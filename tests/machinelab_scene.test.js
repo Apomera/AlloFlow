@@ -568,7 +568,7 @@ describe('Siege Field wave 8: over-shots fly on, predict-then-loose, splash, hot
 
   it('speaks the coach line and the verdict to screen readers', () => {
     const src = source();
-    expect(src).toContain("announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line);");
+    expect(src).toContain("announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line");
   });
 
   it('splashes only in the moat, never on a wall hit, and cancels the scorch there', () => {
@@ -846,5 +846,49 @@ describe('Siege Field wave 14: the camera takes the hit, a moon, rain that lands
     expect(src).toContain('rrg.material.opacity = 0.7 * (1 - kk) * (1 - kk);');
     // Ambient life: with ambient off there is no splash, as with everything else.
     expect(src).toContain('rrg.visible = ambient;');
+  });
+});
+
+describe('Siege Field wave 15: ranging by bracket', () => {
+  it('keeps the best short and the best over, tightening rather than replacing', () => {
+    const src = source();
+    expect(src).toContain("if (kind === 'short') lo = (lo == null) ? at : Math.max(lo, at);");
+    expect(src).toContain("else if (kind === 'over') hi = (hi == null) ? at : Math.min(hi, at);");
+  });
+
+  it('holds the bracket per standoff, because moving the engine asks another question', () => {
+    const src = source();
+    expect(src).toContain('var held = (d.bracket && d.bracket.at === d.standoff) ? d.bracket : { at: d.standoff, lo: null, hi: null };');
+    expect(src).toContain('bracket: (d.bracket && d.bracket.at === d.standoff) ? d.bracket : null,');
+  });
+
+  it('only a long shot closes the far side: a wide miss and a hit leave it alone', () => {
+    const src = source();
+    expect(src).toContain("var overBracket = (res.outcome === 'over')");
+    expect(src).toContain("{ line: '', patch: {} };");
+  });
+
+  it('says where the wall sits between the two shots, as a fraction, not as a midpoint', () => {
+    const src = source();
+    expect(src).toContain('var frac = Math.max(0, Math.min(1, (d.standoff - lo) / (hi - lo)));');
+    expect(src).toContain("__alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +");
+    // Halfway between two landing distances is not the target; the wall is.
+    expect(src).not.toContain('Halfway is ');
+  });
+
+  it('draws the band between the two shots and a bar on each edge', () => {
+    const src = source();
+    expect(src).toContain('S.bracketMark.band.scale.y = Math.max(0.5, bz1 - bz0);');
+    expect(src).toContain('S.bracketMark.edges[0].position.z = bz0;');
+    expect(src).toContain('S.bracketMark.edges[1].position.z = bz1;');
+    // Shown only when both edges are known and they really do straddle.
+    expect(src).toContain('var bkOn = !!(bk && bk.lo != null && bk.hi != null && bk.hi > bk.lo);');
+  });
+
+  it('starts with no bracket at all', () => {
+    const src = source();
+    expect(src).toContain('bracket: null,');
+    const html = renderTool('machineLab', state());
+    expect(html).not.toContain('Bracketed');
   });
 });

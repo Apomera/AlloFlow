@@ -4119,6 +4119,34 @@ window.StemLab = window.StemLab || {
     if (apexLabel) S.model.add(apexLabel.sprite);
     S.apexMark = { tick: apexTick, drop: dropLine, label: apexLabel, sig: null };
 
+    // ── The ranging bracket, laid on the ground between the best short and
+    // the best over. The band is the ground the answer is known to be on; the
+    // bar across it is halfway, which is the next thing to try. ──
+    var bandMat = new THREE.MeshBasicMaterial({
+      color: contrast ? 0xffff00 : 0xffd479, transparent: true,
+      opacity: contrast ? 0.3 : 0.16, depthWrite: false, side: THREE.DoubleSide
+    });
+    var bandMesh = new THREE.Mesh(new THREE.PlaneGeometry(laneHalf * 1.7, 1), bandMat);
+    bandMesh.rotation.x = -Math.PI / 2;
+    bandMesh.position.y = 0.05;
+    bandMesh.visible = false;
+    S.model.add(bandMesh);
+    // The near and far edges of the band, drawn as bars: those are the two
+    // shots, and the wall standing between them is the whole point.
+    var edgeMat = new THREE.MeshBasicMaterial({
+      color: contrast ? 0xffffff : 0xffb020, transparent: true, opacity: 0.85, depthWrite: false
+    });
+    var edgeBars = [0, 1].map(function () {
+      var bar = new THREE.Mesh(new THREE.BoxGeometry(laneHalf * 1.7, 0.09, 0.26), edgeMat);
+      bar.position.y = 0.11;
+      bar.visible = false;
+      S.model.add(bar);
+      return bar;
+    });
+    // No label: at any real standoff it lands among the range stakes and
+    // reads as clutter, and the shot feedback already gives both numbers.
+    S.bracketMark = { band: bandMesh, edges: edgeBars, sig: null };
+
     // ── Seconds on the arc. One bead per second of flight, each with its
     // shadow on the ground below it. The horizontal gaps stay about the same
     // while the vertical ones grow: that is gravity drawn instead of asserted,
@@ -4896,6 +4924,24 @@ window.StemLab = window.StemLab || {
         });
       }
       // Chaff drifts with the wind, and wraps rather than running out.
+      // The bracket. Two numbers from two shots; everything here is derived.
+      if (S.bracketMark) {
+        var bk = data.bracket;
+        var bkOn = !!(bk && bk.lo != null && bk.hi != null && bk.hi > bk.lo);
+        S.bracketMark.band.visible = bkOn;
+        S.bracketMark.edges[0].visible = bkOn;
+        S.bracketMark.edges[1].visible = bkOn;
+        if (bkOn && S.bracketMark.sig !== data.bracketSig) {
+          S.bracketMark.sig = data.bracketSig;
+          var bz0 = -standoff + bk.lo, bz1 = -standoff + bk.hi;
+          S.bracketMark.band.position.z = (bz0 + bz1) / 2;
+          // The plane is 1 m deep and lies flat, so its y scale is the span
+          // down the lane between the two shots.
+          S.bracketMark.band.scale.y = Math.max(0.5, bz1 - bz0);
+          S.bracketMark.edges[0].position.z = bz0;
+          S.bracketMark.edges[1].position.z = bz1;
+        }
+      }
       // Each ring runs its own 1.1 s cycle and jumps to a new hashed spot at
       // the start of each one, which is a splash field without a spawner.
       if (S.rainRings) {
@@ -5172,6 +5218,8 @@ window.StemLab = window.StemLab || {
       // Predicted arc over the field; the start-here card; the last shot, kept
       // whole so it can be replayed in slow motion.
       scenePath: true, sceneIntroDismissed: false, lastFlight: null,
+      // The ranging bracket: the best short and the best over at one standoff.
+      bracket: null,
       // Compact traces of the last three flights, and the best siege per target.
       sceneTraces: [], siegeBests: {},
       // Sound is opt-in: a classroom default.
@@ -7868,6 +7916,31 @@ window.StemLab = window.StemLab || {
         };
       }
 
+      // Ranging by bracket: one shot short, one shot over, and the answer is
+      // fenced in between them. It is the oldest method in gunnery and the same
+      // idea as bisection, so a learner who finds the wall this way has done
+      // something they will meet again in a maths class. Kept per standoff:
+      // move the engine and the old bracket is about a different question.
+      function bracketAfter(kind, landedAt) {
+        var held = (d.bracket && d.bracket.at === d.standoff) ? d.bracket : { at: d.standoff, lo: null, hi: null };
+        var lo = held.lo, hi = held.hi;
+        var at = Math.max(0, Number(landedAt) || 0);
+        if (kind === 'short') lo = (lo == null) ? at : Math.max(lo, at);
+        else if (kind === 'over') hi = (hi == null) ? at : Math.min(hi, at);
+        var line = '';
+        if (lo != null && hi != null && hi > lo) {
+          // Where the wall sits between the two shots, as a fraction. That
+          // fraction is the actionable part: it says how far to move the
+          // setting, and it is proportional reasoning rather than a rule.
+          var frac = Math.max(0, Math.min(1, (d.standoff - lo) / (hi - lo)));
+          line = ' ' + __alloT('stem.machinelab.bracket_l1', 'Bracketed: one short at ') + fmt(lo, 0) +
+            __alloT('stem.machinelab.bracket_l2', ' m, one long at ') + fmt(hi, 0) +
+            __alloT('stem.machinelab.bracket_l3', ' m. The wall is ') + Math.round(frac * 100) +
+            __alloT('stem.machinelab.bracket_l4', '% of the way between them, so the setting you want is between those two shots.');
+        }
+        return { line: line, patch: { bracket: { at: d.standoff, lo: lo, hi: hi } } };
+      }
+
       function loose() {
         if (d.siegeFlight) return;
         if (!preview) {
@@ -7908,13 +7981,15 @@ window.StemLab = window.StemLab || {
           var shortPlay = Math.max(0.9, Math.min(4.5, shortSecs));
           var shortId = (d.siegeFlightId || 0) + 1;
           var shortGuess = judgeGuess('short');
+          var shortLand = shortPath.length ? (Number(shortPath[shortPath.length - 1].x) || 0) : (preview.range || 0);
+          var shortBracket = bracketAfter('short', shortLand);
           updMulti(Object.assign({
             shotsFired: shots, totalCrankWork: work, lastImpact: null,
             siegeFeedback: {
               ok: false,
               message: __alloT('stem.machinelab.fell_short', 'Short by ') +
                 fmt(impact ? impact.shortBy : d.standoff, 1) +
-                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.') + coachLine + shortGuess.line
+                __alloT('stem.machinelab.fell_short2', ' m. Range the target: more stored energy, or a lighter stone, or move closer.') + coachLine + shortGuess.line + shortBracket.line
             },
             siegeFlightId: shortId,
             siegeFlight: shortPath.length > 1
@@ -7922,10 +7997,10 @@ window.StemLab = window.StemLab || {
               : null,
             lastFlight: shortPath.length > 1 ? { path: shortPath, seconds: shortPlay, before: blocks, outcome: 'short' } : null,
             sceneTraces: shortPath.length > 1 ? (d.sceneTraces || []).slice(-2).concat([compactPath(shortPath)]) : (d.sceneTraces || [])
-          }, shortGuess.patch));
+          }, shortGuess.patch, shortBracket.patch));
           if (shortPath.length > 1) clearFlightLater(shortId, shortPlay + WINDUP_SECS);
           // The coach is for everyone, so it is spoken as well as shown.
-          announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line);
+          announceToSR(__alloT('stem.machinelab.sr_short', 'The shot fell short.') + coachLine + shortGuess.line + shortBracket.line);
           return;
         }
 
@@ -7974,6 +8049,13 @@ window.StemLab = window.StemLab || {
         }
         var hitGuess = judgeGuess(res.outcome === 'hit' ? 'hit' : (res.outcome === 'over' ? 'over' : 'wide'));
         msg += hitGuess.line;
+        // Only a shot that went LONG closes the far side of the bracket. A wide
+        // shot missed sideways and says nothing about range; a hit ends the
+        // question. Both leave the bracket exactly as it was.
+        var overBracket = (res.outcome === 'over')
+          ? bracketAfter('over', flightPath.length ? (Number(flightPath[flightPath.length - 1].x) || 0) : (preview.range || 0))
+          : { line: '', patch: {} };
+        msg += overBracket.line;
         updMulti(Object.assign({
           wallBlocks: res.blocks, shotsFired: shots, totalCrankWork: work,
           breached: nowBreached, lastImpact: res,
@@ -7986,7 +8068,7 @@ window.StemLab = window.StemLab || {
           },
           lastFlight: { path: flightPath, seconds: playSecs, before: blocks, outcome: res.outcome },
           sceneTraces: (d.sceneTraces || []).slice(-2).concat([compactPath(flightPath)])
-        }, hitGuess.patch));
+        }, hitGuess.patch, overBracket.patch));
         clearFlightLater(flightId, playSecs + WINDUP_SECS);
         if (nowBreached && !d.breached) {
           awardStemXP(40);
@@ -8923,6 +9005,11 @@ window.StemLab = window.StemLab || {
           traces: d.sceneTraces || [],
           tracesSig: (d.sceneTraces || []).map(function (p) { return p.length + ':' + (p.length ? Math.round(p[p.length - 1].x) : 0); }).join('|'),
           showPath: d.scenePath !== false,
+          // Only the bracket that belongs to this standoff: moving the engine
+          // asks a different question, and the old answer is not about it.
+          bracket: (d.bracket && d.bracket.at === d.standoff) ? d.bracket : null,
+          bracketSig: (d.bracket && d.bracket.at === d.standoff)
+            ? [d.bracket.at, d.bracket.lo, d.bracket.hi].join('|') : '',
           previewPath: preview && preview.path ? preview.path : null,
           previewSig: preview ? [Math.round(d.standoff), preview.range, preview.apex, preview.drift].join('|') : '',
           kind: machineId,

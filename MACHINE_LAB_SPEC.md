@@ -183,6 +183,21 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 15 (2026-09-05)
+
+- **Ranging by bracket.** One shot short and one shot long fence the wall in between them.
+  The tool keeps the best of each at that standoff (`Math.max` on the shorts, `Math.min` on
+  the longs, so the bracket tightens rather than jumping about), draws the band on the ground
+  with a bar on each edge, and says in the feedback where the wall sits between the two shots
+  as a percentage. That percentage is the actionable part, and it is proportional reasoning
+  rather than a rule to remember.
+- ★**What it does NOT say.** The first version offered "halfway is 89 m — try for that". That
+  is wrong: halfway between two landing distances is not the target, the wall is. Only a shot
+  that went LONG closes the far side; a wide miss says nothing about range and a hit ends the
+  question, so both leave the bracket exactly as it was.
+- The bracket is held per standoff. Move the engine and the old bracket is about a different
+  question, so it is dropped rather than redrawn somewhere it does not mean anything.
+
 ### Wave 14 (2026-09-05)
 
 - **The camera takes the hit.** A short wobble on the look-at and the yaw, scaled by the
