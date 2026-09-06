@@ -397,6 +397,7 @@
   "pacific": "Pacific",
   "flyways_legend": "Flyways",
   "stopover_site": "Stopover site",
+  "ai_facts_failed": "Could not load AI facts. Try again later.",
   "aria_routes_map": "Migration route map of North America showing four flyways: Atlantic, Mississippi, Central, and Pacific.",
   "currently_tracking": "Currently tracking",
   "select_a_species": "Select a species to see its route.",

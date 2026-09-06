@@ -5234,7 +5234,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               updMulti({ aiExplorerText: result, aiExplorerLoading: false });
             }
           }).catch(function() {
-            updMulti({ aiExplorerText: 'Could not load AI facts. Try again later.', aiExplorerLoading: false });
+            updMulti({ aiExplorerText: t('stem.migration.ai_facts_failed', 'Could not load AI facts. Try again later.'), aiExplorerLoading: false });
           });
         }
 
@@ -5331,8 +5331,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 h('div', null, h('strong', null, t('stem.migration.fun_fact', 'Fun Fact: ')), sp.funFact)
               ),
 
-              // AI Explorer
-              h('div', { className: 'flex items-center gap-2 mt-2' },
+              // AI Explorer. Rendered only when there is a backend to ask:
+              // the button used to appear enabled with no AI configured, and
+              // clicking it was a silent no-op, because handleAIExplorer opens
+              // with `if (!callGemini) return`. A control that is focusable,
+              // announced and does nothing is worse than an absent one. This
+              // is the gating other tools here already use (angles,
+              // allobotsage): `callGemini && h(...)`.
+              callGemini && h('div', { className: 'flex items-center gap-2 mt-2' },
                 h('button', {
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold ' + btnPrimary,
                   'aria-label': t('stem.migration.aria_ask_ai', 'Ask AI for more facts about') + ' ' + sp.name,

@@ -410,6 +410,29 @@ describe('Migration Lab tool integrity', () => {
     }
   });
 
+  it('renders no AI control when there is no AI backend', () => {
+    // The AI Explorer button used to render enabled with no backend
+    // configured, and clicking it was a silent no-op: handleAIExplorer opens
+    // with `if (!callGemini) return`. A control that is visible, focusable and
+    // announced, and then does nothing, is worse than an absent one. Other
+    // tools here already gate on `callGemini && h(...)`.
+    function renderWith(ai) {
+      const store = { migration: { tab: 'routes', selectedSpecies: 'canada_goose' } };
+      const ctx = {
+        React, toolData: store, update: () => {}, updateMulti: () => {},
+        addToast: () => {}, announceToSR: () => {}, t: (k, fb) => (fb == null ? k : fb),
+        isDark: true, setStemLabTool: () => {}, awardXP: () => {}
+      };
+      if (ai) ctx.callGemini = () => Promise.resolve('');
+      const html = renderToStaticMarkup(React.createElement(() => tool.render(ctx)));
+      const el = document.createElement('div');
+      el.innerHTML = html;
+      return Array.from(el.querySelectorAll('button')).filter((b) => /AI Explorer/.test(b.textContent || '')).length;
+    }
+    expect(renderWith(true), 'offered when a backend exists').toBe(1);
+    expect(renderWith(false), 'absent when no backend exists').toBe(0);
+  });
+
   it('keeps source and public mirrors identical', () => {
     expect(fs.readFileSync(sourcePath, 'utf8')).toBe(fs.readFileSync(publicPath, 'utf8'));
   });
