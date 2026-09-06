@@ -403,6 +403,21 @@ Most are legitimate. A hookFact often draws on the pack's FAQ or anchor chart ra
 **"The middle is where the problem shows up and gets tried at."** Not false, but clumsy enough to matter in a grade-2 pack whose job is modelling clear retelling. Now "the character tries to fix it".
 
 That is 660 blocks checked to find one factual error and one bad sentence. Worth it: the cube claim had survived the shape suite, the reading-level audit, the answer-key pass and a live render, because none of them look at whether a sentence is true.
+## Eighteenth pass: reading the FAQs of the fourteen newest packs
+
+The thirteenth pass extracted claims carrying a number, a date or a proper name. That misses everything asserted in plain prose, and an FAQ is almost entirely plain prose. So: all 84 FAQ answers in the fourteen packs written on 5 and 6 September, read straight through.
+
+Most hold. The pyramids answer and its workers' village evidence, the Rosetta Stone and Champollion, `in-` meaning "not" in *invisible* but not in *include*, a pyramid holding exactly a third of the box around it, a litre being exactly 1000 cubic centimetres, polyphenol oxidase browning a cut apple and lemon juice slowing it, nuclear reactions being the honest exception to conservation of mass, and the deep ocean floor being less well mapped than the surface of Mars.
+
+### Three were wrong
+
+**"Is the Sun bigger than the other stars?" — "Not really."** That is the opposite of the truth. Roughly three quarters of the stars in the galaxy are red dwarfs, all smaller than the Sun, so the Sun is bigger than most stars. The answer was reaching for a real idea — that plenty of stars dwarf it, and it only looks huge because it is close — and got there by asserting something false. It now says both halves: bigger than most, much smaller than some.
+
+**"Salt in water separates into particles that are still salt."** Dissolved salt separates into charged particles, which are what salt is built from rather than salt itself. Loose phrasing anywhere; not loose enough to ignore in the pack whose entire subject is what counts as a new substance. Reworded, and the honest hedge that follows it — that some dissolvings genuinely do involve reactions, so the recovery test is the one to trust — was already right and stayed.
+
+**"If I enjoy both options equally, is the cost zero?" — "No, but it is small."** This one contradicted itself in the next sentence and inverted the pack's central concept. If the two options were nearly equal, you gave up something nearly as good, so the opportunity cost is **high**, not small. What is small is how much better off you ended up. The answer now says so.
+
+The third is the one worth dwelling on. It is not a slip of fact but a slip of *reasoning*, in the pack built to teach that exact reasoning, and it read plausibly enough to survive being written, reviewed at authoring time, levelled for readability, and rendered live. Only reading it slowly, against the definition three paragraphs above it, exposed the inversion.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

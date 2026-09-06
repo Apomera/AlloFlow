@@ -590,11 +590,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   ];
 
   // ── Wing types for aerodynamics tab ──
+  // No bestAngle here on purpose. The best lift-to-drag angle is a CONSEQUENCE
+  // of liftCoeff, dragCoeff and aspect ratio, so storing it beside them lets it
+  // drift from the curve the tab actually draws -- which it had, on three of
+  // these four wings. migrBestLD() derives it from the same model as the graph.
   var WING_TYPES = [
-    { id: 'soaring', name: 'Soaring (Eagle)', emoji: '\uD83E\uDD85', ar: 7, aspectRatio: 'High (7:1)', shape: 'Long, narrow, slotted tips', liftCoeff: 1.6, dragCoeff: 0.02, bestAngle: 5, stallAngle: 16, desc: 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.' },
-    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', ar: 5, aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, bestAngle: 6, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10–30% energy savings; ~65% is a theoretical per-position maximum).' },
-    { id: 'hovering', name: 'Hovering (Hummingbird)', emoji: '\uD83D\uDC26', ar: 3, aspectRatio: 'Low (3:1)', shape: 'Short, figure-8 stroke', liftCoeff: 1.8, dragCoeff: 0.08, bestAngle: 40, stallAngle: 90, desc: 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.' },
-    { id: 'speed', name: 'Speed (Falcon)', emoji: '\uD83E\uDD85', ar: 6, aspectRatio: 'Medium-High (6:1)', shape: 'Swept back, pointed', liftCoeff: 1.2, dragCoeff: 0.018, bestAngle: 4, stallAngle: 12, desc: 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.' }
+    { id: 'soaring', name: 'Soaring (Eagle)', emoji: '\uD83E\uDD85', ar: 7, aspectRatio: 'High (7:1)', shape: 'Long, narrow, slotted tips', liftCoeff: 1.6, dragCoeff: 0.02, stallAngle: 16, desc: 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.' },
+    { id: 'flapping', name: 'Flapping (Goose)', emoji: '\uD83E\uDEBF', ar: 5, aspectRatio: 'Medium (5:1)', shape: 'Medium, broad, rounded', liftCoeff: 1.4, dragCoeff: 0.035, stallAngle: 14, desc: 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10–30% energy savings; ~65% is a theoretical per-position maximum).' },
+    { id: 'hovering', name: 'Hovering (Hummingbird)', emoji: '\uD83D\uDC26', ar: 3, aspectRatio: 'Low (3:1)', shape: 'Short, figure-8 stroke', liftCoeff: 1.8, dragCoeff: 0.08, stallAngle: 90, desc: 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.' },
+    { id: 'speed', name: 'Speed (Falcon)', emoji: '\uD83E\uDD85', ar: 6, aspectRatio: 'Medium-High (6:1)', shape: 'Swept back, pointed', liftCoeff: 1.2, dragCoeff: 0.018, stallAngle: 12, desc: 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.' }
   ];
 
   // ── Navigation methods data ──
@@ -703,6 +707,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       ratio: totalKJ > 0 ? fatBudgetKJ / totalKJ : Infinity,
       rangeKm: energyPerKm > 0 ? fatBudgetKJ / energyPerKm : 0
     };
+  }
+
+  // ── Aerofoil model ───────────────────────────────────────
+  // Pure, and at module scope beside the flight-energy model, because the
+  // aerodynamics graph, its best-lift-to-drag marker and the explainer card
+  // beneath it must all read one derivation. They did not: the card used to
+  // quote a bestAngle stored in WING_TYPES, and three of the four wings
+  // disagreed with the curve drawn right above it.
+  // One default wing id. The canvas loop read its own default of 'goose',
+  // which is not a WING_TYPES id at all; it only ever drew the right wing
+  // because getWingType fell through to WING_TYPES[1], which happens to be the
+  // same wing the controls default to. Reorder that array and the canvas would
+  // have silently drawn a different aerofoil than the card said.
+  var MIGR_DEFAULT_WING = 'flapping';
+  function migrAeroCoeffs(w, aoaDeg) {
+    var stalled = aoaDeg > w.stallAngle;
+    var cl;
+    if (!stalled) {
+      cl = w.liftCoeff * (aoaDeg / w.stallAngle);
+    } else {
+      // continuous at the stall angle, then a clear drop over a few degrees
+      cl = w.liftCoeff * (0.45 + 0.55 * Math.exp(-(aoaDeg - w.stallAngle) * 0.8));
+    }
+    var ar = w.ar || 5;
+    var cd = w.dragCoeff + (cl * cl) / (Math.PI * ar * 0.85);
+    // Past the stall the induced-drag formula no longer applies: it
+    // assumes attached flow. Adding a separation term on top of it made
+    // total drag FALL through the stall, because the collapsing lift took
+    // the induced term down faster than the penalty came up. So beyond
+    // the stall angle drag is anchored at its value AT the stall and
+    // separation drag is added to that, which can only rise.
+    if (stalled) {
+      var cdAtStall = w.dragCoeff + (w.liftCoeff * w.liftCoeff) / (Math.PI * ar * 0.85);
+      cd = cdAtStall + 0.05 * (1 - Math.exp(-(aoaDeg - w.stallAngle) * 0.35));
+    }
+    return { cl: cl, cd: cd, ld: cd > 0.001 ? cl / cd : 0, stalling: stalled };
+  }
+  // The angle of best lift-to-drag, derived from the model rather than
+  // stored beside it, so the label and the curve can never disagree.
+  function migrBestLD(w) {
+    var bestA = 0, bestV = -1;
+    for (var a = 0.25; a <= w.stallAngle; a += 0.25) {
+      var r = migrAeroCoeffs(w, a).ld;
+      if (r > bestV) { bestV = r; bestA = a; }
+    }
+    return { angle: bestA, ld: bestV };
   }
 
   // ── Formation physics constants ──
@@ -1864,6 +1914,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     _testing: {
       flightEnergy: migrFlightEnergy,
       typicalSpan: migrTypicalSpan,
+      aeroCoeffs: migrAeroCoeffs,
+      bestLD: migrBestLD,
+      wingTypes: WING_TYPES,
       formationSaving: MIGR_FORMATION_SAVING,
       beaufort: getBeaufortEntry
     },
@@ -2005,7 +2058,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         flightWind: d.flightWind == null ? 8 : d.flightWind,
         flightPaused: !!d.flightPaused,
         flightSeason: d.flightSeason || 'fall',
-        selectedWing: d.selectedWing || 'goose', isDark: isDark, tab: tab, t: t,
+        selectedWing: d.selectedWing || MIGR_DEFAULT_WING, isDark: isDark, tab: tab, t: t,
         // Read inside deferred canvas callbacks, so they cannot come from the
         // render closure: vLeaderRotations is both DISPLAYED and INCREMENTED
         // there, and thermalRidden gates a one-shot XP award.
@@ -5612,13 +5665,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var timeRef = _arTimeRef;
 
         var aoa = typeof d.aoa === 'number' ? d.aoa : 5; // angle of attack
-        var selectedWing = d.selectedWing || 'flapping';
+        var selectedWing = d.selectedWing || MIGR_DEFAULT_WING;
 
         function getWingType(id) {
           for (var i = 0; i < WING_TYPES.length; i++) {
             if (WING_TYPES[i].id === id) return WING_TYPES[i];
           }
-          return WING_TYPES[1];
+          // Fall back to the named default, not to a position in the array.
+          for (var j = 0; j < WING_TYPES.length; j++) {
+            if (WING_TYPES[j].id === MIGR_DEFAULT_WING) return WING_TYPES[j];
+          }
+          return WING_TYPES[0];
         }
 
         var wing = getWingType(selectedWing);
@@ -5645,39 +5702,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // the card is the number the wing actually reaches), drops away past
         // the stall, and induced drag uses the wing's OWN aspect ratio. Drag
         // also rises through the stall, which it did not before.
-        function migrAeroCoeffs(w, aoaDeg) {
-          var stalled = aoaDeg > w.stallAngle;
-          var cl;
-          if (!stalled) {
-            cl = w.liftCoeff * (aoaDeg / w.stallAngle);
-          } else {
-            // continuous at the stall angle, then a clear drop over a few degrees
-            cl = w.liftCoeff * (0.45 + 0.55 * Math.exp(-(aoaDeg - w.stallAngle) * 0.8));
-          }
-          var ar = w.ar || 5;
-          var cd = w.dragCoeff + (cl * cl) / (Math.PI * ar * 0.85);
-          // Past the stall the induced-drag formula no longer applies: it
-          // assumes attached flow. Adding a separation term on top of it made
-          // total drag FALL through the stall, because the collapsing lift took
-          // the induced term down faster than the penalty came up. So beyond
-          // the stall angle drag is anchored at its value AT the stall and
-          // separation drag is added to that, which can only rise.
-          if (stalled) {
-            var cdAtStall = w.dragCoeff + (w.liftCoeff * w.liftCoeff) / (Math.PI * ar * 0.85);
-            cd = cdAtStall + 0.05 * (1 - Math.exp(-(aoaDeg - w.stallAngle) * 0.35));
-          }
-          return { cl: cl, cd: cd, ld: cd > 0.001 ? cl / cd : 0, stalling: stalled };
-        }
-        // The angle of best lift-to-drag, derived from the model rather than
-        // stored beside it, so the label and the curve can never disagree.
-        function migrBestLD(w) {
-          var bestA = 0, bestV = -1;
-          for (var a = 0.25; a <= w.stallAngle; a += 0.25) {
-            var r = migrAeroCoeffs(w, a).ld;
-            if (r > bestV) { bestV = r; bestA = a; }
-          }
-          return { angle: bestA, ld: bestV };
-        }
 
         // Lift & drag calculations
         var aoaRad = aoa * Math.PI / 180;
@@ -6307,7 +6331,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                   h('div', { className: 'text-[0.6875rem] ' + textSecondary + ' leading-relaxed' }, __alloT('stem.migration.' + (wt.id) + '_desc', wt.desc)),
                   h('div', { className: 'flex gap-2 mt-1.5 text-[0.6875rem]' },
                     h('span', { className: accent }, 'AR: ' + wt.aspectRatio),
-                    h('span', { className: textMuted }, 'Best AoA: ' + wt.bestAngle + '\u00B0'),
+                    h('span', { className: textMuted }, t('stem.migration.best_aoa_label', 'Best AoA') + ': ' + migrBestLD(wt).angle.toFixed(1) + '\u00B0'),
                     h('span', { className: textMuted }, 'Stall: ' + wt.stallAngle + '\u00B0')
                   )
                 );
@@ -6327,7 +6351,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('div', null,
                 h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.angle_of_attack_stall', 'Angle of Attack & Stall')),
                 h('p', null, t('stem.migration.as_the_angle_of_attack_increases_lift_', 'As the angle of attack increases, lift increases \u2014 up to a point. Beyond the '), h('strong', null, t('stem.migration.critical_angle', 'critical angle')), t('stem.migration.stall_angle_airflow_separates_from_the', ' (stall angle), airflow separates from the upper surface. The wing loses its smooth airflow, lift drops dramatically, and drag spikes. This is a "stall."')),
-                h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: 'text-green-500' }, wing.bestAngle + '\u00B0'), '.')
+                h('p', { className: 'mt-1' }, t('stem.migration.current_wing_s_stall_angle', 'Current wing\'s stall angle: '), h('strong', { className: 'text-red-500' }, wing.stallAngle + '\u00B0'), t('stem.migration.best_l_d_at', '. Best L/D at: '), h('strong', { className: 'text-green-500' }, migrBestLD(wing).angle.toFixed(1) + '\u00B0'), '.')
               ),
               h('div', null,
                 h('h4', { className: 'font-bold text-[0.6875rem] mb-1 ' + textPrimary }, t('stem.migration.lift_to_drag_ratio_l_d', 'Lift-to-Drag Ratio (L/D)')),

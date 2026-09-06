@@ -113,6 +113,75 @@ describe('Migration Lab flight-energy model', () => {
     expect(span(0.6)).toBeLessThan(span(4));
   });
 
+  it('derives the best lift-to-drag angle instead of storing it', () => {
+    // The Aerodynamics tab answered "what is the best angle of attack?" twice.
+    // The graph marked the angle its own model found; the card beneath quoted a
+    // bestAngle stored in WING_TYPES. Three of the four wings disagreed --
+    // soaring 5 vs 6.00, flapping 6 vs 6.75, speed 4 vs 5.25 -- on the same
+    // screen. Storing a value that is a consequence of three others is what
+    // lets it drift, so the field is gone.
+    for (const w of tool._testing.wingTypes) {
+      expect(w, w.id + ' should not carry a stored bestAngle').not.toHaveProperty('bestAngle');
+    }
+    const best = tool._testing.bestLD;
+    const coef = tool._testing.aeroCoeffs;
+    for (const w of tool._testing.wingTypes) {
+      const b = best(w);
+      // The reported angle really is the maximum of the curve the tab draws.
+      expect(coef(w, b.angle).ld, w.id).toBeGreaterThanOrEqual(coef(w, b.angle - 1).ld - 1e-9);
+      expect(coef(w, b.angle).ld, w.id).toBeGreaterThanOrEqual(coef(w, b.angle + 1).ld - 1e-9);
+      expect(b.angle, w.id + ' best angle sits below the stall').toBeLessThanOrEqual(w.stallAngle);
+    }
+  });
+
+  it('defaults the aerofoil to a wing that actually exists', () => {
+    // The canvas loop used to default selectedWing to 'goose', which is a bird
+    // SILHOUETTE id, not a WING_TYPES id. It drew the right wing only because
+    // getWingType fell through to WING_TYPES[1], which happens to be the same
+    // wing the controls default to. Reordering that array would have made the
+    // canvas silently disagree with the card beside it.
+    const src = fs.readFileSync(sourcePath, 'utf8');
+    const declared = (src.match(/var MIGR_DEFAULT_WING = '([a-z]+)'/) || [])[1];
+    expect(declared, 'a single named default').toBeTruthy();
+    expect(tool._testing.wingTypes.map((w) => w.id)).toContain(declared);
+    // No surface may carry its own default.
+    expect(src).not.toMatch(/selectedWing\s*\|\|\s*'(?!.*MIGR_DEFAULT_WING)[a-z_]+'/);
+  });
+
+  it('models a stall that loses lift and gains drag', () => {
+    const coef = tool._testing.aeroCoeffs;
+    for (const w of tool._testing.wingTypes) {
+      const justBelow = coef(w, w.stallAngle - 0.5);
+      const at = coef(w, w.stallAngle);
+      const past = coef(w, w.stallAngle + 4);
+      const wayPast = coef(w, w.stallAngle + 12);
+      // Continuous at the stall: no cliff in the drawn curve.
+      expect(Math.abs(at.cl - justBelow.cl), w.id).toBeLessThan(0.1);
+      expect(past.cl, w.id + ' lift falls past the stall').toBeLessThan(at.cl);
+      // Drag must only rise past the stall. An earlier form added a separation
+      // term on top of induced drag, and the collapsing lift pulled the induced
+      // term down faster than the penalty came up -- so total drag FELL through
+      // the stall, which is backwards.
+      expect(past.cd, w.id + ' drag rises past the stall').toBeGreaterThan(at.cd);
+      expect(wayPast.cd, w.id + ' drag keeps rising').toBeGreaterThanOrEqual(past.cd);
+      expect(past.stalling).toBe(true);
+      expect(justBelow.stalling).toBe(false);
+    }
+  });
+
+  it('shows one best angle on the wing card and in the explainer', () => {
+    for (const wing of ['soaring', 'flapping', 'hovering', 'speed']) {
+      const el = document.createElement('div');
+      el.innerHTML = render('aero', true, { selectedWing: wing });
+      const txt = el.textContent;
+      const cardAngles = (txt.match(/Best AoA: ([\d.]+)/g) || []).map((m) => m.replace(/[^\d.]/g, ''));
+      const explainer = (txt.match(/Best L\/D at: ([\d.]+)/) || [])[1];
+      expect(cardAngles.length, wing).toBe(4);
+      expect(explainer, wing + ' explainer states an angle').toBeTruthy();
+      expect(cardAngles, wing + ' explainer angle matches a card').toContain(explainer);
+    }
+  });
+
   it('reads the true Beaufort force bands', () => {
     const b = tool._testing.beaufort;
     expect(b(0).force).toBe(0);

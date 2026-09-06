@@ -500,6 +500,7 @@
   "drag_coeff_c": "Drag Coeff (Cₑ)",
   "l_d_ratio": "L/D Ratio",
   "wing_type_comparison": "Wing Type Comparison",
+  "best_aoa_label": "Best AoA",
   "flight_physics_explained": "📚 Flight Physics Explained",
   "bernoulli_s_principle": "Bernoulli's Principle",
   "as_air_speeds_up_its_pressure_drops_a_": "As air speeds up, its pressure drops. A wing's curved upper surface forces air to travel faster over the top than under the bottom. This creates ",
