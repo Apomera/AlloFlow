@@ -3930,6 +3930,80 @@ window.StemLab = window.StemLab || {
       }
       S.fire = { flame: flame, light: fireLight, base: P.fire, smoke: smoke };
 
+      // ── The camp. The castle got a ward it is defending; this is what the
+      // engine is standing in. A siege was a place people lived for weeks, and
+      // an engine alone in a field says the opposite. ──
+      var campGround = function (cx, cz) { return terrainHeight(cx, cz, standoff, laneHalf); };
+      [[-12.5, -standoff + 3.5, 2.1, 2.5, 0xcfc0a0], [15.2, -standoff - 6.5, 1.9, 2.2, 0xc4b394]].forEach(function (t2) {
+        var t2x = t2[0], t2z = t2[1];
+        var tent2 = new THREE.Mesh(new THREE.ConeGeometry(t2[2], t2[3], 8), mat(t2[4]));
+        tent2.position.set(t2x, campGround(t2x, t2z) + t2[3] / 2, t2z);
+        tent2.castShadow = true; tent2.receiveShadow = true;
+        S.model.add(tent2);
+      });
+
+      // The supply cart: the stones did not walk here.
+      var cart = new THREE.Group();
+      cart.position.set(9.4, campGround(9.4, -standoff + 5.5), -standoff + 5.5);
+      cart.rotation.y = 0.5;
+      var bed = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.55, 1.5), mat(0x6b4b2a, tex.wood ? { map: tex.wood } : null));
+      bed.position.y = 0.95; bed.castShadow = true;
+      cart.add(bed);
+      [-1, 1].forEach(function (ws) {
+        var wheel = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.14, 12), mat(0x5b3b1f));
+        wheel.rotation.x = Math.PI / 2;
+        wheel.position.set(0.2, 0.62, ws * 0.82);
+        wheel.castShadow = true;
+        cart.add(wheel);
+      });
+      var shaft = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.12), mat(0x5b3b1f));
+      shaft.position.set(-2.1, 0.8, 0);
+      cart.add(shaft);
+      for (var cs = 0; cs < 3; cs++) {
+        var loadStone = new THREE.Mesh(new THREE.DodecahedronGeometry(0.32 + hash01(cs, 5, 151) * 0.14, 0), mat(0x7d7569));
+        loadStone.position.set(-0.6 + cs * 0.6, 1.45, (hash01(cs, 7, 152) - 0.5) * 0.5);
+        loadStone.castShadow = true;
+        cart.add(loadStone);
+      }
+      S.model.add(cart);
+
+      // Barrels, because a siege drinks.
+      for (var bl = 0; bl < 4; bl++) {
+        var barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.34, 0.8, 10), mat(0x77522c, tex.wood ? { map: tex.wood } : null));
+        var blx = -9.6 + (bl % 2) * 0.82, blz = -standoff - 1.6 + Math.floor(bl / 2) * 0.85;
+        barrel.position.set(blx, campGround(blx, blz) + 0.4, blz);
+        barrel.castShadow = true;
+        S.model.add(barrel);
+      }
+
+      // A stake screen across the camp's front: the crew are within range of
+      // the wall too, and they know it.
+      for (var pk = 0; pk < 13; pk++) {
+        var pkx = -9 + pk * 1.5;
+        if (Math.abs(pkx) < 2.6) continue;
+        var pkz = -standoff + 8.5 + hash01(pk, 11, 153) * 0.6;
+        var stake = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.11, 2.1, 5), mat(0x5f4326));
+        stake.position.set(pkx, campGround(pkx, pkz) + 0.85, pkz);
+        stake.rotation.x = -0.42;
+        stake.rotation.z = (hash01(pk, 13, 154) - 0.5) * 0.16;
+        stake.castShadow = true;
+        S.model.add(stake);
+      }
+
+      // The camp's standard, answering the castle's banner across the field.
+      var stdPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 5.4, 6), mat(0x3b2a1a));
+      stdPole.position.set(13.8, campGround(13.8, -standoff + 7.5) + 2.7, -standoff + 7.5);
+      stdPole.castShadow = true;
+      S.model.add(stdPole);
+      var stdGeo = new THREE.PlaneGeometry(2.1, 1.15, 9, 3);
+      stdGeo.translate(1.05, 0, 0);
+      var standard = new THREE.Mesh(stdGeo, mat(0x2f5f8f, { side: THREE.DoubleSide }));
+      standard.position.set(13.8, campGround(13.8, -standoff + 7.5) + 4.6, -standoff + 7.5);
+      standard.castShadow = true;
+      S.model.add(standard);
+      S.standard = standard;
+      S.standardBase = stdGeo.attributes.position.array.slice();
+
       var birds = new THREE.Group();
       for (var bi = 0; bi < 6; bi++) {
         var bird = new THREE.Group();
@@ -4404,6 +4478,23 @@ window.StemLab = window.StemLab || {
         var heave = (winding > 0 && !red) ? Math.sin(tSec * 7 * Math.PI / 1.0) : 0;
         S.crew[0].rotation.x = heave * 0.22; S.crew[0].position.y = Math.max(0, heave) * 0.08;
         S.crew[1].rotation.x = -heave * 0.18; S.crew[1].position.y = Math.max(0, -heave) * 0.08;
+        // And they watch it go. Turning to follow the stone is the cheapest
+        // possible cue that the thing in the air is the thing they just threw.
+        var watchAt = stonePos || (S.impactAt != null && (now - S.impactAt) < 2600 ? S.impactPos : null);
+        for (var cw = 0; cw < S.crew.length; cw++) {
+          var member = S.crew[cw];
+          var faceY = watchAt
+            ? Math.atan2(watchAt.x - member.position.x, watchAt.z - member.position.z)
+            : (member.userData && member.userData.rest0 != null ? member.userData.rest0 : member.rotation.y);
+          if (!member.userData) member.userData = {};
+          if (member.userData.rest0 == null) member.userData.rest0 = member.rotation.y;
+          // Take the short way round, or a stone crossing behind them spins
+          // the whole figure the long way.
+          var dY = faceY - member.rotation.y;
+          while (dY > Math.PI) dY -= Math.PI * 2;
+          while (dY < -Math.PI) dY += Math.PI * 2;
+          member.rotation.y += dY * Math.min(1, dt * 4);
+        }
       }
 
       // Ghost traces of the last flights, for comparing one change against
@@ -4688,6 +4779,19 @@ window.StemLab = window.StemLab || {
           bp.setY(bv, by - Math.max(0, 1 - windAbs / 3) * 0.35 * (bx / 2.4));
         }
         bp.needsUpdate = true;
+      }
+      // The camp's standard, on the castle banner's rules: it is the same wind.
+      if (S.standard && S.standardBase) {
+        S.standard.rotation.y = wind < 0 ? Math.PI : 0;
+        var sp2 = S.standard.geometry.attributes.position;
+        var sbase = S.standardBase;
+        var samp = 0.11 + windAbs * 0.028, sfreq = 5 + windAbs * 0.8;
+        for (var sv = 0; sv < sp2.count; sv++) {
+          var sx2 = sbase[sv * 3], sy2 = sbase[sv * 3 + 1];
+          sp2.setZ(sv, ambient ? Math.sin(sx2 * 2.6 + tSec * sfreq + sy2 * 1.5) * samp * (sx2 / 2.1 + 0.1) : 0);
+          sp2.setY(sv, sy2 - Math.max(0, 1 - windAbs / 3) * 0.32 * (sx2 / 2.1));
+        }
+        sp2.needsUpdate = true;
       }
       if (S.rain) {
         var rp = S.rain.geometry.attributes.position;

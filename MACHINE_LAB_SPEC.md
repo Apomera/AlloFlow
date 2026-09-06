@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 13 (2026-09-05)
+
+- **The camp.** Wave 12 gave the castle something to defend; this is what the engine is
+  standing in. Two more tents, a cart loaded with stones, barrels, a screen of angled stakes
+  across the camp's front with a gap left open for the shot, and a standard answering the
+  castle's banner. Every prop sits on `terrainHeight`, the same ground the flight model
+  assumes.
+- **The crew watch their own shot.** All three turn to follow the stone while it is in the
+  air, hold on the impact for 2.6 s, then return to the way they were first facing. The turn
+  takes the short way round, or a stone crossing behind them spins the figure the long way.
+- The standard flutters on the castle banner's own rules, because it is the same wind: still
+  when ambient motion is off.
+
 ### Wave 12 (2026-09-05)
 
 - **An inner ward.** A wall with nothing behind it is a fence. The castle now has a keep that

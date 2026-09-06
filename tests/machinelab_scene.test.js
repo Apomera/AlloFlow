@@ -762,3 +762,51 @@ describe('Siege Field wave 12: an inner ward and people on the rampart', () => {
     expect(src.slice(rampart, rampart + 400)).toContain("if (!contrast && m.wallPreset !== 'imported') {");
   });
 });
+
+describe('Siege Field wave 13: the camp, and a crew that watches its own shot', () => {
+  it('pitches more of a camp: tents, a loaded cart, barrels, a stake screen, a standard', () => {
+    const src = source();
+    expect(src).toContain('// ── The camp. The castle got a ward it is defending; this is what the');
+    expect(src).toContain('// The supply cart: the stones did not walk here.');
+    expect(src).toContain('// Barrels, because a siege drinks.');
+    expect(src).toContain("// A stake screen across the camp's front: the crew are within range of");
+    expect(src).toContain("// The camp's standard, answering the castle's banner across the field.");
+  });
+
+  it('leaves the lane clear through the stake screen, so nothing stands in the shot', () => {
+    const src = source();
+    expect(src).toContain('if (Math.abs(pkx) < 2.6) continue;');
+  });
+
+  it('sits every camp prop on the terrain the physics uses', () => {
+    const src = source();
+    expect(src).toContain('var campGround = function (cx, cz) { return terrainHeight(cx, cz, standoff, laneHalf); };');
+    expect(src).toContain('barrel.position.set(blx, campGround(blx, blz) + 0.4, blz);');
+    expect(src).toContain('stake.position.set(pkx, campGround(pkx, pkz) + 0.85, pkz);');
+  });
+
+  it('flies the standard on the castle banner rules, still when ambient is off', () => {
+    const src = source();
+    expect(src).toContain('if (S.standard && S.standardBase) {');
+    expect(src).toContain('sp2.setZ(sv, ambient ? Math.sin(sx2 * 2.6 + tSec * sfreq + sy2 * 1.5) * samp * (sx2 / 2.1 + 0.1) : 0);');
+  });
+
+  it('turns the crew to follow the stone, the short way round, and back to rest after', () => {
+    const src = source();
+    expect(src).toContain('var watchAt = stonePos || (S.impactAt != null && (now - S.impactAt) < 2600 ? S.impactPos : null);');
+    expect(src).toContain('while (dY > Math.PI) dY -= Math.PI * 2;');
+    expect(src).toContain('while (dY < -Math.PI) dY += Math.PI * 2;');
+    // Each figure remembers the way it was first facing, so "no stone" is a place.
+    expect(src).toContain('if (member.userData.rest0 == null) member.userData.rest0 = member.rotation.y;');
+  });
+
+  it('builds none of the camp in high contrast', () => {
+    const src = source();
+    const camp = src.indexOf('// ── The camp. The castle got a ward');
+    const guard = src.lastIndexOf('if (!contrast) {', camp);
+    const closes = src.slice(guard, camp);
+    // No other contrast branch opens between the guard and the camp.
+    expect(closes).not.toContain('if (contrast)');
+    expect(guard).toBeGreaterThan(0);
+  });
+});
