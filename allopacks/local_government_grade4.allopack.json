@@ -1,0 +1,624 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Who Decided That? — Local Government and How Rules Change",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "4th Grade",
+    "standards": "C3 Framework D2.Civ.2.3-5 (explain how a democracy relies on people's responsible participation); C3 Framework D2.Civ.12.3-5 (explain how rules and laws change society and how people change rules and laws); C3 Framework D2.Civ.6.3-5 (describe ways in which people benefit from and are challenged by working together); CCSS.ELA-LITERACY.RI.4.3 (explain events, procedures, or ideas in a historical or technical text, including what happened and why)",
+    "createdAt": "2026-09-06T01:30:00.000Z",
+    "imageShotList": "allopacks/local_government_grade4.IMAGES.md"
+  },
+  "sourceTopic": "Local Government and Civic Participation",
+  "history": [
+    {
+      "id": "lg-directions",
+      "type": "directions",
+      "title": "Follow the Decision",
+      "timestamp": "2026-09-06T01:30:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nSomebody decided where the crosswalk goes. Somebody decided when the library closes. This week you find out who, and how ordinary people get those decisions changed.\n\n1. Read **Who Decided That?**\n2. Learn the words in **Town Words**, then win the **Crossword**.\n3. Keep the **Three Levels, One Question** chart open.\n4. Fill in **Town Cornell Notes** as you read.\n5. Sort the cards in **Who Decides This?**\n6. Take **Town Check**.\n7. Lock it in with **Remember the Levels**.\n8. Read **Town Questions Kids Ask**.\n9. Finish with **Propose: One Change to Your Town**.\n\nYour job this week: find one rule in your town and try to work out who made it. 🏛️",
+        "objectives": [
+          {
+            "id": "lg-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "lg-glossary"
+          },
+          {
+            "id": "lg-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "lg-glossary"
+          },
+          {
+            "id": "lg-goal-xp",
+            "label": "Earn 20 XP",
+            "kind": "xp",
+            "amount": 20
+          },
+          {
+            "id": "lg-goal-rule",
+            "label": "I found a rule in my town and worked out who made it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "4th Grade • 4 goals • trace a real rule"
+    },
+    {
+      "id": "lg-reading",
+      "type": "simplified",
+      "title": "Who Decided That?",
+      "timestamp": "2026-09-06T01:30:01.000Z",
+      "data": "## Who Decided That?\n\nThere is a crosswalk near your school. Somebody decided to put it there. Somebody decided what time the library closes, and whether the park gets a new slide.\n\nThose were real decisions, made by real people, in a meeting you were allowed to attend.\n\n**Government** happens at three levels. The national level handles things like the army and money. The state level handles things like driver's licences and most school rules. The **local** level is your city or town, and it handles a surprising amount of what you actually touch: parks, libraries, rubbish collection, crosswalks, fire stations.\n\nMost towns are run by a **council**, a small group of people **citizens** elect. Many also elect a **mayor** to lead. The council passes an **ordinance**, which is the word for a rule made by a town rather than a state or a country.\n\nThe council also sets a **budget**, and this is where the real decisions live. A town has only so much money. Spending it on one **service** means not spending it on another. A new library roof might mean waiting another year for the skate park. Nobody is being mean. The money simply ran out, and somebody had to choose.\n\nSo how does anything change?\n\nCouncil meetings are open to the public, and most set aside time for anyone to speak. People sign a **petition**, a written request with many names on it, to show a lot of people want the same thing. And people **vote**, which is the slowest tool and the strongest one.\n\nNow the part that surprises people. Far fewer people vote in local elections than in national ones. In many places, well under half of those who could vote actually do, and in some local elections it is under a quarter.\n\nThat matters more than it sounds. It means local decisions — the ones closest to your street — are often made by a small number of people who showed up. A room with twenty people in it can change a town.\n\nWhich is the good news and the bad news at once. The people who show up decide. And you can be one of them, sooner than you think.",
+      "meta": "4th Grade • Leveled reading • ~380 words",
+      "imageSlot": "lg-img-three-levels"
+    },
+    {
+      "id": "lg-glossary",
+      "type": "glossary",
+      "title": "Town Words",
+      "timestamp": "2026-09-06T01:30:02.000Z",
+      "data": [
+        {
+          "term": "Government",
+          "def": "The people who make and carry out the rules for a place.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Local",
+          "def": "To do with the town or city where you live.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Council",
+          "def": "A small group elected to make decisions for a town.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mayor",
+          "def": "The person elected to lead a city or town.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Citizen",
+          "def": "A member of a country or a community.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Vote",
+          "def": "A choice you make that gets counted with everyone else's.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Budget",
+          "def": "A plan for how money will be spent.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Ordinance",
+          "def": "A rule made by a town or city rather than a state.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Petition",
+          "def": "A written request with many names signed on it.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Service",
+          "def": "Something a town provides, like a library or rubbish collection.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "lg-anchor",
+      "type": "anchor-chart",
+      "title": "Three Levels, One Question",
+      "timestamp": "2026-09-06T01:30:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHO DECIDES THIS ONE?",
+        "sections": [
+          {
+            "label": "NATIONAL",
+            "bullets": [
+              "The army, the money, post offices",
+              "Farthest from your street",
+              "Hardest for one person to reach"
+            ],
+            "iconPrompt": "a large domed building seen from far away"
+          },
+          {
+            "label": "STATE",
+            "bullets": [
+              "Driver's licences, most school rules",
+              "Highways between cities",
+              "In the middle, in every sense"
+            ],
+            "iconPrompt": "a state capitol building at middle distance"
+          },
+          {
+            "label": "LOCAL",
+            "bullets": [
+              "Parks, libraries, rubbish, crosswalks",
+              "Closest to your street",
+              "The one you can actually walk into"
+            ],
+            "iconPrompt": "a small town hall with steps and open doors"
+          },
+          {
+            "label": "HOW THINGS CHANGE",
+            "bullets": [
+              "Speak at a meeting — they are open to the public",
+              "Sign or start a petition",
+              "Vote: slowest tool, strongest tool"
+            ],
+            "iconPrompt": "a microphone on a stand facing a row of chairs"
+          },
+          {
+            "label": "THE BUDGET IS THE DECISION",
+            "bullets": [
+              "A town has only so much money",
+              "Choosing one service means not choosing another",
+              "Ask what got left out, not just what got funded"
+            ],
+            "iconPrompt": "a pie divided into uneven slices"
+          }
+        ]
+      },
+      "meta": "3 levels + how change happens + the budget truth"
+    },
+    {
+      "id": "lg-notes",
+      "type": "note-taking",
+      "title": "Town Cornell Notes",
+      "timestamp": "2026-09-06T01:30:04.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Local Government and How Rules Change",
+        "cues": [
+          {
+            "id": "cue-lg-1",
+            "text": "Three levels — which is which?"
+          },
+          {
+            "id": "cue-lg-2",
+            "text": "What does LOCAL handle?"
+          },
+          {
+            "id": "cue-lg-3",
+            "text": "Council and mayor — who does what?"
+          },
+          {
+            "id": "cue-lg-4",
+            "text": "What is an ordinance?"
+          },
+          {
+            "id": "cue-lg-5",
+            "text": "Why is the budget the real decision?"
+          },
+          {
+            "id": "cue-lg-6",
+            "text": "Three ways people change things"
+          },
+          {
+            "id": "cue-lg-7",
+            "text": "Local turnout — how low?"
+          },
+          {
+            "id": "cue-lg-8",
+            "text": "\"The people who show up decide\" — so what?"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-lg-1",
+            "text": ""
+          },
+          {
+            "id": "note-lg-2",
+            "text": ""
+          },
+          {
+            "id": "note-lg-3",
+            "text": ""
+          },
+          {
+            "id": "note-lg-4",
+            "text": ""
+          },
+          {
+            "id": "note-lg-5",
+            "text": ""
+          },
+          {
+            "id": "note-lg-6",
+            "text": ""
+          },
+          {
+            "id": "note-lg-7",
+            "text": ""
+          },
+          {
+            "id": "note-lg-8",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "8 cues • blank note rows • fill in as you read"
+    },
+    {
+      "id": "lg-memory",
+      "type": "memory-aid",
+      "title": "Remember the Levels",
+      "timestamp": "2026-09-06T01:30:05.000Z",
+      "meta": "4th Grade • 2 memory aids • the three levels, and the budget truth",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Levels",
+        "instructions": "Two cards hold the big ideas. Study the example, make one your own, and say how it helps you.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "The local level is your city or town, and it handles a surprising amount of what you actually touch. A town has only so much money. Spending it on one service means not spending it on another.",
+        "lessonRef": {
+          "resourceId": "lg-reading",
+          "title": "Who Decided That?"
+        },
+        "cards": [
+          {
+            "id": "lg-ma-levels",
+            "target": "The three levels, and which one is nearest to you",
+            "essentialFacts": [
+              "The national level handles things like the army and money.",
+              "The state level handles things like driver's licences and school rules.",
+              "The local level handles parks, libraries, rubbish and crosswalks.",
+              "Local is the level closest to your street."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Three rings around your house. The inner ring is your town. The middle ring is your state. The outer ring is the country. The closer the ring, the more it touches your day.",
+            "mapping": "Distance on the picture matches distance in real life, so the ring you can almost step into is the one you can actually walk into.",
+            "scaffoldStarter": "Inner ring: ____. Middle ring: ____. Outer ring: ____.",
+            "scaffoldSteps": [
+              "Draw three rings around your home.",
+              "Put one level on each ring.",
+              "Name one thing each level decides."
+            ],
+            "coachPrompts": [
+              "Which ring decided your crosswalk?"
+            ],
+            "studentPrompt": "Draw your own picture of the three levels.",
+            "reasoningPrompt": "Why is the nearest ring the easiest one to change?",
+            "hookFact": {
+              "text": "A room with twenty people in it can change a town.",
+              "sourceTitle": "Who Decided That? (this lesson)"
+            }
+          },
+          {
+            "id": "lg-ma-budget",
+            "target": "Why a budget is a set of choices, not a list",
+            "essentialFacts": [
+              "A town has only so much money.",
+              "Spending on one service means not spending on another.",
+              "A new library roof might mean waiting another year for the skate park."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "A budget is like one pizza at a party. Every slice you hand to somebody is a slice nobody else gets. The argument is never about the pizza. It is about the slices.",
+            "mapping": "A pizza is obviously finite, which is the one feature of a budget that people forget when they ask why the town cannot just do both.",
+            "scaffoldStarter": "The town chose ____. That means ____ had to wait.",
+            "scaffoldSteps": [
+              "Name something a town might fund.",
+              "Name what it would have to wait for.",
+              "Say who is affected by each."
+            ],
+            "coachPrompts": [
+              "Who gets asked about the slice that was not handed out?"
+            ],
+            "studentPrompt": "Make your own comparison for a budget.",
+            "reasoningPrompt": "Why is asking what got left out a better question than asking what got funded?",
+            "hookFact": {
+              "text": "Nobody is being mean. The money simply ran out, and somebody had to choose.",
+              "sourceTitle": "Who Decided That? (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "lg-sort",
+      "type": "concept-sort",
+      "title": "Who Decides This?",
+      "timestamp": "2026-09-06T01:30:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "lg-nat",
+            "label": "National",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "lg-state",
+            "label": "State",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "lg-loc",
+            "label": "Local",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "lg1",
+            "content": "Where a new crosswalk is painted",
+            "categoryId": "lg-loc"
+          },
+          {
+            "id": "lg2",
+            "content": "What hours the public library opens",
+            "categoryId": "lg-loc"
+          },
+          {
+            "id": "lg3",
+            "content": "When rubbish gets collected on your street",
+            "categoryId": "lg-loc"
+          },
+          {
+            "id": "lg4",
+            "content": "How old you must be to drive a car",
+            "categoryId": "lg-state"
+          },
+          {
+            "id": "lg5",
+            "content": "How many days a school year must run",
+            "categoryId": "lg-state"
+          },
+          {
+            "id": "lg6",
+            "content": "The speed limit on a highway between cities",
+            "categoryId": "lg-state"
+          },
+          {
+            "id": "lg7",
+            "content": "Who is in charge of the armed forces",
+            "categoryId": "lg-nat"
+          },
+          {
+            "id": "lg8",
+            "content": "What money the whole country uses",
+            "categoryId": "lg-nat"
+          },
+          {
+            "id": "lg9",
+            "content": "How the postal service is run",
+            "categoryId": "lg-nat"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • three each, all real decisions"
+    },
+    {
+      "id": "lg-quiz",
+      "type": "quiz",
+      "title": "Town Check",
+      "timestamp": "2026-09-06T01:30:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which level of government most likely decided where your crosswalk goes?",
+            "options": [
+              "The national level, since roads cross the country",
+              "The local level, since it handles streets and crossings",
+              "The state level, since it sets all the speed limits",
+              "No level; a road company decides that by itself"
+            ],
+            "correctAnswer": "The local level, since it handles streets and crossings",
+            "conceptLabel": "local handles what you touch"
+          },
+          {
+            "type": "mcq",
+            "question": "What is an ordinance?",
+            "options": [
+              "A rule made by a town rather than a state",
+              "A plan for how a town will spend its money",
+              "A written request signed by many people",
+              "A meeting that is open to the public"
+            ],
+            "correctAnswer": "A rule made by a town rather than a state",
+            "conceptLabel": "the words for local rules"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does the reading say the budget is where the real decisions live?",
+            "options": [
+              "Because budgets are written in very difficult language",
+              "Because the mayor writes it without asking anybody",
+              "Because money is limited, so funding one thing means not another",
+              "Because it is the only document the public may read"
+            ],
+            "correctAnswer": "Because money is limited, so funding one thing means not another",
+            "conceptLabel": "a budget is a set of choices"
+          },
+          {
+            "type": "mcq",
+            "question": "Which is described as the slowest tool and the strongest one?",
+            "options": [
+              "Signing a petition with many names on it",
+              "Speaking at the public time in a meeting",
+              "Writing a letter to the local newspaper",
+              "Voting in an election when one comes round"
+            ],
+            "correctAnswer": "Voting in an election when one comes round",
+            "conceptLabel": "how people change things"
+          },
+          {
+            "type": "mcq",
+            "question": "Fewer people vote in local elections than national ones. Why does that matter?",
+            "options": [
+              "It means local elections do not really count for much",
+              "It means a small number of people decide nearby things",
+              "It means the state has to step in and decide instead",
+              "It means local elections are held less often than others"
+            ],
+            "correctAnswer": "It means a small number of people decide nearby things",
+            "conceptLabel": "the people who show up decide"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Name three ways an ordinary person can try to change a local rule, and say which is slowest.",
+            "expectedAnswer": "Speak during the public time at a council meeting, sign or start a petition, and vote in local elections. Voting is the slowest, because you have to wait for an election, but the reading calls it the strongest.",
+            "conceptLabel": "how people change things"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A town funds a new library roof this year. What question does the reading say you should ask next?",
+            "expectedAnswer": "Ask what got left out. Because the money is limited, funding the roof means something else had to wait, such as the skate park. Looking at what was not funded tells you as much as looking at what was.",
+            "conceptLabel": "a budget is a set of choices"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "What is one thing in your town you would change if you could?"
+          },
+          {
+            "text": "Were you surprised that meetings are open to anyone? Why or why not?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • one asks what got left out"
+    },
+    {
+      "id": "lg-faq",
+      "type": "faq",
+      "title": "Town Questions Kids Ask",
+      "timestamp": "2026-09-06T01:30:08.000Z",
+      "data": [
+        {
+          "question": "Can a kid actually speak at a council meeting? 🎤",
+          "answer": "In most towns, yes. Public comment time is usually open to anyone who lives there, whatever their age. Some councils ask you to sign up first. It is worth checking your town's website."
+        },
+        {
+          "question": "Do petitions ever work?",
+          "answer": "Sometimes. A petition does not force anyone to act. What it does is show that many people want the same thing, which is hard to ignore in a small town. It works best alongside showing up."
+        },
+        {
+          "question": "Why are local elections held on odd days? 🗳️",
+          "answer": "Many towns hold them separately from national ones, often in spring or in odd-numbered years. Researchers think this is part of why turnout is so low, because fewer people notice they are happening."
+        },
+        {
+          "question": "What if the council decides something unfair?",
+          "answer": "People can speak against it, organise, vote the members out at the next election, and in some cases challenge it in court if it conflicts with state or national law."
+        },
+        {
+          "question": "Who pays for the library and the park? 💰",
+          "answer": "Mostly local taxes, often on property, plus some money passed down from the state. That is why the budget argument is really an argument about how much everyone contributes and what it buys."
+        },
+        {
+          "question": "Is a mayor the boss of everything?",
+          "answer": "Not usually. Towns are set up differently. In many, the council holds most of the power and the mayor leads meetings. In others the mayor runs daily business. It is worth finding out which yours is."
+        }
+      ],
+      "meta": "6 questions • the first one is the useful one"
+    },
+    {
+      "id": "lg-challenge",
+      "type": "applied-challenge",
+      "title": "Propose: One Change to Your Town",
+      "timestamp": "2026-09-06T01:30:09.000Z",
+      "meta": "4th Grade • Proposal brief • name the level, name the cost",
+      "data": {
+        "schemaVersion": 6,
+        "title": "One Change to Your Town",
+        "instructions": "Pick one thing you would change locally. Work out who actually decides it, what it would cost, and what would have to wait. Then write the proposal.",
+        "selectionMode": "manual",
+        "family": "propose",
+        "fitReason": "The standard asks students to explain how people change rules and laws. Making them identify the right level and name a tradeoff turns a wish into a proposal, which is the difference the reading is built on.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "propose",
+          "context": "Your class is making a display for the school entrance called One Change. Each team picks something real about the town: a crossing, a park, library hours, a bus stop, a bike lane.",
+          "role": "Citizens making a case",
+          "audience": "Your town council, who read short proposals from the public",
+          "drivingQuestion": "What is one change worth asking for, who exactly has the power to make it, and what would the town have to give up to pay for it?",
+          "seedDirection": "Work out the level first. If it turns out to be a state decision, either pick something else or say plainly who you would have to reach instead.",
+          "lockedLessonFacts": [
+            "The local level handles parks, libraries, rubbish and crosswalks.",
+            "A council passes ordinances and sets a budget.",
+            "A town has only so much money, so funding one service means not funding another.",
+            "People change things by speaking at meetings, by petition, and by voting."
+          ],
+          "openQuestions": [
+            "Is this really a local decision, or does it belong to another level?",
+            "Who benefits, and is there anyone it would inconvenience?",
+            "What would you be willing to see wait so this could happen?"
+          ],
+          "stakeholders": [
+            "The council members reading it",
+            "Neighbours who benefit from the change",
+            "Anyone who loses out if money moves"
+          ],
+          "criteria": [
+            "The change is named clearly, in one sentence",
+            "The correct level of government is identified, with a reason",
+            "A rough cost is estimated, and one thing that would have to wait is named",
+            "One person or group who might object is named, and answered",
+            "At least four glossary words used correctly"
+          ],
+          "constraints": [
+            "One change per team",
+            "It must be something a council could actually do",
+            "One page, because that is what gets read"
+          ],
+          "deliverable": "A one-page proposal: the change, the level and why, a rough cost, what would have to wait, and your answer to the strongest objection.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A team wanted the school day to start later and wrote it as a town proposal.",
+            "move": "They found that school hours are set by the district and the state, not the council. Rather than dropping it, they rewrote the proposal to the school board and said in one line why the council was the wrong audience.",
+            "whyItHelps": "Finding the right level was the whole difference between a complaint and a proposal that could actually be acted on."
+          },
+          "frameStarter": "We propose ____. This is a ____ decision because ____. It would cost about ____, which means ____ would wait.",
+          "frameChoices": [
+            "A crossing near the school",
+            "Longer library hours",
+            "A bench or shelter at the bus stop",
+            "A bike lane on one street"
+          ],
+          "coachPrompts": [
+            "Did you check which level actually decides this?",
+            "What would have to wait, and who cares about that?",
+            "Who would object, and what would you say to them?"
+          ]
+        },
+        "coachHint": "Right level. Real cost. Name the tradeoff.",
+        "sourceExcerpt": "A town has only so much money. Spending it on one service means not spending it on another.",
+        "lessonRef": {
+          "resourceId": "lg-reading",
+          "title": "Who Decided That?"
+        }
+      }
+    }
+  ]
+}

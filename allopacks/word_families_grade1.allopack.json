@@ -1,0 +1,534 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Learn One, Read Many — Word Families",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "1st Grade",
+    "standards": "CCSS.ELA-LITERACY.RF.1.2.A (distinguish long from short vowel sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.2.C (isolate and pronounce initial, medial vowel, and final sounds in spoken single-syllable words); CCSS.ELA-LITERACY.RF.1.3.B (decode regularly spelled one-syllable words); CCSS.ELA-LITERACY.RF.1.3.G (recognize and read grade-appropriate irregularly spelled words)",
+    "createdAt": "2026-09-06T01:10:00.000Z",
+    "imageShotList": "allopacks/word_families_grade1.IMAGES.md"
+  },
+  "sourceTopic": "Word Families and Rhyming Patterns",
+  "history": [
+    {
+      "id": "wf-directions",
+      "type": "directions",
+      "title": "Swap the Front",
+      "timestamp": "2026-09-06T01:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nIf you can read the word cat, you can already read six more words. You just do not know it yet.\n\n1. Read **Learn One, Read Many** with a grown-up or a partner.\n2. Learn the words in **Sound Words**, then win the **Matching** game.\n3. Look at the **Families to Know** chart.\n4. Sort the cards in **Same Family or Not?**\n5. Take **Word Check** — say every word out loud.\n6. Lock it in with **Remember the Swap**.\n7. Read **Word Questions Kids Ask**.\n8. Finish with **Design: A Family Flip Book**.\n\nYour job this week: find two words that rhyme in a book, and say them to somebody. 🔤",
+        "objectives": [
+          {
+            "id": "wf-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "wf-glossary"
+          },
+          {
+            "id": "wf-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "wf-glossary"
+          },
+          {
+            "id": "wf-goal-xp",
+            "label": "Earn 15 XP",
+            "kind": "xp",
+            "amount": 15
+          },
+          {
+            "id": "wf-goal-rhyme",
+            "label": "I found two rhyming words in a book and said them out loud",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "1st Grade • 4 goals • find a rhyme in a book"
+    },
+    {
+      "id": "wf-reading",
+      "type": "simplified",
+      "title": "Learn One, Read Many",
+      "timestamp": "2026-09-06T01:10:01.000Z",
+      "data": "## Learn One, Read Many\n\nSay this **word**: cat.\n\nNow keep the ending and swap the front. Hat. Bat. Mat. Sat. Rat. Pat.\n\nYou just read six new words. You did not learn six new words. You learned one **chunk**, and then you swapped the **start**.\n\nThat is a word **family**. All the words end with the same **letters** and the same **sound**.\n\nHere is another one. Hop. Mop. Top. Pop. Same ending, new front each time.\n\nSome fronts have two letters that you say fast together. That is a **blend**. Stop. Chop. Shop. Those are in the same family too.\n\nWhen words end the same way, they **rhyme**. So a family is a group of words that rhyme.\n\nEvery family has a **vowel** in it. The vowels are a, e, i, o and u. The vowel sits in the middle and gives the chunk its sound.\n\nWord families are a **pattern**. Once you spot the pattern, reading gets faster, because you stop sounding out every letter.\n\nBut here is something true and a bit annoying. Not every word that rhymes looks the same. Say some and hum. They rhyme. They do not match at all. English does that sometimes.\n\nSo use your eyes and your ears. Look for the chunk. Then listen to check.",
+      "meta": "1st Grade • Leveled reading • ~215 words • read aloud together",
+      "imageSlot": "wf-img-swap-front"
+    },
+    {
+      "id": "wf-glossary",
+      "type": "glossary",
+      "title": "Sound Words",
+      "timestamp": "2026-09-06T01:10:02.000Z",
+      "data": [
+        {
+          "term": "Word",
+          "def": "Letters put together to mean something.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Letter",
+          "def": "One of the signs we use to write.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sound",
+          "def": "What you hear when you say a letter.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Chunk",
+          "def": "A part of a word you say all at once.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Start",
+          "def": "The bit at the front of a word.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Family",
+          "def": "A group of words that end the same way.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Rhyme",
+          "def": "Words that end with the same sound.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Vowel",
+          "def": "One of these five: a, e, i, o, u.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Blend",
+          "def": "Two letters said fast together, like st.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Pattern",
+          "def": "Something that happens again and again.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "wf-anchor",
+      "type": "anchor-chart",
+      "title": "Families to Know",
+      "timestamp": "2026-09-06T01:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "KEEP THE END, SWAP THE FRONT",
+        "sections": [
+          {
+            "label": "THE -AT FAMILY",
+            "bullets": [
+              "cat, hat, bat",
+              "mat, sat, rat",
+              "flat, chat"
+            ],
+            "iconPrompt": "a cat wearing a hat sitting on a mat"
+          },
+          {
+            "label": "THE -OP FAMILY",
+            "bullets": [
+              "hop, mop, top",
+              "pop, cop",
+              "stop, chop, shop"
+            ],
+            "iconPrompt": "a mop leaning beside a spinning top"
+          },
+          {
+            "label": "THE -IG FAMILY",
+            "bullets": [
+              "big, dig, pig",
+              "fig, wig",
+              "twig"
+            ],
+            "iconPrompt": "a pig digging beside a twig"
+          },
+          {
+            "label": "HOW TO USE IT",
+            "bullets": [
+              "Find the chunk at the end",
+              "Say it",
+              "Swap the front and say it again"
+            ],
+            "iconPrompt": "a card with a sliding front piece and a fixed back piece"
+          }
+        ]
+      },
+      "meta": "3 families + the move • chart for the wall"
+    },
+    {
+      "id": "wf-memory",
+      "type": "memory-aid",
+      "title": "Remember the Swap",
+      "timestamp": "2026-09-06T01:10:04.000Z",
+      "meta": "1st Grade • 2 memory aids • the swap, and the ears check",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Swap",
+        "instructions": "Two cards hold the moves. Look at the example. Make one your own. Then say how it helps.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Now keep the ending and swap the front. You learned one chunk, and then you swapped the start. Say some and hum. They rhyme. They do not match at all.",
+        "lessonRef": {
+          "resourceId": "wf-reading",
+          "title": "Learn One, Read Many"
+        },
+        "cards": [
+          {
+            "id": "wf-ma-swap",
+            "target": "Keep the ending and swap the front sound",
+            "essentialFacts": [
+              "Words in a family end with the same letters.",
+              "You keep the chunk and change the start.",
+              "Learning one chunk lets you read many words."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Two hands. Left hand is the front. Right hand is the chunk. Hold the right hand still. Wiggle the left. Cat, hat, bat. Only one hand moves.",
+            "mapping": "One hand stays still and one moves. That shows which part of the word changes and which part stays put.",
+            "scaffoldStarter": "My right hand says ____. My left hand says ____, then ____.",
+            "scaffoldSteps": [
+              "Pick a chunk for your right hand.",
+              "Hold it still.",
+              "Swap the front three times."
+            ],
+            "coachPrompts": [
+              "Which hand did not move?"
+            ],
+            "studentPrompt": "Show me a swap with your own hands.",
+            "reasoningPrompt": "How do your hands show what stays the same?",
+            "hookFact": {
+              "text": "You just read six new words. You did not learn six new words.",
+              "sourceTitle": "Learn One, Read Many (this lesson)"
+            }
+          },
+          {
+            "id": "wf-ma-earscheck",
+            "target": "Use your eyes, then check with your ears",
+            "essentialFacts": [
+              "Words in a family look the same at the end.",
+              "Words that rhyme sound the same at the end.",
+              "Some words rhyme without looking alike, like some and hum."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Point to your eyes, then to your ears. Eyes first: does the end look the same? Ears second: does the end sound the same? Two checks, in that order.",
+            "mapping": "Pointing at your eyes and then your ears puts the two checks in order and reminds you that one is not enough on its own.",
+            "scaffoldStarter": "My eyes see ____. My ears hear ____.",
+            "scaffoldSteps": [
+              "Point at your eyes and look at the ending.",
+              "Point at your ears and say it out loud.",
+              "Say if both agree."
+            ],
+            "coachPrompts": [
+              "Did your eyes and ears say the same thing?"
+            ],
+            "studentPrompt": "Make your own two-step check.",
+            "reasoningPrompt": "Why do you need your ears and not just your eyes?",
+            "hookFact": {
+              "text": "Say some and hum. They rhyme. They do not match at all.",
+              "sourceTitle": "Learn One, Read Many (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "wf-sort",
+      "type": "concept-sort",
+      "title": "Same Family or Not?",
+      "timestamp": "2026-09-06T01:10:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "wf-at",
+            "label": "The -at family",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "wf-op",
+            "label": "The -op family",
+            "color": "bg-sky-500"
+          },
+          {
+            "id": "wf-ig",
+            "label": "The -ig family",
+            "color": "bg-amber-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "wf1",
+            "content": "hat",
+            "categoryId": "wf-at"
+          },
+          {
+            "id": "wf2",
+            "content": "bat",
+            "categoryId": "wf-at"
+          },
+          {
+            "id": "wf3",
+            "content": "flat",
+            "categoryId": "wf-at"
+          },
+          {
+            "id": "wf4",
+            "content": "mop",
+            "categoryId": "wf-op"
+          },
+          {
+            "id": "wf5",
+            "content": "top",
+            "categoryId": "wf-op"
+          },
+          {
+            "id": "wf6",
+            "content": "stop",
+            "categoryId": "wf-op"
+          },
+          {
+            "id": "wf7",
+            "content": "pig",
+            "categoryId": "wf-ig"
+          },
+          {
+            "id": "wf8",
+            "content": "dig",
+            "categoryId": "wf-ig"
+          },
+          {
+            "id": "wf9",
+            "content": "twig",
+            "categoryId": "wf-ig"
+          }
+        ]
+      },
+      "meta": "3 families • 9 cards • one blend in each family on purpose"
+    },
+    {
+      "id": "wf-quiz",
+      "type": "quiz",
+      "title": "Word Check",
+      "timestamp": "2026-09-06T01:10:06.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which word is in the same family as cat?",
+            "options": [
+              "cup",
+              "mat",
+              "cot",
+              "can"
+            ],
+            "correctAnswer": "mat",
+            "conceptLabel": "same ending, same family"
+          },
+          {
+            "type": "mcq",
+            "question": "In the word hop, which part is the chunk?",
+            "options": [
+              "op",
+              "ho",
+              "h",
+              "p"
+            ],
+            "correctAnswer": "op",
+            "conceptLabel": "the chunk is the ending"
+          },
+          {
+            "type": "mcq",
+            "question": "Which word does NOT belong with big, dig and pig?",
+            "options": [
+              "wig",
+              "fig",
+              "bag",
+              "twig"
+            ],
+            "correctAnswer": "bag",
+            "conceptLabel": "same ending, same family"
+          },
+          {
+            "type": "mcq",
+            "question": "What do you do to make a new word in the same family?",
+            "options": [
+              "Change the front and keep the ending",
+              "Change the ending and keep the front",
+              "Change every letter in the whole word",
+              "Add a letter to the end of the word"
+            ],
+            "correctAnswer": "Change the front and keep the ending",
+            "conceptLabel": "swap the front"
+          },
+          {
+            "type": "mcq",
+            "question": "Some and hum rhyme, but they look different. What does that tell you?",
+            "options": [
+              "One of the two words must be spelled wrong",
+              "Rhyming words always have to look the same",
+              "You should only ever trust your eyes",
+              "Words can rhyme without matching letters"
+            ],
+            "correctAnswer": "Words can rhyme without matching letters",
+            "conceptLabel": "eyes and ears can disagree"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Write three words in the -op family.",
+            "expectedAnswer": "Answers vary. Any three of hop, mop, top, pop, cop, stop, chop, shop, drop. All must end with the letters op.",
+            "conceptLabel": "same ending, same family"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Your friend says cot is in the cat family. What would you tell them?",
+            "expectedAnswer": "It is not. Cat ends with at and cot ends with ot, so the chunks are different. They start the same, but the family comes from the ending.",
+            "conceptLabel": "the chunk is the ending"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which family was easiest for you?"
+          },
+          {
+            "text": "What two words did you find that rhyme?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 tell-me • say every word out loud"
+    },
+    {
+      "id": "wf-faq",
+      "type": "faq",
+      "title": "Word Questions Kids Ask",
+      "timestamp": "2026-09-06T01:10:07.000Z",
+      "data": [
+        {
+          "question": "Why do some words break the rule? 🤔",
+          "answer": "English came from lots of languages. The spellings came along too. So a few words look odd. You learn those by heart."
+        },
+        {
+          "question": "How many families are there?",
+          "answer": "Lots. But a few dozen cover most short words. Learn those and a whole shelf of books opens up."
+        },
+        {
+          "question": "Is rhyming the same as a family? 🎵",
+          "answer": "Almost. Words in a family rhyme. But some words rhyme without matching letters, like some and hum."
+        },
+        {
+          "question": "What if I cannot hear the rhyme?",
+          "answer": "Say both words slowly, one after the other. Then say just the ends. It gets easier with practice."
+        },
+        {
+          "question": "Do big words have chunks too? 📚",
+          "answer": "Yes! Long words are made of chunks as well. You will break those apart later. It is the same idea."
+        },
+        {
+          "question": "Can two letters make one sound?",
+          "answer": "They can. In shop, the s and h make one sound together. In chop, the c and h do the same."
+        }
+      ],
+      "meta": "6 questions • the first one is honest about English"
+    },
+    {
+      "id": "wf-challenge",
+      "type": "applied-challenge",
+      "title": "Design: A Family Flip Book",
+      "timestamp": "2026-09-06T01:10:08.000Z",
+      "meta": "1st Grade • Design brief • one chunk, many fronts",
+      "data": {
+        "schemaVersion": 6,
+        "title": "A Family Flip Book",
+        "instructions": "Make a flip book with one ending and lots of fronts. Test it on a partner. See how many real words you can make.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "A flip book makes the swap physical: the ending is fixed to the page and only the front moves. Building one is how a first grader proves they know what a family is.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "Your class has card strips, scissors, markers, and a stapler the teacher will use. Each of you picks one word family to build.",
+          "role": "Book makers",
+          "audience": "A partner in your class, who will flip it and read every word",
+          "drivingQuestion": "How many real words can you make from one ending, and how do you know when a flip is not a real word?",
+          "seedDirection": "Write the ending once, on the big part. Only the little flipping part changes.",
+          "lockedLessonFacts": [
+            "Words in a family end with the same letters.",
+            "You keep the chunk and swap the start.",
+            "Some fronts are blends, like st or ch.",
+            "Words in a family rhyme."
+          ],
+          "openQuestions": [
+            "Which ending will you pick?",
+            "Which fronts make real words, and which do not?",
+            "Do any of your fronts need two letters?"
+          ],
+          "stakeholders": [
+            "Your partner who reads it",
+            "The teacher who staples it",
+            "The class library where it will live"
+          ],
+          "criteria": [
+            "The ending is written once and does not move",
+            "At least five fronts that make real words",
+            "At least one front that is a blend",
+            "Your partner can read every page out loud"
+          ],
+          "constraints": [
+            "One family per book",
+            "Real words only on the pages",
+            "Ask before you use the stapler"
+          ],
+          "deliverable": "A flip book that works, plus one sentence you tell the class: your ending, and how many real words you made.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student picked the ending og and kept making words that were not real.",
+            "move": "He tried every letter in order and said each one out loud to his partner. They kept dog, log, fog, jog and hog, and put the rest aside.",
+            "whyItHelps": "Saying each one out loud to somebody caught the made-up ones fast."
+          },
+          "frameStarter": "My ending is ____. My fronts are ____. That makes ____ real words.",
+          "frameChoices": [
+            "The -at family",
+            "The -op family",
+            "The -ig family",
+            "The -un family"
+          ],
+          "coachPrompts": [
+            "Is every page a real word?",
+            "Did you try a blend?",
+            "Can your partner read them all?"
+          ]
+        },
+        "coachHint": "One ending. Many fronts. Say them out loud.",
+        "sourceExcerpt": "Now keep the ending and swap the front. Hat. Bat. Mat. Sat. Rat. Pat.",
+        "lessonRef": {
+          "resourceId": "wf-reading",
+          "title": "Learn One, Read Many"
+        }
+      }
+    }
+  ]
+}

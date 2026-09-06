@@ -1,0 +1,604 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Everything Has a Cost — Scarcity, Choice, and What You Gave Up",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "7th Grade",
+    "standards": "C3 Framework D2.Eco.1.6-8 (explain how economic decisions affect the well-being of individuals, businesses, and society); C3 Framework D2.Eco.2.6-8 (evaluate alternative approaches or solutions to current economic issues in terms of benefits and costs); C3 Framework D2.Eco.3.6-8 (explain the roles of buyers and sellers in product, labor, and financial markets); CCSS.ELA-LITERACY.RH.6-8.4 (determine the meaning of words and phrases as they are used in a text, including vocabulary specific to domains related to history and social studies)",
+    "createdAt": "2026-09-06T01:50:00.000Z",
+    "imageShotList": "allopacks/scarcity_choice_grade7.IMAGES.md"
+  },
+  "sourceTopic": "Scarcity, Opportunity Cost, and Trade-offs",
+  "history": [
+    {
+      "id": "sc-directions",
+      "type": "directions",
+      "title": "Name What You Gave Up",
+      "timestamp": "2026-09-06T01:50:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEvery choice has a price, and the price is usually not money. This week you learn to name the thing you gave up, which is the one question economics is actually about.\n\n1. Read **Everything Has a Cost**.\n2. Learn the words in **Choice Words**, then win the **Crossword**.\n3. Keep the **Every Choice, Two Columns** chart open.\n4. Trace **Why Choosing Is Unavoidable** before the quiz.\n5. Sort the cards in **Scarce or Just Expensive?**\n6. Take **Choice Check**.\n7. Lock it in with **Remember the Second Best**.\n8. Read **Money Questions Kids Ask**.\n9. Finish with **Decide: The Community Centre Hour**.\n\nYour job this week: catch yourself making one real choice and name what you gave up. ⚖️",
+        "objectives": [
+          {
+            "id": "sc-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "sc-glossary"
+          },
+          {
+            "id": "sc-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "sc-glossary"
+          },
+          {
+            "id": "sc-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "sc-goal-name",
+            "label": "I named what I gave up in one real choice",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "7th Grade • 4 goals • name one real trade-off"
+    },
+    {
+      "id": "sc-reading",
+      "type": "simplified",
+      "title": "Everything Has a Cost",
+      "timestamp": "2026-09-06T01:50:01.000Z",
+      "data": "## Everything Has a Cost\n\nYou have one free hour. You can see friends, finish a project, or sleep. Whatever you pick, you did not do the other two.\n\nThat sentence is most of economics.\n\nEconomics is often described as being about money. It is really about **scarcity**: there is not enough of something to satisfy every want, so choosing is unavoidable. Time is scarce. Money is scarce. Clean water is scarce in some places and not in others. Even attention is scarce.\n\nScarcity is not the same as being rare, and it is not the same as being expensive. Something is **scarce** when people want more of it than exists. Sand is cheap and enormously common, and construction sand is genuinely scarce in some regions because demand outruns what can be dug.\n\nBecause things are scarce, every choice is a **trade-off**. You gain one thing and give up another.\n\nEconomists give the thing you gave up a name: **opportunity** cost. It is not everything you turned down. It is the single **alternative** you would have picked instead — your next best option. If you chose sleep over friends and a project, and you would have chosen friends next, then the opportunity cost of sleeping is seeing your friends. The project does not count. It was third.\n\nThat definition sounds fussy and it is the useful part. It forces you to name one specific thing rather than waving at everything.\n\nOpportunity cost also explains decisions that look strange from outside. A town that spends on a new road is not against libraries. It made a choice, and the library was what it gave up. Judging the decision means comparing the **benefit** of the road against the library, not against nothing.\n\nThere is a trap worth knowing. Money already spent and not recoverable is a **sunk** cost, and it should not affect what you do next. If you paid for a ticket to a film you now know you will hate, the money is gone whether you go or not. The real choice is only about the next two hours. People find this genuinely hard, and knowing the word does not make it easy.\n\nOne more idea. Doing a bit more of something is a **marginal** decision. The question is rarely all or nothing. It is: is one more hour of practice worth what that hour costs me?\n\nSo when you meet a decision, yours or a government's, ask two things. What is scarce here? And what exactly got given up?",
+      "meta": "7th Grade • Leveled reading • ~430 words",
+      "imageSlot": "sc-img-two-columns"
+    },
+    {
+      "id": "sc-glossary",
+      "type": "glossary",
+      "title": "Choice Words",
+      "timestamp": "2026-09-06T01:50:02.000Z",
+      "data": [
+        {
+          "term": "Scarcity",
+          "def": "The condition of people wanting more of something than exists.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Scarce",
+          "def": "Wanted in greater quantity than is available.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Choice",
+          "def": "Picking one option and therefore not picking the others.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Trade-off",
+          "def": "Gaining one thing by giving up another.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Opportunity",
+          "def": "A chance to do one thing, which closes while you do another.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Alternative",
+          "def": "The option you would have taken instead of the one you took.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Benefit",
+          "def": "What you gain from a decision.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Sunk",
+          "def": "Already spent and impossible to get back.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Marginal",
+          "def": "About one more unit rather than about all or nothing.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Incentive",
+          "def": "Something that makes one option more attractive than another.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "10 terms • Tiered • all fit the crossword grid"
+    },
+    {
+      "id": "sc-anchor",
+      "type": "anchor-chart",
+      "title": "Every Choice, Two Columns",
+      "timestamp": "2026-09-06T01:50:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "WHAT DID IT ACTUALLY COST?",
+        "sections": [
+          {
+            "label": "1 · WHAT IS SCARCE HERE?",
+            "bullets": [
+              "Time, money, space, attention, water",
+              "Scarce means wanted more than exists",
+              "Not the same as rare, not the same as expensive"
+            ],
+            "iconPrompt": "a single glass being poured from a jug that is nearly empty"
+          },
+          {
+            "label": "2 · WHAT WAS CHOSEN?",
+            "bullets": [
+              "Name the option actually taken",
+              "State the benefit it brings",
+              "Be specific, not general"
+            ],
+            "iconPrompt": "one door standing open among several"
+          },
+          {
+            "label": "3 · WHAT WAS THE NEXT BEST?",
+            "bullets": [
+              "Not everything you turned down",
+              "Just the one you would have taken instead",
+              "That single option is the opportunity cost"
+            ],
+            "iconPrompt": "a second door, closed, directly beside the open one"
+          },
+          {
+            "label": "THE SUNK COST TRAP",
+            "bullets": [
+              "Money already spent cannot be recovered",
+              "It should not affect what you do next",
+              "Ask only: what are my options from here?"
+            ],
+            "iconPrompt": "a torn ticket stub lying on the ground behind a person walking away"
+          },
+          {
+            "label": "THINK AT THE MARGIN",
+            "bullets": [
+              "Rarely all or nothing",
+              "Ask: is ONE more worth what it costs?",
+              "One more hour, one more dollar, one more slice"
+            ],
+            "iconPrompt": "a stack of blocks with one being added at the top"
+          }
+        ]
+      },
+      "meta": "5 parts • three steps plus two traps"
+    },
+    {
+      "id": "sc-outline",
+      "type": "outline",
+      "title": "Why Choosing Is Unavoidable",
+      "timestamp": "2026-09-06T01:50:04.000Z",
+      "data": {
+        "main": "Scarcity forces choice; choice creates cost",
+        "branches": [
+          {
+            "title": "Scarcity is the starting condition",
+            "items": [
+              "People want more of something than exists",
+              "Time, money, water, attention, space",
+              "Not the same as rare: sand is common and can still be scarce where demand outruns supply"
+            ]
+          },
+          {
+            "title": "Therefore every choice is a trade-off",
+            "items": [
+              "Picking one option means not picking the others",
+              "This is true of a person, a family, a business and a government",
+              "There is no option with no cost attached"
+            ]
+          },
+          {
+            "title": "Opportunity cost names the price",
+            "items": [
+              "It is the single next best alternative, not everything turned down",
+              "Sleep over friends over a project: the cost is the friends, not the project",
+              "Naming one specific thing is what makes it useful"
+            ]
+          },
+          {
+            "title": "It explains decisions that look strange",
+            "items": [
+              "A town funding a road is not against libraries",
+              "The library was what it gave up",
+              "Judge the road against the library, not against nothing"
+            ]
+          },
+          {
+            "title": "Two traps",
+            "items": [
+              "Sunk cost: money already spent should not shape the next decision",
+              "All-or-nothing thinking: most real questions are marginal, about one more unit",
+              "Knowing the words does not make either one easy"
+            ]
+          },
+          {
+            "title": "The two questions",
+            "items": [
+              "What is scarce here?",
+              "What exactly got given up?",
+              "Apply them to your own choices and to public ones"
+            ]
+          }
+        ]
+      },
+      "meta": "6 branches • concept map • the chain from scarcity to cost"
+    },
+    {
+      "id": "sc-memory",
+      "type": "memory-aid",
+      "title": "Remember the Second Best",
+      "timestamp": "2026-09-06T01:50:05.000Z",
+      "meta": "7th Grade • 2 memory aids • the next best option, and sunk cost",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Second Best",
+        "instructions": "Two cards hold the ideas people most often get wrong. Study the example, build one of your own, then say what it protects you from.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "It is not everything you turned down. It is the single alternative you would have picked instead. Money already spent and not recoverable is a sunk cost, and it should not affect what you do next.",
+        "lessonRef": {
+          "resourceId": "sc-reading",
+          "title": "Everything Has a Cost"
+        },
+        "cards": [
+          {
+            "id": "sc-ma-second",
+            "target": "Opportunity cost is the runner-up, not the whole field",
+            "essentialFacts": [
+              "Opportunity cost is the single next best alternative.",
+              "It is not everything you turned down.",
+              "Naming one specific option is what makes it useful."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "SILVER MEDAL. The winner is what you chose. The cost is whoever came second, and only that one. Fourth place is not part of the price.",
+            "mapping": "A podium has exactly one runner-up, which is the constraint students keep dropping when they list everything they gave up.",
+            "scaffoldStarter": "I chose ____. Silver medal goes to ____. That is the cost.",
+            "scaffoldSteps": [
+              "Name what you chose.",
+              "Name what would have been second.",
+              "Ignore everything below that."
+            ],
+            "coachPrompts": [
+              "What came third, and why does it not count?"
+            ],
+            "studentPrompt": "Build your own phrase for the next best option.",
+            "reasoningPrompt": "Why is naming one option more useful than listing everything?",
+            "hookFact": {
+              "text": "If you chose sleep over friends and a project, the opportunity cost of sleeping is seeing your friends. The project does not count. It was third.",
+              "sourceTitle": "Everything Has a Cost (this lesson)"
+            }
+          },
+          {
+            "id": "sc-ma-sunk",
+            "target": "Money already spent should not steer the next decision",
+            "essentialFacts": [
+              "A sunk cost is already spent and cannot be recovered.",
+              "It should not affect what you do next.",
+              "The real choice is only about the options ahead of you."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "You are halfway through a book you have stopped enjoying. The hours you already spent are gone whether you finish or not. The only live question is what the next hour is worth.",
+            "mapping": "Reading time cannot be refunded, which makes the spent-and-gone part obvious, and the remaining hours are visibly the only thing still under your control.",
+            "scaffoldStarter": "I already spent ____. That is gone. My real choice now is ____.",
+            "scaffoldSteps": [
+              "Name what has already been spent.",
+              "Say plainly that it cannot come back.",
+              "State the choice that is actually left."
+            ],
+            "coachPrompts": [
+              "Would you start this today, knowing what you know now?"
+            ],
+            "studentPrompt": "Build your own example of a sunk cost.",
+            "reasoningPrompt": "Why do people find this rule so hard to follow in practice?",
+            "hookFact": {
+              "text": "The money is gone whether you go or not. The real choice is only about the next two hours.",
+              "sourceTitle": "Everything Has a Cost (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "sc-sort",
+      "type": "concept-sort",
+      "title": "Scarce or Just Expensive?",
+      "timestamp": "2026-09-06T01:50:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "sc-scarce",
+            "label": "Scarce: wanted more than exists",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "sc-notscarce",
+            "label": "Not scarce, whatever it costs",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "sc-sunk",
+            "label": "A sunk cost: already gone",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "sc1",
+            "content": "Hours in a school day",
+            "categoryId": "sc-scarce"
+          },
+          {
+            "id": "sc2",
+            "content": "Space in the school car park",
+            "categoryId": "sc-scarce"
+          },
+          {
+            "id": "sc3",
+            "content": "Construction sand in a fast-growing city",
+            "categoryId": "sc-scarce"
+          },
+          {
+            "id": "sc4",
+            "content": "Air to breathe on a hillside",
+            "categoryId": "sc-notscarce"
+          },
+          {
+            "id": "sc5",
+            "content": "Seawater at the coast",
+            "categoryId": "sc-notscarce"
+          },
+          {
+            "id": "sc6",
+            "content": "Sunlight falling on an open field",
+            "categoryId": "sc-notscarce"
+          },
+          {
+            "id": "sc7",
+            "content": "A concert ticket you already bought",
+            "categoryId": "sc-sunk"
+          },
+          {
+            "id": "sc8",
+            "content": "Six months of training already done",
+            "categoryId": "sc-sunk"
+          },
+          {
+            "id": "sc9",
+            "content": "The non-refundable deposit you paid",
+            "categoryId": "sc-sunk"
+          }
+        ]
+      },
+      "meta": "3 buckets • 9 cards • the middle bucket catches the rare-equals-scarce error"
+    },
+    {
+      "id": "sc-quiz",
+      "type": "quiz",
+      "title": "Choice Check",
+      "timestamp": "2026-09-06T01:50:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "You could see friends, finish a project, or sleep. You sleep, and friends was your next choice. What is the opportunity cost?",
+            "options": [
+              "Seeing your friends, and only that",
+              "The project and the friends together",
+              "Nothing, because sleep was free to do",
+              "The hour of time that you used up"
+            ],
+            "correctAnswer": "Seeing your friends, and only that",
+            "conceptLabel": "opportunity cost is the next best"
+          },
+          {
+            "type": "mcq",
+            "question": "What does it mean for something to be scarce?",
+            "options": [
+              "It costs a large amount of money to buy",
+              "People want more of it than there is",
+              "Very little of it exists anywhere on Earth",
+              "It can only be found in a few countries"
+            ],
+            "correctAnswer": "People want more of it than there is",
+            "conceptLabel": "scarce is not the same as rare"
+          },
+          {
+            "type": "mcq",
+            "question": "Sand is common and cheap, yet construction sand is scarce in some regions. Why?",
+            "options": [
+              "Because most sand has already been used up",
+              "Because sand is far rarer than people realise",
+              "Because demand there outruns what can be supplied",
+              "Because governments have banned digging for it"
+            ],
+            "correctAnswer": "Because demand there outruns what can be supplied",
+            "conceptLabel": "scarce is not the same as rare"
+          },
+          {
+            "type": "mcq",
+            "question": "You paid for a film ticket and now know you will hate the film. What should the ticket price affect?",
+            "options": [
+              "It should push you to attend, to avoid waste",
+              "It should be split evenly across the decision",
+              "It should be weighed against the film's length",
+              "Nothing, because the money is gone either way"
+            ],
+            "correctAnswer": "Nothing, because the money is gone either way",
+            "conceptLabel": "sunk costs are gone"
+          },
+          {
+            "type": "mcq",
+            "question": "A town funds a new road instead of a library. What does opportunity cost say about judging that?",
+            "options": [
+              "Compare the road's benefit against the library's",
+              "Judge the road entirely on its own merits alone",
+              "Assume the council does not value libraries much",
+              "Add both costs together to find the total spent"
+            ],
+            "correctAnswer": "Compare the road's benefit against the library's",
+            "conceptLabel": "opportunity cost is the next best"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why scarcity, not money, is described as what economics is really about.",
+            "expectedAnswer": "Scarcity means people want more of something than exists, so choosing is unavoidable. That applies to time, attention, water and space, not just money. Because everything scarce forces a choice, and every choice gives something up, scarcity is the more general idea and money is only one example of it.",
+            "conceptLabel": "scarce is not the same as rare"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Describe a real decision you made this week, and name its opportunity cost precisely.",
+            "expectedAnswer": "Answers vary. A full answer names the option chosen, then names one specific alternative that would have been taken instead, rather than listing everything given up, and explains why that one was the next best.",
+            "conceptLabel": "opportunity cost is the next best"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where have you seen someone stick with something only because they had already paid for it?"
+          },
+          {
+            "text": "Which is harder for you to name honestly: what you chose, or what you gave up?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • the last one is about your own week"
+    },
+    {
+      "id": "sc-faq",
+      "type": "faq",
+      "title": "Money Questions Kids Ask",
+      "timestamp": "2026-09-06T01:50:08.000Z",
+      "data": [
+        {
+          "question": "Is anything actually free? 🤔",
+          "answer": "Some things are free of charge. Almost nothing is free of cost, because taking it uses time or attention or space that had another use. A free concert still costs you the evening."
+        },
+        {
+          "question": "If I enjoy both options equally, is the cost zero?",
+          "answer": "No, but it is small. Opportunity cost is not about regret, it is about what you gave up. If the two were nearly equal, you gave up something nearly as good, which is why the choice felt hard."
+        },
+        {
+          "question": "Does this mean money decisions are the only real ones? 💸",
+          "answer": "The opposite. Time is scarce for everyone, including people with plenty of money, which is why a busy person paying for a faster option is behaving perfectly rationally."
+        },
+        {
+          "question": "Why do people fall for sunk costs so often?",
+          "answer": "Because walking away feels like admitting waste, and people dislike that more than they dislike losing a further hour. Economists have studied it for decades and knowing the word does not immunise you."
+        },
+        {
+          "question": "Is scarcity the same as poverty? ⚖️",
+          "answer": "No. Poverty is not having enough for a decent life, which is a serious problem to solve. Scarcity is the general condition that wants exceed what exists, and it applies to everyone, rich or poor."
+        },
+        {
+          "question": "Can a government just make more of something?",
+          "answer": "Sometimes, and always at a cost. Building more housing uses workers and materials that were going to build something else. That is opportunity cost operating at national scale."
+        }
+      ],
+      "meta": "6 questions • the poverty answer draws a line that matters"
+    },
+    {
+      "id": "sc-challenge",
+      "type": "applied-challenge",
+      "title": "Decide: The Community Centre Hour",
+      "timestamp": "2026-09-06T01:50:09.000Z",
+      "meta": "7th Grade • Decision brief • one hour, four claimants",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Community Centre Hour",
+        "instructions": "Four groups want the same hour in the same room. Recommend one, name the opportunity cost precisely, and defend it to the group that loses.",
+        "selectionMode": "manual",
+        "family": "decide",
+        "fitReason": "D2.Eco.2 asks students to evaluate alternatives in terms of benefits and costs. Forcing one recommendation from four claims on a genuinely scarce resource makes opportunity cost something they have to name rather than define.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "decide",
+          "context": "The community centre has one room free on Tuesdays from four to five. Four groups have asked for it: a homework club, a seniors' exercise class, a youth band rehearsal, and a food-bank sorting session. Only one can have it.",
+          "role": "The centre's booking panel",
+          "audience": "All four groups, who will each be told the decision and the reason",
+          "drivingQuestion": "Which group should get the hour, what exactly is the opportunity cost of that decision, and can you justify it to the group that came second?",
+          "seedDirection": "Rank all four before you decide. You cannot name an opportunity cost without knowing which one came second.",
+          "lockedLessonFacts": [
+            "Scarcity means people want more of something than exists.",
+            "Every choice is a trade-off: you gain one thing and give up another.",
+            "Opportunity cost is the single next best alternative, not everything turned down.",
+            "Money already spent is a sunk cost and should not shape the next decision."
+          ],
+          "openQuestions": [
+            "How do you compare benefits that are not measured in the same units?",
+            "Does it matter how many people each group serves, or who they are?",
+            "Would your answer change if one group had already bought equipment for that room?"
+          ],
+          "stakeholders": [
+            "The four groups competing for the hour",
+            "The centre staff who must explain the decision",
+            "People served by the group that loses"
+          ],
+          "criteria": [
+            "All four options are ranked, not just the winner named",
+            "The opportunity cost is stated as one specific alternative, with a reason it ranked second",
+            "At least one benefit that is hard to measure is acknowledged rather than ignored",
+            "The sunk-cost question is answered explicitly",
+            "At least four glossary words used correctly"
+          ],
+          "constraints": [
+            "One hour, one room, one group",
+            "A decision is required; no splitting the hour",
+            "Every claim needs a stated reason"
+          ],
+          "deliverable": "A panel decision: the ranked list of four, the recommendation, the opportunity cost named precisely, and a short paragraph addressed to the second-place group explaining the reasoning.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A panel gave the hour to the group that had already bought floor mats for that room.",
+            "move": "Challenged on it, they recognised the mats were a sunk cost, reranked on benefit alone, and changed their answer. They kept a note explaining why the mats had felt so persuasive.",
+            "whyItHelps": "They caught themselves letting spent money steer a forward-looking decision, which is the exact trap the reading names."
+          },
+          "frameStarter": "We recommend ____. Our second choice was ____, so the opportunity cost is ____. We say this to them because ____.",
+          "frameChoices": [
+            "The homework club",
+            "The seniors' exercise class",
+            "The youth band rehearsal",
+            "The food-bank sorting session"
+          ],
+          "coachPrompts": [
+            "Did you rank all four, or only pick a winner?",
+            "Is your opportunity cost one specific thing, or a vague list?",
+            "Did any already-spent money sneak into your reasoning?"
+          ]
+        },
+        "coachHint": "Rank all four. Name the runner-up. That is the cost.",
+        "sourceExcerpt": "It is not everything you turned down. It is the single alternative you would have picked instead.",
+        "lessonRef": {
+          "resourceId": "sc-reading",
+          "title": "Everything Has a Cost"
+        }
+      }
+    }
+  ]
+}
