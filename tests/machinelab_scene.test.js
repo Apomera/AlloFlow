@@ -352,7 +352,9 @@ describe('Siege Field wave 4: sound, crew, record, quest', () => {
     expect(on).toMatch(/aria-pressed="true"[^>]*>[^<]*Sound/);
     const src = source();
     expect(src).toMatch(/sceneSound: false,/);
-    expect(src).toContain("if (!d.sceneSound) SCENE_AUDIO.unlock(); upd('sceneSound', !d.sceneSound);");
+    // Wave 23 added the other half: turning it off silences the bed at once.
+    expect(src).toContain("if (!d.sceneSound) SCENE_AUDIO.unlock(); else SCENE_AUDIO.quiet();");
+    expect(src).toContain("upd('sceneSound', !d.sceneSound);");
   });
 
   it('cues fire on the three transitions only, and never under reduced motion', () => {
@@ -1200,5 +1202,48 @@ describe('Siege Field wave 22: one derivation of a second, four places that draw
   it('is one derivation: no bespoke second-walk left anywhere', () => {
     const src = source();
     expect(src.match(/while \(sec(ond)? <= /g) || []).toHaveLength(1);
+  });
+});
+
+describe('Siege Field wave 23: the valley has a sound, and it stops when asked', () => {
+  it('runs an ambient bed only while sound is on and motion is allowed', () => {
+    const src = source();
+    expect(src).toContain("SCENE_AUDIO.bed(S, windAbs, (data.ambient !== false) ? P.fire : 0, timeIsStorm);");
+    expect(src).toContain('} else if (S.bedRunning) {\n        SCENE_AUDIO.quiet(S);');
+    expect(src).toContain('S.bedRunning = !!(data.sound && !red);');
+  });
+
+  it('keeps the bed quiet: a cap on the wind, a cap on the fire', () => {
+    const src = source();
+    expect(src).toContain('var windGain = Math.min(0.05, 0.006 + (Number(windAbs) || 0) * 0.0035) + (rain ? 0.02 : 0);');
+    expect(src).toContain('var fireGain = Math.min(0.03, (Number(fire) || 0) * 0.016);');
+    // Eased, not stepped: a slider drag must not click.
+    expect(src).toContain('bedOn.wind.gain.setTargetAtTime(windGain, t0, 0.4);');
+  });
+
+  it('gives the bed an owner, so an outgoing scene cannot silence its successor', () => {
+    const src = source();
+    expect(src).toContain('bedOn.owner = owner || bedOn.owner;');
+    expect(src).toContain('if (owner && bedOn.owner && bedOn.owner !== owner) return;');
+  });
+
+  it('stops the bed the moment the learner turns sound off, not at the next frame', () => {
+    const src = source();
+    expect(src).toContain('if (!d.sceneSound) SCENE_AUDIO.unlock(); else SCENE_AUDIO.quiet();');
+  });
+
+  it('sounds masonry coming down, scaled by how much of it fell', () => {
+    const src = source();
+    expect(src).toContain('if (fell > 0 && data.sound && !red) SCENE_AUDIO.rubble(fell);');
+    expect(src).toContain('var dur = 0.5 + count * 0.06;');
+    // Deterministic clacks: the tool forbids Math.random everywhere, audio too.
+    expect(src).toContain('var when = t0 + 0.04 + hash01(c, count, 181) * dur * 0.7;');
+  });
+
+  it('still ships with sound off by default', () => {
+    const src = source();
+    expect(src).toContain('sceneSound: false,');
+    const html = renderTool('machineLab', state());
+    expect(html).toMatch(/aria-pressed="false"[^>]*>[^<]*🔇/);
   });
 });

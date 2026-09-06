@@ -3271,7 +3271,7 @@ window.StemLab = window.StemLab || {
   // directly (textContent, ~10 times a frame at most) instead of asking React
   // to re-render the whole tool sixty times a second for four numbers.
   var SCENE_AUDIO = (function () {
-    var ctx = null, noiseBuf = null;
+    var ctx = null, noiseBuf = null, bedOn = null;
     function ac() {
       if (ctx) return ctx;
       try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { ctx = null; }
@@ -3325,6 +3325,79 @@ window.StemLab = window.StemLab || {
           n.start(t0); n.stop(t0 + 0.65);
         } catch (e) {}
       },
+      // The bed: the valley's own sound. One noise source through a lowpass
+      // for the wind, one through a bandpass for the fire, both held open and
+      // only re-gained as the scene changes. Started on demand and stopped
+      // flat when sound goes off, so nothing is left running behind a view
+      // the learner has left.
+      bed: function (owner, windAbs, fire, rain) {
+        var a = ac(); if (!a) return;
+        try {
+          if (!bedOn) {
+            var wn = noise(); if (!wn) return;
+            wn.loop = true;
+            var wlp = a.createBiquadFilter(); wlp.type = 'lowpass'; wlp.frequency.value = 420; wlp.Q.value = 0.7;
+            var wg = a.createGain(); wg.gain.value = 0.0001;
+            wn.connect(wlp); wlp.connect(wg); wg.connect(a.destination);
+            wn.start(0);
+            var fn = noise(); if (!fn) return;
+            fn.loop = true;
+            var fbp = a.createBiquadFilter(); fbp.type = 'bandpass'; fbp.frequency.value = 1150; fbp.Q.value = 0.9;
+            var fg = a.createGain(); fg.gain.value = 0.0001;
+            fn.connect(fbp); fbp.connect(fg); fg.connect(a.destination);
+            fn.start(0);
+            bedOn = { wind: wg, windSrc: wn, fire: fg, fireSrc: fn, owner: owner || null };
+          }
+          // The newest scene to ask for the bed owns it, so an outgoing scene
+          // cannot stop the one that has just replaced it.
+          bedOn.owner = owner || bedOn.owner;
+          var t0 = a.currentTime;
+          // Audible from a breeze, never loud: this sits under everything else.
+          var windGain = Math.min(0.05, 0.006 + (Number(windAbs) || 0) * 0.0035) + (rain ? 0.02 : 0);
+          var fireGain = Math.min(0.03, (Number(fire) || 0) * 0.016);
+          bedOn.wind.gain.setTargetAtTime(windGain, t0, 0.4);
+          bedOn.fire.gain.setTargetAtTime(fireGain, t0, 0.4);
+        } catch (e) {}
+      },
+      quiet: function (owner) {
+        var a = ac();
+        if (!a || !bedOn) return;
+        // A scene may only silence the bed it owns. No owner means the learner
+        // asked for silence, which always wins.
+        if (owner && bedOn.owner && bedOn.owner !== owner) return;
+        try {
+          bedOn.windSrc.stop(); bedOn.fireSrc.stop();
+          bedOn.windSrc.disconnect(); bedOn.fireSrc.disconnect();
+          bedOn.wind.disconnect(); bedOn.fire.disconnect();
+        } catch (e) {}
+        bedOn = null;
+      },
+      // Masonry coming down: a body of low noise with a scatter of clacks over
+      // it, longer and heavier the more of the wall went.
+      rubble: function (blocks) {
+        var a = ac(), n = noise(); if (!a || !n) return;
+        try {
+          var t0 = a.currentTime, count = Math.max(1, Math.min(14, blocks || 1));
+          var dur = 0.5 + count * 0.06;
+          var lp = a.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
+          var g = a.createGain();
+          g.gain.setValueAtTime(0.0001, t0);
+          g.gain.exponentialRampToValueAtTime(Math.min(0.16, 0.05 + count * 0.012), t0 + 0.05);
+          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+          n.connect(lp); lp.connect(g); g.connect(a.destination);
+          n.start(t0); n.stop(t0 + dur + 0.05);
+          for (var c = 0; c < Math.min(8, count); c++) {
+            var when = t0 + 0.04 + hash01(c, count, 181) * dur * 0.7;
+            var clack = a.createOscillator(); clack.type = 'triangle';
+            clack.frequency.setValueAtTime(240 + hash01(c, 7, 182) * 420, when);
+            var cg = a.createGain();
+            cg.gain.setValueAtTime(0.05, when);
+            cg.gain.exponentialRampToValueAtTime(0.0001, when + 0.09);
+            clack.connect(cg); cg.connect(a.destination);
+            clack.start(when); clack.stop(when + 0.1);
+          }
+        } catch (e) {}
+      },
       // Landing: a low thump for earth, a thump plus a rattle of stone for the wall.
       thud: function (hitWall, energyKJ) {
         var a = ac(); if (!a) return;
@@ -3364,6 +3437,7 @@ window.StemLab = window.StemLab || {
     var standoff = Math.max(5, m.standoff || 80);
     var P = skyPreset(m.time || 'dusk', contrast);
     var reduced = !!m.reduced;
+    var timeIsStorm = (m.time || 'dusk') === 'storm';
     var mat = function (c, extra) {
       var cfg = { color: c };
       if (extra) for (var k in extra) if (Object.prototype.hasOwnProperty.call(extra, k)) cfg[k] = extra[k];
@@ -4649,6 +4723,9 @@ window.StemLab = window.StemLab || {
         var wasBreached = {};
         (data.prevBlocks || []).forEach(function (pb) { if (pb.state === 'breached') wasBreached[pb.col + '_' + pb.row] = true; });
         (data.blocks || []).forEach(function (nb) { if (nb.state === 'breached' && !wasBreached[nb.col + '_' + nb.row]) S.tumble[nb.col + '_' + nb.row] = true; });
+        var fell = 0;
+        for (var tk in S.tumble) if (Object.prototype.hasOwnProperty.call(S.tumble, tk)) fell++;
+        if (fell > 0 && data.sound && !red) SCENE_AUDIO.rubble(fell);
       }
       var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;
       var tumbleEase = tumbleK * tumbleK * (3 - 2 * tumbleK);
@@ -5213,6 +5290,14 @@ window.StemLab = window.StemLab || {
           df.rotation.x = duck * 0.42 + sway;
         }
       }
+      // The bed follows the hour and the wind, and stops the moment sound is
+      // turned off rather than fading out behind a closed view.
+      if (data.sound && !red) {
+        SCENE_AUDIO.bed(S, windAbs, (data.ambient !== false) ? P.fire : 0, timeIsStorm);
+      } else if (S.bedRunning) {
+        SCENE_AUDIO.quiet(S);
+      }
+      S.bedRunning = !!(data.sound && !red);
       if (S.sock) {
         // Points downwind; hangs in calm air, lifts to level by about 8 m/s.
         S.sock.rotation.y = wind < 0 ? Math.PI : 0;
@@ -9531,7 +9616,10 @@ window.StemLab = window.StemLab || {
               }, '📈 ' + __alloT('stem.machinelab.arc_toggle', 'Predicted arc')),
               h('button', {
                 key: 'snd', type: 'button', 'aria-pressed': d.sceneSound ? 'true' : 'false',
-                onClick: function () { if (!d.sceneSound) SCENE_AUDIO.unlock(); upd('sceneSound', !d.sceneSound); },
+                onClick: function () {
+                  if (!d.sceneSound) SCENE_AUDIO.unlock(); else SCENE_AUDIO.quiet();
+                  upd('sceneSound', !d.sceneSound);
+                },
                 title: __alloT('stem.machinelab.sound_t', 'Winch, release and impact sounds, made on the spot. Off by default.'),
                 style: {
                   padding: '4px 10px', borderRadius: 7, cursor: 'pointer',

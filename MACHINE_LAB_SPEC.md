@@ -183,6 +183,24 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 23 (2026-09-06)
+
+- **The valley has a sound.** An ambient bed of two looped noise sources — one through a
+  lowpass for the wind, one through a bandpass for the fire — whose gains follow the crosswind
+  slider, the hour's `P.fire`, and whether it is raining. Eased with `setTargetAtTime`, so
+  dragging the wind slider does not click. Capped low: this sits under everything else.
+- **Masonry coming down has a sound too**, scaled by how many blocks fell, with its clacks
+  placed by `hash01` rather than `Math.random` like everything else in this tool.
+- ★**The bed has an owner.** It is one graph shared by the module, but its lifecycle was driven
+  by whichever scene instance happened to tick, so on a re-mount the outgoing scene silenced
+  the bed its successor had just started. A scene may now only silence the bed it owns; a
+  learner asking for silence always wins.
+- Turning sound off stops the bed on the click rather than at the next frame, and sound is
+  still off by default.
+- Verified through a fake `AudioContext` installed before the tool loads
+  (`scratchpad/w23_audio.cjs`): nothing runs with sound off, two loops run with it on, and
+  starts and stops balance after toggling it off.
+
 ### Wave 22 (2026-09-06)
 
 - **One derivation of a second, four places that draw it.** `secondMarks(path, limit, stopAtX)`
