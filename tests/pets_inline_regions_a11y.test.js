@@ -12,8 +12,8 @@ describe('Pets Simulator inline quiz accessibility', () => {
 
   it('exposes the inline Household Hazard Sleuth as a labeled focusable region', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("tfsOpen && h('div', { role: 'region', 'aria-label': 'Household Hazard Sleuth quiz game', tabIndex: 0");
-    expect(source).not.toContain("tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Household Hazard Sleuth quiz game'");
+    expect(source).toContain(`tfsOpen && h('div', { role: 'region', 'aria-label': __alloT('stem.pets.a11y_household_hazard_sleuth_quiz_game', 'Household Hazard Sleuth quiz game'), tabIndex: 0`);
+    expect(source).not.toContain(`tfsOpen && h('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.pets.a11y_household_hazard_sleuth_quiz_game', 'Household Hazard Sleuth quiz game')`);
     expect(source).toContain("'data-pets-hazard-boundary': 'classification-only'");
   });
 });

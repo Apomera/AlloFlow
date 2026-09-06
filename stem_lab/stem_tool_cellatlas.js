@@ -6,6 +6,16 @@
 // - The cluster positions are an illustrative teaching layout, not a published UMAP.
 // - Expression values are teaching-normalized marker evidence (0-100), not raw counts.
 (function () {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloCellAtlasCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloCellAtlasCtx && typeof __alloCellAtlasCtx.t === "function") ? __alloCellAtlasCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   if (!window.StemLab || typeof window.StemLab.registerTool !== 'function') return;
@@ -1031,6 +1041,7 @@
       }
     ],
     render: function (ctx) {
+      __alloCellAtlasCtx = ctx;
       var React = ctx.React;
       var h = React.createElement;
       var data = ctx.toolData || {};
@@ -1459,7 +1470,7 @@
       function runMarkerAblation(geneId) {
         if (!geneId) {
           patch({ ablationGene: '' });
-          announce('All marker features restored.');
+          announce(__alloT('stem.cellatlas.sr_all_marker_features_restored', 'All marker features restored.'));
           return;
         }
         var trials = Object.assign({}, d.ablationTrials || {});
@@ -1483,7 +1494,7 @@
       function togglePanelGene(geneId) {
         var isSelected = selectedPanelGenes.indexOf(geneId) >= 0;
         if (isSelected && selectedPanelGenes.length === 1) {
-          announce('Keep at least one gene in the marker panel.');
+          announce(__alloT('stem.cellatlas.sr_keep_at_least_one_gene_in_the_marker_panel', 'Keep at least one gene in the marker panel.'));
           return;
         }
         var nextGenes = isSelected
@@ -1641,7 +1652,7 @@
           h('p', { className: 'cal-kicker' }, 'Returned from AlphaFold'),
           h('h3', { id: 'cal-af-return-title' }, 'Cross-scale evidence record'),
           h('p', { className: 'cal-card-intro' }, 'This record keeps the source RNA observation, learner-authored model interpretation, and unmeasured biological questions visibly separate.'),
-          h('div', { className: 'cal-af-return-meta', role: 'list', 'aria-label': 'Cross-scale record context' },
+          h('div', { className: 'cal-af-return-meta', role: 'list', 'aria-label': __alloT('stem.cellatlas.a11y_cross_scale_record_context', 'Cross-scale record context') },
             h('span', { role: 'listitem' }, text(record.tissue, 'Tissue atlas')),
             h('span', { role: 'listitem' }, text(record.cellType, 'Selected cell')),
             h('span', { role: 'listitem' }, text(record.gene, 'Gene') + ' → ' + text(record.protein, 'protein')),
@@ -1696,7 +1707,7 @@
           h('h3', { id: 'cal-real-insight-title' }, 'Detected does not mean defining'),
           h('p', { className: 'cal-card-intro' },
             'In this raw-count snapshot, GCG is detected in ' + gcg.detectionPct + '% of mapped acinar cells, but their mean GCG signal is only ' + gcg.relativeMeanPct + '% of the highest displayed cell-type mean for GCG. What is the strongest conclusion?'),
-          h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Real-data interpretation choices' },
+          h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_real_data_interpretation_choices', 'Real-data interpretation choices') },
             h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'same' ? 'true' : 'false', onClick: function () { patch({ realInterpretation: 'same' }); } }, 'The acinar cells must actually be alpha cells because GCG was detected.'),
             h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'invalid' ? 'true' : 'false', onClick: function () { patch({ realInterpretation: 'invalid' }); } }, 'Any unexpected detection makes the entire dataset invalid.'),
             h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'cautious' ? 'true' : 'false', onClick: function () { patch({ realInterpretation: 'cautious', realDataViewed: true }); } }, 'Detection alone is insufficient; signal magnitude, the multigene panel, and possible ambient/background RNA all matter.')),
@@ -1765,7 +1776,7 @@
             'The source labels and marker templates are not independent, only eight genes are compared, and the two metrics encode different biological questions. A 7-of-7 result here does not establish that relative mean is universally superior.'),
           h('div', { className: 'cal-question', style: { marginTop: '12px' } },
             h('h3', null, 'Why did the ranking change so much?'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Metric stress-test explanation choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_metric_stress_test_explanation_choices', 'Metric stress-test explanation choices') },
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'zeros' ? 'true' : 'false', onClick: function () { patch({ metricStressAnswer: 'zeros' }); } }, 'A metric with fewer zero values is automatically more scientifically accurate.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'representation' ? 'true' : 'false', onClick: function () { patch({ metricStressAnswer: 'representation', realBenchmarkViewed: true }); } }, 'Detection frequency emphasizes broad presence, including background; relative magnitude preserves which marker dominates each displayed identity.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'labels' ? 'true' : 'false', onClick: function () { patch({ metricStressAnswer: 'labels' }); } }, 'The mismatch proves the source annotations are wrong.')),
@@ -1831,7 +1842,7 @@
               'Equal weighting is also only descriptive: four donors are too few for broad population claims, and a defensible analysis would define its estimand and use a donor-aware hierarchical or replicate-level model.'),
             h('div', { className: 'cal-question', style: { marginTop: '12px' } },
               h('h3', null, 'Why can 14.1% pooled and 31.4% equal-replicate mean both be arithmetically correct?'),
-              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Pseudoreplication interpretation choices' },
+              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_pseudoreplication_interpretation_choices', 'Pseudoreplication interpretation choices') },
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'error' ? 'true' : 'false', onClick: function () { patch({ pseudoreplicationInterpretation: 'error' }); } }, 'One result must be a calculation error because valid summaries cannot differ.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'nested' ? 'true' : 'false', onClick: function () { patch({ pseudoreplicationInterpretation: 'nested', pseudoreplicationViewed: true }); } }, 'They answer different weighting questions: pooled cells emphasize donors with more captured cells, while the descriptive replicate mean weights each donor equally; neither alone proves a population rate.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'cells' ? 'true' : 'false', onClick: function () { patch({ pseudoreplicationInterpretation: 'cells' }); } }, 'The 78 cells should be treated as 78 independent people for population inference.')),
@@ -1894,7 +1905,7 @@
           h('h3', { id: 'cal-replicate-title' }, 'Does the pattern transfer across people?'),
           h('p', { className: 'cal-card-intro' },
             'The four public source donor categories are deterministically relabeled Replicate A–D. Original donor IDs and cell rows are not exported. Compare denominators first, then hold out each replicate and build empirical cell-type centroids from the other three.'),
-          h('div', { className: 'cal-replicate-tabs', role: 'group', 'aria-label': 'Pseudonymous source replicate' },
+          h('div', { className: 'cal-replicate-tabs', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_pseudonymous_source_replicate', 'Pseudonymous source replicate') },
             replicateOptions.map(function (replicate) {
               var lowGroups = Object.keys(replicate.cellTypes).filter(function (cellId) {
                 return replicate.cellTypes[cellId].available && replicate.cellTypes[cellId].lowCellCount;
@@ -1944,7 +1955,7 @@
               h('span', null, 'Detection-frequency held-out transfer'),
               h('strong', null, detectionAligned + ' of ' + detectionTotal),
               h('span', null, 'source identities align; broad detection produces smaller gaps and several mismatches'))),
-          h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Replicate transfer metric' },
+          h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_replicate_transfer_metric', 'Replicate transfer metric') },
             h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': replicateMetricId === 'relativeMeanPct' ? 'true' : 'false', onClick: function () { selectReplicateMetric('relativeMeanPct'); } }, 'Inspect relative-mean transfer'),
             h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': replicateMetricId === 'detectionPct' ? 'true' : 'false', onClick: function () { selectReplicateMetric('detectionPct'); } }, 'Inspect detection transfer')),
           h('div', { className: 'cal-table-wrap' },
@@ -1974,7 +1985,7 @@
           h('div', { className: 'cal-question', style: { marginTop: '12px' } },
             h('h3', null, 'What result would count as independent replication?'),
             h('p', { className: 'cal-card-intro' }, 'Choose the strongest next test, not the most convenient re-analysis.'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Independent replication choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_independent_replication_choices', 'Independent replication choices') },
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'rerun' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'rerun', reproducibilityViewed: true }); } }, 'Rerun the same source cells with the same pipeline and call the agreement independent.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'heldout' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'heldout', reproducibilityViewed: true }); } }, 'Hold out one donor from this study; this tests internal transfer, but it is not external replication.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': reproducibilityAnswer === 'external-study' ? 'true' : 'false', onClick: function () { patch({ reproducibilityInterpretation: 'external-study', reproducibilityViewed: true }); } }, 'Apply a prespecified marker and QC plan to a separate version-pinned pancreas study, then report mapping failures and uncertainty.')),
@@ -1984,8 +1995,8 @@
                 : 'That is still a re-analysis of the same study. Donor holdout can test internal transfer, but independent replication needs a separate pinned source.')),
             h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
               h('button', { type: 'button', className: 'cal-secondary', onClick: copyReproducibilityPacket }, 'Copy reproducibility audit'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('md'); }, 'aria-label': 'Download cell-atlas-reproducibility-audit.md' }, 'Download audit (.md)'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('json'); }, 'aria-label': 'Download cell-atlas-reproducibility-audit.json' }, 'Download audit (.json)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('md'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_reproducibility_audit_md', 'Download cell-atlas-reproducibility-audit.md') }, 'Download audit (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadReproducibilityPacket('json'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_reproducibility_audit_json', 'Download cell-atlas-reproducibility-audit.json') }, 'Download audit (.json)'),
               d.reproducibilityPacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-reproducibility-audit.md.'),
               d.reproducibilityPacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-reproducibility-audit.json.'),
               d.reproducibilityPacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free reproducibility audit.'),
@@ -1994,7 +2005,7 @@
               d.reproducibilityPacketStatus === 'download-failed' && h('span', { className: 'cal-map-note', role: 'status' }, 'Download unavailable; select the audit text manually.')),
           smallKdr && h('div', { className: 'cal-question', style: { marginTop: '12px' } },
             h('h3', null, 'Replicate B has ' + smallEndothelial.cellCount + ' endothelial cells, with KDR detected in ' + smallKdr.detectionPct + '%. What is justified?'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Replicate sample-size interpretation choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_replicate_sample_size_interpretation_choices', 'Replicate sample-size interpretation choices') },
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'population' ? 'true' : 'false', onClick: function () { patch({ replicateInterpretation: 'population' }); } }, 'The 100% estimate precisely describes all endothelial cells in the human population.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'cautious' ? 'true' : 'false', onClick: function () { patch({ replicateInterpretation: 'cautious', replicateDataViewed: true }); } }, 'Both sampled cells had detected KDR, but n=2 gives weak precision; inspect other replicates and avoid population-level certainty.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'discard' ? 'true' : 'false', onClick: function () { patch({ replicateInterpretation: 'discard' }); } }, 'Any group below ten cells must be silently deleted from the atlas.')),
@@ -2015,7 +2026,7 @@
           h('h3', { id: 'cal-ablation-title' }, 'How fragile is an eight-gene ranking?'),
           h('p', { className: 'cal-card-intro' },
             'Set one aggregate input feature to zero, recompute the same cosine ranking, and ask whether the top teaching template changes. This tests the displayed pipeline’s dependence on one gene.'),
-          h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Ablation metric' },
+          h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_ablation_metric', 'Ablation metric') },
             h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': ablationMetricId === 'relativeMeanPct' ? 'true' : 'false', onClick: function () { selectAblationMetric('relativeMeanPct'); } }, 'Ablate relative-mean profile'),
             h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': ablationMetricId === 'detectionPct' ? 'true' : 'false', onClick: function () { selectAblationMetric('detectionPct'); } }, 'Ablate detection profile')),
           h('div', { className: 'cal-ablation-controls' },
@@ -2025,7 +2036,7 @@
                 ablationAudit.map(function (row) { return h('option', { key: row.cellId, value: row.cellId }, row.cellLabel); }))),
             h('div', null,
               h('p', { className: 'cal-kicker' }, 'Feature to set to zero'),
-              h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': 'Gene feature to remove' },
+              h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_gene_feature_to_remove', 'Gene feature to remove') },
                 realSnapshot.genes.map(function (geneId) {
                   return h('button', { key: geneId, type: 'button', className: 'cal-pill', 'aria-pressed': ablationGeneId === geneId ? 'true' : 'false', onClick: function () { runMarkerAblation(geneId); } }, 'Remove ' + geneId);
                 }),
@@ -2066,7 +2077,7 @@
             'Setting an aggregate input to zero does not simulate a gene knockout, estimate a single-cell dropout rate, or show that the cells changed identity. It is a counterfactual test of this small ranking pipeline.'),
           h('div', { className: 'cal-question', style: { marginTop: '12px' } },
             h('h3', null, 'What does a marker-dependent flip justify?'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Marker-ablation interpretation choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_marker_ablation_interpretation_choices', 'Marker-ablation interpretation choices') },
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'identity' ? 'true' : 'false', onClick: function () { patch({ ablationInterpretation: 'identity' }); } }, 'The source cells physically changed into the newly ranked cell type.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'panel' ? 'true' : 'false', onClick: function () { patch({ ablationInterpretation: 'panel', realBenchmarkViewed: true }); } }, 'This limited panel and template ranking lack redundancy for that profile; stronger annotation should use converging markers, QC, and replication.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'knockout' ? 'true' : 'false', onClick: function () { patch({ ablationInterpretation: 'knockout' }); } }, 'The trial predicts what a laboratory gene knockout would cause.')),
@@ -2089,10 +2100,10 @@
             h('h3', null, 'Can a smaller panel preserve the distinctions?'),
             h('p', { className: 'cal-card-intro' },
               'Choose any non-empty subset of the eight genes. The lab zeros excluded features, reranks all seven represented source groups, and compares your result with the best apparent agreement found at every panel size.'),
-            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Panel metric' },
+            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_panel_metric', 'Panel metric') },
               h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': panelMetricId === 'relativeMeanPct' ? 'true' : 'false', onClick: function () { selectPanelMetric('relativeMeanPct'); } }, 'Build with relative mean'),
               h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': panelMetricId === 'detectionPct' ? 'true' : 'false', onClick: function () { selectPanelMetric('detectionPct'); } }, 'Build with detection frequency')),
-            h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': 'Genes included in marker panel', style: { marginTop: '10px' } },
+            h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_genes_included_in_marker_panel', 'Genes included in marker panel'), style: { marginTop: '10px' } },
               realSnapshot.genes.map(function (geneId) {
                 var selected = selectedPanelGenes.indexOf(geneId) >= 0;
                 return h('button', { key: geneId, type: 'button', className: 'cal-pill', 'aria-pressed': selected ? 'true' : 'false', onClick: function () { togglePanelGene(geneId); } }, geneId);
@@ -2135,7 +2146,7 @@
               'The same seven annotated groups are used to search for and score the panels. Trying all 255 subsets can overfit this tiny display; a chosen panel needs testing on held-out donors, datasets, technologies, and plausible perturbations.'),
             h('div', { className: 'cal-question', style: { marginTop: '12px' } },
               h('h3', null, 'Why not choose the best-scoring panel and declare the problem solved?'),
-              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Panel-selection interpretation choices' },
+              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_panel_selection_interpretation_choices', 'Panel-selection interpretation choices') },
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'perfect' ? 'true' : 'false', onClick: function () { patch({ panelInterpretation: 'perfect' }); } }, 'Exhaustive search guarantees the selected genes will generalize to any new atlas.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'holdout' ? 'true' : 'false', onClick: function () { patch({ panelInterpretation: 'holdout', panelChanged: true }); } }, 'Selection and scoring used the same small dataset, so apparent agreement is optimistic; test the panel on independent held-out data.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'more' ? 'true' : 'false', onClick: function () { patch({ panelInterpretation: 'more' }); } }, 'Adding more genes must always improve a cosine-template ranking.')),
@@ -2157,10 +2168,10 @@
             h('h3', null, 'Does the top ranking survive small input changes?'),
             h('p', { className: 'cal-card-intro' },
               'For every gene, choose the low or high edge of a symmetric multiplicative envelope. The lab evaluates all 2⁸ = 256 sign patterns, so the result is deterministic and reproducible.'),
-            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Perturbation metric' },
+            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_perturbation_metric', 'Perturbation metric') },
               h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': stabilityMetricId === 'relativeMeanPct' ? 'true' : 'false', onClick: function () { selectStabilityMetric('relativeMeanPct'); } }, 'Stress relative mean'),
               h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': stabilityMetricId === 'detectionPct' ? 'true' : 'false', onClick: function () { selectStabilityMetric('detectionPct'); } }, 'Stress detection frequency')),
-            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Perturbation envelope', style: { marginTop: '8px' } },
+            h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_perturbation_envelope', 'Perturbation envelope'), style: { marginTop: '8px' } },
               [0.1, 0.25, 0.5].map(function (amount) {
                 return h('button', { key: amount, type: 'button', className: 'cal-pill', 'aria-pressed': stabilityAmount === amount ? 'true' : 'false', onClick: function () { selectStabilityAmount(amount); } }, 'Use ±' + Math.round(amount * 100) + '% envelope');
               })),
@@ -2174,7 +2185,7 @@
                 h('strong', null, stabilitySelected.stableCount + ' of ' + stabilitySelected.totalPatterns),
                 h('span', null, envelopeLabel + ' perturbation patterns (' + stabilitySelected.stabilityPct.toFixed(1) + '% computational stability)'))),
             h('h4', null, 'Top-template outcomes for ' + stabilitySelected.cellLabel),
-            h('div', { className: 'cal-outcomes', role: 'list', 'aria-label': 'Perturbation outcome distribution' },
+            h('div', { className: 'cal-outcomes', role: 'list', 'aria-label': __alloT('stem.cellatlas.a11y_perturbation_outcome_distribution', 'Perturbation outcome distribution') },
               stabilitySelected.outcomes.map(function (outcome) {
                 return h('span', { key: outcome.id, className: 'cal-outcome', role: 'listitem' }, outcome.label + ': ' + outcome.count + '/256');
               })),
@@ -2198,7 +2209,7 @@
               'The symmetric multipliers are a chosen computational stress test, not an estimate of donor variation, technical error, or biological probability. Zero inputs remain zero, correlations are ignored, and a stable ranking can still be systematically misaligned.'),
             h('div', { className: 'cal-question', style: { marginTop: '12px' } },
               h('h3', null, 'What does 192/256 stable patterns mean?'),
-              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Perturbation-stability interpretation choices' },
+              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_perturbation_stability_interpretation_choices', 'Perturbation-stability interpretation choices') },
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'probability' ? 'true' : 'false', onClick: function () { patch({ stabilityInterpretation: 'probability' }); } }, 'There is a 75% biological probability that the source cells truly have the baseline identity.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'sensitivity' ? 'true' : 'false', onClick: function () { patch({ stabilityInterpretation: 'sensitivity', stabilityViewed: true }); } }, 'The top template survives 75% of this chosen perturbation grid; that measures pipeline sensitivity, not biological confidence or correctness.'),
                 h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': answer === 'label' ? 'true' : 'false', onClick: function () { patch({ stabilityInterpretation: 'label' }); } }, 'Any instability proves the source annotation is incorrect.')),
@@ -2221,18 +2232,18 @@
               h('p', { className: 'cal-card-intro' }, 'Choose a marker gene, then inspect which ' + tissue.label.toLowerCase() + ' cell cluster carries the strongest evidence. Each labeled cluster is keyboard selectable.'),
               h('div', { className: 'cal-evidence-switch' },
                 h('strong', null, 'Evidence layer'),
-                h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Evidence source mode' },
+                h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_evidence_source_mode', 'Evidence source mode') },
                   h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': evidenceMode === 'teaching' ? 'true' : 'false', onClick: function () { selectEvidenceMode('teaching'); } }, 'Curated teaching model'),
                   h('button', { type: 'button', className: 'cal-pill', disabled: !realAvailable, 'aria-pressed': evidenceMode === 'real' ? 'true' : 'false', onClick: function () { selectEvidenceMode('real'); } }, realAvailable ? 'Real Muraro snapshot' : 'Real snapshot: pancreas only'))),
-              evidenceMode === 'real' && h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': 'Real-data metric', style: { marginBottom: '9px' } },
+              evidenceMode === 'real' && h('div', { className: 'cal-mode-buttons', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_real_data_metric', 'Real-data metric'), style: { marginBottom: '9px' } },
                 h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': realMetric === 'relativeMeanPct' ? 'true' : 'false', onClick: function () { selectRealMetric('relativeMeanPct'); } }, 'Relative mean signal'),
                 h('button', { type: 'button', className: 'cal-pill', 'aria-pressed': realMetric === 'detectionPct' ? 'true' : 'false', onClick: function () { selectRealMetric('detectionPct'); } }, 'Detection frequency')),
-              evidenceMode === 'real' && h('div', { className: 'cal-real-meta', role: 'list', 'aria-label': 'Real snapshot provenance summary' },
+              evidenceMode === 'real' && h('div', { className: 'cal-real-meta', role: 'list', 'aria-label': __alloT('stem.cellatlas.a11y_real_snapshot_provenance_summary', 'Real snapshot provenance summary') },
                 h('div', { role: 'listitem' }, h('b', null, realSnapshot.source.primaryCellCount), h('span', null, 'primary cells in asset')),
                 h('div', { role: 'listitem' }, h('b', null, mappedRealCells), h('span', null, 'cells mapped to this lesson')),
                 h('div', { role: 'listitem' }, h('b', null, realSnapshot.source.donorCount), h('span', null, 'donors')),
                 h('div', { role: 'listitem' }, h('b', null, realSnapshot.source.assay), h('span', null, 'assay'))),
-              h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': 'Marker gene' },
+              h('div', { className: 'cal-gene-row', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_marker_gene', 'Marker gene') },
                 GENES.map(function (gene) {
                   return h('button', { key: gene.id, type: 'button', className: 'cal-pill', 'aria-pressed': selectedGene.id === gene.id ? 'true' : 'false', onClick: function () { patch({ selectedGene: gene.id }); announce(gene.id + ' marker selected.'); } }, gene.id);
                 })),
@@ -2367,7 +2378,7 @@
             h('p', { className: 'cal-map-note' }, 'The bars summarize a curated teaching profile. A real analysis would consider many more genes, cells, quality checks, and possible batch effects.')),
           h('div', { className: 'cal-question' },
             h('h3', null, 'Which cell identity is best supported?'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Mystery cell answer choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_mystery_cell_answer_choices', 'Mystery cell answer choices') },
               CELL_TYPES.map(function (cell) {
                 return h('button', { key: cell.id, type: 'button', className: 'cal-choice', 'aria-pressed': selectedAnswer === cell.id ? 'true' : 'false', onClick: function () { answerMystery(cell.id); } }, cell.label, h('span', { style: { display: 'block', marginTop: '3px', color: '#627d98', fontSize: '9px' } }, 'marker ' + cell.marker));
               })),
@@ -2472,7 +2483,7 @@
               h('p', { className: 'cal-kicker' }, 'Quality-control case ' + (designCaseIndex + 1) + ' of ' + DESIGN_CASES.length),
               h('h3', null, designCase.title),
               h('p', { className: 'cal-case-signal' }, designCase.signal),
-              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Quality-control response choices' },
+              h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_quality_control_response_choices', 'Quality-control response choices') },
                 designCase.choices.map(function (choice) {
                   return h('button', { key: choice.id, type: 'button', className: 'cal-choice', 'aria-pressed': selectedAnswer === choice.id ? 'true' : 'false', onClick: function () { answerDesignCase(choice.id); } }, choice.label);
                 })),
@@ -2496,8 +2507,8 @@
               h('p', { className: 'cal-map-note' }, 'The aim is not to memorize one correction. It is to ask what else could produce the observation.'),
               h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
                 h('button', { type: 'button', className: 'cal-secondary', onClick: copyDesignPacket }, 'Copy study plan packet'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('md'); }, 'aria-label': 'Download cell-atlas-study-design.md' }, 'Download plan (.md)'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('json'); }, 'aria-label': 'Download cell-atlas-study-design.json' }, 'Download plan (.json)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('md'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_study_design_md', 'Download cell-atlas-study-design.md') }, 'Download plan (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadDesignPacket('json'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_study_design_json', 'Download cell-atlas-study-design.json') }, 'Download plan (.json)'),
               d.designPacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-study-design.md.'),
               d.designPacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-study-design.json.'),
                 d.designPacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free study plan packet.'),
@@ -2570,7 +2581,7 @@
             h('p', { className: 'cal-kicker' }, 'Across organs'),
             h('h3', { id: 'cal-cross-title' }, 'Cross-tissue evidence studio'),
             h('p', { className: 'cal-card-intro' }, 'Compare a shared biological problem across three organs. Similar jobs can use related or different molecular programs; functional analogy is not automatically shared lineage.'),
-            h('div', { className: 'cal-lens-tabs', role: 'group', 'aria-label': 'Cross-tissue systems lens' },
+            h('div', { className: 'cal-lens-tabs', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_cross_tissue_systems_lens', 'Cross-tissue systems lens') },
               CROSS_TISSUE_LENSES.map(function (lens) {
                 return h('button', {
                   key: lens.id,
@@ -2612,14 +2623,14 @@
               h('div', { className: 'cal-field' },
                 h('label', { htmlFor: 'cal-cer-reasoning' }, 'Reasoning + limitation'),
                 h('textarea', { id: 'cal-cer-reasoning', rows: 5, value: notebook.reasoning || '', placeholder: 'This supports the claim because... However, the model cannot show...', onChange: function (event) { updateNotebook('reasoning', event.target.value); } }))),
-            h('div', { className: 'cal-checks', role: 'status', 'aria-label': 'Notebook completion checks' },
+            h('div', { className: 'cal-checks', role: 'status', 'aria-label': __alloT('stem.cellatlas.a11y_notebook_completion_checks', 'Notebook completion checks') },
               h('span', { className: 'cal-check', 'data-done': notebookState.claim ? 'true' : 'false' }, notebookState.claim ? '\u2713 specific claim' : 'claim needs more detail'),
               h('span', { className: 'cal-check', 'data-done': notebookState.evidence ? 'true' : 'false' }, notebookState.evidence ? '\u2713 two markers cited' : notebookState.markerHits + '/2 markers cited'),
               h('span', { className: 'cal-check', 'data-done': notebookState.reasoning ? 'true' : 'false' }, notebookState.reasoning ? '\u2713 reasoning developed' : 'reasoning needs more detail')),
             h('div', { className: 'cal-actions', style: { marginTop: '10px' } },
               h('button', { type: 'button', className: 'cal-secondary', onClick: copyCrossTissuePacket }, 'Copy cross-tissue CER packet'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('md'); }, 'aria-label': 'Download cell-atlas-cross-tissue-cer.md' }, 'Download CER packet (.md)'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('json'); }, 'aria-label': 'Download cell-atlas-cross-tissue-cer.json' }, 'Download CER packet (.json)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('md'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_cross_tissue_cer_md', 'Download cell-atlas-cross-tissue-cer.md') }, 'Download CER packet (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCrossTissuePacket('json'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_cross_tissue_cer_json', 'Download cell-atlas-cross-tissue-cer.json') }, 'Download CER packet (.json)'),
               d.crossTissuePacketStatus === 'copied' && h('span', { className: 'cal-map-note', role: 'status' }, 'Copied a sequence-free CER packet.'),
               d.crossTissuePacketStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-cross-tissue-cer.md.'),
               d.crossTissuePacketStatus === 'downloaded-json' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded cell-atlas-cross-tissue-cer.json.'),
@@ -2629,7 +2640,7 @@
           h('div', { className: 'cal-card cal-caution' },
             h('p', { className: 'cal-kicker' }, 'Caution checkpoint'),
             h('h3', null, 'Which conclusion is scientifically defensible?'),
-            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': 'Cautious conclusion choices' },
+            h('div', { className: 'cal-choice-grid', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_cautious_conclusion_choices', 'Cautious conclusion choices') },
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': cautionAnswer === 'marker' ? 'true' : 'false', onClick: function () { patch({ cautionAnswer: 'marker' }); } }, 'One shared marker always proves two cells are the same type.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': cautionAnswer === 'lineage' ? 'true' : 'false', onClick: function () { patch({ cautionAnswer: 'lineage' }); } }, 'Cells with similar support jobs must share the same developmental lineage.'),
               h('button', { type: 'button', className: 'cal-choice', 'aria-pressed': cautionAnswer === 'cautious' ? 'true' : 'false', onClick: function () { patch({ cautionAnswer: 'cautious', crossTissueCompared: true }); } }, 'Marker panels can support a functional comparison, but this model alone cannot prove identity or lineage.')),
@@ -2761,7 +2772,7 @@
         var downloaded = downloadArtifact('cell-atlas-teacher-review-' + snapshot.id, cellAtlasPortfolioArtifact(snapshot), format);
         if (downloaded) {
           persistCellAtlasPortfolioAttempt(snapshot, 'downloaded', format);
-          announce('Downloaded and saved Cell Atlas revision attempt.');
+          announce(__alloT('stem.cellatlas.sr_downloaded_and_saved_cell_atlas_revision_attempt', 'Downloaded and saved Cell Atlas revision attempt.'));
         } else {
           patch({ cellAtlasPortfolioStatus: 'download-failed' });
         }
@@ -2863,7 +2874,7 @@
             h('table', { className: 'cal-teacher-review-table' },
               h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Criterion'), h('th', { scope: 'col' }, 'Score'), h('th', { scope: 'col' }, 'Evidence signal'), h('th', { scope: 'col' }, 'Next move'))),
               h('tbody', null, teacherReviewItems.map(function (item) { return h('tr', { key: item.label }, h('th', { scope: 'row' }, item.label), h('td', { className: 'cal-teacher-review-score' }, item.score + '/4'), h('td', null, item.detail), h('td', null, item.nextMove)); }))),
-            h('div', { className: 'cal-evidence-map', role: 'group', 'aria-label': 'Claim to evidence map' },
+            h('div', { className: 'cal-evidence-map', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_claim_to_evidence_map', 'Claim to evidence map') },
               h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Claim'), h('span', null, teacherEvidenceMap.claim)),
               h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Evidence'), h('span', null, teacherEvidenceMap.evidence)),
               h('div', { className: 'cal-evidence-map-item' }, h('strong', null, 'Reasoning'), h('span', null, teacherEvidenceMap.reasoning)),
@@ -2882,7 +2893,7 @@
             h('div', { className: 'cal-self-check', role: 'group', 'aria-labelledby': 'cal-self-check-title' },
               h('h4', { id: 'cal-self-check-title' }, 'Learner self-check'),
               h('p', null, 'Record your confidence and uncertainty before saving. This reflection is preserved with the attempt but is not part of the rubric score.'),
-              h('div', { className: 'cal-self-check-options', role: 'group', 'aria-label': 'Confidence level' },
+              h('div', { className: 'cal-self-check-options', role: 'group', 'aria-label': __alloT('stem.cellatlas.a11y_confidence_level', 'Confidence level') },
                 [{ id: 'uncertain', label: 'I need more evidence' }, { id: 'developing', label: 'I can explain a tentative claim' }, { id: 'confident', label: 'I can defend the claim and its limits' }].map(function (option) { return h('button', { key: option.id, type: 'button', 'aria-pressed': learnerSelfCheck.confidence === option.id ? 'true' : 'false', onClick: function () { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { confidence: option.id }), cellAtlasPortfolioStatus: '' }); } }, option.label); })),
               h('label', { htmlFor: 'cal-self-check-evidence' }, 'Strongest evidence I used'),
               h('textarea', { id: 'cal-self-check-evidence', rows: 2, maxLength: 500, value: learnerSelfCheck.strongestEvidence || '', placeholder: 'Name the marker, comparison, or source detail that most supports your claim.', onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { strongestEvidence: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } }),
@@ -2890,11 +2901,11 @@
               h('textarea', { id: 'cal-self-check-uncertainty', rows: 2, maxLength: 500, value: learnerSelfCheck.uncertainty || '', placeholder: 'Name one limitation, alternative explanation, or next test.', onChange: function (event) { patch({ cellAtlasLearnerSelfCheck: Object.assign({}, learnerSelfCheck, { uncertainty: portfolioSafeText(event.target.value, '').slice(0, 500) }), cellAtlasPortfolioStatus: '' }); } })),
             h('div', { className: 'cal-portfolio-head' }, h('h4', { id: 'cal-portfolio-title' }, 'Revision portfolio'), h('span', null, portfolioAttempts.length + '/8 attempts saved')),
             h('div', { className: 'cal-portfolio-delta', 'data-direction': teacherPortfolioDelta.direction, role: 'status' }, h('strong', null, teacherPortfolioDelta.label), ' ', teacherPortfolioDelta.detail),
-            portfolioAttempts.length ? h('ol', { className: 'cal-portfolio-list', 'aria-label': 'Saved revision attempts' }, portfolioAttempts.slice(-4).reverse().map(function (attempt) { var previous = portfolioAttempts[portfolioAttempts.indexOf(attempt) - 1]; var delta = cellAtlasPortfolioDelta(attempt, previous); return h('li', { key: attempt.id, 'data-direction': delta.direction }, String(attempt.createdAt || '').slice(0, 10) + ' - ' + attempt.total + '/16 - ' + (attempt.imported ? 'imported' : 'local') + ' - ' + delta.label); })) : h('p', { className: 'cal-card-intro' }, 'No saved attempts yet. Save one after reviewing this work to begin a revision history.'),
+            portfolioAttempts.length ? h('ol', { className: 'cal-portfolio-list', 'aria-label': __alloT('stem.cellatlas.a11y_saved_revision_attempts', 'Saved revision attempts') }, portfolioAttempts.slice(-4).reverse().map(function (attempt) { var previous = portfolioAttempts[portfolioAttempts.indexOf(attempt) - 1]; var delta = cellAtlasPortfolioDelta(attempt, previous); return h('li', { key: attempt.id, 'data-direction': delta.direction }, String(attempt.createdAt || '').slice(0, 10) + ' - ' + attempt.total + '/16 - ' + (attempt.imported ? 'imported' : 'local') + ' - ' + delta.label); })) : h('p', { className: 'cal-card-intro' }, 'No saved attempts yet. Save one after reviewing this work to begin a revision history.'),
             h('div', { className: 'cal-actions' },
               h('button', { type: 'button', className: 'cal-primary', onClick: saveCellAtlasPortfolioAttempt }, 'Save portfolio attempt'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('json'); }, 'aria-label': 'Download Cell Atlas teacher review portfolio JSON' }, 'Download snapshot (.json)'),
-              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('md'); }, 'aria-label': 'Download Cell Atlas teacher review portfolio markdown' }, 'Download snapshot (.md)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('json'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_teacher_review_portfolio_js', 'Download Cell Atlas teacher review portfolio JSON') }, 'Download snapshot (.json)'),
+              h('button', { type: 'button', className: 'cal-secondary', onClick: function () { downloadCellAtlasPortfolio('md'); }, 'aria-label': __alloT('stem.cellatlas.a11y_download_cell_atlas_teacher_review_portfolio_ma', 'Download Cell Atlas teacher review portfolio markdown') }, 'Download snapshot (.md)'),
               d.cellAtlasPortfolioStatus === 'saved' && h('span', { className: 'cal-map-note', role: 'status' }, 'Saved a local, sequence-free revision attempt.'),
               d.cellAtlasPortfolioStatus === 'imported' && h('span', { className: 'cal-map-note', role: 'status' }, d.cellAtlasPortfolioLabel || 'Imported a bounded portfolio attempt.'),
               d.cellAtlasPortfolioStatus === 'downloaded' && h('span', { className: 'cal-map-note', role: 'status' }, 'Downloaded and saved the revision snapshot.'),
@@ -2930,7 +2941,7 @@
 
       return h('main', { className: 'cal-shell', 'data-cell-atlas-tool': 'true' },
         h('header', { className: 'cal-top' },
-          h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce('Returned to STEAM Lab tools.'); }, 'aria-label': 'Back to STEAM Lab tools' }, '\u2190'),
+          h('button', { type: 'button', className: 'cal-back', onClick: function () { if (typeof setStemLabTool === 'function') setStemLabTool(null); announce(__alloT('stem.cellatlas.sr_returned_to_steam_lab_tools', 'Returned to STEAM Lab tools.')); }, 'aria-label': __alloT('stem.cellatlas.a11y_back_to_steam_lab_tools', 'Back to STEAM Lab tools') }, '\u2190'),
           h('div', { className: 'cal-brand' },
             h('p', { className: 'cal-kicker' }, 'Tissue to cell to gene to protein'),
             h('h1', { className: 'cal-title' }, 'Cell Atlas Lab'),
@@ -2941,7 +2952,7 @@
             h('p', { className: 'cal-kicker' }, 'Investigation question'),
             h('h2', { id: 'cal-mission-title' }, view === 'cross' ? 'What stays conserved—and what becomes specialized—across organs?' : view === 'design' ? 'How do study-design choices shape what a cell atlas can claim?' : tissue.mission),
             h('p', null, 'Single-cell RNA sequencing measures which genes are active in individual cells. Scientists compare expression patterns to identify cell types, states, and specialized functions. Your task is to build a cautious identity claim from marker evidence.')),
-          h('div', { className: 'cal-progress', role: 'list', 'aria-label': 'Investigation progress' },
+          h('div', { className: 'cal-progress', role: 'list', 'aria-label': __alloT('stem.cellatlas.a11y_investigation_progress', 'Investigation progress') },
             h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, exploredCount), h('span', null, 'cell types explored')),
             h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, correctCount + '/3'), h('span', null, 'mysteries solved')),
             h('div', { className: 'cal-metric', role: 'listitem' }, h('b', null, visitedCount + '/3'), h('span', null, 'tissue atlases visited')),
@@ -2950,7 +2961,7 @@
           h('div', { className: 'cal-route-head' },
             h('strong', { id: 'cal-route-title' }, 'Evidence route'),
             h('span', null, routeDoneCount + '/5 milestones')),
-          h('div', { className: 'cal-route-bar', role: 'progressbar', 'aria-label': 'Evidence route progress', 'aria-valuemin': '0', 'aria-valuemax': '5', 'aria-valuenow': String(routeDoneCount), 'aria-valuetext': routeDoneCount + ' of 5 milestones complete' },
+          h('div', { className: 'cal-route-bar', role: 'progressbar', 'aria-label': __alloT('stem.cellatlas.a11y_evidence_route_progress', 'Evidence route progress'), 'aria-valuemin': '0', 'aria-valuemax': '5', 'aria-valuenow': String(routeDoneCount), 'aria-valuetext': routeDoneCount + ' of 5 milestones complete' },
             h('span', { style: { width: routePercent + '%' } })),
           h('div', { className: 'cal-route-steps', role: 'list' },
             routeSteps.map(function (step) {
@@ -2962,13 +2973,13 @@
             h('strong', null, nextRouteStep ? 'Next recommended step' : 'Core route complete'),
             h('span', null, nextRouteStep ? nextRouteStep.detail : 'All five milestones are complete; revisit Methods + sources when preparing to share your work.'),
             nextRouteStep && h('button', { type: 'button', onClick: function () { openRouteStep(nextRouteStep); } }, 'Open ' + nextRouteStep.action))),
-        h('nav', { className: 'cal-tissues', 'aria-label': 'Choose a Human Cell Atlas tissue investigation' },
+        h('nav', { className: 'cal-tissues', 'aria-label': __alloT('stem.cellatlas.a11y_choose_a_human_cell_atlas_tissue_investigation', 'Choose a Human Cell Atlas tissue investigation') },
           TISSUES.map(function (item) {
             return h('button', { key: item.id, type: 'button', className: 'cal-tissue', 'aria-pressed': tissue.id === item.id ? 'true' : 'false', onClick: function () { chooseTissue(item); } },
               h('span', { className: 'cal-tissue-icon', 'aria-hidden': 'true' }, item.icon),
               h('span', null, h('b', null, item.label), item.source.hcaId));
           })),
-        h('nav', { className: 'cal-tabs', 'aria-label': 'Cell Atlas investigation views' },
+        h('nav', { className: 'cal-tabs', 'aria-label': __alloT('stem.cellatlas.a11y_cell_atlas_investigation_views', 'Cell Atlas investigation views') },
           views.map(function (item) {
             return h('button', { key: item.id, type: 'button', className: 'cal-tab', 'aria-pressed': view === item.id ? 'true' : 'false', onClick: function () { patch({ view: item.id, comparisonViewed: item.id === 'compare' ? true : d.comparisonViewed, crossTissueCompared: item.id === 'cross' ? true : d.crossTissueCompared }); announce(item.label + ' opened.'); } }, item.label);
           })),

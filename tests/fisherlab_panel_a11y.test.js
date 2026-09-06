@@ -18,7 +18,7 @@ describe('Fisher Lab active panel accessibility', () => {
     expect(source).toContain('id: \'fl-active-panel\'');
     expect(source).toContain("role: 'tabpanel'");
     expect(source).toContain('tabIndex: 0');
-    expect(source).toContain("'aria-label': 'Species ranking hypothesis'");
+    expect(source).toContain(`'aria-label': __alloT('stem.fisherlab.a11y_species_ranking_hypothesis', 'Species ranking hypothesis')`);
   });
 
   it('keeps selected-region scope visible inside every non-Maine section', () => {
@@ -172,7 +172,7 @@ describe('Fisher Lab active panel accessibility', () => {
     expect(queueAt).toBeGreaterThan(clearAt);
     expect(focusAt).toBeGreaterThan(queueAt);
     expect(traffic.match(/resolveSimulatorTrafficChoice\(/g) || []).toHaveLength(2);
-    expect(canvas).toContain("'aria-label': 'Interactive 3D harbor");
+    expect(canvas).toMatch(/'aria-label': (?:__alloT\('[^']+', )?'Interactive 3D harbor/);
     expect(canvas).not.toContain('onFocus:');
     expect(canvas).not.toContain("flAnnounce('Harbor controls active.");
   });
@@ -284,7 +284,7 @@ describe('Fisher Lab active panel accessibility', () => {
     const root = source.slice(source.indexOf('var activeTabEntry = TABS.find'), source.indexOf("tab === 'home' ? homeTab()"));
 
     expect(bar).toContain("className: 'fl-accessibility-controls'");
-    expect(bar).toContain("'aria-label': 'Accessibility preferences'");
+    expect(bar).toContain(`'aria-label': __alloT('stem.fisherlab.a11y_accessibility_preferences', 'Accessibility preferences')`);
     expect(bar).toContain("{ key: 'staticCamera', label: 'Reduced scene motion'");
     expect(bar).toContain("{ key: 'captionMode', label: 'Expanded captions'");
     expect(bar).toContain("{ key: 'largeText', label: 'Large text'");

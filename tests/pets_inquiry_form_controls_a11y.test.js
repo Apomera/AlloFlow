@@ -12,7 +12,7 @@ describe('Pets Lab inquiry accessibility', () => {
 
   it('provides accessible names for welfare hypothesis and explanation fields', () => {
     const source = fs.readFileSync(sourcePath, 'utf8');
-    expect(source).toContain("'aria-label': 'Pet welfare hypothesis'");
-    expect(source).toContain("'aria-label': 'Pet welfare explanation'");
+    expect(source).toContain(`'aria-label': __alloT('stem.pets.a11y_pet_welfare_hypothesis', 'Pet welfare hypothesis')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.pets.a11y_pet_welfare_explanation', 'Pet welfare explanation')`);
   });
 });

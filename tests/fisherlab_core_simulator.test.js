@@ -1514,6 +1514,10 @@ describe('Fisher Lab simulator safeguards', () => {
       'emitVoyageCheckpoint',
       'statusCb',
       'flAnnounce',
+      // The tool now keys its announcements, so a slice of its source needs the
+      // translator the way it already needs flAnnounce. The stub returns the English
+      // fallback, which is what __alloT does when no ctx has been seen.
+      '__alloT',
       'document',
       'window',
       source.slice(lifecycleStart, lifecycleEnd) +
@@ -1533,6 +1537,7 @@ describe('Fisher Lab simulator safeguards', () => {
       },
       (payload) => calls.statuses.push(payload.text),
       (message) => calls.announcements.push(message),
+      (key, fallback) => (fallback == null ? key : fallback),
       documentStub,
       windowStub
     );
@@ -1612,6 +1617,10 @@ describe('Fisher Lab simulator safeguards', () => {
       'flAnnounce',
       'publishHudPatch',
       'emitVoyageCheckpoint',
+      // The tool now keys its announcements, so a slice of its source needs the
+      // translator the way it already needs flAnnounce. The stub returns the English
+      // fallback, which is what __alloT does when no ctx has been seen.
+      '__alloT',
       'var contextLost = true;\n' + source.slice(pauseStart, pauseEnd) + '\nreturn setPaused;'
     )(
       boatState,
@@ -1619,7 +1628,8 @@ describe('Fisher Lab simulator safeguards', () => {
       (payload) => statuses.push(payload.text),
       (message) => announcements.push(message),
       () => { hudUpdates += 1; },
-      () => { checkpoints += 1; }
+      () => { checkpoints += 1; },
+      (key, fallback) => (fallback == null ? key : fallback)
     );
 
     expect(setPaused(false, true)).toBe(false);
@@ -1679,6 +1689,10 @@ describe('Fisher Lab simulator safeguards', () => {
       'setTimeout',
       'isCurrentSimulatorLaunch',
       'launchSim',
+      // The tool now keys its announcements, so a slice of its source needs the
+      // translator the way it already needs flAnnounce. The stub returns the English
+      // fallback, which is what __alloT does when no ctx has been seen.
+      '__alloT',
       source.slice(restartStart, restartEnd) + '\nreturn restartSimulatorGraphics;'
     )(
       true,
@@ -1698,7 +1712,8 @@ describe('Fisher Lab simulator safeguards', () => {
       simRetryTimerRef,
       (callback) => { queued = callback; return 73; },
       (generation) => generation === 12,
-      (checkpoint) => calls.launched.push(checkpoint)
+      (checkpoint) => calls.launched.push(checkpoint),
+      (key, fallback) => (fallback == null ? key : fallback)
     );
 
     restartSimulatorGraphics();
@@ -1864,7 +1879,7 @@ describe('Fisher Lab simulator safeguards', () => {
     expect(source).toContain('appendCoreCatchDecision');
     expect(source).toContain('catchDecisionHistory: boatState.catchDecisionHistory.slice()');
     expect(source).toContain('boatState.catchDecisionHistory = []');
-    expect(source).toContain("'aria-label': 'Catch field notes'");
+    expect(source).toContain(`'aria-label': __alloT('stem.fisherlab.a11y_catch_field_notes', 'Catch field notes')`);
     expect(source).toContain("maxHeight: 'calc(100% - 24px)'");
     expect(source).toContain("!activeTraffic && !hud.missionAttemptComplete && !hud.missionComplete");
     expect(source).toContain("!!shellfishDecisionResult, !!hud.missionAttemptComplete, !!hud.missionComplete");
@@ -2891,7 +2906,10 @@ describe('Fisher Lab chart room accessibility', () => {
     expect(from).toBeGreaterThan(-1);
     const el = s.slice(from, from + 2200);
     expect(el).toContain("role: 'img'");
-    expect(el).toMatch(/'aria-label': '[^']{120,}'/);   // a real description, not a stub
+    // The label is keyed now, so match the English fallback inside __alloT(...)
+    // as well as a bare literal. The length check is the point: a real
+    // description, not a stub.
+    expect(el).toMatch(/'aria-label': (?:__alloT\('[^']+', )?'[^']{120,}'/);
   });
 
   it('describes what the chart actually shows', () => {
@@ -3446,7 +3464,7 @@ describe('Fisher Lab cast setup preview', () => {
     const bars = src.slice(src.indexOf('function flSetupScoreBarsSvg'), src.indexOf('// Where a contact sits on the scope'));
     expect(preview).toContain("'aria-hidden': 'true'");
     expect(bars).toContain("'aria-hidden': 'true'");
-    expect(src).toContain("'aria-label': 'Fishing setup affinity'");
+    expect(src).toContain(`'aria-label': __alloT('stem.fisherlab.a11y_fishing_setup_affinity', 'Fishing setup affinity')`);
   });
 });
 

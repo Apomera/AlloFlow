@@ -38,7 +38,7 @@ describe('Fisher Lab integrity helpers are wired into gameplay', () => {
     expect(source).toContain("getFishingScenarioConditions(activeRegion, ev && ev.weather, ev && ev.timeOfDay)");
     expect(source).toContain("mode: voyageMode.id");
     expect(source).toContain("assistMode: !(ev && ev.mode && ev.mode !== 'guided')");
-    expect(source).toContain("'aria-label': 'Observed voyage conditions'");
+    expect(source).toContain(`'aria-label': __alloT('stem.fisherlab.a11y_observed_voyage_conditions', 'Observed voyage conditions')`);
     expect(source).not.toContain("updateFishingSession({ tide: e.target.value })");
     expect(source).not.toContain("updateFishingSession({ current: e.target.value })");
   });

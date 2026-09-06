@@ -36,6 +36,16 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) {
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloFisherCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloFisherCtx && typeof __alloFisherCtx.t === "function") ? __alloFisherCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ─── Live region (ARIA polite announcements) ───
@@ -2329,7 +2339,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     return h('svg', {
       viewBox: '0 0 240 246', role: 'img',
-      'aria-label': 'Navigation light sectors seen from above. The green starboard sidelight covers 112.5 degrees from dead ahead round to 22.5 degrees abaft the starboard beam. The red port sidelight covers the mirror-image 112.5 degrees to port. The white stern light covers the remaining 135 degrees astern. The three sectors together cover the full 360 degrees with no gap and no overlap.',
+      'aria-label': __alloT('stem.fisherlab.a11y_navigation_light_sectors_seen_from_above_the_gr', 'Navigation light sectors seen from above. The green starboard sidelight covers 112.5 degrees from dead ahead round to 22.5 degrees abaft the starboard beam. The red port sidelight covers the mirror-image 112.5 degrees to port. The white stern light covers the remaining 135 degrees astern. The three sectors together cover the full 360 degrees with no gap and no overlap.'),
       style: { width: '100%', maxWidth: 260, height: 'auto', display: 'block' }
     }, [
       h('circle', { key: 'c', cx: cx, cy: cy, r: r, fill: 'rgba(2,6,23,0.6)', stroke: 'rgba(125,211,252,0.25)', strokeWidth: 1 }),
@@ -2416,7 +2426,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     kids.push(h('text', { key: 'cav', x: X0, y: 226, fontSize: 10, fontStyle: 'italic', fill: '#94a3b8' }, 'Assumes a six-hour half-cycle. Maine\'s is nearer 6 h 12 m, and shallow or estuarine harbours depart from it further.'));
     return h('svg', {
       viewBox: '0 0 640 240', role: 'img',
-      'aria-label': 'Rule of twelfths. Between high and low water the level changes by one twelfth of the range in the first hour, two twelfths in the second, three in the third, three in the fourth, two in the fifth and one in the sixth. Half the range has gone by mid-tide. Plotted against the smooth semidiurnal curve it approximates, the two never differ by more than about one sixtieth of the range.',
+      'aria-label': __alloT('stem.fisherlab.a11y_rule_of_twelfths_between_high_and_low_water_the', 'Rule of twelfths. Between high and low water the level changes by one twelfth of the range in the first hour, two twelfths in the second, three in the third, three in the fourth, two in the fifth and one in the sixth. Half the range has gone by mid-tide. Plotted against the smooth semidiurnal curve it approximates, the two never differ by more than about one sixtieth of the range.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -2447,7 +2457,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     return h('svg', {
       viewBox: '0 0 400 200', role: 'img',
-      'aria-label': 'Spring and neap tides. At new and full moon the Sun and Moon pull in line and their tidal bulges add, giving the largest range, called a spring tide. At the quarter moons they pull at right angles and partly cancel, giving the smallest range, a neap tide.',
+      'aria-label': __alloT('stem.fisherlab.a11y_spring_and_neap_tides_at_new_and_full_moon_the', 'Spring and neap tides. At new and full moon the Sun and Moon pull in line and their tidal bulges add, giving the largest range, called a spring tide. At the quarter moons they pull at right angles and partly cancel, giving the smallest range, a neap tide.'),
       style: { width: '100%', maxWidth: 520, height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)', background: 'rgba(12,42,66,0.4)' }
     }, [
       panel(4, 'SPRING — new / full moon', 0, ['Sun and Moon pull in line:', 'the bulges add. Biggest range.'], '#7dd3fc'),
@@ -2499,7 +2509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     kids.push(h('text', { key: 'note', x: X0, y: 14, fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' }, 'Depth axis is square-root compressed — ticks show true depth'));
     return h('svg', {
       viewBox: '0 0 640 420', role: 'img',
-      'aria-label': 'Water column of the Gulf of Maine, from the bright surface layer down to the continental slope and the seabed, shaded darker with depth. The depth axis is square-root compressed so the thin surface bands stay readable; tick marks give true depths of 0, 5, 30, 100, 200, 300 and 400 metres. Each band is labelled with its name, its light level and its depth range.',
+      'aria-label': __alloT('stem.fisherlab.a11y_water_column_of_the_gulf_of_maine_from_the_brig', 'Water column of the Gulf of Maine, from the bright surface layer down to the continental slope and the seabed, shaded darker with depth. The depth axis is square-root compressed so the thin surface bands stay readable; tick marks give true depths of 0, 5, 30, 100, 200, 300 and 400 metres. Each band is labelled with its name, its light level and its depth range.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -2545,7 +2555,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       'GEOGRAPHIC range — how far the curve lets you see it — not the light\'s luminous range, which is how far it is bright enough to be seen.'));
     return h('svg', {
       viewBox: '0 0 640 212', role: 'img',
-      'aria-label': 'Distance to the horizon. An observer with an eye height of ten feet sees the horizon 3.7 nautical miles away, since 1.17 times the square root of 10 is 3.7. A hundred-foot lighthouse has its own horizon 11.7 miles away. Because both see the same point on the curve, the light can first be raised at about 15.4 miles. The earth curvature in the drawing is greatly exaggerated.',
+      'aria-label': __alloT('stem.fisherlab.a11y_distance_to_the_horizon_an_observer_with_an_eye', 'Distance to the horizon. An observer with an eye height of ten feet sees the horizon 3.7 nautical miles away, since 1.17 times the square root of 10 is 3.7. A hundred-foot lighthouse has its own horizon 11.7 miles away. Because both see the same point on the curve, the light can first be raised at about 15.4 miles. The earth curvature in the drawing is greatly exaggerated.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -2580,7 +2590,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     kids.push(h('text', { key: 'w2', x: 320, y: 158, textAnchor: 'middle', fontSize: 10, fill: '#94a3b8' }, 'Maine\'s variation is westerly, so true = magnetic − 16°.'));
     return h('svg', {
       viewBox: '0 0 640 168', role: 'img',
-      'aria-label': 'The compass correction chain, remembered as Can Dead Men Vote Twice: Compass, Deviation, Magnetic, Variation, True. Deviation is your own vessel\'s error and comes off its deviation card; variation is where magnetic north actually lies, about 16 degrees west in Maine. Working left to right corrects a compass reading to true; working right to left converts a charted true course into one you can steer.',
+      'aria-label': __alloT('stem.fisherlab.a11y_the_compass_correction_chain_remembered_as_can', 'The compass correction chain, remembered as Can Dead Men Vote Twice: Compass, Deviation, Magnetic, Variation, True. Deviation is your own vessel\'s error and comes off its deviation card; variation is where magnetic north actually lies, about 16 degrees west in Maine. Working left to right corrects a compass reading to true; working right to left converts a charted true course into one you can steer.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -2612,7 +2622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     }
     return h('svg', {
       viewBox: '0 0 540 196', role: 'img',
-      'aria-label': 'Anchor scope. In thirty feet of water measured from the bow, a three to one scope of ninety feet pulls on the anchor at about nineteen degrees above the seabed, a five to one scope of a hundred and fifty feet at about twelve degrees, and a seven to one scope of two hundred and ten feet at about eight degrees. The flatter the pull, the better the anchor holds; a steep pull lifts the shank and the anchor breaks out.',
+      'aria-label': __alloT('stem.fisherlab.a11y_anchor_scope_in_thirty_feet_of_water_measured_f', 'Anchor scope. In thirty feet of water measured from the bow, a three to one scope of ninety feet pulls on the anchor at about nineteen degrees above the seabed, a five to one scope of a hundred and fifty feet at about twelve degrees, and a seven to one scope of two hundred and ten feet at about eight degrees. The flatter the pull, the better the anchor holds; a steep pull lifts the shank and the anchor breaks out.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)', background: 'rgba(12,42,66,0.4)' }
     }, [
       panel(2, 3, '#f0584a', 'Steep pull — lifts the shank'),
@@ -3051,7 +3061,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       getCoreZoneTrapSummary(zones)));
     return h('svg', {
       viewBox: '0 0 640 172', role: 'img',
-      'aria-label': 'The seven Maine lobster management zones in order along the coast, from Zone A at the north-eastern end on the Canadian border through to Zone G at the south-western end by New Hampshire. Each is labelled with its letter and its leading port. The drawing is schematic: the order is exact, the boundaries and widths are not.',
+      'aria-label': __alloT('stem.fisherlab.a11y_the_seven_maine_lobster_management_zones_in_ord', 'The seven Maine lobster management zones in order along the coast, from Zone A at the north-eastern end on the Canadian border through to Zone G at the south-western end by New Hampshire. Each is labelled with its letter and its leading port. The drawing is schematic: the order is exact, the boundaries and widths are not.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -3316,7 +3326,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
     return h('svg', {
       viewBox: '0 0 760 336', role: 'img',
-      'aria-label': 'Where each kind of gear works, from the beach out to deeper water. Wading the flats fishes ankle to waist depth on foot. A lobster trap sits on the seabed with a line up to a coloured surface buoy whose colours identify its licence holder. Trolling drags a lure through the top few metres behind a moving boat. Jigging works straight down from a drifting boat, from the seabed up into mid-water. A gillnet stands as a wall of mesh held up by floats on its headline and down by lead on its footrope, fishing the whole height of the wall. A longline lies along the bottom with short baited droppers, marked at the end by a buoy and flag.',
+      'aria-label': __alloT('stem.fisherlab.a11y_where_each_kind_of_gear_works_from_the_beach_ou', 'Where each kind of gear works, from the beach out to deeper water. Wading the flats fishes ankle to waist depth on foot. A lobster trap sits on the seabed with a line up to a coloured surface buoy whose colours identify its licence holder. Trolling drags a lure through the top few metres behind a moving boat. Jigging works straight down from a drifting boat, from the seabed up into mid-water. A gillnet stands as a wall of mesh held up by floats on its headline and down by lead on its footrope, fishing the whole height of the wall. A longline lies along the bottom with short baited droppers, marked at the end by a buoy and flag.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, k);
   }
@@ -3478,7 +3488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       'Schematic. The PARTS are named the same on every fish; how many dorsal fins there are, and whether a barbel is present at all, is what varies by family.'));
     return h('svg', {
       viewBox: '0 0 620 232', role: 'img',
-      'aria-label': 'A labelled fish, naming the parts the identification notes use: first, second and third dorsal fins along the back; the lateral line running the length of the flank; the gill cover behind the head; a barbel hanging under the chin; the pectoral fin behind the gill cover; the pelvic fin beneath it; the anal fin under the rear of the body; and the caudal or tail fin. The drawing is schematic — the parts are named the same on every fish, but the number of dorsal fins and the presence of a barbel vary by family.',
+      'aria-label': __alloT('stem.fisherlab.a11y_a_labelled_fish_naming_the_parts_the_identifica', 'A labelled fish, naming the parts the identification notes use: first, second and third dorsal fins along the back; the lateral line running the length of the flank; the gill cover behind the head; a barbel hanging under the chin; the pectoral fin behind the gill cover; the pelvic fin beneath it; the anal fin under the rear of the body; and the caudal or tail fin. The drawing is schematic — the parts are named the same on every fish, but the number of dorsal fins and the presence of a barbel vary by family.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, k);
   }
@@ -3549,7 +3559,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     k.push(h('text', { key: 'why', x: 322, y: 374, fontSize: 9.5, fontStyle: 'italic', fill: '#94a3b8' }, 'It matters: cod is severely depleted here and haddock has recovered.'));
     return h('svg', {
       viewBox: '0 0 640 386', role: 'img',
-      'aria-label': 'Atlantic cod compared with haddock. Both are cod-family fish carrying three dorsal fins and a barbel under the chin, small on haddock, so neither of those separates them. Cod has a pale lateral line that arches upward over the pectoral fin, a rounded first dorsal fin, and no dark mark on the shoulder. Haddock has a dark lateral line running straighter along the flank, a tall pointed first dorsal fin, and a black thumbprint mark above the pectoral fin. Telling them apart matters because cod is severely depleted in the Gulf of Maine while haddock has recovered.',
+      'aria-label': __alloT('stem.fisherlab.a11y_atlantic_cod_compared_with_haddock_both_are_cod', 'Atlantic cod compared with haddock. Both are cod-family fish carrying three dorsal fins and a barbel under the chin, small on haddock, so neither of those separates them. Cod has a pale lateral line that arches upward over the pectoral fin, a rounded first dorsal fin, and no dark mark on the shoulder. Haddock has a dark lateral line running straighter along the flank, a tall pointed first dorsal fin, and a black thumbprint mark above the pectoral fin. Telling them apart matters because cod is severely depleted in the Gulf of Maine while haddock has recovered.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, k);
   }
@@ -5681,7 +5691,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     kids.push(h('text', { key: 'rev', x: 548, y: 22, textAnchor: 'end', fontSize: 10, fontStyle: 'italic', fill: '#cbd5e1' }, 'Outbound: the whole picture reverses'));
     return h('svg', {
       viewBox: '0 0 640 250', role: 'img',
-      'aria-label': 'Channel plan for red right returning. A vessel inbound from the sea toward the harbor keeps the red conical nun buoys, numbered even, on her starboard side, and the green cylindrical can buoys, numbered odd, on her port side. Outbound, the sides reverse.',
+      'aria-label': __alloT('stem.fisherlab.a11y_channel_plan_for_red_right_returning_a_vessel_i', 'Channel plan for red right returning. A vessel inbound from the sea toward the harbor keeps the red conical nun buoys, numbered even, on her starboard side, and the green cylindrical can buoys, numbered odd, on her port side. Outbound, the sides reverse.'),
       style: { width: '100%', height: 'auto', display: 'block', borderRadius: 8, border: '1px solid rgba(56,189,248,0.25)' }
     }, kids);
   }
@@ -16100,12 +16110,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (haulActive || !boatState.closestTrapId) return;
       if (Math.abs(boatState.speed) > 1) {
         statusCb({ type: 'guidance', text: 'Slow below 1 knot before hauling so the line stays under control.' });
-        flAnnounce('Slow below one knot before hauling the trap.');
+        flAnnounce(__alloT('stem.fisherlab.sr_slow_below_one_knot_before_hauling_the_trap', 'Slow below one knot before hauling the trap.'));
         return;
       }
       var buoy = buoys.find(function(b) { return b.userData.id === boatState.closestTrapId; });
       if (!buoy || buoy.userData.hauled) {
-        flAnnounce('This trap has already been hauled.');
+        flAnnounce(__alloT('stem.fisherlab.sr_this_trap_has_already_been_hauled', 'This trap has already been hauled.'));
         return;
       }
       haulActive = true;
@@ -16727,7 +16737,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (contextLost && !paused) {
         if (announce) {
           statusCb({ type: 'system', text: 'Graphics are still recovering - simulation remains paused' });
-          flAnnounce('Graphics are still recovering. The harbor simulation remains paused.');
+          flAnnounce(__alloT('stem.fisherlab.sr_graphics_are_still_recovering_the_harbor_simulati', 'Graphics are still recovering. The harbor simulation remains paused.'));
         }
         return false;
       }
@@ -16784,7 +16794,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       pausedForInactivity = false;
       inactivityPauseReason = null;
       statusCb({ type: 'system', text: returnText });
-      flAnnounce('Harbor simulation remains paused. Press P or use Resume when ready.');
+      flAnnounce(__alloT('stem.fisherlab.sr_harbor_simulation_remains_paused_press_p_or_use_r', 'Harbor simulation remains paused. Press P or use Resume when ready.'));
       return true;
     }
     function onVisibilityChange() {
@@ -16805,7 +16815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         return;
       }
       if (boatState.fogSignalMade) {
-        flAnnounce('Prolonged fog signal already logged.');
+        flAnnounce(__alloT('stem.fisherlab.sr_prolonged_fog_signal_already_logged', 'Prolonged fog signal already logged.'));
         return;
       }
       boatState.fogSignalMade = true;
@@ -16841,7 +16851,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }
       }
       statusCb({ type: 'signal', text: 'Rule 35: one prolonged fog-horn blast sounded (4 seconds)' });
-      flAnnounce('Prolonged fog signal made. Visual confirmation: Rule 35 signal logged.');
+      flAnnounce(__alloT('stem.fisherlab.sr_prolonged_fog_signal_made_visual_confirmation_rul', 'Prolonged fog signal made. Visual confirmation: Rule 35 signal logged.'));
       publishHudPatch({ trafficFogSignalMade: true });
     }
     function reportRadarCall(call) {
@@ -17054,7 +17064,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (!boatState.fuelDepletedWarned) {
           boatState.fuelDepletedWarned = true;
           statusCb({ type: 'violation', text: 'Fuel exhausted — propulsion offline. Restart the mission and plan a reserve.' });
-          flAnnounce('Fuel exhausted. Propulsion offline.');
+          flAnnounce(__alloT('stem.fisherlab.sr_fuel_exhausted_propulsion_offline', 'Fuel exhausted. Propulsion offline.'));
         }
       }
 
@@ -17072,7 +17082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.unsafeSpeedWarned = true;
           boatState.stewardshipScore = Math.max(0, boatState.stewardshipScore - 10);
           statusCb({ type: 'violation', text: 'Unsafe speed for visibility and sea state: -10 points. Reduce below ' + conditionSpeedLimit.toFixed(1) + ' kt.' });
-          flAnnounce('Unsafe speed for current conditions. Reduce speed.');
+          flAnnounce(__alloT('stem.fisherlab.sr_unsafe_speed_for_current_conditions_reduce_speed', 'Unsafe speed for current conditions. Reduce speed.'));
         }
       } else {
         boatState.unsafeSpeedSeconds = Math.max(0, boatState.unsafeSpeedSeconds - dt * 2);
@@ -17344,12 +17354,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (maneuverWindowState.remaining <= 10 && !boatState.trafficWindowTenWarned) {
           boatState.trafficWindowTenWarned = true;
           statusCb({ type: 'guidance', text: 'Maneuver window: 10 seconds remain before review.' });
-          flAnnounce('Ten seconds remain in the maneuver window.');
+          flAnnounce(__alloT('stem.fisherlab.sr_ten_seconds_remain_in_the_maneuver_window', 'Ten seconds remain in the maneuver window.'));
         }
         if (maneuverWindowState.remaining <= 5 && !boatState.trafficWindowFiveWarned) {
           boatState.trafficWindowFiveWarned = true;
           statusCb({ type: 'guidance', text: 'Maneuver window: 5 seconds remain before review.' });
-          flAnnounce('Five seconds remain. Complete the required maneuver actions.');
+          flAnnounce(__alloT('stem.fisherlab.sr_five_seconds_remain_complete_the_required_maneuve', 'Five seconds remain. Complete the required maneuver actions.'));
         }
         boatState.trafficClosestRange = Math.min(boatState.trafficClosestRange, trafficRange);
         if (trafficManeuver.complete) {
@@ -17372,7 +17382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           boatState.trafficGradeLabel = reviewGrade.label;
           boatState.trafficGradeBonus = 0;
           statusCb({ type: 'guidance', text: 'Maneuver window ended · CPA ' + boatState.trafficClosestRange.toFixed(1) + '. Review: ' + encounterProfile.maneuverInstruction });
-          flAnnounce('Maneuver reviewed. Continue the voyage.');
+          flAnnounce(__alloT('stem.fisherlab.sr_maneuver_reviewed_continue_the_voyage', 'Maneuver reviewed. Continue the voyage.'));
           emitVoyageCheckpoint('traffic-review', true);
         }
       }
@@ -17389,7 +17399,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         if (dRock < 6) {
           boatState.reachedHalfwayRock = true;
           boatState.stewardshipScore += Math.round(30 * voyageMode.scoreMultiplier);
-          flAnnounce('Reached the fishing grounds. Drop a jig with F.');
+          flAnnounce(__alloT('stem.fisherlab.sr_reached_the_fishing_grounds_drop_a_jig_with_f', 'Reached the fishing grounds. Drop a jig with F.'));
           statusCb({ type: 'milestone', text: 'Reached ' + missionProfile.destination + ' — press F to fish' });
           emitVoyageCheckpoint('fishing-grounds', true);
         }
@@ -17428,7 +17438,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         keys['f'] = false;
         if (Math.abs(boatState.speed) > 1) {
           statusCb({ type: 'guidance', text: 'Slow below 1 knot before setting up a cast.' });
-          flAnnounce('Slow below one knot before fishing.');
+          flAnnounce(__alloT('stem.fisherlab.sr_slow_below_one_knot_before_fishing', 'Slow below one knot before fishing.'));
         } else {
           boatState.fishingAttempts += 1;
           pendingInteraction = 'fishing';
@@ -17443,7 +17453,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             attempt: boatState.fishingAttempts,
             text: 'Rod ready — choose water, depth, tackle, and presentation before casting'
           });
-          flAnnounce('Fishing setup open. Choose a spot, tackle, depth, and presentation before casting.');
+          flAnnounce(__alloT('stem.fisherlab.sr_fishing_setup_open_choose_a_spot_tackle_depth_and', 'Fishing setup open. Choose a spot, tackle, depth, and presentation before casting.'));
         }
       }
 
@@ -17820,7 +17830,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     desc: 'Pilot a Maine skiff. Learn IALA-B buoyage, COLREGS, charts, tides, fish identification, and responsible harvest decisions in an immersive 3D sim.',
     tags: ['fishing', 'boating', 'navigation', 'maine', '3d', 'sim'],
     ready: true,
-    render: function(ctx) { return _renderFisherLab(ctx); }
+    render: function(ctx) {
+      __alloFisherCtx = ctx; return _renderFisherLab(ctx); }
   });
 
   function _renderFisherLab(ctx) {
@@ -18205,7 +18216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var rp = req.call(el);
         if (rp && rp.catch) rp.catch(function() { useTheaterFallback(true); });
       } catch (_) { useTheaterFallback(true); }
-      flAnnounce('Simulator expanded to full screen. Press the same button to return.');
+      flAnnounce(__alloT('stem.fisherlab.sr_simulator_expanded_to_full_screen_press_the_same', 'Simulator expanded to full screen. Press the same button to return.'));
     }
 
     useEffect(function() {
@@ -18318,7 +18329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         castMeter: 50,
         message: 'Move the cast marker into the 75–95 target zone, then release the cast.'
       });
-      flAnnounce('Cast meter ready. Aim for the target zone from 75 to 95 percent.');
+      flAnnounce(__alloT('stem.fisherlab.sr_cast_meter_ready_aim_for_the_target_zone_from_75', 'Cast meter ready. Aim for the target zone from 75 to 95 percent.'));
     }
     function releaseFishingCast() {
       if (!activeFishing || activeFishing.phase !== 'cast') return;
@@ -18327,13 +18338,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var castResult = evaluateCast({ accuracy: accuracy, distanceRatio: meter / 100, assistMode: activeFishing.assistMode });
       if (!castResult.success) {
         updateFishingSession({ phase: 'lost', lossReason: 'off-target', castResult: castResult, message: castResult.feedback });
-        flAnnounce('Cast missed the selected water. Adjust and try again.');
+        flAnnounce(__alloT('stem.fisherlab.sr_cast_missed_the_selected_water_adjust_and_try_aga', 'Cast missed the selected water. Adjust and try again.'));
         return;
       }
       var target = activeFishing.encounter.setupScore.total >= 75 ? 2 : activeFishing.encounter.setupScore.total >= 50 ? 3 : 4;
       var castTransition = advanceFishingPhase(activeFishing.encounter, { type: 'cast', result: castResult });
       updateFishingSession({ phase: castTransition.phase, encounter: castTransition, castResult: castResult, presentationCount: 0, presentationTarget: target, message: 'Cast placed. Work the rig with the selected ' + activeFishing.technique.replace(/-/g, ' ') + ' presentation.' });
-      flAnnounce('Cast placed. Work the presentation and watch for a bite.');
+      flAnnounce(__alloT('stem.fisherlab.sr_cast_placed_work_the_presentation_and_watch_for_a', 'Cast placed. Work the presentation and watch for a bite.'));
     }
     function workFishingPresentation() {
       if (!activeFishing || activeFishing.phase !== 'presentation') return;
@@ -18345,7 +18356,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var biteRoll = hashCoreFishingSeed(activeFishing.encounter.seed + ':bite') / 4294967296;
       if (biteRoll > activeFishing.encounter.biteChance) {
         updateFishingSession({ phase: 'no-bite', presentationCount: count, message: 'No bite on this drift. Use the evidence to change spot, depth, tackle, or presentation.' });
-        flAnnounce('No bite. Review the setup evidence and adapt before the next cast.');
+        flAnnounce(__alloT('stem.fisherlab.sr_no_bite_review_the_setup_evidence_and_adapt_befor', 'No bite. Review the setup evidence and adapt before the next cast.'));
         return;
       }
       var biteTransition = advanceFishingPhase(activeFishing.encounter, { type: 'bite' });
@@ -18358,11 +18369,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var hookTransition = advanceFishingPhase(activeFishing.encounter, { type: 'hookset', result: hookset });
       if (!hookset.success) {
         updateFishingSession({ phase: hookTransition.phase, encounter: hookTransition, lossReason: 'missed-bite', hookset: hookset, hooksetMs: reactionMs, message: hookset.feedback });
-        flAnnounce('Missed bite. Reset and watch for the next line-load cue.');
+        flAnnounce(__alloT('stem.fisherlab.sr_missed_bite_reset_and_watch_for_the_next_line_loa', 'Missed bite. Reset and watch for the next line-load cue.'));
         return;
       }
       updateFishingSession({ phase: hookTransition.phase, encounter: hookTransition, hookset: hookset, hooksetMs: reactionMs, tension: 0.45, stamina: 100, tensionSamples: [0.45], fightTurns: 0, message: 'Fish on. Reel in the working band; give line before tension becomes high.' });
-      flAnnounce('Fish hooked. Balance reeling and giving line to control tension.');
+      flAnnounce(__alloT('stem.fisherlab.sr_fish_hooked_balance_reeling_and_giving_line_to_co', 'Fish hooked. Balance reeling and giving line to control tension.'));
     }
     function getFishingEncounterLength(species, seed) {
       var unit = hashCoreFishingSeed(seed + ':length') / 4294967296;
@@ -18402,13 +18413,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (tension >= tensionProfile.hardHigh) {
         var breakTransition = advanceFishingPhase(activeFishing.encounter, { type: 'fight', result: { success: false } });
         updateFishingSession({ phase: breakTransition.phase, encounter: breakTransition, lossReason: 'line-break', tension: tension, stamina: stamina, tensionSamples: samples, fightTurns: turn, message: 'The line broke under critical tension. Give line before the next surge.' });
-        flAnnounce('Line break. Give line sooner when tension rises.');
+        flAnnounce(__alloT('stem.fisherlab.sr_line_break_give_line_sooner_when_tension_rises', 'Line break. Give line sooner when tension rises.'));
         return;
       }
       if (tension <= tensionProfile.hardLow) {
         var slackTransition = advanceFishingPhase(activeFishing.encounter, { type: 'fight', result: { success: false } });
         updateFishingSession({ phase: slackTransition.phase, encounter: slackTransition, lossReason: 'slack-line', tension: tension, stamina: stamina, tensionSamples: samples, fightTurns: turn, message: 'Slack line let the hook work free. Reel before tension falls out of the working band.' });
-        flAnnounce('Fish lost to slack line. Reel sooner when tension falls.');
+        flAnnounce(__alloT('stem.fisherlab.sr_fish_lost_to_slack_line_reel_sooner_when_tension', 'Fish lost to slack line. Reel sooner when tension falls.'));
         return;
       }
       if (stamina <= 0) {
@@ -18416,7 +18427,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var fightTransition = advanceFishingPhase(activeFishing.encounter, { type: 'fight', result: fightResult });
         if (!fightResult.success) {
           updateFishingSession({ phase: fightTransition.phase, encounter: fightTransition, lossReason: fightResult.outcome, fightResult: fightResult, tension: tension, stamina: stamina, tensionSamples: samples, fightTurns: turn, message: fightResult.feedback });
-          flAnnounce('Fish lost. Review the tension history and try again.');
+          flAnnounce(__alloT('stem.fisherlab.sr_fish_lost_review_the_tension_history_and_try_agai', 'Fish lost. Review the tension history and try again.'));
           return;
         }
         var species = getSpeciesForRegion(activeFishing.region).find(function(item) { return item.id === activeFishing.encounter.speciesId; });
@@ -18444,7 +18455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           }
         };
         updateFishingSession({ phase: fightTransition.phase, encounter: fightTransition, tension: tension, stamina: 0, tensionSamples: samples, fightTurns: turn, message: 'Fish alongside. Netting and moving directly to inspection.' });
-        flAnnounce('Fish landed. Moving to species identification and measurement.');
+        flAnnounce(__alloT('stem.fisherlab.sr_fish_landed_moving_to_species_identification_and', 'Fish landed. Moving to species identification and measurement.'));
         setTimeout(function() {
           if (harborRef.current && harborRef.current.landFish) harborRef.current.landFish(landedEncounter);
           setActiveFishing(null);
@@ -18553,7 +18564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       if (updateUi !== false) {
         setSavedVoyageCheckpoint(persistedCheckpoint);
         setVoyageSaveStatus({ id: persistedCheckpoint ? 'saved' : 'idle', savedAt: persistedCheckpoint ? persistedCheckpoint.savedAt : 0 });
-        if (storageFailureActiveRef.current) flAnnounce('Voyage autosave restored.');
+        if (storageFailureActiveRef.current) flAnnounce(__alloT('stem.fisherlab.sr_voyage_autosave_restored', 'Voyage autosave restored.'));
       }
       storageFailureActiveRef.current = false;
       return true;
@@ -18570,11 +18581,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function retryVoyagePersistence() {
       var pending = pendingVoyageWriteRef.current;
       if (!pending || !pending.state) {
-        flAnnounce('No pending voyage save needs retrying.');
+        flAnnounce(__alloT('stem.fisherlab.sr_no_pending_voyage_save_needs_retrying', 'No pending voyage save needs retrying.'));
         return;
       }
       if (!commitVoyageState(pending.state, true)) {
-        flAnnounce('Autosave retry failed. Keep this tab open and check browser storage settings.');
+        flAnnounce(__alloT('stem.fisherlab.sr_autosave_retry_failed_keep_this_tab_open_and_chec', 'Autosave retry failed. Keep this tab open and check browser storage settings.'));
       }
     }
     function getLatestVoyageRescueCheckpoint(includeLive) {
@@ -18621,7 +18632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           try { if (urlApi.revokeObjectURL) urlApi.revokeObjectURL(cleanupUrl); } catch (_) {}
         }, 0);
         setVoyageRescueStatus({ id: 'downloaded', message: 'Voyage rescue file downloaded. Keep it somewhere you can find later.' });
-        flAnnounce('Voyage rescue file downloaded.');
+        flAnnounce(__alloT('stem.fisherlab.sr_voyage_rescue_file_downloaded', 'Voyage rescue file downloaded.'));
         return true;
       } catch (_) {
         try { if (anchor && anchor.parentNode) anchor.parentNode.removeChild(anchor); } catch (_) {}
@@ -18818,13 +18829,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         }, function() {
           if (!isCurrentSimulatorLaunch(launchGeneration)) return;
           setSim({ active: false, threeLoaded: false, threeError: true, loading: false });
-          flAnnounce('3D engine could not load. Your saved voyage remains available. Use Chart Mode as a fallback.');
+          flAnnounce(__alloT('stem.fisherlab.sr_3d_engine_could_not_load_your_saved_voyage_remain', '3D engine could not load. Your saved voyage remains available. Use Chart Mode as a fallback.'));
         });
       }
     }
     function startSim() {
       if (savedVoyageCheckpoint && !clearSavedVoyageCheckpoint('start-new')) {
-        flAnnounce('A new voyage was not started because the saved voyage could not be cleared. Retry autosave or resume the saved voyage.');
+        flAnnounce(__alloT('stem.fisherlab.sr_a_new_voyage_was_not_started_because_the_saved_vo', 'A new voyage was not started because the saved voyage could not be cleared. Retry autosave or resume the saved voyage.'));
         return;
       }
       pendingCheckpointRef.current = null;
@@ -18833,21 +18844,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     function resumeSavedVoyage() {
       var checkpoint = normalizeCoreVoyageCheckpoint(savedVoyageCheckpoint);
       if (!checkpoint) {
-        if (clearSavedVoyageCheckpoint('invalid-checkpoint')) flAnnounce('The invalid saved voyage was discarded.');
-        else flAnnounce('The invalid saved voyage could not be cleared because browser storage is unavailable.');
+        if (clearSavedVoyageCheckpoint('invalid-checkpoint')) flAnnounce(__alloT('stem.fisherlab.sr_the_invalid_saved_voyage_was_discarded', 'The invalid saved voyage was discarded.'));
+        else flAnnounce(__alloT('stem.fisherlab.sr_the_invalid_saved_voyage_could_not_be_cleared_bec', 'The invalid saved voyage could not be cleared because browser storage is unavailable.'));
         return;
       }
       launchSim(checkpoint);
     }
     function discardSavedVoyage() {
       if (!clearSavedVoyageCheckpoint('discard')) {
-        flAnnounce('Saved voyage could not be discarded because browser storage is unavailable. Retry autosave and try again.');
+        flAnnounce(__alloT('stem.fisherlab.sr_saved_voyage_could_not_be_discarded_because_brows', 'Saved voyage could not be discarded because browser storage is unavailable. Retry autosave and try again.'));
         return;
       }
       preferredVoyageRescueCheckpointRef.current = null;
       setVoyageRescuePreview(null);
       setVoyageRescueStatus({ id: 'idle', message: '' });
-      flAnnounce('Saved voyage discarded. Start a new voyage when ready.');
+      flAnnounce(__alloT('stem.fisherlab.sr_saved_voyage_discarded_start_a_new_voyage_when_re', 'Saved voyage discarded. Start a new voyage when ready.'));
       setTimeout(function() {
         var activePanel = document.getElementById('fl-active-panel');
         focusCoreElement(activePanel);
@@ -18864,7 +18875,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         normalizeCoreVoyageCheckpoint(confirmedVoyageCheckpointRef.current) ||
         normalizeCoreVoyageCheckpoint(savedVoyageCheckpoint);
       if (!recovery) {
-        flAnnounce('No safe graphics recovery checkpoint is available. Leave the simulator and start a new voyage.');
+        flAnnounce(__alloT('stem.fisherlab.sr_no_safe_graphics_recovery_checkpoint_is_available', 'No safe graphics recovery checkpoint is available. Leave the simulator and start a new voyage.'));
         return;
       }
       var retryGeneration = invalidateSimulatorLaunch();
@@ -18877,7 +18888,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setActiveLobster(null);
       setActiveTraffic(null);
       setSim({ active: false, threeLoaded: false, threeError: false, loading: true, restarting: true });
-      flAnnounce('Restarting graphics from the latest safe voyage checkpoint.');
+      flAnnounce(__alloT('stem.fisherlab.sr_restarting_graphics_from_the_latest_safe_voyage_c', 'Restarting graphics from the latest safe voyage checkpoint.'));
       simRetryTimerRef.current = setTimeout(function() {
         simRetryTimerRef.current = null;
         if (!isCurrentSimulatorLaunch(retryGeneration)) return;
@@ -18899,7 +18910,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       setTimeout(function() {
         if (!isCurrentSimulatorLaunch(stopGeneration)) return;
         focusCoreElement(simLaunchRef);
-        flAnnounce('Simulator closed. Voyage briefing focused.');
+        flAnnounce(__alloT('stem.fisherlab.sr_simulator_closed_voyage_briefing_focused', 'Simulator closed. Voyage briefing focused.'));
       }, 0);
     }
 
@@ -18952,7 +18963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             console.error('[FisherLab] Error starting 3D simulation:', err);
             updateGraphicsRecovery(false);
             setSim({ active: false, threeLoaded: !!window.THREE, threeError: true, loading: false });
-            flAnnounce('3D engine failed to initialize. Use Chart Mode (2D fallback) instead.');
+            flAnnounce(__alloT('stem.fisherlab.sr_3d_engine_failed_to_initialize_use_chart_mode_2d', '3D engine failed to initialize. Use Chart Mode (2D fallback) instead.'));
           }
         }
       }
@@ -19064,7 +19075,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', null,
           h('strong', { id: 'fl-voyage-files-title', style: { display: 'block', color: '#bae6fd', fontSize: 12.5 } }, 'Voyage rescue file'),
           h('span', { style: { display: 'block', marginTop: 3, color: '#cbd5e1', fontSize: 10.5, lineHeight: 1.45 } }, 'Keep a portable backup or move a safe paused checkpoint between devices. The JSON includes voyage position, decisions, and scores; it does not include your field journal or profile.')),
-        h('div', { role: 'group', 'aria-label': 'Voyage rescue file actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+        h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_voyage_rescue_file_actions', 'Voyage rescue file actions'), style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
           h('button', {
             type: 'button',
             className: 'fl-btn',
@@ -19094,7 +19105,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             type: 'file',
             accept: '.json,application/json',
             tabIndex: -1,
-            'aria-label': 'Choose a Fisher Lab voyage rescue JSON file',
+            'aria-label': __alloT('stem.fisherlab.a11y_choose_a_fisher_lab_voyage_rescue_json_file', 'Choose a Fisher Lab voyage rescue JSON file'),
             onChange: handleVoyageRescueFile,
             style: { position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }
           })),
@@ -19109,7 +19120,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           comparison.current ? h('span', { style: { color: '#dbeafe', fontSize: 10.5, lineHeight: 1.45 } }, 'Current local: ' + comparison.current.regionLabel + ' - ' + comparison.current.modeLabel + ' - ' + comparison.current.completedObjectives + '/' + comparison.current.totalObjectives + ' outbound objectives - ' + comparison.current.fuel + '% fuel' + (localSavedLabel ? ' - saved ' + localSavedLabel : '')) : null,
           h('span', { style: { color: comparison.relation === 'older' || comparison.relation === 'same-time' ? '#fde68a' : '#a7f3d0', fontSize: 10.5, fontWeight: 800, lineHeight: 1.45 } }, comparisonMessage),
           h('span', { style: { color: '#e2e8f0', fontSize: 10, lineHeight: 1.45 } }, 'No saved progress changes until you confirm. Download the current checkpoint first if you want an extra backup.'),
-          h('div', { role: 'group', 'aria-label': 'Confirm voyage rescue', style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_confirm_voyage_rescue', 'Confirm voyage rescue'), style: { display: 'flex', gap: 7, flexWrap: 'wrap' } },
             h('button', { type: 'button', ref: voyageRescueConfirmRef, className: 'fl-btn', onClick: confirmVoyageRescueRestore,
               style: { minHeight: 40, padding: '8px 12px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Use rescued voyage'),
             h('button', { type: 'button', className: 'fl-btn', onClick: cancelVoyageRescuePreview,
@@ -19139,7 +19150,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('strong', { id: 'fl-voyage-storage-title', style: { display: 'block', color: '#fecaca', fontSize: 13 } }, 'Voyage autosave unavailable'),
           h('span', { style: { display: 'block', marginTop: 3, fontSize: 10.5, lineHeight: 1.45 } },
             hasConfirmedCheckpoint ? 'Your last confirmed checkpoint remains available, but newer progress is not saved. Retry before leaving, or download a rescue file.' : (hasRescueCheckpoint ? 'Browser recovery is not confirmed. Keep this tab open, download a rescue file, and retry before leaving.' : 'No recovery checkpoint is confirmed. Keep this tab open and retry before refreshing or leaving.'))),
-        h('div', { role: 'group', 'aria-label': 'Voyage storage recovery actions', style: { display: 'flex', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+        h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_voyage_storage_recovery_actions', 'Voyage storage recovery actions'), style: { display: 'flex', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
           h('button', {
             type: 'button',
             className: 'fl-btn',
@@ -19170,7 +19181,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('span', { style: { display: 'block', marginTop: 3, color: '#dbeafe', fontSize: 11, lineHeight: 1.45 } },
             summary.regionLabel + ' · ' + summary.modeLabel + ' · ' + summary.completedObjectives + '/' + summary.totalObjectives + ' outbound objectives · ' + summary.fuel + '% fuel'),
           savedLabel ? h('span', { style: { display: 'block', marginTop: 2, color: '#94a3b8', fontSize: 9.5 } }, 'Saved ' + savedLabel + ' · restores paused with throttle neutral') : null),
-        h('div', { role: 'group', 'aria-label': 'Saved voyage actions', style: { display: 'flex', flex: '1 1 220px', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
+        h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_saved_voyage_actions', 'Saved voyage actions'), style: { display: 'flex', flex: '1 1 220px', gap: 7, flexWrap: 'wrap', justifyContent: 'flex-end' } },
           h('button', { type: 'button', ref: simLaunchRef, className: 'fl-btn', onClick: resumeSavedVoyage,
             style: { minHeight: 40, padding: '8px 12px', border: 0, borderRadius: 7, background: '#34d399', color: '#052e2b', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, '▶ Resume saved voyage'),
           h('button', { type: 'button', className: 'fl-btn', onClick: downloadVoyageRescue,
@@ -19188,13 +19199,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       ];
       return h('aside', {
         className: 'fl-accessibility-controls',
-        'aria-label': 'Accessibility preferences',
+        'aria-label': __alloT('stem.fisherlab.a11y_accessibility_preferences', 'Accessibility preferences'),
         style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 12, padding: '8px 10px', borderRadius: 9, border: '1px solid rgba(148,163,184,0.28)', background: 'rgba(2,6,23,0.56)', color: '#cbd5e1' }
       },
         h('div', { style: { display: 'grid', gap: 2 } },
           h('strong', { style: { color: '#e0f2fe', fontSize: 11 } }, 'Display & motion'),
           h('span', { style: { color: '#94a3b8', fontSize: 9.5 } }, sim.active ? 'Scene-motion preference locks during an active voyage.' : 'Preferences are saved on this device.')),
-        h('div', { role: 'group', 'aria-label': 'Display and motion options', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+        h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_display_and_motion_options', 'Display and motion options'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
           options.map(function(option) {
             var selected = accessibilityPreferences[option.key] === true;
             var locked = option.key === 'staticCamera' && sim.active;
@@ -19374,7 +19385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         flAnnounce(tabEntry.label + ' section open');
       }
 
-      return h('nav', { 'aria-label': 'FisherLab learning sections', style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
+      return h('nav', { 'aria-label': __alloT('stem.fisherlab.a11y_fisherlab_learning_sections', 'FisherLab learning sections'), style: { display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 14 } },
         h('div', { role: 'search', style: { display: 'grid', gridTemplateColumns: 'minmax(180px, 1fr) auto', gap: 7, alignItems: 'end' } },
           h('label', { htmlFor: 'fl-section-search', style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 800, color: 'var(--allo-stem-text, #cbd5e1)' } },
             h('span', null, 'Find a FisherLab section'),
@@ -19391,7 +19402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           tabSearch ? h('button', {
             type: 'button',
             className: 'fl-btn',
-            onClick: function() { setTabSearch(''); flAnnounce('Section search cleared'); },
+            onClick: function() { setTabSearch(''); flAnnounce(__alloT('stem.fisherlab.sr_section_search_cleared', 'Section search cleared')); },
             style: { minHeight: 36, padding: '7px 11px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.35)', background: 'rgba(15,23,42,0.72)', color: '#cbd5e1', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
           }, 'Clear') : h('span', null)
         ),
@@ -19401,7 +19412,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           'aria-live': 'polite',
           style: { fontSize: 11, color: query && !matches.length ? '#fbbf24' : 'var(--allo-stem-text-soft, #94a3b8)' }
         }, query ? matches.length + (matches.length === 1 ? ' section found' : ' sections found') : TABS.length + ' sections across 8 learning areas'),
-        h('div', { 'aria-label': 'FisherLab learning areas', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
+        h('div', { 'aria-label': __alloT('stem.fisherlab.a11y_fisherlab_learning_areas', 'FisherLab learning areas'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 6 } },
           CATEGORIES.map(function(cat) {
             var isSelected = activeCat === cat.id;
             return h('button', {
@@ -19470,7 +19481,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         ),
         query && matches.length > 0 && h('div', {
           role: 'group',
-          'aria-label': 'Matching FisherLab sections',
+          'aria-label': __alloT('stem.fisherlab.a11y_matching_fisherlab_sections', 'Matching FisherLab sections'),
           style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(175px, 1fr))', gap: 6 }
         },
           matches.map(function(entry) {
@@ -19611,11 +19622,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           }, style: { flex: 1, padding: 8, fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this condition profile'),
           h('button', { type: 'button', onClick: function() { setIQ({ temp: 12, salinity: 32, oxygen: 7, current: 1.5, depth: 30 }); }, style: { padding: '8px 12px', fontSize: 11, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: '#94a3b8', cursor: 'pointer' } }, 'Reset')
         ),
-        iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Recent condition profiles', style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
+        iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': __alloT('stem.fisherlab.a11y_recent_condition_profiles', 'Recent condition profiles'), style: { maxHeight: 100, overflow: 'auto', padding: 6, borderRadius: 6, background: '#0a0a1a', border: '1px solid #1e293b', marginBottom: 10, fontSize: 10, fontFamily: 'monospace', lineHeight: 1.4 } },
           iq.log.slice(-6).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · top:' + e.top + ' · T' + e.temp + ' S' + e.sal + ' O' + e.o2 + ' C' + e.cur + ' D' + e.dep); })
         ),
         h('label', { style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which parameter most often disqualifies a species?)'),
-        h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': 'Species ranking hypothesis', placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+        h('textarea', { value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.fisherlab.a11y_species_ranking_hypothesis', 'Species ranking hypothesis'), placeholder: 'e.g., depth eliminates halibut on the inshore profile but rescued by salinity...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
         !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: '#0a0a1a', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
         iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: '#0a0a1a', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
           h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
@@ -19630,7 +19641,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('input', { type: 'checkbox', checked: iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
           h('span', null, 'I can explain why these parameters yield this species ranking.')
         ),
-        iq.understood && h('textarea', { 'aria-label': 'Explain the species ranking in your own words', value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
+        iq.understood && h('textarea', { 'aria-label': __alloT('stem.fisherlab.a11y_explain_the_species_ranking_in_your_own_words', 'Explain the species ranking in your own words'), value: iq.explanation, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#0a0a1a', color: '#e8f0f5', fontSize: 11, marginBottom: 6, resize: 'vertical' } }),
         h('p', { style: { margin: 0, fontSize: 10, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Illustrative tolerance ranges only; do not use for actual stocking or fishery decisions. Always consult primary literature and DMR for production use.')
       );
     }
@@ -19880,7 +19891,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('label', { style: { display: 'grid', gap: 6, margin: '10px 0', color: '#e0f2fe', fontSize: 13 } }, 'Reading spread',
               h('select', { value: model.wideSpread ? 'wide' : 'tight', onChange: function(e) { updateModel('wideSpread', e.target.value === 'wide'); }, style: { width: '100%', minWidth: 0, minHeight: 44, padding: 8, borderRadius: 7, border: '1px solid #627d91', color: '#f1f5f9', background: '#061c2b', fontSize: 14 } },
                 h('option', { value: 'tight' }, 'Tight · range 0.2 units'), h('option', { value: 'wide' }, 'Wide · range 0.8 units'))),
-            h('ol', { 'aria-label': 'Repeated measurements', style: { display: 'flex', flexWrap: 'wrap', gap: 8, padding: 0, listStyle: 'none' } }, measurement.readings.map(function(value, index) {
+            h('ol', { 'aria-label': __alloT('stem.fisherlab.a11y_repeated_measurements', 'Repeated measurements'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, padding: 0, listStyle: 'none' } }, measurement.readings.map(function(value, index) {
               return h('li', { key: index, style: { flex: '1 1 65px', background: '#0b2637', border: '1px solid #355064', padding: 10, borderRadius: 8, color: '#e0f2fe', fontSize: 13 } },
                 h('span', { style: { display: 'block', color: '#bae6fd', fontSize: 11 } }, 'Reading ' + (index + 1)), h('strong', { style: { fontSize: 20 } }, value.toFixed(1)));
             })),
@@ -19929,7 +19940,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       learningFocusTargetRef.current = 'fl-journey-title';
     }
     function guidedJourneyLauncher() {
-      return h('section', { id: 'fl-journey-launch', tabIndex: -1, 'aria-label': 'Guided investigation', style: Object.assign({}, cardStyle, { padding: 18, borderLeft: '4px solid #5eead4', background: 'linear-gradient(120deg,#0c343c,#10273c)' }) },
+      return h('section', { id: 'fl-journey-launch', tabIndex: -1, 'aria-label': __alloT('stem.fisherlab.a11y_guided_investigation', 'Guided investigation'), style: Object.assign({}, cardStyle, { padding: 18, borderLeft: '4px solid #5eead4', background: 'linear-gradient(120deg,#0c343c,#10273c)' }) },
         h('div', { style: { display: 'grid', gap: 6, maxWidth: 440, marginBottom: 14, color: '#bae6fd', fontSize: 13 } }, h('label', { htmlFor: 'fl-investigation-topic' }, 'Investigation topic'),
           h('select', { id: 'fl-investigation-topic', value: journeyTopic, onChange: function(e) { setJourneyTopic(e.target.value); setJourneyEvidenceStatus(''); }, style: { width: '100%', minHeight: 44, padding: 10, border: '1px solid #6b91a3', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14 } },
             h('option', { value: 'navigation' }, 'Navigation · travel time'),
@@ -19948,7 +19959,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var expectedTab = journey.step === 2 ? evidenceTab : 'home';
       var buttonStyle = { minHeight: 44, padding: '10px 14px', border: '1px solid #6b91a3', borderRadius: 8, background: '#102e42', color: '#e0f2fe', fontSize: 14, lineHeight: 1.5, cursor: 'pointer' };
       var primaryStyle = Object.assign({}, buttonStyle, { background: '#115e59', borderColor: '#5eead4', color: '#f0fdfa', fontWeight: 800 });
-      if (tab !== expectedTab) return h('aside', { 'aria-label': 'Investigation in progress', style: Object.assign({}, cardStyle, { padding: 14 }) },
+      if (tab !== expectedTab) return h('aside', { 'aria-label': __alloT('stem.fisherlab.a11y_investigation_in_progress', 'Investigation in progress'), style: Object.assign({}, cardStyle, { padding: 14 }) },
         h('span', { style: { color: '#dbeafe', fontSize: 14, marginRight: 12 } }, 'Your ' + journeyTopic + ' investigation is waiting here.'),
         h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { openGuidedJourney(false); } }, 'Continue investigation'));
       var titles = ['Make a prediction', sampling ? 'Compare two sampling views' : 'Compare two model trials', sampling ? 'Inspect your field journal' : 'Inspect the training chart', 'Explain your evidence', 'Investigation complete'];
@@ -20007,11 +20018,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 } },
           h('span', { style: { color: '#99f6e4', fontSize: 12, fontWeight: 900, letterSpacing: '0.05em' } }, journeyTopic.toUpperCase() + ' INVESTIGATION · ' + (journey.step === 4 ? 'COMPLETE' : 'STEP ' + (journey.step + 1) + ' OF 4')),
           h('button', { type: 'button', className: 'fl-btn', style: buttonStyle, onClick: function() { setJourneyActive(false); var teacherReturn = lessonLaunchTopic === journeyTopic; learningFocusTargetRef.current = teacherReturn ? 'fl-teacher-title' : 'fl-journey-launch'; setTab(teacherReturn ? 'lessonplans' : 'home'); } }, lessonLaunchTopic === journeyTopic ? (journey.step === 4 ? 'Return to lesson plans' : 'Pause and return to lesson plans') : journey.step === 4 ? 'Return to warmups' : 'Pause investigation')),
-        h('ol', { 'aria-label': 'Investigation steps', style: { display: 'flex', flexWrap: 'wrap', gap: 8, listStyle: 'none', padding: 0, margin: '18px 0' } }, labels.map(function(label, i) {
+        h('ol', { 'aria-label': __alloT('stem.fisherlab.a11y_investigation_steps', 'Investigation steps'), style: { display: 'flex', flexWrap: 'wrap', gap: 8, listStyle: 'none', padding: 0, margin: '18px 0' } }, labels.map(function(label, i) {
           return h('li', { key: label, 'aria-current': journey.step === i ? 'step' : undefined, style: { padding: '7px 11px', borderRadius: 7, border: '1px solid ' + (journey.step === i ? '#5eead4' : '#395b70'), background: journey.step === i ? '#134044' : '#0d293a', color: journey.step >= i ? '#d7fff5' : '#cbd5e1', fontSize: 13 } }, (journey.step > i ? '✓ ' : (i + 1) + '. ') + label);
         })),
         h('h3', { id: 'fl-journey-title', tabIndex: -1, style: { fontSize: 25, lineHeight: 1.3, color: '#f8fafc', margin: '0 0 14px' } }, titles[journey.step]),
-        journey.trials.length ? h('ul', { 'aria-label': 'Recorded model trials', style: { listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: 10 } }, journey.trials.map(function(trial, i) {
+        journey.trials.length ? h('ul', { 'aria-label': __alloT('stem.fisherlab.a11y_recorded_model_trials', 'Recorded model trials'), style: { listStyle: 'none', padding: 0, display: 'flex', flexWrap: 'wrap', gap: 10 } }, journey.trials.map(function(trial, i) {
           return h('li', { key: i, style: { flex: '1 1 180px', padding: 14, border: '1px solid #477589', borderRadius: 9, background: '#0b2d3e', color: '#dbeafe', fontSize: 13, lineHeight: 1.7 } },
             h('span', null, sampling ? (i ? 'A + B · ' : 'Spot A alone · ') + trial.target + ' target fish / ' + trial.total + ' fish' : 'Trial ' + (i + 1) + ' · ' + trial.distance + ' nautical miles · ' + trial.speed + ' knots'),
             h('strong', { style: { display: 'block', fontSize: 24, color: i ? '#fde68a' : '#99f6e4' } }, sampling ? Number(trial.percent.toFixed(1)) + '%' : Number(trial.minutes.toFixed(1)) + ' minutes'));
@@ -20038,7 +20049,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           h('line', { x1: 60, y1: 65, x2: 60, y2: 60 - length, stroke: color, strokeWidth: 3, strokeDasharray: dashed ? '4 3' : undefined }),
           h('path', { d: 'M 55 ' + (65 - length) + ' L 60 ' + (57 - length) + ' L 65 ' + (65 - length), fill: 'none', stroke: color, strokeWidth: 3 }));
       }
-      return h('section', { 'data-fisherlab-sea-card': sea.id, 'aria-label': 'Wind and navigation instruments', style: { marginBottom: 14, padding: 16, border: '1px solid #2e6f81', borderRadius: 14, background: 'radial-gradient(ellipse at top right,rgba(20,184,166,0.22),transparent 65%),linear-gradient(120deg,#071d30,#123144)' } },
+      return h('section', { 'data-fisherlab-sea-card': sea.id, 'aria-label': __alloT('stem.fisherlab.a11y_wind_and_navigation_instruments', 'Wind and navigation instruments'), style: { marginBottom: 14, padding: 16, border: '1px solid #2e6f81', borderRadius: 14, background: 'radial-gradient(ellipse at top right,rgba(20,184,166,0.22),transparent 65%),linear-gradient(120deg,#071d30,#123144)' } },
         h('div', { style: { display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' } },
           h('svg', { viewBox: '0 0 120 120', width: 120, height: 120, 'aria-hidden': 'true', style: { flex: '0 0 120px' } },
             h('circle', { cx: 60, cy: 60, r: 46, fill: '#061a29', stroke: '#3a647b' }),
@@ -20485,12 +20496,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       function saveJournalCorrection() {
         if (!activeReviewRow) {
-          flAnnounce('Choose a review-needed decision first.');
+          flAnnounce(__alloT('stem.fisherlab.sr_choose_a_review_needed_decision_first', 'Choose a review-needed decision first.'));
           return;
         }
         var correction = journalReviewDraft.trim();
         if (correction.length < 20) {
-          flAnnounce('Write at least 20 characters before saving the correction.');
+          flAnnounce(__alloT('stem.fisherlab.sr_write_at_least_20_characters_before_saving_the_co', 'Write at least 20 characters before saving the correction.'));
           return;
         }
         var saved = loadState();
@@ -20498,7 +20509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
         var next = appendCoreJournalCorrection(priorLog, activeReviewRow.observationId, correction, Date.now());
         var correctedRow = getCoreJournalRows(next, { evidence: 'revisited' }).find(function(row) { return row.observationId === activeReviewRow.observationId; });
         if (!correctedRow) {
-          flAnnounce('That decision could not be updated. The original journal record was preserved.');
+          flAnnounce(__alloT('stem.fisherlab.sr_that_decision_could_not_be_updated_the_original_j', 'That decision could not be updated. The original journal record was preserved.'));
           return;
         }
         saved.lifeLog = next;
@@ -20510,7 +20521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       function exportVisibleJournal() {
         if (!visibleRows.length) {
-          flAnnounce('No visible journal observations to export.');
+          flAnnounce(__alloT('stem.fisherlab.sr_no_visible_journal_observations_to_export', 'No visible journal observations to export.'));
           return;
         }
         try {
@@ -20534,7 +20545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
           flAnnounce(visibleRows.length + ' field journal observations exported as CSV.');
         } catch (error) {
           console.error('[FisherLab] Field journal export failed', error);
-          flAnnounce('Field journal export is unavailable in this browser.');
+          flAnnounce(__alloT('stem.fisherlab.sr_field_journal_export_is_unavailable_in_this_brows', 'Field journal export is unavailable in this browser.'));
         }
       }
 
@@ -20552,7 +20563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
               h('button', { type: 'button', className: 'fl-btn', disabled: !visibleRows.length, onClick: exportVisibleJournal,
                 style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(240,171,252,0.55)', background: visibleRows.length ? '#7e22ce' : '#334155', color: '#faf5ff', fontSize: 11, fontWeight: 900, cursor: visibleRows.length ? 'pointer' : 'not-allowed', opacity: visibleRows.length ? 1 : 0.65 } }, 'Export visible CSV'),
-              h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTab('sim'); flAnnounce('3D simulator section open'); },
+              h('button', { type: 'button', className: 'fl-btn', onClick: function() { setTab('sim'); flAnnounce(__alloT('stem.fisherlab.sr_3d_simulator_section_open', '3D simulator section open')); },
                 style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.45)', background: '#0c4a6e', color: '#e0f2fe', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Return to the sim'))
           ),
           h('div', { 'aria-label': 'Field journal summary for ' + activeRegionLabel, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(130px,1fr))', gap: 9, marginTop: 14 } },
@@ -20742,7 +20753,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 h('option', { value: 'unscored' }, 'Not scored'))),
             h('label', { htmlFor: 'fl-journal-search', style: labelStyle }, 'Find species, mission, or evidence',
               h('input', { id: 'fl-journal-search', type: 'search', value: journalQuery, onChange: function(e) { setJournalQuery(e.target.value); }, placeholder: 'Try cod, review, or slot minimum.', style: controlStyle })),
-            h('button', { type: 'button', className: 'fl-btn', onClick: function() { setJournalRegionFilter('current'); setJournalDispositionFilter('all'); setJournalEvidenceFilter('all'); setJournalQuery(''); flAnnounce('Field journal filters reset.'); },
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { setJournalRegionFilter('current'); setJournalDispositionFilter('all'); setJournalEvidenceFilter('all'); setJournalQuery(''); flAnnounce(__alloT('stem.fisherlab.sr_field_journal_filters_reset', 'Field journal filters reset.')); },
               style: { minHeight: 42, padding: '8px 12px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.4)', background: '#334155', color: '#f8fafc', fontSize: 11, fontWeight: 900, cursor: 'pointer' } }, 'Reset filters')
           ),
           h('div', { id: 'fl-journal-filter-status', role: 'status', 'aria-live': 'polite', style: { marginTop: 9, color: visibleRows.length ? '#a7f3d0' : '#fde68a', fontSize: 11, fontWeight: 800 } },
@@ -20911,7 +20922,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       }
       function toggleSimulatorPause() {
         if (graphicsContextLost) {
-          flAnnounce('Graphics are still recovering. Resume is unavailable until restoration completes.');
+          flAnnounce(__alloT('stem.fisherlab.sr_graphics_are_still_recovering_resume_is_unavailab', 'Graphics are still recovering. Resume is unavailable until restoration completes.'));
           return;
         }
         var nextPaused = !hud.paused;
@@ -20963,12 +20974,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 'This optional catch target adds journal evidence. The core mission still requires ' + mission.targetFish + ' and remains unchanged.'),
               h('p', { style: { margin: 0, color: '#a7f3d0', fontSize: 10.5, lineHeight: 1.5 } },
                 'Suggested starting setup: ' + practicePlan.spotLabel + ', ' + practicePlan.tackleLabel + ', ' + practicePlan.targetDepth + ' water, ' + practicePlan.technique.replace(/-/g, ' ') + '. Encounters remain probability-weighted, so bycatch is possible.')),
-            h('button', { type: 'button', className: 'fl-btn', onClick: function() { practiceTargetRef.current = ''; practiceFocusRef.current = ''; practiceCorrectionRef.current = 0; setPracticeTargetSpeciesId(''); setPracticeFocusSkill(''); flAnnounce('Focused practice target cleared.'); },
+            h('button', { type: 'button', className: 'fl-btn', onClick: function() { practiceTargetRef.current = ''; practiceFocusRef.current = ''; practiceCorrectionRef.current = 0; setPracticeTargetSpeciesId(''); setPracticeFocusSkill(''); flAnnounce(__alloT('stem.fisherlab.sr_focused_practice_target_cleared', 'Focused practice target cleared.')); },
               style: { minHeight: 40, padding: '7px 10px', borderRadius: 7, border: '1px solid rgba(226,232,240,0.34)', background: '#334155', color: '#f8fafc', fontSize: 10.5, fontWeight: 900, cursor: 'pointer' } }, 'Clear target')
           ) : null,
           h('fieldset', { disabled: sim.active, style: { margin: '0 0 12px', padding: 0, border: 0 } },
             h('legend', { style: { marginBottom: 7, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Voyage challenge'),
-            h('div', { role: 'radiogroup', 'aria-label': 'Voyage challenge', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
+            h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.fisherlab.a11y_voyage_challenge', 'Voyage challenge'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 8 } },
               ['guided', 'skipper', 'master'].map(function(modeId) {
                 var candidate = getCoreVoyageMode(modeId);
                 var selected = voyageMode === modeId;
@@ -21021,7 +21032,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 onClick: function() { setSoundOn(!soundOn); },
                 style: { padding: '6px 12px', background: soundOn ? '#0ea5e9' : 'rgba(15,23,42,0.5)', color: soundOn ? '#04141f' : '#cbd5e1', border: '1px solid ' + (soundOn ? '#38bdf8' : 'rgba(100,116,139,0.3)'), borderRadius: 6, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, soundOn ? '🔊 Sound: ON (M)' : '🔇 Sound: OFF (M)'),
-              h('div', { role: 'group', 'aria-label': 'Camera view (V cycles)', style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_camera_view_v_cycles', 'Camera view (V cycles)'), style: { display: 'flex', gap: 4 } },
                 CAMERA_VIEWS.map(function(view) {
                   var isSel = cameraView === view.id;
                   return h('button', {
@@ -21037,7 +21048,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   }, view.label);
                 })
               ),
-              h('div', { role: 'group', 'aria-label': 'Time of day', style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_time_of_day', 'Time of day'), style: { display: 'flex', gap: 4 } },
                 ['day', 'sunset', 'night'].map(function(tod) {
                   var isSel = timeOfDay === tod;
                   var labels = { day: '☀️ Day', sunset: '🌅 Sunset', night: '🌙 Night' };
@@ -21054,7 +21065,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, color: '#bae6fd', fontSize: 12 } }, h('label', { htmlFor: 'fl-sea-state' }, 'Sea conditions'),
                 h('select', { id: 'fl-sea-state', value: seaState, disabled: voyageMode !== 'guided', title: voyageMode === 'guided' ? 'Change the training sea independently of weather' : 'Sea preset is fixed for this voyage mode', onChange: function(e) { setSeaState(e.target.value); }, style: { minHeight: 44, padding: '6px 8px', borderRadius: 7, border: '1px solid #5eead4', background: '#0b2637', color: '#e0f2fe', fontSize: 12 } },
                   ['calm', 'breeze', 'chop'].map(function(id) { return h('option', { key: id, value: id }, getCoreSeaState(id).label); }))),
-              h('div', { role: 'group', 'aria-label': 'Weather', style: { display: 'flex', gap: 4 } },
+              h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_weather', 'Weather'), style: { display: 'flex', gap: 4 } },
                 ['clear', 'foggy', 'rainy'].map(function(w) {
                   var isSel = weather === w;
                   var labels = { clear: '☀️ Clear', foggy: '🌫️ Foggy', rainy: '🌧️ Rainy' };
@@ -21105,7 +21116,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             // stage can hand the scene the whole window; an inline height would
             // beat every rule that tries to.
             h('canvas', { ref: canvasRef, className: 'fl-sim-canvas', role: 'application', tabIndex: 0,
-              'aria-label': 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, use 1 through 3 for a radar evidence call when prompted, F at the fishing grounds, H near a trap, and P to pause.',
+              'aria-label': __alloT('stem.fisherlab.a11y_interactive_3d_harbor_focus_this_scene_to_steer', 'Interactive 3D harbor. Focus this scene to steer with WASD or arrow keys. Press B for the fog horn, use 1 through 3 for a radar evidence call when prompted, F at the fishing grounds, H near a trap, and P to pause.'),
               'aria-keyshortcuts': 'W A S D ArrowUp ArrowDown ArrowLeft ArrowRight Space B F H P V M 1 2 3 Escape',
               onClick: function(e) { focusCoreElement(e.currentTarget); } }),
 
@@ -21119,7 +21130,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 return '📹 Chase · V';
               })()),
 
-            h('div', { className: 'fl-nav-cue' + (hud.trafficDecisionMade && !hud.trafficManeuverComplete ? ' fl-nav-cue-radar' : ''), 'aria-label': 'Next voyage objective and relative bearing', style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
+            h('div', { className: 'fl-nav-cue' + (hud.trafficDecisionMade && !hud.trafficManeuverComplete ? ' fl-nav-cue-radar' : ''), 'aria-label': __alloT('stem.fisherlab.a11y_next_voyage_objective_and_relative_bearing', 'Next voyage objective and relative bearing'), style: { padding: '8px 10px', borderRadius: 8, background: 'rgba(3,18,31,0.88)', border: '1px solid rgba(125,211,252,0.45)', boxShadow: '0 8px 24px rgba(0,0,0,0.38)', color: '#e0f2fe', textAlign: 'center' } },
               h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } },
                 h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', color: '#fbbf24', fontSize: 22, lineHeight: 1, transform: 'rotate(' + (hud.objectiveBearing || 0) + 'deg)', transition: 'transform 0.2s ease' } }, '↑'),
                 h('div', { style: { minWidth: 0, textAlign: 'left' } },
@@ -21137,7 +21148,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     h('span', { style: { display: 'block', marginTop: 4, color: '#dbeafe', fontSize: 10 } }, 'Bearing Δ ' + (hud.trafficBearingChange || 0).toFixed(1) + '° · Range Δ ' + ((hud.trafficRangeChange || 0) > 0 ? '+' : '') + (hud.trafficRangeChange || 0).toFixed(1))
                   )
                 ),
-                trafficTrackDots.length >= 3 ? h('div', { role: 'group', 'aria-label': 'Make the radar evidence call', style: { pointerEvents: 'auto', display: 'grid', gap: 3, padding: '5px 0', borderBottom: '1px solid rgba(125,211,252,0.18)' } },
+                trafficTrackDots.length >= 3 ? h('div', { role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_make_the_radar_evidence_call', 'Make the radar evidence call'), style: { pointerEvents: 'auto', display: 'grid', gap: 3, padding: '5px 0', borderBottom: '1px solid rgba(125,211,252,0.18)' } },
                   h('span', { style: { color: '#fde68a', fontSize: 8, fontWeight: 900, textTransform: 'uppercase' } }, hud.radarCallMade ? 'Radar call logged' : 'Make the radar call - optional bonus'),
                   hud.radarCallMade ? h('span', { style: { color: hud.radarCallCorrect ? '#86efac' : '#fca5a5', fontSize: 8, fontWeight: 800 } }, (hud.radarCallCorrect ? 'Correct' : 'Review') + ': ' + hud.radarCallLabel + (hud.radarCallBonus ? ' +' + hud.radarCallBonus : '')) : h('div', { style: { display: 'flex', gap: 3, flexWrap: 'wrap' } },
                     [
@@ -21259,13 +21270,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', { style: { marginTop: 5, fontSize: 9, color: hud.unsafeSpeed ? '#fb923c' : '#a7f3d0', fontWeight: hud.unsafeSpeed ? 900 : 600 } }, hud.unsafeSpeed ? 'Reduce speed for current conditions' : (hud.decisionStreak || 0) ? 'Decision streak ×' + hud.decisionStreak + ' · ' + decisionAccuracy + '% accurate' : 'Build a streak with correct classifications')),
             
             // Status log
-            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': 'Voyage log', 'data-expanded-captions': accessibilityPreferences.captionMode ? 'true' : 'false', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: accessibilityPreferences.captionMode ? 180 : 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
+            h('div', { className: 'fl-sim-log', role: 'log', 'aria-live': 'polite', 'aria-label': __alloT('stem.fisherlab.a11y_voyage_log', 'Voyage log'), 'data-expanded-captions': accessibilityPreferences.captionMode ? 'true' : 'false', style: { position: 'absolute', bottom: 10, left: 10, right: 10, maxHeight: accessibilityPreferences.captionMode ? 180 : 100, overflowY: 'auto', background: 'rgba(8,18,32,0.85)', padding: 8, borderRadius: 8, zIndex: 10 } },
               (status || []).slice(accessibilityPreferences.captionMode ? -8 : -4).map(function(ev, ei) {
                 var color = ev.type === 'fish' || ev.type === 'lobster' ? '#fbbf24' : (ev.type === 'violation' ? '#fb923c' : (ev.type === 'complete' ? '#86efac' : '#bae6fd'));
                 return h('div', { key: ei, style: { fontSize: 11, color: color, marginBottom: 2 } }, '• ' + ev.text);
               })),
             
-            h('div', { className: 'fl-sim-touch', role: 'group', 'aria-label': 'On-screen boat controls' },
+            h('div', { className: 'fl-sim-touch', role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_on_screen_boat_controls', 'On-screen boat controls') },
               [
                 { key: 'arrowleft', label: 'Turn port', icon: '←' },
                 { key: 'arrowup', label: 'Throttle forward', icon: '↑' },
@@ -21285,7 +21296,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   style: { width: 38, height: 34, touchAction: 'none', userSelect: 'none', borderRadius: 6, border: '1px solid rgba(125,211,252,0.4)', background: '#0f2740', color: '#e0f2fe', fontSize: 18, cursor: 'pointer' }
                 }, control.icon);
               }),
-              trafficIsRestricted && hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': 'Sound one prolonged fog-horn blast', disabled: !!hud.trafficFogSignalMade, onClick: function() { if (harborRef.current && harborRef.current.soundFogSignal) harborRef.current.soundFogSignal(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(253,230,138,0.6)', background: hud.trafficFogSignalMade ? '#365314' : '#854d0e', color: '#fef9c3', fontWeight: 900, cursor: hud.trafficFogSignalMade ? 'default' : 'pointer' } }, hud.trafficFogSignalMade ? 'Horn logged' : 'Horn (B)') : null,
+              trafficIsRestricted && hud.trafficDecisionMade && !hud.trafficManeuverComplete ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': __alloT('stem.fisherlab.a11y_sound_one_prolonged_fog_horn_blast', 'Sound one prolonged fog-horn blast'), disabled: !!hud.trafficFogSignalMade, onClick: function() { if (harborRef.current && harborRef.current.soundFogSignal) harborRef.current.soundFogSignal(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(253,230,138,0.6)', background: hud.trafficFogSignalMade ? '#365314' : '#854d0e', color: '#fef9c3', fontWeight: 900, cursor: hud.trafficFogSignalMade ? 'default' : 'pointer' } }, hud.trafficFogSignalMade ? 'Horn logged' : 'Horn (B)') : null,
               h('button', { type: 'button', className: 'fl-btn', onClick: function() { if (harborRef.current && harborRef.current.fish) harborRef.current.fish(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(196,181,253,0.5)', background: '#312e81', color: '#ede9fe', fontWeight: 800, cursor: 'pointer' } }, 'Fish'),
               h('button', { type: 'button', className: 'fl-btn', disabled: !hud.closestTrapId || hud.closestTrapHauled, onClick: function() { if (harborRef.current && harborRef.current.haulTrap) harborRef.current.haulTrap(); }, style: { minHeight: 34, padding: '0 10px', borderRadius: 6, border: '1px solid rgba(251,191,36,0.5)', background: '#713f12', color: '#fef3c7', fontWeight: 800, cursor: hud.closestTrapId ? 'pointer' : 'not-allowed', opacity: hud.closestTrapId ? 1 : 0.55 } }, 'Haul')
             ),
@@ -21311,7 +21322,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('h3', { id: 'fl-fishing-title', style: { margin: '4px 0 0', color: '#f8fafc', fontSize: 22 } }, fishingTargetSpecies.name + ' practice')),
                     h('div', { style: { display: 'flex', gap: 7, alignItems: 'center', flexWrap: 'wrap' } },
                       h('span', { className: 'fl-pill', style: { color: activeFishing.assistMode ? '#a7f3d0' : '#fde68a' } }, activeFishing.assistMode ? 'Guided timing' : 'Standard timing'),
-                      activeFishing.phase !== 'landed' ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': 'End fishing and return to helm', onClick: leaveFishing, style: Object.assign({}, secondaryStyle, { minHeight: 36, padding: '6px 10px', fontSize: 10 }) }, 'Return to helm') : null)
+                      activeFishing.phase !== 'landed' ? h('button', { type: 'button', className: 'fl-btn', 'aria-label': __alloT('stem.fisherlab.a11y_end_fishing_and_return_to_helm', 'End fishing and return to helm'), onClick: leaveFishing, style: Object.assign({}, secondaryStyle, { minHeight: 36, padding: '6px 10px', fontSize: 10 }) }, 'Return to helm') : null)
                   ),
                   h('p', { 'data-fisherlab-fishing-target': activeFishing.targetSpeciesId, style: { margin: '10px 0 0', color: '#a7f3d0', fontSize: 10.5, lineHeight: 1.45, fontWeight: 800 } },
                     (activeFishing.practiceTargeted ? 'Focused target: ' : 'Mission target: ') + fishingTargetSpecies.name + '. Encounters remain probability-weighted, so bycatch is possible.'),
@@ -21329,7 +21340,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                           h('option', { value: 'surface' }, 'Surface'),
                           h('option', { value: 'midwater' }, 'Midwater'),
                           h('option', { value: 'bottom' }, 'Near bottom'))),
-                      h('div', { 'aria-label': 'Observed voyage conditions', style: { padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(125,211,252,0.28)', background: 'rgba(2,6,23,0.35)', color: '#dbeafe', fontSize: 10, lineHeight: 1.5 } },
+                      h('div', { 'aria-label': __alloT('stem.fisherlab.a11y_observed_voyage_conditions', 'Observed voyage conditions'), style: { padding: '8px 10px', borderRadius: 6, border: '1px solid rgba(125,211,252,0.28)', background: 'rgba(2,6,23,0.35)', color: '#dbeafe', fontSize: 10, lineHeight: 1.5 } },
                         h('div', { style: fieldStyle }, 'Observed conditions'),
                         h('div', { style: { marginTop: 4 } }, (activeFishing.tide === 'none' ? 'non-tidal water' : activeFishing.tide + ' tide') + ' · ' + activeFishing.current + ' current · ' + activeFishing.waterTemperatureC + '°C'),
                         h('div', { style: { color: '#94a3b8' } }, activeFishing.weather + ' · ' + activeFishing.timeOfDay + ' · read-only voyage evidence')),
@@ -21350,7 +21361,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     ),
                     h('div', { style: { marginTop: 12, padding: 11, borderRadius: 7, background: 'rgba(2,6,23,0.48)' } },
                       h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: '#bae6fd', fontSize: 11, fontWeight: 900 } }, h('span', null, 'Target affinity'), h('span', null, liveSetupScore.total + '/100')),
-                      h('div', { role: 'progressbar', 'aria-label': 'Fishing setup affinity', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': liveSetupScore.total, style: { height: 8, marginTop: 5, overflow: 'hidden', borderRadius: 5, background: 'rgba(148,163,184,0.25)' } },
+                      h('div', { role: 'progressbar', 'aria-label': __alloT('stem.fisherlab.a11y_fishing_setup_affinity', 'Fishing setup affinity'), 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': liveSetupScore.total, style: { height: 8, marginTop: 5, overflow: 'hidden', borderRadius: 5, background: 'rgba(148,163,184,0.25)' } },
                         h('div', { style: { width: Math.min(100, liveSetupScore.total) + '%', height: '100%', background: 'linear-gradient(90deg,#f59e0b,#34d399)' } })),
                       flSetupScoreBarsSvg(h, liveSetupScore.components),
                       h('ul', { style: { margin: '8px 0 0', paddingLeft: 18, color: '#dbeafe', fontSize: 10, lineHeight: 1.45 } }, liveSetupScore.evidence.map(function(note, index) { return h('li', { key: index }, note); })),
@@ -21374,7 +21385,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   activeFishing.phase === 'presentation' ? h('div', null,
                     flPresentationSvg(h, activeFishing.presentationCount, activeFishing.presentationTarget, activeFishing.technique),
                     h('div', { style: { color: '#e2e8f0', fontSize: 12 } }, 'Presentation actions: ' + activeFishing.presentationCount + ' of ' + activeFishing.presentationTarget),
-                    h('div', { role: 'progressbar', 'aria-label': 'Presentation cadence', 'aria-valuemin': 0, 'aria-valuemax': activeFishing.presentationTarget, 'aria-valuenow': activeFishing.presentationCount, style: { height: 9, margin: '8px 0 14px', overflow: 'hidden', borderRadius: 5, background: '#1e293b' } },
+                    h('div', { role: 'progressbar', 'aria-label': __alloT('stem.fisherlab.a11y_presentation_cadence', 'Presentation cadence'), 'aria-valuemin': 0, 'aria-valuemax': activeFishing.presentationTarget, 'aria-valuenow': activeFishing.presentationCount, style: { height: 9, margin: '8px 0 14px', overflow: 'hidden', borderRadius: 5, background: '#1e293b' } },
                       h('div', { style: { height: '100%', width: (activeFishing.presentationCount / activeFishing.presentationTarget * 100) + '%', background: '#38bdf8' } })),
                     h('button', { ref: decisionFocusRef, type: 'button', className: 'fl-btn', onClick: workFishingPresentation, style: actionStyle }, 'Work lure / bait')
                   ) : null,
@@ -21621,7 +21632,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                   }),
                   h('div', { style: { marginTop: 9, color: catchSkillSummary.focusId === 'balanced' ? '#a7f3d0' : '#fde68a', fontSize: 10, lineHeight: 1.45, fontWeight: 800 } }, catchSkillSummary.focusLabel)
                 ) : null,
-                catchDecisionHistory.length ? h('div', { 'aria-label': 'Catch field notes', style: { margin: '12px 0', paddingTop: 10, borderTop: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
+                catchDecisionHistory.length ? h('div', { 'aria-label': __alloT('stem.fisherlab.a11y_catch_field_notes', 'Catch field notes'), style: { margin: '12px 0', paddingTop: 10, borderTop: '1px solid rgba(186,230,253,0.28)', textAlign: 'left' } },
                   h('div', { style: { marginBottom: 5, color: '#bae6fd', fontSize: 11, fontWeight: 900, textTransform: 'uppercase' } }, 'Catch field notes'),
                   catchDecisionHistory.map(function(note, noteIndex) {
                     return h('div', { key: noteIndex, style: { display: 'grid', gridTemplateColumns: '1fr auto', gap: '3px 10px', padding: '7px 0', borderBottom: noteIndex < catchDecisionHistory.length - 1 ? '1px solid rgba(148,163,184,0.18)' : 'none' } },
@@ -21774,7 +21785,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       height: '100%',
                       viewBox: '0 0 540 280',
                       role: 'img',
-                      'aria-label': 'Shellfish measurement diagram with fixed and adjustable caliper jaws. Use the range control to align the jaws with the marked reference points.',
+                      'aria-label': __alloT('stem.fisherlab.a11y_shellfish_measurement_diagram_with_fixed_and_ad', 'Shellfish measurement diagram with fixed and adjustable caliper jaws. Use the range control to align the jaws with the marked reference points.'),
                       style: { flex: 1, background: '#111827', borderRadius: '6px' }
                     },
                       // Ruler background markings
@@ -21961,7 +21972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                       h('input', {
                         type: 'range',
                         disabled: !!shellfishDecisionResult,
-                        'aria-label': 'Caliper measurement in inches',
+                        'aria-label': __alloT('stem.fisherlab.a11y_caliper_measurement_in_inches', 'Caliper measurement in inches'),
                         min: activeLobster.specimenType === 'crab' ? 3.00 : activeLobster.specimenType === 'crayfish' ? 1.50 : 2.50,
                         max: activeLobster.specimenType === 'crab' ? 8.00 : activeLobster.specimenType === 'crayfish' ? 5.00 : 6.00,
                         step: 0.05,
@@ -22131,7 +22142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             // one surface a student is left with when the 3-D sim cannot run was
             // the surface least reliably announced.
             role: 'img',
-            'aria-label': 'Stylized north-up nautical chart of the Portland Harbor approach. The mainland and Custom House Wharf are along the top, with Portland Head Light to the east. The channel runs down the middle to open water at the bottom. Three red nun buoys, numbered 2, 4 and 6, mark its eastern side on the right of the chart, and three green cans, numbered 1, 3 and 5, mark its western side on the left. A vessel returning from sea travels up the chart and keeps the red nuns to starboard; outbound the sides reverse. A red and white mid-channel safe-water mark sits at the seaward end, with Halfway Rock beyond it, and dashed 10-metre and 30-metre depth contours cross the chart.' },
+            'aria-label': __alloT('stem.fisherlab.a11y_stylized_north_up_nautical_chart_of_the_portlan', 'Stylized north-up nautical chart of the Portland Harbor approach. The mainland and Custom House Wharf are along the top, with Portland Head Light to the east. The channel runs down the middle to open water at the bottom. Three red nun buoys, numbered 2, 4 and 6, mark its eastern side on the right of the chart, and three green cans, numbered 1, 3 and 5, mark its western side on the left. A vessel returning from sea travels up the chart and keeps the red nuns to starboard; outbound the sides reverse. A red and white mid-channel safe-water mark sits at the seaward end, with Halfway Rock beyond it, and dashed 10-metre and 30-metre depth contours cross the chart.') },
             // land
             h('rect', { x: 0, y: 0, width: 600, height: 80, fill: '#a8c595' }),
             h('text', { x: 18, y: 30, fill: '#3b4d2b', fontSize: 13, fontWeight: 700 }, 'Portland (mainland)'),
@@ -22802,7 +22813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       return h('section', { 'data-fisherlab-quiz': 'question', 'data-quiz-bank-index': index, style: Object.assign({}, cardStyle, { padding: 22 }) },
         h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 10, color: '#bae6fd', fontSize: 13 } },
           h('strong', null, quizState.firstPass ? 'Retry practice' : 'First attempt'), h('span', null, 'Question ' + (quizState.cursor + 1) + ' of ' + quizState.indices.length)),
-        h('progress', { value: summary.answered, max: summary.total, 'aria-label': 'Questions answered in this round', style: { width: '100%', height: 10, marginBottom: 18, accentColor: '#5eead4' } }),
+        h('progress', { value: summary.answered, max: summary.total, 'aria-label': __alloT('stem.fisherlab.a11y_questions_answered_in_this_round', 'Questions answered in this round'), style: { width: '100%', height: 10, marginBottom: 18, accentColor: '#5eead4' } }),
         h('h2', { id: 'fl-quiz-question-title', tabIndex: -1, style: { fontSize: 21, lineHeight: 1.45, margin: '0 0 16px', color: '#f8fafc' } }, q.q),
         h('div', { style: { display: 'grid', gap: 9 } }, q.a.map(function(option, oi) {
           var chosen = picked === oi;

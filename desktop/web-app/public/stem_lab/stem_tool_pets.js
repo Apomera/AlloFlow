@@ -85,6 +85,16 @@ window.StemLab = window.StemLab || {
 if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloPetsCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloPetsCtx && typeof __alloPetsCtx.t === "function") ? __alloPetsCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   'use strict';
 
   // ── Live region (WCAG 4.1.3) ──
@@ -2200,6 +2210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
     description: 'Companion-animal SCIENCE: physiology, ethology, nutrition, genetics, domestication, zoonoses, service animals. Cross-species pet training that assumes BehaviorLab\'s operant theory and applies it to real homes. UDL-aligned via Service & Support Animals coverage.',
     tags: ['pets', 'animals', 'biology', 'ethology', 'genetics', 'service-dogs', 'maine'],
     render: function(ctx) {
+      __alloPetsCtx = ctx;
       try {
         return _renderPets(ctx);
       } catch(e) {
@@ -4181,7 +4192,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           reason: evidenceReason
         };
         upd('modulesCompleted', upgraded);
-        if (!quiet) petsAnnounce('Completion updated with activity evidence.');
+        if (!quiet) petsAnnounce(__alloT('stem.pets.sr_completion_updated_with_activity_evidence', 'Completion updated with activity evidence.'));
         return;
       }
       var nextCompleted = Object.assign({}, modulesCompleted);
@@ -4215,7 +4226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         updMulti(leavingAiPractice
           ? { view: 'menu', aiLoadingCritique: false, aiCritiqueRequest: null }
           : { view: 'menu' });
-        petsAnnounce('Back to menu');
+        petsAnnounce(__alloT('stem.pets.sr_back_to_menu', 'Back to menu'));
         return;
       }
       var navigationPatch = Object.assign({}, extraPatch || {}, { view: nextView, lastView: nextView });
@@ -4260,7 +4271,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       var moduleComplete = !!modulesCompleted[view];
       return h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14, flexWrap: 'wrap' } },
         h('button', { 'data-pets-focusable': true,
-          'aria-label': 'Back to Pets Lab menu',
+          'aria-label': __alloT('stem.pets.a11y_back_to_pets_lab_menu', 'Back to Pets Lab menu'),
           onClick: function() { goToView('menu'); },
           style: btn({ padding: '6px 12px', fontSize: 12 })
         }, '← Menu'),
@@ -4287,7 +4298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       );
     }
     function footer() {
-      return h('div', { className: 'petslab-footnote', role: 'note', 'aria-label': 'Source attribution',
+      return h('div', { className: 'petslab-footnote', role: 'note', 'aria-label': __alloT('stem.pets.a11y_source_attribution', 'Source attribution'),
         style: { marginTop: 18, padding: '10px 14px', borderRadius: 8, background: T.cardAlt, border: '1px dashed ' + T.border, color: T.dim, fontSize: 11, textAlign: 'center', lineHeight: 1.55 } },
         'Citations: AVMA · AAFP · AAFCO · IAADP · ASAB · CDC · House Rabbit Society · ASPCA · Bradshaw 2013 · Mech 2000. Educational only — for medical questions, see your veterinarian.');
     }
@@ -4488,7 +4499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             : recommendedNeedsPractice
               ? recommendedTile.label + ' is complete, but its most recent scored target was not yet met. Practice it again, then return for the next route step.'
             : path.why;
-        return h('div', { className: 'petslab-start-card', role: 'region', 'aria-label': 'Recommended path through the lab',
+        return h('div', { className: 'petslab-start-card', role: 'region', 'aria-label': __alloT('stem.pets.a11y_recommended_path_through_the_lab', 'Recommended path through the lab'),
           style: { padding: 14, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap', marginBottom: 4 } },
             h('div', { style: { fontSize: 13, fontWeight: 700, color: T.accentHi } }, header),
@@ -4617,7 +4628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               style: btn({ padding: '8px 11px', fontSize: 12 })
             }, 'Clear')
           ),
-          h('div', { className: 'petslab-menu-filter-row', role: 'group', 'aria-label': 'Filter modules by progress' },
+          h('div', { className: 'petslab-menu-filter-row', role: 'group', 'aria-label': __alloT('stem.pets.a11y_filter_modules_by_progress', 'Filter modules by progress') },
             progressFilters.map(function(filter) {
               var active = menuProgressFilter === filter.id;
               return h('button', {
@@ -5055,7 +5066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                     );
                   })
                 ),
-                h('div', { className: 'petslab-tradeoff-legend', role: 'list', 'aria-label': 'Radar chart legend' },
+                h('div', { className: 'petslab-tradeoff-legend', role: 'list', 'aria-label': __alloT('stem.pets.a11y_radar_chart_legend', 'Radar chart legend') },
                   h('span', { className: 'petslab-tradeoff-legend-item', role: 'listitem' },
                     h('span', { className: 'petslab-tradeoff-legend-swatch', style: { borderTopColor: sm.color }, 'aria-hidden': 'true' }),
                     h('span', null, 'Circle + solid = provided')
@@ -5119,14 +5130,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               }, style: { flex: 1, padding: 6, fontSize: 10, fontWeight: 700, borderRadius: 6, border: '1px solid ' + sm.border, background: sm.bg, color: sm.color, cursor: 'pointer' } }, '📋 Log this scenario'),
               h('button', { type: 'button', onClick: function() { setIQ({ food: 50, exercise: 50, social: 50, vet: 50, training: 50 }); }, style: { padding: '6px 10px', fontSize: 10, borderRadius: 6, border: '1px solid #5c4536', background: '#181210', color: '#e8d5b7', cursor: 'pointer' } }, 'Reset')
             ),
-            iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': 'Logged care scenarios', tabIndex: 0, 'data-pets-focusable': true, style: { maxHeight: 96, overflow: 'auto', padding: 6, borderRadius: 6, background: '#181210', border: '1px solid #5c4536', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
+            iq.log.length > 0 && h('div', { role: 'log', 'aria-live': 'polite', 'aria-label': __alloT('stem.pets.a11y_logged_care_scenarios', 'Logged care scenarios'), tabIndex: 0, 'data-pets-focusable': true, style: { maxHeight: 96, overflow: 'auto', padding: 6, borderRadius: 6, background: '#181210', border: '1px solid #5c4536', marginBottom: 10, fontSize: 9, fontFamily: 'monospace', lineHeight: 1.4 } },
               iq.log.slice(-5).map(function(e, i) {
                 var detail = e.worst ? ' · largest ' + e.worst + ' P' + e.provided + '/T' + e.need : '';
                 return h('div', { key: (e.t || 'entry') + '-' + i }, e.t + '  ' + e.sp + ' · ' + e.state + ' · gap ' + e.gap + detail);
               })
             ),
             h('label', { htmlFor: 'pets-care-inquiry-hypothesis', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which species is hardest to keep thriving — and why?)'),
-            h('textarea', { id: 'pets-care-inquiry-hypothesis', value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare hypothesis', 'aria-describedby': 'pets-care-inquiry-hypothesis-count pets-care-inquiry-privacy-note', placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            h('textarea', { id: 'pets-care-inquiry-hypothesis', value: iq.hypothesis, maxLength: 1200, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_hypothesis', 'Pet welfare hypothesis'), 'aria-describedby': 'pets-care-inquiry-hypothesis-count pets-care-inquiry-privacy-note', placeholder: 'e.g., parrots need high social provision because flock behavior...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
             h('div', { id: 'pets-care-inquiry-hypothesis-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.hypothesis.length + ' / 1200 characters'),
             h('p', { id: 'pets-care-inquiry-privacy-note', role: 'note', style: { margin: '0 0 10px', color: '#bda891', fontSize: 9, lineHeight: 1.45 } },
               'Your hypothesis, explanation, and scenario log save with this project. Do not include names or identifying details.'),
@@ -5145,7 +5156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('span', null, 'I can explain why this species shows this welfare state at these slider settings.')
             ),
             iq.understood && h('label', { htmlFor: 'pets-care-inquiry-explanation', style: { display: 'block', fontSize: 10, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your explanation'),
-            iq.understood && h('textarea', { id: 'pets-care-inquiry-explanation', value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': 'Pet welfare explanation', 'aria-describedby': 'pets-care-inquiry-explanation-count pets-care-inquiry-privacy-note', placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
+            iq.understood && h('textarea', { id: 'pets-care-inquiry-explanation', value: iq.explanation, maxLength: 1200, onChange: function(e) { setIQ({ explanation: e.target.value }); }, rows: 2, 'aria-label': __alloT('stem.pets.a11y_pet_welfare_explanation', 'Pet welfare explanation'), 'aria-describedby': 'pets-care-inquiry-explanation-count pets-care-inquiry-privacy-note', placeholder: 'Explain in your own words...', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: '#181210', color: '#fef3e2', fontSize: 10, marginBottom: 4, resize: 'vertical' } }),
             iq.understood && h('div', { id: 'pets-care-inquiry-explanation-count', style: { marginBottom: 6, color: '#bda891', fontSize: 9 } }, iq.explanation.length + ' / 1200 characters'),
             h('p', { style: { margin: 0, fontSize: 9, fontStyle: 'italic', opacity: 0.6 } }, 'Inquiry widget — no score, no reveal, no answer dump. Welfare frameworks: Five Domains (Mellor 2017), Five Freedoms (Brambell 1965).')
           );
@@ -5879,7 +5890,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 preserveAspectRatio: 'xMidYMid meet',
                 role: 'img',
                 focusable: 'false',
-                'aria-label': 'Behavior probability and trust trajectory across 10 rounds.',
+                'aria-label': __alloT('stem.pets.a11y_behavior_probability_and_trust_trajectory_acros', 'Behavior probability and trust trajectory across 10 rounds.'),
                 'aria-describedby': 'pets-trainer-chart-desc',
                 style: { display: 'block', width: '100%', height: 'auto', minHeight: 150, background: T.bg, borderRadius: 8 }
               },
@@ -6051,7 +6062,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', { style: { fontSize: 11, color: T.dim, marginTop: 8, fontStyle: 'italic' } }, 'You have ~3 seconds in real life — pick your response now.')
           ),
           // Response choices
-          h('div', { role: 'group', 'aria-label': 'Choose your response',
+          h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_your_response', 'Choose your response'),
             style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8, marginBottom: 12 } },
             responseBtns.map(function(b) {
               var isPicked = revealed && thisChoice.rxn === b.id;
@@ -6111,7 +6122,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var nextTab = e.currentTarget.parentNode.querySelectorAll('[role="tab"]')[nextIndex];
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       }
-      var trModeBar = h('div', { role: 'tablist', 'aria-label': 'Training mode',
+      var trModeBar = h('div', { role: 'tablist', 'aria-label': __alloT('stem.pets.a11y_training_mode', 'Training mode'),
         style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
         trainingModes.map(function(m, tabIndex) {
           var sel = trMode === m;
@@ -6280,7 +6291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('strong', { style: { color: '#7dd3fc' } }, 'Wet-versus-dry comparison trap: '),
             'Guaranteed-analysis values are listed “as fed.” Foods with very different moisture cannot be compared directly without converting to a dry-matter basis. A higher-looking protein percentage on the package may not be higher after that adjustment.'),
           h('h4', { style: { margin: '0 0 7px', color: T.text, fontSize: 13 } }, 'Try three mock labels'),
-          h('div', { role: 'list', 'aria-label': 'Pet food label practice cases', style: { display: 'grid', gap: 7 } },
+          h('div', { role: 'list', 'aria-label': __alloT('stem.pets.a11y_pet_food_label_practice_cases', 'Pet food label practice cases'), style: { display: 'grid', gap: 7 } },
             PET_FOOD_LABEL_CASES.map(function(item) {
               return h('details', {
                 key: item.id,
@@ -6528,7 +6539,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 style: { padding: '6px 12px', borderRadius: 8, background: T.cardAlt, color: T.accentHi, border: '1px solid ' + T.accent, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
               }, tfsOpen ? 'Hide ▴' : 'Play →')
             ),
-            tfsOpen && h('div', { role: 'region', 'aria-label': 'Household Hazard Sleuth quiz game', tabIndex: 0, style: { marginTop: 12 } },
+            tfsOpen && h('div', { role: 'region', 'aria-label': __alloT('stem.pets.a11y_household_hazard_sleuth_quiz_game', 'Household Hazard Sleuth quiz game'), tabIndex: 0, style: { marginTop: 12 } },
               h('div', { role: 'note', 'data-pets-hazard-boundary': 'classification-only', style: { marginBottom: 10, padding: 9, borderRadius: 8, color: '#fde68a', background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.45)', fontSize: 11, lineHeight: 1.5 } },
                 'Pattern-recognition practice only: this activity cannot rule out poisoning, calculate a safe dose, or replace case-specific advice. For a real exposure, stop and use the response protocol above.'),
               tfsIdx < 0
@@ -6581,7 +6592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                         )
                       ),
                       // 5 picker buttons
-                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': 'Choose the best hazard pattern' },
+                      h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_the_best_hazard_pattern', 'Choose the best hazard pattern') },
                         TFS_OPTIONS.map(function(opt) {
                           var picked = tfsAns && tfsPick === opt.id;
                           var isRight = tfsAns && opt.id === v.correct;
@@ -6661,7 +6672,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                                   }, 'Missed-case details were not stored for this earlier attempt. Restart the full 10 to build a review set.')
                                 : missedCases.length
                                   ? h('section', {
-                                      'aria-label': 'Missed hazard case review',
+                                      'aria-label': __alloT('stem.pets.a11y_missed_hazard_case_review', 'Missed hazard case review'),
                                       'data-pets-toxic-review': 'available',
                                       style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.card, border: '1px solid ' + T.border }
                                     },
@@ -6694,7 +6705,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                                     }, '✅ No missed hazard cases — every vignette was identified correctly.'),
                               reviewActive
                                 ? h('section', {
-                                    'aria-label': 'Focused missed-case retry',
+                                    'aria-label': __alloT('stem.pets.a11y_focused_missed_case_retry', 'Focused missed-case retry'),
                                     'data-pets-toxic-retry': 'active',
                                     style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.08)', border: '2px solid rgba(14,165,233,0.45)' }
                                   },
@@ -6709,7 +6720,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                                     }, reviewVignette.icon + ' ' + reviewVignette.food + ' — which species is at primary risk?'),
                                     h('div', {
                                       role: 'group',
-                                      'aria-label': 'Retry the missed hazard case',
+                                      'aria-label': __alloT('stem.pets.a11y_retry_the_missed_hazard_case', 'Retry the missed hazard case'),
                                       style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6 }
                                     }, TFS_OPTIONS.map(function(option) {
                                       var selected = reviewAnswered && tfsReview.pick === option.id;
@@ -6805,8 +6816,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             '. This tile covers ARTIFICIAL selection — what humans did to dogs, cats, and other companion species across thousands of generations of choosing who breeds with whom.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, 'Domestication timeline'),
-          h('div', { role: 'region', 'aria-label': 'Scrollable domestication timeline', tabIndex: 0, 'data-pets-focusable': true, style: { maxWidth: '100%', overflowX: 'auto', overscrollBehaviorInline: 'contain' } },
-            h('table', { 'aria-label': 'Domestication timeline', style: { width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: 12 } },
+          h('div', { role: 'region', 'aria-label': __alloT('stem.pets.a11y_scrollable_domestication_timeline', 'Scrollable domestication timeline'), tabIndex: 0, 'data-pets-focusable': true, style: { maxWidth: '100%', overflowX: 'auto', overscrollBehaviorInline: 'contain' } },
+            h('table', { 'aria-label': __alloT('stem.pets.a11y_domestication_timeline', 'Domestication timeline'), style: { width: '100%', minWidth: 620, borderCollapse: 'collapse', fontSize: 12 } },
               h('thead', null,
               h('tr', { style: { background: T.cardAlt } },
                 h('th', { scope: 'col', style: { padding: '6px 8px', textAlign: 'left', color: T.accentHi } }, 'Species'),
@@ -7055,11 +7066,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', {
               className: 'petslab-punnett-scroll',
               role: 'region',
-              'aria-label': 'Scrollable Punnett square',
+              'aria-label': __alloT('stem.pets.a11y_scrollable_punnett_square', 'Scrollable Punnett square'),
               tabIndex: 0
             },
               h('table', { className: 'petslab-punnett-table',
-                'aria-label': 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes' },
+                'aria-label': __alloT('stem.pets.a11y_punnett_square_4_by_4_grid_showing_16_offspring', 'Punnett square 4 by 4 grid showing 16 offspring genotypes and phenotypes') },
                 h('thead', null,
                   h('tr', null,
                     h('th', { scope: 'col', style: { padding: 6, color: T.dim, fontSize: 10 } }, ''),
@@ -7124,7 +7135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', {
                 className: 'petslab-outcome-legend',
                 role: 'list',
-                'aria-label': 'Phenotype outcome legend'
+                'aria-label': __alloT('stem.pets.a11y_phenotype_outcome_legend', 'Phenotype outcome legend')
               },
                 ['Black', 'Chocolate', 'Yellow'].map(function(color) {
                   var ph = phenotype(color === 'Black' ? 'B' : 'b', color === 'Black' ? 'B' : 'b',
@@ -8001,12 +8012,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           learningModelNote('Decision-support model', 'The fit scores come from fixed educational weights, not a validated matching instrument. Use them to surface questions for a shelter, veterinarian, or experienced caregiver—not as an adoption decision.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 6 } }, '🏘️ Housing'),
-          h('div', { role: 'radiogroup', 'aria-label': 'Housing type' },
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_housing_type', 'Housing type') },
             radio('housing', 'apartment', pickHousing, 'Apartment / small', function(v) { upd('pickHousing', v); }),
             radio('housing', 'house', pickHousing, 'House with yard', function(v) { upd('pickHousing', v); }),
             radio('housing', 'rural', pickHousing, 'Rural / acreage', function(v) { upd('pickHousing', v); })),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } }, '👨‍👩‍👧 Family'),
-          h('div', { role: 'radiogroup', 'aria-label': 'Youngest child at home' },
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_youngest_child_at_home', 'Youngest child at home') },
             PICK_KID_BANDS.map(function (b) {
               return radio('kidage', b.id, pickKidAge, b.label, function (v) {
                 upd('pickKidAge', v);
@@ -8022,16 +8033,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, pickHoursHome + ' hr')),
           h('input', { id: 'pp-hours', 'data-pets-focusable': true, type: 'range',
             min: 0, max: 14, step: 1, value: pickHoursHome,
-            'aria-label': 'Hours alone per day',
+            'aria-label': __alloT('stem.pets.a11y_hours_alone_per_day', 'Hours alone per day'),
             onChange: function(e) { upd('pickHoursHome', parseInt(e.target.value, 10)); },
             style: { width: '100%', accentColor: T.accent } }),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } }, '💵 Budget'),
-          h('div', { role: 'radiogroup', 'aria-label': 'Budget' },
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_budget', 'Budget') },
             radio('budget', 'low', pickBudget, 'Low (< $1K/yr)', function(v) { upd('pickBudget', v); }),
             radio('budget', 'medium', pickBudget, 'Medium ($1–3K/yr)', function(v) { upd('pickBudget', v); }),
             radio('budget', 'high', pickBudget, 'High ($3K+ /yr)', function(v) { upd('pickBudget', v); })),
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginTop: 12, marginBottom: 6 } }, '🎓 Pet experience'),
-          h('div', { role: 'radiogroup', 'aria-label': 'Experience level' },
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_experience_level', 'Experience level') },
             radio('exp', 'first', pickExperience, 'First-time owner', function(v) { upd('pickExperience', v); }),
             radio('exp', 'some', pickExperience, 'Some experience', function(v) { upd('pickExperience', v); }),
             radio('exp', 'lots', pickExperience, 'Experienced (multiple species)', function(v) { upd('pickExperience', v); }))),
@@ -8772,7 +8783,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           var temp = ids[i]; ids[i] = ids[j]; ids[j] = temp;
         }
         upd('blTransfer', { idx: 0, ids: ids.slice(0, 4), answers: [], score: 0, done: false, bestPct: blTransfer ? blTransfer.bestPct : 0 });
-        petsAnnounce('Starting a four-case body language context challenge.');
+        petsAnnounce(__alloT('stem.pets.sr_starting_a_four_case_body_language_context_challe', 'Starting a four-case body language context challenge.'));
         focusBodyTarget(_bodyStepHeadingRef);
       }
       function answerContextChallenge(choiceIndex) {
@@ -8963,7 +8974,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       }
       function newQuiz() { startQuiz('random'); }
       // Mode switcher UI
-      var modeBar = h('div', { role: 'tablist', 'aria-label': 'Body language mode',
+      var modeBar = h('div', { role: 'tablist', 'aria-label': __alloT('stem.pets.a11y_body_language_mode', 'Body language mode'),
         style: { display: 'flex', gap: 8, marginBottom: 14, flexWrap: 'wrap' } },
         ['read', 'quiz', 'context'].map(function(m) {
           var sel = blMode === m;
@@ -9017,7 +9028,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, decodedCount + ' / 27 logged once'),
               h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, unseenSignals.length + ' unseen'),
               h('span', { style: { padding: '5px 8px', borderRadius: 999, background: T.cardAlt, border: '1px solid ' + T.border } }, needsPracticeSignals.length + ' need practice')),
-            h('div', { role: 'group', 'aria-label': 'Choose a body-language practice set',
+            h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_a_body_language_practice_set', 'Choose a body-language practice set'),
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(190px, 100%), 1fr))', gap: 8 } },
               h('button', { type: 'button', 'data-pets-focusable': true,
                 onClick: function() { startQuiz('random'); },
@@ -9096,7 +9107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             // Per-question result strip
             h('div', { style: { padding: '0 18px 8px' } },
               h('div', { style: { fontSize: 9, fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: T.muted, marginBottom: 4 } }, 'Your answers'),
-              h('div', { role: 'list', 'aria-label': 'Question results',
+              h('div', { role: 'list', 'aria-label': __alloT('stem.pets.a11y_question_results', 'Question results'),
                 style: { display: 'flex', flexWrap: 'wrap', gap: 4 } },
                 blQuiz.qs.map(function(qq, qi) {
                   var picked = ans[qi];
@@ -9179,7 +9190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('div', { style: { fontSize: 12, color: T.muted, marginTop: 8, fontStyle: 'italic' } }, 'What is this animal most likely communicating?')
           ),
           // Choices
-          h('div', { role: 'group', 'aria-label': 'Choose the most likely meaning',
+          h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_the_most_likely_meaning', 'Choose the most likely meaning'),
             style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
             q.choices.map(function(choice, ci) {
               var isPicked = picked === ci;
@@ -9330,7 +9341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }, contextItem.scenario),
             h('div', { style: { color: T.text, fontSize: 13, fontWeight: 800, lineHeight: 1.5 } }, contextItem.question)
           ),
-          h('div', { role: 'group', 'aria-label': 'Choose the safest next step',
+          h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_the_safest_next_step', 'Choose the safest next step'),
             style: { display: 'grid', gap: 8, marginBottom: 12 } },
             contextItem.choices.map(function(choice, choiceIndex) {
               var isPicked = contextPicked === choiceIndex;
@@ -9676,7 +9687,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             'Start with an illustrative classroom scenario or replace it with current local research. Costs vary by animal, health, provider, housing, region, and time. Dollar projections use today’s values: future price changes and unexpected treatment are not forecast.')),
         h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
           h('div', { style: { fontSize: 13, fontWeight: 700, color: T.text, marginBottom: 8 } }, 'Pick a species'),
-          h('div', { role: 'radiogroup', 'aria-label': 'Species' },
+          h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_species', 'Species') },
             radioCost('dog-large', '🐕 Large dog'),
             radioCost('dog-small', '🐕‍🦺 Small dog'),
             radioCost('cat-indoor', '🐈 Cat'),
@@ -9686,7 +9697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             radioCost('parrot-medium', '🦜 Conure'))),
         h('fieldset', { className: 'petslab-cost-basis' },
           h('legend', null, 'Choose the estimate basis'),
-          h('div', { className: 'petslab-cost-mode-options', role: 'radiogroup', 'aria-label': 'Estimate basis' },
+          h('div', { className: 'petslab-cost-mode-options', role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_estimate_basis', 'Estimate basis') },
             costModeRadio('illustrative', 'Illustrative starting values'),
             costModeRadio('local', 'My researched estimates')),
           h('p', { id: 'pets-cost-research-help', style: { margin: 0, color: T.muted, fontSize: 11, lineHeight: 1.5 } },
@@ -9735,7 +9746,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ' (typical lifespan ~', h('strong', null, p.lifespan), ' yr)'),
           h('input', { id: 'cs-years', 'data-pets-focusable': true, type: 'range',
             min: 1, max: 30, step: 1, value: costYears,
-            'aria-label': 'Commitment years',
+            'aria-label': __alloT('stem.pets.a11y_commitment_years', 'Commitment years'),
             onChange: function(e) { upd('costYears', parseInt(e.target.value, 10)); },
             style: { width: '100%', accentColor: T.accent } })),
         h('div', { className: 'petslab-cost-summary', style: { padding: 16, borderRadius: 12, background: T.cardAlt, border: '1px solid ' + T.accent, marginBottom: 14 } },
@@ -9823,7 +9834,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   }, share >= 12 ? s.mark + ' ' + Math.round(share) + '%' : (share >= 7 ? s.mark : s.mark.charAt(0)));
                 })
               ),
-              h('div', { className: 'petslab-cost-allocation-legend', role: 'list', 'aria-label': 'Cost allocation legend' },
+              h('div', { className: 'petslab-cost-allocation-legend', role: 'list', 'aria-label': __alloT('stem.pets.a11y_cost_allocation_legend', 'Cost allocation legend') },
                 segs.map(function(s) {
                   return h('div', { key: s.id, role: 'listitem', className: 'petslab-cost-allocation-item' },
                     h('span', { className: 'petslab-cost-allocation-mark', 'aria-hidden': 'true' }, s.mark),
@@ -10331,7 +10342,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   idx: 0, score: 0, answered: false, lastChoice: null,
                   missedIds: missedNow.slice(), reviewIds: [], mode: 'all', responses: {}
                 }));
-                petsAnnounce('Full quiz reset');
+                petsAnnounce(__alloT('stem.pets.sr_full_quiz_reset', 'Full quiz reset'));
                 focusPetsTarget(_quizQuestionRef);
               },
               style: btn() }, '🔄 Try full quiz'),
@@ -10371,7 +10382,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               h('div', { ref: _quizQuestionRef, tabIndex: -1, className: 'petslab-quiz-question-heading',
                 style: { fontSize: 14, color: T.text, lineHeight: 1.55, fontWeight: 600 } }, q.stem)
             )),
-          h('div', { role: 'group', 'aria-label': 'Choose the best answer' },
+          h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_the_best_answer', 'Choose the best answer') },
             q.choices.map(function(c, i) {
               var picked = quizState.lastChoice === i;
               var correct = q.correct === i;
@@ -10868,7 +10879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                         if (priority.moduleId === 'bodyLang') {
                           updMulti({ view: 'bodyLang', lastView: 'bodyLang', blMode: 'quiz' });
                           markVisited('bodyLang');
-                          petsAnnounce('Opening Body Language signal practice.');
+                          petsAnnounce(__alloT('stem.pets.sr_opening_body_language_signal_practice', 'Opening Body Language signal practice.'));
                         } else {
                           goToView(priority.moduleId, priority.moduleLabel);
                         }
@@ -10956,11 +10967,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                 h('p', { style: { margin: 0, color: T.muted, fontSize: 10, lineHeight: 1.5 } },
                   h('strong', { style: { color: T.text } }, 'Success evidence: '), item.success));
             }))),
-        h('div', { role: 'region', 'aria-label': 'Scrollable potential NGSS connections table', tabIndex: 0, 'data-pets-focusable': true, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
+        h('div', { role: 'region', 'aria-label': __alloT('stem.pets.a11y_scrollable_potential_ngss_connections_table', 'Scrollable potential NGSS connections table'), tabIndex: 0, 'data-pets-focusable': true, style: { padding: 14, borderRadius: 12, background: T.card, border: '1px solid ' + T.border, marginBottom: 14, overflowX: 'auto' } },
           h('h3', { style: { margin: '0 0 5px', fontSize: 15, color: T.text } }, '📐 Potential NGSS connections'),
           h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 10, lineHeight: 1.5 } },
             'Connection does not equal alignment. Each row names an additional science practice or performance task needed before treating the activity as evidence for a performance expectation.'),
-          h('table', { 'aria-label': 'Potential NGSS connections and additional evidence needed',
+          h('table', { 'aria-label': __alloT('stem.pets.a11y_potential_ngss_connections_and_additional_evide', 'Potential NGSS connections and additional evidence needed'),
             style: { width: '100%', minWidth: 540, borderCollapse: 'collapse', fontSize: 12 } },
             h('thead', null,
               h('tr', { style: { background: T.cardAlt } },
@@ -11144,7 +11155,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('span', null, '75'),
             h('span', null, '100+ yr')
           ),
-          reveal && h('div', { className: 'petslab-life-stage-key', 'aria-label': 'Illustrative life-stage key' },
+          reveal && h('div', { className: 'petslab-life-stage-key', 'aria-label': __alloT('stem.pets.a11y_illustrative_life_stage_key', 'Illustrative life-stage key') },
             h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25cf '), 'Young / settling in'),
             h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25a0 '), 'Adult care years'),
             h('span', null, h('span', { 'aria-hidden': 'true' }, '\u25c6 '), 'Senior-care planning')
@@ -11160,7 +11171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return h('section', { className: 'petslab-life-comparison', 'aria-labelledby': 'petslab-life-comparison-title' },
           h('h4', { id: 'petslab-life-comparison-title' }, 'All species on one 100-year scale'),
           h('p', null, 'Compare the typical commitment length directly. Each color also has a distinct shape and written range.'),
-          h('div', { className: 'petslab-life-stage-key', 'aria-label': 'Lifespan bucket legend' },
+          h('div', { className: 'petslab-life-stage-key', 'aria-label': __alloT('stem.pets.a11y_lifespan_bucket_legend', 'Lifespan bucket legend') },
             BUCKETS.map(function(bucket) {
               return h('span', { key: 'legend-' + bucket.id, style: { color: bucket.color } },
                 h('span', { className: 'petslab-life-bucket-mark', 'aria-hidden': 'true' }, lifeShapeText(bucket.id)),
@@ -11390,7 +11401,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           }, '✅ No missed species — every lifespan range was identified correctly.');
         }
         return h('section', {
-          'aria-label': 'Missed lifespan case review',
+          'aria-label': __alloT('stem.pets.a11y_missed_lifespan_case_review', 'Missed lifespan case review'),
           'data-pets-lifespan-review': 'available',
           style: { marginTop: 10, padding: 10, borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border }
         },
@@ -11422,7 +11433,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       function renderLifespanFocusedRetry() {
         if (reviewActive) {
           return h('section', {
-            'aria-label': 'Focused missed-species retry',
+            'aria-label': __alloT('stem.pets.a11y_focused_missed_species_retry', 'Focused missed-species retry'),
             'data-pets-lifespan-retry': 'active',
             style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(14,165,233,0.08)', border: '2px solid rgba(14,165,233,0.45)' }
           },
@@ -11437,7 +11448,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             }, reviewVignette.icon + ' ' + reviewVignette.species + ' — choose its typical lifespan bucket.'),
             h('div', {
               role: 'group',
-              'aria-label': 'Retry the missed lifespan case',
+              'aria-label': __alloT('stem.pets.a11y_retry_the_missed_lifespan_case', 'Retry the missed lifespan case'),
               style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(145px, 1fr))', gap: 6 }
             }, BUCKETS.map(function(bucket) {
               var selected = reviewAnswered && lsReview.pick === bucket.id;
@@ -11519,7 +11530,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           renderLifeStage(v, lsAns)
         ),
         // 5 picker buttons
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': 'Pick the lifespan range' },
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 8 }, role: 'group', 'aria-label': __alloT('stem.pets.a11y_pick_the_lifespan_range', 'Pick the lifespan range') },
           BUCKETS.map(function(b) {
             var picked = lsAns && lsPick === b.id;
             var isRight = lsAns && acceptedIds.indexOf(b.id) >= 0;
@@ -11626,7 +11637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('🌟 Famous Animals in Science'),
         h('p', { style: { margin: '0 0 12px', color: T.muted, fontSize: 13, lineHeight: 1.6 } },
           '10 animals you\'ll encounter in textbooks, museums, and culture. Each shaped how we understand animal cognition, training, service work, or human-animal bonds.'),
-        h('div', { role: 'group', 'aria-label': 'Filter famous animals by category',
+        h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_filter_famous_animals_by_category', 'Filter famous animals by category'),
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
           FAMOUS_FILTERS.map(function(f) {
             var active = famousFilter === f.id;
@@ -11850,7 +11861,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           feedbackSource: 'local',
           reviewStatus: 'teacher-review'
         });
-        petsAnnounce('Offline rubric check ready.');
+        petsAnnounce(__alloT('stem.pets.sr_offline_rubric_check_ready', 'Offline rubric check ready.'));
       }
 
       function getCritique() {
@@ -11868,7 +11879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             draftSnapshot: requestDraft
           }
         });
-        petsAnnounce('Getting critique...');
+        petsAnnounce(__alloT('stem.pets.sr_getting_critique', 'Getting critique...'));
         var prompt = 'You are a veterinary + animal-welfare educator reviewing a student\'s response to a real-world pet-care scenario.\n\n' +
           'SCENARIO:\n' + requestScenario.prompt + '\n\n' +
           'STUDENT RESPONSE:\n' + requestDraft + '\n\n' +
@@ -11896,7 +11907,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               feedbackSource: 'ai',
               reviewStatus: 'teacher-review'
             });
-            petsAnnounce('Critique ready.');
+            petsAnnounce(__alloT('stem.pets.sr_critique_ready', 'Critique ready.'));
           })
           .catch(function(e) {
             if (_aiRequestRef.current.seq !== requestId) return;
@@ -11921,7 +11932,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           revisionMade: true,
           revisionNoteChars: trimmedNote.length
         });
-        petsAnnounce('Revision reflection saved for teacher review.');
+        petsAnnounce(__alloT('stem.pets.sr_revision_reflection_saved_for_teacher_review', 'Revision reflection saved for teacher review.'));
       }
 
       return h('div', { style: { padding: 20, maxWidth: 880, margin: '0 auto', color: T.text } },
@@ -12036,7 +12047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               });
             },
             placeholder: 'Walk through what you\'d do or say. What do you ask first? What do you recommend? What would change your recommendation?',
-            'aria-label': 'Your response',
+            'aria-label': __alloT('stem.pets.a11y_your_response', 'Your response'),
             'aria-describedby': 'pets-ai-response-count pets-ai-feedback-readiness pets-ai-privacy-note',
             rows: 6,
             style: { width: '100%', padding: 10, borderRadius: 8, border: '1px solid ' + T.border, background: T.bg, color: T.text, fontSize: 13, lineHeight: 1.55, fontFamily: 'inherit', boxSizing: 'border-box', resize: 'vertical' } }),
@@ -12070,7 +12081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             callGemini && h('button', {
               type: 'button',
               'data-pets-focusable': true,
-              'aria-label': 'Run offline rubric check',
+              'aria-label': __alloT('stem.pets.a11y_run_offline_rubric_check', 'Run offline rubric check'),
               'aria-describedby': 'pets-ai-feedback-readiness pets-ai-privacy-note',
               disabled: aiLoadingCritique || !draftReadiness.ready,
               onClick: function() { localRubricCheck(scenario, aiResponse.trim()); },
@@ -12901,7 +12912,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         backBar('🔬 Diagrams'),
         h('p', { style: { margin: '0 0 14px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
           '4 labeled anatomical schematics. Switch tabs to compare different topics covered across the lab.'),
-        h('div', { role: 'tablist', 'aria-label': 'Schematic diagrams',
+        h('div', { role: 'tablist', 'aria-label': __alloT('stem.pets.a11y_schematic_diagrams', 'Schematic diagrams'),
           style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
           DIAGRAM_TABS.map(function(t, tabIndex) {
             var picked = current === t.id;
@@ -12950,7 +12961,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var nextTab = e.currentTarget.parentNode.querySelectorAll('[role="tab"]')[nextIndex];
         if (nextTab) { nextTab.focus(); nextTab.click(); }
       }
-      var sectionTabs = h('div', { role: 'tablist', 'aria-label': 'Welfare topic',
+      var sectionTabs = h('div', { role: 'tablist', 'aria-label': __alloT('stem.pets.a11y_welfare_topic', 'Welfare topic'),
         style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 14 } },
         welfareKeys.map(function(k, tabIndex) {
           var s = WELFARE_DATA[k];
@@ -13025,7 +13036,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             ),
             h('input', { id: 'litter-years', 'data-pets-focusable': true, type: 'range',
               min: 1, max: 7, step: 1, value: years,
-              'aria-label': 'Years of unchecked breeding',
+              'aria-label': __alloT('stem.pets.a11y_years_of_unchecked_breeding', 'Years of unchecked breeding'),
               onChange: function(e) { upd('litterYears', parseInt(e.target.value, 10)); },
               style: { width: '100%', accentColor: T.warm, cursor: 'pointer' }
             }),
@@ -13250,7 +13261,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
       return h('section', {
         className: 'petslab-care-timeline',
         role: 'region',
-        'aria-label': 'Seven-day welfare timeline. Each day shows the scenario choice and its physical, mental, social, and environmental changes.',
+        'aria-label': __alloT('stem.pets.a11y_seven_day_welfare_timeline_each_day_shows_the_s', 'Seven-day welfare timeline. Each day shows the scenario choice and its physical, mental, social, and environmental changes.'),
         style: { marginBottom: 12 }
       },
         h('div', { className: 'petslab-care-timeline-head' },
@@ -13258,7 +13269,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             h('h3', null, 'Seven-day welfare timeline'),
             h('p', null, 'Follow how each decision moves the four welfare domains. The highlighted day is your current position.')
           ),
-          h('div', { className: 'petslab-care-timeline-legend', 'aria-label': 'Welfare domain key' },
+          h('div', { className: 'petslab-care-timeline-legend', 'aria-label': __alloT('stem.pets.a11y_welfare_domain_key', 'Welfare domain key') },
             domainMeta.map(function(m) { return h('span', { key: m.key, style: { color: m.color } }, m.label + ' ' + m.key); })
           )
         ),
@@ -13878,7 +13889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }, moodCaption()),
         hasChosen && h('div', {
           className: 'petslab-care-decision',
-          'aria-label': 'Daily decision recorded',
+          'aria-label': __alloT('stem.pets.a11y_daily_decision_recorded', 'Daily decision recorded'),
           style: {
             position: 'absolute', right: 12, top: 12,
             padding: '6px 9px', borderRadius: 999,
@@ -14660,7 +14671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
           h('p', { ref: _careQuestionRef, tabIndex: -1,
             style: { margin: 0, fontSize: 15, color: T.text, lineHeight: 1.6 } }, dayObj.prompt)
         ),
-        h('div', { role: 'group', 'aria-label': 'Choose your action',
+        h('div', { role: 'group', 'aria-label': __alloT('stem.pets.a11y_choose_your_action', 'Choose your action'),
           style: { display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 12 } },
           dayObj.choices.map(function(ch) {
             var isPicked = hasChosen && thisChoice.choiceId === ch.id;
@@ -14782,10 +14793,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         }
         window.StemLab.ensureThree({ orbit: false }).then(function () {
           updMulti({ _threeLoading: false, _threeLoaded: true });
-          petsAnnounce('3D engine ready.');
+          petsAnnounce(__alloT('stem.pets.sr_3d_engine_ready', '3D engine ready.'));
         }).catch(function () {
           updMulti({ _threeLoading: false, _threeError: true });
-          petsAnnounce('The 3D engine could not load. The written comparison below still works.');
+          petsAnnounce(__alloT('stem.pets.sr_the_3d_engine_could_not_load_the_written_comparis', 'The 3D engine could not load. The written comparison below still works.'));
         });
       }
 
@@ -14946,13 +14957,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         _sensoryCompareLightRef.current = null;
         var viewer = _sensoryViewerRef.current;
         if (viewer) viewer.setInputLocked(false);
-        if (announce !== false) petsAnnounce('Comparison cleared. You can move and choose a new angle.');
+        if (announce !== false) petsAnnounce(__alloT('stem.pets.sr_comparison_cleared_you_can_move_and_choose_a_new', 'Comparison cleared. You can move and choose a new angle.'));
       }
 
       function captureSensoryView() {
         var viewer = _sensoryViewerRef.current;
         if (!viewer || sensoryStatus !== 'ready') {
-          petsAnnounce('The 3D room must be ready before a comparison frame can be captured.');
+          petsAnnounce(__alloT('stem.pets.sr_the_3d_room_must_be_ready_before_a_comparison_fra', 'The 3D room must be ready before a comparison frame can be captured.'));
           return;
         }
         var first = !sensoryCompareActive;
@@ -14967,7 +14978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         var src = viewer.captureView(520);
         if (!src) {
           if (first) clearSensoryComparison(false);
-          petsAnnounce('This browser could not capture the comparison frame.');
+          petsAnnounce(__alloT('stem.pets.sr_this_browser_could_not_capture_the_comparison_fra', 'This browser could not capture the comparison frame.'));
           return;
         }
         var current = _petsSensorySpecies(sensorySpecies);
@@ -14997,7 +15008,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         return h('section', {
           className: 'petslab-sensory-compare',
           role: 'region',
-          'aria-label': 'Locked viewpoint comparison for human, dog, and cat vision'
+          'aria-label': __alloT('stem.pets.a11y_locked_viewpoint_comparison_for_human_dog_and_c', 'Locked viewpoint comparison for human, dog, and cat vision')
         },
           h('div', { className: 'petslab-sensory-compare-head' },
             h('div', null,
@@ -15070,7 +15081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
 
       var seenCount = Object.keys(sensorySeen).length;
       var speciesBar = h('div', { style: { marginBottom: 10 } },
-        h('div', { role: 'radiogroup', 'aria-label': 'Whose eyes to see through',
+        h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.pets.a11y_whose_eyes_to_see_through', 'Whose eyes to see through'),
           style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
           SENSORY_SPECIES.map(function (s) {
             var on = s.id === sensorySpecies;
@@ -15257,7 +15268,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
                   var viewer = _sensoryViewerRef.current;
                   if (!viewer || sensoryStatus !== 'ready' || sensoryCompareActive) return;
                   viewer.resetView();
-                  petsAnnounce('View reset to the room entrance.');
+                  petsAnnounce(__alloT('stem.pets.sr_view_reset_to_the_room_entrance', 'View reset to the room entrance.'));
                 },
                 style: btn({ padding: '7px 10px', fontSize: 11, opacity: sensoryStatus === 'ready' && !sensoryCompareActive ? 1 : 0.48 })
               }, '\u21BA Reset')
@@ -15280,7 +15291,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
               style: btn({ padding: '8px 14px', fontSize: 13 }) },
               sensoryReduceMotion ? '🧊 Motion reduced' : '🌀 Motion on'),
             h('button', { className: 'petslab-sim-button', 'data-pets-focusable': true,
-              onClick: function () { clearSensoryComparison(false); upd('sensoryActive', false); petsAnnounce('Left the room.'); },
+              onClick: function () { clearSensoryComparison(false); upd('sensoryActive', false); petsAnnounce(__alloT('stem.pets.sr_left_the_room', 'Left the room.')); },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, '⏹ Leave the room'),
             h('span', { style: { fontSize: 11, color: T.dim } },
               sensoryCompareActive
@@ -15391,7 +15402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
         // with the page's real primary action.
         h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginBottom: 14 } },
           h('button', { 'data-pets-focusable': true,
-            'aria-label': 'Back to Pets Lab menu',
+            'aria-label': __alloT('stem.pets.a11y_back_to_pets_lab_menu', 'Back to Pets Lab menu'),
             onClick: function () { goToView('menu'); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
           }, '← Menu'),
@@ -15469,7 +15480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('petsLab'))) {
             onClick: function () {
               updMulti({ view: 'bodyLang', lastView: 'bodyLang', blMode: 'quiz', blQuiz: null });
               markVisited('bodyLang');
-              petsAnnounce('Opening Body Language Decoder practice.');
+              petsAnnounce(__alloT('stem.pets.sr_opening_body_language_decoder_practice', 'Opening Body Language Decoder practice.'));
             },
             style: btnPrimary({ padding: '10px 18px', fontSize: 13, width: '100%' })
           }, unique === 0
