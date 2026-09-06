@@ -3073,7 +3073,7 @@ window.StemLab = window.StemLab || {
           var g = p.geoSandbox || {};
           return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) });
         });
-        if (announceToSR) announceToSR('Construction cleared');
+        if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_construction_cleared', 'Construction cleared'));
       }
       function selectObject(id) {
         setLabToolData(function(p) {
@@ -3348,16 +3348,16 @@ window.StemLab = window.StemLab || {
           ctx.callGemini(prompt, false, false, 0.7).then(function(resp) {
             aiRequestRef.current = false;
             updExt({ aiResponse: resp || 'No response received.', aiLoading: false });
-            if (announceToSR) announceToSR('AI Tutor response ready.');
+            if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_ai_tutor_response_ready', 'AI Tutor response ready.'));
           }).catch(function() {
             aiRequestRef.current = false;
             updExt({ aiResponse: 'AI tutor is unavailable right now.', aiLoading: false });
-            if (announceToSR) announceToSR('AI Tutor is unavailable right now.');
+            if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_ai_tutor_is_unavailable_right_now', 'AI Tutor is unavailable right now.'));
           });
         } else {
           aiRequestRef.current = false;
           updExt({ aiResponse: 'AI tutor requires Gemini API.', aiLoading: false });
-          if (announceToSR) announceToSR('AI Tutor requires an AI provider connection.');
+          if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_ai_tutor_requires_an_ai_provider_connection', 'AI Tutor requires an AI provider connection.'));
         }
       };
 
@@ -3388,7 +3388,7 @@ window.StemLab = window.StemLab || {
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRecipePrompt(subj), false, false, 0.85).then(function(resp) {
           var recipe = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-          if (recipe) { _pushSculptUndo(); recipe.name = subj.slice(0, 80); _updSculpt(recipe); if (announceToSR) announceToSR('Sculpture created'); }
+          if (recipe) { _pushSculptUndo(); recipe.name = subj.slice(0, 80); _updSculpt(recipe); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_sculpture_created', 'Sculpture created')); }
           else aiTrouble(t('stem.geosandbox.ai_unbuildable', 'The AI did not send back a sculpture that could be built. Try describing it more simply, like “a snowman” or “a rocket”.'));
           setSculptBusy(false);
         }).catch(function() { setSculptBusy(false); aiTrouble(AI_UNREACHABLE); });
@@ -3413,7 +3413,7 @@ window.StemLab = window.StemLab || {
         setSculptBusy(true);
         ctx.callGemini(P3D.buildRefinePrompt(sculptRecipe, instr), false, false, 0.7).then(function(resp) {
           var nr = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-          if (nr) { _pushSculptUndo(); _updSculpt(Object.assign({}, nr, { scale: sculptRecipe.scale, rotY: sculptRecipe.rotY, tint: sculptRecipe.tint })); setSculptRefine(''); if (announceToSR) announceToSR('Sculpture refined'); }
+          if (nr) { _pushSculptUndo(); _updSculpt(Object.assign({}, nr, { scale: sculptRecipe.scale, rotY: sculptRecipe.rotY, tint: sculptRecipe.tint })); setSculptRefine(''); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_sculpture_refined', 'Sculpture refined')); }
           else aiTrouble(t('stem.geosandbox.ai_refine_failed', 'The AI could not apply that change. Try one change at a time, like “make the head bigger”.'));
           setSculptBusy(false);
         }).catch(function() { setSculptBusy(false); aiTrouble(AI_UNREACHABLE); });
@@ -3545,7 +3545,7 @@ window.StemLab = window.StemLab || {
       function startFromScratch() {        _pushSculptUndo();
         _updSculpt({ name: 'my sculpt', parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0.5, 0], rotation: [0, 0, 0], color: '#60a5fa' }] });
         setSelPart(0); setSculptEdit(true); loadedSculptName.current=null;
-        if (announceToSR) announceToSR('New sculpt started with one box. Add parts and shape them by hand.');
+        if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_new_sculpt_started_with_one_box_add_parts_and_sha', 'New sculpt started with one box. Add parts and shape them by hand.'));
       }
       function addPart(shape) {
         var parts = (sculptRecipe && sculptRecipe.parts) ? sculptRecipe.parts.slice() : [];
@@ -3570,7 +3570,7 @@ window.StemLab = window.StemLab || {
         var members = sculptRecipe.parts.map(function(p,i){return i;}).filter(function(i){return i === selPart || (gd.sculptMoveGroup && part.group && sculptRecipe.parts[i].group === part.group);});
         if (members.some(function(i){return sculptRecipe.parts[i].locked;})) { setSculptMessage('Unlock the selected part or group before moving it.'); return; }
         members.forEach(function(i){var v=sculptRecipe.parts[i].position[index];delta=delta>0?Math.min(delta,(index===1?8:4)-v):Math.max(delta,-4-v);});
-        if (Math.abs(delta)<1e-8) { setSculptMessage('Movement limit reached.'); if(announceToSR)announceToSR('Movement limit reached.'); return; }
+        if (Math.abs(delta)<1e-8) { setSculptMessage('Movement limit reached.'); if(announceToSR)announceToSR(__alloT('stem.geosandbox.sr_movement_limit_reached', 'Movement limit reached.')); return; }
         if (sculptEditSession.current !== true) { _pushSculptUndo(); if(sculptEditSession.current==='armed')sculptEditSession.current=true; }
         var next = sculptRecipe.parts.map(function(p,i){if(members.indexOf(i)<0)return p;var q=Object.assign({},p,{position:p.position.slice()});q.position[index]+=delta;return q;});
         var message = 'Moved '+axis.toUpperCase()+' '+(delta>0?'+':'')+(delta*f).toFixed(2)+' '+unitDef.short;
@@ -3594,7 +3594,7 @@ window.StemLab = window.StemLab || {
         _pushSculptUndo();
         var parts = sculptRecipe.parts.filter(function(_p, i) { return i !== selPart; });
         if (parts.length) { _setParts(parts, 'Part deleted'); setSelPart(Math.max(0, selPart - 1)); }
-        else { _updSculpt(null); setSelPart(null); setSculptEdit(false); if (announceToSR) announceToSR('All parts deleted'); }
+        else { _updSculpt(null); setSelPart(null); setSculptEdit(false); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_all_parts_deleted', 'All parts deleted')); }
       }
 
       // A compact investigation cycle: predict → manipulate → compare → explain.
@@ -3604,7 +3604,7 @@ window.StemLab = window.StemLab || {
         if (!sculptRecipe || selPart == null || !sculptRecipe.parts || !sculptRecipe.parts[selPart]) return;
         setSculptInvestigation({ active: true, phase: 'predict', prediction: '', partIndex: selPart, partId: sculptRecipe.parts[selPart].partId, beforeRecipe: JSON.parse(JSON.stringify(sculptRecipe)), baseline: JSON.parse(JSON.stringify(sculptRecipe.parts[selPart])), study: null, explanation: '', responseMode: 'written', demonstrated: false });
         recordGeoResearch('investigation_start', { mode: 'sculpt', part: selPart, phase: 'predict' });
-        if (announceToSR) announceToSR('Investigation started. Predict which measure will grow faster when every dimension is scaled by 1.25.');
+        if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_investigation_started_predict_which_measure_will', 'Investigation started. Predict which measure will grow faster when every dimension is scaled by 1.25.'));
       }
       function chooseSculptPrediction(choice) {
         setSculptInvestigation(Object.assign({}, sculptInvestigation, { prediction: choice, phase: 'manipulate' }));
@@ -3636,7 +3636,7 @@ window.StemLab = window.StemLab || {
         recordGeoResearch(restart ? 'investigation_restart' : 'investigation_exit', { mode: 'sculpt', part: sculptInvestigation.partIndex, phase: sculptInvestigation.phase });
         if (restart) {
           setSculptInvestigation(Object.assign({}, sculptInvestigation, { phase: 'predict', prediction: '', study: null, explanation: '' }));
-          if (announceToSR) announceToSR('Investigation restarted at the original part size.');
+          if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_investigation_restarted_at_the_original_part_size', 'Investigation restarted at the original part size.'));
         } else {
           setSculptInvestigation({ active: false, phase: 'predict', prediction: '', partIndex: null, study: null, explanation: '' });
           if (announceToSR) announceToSR(shouldRestore ? 'Investigation exited and its scale change was undone.' : 'Investigation exited.');
@@ -3650,7 +3650,7 @@ window.StemLab = window.StemLab || {
         upd('sculptureRecords', sculptureRecords.concat([entry]));
         setSculptMessage('Investigation saved to your learning notebook.');
         setSculptInvestigation({ active: false, phase: 'predict', prediction: '', partIndex: null, study: null, explanation: '' });
-        if (announceToSR) announceToSR('Investigation complete and saved to your learning notebook.');
+        if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_investigation_complete_and_saved_to_your_learning', 'Investigation complete and saved to your learning notebook.'));
       }
       function exportResearchTrace() {
         if (!researchTrace.length || typeof document === 'undefined') return;
@@ -3659,7 +3659,7 @@ window.StemLab = window.StemLab || {
           var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
           var url = URL.createObjectURL(blob), link = document.createElement('a');
           link.href = url; link.download = 'geometry-sandbox-research-trace.json'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
-          if (announceToSR) announceToSR('Anonymous research trace exported.');
+          if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_anonymous_research_trace_exported', 'Anonymous research trace exported.'));
         } catch (e) { if (addToast) addToast('Could not export the research trace.', 'warning'); }
       }
       // Compact, shape-specific net + cross-section diagram for the selected-part
@@ -3845,10 +3845,10 @@ window.StemLab = window.StemLab || {
         setVoiceHeard(text);
         ctx.callGemini(P3D.buildSculptCommandPrompt(text, !!sculptRecipe), false, false, 0.2).then(function(resp) {
           var cmd = P3D.parseSculptCommand(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR('Did not catch a sculpting command. Try “make a rocket” or “bigger”.'); return; }
+          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_did_not_catch_a_sculpting_command_try_make_a_rock', 'Did not catch a sculpting command. Try “make a rocket” or “bigger”.')); return; }
           if (cmd.action === 'create') { doGenerateSculpt(cmd.subject || text); }
           else if (cmd.action === 'refine') { if (sculptRecipe) doRefineSculpt(cmd.instruction || text); else doGenerateSculpt(cmd.subject || text); }
-          else if (cmd.action === 'remove') { _updSculpt(null); if (announceToSR) announceToSR('Sculpture removed'); }
+          else if (cmd.action === 'remove') { _updSculpt(null); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_sculpture_removed', 'Sculpture removed')); }
           else if (cmd.action === 'bigger' || cmd.action === 'smaller' || cmd.action === 'rotate' || cmd.action === 'recolor') { doManualTweak(cmd.action); if (announceToSR) announceToSR(cmd.action); }
         }).catch(function() { aiTrouble(AI_UNREACHABLE); });   // silence after a student speaks is the worst answer
       };
@@ -3857,7 +3857,7 @@ window.StemLab = window.StemLab || {
       var toggleVoice = function(handler, hint) {
         if (voiceListening) { try { if (window._geoVoiceCtl) window._geoVoiceCtl.stop(); } catch (e) {} setVoiceListening(false); _vrCap(''); return; }
         ensureVoice(function(V) {
-          if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR('Voice input is unavailable in this browser.'); _vrCap('🎤 unavailable'); setTimeout(function() { _vrCap(''); }, 1800); return; }
+          if (!V || !V.initWebSpeechCapture) { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_voice_input_is_unavailable_in_this_browser', 'Voice input is unavailable in this browser.')); _vrCap('🎤 unavailable'); setTimeout(function() { _vrCap(''); }, 1800); return; }
           try {
             window._geoVoiceCtl = V.initWebSpeechCapture({
               lang: (ctx.lang || 'en') + (String(ctx.lang || 'en').indexOf('-') < 0 ? '-US' : ''),
@@ -3866,7 +3866,7 @@ window.StemLab = window.StemLab || {
               onEnd: function() { setVoiceListening(false); }
             });
             if (window._geoVoiceCtl && window._geoVoiceCtl.start() !== false) { setVoiceListening(true); setVoiceHeard(''); _vrCap('🎤 ' + (hint || 'Listening…')); if (announceToSR) announceToSR(hint || 'Listening.'); }
-          } catch (e) { if (announceToSR) announceToSR('Voice input could not start.'); _vrCap(''); }
+          } catch (e) { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_voice_input_could_not_start', 'Voice input could not start.')); _vrCap(''); }
         });
       };
       // Voice for the HandWaver-style dimensional stretch: speak the moves
@@ -3881,11 +3881,11 @@ window.StemLab = window.StemLab || {
         var sel = construction.objects.find(function(o) { return o.id === construction.selection; });
         ctx.callGemini(P3D.buildStretchCommandPrompt(text, sel ? sel.type : ''), false, false, 0.2).then(function(resp) {
           var cmd = P3D.parseStretchCommand(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR('Try “add a point”, “stretch it up”, or “pull it out”.'); return; }
+          if (!cmd || cmd.action === 'none') { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_try_add_a_point_stretch_it_up_or_pull_it_out', 'Try “add a point”, “stretch it up”, or “pull it out”.')); return; }
           if (cmd.action === 'point') addPoint([0, 0, 0]);
           else if (cmd.action === 'stretch') { if (construction.selection) performStretch(cmd.axis); else addPoint([0, 0, 0]); }
           else if (cmd.action === 'undo') doStretchUndo();
-          else if (cmd.action === 'reset') { pushHistory(); setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) }); }); if (announceToSR) announceToSR('Construction cleared'); }
+          else if (cmd.action === 'reset') { pushHistory(); setLabToolData(function(p) { var g = p.geoSandbox || {}; return Object.assign({}, p, { geoSandbox: Object.assign({}, g, { construction: { objects: [], selection: null } }) }); }); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_construction_cleared', 'Construction cleared')); }
         }).catch(function() { aiTrouble(AI_UNREACHABLE); });
       };
       // Bridge the in-VR controller trigger to voice: while immersed there is no
@@ -4035,12 +4035,12 @@ window.StemLab = window.StemLab || {
       var doExportSTL = function() {
         if (mode !== 'single') {
           if (typeof addToast === 'function') addToast('STL export is available in Single shape mode.', 'info');
-          if (announceToSR) announceToSR('STL export is available in Single shape mode.');
+          if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_stl_export_is_available_in_single_shape_mode', 'STL export is available in Single shape mode.'));
           return false;
         }
         if (!exportSTL(shape, addToast)) {
           if (typeof addToast === 'function') addToast('The 3D model is not ready to export yet.', 'warning');
-          if (announceToSR) announceToSR('The 3D model is not ready to export yet.');
+          if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_the_3d_model_is_not_ready_to_export_yet', 'The 3D model is not ready to export yet.'));
           return false;
         }
         setLabToolData(function(prev) {
@@ -4281,7 +4281,7 @@ window.StemLab = window.StemLab || {
               tabIndex: mode === 'single' ? 0 : -1,
               onClick: function() {
                 setGeoMode('single');
-                if (announceToSR) announceToSR('Single shape mode');
+                if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_single_shape_mode', 'Single shape mode'));
               },
               className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
                 (mode === 'single' ? 'bg-sky-700 text-white shadow' : 'text-slate-300 hover:text-slate-100')
@@ -4294,7 +4294,7 @@ window.StemLab = window.StemLab || {
               tabIndex: mode === 'stretch' ? 0 : -1,
               onClick: function() {
                 setGeoMode('stretch');
-                if (announceToSR) announceToSR('Dimensional stretch mode. Place a point and stretch it into higher dimensions.');
+                if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_dimensional_stretch_mode_place_a_point_and_stretc', 'Dimensional stretch mode. Place a point and stretch it into higher dimensions.'));
               },
               title: t('stem.geosandbox.handwaver_inspired_build_by_stretching', 'HandWaver-inspired: build by stretching point \u2192 line \u2192 plane \u2192 solid'),
               className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
@@ -4309,7 +4309,7 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 if (!(window.AlloModules && window.AlloModules.Prim3D)) ensurePrim3d(function(ok) { if (ok) setPrim3dReady(true); });
                 setGeoMode('sculpt');
-                if (announceToSR) announceToSR('Sculpt mode. Build manually from primitive shapes or use AI-assisted creation.');
+                if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_sculpt_mode_build_manually_from_primitive_shapes', 'Sculpt mode. Build manually from primitive shapes or use AI-assisted creation.'));
               },
               title: t('stem.geosandbox.sculpt_mode_title', 'Sculpt: build manually from primitives or create with AI'),
               className: 'px-3 py-1 rounded-full text-[0.6875rem] font-bold transition-all ' +
@@ -4322,7 +4322,7 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 var gs = window._geoScene;
                 if (gs && typeof gs.enterVR === 'function') {
-                  gs.enterVR().then(function() { if (announceToSR) announceToSR('Entered VR. Look around your model.'); }).catch(function() { if (announceToSR) announceToSR('Could not start VR.'); });
+                  gs.enterVR().then(function() { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_entered_vr_look_around_your_model', 'Entered VR. Look around your model.')); }).catch(function() { if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_could_not_start_vr', 'Could not start VR.')); });
                 }
               },
               title: t('stem.geosandbox.enter_vr_title', 'Enter VR — stand next to your model (needs a headset)'),
@@ -4611,11 +4611,11 @@ h('div', { className: 'flex flex-wrap gap-1' },
                           h('div', { className: 'text-[10.5px] font-bold text-emerald-50 truncate' }, 'Part ' + (selPart + 1) + ' of ' + sm.parts.length + ' · ' + sm.parts[selPart].name),
                           h('div', { className: 'text-[9.5px] font-mono text-emerald-200/75 truncate' }, sm.parts[selPart].dims)
                         ),
-                        h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': 'Selected sculpt part navigation' },
-                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart - 1); }, disabled: selPart <= 0, 'aria-label': 'Select previous sculpt part', className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, '← Previous'),
+                        h('div', { className: 'flex flex-wrap gap-1', role: 'group', 'aria-label': __alloT('stem.geosandbox.a11y_selected_sculpt_part_navigation', 'Selected sculpt part navigation') },
+                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart - 1); }, disabled: selPart <= 0, 'aria-label': __alloT('stem.geosandbox.a11y_select_previous_sculpt_part', 'Select previous sculpt part'), className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, '← Previous'),
                           h('button', { type: 'button', onClick: function() { focusSculptPart(selPart); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-emerald-700 text-white border border-emerald-400/40' }, '◎ Focus 3D'),
                           sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { focusSculptPart(null); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30' }, '▣ View all'),
-                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart + 1); }, disabled: selPart >= sm.parts.length - 1, 'aria-label': 'Select next sculpt part', className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, 'Next →')
+                          sm.parts.length > 1 && h('button', { type: 'button', onClick: function() { selectSculptPart(selPart + 1); }, disabled: selPart >= sm.parts.length - 1, 'aria-label': __alloT('stem.geosandbox.a11y_select_next_sculpt_part', 'Select next sculpt part'), className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-800 text-emerald-100 border border-emerald-500/30 disabled:opacity-40' }, 'Next →')
                         )
                       )
                 ),
@@ -4655,7 +4655,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                               h('span', { className: 'text-amber-100' }, (sliceStudy.shape === 'torus' ? 'Depth along local Z ' : 'Height along local Y ') + Math.round(sculptSliceT * 100) + '% · ' + sliceStudy.label),
                               h('span', { className: 'font-mono font-bold text-amber-200' }, 'A = ' + sliceStudy.area.toFixed(2) + ' ' + unitDef.short + '²')
                             ),
-                            h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: sculptSliceT, onChange: function(e) { upd('sculptSliceT', parseFloat(e.target.value)); }, 'aria-label': 'Cross-section height through selected part', 'aria-description': sliceStudy.shape === 'torus' ? 'Measured along the ring local Z axis.' : 'Measured along the part local Y axis.', 'aria-valuetext': Math.round(sculptSliceT * 100) + ' percent; area ' + sliceStudy.area.toFixed(2) + ' square ' + unitDef.short, className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400' }),
+                            h('input', { type: 'range', min: 0, max: 1, step: 0.01, value: sculptSliceT, onChange: function(e) { upd('sculptSliceT', parseFloat(e.target.value)); }, 'aria-label': __alloT('stem.geosandbox.a11y_cross_section_height_through_selected_part', 'Cross-section height through selected part'), 'aria-description': sliceStudy.shape === 'torus' ? 'Measured along the ring local Z axis.' : 'Measured along the part local Y axis.', 'aria-valuetext': Math.round(sculptSliceT * 100) + ' percent; area ' + sliceStudy.area.toFixed(2) + ' square ' + unitDef.short, className: 'w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-amber-400' }),
                             h('div', { className: 'font-mono text-[9.5px] text-amber-100/75' }, sliceStudy.formula + ' · ' + sliceStudy.substituted),
                             h('div', { className: 'flex items-center justify-between gap-2 pt-1 border-t border-amber-300/20 text-[9.5px]' },
                               h('span', { className: 'font-bold text-amber-100' }, 'Volume by slices'),
@@ -4681,7 +4681,7 @@ h('div', { className: 'flex flex-wrap gap-1' },
                           h('button', { type: 'button', onClick: function() { resetSculptInvestigation(false); }, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-rose-900/45 text-rose-100 border border-rose-500/40' }, sculptInvestigation.study ? 'Undo & exit' : 'Exit')
                         )
                   ),
-                  h('div', { className: 'grid grid-cols-4 gap-1', 'aria-label': 'Investigation phases' },
+                  h('div', { className: 'grid grid-cols-4 gap-1', 'aria-label': __alloT('stem.geosandbox.a11y_investigation_phases', 'Investigation phases') },
                     ['predict', 'manipulate', 'compare', 'explain'].map(function(phase, phaseIndex) {
                       var order = ['predict', 'manipulate', 'compare', 'explain'];
                       var currentIndex = sculptInvestigation.active ? order.indexOf(sculptInvestigation.phase) : -1;
@@ -5711,14 +5711,14 @@ h('div', { className: 'flex flex-wrap gap-1' },
               ),
               showAdvancedTools && h('div', { 'data-geo-advanced-tools': 'true', className: 'rounded-lg border border-sky-500/30 bg-sky-950/20 p-2 space-y-1.5' },
                 h('label', { className: 'flex items-start gap-2 text-[10.5px] font-bold text-sky-100 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: researchTraceOn, onChange: function(e) { upd('researchTraceOn', e.target.checked); if (e.target.checked) { researchStartedRef.current = Date.now(); if (announceToSR) announceToSR('Anonymous session trace on.'); } else if (announceToSR) announceToSR('Anonymous session trace paused.'); }, 'aria-describedby': 'geo-research-privacy' }),
+                  h('input', { type: 'checkbox', checked: researchTraceOn, onChange: function(e) { upd('researchTraceOn', e.target.checked); if (e.target.checked) { researchStartedRef.current = Date.now(); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_anonymous_session_trace_on', 'Anonymous session trace on.')); } else if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_anonymous_session_trace_paused', 'Anonymous session trace paused.')); }, 'aria-describedby': 'geo-research-privacy' }),
                   h('span', null, 'Anonymous research trace (this session only)')
                 ),
                 h('p', { id: 'geo-research-privacy', className: 'text-[9.5px] text-sky-100/70 leading-relaxed' }, 'Records action types, phases, and coarse numbers. It never records names, AI prompts, or explanation text.'),
                 researchTraceOn && h('div', { className: 'flex items-center gap-1' },
                   h('span', { className: 'flex-1 text-[9.5px] text-sky-200 font-mono' }, researchTrace.length + ' event' + (researchTrace.length === 1 ? '' : 's')),
                   h('button', { type: 'button', onClick: exportResearchTrace, disabled: !researchTrace.length, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-sky-700 text-white disabled:bg-slate-700 disabled:text-slate-300' }, 'Export JSON'),
-                  h('button', { type: 'button', onClick: function() { setResearchTrace([]); researchStartedRef.current = Date.now(); if (announceToSR) announceToSR('Research trace cleared.'); }, disabled: !researchTrace.length, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-700 text-white disabled:opacity-50' }, 'Clear')
+                  h('button', { type: 'button', onClick: function() { setResearchTrace([]); researchStartedRef.current = Date.now(); if (announceToSR) announceToSR(__alloT('stem.geosandbox.sr_research_trace_cleared', 'Research trace cleared.')); }, disabled: !researchTrace.length, className: 'px-2 py-1 rounded text-[9.5px] font-bold bg-slate-700 text-white disabled:opacity-50' }, 'Clear')
                 )
               ),
               h('div', { className: 'flex items-center gap-1' },

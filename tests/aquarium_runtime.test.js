@@ -32,7 +32,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
   it('offers keyboard-operable chemistry cards and described trend graphics', () => {
     expect(source).toContain('return React.createElement("button", {');
     expect(source).toContain("'aria-pressed': isActive");
-    expect(source).toContain("'aria-label': \"Nitrogen cycle trends\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_nitrogen_cycle_trends', 'Nitrogen cycle trends')`);
     expect(source).toContain('role: "img"');
   });
 
@@ -86,8 +86,8 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('var chemDefaults = {');
     expect(source).toContain("dissolvedO2: 7, co2: 3");
     expect(source).toContain('waterChemNeedsMigration = true');
-    expect(source).toContain("'aria-label': \"Close chemistry explanation\"");
-    expect(source).toContain("'aria-label': \"Dismiss aquarium event\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_close_chemistry_explanation', 'Close chemistry explanation')`);
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_dismiss_aquarium_event', 'Dismiss aquarium event')`);
   });
 
   it('keeps collision recovery outside identity mapper callbacks', () => {
@@ -120,7 +120,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("ammonia: waterChem.ammonia + (targetInQuarantine ? 0 : targetId ? 0.1 : 0.25)");
     expect(source).toContain('function aquaGain(baseGain)');
     expect(source).toContain("upd('soundVolume', Number(event.target.value))");
-    expect(source).toContain("'aria-label': \"Aquarium sound volume\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_aquarium_sound_volume', 'Aquarium sound volume')`);
   });
 
   it('tracks fish age and bounded care history through lifecycle changes', () => {
@@ -224,7 +224,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
 
     const scheduleStart = source.indexOf('var lastWaterChangeTick =');
     const waterChangeStart = source.indexOf('var doWaterChange = function (requestedPercent)');
-    const plannerStart = source.indexOf("'aria-label': \"Aquarium maintenance planner\"");
+    const plannerStart = source.indexOf(`'aria-label': __alloT('stem.aquarium.a11y_aquarium_maintenance_planner', 'Aquarium maintenance planner')`);
     expect(waterChangeStart).toBeGreaterThan(scheduleStart);
     expect(plannerStart).toBeGreaterThan(waterChangeStart);
   });
@@ -325,7 +325,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect((source.match(/tutorialEquipmentMaintained: true/g) || []).length).toBeGreaterThanOrEqual(3);
 
     expect(source).toContain("'aria-labelledby': \"aquarium-learning-path-title\"");
-    expect(source).toContain("'aria-label': \"Aquarium learning path progress\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_aquarium_learning_path_progress', 'Aquarium learning path progress')`);
     expect(source).toContain('currentTutorialEvidence.complete ? "\\u2705 Evidence ready: "');
     expect(source).toContain("'aria-controls': \"aquarium-learning-outline\"");
     expect(source).toContain('onClick: function () { selectTutorialLesson(lessonIndex); }');
@@ -522,11 +522,11 @@ describe('Aquarium runtime and chemistry learning contract', () => {
 
     expect(source).toContain('"\\uD83C\\uDF0D Living Ecosystem Exchange Network"');
     expect(source).toContain("'aria-labelledby': \"aquarium-exchange-network-title\"");
-    expect(source).toContain("'aria-label': \"Exchange time view\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_exchange_time_view', 'Exchange time view')`);
     expect(source).toContain("{ id: 'live', label: '\\u25CF Live tick' }");
     expect(source).toContain("{ id: 'net', label: '\\uD83D\\uDCCA 24h net' }");
     expect(source).toContain("upd('ecosystemExchangeView', viewOption.id)");
-    expect(source).toContain("'aria-label': \"Focus an ecosystem role\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_focus_an_ecosystem_role', 'Focus an ecosystem role')`);
     expect(source).toContain("updMulti({ ecosystemFocusType: focusOption.id, ecosystemFocusId: null })");
     expect(source).toContain('Closed-loop aquarium diagram.');
     expect(source).toContain('"Without these plants next tick"');
@@ -649,7 +649,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain("document.getElementById('aquarium-selected-plant-profile')");
     expect(source).toContain('id: "aquarium-selected-plant-profile"');
     expect(source).toContain("updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: vitalityItem.id })");
-    expect(source).toContain('role: "group", \'aria-label\': "Filtered organism vitality and plant health"');
+    expect(source).toContain(`role: "group", 'aria-label': __alloT('stem.aquarium.a11y_filtered_organism_vitality_and_plant_health', 'Filtered organism vitality and plant health')`);
     expect(source).not.toContain('key: vitalityItem.key, type: "button", role: "listitem"');
   });
   it('scores spatial habitat structure and applies shelter to organism vitality', () => {
@@ -992,7 +992,7 @@ expect(source).toContain('requestedHabitatInteractionId');
     expect(source).toContain('sources − sinks = modeled net');
     expect(source).toContain("'oxygen_delta','co2_delta','ammonia_delta','nitrate_delta'");
     expect(source).toContain('var pointStock = point.photosyntheticStock || {}');
-    expect(source).toContain("'aria-label': \"Matter source and sink budgets for the last aquarium-hour tick\"");
+    expect(source).toContain(`'aria-label': __alloT('stem.aquarium.a11y_matter_source_and_sink_budgets_for_the_last_aqu', 'Matter source and sink budgets for the last aquarium-hour tick')`);
   });
   it('teaches controlled interventions and evaluates preregistered directions', () => {
     const baseline = {

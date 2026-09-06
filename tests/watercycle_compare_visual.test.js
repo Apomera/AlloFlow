@@ -12,7 +12,7 @@ describe('Water Cycle visual Scenario Compare', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('className: "wc-compare-bars"');
-      expect(source).toContain('"aria-label": "Visual comparison of baseline and current values"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_visual_comparison_of_baseline_and_current_value', 'Visual comparison of baseline and current values')`);
       expect(source).toContain('"aria-describedby": "wcScenarioWorkflowStatus"');
       expect(source).toContain('id: "wcScenarioWorkflowStatus"');
       expect(source).toContain('className: "wc-compare-method"');
@@ -28,7 +28,7 @@ describe('Water Cycle visual Scenario Compare', () => {
       expect(source).toContain('className: "wc-compare-bar-base"');
       expect(source).toContain('className: "wc-compare-bar-current"');
       expect(source).toContain('className: "wc-route-mix"');
-      expect(source).toContain('"aria-label": "Baseline and current pathway mix"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_baseline_and_current_pathway_mix', 'Baseline and current pathway mix')`);
       expect(source).toContain('renderWcRouteMixBar("Base", wcBaselineRouteShares)');
       expect(source).toContain('renderWcRouteMixBar("Now", wcRouteShares)');
       expect(source).toContain('is-prediction-evidence');

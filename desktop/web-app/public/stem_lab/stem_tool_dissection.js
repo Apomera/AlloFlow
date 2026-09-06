@@ -14326,7 +14326,7 @@ var d = labToolData.dissection || {};
                   resetConfirmPending: false,
                   procedureFeedback: { message: 'Saved progress is still unavailable. Temporary-session changes remain in memory and saving stays paused.', tone: 'caution', at: Date.now() }
                 });
-                if (typeof announceToSR === 'function') announceToSR('Saved progress is still unavailable. Temporary-session changes remain and saving stays paused.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_saved_progress_is_still_unavailable_temporary_ses', 'Saved progress is still unavailable. Temporary-session changes remain and saving stays paused.'));
                 focusResetControl('diss-protected-save-retry');
                 return;
               }
@@ -14337,7 +14337,7 @@ var d = labToolData.dissection || {};
                   resetConfirmPending: false,
                   procedureFeedback: { message: 'No stored record was found. Temporary-session work was kept, and saving resumed from it.', tone: 'success', at: Date.now() }
                 });
-                if (typeof announceToSR === 'function') announceToSR('No stored record was found. Temporary-session work was kept, and saving resumed from it.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_no_stored_record_was_found_temporary_session_work', 'No stored record was found. Temporary-session work was kept, and saving resumed from it.'));
                 focusResetControl('diss-reset-specimen');
                 return;
               }
@@ -14429,7 +14429,7 @@ var d = labToolData.dissection || {};
                 _dissSaveRetrying: false
               });
               if (loadIsProtectedRetry) {
-                if (typeof announceToSR === 'function') announceToSR('Protected saved progress reloaded safely. Saving has resumed from that saved version.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_protected_saved_progress_reloaded_safely_saving_h', 'Protected saved progress reloaded safely. Saving has resumed from that saved version.'));
                 focusResetControl('diss-reset-specimen');
               }
             }, 0);
@@ -15550,7 +15550,7 @@ var d = labToolData.dissection || {};
                 React.createElement("span", { className: "diss-next-action__eyebrow" }, 'Next best action \u00B7 ' + nextActionModel.phase),
                 React.createElement("h3", { id: "diss-next-action-title", tabIndex: -1 }, nextActionModel.title),
                 React.createElement("p", null, nextActionModel.description),
-                React.createElement("div", { className: "diss-next-action__meta", "aria-label": "Current lab context" },
+                React.createElement("div", { className: "diss-next-action__meta", "aria-label": __alloT('stem.dissection.a11y_current_lab_context', 'Current lab context') },
                   React.createElement("span", null, spec.icon + ' ' + spec.name),
                   React.createElement("span", null, currentLayerDef.icon + ' ' + currentLayerDef.name + ' \u00B7 layer ' + (currentLayerIdx + 1) + '/' + spec.layers.length),
                   nextToolReadiness && stageHandoffUsesTool && React.createElement("span", null, 'Tool: ' + nextToolDefinition.label + ' \u00B7 ' + nextToolReadiness.label)
@@ -15599,7 +15599,7 @@ var d = labToolData.dissection || {};
                   phase === 'reflect' ? definition.reflectionPrompt : (phase === 'perform' ? 'Use ' + actionTool.label + ' to ' + procedureNext.label.toLowerCase() + '. The simulation will score the action you perform; it will not execute the step from the Next card.' : definition.predictionPrompt)
                 )
               ),
-              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": "Learning cycle progress" },
+              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": __alloT('stem.dissection.a11y_learning_cycle_progress', 'Learning cycle progress') },
                 phaseStates.map(function (phaseState) {
                   return React.createElement("span", { key: phaseState.id, className: "diss-learning-check__phase", "data-state": phaseState.state, "aria-current": phaseState.state === 'current' ? 'step' : undefined }, (phaseState.state === 'complete' ? '\u2713 ' : '') + phaseState.label);
                 })
@@ -15637,12 +15637,12 @@ var d = labToolData.dissection || {};
                 React.createElement("h3", { id: "diss-guided-observation-title" }, 'What observation supports this identification?'),
                 React.createElement("p", { className: "diss-learning-check__prompt" }, 'You located ' + guidedObservationOrgan.name + '. Choose the description that matches what this structure looks like or does. Locating alone does not advance the step.')
               ),
-              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": "Guided evidence progress" },
+              React.createElement("div", { className: "diss-learning-check__phases", "aria-label": __alloT('stem.dissection.a11y_guided_evidence_progress', 'Guided evidence progress') },
                 React.createElement("span", { className: "diss-learning-check__phase", "data-state": "complete" }, '\u2713 Locate'),
                 React.createElement("span", { className: "diss-learning-check__phase", "data-state": "current", "aria-current": "step" }, 'Observe'),
                 React.createElement("span", { className: "diss-learning-check__phase", "data-state": "upcoming" }, 'Verify')
               ),
-              React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": "Choose the matching specimen observation" },
+              React.createElement("div", { className: "diss-learning-check__options", role: "group", "aria-label": __alloT('stem.dissection.a11y_choose_the_matching_specimen_observation', 'Choose the matching specimen observation') },
                 guidedObservationOptions.map(function (option) {
                   var isChosen = guidedFeedback && guidedFeedback.choiceId === option.id;
                   return React.createElement("button", {
@@ -15693,7 +15693,7 @@ var d = labToolData.dissection || {};
             if (visualEvidence.length >= evidenceFrameLimit) {
               setProcedureFeedback('Evidence notebook is full. Download or remove a frame before capturing another; no saved frame was replaced.', 'caution');
               if (addToast) addToast('Evidence notebook full — manage frames before capturing.', 'error');
-              if (typeof announceToSR === 'function') announceToSR('Evidence notebook full. No frame was replaced. Download or remove a frame before capturing another.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_evidence_notebook_full_no_frame_was_replaced_down', 'Evidence notebook full. No frame was replaced. Download or remove a frame before capturing another.'));
               focusEvidenceControl();
               return false;
             }
@@ -15905,7 +15905,7 @@ var d = labToolData.dissection || {};
               resetConfirmPending: false,
               procedureFeedback: { message: 'Checking protected saved progress. A successful check reloads the saved version before saving resumes.', tone: 'working', at: Date.now() }
             });
-            if (typeof announceToSR === 'function') announceToSR('Checking protected saved progress. Temporary-session changes will remain unless the saved version can be read safely.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_checking_protected_saved_progress_temporary_sessi', 'Checking protected saved progress. Temporary-session changes will remain unless the saved version can be read safely.'));
           }
           function cancelSpecimenReset() {
             upd('resetConfirmPending', false);
@@ -16310,7 +16310,7 @@ var d = labToolData.dissection || {};
               clearAssessmentTeachingTimers();
               updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, traceNervous: false, traceCirculation: false, traceDigestion: false, traceRespiration: false, traceExcretory: false, showEndocrine: false, livingFunctionEnabled: false, livingFunctionPaused: false, quizMode: true, quizIdx: 0, quizScore: 0, quizTotal: 0, quizFirstAttemptScore: 0, quizFirstAttemptTotal: 0, quizSupportedCount: 0, quizComplete: false, quizReviewMode: false, quizFeedback: null, quizExplanation: null, quizRetry: null, quizReviewQueue: Array.isArray(d.quizReviewQueue) ? d.quizReviewQueue : [], selectedOrgan: null, hoveredOrgan: null, quizSeed: Date.now(), quizAnswerMode: d.quizAnswerMode || 'choices', toolbarStudyOpen: false, toolbarViewOpen: false, toolbarToolsOpen: false, rulerMode: false, annotateMode: false, rulerStart: null, rulerEnd: null, compareTechniqueAttempts: false, compareReplayPlaying: false, splitComparison: false, beforeTechniqueView: false });
               updMany({ inspectionLens: false, lensPinned: false, lensPinnedPoint: null, lensPinnedOrganId: null, macroInset: false, _procedureDemo: null, _procedureReplay: null });
-              if (typeof announceToSR === 'function') announceToSR('Practice assessment started. Choose multiple choice or answer directly on the specimen.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.dissection.sr_practice_assessment_started_choose_multiple_choic', 'Practice assessment started. Choose multiple choice or answer directly on the specimen.'));
             } else {
               updMany({ flashcardMode: false, compareMode: false, guidedMode: false, guidedTargetIds: [], guidedObservationPending: null, guidedObservationFeedback: null, quizMode: false, quizComplete: false, quizReviewMode: false, quizFeedback: null, toolbarStudyOpen: false });
               if (typeof announceToSR === 'function') announceToSR(advancedWorkspace ? 'Free explore mode active.' : 'Procedure practice mode active.');
@@ -16425,7 +16425,7 @@ var d = labToolData.dissection || {};
                 React.createElement("p", { className: "diss-mission__eyebrow" }, __alloT('stem.dissection.virtual_biology_laboratory', 'Virtual Biology Laboratory')),
                 React.createElement("h2", { id: "diss-mission-title" }, __alloT('stem.dissection.virtual_dissection_lab', 'Virtual Dissection Lab')),
                 React.createElement("p", { className: "diss-mission__copy" }, missionText),
-                React.createElement("ol", { className: "diss-workflow", "aria-label": "Dissection workflow" },
+                React.createElement("ol", { className: "diss-workflow", "aria-label": __alloT('stem.dissection.a11y_dissection_workflow', 'Dissection workflow') },
                   workflowSteps.map(function (step, stepIdx) {
                     var workflowPosition = stepIdx + 1;
                     var workflowState = workflowPosition < nextActionModel.step ? 'complete' : (workflowPosition === nextActionModel.step ? 'current' : 'upcoming');
@@ -16437,7 +16437,7 @@ var d = labToolData.dissection || {};
                 ),
                 React.createElement("p", { className: "diss-mission__copy" }, __alloT('stem.dissection.virtual_practice_notice', 'Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.'))
               ),
-              React.createElement("div", { className: "diss-mission__stats", "aria-label": "Current lab status" },
+              React.createElement("div", { className: "diss-mission__stats", "aria-label": __alloT('stem.dissection.a11y_current_lab_status', 'Current lab status') },
                 [
                   { label: 'Specimen', value: spec.icon + ' ' + spec.name },
                   { label: 'Layer', value: (currentLayerIdx + 1) + ' of ' + spec.layers.length + ' · ' + currentLayerDef.name },
@@ -16453,7 +16453,7 @@ var d = labToolData.dissection || {};
 
             renderNextActionCard(),
 
-            React.createElement("div", { className: "diss-mode-rail", "data-dissection-workspace-mode": true, role: "toolbar", "aria-label": "Learning route", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+            React.createElement("div", { className: "diss-mode-rail", "data-dissection-workspace-mode": true, role: "toolbar", "aria-label": __alloT('stem.dissection.a11y_learning_route', 'Learning route'), "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
               [
                 { id: 'explore', icon: '🔎', label: advancedWorkspace ? __alloT('stem.dissection.free_explore', 'Free explore') : 'Procedure practice' },
                 { id: 'guided', icon: '🧭', label: __alloT('stem.dissection.guided_investigation', 'Guided investigation') },
@@ -16474,16 +16474,16 @@ var d = labToolData.dissection || {};
                   onClick: function () { setStudyRoute(route.id); }
                 }, route.icon + ' ' + route.label);
               }),
-              React.createElement("div", { className: "diss-workspace-mode__choices", role: "group", "aria-label": "Workspace detail" },
+              React.createElement("div", { className: "diss-workspace-mode__choices", role: "group", "aria-label": __alloT('stem.dissection.a11y_workspace_detail', 'Workspace detail') },
                 React.createElement("button", {
                   type: "button", "aria-pressed": workspaceMode === 'essentials',
-                  "aria-label": 'Essentials workspace',
+                  "aria-label": __alloT('stem.dissection.a11y_essentials_workspace', 'Essentials workspace'),
                   title: 'Essentials workspace: keeps the procedure, instruments, observation, evidence, assessment, and accessibility controls in focus.',
                   onClick: function () { setDissectionWorkspaceMode('essentials'); }
                 }, 'Essentials'),
                 React.createElement("button", {
                   type: "button", "aria-pressed": workspaceMode === 'advanced',
-                  "aria-label": 'Advanced workspace',
+                  "aria-label": __alloT('stem.dissection.a11y_advanced_workspace', 'Advanced workspace'),
                   title: 'Advanced workspace: adds scenarios, detailed telemetry, technique comparison, instructor settings, and extended visualization tools.',
                   onClick: function () { setDissectionWorkspaceMode('advanced'); }
                 }, 'Advanced')
@@ -16495,7 +16495,7 @@ var d = labToolData.dissection || {};
                 React.createElement("h3", { id: "diss-specimen-heading" }, 'Choose a specimen'),
                 React.createElement("p", null, SPEC_KEYS.length + ' comparative anatomy models')
               ),
-              React.createElement("div", { className: "diss-specimen-rail", role: "tablist", "aria-label": "Dissection specimens" },
+              React.createElement("div", { className: "diss-specimen-rail", role: "tablist", "aria-label": __alloT('stem.dissection.a11y_dissection_specimens', 'Dissection specimens') },
                 SPEC_KEYS.map(function (sk) {
                   var sp = SPECIMENS[sk];
                   var isActive = sk === specimen;
@@ -16526,7 +16526,7 @@ var d = labToolData.dissection || {};
                 // in the Essentials workspace. The section heading is already a flex row with
                 // space-between and room to spare, so they ride along it instead. On a phone the
                 // heading stacks to a column and they simply fall below, as before.
-                React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": "Specimen display and lab tool controls", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+                React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": __alloT('stem.dissection.a11y_specimen_display_and_lab_tool_controls', 'Specimen display and lab tool controls'), "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
 
                   React.createElement("span", { className: "diss-toolbar__label", "aria-hidden": "true" }, 'Controls'),
 
@@ -16537,7 +16537,7 @@ var d = labToolData.dissection || {};
                   }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View & access ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
 
                   // ── Tools toggle ──
-                  !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Lab tool options", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
+                  !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": __alloT('stem.dissection.a11y_lab_tool_options', 'Lab tool options'), "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
                     onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
                     className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
                   }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
@@ -16572,35 +16572,35 @@ var d = labToolData.dissection || {};
 
 
             // ── View group expanded ──
-            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": "View and accessibility controls" },
+            d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": __alloT('stem.dissection.a11y_view_and_accessibility_controls', 'View and accessibility controls') },
               React.createElement("button", { disabled: !!d.quizMode, "aria-label": d.quizMode ? "Organ name labels hidden during assessment" : "Toggle organ name labels", "aria-pressed": !d.quizMode && d.labelMode !== 'hidden', onClick: function () { upd('labelMode', d.labelMode === 'show' ? 'hidden' : 'show'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (!d.quizMode && d.labelMode !== 'hidden' ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83C\uDFF7 Labels ' + (!d.quizMode && d.labelMode !== 'hidden' ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle high contrast mode", "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle additional reduced motion; operating system reduced motion settings are always honored", "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
-              React.createElement("button", { "aria-label": "Toggle larger interface text", "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
-              React.createElement("button", { "aria-label": "Toggle simplified step instructions", "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
-              React.createElement("button", { "aria-label": "Toggle dissection sound effects", "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
-              React.createElement("button", { "aria-label": "Toggle tactile instrument feedback", "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off'),
-              React.createElement("button", { "aria-label": "Visual presentation: cycle guided, realistic, and accessible", onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_high_contrast_mode', 'Toggle high contrast mode'), "aria-pressed": highContrastEnabled, onClick: function () { setAccessibilityPreference('highContrast', !highContrastEnabled, 'High contrast'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (highContrastEnabled ? 'bg-yellow-500 text-black' : 'bg-white text-blue-700 border border-blue-200') }, '\u2600 High contrast ' + (highContrastEnabled ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_additional_reduced_motion_operating_syst', 'Toggle additional reduced motion; operating system reduced motion settings are always honored'), "aria-pressed": reducedMotionEnabled, onClick: function () { setAccessibilityPreference('reducedMotion', !reducedMotionEnabled, 'Reduced motion'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (reducedMotionEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, reducedMotionEnabled ? '\u23F8 Reduced motion on' : '\u25B6 Reduced motion off'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_larger_interface_text', 'Toggle larger interface text'), "aria-pressed": largeTextEnabled, onClick: function () { setAccessibilityPreference('largeText', !largeTextEnabled, 'Larger interface text'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (largeTextEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, largeTextEnabled ? 'A+ Larger text on' : 'A Larger text off'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_simplified_step_instructions', 'Toggle simplified step instructions'), "aria-pressed": simplifiedInstructions, onClick: function () { setAccessibilityPreference('simplifiedInstructions', !simplifiedInstructions, 'Simplified instructions'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (simplifiedInstructions ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, simplifiedInstructions ? 'Simple steps on' : 'Simple steps off'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_dissection_sound_effects', 'Toggle dissection sound effects'), "aria-pressed": d.soundEnabled !== false, onClick: function () { var enabled = d.soundEnabled === false; try { window.__alloDissectionSoundEnabled = enabled; } catch (e) {} upd('soundEnabled', enabled); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.soundEnabled !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.soundEnabled !== false ? '\uD83D\uDD0A Sound on' : '\uD83D\uDD07 Sound off'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_tactile_instrument_feedback', 'Toggle tactile instrument feedback'), "aria-pressed": d.tactileFeedback !== false, onClick: function () { upd('tactileFeedback', d.tactileFeedback === false); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.tactileFeedback !== false ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.tactileFeedback !== false ? '\u223F Tactile on' : '\u223F Tactile off'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_visual_presentation_cycle_guided_realistic_and', 'Visual presentation: cycle guided, realistic, and accessible'), onClick: function () { setVisualRealism(visualRealism === 'guided' ? 'realistic' : (visualRealism === 'realistic' ? 'accessible' : 'guided')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2726 Visuals: ' + (visualRealism === 'realistic' ? 'Realistic' : visualRealism === 'accessible' ? 'Accessible' : 'Guided')),
               !d.quizMode && React.createElement(React.Fragment, null,
               React.createElement("button", { id: "diss-view-cycle", disabled: !!d.practicalMode, "aria-label": d.practicalMode ? "Anatomical view locked during timed practical" : "Anatomical view: cycle dorsal, ventral, lateral, and internal", onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'view toolbar'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB View: ' + anatomicalView),
-              React.createElement("button", { "aria-label": "Toggle layer cross-section", "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Cross-section ' + (crossSectionMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen", onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
-              React.createElement("button", { "aria-label": "Toggle curated anatomical relationships", "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Rendering quality: cycle auto, high, and balanced", onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality),
-              !d.quizMode && React.createElement("button", { "aria-label": "Toggle movable inspection lens", "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_layer_cross_section', 'Toggle layer cross-section'), "aria-pressed": crossSectionMode, onClick: function () { upd('crossSectionMode', !crossSectionMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (crossSectionMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A4 Cross-section ' + (crossSectionMode ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_specimen_condition_cycle_standard_preserved_deh', 'Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen'), onClick: function () { var conditions = ['standard', 'preserved', 'dehydrated', 'cloudy', 'swollen']; upd('specimenCondition', conditions[(conditions.indexOf(specimenCondition) + 1) % conditions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Condition: ' + specimenCondition),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_curated_anatomical_relationships', 'Toggle curated anatomical relationships'), "aria-pressed": relationshipMode, onClick: function () { upd('relationshipMode', !relationshipMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2194 Relationships ' + (relationshipMode ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_rendering_quality_cycle_auto_high_and_balanced', 'Rendering quality: cycle auto, high, and balanced'), onClick: function () { var qualities = ['auto', 'high', 'balanced']; upd('renderQuality', qualities[(qualities.indexOf(renderQuality) + 1) % qualities.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2699 Quality: ' + renderQuality),
+              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_movable_inspection_lens', 'Toggle movable inspection lens'), "aria-pressed": inspectionLens, onClick: function () { upd('inspectionLens', !inspectionLens); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (inspectionLens ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\uD83D\uDD0D Lens ' + (inspectionLens ? 'on' : 'off')),
               !d.quizMode && React.createElement("button", { "aria-label": lensPinned ? "Release pinned inspection target" : "Pin inspection lens to selected structure or current pointer", "aria-pressed": lensPinned, onClick: toggleInspectionPin, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (lensPinned ? 'bg-cyan-700 text-white' : 'bg-white text-blue-700 border border-blue-200') }, lensPinned ? '\u2316 Unpin lens' : '\u2316 Pin lens'),
-              !d.quizMode && React.createElement("button", { "aria-label": "Cycle inspection magnification: 2, 4, or 6 times", onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
-              !d.quizMode && React.createElement("button", { "aria-label": "Cycle inspection focus depth: surface, structure, or deep", onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth),
-              React.createElement("button", { "aria-label": "Toggle detailed pointer-following instrument visuals and contact response", "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
-              !d.quizMode && React.createElement("button", { "aria-label": "Toggle docked macro inspection view", "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle specimen-specific surface and tray depth details", "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle anatomical depth atlas with shape-coded landmarks", "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle responsive tissue relief lighting around visible structures", "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle animated direction markers for curated anatomical relationships", "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle selected-structure focus isolation", "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle subtle pointer-responsive specimen depth", "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Toggle live and reference split comparison", "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
-              React.createElement("button", { "aria-label": "Lab light: cycle neutral, warm, and cool", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
+              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_magnification_2_4_or_6_times', 'Cycle inspection magnification: 2, 4, or 6 times'), onClick: cycleLensMagnification, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2295 Magnify ' + lensMagnification + 'x'),
+              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_cycle_inspection_focus_depth_surface_structure', 'Cycle inspection focus depth: surface, structure, or deep'), onClick: cycleLensFocusDepth, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u25C9 Focus: ' + lensFocusDepth),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_detailed_pointer_following_instrument_vi', 'Toggle detailed pointer-following instrument visuals and contact response'), "aria-pressed": instrumentVisuals, onClick: function () { upd('instrumentVisuals', !instrumentVisuals); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (instrumentVisuals ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2692 Visual tools ' + (instrumentVisuals ? 'on' : 'off')),
+              !d.quizMode && React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_docked_macro_inspection_view', 'Toggle docked macro inspection view'), "aria-pressed": macroInset, onClick: function () { upd('macroInset', !macroInset); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (macroInset ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25A3 Macro view ' + (macroInset ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_specimen_specific_surface_and_tray_depth', 'Toggle specimen-specific surface and tray depth details'), "aria-pressed": sceneDetail, onClick: function () { upd('sceneDetail', !sceneDetail); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (sceneDetail ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2726 Scene detail ' + (sceneDetail ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_anatomical_depth_atlas_with_shape_coded', 'Toggle anatomical depth atlas with shape-coded landmarks'), "aria-pressed": depthAtlasEnabled, onClick: function () { var nextDepthAtlas = !depthAtlasEnabled; upd('depthAtlas', nextDepthAtlas); setProcedureFeedback('Depth atlas ' + (nextDepthAtlas ? 'enabled. Surface, mid-depth, and deep structures now use distinct landmark shapes.' : 'disabled. Standard landmark pins remain visible.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (depthAtlasEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25C8 Depth atlas ' + (depthAtlasEnabled ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_responsive_tissue_relief_lighting_around', 'Toggle responsive tissue relief lighting around visible structures'), "aria-pressed": tissueReliefEnabled, onClick: function () { var nextTissueRelief = !tissueReliefEnabled; upd('tissueRelief', nextTissueRelief); setProcedureFeedback('Tissue relief ' + (nextTissueRelief ? 'enabled. Structure elevation and recess cues now respond to the inspection light.' : 'disabled. Flat anatomical shading remains active.'), 'working'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (tissueReliefEnabled ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25D2 Tissue relief ' + (tissueReliefEnabled ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_animated_direction_markers_for_curated_a', 'Toggle animated direction markers for curated anatomical relationships'), "aria-pressed": relationshipMotion, onClick: function () { upd('relationshipMotion', !relationshipMotion); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (relationshipMotion ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u2192 Flow motion ' + (relationshipMotion ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_selected_structure_focus_isolation', 'Toggle selected-structure focus isolation'), "aria-pressed": focusMode, onClick: function () { upd('focusMode', !focusMode); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (focusMode ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, '\u25CE Focus mode ' + (focusMode ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_subtle_pointer_responsive_specimen_depth', 'Toggle subtle pointer-responsive specimen depth'), "aria-pressed": parallaxDepth, onClick: function () { upd('parallaxDepth', !parallaxDepth); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (parallaxDepth ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, 'Depth motion ' + (parallaxDepth ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_toggle_live_and_reference_split_comparison', 'Toggle live and reference split comparison'), "aria-pressed": splitComparison && !!referenceEvidence, disabled: !referenceEvidence, onClick: function () { upd('splitComparison', !splitComparison); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (splitComparison && referenceEvidence ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') + (!referenceEvidence ? ' opacity-50 cursor-not-allowed' : '') }, 'Split compare ' + (splitComparison && referenceEvidence ? 'on' : 'off')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_lab_light_cycle_neutral_warm_and_cool', 'Lab light: cycle neutral, warm, and cool'), onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDCA1 ' + labLight + ' light'),
               React.createElement("label", { className: "diss-light-intensity", "data-tone": currentIllumination.tone, htmlFor: "diss-light-intensity-range" },
                 React.createElement("span", null, 'Illumination intensity · ' + currentIllumination.label),
                 React.createElement("output", { htmlFor: "diss-light-intensity-range" }, lightIntensity + '%'),
@@ -16611,31 +16611,31 @@ var d = labToolData.dissection || {};
                   onBlur: function () { var result = illuminationAssessmentData(currentProcedure, lightIntensity); setProcedureFeedback('Illumination ' + lightIntensity + ' percent: ' + result.label + '. ' + result.suggestion, result.score >= 72 ? 'success' : 'caution'); }
                 })
               ),
-              React.createElement("button", { "aria-label": "Laboratory light direction: cycle overhead, left, right, and raking", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection),
-              React.createElement("button", { "aria-label": "Generate another deterministic specimen variation", onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_laboratory_light_direction_cycle_overhead_left', 'Laboratory light direction: cycle overhead, left, right, and raking'), onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u2198 Light angle: ' + lightDirection),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_generate_another_deterministic_specimen_variati', 'Generate another deterministic specimen variation'), onClick: function () { upd('variationSeed', variationSeed + 1); setProcedureFeedback('Loaded specimen variation ' + (variationSeed + 1) + '. Landmark shifts are small and deterministic.'); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u21BB Variation ' + variationSeed),
               React.createElement("button", { "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold " + (d.beforeTechniqueView ? 'bg-blue-600 text-white' : 'bg-white text-blue-700 border border-blue-200') }, d.beforeTechniqueView ? '\u25C0 Tissue: before' : '\u25B6 Tissue: after')
               ),
-              React.createElement("button", { "aria-label": "Enter fullscreen specimen mode with view and tool controls", "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
-              React.createElement("button", { "aria-label": "Animation speed: cycle normal, slow, and fast", onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
-              React.createElement("button", { "aria-label": "Print clean dissection report", onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_enter_fullscreen_specimen_mode_with_view_and_to', 'Enter fullscreen specimen mode with view and tool controls'), "aria-controls": "diss-fullscreen-dock", onClick: function (event) { enterDissectionFullscreen(event.currentTarget); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u26F6 Fullscreen'),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_animation_speed_cycle_normal_slow_and_fast', 'Animation speed: cycle normal, slow, and fast'), onClick: function () { var s = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', s); }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\u23E9 ' + (d.animSpeed === 'slow' ? 'Slow' : d.animSpeed === 'fast' ? 'Fast' : 'Normal')),
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_print_clean_dissection_report', 'Print clean dissection report'), onClick: function () { try { setProcedureFeedback('Print view opened. Choose a printer or save the report as a PDF.'); window.print(); } catch (e) { if (addToast) addToast('Print is unavailable in this view.', 'error'); setProcedureFeedback('Print is unavailable in this view.', 'caution'); } }, className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-blue-700 border border-blue-200" }, '\uD83D\uDDA8 Print')
             ),
 
             // Tools group expanded
-            !d.quizMode && d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-advanced-only diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Lab tools" },
+            !d.quizMode && d.toolbarToolsOpen && React.createElement("div", { id: "diss-lab-tools", className: "diss-advanced-only diss-tool-panel flex flex-wrap bg-emerald-50 rounded-xl border border-emerald-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": __alloT('stem.dissection.a11y_lab_tools', 'Lab tools') },
 
-              React.createElement("button", { "aria-label": "Ruler", "aria-pressed": !!d.rulerMode,
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_ruler', 'Ruler'), "aria-pressed": !!d.rulerMode,
                 onClick: function () { var enabled = !d.rulerMode; upd('rulerMode', enabled); if (enabled) upd('annotateMode', false); setProcedureFeedback(enabled ? 'Ruler active. Select two points on the specimen to measure their distance.' : 'Ruler off.'); },
                 title: 'Ruler' + ' — Measure distances on the specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.rulerMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\uD83D\uDCCF ' + 'Ruler'),
 
-              React.createElement("button", { "aria-label": "Annotate", "aria-pressed": !!d.annotateMode,
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_annotate', 'Annotate'), "aria-pressed": !!d.annotateMode,
                 onClick: function () { var enabled = !d.annotateMode; upd('annotateMode', enabled); if (enabled) upd('rulerMode', false); setProcedureFeedback(enabled ? 'Annotation active. Select points on the specimen to draw a connected evidence line.' : 'Annotation off.'); },
                 title: 'Annotate' + ' — Draw annotations on the canvas',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.annotateMode ? 'bg-emerald-700 text-white' : 'transition-colors bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 active:scale-[0.97]')
               }, '\u270F ' + 'Annotate'),
 
-              React.createElement("button", { "aria-label": "Screenshot",
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_screenshot', 'Screenshot'),
                 onClick: function () {
                   try {
                     var c = queryDissectionNode('[data-diss-canvas]');
@@ -16646,7 +16646,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, '\uD83D\uDCF8 ' + 'Screenshot'),
 
-              React.createElement("button", { "aria-label": "Clear annotations", disabled: !(d.annotations || []).length,
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_clear_annotations', 'Clear annotations'), disabled: !(d.annotations || []).length,
                 onClick: function () { var count = (d.annotations || []).length; upd('annotations', []); setProcedureFeedback('Cleared ' + count + ' annotation point' + (count === 1 ? '' : 's') + '.'); },
                 title: 'Clear annotations \u2014 Remove annotation marks from the current specimen',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -16660,7 +16660,7 @@ var d = labToolData.dissection || {};
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all active:scale-[0.97]"
               }, visualEvidence.length >= evidenceFrameLimit ? 'Evidence full · manage notebook' : 'Capture evidence'),
 
-              React.createElement("button", { "aria-label": "Copy accurate lab report to clipboard",
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_copy_accurate_lab_report_to_clipboard', 'Copy accurate lab report to clipboard'),
                 onClick: function () {
                   var report = 'Virtual Dissection Lab Report: ' + spec.name + '\n' + '\u2500'.repeat(36) + '\n';
                   report += 'Specimen: ' + spec.name + '\nLayers revealed: ' + revealedLayerCount + '/' + spec.layers.length + '\n';
@@ -16728,10 +16728,10 @@ var d = labToolData.dissection || {};
                   });
                   copyDissectionText(report, 'Lab report copied to the clipboard.', 'The lab report could not be copied in this view.');
                 },
-                "aria-label": "Copy lab report to clipboard",
+                "aria-label": __alloT('stem.dissection.a11y_copy_lab_report_to_clipboard', 'Copy lab report to clipboard'),
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-emerald-700 border border-emerald-200"
               }, '\uD83D\uDCCB Lab Report'),
-              React.createElement("button", { id: "diss-reset-specimen", "aria-label": "Reset progress for this specimen", "aria-expanded": !!d.resetConfirmPending, "aria-controls": "diss-reset-confirmation", onClick: requestSpecimenReset,
+              React.createElement("button", { id: "diss-reset-specimen", "aria-label": __alloT('stem.dissection.a11y_reset_progress_for_this_specimen', 'Reset progress for this specimen'), "aria-expanded": !!d.resetConfirmPending, "aria-controls": "diss-reset-confirmation", onClick: requestSpecimenReset,
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-white text-red-700 border border-red-300"
               }, '\u21BA Reset specimen'),
               d.resetConfirmPending && !activeDissectionSaveIssue && React.createElement("div", { id: "diss-reset-confirmation", className: "diss-reset-confirm", role: "group", "aria-labelledby": "diss-reset-confirm-title" },
@@ -16742,15 +16742,15 @@ var d = labToolData.dissection || {};
             ),
 
             // Study group expanded
-            d.toolbarStudyOpen && React.createElement("div", { id: "diss-study-tools", tabIndex: -1, className: "diss-tool-panel flex flex-wrap bg-amber-50 rounded-xl border border-amber-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": "Study tools" },
+            d.toolbarStudyOpen && React.createElement("div", { id: "diss-study-tools", tabIndex: -1, className: "diss-tool-panel flex flex-wrap bg-amber-50 rounded-xl border border-amber-200 animate-[fadeIn_0.2s_ease-out]", role: "region", "aria-label": __alloT('stem.dissection.a11y_study_tools', 'Study tools') },
 
-              React.createElement("button", { "aria-label": "Flashcard", "aria-pressed": !!d.flashcardMode,
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_flashcard', 'Flashcard'), "aria-pressed": !!d.flashcardMode,
                 onClick: function () { if (d.flashcardMode) upd('flashcardMode', false); else { closeTimedPractical(); upd('guidedMode', false); upd('quizMode', false); upd('compareMode', false); upd('flashcardMode', true); upd('flashcardIdx', 0); upd('flashcardFlipped', false); } },
                 title: 'Flashcard' + ' — Review organs with flip cards',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.flashcardMode ? 'bg-violet-600 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
               }, '\uD83C\uDCCF ' + 'Flashcard'),
 
-              React.createElement("button", { "aria-label": "Compare", "aria-pressed": !!d.compareMode,
+              React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_compare', 'Compare'), "aria-pressed": !!d.compareMode,
                 onClick: function () { if (d.compareMode) upd('compareMode', false); else { closeTimedPractical(); upd('guidedMode', false); upd('quizMode', false); upd('flashcardMode', false); upd('compareMode', true); } },
                 title: 'Compare' + ' — Compare organs across specimens',
                 className: "px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all " + (d.compareMode ? 'bg-cyan-700 text-white' : 'transition-colors bg-white text-amber-700 border border-amber-200 hover:bg-amber-100 active:scale-[0.97]')
@@ -16829,7 +16829,7 @@ var d = labToolData.dissection || {};
                     className: "diss-stage__telemetry",
                     "data-tone": stageTelemetryTone,
                     role: "group",
-                    "aria-label": "Live specimen response monitor"
+                    "aria-label": __alloT('stem.dissection.a11y_live_specimen_response_monitor', 'Live specimen response monitor')
                   },
                     React.createElement("div", { className: "diss-stage__telemetry-head" },
                       React.createElement("div", null,
@@ -16882,7 +16882,7 @@ var d = labToolData.dissection || {};
                       React.createElement("button", { type: "button", className: "diss-stage__telemetry-replay", onClick: showProcedureLastResponse, "aria-label": selectedTechniqueActionIsLatest ? "Replay the latest technique response" : "Replay the selected technique response" }, (selectedTechniqueActionIsLatest ? 'Replay last response' : 'Replay selected response'))
                     )
                   ),
-                  stageHandoffUsesTool && React.createElement("section", { className: "diss-field-readiness", "data-tone": fieldReadinessTone, role: "group", "aria-label": "Pre-contact field readiness" },
+                  stageHandoffUsesTool && React.createElement("section", { className: "diss-field-readiness", "data-tone": fieldReadinessTone, role: "group", "aria-label": __alloT('stem.dissection.a11y_pre_contact_field_readiness', 'Pre-contact field readiness') },
                     React.createElement("div", { className: "diss-field-readiness__header" },
                       React.createElement("strong", null, 'Pre-contact check · ' + fieldReadinessLabel),
                       React.createElement("span", { className: "diss-field-readiness__score" }, fieldReadinessScore + '/100')
@@ -16900,7 +16900,7 @@ var d = labToolData.dissection || {};
                       })
                     ),
                     React.createElement("div", { className: "diss-field-readiness__actions" },
-                      React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: runFieldReadinessCheck, "aria-label": "Run pre-contact field check" }, 'Run field check'),
+                      React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: runFieldReadinessCheck, "aria-label": __alloT('stem.dissection.a11y_run_pre_contact_field_check', 'Run pre-contact field check') }, 'Run field check'),
                       React.createElement("button", { type: "button", className: "diss-field-readiness__action", onClick: resolveFieldReadinessIssue, disabled: !firstFieldReadinessIssue, "aria-label": firstFieldReadinessIssue ? 'Fix first readiness issue: ' + firstFieldReadinessIssue.label : 'All readiness checks pass' }, fieldReadinessActionLabel)
                     )
                   ),
@@ -16915,20 +16915,20 @@ var d = labToolData.dissection || {};
                   ),
                   React.createElement("div", { className: "diss-canvas-layout", "data-split": !d.quizMode && splitComparison && referenceEvidence ? "true" : "false" },
                     React.createElement("div", { className: "diss-canvas-frame", "data-diss-fullscreen-stage": true },
-                      React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": "Fullscreen specimen view and tools" },
-                      React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": "Exit fullscreen specimen mode", "aria-keyshortcuts": "Escape", title: "Exit fullscreen (Escape)", onClick: function (event) { exitDissectionFullscreen(event.currentTarget); } }, 'Exit fullscreen'),
+                      React.createElement("div", { id: "diss-fullscreen-dock", className: "diss-fullscreen-dock", role: "toolbar", "aria-label": __alloT('stem.dissection.a11y_fullscreen_specimen_view_and_tools', 'Fullscreen specimen view and tools') },
+                      React.createElement("button", { type: "button", className: "diss-fullscreen-dock__exit", "data-diss-fullscreen-exit": true, "aria-label": __alloT('stem.dissection.a11y_exit_fullscreen_specimen_mode', 'Exit fullscreen specimen mode'), "aria-keyshortcuts": "Escape", title: "Exit fullscreen (Escape)", onClick: function (event) { exitDissectionFullscreen(event.currentTarget); } }, 'Exit fullscreen'),
                         React.createElement("button", { type: "button", disabled: !!d.quizMode, onClick: function () { var views = ['dorsal', 'ventral', 'lateral', 'internal']; changeAnatomicalView(views[(views.indexOf(anatomicalView) + 1) % views.length], 'fullscreen dock'); }, "aria-label": d.quizMode ? "Fullscreen anatomical view locked during assessment" : "Fullscreen anatomical view: cycle dorsal, ventral, lateral, and internal" }, 'View: ' + anatomicalView),
-                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": "Fullscreen illumination color: cycle neutral, warm, and cool" }, 'Light: ' + labLight),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { upd('labLight', labLight === 'neutral' ? 'warm' : (labLight === 'warm' ? 'cool' : 'neutral')); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_illumination_color_cycle_neutral_war', 'Fullscreen illumination color: cycle neutral, warm, and cool') }, 'Light: ' + labLight),
                         React.createElement("label", null,
                           React.createElement("span", null, 'Illumination ' + lightIntensity + '%'),
                           React.createElement("input", { type: "range", min: 20, max: 100, step: 2, value: lightIntensity, disabled: !!d.practicalMode, onChange: function (event) { upd('lightIntensity', Number(event.target.value)); }, "aria-label": d.practicalMode ? "Fullscreen illumination locked during timed practical" : "Fullscreen illumination intensity", "aria-valuetext": lightIntensity + ' percent, ' + currentIllumination.label })
                         ),
-                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, "aria-label": "Fullscreen light direction: cycle overhead, left, right, and raking" }, 'Angle: ' + lightDirection),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var directions = ['overhead', 'left', 'right', 'raking']; upd('lightDirection', directions[(directions.indexOf(lightDirection) + 1) % directions.length]); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_light_direction_cycle_overhead_left', 'Fullscreen light direction: cycle overhead, left, right, and raking') }, 'Angle: ' + lightDirection),
                         React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-label": 'Tissue: ' + (d.beforeTechniqueView ? 'before' : 'after') + ' technique. Activate to show the tissue ' + (d.beforeTechniqueView ? 'after' : 'before') + ' the technique.', onClick: function () { upd('beforeTechniqueView', !d.beforeTechniqueView); } }, d.beforeTechniqueView ? 'Tissue: before' : 'Tissue: after'),
-                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var speed = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', speed); }, "aria-label": "Fullscreen animation speed: cycle normal, slow, and fast" }, 'Speed: ' + (d.animSpeed === 'slow' ? 'slow' : d.animSpeed === 'fast' ? 'fast' : 'normal')),
+                        React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var speed = d.animSpeed === 'fast' ? 'normal' : (d.animSpeed === 'normal' ? 'slow' : 'fast'); upd('animSpeed', speed); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_animation_speed_cycle_normal_slow_an', 'Fullscreen animation speed: cycle normal, slow, and fast') }, 'Speed: ' + (d.animSpeed === 'slow' ? 'slow' : d.animSpeed === 'fast' ? 'fast' : 'normal')),
                         !d.quizMode && React.createElement("label", null,
                           React.createElement("span", null, 'Tool'),
-                          React.createElement("select", { value: activeInstrument, onChange: function (event) { selectProcedureInstrument(event.target.value, 'fullscreen tool dock'); }, "aria-label": "Fullscreen active instrument" },
+                          React.createElement("select", { value: activeInstrument, onChange: function (event) { selectProcedureInstrument(event.target.value, 'fullscreen tool dock'); }, "aria-label": __alloT('stem.dissection.a11y_fullscreen_active_instrument', 'Fullscreen active instrument') },
                             PROCEDURE_INSTRUMENTS.map(function (tool) {
                               var restrictedTool = scenarioDefinition.id === 'restricted-tray' && (tool.id === 'dropper' || tool.id === 'wick');
                               return React.createElement("option", { key: tool.id, value: tool.id, disabled: restrictedTool }, tool.label + (restrictedTool ? ' \u2014 unavailable' : ''));
@@ -17102,13 +17102,13 @@ var d = labToolData.dissection || {};
 
                       })
                     ),
-                    !d.quizMode && splitComparison && referenceEvidence ? React.createElement("section", { className: "diss-split-reference", "aria-label": "Selected dissection reference frame" },
+                    !d.quizMode && splitComparison && referenceEvidence ? React.createElement("section", { className: "diss-split-reference", "aria-label": __alloT('stem.dissection.a11y_selected_dissection_reference_frame', 'Selected dissection reference frame') },
                       React.createElement("div", { className: "diss-split-reference__header" },
                         React.createElement("div", null,
                           React.createElement("strong", null, 'Reference frame'),
                           React.createElement("span", null, evidenceLayerLabel(referenceEvidence) + ' · ' + evidenceViewLabel(referenceEvidence) + ' view')
                         ),
-                        React.createElement("button", { type: "button", "aria-label": "Close split comparison", onClick: function () { upd('splitComparison', false); } }, 'Close')
+                        React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_close_split_comparison', 'Close split comparison'), onClick: function () { upd('splitComparison', false); } }, 'Close')
                       ),
                       React.createElement("img", { src: referenceEvidence.image, alt: spec.name + ' evidence reference, ' + evidenceLayerLabel(referenceEvidence) + ', ' + evidenceViewLabel(referenceEvidence) + ' view, ' + evidenceConditionLabel(referenceEvidence) }),
                       React.createElement("p", null, (referenceEvidence.selectedOrganName ? 'Focused on ' + referenceEvidence.selectedOrganName + ' · ' : '') + (isFinite(Number(referenceEvidence.techniqueScore)) ? 'Technique ' + Math.max(0, Math.min(100, Math.round(Number(referenceEvidence.techniqueScore)))) + '/100' : 'Technique not scored') + (referenceEvidence.opticalQuality != null ? ' · optics ' + referenceEvidence.opticalQuality + '%' : '') + ' · captured ' + (typeof referenceEvidence.capturedAt === 'string' && referenceEvidence.capturedAt ? referenceEvidence.capturedAt.slice(0, 16).replace('T', ' ') : 'earlier'))
@@ -17117,21 +17117,21 @@ var d = labToolData.dissection || {};
 
                   // Zoom control bar
                 React.createElement("div", { className: "diss-zoom-bar flex items-center justify-center gap-2 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400" },
-                  React.createElement("button", { "aria-label": "Zoom out canvas",
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_zoom_out_canvas', 'Zoom out canvas'),
                     onClick: function (e) { adjustCanvasZoomFromControl(e, -0.25); },
                     className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
                   }, '\u2796'),
                   React.createElement("span", { className: "text-[11px] font-mono text-slate-600 min-w-[40px] text-center" }, Math.round((d.canvasZoom || 1) * 100) + '%'),
-                  React.createElement("button", { "aria-label": "Zoom in canvas",
+                  React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_zoom_in_canvas', 'Zoom in canvas'),
                     onClick: function (e) { adjustCanvasZoomFromControl(e, 0.25); },
                     className: "transition-colors px-2 py-0.5 rounded text-xs font-bold bg-white border border-slate-400 hover:bg-slate-50 active:scale-[0.97]"
                   }, '\u2795'),
-                  (d.canvasZoom || 1) > 1.01 ? React.createElement("div", { className: "diss-pan-controls", role: "group", "aria-label": "Move the zoomed specimen without dragging" },
-                    React.createElement("button", { type: "button", "aria-label": "Move specimen up", onClick: function (e) { panCanvasByControl(e, 0, -54, 'up'); } }, '\u2191'),
-                    React.createElement("button", { type: "button", "aria-label": "Move specimen left", onClick: function (e) { panCanvasByControl(e, -54, 0, 'left'); } }, '\u2190'),
+                  (d.canvasZoom || 1) > 1.01 ? React.createElement("div", { className: "diss-pan-controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_move_the_zoomed_specimen_without_dragging', 'Move the zoomed specimen without dragging') },
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_up', 'Move specimen up'), onClick: function (e) { panCanvasByControl(e, 0, -54, 'up'); } }, '\u2191'),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_left', 'Move specimen left'), onClick: function (e) { panCanvasByControl(e, -54, 0, 'left'); } }, '\u2190'),
                     React.createElement("span", { "aria-hidden": "true" }, 'PAN'),
-                    React.createElement("button", { type: "button", "aria-label": "Move specimen right", onClick: function (e) { panCanvasByControl(e, 54, 0, 'right'); } }, '\u2192'),
-                    React.createElement("button", { type: "button", "aria-label": "Move specimen down", onClick: function (e) { panCanvasByControl(e, 0, 54, 'down'); } }, '\u2193')
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_right', 'Move specimen right'), onClick: function (e) { panCanvasByControl(e, 54, 0, 'right'); } }, '\u2192'),
+                    React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_move_specimen_down', 'Move specimen down'), onClick: function (e) { panCanvasByControl(e, 0, 54, 'down'); } }, '\u2193')
                   ) : null,
                   (d.canvasZoom || 1) !== 1 ? React.createElement("button", { "aria-label": "100%",
                     onClick: function (e) { resetCanvasView(e); },
@@ -17267,13 +17267,13 @@ var d = labToolData.dissection || {};
                         React.createElement("h4", { id: "diss-procedure-title" }, 'Technique practice \u00B7 ' + (procedureStageIdx >= PROCEDURE_STEPS.length ? 'ready to complete' : 'step ' + (procedureStageIdx + 1) + ' of ' + PROCEDURE_STEPS.length)),
                         React.createElement("p", null, procedureProtocol.title + '. ' + (procedureMode === 'guided' ? 'Follow the specimen-specific corridor or use the equivalent action button.' : 'Choose instruments yourself; protocol safeguards and feedback remain active.'))
                       ),
-                      React.createElement("div", { className: "diss-procedure__mode", role: "group", "aria-label": "Technique support level" },
+                      React.createElement("div", { className: "diss-procedure__mode", role: "group", "aria-label": __alloT('stem.dissection.a11y_technique_support_level', 'Technique support level') },
                         ['guided', 'independent'].map(function (mode) {
                           return React.createElement("button", { type: "button", key: mode, "aria-pressed": procedureMode === mode, onClick: function () { upd('procedureMode', mode); setProcedureFeedback(mode === 'guided' ? 'Guided technique shows the teaching access path.' : 'Independent technique hides the access path while preserving safety feedback.'); } }, mode === 'guided' ? 'Guided' : 'Independent');
                         })
                       )
                     ),
-                    React.createElement("dl", { className: "diss-protocol", "aria-label": "Specimen-specific procedure protocol" },
+                    React.createElement("dl", { className: "diss-protocol", "aria-label": __alloT('stem.dissection.a11y_specimen_specific_procedure_protocol', 'Specimen-specific procedure protocol') },
                       React.createElement("div", { "data-aligned": anatomicalView === procedureProtocol.recommendedView ? "true" : "false" },
                         React.createElement("dt", null, 'Orientation'),
                         React.createElement("dd", null,
@@ -17292,7 +17292,7 @@ var d = labToolData.dissection || {};
                         React.createElement("dd", null, protectedLandmarkNames.join(', ') || 'Underlying anatomy')
                       )
                     ),
-                    React.createElement("div", { className: "diss-active-tool", "data-readiness": activeInstrumentState.readiness, "aria-label": "Active instrument status" },
+                    React.createElement("div", { className: "diss-active-tool", "data-readiness": activeInstrumentState.readiness, "aria-label": __alloT('stem.dissection.a11y_active_instrument_status', 'Active instrument status') },
                       React.createElement("span", { className: "diss-active-tool__icon", "aria-hidden": "true" }, (PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).icon || '\u2022'),
                       React.createElement("div", null,
                         React.createElement("strong", null, 'Active tool: ' + ((PROCEDURE_INSTRUMENTS.find(function (tool) { return tool.id === activeInstrument; }) || {}).label || activeInstrument)),
@@ -17300,7 +17300,7 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("span", { className: "diss-active-tool__badge" }, activeInstrumentState.label)
                     ),
-                    React.createElement("section", { className: "diss-readiness", "data-tone": currentToolReadiness.tone, role: "region", "aria-label": "Active instrument action readiness" },
+                    React.createElement("section", { className: "diss-readiness", "data-tone": currentToolReadiness.tone, role: "region", "aria-label": __alloT('stem.dissection.a11y_active_instrument_action_readiness', 'Active instrument action readiness') },
                       React.createElement("div", { className: "diss-readiness__header" },
                         React.createElement("strong", null, 'Action readiness \u00B7 ' + currentToolReadiness.label),
                         React.createElement("span", { className: "diss-readiness__score" }, currentToolReadiness.score + '/100')
@@ -17308,7 +17308,7 @@ var d = labToolData.dissection || {};
                       React.createElement("div", { className: "diss-readiness__meter", role: "progressbar", "aria-label": "Action readiness for " + currentToolReadiness.tool.label, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": currentToolReadiness.score, "aria-valuetext": currentToolReadiness.label + ', ' + currentToolReadiness.score + ' percent' },
                         React.createElement("span", { style: { width: currentToolReadiness.score + '%' } })
                       ),
-                      React.createElement("div", { className: "diss-readiness__checks", role: "group", "aria-label": "Readiness checks" },
+                      React.createElement("div", { className: "diss-readiness__checks", role: "group", "aria-label": __alloT('stem.dissection.a11y_readiness_checks', 'Readiness checks') },
                         currentToolReadiness.checks.map(function (check) {
                           return React.createElement("div", { className: "diss-readiness__check", key: check.id },
                             React.createElement("b", { "aria-hidden": "true" }, check.ready ? '\u2713' : '!'),
@@ -17318,7 +17318,7 @@ var d = labToolData.dissection || {};
                       ),
                       React.createElement("p", { className: "diss-readiness__cue" }, currentToolReadiness.cue)
                     ),
-                    React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": "Dissection instruments" },
+                    React.createElement("div", { className: "diss-instruments", role: "radiogroup", "aria-label": __alloT('stem.dissection.a11y_dissection_instruments', 'Dissection instruments') },
                       PROCEDURE_INSTRUMENTS.map(function (tool) {
                         var toolState = procedureInstrumentStatus(tool.id);
                         var toolIsNext = procedureNext.action !== 'complete' && tool.id === procedureNext.instrument;
@@ -17343,7 +17343,7 @@ var d = labToolData.dissection || {};
                         );
                       })
                     ),
-                    activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": "Scalpel depth" },
+                    activeInstrument === 'scalpel' && React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_scalpel_depth', 'Scalpel depth') },
                       React.createElement("span", { className: "text-[11px] font-bold text-slate-600" }, 'Depth:'),
                       ['shallow', 'deep'].map(function (depth) {
                         return React.createElement("button", { type: "button", key: depth, "aria-pressed": (d.incisionDepth || 'shallow') === depth, onClick: function () { upd('incisionDepth', depth); setProcedureFeedback(depth === 'shallow' ? 'Shallow depth selected. The scalpel is ready when orientation is complete.' : 'Deep practice depth selected. It will be blocked to protect underlying structures.', depth === 'shallow' ? 'success' : 'caution'); } }, depth === 'shallow' ? 'Shallow' : 'Deep (practice warning)');
@@ -17386,7 +17386,7 @@ var d = labToolData.dissection || {};
                         return React.createElement("span", { key: step.id, className: "diss-procedure__step", "data-complete": procedureStageIdx > idx ? "true" : "false", "data-current": procedureStageIdx === idx ? "true" : "false" }, (procedureStageIdx > idx ? '\u2713 ' : '') + step.label);
                       })
                     ),
-                    React.createElement("div", { className: "diss-procedure__metrics", role: "group", "aria-label": "Technique feedback metrics" },
+                    React.createElement("div", { className: "diss-procedure__metrics", role: "group", "aria-label": __alloT('stem.dissection.a11y_technique_feedback_metrics', 'Technique feedback metrics') },
                       [
                         { label: 'Technique score', value: techniqueScore + '/100' },
                         { label: 'Decision quality', value: currentDecisionScore + '/100' },
@@ -17413,7 +17413,7 @@ var d = labToolData.dissection || {};
                         className: "diss-advanced-card diss-tissue-monitor",
                         "data-tone": currentTissueState.trauma >= 60 ? "danger" : ((currentTissueState.risk >= 55 || currentTissueState.moisture < 38 || currentTissueState.tension > 82) ? "caution" : "stable"),
                         role: "group",
-                        "aria-label": "Dynamic tissue state"
+                        "aria-label": __alloT('stem.dissection.a11y_dynamic_tissue_state', 'Dynamic tissue state')
                       },
                         React.createElement("strong", null, 'Dynamic tissue state \u00B7 ' + currentTissueStatus.label),
                         React.createElement("p", null, currentTissueState.variantLabel + '. ' + currentTissueStatus.priority),
@@ -17469,7 +17469,7 @@ var d = labToolData.dissection || {};
                           React.createElement("span", { className: "diss-optics__plane-item" }, React.createElement("span", { className: "diss-focus-symbol", "data-focus": "soft", "aria-hidden": "true" }), 'Soft ' + opticalPlaneCounts.soft),
                           React.createElement("span", { className: "diss-optics__plane-item" }, React.createElement("span", { className: "diss-focus-symbol", "data-focus": "unresolved", "aria-hidden": "true" }), 'Unresolved ' + opticalPlaneCounts.unresolved)
                         ),
-                        React.createElement("div", { className: "diss-optics__controls", role: "group", "aria-label": "Inspection focus depth" },
+                        React.createElement("div", { className: "diss-optics__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_inspection_focus_depth', 'Inspection focus depth') },
                           React.createElement("span", null, 'Focus'),
                           ['surface', 'structure', 'deep'].map(function (depth) {
                             return React.createElement("button", { type: "button", key: depth, "aria-pressed": lensFocusDepth === depth, onClick: function () {
@@ -17504,7 +17504,7 @@ var d = labToolData.dissection || {};
                         React.createElement("div", { className: "diss-scenario-console__controls" },
                           React.createElement("label", null,
                             React.createElement("span", null, 'Choose scenario'),
-                            React.createElement("select", { id: "diss-scenario-select", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, "aria-label": "Choose procedure scenario" },
+                            React.createElement("select", { id: "diss-scenario-select", value: scenarioDefinition.id, onChange: function (event) { var chosen = ADVANCED_SCENARIOS.find(function (scenario) { return scenario.id === event.target.value; }); activateProcedureScenario(chosen, false); }, "aria-label": __alloT('stem.dissection.a11y_choose_procedure_scenario', 'Choose procedure scenario') },
                               ADVANCED_SCENARIOS.map(function (scenario) { return React.createElement("option", { key: scenario.id, value: scenario.id }, scenario.label + ' \u00B7 ' + scenario.difficulty); })
                             )
                           ),
@@ -17523,20 +17523,20 @@ var d = labToolData.dissection || {};
                         React.createElement("strong", null, 'Material response \u00B7 resistance ' + currentMaterialInteraction.resistance + '/100'),
                         React.createElement("p", null, currentMaterialInteraction.label + '. ' + currentMaterialInteraction.response + ' Risk if control is lost: ' + currentMaterialInteraction.failureMode)
                       ),
-                      currentProcedure.forcepsDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.forcepsDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": "Recorded direct forceps lift evidence" },
+                      currentProcedure.forcepsDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.forcepsDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_forceps_lift_evidence', 'Recorded direct forceps lift evidence') },
                         React.createElement("strong", null, 'Direct lift evidence \u00B7 ' + currentProcedure.forcepsDragMetrics.liftPercent + '% lift'),
                         React.createElement("p", null, 'Control ' + currentProcedure.forcepsDragMetrics.control + '%. Projected tension ' + currentProcedure.forcepsDragMetrics.projectedTension + '%. Duration ' + currentProcedure.forcepsDragMetrics.durationMs + ' milliseconds. Input: ' + currentProcedure.forcepsDragMetrics.inputType + '.')
-                      ),                      currentProcedure.pinDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.pinDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": "Recorded direct pin placement evidence" },
+                      ),                      currentProcedure.pinDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.pinDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_pin_placement_evidence', 'Recorded direct pin placement evidence') },
                         React.createElement("strong", null, 'Direct pin evidence \u00B7 ' + currentProcedure.pinDragMetrics.insertionPercent + '% inserted'),
                         React.createElement("p", null, 'Alignment ' + currentProcedure.pinDragMetrics.alignment + '%. Control ' + currentProcedure.pinDragMetrics.control + '%. Angle ' + currentProcedure.pinDragMetrics.angle + ' degrees. Input: ' + currentProcedure.pinDragMetrics.inputType + '.')
                       ),
-                      currentProcedure.probeDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.probeDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": "Recorded direct probe palpation evidence" },
+                      currentProcedure.probeDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.probeDragMetrics.control >= 72 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_probe_palpation_evidence', 'Recorded direct probe palpation evidence') },
                         React.createElement("strong", null, 'Direct probe evidence \u00B7 ' + currentProcedure.probeDragMetrics.contactPercent + '% contact'),
                         React.createElement("p", null, 'Alignment ' + currentProcedure.probeDragMetrics.alignment + '%. Control ' + currentProcedure.probeDragMetrics.control + '%. Resistance ' + currentProcedure.probeDragMetrics.resistance + '/100. Deformation ' + currentProcedure.probeDragMetrics.deformation + '. Input: ' + currentProcedure.probeDragMetrics.inputType + '.')
-                      ),                      currentProcedure.dropperDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.dropperDragMetrics.control >= 72 && currentProcedure.dropperDragMetrics.poolingRisk < 64 ? "clear" : "caution", role: "status", "aria-label": "Recorded direct dropper hydration evidence" },
+                      ),                      currentProcedure.dropperDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.dropperDragMetrics.control >= 72 && currentProcedure.dropperDragMetrics.poolingRisk < 64 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_dropper_hydration_evidence', 'Recorded direct dropper hydration evidence') },
                         React.createElement("strong", null, 'Direct dropper evidence \u00B7 ' + currentProcedure.dropperDragMetrics.contactPercent + '% contact'),
                         React.createElement("p", null, 'Dose ' + currentProcedure.dropperDragMetrics.dose + '. Flow alignment ' + currentProcedure.dropperDragMetrics.flowAlignment + '%. Control ' + currentProcedure.dropperDragMetrics.control + '%. Moisture ' + currentProcedure.dropperDragMetrics.moisture + '%. Pooling risk ' + currentProcedure.dropperDragMetrics.poolingRisk + '/100. Input: ' + currentProcedure.dropperDragMetrics.inputType + '.')
-                      ),                      currentProcedure.wickDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.wickDragMetrics.control >= 72 && currentProcedure.wickDragMetrics.edgeAlignment >= 72 ? "clear" : "caution", role: "status", "aria-label": "Recorded direct wick recovery evidence" },
+                      ),                      currentProcedure.wickDragMetrics && React.createElement("div", { className: "diss-advanced-card", "data-tone": currentProcedure.wickDragMetrics.control >= 72 && currentProcedure.wickDragMetrics.edgeAlignment >= 72 ? "clear" : "caution", role: "status", "aria-label": __alloT('stem.dissection.a11y_recorded_direct_wick_recovery_evidence', 'Recorded direct wick recovery evidence') },
                         React.createElement("strong", null, 'Direct wick evidence \u00B7 ' + currentProcedure.wickDragMetrics.recoveryPercent + '% recovery'),
                         React.createElement("p", null, 'Edge alignment ' + currentProcedure.wickDragMetrics.edgeAlignment + '%. Contact ' + currentProcedure.wickDragMetrics.contactPercent + '%. Control ' + currentProcedure.wickDragMetrics.control + '%. Pooling before ' + currentProcedure.wickDragMetrics.poolingBefore + ' drops. Input: ' + currentProcedure.wickDragMetrics.inputType + '.')
                       ),                      d.adaptiveGuidance !== false && React.createElement("div", { className: "diss-advanced-card" },
@@ -17547,24 +17547,24 @@ var d = labToolData.dissection || {};
                       relationshipMode && d.selectedOrgan && React.createElement("div", { className: "diss-advanced-card" },
                         React.createElement("strong", null, 'Curated anatomical relationships'),
                         React.createElement("p", null, selectedRelationships.length ? selectedRelationships.map(function (item) { return item.relation + ' ' + item.organ.name + ' [' + item.type + '; ' + anatomicalRelationshipEncodingText(item.type) + ']' + (item.visible ? '' : ' (not yet exposed)'); }).join('; ') + '.' : 'No curated connection is defined for this structure.'),
-                        React.createElement("p", { "aria-label": "Relationship pathway visual key" }, 'Path key: vascular solid circles; neural dash-dot diamonds; digestive short-dash chevrons; optical dotted triangles; excretory long-dash rings; respiratory long-short double chevrons; structural long-dash squares; other functional links even-dash hexagons.'),
+                        React.createElement("p", { "aria-label": __alloT('stem.dissection.a11y_relationship_pathway_visual_key', 'Relationship pathway visual key') }, 'Path key: vascular solid circles; neural dash-dot diamonds; digestive short-dash chevrons; optical dotted triangles; excretory long-dash rings; respiratory long-short double chevrons; structural long-dash squares; other functional links even-dash hexagons.'),
                         React.createElement("button", { type: "button", disabled: !selectedRelationships.some(function (item) { return item.visible; }), onClick: traceNextAnatomicalRelationship }, 'Trace next exposed connection')
                       )
                     ),
-                    !d.quizMode && d.compareTechniqueAttempts && techniqueComparison && React.createElement("div", { className: "diss-advanced-card diss-attempt-comparison", role: "region", "aria-label": "Technique attempt comparison" },
+                    !d.quizMode && d.compareTechniqueAttempts && techniqueComparison && React.createElement("div", { className: "diss-advanced-card diss-attempt-comparison", role: "region", "aria-label": __alloT('stem.dissection.a11y_technique_attempt_comparison', 'Technique attempt comparison') },
                       React.createElement("strong", null, 'Previous attempt vs current attempt'),
                       React.createElement("p", null, 'Saved baseline: ' + (techniqueComparison.previous.view || anatomicalView) + ' view, ' + (techniqueComparison.previous.inputType || 'input not recorded') + '. Positive values indicate improvement.'),
-                      React.createElement("div", { className: "diss-attempt-comparison__legend", role: "list", "aria-label": "Technique path comparison legend" },
+                      React.createElement("div", { className: "diss-attempt-comparison__legend", role: "list", "aria-label": __alloT('stem.dissection.a11y_technique_path_comparison_legend', 'Technique path comparison legend') },
                         React.createElement("span", { className: "diss-attempt-comparison__legend-item", role: "listitem" }, React.createElement("i", { className: "diss-attempt-comparison__swatch", "aria-hidden": "true" }), 'Current attempt · solid cyan path'),
                         React.createElement("span", { className: "diss-attempt-comparison__legend-item", role: "listitem" }, React.createElement("i", { className: "diss-attempt-comparison__swatch", "data-style": "saved", "aria-hidden": "true" }), 'Saved baseline · dashed magenta path'),
                         React.createElement("span", { className: "diss-attempt-comparison__legend-item", role: "listitem" }, React.createElement("i", { className: "diss-attempt-comparison__swatch", "data-style": "caution", "aria-hidden": "true" }), 'Caution marker · diamond or circle')
                       ),
-                      React.createElement("div", { className: "diss-attempt-comparison__scrub", role: "group", "aria-label": "Comparison replay controls" },
+                      React.createElement("div", { className: "diss-attempt-comparison__scrub", role: "group", "aria-label": __alloT('stem.dissection.a11y_comparison_replay_controls', 'Comparison replay controls') },
                         React.createElement("label", { htmlFor: "diss-compare-replay-progress" }, 'Replay point'),
-                        React.createElement("input", { id: "diss-compare-replay-progress", type: "range", min: 0, max: 100, step: 1, value: compareReplayPercent, onChange: function (event) { setTechniqueCompareReplayProgress(Number(event.target.value) / 100); }, "aria-label": "Scrub comparison replay", "aria-valuetext": compareReplayLabel, "data-diss-compare-progress": true }),
+                        React.createElement("input", { id: "diss-compare-replay-progress", type: "range", min: 0, max: 100, step: 1, value: compareReplayPercent, onChange: function (event) { setTechniqueCompareReplayProgress(Number(event.target.value) / 100); }, "aria-label": __alloT('stem.dissection.a11y_scrub_comparison_replay', 'Scrub comparison replay'), "aria-valuetext": compareReplayLabel, "data-diss-compare-progress": true }),
                         React.createElement("output", { htmlFor: "diss-compare-replay-progress" }, compareReplayPercent + '% · ' + compareReplayLabel),
                         React.createElement("button", { type: "button", onClick: toggleTechniqueCompareReplay, "aria-pressed": !!d.compareReplayPlaying, "aria-label": d.compareReplayPlaying ? "Pause comparison replay" : "Play comparison replay" }, d.compareReplayPlaying ? 'Pause compare replay' : 'Play compare replay'),
-                        React.createElement("button", { type: "button", onClick: function () { setTechniqueCompareReplayProgress(1); }, disabled: compareReplayPercent >= 100, "aria-label": "Show full comparison paths" }, 'Show full paths')
+                        React.createElement("button", { type: "button", onClick: function () { setTechniqueCompareReplayProgress(1); }, disabled: compareReplayPercent >= 100, "aria-label": __alloT('stem.dissection.a11y_show_full_comparison_paths', 'Show full comparison paths') }, 'Show full paths')
                       ),
                       React.createElement("div", { className: "diss-attempt-comparison__grid" },
                         [
@@ -17584,7 +17584,7 @@ var d = labToolData.dissection || {};
                         })
                       )
                     ),
-                    procedureTimelineEntries.length > 0 && React.createElement("div", { className: "diss-procedure__timeline", "aria-label": "Recorded technique timeline" },
+                    procedureTimelineEntries.length > 0 && React.createElement("div", { className: "diss-procedure__timeline", "aria-label": __alloT('stem.dissection.a11y_recorded_technique_timeline', 'Recorded technique timeline') },
                       procedureTimelineEntries.map(function (entry, idx) {
                         var timelineLabel = entry.label || procedureActionLabel(entry.action);
                         var timelineOutcome = entry.outcome || 'RECORDED';
@@ -17606,7 +17606,7 @@ var d = labToolData.dissection || {};
                         );
                       })
                     ),
-                    (currentProcedure.cautionLog || []).length > 0 && React.createElement("div", { className: "diss-procedure__timeline", "aria-label": "Technique caution history" },
+                    (currentProcedure.cautionLog || []).length > 0 && React.createElement("div", { className: "diss-procedure__timeline", "aria-label": __alloT('stem.dissection.a11y_technique_caution_history', 'Technique caution history') },
                       (currentProcedure.cautionLog || []).slice(-3).map(function (entry, idx) {
                         return React.createElement("span", { key: String(entry.at || idx) }, 'Caution: ' + entry.message);
                       })
@@ -17614,26 +17614,26 @@ var d = labToolData.dissection || {};
                     React.createElement("div", { className: "diss-procedure__controls" },
                       React.createElement("button", { type: "button", className: "diss-procedure__next", disabled: equivalentProcedureActionDisabled, onClick: performNextProcedureStep, "aria-describedby": "diss-equivalent-technique-note", "aria-label": equivalentProcedureActionLabel }, procedureNext.action === 'complete' ? 'Technique complete' : ('Motor-neutral: ' + procedureNext.label)),
                       React.createElement("span", { id: "diss-equivalent-technique-note", className: "diss-sr-only" }, 'This control provides a motor-neutral equivalent after you choose the plan and prepare the field. It records supported technique and still requires an explanation before the next step.'),
-                      React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": "Show a generalized safe-technique demonstration on the specimen" }, '\u25B6 Show technique'),
-                      React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": "Replay the recorded technique attempt on the specimen" }, '\u21BB Replay attempt'),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": "Save this technique attempt as a comparison baseline" }, '\u25A3 Save attempt'),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": "Start a new technique attempt for this layer" }, '\u21BB Start new attempt'),
-                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": "Compare the current technique with the previous saved attempt" }, '\u21C4 Compare attempts'),
+                      React.createElement("button", { type: "button", onClick: showProcedureDemonstration, "aria-label": __alloT('stem.dissection.a11y_show_a_generalized_safe_technique_demonstration', 'Show a generalized safe-technique demonstration on the specimen') }, '\u25B6 Show technique'),
+                      React.createElement("button", { type: "button", disabled: !((currentProcedure.actionLog || []).length || (currentProcedure.history || []).length), onClick: showProcedureReplay, "aria-label": __alloT('stem.dissection.a11y_replay_the_recorded_technique_attempt_on_the_sp', 'Replay the recorded technique attempt on the specimen') }, '\u21BB Replay attempt'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: procedureStageIdx === 0, onClick: saveTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_save_this_technique_attempt_as_a_comparison_bas', 'Save this technique attempt as a comparison baseline') }, '\u25A3 Save attempt'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !attemptEntries.length, onClick: startNewTechniqueAttempt, "aria-label": __alloT('stem.dissection.a11y_start_a_new_technique_attempt_for_this_layer', 'Start a new technique attempt for this layer') }, '\u21BB Start new attempt'),
+                      React.createElement("button", { type: "button", className: "diss-advanced-only", disabled: !techniqueComparison, "aria-pressed": !!d.compareTechniqueAttempts, onClick: function () { upd('compareTechniqueAttempts', !d.compareTechniqueAttempts); }, "aria-label": __alloT('stem.dissection.a11y_compare_the_current_technique_with_the_previous', 'Compare the current technique with the previous saved attempt') }, '\u21C4 Compare attempts'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": d.adaptiveGuidance !== false, onClick: function () { upd('adaptiveGuidance', d.adaptiveGuidance === false); } }, 'Adaptive coaching ' + (d.adaptiveGuidance === false ? 'off' : 'on')),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", onClick: function () { var select = dissectionNodeById('diss-scenario-select'); if (select) { select.scrollIntoView({ block: 'center', behavior: reducedMotionEnabled ? 'auto' : 'smooth' }); select.focus(); } }, "aria-controls": "diss-scenario-select" }, '\u2691 Scenario center'),
                       React.createElement("button", { type: "button", className: "diss-advanced-only", "aria-pressed": !!d.showProcedureDebrief, onClick: function () { upd('showProcedureDebrief', !d.showProcedureDebrief); } }, '\uD83D\uDCDD Debrief'),
                       activeInstrument === 'dropper' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('dropper', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('dropper', { point: result.point || point }); } }, '\u25C9 Apply controlled drop'),
-                      activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": "Wick excess saline from the visible pool edge" }, '\u25A7 Wick excess saline'),
-                      React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": "Undo the last technique action and visually restore the previous tissue state" }, '\u21A9 Undo last technique action')
+                      activeInstrument === 'wick' && React.createElement("button", { type: "button", disabled: !currentToolReadiness.safeToAct, onClick: function () { var point = currentProcedure.dropperPoint || procedureGuidePoints()[Math.floor((procedureGuidePoints().length - 1) / 2)]; var result = performProcedureAction('wick', { point: point }); if (result && result.ok) queueProcedureInstrumentReplay('wick', { point: result.point || point }); }, "aria-label": __alloT('stem.dissection.a11y_wick_excess_saline_from_the_visible_pool_edge', 'Wick excess saline from the visible pool edge') }, '\u25A7 Wick excess saline'),
+                      React.createElement("button", { type: "button", disabled: !(currentProcedure.history || []).length, onClick: undoProcedureAction, "aria-label": __alloT('stem.dissection.a11y_undo_the_last_technique_action_and_visually_res', 'Undo the last technique action and visually restore the previous tissue state') }, '\u21A9 Undo last technique action')
                     ),
-                    advancedWorkspace && d.showProcedureDebrief && React.createElement("div", { className: "diss-debrief", role: "region", "aria-label": "Technique debrief" },
+                    advancedWorkspace && d.showProcedureDebrief && React.createElement("div", { className: "diss-debrief", role: "region", "aria-label": __alloT('stem.dissection.a11y_technique_debrief', 'Technique debrief') },
                       React.createElement("strong", null, 'Strength: '), procedureDebrief.strength + '. ',
                       React.createElement("strong", null, 'Next improvement: '), procedureDebrief.improve
                     ),
                     React.createElement("details", { className: "diss-instructor" },
                       React.createElement("summary", null, 'Scenario thresholds'),
                       React.createElement("p", { className: "diss-procedure__notice" }, 'These controls tune procedure scenarios. Verified investigation completion also requires the objective, evidence, observation, technique, and first-attempt assessment targets.'),
-                      React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": "Scenario assessment thresholds" },
+                      React.createElement("div", { className: "diss-procedure__controls", role: "group", "aria-label": __alloT('stem.dissection.a11y_scenario_assessment_thresholds', 'Scenario assessment thresholds') },
                         React.createElement("button", { type: "button", onClick: function () { upd('instructorTarget', instructorTarget >= 90 ? 70 : instructorTarget + 5); } }, 'Target score: ' + instructorTarget),
                         React.createElement("button", { type: "button", onClick: function () { upd('instructorMaxCautions', instructorMaxCautions >= 2 ? 0 : instructorMaxCautions + 1); } }, 'Max cautions: ' + instructorMaxCautions),
                         React.createElement("button", { type: "button", onClick: function () { upd('instructorRequiredStructures', instructorRequiredStructures >= 4 ? 1 : instructorRequiredStructures + 1); } }, 'Required structures: ' + instructorRequiredStructures)
@@ -17646,7 +17646,7 @@ var d = labToolData.dissection || {};
                     React.createElement("p", { className: "diss-procedure__notice" }, 'This is a generalized, non-graphic teaching simulation, not a specimen-specific physical-dissection or surgical protocol. Follow instructor-approved procedures in a physical lab.')
                   ),
 
-                  !d.quizMode && React.createElement("details", { className: "diss-overlay-actions", "data-dissection-overlays": true, "aria-label": "System overlays" },
+                  !d.quizMode && React.createElement("details", { className: "diss-overlay-actions", "data-dissection-overlays": true, "aria-label": __alloT('stem.dissection.a11y_system_overlays', 'System overlays') },
                     React.createElement("summary", null, 'Systems and physiology tools'),
                     [
                       { key: 'traceNervous', label: 'Nervous', icon: '\u26A1', active: !!d.traceNervous, tone: 'purple' },
@@ -17671,7 +17671,7 @@ var d = labToolData.dissection || {};
                       className: "diss-living-function",
                       "data-active": livingFunctionEnabled ? "true" : "false",
                       role: "group",
-                      "aria-label": "Specimen-specific living function model"
+                      "aria-label": __alloT('stem.dissection.a11y_specimen_specific_living_function_model', 'Specimen-specific living function model')
                     },
                       React.createElement("div", { className: "diss-living-function__copy" },
                         React.createElement("strong", null, specimenLivingFunctionProfile().title),
@@ -17696,7 +17696,7 @@ var d = labToolData.dissection || {};
                           var nextSpeed = livingFunctionSpeed === 'normal' ? 'slow' : (livingFunctionSpeed === 'slow' ? 'fast' : 'normal');
                           upd('livingFunctionSpeed', nextSpeed);
                           setProcedureFeedback('Living function speed set to ' + nextSpeed + '.');
-                        }, "aria-label": "Cycle living function speed" }, 'Speed: ' + livingFunctionSpeed)
+                        }, "aria-label": __alloT('stem.dissection.a11y_cycle_living_function_speed', 'Cycle living function speed') }, 'Speed: ' + livingFunctionSpeed)
                       )
                     ),
                     activeFunctionalTraceKey && React.createElement("div", { className: "diss-system-playback", role: "group", "aria-label": activeFunctionalTraceLabel + " pathway playback" },
@@ -17741,14 +17741,14 @@ var d = labToolData.dissection || {};
                 React.createElement("div", { className: "flex items-center justify-between gap-3 mt-3" },
                   React.createElement("button", {
                     type: "button",
-                    "aria-label": "Previous flashcard",
+                    "aria-label": __alloT('stem.dissection.a11y_previous_flashcard', 'Previous flashcard'),
                     disabled: (d.flashcardIdx || 0) <= 0,
                     onClick: function () { upd('flashcardIdx', Math.max(0, (d.flashcardIdx || 0) - 1)); upd('flashcardFlipped', false); },
                     className: "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-800 disabled:opacity-40"
                   }, '◀ Previous'),
                   React.createElement("button", {
                     type: "button",
-                    "aria-label": "Next flashcard",
+                    "aria-label": __alloT('stem.dissection.a11y_next_flashcard', 'Next flashcard'),
                     disabled: (d.flashcardIdx || 0) >= organs.length - 1,
                     onClick: function () { upd('flashcardIdx', Math.min(organs.length - 1, (d.flashcardIdx || 0) + 1)); upd('flashcardFlipped', false); },
                     className: "px-4 py-2 rounded-lg text-xs font-bold bg-indigo-100 text-indigo-800 disabled:opacity-40"
@@ -17761,7 +17761,7 @@ var d = labToolData.dissection || {};
 
                 React.createElement("div", { className: "text-xs font-bold text-cyan-800 mb-2" }, '\uD83D\uDD0D ' + 'Comparing across specimens' + ': ' + sel.name + ' across specimens'),
 
-                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": "Specimen list" },
+                React.createElement("div", { className: "space-y-1.5 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": __alloT('stem.dissection.a11y_specimen_list', 'Specimen list') },
 
                   SPEC_KEYS.map(function (sk) {
 
@@ -17841,7 +17841,7 @@ var d = labToolData.dissection || {};
 
               // Sidebar
 
-              React.createElement("aside", { id: "diss-structure-directory", tabIndex: -1, className: "diss-sidebar space-y-3", "data-dissection-sidebar": true, "aria-label": "Structure directory and lab notes" },
+              React.createElement("aside", { id: "diss-structure-directory", tabIndex: -1, className: "diss-sidebar space-y-3", "data-dissection-sidebar": true, "aria-label": __alloT('stem.dissection.a11y_structure_directory_and_lab_notes', 'Structure directory and lab notes') },
                 React.createElement("a", { href: "#diss-canvas", className: "diss-skip-return", onClick: function (event) { event.preventDefault(); focusDissectionTarget('diss-canvas', 'Interactive specimen focused.', event.currentTarget.closest('[data-dissection-root]')); } }, 'Return to interactive specimen'),
 
                 // Selected organ detail
@@ -17860,7 +17860,7 @@ var d = labToolData.dissection || {};
 
                     React.createElement("div", { className: "diss-selection-nav flex gap-1" },
 
-                      React.createElement("button", { type: "button", "aria-label": "Previous structure", disabled: selectedOrganIndex <= 0,
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_previous_structure', 'Previous structure'), disabled: selectedOrganIndex <= 0,
 
                         onClick: function () {
 
@@ -17873,7 +17873,7 @@ var d = labToolData.dissection || {};
 
                       }, '\u25C0'),
 
-                      React.createElement("button", { type: "button", "aria-label": "Next structure", disabled: selectedOrganIndex >= organs.length - 1,
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_next_structure', 'Next structure'), disabled: selectedOrganIndex >= organs.length - 1,
 
                         onClick: function () {
 
@@ -17887,7 +17887,7 @@ var d = labToolData.dissection || {};
                       }, '▶'),
                       React.createElement("button", {
                         type: "button",
-                        "aria-label": "Back to structure directory",
+                        "aria-label": __alloT('stem.dissection.a11y_back_to_structure_directory', 'Back to structure directory'),
                         onClick: function () {
                           var closingOrganId = sel.id;
                           upd('selectedOrgan', null);
@@ -18285,7 +18285,7 @@ var d = labToolData.dissection || {};
 
                     placeholder: 'Search organs...',
 
-                    "aria-label": "Search organs in this layer",
+                    "aria-label": __alloT('stem.dissection.a11y_search_organs_in_this_layer', 'Search organs in this layer'),
                     "aria-controls": "diss-directory-results",
                     "aria-describedby": "diss-directory-count",
 
@@ -18300,7 +18300,7 @@ var d = labToolData.dissection || {};
                   React.createElement("p", { id: "diss-directory-count", className: "diss-directory-status", role: "status", "aria-live": "polite", "aria-atomic": "true" },
                     organSearchText ? (filteredOrgans.length + ' matching ' + (filteredOrgans.length === 1 ? 'structure' : 'structures') + ' in ' + currentLayerDef.name + '.') : (organs.length + ' structures available in ' + currentLayerDef.name + '.')
                   ),
-                  React.createElement("div", { id: "diss-directory-results", className: "space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false", tabIndex: 0, role: "region", "aria-label": "Directory results" },
+                  React.createElement("div", { id: "diss-directory-results", className: "space-y-1 max-h-72 overflow-y-auto", "aria-busy": "false", tabIndex: 0, role: "region", "aria-label": __alloT('stem.dissection.a11y_directory_results', 'Directory results') },
 
                     filteredOrgans.length === 0
                       ? React.createElement("p", { className: "diss-directory-empty" }, 'No structures match “' + (d.organSearch || '') + '”. Try a structure name, system, or function.')
@@ -18384,7 +18384,7 @@ var d = labToolData.dissection || {};
                   ),
 
                   React.createElement("p", { className: "text-xs text-amber-700 mb-2" }, quizPrompt),
-                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": "Answer method" },
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mb-3", role: "group", "aria-label": __alloT('stem.dissection.a11y_answer_method', 'Answer method') },
                     React.createElement("button", { type: "button", "aria-pressed": effectiveQuizAnswerMode === 'choices', onClick: function () { upd('quizAnswerMode', 'choices'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'choices' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, d.practicalMode ? 'Accessible choices' : 'Multiple choice'),
                     React.createElement("button", { type: "button", disabled: !hotspotQuizAvailable, title: hotspotQuizAvailable ? 'Answer directly on the visible specimen' : 'The current question is not visible on the specimen; use multiple choice', "aria-pressed": effectiveQuizAnswerMode === 'hotspot', onClick: function () { upd('quizAnswerMode', 'hotspot'); }, className: "px-3 py-1 rounded-lg text-xs font-bold border " + (effectiveQuizAnswerMode === 'hotspot' ? 'bg-amber-700 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300') }, hotspotQuizAvailable ? 'Select on specimen' : 'Specimen answer unavailable')
                   ),
@@ -18585,7 +18585,7 @@ var d = labToolData.dissection || {};
                   ),
 
                   React.createElement("div", { className: "mt-1 text-[11px] text-blue-700" }, 'Observation: ' + exploredCount + ' of ' + totalOrgansInSpecimen + ' structures viewed'),
-                  React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": "Learning evidence dimensions" },
+                  React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2", "aria-label": __alloT('stem.dissection.a11y_learning_evidence_dimensions', 'Learning evidence dimensions') },
                     masteryDimensions.map(function (dimension) {
                       return React.createElement("div", { key: dimension.id, className: "rounded-lg border border-blue-100 bg-white/80 p-2" },
                         React.createElement("div", { className: "flex items-center justify-between gap-2 text-[11px]" },
@@ -18818,12 +18818,12 @@ var d = labToolData.dissection || {};
                         var logMessage = 'Inquiry approach logged for ' + spec.name + ': ' + sm.label + ', damage index ' + damage.toFixed(1) + ', insight score ' + insight.toFixed(1) + '.';
                         setProcedureFeedback(logMessage, 'success');
                       }, className: "flex-1 min-h-11 px-2 py-1 rounded text-[10px] font-bold", style: { background: sm.bg, color: sm.color, border: '1px solid ' + sm.border, cursor: 'pointer' } }, '📋 Log this approach'),
-                      React.createElement("button", { type: "button", "aria-label": "Reset inquiry simulator inputs", onClick: function() {
+                      React.createElement("button", { type: "button", "aria-label": __alloT('stem.dissection.a11y_reset_inquiry_simulator_inputs', 'Reset inquiry simulator inputs'), onClick: function() {
                         setIQ({ specimenSize: 8, layerDepth: 1, careLevel: 5, timePress: 5 });
                         setProcedureFeedback('Inquiry simulator inputs reset. Saved approaches and written responses were preserved.', 'working');
                       }, className: "min-h-11 px-2 py-1 rounded text-[10px]", style: { background: '#0a0a1a', color: '#cbd5e1', border: '1px solid #64748b', cursor: 'pointer' } }, 'Reset inputs')
                     ),
-                    iq.log.length > 0 && React.createElement("section", { className: "p-1.5 rounded text-[10px] mb-2", role: "log", "aria-label": "Saved inquiry approaches", "aria-live": "polite", "aria-relevant": "additions", tabIndex: 0, style: { background: '#0a0a1a', maxHeight: 110, overflow: 'auto', border: '1px solid #64748b' } },
+                    iq.log.length > 0 && React.createElement("section", { className: "p-1.5 rounded text-[10px] mb-2", role: "log", "aria-label": __alloT('stem.dissection.a11y_saved_inquiry_approaches', 'Saved inquiry approaches'), "aria-live": "polite", "aria-relevant": "additions", tabIndex: 0, style: { background: '#0a0a1a', maxHeight: 110, overflow: 'auto', border: '1px solid #64748b' } },
                       React.createElement("h5", { className: "font-bold mb-1" }, 'Saved approaches (' + iq.log.length + '/20)'),
                       React.createElement("ol", { className: "m-0 pl-4 font-mono" },
                         iq.log.slice(-5).map(function(e, i) { return React.createElement("li", { key: e.t + '|' + e.sz + '|' + e.dp + '|' + i }, (e.t ? e.t + ' · ' : '') + e.state + ' · size ' + e.sz + ' cm · depth ' + e.dp + '/5 · care ' + e.c + '/10 · time ' + e.tp + '/10 · damage ' + e.dmg + ' · insight ' + e.ins); })
@@ -18858,7 +18858,7 @@ var d = labToolData.dissection || {};
                 React.createElement("details", { className: "diss-disclosure bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200" },
 
                   React.createElement("summary", { className: "text-violet-800" }, 'Key terms'),
-                  React.createElement("div", { className: "diss-disclosure__body space-y-1 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": "Structure details" },
+                  React.createElement("div", { className: "diss-disclosure__body space-y-1 max-h-48 overflow-y-auto", tabIndex: 0, role: "region", "aria-label": __alloT('stem.dissection.a11y_structure_details', 'Structure details') },
 
                     [
 

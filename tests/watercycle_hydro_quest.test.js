@@ -33,7 +33,7 @@ describe('Water Cycle Hydro Quest', () => {
     expect(source).toContain('id: "wcHydroQuestStatus"');
     expect(source).toContain('"aria-describedby": "wcHydroQuestStatus"');
     expect(source).toContain('mission.complete ? "Complete" : "Open"');
-    expect(source).toContain('className: "wc-hydro-missions", role: "list", "aria-label": "Hydro Quest missions"');
+    expect(source).toContain(`className: "wc-hydro-missions", role: "list", "aria-label": __alloT('stem.watercycle.a11y_hydro_quest_missions', 'Hydro Quest missions')`);
     expect(source).toContain('role: "listitem"');
     expect(source).toContain('mission.name + (mission.complete ? " complete. " : " open. ") + mission.detail');
   });

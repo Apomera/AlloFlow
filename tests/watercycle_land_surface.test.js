@@ -45,9 +45,9 @@ describe('Water Cycle Land-Surface Scenario Lab', () => {
 
       expect(source).toContain('"data-watercycle-land": "true"');
       expect(source).toContain('"aria-labelledby": "wc-land-title"');
-      expect(source).toContain('"aria-label": "Rainfall intensity index"');
-      expect(source).toContain('"aria-label": "Antecedent soil saturation index"');
-      expect(source).toContain('"aria-label": "Reset land-surface scenario"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_rainfall_intensity_index', 'Rainfall intensity index')`);
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_antecedent_soil_saturation_index', 'Antecedent soil saturation index')`);
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_reset_land_surface_scenario', 'Reset land-surface scenario')`);
       expect(source).toContain('renderLandSegments("Soil permeability"');
       expect(source).toContain('renderLandSegments("Slope"');
       expect(source).toContain('renderLandSegments("Land cover"');

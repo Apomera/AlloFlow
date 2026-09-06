@@ -59,7 +59,7 @@ describe('Water Cycle 3D Droplet Journey', () => {
       expect(source).toMatch(/: "Loading the 3D water journey\.\.\."\r?\n\s+\),\r?\n/);
       expect(source).toContain('canvasEl._wc3dResetCamera = function()');
       expect(source).toContain('canvasEl._wc3dResetCamera = null;');
-      expect(source).toContain('"aria-label": "Resume guided camera"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_resume_guided_camera', 'Resume guided camera')`);
       expect(source).toContain('canvasEl._wc3dAdjustCamera = function(action)');
       expect(source).toContain('canvasEl._wc3dAdjustCamera = null;');
       expect(source).toMatch(/function cleanupJourney3d\(\) \{[\s\S]*?canvasEl\._wc3dAdjustCamera = null;\r?\n\s+\}/);
@@ -71,14 +71,14 @@ describe('Water Cycle 3D Droplet Journey', () => {
     WATER_CYCLE_PATHS.forEach((filePath) => {
       const source = readFileSync(filePath, 'utf8');
 
-      expect(source).toContain('"aria-label": "Water Cycle visualization"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_water_cycle_visualization', 'Water Cycle visualization')`);
       expect(source).toContain('"aria-pressed": journeyView === \'2d\'');
       expect(source).toContain('"aria-pressed": journeyView === \'3d\'');
       expect(source).toContain('"aria-live": "polite"');
       expect(source).toContain('illustrative scale');
       expect(source).toContain('Three-dimensional tracked water parcel');
       expect(source).toContain('var journeyLensMap = {');
-      expect(source).toContain('"aria-label": "Current water parcel state"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_current_water_parcel_state', 'Current water parcel state')`);
       expect(source).toContain("driver: 'Hydraulic gradient'");
       expect(source).toContain("driver: 'Water-potential gradient'");
       expect(source).toContain("pace: 'Path dependent'");

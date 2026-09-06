@@ -19,7 +19,7 @@ describe('Water Cycle prediction-and-evidence loop', () => {
       expect(source).toContain("mixed: { label: 'A mixed or small shift'");
       expect(source).toContain('className: "wc-prediction-strip" +');
       expect(source).toContain('"data-watercycle-evidence-interpretation": "true"');
-      expect(source).toMatch(/"aria-label": "(?:Scenario evidence interpretation|Evidence interpretation check)"/);
+      expect(source).toMatch(/"aria-label": __alloT\('stem\.watercycle\.a11y_(?:scenario_evidence_interpretation|evidence_interpretation_check)', '(?:Scenario evidence interpretation|Evidence interpretation check)'\)/);
       expect(source).toContain('"Read the evidence"');
       expect(source).toContain('"Make a prediction"');
       expect(source).toContain('Before reading the evidence, what will shift most?');
@@ -32,8 +32,8 @@ describe('Water Cycle prediction-and-evidence loop', () => {
 
       expect(source).not.toContain('"Predict first"');
       expect(source).not.toMatch(/Which (?:modeled )?pathway shows the strongest (?:modeled )?shift\?/);
-      expect(source).not.toContain('"aria-label": "Prediction check"');
-      expect(source).not.toContain('"aria-label": "Choose a predicted scenario shift"');
+      expect(source).not.toContain(`"aria-label": __alloT('stem.watercycle.a11y_prediction_check', 'Prediction check')`);
+      expect(source).not.toContain(`"aria-label": __alloT('stem.watercycle.a11y_choose_a_predicted_scenario_shift', 'Choose a predicted scenario shift')`);
     });
   });
 
@@ -63,7 +63,7 @@ describe('Water Cycle prediction-and-evidence loop', () => {
 
       expect(source).toContain("wcScenarioPreset: 'custom', wcPrediction: ''");
       expect(source).toContain("var resetWcPrediction = function()");
-      expect(source).toMatch(/"aria-label": "Choose a (?:different|new) evidence claim"/);
+      expect(source).toMatch(/"aria-label": __alloT\('stem\.watercycle\.a11y_choose_a_(?:different|new)_evidence_claim', 'Choose a (?:different|new) evidence claim'\)/);
       expect(source).toContain('wcPrediction: \'\'');
       expect(source).toContain("updMulti({ wcScenarioBaseline: null, wcPrediction: '', wcReplayedObservation: '' });");
     });

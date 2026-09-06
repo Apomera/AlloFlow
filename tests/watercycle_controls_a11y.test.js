@@ -88,7 +88,7 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
 
       expect(source).toContain('id: "wcQuizQuestion"');
       expect(source).toContain('role: "region",');
-      expect(source).toContain('"aria-label": "Water Cycle quiz"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_water_cycle_quiz', 'Water Cycle quiz')`);
       expect(source).toContain('"aria-busy": !!d.aiQuizLoading');
       expect(source).toContain('id: "wcQuizStatus"');
       expect(source).toContain('Generating an AI quiz question.');
@@ -96,7 +96,7 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
       expect(source).toContain('"aria-labelledby": "wcQuizQuestion"');
       expect(source).toContain('"aria-describedby": "wcQuizInstructions wcQuizStatus"');
       expect(source).toContain('id: "wcQuizInstructions"');
-      expect(source).toContain('role: "group", "aria-label": "Quiz answer choices"');
+      expect(source).toContain(`role: "group", "aria-label": __alloT('stem.watercycle.a11y_quiz_answer_choices', 'Quiz answer choices')`);
       expect(source).toContain('aria-label": d.wcQuiz.answered');
       expect(source).toContain('Correct answer: " + d.wcQuiz.a');
       expect(source).toContain('"aria-atomic": "true"');
@@ -112,7 +112,7 @@ expect(source).toContain('"data-tooltip": t(\'stem.watercycle.reset_climate_sett
       expect(source).toContain('"aria-describedby": "wcMythInstructions"');
       expect(source).toContain('id: "wcMythQuestion", role: "status", "aria-live": "polite"');
       expect(source).toContain('id: "wcMythInstructions"');
-      expect(source).toContain('role: "group", "aria-label": "True or false answers"');
+      expect(source).toContain(`role: "group", "aria-label": __alloT('stem.watercycle.a11y_true_or_false_answers', 'True or false answers')`);
       expect(source).toContain('type: "button",');
       expect(source).toContain('role: "status", "aria-live": "polite", "aria-atomic": "true", className: "p-2.5 rounded-lg border "');
     });

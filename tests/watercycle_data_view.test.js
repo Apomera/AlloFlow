@@ -20,7 +20,7 @@ describe('Water Cycle semantic Data view', () => {
       expect(source).toContain('className: "wc-data-summary"');
       expect(source).toContain('Text alternative to the canvas');
       expect(source).toContain('className: "wc-data-table"');
-      expect(source).toContain('"aria-label": "Current Water Cycle model data"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_current_water_cycle_model_data', 'Current Water Cycle model data')`);
       expect(source).toContain('className: "sr-only" }, "Current Water Cycle model data"');
     });
   });

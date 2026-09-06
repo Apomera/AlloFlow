@@ -39,14 +39,14 @@ describe('Water Cycle experiment trail', () => {
       expect(source).toContain('Save current observation to experiment trail');
       expect(source).toContain('className: "wc-experiment-log wc-focus-secondary"');
       expect(source).toContain('pathway-mix snapshots');
-      expect(source).toContain('"aria-label": "Experiment trail"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_experiment_trail', 'Experiment trail')`);
       expect(source).toContain('"aria-describedby": "wcExperimentTrailStatus"');
       expect(source).toContain('id: "wcExperimentTrailStatus"');
       expect(source).toContain('role: "status"');
       expect(source).toContain('"aria-atomic": "true"');
-      expect(source).toContain('"aria-label": "Saved experiment observations"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_saved_experiment_observations', 'Saved experiment observations')`);
       expect(source).toContain('wcExperimentLog.length + "/4 observations saved"');
-      expect(source).toContain('"aria-label": "Clear experiment trail"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_clear_experiment_trail', 'Clear experiment trail')`);
       expect(source).toContain('var clearWcExperimentLog = function()');
       expect(source).toContain('className: "wc-log-replay"');
       expect(source).toContain('className: "wc-experiment-log-replay-badge", "aria-hidden": "true"');

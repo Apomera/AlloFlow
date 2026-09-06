@@ -26,7 +26,7 @@ describe('Water Cycle Journey pathway explorer', () => {
       expect(source).toContain('+ ". " + path.detail');
       expect(source).toContain("var journeyPathCoverageLabel = journeyPathCoverageCount === journeyPathDefinitions.length");
       expect(source).toContain('className: "wc-route-ledger"');
-      expect(source).toContain('"aria-label": "Journey pathway coverage"');
+      expect(source).toContain(`"aria-label": __alloT('stem.watercycle.a11y_journey_pathway_coverage', 'Journey pathway coverage')`);
       expect(source).toContain('"aria-valuetext": journeyPathCoverageLabel');
       expect(source).toContain('var isNext = !!journeyPathNext && journeyPathNext.key === path.key;');
       expect(source).toContain('className: "wc-route-ledger-item" + (explored ? " is-explored" : "") + (current ? " is-current" : "") + (isNext ? " is-next" : "")');

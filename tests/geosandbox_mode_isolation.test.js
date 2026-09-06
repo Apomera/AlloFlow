@@ -61,7 +61,7 @@ describe('Geometry Sandbox mode scene isolation', () => {
     expect(tool).toContain('function focusSculptPart(index)');
     expect(tool).toContain("window.matchMedia('(prefers-reduced-motion: reduce)')");
     expect(tool).toContain("'data-geo-sculpt-part-navigator': 'true'");
-    expect(tool).toContain("'aria-label': 'Selected sculpt part navigation'");
+    expect(tool).toContain(`'aria-label': __alloT('stem.geosandbox.a11y_selected_sculpt_part_navigation', 'Selected sculpt part navigation')`);
     expect(tool).toContain('if (window._geoFocusAnim) { cancelAnimationFrame(window._geoFocusAnim)');
     expect(tool).toContain('function previewSculptPart(index)');
     expect(tool).toContain('o.userData.geoSculptPreview = previewed');

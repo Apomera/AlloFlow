@@ -43,6 +43,9 @@ function buildHandler(overrides) {
       { id: 'transpiration', label: 'Transpiration' }, { id: 'infiltration', label: 'Infiltration' },
     ],
     announceToSR: record('announce'),
+    // The handler is lifted out of the tool and run in this synthetic scope, so
+    // the translator it now calls has to be provided here too.
+    __alloT: (key, fallback) => fallback,
     chooseJourneyPath: record('chooseJourneyPath'),
     selectStage: record('selectStage'),
     toggleWcFocusMode: record('toggleWcFocusMode'),

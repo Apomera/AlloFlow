@@ -249,7 +249,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('procedureByLayer: normalizeSavedProcedureByLayer(data.procedureByLayer || {}, {');
       expect(source).toContain('delete snapshot.tissueState.lastUpdatedAt;');
       expect(source).toContain('verifiedIdentifications: d.verifiedIdentifications || {}');
-      expect(source).toContain("role: \"radiogroup\", \"aria-label\": \"Dissection instruments\"");
+      expect(source).toContain("role: \"radiogroup\", \"aria-label\": __alloT('stem.dissection.a11y_dissection_instruments', 'Dissection instruments')");
       expect(source).toContain('function performProcedureAction(action, payload)');
       expect(source).toContain('function beginProcedureStroke(e)');
       expect(source).toContain('function finishProcedureStroke(e)');
@@ -4482,7 +4482,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("evidence.opticalQuality != null ? ' · optics '");
       expect(source).toContain("report += 'Optical inspection: '");
       expect(source).toContain("'Optical inspection \\u00B7 ' + currentOpticalInspection.label");
-      expect(source).toContain('"aria-label": "Inspection focus depth"');
+      expect(source).toContain(`"aria-label": __alloT('stem.dissection.a11y_inspection_focus_depth', 'Inspection focus depth')`);
     }
 
     const html = renderTool('dissection', {
@@ -4525,7 +4525,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain('function onCompositeToolbarKeyDown(e)');
       expect(source).toContain('"aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown');
       expect(source).toContain('function panCanvasByControl(e, horizontalStep, verticalStep, label)');
-      expect(source).toContain('"aria-label": "Move the zoomed specimen without dragging"');
+      expect(source).toContain(`"aria-label": __alloT('stem.dissection.a11y_move_the_zoomed_specimen_without_dragging', 'Move the zoomed specimen without dragging')`);
       expect(source).toContain("localStorage.getItem('dissection_accessibility_preferences')");
       expect(source).toContain("localStorage.setItem('dissection_accessibility_preferences'");
       expect(source).toContain('"data-reduced-motion": reducedMotionEnabled ? "true" : "false"');
@@ -4781,7 +4781,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain('not preserved motion');
       expect(source).toContain('livingFunction: livingFunctionEnabled ?');
       expect(source).toContain("report += 'Living function model: '");
-      expect(source).toContain('"aria-label": "Specimen-specific living function model"');
+      expect(source).toContain(`"aria-label": __alloT('stem.dissection.a11y_specimen_specific_living_function_model', 'Specimen-specific living function model')`);
     }
 
     const html = renderTool('dissection', {
@@ -5247,7 +5247,7 @@ expect(source).toContain('Scenario checkpoint: ');
       expect(source).toContain('function procedureToolReadinessData(toolId, state)');
       expect(source).toContain("{ id: 'sequence', label: 'Sequence', ready: sequenceReady }");
       expect(source).toContain('className: "diss-readiness"');
-      expect(source).toContain('"aria-label": "Active instrument action readiness"');
+      expect(source).toContain(`"aria-label": __alloT('stem.dissection.a11y_active_instrument_action_readiness', 'Active instrument action readiness')`);
       expect(source).toContain('toolReadiness: { score: currentToolReadiness.score');
       expect(source).toContain("report += 'Active tool readiness: '");
       expect(source).toContain("var selectionMessage = tool.label + ' selected'");

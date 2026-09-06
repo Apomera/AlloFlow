@@ -4137,7 +4137,7 @@ const d = labToolData.waterCycle || {};
               cv.dataset.climTemp = '15';
               cv.dataset.climWind = '1.0';
             }
-            if (typeof announceToSR === 'function') announceToSR('Climate settings reset to balanced conditions.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_climate_settings_reset_to_balanced_conditions', 'Climate settings reset to balanced conditions.'));
           };
           var adjustClimate = function(key, val) {
             var interactionBaseline = getWcInteractionBaseline();
@@ -4163,7 +4163,7 @@ const d = labToolData.waterCycle || {};
             updMulti(nextData);
             var cv = document.getElementById('wcCanvas');
             if (cv) cv.dataset[key] = String(val);
-            if (interactionBaseline && typeof announceToSR === 'function') announceToSR('Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.');
+            if (interactionBaseline && typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_experiment_baseline_saved_before_this_change_choo', 'Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.'));
             setTimeout(function() { checkWaterCycleChallenges(nextState); }, 50);
           };
 
@@ -4172,7 +4172,7 @@ const d = labToolData.waterCycle || {};
             var nextData = { [key]: val, landAdjusted: true, precipLab3dActive: false, wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' };
             if (interactionBaseline) nextData.wcScenarioBaseline = interactionBaseline;
             updMulti(nextData);
-            if (interactionBaseline && typeof announceToSR === 'function') announceToSR('Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.');
+            if (interactionBaseline && typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_experiment_baseline_saved_before_this_change_choo', 'Experiment baseline saved before this change. Choose a prediction, then use the comparison values as evidence.'));
           };
 
           var resetLandScenario = function() {
@@ -4187,13 +4187,13 @@ const d = labToolData.waterCycle || {};
               wcPrediction: '',
               wcReplayedObservation: ''
             });
-            if (typeof announceToSR === 'function') announceToSR('Land-surface scenario reset to balanced conditions.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_land_surface_scenario_reset_to_balanced_condition', 'Land-surface scenario reset to balanced conditions.'));
           };
 
           var applyWcScenarioPreset = function(presetId) {
             if (presetId === 'custom') {
               updMulti({ wcScenarioPreset: 'custom', wcPrediction: '', wcReplayedObservation: '' });
-              if (typeof announceToSR === 'function') announceToSR('Custom controls selected. Tune one variable at a time and compare the results.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_custom_controls_selected_tune_one_variable_at_a_t', 'Custom controls selected. Tune one variable at a time and compare the results.'));
               return;
             }
             var preset = WATER_CYCLE_PRESETS[presetId];
@@ -4246,7 +4246,7 @@ const d = labToolData.waterCycle || {};
 
           var resetWcPrediction = function() {
             upd('wcPrediction', '');
-            if (typeof announceToSR === 'function') announceToSR('Evidence claim cleared. Read the comparison and choose another claim.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_evidence_claim_cleared_read_the_comparison_and_ch', 'Evidence claim cleared. Read the comparison and choose another claim.'));
           };
 
           var saveWcObservation = function() {
@@ -4283,13 +4283,13 @@ const d = labToolData.waterCycle || {};
               savedAt: Date.now()
             }]).slice(-4);
             upd('wcExperimentLog', nextLog);
-            if (typeof announceToSR === 'function') announceToSR('Observation saved to the experiment trail.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_observation_saved_to_the_experiment_trail', 'Observation saved to the experiment trail.'));
             if (typeof addToast === 'function') addToast('📝 Observation saved. Try another scenario to build the trail.', 'success');
           };
 
           var clearWcExperimentLog = function() {
             updMulti({ wcExperimentLog: [], wcReplayedObservation: '' });
-            if (typeof announceToSR === 'function') announceToSR('Experiment trail cleared.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_experiment_trail_cleared', 'Experiment trail cleared.'));
           };
 
           var replayWcObservation = function(entry) {
@@ -4346,7 +4346,7 @@ const d = labToolData.waterCycle || {};
                 hydrologistReply: String(resp || '').trim(),
                 hydrologistLoading: false
               });
-              if (typeof announceToSR === 'function') announceToSR('AI Hydrologist reply ready.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_ai_hydrologist_reply_ready', 'AI Hydrologist reply ready.'));
             }).catch(function() {
               updMulti({
                 hydrologistLoading: false,
@@ -5078,7 +5078,7 @@ const d = labToolData.waterCycle || {};
                   else if (resp && resp.candidates) text = (resp.candidates[0] && resp.candidates[0].content && resp.candidates[0].content.parts && resp.candidates[0].content.parts[0] && resp.candidates[0].content.parts[0].text) || '';
                   text = (text || 'The reader returned no text. Try again in a moment.').replace(/\*\*/g, '').replace(/^[\s\n]+|[\s\n]+$/g, '');
                   setSteward({ aiReadResponse: text, aiReadLoading: false });
-                  if (typeof announceToSR === 'function') announceToSR('AI Watershed Reading complete.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_ai_watershed_reading_complete', 'AI Watershed Reading complete.'));
                 }).catch(function() {
                   setSteward({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
                 });
@@ -5368,7 +5368,7 @@ const d = labToolData.waterCycle || {};
                         h('span', null, def.icon + ' ' + def.name + (targetsHit ? ' ✓' : '')),
                         def.deepDive ? h('button', {
                           onClick: function() { openStewardDeepDive(c.id); },
-                          'aria-label': 'Deep-dive',
+                          'aria-label': __alloT('stem.watercycle.a11y_deep_dive', 'Deep-dive'),
                           className: "focus:ring-2 focus:ring-yellow-500 focus:outline-none transition-all",
                           style: { marginLeft: 'auto', background: 'transparent', border: '1px solid ' + def.color + '66', color: def.color, cursor: 'pointer', borderRadius: 6, padding: '0 6px', fontSize: 11 }
                         }, '📚') : null
@@ -5909,7 +5909,7 @@ const d = labToolData.waterCycle || {};
                 understood: false,
                 explanation: ''
               }));
-              if (typeof announceToSR === 'function') announceToSR('Precipitation Lab reset to gentle rain.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_precipitation_lab_reset_to_gentle_rain', 'Precipitation Lab reset to gentle rain.'));
             }
 
             function logPrecipObservation() {
@@ -11252,7 +11252,7 @@ const d = labToolData.waterCycle || {};
                       h('span', null, 'Loading the 3D storm…'),
                       h('button', {type:'button',className:'wc-precip-btn',onClick:function(){setIQ({_3dAttempt:(iq._3dAttempt || 0)+1});}}, 'Retry 3D'),
                       h('button', {type:'button',className:'wc-precip-btn',onClick:function(){setPrecipViewMode('2d');}}, 'Use 2D chamber')),
-                    precipViewMode === '3d' && h('div', {className:'wc-storm-field-controls',role:'group','aria-label':'Storm field controls'},
+                    precipViewMode === '3d' && h('div', {className:'wc-storm-field-controls',role:'group','aria-label':__alloT('stem.watercycle.a11y_storm_field_controls', 'Storm field controls')},
                       h('div',{className:'wc-storm-field-row'},
                         h('label',{htmlFor:'wcStormEnvironment'},'Environment',
                           h('select',{id:'wcStormEnvironment',value:precipConfig.environment,onChange:function(event){setIQ({environment:event.target.value});}},
@@ -11269,7 +11269,7 @@ const d = labToolData.waterCycle || {};
                           h('input',{id:'wcStormTransition',type:'range',min:1,max:20,step:1,value:precipConfig.transitionSeconds,
                             onChange:function(event){setIQ({transitionSeconds:Number(event.target.value)});}}))),
                       h('p',{className:'wc-storm-live-weather','aria-live':'off'},'Weather eases toward your selected settings.'),
-                      precipConfig.cameraFocus === 'immersive' && h('div',{className:'wc-storm-walk-buttons',role:'group','aria-label':'Move and look inside the storm'},
+                      precipConfig.cameraFocus === 'immersive' && h('div',{className:'wc-storm-walk-buttons',role:'group','aria-label':__alloT('stem.watercycle.a11y_move_and_look_inside_the_storm', 'Move and look inside the storm')},
                         [['w','Forward'],['s','Back'],['a','Step left'],['d','Step right'],['arrowleft','Look left'],['arrowright','Look right'],['arrowup','Look up'],['arrowdown','Look down'],['e','Rise'],['q','Lower']].map(function(action){
                           return h('button',{key:action[0],type:'button',onClick:function(){
                             if(precip3dCanvasNode && precip3dCanvasNode._wcStormAction) precip3dCanvasNode._wcStormAction(action[0]);
@@ -11280,7 +11280,7 @@ const d = labToolData.waterCycle || {};
                       h('button',{type:'button',onClick:function(event){
                         var chamber=event.currentTarget.closest('.wc-precip-chamber');
                         if(document.fullscreenElement){document.exitFullscreen();}
-                        else if(chamber && chamber.requestFullscreen){chamber.requestFullscreen().catch(function(){if(typeof announceToSR==='function')announceToSR('Full screen is unavailable in this browser.');});}
+                        else if(chamber && chamber.requestFullscreen){chamber.requestFullscreen().catch(function(){if(typeof announceToSR==='function')announceToSR(__alloT('stem.watercycle.sr_full_screen_is_unavailable_in_this_browser', 'Full screen is unavailable in this browser.'));});}
                       }},'Full-screen storm')),
 
                     precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-focus', role: 'group',
@@ -11315,7 +11315,7 @@ const d = labToolData.waterCycle || {};
                         ? precipModel.thermalLayers.crossings.length + ' phase-change ' +
                           (precipModel.thermalLayers.crossings.length === 1 ? 'layer' : 'layers')
                         : 'No 0\u00B0C crossing')),
-                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-key', role: 'group', 'aria-label': '3D cloud chamber visual key' },
+                    precipViewMode === '3d' && h('div', { className: 'wc-precip-3d-key', role: 'group', 'aria-label': __alloT('stem.watercycle.a11y_3d_cloud_chamber_visual_key', '3D cloud chamber visual key') },
                       h('span', null,
                         h('i', { className: precipConfig.cameraFocus === 'cloud' ? 'is-condensation' : 'is-nuclei', 'aria-hidden': 'true' }),
                         precipConfig.cameraFocus === 'cloud' ? 'Vapor tracer → droplets' : 'Nuclei + droplets'),
@@ -11334,7 +11334,7 @@ const d = labToolData.waterCycle || {};
                           ? 'Orbit · zoom' : 'Drag to orbit · scroll to zoom'),
                       h('button', { type: 'button', className: 'wc-precip-3d-reset', onClick: function() {
                         if (precip3dCanvasNode && precip3dCanvasNode._wcPrecip3dResetCamera) precip3dCanvasNode._wcPrecip3dResetCamera();
-                      }, 'aria-label': 'Reset the 3D cloud chamber camera' }, 'Reset view')),
+                      }, 'aria-label': __alloT('stem.watercycle.a11y_reset_the_3d_cloud_chamber_camera', 'Reset the 3D cloud chamber camera') }, 'Reset view')),
                     h('div', { className: 'wc-precip-canvas-dock', role: 'group',
                       'aria-label': 'Live chamber status: ' + precipModel.displayLabel + ', ' +
                         precipIntensityLabel + ' intensity, ' + precipReachLabel },
@@ -11389,7 +11389,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { className: 'wc-storm-lifecycle-head' },
                       h('strong', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
                       h('span', null, precipModel.lifecycle.stageLabel + ' · ' + precipModel.lifecycle.time + '/100')),
-                    h('div', { className: 'wc-storm-stage-segments', 'aria-label': 'Jump to storm stage' },
+                    h('div', { className: 'wc-storm-stage-segments', 'aria-label': __alloT('stem.watercycle.a11y_jump_to_storm_stage', 'Jump to storm stage') },
                       stormStageStops.map(function(stageStop) {
                         return h('button', { key: stageStop.key, type: 'button', className: 'wc-precip-btn',
                           'aria-pressed': precipModel.lifecycle.stageKey === stageStop.key,
@@ -11446,7 +11446,7 @@ const d = labToolData.waterCycle || {};
                           ? (lightningStudyAvailable ? 'Guided still frame' : 'Unavailable in this cloud')
                           : 'Automatic timing')),
                       h('div', { className: 'wc-lightning-study-steps', role: 'group',
-                        'aria-label': 'Choose a lightning sequence phase' },
+                        'aria-label': __alloT('stem.watercycle.a11y_choose_a_lightning_sequence_phase', 'Choose a lightning sequence phase') },
                         WC_LIGHTNING_STUDY_STEPS.map(function(studyStep, studyIndex) {
                           return h('button', { key: studyStep.key, type: 'button', className: 'wc-lightning-study-step',
                             'data-lightning-study-choice': studyStep.key,
@@ -11462,7 +11462,7 @@ const d = labToolData.waterCycle || {};
                         ? h('p', { className: 'wc-lightning-study-note' },
                             'Study snapshots are static and silent. Choose Auto to resume flash-to-thunder timing.')
                         : null),
-                    h('dl', { className: 'wc-storm-anatomy-readouts', 'aria-label': 'Storm instrument readouts' },
+                    h('dl', { className: 'wc-storm-anatomy-readouts', 'aria-label': __alloT('stem.watercycle.a11y_storm_instrument_readouts', 'Storm instrument readouts') },
                       precipModel.stormAnatomy.instruments.map(function(instrument) {
                         var instrumentAvailable = instrument.value != null && isFinite(instrument.value);
                         var instrumentValue = !instrumentAvailable ? 'N/A'
@@ -11472,7 +11472,7 @@ const d = labToolData.waterCycle || {};
                           'data-instrument-available': instrumentAvailable ? 'true' : 'false' },
                           h('dt', null, instrument.label),
                           h('dd', null, instrumentValue + (instrumentAvailable && instrument.unit ? ' ' + instrument.unit : '')));
-                      }))),                  h('div', { className: 'wc-thunder-lesson', role: 'group', 'aria-label': 'Thunder and lightning explanation' },
+                      }))),                  h('div', { className: 'wc-thunder-lesson', role: 'group', 'aria-label': __alloT('stem.watercycle.a11y_thunder_and_lightning_explanation', 'Thunder and lightning explanation') },
                     h('strong', null, lightningStudyActive
                       ? '⚡ Study snapshot · ' + activeLightningStudy.label
                       : '⚡ Flash → thunder · ' + precipModel.thunder.caption),
@@ -11492,7 +11492,7 @@ const d = labToolData.waterCycle || {};
                     h('p', null, precipModel.description),
                     h('p', { className: 'wc-precip-causal' }, precipModel.causalExplanation)
                   ),
-                  h('div', { className: 'wc-precip-metrics', 'aria-label': 'Precipitation model readouts' },
+                  h('div', { className: 'wc-precip-metrics', 'aria-label': __alloT('stem.watercycle.a11y_precipitation_model_readouts', 'Precipitation model readouts') },
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Particle growth'), h('strong', null, precipModel.growthIndex + '/100')),
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Cloud phase'), h('strong', null, precipModel.cloudPhase)),
                     h('div', { className: 'wc-precip-metric' }, h('span', null, 'Temperature path'), h('strong', null, precipModel.profileLabel)),
@@ -11505,7 +11505,7 @@ const d = labToolData.waterCycle || {};
                         : precipConfig.terrain === 'coast' ? 'Coastal moisture feed' : 'Flat terrain'))
                   )
                 ),
-                h('div', { className: 'wc-precip-controls', 'aria-label': 'Precipitation controls' },
+                h('div', { className: 'wc-precip-controls', 'aria-label': __alloT('stem.watercycle.a11y_precipitation_controls', 'Precipitation controls') },
                   h('div', { className: 'wc-precip-control-group' },
                     h('span', { className: 'wc-precip-control-title' }, 'Cloud engine'), cloudSliders.map(precipSlider)),
                   h('div', { className: 'wc-precip-control-group' },
@@ -11604,7 +11604,7 @@ const d = labToolData.waterCycle || {};
                       h('span', null, 'I can explain the pattern in my own words')),
                     iq.understood && h('textarea', { rows: 3, value: iq.explanation || '',
                       onChange: function(event) { setIQ({ explanation: event.target.value }); },
-                      'aria-label': 'Explain the precipitation pattern',
+                      'aria-label': __alloT('stem.watercycle.a11y_explain_the_precipitation_pattern', 'Explain the precipitation pattern'),
                       placeholder: 'Use moisture, lift, lower-air humidity, and temperature in your explanation.' })
                   )
                 )
@@ -21462,7 +21462,7 @@ const d = labToolData.waterCycle || {};
               }
               if (typeof awardStemXP === 'function') awardStemXP('waterCycle', 25, 'Water Cycle journey loop');
               if (typeof stemCelebrate === 'function') stemCelebrate();
-              if (typeof announceToSR === 'function') announceToSR('Water journey complete. Loop recorded. Choose Start Another Loop to continue.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_water_journey_complete_loop_recorded_choose_start', 'Water journey complete. Loop recorded. Choose Start Another Loop to continue.'));
               if (typeof addToast === 'function') addToast('\uD83C\uDF89 Cycle complete! +25 XP.', 'success');
             };
             // Bridge canvas clicks and events to React state
@@ -26539,7 +26539,7 @@ const d = labToolData.waterCycle || {};
                 upd('journeyActive', false); upd('journeyState', 'idle'); upd('journeyPaused', false);
                 upd('journeyReplayProgress', null);
                 var cvOff = document.getElementById('wcCanvas'); if (cvOff) cvOff.dataset.journeyState = 'idle';
-                if (typeof announceToSR === 'function') announceToSR('Journey ended.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_journey_ended', 'Journey ended.'));
               } else {
                 upd('journeyActive', true); upd('journeyState', 'ocean'); upd('journeyLastPath', ''); upd('journeyPaused', false);
                 upd('journeyReplayProgress', null);
@@ -26547,7 +26547,7 @@ const d = labToolData.waterCycle || {};
                 upd('journeyLoops', d.journeyLoops || 0);
                 upd('journeyPaths', d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 });
                 var cvOn = document.getElementById('wcCanvas'); if (cvOn) cvOn.dataset.journeyState = 'ocean';
-                if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_journey_started_you_are_now_a_water_droplet_in_th', 'Journey started. You are now a water droplet in the ocean.'));
               }
             } else if (d.journeyActive && d.journeyState === 'ground_choice' && (k === 'r' || k === 'R' || k === 'u' || k === 'U' || k === 'p' || k === 'P')) {
               e.preventDefault();
@@ -27226,7 +27226,7 @@ const d = labToolData.waterCycle || {};
             if (!journeyCanvas) return;
             if (action === 'follow') {
               if (journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
-              if (typeof announceToSR === 'function') announceToSR('Guided 3D camera resumed.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_guided_3d_camera_resumed', 'Guided 3D camera resumed.'));
               return;
             }
             if (journeyCanvas._wc3dAdjustCamera && journeyCanvas._wc3dAdjustCamera(action)) {
@@ -27308,13 +27308,13 @@ const d = labToolData.waterCycle || {};
               cv.dataset.climTemp = String(baseline.climTemp != null ? baseline.climTemp : 15);
               cv.dataset.climWind = String(baseline.climWind != null ? baseline.climWind : 1.0);
             }
-            if (typeof announceToSR === 'function') announceToSR('Saved scenario baseline restored. The comparison now shows the baseline state.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_saved_scenario_baseline_restored_the_comparison_n', 'Saved scenario baseline restored. The comparison now shows the baseline state.'));
             if (typeof addToast === 'function') addToast('↶ Saved baseline restored. Try a new adjustment when ready.', 'info');
           }
 
           function clearWcScenarioBaseline() {
             updMulti({ wcScenarioBaseline: null, wcPrediction: '', wcReplayedObservation: '' });
-            if (typeof announceToSR === 'function') announceToSR('Scenario comparison cleared.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_scenario_comparison_cleared', 'Scenario comparison cleared.'));
           }
 
           function syncWcWalkthroughStage(index) {
@@ -27329,7 +27329,7 @@ const d = labToolData.waterCycle || {};
           function toggleWcWalkthrough() {
             if (wcWalkthroughActive) {
               upd('wcWalkthroughActive', false);
-              if (typeof announceToSR === 'function') announceToSR('Guided walkthrough paused. Your stage selection is preserved.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_guided_walkthrough_paused_your_stage_selection_is', 'Guided walkthrough paused. Your stage selection is preserved.'));
               return;
             }
             var startIndex = Math.max(0, Math.min(STAGES.length - 1, resolvedStageIndex - 1));
@@ -27342,7 +27342,7 @@ const d = labToolData.waterCycle || {};
             if (nextIndex < 0) return;
             if (nextIndex >= STAGES.length) {
               upd('wcWalkthroughActive', false);
-              if (typeof announceToSR === 'function') announceToSR('Guided walkthrough complete. All six cycle stages reviewed.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_guided_walkthrough_complete_all_six_cycle_stages', 'Guided walkthrough complete. All six cycle stages reviewed.'));
               return;
             }
             syncWcWalkthroughStage(nextIndex);
@@ -27381,7 +27381,7 @@ const d = labToolData.waterCycle || {};
                 " " + wcBaselineRouteShares[pathKey] + "% to " + wcRouteShares[pathKey] + "% (" + formatWcDelta(delta, " pts", 0) + ")"
               );
             };
-            return React.createElement("div", { className: "wc-route-mix-legend", role: "list", "aria-label": "Pathway mix changes" },
+            return React.createElement("div", { className: "wc-route-mix-legend", role: "list", "aria-label": __alloT('stem.watercycle.a11y_pathway_mix_changes', 'Pathway mix changes') },
               routeCopy("runoff", "Runoff"),
               routeCopy("infiltration", "Underground"),
               routeCopy("plant", "Plant")
@@ -27437,7 +27437,7 @@ const d = labToolData.waterCycle || {};
               var firstControl = climateLab.querySelector('input, select, button');
               if (firstControl) firstControl.focus({ preventScroll: true });
             });
-            if (typeof announceToSR === 'function') announceToSR('Climate Lab opened. Change one control and watch the live model respond.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_climate_lab_opened_change_one_control_and_watch_t', 'Climate Lab opened. Change one control and watch the live model respond.'));
           }
           function beginWcQuickJourney() {
             updMulti({
@@ -27447,7 +27447,7 @@ const d = labToolData.waterCycle || {};
               journeyLastPath: '',
               journeyReplayProgress: null
             });
-            if (typeof announceToSR === 'function') announceToSR('Droplet journey started in ocean storage.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_droplet_journey_started_in_ocean_storage', 'Droplet journey started in ocean storage.'));
           }
           function watchWcCycle() {
             updMulti({ journeyView: '2d', journeyActive: false, journeyState: 'idle', wc2dPaused: false, wcWalkthroughActive: false });
@@ -27460,7 +27460,7 @@ const d = labToolData.waterCycle || {};
               var canvasShell = document.querySelector('[data-watercycle-canvas-shell]');
               if (canvasShell) canvasShell.scrollIntoView({ behavior: 'smooth', block: 'center' });
             });
-            if (typeof announceToSR === 'function') announceToSR('Water cycle animation playing. Watch water move between ocean, air, land, and plants.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_water_cycle_animation_playing_watch_water_move_be', 'Water cycle animation playing. Watch water move between ocean, air, land, and plants.'));
           }
           function clampWcSignal(value) {
             return Math.max(0, Math.min(100, Math.round(value)));
@@ -27609,7 +27609,7 @@ const d = labToolData.waterCycle || {};
               ),
 
 
-              React.createElement("div", { className: "wc-view-segments", role: "group", "aria-label": "Water Cycle visualization" },
+              React.createElement("div", { className: "wc-view-segments", role: "group", "aria-label": __alloT('stem.watercycle.a11y_water_cycle_visualization', 'Water Cycle visualization') },
                 React.createElement("button", {
                   type: "button",
                   "aria-pressed": journeyView === '2d',
@@ -27648,11 +27648,11 @@ const d = labToolData.waterCycle || {};
                   type: "button",
                   className: "wc-camera-reset",
                   "data-tooltip": "Resume guided camera",
-                  "aria-label": "Resume guided camera",
+                  "aria-label": __alloT('stem.watercycle.a11y_resume_guided_camera', 'Resume guided camera'),
                   onClick: function() {
                     var journeyCanvas = document.getElementById('wcJourney3d');
                     if (journeyCanvas && journeyCanvas._wc3dResetCamera) journeyCanvas._wc3dResetCamera();
-                    if (typeof announceToSR === 'function') announceToSR('Guided 3D camera resumed.');
+                    if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_guided_3d_camera_resumed', 'Guided 3D camera resumed.'));
                   }
                 }, "\u21BA Reset")
               )
@@ -27977,7 +27977,7 @@ const d = labToolData.waterCycle || {};
               journeyView === '3d' && React.createElement("div", {
                 className: "wc-viewport-dock",
                 role: "group",
-                "aria-label": "Droplet journey and 3D camera controls"
+                "aria-label": __alloT('stem.watercycle.a11y_droplet_journey_and_3d_camera_controls', 'Droplet journey and 3D camera controls')
               },
                 React.createElement("div", { className: "wc-viewport-state" },
                   React.createElement("span", null, d.journeyActive ? "Current parcel state" : "Ready"),
@@ -27988,7 +27988,7 @@ const d = labToolData.waterCycle || {};
                   !d.journeyActive ? React.createElement("button", {
                     type: "button",
                     className: "wc-viewport-start",
-                    "aria-label": "Start droplet journey in the ocean",
+                    "aria-label": __alloT('stem.watercycle.a11y_start_droplet_journey_in_the_ocean', 'Start droplet journey in the ocean'),
                     onClick: function() {
                       updMulti({
                         journeyActive: true, journeyState: 'ocean', activeStage: 'collection', journeyPaused: false,
@@ -28003,7 +28003,7 @@ const d = labToolData.waterCycle || {};
                         startCanvas.dataset.journeyPaused = 'false';
                         startCanvas.dataset.journeyProgress = '0';
                       }
-                      if (typeof announceToSR === 'function') announceToSR('Droplet journey started in the ocean.');
+                      if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_droplet_journey_started_in_the_ocean', 'Droplet journey started in the ocean.'));
                     }
                   }, "\uD83D\uDCA7 Begin as a droplet") : React.createElement(React.Fragment, null,
                     React.createElement("button", {
@@ -28023,7 +28023,7 @@ const d = labToolData.waterCycle || {};
                       }
                     }, journeyPaused ? "\u25B6" : "\u23F8"),
                     React.createElement("button", {
-                      type: "button", className: "wc-viewport-btn", "aria-label": "Restart water journey from the ocean", "data-tooltip": "Restart journey",
+                      type: "button", className: "wc-viewport-btn", "aria-label": __alloT('stem.watercycle.a11y_restart_water_journey_from_the_ocean', 'Restart water journey from the ocean'), "data-tooltip": "Restart journey",
                       onClick: function() {
                         updMulti({ journeyState: 'ocean', activeStage: 'collection', journeyPaused: false, journeyLastPath: '', journeyReplayProgress: null });
                         var restartCanvas = document.getElementById('wcCanvas');
@@ -28082,7 +28082,7 @@ const d = labToolData.waterCycle || {};
                 React.createElement("span", { className: "wc-canvas-guide-handoff-to" }, currentMatterEnergy.phaseTo),
                 React.createElement("span", { className: "wc-canvas-guide-handoff-energy" }, "Energy: " + currentMatterEnergy.energyTransfer)
               ),
-              React.createElement("span", { className: "wc-canvas-visual-key", role: "note", "aria-label": "Visual key: tracked parcel, transfer path, and energy cue" },
+              React.createElement("span", { className: "wc-canvas-visual-key", role: "note", "aria-label": __alloT('stem.watercycle.a11y_visual_key_tracked_parcel_transfer_path_and_ene', 'Visual key: tracked parcel, transfer path, and energy cue') },
                 React.createElement("span", { className: "wc-canvas-visual-key-item" },
                   React.createElement("span", { className: "wc-canvas-visual-key-mark is-parcel", "aria-hidden": "true" }),
                   "Tracked parcel"
@@ -28207,7 +28207,7 @@ const d = labToolData.waterCycle || {};
                   // piloted water-parcel simulation.
                   React.createElement("button", {
                     type: "button", className: "wc-start-action wc-start-action-pilot", onClick: function() { switchMode('pilot'); },
-                    "aria-label": "Be the Water: interactive 3D simulation of one water parcel moving through states and pathways"
+                    "aria-label": __alloT('stem.watercycle.a11y_be_the_water_interactive_3d_simulation_of_one_w', 'Be the Water: interactive 3D simulation of one water parcel moving through states and pathways')
                   },
                     React.createElement("span", { className: "wc-start-number", "aria-hidden": "true" }, "3"),
                     React.createElement("span", null,
@@ -28235,7 +28235,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("div", {
                 className: "w-full rounded-full h-2.5 " + (isDark ? "bg-slate-800/50" : "bg-sky-100/50"),
                 role: "progressbar",
-                "aria-label": "Water cycle challenge progress",
+                "aria-label": __alloT('stem.watercycle.a11y_water_cycle_challenge_progress', 'Water cycle challenge progress'),
                 "aria-valuemin": 0,
                 "aria-valuemax": WATER_CYCLE_CHALLENGES.length,
                 "aria-valuenow": (d.completedChallenges || []).length,
@@ -28246,7 +28246,7 @@ const d = labToolData.waterCycle || {};
                   style: { width: Math.min(100, ((d.completedChallenges || []).length / WATER_CYCLE_CHALLENGES.length) * 100) + "%", boxShadow: isDark ? "0 0 8px rgba(14,165,233,0.5)" : "0 0 8px rgba(14,165,233,0.3)" }
                 })
               ),
-              React.createElement("div", { className: "wc-challenge-strip flex flex-wrap gap-2 mt-2", role: "list", "aria-label": "Water cycle achievements" },
+              React.createElement("div", { className: "wc-challenge-strip flex flex-wrap gap-2 mt-2", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_cycle_achievements', 'Water cycle achievements') },
                 WATER_CYCLE_CHALLENGES.map(function(ch) {
                   var done = (d.completedChallenges || []).indexOf(ch.id) !== -1;
                   return React.createElement("div", {
@@ -28285,7 +28285,7 @@ const d = labToolData.waterCycle || {};
               wcWalkthroughActive && React.createElement("div", {
                 className: "wc-walkthrough-progress",
                 role: "progressbar",
-                "aria-label": "Guided walkthrough progress",
+                "aria-label": __alloT('stem.watercycle.a11y_guided_walkthrough_progress', 'Guided walkthrough progress'),
                 "aria-describedby": "wcWalkthroughStatus",
                 "aria-valuemin": 1,
                 "aria-valuemax": STAGES.length,
@@ -28297,7 +28297,7 @@ const d = labToolData.waterCycle || {};
                   ? React.createElement("button", {
                       type: "button",
                       className: "wc-walkthrough-primary",
-                      "aria-label": "Start guided water cycle walkthrough",
+                      "aria-label": __alloT('stem.watercycle.a11y_start_guided_water_cycle_walkthrough', 'Start guided water cycle walkthrough'),
                       onClick: toggleWcWalkthrough
                     }, "\u25B6 Start guide")
                   : React.createElement(React.Fragment, null,
@@ -28305,7 +28305,7 @@ const d = labToolData.waterCycle || {};
                         type: "button",
                         className: "wc-walkthrough-btn",
                         disabled: wcWalkthroughIndex === 0,
-                        "aria-label": "Previous walkthrough stage",
+                        "aria-label": __alloT('stem.watercycle.a11y_previous_walkthrough_stage', 'Previous walkthrough stage'),
                         onClick: function() { stepWcWalkthrough(-1); }
                       }, "\u2190 Back"),
                       React.createElement("button", {
@@ -28317,7 +28317,7 @@ const d = labToolData.waterCycle || {};
                       React.createElement("button", {
                         type: "button",
                         className: "wc-walkthrough-btn",
-                        "aria-label": "Exit guided walkthrough",
+                        "aria-label": __alloT('stem.watercycle.a11y_exit_guided_walkthrough', 'Exit guided walkthrough'),
                         onClick: toggleWcWalkthrough
                       }, "Exit")
                     )
@@ -28327,7 +28327,7 @@ const d = labToolData.waterCycle || {};
             journeyView === '3d' && React.createElement("div", {
               className: "wc-journey-lens",
               role: "region",
-              "aria-label": "Current water parcel state"
+              "aria-label": __alloT('stem.watercycle.a11y_current_water_parcel_state', 'Current water parcel state')
             },
               React.createElement("div", null,
                 React.createElement("span", null, "State"),
@@ -28363,7 +28363,7 @@ const d = labToolData.waterCycle || {};
               React.createElement("div", {
                 className: "wc-hydro-progress",
                 role: "progressbar",
-                "aria-label": "Hydro Quest progress",
+                "aria-label": __alloT('stem.watercycle.a11y_hydro_quest_progress', 'Hydro Quest progress'),
                 "aria-valuemin": 0,
                 "aria-valuemax": 120,
                 "aria-valuenow": hydroPoints,
@@ -28376,7 +28376,7 @@ const d = labToolData.waterCycle || {};
                 "aria-live": "polite",
                 "aria-atomic": "true"
               }, hydroCompleted + " of " + hydroMissions.length + " Hydro Quest missions complete. " + hydroPoints + " of 120 Hydro Points."),
-              React.createElement("div", { className: "wc-hydro-missions", role: "list", "aria-label": "Hydro Quest missions" },
+              React.createElement("div", { className: "wc-hydro-missions", role: "list", "aria-label": __alloT('stem.watercycle.a11y_hydro_quest_missions', 'Hydro Quest missions') },
                 hydroMissions.map(function(mission) {
                   return React.createElement("div", {
                     key: mission.id,
@@ -28579,7 +28579,7 @@ React.createElement("div", {
               React.createElement("div", { className: "wc-data-table-wrap" },
                 React.createElement("table", {
                   className: "wc-data-table",
-                  "aria-label": "Current Water Cycle model data"
+                  "aria-label": __alloT('stem.watercycle.a11y_current_water_cycle_model_data', 'Current Water Cycle model data')
                 },
                   React.createElement("caption", { className: "sr-only" }, "Current Water Cycle model data"),
                   React.createElement("tbody", null,
@@ -28684,7 +28684,7 @@ React.createElement("div", {
 
             renderWcSectionTabs(),
 
-            wcSection === 'conditions' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Change the conditions" },
+            wcSection === 'conditions' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_change_the_conditions', 'Change the conditions') },
             React.createElement("details", {
               className: "wc-climate-lab wc-control-panel rounded-xl p-3 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-amber-900/40 backdrop-blur-md" : "bg-gradient-to-r from-amber-50 via-sky-50 to-emerald-50 border-amber-200"),
               "data-watercycle-climate": "true",
@@ -28709,7 +28709,7 @@ React.createElement("div", {
                   React.createElement("select", {
                     id: "wcScenarioPreset",
                     value: WATER_CYCLE_PRESETS[wcScenarioPreset] ? wcScenarioPreset : "custom",
-                    "aria-label": "Choose a Water Cycle experiment preset",
+                    "aria-label": __alloT('stem.watercycle.a11y_choose_a_water_cycle_experiment_preset', 'Choose a Water Cycle experiment preset'),
                     "aria-describedby": "wcScenarioPresetHint",
                     onChange: function(e) { applyWcScenarioPreset(e.target.value); }
                   },
@@ -28863,7 +28863,7 @@ React.createElement("div", {
                 React.createElement("button", {
                   type: "button",
                   "data-tooltip": "Reset land scenario",
-                  "aria-label": "Reset land-surface scenario",
+                  "aria-label": __alloT('stem.watercycle.a11y_reset_land_surface_scenario', 'Reset land-surface scenario'),
                   onClick: resetLandScenario,
                   className: "wc-reset-control wc-land-reset"
                 }, "\u21BA Reset")
@@ -28878,7 +28878,7 @@ React.createElement("div", {
                     max: "100",
                     step: "5",
                     value: landRainIntensity,
-                    "aria-label": "Rainfall intensity index",
+                    "aria-label": __alloT('stem.watercycle.a11y_rainfall_intensity_index', 'Rainfall intensity index'),
                     "aria-valuetext": landRainIntensity + " out of 100 rainfall intensity",
                     onChange: function(e) { adjustLand('landRainIntensity', parseFloat(e.target.value)); },
                     className: "w-full",
@@ -28894,7 +28894,7 @@ React.createElement("div", {
                     max: "100",
                     step: "5",
                     value: landSaturation,
-                    "aria-label": "Antecedent soil saturation index",
+                    "aria-label": __alloT('stem.watercycle.a11y_antecedent_soil_saturation_index', 'Antecedent soil saturation index'),
                     "aria-valuetext": landSaturation + " out of 100 soil saturation",
                     onChange: function(e) { adjustLand('landSaturation', parseFloat(e.target.value)); },
                     className: "w-full",
@@ -28942,7 +28942,7 @@ React.createElement("div", {
             wcScenarioBaseline && (!wcScenarioChanges.length || wcPrediction) && React.createElement("div", {
               className: "wc-compare-strip",
               role: "region",
-              "aria-label": "Scenario comparison",
+              "aria-label": __alloT('stem.watercycle.a11y_scenario_comparison', 'Scenario comparison'),
               "aria-describedby": "wcScenarioWorkflowStatus"
             },
               React.createElement("div", { className: "wc-compare-copy" },
@@ -28973,18 +28973,18 @@ React.createElement("div", {
                   type: "button",
                   className: "wc-compare-btn",
                   "data-tooltip": "Save the current settings as the new baseline",
-                  "aria-label": "Update scenario comparison baseline",
+                  "aria-label": __alloT('stem.watercycle.a11y_update_scenario_comparison_baseline', 'Update scenario comparison baseline'),
                   onClick: captureWcScenarioBaseline
                 }, "\u21BB Update"),
                 React.createElement("button", {
                   type: "button",
                   className: "wc-compare-btn is-clear",
                   "data-tooltip": "Clear the saved baseline",
-                  "aria-label": "Clear scenario comparison baseline",
+                  "aria-label": __alloT('stem.watercycle.a11y_clear_scenario_comparison_baseline', 'Clear scenario comparison baseline'),
                   onClick: clearWcScenarioBaseline
                 }, "Clear")
               ),
-              React.createElement("div", { className: "wc-compare-metrics", role: "list", "aria-label": "Current values compared with baseline" },
+              React.createElement("div", { className: "wc-compare-metrics", role: "list", "aria-label": __alloT('stem.watercycle.a11y_current_values_compared_with_baseline', 'Current values compared with baseline') },
                 React.createElement("span", { className: "wc-compare-metric", role: "listitem" },
                   React.createElement("strong", null, "Evaporation"),
                   wcBaselineEvaporationIndex.toFixed(2) + "x \u2192 " + evaporationIndex.toFixed(2) + "x"
@@ -29000,7 +29000,7 @@ React.createElement("div", {
               ),
               React.createElement("div", {
                 className: "wc-compare-bars",
-                "aria-label": "Visual comparison of baseline and current values",
+                "aria-label": __alloT('stem.watercycle.a11y_visual_comparison_of_baseline_and_current_value', 'Visual comparison of baseline and current values'),
                 "aria-describedby": "wcScenarioWorkflowStatus"
               },
                 React.createElement("div", {
@@ -29105,7 +29105,7 @@ React.createElement("div", {
                 React.createElement("div", {
                   className: "wc-route-mix",
                   role: "group",
-                  "aria-label": "Baseline and current pathway mix"
+                  "aria-label": __alloT('stem.watercycle.a11y_baseline_and_current_pathway_mix', 'Baseline and current pathway mix')
                 },
                   React.createElement("div", { className: "wc-route-mix-head" },
                     React.createElement("strong", { className: "wc-route-mix-title" }, "Pathway mix"),
@@ -29122,7 +29122,7 @@ React.createElement("div", {
             wcCausalActive && React.createElement("div", {
               className: "wc-causal-strip",
               role: "region",
-              "aria-label": "Causal pathway",
+              "aria-label": __alloT('stem.watercycle.a11y_causal_pathway', 'Causal pathway'),
               "aria-live": "polite"
             },
               React.createElement("div", { className: "wc-causal-copy" },
@@ -29130,7 +29130,7 @@ React.createElement("div", {
                 React.createElement("strong", null, wcCausalDriver),
                 React.createElement("span", null, wcCausalOutcome)
               ),
-              React.createElement("div", { className: "wc-causal-chain", role: "list", "aria-label": "Affected cycle stages" },
+              React.createElement("div", { className: "wc-causal-chain", role: "list", "aria-label": __alloT('stem.watercycle.a11y_affected_cycle_stages', 'Affected cycle stages') },
                 wcCausalChain.map(function(node, nodeIndex) {
                   return React.createElement(React.Fragment, { key: node.id },
                     nodeIndex > 0 && React.createElement("span", { className: "wc-causal-arrow", "aria-hidden": "true" }, "→"),
@@ -29146,7 +29146,7 @@ React.createElement("div", {
               className: "wc-prediction-strip" + (wcPrediction ? " is-answered" : ""),
               "data-watercycle-evidence-interpretation": "true",
               role: "region",
-              "aria-label": "Scenario evidence interpretation",
+              "aria-label": __alloT('stem.watercycle.a11y_scenario_evidence_interpretation', 'Scenario evidence interpretation'),
               "aria-live": wcPrediction ? "polite" : undefined
             },
               React.createElement("div", { className: "wc-prediction-copy" },
@@ -29162,7 +29162,7 @@ React.createElement("div", {
               !wcPrediction && React.createElement("div", {
                 className: "wc-prediction-options",
                 role: "group",
-                "aria-label": "Choose the strongest modeled shift"
+                "aria-label": __alloT('stem.watercycle.a11y_choose_the_strongest_modeled_shift', 'Choose the strongest modeled shift')
               },
                 Object.keys(WATER_CYCLE_PREDICTIONS).map(function(predictionId) {
                   var prediction = WATER_CYCLE_PREDICTIONS[predictionId];
@@ -29193,7 +29193,7 @@ React.createElement("div", {
                 React.createElement("button", {
                   type: "button",
                   className: "wc-prediction-reset",
-                  "aria-label": "Choose a different evidence claim",
+                  "aria-label": __alloT('stem.watercycle.a11y_choose_a_different_evidence_claim', 'Choose a different evidence claim'),
                   onClick: resetWcPrediction
                 }, "Choose again")
               )
@@ -29201,7 +29201,7 @@ React.createElement("div", {
             wcExperimentLog.length > 0 && React.createElement("div", {
               className: "wc-experiment-log wc-focus-secondary" + (wcReplayedObservation ? " is-replaying" : ""),
               role: "region",
-              "aria-label": "Experiment trail",
+              "aria-label": __alloT('stem.watercycle.a11y_experiment_trail', 'Experiment trail'),
               "aria-describedby": "wcExperimentTrailStatus"
             },
               React.createElement("div", { className: "wc-experiment-log-head" },
@@ -29221,14 +29221,14 @@ React.createElement("div", {
                 React.createElement("button", {
                   type: "button",
                   className: "wc-experiment-log-clear",
-                  "aria-label": "Clear experiment trail",
+                  "aria-label": __alloT('stem.watercycle.a11y_clear_experiment_trail', 'Clear experiment trail'),
                   onClick: clearWcExperimentLog
                 }, "Clear trail")
               ),
               React.createElement("div", {
                 className: "wc-log-list",
                 role: "list",
-                "aria-label": "Saved experiment observations"
+                "aria-label": __alloT('stem.watercycle.a11y_saved_experiment_observations', 'Saved experiment observations')
               },
                 wcExperimentLog.slice().reverse().map(function(entry, entryIndex) {
                   var prediction = WATER_CYCLE_PREDICTIONS[entry.prediction] || WATER_CYCLE_PREDICTIONS.mixed;
@@ -29269,7 +29269,7 @@ React.createElement("div", {
             ),
             ),
 
-            wcSection === 'journey' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Follow one droplet" },
+            wcSection === 'journey' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_follow_one_droplet', 'Follow one droplet') },
             React.createElement("div", {
               className: "wc-journey-panel wc-control-panel rounded-xl p-4 mb-3 shadow-md border-2 " + (isDark ? "bg-slate-950/60 border-cyan-900/40 backdrop-blur-md" : "bg-gradient-to-r from-cyan-50 to-sky-50 border-cyan-300"),
               "data-watercycle-journey": "true",
@@ -29288,7 +29288,7 @@ React.createElement("div", {
                           journeyReplayProgress: null, journeyLoops: d.journeyLoops || 0, journeyPaths: d.journeyPaths || { runoff: 0, infiltrate: 0, plant: 0 } });
                         var cv = document.getElementById('wcCanvas');
                         if (cv) { cv.dataset.journeyState = 'ocean'; cv.dataset.activeStage = 'collection'; cv.dataset.journeyProgress = '0'; }
-                        if (typeof announceToSR === 'function') announceToSR('Journey started. You are now a water droplet in the ocean.');
+                        if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_journey_started_you_are_now_a_water_droplet_in_th', 'Journey started. You are now a water droplet in the ocean.'));
                         addToast('\uD83D\uDCA7 You are now a water droplet in the ocean! Watch and learn as you travel through the water cycle.', 'info');
                       },
                       className: "px-4 py-2 bg-gradient-to-r from-cyan-700 to-blue-600 text-white text-xs font-bold rounded-xl hover:from-cyan-700 hover:to-blue-600 shadow-lg transition-all hover:scale-105 focus:ring-2 focus:ring-yellow-500 focus:outline-none"
@@ -29301,7 +29301,7 @@ React.createElement("div", {
                           updMulti({ journeyActive: false, journeyState: 'idle', journeyPaused: false, journeyReplayProgress: null });
                           var cv = document.getElementById('wcCanvas');
                           if (cv) { cv.dataset.journeyState = 'idle'; }
-                          if (typeof announceToSR === 'function') announceToSR('Journey ended.');
+                          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_journey_ended', 'Journey ended.'));
                         },
                         className: "px-3 py-1.5 bg-slate-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-slate-500 transition-all focus:ring-2 focus:ring-yellow-500 focus:outline-none active:scale-[0.97]"
                       }, t('stem.watercycle.end_journey_j', "\u23F9 End Journey (J)"))
@@ -29356,7 +29356,7 @@ React.createElement("div", {
                     React.createElement("button", {
                       type: "button",
                       className: "wc-journey-icon-btn",
-                      "aria-label": "Restart water journey from the ocean",
+                      "aria-label": __alloT('stem.watercycle.a11y_restart_water_journey_from_the_ocean', 'Restart water journey from the ocean'),
                       "data-tooltip": "Restart from ocean",
                       onClick: function() {
                         updMulti({ journeyState: 'ocean', journeyPaused: false, journeyLastPath: '' });
@@ -29364,11 +29364,11 @@ React.createElement("div", {
                         upd('activeStage', 'collection');
                         var journeyCanvas = document.getElementById('wcCanvas');
                         if (journeyCanvas && journeyCanvas._wcRestartJourney) journeyCanvas._wcRestartJourney();
-                        if (typeof announceToSR === 'function') announceToSR('Water journey restarted in the ocean.');
+                        if (typeof announceToSR === 'function') announceToSR(__alloT('stem.watercycle.sr_water_journey_restarted_in_the_ocean', 'Water journey restarted in the ocean.'));
                       }
                     }, "\u21BA Reset")
                   ),
-                  React.createElement("div", { className: "wc-speed-segments", role: "group", "aria-label": "Journey animation speed" },
+                  React.createElement("div", { className: "wc-speed-segments", role: "group", "aria-label": __alloT('stem.watercycle.a11y_journey_animation_speed', 'Journey animation speed') },
                     [0.5, 1, 2].map(function(speedOption) {
                       return React.createElement("button", {
                         key: String(speedOption),
@@ -29384,7 +29384,7 @@ React.createElement("div", {
                     })
                   )
                 ),
-                React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": "Water journey timeline" },
+                React.createElement("div", { className: "wc-journey-timeline", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_journey_timeline', 'Water journey timeline') },
                   journeyTimelineSteps.map(function(step, index) {
                     var timelineStepState = index < journeyTimelineIndex ? "is-complete" : index === journeyTimelineIndex ? "is-current" : "is-upcoming";
                     var timelineStepLabel = index < journeyTimelineIndex ? "completed" : index === journeyTimelineIndex ? "current" : "upcoming";
@@ -29414,7 +29414,7 @@ React.createElement("div", {
                     max: 100,
                     step: 1,
                     value: Math.round(journeyReplayProgress * 100),
-                    "aria-label": "Scrub through the water droplet journey",
+                    "aria-label": __alloT('stem.watercycle.a11y_scrub_through_the_water_droplet_journey', 'Scrub through the water droplet journey'),
                     "aria-valuetext": Math.round(journeyReplayProgress * 100) + " percent: " + journeyReplaySegment.label,
                     "aria-describedby": "wcJourneyReplayStatus",
                     onChange: function(e) { setJourneyReplayProgress(Number(e.target.value) / 100); }
@@ -29429,7 +29429,7 @@ React.createElement("div", {
                     type: "button",
                     className: "wc-replay-resume",
                     onClick: resumeLiveJourney,
-                    "aria-label": "Resume the live water journey from the current replay state"
+                    "aria-label": __alloT('stem.watercycle.a11y_resume_the_live_water_journey_from_the_current', 'Resume the live water journey from the current replay state')
                   }, "▶ Resume live journey"),
                   React.createElement("p", { id: "wcJourneyReplayStatus", className: "wc-replay-status", role: "status", "aria-live": "polite", "aria-atomic": "true" }, journeyReplayStatus)
                 ),
@@ -29467,7 +29467,7 @@ React.createElement("div", {
                   d.journeyActive && React.createElement("section", {
                     className: "wc-route-ledger",
                     role: "region",
-                    "aria-label": "Journey pathway explorer",
+                    "aria-label": __alloT('stem.watercycle.a11y_journey_pathway_explorer', 'Journey pathway explorer'),
                     "aria-live": "polite"
                   },
                     React.createElement("div", { className: "wc-route-ledger-head" },
@@ -29479,14 +29479,14 @@ React.createElement("div", {
                       React.createElement("div", {
                         className: "wc-route-ledger-progress",
                         role: "progressbar",
-                        "aria-label": "Journey pathway coverage",
+                        "aria-label": __alloT('stem.watercycle.a11y_journey_pathway_coverage', 'Journey pathway coverage'),
                         "aria-valuemin": 0,
                         "aria-valuemax": journeyPathDefinitions.length,
                         "aria-valuenow": journeyPathCoverageCount,
                         "aria-valuetext": journeyPathCoverageLabel
                       }, journeyPathCoverageCount + "/" + journeyPathDefinitions.length)
                     ),
-                    React.createElement("div", { className: "wc-route-ledger-list", role: "list", "aria-label": "Explored journey pathways" },
+                    React.createElement("div", { className: "wc-route-ledger-list", role: "list", "aria-label": __alloT('stem.watercycle.a11y_explored_journey_pathways', 'Explored journey pathways') },
                       journeyPathDefinitions.map(function(path) {
                         var explored = path.count > 0;
                         var current = journeyChosenRouteKey === path.key;
@@ -29566,7 +29566,7 @@ React.createElement("div", {
                       var cv = document.getElementById('wcCanvas');
                       if (cv) { cv.dataset.journeyState = 'ocean'; cv.dataset.activeStage = 'collection'; cv.dataset.journeyProgress = '0'; }
                       if (typeof announceToSR === 'function') {
-                        announceToSR('Starting another loop. You are now a water droplet in the ocean.');
+                        announceToSR(__alloT('stem.watercycle.sr_starting_another_loop_you_are_now_a_water_droplet', 'Starting another loop. You are now a water droplet in the ocean.'));
                       }
                       addToast('\uD83D\uDCA7 Another loop started. Compare a new pathway next.', 'info');
                     },
@@ -29575,7 +29575,7 @@ React.createElement("div", {
                 ),
 
                 // Stats bar
-                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status", "aria-label": "Journey progress summary", "aria-live": "polite", "aria-atomic": "true" },
+                (d.journeyLoops > 0 || (d.journeyPaths && (d.journeyPaths.runoff || d.journeyPaths.infiltrate || d.journeyPaths.plant))) && React.createElement("div", { className: "flex flex-wrap items-center gap-3 text-[0.6875rem] font-bold", role: "status", "aria-label": __alloT('stem.watercycle.a11y_journey_progress_summary', 'Journey progress summary'), "aria-live": "polite", "aria-atomic": "true" },
                   React.createElement("span", { className: "text-cyan-400" }, "\uD83D\uDD04 Loops: " + (d.journeyLoops || 0)),
                   React.createElement("span", { className: "text-blue-500 text-blue-400" }, "\uD83C\uDF0A Runoff: " + ((d.journeyPaths && d.journeyPaths.runoff) || 0)),
                   React.createElement("span", { className: "text-amber-500 text-amber-400" }, "\uD83E\uDEB4 Underground: " + ((d.journeyPaths && d.journeyPaths.infiltrate) || 0)),
@@ -29646,7 +29646,7 @@ React.createElement("div", {
             // ═══ WATER BUDGET  -  Live Data Panel ═══
             ),
 
-            wcSection === 'data' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "What the data shows" },
+            wcSection === 'data' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_what_the_data_shows', 'What the data shows') },
             React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "wc-focus-secondary rounded-xl p-3 mb-3 border " + (isDark ? "bg-slate-950/60 border-slate-800/50 backdrop-blur-md" : "bg-gradient-to-r from-slate-50 to-sky-50 border-slate-400 shadow-sm") },
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "text-base" }, "\uD83D\uDCCA"),
@@ -29708,7 +29708,7 @@ React.createElement("div", {
                 React.createElement("span", { className: "wc-signal-driver-copy" }, wcSignalDriver.detail)
               ),
               React.createElement("div", { className: "wc-signal-grid" },
-                React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": "Water storage comparisons" },
+                React.createElement("div", { className: "wc-signal-bars", role: "list", "aria-label": __alloT('stem.watercycle.a11y_water_storage_comparisons', 'Water storage comparisons') },
                   wcSignalReservoirs.map(function(reservoir) {
                     return React.createElement("div", {
                       key: reservoir.key,
@@ -29779,7 +29779,7 @@ React.createElement("div", {
                       }, label);
                     })
                   ),
-                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": "Transfer driver legend" },
+                  React.createElement("div", { className: "wc-signal-legend", role: "list", "aria-label": __alloT('stem.watercycle.a11y_transfer_driver_legend', 'Transfer driver legend') },
                     React.createElement("span", { role: "listitem" }, React.createElement("i", { "aria-hidden": "true" }), "Energy"),
                     React.createElement("span", { role: "listitem" }, React.createElement("i", { className: "is-flow", "aria-hidden": "true" }), "Surface flow"),
                     React.createElement("span", { role: "listitem" }, React.createElement("i", { className: "is-storage", "aria-hidden": "true" }), "Storage")
@@ -29809,11 +29809,11 @@ React.createElement("div", {
 
             ),
 
-            wcSection === 'check' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": "Check yourself" },
+            wcSection === 'check' && React.createElement("div", { className: "wc-section-body", role: "region", "aria-label": __alloT('stem.watercycle.a11y_check_yourself', 'Check yourself') },
             React.createElement("div", {
               className: "wc-focus-secondary flex items-center gap-2 mb-2 flex-wrap",
               role: "region",
-              "aria-label": "Water Cycle quiz",
+              "aria-label": __alloT('stem.watercycle.a11y_water_cycle_quiz', 'Water Cycle quiz'),
               "aria-busy": !!d.aiQuizLoading
             },
 
@@ -29926,7 +29926,7 @@ React.createElement("div", {
                 }, d.wcQuiz.q),
                 React.createElement("p", { id: "wcQuizInstructions", className: "sr-only" }, "Choose one answer. After you answer, review the feedback and concept focus."),
 
-                React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": "Quiz answer choices" },
+                React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": __alloT('stem.watercycle.a11y_quiz_answer_choices', 'Quiz answer choices') },
 
                   d.wcQuiz.opts.map(function (opt) {
 
@@ -30084,7 +30084,7 @@ React.createElement("div", {
                 myth && React.createElement("div", { className: "space-y-2", role: "group", "aria-labelledby": "wcMythQuestion", "aria-describedby": "wcMythInstructions" },
                   React.createElement("p", { id: "wcMythQuestion", role: "status", "aria-live": "polite", "aria-atomic": "true", className: "text-xs font-bold " + (isDark ? "text-slate-300" : "text-slate-700") }, "\u201C" + myth.s + "\u201D"),
                   React.createElement("p", { id: "wcMythInstructions", className: "sr-only" }, "Decide whether the statement is true or false. After answering, review the explanation and Try it prompt."),
-                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": "True or false answers" },
+                  !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2", role: "group", "aria-label": __alloT('stem.watercycle.a11y_true_or_false_answers', 'True or false answers') },
                     [true, false].map(function (val) {
                       return React.createElement("button", {
                         type: "button",

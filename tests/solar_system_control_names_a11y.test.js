@@ -288,12 +288,12 @@ describe('Solar System control accessible names', () => {
   });
   it('exposes selected states and names for Orrery choice groups', () => {
     const source = readFileSync(SOURCE, 'utf8');
-    expect(source).toContain('role: "group", "aria-label": "Transfer departure planet"');
-    expect(source).toContain('role: "group", "aria-label": "Transfer arrival planet"');
+    expect(source).toContain(`role: "group", "aria-label": __alloT('stem.solarsystem.a11y_transfer_departure_planet', 'Transfer departure planet')`);
+    expect(source).toContain(`role: "group", "aria-label": __alloT('stem.solarsystem.a11y_transfer_arrival_planet', 'Transfer arrival planet')`);
     expect(source).toContain('"aria-pressed": tr_from === p.id');
     expect(source).toContain('"aria-pressed": tr_to === p.id');
-    expect(source).toContain('role: "group", "aria-label": "Challenge question navigator"');
-    expect(source).toContain('role: "group", "aria-label": "True or false question navigator"');
+    expect(source).toContain(`role: "group", "aria-label": __alloT('stem.solarsystem.a11y_challenge_question_navigator', 'Challenge question navigator')`);
+    expect(source).toContain(`role: "group", "aria-label": __alloT('stem.solarsystem.a11y_true_or_false_question_navigator', 'True or false question navigator')`);
     expect(source).toContain('id: "orrery-challenge-progress"');
     expect(source).toContain('"aria-valuenow": solvedCount');
   });
@@ -435,6 +435,6 @@ describe('Solar System control accessible names', () => {
     const source = readFileSync(SOURCE, 'utf8');
     expect(source).toContain("htmlFor: 'solar-kepler-hypothesis'");
     expect(source).toContain("id: 'solar-kepler-hypothesis'");
-    expect(source).toContain("h('span', { style: { display: 'block', marginBottom: 4 } }, __alloT('stem.solarsystem.explain_in_your_own_words', 'Explain in your own words'))");
+    expect(source).toContain(`h('span', { style: { display: 'block', marginBottom: 4 } }, __alloT('stem.solarsystem.explain_in_your_own_words', 'Explain in your own words'))`);
   });
 });
