@@ -213,6 +213,40 @@ describe('Migration Lab visible prose reaches the translator', () => {
   });
 });
 
+describe('Migration Lab spoken narration', () => {
+  // A TTS string is an ARGUMENT to a function, not a DOM text node and not an
+  // attribute, so neither the prose gate nor the accessible-name gate can see
+  // it. That is how the read-aloud came to be teaching a number the screen had
+  // stopped claiming.
+  const source = () => require_('node:fs').readFileSync(path.join(ROOT, 'stem_lab/stem_tool_migration.js'), 'utf8');
+
+  it('routes every spoken string through the translator', () => {
+    // A raw literal as the first argument is the defect shape.
+    const raw = source().match(/callTTS\(\s*['"]/g) || [];
+    expect(raw).toEqual([]);
+  });
+
+  it('does not narrate a formation saving the screen no longer claims', () => {
+    const src = source();
+    const spoken = [...src.matchAll(/callTTS\(\s*t\(\s*'[^']*'\s*,\s*'((?:\\.|[^'])*)'/g)].map((m) => m[1]);
+    expect(spoken.length).toBeGreaterThan(0);
+    for (const line of spoken) {
+      // 65% is the theoretical per-position maximum. The prose is allowed to
+      // name it AS a theoretical bound; a narration stating it as the saving is
+      // what this catches.
+      expect(line, 'narration states 65% as the saving').not.toMatch(/(up to\s+)?65\s*(percent|%)/i);
+      if (/saving|saves|energy/i.test(line) && /percent|%/.test(line)) {
+        const nums = [...line.matchAll(/(\d+)\s*(?:to\s*(\d+)\s*)?(?:percent|%)/gi)]
+          .flatMap((m) => [Number(m[1]), m[2] ? Number(m[2]) : null])
+          .filter((n) => n != null);
+        for (const n of nums) {
+          expect(n, 'narrated saving ' + n + '% is outside the 10-30% the tool documents').toBeLessThanOrEqual(30);
+        }
+      }
+    }
+  });
+});
+
 describe('Migration Lab canvas text reaches the translator', () => {
   it('paints no untranslated prose on any animated canvas', () => {
     const known = [

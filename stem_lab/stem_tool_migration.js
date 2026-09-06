@@ -672,7 +672,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // Formation saving. In-flight measurements land around 10-30% depending on
   // species and position in the flock; this tool quotes 22% as the midpoint
   // everywhere it appears, and an echelon gets rather less than a full V.
-  var MIGR_FORMATION_SAVING = { solo: 0, echelon: 0.12, V: 0.22 };
+  // Keyed by every id either surface uses. The Energy Inquiry speaks
+  // solo/echelon/V and the 3D flight deck speaks solo/v/loose/swarm; these were
+  // two separate tables with two sets of numbers until one of them drifted.
+  // Lookup is case-insensitive so 'V' and 'v' cannot become different answers.
+  var MIGR_FORMATION_SAVING = { solo: 0, swarm: 0.05, loose: 0.07, echelon: 0.12, v: 0.22 };
+  function migrFormationSaving(mode) {
+    if (!mode) return 0;
+    var k = String(mode).toLowerCase();
+    return MIGR_FORMATION_SAVING[k] == null ? 0 : MIGR_FORMATION_SAVING[k];
+  }
   // The wingspan a bird of this mass usually carries. Used where a surface does
   // not let the student set span independently, so span never silently
   // disappears from the physics. Fitted to the birds in SPECIES.
@@ -688,7 +697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
     // through the air. Frontal area scales as mass^(2/3) for a given build.
     var profile = 0.5 * MIGR_RHO * v * v * MIGR_CDS * Math.pow(m, 2 / 3);
     var dragN = induced + profile;
-    var saving = MIGR_FORMATION_SAVING[o.formation] || 0;
+    var saving = migrFormationSaving(o.formation);
     // Cost is per km OVER THE GROUND, so a tailwind genuinely cheapens the
     // crossing and a headwind bites. Ground speed is floored: past about 11 m/s
     // of headwind the bird is barely making ground and the ratio would run away.
@@ -1918,6 +1927,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       bestLD: migrBestLD,
       wingTypes: WING_TYPES,
       formationSaving: MIGR_FORMATION_SAVING,
+      savingFor: migrFormationSaving,
       beaufort: getBeaufortEntry
     },
     icon: '\uD83E\uDDED',
@@ -2907,7 +2917,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         var cameraMode = d.flightCamera || 'chase';
         var season = d.flightSeason || 'fall';
         var groundSpeed = Math.max(1, Math.round(species.speed + flightWind * 2.237));
-        var benefit = resolvedFormation === 'v' ? 22 : (resolvedFormation === 'loose' ? 7 : (resolvedFormation === 'swarm' && species.id !== 'monarch' ? 5 : 0));
+        // Monarchs are the deliberate exception: their swarm is not drafting,
+        // so the deck credits them nothing however they are flying.
+        var benefit = (resolvedFormation === 'swarm' && species.id === 'monarch')
+          ? 0
+          : Math.round(migrFormationSaving(resolvedFormation) * 100);
         var direction = season === 'fall'
           ? species.breedingRange + ' to ' + species.winterRange
           : species.winterRange + ' to ' + species.breedingRange;
@@ -3617,7 +3631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Read aloud helper
         var vReadAloud = function() {
           if (!callTTS) return;
-          callTTS('V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips, saving up to 65 percent of their energy. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Drag the birds to different positions and see how formation efficiency changes.');
+          callTTS(t('stem.migration.tts_vformation', 'V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips. Measurements on real flocks put the saving at roughly 10 to 30 percent, and this tool uses 22 percent as a midpoint. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Drag the birds to different positions and see how formation efficiency changes.'));
         };
 
         return h('div', { className: 'space-y-3' },
@@ -6916,7 +6930,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'r' || e.key === 'R') {
-                  if (callTTS) callTTS('Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.');
+                  if (callTTS) callTTS(t('stem.migration.tts_navigation', 'Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.'));
                 }
               },
               style: { width: '100%', display: 'block' }

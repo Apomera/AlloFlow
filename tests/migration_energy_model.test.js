@@ -92,8 +92,23 @@ describe('Migration Lab flight-energy model', () => {
     const solo = em({ massKg: 1, wingspanM: 1.2, formation: 'solo', distanceKm: 1000 }).totalKJ;
     const vee = em({ massKg: 1, wingspanM: 1.2, formation: 'V', distanceKm: 1000 }).totalKJ;
     expect(1 - vee / solo).toBeCloseTo(0.22, 10);
-    expect(tool._testing.formationSaving.V).toBe(0.22);
-    expect(tool._testing.formationSaving.solo).toBe(0);
+    // Pinned through the accessor, not the raw table: the 3D deck speaks
+    // v/loose/swarm and the inquiry speaks solo/echelon/V, and they were two
+    // separate tables until one drifted. Case must not change the answer.
+    const saving = tool._testing.savingFor;
+    expect(saving('V')).toBe(0.22);
+    expect(saving('v')).toBe(0.22);
+    expect(saving('solo')).toBe(0);
+    expect(saving('echelon')).toBe(0.12);
+    expect(saving('loose')).toBeGreaterThan(0);
+    expect(saving('swarm')).toBeGreaterThan(0);
+    // Ordering is the claim a student can check: a full V beats an echelon,
+    // which beats a loose flock, which beats flying alone.
+    expect(saving('v')).toBeGreaterThan(saving('echelon'));
+    expect(saving('echelon')).toBeGreaterThan(saving('loose'));
+    expect(saving('loose')).toBeGreaterThan(saving('swarm'));
+    expect(saving('swarm')).toBeGreaterThan(saving('solo'));
+    expect(saving('not-a-formation')).toBe(0);
   });
 
   it('never lets a headwind drive the cost to infinity', () => {
