@@ -563,14 +563,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
 
   // ── Migration species data ──
   var SPECIES = [
-    { id: 'canada_goose', name: 'Canada Goose', emoji: '\uD83E\uDEBF', flyway: 'atlantic', distance: 3000, speed: 40, altitude: 3000, breedingRange: 'Northern Canada & Alaska', winterRange: 'Southern US & Mexico', funFact: 'Canada Geese cruise at about 40 mph, but riding a strong tailwind they have been recorded covering 1,500 miles in 24 hours. They mate for life.', formation: 'V-formation' },
-    { id: 'arctic_tern', name: 'Arctic Tern', emoji: '\uD83D\uDD4A\uFE0F', flyway: 'atlantic', distance: 44000, speed: 25, altitude: 1500, breedingRange: 'Arctic Circle', winterRange: 'Antarctic', funFact: 'Arctic Terns see two summers per year and more daylight than any other creature. Their migration is the longest of any animal.', formation: 'Loose flock' },
-    { id: 'ruby_hummingbird', name: 'Ruby-throated Hummingbird', emoji: '\uD83D\uDC26', flyway: 'mississippi', distance: 3000, speed: 30, altitude: 500, breedingRange: 'Eastern North America', winterRange: 'Central America', funFact: 'This tiny bird weighing just 3g flies 500 miles non-stop across the Gulf of Mexico. It beats its wings 53 times per second.', formation: 'Solo' },
-    { id: 'snow_goose', name: 'Snow Goose', emoji: '\uD83E\uDEBF', flyway: 'central', distance: 5000, speed: 50, altitude: 7500, breedingRange: 'Arctic tundra', winterRange: 'Southern US', funFact: 'Snow Geese have increased from 2 million to 15 million birds since the 1970s, actually damaging their Arctic breeding grounds.', formation: 'V-formation' },
-    { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'central', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo' },
-    { id: 'sandhill_crane', name: 'Sandhill Crane', emoji: '\uD83E\uDDA9', flyway: 'central', distance: 6000, speed: 35, altitude: 6000, breedingRange: 'Northern US & Canada', winterRange: 'Southern US & Mexico', funFact: 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.', formation: 'V-formation' },
-    { id: 'monarch', name: 'Monarch Butterfly', emoji: '\uD83E\uDD8B', flyway: 'central', distance: 3000, speed: 12, altitude: 1200, breedingRange: 'Eastern North America', winterRange: 'Central Mexico (oyamel fir forests)', funFact: 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.', formation: 'Swarm' },
-    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.', formation: 'V-formation' }
+    { id: 'canada_goose', name: 'Canada Goose', emoji: '\uD83E\uDEBF', flyway: 'atlantic', distance: 3000, speed: 40, altitude: 3000, breedingRange: 'Northern Canada & Alaska', winterRange: 'Southern US & Mexico', funFact: 'Canada Geese cruise at about 40 mph, but riding a strong tailwind they have been recorded covering 1,500 miles in 24 hours. They mate for life.', formation: 'V-formation', weight: '3.5-6 kg' },
+    { id: 'arctic_tern', name: 'Arctic Tern', emoji: '\uD83D\uDD4A\uFE0F', flyway: 'atlantic', distance: 44000, speed: 25, altitude: 1500, breedingRange: 'Arctic Circle', winterRange: 'Antarctic', funFact: 'Arctic Terns see two summers per year and more daylight than any other creature. Their migration is the longest of any animal.', formation: 'Loose flock', weight: '100 g' },
+    { id: 'ruby_hummingbird', name: 'Ruby-throated Hummingbird', emoji: '\uD83D\uDC26', flyway: 'mississippi', distance: 3000, speed: 30, altitude: 500, breedingRange: 'Eastern North America', winterRange: 'Central America', funFact: 'This tiny bird weighing just 3g flies 500 miles non-stop across the Gulf of Mexico. It beats its wings 53 times per second.', formation: 'Solo', weight: '3 g' },
+    { id: 'snow_goose', name: 'Snow Goose', emoji: '\uD83E\uDEBF', flyway: 'central', distance: 5000, speed: 50, altitude: 7500, breedingRange: 'Arctic tundra', winterRange: 'Southern US', funFact: 'Snow Geese have increased from 2 million to 15 million birds since the 1970s, actually damaging their Arctic breeding grounds.', formation: 'V-formation', weight: '2.5-3.5 kg' },
+    { id: 'peregrine', name: 'Peregrine Falcon', emoji: '\uD83E\uDD85', flyway: 'central', distance: 15500, speed: 60, altitude: 3500, breedingRange: 'Arctic tundra', winterRange: 'South America', funFact: 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).', formation: 'Solo', weight: '0.5-1.5 kg' },
+    { id: 'sandhill_crane', name: 'Sandhill Crane', emoji: '\uD83E\uDDA9', flyway: 'central', distance: 6000, speed: 35, altitude: 6000, breedingRange: 'Northern US & Canada', winterRange: 'Southern US & Mexico', funFact: 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.', formation: 'V-formation', weight: '3-5 kg' },
+    { id: 'monarch', name: 'Monarch Butterfly', emoji: '\uD83E\uDD8B', flyway: 'central', distance: 3000, speed: 12, altitude: 1200, breedingRange: 'Eastern North America', winterRange: 'Central Mexico (oyamel fir forests)', funFact: 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.', formation: 'Swarm', weight: '0.5 g' },
+    { id: 'bartailed_godwit', name: 'Bar-tailed Godwit', emoji: '\uD83D\uDC26', flyway: 'pacific', distance: 18000, speed: 55, altitude: 6000, breedingRange: 'Alaska', winterRange: 'New Zealand', funFact: 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.', formation: 'V-formation', weight: '300 g' }
   ];
 
   // ── Wing types for aerodynamics tab ──
@@ -1495,6 +1495,243 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
   // ════════════════════════════════════════════
   // REGISTER TOOL
   // ════════════════════════════════════════════
+  // The four North American flyway names. Literal keys, because the canvas
+  // legend previously built them as 'flyway_' + id, which renders correctly and
+  // is invisible to the extractor.
+  function migrLocalizedFlywayNames(t) {
+    if (!t) return { atlantic: 'Atlantic', mississippi: 'Mississippi', central: 'Central', pacific: 'Pacific' };
+    return {
+      atlantic: t('stem.migration.flyway_atlantic', 'Atlantic'),
+      mississippi: t('stem.migration.flyway_mississippi', 'Mississippi'),
+      central: t('stem.migration.flyway_central', 'Central'),
+      pacific: t('stem.migration.flyway_pacific', 'Pacific')
+    };
+  }
+
+  // ── Localised data tables ─────────────────────────────────
+  // The tables above are built at module scope, above the render closure that
+  // owns t(), which is why 181 strings in them had never reached a translator:
+  // there was nowhere to wrap them. These functions take the translator as an
+  // argument instead.
+  //
+  // Two things here are deliberate and load-bearing:
+  //   - the parameter is named `t`, because dev-tools/i18n/extract_stem_tool_en.cjs
+  //     matches on the callee name. `tr(...)` renders perfectly and is invisible
+  //     to extraction, so the translator would never receive the key.
+  //   - every key is a LITERAL. A computed key such as
+  //     t('stem.migration.species_' + sp.id + '_name', sp.name) has the same
+  //     problem: correct at runtime, unextractable, English in every locale.
+  //
+  // Generated from the tables themselves, so a new row cannot be left behind.
+  function migrLocalizedSpecies(t) {
+    if (!t) return SPECIES;
+    return [
+      Object.assign({}, SPECIES[0], {
+        name: t('stem.migration.species_canada_goose_name', 'Canada Goose'),
+        breedingRange: t('stem.migration.species_canada_goose_breedingrange', 'Northern Canada & Alaska'),
+        winterRange: t('stem.migration.species_canada_goose_winterrange', 'Southern US & Mexico'),
+        funFact: t('stem.migration.species_canada_goose_funfact', 'Canada Geese cruise at about 40 mph, but riding a strong tailwind they have been recorded covering 1,500 miles in 24 hours. They mate for life.'),
+        formation: t('stem.migration.species_canada_goose_formation', 'V-formation')
+      }),
+      Object.assign({}, SPECIES[1], {
+        name: t('stem.migration.species_arctic_tern_name', 'Arctic Tern'),
+        breedingRange: t('stem.migration.species_arctic_tern_breedingrange', 'Arctic Circle'),
+        winterRange: t('stem.migration.species_arctic_tern_winterrange', 'Antarctic'),
+        funFact: t('stem.migration.species_arctic_tern_funfact', 'Arctic Terns see two summers per year and more daylight than any other creature. Their migration is the longest of any animal.'),
+        formation: t('stem.migration.species_arctic_tern_formation', 'Loose flock')
+      }),
+      Object.assign({}, SPECIES[2], {
+        name: t('stem.migration.species_ruby_hummingbird_name', 'Ruby-throated Hummingbird'),
+        breedingRange: t('stem.migration.species_ruby_hummingbird_breedingrange', 'Eastern North America'),
+        winterRange: t('stem.migration.species_ruby_hummingbird_winterrange', 'Central America'),
+        funFact: t('stem.migration.species_ruby_hummingbird_funfact', 'This tiny bird weighing just 3g flies 500 miles non-stop across the Gulf of Mexico. It beats its wings 53 times per second.'),
+        formation: t('stem.migration.species_ruby_hummingbird_formation', 'Solo')
+      }),
+      Object.assign({}, SPECIES[3], {
+        name: t('stem.migration.species_snow_goose_name', 'Snow Goose'),
+        breedingRange: t('stem.migration.species_snow_goose_breedingrange', 'Arctic tundra'),
+        winterRange: t('stem.migration.species_snow_goose_winterrange', 'Southern US'),
+        funFact: t('stem.migration.species_snow_goose_funfact', 'Snow Geese have increased from 2 million to 15 million birds since the 1970s, actually damaging their Arctic breeding grounds.'),
+        formation: t('stem.migration.species_snow_goose_formation', 'V-formation')
+      }),
+      Object.assign({}, SPECIES[4], {
+        name: t('stem.migration.species_peregrine_name', 'Peregrine Falcon'),
+        breedingRange: t('stem.migration.species_peregrine_breedingrange', 'Arctic tundra'),
+        winterRange: t('stem.migration.species_peregrine_winterrange', 'South America'),
+        funFact: t('stem.migration.species_peregrine_funfact', 'The Peregrine Falcon is the fastest animal on Earth, reaching over 240 mph (386 km/h) in a hunting stoop (dive).'),
+        formation: t('stem.migration.species_peregrine_formation', 'Solo')
+      }),
+      Object.assign({}, SPECIES[5], {
+        name: t('stem.migration.species_sandhill_crane_name', 'Sandhill Crane'),
+        breedingRange: t('stem.migration.species_sandhill_crane_breedingrange', 'Northern US & Canada'),
+        winterRange: t('stem.migration.species_sandhill_crane_winterrange', 'Southern US & Mexico'),
+        funFact: t('stem.migration.species_sandhill_crane_funfact', 'Sandhill Cranes are among the oldest living bird species, with fossils dating back 2.5 million years. They dance to bond with mates.'),
+        formation: t('stem.migration.species_sandhill_crane_formation', 'V-formation')
+      }),
+      Object.assign({}, SPECIES[6], {
+        name: t('stem.migration.species_monarch_name', 'Monarch Butterfly'),
+        breedingRange: t('stem.migration.species_monarch_breedingrange', 'Eastern North America'),
+        winterRange: t('stem.migration.species_monarch_winterrange', 'Central Mexico (oyamel fir forests)'),
+        funFact: t('stem.migration.species_monarch_funfact', 'No single Monarch makes the full round trip. It takes 4 generations to complete the cycle. Only the "super generation" migrates south.'),
+        formation: t('stem.migration.species_monarch_formation', 'Swarm')
+      }),
+      Object.assign({}, SPECIES[7], {
+        name: t('stem.migration.species_bartailed_godwit_name', 'Bar-tailed Godwit'),
+        breedingRange: t('stem.migration.species_bartailed_godwit_breedingrange', 'Alaska'),
+        winterRange: t('stem.migration.species_bartailed_godwit_winterrange', 'New Zealand'),
+        funFact: t('stem.migration.species_bartailed_godwit_funfact', 'In 2022 a five-month-old Bar-tailed Godwit flew 8,425 miles non-stop from Alaska to Tasmania in 11 days, without eating, drinking, or sleeping. It is the longest non-stop flight ever recorded, and the bird did it on its first migration, with no adult to follow.'),
+        formation: t('stem.migration.species_bartailed_godwit_formation', 'V-formation')
+      })
+    ];
+  }
+  function migrLocalizedWingTypes(t) {
+    if (!t) return WING_TYPES;
+    return [
+      Object.assign({}, WING_TYPES[0], {
+        name: t('stem.migration.wing_soaring_name', 'Soaring (Eagle)'),
+        aspectRatio: t('stem.migration.wing_soaring_aspectratio', 'High (7:1)'),
+        shape: t('stem.migration.wing_soaring_shape', 'Long, narrow, slotted tips'),
+        desc: t('stem.migration.wing_soaring_desc', 'Long narrow wings maximize lift-to-drag ratio for effortless soaring. Slotted wingtip feathers reduce induced drag by spreading vortices. Eagles can soar for hours without a single flap, using thermals and ridge lift.')
+      }),
+      Object.assign({}, WING_TYPES[1], {
+        name: t('stem.migration.wing_flapping_name', 'Flapping (Goose)'),
+        aspectRatio: t('stem.migration.wing_flapping_aspectratio', 'Medium (5:1)'),
+        shape: t('stem.migration.wing_flapping_shape', 'Medium, broad, rounded'),
+        desc: t('stem.migration.wing_flapping_desc', 'Broad wings provide good lift at moderate speeds. Geese use powered flight with steady flapping for long-distance migration. A well-positioned trailing bird can cut its drag substantially via upwash exploitation (real flocks measure ~10\u201330% energy savings; ~65% is a theoretical per-position maximum).')
+      }),
+      Object.assign({}, WING_TYPES[2], {
+        name: t('stem.migration.wing_hovering_name', 'Hovering (Hummingbird)'),
+        aspectRatio: t('stem.migration.wing_hovering_aspectratio', 'Low (3:1)'),
+        shape: t('stem.migration.wing_hovering_shape', 'Short, figure-8 stroke'),
+        desc: t('stem.migration.wing_hovering_desc', 'Hummingbird wings rotate at the shoulder, allowing a figure-8 stroke pattern that generates lift on both the downstroke AND upstroke. They can fly backwards, sideways, and hover in place. Wing beat: 50-80 times per second.')
+      }),
+      Object.assign({}, WING_TYPES[3], {
+        name: t('stem.migration.wing_speed_name', 'Speed (Falcon)'),
+        aspectRatio: t('stem.migration.wing_speed_aspectratio', 'Medium-High (6:1)'),
+        shape: t('stem.migration.wing_speed_shape', 'Swept back, pointed'),
+        desc: t('stem.migration.wing_speed_desc', 'Swept-back pointed wings minimize drag at high speeds. During a stoop (dive), Peregrines tuck their wings to form a teardrop shape, reaching 240+ mph. A small tubercle on the beak disrupts airflow to prevent suffocation at speed.')
+      })
+    ];
+  }
+  function migrLocalizedNavMethods(t) {
+    if (!t) return NAV_METHODS;
+    return [
+      Object.assign({}, NAV_METHODS[0], {
+        name: t('stem.migration.nav_magnetic_name', 'Magnetic Sense'),
+        desc: t('stem.migration.nav_magnetic_desc', 'Birds sense Earth\'s magnetic field, but HOW is still an open question \u2014 this is live science, not settled textbook. The leading candidate is cryptochrome, a light-sensitive protein in the eye whose chemistry is thought to respond to magnetic fields, which could give birds a directional overlay on what they see. An older explanation \u2014 magnetite crystals in the upper beak wired to the trigeminal nerve \u2014 lost most of its support in 2012, when the cells in question turned out to be immune cells (macrophages), not nerve cells. The trigeminal nerve does still appear to report field STRENGTH, so birds may run a compass in the eye and a map sense in the beak.')
+      }),
+      Object.assign({}, NAV_METHODS[1], {
+        name: t('stem.migration.nav_stars_name', 'Star Navigation'),
+        desc: t('stem.migration.nav_stars_desc', 'Nocturnal migrants (warblers, thrushes) use star patterns to navigate. Experiments in planetariums showed that birds orient to the rotation center of the night sky (near Polaris). Young birds learn star patterns during their first summer \u2014 they aren\'t born knowing them.')
+      }),
+      Object.assign({}, NAV_METHODS[2], {
+        name: t('stem.migration.nav_sun_name', 'Sun Compass'),
+        desc: t('stem.migration.nav_sun_desc', 'Birds track the sun\'s position and use an internal circadian clock to compensate for its movement across the sky. Experiments with clock-shifted birds (kept in artificially lit rooms) showed they navigate in predictably wrong directions, proving the sun-compass mechanism.')
+      }),
+      Object.assign({}, NAV_METHODS[3], {
+        name: t('stem.migration.nav_landmarks_name', 'Landmarks'),
+        desc: t('stem.migration.nav_landmarks_desc', 'Experienced migrants follow visual landmarks: coastlines, mountain ranges, rivers, and highways. Pigeons even follow roads and make turns at intersections. This "pilotage" navigation is learned over multiple migration trips and passed down through flock experience.')
+      }),
+      Object.assign({}, NAV_METHODS[4], {
+        name: t('stem.migration.nav_smell_name', 'Smell Navigation'),
+        desc: t('stem.migration.nav_smell_desc', 'Seabirds (petrels, albatrosses) navigate using olfactory maps of ocean scents. Dimethyl sulfide released by phytoplankton marks productive feeding areas. Homing pigeons also use smell \u2014 blocking their nostrils impairs their ability to find home.')
+      }),
+      Object.assign({}, NAV_METHODS[5], {
+        name: t('stem.migration.nav_inherited_name', 'Inherited Maps'),
+        desc: t('stem.migration.nav_inherited_desc', 'Some migration routes are genetically encoded. Young Cuckoos raised by foster parents of other species still migrate to the correct wintering grounds \u2014 a place they\'ve never been, following a route they were never taught. The CLOCK gene and ADCYAP1 gene are linked to migratory restlessness.')
+      })
+    ];
+  }
+  function migrLocalizedMigrationThreats(t) {
+    if (!t) return MIGRATION_THREATS;
+    return [
+      Object.assign({}, MIGRATION_THREATS[0], {
+        threat: t('stem.migration.threat_light_pollution_threat', 'Light Pollution'),
+        desc: t('stem.migration.threat_light_pollution_desc', 'Artificial lights disorient nocturnal migrants, causing building collisions. Up to 1 billion birds die from building strikes annually in the US alone. Lights Out programs in major cities reduce deaths by 80%.')
+      }),
+      Object.assign({}, MIGRATION_THREATS[1], {
+        threat: t('stem.migration.threat_habitat_loss_threat', 'Habitat Loss'),
+        desc: t('stem.migration.threat_habitat_loss_desc', 'Wetland drainage and deforestation destroy critical stopover sites where birds rest and refuel. Without these rest stops, birds cannot complete their journeys. More than half the wetlands of the lower 48 states have been drained since the 1780s.')
+      }),
+      Object.assign({}, MIGRATION_THREATS[2], {
+        threat: t('stem.migration.threat_climate_change_threat', 'Climate Change'),
+        desc: t('stem.migration.threat_climate_change_desc', 'Warming temperatures shift the timing of insect emergence and plant flowering, creating mismatches with bird arrival. Birds may arrive at breeding grounds to find their food sources have already peaked.')
+      }),
+      Object.assign({}, MIGRATION_THREATS[3], {
+        threat: t('stem.migration.threat_wind_turbines_threat', 'Wind Turbines'),
+        desc: t('stem.migration.threat_wind_turbines_desc', 'Poorly sited wind farms can kill migratory birds, especially raptors. Modern solutions include radar-activated shutdown systems and careful placement away from migration corridors.')
+      }),
+      Object.assign({}, MIGRATION_THREATS[4], {
+        threat: t('stem.migration.threat_cat_predation_threat', 'Cat Predation'),
+        desc: t('stem.migration.threat_cat_predation_desc', 'Domestic and feral cats kill an estimated 1.3-4 billion birds per year in the US. Keeping cats indoors is one of the simplest conservation actions for birds.')
+      })
+    ];
+  }
+  function migrLocalizedFormationFacts(t) {
+    if (!t) return FORMATION_FACTS;
+    return [
+      Object.assign({}, FORMATION_FACTS[0], {
+        title: t('stem.migration.ffact_upwash_zone_title', 'Upwash Zone'),
+        text: t('stem.migration.ffact_upwash_zone_text', 'When a bird flaps, it creates a downward push of air (downwash) directly behind it and an upward push (upwash) at roughly 30\u00B0 to either side of the wingtip. Trailing birds position themselves in this upwash zone to get free lift.')
+      }),
+      Object.assign({}, FORMATION_FACTS[1], {
+        title: t('stem.migration.ffact_energy_savings_title', 'Energy Savings'),
+        text: t('stem.migration.ffact_energy_savings_text', 'Research on pelicans (Weimerskirch et al., 2001) showed that birds in V-formation have lower heart rates and glide more often. Field studies suggest trailing birds save roughly 10\u201330% of their energy in real flocks; ~65% is a theoretical per-position maximum, not the typical saving.')
+      }),
+      Object.assign({}, FORMATION_FACTS[2], {
+        title: t('stem.migration.ffact_leader_rotation_title', 'Leader Rotation'),
+        text: t('stem.migration.ffact_leader_rotation_text', 'Leading is exhausting \u2014 the front bird gets no upwash benefit and faces full air resistance. In nature, birds rotate leadership every few minutes. Each bird serves roughly equal time at the front.')
+      }),
+      Object.assign({}, FORMATION_FACTS[3], {
+        title: t('stem.migration.ffact_flap_timing_title', 'Flap Timing'),
+        text: t('stem.migration.ffact_flap_timing_text', 'Birds in formation synchronize their wing beats with the bird ahead, adjusted by a phase delay. This maximizes the upwash capture. High-speed cameras show flap timing accuracy within 0.1 seconds.')
+      }),
+      Object.assign({}, FORMATION_FACTS[4], {
+        title: t('stem.migration.ffact_communication_title', 'Communication'),
+        text: t('stem.migration.ffact_communication_text', 'Geese honk during flight to communicate position and encourage the leader. The V-shape also gives each bird an unobstructed view of the bird ahead, helping maintain spacing.')
+      }),
+      Object.assign({}, FORMATION_FACTS[5], {
+        title: t('stem.migration.ffact_vortex_physics_title', 'Vortex Physics'),
+        text: t('stem.migration.ffact_vortex_physics_text', 'Each wingtip generates a spinning vortex of air (like a tiny tornado). The air on the outer edge of the vortex moves upward. By flying in the upwash of the preceding bird\'s wingtip vortex, trailing birds effectively surf on rising air.')
+      })
+    ];
+  }
+  function migrLocalizedMigrationRecords(t) {
+    if (!t) return MIGRATION_RECORDS;
+    return [
+      Object.assign({}, MIGRATION_RECORDS[0], {
+        species: t('stem.migration.record_bar_tailed_godwit_species', 'Bar-tailed Godwit'),
+        record: t('stem.migration.record_bar_tailed_godwit_record', 'Longest non-stop flight'),
+        value: t('stem.migration.record_bar_tailed_godwit_value', '8,425 miles (Alaska to Tasmania, 11 days without rest)')
+      }),
+      Object.assign({}, MIGRATION_RECORDS[1], {
+        species: t('stem.migration.record_arctic_tern_species', 'Arctic Tern'),
+        record: t('stem.migration.record_arctic_tern_record', 'Longest annual migration'),
+        value: t('stem.migration.record_arctic_tern_value', '44,000 miles pole-to-pole round trip')
+      }),
+      Object.assign({}, MIGRATION_RECORDS[2], {
+        species: t('stem.migration.record_great_snipe_species', 'Great Snipe'),
+        record: t('stem.migration.record_great_snipe_record', 'Fastest migration'),
+        value: t('stem.migration.record_great_snipe_value', '4,200 miles at 60 mph average')
+      }),
+      Object.assign({}, MIGRATION_RECORDS[3], {
+        species: t('stem.migration.record_ruppell_s_griffon_vulture_species', 'Ruppell\'s Griffon Vulture'),
+        record: t('stem.migration.record_ruppell_s_griffon_vulture_record', 'Highest flight altitude'),
+        value: t('stem.migration.record_ruppell_s_griffon_vulture_value', '37,000 feet (hit by airplane)')
+      }),
+      Object.assign({}, MIGRATION_RECORDS[4], {
+        species: t('stem.migration.record_ruby_throated_hummingbird_species', 'Ruby-throated Hummingbird'),
+        record: t('stem.migration.record_ruby_throated_hummingbird_record', 'Smallest migrant'),
+        value: t('stem.migration.record_ruby_throated_hummingbird_value', '500 miles non-stop across Gulf of Mexico at 3 grams')
+      }),
+      Object.assign({}, MIGRATION_RECORDS[5], {
+        species: t('stem.migration.record_common_swift_species', 'Common Swift'),
+        record: t('stem.migration.record_common_swift_record', 'Longest continuous flight'),
+        value: t('stem.migration.record_common_swift_value', '10 months airborne without landing')
+      })
+    ];
+  }
+
   window.StemLab.registerTool('migration', {
     // Pure seams. The flight-energy model is the one derivation every surface
     // in this tool reads, so it is the thing worth pinning in a test.
@@ -1528,6 +1765,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
       var addToast = ctx.addToast;
       var announceToSR = ctx.announceToSR;
       var t = ctx.t;
+      // Shadow the module-scope data tables with translated copies for this
+      // render. Declaring them with `var` inside render shadows the outer
+      // bindings for the whole function, so every call site below reads
+      // localised strings without each one having to remember to ask.
+      var SPECIES = migrLocalizedSpecies(t);
+      var WING_TYPES = migrLocalizedWingTypes(t);
+      var NAV_METHODS = migrLocalizedNavMethods(t);
+      var MIGRATION_THREATS = migrLocalizedMigrationThreats(t);
+      var FORMATION_FACTS = migrLocalizedFormationFacts(t);
+      var MIGRATION_RECORDS = migrLocalizedMigrationRecords(t);
+      var FLYWAY_NAMES = migrLocalizedFlywayNames(t);
       var callGemini = ctx.callGemini;
       var callTTS = ctx.callTTS;
       var awardXP = ctx.awardXP;
@@ -4508,7 +4756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               // four labels never stack, and kept legible over land or water.
               var lp = flywayPoint(pts, 0.24 + fi * 0.055);
               migrChip(c, lp.x, lp.y,
-                migrT(lv.t, 'flyway_' + fw, fw.charAt(0).toUpperCase() + fw.slice(1)),
+                migrLocalizedFlywayNames(lv.t)[fw] || (fw.charAt(0).toUpperCase() + fw.slice(1)),
                 isDark ? '#f8fafc' : '#0f172a',
                 migrAlpha(col.stroke, isActive ? 0.62 : 0.30),
                 'bold ' + (isActive ? 9 : 8) + 'px system-ui');
@@ -4967,22 +5215,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               h('table', { className: 'w-full text-[0.6875rem] ' + textSecondary, role: 'table' },
                 h('thead', null,
                   h('tr', { className: 'border-b ' + borderCol },
-                    ['Species', 'Distance', 'Speed', 'Altitude', 'Weight', 'Flyway', 'Formation'].map(function(col) {
+                    [t('stem.migration.col_species', 'Species'), t('stem.migration.col_distance', 'Distance'),
+                     t('stem.migration.col_speed', 'Speed'), t('stem.migration.col_altitude', 'Altitude'),
+                     t('stem.migration.col_weight', 'Weight'), t('stem.migration.col_flyway', 'Flyway'),
+                     t('stem.migration.col_formation', 'Formation')].map(function(col) {
                       return h('th', { key: col, scope: 'col', className: 'text-left py-1.5 px-1 font-bold ' + textPrimary }, col);
                     })
                   )
                 ),
                 h('tbody', null,
-                  [
-                    { name: t('stem.migration.canada_goose', 'Canada Goose'), dist: '3,000 mi', spd: '40 mph', alt: t('stem.migration.3_000_ft', '3,000 ft'), wt: '3.5-6 kg', fw: 'Atlantic', form: 'V-formation' },
-                    { name: t('stem.migration.arctic_tern', 'Arctic Tern'), dist: '44,000 mi', spd: '25 mph', alt: t('stem.migration.1_500_ft', '1,500 ft'), wt: '100 g', fw: 'Atlantic', form: 'Loose flock' },
-                    { name: t('stem.migration.ruby_thr_hummingbird', 'Ruby-thr. Hummingbird'), dist: '3,000 mi', spd: '30 mph', alt: t('stem.migration.500_ft', '500 ft'), wt: '3.5 g', fw: 'Mississippi', form: 'Solo' },
-                    { name: t('stem.migration.snow_goose', 'Snow Goose'), dist: '5,000 mi', spd: '50 mph', alt: t('stem.migration.7_500_ft', '7,500 ft'), wt: '2.5-3.5 kg', fw: 'Central', form: 'V-formation' },
-                    { name: t('stem.migration.peregrine_falcon', 'Peregrine Falcon'), dist: '15,500 mi', spd: '60 mph', alt: t('stem.migration.3_500_ft', '3,500 ft'), wt: '0.5-1.5 kg', fw: 'Pacific', form: 'Solo' },
-                    { name: t('stem.migration.sandhill_crane', 'Sandhill Crane'), dist: '6,000 mi', spd: '35 mph', alt: t('stem.migration.6_000_ft', '6,000 ft'), wt: '3-5 kg', fw: 'Central', form: 'V-formation' },
-                    { name: t('stem.migration.monarch_butterfly', 'Monarch Butterfly'), dist: '3,000 mi', spd: '12 mph', alt: t('stem.migration.1_200_ft', '1,200 ft'), wt: '0.5 g', fw: 'Central', form: 'Swarm' },
-                    { name: t('stem.migration.bar_tailed_godwit', 'Bar-tailed Godwit'), dist: '7,000 mi', spd: '55 mph', alt: t('stem.migration.6_000_ft_2', '6,000 ft'), wt: '300 g', fw: 'Pacific', form: 'V-formation' }
-                  ].map(function(row, ri2) {
+                  // Derived from SPECIES rather than restated. This table used to be
+                  // a second hand-kept copy and had drifted from the cards
+                  // directly above it: the godwit read 7,000 mi against the
+                  // card's 18,000, and the peregrine was filed under the wrong
+                  // flyway.
+                  SPECIES.map(function(sp) {
+                    return {
+                      name: sp.name,
+                      dist: sp.distance.toLocaleString() + ' ' + t('stem.migration.mi_unit', 'mi'),
+                      spd: sp.speed + ' ' + t('stem.migration.mph_unit', 'mph'),
+                      alt: sp.altitude.toLocaleString() + ' ' + t('stem.migration.ft_unit', 'ft'),
+                      wt: sp.weight,
+                      fw: FLYWAY_NAMES[sp.flyway] || sp.flyway,
+                      form: sp.formation
+                    };
+                  }).map(function(row, ri2) {
                     return h('tr', { key: ri2, className: 'border-b ' + borderCol + ' ' + (ri2 % 2 === 0 ? (isDark ? 'bg-slate-800/30' : 'bg-slate-50/50') : '') },
                       h('td', { className: 'py-1 px-1 font-medium ' + textPrimary }, row.name),
                       h('td', { className: 'py-1 px-1' }, row.dist),
@@ -6527,7 +6784,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                       h('span', { className: 'text-xl', 'aria-hidden': 'true' }, nm.icon),
                       h('span', { className: 'text-xs font-bold ' + textPrimary }, nm.name)
                     ),
-                    isExpanded && h('p', { className: 'text-[0.6875rem] leading-relaxed mt-2 ' + textSecondary }, __alloT('stem.migration.' + (nm.id) + '_desc', nm.desc))
+                    isExpanded && h('p', { className: 'text-[0.6875rem] leading-relaxed mt-2 ' + textSecondary }, nm.desc)
                   )
                 );
               })

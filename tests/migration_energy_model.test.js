@@ -25,7 +25,12 @@ beforeAll(() => {
 });
 
 function render(tab, isDark, toolState) {
-  const store = { migration: Object.assign({ tab }, toolState || {}) };
+  // A third argument of { mark: true } swaps in a sentinel locale: every string
+  // that went through t() comes back prefixed, so anything unmarked never
+  // reached the translator.
+  const opts = toolState && toolState.mark ? toolState : null;
+  const state = opts ? (opts.state || {}) : (toolState || {});
+  const store = { migration: Object.assign({ tab }, state) };
   const ctx = {
     React,
     toolData: store,
@@ -33,7 +38,7 @@ function render(tab, isDark, toolState) {
     updateMulti: () => {},
     addToast: () => {},
     announceToSR: () => {},
-    t: (k, fb) => (fb == null ? k : fb),
+    t: opts ? (k, fb) => '«' + (fb == null ? k : fb) : (k, fb) => (fb == null ? k : fb),
     isDark,
     setStemLabTool: () => {},
     awardXP: () => {}
@@ -226,6 +231,54 @@ describe('Migration Lab tool integrity', () => {
 
   it('says which wingspan the budget calculator assumed', () => {
     expect(render('vformation', true)).toMatch(/assumed wingspan \d+ cm/);
+  });
+
+  it('states one distance, speed, altitude and flyway per species', () => {
+    // The Species Comparison table was a second hand-kept copy of the species
+    // data sitting directly under the cards it disagreed with: the godwit read
+    // 7,000 mi against the card's 18,000, and the peregrine was filed under
+    // the wrong flyway. It derives from SPECIES now, so this pins that the two
+    // cannot drift apart again.
+    const el = document.createElement('div');
+    el.innerHTML = render('routes', true);
+    const table = Array.from(el.querySelectorAll('table')).find((t) => /Species/.test(t.textContent));
+    expect(table).toBeTruthy();
+    const rows = Array.from(table.querySelectorAll('tbody tr'))
+      .map((tr) => Array.from(tr.querySelectorAll('td')).map((td) => td.textContent.trim()));
+    expect(rows.length).toBeGreaterThanOrEqual(8);
+
+    // Every card on the same tab states the species' flyway and distance too.
+    const cardText = el.textContent;
+    for (const [name, dist, , , , flyway] of rows) {
+      expect(cardText, name + ' distance').toContain(dist);
+      expect(cardText.toLowerCase(), name + ' flyway').toContain(flyway.toLowerCase());
+    }
+    const godwit = rows.find((r) => /Godwit/.test(r[0]));
+    expect(godwit[1]).toBe('18,000 mi');
+    const peregrine = rows.find((r) => /Peregrine/.test(r[0]));
+    expect(peregrine[5]).toBe('Central');
+  });
+
+  it('routes every data-table string through the translator', () => {
+    // The species, wing-type and navigation tables are built at module scope,
+    // above the closure that owns t(). That is why 181 strings in them had
+    // never reached a pack. A sentinel locale marks whatever did go through
+    // t(); anything unmarked did not. Probe strings avoid & and < so the
+    // comparison is against markup, not against HTML escaping.
+    const MARK = '«';
+    const cases = [
+      ['routes', { selectedSpecies: 'arctic_tern' }, ['Arctic Tern', 'Arctic Circle', 'Antarctic', 'Loose flock']],
+      ['navigate', {}, ['Magnetic Sense', 'Star Navigation']],
+      ['aero', {}, ['Soaring (Eagle)', 'Hovering (Hummingbird)']]
+    ];
+    for (const [tab, state, probes] of cases) {
+      const html = render(tab, true, { mark: true, state });
+      for (const probe of probes) {
+        const at = html.indexOf(probe);
+        expect(at, tab + ': "' + probe + '" should be rendered').toBeGreaterThan(-1);
+        expect(html.slice(at - 1, at), tab + ': "' + probe + '" never went through t()').toBe(MARK);
+      }
+    }
   });
 
   it('keeps source and public mirrors identical', () => {
