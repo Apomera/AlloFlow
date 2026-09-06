@@ -1,0 +1,607 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Energy Moves — How Things Make Other Things Happen",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "4th Grade",
+    "standards": "NGSS 4-PS3-1 (use evidence to construct an explanation relating the speed of an object to the energy of that object); NGSS 4-PS3-2 (make observations to provide evidence that energy can be transferred from place to place by sound, light, heat, and electric currents); NGSS 4-PS3-3 (ask questions and predict outcomes about the changes in energy that occur when objects collide); NGSS 4-PS3-4 (apply scientific ideas to design, test, and refine a device that converts energy from one form to another)",
+    "createdAt": "2026-09-06T04:20:00.000Z",
+    "imageShotList": "allopacks/energy_transfer_grade4.IMAGES.md"
+  },
+  "sourceTopic": "Energy Transfer, Speed, Collisions, and Energy Conversion",
+  "history": [
+    {
+      "id": "en-directions",
+      "type": "directions",
+      "title": "Energy Week",
+      "timestamp": "2026-09-06T04:20:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nEnergy is not a thing you can hold. It is what lets one thing make something else happen. This week you follow it around.\n\n1. Read **Energy Moves**.\n2. Learn the words in **Energy Words**, then win the **Matching** game and the **Memory** game.\n3. Study the **Four Ways Energy Travels** chart.\n4. Sort the cards in **How Did It Travel?**\n5. Practise explaining with **Energy Frames**, then check the rubric.\n6. Take **Energy Check**.\n7. Lock it in with **Remember Where It Went**.\n8. Read **Energy Questions Kids Ask**.\n9. Finish with **Design Challenge: Make Something Happen**.\n\nWatch for one moment this week where energy clearly moved from one thing to another. ⚡",
+        "objectives": [
+          {
+            "id": "en-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "en-glossary"
+          },
+          {
+            "id": "en-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "en-glossary"
+          },
+          {
+            "id": "en-goal-xp",
+            "label": "Earn 30 XP",
+            "kind": "xp",
+            "amount": 30
+          },
+          {
+            "id": "en-goal-spot",
+            "label": "I spotted energy moving from one thing to another and wrote it down",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "4th Grade • 4 goals • watch for energy moving"
+    },
+    {
+      "id": "en-reading",
+      "type": "simplified",
+      "title": "Energy Moves",
+      "timestamp": "2026-09-06T04:20:01.000Z",
+      "data": "## Energy Moves\n\nYou cannot hold **energy** in your hand. You cannot put it in a jar. But you can see what it does.\n\nEnergy is what lets one thing make something else happen. A moving ball knocks over a cup. A hot pan warms the soup. A battery lights a bulb. In each one, something changed, and energy is the reason.\n\n### Faster means more\n\nAnything moving has energy, and how much depends on its **speed**. Roll a ball slowly into a stack of blocks and one block wobbles. Roll the same ball fast and the whole stack scatters.\n\nThe ball did not get heavier. It got faster, and faster means more energy of **motion**. This is why running into someone hurts more than walking into them.\n\n### Energy does not stay put\n\nHere is the important part. Energy can move from one place to another. That move is called a **transfer**, and it happens in four ways you meet every day.\n\n**Sound.** A drum is hit, the drum skin shakes, and the shaking travels through the air. When it reaches your ear, you hear it. If the drum is loud enough you feel it in your chest, because the energy really did travel to you.\n\n**Light.** The Sun is very far away, and its energy still reaches your face. A torch sends energy across a dark room to the wall.\n\n**Heat.** Put a metal spoon in hot soup and the handle warms up. The energy moved along the spoon, from the hot end toward the cool end. It always goes that way, warm to cool, never the other way.\n\n**Electric current.** A wire carries energy from a battery to a bulb. Nothing you can see is moving along the wire, but the energy arrives, and the bulb glows.\n\n### Crashes are transfers\n\nWhen two things **collide**, energy moves between them. A rolling marble hits a still marble, stops, and the still one shoots away. The energy went from the first to the second.\n\nSome of it usually leaks out too. A collision often makes a sound, and the objects can get slightly warmer. That sound and that warmth are energy, leaving in another form.\n\n### It never just vanishes\n\nPeople say energy gets used up. It does not. It **changes** form and it spreads out.\n\nA torch does not destroy the energy in its battery. It turns it into light and a little heat. A bouncing ball ends up still on the floor, and the energy went into sound and warming the ground very slightly.\n\nSo when something stops happening, do not ask where the energy went missing. Ask where it went. There is always an answer.",
+      "meta": "4th Grade • Leveled reading • ~445 words",
+      "imageSlot": "en-img-transfer"
+    },
+    {
+      "id": "en-glossary",
+      "type": "glossary",
+      "title": "Energy Words",
+      "timestamp": "2026-09-06T04:20:02.000Z",
+      "data": [
+        {
+          "term": "Energy",
+          "def": "What lets one thing make something else happen.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Motion",
+          "def": "Movement from one place to another.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Speed",
+          "def": "How fast something is moving.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Transfer",
+          "def": "When energy moves from one place to another.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Collide",
+          "def": "To crash into something else.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Sound",
+          "def": "Energy that travels as shaking you can hear.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Light",
+          "def": "Energy that travels and can be seen.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Heat",
+          "def": "Energy that moves from a warmer thing to a cooler one.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Current",
+          "def": "Energy carried along a wire.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Change",
+          "def": "When energy turns from one form into another.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, good for games"
+    },
+    {
+      "id": "en-anchor",
+      "type": "anchor-chart",
+      "title": "Four Ways Energy Travels",
+      "timestamp": "2026-09-06T04:20:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "HOW ENERGY GETS FROM HERE TO THERE",
+        "sections": [
+          {
+            "label": "SOUND",
+            "bullets": [
+              "Something shakes",
+              "The shaking travels through air",
+              "A loud drum you feel in your chest"
+            ],
+            "iconPrompt": "a drum with curved ripple lines spreading outward from its skin"
+          },
+          {
+            "label": "LIGHT",
+            "bullets": [
+              "Travels in straight lines",
+              "Crosses empty space",
+              "The Sun reaches your face"
+            ],
+            "iconPrompt": "a torch with straight beam lines reaching a flat wall"
+          },
+          {
+            "label": "HEAT",
+            "bullets": [
+              "Warm to cool, always",
+              "Never cool to warm",
+              "A spoon handle warming in soup"
+            ],
+            "iconPrompt": "a spoon in a bowl with small arrows moving up the handle"
+          },
+          {
+            "label": "ELECTRIC CURRENT",
+            "bullets": [
+              "Carried along a wire",
+              "You cannot see it move",
+              "A battery lighting a bulb"
+            ],
+            "iconPrompt": "a battery joined by two wires to a small round bulb"
+          },
+          {
+            "label": "AND REMEMBER",
+            "bullets": [
+              "Faster means more energy",
+              "Crashes move energy between things",
+              "It changes form, it never vanishes"
+            ],
+            "iconPrompt": "two marbles touching, one still and one with motion lines behind it"
+          }
+        ]
+      },
+      "meta": "5 parts • four ways to travel, plus the rule underneath"
+    },
+    {
+      "id": "en-memory",
+      "type": "memory-aid",
+      "title": "Remember Where It Went",
+      "timestamp": "2026-09-06T04:20:04.000Z",
+      "meta": "4th Grade • 2 memory aids • the four ways, and the never-vanishes rule",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Where It Went",
+        "instructions": "Two cards hold the ideas you will use all week. Read the example, then make one of your own and say why it works.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": true,
+        "sourceExcerpt": "People say energy gets used up. It does not. It changes form and it spreads out. A torch does not destroy the energy in its battery. It turns it into light and a little heat.",
+        "lessonRef": {
+          "resourceId": "en-reading",
+          "title": "Energy Moves"
+        },
+        "cards": [
+          {
+            "id": "en-ma-four-ways",
+            "target": "The four ways energy travels from place to place",
+            "essentialFacts": [
+              "Sound travels as shaking through the air.",
+              "Light travels in straight lines and crosses empty space.",
+              "Heat moves from a warmer thing to a cooler one.",
+              "An electric current carries energy along a wire."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture one room with four things in it. A drum on the floor. A lamp on the table. A mug of tea beside it. A plug in the wall. Sound, light, heat, current. One room holds all four ways.",
+            "mapping": "One picture instead of a list of four, and each object is something you have actually stood next to, so recalling the room recalls the four.",
+            "scaffoldStarter": "In my room, ____ shows ____ because ____.",
+            "scaffoldSteps": [
+              "Picture a room you know well.",
+              "Find one object for each of the four ways.",
+              "Say what is transferring energy in each one."
+            ],
+            "coachPrompts": [
+              "Which of the four is hardest to spot in your room?"
+            ],
+            "studentPrompt": "Build your own room with all four ways in it.",
+            "reasoningPrompt": "Could one object show two ways at once? Give an example.",
+            "hookFact": {
+              "text": "If the drum is loud enough you feel it in your chest, because the energy really did travel to you.",
+              "sourceTitle": "Energy Moves (this lesson)"
+            }
+          },
+          {
+            "id": "en-ma-where-went",
+            "target": "Energy never vanishes, so always ask where it went",
+            "essentialFacts": [
+              "Energy changes form and spreads out.",
+              "A torch turns battery energy into light and a little heat.",
+              "A collision often makes sound and a little warmth."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Ask two questions in this order, every time. WHERE FROM? WHERE TO? The ball stopped rolling. Where from: the ball moving. Where to: sound and a slightly warmer floor.",
+            "mapping": "Two questions in a fixed order turn a vague thought into a trail you can actually follow, and the second one stops you from saying the energy just disappeared.",
+            "scaffoldStarter": "Where from: ____. Where to: ____.",
+            "scaffoldSteps": [
+              "Name something that stopped or changed.",
+              "Ask where the energy came from.",
+              "Ask where it went, and name a form."
+            ],
+            "coachPrompts": [
+              "You said it stopped. Where did the energy go?"
+            ],
+            "studentPrompt": "Make your own two questions for following energy.",
+            "reasoningPrompt": "Why is saying it was used up not a real answer?",
+            "hookFact": {
+              "text": "So when something stops happening, do not ask where the energy went missing. Ask where it went.",
+              "sourceTitle": "Energy Moves (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "en-sort",
+      "type": "concept-sort",
+      "title": "How Did It Travel?",
+      "timestamp": "2026-09-06T04:20:05.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "en-sound",
+            "label": "It travelled as SOUND",
+            "color": "bg-violet-500"
+          },
+          {
+            "id": "en-light",
+            "label": "It travelled as LIGHT",
+            "color": "bg-amber-500"
+          },
+          {
+            "id": "en-heat",
+            "label": "It travelled as HEAT",
+            "color": "bg-rose-500"
+          },
+          {
+            "id": "en-current",
+            "label": "It travelled as an ELECTRIC CURRENT",
+            "color": "bg-sky-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "ens1",
+            "content": "A drum is hit and you feel it in your chest",
+            "categoryId": "en-sound"
+          },
+          {
+            "id": "ens2",
+            "content": "A shout reaches you from across the field",
+            "categoryId": "en-sound"
+          },
+          {
+            "id": "ens3",
+            "content": "A guitar string is plucked and you hear a note",
+            "categoryId": "en-sound"
+          },
+          {
+            "id": "ens4",
+            "content": "A torch beam reaches the far wall of a dark room",
+            "categoryId": "en-light"
+          },
+          {
+            "id": "ens5",
+            "content": "Sunlight reaches the leaves of a plant on the windowsill",
+            "categoryId": "en-light"
+          },
+          {
+            "id": "ens6",
+            "content": "A lamp is switched on and you can see the whole room",
+            "categoryId": "en-light"
+          },
+          {
+            "id": "ens7",
+            "content": "A metal spoon left in hot soup gets warm to hold",
+            "categoryId": "en-heat"
+          },
+          {
+            "id": "ens8",
+            "content": "A radiator makes the air in a cold room warmer",
+            "categoryId": "en-heat"
+          },
+          {
+            "id": "ens9",
+            "content": "Cold hands warm up wrapped around a hot mug",
+            "categoryId": "en-heat"
+          },
+          {
+            "id": "ens10",
+            "content": "A wire carries energy from a battery to a bulb",
+            "categoryId": "en-current"
+          },
+          {
+            "id": "ens11",
+            "content": "A cable carries energy from the wall to a kettle",
+            "categoryId": "en-current"
+          },
+          {
+            "id": "ens12",
+            "content": "A charger cord carries energy to a flat tablet",
+            "categoryId": "en-current"
+          }
+        ]
+      },
+      "meta": "4 buckets • 12 cards • each card names only one journey, on purpose"
+    },
+    {
+      "id": "en-frames",
+      "type": "sentence-frames",
+      "title": "Energy Frames",
+      "timestamp": "2026-09-06T04:20:06.000Z",
+      "meta": "6 frames • say them out loud before writing • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The energy started in ____ and ended up in ____."
+          },
+          {
+            "text": "It travelled as ____, and I know because ____."
+          },
+          {
+            "text": "When ____ moved faster, ____ happened, which shows it had more energy."
+          },
+          {
+            "text": "When ____ and ____ collided, the energy moved from ____ to ____."
+          },
+          {
+            "text": "Some energy also left as ____, which is why ____."
+          },
+          {
+            "text": "It did not get used up. It changed into ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Explaining |\n|---|---|---|---|\n| Following the energy | Says something happened | Names where the energy started | Names where it started AND where it ended up |\n| Naming the way | Not named | Names sound, light, heat or current | Names it and gives the observation that shows it |\n| Nothing vanishes | Says the energy was used up | Says it changed | Names the new form, including energy that left as sound or warmth |"
+      }
+    },
+    {
+      "id": "en-quiz",
+      "type": "quiz",
+      "title": "Energy Check",
+      "timestamp": "2026-09-06T04:20:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "You roll the same ball faster into a stack of blocks. What happens, and why?",
+            "options": [
+              "The stack scatters more, because faster means more energy",
+              "The stack scatters more, because the ball became heavier",
+              "The stack barely moves, because speed does not affect energy",
+              "The stack moves the same amount, because it is the same ball"
+            ],
+            "correctAnswer": "The stack scatters more, because faster means more energy",
+            "conceptLabel": "speed and energy"
+          },
+          {
+            "type": "mcq",
+            "question": "A metal spoon in hot soup gets warm. Which way did the energy travel?",
+            "options": [
+              "From the cool handle down into the hot soup",
+              "From the hot soup up along the spoon to the handle",
+              "It did not travel; the handle made its own heat",
+              "It travelled as light along the shiny metal"
+            ],
+            "correctAnswer": "From the hot soup up along the spoon to the handle",
+            "conceptLabel": "heat transfer"
+          },
+          {
+            "type": "mcq",
+            "question": "Which way does heat always move?",
+            "options": [
+              "From a cooler thing to a warmer thing",
+              "Toward whichever thing is bigger",
+              "From a warmer thing to a cooler thing",
+              "Downward, because heat is heavy"
+            ],
+            "correctAnswer": "From a warmer thing to a cooler thing",
+            "conceptLabel": "heat transfer"
+          },
+          {
+            "type": "mcq",
+            "question": "A rolling marble hits a still marble and stops. What happened to its energy?",
+            "options": [
+              "It was destroyed the moment the marble stopped",
+              "It stayed inside the first marble but went quiet",
+              "It turned into extra weight in the second marble",
+              "It transferred to the second marble, which moved away"
+            ],
+            "correctAnswer": "It transferred to the second marble, which moved away",
+            "conceptLabel": "collisions"
+          },
+          {
+            "type": "mcq",
+            "question": "A bouncing ball finally lies still on the floor. What is the best explanation?",
+            "options": [
+              "The energy changed into sound and slight warming",
+              "The energy was used up completely and is now gone",
+              "The energy sank down into the ground and stopped there",
+              "The ball never really had any energy to begin with"
+            ],
+            "correctAnswer": "The energy changed into sound and slight warming",
+            "conceptLabel": "energy never vanishes"
+          },
+          {
+            "type": "mcq",
+            "question": "What does a torch actually do with the energy from its battery?",
+            "options": [
+              "It destroys that energy in order to make brightness",
+              "It changes that energy into light and a little heat",
+              "It stores the energy up until the battery is empty",
+              "It moves the energy into the air around the torch"
+            ],
+            "correctAnswer": "It changes that energy into light and a little heat",
+            "conceptLabel": "energy never vanishes"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "You clap your hands. Follow the energy: where did it start, and where did it end up?",
+            "expectedAnswer": "It started as the energy of your hands moving. When they collided it transferred, and most of it left as sound travelling through the air to people's ears. A little also made your hands slightly warmer. None of it was destroyed.",
+            "conceptLabel": "energy never vanishes"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A friend says a battery gets used up because the energy inside it is destroyed. What would you tell them?",
+            "expectedAnswer": "Energy is not destroyed. The battery ran down because its energy was changed into other forms and moved away, such as light and heat from a bulb. The battery is empty because the energy left, not because it stopped existing.",
+            "conceptLabel": "energy never vanishes"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which of the four ways is hardest for you to notice in real life?"
+          },
+          {
+            "text": "Where did you spot energy moving this week?"
+          }
+        ]
+      },
+      "meta": "6 picks + 2 explain • the used-up misconception is tested twice on purpose"
+    },
+    {
+      "id": "en-faq",
+      "type": "faq",
+      "title": "Energy Questions Kids Ask",
+      "timestamp": "2026-09-06T04:20:08.000Z",
+      "data": [
+        {
+          "question": "If energy never vanishes, why do batteries go flat? 🔋",
+          "answer": "Because the energy left the battery. It went out as light, sound and heat, and spread into the room. It still exists, but it is now spread out so thinly that nothing can use it again."
+        },
+        {
+          "question": "Is energy a thing or an idea? 🤔",
+          "answer": "A bit of both, and scientists argue about how to say it. It is not stuff you can collect in a bucket. It is more like an amount that things have, and the useful part is that the amount can be tracked as it moves."
+        },
+        {
+          "question": "Can energy travel through empty space?",
+          "answer": "Light can, which is how sunlight crosses space to reach us. Sound cannot, because sound needs something to shake. Space is silent."
+        },
+        {
+          "question": "Where does the energy in food come from? 🌱",
+          "answer": "From the Sun, by a longer path than you might expect. Plants capture sunlight, animals eat plants, and we eat both. Almost all the energy in your lunch started as sunlight."
+        },
+        {
+          "question": "Does a still object have any energy at all?",
+          "answer": "It has no energy of motion, since it is not moving. But it can still hold energy in other ways, such as a stretched rubber band or a book resting on a high shelf. Let either one go and you will see it."
+        },
+        {
+          "question": "Why do my hands warm up when I rub them? 🙌",
+          "answer": "You are moving them, and rubbing turns some of that motion into heat. It is the same reason a slide feels warm after you go down it fast."
+        }
+      ],
+      "meta": "6 questions • one admits scientists argue about how to describe energy"
+    },
+    {
+      "id": "en-challenge",
+      "type": "applied-challenge",
+      "title": "Design Challenge: Make Something Happen",
+      "timestamp": "2026-09-06T04:20:09.000Z",
+      "meta": "4th Grade • Design brief • build a device that changes energy from one form to another",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Make Something Happen",
+        "instructions": "Build something that takes energy in one form and turns it into another. Test it, improve it once, and trace where the energy goes.",
+        "selectionMode": "manual",
+        "family": "design",
+        "fitReason": "Energy conversion stays abstract until a student builds a thing that does it and has to say what became what. Requiring one round of improvement is what makes it engineering rather than craft, and tracing the leaks is where the never-vanishes rule stops being a slogan.",
+        "agencyMode": "co-framed",
+        "scope": "compact",
+        "brief": {
+          "family": "design",
+          "context": "You will have simple materials: card, string, tape, rubber bands, marbles, paper cups, straws, a torch, a small ramp. Your teacher may add batteries, wires and bulbs. Everything must be safe to hold and drop.",
+          "role": "Energy engineers",
+          "audience": "The class, who will try each device and try to say what turned into what",
+          "drivingQuestion": "What went in, what came out, and where did the rest of it go?",
+          "seedDirection": "Start with motion, because it is the easiest form to make and the easiest to see. A ramp and a marble is enough to begin.",
+          "lockedLessonFacts": [
+            "Faster means more energy of motion.",
+            "Energy transfers by sound, light, heat and electric currents.",
+            "When two things collide, energy moves between them.",
+            "Energy changes form and spreads out; it never just vanishes."
+          ],
+          "openQuestions": [
+            "What happened when you made the starting motion faster?",
+            "Where did energy leak out that you did not plan for?",
+            "Could someone watching tell what turned into what, without you explaining?"
+          ],
+          "stakeholders": [
+            "A classmate who has to work out how your device runs",
+            "Your partner, who tests it while you watch",
+            "A younger student who might build it next year"
+          ],
+          "criteria": [
+            "Your device turns energy from one form into another",
+            "You name what went in and what came out",
+            "You test it twice, change one thing, and say what happened",
+            "You name one place energy leaked out, such as sound or warmth"
+          ],
+          "constraints": [
+            "Nothing that could hurt anyone if it went wrong",
+            "It has to fit on a desk",
+            "Change only one thing between the two tests"
+          ],
+          "deliverable": "Your working device, plus a short card showing what went in, what came out, one place energy leaked, and what changed between your two tests.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student built a ramp so a marble rolled down and knocked a paper cup off the desk edge.",
+            "move": "The first run barely nudged the cup. He raised the ramp so the marble arrived faster, and the second run sent the cup flying. On his card he wrote that motion went in, motion came out, and some energy left as the click he could hear at the moment of the hit.",
+            "whyItHelps": "Changing only the ramp height meant he could say exactly why the second run worked better. Noticing the click is what showed he understood that leaks are energy too, not just noise."
+          },
+          "frameStarter": "My device takes ____ and turns it into ____. Some energy leaked out as ____.",
+          "frameChoices": [
+            "Start with a rolling marble",
+            "Start with a stretched rubber band",
+            "Start with a falling weight",
+            "Start with a battery and wire"
+          ],
+          "coachPrompts": [
+            "What form went in, and what form came out?",
+            "What did you hear or feel that you did not plan for?",
+            "What is the one thing you changed between your two tests?"
+          ]
+        },
+        "coachHint": "One form in, another form out, and name one leak.",
+        "sourceExcerpt": "A collision often makes a sound, and the objects can get slightly warmer. That sound and that warmth are energy, leaving in another form.",
+        "lessonRef": {
+          "resourceId": "en-reading",
+          "title": "Energy Moves"
+        }
+      }
+    }
+  ]
+}

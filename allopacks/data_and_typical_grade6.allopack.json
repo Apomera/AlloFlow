@@ -1,0 +1,715 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "What Counts as Typical — Reading Data Honestly",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "6th Grade",
+    "standards": "CCSS.MATH.CONTENT.6.SP.A.1 (recognize a statistical question as one that anticipates variability in the data and accounts for it in the answers); CCSS.MATH.CONTENT.6.SP.A.2 (understand that a set of data collected to answer a statistical question has a distribution which can be described by its center, spread, and overall shape); CCSS.MATH.CONTENT.6.SP.A.3 (recognize that a measure of center summarizes all of its values with a single number, while a measure of variation describes how its values vary); CCSS.MATH.CONTENT.6.SP.B.5 (summarize numerical data sets in relation to their context)",
+    "createdAt": "2026-09-06T04:10:00.000Z",
+    "imageShotList": "allopacks/data_and_typical_grade6.IMAGES.md"
+  },
+  "sourceTopic": "Statistical Questions, Center, Spread, and What a Single Number Hides",
+  "history": [
+    {
+      "id": "dg-directions",
+      "type": "directions",
+      "title": "Data Week",
+      "timestamp": "2026-09-06T04:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nOne number can summarise a hundred people. That is useful, and it is also how a lot of people get misled. This week you learn to do both jobs: find the summary, and ask what it is hiding.\n\n1. Read **What Counts as Typical**.\n2. Learn the words in **Data Words**, then win the **Matching** game and the **Memory** game.\n3. Work through **From Question to Answer** to see the shape of the process.\n4. Study the **Centre and Spread** chart.\n5. Sort the cards in **Statistical Question or Not?**\n6. Work through **Typical Problems**. Write the data in order first, every time.\n7. Take **Data Check**.\n8. Lock it in with **Remember Centre and Spread**.\n9. Read **Data Questions People Ask**.\n10. Finish with **Investigation: The Number That Hides Something**.\n\nBring one real statistic you have seen — on a poster, a packet or a screen. 📊",
+        "objectives": [
+          {
+            "id": "dg-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "dg-glossary"
+          },
+          {
+            "id": "dg-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "dg-glossary"
+          },
+          {
+            "id": "dg-goal-xp",
+            "label": "Earn 35 XP",
+            "kind": "xp",
+            "amount": 35
+          },
+          {
+            "id": "dg-goal-stat",
+            "label": "I brought a real statistic and worked out what it does not tell me",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "6th Grade • 4 goals • bring a real statistic you have seen"
+    },
+    {
+      "id": "dg-reading",
+      "type": "simplified",
+      "title": "What Counts as Typical",
+      "timestamp": "2026-09-06T04:10:01.000Z",
+      "data": "## What Counts as Typical\n\nSome questions have one answer. Some questions have a pile of answers. Statistics is about the second kind.\n\n\"How tall am I?\" has one answer. Measure once and you are finished. \"How tall are the students in my class?\" is different. Ask thirty people and you get thirty numbers, most of them different. A question like that is a **statistical** question, and the giveaway is that you expect the answers to vary before you even start collecting them.\n\nThat pile of answers is called a **data** set, and staring at thirty numbers tells you almost nothing. So we summarise. Two questions do most of the work: **where is the middle, and how spread out are they?**\n\n### Two ways to say middle\n\nThe **mean** is what most people call the average. Add every value, divide by how many there are. It uses every single number, which is its strength.\n\nThe **median** is the value in the middle once you put them in order. Half the values sit above it and half below. With an even count there are two middle numbers, so you take the mean of those two.\n\nMost of the time these two land close together. When they do not, something interesting is going on.\n\n### The number that ruins the average\n\nLook at this set: 4, 5, 6, 7, 100.\n\nThe median is 6, which describes four of the five values well. The mean is 24.4 — a number larger than four of the five things it is supposed to summarise. Nobody in that group is anywhere near 24.4.\n\nThe 100 is an **outlier**: a value far from the rest. Because the mean uses every number, one extreme value drags it. The median barely notices, because moving one value from 100 to 1,000 does not change which number sits in the middle.\n\nSo neither one is the right answer in general. The mean is the better summary when the values are fairly even. The median is more honest when a few extremes would distort the picture. Anyone reporting an average without saying which one they used has left something out.\n\n### One number is never the whole story\n\nHere are two groups, and both have a mean of 50:\n\n- 49, 50, 50, 51\n- 5, 20, 80, 95\n\nThe same centre, and nothing else in common. What separates them is **spread**, how far the values sit from each other. The simplest measure is the **range**, the largest value minus the smallest: 2 for the first group and 90 for the second.\n\nThis is why a single number can mislead without anybody lying. Report only the centre and you have hidden whether the group is tightly packed or scattered everywhere.\n\nSo when you meet a statistic, ask three things. What exactly was measured? Which middle is this? And what was the spread?",
+      "meta": "6th Grade • Leveled reading • ~450 words",
+      "imageSlot": "dg-img-outlier"
+    },
+    {
+      "id": "dg-glossary",
+      "type": "glossary",
+      "title": "Data Words",
+      "timestamp": "2026-09-06T04:10:02.000Z",
+      "data": [
+        {
+          "term": "Data",
+          "def": "The collected values that answer a question.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Statistical",
+          "def": "Describing a question whose answers you expect to vary.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mean",
+          "def": "Add every value, then divide by how many there are.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Median",
+          "def": "The middle value once the data is in order.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mode",
+          "def": "The value that appears most often in a set.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Range",
+          "def": "The largest value minus the smallest.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Outlier",
+          "def": "A value that sits far away from the rest.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Spread",
+          "def": "How far apart the values are from each other.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Centre",
+          "def": "A single value used to stand for the whole set.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Sample",
+          "def": "The part of a group you actually measured.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Typical",
+          "def": "Close to what most of the group looks like.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "11 terms • Tiered • mean and median are the pair people confuse"
+    },
+    {
+      "id": "dg-outline",
+      "type": "outline",
+      "title": "From Question to Answer",
+      "timestamp": "2026-09-06T04:10:03.000Z",
+      "data": {
+        "main": "A statistic is a summary, and every summary leaves something out",
+        "branches": [
+          {
+            "title": "It starts with the right kind of question",
+            "items": [
+              "A statistical question expects the answers to vary",
+              "How tall am I? is not one. How tall are the students in my class? is",
+              "If you can answer it by measuring once, it is not statistical"
+            ]
+          },
+          {
+            "title": "Collecting gives you a pile of numbers",
+            "items": [
+              "The pile itself tells you almost nothing",
+              "Put it in order before doing anything else",
+              "The order is what makes the middle findable"
+            ]
+          },
+          {
+            "title": "Two ways to say middle",
+            "items": [
+              "Mean: add them all, divide by how many",
+              "Median: the middle value in order, or the mean of the two middles",
+              "Usually close together; when they are not, look closer"
+            ]
+          },
+          {
+            "title": "Outliers pull one and not the other",
+            "items": [
+              "The mean uses every value, so an extreme drags it",
+              "The median only cares which value sits in the middle",
+              "4, 5, 6, 7, 100 has a median of 6 and a mean of 24.4"
+            ]
+          },
+          {
+            "title": "Centre alone is not enough",
+            "items": [
+              "49, 50, 50, 51 and 5, 20, 80, 95 share a mean of 50",
+              "Spread is what separates them",
+              "Range is the simplest measure: largest minus smallest"
+            ]
+          },
+          {
+            "title": "Three questions for any statistic you meet",
+            "items": [
+              "What exactly was measured?",
+              "Which middle is this, and who chose it?",
+              "What was the spread?"
+            ]
+          }
+        ]
+      },
+      "meta": "6 branches • the process, and where it can mislead"
+    },
+    {
+      "id": "dg-anchor",
+      "type": "anchor-chart",
+      "title": "Centre and Spread",
+      "timestamp": "2026-09-06T04:10:04.000Z",
+      "data": {
+        "chartType": "comparison",
+        "title": "SUMMARISING A PILE OF NUMBERS",
+        "sections": [
+          {
+            "label": "MEAN",
+            "bullets": [
+              "Add all, divide by how many",
+              "Uses every value",
+              "One extreme drags it"
+            ],
+            "iconPrompt": "a balance beam with equal weights spread along it and one heavy weight at the far end tipping it"
+          },
+          {
+            "label": "MEDIAN",
+            "bullets": [
+              "Put them in order first",
+              "Take the middle one",
+              "Even count: mean of the two middles"
+            ],
+            "iconPrompt": "a row of dots of increasing size with the centre dot circled"
+          },
+          {
+            "label": "SPREAD",
+            "bullets": [
+              "How far apart the values sit",
+              "Range: largest minus smallest",
+              "Same centre can hide very different spreads"
+            ],
+            "iconPrompt": "two horizontal number lines, one with dots clustered tightly and one with dots scattered wide"
+          },
+          {
+            "label": "ASK EVERY TIME",
+            "bullets": [
+              "What exactly was measured?",
+              "Which middle is this?",
+              "What was the spread?"
+            ],
+            "iconPrompt": "three stacked question marks beside a small bar chart"
+          }
+        ]
+      },
+      "meta": "4 parts • the three questions are the part to keep"
+    },
+    {
+      "id": "dg-memory",
+      "type": "memory-aid",
+      "title": "Remember Centre and Spread",
+      "timestamp": "2026-09-06T04:10:05.000Z",
+      "meta": "6th Grade • 2 memory aids • which middle, and what one number hides",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember Centre and Spread",
+        "instructions": "Two cards carry the moves you will use on every data set. Read the example, build your own, then explain why yours works.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "visual-association",
+          "sequence-cue"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "standard",
+        "reasoningRequired": true,
+        "sourceExcerpt": "The mean uses every single number, which is its strength. The median barely notices, because moving one value from 100 to 1,000 does not change which number sits in the middle.",
+        "lessonRef": {
+          "resourceId": "dg-reading",
+          "title": "What Counts as Typical"
+        },
+        "cards": [
+          {
+            "id": "dg-ma-seesaw",
+            "target": "Why an outlier drags the mean but not the median",
+            "essentialFacts": [
+              "The mean uses every value, so one extreme value pulls it.",
+              "The median only depends on which value sits in the middle.",
+              "In 4, 5, 6, 7, 100 the median is 6 and the mean is 24.4."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a seesaw with the values as weights along the plank. The mean is where you would put the pivot to balance it, so a heavy weight far out at one end forces the pivot to slide toward it. The median is just the person standing in the middle of the queue, and they do not move no matter how far away the last person walks.",
+            "mapping": "Two different physical pictures for two different definitions. The seesaw shows why distance matters to the mean, and the queue shows why only position matters to the median.",
+            "scaffoldStarter": "The outlier moves the ____ because ____, but not the ____ because ____.",
+            "scaffoldSteps": [
+              "Draw the values as weights on a plank.",
+              "Move one weight much further out.",
+              "Say what happened to the balance point and to the middle of the queue."
+            ],
+            "coachPrompts": [
+              "If that far value doubled, which summary would change?"
+            ],
+            "studentPrompt": "Make your own picture for why one summary moves and the other does not.",
+            "reasoningPrompt": "Does that mean the median is always the better summary? Argue it.",
+            "hookFact": {
+              "text": "The mean is 24.4, a number larger than four of the five things it is supposed to summarise.",
+              "sourceTitle": "What Counts as Typical (this lesson)"
+            }
+          },
+          {
+            "id": "dg-ma-three-questions",
+            "target": "The three questions to ask about any statistic",
+            "essentialFacts": [
+              "Ask what exactly was measured.",
+              "Ask which middle is being reported.",
+              "Ask what the spread was."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Three beats, in this order. WHAT. WHICH. HOW WIDE. What was measured, which middle is this, how wide was the spread. The order matters, because the first question sometimes ends the conversation on its own.",
+            "mapping": "Three short prompts that fit in your head while someone is still talking, so you can check a claim in real time rather than afterwards.",
+            "scaffoldStarter": "What: ____. Which: ____. How wide: ____.",
+            "scaffoldSteps": [
+              "Say the three beats out loud.",
+              "Try them on a statistic from an advert.",
+              "Note which question the statistic failed to answer."
+            ],
+            "coachPrompts": [
+              "Which of the three did that claim not tell you?"
+            ],
+            "studentPrompt": "Make your own three-step check for a statistic.",
+            "reasoningPrompt": "Why is what was measured the first question rather than the last?",
+            "hookFact": {
+              "text": "This is why a single number can mislead without anybody lying.",
+              "sourceTitle": "What Counts as Typical (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "dg-sort",
+      "type": "concept-sort",
+      "title": "Statistical Question or Not?",
+      "timestamp": "2026-09-06T04:10:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "dg-stat",
+            "label": "STATISTICAL — the answers will vary",
+            "color": "bg-indigo-500"
+          },
+          {
+            "id": "dg-not",
+            "label": "NOT STATISTICAL — one measurement settles it",
+            "color": "bg-slate-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "dgs1",
+            "content": "How tall are the students in my class?",
+            "categoryId": "dg-stat"
+          },
+          {
+            "id": "dgs2",
+            "content": "How many hours of sleep do sixth graders in this school get on a school night?",
+            "categoryId": "dg-stat"
+          },
+          {
+            "id": "dgs3",
+            "content": "How long do people wait at this bus stop?",
+            "categoryId": "dg-stat"
+          },
+          {
+            "id": "dgs4",
+            "content": "What do the paperbacks in this shop cost?",
+            "categoryId": "dg-stat"
+          },
+          {
+            "id": "dgs5",
+            "content": "How many pets do the families on my street have?",
+            "categoryId": "dg-stat"
+          },
+          {
+            "id": "dgs6",
+            "content": "How tall am I?",
+            "categoryId": "dg-not"
+          },
+          {
+            "id": "dgs7",
+            "content": "How many students are in my class today?",
+            "categoryId": "dg-not"
+          },
+          {
+            "id": "dgs8",
+            "content": "What time is the first bus scheduled to leave?",
+            "categoryId": "dg-not"
+          },
+          {
+            "id": "dgs9",
+            "content": "What did I score on yesterday's test?",
+            "categoryId": "dg-not"
+          },
+          {
+            "id": "dgs10",
+            "content": "How much does this particular paperback cost?",
+            "categoryId": "dg-not"
+          }
+        ]
+      },
+      "meta": "2 buckets • 10 cards • four pairs differ only by one word, on purpose"
+    },
+    {
+      "id": "dg-math",
+      "type": "math",
+      "title": "Typical Problems",
+      "timestamp": "2026-09-06T04:10:07.000Z",
+      "data": {
+        "problems": [
+          {
+            "question": "Find the mean of 2, 3, 3, 4, 8.",
+            "answer": "4",
+            "steps": [
+              {
+                "explanation": "Add every value: 2 + 3 + 3 + 4 + 8 = 20."
+              },
+              {
+                "explanation": "Count how many values there are. There are 5."
+              },
+              {
+                "explanation": "Divide: 20 divided by 5 is 4. The mean is 4."
+              }
+            ]
+          },
+          {
+            "question": "Find the median of 2, 3, 3, 4, 8.",
+            "answer": "3",
+            "steps": [
+              {
+                "explanation": "Check the order first. These are already smallest to largest."
+              },
+              {
+                "explanation": "There are 5 values, so the middle one is the 3rd."
+              },
+              {
+                "explanation": "The 3rd value is 3. The median is 3, which is lower than the mean of 4."
+              }
+            ]
+          },
+          {
+            "question": "Find the median of 3, 5, 8, 10.",
+            "answer": "6.5",
+            "steps": [
+              {
+                "explanation": "The values are in order, and there are 4 of them, which is even."
+              },
+              {
+                "explanation": "With an even count there are two middle values: 5 and 8."
+              },
+              {
+                "explanation": "Take the mean of those two: 5 + 8 = 13, and 13 divided by 2 is 6.5."
+              }
+            ]
+          },
+          {
+            "question": "Find the mean and the median of 4, 5, 6, 7, 100. Which one describes this group better, and why?",
+            "answer": "Mean 24.4, median 6; the median describes it better",
+            "steps": [
+              {
+                "explanation": "Mean: 4 + 5 + 6 + 7 + 100 = 122, and 122 divided by 5 is 24.4."
+              },
+              {
+                "explanation": "Median: there are 5 values in order, so the middle is the 3rd, which is 6."
+              },
+              {
+                "explanation": "The median is better here. The mean of 24.4 is larger than four of the five values, because the outlier of 100 drags it upward."
+              }
+            ]
+          },
+          {
+            "question": "Find the range of 12, 15, 9, 20, 11.",
+            "answer": "11",
+            "steps": [
+              {
+                "explanation": "Find the largest value. It is 20."
+              },
+              {
+                "explanation": "Find the smallest value. It is 9."
+              },
+              {
+                "explanation": "Subtract: 20 minus 9 is 11. The range is 11."
+              }
+            ]
+          },
+          {
+            "question": "Five friends have heights of 150, 152, 155, 158 and 160 centimetres. Find the mean and the median.",
+            "answer": "Both are 155 centimetres",
+            "steps": [
+              {
+                "explanation": "Add them: 150 + 152 + 155 + 158 + 160 = 775."
+              },
+              {
+                "explanation": "Divide by 5: 775 divided by 5 is 155, so the mean is 155."
+              },
+              {
+                "explanation": "The middle of 5 ordered values is the 3rd, which is 155. Mean and median agree here because there is no outlier pulling the mean."
+              }
+            ]
+          }
+        ]
+      },
+      "meta": "6 problems • order the data first, every time"
+    },
+    {
+      "id": "dg-quiz",
+      "type": "quiz",
+      "title": "Data Check",
+      "timestamp": "2026-09-06T04:10:08.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "Which of these is a statistical question?",
+            "options": [
+              "How long do people wait at this particular bus stop?",
+              "What time is the first bus scheduled to leave?",
+              "How many students came to class this morning?",
+              "What score did I get on yesterday's spelling test?"
+            ],
+            "correctAnswer": "How long do people wait at this particular bus stop?",
+            "conceptLabel": "statistical questions"
+          },
+          {
+            "type": "mcq",
+            "question": "What makes a question statistical?",
+            "options": [
+              "The answer has to be worked out with a calculator",
+              "You expect the answers to vary before you collect them",
+              "It asks about a large number of people at once",
+              "The answer will always be a decimal rather than a whole number"
+            ],
+            "correctAnswer": "You expect the answers to vary before you collect them",
+            "conceptLabel": "statistical questions"
+          },
+          {
+            "type": "mcq",
+            "question": "What is the median of 3, 5, 8, 10?",
+            "options": [
+              "There is no median because the count is even",
+              "It is 8, the larger of the two middle values",
+              "The middle values are 5 and 8, so it is 6.5",
+              "It is 6.5, the same as the mean of the whole set"
+            ],
+            "correctAnswer": "The middle values are 5 and 8, so it is 6.5",
+            "conceptLabel": "finding the median"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does an outlier move the mean much more than the median?",
+            "options": [
+              "The mean is always larger than the median in any data set",
+              "The median is worked out before the outlier is added in",
+              "Outliers are removed from the median but not from the mean",
+              "The mean uses every value, so distance matters to it"
+            ],
+            "correctAnswer": "The mean uses every value, so distance matters to it",
+            "conceptLabel": "outliers"
+          },
+          {
+            "type": "mcq",
+            "question": "Two groups both have a mean of 50. What does that tell you about how spread out they are?",
+            "options": [
+              "Nothing at all, because centre says nothing about spread",
+              "Both groups must be spread out in much the same way",
+              "The first group listed must be the more tightly packed one",
+              "Both groups must contain a value equal to exactly 50"
+            ],
+            "correctAnswer": "Nothing at all, because centre says nothing about spread",
+            "conceptLabel": "centre and spread"
+          },
+          {
+            "type": "mcq",
+            "question": "A shop reports that the average price of its paperbacks is high, and most of its paperbacks are cheap. What most likely explains this?",
+            "options": [
+              "The shop must have made an arithmetic mistake somewhere",
+              "A few very expensive books are dragging the mean upward",
+              "The median must be higher than the mean in that shop",
+              "Averages cannot be worked out for prices, only for counts"
+            ],
+            "correctAnswer": "A few very expensive books are dragging the mean upward",
+            "conceptLabel": "outliers"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "The set 4, 5, 6, 7, 100 has a mean of 24.4 and a median of 6. Explain to someone who has not read this lesson why the two numbers are so far apart.",
+            "expectedAnswer": "The mean adds every value and divides, so the 100 contributes as much as everything else and pulls the result far upward. The median only asks which value sits in the middle once the set is in order, and that is 6 regardless of how large the last value is. The gap between them is a signal that an extreme value is present.",
+            "conceptLabel": "outliers"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Someone tells you the average wait at a bus stop is eight minutes. What are the three questions you should ask, and why does each one matter?",
+            "expectedAnswer": "What exactly was measured, because waits at rush hour and waits at midnight are different populations. Which middle is this, because a mean and a median can differ a lot if some waits were very long. And what was the spread, because an average of eight minutes could mean everyone waits about eight, or that half wait two and half wait fourteen.",
+            "conceptLabel": "the three questions"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where have you seen an average reported without any mention of spread?"
+          },
+          {
+            "text": "Has a statistic ever changed your mind about something? Should it have?"
+          }
+        ]
+      },
+      "meta": "6 picks + 2 explain • every distractor is a real student misconception"
+    },
+    {
+      "id": "dg-faq",
+      "type": "faq",
+      "title": "Data Questions People Ask",
+      "timestamp": "2026-09-06T04:10:09.000Z",
+      "data": [
+        {
+          "question": "Is the average the same thing as the mean? 🤔",
+          "answer": "In everyday speech people say average and mean the mean. In maths, average is a loose word that can cover the mean, the median or the mode. That is exactly why saying which one you used matters."
+        },
+        {
+          "question": "Should outliers just be thrown out? ⚠️",
+          "answer": "Almost never without a reason. An outlier caused by a typing error can be corrected. But an outlier that is a real measurement is real data, and deleting it because it is inconvenient is how honest work turns into dishonest work. Report it, and say what you did."
+        },
+        {
+          "question": "What is the mode actually for?",
+          "answer": "It is the only one of the three that works on things that are not numbers. You cannot take the mean of a favourite colour, but you can say which colour came up most often."
+        },
+        {
+          "question": "Can a data set have no mode, or more than one? 🎲",
+          "answer": "Both happen. If every value appears exactly once there is no mode at all, and if two values tie for most common the set has two."
+        },
+        {
+          "question": "Is a bigger sample always better? 📈",
+          "answer": "Bigger usually helps, but who is in the sample matters more than how many. Asking two thousand people outside a football ground about sport gives you a worse answer than asking two hundred people chosen from across a town."
+        },
+        {
+          "question": "Can a graph lie without any of the numbers being wrong? 📉",
+          "answer": "Easily, and it is worth watching for. Starting a vertical axis somewhere other than zero can turn a small change into a dramatic-looking cliff. Every number on it can be correct while the picture tells you something false."
+        }
+      ],
+      "meta": "6 questions • one is about deleting inconvenient data"
+    },
+    {
+      "id": "dg-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Number That Hides Something",
+      "timestamp": "2026-09-06T04:10:10.000Z",
+      "meta": "6th Grade • Investigation brief • collect real data, report centre and spread",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Number That Hides Something",
+        "instructions": "Ask a statistical question about your own class, collect the data, and report it honestly: centre, spread, and one sentence on what your summary hides.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "Students meet statistics as arithmetic on numbers somebody else chose. Collecting their own data makes every choice visible: what to measure, who to ask, which middle to report. The requirement to name what the summary hides is the part that turns the arithmetic into judgement.",
+        "agencyMode": "student-led",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "You may collect data from your own class or year group during one lesson. Questions must be about things people will happily answer out loud: minutes spent travelling to school, number of letters in a first name, hours of sleep last night, number of siblings, shoe size.",
+          "role": "Statisticians",
+          "audience": "The class, who will compare summaries and look for the ones that hide the most",
+          "drivingQuestion": "What does my summary tell you, and what does it hide?",
+          "seedDirection": "Choose something you genuinely do not know the answer to. If you can guess the result now, the data will not teach you anything.",
+          "lockedLessonFacts": [
+            "A statistical question is one whose answers you expect to vary.",
+            "The mean uses every value, so an outlier drags it; the median does not move in the same way.",
+            "Two sets with the same centre can have completely different spreads.",
+            "Range is the largest value minus the smallest."
+          ],
+          "openQuestions": [
+            "Did your mean and median agree? What does the gap between them tell you?",
+            "Was there an outlier, and what was the story behind it?",
+            "Would your answer change if you had asked a different group?"
+          ],
+          "stakeholders": [
+            "The people who gave you their data and trusted you to report it",
+            "Your class, who will judge whether your summary is honest",
+            "Anyone who might act on a number like yours"
+          ],
+          "criteria": [
+            "A genuine statistical question, stated precisely enough to answer",
+            "At least fifteen values, listed in order",
+            "Mean, median and range, each worked out and shown",
+            "A statement of which centre you would report and why",
+            "One sentence naming what your summary hides"
+          ],
+          "constraints": [
+            "Nothing personal or embarrassing, and anyone may decline to answer",
+            "No names attached to any value",
+            "Report every value you collected, including any outlier",
+            "Under one page, plus your ordered data"
+          ],
+          "deliverable": "A one-page report with your question, your ordered data, the mean, median and range, the centre you chose with your reason, and one sentence on what the summary hides.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A student asked how many minutes classmates spend travelling to school.",
+            "move": "Most answers clustered between five and fifteen minutes, but one classmate travelled seventy. The mean came out at nineteen minutes, which described almost nobody. She reported the median of eleven, showed the seventy, and wrote that her summary hid the fact that one person's journey was six times the typical one.",
+            "whyItHelps": "She did not delete the awkward value or bury it. Naming it made her report more trustworthy, not less, and the outlier turned out to be the most interesting thing she found."
+          },
+          "frameStarter": "My question was ____. The mean was ____ and the median was ____. I would report ____ because ____. What this hides is ____.",
+          "frameChoices": [
+            "Something about time",
+            "Something about counting",
+            "Something about distance",
+            "Something about words or letters"
+          ],
+          "coachPrompts": [
+            "Do you expect these answers to vary? If not, it is not a statistical question yet.",
+            "Did your mean and median agree, and what does that tell you?",
+            "Is there a value you would rather not report? Report it.",
+            "What would someone wrongly conclude from your number alone?"
+          ]
+        },
+        "coachHint": "A real question, fifteen values in order, all three summaries, and what yours hides.",
+        "sourceExcerpt": "This is why a single number can mislead without anybody lying. Report only the centre and you have hidden whether the group is tightly packed or scattered everywhere.",
+        "lessonRef": {
+          "resourceId": "dg-reading",
+          "title": "What Counts as Typical"
+        }
+      }
+    }
+  ]
+}

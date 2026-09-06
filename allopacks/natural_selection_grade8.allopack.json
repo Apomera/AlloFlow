@@ -1,0 +1,750 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Nothing Is Trying — How Natural Selection Actually Works",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "8th Grade",
+    "standards": "NGSS MS-LS4-4 (construct an explanation based on evidence that describes how genetic variations of traits in a population increase some individuals' probability of surviving and reproducing in a specific environment); NGSS MS-LS4-6 (use mathematical representations to support explanations of how natural selection may lead to increases and decreases of specific traits in populations over time); NGSS MS-LS3-1 (develop and use a model to describe why structural changes to genes may affect proteins and may result in harmful, beneficial, or neutral effects to the structure and function of the organism)",
+    "createdAt": "2026-09-06T04:30:00.000Z",
+    "imageShotList": "allopacks/natural_selection_grade8.IMAGES.md"
+  },
+  "sourceTopic": "Natural Selection, Heritable Variation, and the Misconceptions That Survive It",
+  "history": [
+    {
+      "id": "ns-directions",
+      "type": "directions",
+      "title": "Selection Week",
+      "timestamp": "2026-09-06T04:30:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nMost people can define natural selection and still explain it wrongly. This unit spends as much time on the wrong version as the right one, because the wrong version is the one that survives.\n\n1. Read **Nothing Is Trying**. Mark every sentence that says what selection does *not* do.\n2. Learn the words in **Selection Vocabulary**, then win the **Matching** game and the **Memory** game.\n3. Work through **The Four Conditions** to see why the argument holds together.\n4. Study the **Right Version, Wrong Version** chart.\n5. Sort the cards in **How It Works or How It Doesn't?** — several are close.\n6. Fill in **Selection Notes** as you read.\n7. Take **Selection Check**.\n8. Lock it in with **Remember the Four Conditions**.\n9. Read **Questions People Ask About Evolution**.\n10. Finish with **Investigation: Track the Trait**.\n\nBring one example of an organism that seems perfectly built for where it lives. 🧬",
+        "objectives": [
+          {
+            "id": "ns-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "ns-glossary"
+          },
+          {
+            "id": "ns-goal-memory",
+            "label": "Win the Memory game",
+            "kind": "game",
+            "gameType": "memory",
+            "resourceRef": "ns-glossary"
+          },
+          {
+            "id": "ns-goal-xp",
+            "label": "Earn 40 XP",
+            "kind": "xp",
+            "amount": 40
+          },
+          {
+            "id": "ns-goal-catch",
+            "label": "I caught myself using the wrong version and rewrote it",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "8th Grade • 4 goals • bring an organism that looks perfectly built"
+    },
+    {
+      "id": "ns-reading",
+      "type": "simplified",
+      "title": "Nothing Is Trying",
+      "timestamp": "2026-09-06T04:30:01.000Z",
+      "data": "## Nothing Is Trying\n\nHere is a sentence you have probably heard: animals adapt to their environment. It sounds right. It is also the most common way of getting natural selection exactly backwards.\n\nAn individual does not adapt. **Populations** change across generations, and no individual in them changes at all.\n\n### Four conditions, and that is the whole thing\n\nNatural selection follows from four facts. If all four hold, it happens. There is nothing else to it.\n\n**One: variation exists.** In any population, individuals differ. Some beetles are darker, some lighter. Some bacteria happen to carry a gene that a particular drug cannot disable. Crucially, **this variation is already there before the environment changes.** It was not requested and it was not produced on demand.\n\n**Two: some of that variation is heritable.** Traits carried in genes get passed to offspring. Traits you acquire during your life do not. A weightlifter's children are not born strong, and a mouse that loses its tail has ordinary tailed pups.\n\n**Three: more offspring are produced than can survive.** Food, space and safety run out. Not everyone makes it.\n\n**Four: survival is not random with respect to those traits.** Some variants do better in this particular environment, so they leave more offspring.\n\nRun those four for many generations and the **frequency** of a trait in the population shifts. That shift is the whole phenomenon.\n\n### Why the wrong version is so appealing\n\nThe wrong version says an organism notices a problem and develops a solution. It is appealing because it is how *we* solve problems, and because the results genuinely look designed.\n\nBut nothing is trying. A **mutation** does not arrive because it would be useful. Mutations happen regardless, and most are neutral or harmful. Occasionally one turns out to help in the environment that happens to exist, and that one spreads — not because it was needed, but because its carriers left more offspring.\n\nBacteria make this concrete. Give a large population of bacteria an antibiotic and a few usually survive. Those few were not toughened by the drug. They already carried a variant that the drug could not disable, before it was ever applied. The antibiotic did not create resistance; it removed everything else. The next generation descends from the survivors, so more of it is resistant. Do that repeatedly and resistance becomes common.\n\nThis is also why antibiotics are worth using carefully rather than routinely, and why resistance is a serious medical problem rather than a textbook curiosity.\n\n### Fit to what, exactly\n\n**Fitness** in biology does not mean strong or fast. It means leaving more surviving offspring in this environment. A trait that helps in one place can be useless in another and harmful in a third.\n\nSo selection has no direction and no destination. Change the environment and the favoured trait can reverse within a few generations. Nothing is being perfected, because there is nothing to be perfect for.\n\nWhat is left is simpler and stranger than the story people tell. Variation that already existed, filtered by conditions that happen to prevail, repeated until the population looks built for a world that merely selected it.",
+      "meta": "8th Grade • Leveled reading • ~520 words",
+      "imageSlot": "ns-img-frequency-shift"
+    },
+    {
+      "id": "ns-glossary",
+      "type": "glossary",
+      "title": "Selection Vocabulary",
+      "timestamp": "2026-09-06T04:30:02.000Z",
+      "data": [
+        {
+          "term": "Population",
+          "def": "All the individuals of one species living in the same area.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Variation",
+          "def": "The differences between individuals in a population.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Heritable",
+          "def": "Able to be passed from parent to offspring through genes.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Mutation",
+          "def": "A change in a gene, which may be harmful, helpful or neither.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Frequency",
+          "def": "How common a trait is within a population.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Fitness",
+          "def": "How many surviving offspring an individual leaves in its environment.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Selection",
+          "def": "The unequal survival and reproduction of different variants.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Acquired",
+          "def": "Gained during a lifetime, and therefore not inherited.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Generation",
+          "def": "One complete round of parents producing offspring.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Resistance",
+          "def": "A variant's ability to survive something that kills the others.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Environment",
+          "def": "The conditions an organism lives in, which decide what helps.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Adaptation",
+          "def": "A heritable trait that became common because it helped in that environment.",
+          "tier": "Domain-Specific"
+        }
+      ],
+      "meta": "12 terms • Tiered • acquired is the one that settles most arguments"
+    },
+    {
+      "id": "ns-outline",
+      "type": "outline",
+      "title": "The Four Conditions",
+      "timestamp": "2026-09-06T04:30:03.000Z",
+      "data": {
+        "main": "Four facts are enough; nothing needs to intend anything",
+        "branches": [
+          {
+            "title": "One: variation already exists",
+            "items": [
+              "Individuals in a population differ from each other",
+              "The variation is present before the environment changes",
+              "It is not produced on demand and not requested"
+            ]
+          },
+          {
+            "title": "Two: some variation is heritable",
+            "items": [
+              "Traits carried in genes pass to offspring",
+              "Traits acquired during a lifetime do not",
+              "A weightlifter's children are not born strong"
+            ]
+          },
+          {
+            "title": "Three: more offspring than can survive",
+            "items": [
+              "Food, space and safety run out",
+              "Not everyone reproduces",
+              "This is what makes the filter possible"
+            ]
+          },
+          {
+            "title": "Four: survival is not random with respect to the trait",
+            "items": [
+              "Some variants do better in this particular environment",
+              "They leave more offspring than the others",
+              "That is the entire mechanism"
+            ]
+          },
+          {
+            "title": "The consequence, and only this",
+            "items": [
+              "Trait frequency in the population shifts across generations",
+              "No individual changes at any point",
+              "The population changes; its members do not"
+            ]
+          },
+          {
+            "title": "What it therefore cannot do",
+            "items": [
+              "It cannot produce a mutation because one would be useful",
+              "It cannot pass on a trait acquired during a life",
+              "It cannot aim at a goal or perfect anything"
+            ]
+          },
+          {
+            "title": "Fitness is local, not general",
+            "items": [
+              "Fitness means surviving offspring in this environment",
+              "Not strength, not speed, not complexity",
+              "Change the environment and the favoured trait can reverse"
+            ]
+          }
+        ]
+      },
+      "meta": "7 branches • conditions first, consequences second"
+    },
+    {
+      "id": "ns-anchor",
+      "type": "anchor-chart",
+      "title": "Right Version, Wrong Version",
+      "timestamp": "2026-09-06T04:30:04.000Z",
+      "data": {
+        "chartType": "comparison",
+        "title": "THE TWO STORIES PEOPLE TELL",
+        "sections": [
+          {
+            "label": "WRONG: THE ORGANISM ACTS",
+            "bullets": [
+              "It notices a problem",
+              "It develops what it needs",
+              "It passes on what it built"
+            ],
+            "iconPrompt": "a single animal silhouette with a curved arrow looping back on itself"
+          },
+          {
+            "label": "RIGHT: THE POPULATION SHIFTS",
+            "bullets": [
+              "Variation is already present",
+              "Conditions favour some variants",
+              "Their share grows over generations"
+            ],
+            "iconPrompt": "three rows of small shapes, the darker shapes making up more of each successive row"
+          },
+          {
+            "label": "THE TEST QUESTION",
+            "bullets": [
+              "Did an individual change?",
+              "If yes, it is the wrong version",
+              "Only proportions change"
+            ],
+            "iconPrompt": "a single shape beside a large group of shapes, with a question mark between them"
+          },
+          {
+            "label": "WHAT FITNESS IS NOT",
+            "bullets": [
+              "Not strongest",
+              "Not fastest",
+              "Not most complex",
+              "Only: more surviving offspring here"
+            ],
+            "iconPrompt": "a set of nested outlines of differing sizes with no one outline emphasised"
+          }
+        ]
+      },
+      "meta": "4 parts • the test question is the one to memorise"
+    },
+    {
+      "id": "ns-memory",
+      "type": "memory-aid",
+      "title": "Remember the Four Conditions",
+      "timestamp": "2026-09-06T04:30:05.000Z",
+      "meta": "8th Grade • 2 memory aids • the four conditions, and the individual test",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Four Conditions",
+        "instructions": "Two cards carry what you will use on every example. Read the given one, build your own, then explain why yours works.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "sequence-cue",
+          "visual-association"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "standard",
+        "reasoningRequired": true,
+        "sourceExcerpt": "The antibiotic did not create resistance; it removed everything else. The next generation descends from the survivors, so more of it is resistant.",
+        "lessonRef": {
+          "resourceId": "ns-reading",
+          "title": "Nothing Is Trying"
+        },
+        "cards": [
+          {
+            "id": "ns-ma-four",
+            "target": "The four conditions, in the order they have to hold",
+            "essentialFacts": [
+              "Variation exists, and it is already there beforehand.",
+              "Some of that variation is heritable.",
+              "More offspring are produced than can survive.",
+              "Survival is not random with respect to those traits."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "sequence-cue",
+            "mode": "scaffolded",
+            "aiExample": "Four beats: DIFFER, INHERIT, CROWD, FILTER. They differ. Some differences are inherited. There are too many of them. The environment filters. Say it in that order, because each beat is useless without the one before it.",
+            "mapping": "Four single words in a fixed order, and the order carries an argument: inheritance is pointless without variation, and filtering is pointless without crowding.",
+            "scaffoldStarter": "Differ: ____. Inherit: ____. Crowd: ____. Filter: ____.",
+            "scaffoldSteps": [
+              "Say the four beats out loud.",
+              "Run them on the antibiotic example.",
+              "Run them on an example of your own."
+            ],
+            "coachPrompts": [
+              "Which of the four does your example not clearly show?"
+            ],
+            "studentPrompt": "Build your own four-beat cue for the conditions.",
+            "reasoningPrompt": "What would happen if condition two failed but the other three held?",
+            "hookFact": {
+              "text": "If all four hold, it happens. There is nothing else to it.",
+              "sourceTitle": "Nothing Is Trying (this lesson)"
+            }
+          },
+          {
+            "id": "ns-ma-test",
+            "target": "One question catches almost every wrong explanation",
+            "essentialFacts": [
+              "Individuals do not change; populations do.",
+              "Only the proportions of variants shift.",
+              "If your explanation has an individual changing, it is the wrong version."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "visual-association",
+            "mode": "scaffolded",
+            "aiExample": "Picture a jar of red and blue marbles. Selection never repaints a marble. It only removes marbles, and the jar afterwards is a different mix of exactly the same marbles. If your explanation repaints anything, it is wrong.",
+            "mapping": "Repainting is a vivid, specific thing to watch for, and it is precisely the move the wrong version makes. Removal versus repainting is the entire distinction in one image.",
+            "scaffoldStarter": "In my explanation, did anything get repainted? ____. Instead, what changed was ____.",
+            "scaffoldSteps": [
+              "Write your explanation out.",
+              "Underline every verb attached to a single organism.",
+              "Ask whether any of them repaints a marble."
+            ],
+            "coachPrompts": [
+              "Point at the individual in your sentence. Did it change?"
+            ],
+            "studentPrompt": "Make your own image for removal rather than repainting.",
+            "reasoningPrompt": "Why does the repainting version feel so much more natural to say?",
+            "hookFact": {
+              "text": "An individual does not adapt. Populations change across generations, and no individual in them changes at all.",
+              "sourceTitle": "Nothing Is Trying (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "ns-sort",
+      "type": "concept-sort",
+      "title": "How It Works or How It Doesn't?",
+      "timestamp": "2026-09-06T04:30:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "ns-right",
+            "label": "HOW IT WORKS — accurate",
+            "color": "bg-emerald-500"
+          },
+          {
+            "id": "ns-wrong",
+            "label": "HOW IT DOESN'T — a common misconception",
+            "color": "bg-rose-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "nss1",
+            "content": "The variation was already in the population before the environment changed",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss2",
+            "content": "Individuals carrying a helpful heritable trait leave more surviving offspring",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss3",
+            "content": "The share of the population carrying the trait grows over generations",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss4",
+            "content": "Only traits passed on through genes can be selected",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss5",
+            "content": "A trait that helps in one environment can be useless in another",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss6",
+            "content": "Most mutations are neutral or harmful rather than helpful",
+            "categoryId": "ns-right"
+          },
+          {
+            "id": "nss7",
+            "content": "An individual animal changes its own body to suit its surroundings",
+            "categoryId": "ns-wrong"
+          },
+          {
+            "id": "nss8",
+            "content": "A species develops a new trait because it needs one",
+            "categoryId": "ns-wrong"
+          },
+          {
+            "id": "nss9",
+            "content": "A giraffe that stretches for high leaves passes a longer neck to its calves",
+            "categoryId": "ns-wrong"
+          },
+          {
+            "id": "nss10",
+            "content": "Natural selection gradually makes a species more perfect",
+            "categoryId": "ns-wrong"
+          },
+          {
+            "id": "nss11",
+            "content": "The strongest animal in a population is always the one that survives",
+            "categoryId": "ns-wrong"
+          },
+          {
+            "id": "nss12",
+            "content": "An antibiotic toughens up the bacteria that live through it",
+            "categoryId": "ns-wrong"
+          }
+        ]
+      },
+      "meta": "2 buckets • 12 cards • the wrong six are the sentences students actually write"
+    },
+    {
+      "id": "ns-notes",
+      "type": "note-taking",
+      "title": "Selection Notes",
+      "timestamp": "2026-09-06T04:30:07.000Z",
+      "data": {
+        "templateType": "cornell-notes",
+        "title": "Natural Selection and What It Cannot Do",
+        "cues": [
+          {
+            "id": "cue-ns-1",
+            "text": "Why is \"animals adapt\" backwards?"
+          },
+          {
+            "id": "cue-ns-2",
+            "text": "Condition 1 — variation. When does it arise?"
+          },
+          {
+            "id": "cue-ns-3",
+            "text": "Condition 2 — heritable vs acquired"
+          },
+          {
+            "id": "cue-ns-4",
+            "text": "Condition 3 — why does crowding matter?"
+          },
+          {
+            "id": "cue-ns-5",
+            "text": "Condition 4 — what does non-random mean here?"
+          },
+          {
+            "id": "cue-ns-6",
+            "text": "What actually changes across generations?"
+          },
+          {
+            "id": "cue-ns-7",
+            "text": "Antibiotics — what did the drug NOT do?"
+          },
+          {
+            "id": "cue-ns-8",
+            "text": "Fitness — define it without the words strong or fast"
+          },
+          {
+            "id": "cue-ns-9",
+            "text": "Why has selection no direction?"
+          },
+          {
+            "id": "cue-ns-10",
+            "text": "The test question for my own writing"
+          }
+        ],
+        "notes": [
+          {
+            "id": "note-ns-1",
+            "text": ""
+          },
+          {
+            "id": "note-ns-2",
+            "text": ""
+          },
+          {
+            "id": "note-ns-3",
+            "text": ""
+          },
+          {
+            "id": "note-ns-4",
+            "text": ""
+          },
+          {
+            "id": "note-ns-5",
+            "text": ""
+          },
+          {
+            "id": "note-ns-6",
+            "text": ""
+          },
+          {
+            "id": "note-ns-7",
+            "text": ""
+          },
+          {
+            "id": "note-ns-8",
+            "text": ""
+          },
+          {
+            "id": "note-ns-9",
+            "text": ""
+          },
+          {
+            "id": "note-ns-10",
+            "text": ""
+          }
+        ]
+      },
+      "meta": "10 cues • blank note rows • cue 8 is deliberately hard"
+    },
+    {
+      "id": "ns-quiz",
+      "type": "quiz",
+      "title": "Selection Check",
+      "timestamp": "2026-09-06T04:30:08.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "What actually changes when a population undergoes natural selection?",
+            "options": [
+              "The proportion of individuals carrying a trait changes",
+              "Each individual gradually adjusts its own body over its lifetime",
+              "Every member of the species develops the useful trait at once",
+              "The environment changes to suit the species living in it"
+            ],
+            "correctAnswer": "The proportion of individuals carrying a trait changes",
+            "conceptLabel": "populations, not individuals"
+          },
+          {
+            "type": "mcq",
+            "question": "When does the variation that selection acts on arise?",
+            "options": [
+              "It is produced in response to the new conditions",
+              "It is already present before the environment changes",
+              "It appears only once the old variants have died out",
+              "It is created by the environment acting on the parents"
+            ],
+            "correctAnswer": "It is already present before the environment changes",
+            "conceptLabel": "variation comes first"
+          },
+          {
+            "type": "mcq",
+            "question": "A weightlifter builds a great deal of muscle. What do their children inherit?",
+            "options": [
+              "More muscle than average, since the parent developed it",
+              "Slightly more muscle, but only in the first generation",
+              "Nothing from that training, because it is an acquired trait",
+              "The muscle itself, but not the ability to maintain it"
+            ],
+            "correctAnswer": "Nothing from that training, because it is an acquired trait",
+            "conceptLabel": "heritable versus acquired"
+          },
+          {
+            "type": "mcq",
+            "question": "A few bacteria survive a course of antibiotics. What does this show?",
+            "options": [
+              "The drug toughened those particular bacteria up",
+              "Those bacteria learned to withstand the drug over time",
+              "The drug caused a helpful mutation in the survivors",
+              "Those bacteria already carried a variant the drug could not disable"
+            ],
+            "correctAnswer": "Those bacteria already carried a variant the drug could not disable",
+            "conceptLabel": "variation comes first"
+          },
+          {
+            "type": "mcq",
+            "question": "In biology, what does fitness mean?",
+            "options": [
+              "Leaving more surviving offspring in this environment",
+              "Being the strongest member of the population",
+              "Being physically healthy and free of disease",
+              "Being able to survive in the widest range of places"
+            ],
+            "correctAnswer": "Leaving more surviving offspring in this environment",
+            "conceptLabel": "what fitness means"
+          },
+          {
+            "type": "mcq",
+            "question": "Why does natural selection have no direction or destination?",
+            "options": [
+              "Because it works far too slowly to have any pattern",
+              "Because what counts as helpful depends on current conditions",
+              "Because mutations occur at a completely steady rate",
+              "Because every trait is equally useful in every environment"
+            ],
+            "correctAnswer": "Because what counts as helpful depends on current conditions",
+            "conceptLabel": "no direction"
+          },
+          {
+            "type": "mcq",
+            "question": "Most mutations are best described as which of the following?",
+            "options": [
+              "Helpful, which is why species keep improving",
+              "Always harmful, since any change breaks something",
+              "Neutral or harmful, with helpful ones being uncommon",
+              "Produced deliberately when an organism needs them"
+            ],
+            "correctAnswer": "Neutral or harmful, with helpful ones being uncommon",
+            "conceptLabel": "mutations are not requested"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Rewrite this sentence so it is accurate: \"Over time, the moths turned darker so they could hide against the sooty trees.\"",
+            "expectedAnswer": "Darker and lighter moths were both already present in the population. Against sooty trees the darker ones were harder for predators to see, so they survived and reproduced more often. Over generations the proportion of dark moths in the population increased. No moth changed colour, and none of it happened so that anything could hide.",
+            "conceptLabel": "populations, not individuals"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Explain why saying \"a species develops a trait because it needs it\" gets the mechanism backwards.",
+            "expectedAnswer": "Need does not produce variation. Mutations happen regardless of whether they would be useful, and most are neutral or harmful. A trait spreads only if it happens to already exist and happens to help its carriers leave more offspring in the environment that happens to prevail. The usefulness follows from the spread rather than causing it.",
+            "conceptLabel": "mutations are not requested"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Which of the wrong versions have you used yourself without noticing?"
+          },
+          {
+            "text": "Why do you think the wrong version is so much easier to say?"
+          }
+        ]
+      },
+      "meta": "7 picks + 2 explain • every distractor is a documented misconception"
+    },
+    {
+      "id": "ns-faq",
+      "type": "faq",
+      "title": "Questions People Ask About Evolution",
+      "timestamp": "2026-09-06T04:30:09.000Z",
+      "data": [
+        {
+          "question": "If most mutations are harmful, how does anything ever improve? 🧬",
+          "answer": "Because harmful ones are removed and the rare helpful one spreads. Populations are large and generations are many, so even a very uncommon helpful variant gets its chance. The filter does the work, not the mutation rate."
+        },
+        {
+          "question": "Does natural selection explain everything about how species change?",
+          "answer": "No, and biologists are clear about that. Random genetic drift changes small populations by chance alone, and some traits are carried along simply because they sit near a useful gene. Selection is the main mechanism behind traits that look well-suited, not the only thing happening."
+        },
+        {
+          "question": "Are humans still evolving? 🌍",
+          "answer": "Yes. Lactose tolerance in adults spread in populations with a long history of dairy farming, and it is a well-studied recent example. Evolution does not stop; it just happens on a timescale longer than a lifetime."
+        },
+        {
+          "question": "Is the phrase survival of the fittest wrong? 🤔",
+          "answer": "It is not wrong so much as badly worded for modern ears. Fittest meant best-fitting to the conditions, not strongest. Because the everyday meaning of fit has drifted, most biologists avoid the phrase entirely."
+        },
+        {
+          "question": "Why do some organisms look so perfectly designed? 🐦",
+          "answer": "Because you are seeing the survivors of an enormous filter, and not the countless variants that failed. Looked at closely, organisms are full of awkward compromises, which is what you would expect from something assembled by filtering rather than planning."
+        },
+        {
+          "question": "Can a trait become common without being useful at all?",
+          "answer": "It can. In a small population, chance alone can make a neutral trait common, which is genetic drift. Usefulness makes spreading much more likely, but it is not the only route."
+        },
+        {
+          "question": "Why does antibiotic resistance matter so much? 💊",
+          "answer": "Because we are running the experiment constantly and at scale. Every use of an antibiotic removes susceptible bacteria and leaves resistant ones to reproduce. That is why doctors avoid prescribing them when they will not help, and why you should follow the instructions you were actually given rather than a rule of thumb you half remember."
+        }
+      ],
+      "meta": "7 questions • two say plainly what selection does not explain"
+    },
+    {
+      "id": "ns-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: Track the Trait",
+      "timestamp": "2026-09-06T04:30:10.000Z",
+      "meta": "8th Grade • Investigation brief • model a frequency shift, then audit your own language",
+      "data": {
+        "schemaVersion": 6,
+        "title": "Track the Trait",
+        "instructions": "Model several generations of selection with counters, record how the trait frequency changes, and then audit your own written explanation for the wrong version.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "The frequency shift is the whole phenomenon and students almost never see one happen. Running it by hand makes the population the thing that changes, and the language audit at the end is where most students discover they have written the wrong version without noticing.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "You will have a bag of counters in two colours standing for two variants of one heritable trait, plus a rule your teacher gives you for which colour survives in this environment. You may change the environment rule partway through if you say when you did it.",
+          "role": "Population biologists",
+          "audience": "The class, who will compare frequency graphs and hunt each other's write-ups for the wrong version",
+          "drivingQuestion": "What exactly is it that changes from one generation to the next?",
+          "seedDirection": "Record the starting counts before you touch anything. Without generation zero you have nothing to compare against.",
+          "lockedLessonFacts": [
+            "Variation is already present before the environment changes.",
+            "Only heritable traits can be selected; acquired traits cannot.",
+            "More offspring are produced than can survive.",
+            "The frequency of a trait in the population shifts, while no individual changes."
+          ],
+          "openQuestions": [
+            "How many generations before the change was obvious?",
+            "Did the disfavoured variant disappear completely, and does that matter?",
+            "What happened when the environment rule reversed?"
+          ],
+          "stakeholders": [
+            "Your partner, who is checking your counts",
+            "The class, who will read your explanation critically",
+            "A student next year who will read the wrong version somewhere and need this"
+          ],
+          "criteria": [
+            "Starting frequencies recorded before generation one",
+            "At least six generations, with counts for each",
+            "A graph of the trait frequency across generations",
+            "A written explanation with no sentence in which an individual changes",
+            "One sentence saying what your model does not represent well"
+          ],
+          "constraints": [
+            "The environment rule must be fixed in advance and stated, and any change to it recorded",
+            "Report every generation, including any that went against the trend",
+            "Under one page of writing, plus your table and graph",
+            "You may not write that an organism adapts, tries, wants or needs anything"
+          ],
+          "deliverable": "A one-page report with your table, your frequency graph, an explanation that survives the language audit, and one sentence on what the counter model fails to capture.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A pair ran six generations and their dark counters went from a quarter of the bag to nearly three quarters.",
+            "move": "Their first write-up said the population adapted to the new conditions. Running the language audit, they underlined adapted and found it was doing the work of a whole explanation. They rewrote it as a statement about which counters were removed each round and what that did to the proportions, and the sentence got longer and much better.",
+            "whyItHelps": "The banned words are not a style rule. Each of them hides the mechanism, and being forced around them makes a student state the mechanism out loud."
+          },
+          "frameStarter": "At generation zero, ____ per cent carried ____. By generation six, ____. This happened because ____.",
+          "frameChoices": [
+            "Model a predator that spots one colour more easily",
+            "Model a drug that one variant survives",
+            "Model a food source only one variant can reach",
+            "Model an environment that reverses partway through"
+          ],
+          "coachPrompts": [
+            "What did you record before generation one?",
+            "Is there a sentence where a single organism changes? Rewrite it.",
+            "Did any counter change colour at any point? What does that tell you?",
+            "What does the bag of counters fail to represent about a real population?"
+          ]
+        },
+        "coachHint": "Six generations, a graph, and an explanation with no organism trying anything.",
+        "sourceExcerpt": "An individual does not adapt. Populations change across generations, and no individual in them changes at all.",
+        "lessonRef": {
+          "resourceId": "ns-reading",
+          "title": "Nothing Is Trying"
+        }
+      }
+    }
+  ]
+}

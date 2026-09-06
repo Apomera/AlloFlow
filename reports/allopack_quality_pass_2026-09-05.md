@@ -6,21 +6,21 @@ The passes below are in the order they were run. **Start with "Where this stands
 
 ## Where this stands
 
-**The catalog holds 42 packs covering grades 1 to 8, and the grade-by-subject matrix is now complete.** Every grade from 1 to 8 has Science, ELA, Math and Social Studies. All 42 pass the shape suite, report zero audit flags, and load clean in the deployed app.
+**The catalog holds 45 packs covering grades 1 to 8, with the grade-by-subject matrix complete.** Every grade from 1 to 8 has Science, ELA, Math and Social Studies. All 45 pass the shape suite, report zero audit flags, and load clean in the deployed app.
 
-`catalog/index.json` is **unchanged, at two entries**. Publishing the other 40 is a deliberate decision and remains open — see "Catalog" below and the seed plan.
+`catalog/index.json` is **unchanged, at two entries**. Publishing the other 43 is a deliberate decision and remains open — see "Catalog" below and the seed plan.
 
 ### What is now verified, and how
 
 | Surface | Method | Result |
 | --- | --- | --- |
-| Structure and shapes | `tests/allopack_catalog.test.js` | 42 packs green |
+| Structure and shapes | `tests/allopack_catalog.test.js` | 45 packs green |
 | Reading level of every student-facing text | `dev-tools/audit_allopacks.cjs` | 0 flags |
-| Loads in the real app | `dev-tools/smoke_allopacks_live.mjs` | 42 of 42, one only on a retry |
+| Loads in the real app | `dev-tools/smoke_allopacks_live.mjs` | 45 of 45, one only on a retry |
 | Answer keys | 44 math answers re-worked, 216 MCQ items, 78 keys read | all correct |
 | Concept-sort placements | 394 cards read | 1 fixed |
 | Facts, dates, names | 57 claims + all 84 new FAQ answers + 8 readings | 6 fixed |
-| Standards codes and glosses | all 42 against the official text | 2 unearned alignments dropped |
+| Standards codes and glosses | all 45 against the official text | 2 unearned alignments dropped |
 | Universal claims | every *every/always/never* sentence | 3 fixed |
 | Timelines, briefs, frames, rubrics | read in full | 3 fixed |
 | Ids across the catalog | `tests/allopack_id_uniqueness.test.js` | green |
@@ -33,7 +33,7 @@ Beyond the original shape suite: grade-aware reading-level targets for every stu
 
 - **Publishing.** The user's call. `node dev-tools/build_allopack_catalog_entries.cjs --apply` writes the manifest entries, and because raw main is the live catalog, that publishes on the next deploy.
 - **Seed-plan checks 4 to 7**, which need a human: playing a word game to a win and watching the goal tick, the Spanish translation pass, in-app image generation against the shot lists, and the send-home round trip. Checks 2, 3 (load half), 8 and 9 are done.
-- **Illustration.** All 42 packs ship text-only with an `.IMAGES.md` shot list. 21 use the full Water Cycle pilot format; the other 21 use the earlier short format and now carry the text-free policy header.
+- **Illustration.** All 45 packs ship text-only with an `.IMAGES.md` shot list. 24 use the full Water Cycle pilot format; the other 21 use the earlier short format and now carry the text-free policy header.
 
 ### The one lesson worth carrying forward
 
@@ -613,6 +613,49 @@ The reporting change earned its keep within one run of being written. Had the re
 The grade 3 shot list had to solve a problem no previous pack has had. **It is a mathematics pack, and mathematics artwork wants to contain numerals**, which the text-free policy forbids. The resolution is that the artwork carries quantity and never notation: four plates each holding six counters, with the numerals living in AlloFlow's native labels anchored over the image. That toggle between picture and symbol is better teaching than a drawn equation would have been, so the constraint improved the pack.
 
 The grade 8 shot list had the same problem in a harder form: **a pack about reading, forbidden from drawing anything readable.** It is solved by drawing the shape of an argument rather than its content, with pages rendered as grey lines at a size where no character resolves. Its anchor panel carries a correctness test that generalises: a stack of translucent sheets whose marks accumulate into an emerging shape, where *removing any one sheet should leave the shape standing*. That is the standard itself, stated as an acceptance criterion for a picture.
+## Twenty-eighth pass: three missing domains, and one contested medical claim
+
+With the grade-by-subject matrix closed, "which cell is empty" no longer selects anything. The question became **which content domains the catalog has no pack for at all**, and three came back with nothing:
+
+| Pack | Domain | Standards | Resources |
+| --- | --- | --- | --- |
+| `data_and_typical_grade6` | Statistics and data — no pack touched it | CCSS 6.SP.A.1/A.2/A.3/B.5 | 11 |
+| `energy_transfer_grade4` | Energy — no pack touched it | NGSS 4-PS3-1/2/3/4 | 10 |
+| `natural_selection_grade8` | Heredity and selection — no pack touched it | NGSS MS-LS4-4, MS-LS4-6, MS-LS3-1 | 11 |
+
+Catalog is now **45 packs**, zero audit flags, 455 tests green.
+
+### The gates found nothing, which was itself worth checking
+
+All three passed the audit on the first run. After the previous pass produced ten flags on four packs that was surprising enough to be worth verifying rather than believing, so the audit was re-run filtered to the three slugs to confirm it had actually seen them. It had. The difference is that the flags from last round were fresh in mind while authoring, which is roughly what a gate is for.
+
+One thing the audit accepted was still worth changing. Two packs scored an answer-position spread of `3/2/1/0` — within the skew threshold, but **option D was never correct in either.** A student who notices the last option is never the answer has a real tell, whether or not a gate objects. All three were redistributed so every position is used.
+
+### The most serious finding was a contested medical claim
+
+The natural selection reading ended its antibiotic-resistance section with: *"This is also why finishing a course of antibiotics matters."* The FAQ repeated it.
+
+That is the folk rule, and it is not settled science. For several infections shorter courses are equally effective, and the specific claim that completing a course prevents resistance is an oversimplification that has been challenged in the medical literature. It is exactly the kind of sentence that passes every check available here: plausible, widely repeated, adjacent to accurate material, and wrong in a way that matters more than a textbook error, because a student may act on it.
+
+Both now say what is actually well supported — that unnecessary use drives resistance, and that a patient should follow the instructions they were given rather than a half-remembered rule of thumb.
+
+**A pack whose subject is correcting misconceptions is not thereby protected from carrying one.** The same paragraph that carefully dismantles "the antibiotic toughened the survivors" ended on an unexamined piece of received wisdom.
+
+### And the constraint-versus-deliverable check paid again
+
+The natural selection challenge banned the words *adapt, try, want and need* in student writing, which is a good rule: each hides the mechanism, and being forced around them makes a student state it. But the pack's own glossary defines **adaptation** as a legitimate term. A student writing "this trait is an adaptation" — correct, and using the pack's vocabulary — could be marked as breaking the rule.
+
+The constraint now bans the move rather than the word family: *you may not write that an organism adapts, tries, wants or needs anything.* This is the third pass in a row where reading a brief against the rest of its own pack found a rule that could penalise correct work.
+
+Also caught by reading: a sort card and a quiz distractor both read "What time does the 8:15 bus leave?" in an activity whose entire job is a careful distinction. The card answers itself, and a sixth grader is entitled to treat it as a joke rather than an example. And three reading metas overstated their own word counts again, one by 15 percent — the fifth pack in a row to do this, because the meta gets written before the prose settles.
+
+### An authoring note: the standard illustration of natural selection is wrong
+
+The shot list for the grade 8 science pack had to open by rejecting the topic's canonical image. Search for a picture of natural selection and most results show a row of giraffes with lengthening necks, or an ape straightening into a person. Both depict **one lineage transforming**, which is the misconception the pack exists to correct, drawn.
+
+The correct image is duller and much better: a population whose composition changes while none of its members do. So every panel is built on one acceptance test — **no individual may differ between one frame and the next** — and the anchor panel states it concretely: cut any single beetle out of any row and it must be impossible to say which row it came from. The alt-text rules go further and require the sentence "every individual is drawn identically and none changes between rows", because that is not a stylistic note, it is the panel's entire scientific content, and alt text omitting it would describe a picture that teaches the misconception.
+
+The statistics shot list hit the same constraint the grade 3 maths pack did — numbered axes are forbidden — and resolved it the same way, with one addition that turned out to be the point: the artwork carries *shape* and the numbers live in the native labels, which is precisely what the reading asks a reader to do with a reported statistic.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
