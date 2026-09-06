@@ -378,6 +378,31 @@ The first three are places or parts. Soil minerals are neither. They are a subst
 The card itself is the best one in the sort — it is exactly the "plants eat soil" misconception the reading spends a paragraph correcting, and van Helmont's willow is in the anchor chart to demolish it. So the card stays and the label goes: the bucket is now **"NEITHER (not a reactant or a product)"**, which is true of all four cards and is the sharper teaching point anyway. The sort is now in, out, or neither.
 
 This is the third defect in three passes that came from reading content rather than running a check, and the third that no gate could have caught: an invented statistic, a rewritten standards gloss, and a category label that quietly excluded its own contents. All three were well-formed.
+## Seventeenth pass: are the memory aids and challenges supported by their own lesson?
+
+Memory aids and applied challenges carry text that points back at the pack's reading: a `sourceExcerpt`, a `hookFact` on each card whose `sourceTitle` says "(this lesson)", the `essentialFacts` a card locks, and the `lockedLessonFacts` in a challenge brief. Nothing had ever checked whether the reading actually says any of it.
+
+### The first version of the check was wrong, and it is worth saying how
+
+It demanded verbatim quotation and reported **138 of 174 blocks as mismatches** — a rate that is not credible as a defect rate and was, in fact, entirely the checker's fault.
+
+Two things were wrong with it. The small one: it normalised quote marks and dashes but not the multiplication sign, so `l × w × h` in a reading never matched `l x w x h` in a card. The large one: **it was testing a contract that does not exist.** Reading `memory_aid_source.jsx` settles it — `hookFact` renders as "Did you know? " plus the text, presented as a fun fact and not as a quotation, and its source line is only drawn when a `sourceUrl` is set, which these packs never set. `sourceExcerpt` is assembled into an AI prompt as background context and is never shown to a student at all. A faithful paraphrase breaks nothing.
+
+Had that first output been believed, this report would have claimed 138 fabricated quotations. Checking what the app does with the field before trusting the number is the whole difference.
+
+### The check that was worth running
+
+The question that actually matters is whether the **reading supports the claim**. So: take the distinctive content words of each block and report those absent from the reading entirely. A faithful paraphrase keeps most of them; an unsupported claim brings in words the source never used. Flagging at a third or more absent gave **63 blocks out of 660**, and all 63 were read.
+
+Most are legitimate. A hookFact often draws on the pack's FAQ or anchor chart rather than its reading, which is fine — "this lesson" is the pack, not one resource. The Constitution timeline's ratification dates, the ten percent energy rule, the Spanish and German idioms for heavy rain, the Anti-Federalist demand behind the Bill of Rights: all checked, all correct.
+
+### Two that were not
+
+**"A unit cube has three edges, so the label is cubic."** A cube has twelve edges. Three *meet at a corner*, and a cube is measured in three *directions*, which is what the small 3 records — but the sentence as written states a false fact about cubes, inside a pack whose entire method is counting cubes. It is now "A cube is measured in three directions, so the label is cubic."
+
+**"The middle is where the problem shows up and gets tried at."** Not false, but clumsy enough to matter in a grade-2 pack whose job is modelling clear retelling. Now "the character tries to fix it".
+
+That is 660 blocks checked to find one factual error and one bad sentence. Worth it: the cube claim had survived the shape suite, the reading-level audit, the answer-key pass and a live render, because none of them look at whether a sentence is true.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
