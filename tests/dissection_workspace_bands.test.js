@@ -920,4 +920,24 @@ describe('dissection workspace bands', () => {
     const canvas = root.querySelector('canvas');
     expect(canvas.getAttribute('aria-describedby')).toBe('diss-canvas-status diss-canvas-equivalent');
   }, 60_000);
+
+  // 2026-09-06. Measured stack above the specimen canvas: 1233px on a 1180x900 viewport, so a
+  // student scrolls past more than a full laptop screen before seeing the specimen. The secondary
+  // controls owned 62px of that as their own full-width band while holding ONE visible button in
+  // the Essentials workspace. The layer-stepper heading is already a flex row with space-between
+  // and room to spare, so they ride along it: 1233 -> 1202, and the odd full-width band is gone.
+  it.each(DISSECTION_PATHS)('rides the secondary controls along the layer heading in %s', (filePath) => {
+    const root = render(filePath, {});
+    const bar = root.querySelector(".diss-toolbar");
+    expect(bar, "controls group").not.toBeNull();
+    const heading = bar.closest(".diss-section-heading");
+    expect(heading, "controls sit in a section heading").not.toBeNull();
+    expect(heading.closest(".diss-layer-stepper"), "and that heading is the layer stepper").not.toBeNull();
+    // Still a real toolbar with its label and its toggles.
+    expect(bar.getAttribute("role")).toBe("toolbar");
+    expect(bar.querySelector(".diss-toolbar__label")).not.toBeNull();
+    expect(bar.querySelectorAll("button").length).toBeGreaterThan(0);
+    // The expanded panels stay outside the nav so aria-controls still lands on a sibling.
+    expect(root.querySelector(".diss-layer-stepper #diss-view-tools"), "panel must not move into the nav").toBeNull();
+  }, 60_000);
 });

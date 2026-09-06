@@ -16500,7 +16500,31 @@ var d = labToolData.dissection || {};
             React.createElement("nav", { className: "diss-layer-stepper", "data-dissection-layer-stepper": true, "aria-labelledby": "diss-layer-heading" },
               React.createElement("div", { className: "diss-section-heading" },
                 React.createElement("h3", { id: "diss-layer-heading" }, 'Anatomical layers'),
-                React.createElement("p", null, revealedLayerCount + ' of ' + spec.layers.length + ' completed')
+                React.createElement("p", null, revealedLayerCount + ' of ' + spec.layers.length + ' completed'),
+                // The secondary controls used to sit in their own full-width band below this
+                // stepper: 62px of a 1233px stack above the specimen, holding ONE visible button
+                // in the Essentials workspace. The section heading is already a flex row with
+                // space-between and room to spare, so they ride along it instead. On a phone the
+                // heading stacks to a column and they simply fall below, as before.
+                React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": "Specimen display and lab tool controls", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
+
+                  React.createElement("span", { className: "diss-toolbar__label", "aria-hidden": "true" }, 'Controls'),
+
+                  // ── View toggle ──
+                  React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Accessibility options" : "View and accessibility options", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": "diss-view-tools",
+                    onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
+                    className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-blue-50 active:scale-[0.97]')
+                  }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View & access ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
+
+                  // ── Tools toggle ──
+                  !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Lab tool options", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
+                    onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
+                    className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
+                  }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
+
+                  // ── Study toggle ──
+
+                )
               ),
               React.createElement("div", { className: "diss-layer-list" },
                 spec.layers.map(function (layer, layerIdx) {
@@ -16526,26 +16550,6 @@ var d = labToolData.dissection || {};
               )
             ),
 
-            // Toolbar: compact secondary controls
-            React.createElement("div", { className: "diss-toolbar flex flex-wrap items-center bg-slate-50 border border-slate-400", role: "toolbar", "aria-label": "Specimen display and lab tool controls", "aria-orientation": "horizontal", onKeyDown: onCompositeToolbarKeyDown },
-
-              React.createElement("span", { className: "diss-toolbar__label", "aria-hidden": "true" }, 'Controls'),
-
-              // ── View toggle ──
-              React.createElement("button", { type: "button", tabIndex: !d.toolbarToolsOpen ? 0 : -1, "aria-label": d.quizMode ? "Accessibility options" : "View and accessibility options", "aria-expanded": !!d.toolbarViewOpen, "aria-controls": "diss-view-tools",
-                onClick: function () { upd('toolbarViewOpen', !d.toolbarViewOpen); upd('toolbarToolsOpen', false); upd('toolbarStudyOpen', false); },
-                className: "flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarViewOpen ? 'bg-blue-600 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-blue-50 active:scale-[0.97]')
-              }, (d.quizMode ? '\u267F Accessibility ' : '\uD83D\uDC41 View & access ') + (d.toolbarViewOpen ? '\u25B2' : '\u25BC')),
-
-              // ── Tools toggle ──
-              !d.quizMode && React.createElement("button", { type: "button", tabIndex: d.toolbarToolsOpen ? 0 : -1, "aria-label": "Lab tool options", "aria-expanded": !!d.toolbarToolsOpen, "aria-controls": "diss-lab-tools",
-                onClick: function () { upd('toolbarToolsOpen', !d.toolbarToolsOpen); upd('toolbarViewOpen', false); upd('toolbarStudyOpen', false); },
-                className: "diss-advanced-only flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.toolbarToolsOpen ? 'bg-emerald-700 text-white shadow-md' : 'transition-colors bg-white text-slate-600 border border-slate-400 hover:bg-emerald-50 active:scale-[0.97]')
-              }, '\uD83D\uDEE0 Tools ' + (d.toolbarToolsOpen ? '\u25B2' : '\u25BC')),
-
-              // ── Study toggle ──
-
-            ),
 
             // ── View group expanded ──
             d.toolbarViewOpen && React.createElement("div", { id: "diss-view-tools", className: "diss-tool-panel flex flex-wrap bg-blue-50 rounded-xl border border-blue-200 animate-[fadeIn_0.2s_ease-out]", role: "region", tabIndex: -1, "aria-label": "View and accessibility controls" },
