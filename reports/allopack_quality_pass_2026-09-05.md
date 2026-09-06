@@ -232,6 +232,27 @@ The general shape is worth keeping: **a harness failure that impersonates the th
 ### What this does and does not settle for publishing
 
 Steps 2 and the load half of step 3 of the seed plan are now automated and green, and step 9 (reading level within the stated band) is covered by the audit. Steps 4 through 7 still need a human: playing a word game to a win and watching the goal tick, the Spanish translation pass, in-app image generation against the shot lists, and the send-home round trip. `catalog/index.json` remains unchanged at two entries.
+## Eleventh pass (same day): three new packs, chosen by where the catalog was thinnest
+
+Counting the catalog by subject and grade rather than by pack decided what to write. Science had fourteen packs; Social Studies had two, both upper grades; Math had five, none below grade 3.
+
+| Pack | Grade | Subject | Standards | Why this one |
+| --- | --- | --- | --- | --- |
+| Ten Is a Bundle | 2 | Math | 2.NBT.A.1, A.3, A.4, B.5 | first math pack below grade 3; also uses `math`, a type only 5 of 26 packs had |
+| Reading a Map | 3 | Social Studies | C3 D2.Geo.1 and D2.Geo.2, RI.3.7 | first elementary social studies pack in the catalog |
+| Why Cities Grew on the Nile | 6 | Social Studies | C3 D2.His.14, D2.Geo.5, D2.His.10, RH.6-8.2 | first world history pack; middle-grade social studies was empty |
+
+Each was written against every gate the previous ten passes built, so they arrived already carrying an anchor chart, a memory aid and an applied challenge, with prose held to the grade band. All three load clean in the deployed app.
+
+**Each has an argument rather than a topic.** Place Value turns on the fact that the same digit is worth three different things depending where it stands, and that a zero is doing work by holding a place open. Map Skills is built on the idea that every map leaves something out on purpose, so the reading ends by asking what the mapmaker chose to show — and the concept sort makes half its cards true-but-unhelpful details a city map would drop. The Egypt pack deliberately refuses to be about pyramids: it follows the chain from a predictable flood to silt to surplus to specialists to writing, notes that much of the earliest writing anywhere is receipts rather than poetry, and closes on whose evidence survived and whose did not.
+
+The Egypt FAQ corrects the story most students arrive with. The evidence from the workers' villages at Giza — bread ovens, medical care, burials of honour — points to paid labourers rather than enslaved crowds, and the answer says so while also saying plainly that Egypt did hold enslaved people, so it is not a clean story either.
+
+**The gates caught one of the three.** The grade-2 challenge brief came in at Flesch-Kincaid 4.4 against a band of 2, and was rewritten before the pack was committed. That is the sixth-pass check doing exactly its job on new work. The id-uniqueness gate from the ninth pass also shaped authoring rather than catching a mistake: prefixes were checked against the catalog before writing, not after.
+
+**The shot lists carry the hard part.** Two of these topics fight the no-raster-text policy directly. A place-value pack is about numerals, and a map pack is made of writing. Both shot lists resolve it the same way and say so explicitly: the picture supplies the quantity or the place, and AlloFlow's native labels supply the symbol or the name — which is the lesson in both cases. A key box is rendered empty with blank space beside each symbol; a scale bar has tick marks and no numbers. The Egypt list adds a rule of its own: no invented hieroglyphs, because plausible-looking nonsense script is the historical equivalent of raster text.
+
+The catalog now holds 29 packs across grades 1 to 8: Science 14, ELA 6, Math 6, Social Studies 4 (counting the American Revolution pack, whose standards are half literacy).
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`
