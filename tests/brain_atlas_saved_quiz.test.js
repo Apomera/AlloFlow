@@ -52,7 +52,7 @@ describe('Brain Atlas saved study rounds', () => {
     expect(s.state().brain3DChallengeActive).toBe(false);
     s.answer(1);
     s.answer(0);
-    expect(s.state().brain3DSavedQuizResults).toEqual([{ key: items[0].key, firstTry: false }]);
+    expect(s.state().brain3DSavedQuizResults).toEqual([{ key: items[0].key, firstTry: false, hinted: false }]);
     s.answer(1); // A model pick after success cannot replace correct feedback.
     expect(s.state().brain3DSavedQuizFeedback.correct).toBe(true);
     s.click('Next structure');
@@ -84,7 +84,10 @@ describe('Brain Atlas saved study rounds', () => {
     s.answer(0);
     s.answer(0);
     expect(s.state().brain3DSavedQuizResults).toHaveLength(1);
-    expect(s.find(node => node.props?.['data-brainatlas-saved-answer'] === items[0].key).props.disabled).toBe(true);
+    // aria-disabled, not disabled: a locked answer must keep keyboard focus
+    const locked = s.find(node => node.props?.['data-brainatlas-saved-answer'] === items[0].key);
+    expect(locked.props['aria-disabled']).toBe('true');
+    expect(locked.props.disabled).toBeUndefined();
   });
 
   it('ends the current round when a saved structure is removed', () => {

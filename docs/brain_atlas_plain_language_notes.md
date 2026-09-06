@@ -192,3 +192,19 @@ There is no new stored state. This reads the check answers that were already bei
 
 Four ui_strings keys are now unreferenced by this tool (views_explored, current_targets, quiz_score, damage_pattern_practice) and could be swept later; they were left in place rather than hand-edited out of a file several sessions are writing at once.
 
+## A saved-set round that asks for retrieval
+
+September 5, 2026. The custom round over a learner's saved 3D structures named the target above an answer list containing that same name. A learner using the accessible answer list could finish the round by matching text, without knowing where anything is or what it does, and the summary read the same either way. The June review flagged this: answer labels should not repeat the prompt when retrieval is intended.
+
+The prompt is now what the structure does, taken from the same teaching lookup the compare tray already uses, so no new anatomy was authored. The name sits behind a Show the name button. Taking that button is recorded on the result and reported in the summary, which says that those items were locating practice rather than recall, and that the whole thing is a record of the round and not a score. The panel states its practice goal in a line above the prompt.
+
+Two fallbacks keep the round answerable. A structure with no usable clue is named outright. Two saved structures can also map to the same atlas region and so share a clue word for word, which would be unanswerable by clue; those are named too. In both cases the prompt is never blank.
+
+The screen-reader announcements moved to the clue as well. They previously read the target name aloud when a round started and again on every advance, which handed the answer to exactly the learners the accessible route exists for.
+
+Two other things in the same panel. The answer buttons used the disabled attribute, so answering removed them from the tab order, the same defect fixed earlier in the headline check and the Stimulation Lab; they now use aria-disabled with a click guard. And they were 34 px tall with 9 px text, so they are now 44 px with 11 px text, and the clue reads at 13 px.
+
+Layout checked in Chromium at 1280, 390 and 320 CSS px: every answer button 44 px tall, the hint button 44 px, nothing overflowing its box.
+
+Worth knowing: the clue is the region's clinical function text, so it reads at the level of the rest of the 3D surface rather than in plain language. Whether that surface should get a plain tier is a separate question from this fix.
+

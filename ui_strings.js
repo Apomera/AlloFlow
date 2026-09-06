@@ -16385,6 +16385,33 @@
       "saved_scale": " rectangle. Saved models use the same size unit square."
     },
     "artstudio": {
+      "a11y_symmetry_canvas": "Symmetry drawing canvas in {value1} mode, using {value2} and {value3} blending. Origin at {value4} percent x, {value5} percent y.",
+      "a11y_sym_pattern_bilateral": "bilateral mirror",
+      "a11y_sym_pattern_kaleidoscope": "kaleidoscope",
+      "a11y_sym_pattern_rotational": "rotational",
+      "a11y_sym_stroke_dots": "dot stamps",
+      "a11y_sym_stroke_line": "straight lines",
+      "a11y_sym_stroke_eraser": "symmetric erasing",
+      "a11y_sym_stroke_freehand": "continuous freehand",
+      "a11y_blend_glow": "glow",
+      "a11y_blend_normal": "normal",
+      "a11y_sculpture_preview": "3D sculpture preview. {value1}. Auto-rotation {value2}. Position snapping {value3}. Transform constraint {value4}.",
+      "a11y_state_running": "running",
+      "a11y_snap_units": "{value1} units",
+      "a11y_state_off": "off",
+      "sculpt_print_lab": "Print Lab",
+      "a11y_generative_canvas": "Generative art canvas using {value1} style with {value2} particles; {value3}.",
+      "a11y_string_art_output": "String-art output: {value1} nails arranged on a {value2} frame, connected with multiplier {value3} using {value4} threads at {value5} percent opacity.",
+      "a11y_op_art_output": "Op Art output: {value1} at density {value2} and speed {value3}, {value4}.",
+      "a11y_op_concentric": "concentric rings",
+      "a11y_op_checkerboard": "a warped checkerboard grid",
+      "a11y_op_moire": "overlapping Moire line fields",
+      "a11y_op_waves": "vibrating wavy stripes",
+      "a11y_state_animating": "animating",
+      "a11y_gradient_output": "Gradient output: {value1}{value2}, {value3} blend, with {value4} color stops: {value5}.",
+      "a11y_gradient_angle": " at {value1} degrees",
+      "a11y_gradient_stop": "hue {value1} at {value2} percent",
+      "a11y_list_separator": ", ",
       "a11y_word_this_artwork": "this artwork",
       "a11y_word_rainbow": "rainbow",
       "a11y_word_single_color": "single-color",
@@ -20192,7 +20219,6 @@
       "obs_step_of": "of",
       "obs_step_named": "named objects up now",
       "obs_camera_help3": "Drag to look around, or focus the sky and use arrow keys. Home resets the view. Click any star, planet or object to identify it; press Enter to identify what is at the centre of the view. Next object and Previous object, or the n and p keys, turn you from one named object to the next as though you were turning on the spot, and identify each one. Find buttons turn the camera toward a particular object when it is above the horizon.",
-      "layer_catalog_stars": "Catalogue star field",
       "obs_also_called": "Also called",
       "obs_name_note": "Catalogues keep different spellings and designations for one star, so you will meet both.",
       "obs_brightness_title": "Brightness",
@@ -20211,7 +20237,8 @@
       "obs_extinction_title": "Through the air",
       "obs_extinction_lead": "dimmed by about",
       "obs_extinction_tail": "magnitudes at this altitude. Light from something low crosses far more air than light from overhead, so it fades and reddens. The same object looks brighter once it climbs.",
-      "obs_when_best2": "Best in a dark sky around"
+      "obs_when_best2": "Best in a dark sky around",
+      "layer_catalog_stars": "Catalogue star field"
     },
     "atctower": {
       "first_landing": "First Landing",
@@ -25589,7 +25616,15 @@
       "checks_answered_note": "understanding checks on region cards",
       "look_again_at": "Look again at",
       "quiz_answers": "Quiz answers",
-      "damage_pattern_practice_note": "damage-pattern practice, not a grade"
+      "damage_pattern_practice_note": "damage-pattern practice, not a grade",
+      "saved_quiz_started": "Saved structure round started. Find the structure that",
+      "saved_quiz_name_is": "The structure is",
+      "saved_quiz_next_clue": "Next structure. Find the one that",
+      "saved_quiz_hinted_note": "of these were answered after the name was shown, so those were locating practice rather than recall. This is a record of the round, not a score.",
+      "saved_quiz_no_hint_note": "Answered from the clue alone. This is a record of the round, not a score.",
+      "saved_quiz_goal": "Practice goal: connect what a structure does to where it sits. Showing the name turns the round into locating practice instead, which the summary records.",
+      "saved_quiz_find_the_structure": "Find the structure that",
+      "saved_quiz_show_name": "Show the name"
     },
     "bridgelab": {
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",
@@ -41038,8 +41073,6 @@
       "nebtype_emission": "Emission",
       "nebtype_planetary": "Planetary",
       "nebtype_dark": "Dark",
-      "canvas_mass_solar": "{mass} Solar Masses",
-      "canvas_progenitor_mass": "Started as a {mass} M☉ star",
       "dur_forever": "Forever",
       "collapse_bd_title": "No sustained stellar fusion",
       "collapse_bd_badge": "Substellar",
@@ -41268,7 +41301,9 @@
       "real_sky_zoom_in": "Zoom atlas in",
       "real_sky_reset_view": "Reset to selected target",
       "real_sky_controls_hint": "Drag to pan · scroll or pinch to zoom · right-click to identify",
-      "real_sky_credit": "Real survey imagery and object data via CDS Aladin Lite and SIMBAD."
+      "real_sky_credit": "Real survey imagery and object data via CDS Aladin Lite and SIMBAD.",
+      "canvas_mass_solar": "{mass} Solar Masses",
+      "canvas_progenitor_mass": "Started as a {mass} M☉ star"
     },
     "gamestudio": {
       "sprites": "Sprites",
