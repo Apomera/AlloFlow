@@ -1,0 +1,596 @@
+{
+  "allopack": {
+    "spec": "0.1",
+    "title": "Did Anything New Actually Form? — Reactions and Conservation of Mass",
+    "author": "AlloFlow community catalog (authored by Claude, reviewed by A. Pomeranz)",
+    "license": "CC-BY-4.0",
+    "language": "en",
+    "gradeLevel": "8th Grade",
+    "standards": "NGSS MS-PS1-2 (analyze and interpret data on the properties of substances before and after the substances interact to determine if a chemical reaction has occurred); NGSS MS-PS1-5 (develop and use a model to describe how the total number of atoms does not change in a chemical reaction and thus mass is conserved); CCSS.ELA-LITERACY.RST.6-8.3 (follow precisely a multistep procedure when carrying out experiments, taking measurements, or performing technical tasks)",
+    "createdAt": "2026-09-06T00:10:00.000Z",
+    "imageShotList": "allopacks/chemical_reactions_grade8.IMAGES.md"
+  },
+  "sourceTopic": "Chemical Reactions and Conservation of Mass",
+  "history": [
+    {
+      "id": "cr-directions",
+      "type": "directions",
+      "title": "Check Before You Claim",
+      "timestamp": "2026-09-06T00:10:00.000Z",
+      "data": {
+        "body": "**Due:** (your teacher will tell you)\n\nBubbles are not proof. Neither is a colour change. This week you learn what actually counts as evidence that a new substance formed, and why mass that seems to disappear never really does.\n\n1. Read **Did Anything New Actually Form?**\n2. Learn the words in **Reaction Words**, then win the **Crossword**.\n3. Study the **Signs and Their Impostors** chart — it is the heart of the unit.\n4. Trace **What Happens to the Atoms** before the quiz.\n5. Sort the cards in **Chemical or Physical?**\n6. Take **Reaction Check**.\n7. Lock it in with **Remember the Two Rules**.\n8. Read **Reaction Questions Kids Ask**.\n9. Finish with **Investigation: The Sealed Bag**.\n\nYour job this week: catch one claim — an advert, a video, a classmate — that treats a sign as if it were proof. ⚗️",
+        "objectives": [
+          {
+            "id": "cr-goal-crossword",
+            "label": "Win the Crossword",
+            "kind": "game",
+            "gameType": "crossword",
+            "resourceRef": "cr-glossary"
+          },
+          {
+            "id": "cr-goal-matching",
+            "label": "Win the Matching game",
+            "kind": "game",
+            "gameType": "matching",
+            "resourceRef": "cr-glossary"
+          },
+          {
+            "id": "cr-goal-xp",
+            "label": "Earn 25 XP",
+            "kind": "xp",
+            "amount": 25
+          },
+          {
+            "id": "cr-goal-catch",
+            "label": "I caught a claim that treated a sign as proof",
+            "kind": "manual"
+          }
+        ]
+      },
+      "meta": "8th Grade • 4 goals • catch a sign treated as proof"
+    },
+    {
+      "id": "cr-reading",
+      "type": "simplified",
+      "title": "Did Anything New Actually Form?",
+      "timestamp": "2026-09-06T00:10:01.000Z",
+      "data": "## Did Anything New Actually Form?\n\nDrop an antacid tablet in water and it fizzes furiously. Boil that same water and it bubbles just as hard. One of those is a chemical **reaction** and one is not. The bubbles cannot tell you which.\n\nThat is the problem this lesson solves.\n\nA **substance** is a material with its own fixed **property** set: melting point, density, colour, how it reacts with other things. In a chemical reaction, the substances you start with — the **reactants** — are used up, and different substances — the **products** — appear in their place. In a **physical** change, no new substance appears. The same stuff has changed form.\n\nWater boiling is physical. Steam is still water. Sugar dissolving is physical too, which surprises people, because the sugar vanishes from sight. Evaporate the water and the sugar comes back, unchanged. It was never destroyed, only spread out.\n\nSo what counts as evidence? Textbooks list five **indicators**: bubbles of gas, a colour change, a temperature change, light, and a **precipitate** — a solid appearing when two clear liquids mix.\n\nHere is the part usually left out. **Every one of those five has a physical impostor.** Bubbles can be boiling. A colour change can be dilution. A temperature change can be dissolving, which warms or cools a solution without any reaction at all. Each indicator says *look closer*. None of them proves anything by itself.\n\nThe real test is the definition. Compare the properties before and after. If what you have at the end melts at a different temperature, or has a different density, or refuses to dissolve where the original dissolved easily, then you have different substances, and a reaction happened.\n\nNow the second rule, and it is stranger.\n\nBurn a log and the ash weighs far less than the wood. Mass looks lost. It is not. Carbon dioxide and water vapour left as gases, and nobody weighed them. Do the same burning inside a sealed container and the total mass does not budge.\n\nThat is because **atoms** are not created or destroyed in a reaction. They are rearranged. Every atom that goes in comes out, in some new arrangement, so mass is **conserved**. Antoine Lavoisier established this in the 1770s by insisting on sealed vessels and a good balance, which is a reminder that better measurement, not a better idea, settled it.\n\nSo ask two questions. Are the properties different now? And where did the atoms go?",
+      "meta": "8th Grade • Leveled reading • ~430 words",
+      "imageSlot": "cr-img-impostors"
+    },
+    {
+      "id": "cr-glossary",
+      "type": "glossary",
+      "title": "Reaction Words",
+      "timestamp": "2026-09-06T00:10:02.000Z",
+      "data": [
+        {
+          "term": "Reaction",
+          "def": "A change in which atoms rearrange and new substances appear.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Reactant",
+          "def": "A substance you start with, before the change.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Product",
+          "def": "A substance that exists only after the change.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Substance",
+          "def": "A material with its own fixed set of properties.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Property",
+          "def": "Something measurable about a material, such as density or melting point.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Physical",
+          "def": "Describing a change of form only, with nothing new made.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Precipitate",
+          "def": "A solid that appears when two clear liquids are mixed.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Indicator",
+          "def": "A sign worth investigating, which on its own proves nothing.",
+          "tier": "Academic"
+        },
+        {
+          "term": "Atom",
+          "def": "The smallest particle of an element that keeps its identity.",
+          "tier": "Domain-Specific"
+        },
+        {
+          "term": "Conserved",
+          "def": "Unchanged in total amount, even when the parts look different.",
+          "tier": "Academic"
+        }
+      ],
+      "meta": "10 terms • Tiered • all one word, all fit the crossword grid"
+    },
+    {
+      "id": "cr-anchor",
+      "type": "anchor-chart",
+      "title": "Signs and Their Impostors",
+      "timestamp": "2026-09-06T00:10:03.000Z",
+      "data": {
+        "chartType": "reference",
+        "title": "EVERY SIGN HAS A LOOKALIKE",
+        "sections": [
+          {
+            "label": "BUBBLES",
+            "bullets": [
+              "Could be: a gas product forming",
+              "Impostor: water boiling, or dissolved gas escaping",
+              "Ask: is the gas a new substance?"
+            ],
+            "iconPrompt": "a beaker with rising bubbles"
+          },
+          {
+            "label": "COLOUR CHANGE",
+            "bullets": [
+              "Could be: a product with a different colour",
+              "Impostor: dilution, or two colours simply mixing",
+              "Ask: is the colour a new substance or a thinner one?"
+            ],
+            "iconPrompt": "two liquids meeting with a shifting colour band"
+          },
+          {
+            "label": "TEMPERATURE CHANGE",
+            "bullets": [
+              "Could be: energy released or absorbed by a reaction",
+              "Impostor: dissolving, which warms or cools with no reaction",
+              "Ask: has anything new appeared?"
+            ],
+            "iconPrompt": "a thermometer beside a stirred beaker"
+          },
+          {
+            "label": "A PRECIPITATE",
+            "bullets": [
+              "Could be: an insoluble product forming",
+              "Impostor: a solid settling out that was only suspended",
+              "The strongest of the five, still not proof"
+            ],
+            "iconPrompt": "a cloudy solid forming where two clear liquids meet"
+          },
+          {
+            "label": "THE ACTUAL TEST",
+            "bullets": [
+              "Compare properties before and after",
+              "Different melting point, density, or solubility = different substance",
+              "Then ask where the atoms went"
+            ],
+            "iconPrompt": "a balance scale with a sealed flask on one pan"
+          }
+        ]
+      },
+      "meta": "5 parts • four impostors and the real test"
+    },
+    {
+      "id": "cr-outline",
+      "type": "outline",
+      "title": "What Happens to the Atoms",
+      "timestamp": "2026-09-06T00:10:04.000Z",
+      "data": {
+        "main": "Atoms rearrange; nothing is created or destroyed",
+        "branches": [
+          {
+            "title": "Physical change: no new substance",
+            "items": [
+              "Boiling water — steam is still water",
+              "Sugar dissolving — evaporate the water and the sugar returns unchanged",
+              "The same atoms, in the same groupings, arranged differently in space"
+            ]
+          },
+          {
+            "title": "Chemical reaction: new substances",
+            "items": [
+              "Reactants are used up; products appear in their place",
+              "The atoms are the same atoms, bonded into different groupings",
+              "Products have their own properties, not blends of the old ones"
+            ]
+          },
+          {
+            "title": "Why mass seems to vanish",
+            "items": [
+              "Burn a log: the ash weighs far less than the wood",
+              "Carbon dioxide and water vapour left as gases, unweighed",
+              "Do it in a sealed container and the total mass does not change"
+            ]
+          },
+          {
+            "title": "Why mass is actually conserved",
+            "items": [
+              "Every atom that goes in comes out",
+              "Counting atoms on both sides is what balancing an equation does",
+              "Lavoisier settled it in the 1770s with sealed vessels and a good balance"
+            ]
+          },
+          {
+            "title": "The two questions to ask",
+            "items": [
+              "Are the properties different now?",
+              "Where did the atoms go?",
+              "An indicator only tells you to start asking"
+            ]
+          }
+        ]
+      },
+      "meta": "5 branches • concept map • the atom-level story"
+    },
+    {
+      "id": "cr-memory",
+      "type": "memory-aid",
+      "title": "Remember the Two Rules",
+      "timestamp": "2026-09-06T00:10:05.000Z",
+      "meta": "8th Grade • 2 memory aids • properties test, and atom counting",
+      "data": {
+        "schemaVersion": 2,
+        "title": "Remember the Two Rules",
+        "instructions": "Two cards hold the reasoning. Study the example, build one of your own, then explain what it keeps you from getting wrong.",
+        "selectionMode": "manual",
+        "selectedTypes": [
+          "keyword-association",
+          "analogy-pattern"
+        ],
+        "authorshipMode": "scaffolded",
+        "reflectionLevel": "quick",
+        "reasoningRequired": false,
+        "sourceExcerpt": "Every one of those five has a physical impostor. Compare the properties before and after. Atoms are not created or destroyed in a reaction. They are rearranged.",
+        "lessonRef": {
+          "resourceId": "cr-reading",
+          "title": "Did Anything New Actually Form?"
+        },
+        "cards": [
+          {
+            "id": "cr-ma-signs",
+            "target": "An indicator is a prompt to investigate, not proof",
+            "essentialFacts": [
+              "The five indicators are bubbles, colour change, temperature change, light, and a precipitate.",
+              "Every one of them has a physical impostor.",
+              "The real test is comparing properties before and after."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "keyword-association",
+            "mode": "scaffolded",
+            "aiExample": "SIGNS ARE SUSPECTS. A suspect is worth questioning and is not a conviction. Bubbles are a suspect. Boiling is the alibi. You convict on properties, not on appearance.",
+            "mapping": "Calling the indicators suspects keeps their real status: enough to start an investigation, never enough to close one.",
+            "scaffoldStarter": "____ is a suspect. Its alibi is ____. I convict by ____.",
+            "scaffoldSteps": [
+              "Pick one of the five indicators.",
+              "Name its physical impostor.",
+              "Say what would actually settle it."
+            ],
+            "coachPrompts": [
+              "Which of the five has the weakest alibi, and why?"
+            ],
+            "studentPrompt": "Build your own phrase for what an indicator is worth.",
+            "reasoningPrompt": "Why is treating a sign as proof the most common mistake here?",
+            "hookFact": {
+              "text": "Drop an antacid tablet in water and it fizzes furiously. Boil that same water and it bubbles just as hard.",
+              "sourceTitle": "Did Anything New Actually Form? (this lesson)"
+            }
+          },
+          {
+            "id": "cr-ma-atoms",
+            "target": "Why mass is conserved even when it looks lost",
+            "essentialFacts": [
+              "Atoms are not created or destroyed in a reaction; they are rearranged.",
+              "Burning a log seems to lose mass because gases left unweighed.",
+              "In a sealed container the total mass does not change."
+            ],
+            "factLocked": true,
+            "factVerified": true,
+            "type": "analogy-pattern",
+            "mode": "scaffolded",
+            "aiExample": "Think of a bag of alphabet tiles. Rearranged into new words, the tiles are the same tiles and the bag weighs the same. Tip some on the floor and it only looks lighter because you stopped counting those.",
+            "mapping": "Tiles cannot be created by spelling, which is exactly the constraint atoms are under, and the tiles on the floor stand in for the gases nobody weighed.",
+            "scaffoldStarter": "The atoms are like ____. When mass looks lost, really ____.",
+            "scaffoldSteps": [
+              "Pick something that can be rearranged but not created.",
+              "Say what rearranging changes.",
+              "Say what it does not change."
+            ],
+            "coachPrompts": [
+              "In the burning log, what are the tiles on the floor?"
+            ],
+            "studentPrompt": "Build your own comparison for conservation of mass.",
+            "reasoningPrompt": "How does your comparison explain the sealed container result?",
+            "hookFact": {
+              "text": "Antoine Lavoisier established this in the 1770s by insisting on sealed vessels and a good balance.",
+              "sourceTitle": "Did Anything New Actually Form? (this lesson)"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "cr-sort",
+      "type": "concept-sort",
+      "title": "Chemical or Physical?",
+      "timestamp": "2026-09-06T00:10:06.000Z",
+      "data": {
+        "categories": [
+          {
+            "id": "cr-chem",
+            "label": "Chemical: new substances formed",
+            "color": "bg-violet-500"
+          },
+          {
+            "id": "cr-phys",
+            "label": "Physical: same substance, new form",
+            "color": "bg-emerald-500"
+          }
+        ],
+        "items": [
+          {
+            "id": "cr1",
+            "content": "Iron left in damp air turns to rust",
+            "categoryId": "cr-chem"
+          },
+          {
+            "id": "cr2",
+            "content": "A silver spoon slowly tarnishes black",
+            "categoryId": "cr-chem"
+          },
+          {
+            "id": "cr3",
+            "content": "Baking soda and vinegar fizz and go flat",
+            "categoryId": "cr-chem"
+          },
+          {
+            "id": "cr4",
+            "content": "A cut apple turns brown on the counter",
+            "categoryId": "cr-chem"
+          },
+          {
+            "id": "cr5",
+            "content": "Sugar dissolves and disappears into tea",
+            "categoryId": "cr-phys"
+          },
+          {
+            "id": "cr6",
+            "content": "Water boils and rises away as steam",
+            "categoryId": "cr-phys"
+          },
+          {
+            "id": "cr7",
+            "content": "A copper wire is drawn out thinner",
+            "categoryId": "cr-phys"
+          },
+          {
+            "id": "cr8",
+            "content": "Salt water is left out until crystals form",
+            "categoryId": "cr-phys"
+          },
+          {
+            "id": "cr9",
+            "content": "Dry ice smokes away without a puddle",
+            "categoryId": "cr-phys"
+          },
+          {
+            "id": "cr10",
+            "content": "A wax candle melts and pools in the dish",
+            "categoryId": "cr-phys"
+          }
+        ]
+      },
+      "meta": "2 buckets • 10 cards • several fizz, bubble or change colour on purpose"
+    },
+    {
+      "id": "cr-quiz",
+      "type": "quiz",
+      "title": "Reaction Check",
+      "timestamp": "2026-09-06T00:10:07.000Z",
+      "data": {
+        "questions": [
+          {
+            "type": "mcq",
+            "question": "A beaker of clear liquid starts bubbling. What have you established?",
+            "options": [
+              "That a chemical reaction is definitely taking place",
+              "That a gas is being produced by new substances",
+              "That the liquid must have been an acid to begin with",
+              "That something is worth investigating, and nothing more"
+            ],
+            "correctAnswer": "That something is worth investigating, and nothing more",
+            "conceptLabel": "an indicator is not proof"
+          },
+          {
+            "type": "mcq",
+            "question": "Which observation would best settle whether a reaction occurred?",
+            "options": [
+              "The mixture became noticeably warmer while stirring",
+              "The solid left behind melts at a different temperature",
+              "The colour shifted from dark blue to a paler blue",
+              "Bubbles rose steadily from the bottom of the flask"
+            ],
+            "correctAnswer": "The solid left behind melts at a different temperature",
+            "conceptLabel": "properties are the real test"
+          },
+          {
+            "type": "mcq",
+            "question": "Why is sugar dissolving in water a physical change?",
+            "options": [
+              "Because the sugar can be recovered unchanged by evaporating",
+              "Because no bubbles or colour change happen while stirring",
+              "Because water is a liquid and sugar is a solid substance",
+              "Because the mixture does not get hot enough to react"
+            ],
+            "correctAnswer": "Because the sugar can be recovered unchanged by evaporating",
+            "conceptLabel": "physical change keeps the substance"
+          },
+          {
+            "type": "mcq",
+            "question": "Burning a log leaves ash weighing far less than the wood. Why is mass still conserved?",
+            "options": [
+              "Some mass converts into the heat and light given off",
+              "Mass is only conserved in reactions that stay sealed",
+              "Gases left the system and were never put on the balance",
+              "The ash is denser, so the balance reading misleads you"
+            ],
+            "correctAnswer": "Gases left the system and were never put on the balance",
+            "conceptLabel": "mass is conserved"
+          },
+          {
+            "type": "mcq",
+            "question": "What actually happens to atoms during a chemical reaction?",
+            "options": [
+              "Some are destroyed and replaced by different atoms",
+              "They are rearranged into different groupings, none lost",
+              "They are compressed, which is why products weigh less",
+              "New atoms form from the energy released by the change"
+            ],
+            "correctAnswer": "They are rearranged into different groupings, none lost",
+            "conceptLabel": "mass is conserved"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "A classmate mixes two liquids, sees the beaker get warm, and writes \"a chemical reaction occurred.\" What is wrong with that reasoning, and what should they check?",
+            "expectedAnswer": "A temperature change is an indicator, not proof. Dissolving can warm or cool a solution with no reaction at all. They should compare the properties of what they have now with what they started with, such as melting point, density or solubility, and see whether a genuinely different substance is present.",
+            "conceptLabel": "an indicator is not proof"
+          },
+          {
+            "type": "shortAnswer",
+            "question": "Design a way to show that mass is conserved when baking soda reacts with vinegar. Explain why your setup works.",
+            "expectedAnswer": "Carry out the reaction in a sealed container, such as a closed bag or a stoppered flask, and weigh it before and after. The mass stays the same because the carbon dioxide produced cannot escape and is still on the balance. Doing it in an open beaker would appear to lose mass, because the gas leaves unweighed.",
+            "conceptLabel": "mass is conserved"
+          }
+        ],
+        "reflections": [
+          {
+            "text": "Where have you seen a sign treated as proof, in science or anywhere else?"
+          },
+          {
+            "text": "Which of the five indicators would fool you most easily, and why?"
+          }
+        ]
+      },
+      "meta": "5 picks + 2 write-outs • the last asks you to design the test"
+    },
+    {
+      "id": "cr-faq",
+      "type": "faq",
+      "title": "Reaction Questions Kids Ask",
+      "timestamp": "2026-09-06T00:10:08.000Z",
+      "data": [
+        {
+          "question": "Is cooking a chemical change? 🍳",
+          "answer": "Usually yes. A raw egg turning solid is proteins changing shape and bonding differently, and you cannot get the raw egg back. Melting butter, though, is physical. Cooking is a mix of both."
+        },
+        {
+          "question": "Does mass conservation hold in nuclear reactions?",
+          "answer": "Not in the same simple way. In nuclear changes a tiny amount of mass converts to energy, which is what E = mc squared describes. For every chemical reaction you will meet in this course, mass is conserved."
+        },
+        {
+          "question": "Why does a cut apple go brown? 🍎",
+          "answer": "Oxygen in the air reacts with compounds in the fruit, helped along by an enzyme released when you cut the cells open. It is a genuine chemical reaction, which is why lemon juice slows it down."
+        },
+        {
+          "question": "Can a reaction go backwards?",
+          "answer": "Many can. Some run both ways at once and settle at a balance point. Others are practically one-way, like burning. Reversible does not mean easy to reverse."
+        },
+        {
+          "question": "Is dissolving really not a reaction? 🧂",
+          "answer": "Usually not, and this trips up everyone. Salt in water separates into particles that are still salt, and evaporating brings the salt back. Some dissolvings do involve reactions, so the recovery test is the one to trust."
+        },
+        {
+          "question": "How did anyone prove atoms are conserved before they could see one?",
+          "answer": "By weighing very carefully in sealed vessels. Lavoisier could not see an atom, but he could show that closed systems do not change mass. Good measurement settled it long before good microscopes existed."
+        }
+      ],
+      "meta": "6 questions • the nuclear one is the honest exception to the rule"
+    },
+    {
+      "id": "cr-challenge",
+      "type": "applied-challenge",
+      "title": "Investigation: The Sealed Bag",
+      "timestamp": "2026-09-06T00:10:09.000Z",
+      "meta": "8th Grade • Investigation brief • prove it, do not assert it",
+      "data": {
+        "schemaVersion": 6,
+        "title": "The Sealed Bag",
+        "instructions": "Design and run a test that shows mass is conserved in a reaction that produces a gas. Then explain why an open beaker would have told you the opposite.",
+        "selectionMode": "manual",
+        "family": "investigate",
+        "fitReason": "MS-PS1-5 asks students to model conservation of mass. Running the same reaction open and sealed makes the apparent loss real and then makes it disappear, which is far more convincing than being told the atoms are still there.",
+        "agencyMode": "co-framed",
+        "scope": "standard",
+        "brief": {
+          "family": "investigate",
+          "context": "Your class has baking soda, vinegar, resealable bags, small beakers, a balance reading to 0.01 g, and safety glasses. Every group runs the reaction twice: once open and once sealed.",
+          "role": "Chemists testing a claim",
+          "audience": "A group in the year below who have been told mass is conserved and do not believe it",
+          "drivingQuestion": "Does the total mass change when baking soda reacts with vinegar, and why do the open and sealed versions disagree?",
+          "seedDirection": "Weigh everything you are going to use, including the container and the lid, before you mix anything. If it will be on the balance at the end, it must be on the balance at the start.",
+          "lockedLessonFacts": [
+            "Atoms are not created or destroyed in a reaction; they are rearranged.",
+            "Burning a log seems to lose mass because gases leave unweighed.",
+            "In a sealed container the total mass does not change.",
+            "An indicator such as bubbling is a prompt to investigate, not proof."
+          ],
+          "openQuestions": [
+            "What exactly has to be on the balance for the measurement to be fair?",
+            "How much of a change would count as real, given how precise your balance is?",
+            "What would you predict if the bag leaked slightly?"
+          ],
+          "stakeholders": [
+            "The younger group who need convincing",
+            "Your lab partner, who records the masses",
+            "Anyone repeating your procedure later"
+          ],
+          "criteria": [
+            "Masses recorded before and after for both the open and the sealed run",
+            "The procedure is written so another group could repeat it exactly",
+            "The difference in each run is compared against the balance's precision",
+            "The explanation accounts for the open result without abandoning conservation",
+            "At least four glossary words used correctly"
+          ],
+          "constraints": [
+            "One reaction, run both ways",
+            "Safety glasses on, bags not overfilled",
+            "No claim without a measurement behind it"
+          ],
+          "deliverable": "A one-page report: your procedure, a table of masses for both runs, the difference in each, and a paragraph explaining to the younger group why the open beaker appeared to lose mass while nothing was actually lost.",
+          "factLocked": true,
+          "factVerified": true
+        },
+        "supports": {
+          "parallelExample": {
+            "context": "A group found their sealed bag lost 0.03 g and wanted to declare conservation broken.",
+            "move": "They checked their balance, which read to 0.01 g and drifted by about 0.02 g between weighings, and then noticed the bag had been squeezed. They resealed, repeated it three times, and the difference fell inside their measurement uncertainty.",
+            "whyItHelps": "They compared the size of the difference to the precision of the instrument instead of treating any non-zero number as a result."
+          },
+          "frameStarter": "In the open beaker the mass ____. In the sealed bag it ____. The difference is explained by ____.",
+          "frameChoices": [
+            "Baking soda and vinegar",
+            "An antacid tablet and water",
+            "The same reaction at two temperatures",
+            "The same reaction in two container sizes"
+          ],
+          "coachPrompts": [
+            "Was everything that ended up on the balance also on it at the start?",
+            "Is your difference bigger than your balance can actually resolve?",
+            "Could you convince someone who does not already believe you?"
+          ]
+        },
+        "coachHint": "Weigh the container too. Run it open and sealed.",
+        "sourceExcerpt": "Do the same burning inside a sealed container and the total mass does not budge.",
+        "lessonRef": {
+          "resourceId": "cr-reading",
+          "title": "Did Anything New Actually Form?"
+        }
+      }
+    }
+  ]
+}
