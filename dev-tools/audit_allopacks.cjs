@@ -188,6 +188,33 @@ for (const f of files) {
   // Settled 2026-09-05: every pack carries a wall reference. A teacher browsing the catalog
   // expects one, and a pack without it is the odd one out rather than a deliberate choice.
   if (!by('anchor-chart').length) flags.push('no anchor chart (every pack in the catalog has one)');
+  // ── CITATION-SHAPED CLAIMS ───────────────────────────────────────────────
+  // These packs are AI-authored and the catalog has no sourcing mechanism, so a sentence that
+  // LOOKS like a citation is a liability: a reader cannot tell an invented statistic from a real
+  // one, and neither can any gate. Found 2026-09-06 in the argument pack, of all places: a
+  // concept-sort card read "A 2019 survey found 62 percent of families eat out" — plausible,
+  // specific, and entirely made up, in a lesson about evaluating evidence.
+  // This flags the SHAPE for a human to look at. Either attach a real source, or reword it as
+  // something local and obviously illustrative ("our class survey found 19 of 28 ...").
+  const citationShaped = [
+    /\b(19|20)\d{2}\b[^.]{0,80}\b\d{1,3}\s*percent/i,
+    /\b\d{1,3}\s*percent[^.]{0,80}\b(19|20)\d{2}\b/i,
+    /\b(?:a|the)\s+(19|20)\d{2}\s+(?:survey|study|report|poll)/i,
+  ];
+  const walkStrings = (node, out) => {
+    if (Array.isArray(node)) node.forEach((n) => walkStrings(n, out));
+    else if (node && typeof node === 'object') Object.values(node).forEach((n) => walkStrings(n, out));
+    else if (typeof node === 'string') out.push(node);
+    return out;
+  };
+  for (const text of walkStrings(items, [])) {
+    for (const sentence of String(text).split(/(?<=[.!?])\s+/)) {
+      if (citationShaped.some((re) => re.test(sentence))) {
+        flags.push(`citation-shaped claim needs a real source or rewording: "${sentence.trim().slice(0, 90)}"`);
+      }
+    }
+  }
+
   if (faq && faq.data.length < 4) flags.push(`faq has ${faq.data.length} questions`);
   if (frames && frames.data.items.length < 4) flags.push(`sentence-frames has ${frames.data.items.length} frames`);
   if (!/[A-Z0-9.-]+\s*\(/.test(pack.allopack.standards || '')) flags.push('standards lack a parenthetical gloss');
