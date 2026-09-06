@@ -565,6 +565,16 @@ function __alloBrainAtlasInk(color) {
 // Extracted from stem_tool_science.js
 var prefersReducedMotion = (function() { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } })();
 (function() {
+  // Translator reachable from module scope, IIFE-private so it is not a global.
+  // Installed because this tool had no fallback-aware helper: labels built in
+  // helpers defined above render() could not see a render-scoped one, and a
+  // helper named `t` is shadowed here by numeric `var t` in inner scopes.
+  var __alloBrainCtx = null;
+  var __alloT = function (k, fb) {
+    var v;
+    try { v = (__alloBrainCtx && typeof __alloBrainCtx.t === "function") ? __alloBrainCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
   if (!window.StemLab || !window.StemLab.registerTool) return;
 
   // ═══ 🔬 brainAtlas (brainAtlas) ═══
@@ -587,6 +597,7 @@ var prefersReducedMotion = (function() { try { return window.matchMedia('(prefer
       { id: 'quiz_3', label: 'Answer 3 brain quiz questions', icon: '🎯', check: function(d) { return (d.quizCorrect || 0) >= 3; }, progress: function(d) { return (d.quizCorrect || 0) + '/3'; } }
     ],
     render: function(ctx) {
+      __alloBrainCtx = ctx;
       // Aliases — maps ctx properties to original variable names
       var React = ctx.React;
       var h = React.createElement;
@@ -6991,7 +7002,7 @@ var d = labToolData.brainAtlas || {};
               return;
             }
             if (stimCompareIds.length >= 2) {
-              if (typeof announceToSR === 'function') announceToSR('Treatment comparison already has two modalities. Remove one before adding another.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_treatment_comparison_already_has_two_modalities_r', 'Treatment comparison already has two modalities. Remove one before adding another.'));
               return;
             }
             var nextStimCompareIds = stimCompareIds.concat(item.id);
@@ -7000,7 +7011,7 @@ var d = labToolData.brainAtlas || {};
           }
           function viewStimTreatmentComparison() {
             if (stimCompareItems.length < 2) {
-              if (typeof announceToSR === 'function') announceToSR('Choose two treatment modalities before viewing the comparison.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_choose_two_treatment_modalities_before_viewing_th', 'Choose two treatment modalities before viewing the comparison.'));
               return;
             }
             setTimeout(function () {
@@ -7028,7 +7039,7 @@ var d = labToolData.brainAtlas || {};
               return;
             }
             if (psychCompareIds.length >= 2) {
-              if (typeof announceToSR === 'function') announceToSR('Comparison already has two classes. Remove one before adding another.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_comparison_already_has_two_classes_remove_one_bef', 'Comparison already has two classes. Remove one before adding another.'));
               return;
             }
             var nextCompareIds = psychCompareIds.concat(item.id);
@@ -7037,7 +7048,7 @@ var d = labToolData.brainAtlas || {};
           }
           function viewPsychopharmComparison() {
             if (psychCompareItems.length < 2) {
-              if (typeof announceToSR === 'function') announceToSR('Choose two medication classes before viewing the comparison.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_choose_two_medication_classes_before_viewing_the', 'Choose two medication classes before viewing the comparison.'));
               return;
             }
             setTimeout(function () {
@@ -7970,7 +7981,7 @@ var d = labToolData.brainAtlas || {};
                 state.updateSlicePlane();
                 state.setPreset(state.viewKey, false);
                 brainAtlas3DSetOverlay(canvas, 'ready', '', '');
-                if (typeof announceToSR === 'function') announceToSR('Interactive 3D brain anatomy model ready. Drag to rotate, scroll to zoom, or select a structure.');
+                if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_interactive_3d_brain_anatomy_model_ready_drag_to', 'Interactive 3D brain anatomy model ready. Drag to rotate, scroll to zoom, or select a structure.'));
               }, function (progress) {
                 if (!progress || !progress.total) return;
                 var percent = Math.max(1, Math.min(99, Math.round((progress.loaded / progress.total) * 100)));
@@ -8041,7 +8052,7 @@ var d = labToolData.brainAtlas || {};
 
           function flipBrainAtlas3DSlice() {
             upd('brain3DSliceFlip', !brain3DSliceFlip);
-            if (typeof announceToSR === 'function') announceToSR('Cutaway visible side flipped.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_cutaway_visible_side_flipped', 'Cutaway visible side flipped.'));
           }
 
           var brain3DSliceOrientation = brain3DSliceAxis === 'sagittal'
@@ -8151,7 +8162,7 @@ var d = labToolData.brainAtlas || {};
             if (!preset) return;
             var items = preset.structures.map(brainAtlas3DResolvePresetStructure).filter(Boolean);
             if (items.length < 2) {
-              if (typeof announceToSR === 'function') announceToSR('That comparison is not available in the loaded model.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_that_comparison_is_not_available_in_the_loaded_mo', 'That comparison is not available in the loaded model.'));
               return;
             }
             stopBrainAtlas3DPathwayPlayback(false);
@@ -8180,7 +8191,7 @@ var d = labToolData.brainAtlas || {};
               upd('brain3DChallengeActive', false);
               upd('brain3DSavedQuizActive', false);
               openBrainAtlas3DClinicalScenario(brain3DClinicalScenarioInfo);
-            } else if (typeof announceToSR === 'function') announceToSR('Clinical lesion explorer closed.');
+            } else if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_clinical_lesion_explorer_closed', 'Clinical lesion explorer closed.'));
           }
 
           function openBrainAtlas3DClinicalScenario(scenario) {
@@ -8231,13 +8242,13 @@ var d = labToolData.brainAtlas || {};
           function clearBrainAtlas3DStudySet() {
             upd('brain3DSavedStructures', []);
             upd('brain3DSavedQuizActive', false);
-            if (typeof announceToSR === 'function') announceToSR('Saved study set cleared.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_saved_study_set_cleared', 'Saved study set cleared.'));
           }
 
           function startBrainAtlas3DSavedQuiz(retryOnly) {
             var roundItems = retryOnly === true ? brain3DSavedQuizRetryItems : brain3DSavedItems;
             if (!roundItems.length) {
-              if (typeof announceToSR === 'function') announceToSR('Save at least one structure before starting a study-set quiz.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_save_at_least_one_structure_before_starting_a_stu', 'Save at least one structure before starting a study-set quiz.'));
               return;
             }
             stopBrainAtlas3DPathwayPlayback(true);
@@ -8321,7 +8332,7 @@ var d = labToolData.brainAtlas || {};
             upd('brain3DFocus', 'all');
             upd('selected3DStructure', '');
             upd('selectedRegion', null);
-            if (typeof announceToSR === 'function') announceToSR('Saved structure quiz ended.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_saved_structure_quiz_ended', 'Saved structure quiz ended.'));
           }
 
           function setBrainAtlas3DCompareActive(active) {
@@ -8337,11 +8348,11 @@ var d = labToolData.brainAtlas || {};
               upd('brain3DSliceAxis', 'off');
               upd('brain3DLayer', 'all');
               upd('brain3DFocus', 'all');
-              if (typeof announceToSR === 'function') announceToSR('Compare mode opened. Choose two structures from search or directly from the model.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_compare_mode_opened_choose_two_structures_from_se', 'Compare mode opened. Choose two structures from search or directly from the model.'));
             } else {
               upd('brain3DCompareStructures', []);
               upd('brain3DFocus', 'all');
-              if (typeof announceToSR === 'function') announceToSR('Compare mode closed.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_compare_mode_closed', 'Compare mode closed.'));
             }
           }
 
@@ -8415,13 +8426,13 @@ var d = labToolData.brainAtlas || {};
                 selectBrainAtlas3DPathwayStep(brain3DPathwayInfo.steps[nextIndex], nextIndex, { keepPlaying: true, announce: true });
               }, speed);
             }, 120);
-            if (announce !== false && typeof announceToSR === 'function') announceToSR('Pathway playback started. Each structure will be highlighted in sequence.');
+            if (announce !== false && typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_pathway_playback_started_each_structure_will_be_h', 'Pathway playback started. Each structure will be highlighted in sequence.'));
           }
 
           function toggleBrainAtlas3DPathwayPlayback() {
             if (brain3DPathwayPlaying) {
               stopBrainAtlas3DPathwayPlayback(true);
-              if (typeof announceToSR === 'function') announceToSR('Pathway playback paused.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_pathway_playback_paused', 'Pathway playback paused.'));
             } else startBrainAtlas3DPathwayPlayback(brain3DPathwaySpeed, true);
           }
 
@@ -8458,7 +8469,7 @@ var d = labToolData.brainAtlas || {};
               upd('viewGroup', brainAtlasViewGroupFor(nextRoute.view || 'medial'));
               window.setTimeout(function () { setBrainAtlas3DCamera(nextRoute.view || 'medial'); }, 40);
               if (typeof announceToSR === 'function') announceToSR(nextRoute.title + ' opened. Use playback or choose a numbered step.');
-            } else if (typeof announceToSR === 'function') announceToSR('Guided pathway closed.');
+            } else if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_guided_pathway_closed', 'Guided pathway closed.'));
           }
 
           function selectBrainAtlas3DSearchResult(item) {
@@ -8516,7 +8527,7 @@ var d = labToolData.brainAtlas || {};
             var spokenLabel = String(selected3DLabel || (sel && sel.name) || '').replace(/\s*\((left|right)\)\s*$/i, '');
             if (!spokenLabel) return;
             if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') {
-              if (typeof announceToSR === 'function') announceToSR('Speech pronunciation is not available in this browser.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_speech_pronunciation_is_not_available_in_this_bro', 'Speech pronunciation is not available in this browser.'));
               return;
             }
             try {
@@ -8526,7 +8537,7 @@ var d = labToolData.brainAtlas || {};
               utterance.pitch = 1;
               window.speechSynthesis.speak(utterance);
             } catch (e) {
-              if (typeof announceToSR === 'function') announceToSR('Speech pronunciation could not start.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_speech_pronunciation_could_not_start', 'Speech pronunciation could not start.'));
             }
           }
 
@@ -8546,7 +8557,7 @@ var d = labToolData.brainAtlas || {};
             upd('selected3DStructure', '');
             upd('selectedRegion', null);
             upd('brain3DFocus', 'all');
-            if (typeof announceToSR === 'function') announceToSR('3D structure selection cleared.');
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_3d_structure_selection_cleared', '3D structure selection cleared.'));
           }
 
           var selected3DFamily = brainAtlas3DFamilyInfo(selected3DStructure || (sel && (sel.id + ' ' + sel.name)) || '');
@@ -8760,7 +8771,7 @@ var d = labToolData.brainAtlas || {};
             }
             else {
               upd('brain3DFocus', 'all');
-              if (typeof announceToSR === 'function') announceToSR('Find It in 3D challenge closed.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_find_it_in_3d_challenge_closed', 'Find It in 3D challenge closed.'));
             }
           }
 
@@ -10208,8 +10219,8 @@ var d = labToolData.brainAtlas || {};
                     : (t('stem.brainatlas.quick_scan_help', 'Quick scan keeps the key uses, brain systems, and safety context visible with less text.') || 'Quick scan keeps the key uses, brain systems, and safety context visible with less text.'))
                 ),
                 React.createElement("div", { className: "brainatlas-psych-depth-toggle", role: "group", "aria-label": t('stem.brainatlas.psychopharmacology_learning_depth', 'Psychopharmacology learning depth') || 'Psychopharmacology learning depth', "aria-describedby": "brainatlas-psych-depth-help" },
-                  React.createElement("button", { type: "button", "data-brainatlas-psych-depth-option": "quick", "aria-pressed": psychGuideFull ? "false" : "true", onClick: function () { upd('psychGuideDepth', 'quick'); if (typeof announceToSR === 'function') announceToSR('Quick scan selected. Safety context remains visible.'); } }, t('stem.brainatlas.quick_scan', 'Quick scan') || 'Quick scan'),
-                  React.createElement("button", { type: "button", "data-brainatlas-psych-depth-option": "full", "aria-pressed": psychGuideFull ? "true" : "false", onClick: function () { upd('psychGuideDepth', 'full'); if (typeof announceToSR === 'function') announceToSR('Full reference selected. Mechanisms and examples are now visible.'); } }, t('stem.brainatlas.full_reference', 'Full reference') || 'Full reference')
+                  React.createElement("button", { type: "button", "data-brainatlas-psych-depth-option": "quick", "aria-pressed": psychGuideFull ? "false" : "true", onClick: function () { upd('psychGuideDepth', 'quick'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_quick_scan_selected_safety_context_remains_visibl', 'Quick scan selected. Safety context remains visible.')); } }, t('stem.brainatlas.quick_scan', 'Quick scan') || 'Quick scan'),
+                  React.createElement("button", { type: "button", "data-brainatlas-psych-depth-option": "full", "aria-pressed": psychGuideFull ? "true" : "false", onClick: function () { upd('psychGuideDepth', 'full'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_full_reference_selected_mechanisms_and_examples_a', 'Full reference selected. Mechanisms and examples are now visible.')); } }, t('stem.brainatlas.full_reference', 'Full reference') || 'Full reference')
                 )
               ),
               React.createElement("div", { className: "brainatlas-psych-search" },
@@ -10301,7 +10312,7 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("div", { className: "brainatlas-psych-compare-tools" },
                     React.createElement("span", { className: "brainatlas-psych-compare-count", role: "status", "aria-live": "polite" }, psychCompareItems.length + ' of 2 selected'),
-                    React.createElement("button", { type: "button", className: "brainatlas-psych-compare-clear", onClick: function () { upd('psychCompareIds', []); if (typeof announceToSR === 'function') announceToSR('Medication class comparison cleared.'); } }, 'Clear comparison')
+                    React.createElement("button", { type: "button", className: "brainatlas-psych-compare-clear", onClick: function () { upd('psychCompareIds', []); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_medication_class_comparison_cleared', 'Medication class comparison cleared.')); } }, 'Clear comparison')
                   )
                 ),
                 React.createElement("div", { className: "brainatlas-psych-compare-matrix-wrap" },
@@ -10399,8 +10410,8 @@ var d = labToolData.brainAtlas || {};
                     : (t('stem.brainatlas.stim_quick_scan_help', 'Quick scan focuses on energy delivery, circuit effects, and safety with less text.') || 'Quick scan focuses on energy delivery, circuit effects, and safety with less text.'))
                 ),
                 React.createElement("div", { className: "brainatlas-psych-depth-toggle", role: "group", "aria-label": t('stem.brainatlas.treatment_learning_depth', 'Treatment guide learning depth') || 'Treatment guide learning depth', "aria-describedby": "brainatlas-stim-depth-help" },
-                  React.createElement("button", { type: "button", "data-brainatlas-stim-depth-option": "quick", "aria-pressed": stimGuideFull ? "false" : "true", onClick: function () { upd('stimGuideDepth', 'quick'); if (typeof announceToSR === 'function') announceToSR('Quick treatment scan selected. Safety context remains visible.'); } }, t('stem.brainatlas.quick_scan', 'Quick scan') || 'Quick scan'),
-                  React.createElement("button", { type: "button", "data-brainatlas-stim-depth-option": "full", "aria-pressed": stimGuideFull ? "true" : "false", onClick: function () { upd('stimGuideDepth', 'full'); if (typeof announceToSR === 'function') announceToSR('Full treatment reference selected. Circuit targets and clinical status are now visible.'); } }, t('stem.brainatlas.full_reference', 'Full reference') || 'Full reference')
+                  React.createElement("button", { type: "button", "data-brainatlas-stim-depth-option": "quick", "aria-pressed": stimGuideFull ? "false" : "true", onClick: function () { upd('stimGuideDepth', 'quick'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_quick_treatment_scan_selected_safety_context_rema', 'Quick treatment scan selected. Safety context remains visible.')); } }, t('stem.brainatlas.quick_scan', 'Quick scan') || 'Quick scan'),
+                  React.createElement("button", { type: "button", "data-brainatlas-stim-depth-option": "full", "aria-pressed": stimGuideFull ? "true" : "false", onClick: function () { upd('stimGuideDepth', 'full'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_full_treatment_reference_selected_circuit_targets', 'Full treatment reference selected. Circuit targets and clinical status are now visible.')); } }, t('stem.brainatlas.full_reference', 'Full reference') || 'Full reference')
                 )
               ),
               React.createElement("div", { className: "brainatlas-stim-filter", "data-brainatlas-stim-filter": "true" },
@@ -10506,7 +10517,7 @@ var d = labToolData.brainAtlas || {};
               React.createElement("div", { id: "brainatlas-stim-grid", className: "brainatlas-psych-grid", "data-brainatlas-stim-grid": "true", role: "list", "aria-label": t('stem.brainatlas.treatment_modalities', 'Brain stimulation and somatic treatment modalities') || 'Brain stimulation and somatic treatment modalities' },
                 filteredStimTreatments.length === 0 && React.createElement("div", { className: "brainatlas-psych-empty", "data-brainatlas-stim-empty": "true", role: "listitem" },
                   React.createElement("p", { role: "status", "aria-live": "polite" }, t('stem.brainatlas.no_treatments_match_filters', 'No treatment modalities match this approach and search. Try another approach or clear the filters.') || 'No treatment modalities match this approach and search. Try another approach or clear the filters.'),
-                  React.createElement("button", { type: "button", className: "brainatlas-stim-empty-reset", "data-brainatlas-stim-reset": "true", onClick: function () { upd('stimGuideFamily', 'all'); upd('stimGuideQuery', ''); if (typeof announceToSR === 'function') announceToSR('Treatment filters cleared. All modalities are visible.'); } }, t('stem.brainatlas.clear_treatment_filters', 'Clear treatment filters') || 'Clear treatment filters')
+                  React.createElement("button", { type: "button", className: "brainatlas-stim-empty-reset", "data-brainatlas-stim-reset": "true", onClick: function () { upd('stimGuideFamily', 'all'); upd('stimGuideQuery', ''); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_treatment_filters_cleared_all_modalities_are_visi', 'Treatment filters cleared. All modalities are visible.')); } }, t('stem.brainatlas.clear_treatment_filters', 'Clear treatment filters') || 'Clear treatment filters')
                 ),
                 filteredStimTreatments.map(function (item, itemIndex) {
                   var isWideStimCard = filteredStimTreatments.length % 2 === 1 && itemIndex === filteredStimTreatments.length - 1;
@@ -10565,7 +10576,7 @@ var d = labToolData.brainAtlas || {};
                   ),
                   React.createElement("div", { className: "brainatlas-psych-compare-tools" },
                     React.createElement("span", { className: "brainatlas-psych-compare-count", role: "status", "aria-live": "polite" }, stimCompareItems.length + ' of 2 selected'),
-                    React.createElement("button", { type: "button", className: "brainatlas-psych-compare-clear", "data-brainatlas-stim-compare-clear": "true", onClick: function () { upd('stimCompareIds', []); if (typeof announceToSR === 'function') announceToSR('Treatment comparison cleared.'); } }, t('stem.brainatlas.clear_treatment_comparison', 'Clear comparison') || 'Clear comparison')
+                    React.createElement("button", { type: "button", className: "brainatlas-psych-compare-clear", "data-brainatlas-stim-compare-clear": "true", onClick: function () { upd('stimCompareIds', []); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.brainatlas.sr_treatment_comparison_cleared', 'Treatment comparison cleared.')); } }, t('stem.brainatlas.clear_treatment_comparison', 'Clear comparison') || 'Clear comparison')
                   )
                 ),
                 React.createElement("div", { className: "brainatlas-stim-pathways", "data-brainatlas-stim-pathways": "true", "aria-labelledby": "brainatlas-stim-pathways-title" },
@@ -10836,7 +10847,7 @@ var d = labToolData.brainAtlas || {};
                               key: r.id, role: 'radio',
                               'aria-checked': picked ? 'true' : 'false',
                               'aria-label': r.label,
-                              disabled: fmAns,
+                              "aria-disabled": fmAns ? "true" : "false",
                               onClick: function() { pickFm(r.id); },
                               style: { padding: '10px 12px', borderRadius: 8, background: bg, color: color, border: '2px solid ' + border, cursor: fmAns ? 'default' : 'pointer', textAlign: 'left', fontWeight: 700, fontSize: 11, minHeight: 70, transition: 'all 0.15s' }
                             },
@@ -11529,7 +11540,7 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("div", { className: "brainatlas-3d-challenge-options", role: "group", "aria-label": t('stem.brainatlas.d3_accessible_answer_choices_for_the_3d_challenge', "Accessible answer choices for the 3D challenge") },
                       brain3DChallengeOptions.map(function (option) {
                         var terminalFeedback = brain3DChallengeFeedback && (brain3DChallengeFeedback.status === 'correct' || brain3DChallengeFeedback.status === 'revealed');
-                        return React.createElement("button", { key: option.id, type: "button", disabled: !!terminalFeedback, onClick: function () { chooseBrainAtlas3DChallengeOption(option); } }, option.label);
+                        return React.createElement("button", { key: option.id, type: "button", "aria-disabled": terminalFeedback ? "true" : "false", onClick: function () { if (terminalFeedback) return; chooseBrainAtlas3DChallengeOption(option); } }, option.label);
                       })
                     )
                   )
@@ -11907,8 +11918,8 @@ var d = labToolData.brainAtlas || {};
                     React.createElement("div", { role: "radiogroup", "aria-label": t('stem.brainatlas.guess_the_stimulated_region', "Guess the stimulated region"), className: "grid grid-cols-1 gap-1.5" },
                       opts.map(function (optTarget, oi) {
                         var isCorrect = optTarget === d.patientCorrect; var wasChosen = show && guess.chosen === optTarget;
-                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, disabled: show,
-                          onClick: function () { upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
+                        return React.createElement("button", { key: oi, role: "radio", "aria-checked": !!wasChosen, "aria-disabled": show ? "true" : "false",
+                          onClick: function () { if (show) return; upd('patientGuess', { chosen: optTarget, correct: isCorrect }); if (isCorrect) upd('patientScore', (d.patientScore || 0) + 1); if (typeof announceToSR === 'function') announceToSR(isCorrect ? 'Correct.' : 'Not quite.'); },
                           className: "w-full text-left px-3 py-2 rounded-lg text-[0.6875rem] font-medium border-2 transition-all " +
                             (show && isCorrect ? 'border-green-400 bg-green-50 text-green-800' : show && wasChosen ? 'border-red-400 bg-red-50 text-red-700' : 'transition-colors border-slate-200 hover:border-sky-300 text-slate-600 hover:bg-sky-50 active:scale-[0.97]')
                         }, (show && isCorrect ? '\u2705 ' : show && wasChosen ? '\u274C ' : '') + optTarget);
@@ -11955,9 +11966,11 @@ var d = labToolData.brainAtlas || {};
 
                       var showResult = fb !== null && fb !== undefined;
 
-                      return React.createElement("button", { key: opt.id, disabled: showResult, "data-brainatlas-quiz-option": opt.id, "data-brainatlas-quiz-option-view": brainAtlasRegionViewKey[opt.id] || "", "data-brainatlas-quiz-answer-view": brainAtlasRegionViewKey[quizQ.id] || "",
+                      return React.createElement("button", { key: opt.id, "aria-disabled": showResult ? "true" : "false", "data-brainatlas-quiz-option": opt.id, "data-brainatlas-quiz-option-view": brainAtlasRegionViewKey[opt.id] || "", "data-brainatlas-quiz-answer-view": brainAtlasRegionViewKey[quizQ.id] || "",
 
                         onClick: function () {
+
+                          if (showResult) return;
 
                           var correct = opt.id === quizQ.id;
 

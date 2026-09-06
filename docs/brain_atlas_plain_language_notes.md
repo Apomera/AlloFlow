@@ -302,3 +302,15 @@ The test for this deserves a note. A few hundred rendered rounds cannot tell 31 
 
 The quiz golden moved, which is expected: the option order changed under the fixed random value the goldens use.
 
+## Four more answer surfaces that dropped focus
+
+September 6, 2026. The same defect again, in the places it matters most. A disabled button leaves the tab order, so answering removed the element the keyboard user was standing on, dropped focus to the document, and left the feedback that had just appeared reachable only by tabbing from the top of the tool again.
+
+The authored-card checks in this file have used aria-disabled for exactly this reason since June. Four answer surfaces had not: the Brain Quiz, Function Match, the Find It in 3D challenge, and the patient-response radio group in the Stimulation Lab. That is every graded choice in the tool except the ones already fixed.
+
+The radio group was worse than the others. A disabled radio is skipped by the arrow-key handling that a radio group depends on, so answering there broke the navigation model as well as the focus.
+
+Two of the four had no guard at all behind the disabled attribute, which is what made them more than a focus problem. In the Brain Quiz a second click overwrote the recorded answer and incremented the score again; in the patient radio group it overwrote the guess. Both now refuse the second press before touching any state, and a test pins that the guard sits before the write rather than after it.
+
+Genuinely unavailable controls are left disabled: a zoom button at its limit, or a study set with nothing in it, has nothing to act on. That is not the same thing as a locked answer.
+
