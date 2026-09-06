@@ -12040,7 +12040,7 @@ window.StemLab = window.StemLab || {
       React.createElement('canvas', { ref: canvasRef, className: 'block h-[320px] w-full', role: 'img', 'aria-label': props.label }),
       status === 'loading' && React.createElement('div', { role: 'status', 'aria-live': 'polite', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/80 text-sm font-bold text-cyan-100' }, 'Building the 3D habitat'),
       status === 'error' && React.createElement('div', { role: 'status', className: 'absolute inset-0 flex items-center justify-center bg-slate-950/90 p-6 text-center text-sm text-amber-100' }, 'The 3D view could not start. The synchronized habitat plan and controls remain fully available.'),
-      status === 'ready' && React.createElement('div', { className: 'absolute bottom-2 left-2 flex gap-1 rounded-lg bg-slate-950/75 p-1', role: 'group', 'aria-label': __alloT('stem.aquarium.a11y_3d_camera_presets', '3D camera presets') },
+      status === 'ready' && React.createElement('div', { className: 'absolute bottom-2 left-2 flex gap-1 rounded-lg bg-slate-950/75 p-1', role: 'group', 'aria-label': '3D camera presets' },
         ['front', 'top', 'left'].map(function(view) { return React.createElement('button', { key: view, type: 'button', onClick: function() { if (engineRef.current) engineRef.current.setView(view); }, className: 'rounded border border-white/20 bg-white/10 px-2 py-1 text-[0.5625rem] font-bold text-white hover:bg-white/20' }, view.charAt(0).toUpperCase() + view.slice(1)); })
       )
     );
