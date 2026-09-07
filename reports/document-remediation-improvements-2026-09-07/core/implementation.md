@@ -1,0 +1,14 @@
+# Core acceptance and image-preservation implementation
+
+Application changes are confined to `doc_pipeline_source.jsx`: the strict acceptance helper, AI chunk fixer, and narrow pass/result evidence wiring. `tests/aifix_chunk_gates.test.js` now executes the current source functions instead of pinning the weaker 90%/95% threshold strings. Generated bundles and host project persistence were left to the coordinating agent.
+
+- All single-document, fragment, normal chunk, half-chunk, image-retry, half-assembly, and final-assembly decisions now use `acceptFixedHtmlDetailed` with the same default 95% HTML/97% text floors, growth ceilings, and table-position check. Fragment mode changes only the requirement for document wrapper markers. Split retries are limited to shrink rejections, avoiding repeated calls on known transposition/growth errors.
+- Source image references are immutable across a faithful accessibility fix: exact placeholder multisets cover both FINAL and IMG_DATA identities, while the ordered image-reference list rejects substitutions, duplicate identities, swapped images, and tokens moved into prose. Alt text and other accessibility attributes can still be repaired. Both single- and double-quoted embedded data images use the existing asset map, preserving original quoting and whitespace on restoration.
+- The assembled document receives the same gate before pass coverage is reported. This catches oversized tables whose cells straddle chunk boundaries and reference changes across fragments.
+- Candidate rejection records contain only chunk ID, phase, and reason. They are capped at 100 entries with an uncapped total count, delivered through `onPassEvidence`/optional `onCandidateRejected`, accumulated with pass numbers in `_runMainFixLoop`, and included in the final remediation result. Rejected model text and source content never enter these records.
+
+Validation: 174 tests passed across six focused files (`aifix_chunk_gates`, `doc_pipeline_acceptance`, `doc_pipeline_fabrication`, `doc_pipeline_aggregate_shrink`, `pipeline_audit_fixes`, `pdf_pipeline_quick_bugs`). Result: `regression-tests.json`. The behavioral suite covers all originally reproduced acceptance/image defects, cross-chunk table assembly, greater-than-100 rejection bounding, and positive controls for valid table headers, alt improvements, whitespace cleanup, tiny unchanged fragments, and JSON-wrapped output.
+
+Independent read-only OCR review identified three follow-ups for the coordinating agent: retain recovered pages when a later page retry hits quota/throttle; clear original truncation errors after complete physical-page retries; and compare Unicode math operators so multiplication/division/plus-minus differences are not ignored.
+
+No live model calls, deployments, generated-bundle writes, or unrelated application changes were made by this subtask.

@@ -1362,6 +1362,8 @@ function aeNormalizeWorkspace(value) {
     componentTags: aeComponentTags(raw.componentTags),
     privacyChecked: aeBoolean(raw.privacyChecked, false),
     observer: aeString(raw.observer, 160, config.evaluatorName),
+    // Preserve server attribution when an unchanged published record accompanies another save.
+    createdByEmail: aeString(raw.createdByEmail, 320, ""),
     publishedAt: aeTimestamp(raw.publishedAt),
     teacherAcknowledgedAt: aeTimestamp(raw.teacherAcknowledgedAt),
     version: Math.min(1e3, Math.max(1, Number.parseInt(raw.version, 10) || 1))
@@ -3737,7 +3739,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
     });
   };
   const canEditPlan = active && role === "teacher" && !readOnlyPreview && !cycleFinalized && ["draft", "returned"].includes(active.status);
-  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")), /* @__PURE__ */ React.createElement("p", null, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.current_act_13_terminology_is_lea_selected_measure_student_81f9h8", "Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.") : t("educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b", "Under Maine PEPG this record holds the Student Learning &amp; Growth measure; SPM/SLO remain familiar aliases."))), role === "teacher" && selectedTeacher && !cycleFinalized && !records.some((record) => record.teacherId === selectedTeacher.id) && /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-primary", disabled: readOnlyPreview, title: readOnlyPreview ? t("educator_evaluation.preview_only_no_proposal_is_created_10gjfc9", "Preview only; no proposal is created.") : void 0, onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { className: "ae-page" }, /* @__PURE__ */ React.createElement("div", { className: "ae-heading" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", null, t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")), /* @__PURE__ */ React.createElement("p", null, AE_ACTIVE_FW.id === "pa_act13" ? t("educator_evaluation.current_act_13_terminology_is_lea_selected_measure_student_81f9h8", "Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.") : t("educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b", "Under Maine PEPG this record holds the Student Learning & Growth measure; SPM/SLO remain familiar aliases."))), role === "teacher" && selectedTeacher && !cycleFinalized && !records.some((record) => record.teacherId === selectedTeacher.id) && /* @__PURE__ */ React.createElement("button", { type: "button", className: "ae-btn ae-btn-primary", disabled: readOnlyPreview, title: readOnlyPreview ? t("educator_evaluation.preview_only_no_proposal_is_created_10gjfc9", "Preview only; no proposal is created.") : void 0, onClick: () => {
     const id = createSpm(selectedTeacher.id);
     if (id) setOpenId(id);
   } }, t("educator_evaluation.start_spm_proposal_9v6z62", "+ Start SPM proposal"))), /* @__PURE__ */ React.createElement(AeFinalizedCycleNotice, { teacher: selectedTeacher }), /* @__PURE__ */ React.createElement(AeOtherWorkflowDrafts, { recovery, kind: "spm", year: workspace.academicYear || workspace.config.academicYear, role, teacherId: selectedTeacher?.id, activeId: savedActive?.id, records, onOpen: setOpenId }), /* @__PURE__ */ React.createElement(AeWorkflowDraftNotice, { recovery, onRetry: () => recovery.retry(performPatch), readOnly: cycleFinalized || readOnlyPreview || !savedActive || !!savedActive.finalizedAt || savedActive.status === "locked" }), role === "evaluator" ? /* @__PURE__ */ React.createElement("div", { className: "ae-toolbar" }, /* @__PURE__ */ React.createElement("label", { className: "ae-field", style: { minWidth: 260, margin: 0 } }, /* @__PURE__ */ React.createElement("span", null, t("educator_evaluation.educator_8c1rq4", "Educator")), /* @__PURE__ */ React.createElement("select", { className: "ae-select", value: selectedTeacher ? selectedTeacher.id : "", onChange: (event) => {
@@ -5088,10 +5090,12 @@ function EducatorEvaluationPanel(props) {
         normalized.cycleSnapshots = normalized.cycleSnapshots.filter((item) => item.teacherId === teacherId);
       }
       const route = aePlainObject(initialRoute) ? initialRoute : typeof repository.getInitialRoute === "function" ? repository.getInitialRoute() : null;
-      const requestedTeacherId = aeSafeId(route && route.teacherId, "");
+      const previousUser = remoteUserRef.current;
+      const sameActor = !!previousUser && previousUser.email === currentUser.email && previousUser.role === currentUser.role && (previousUser.teacherId || "") === (currentUser.teacherId || "");
+      const requestedTeacherId = aeSafeId(sameActor ? selectedTeacherIdRef.current : route && route.teacherId, "");
       const nextTeacherId = nextRole === "teacher" ? aeSafeId(currentUser.teacherId, "") : requestedTeacherId && normalized.teachers.some((teacher) => teacher.id === requestedTeacherId) ? requestedTeacherId : normalized.teachers[0] && normalized.teachers[0].id || "";
       const allowedViews = nextRole === "teacher" ? ["overview", "trends", "walkthroughs", "formal", "spm", "audit", "about"] : ["overview", "trends", "staff", "walkthroughs", "formal", "spm", "audit", "about"];
-      const requestedView = aeString(route && route.view, 24, "").toLowerCase();
+      const requestedView = aeString(sameActor ? activeTabRef.current : route && route.view, 24, "").toLowerCase();
       const revision = Number(payload.revision);
       remoteRevisionRef.current = Number.isInteger(revision) && revision >= 0 ? revision : 0;
       workspaceRef.current = normalized;
@@ -5100,7 +5104,7 @@ function EducatorEvaluationPanel(props) {
       setRole(nextRole);
       setSelectedTeacherId(nextTeacherId);
       setTab(allowedViews.includes(requestedView) ? requestedView : "overview");
-      if (remoteUserRef.current && remoteUserRef.current.email !== currentUser.email) textDraftsRef.current.clear();
+      if (previousUser && !sameActor) textDraftsRef.current.clear();
       remoteUserRef.current = currentUser;
       setRemoteState({ status: "saved", error: "", currentUser, deployment: aePlainObject(payload.deployment) ? payload.deployment : null, inFlight: false });
     } catch (error) {

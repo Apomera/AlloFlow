@@ -67,7 +67,7 @@ const HEADLESS_AUDITOR_COUNT = 5;
 // the full remediation result because their audit node evidence, source text,
 // issue-resolution baseline, and OCR state can all affect the next accepted
 // round. Schema-1 full snapshots remain valid and resumable.
-const TERMINAL_CHECKPOINT_CAPSULE_SCHEMA = 1;
+const TERMINAL_CHECKPOINT_CAPSULE_SCHEMA = 2;
 const TERMINAL_CHECKPOINT_REMEDIATION_FIELDS = Object.freeze([
   'accessibleHtml',
   'verificationHtmlBinding',
@@ -98,6 +98,8 @@ const TERMINAL_CHECKPOINT_REMEDIATION_FIELDS = Object.freeze([
   'integrityCoverage',
   'integrityWarning',
   'fidelityNotes',
+  'candidateRejectionCount',
+  'candidateRejections',
   'needsExpertReview',
   'expertReviewReason',
   'activeContent',
@@ -108,6 +110,9 @@ const TERMINAL_CHECKPOINT_REMEDIATION_FIELDS = Object.freeze([
   'groundTruthPages',
   'sourceStructTree',
   'finalText',
+  // Source fidelity is recomputed at publication, including after resume.
+  'sourceText',
+  '_sourceCoverageExtraction',
   'ocrAccuracy',
   '_experimentEarlyGetPages',
   '_perLeafScannedOptOut',
@@ -203,6 +208,13 @@ function terminalCheckpointAuditSummary(value, countKey) {
   return { score, [countKey]: count };
 }
 
+function checkpointSourceCoverageExtraction(value) {
+  const pages = input => input === null || (Array.isArray(input)
+    && input.every(page => page === null || (Number.isSafeInteger(page) && page > 0)));
+  return checkpointHasExactKeys(value, ['pageErrors', 'lowConfidencePages'])
+    && pages(value.pageErrors) && pages(value.lowConfidencePages);
+}
+
 function terminalCheckpointRemediationCapsule(remediation) {
   const axeAudit = terminalCheckpointAuditSummary(
     remediation && remediation.axeAudit,
@@ -232,6 +244,8 @@ function terminalCheckpointRemediationCapsule(remediation) {
       Array.isArray(remediation.groundTruthPages)) ||
     !(remediation.sourceStructTree === null ||
       checkpointPlainObject(remediation.sourceStructTree)) ||
+    typeof remediation.sourceText !== 'string' || remediation.sourceText.length === 0 ||
+    !checkpointSourceCoverageExtraction(remediation._sourceCoverageExtraction) ||
     typeof remediation.finalText !== 'string' ||
     remediation.finalText.length === 0 ||
     !(remediation.ocrAccuracy === null ||
@@ -248,6 +262,7 @@ function terminalCheckpointRemediationCapsule(remediation) {
     capsule[key] = Object.hasOwn(remediation, key) && remediation[key] !== undefined
       ? remediation[key] : null;
   }
+  Object.assign(capsule, Verification.normalizeCandidateRejectionEvidence(remediation));
   capsule.isScanned = remediation.isScanned === true
     || /tesseract|vision|ocr/i.test(String(remediation.groundTruthMethod || ''));
   capsule._experimentEarlyGetPages =
@@ -1442,7 +1457,7 @@ function createDriver(options) {
     const _isPdfInput = /\.pdf$/i.test(fileName);
     (opts.onLog || log)('remediate: ' + fileName + ' (' + Math.round(b64.length * 0.75 / 1024) + ' KB, target ' + (opts.targetScore || 95) + ')');
     return withRunPage(Object.assign({ fileName, base64ForRender: b64 }, opts), (page) =>
-      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn }) => {
+      page.evaluate(async ({ b64: _rawB64, fileName, targetScore, fixPasses, polishPasses, wantTaggedPdf, wantAutoContinue, autoContinueRounds, pdfLibCdn, auditorCount, resumeCheckpoint, pageRange, textFamily, sourceCoverageFn, candidateRejectionFn, candidateRejectionSchema }) => {
         const pipeline = window.__mcpPipeline;
         // Text-family conversion — same mirror of the browser intake as audit()'s evaluate.
         let b64 = _rawB64;
@@ -1522,13 +1537,23 @@ function createDriver(options) {
           && r.afterScoreVerified === true
           && !r.requiresManualReview
           && pipeline.isLiveVerificationHtmlBound(r, r.accessibleHtml));
+        const sourceCoverageExtraction = () => {
+          // Keep counts and page identity, without persisting OCR error messages.
+          const pages = input => Array.isArray(input) ? input.map(item => {
+            const page = typeof item === 'number' ? item : item?.pageNum ?? item?.page;
+            return Number.isSafeInteger(page) && page > 0 ? page : null;
+          }) : null;
+          return { pageErrors: pages(window.__lastOcrPageErrors), lowConfidencePages: pages(window.__lastOcrLowConfidencePages) };
+        };
         const emitCheckpoint = async (snapshot) => {
           if (!checkpointEnabled) return null;
           const auditView = checkpointAuditView(audit);
           if (!auditView) throw new Error('checkpoint_snapshot_invalid');
           let portable;
           try {
-            portable = JSON.parse(JSON.stringify(Object.assign({}, snapshot, { audit: auditView })));
+            const remediation = snapshot.remediation && { ...snapshot.remediation,
+              _sourceCoverageExtraction: snapshot.remediation._sourceCoverageExtraction || sourceCoverageExtraction() };
+            portable = JSON.parse(JSON.stringify(Object.assign({}, snapshot, { audit: auditView }, remediation ? { remediation } : {})));
           } catch (_) {
             throw new Error('checkpoint_snapshot_invalid');
           }
@@ -1570,7 +1595,11 @@ function createDriver(options) {
           }
         } else if (resume && resume.schema === 1
           && (resume.stage === 'primary' || resume.stage === 'round')
-          && resume.remediation && typeof resume.remediation.accessibleHtml === 'string') {
+          && resume.remediation && typeof resume.remediation.accessibleHtml === 'string'
+          && (!Object.hasOwn(resume.remediation, 'checkpointCapsuleSchema')
+            || (resume.remediation.checkpointCapsuleSchema === 2
+              && typeof resume.remediation.sourceText === 'string' && resume.remediation.sourceText.length > 0
+              && resume.remediation._sourceCoverageExtraction))) {
           const restoredAudit = auditFromCheckpoint(resume.audit);
           try {
             const rebound = await pipeline.rehydrateVerificationHtmlBinding(resume.remediation);
@@ -1684,9 +1713,23 @@ function createDriver(options) {
               ', score ' + (cur.afterScore || 0) + '/' + targetScore);
             roundsRun = round + 1;
             let roundOut;
+            // onPassEvidence is a delta emitted once per aiFixChunked invocation.
+            // Keep attempted rejections before verification can fail or revert HTML.
+            const capturePassEvidence = (meta) => {
+              const normalize = (0,eval)('('+candidateRejectionFn+')');
+              const added = normalize(meta, candidateRejectionSchema);
+              if (!added.candidateRejectionCount) return;
+              const prior = normalize(cur, candidateRejectionSchema);
+              Object.assign(cur, normalize({
+                candidateRejectionCount: prior.candidateRejectionCount + added.candidateRejectionCount,
+                candidateRejections: prior.candidateRejections.concat(
+                  added.candidateRejections.map(entry => ({ ...entry, pass: round + 1 }))),
+              }, candidateRejectionSchema));
+            };
+            const fixControls = { onPassEvidence: capturePassEvidence };
             try {
               if (_vio > 0) {
-                roundOut = await pipeline.autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, fixPasses);
+                roundOut = await pipeline.autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, fixPasses, fixControls);
               } else if (auditOnly) {
                 let _refreshAxe = null;
                 try { _refreshAxe = await pipeline.runAxeAudit(cur.accessibleHtml); } catch (_) {}
@@ -1695,7 +1738,7 @@ function createDriver(options) {
                 const _eaLines = ((cur.secondEngineAudit && Array.isArray(cur.secondEngineAudit.fails)) ? cur.secondEngineAudit.fails : []).slice(0, 15)
                   .map((f) => 'EQUAL-ACCESS-CONFIRMED: ' + String((f && (f.message || f.ruleId || f.reasonId)) || JSON.stringify(f)).slice(0, 200));
                 const _instr = _aiIssues.slice(0, 25).map((i) => 'AI-FLAGGED: ' + (typeof i === 'string' ? i : (i.issue || i.description || JSON.stringify(i)))).concat(_eaLines).join('\n');
-                let _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1));
+                let _fixedHtml = await pipeline.aiFixChunked(cur.accessibleHtml, _instr, 'mcp-auto-continue-round-' + (round + 1), null, fixControls);
                 const _hasContrast = _aiIssues.some((i) => { const _s = (typeof i === 'string') ? i : (((i.wcag || '') + ' ' + (i.issue || i.description || ''))); return /1\.4\.3|contrast/i.test(_s); });
                 if (_hasContrast) { try { const _sr = pipeline.sanitizeStyleForWCAG(_fixedHtml); if (_sr && _sr.html && _sr.fixCount > 0) _fixedHtml = _sr.html; } catch (_) {} }
                 let _axe = null;
@@ -1721,6 +1764,7 @@ function createDriver(options) {
                 chunkState: roundOut.chunkState, chunkWeightedScore: roundOut.chunkWeightedScore,
               });
               merged = await pipeline.rehydrateVerificationHtmlBinding(merged);
+              Object.assign(merged, (0,eval)('('+candidateRejectionFn+')')(cur, candidateRejectionSchema));
             } catch (e) { roundLog.push('round ' + (round + 1) + ' merge failed: ' + ((e && e.message) || e)); break; }
             const _det = merged._detScore;
             const _regressed = loopPolicy.roundRegressed({
@@ -1749,7 +1793,8 @@ function createDriver(options) {
             if (roundOut._auditOnly) break; // evidence refresh is deliberately single-shot
           }
         }
-        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:window.__lastOcrPageErrors,lowConfidencePages:window.__lastOcrLowConfidencePages,pageRange});
+        const coverageExtraction = cur?._sourceCoverageExtraction || sourceCoverageExtraction();
+        const contentCoverage=(0,eval)('('+sourceCoverageFn+')')({sourceText:cur?.sourceText,outputHtml:cur?.accessibleHtml,pages:cur?.groundTruthPages,method:cur?.groundTruthMethod,pageErrors:coverageExtraction.pageErrors,lowConfidencePages:coverageExtraction.lowConfidencePages,pageRange});
         let verdict = null;
         let taggedPdfB64 = null, taggedPdfError = null, taggedPdfDelivery = null, taggedPdfExportMode = null;
         let activeContentDetected = false;
@@ -1839,6 +1884,7 @@ function createDriver(options) {
           contentCoverage,
           integrityCoverage: (cur && cur.integrityCoverage) !== undefined ? cur.integrityCoverage : null,
           integrityWarning: (cur && cur.integrityWarning) || null,
+          ...(0,eval)('('+candidateRejectionFn+')')(cur, candidateRejectionSchema),
           fidelityNotes: ((cur && cur.fidelityNotes) || []).map((n) => ({ kind: n.kind, msg: (n.msg || n.message || '').slice(0, 400) })),
           verificationState: (cur && cur.verificationState) || null,
           verificationHtmlBound: !!(cur && typeof pipeline.isLiveVerificationHtmlBound === 'function' && pipeline.isLiveVerificationHtmlBound(cur, cur.accessibleHtml)),
@@ -1860,6 +1906,8 @@ function createDriver(options) {
         };
       }, {
         b64, fileName, sourceCoverageFn:NarrationPlanner.assessSourceCoverage.toString(),
+        candidateRejectionFn: Verification.normalizeCandidateRejectionEvidence.toString(),
+        candidateRejectionSchema: Verification.CANDIDATE_REJECTION_SCHEMA,
         targetScore: Number(opts.targetScore) || 95,
         fixPasses: Number.isFinite(Number(opts.fixPasses)) ? Number(opts.fixPasses) : 2,
         polishPasses: Number.isFinite(Number(opts.polishPasses)) ? Number(opts.polishPasses) : 0,
@@ -2062,13 +2110,11 @@ function createDriver(options) {
           try { parsed = JSON.parse(stdout); } catch (_) {
             return finish(reject, new Error('veraPDF CLI returned no valid JSON (exit ' + code + ')'));
           }
-          const report = parsed && parsed.report;
-          const job = report && Array.isArray(report.jobs) ? report.jobs[0] : null;
-          const validation = job && Array.isArray(job.validationResult) ? job.validationResult[0] : null;
-          const details = validation && validation.details;
-          if (!validation || !details || typeof validation.compliant !== 'boolean') {
-            return finish(reject, new Error('veraPDF CLI returned an incomplete validation result'));
-          }
+          let evidence;
+          try { evidence = Verification.parsePdfUaCliReport(parsed, code); }
+          catch (_) { return finish(reject, new Error('veraPDF CLI returned incomplete or contradictory validation evidence (exit ' + code + ')')); }
+          const { report, validation, counts } = evidence;
+          const details = validation.details;
           const releases = report && report.buildInformation && Array.isArray(report.buildInformation.releaseDetails)
             ? report.buildInformation.releaseDetails : [];
           const core = releases.find((item) => item && item.id === 'core');
@@ -2088,8 +2134,7 @@ function createDriver(options) {
             status: validation.compliant ? 'compliant' : 'noncompliant',
             validator: 'veraPDF',
             validatorVersion: core && typeof core.version === 'string' ? core.version : null,
-            failedRules: count(details.failedRules), failedChecks: count(details.failedChecks),
-            passedRules: count(details.passedRules), passedChecks: count(details.passedChecks),
+            ...counts,
             failedRuleSummaries,
           });
         });
@@ -2972,6 +3017,7 @@ module.exports = {
   terminalCheckpointRemediationCapsule,
   TERMINAL_CHECKPOINT_CAPSULE_SCHEMA,
   TERMINAL_CHECKPOINT_REMEDIATION_FIELDS,
+  checkpointSourceCoverageExtraction,
   classifyHttpFailure,
   providerRetryAfterMs,
   geminiGenerate,

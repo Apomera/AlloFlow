@@ -1,0 +1,53 @@
+const fs = require('fs');
+const path = require('path');
+const { chromium } = require('playwright');
+const { parse } = require('@babel/parser');
+const root = process.cwd();
+const out = path.join(root, 'reports/builder-export-review-2026-09-06');
+const source = fs.readFileSync('view_export_preview_source.jsx', 'utf8');
+const component = parse(source, { sourceType: 'script', plugins: ['jsx'] }).program.body.find(n => n.type === 'FunctionDeclaration' && n.id.name === 'ExportPreviewView');
+const names = component.body.body[0].declarations[0].id.properties.map(p => p.key.name);
+(async () => {
+ const browser = await chromium.launch({headless:true});
+ try {
+  const page = await browser.newPage({ viewport: {width:1280,height:900} });
+  const errors = [];
+  page.on('pageerror', error => { errors.push(error.message); console.error('PAGE ERROR:', error.stack); });
+  await page.route('http://builder.test/**', route => route.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><title>Builder review</title></head><body><div id="root"></div></body></html>'}));
+  await page.goto('http://builder.test/');
+  await page.addStyleTag({path:path.join(root,'app/static/css/main.35e25231.css')});
+  for (const file of ['desktop/web-app/node_modules/react/umd/react.development.js','desktop/web-app/node_modules/react-dom/umd/react-dom.development.js','view_export_preview_module.js']) await page.addScriptTag({path:path.join(root,file)});
+  await page.evaluate(names => {
+   const noop = () => {};
+   const props = Object.fromEntries(names.map(name => [name, /^(set|handle|apply|delete|save|run|toggle|update|process|propose|generate|audit|open|on|_ensure)/.test(name) ? noop : undefined]));
+   const html = '<!doctype html><html lang="en"><head><title>Classroom handout</title></head><body><h1>Classroom handout</h1><p>A short document with the latest teacher edits.</p></body></html>';
+   Object.assign(props, {BUILT_IN_PRESETS:[],FONT_OPTIONS:[{value:'Arial',label:'Arial'}],STYLE_SEEDS:{},customExportCSS:'',exportStylePrompt:'',expertCommandInput:'',exportPresets:[],history:[],agentActivityLog:[],exportConfig:{title:'Classroom handout'},exportPreviewMode:'print',exportTheme:'clean',selectedFont:'Arial',exportPreviewSource:'history',theme:'light',showExportPreview:true,pptxLoaded:true,t:()=>'',getSkippedResources:()=>[],getExportPreviewHTML:()=>html,exportPreviewRef:{current:null},setShowExportPreview:()=>{window.closeRequests=(window.closeRequests||0)+1;},executeExportFromPreview:()=>new Promise(resolve=>{window.finishExport=resolve;}),addToast:()=>{}});
+   props.updateExportPreview = () => window.AlloModules.ExportPreviewHelpers.updateExportPreview({ exportPreviewRef:props.exportPreviewRef,_exportPreviewErrorRef:{current:null},_builderRecoverySaveTimerRef:{current:null},getExportPreviewHTML:()=>html,t:()=>'',addToast:noop,warnLog:console.warn,setCanvasRecoveryRevision:noop,isCanvas:false,a11yInspectMode:false });
+   window.builderProps=props;
+   ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(window.AlloModules.ExportPreviewView,props));
+  }, names);
+  await page.locator('#document-builder-title').waitFor({timeout:10000});
+  await page.evaluate(()=>window.builderProps.updateExportPreview());
+  const menu = page.locator('summary').filter({hasText:'More export formats'});
+  await menu.click();
+  await page.getByRole('button',{name:'Accessible Word (.docx)',exact:true}).focus();
+  await page.keyboard.press('Escape');
+  if (await page.evaluate(()=>window.closeRequests||0)) throw new Error('Escape closed the builder');
+  if (!(await menu.evaluate(el=>document.activeElement===el&&!el.parentElement.open))) throw new Error('Menu focus was not restored');
+  await page.getByRole('button',{name:'Print / Save as PDF',exact:true}).click();
+  await page.getByRole('button',{name:'Export in progress',exact:true}).waitFor();
+  await menu.click();
+  if (!(await page.getByRole('button',{name:'Accessible Word (.docx)',exact:true}).isDisabled())) throw new Error('Overlapping export still enabled');
+  await page.screenshot({path:path.join(out,'builder-export-desktop.png')});
+  await page.evaluate(()=>window.finishExport(false));
+  await page.setViewportSize({width:390,height:844});
+  await menu.scrollIntoViewIfNeeded();
+  await page.screenshot({path:path.join(out,'builder-export-mobile.png')});
+  const menuBounds = await page.getByRole('group',{name:'Additional export formats'}).evaluate(el=>{const r=el.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width,height:r.height,viewport:innerWidth,maxHeight:getComputedStyle(el).maxHeight};});
+  const editorStyle = await page.evaluate(()=>window.builderProps.exportPreviewRef.current.contentDocument.getElementById('allo-builder-edit-css')?.textContent.includes('background-image: linear-gradient'));
+  fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({errors,menuBounds,editorStyle,escapeRestoresFocus:true,overlappingExportDisabled:true},null,2));
+  console.log(JSON.stringify({errors,menuBounds,editorStyle}));
+  if (menuBounds.left < 0 || menuBounds.right > menuBounds.viewport) throw new Error('Mobile export menu is clipped');
+  if(errors.length||!editorStyle) throw new Error('Browser runtime errors or missing page styling');
+ } finally {await browser.close();}
+})().catch(error=>{console.error(error);process.exitCode=1;});

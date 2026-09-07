@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 
 const require = createRequire(import.meta.url);
 const engine = require('../concept_quest_engine.js');
+const resolveBattle = (quest, actions, roles) => engine.resolveBattle(quest, Object.fromEntries(Object.entries(actions).map(([uid, action]) => [uid, { ...action, turnKey: engine.getTurnKey(quest) }])), roles);
 const read = relativePath => fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
 
 describe('Concept Quest engine', () => {
@@ -39,7 +40,7 @@ describe('Concept Quest engine', () => {
   it('resolves concept answers into bounded cooperative ability effects', () => {
     const start = engine.createSession({ questions });
     const battle = engine.resolveTravel(start, {}, 'room-2').quest;
-    const result = engine.resolveBattle(battle, {
+    const result = resolveBattle(battle, {
       studentA: { abilityId: 'explain', answerIndex: 0 },
       studentB: { abilityId: 'connect', answerIndex: 0 },
       studentC: { abilityId: 'question', answerIndex: 1 },
@@ -56,7 +57,7 @@ describe('Concept Quest engine', () => {
 
   it('rewards diverse correct abilities and matching party roles with a combo', () => {
     const battle = engine.resolveTravel(engine.createSession({ questions }), {}, 'room-2').quest;
-    const result = engine.resolveBattle(battle, {
+    const result = resolveBattle(battle, {
       a: { abilityId: 'analyze', answerIndex: 0 },
       b: { abilityId: 'explain', answerIndex: 0 },
       c: { abilityId: 'connect', answerIndex: 0 },
@@ -67,7 +68,7 @@ describe('Concept Quest engine', () => {
 
   it('lets correct students directly assist classmates during a cooperative turn', () => {
     const battle = engine.resolveTravel(engine.createSession({ questions }), {}, 'room-2').quest;
-    const result = engine.resolveBattle(battle, {
+    const result = resolveBattle(battle, {
       helper: { abilityId: 'analyze', answerIndex: 0, supportId: 'clarify', supportTargetUid: 'classmate' },
       classmate: { abilityId: 'explain', answerIndex: 1 },
     });
@@ -80,7 +81,7 @@ describe('Concept Quest engine', () => {
     const quest = engine.createSession({ questions });
     quest.currentRoomId = 'room-3';
     quest.phase = 'battle';
-    const failed = engine.resolveBattle(quest, {
+    const failed = resolveBattle(quest, {
       a: { abilityId: 'analyze', answerIndex: 1 },
       b: { abilityId: 'explain', answerIndex: 0 },
       c: { abilityId: 'connect', answerIndex: 0 },
@@ -88,7 +89,7 @@ describe('Concept Quest engine', () => {
     expect(failed.summary.damage).toBeLessThanOrEqual(2);
     expect(failed.summary.encounterRule).toContain('two-thirds consensus');
 
-    const opened = engine.resolveBattle(quest, {
+    const opened = resolveBattle(quest, {
       a: { abilityId: 'analyze', answerIndex: 1 },
       b: { abilityId: 'explain', answerIndex: 1 },
       c: { abilityId: 'connect', answerIndex: 0 },
@@ -138,7 +139,7 @@ describe('Concept Quest engine', () => {
 
   it('records campaign evidence and creates a cooperative debrief', () => {
     const battle = engine.resolveTravel(engine.createSession({ questions }), {}, 'room-2').quest;
-    const resolved = engine.resolveBattle(battle, {
+    const resolved = resolveBattle(battle, {
       a: { abilityId: 'analyze', answerIndex: 0 },
       b: { abilityId: 'explain', answerIndex: 0 },
       c: { abilityId: 'connect', answerIndex: 0 },
@@ -152,7 +153,7 @@ describe('Concept Quest engine', () => {
 
   it('lets the teacher undo the last published GM change', () => {
     const quest = engine.createSession({ questions });
-    const changed = engine.publishGmDraft(quest, { type: 'enemy', title: 'Surprise', description: 'A new misconception arrives.' });
+    const changed = engine.publishGmDraft(quest, { type: 'enemy', title: 'Surprise', description: 'A new misconception arrives.', challenge: { prompt: 'Which is evidence?', options: ['Measurement', 'Guess'], correctIndex: 0 } });
     expect(changed.phase).toBe('battle');
     const undone = engine.undoLastGmChange(changed);
     expect(undone.error).toBeUndefined();

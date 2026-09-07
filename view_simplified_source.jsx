@@ -886,6 +886,25 @@
     var setLineHeight = props.setLineHeight;
     var setLetterSpacing = props.setLetterSpacing;
     var setFocusedParagraphIndex = props.setFocusedParagraphIndex;
+    // Line Focus follows keyboard focus as well as the pointer. Keep a
+    // focused response visible when the mouse leaves or moves between words.
+    var lineFocusParagraphProps = function (paragraphId) {
+      var clearFocus = function () {
+        setFocusedParagraphIndex(current => current === paragraphId ? null : current);
+      };
+      return {
+        'data-line-focus-paragraph': String(paragraphId),
+        tabIndex: isLineFocusMode ? 0 : undefined,
+        onFocus: function () { setFocusedParagraphIndex(paragraphId); },
+        onBlur: function (event) {
+          if (!event.currentTarget.contains(event.relatedTarget)) clearFocus();
+        },
+        onMouseEnter: function () { setFocusedParagraphIndex(paragraphId); },
+        onMouseLeave: function (event) {
+          if (!event.currentTarget.contains(event.currentTarget.ownerDocument.activeElement)) clearFocus();
+        }
+      };
+    };
     var setIsCustomReviseOpen = props.setIsCustomReviseOpen;
     var setCustomReviseInstruction = props.setCustomReviseInstruction;
     var setComplexityLevel = props.setComplexityLevel;
@@ -972,6 +991,11 @@
     };
     var simplifiedContentParts = buildSimplifiedContentParts(generatedContent && generatedContent.data);
     var simplifiedDisplayBody = simplifiedContentParts.body;
+    function openReadingReflection() {
+      if (!props.onReadReflect) return;
+      props.onReadReflect({ text: simplifiedDisplayBody, title: sourceTopic || 'Adapted reading', language: leveledTextLanguage || '',
+        anchor: { kind: 'adapted', resourceId: String(generatedContent.id || sourceTopic || 'adapted'), section: 'body' } });
+    }
     // The adapted document owns its citation registry. Falling back to the
     // source document is only safe when the adapted document has no reference
     // trailer at all; choosing whichever list is longer can pair adapted body
@@ -1095,6 +1119,21 @@
     var editAudioRecordingStartedAtRef = React.useRef(0);
     var EDIT_AUDIO_MAX_RECORDING_MS = 120000;
     var immersiveDialogRef = React.useRef(null);
+    var [immersiveToolbarBottom, setImmersiveToolbarBottom] = React.useState(0);
+    React.useEffect(function () {
+      if (!isImmersiveReaderActive || !immersiveSettings?.lineFocus) return;
+      var toolbar = immersiveDialogRef.current?.querySelector("[data-immersive-toolbar]");
+      var update = function () {
+        var bottom = toolbar?.getBoundingClientRect().bottom || 0;
+        setImmersiveToolbarBottom(bottom);
+        setImmersiveRulerY(previous => Math.max(previous, bottom + immersiveSettings.textSize * 2.5));
+      };
+      update();
+      var observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+      if (toolbar) observer?.observe(toolbar);
+      window.addEventListener("resize", update);
+      return function () { observer?.disconnect(); window.removeEventListener("resize", update); };
+    }, [isImmersiveReaderActive, immersiveSettings?.lineFocus, immersiveSettings?.textSize, setImmersiveRulerY]);
     var phonicsDialogRef = React.useRef(null);
     var phonicsCloseRef = React.useRef(null);
     var definitionDialogRef = React.useRef(null);
@@ -1887,7 +1926,7 @@
     var simplifiedComplexityDisplay = getSimplifiedComplexityDisplay(generatedContent, gradeLevel);
     return <div className="space-y-6">{activeReadAloudStatus && <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{activeReadAloudStatus}</span>}{isImmersiveReaderActive && generatedContent?.immersiveData && <div ref={immersiveDialogRef} role="dialog" aria-modal="true" aria-label={t('immersive.title') || 'Immersive Reader'} tabIndex={-1} onKeyDown={e => containSimplifiedModalFocus(e, immersiveDialogRef.current, handleCloseImmersiveReader)} className="fixed inset-0 z-[200] overflow-y-auto animate-in motion-reduce:animate-none fade-in zoom-in-95 duration-300 motion-reduce:animate-none motion-reduce:transition-none flex flex-col font-sans" style={{
         backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
-      }} onMouseMove={e => setImmersiveRulerY(e.clientY)}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
+      }} onPointerMove={e => { if (immersiveSettings.lineFocus && e.clientY > immersiveToolbarBottom) setImmersiveRulerY(e.clientY); }} onFocusCapture={e => { if (immersiveSettings.lineFocus && !e.target.closest("[data-immersive-toolbar]") && e.target.closest("[role=dialog]") === immersiveDialogRef.current) { const rect = e.target.getBoundingClientRect(); setImmersiveRulerY(Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, rect.top + Math.min(rect.height / 2, immersiveSettings.textSize * 2.5))); } }}><ImmersiveToolbar settings={immersiveSettings} setSettings={setImmersiveSettings} onClose={handleCloseImmersiveReader} onGeneratePOS={handleGeneratePOSData} isGeneratingPOS={isAnalyzingPos} posReady={!!generatedContent?.posEnriched} onGenerateSyllables={handleGeneratePOSData} isGeneratingSyllables={isAnalyzingPos} syllablesReady={!!generatedContent?.posEnriched} playbackRate={playbackRate} setPlaybackRate={setPlaybackRate} lineHeight={lineHeight} setLineHeight={setLineHeight} letterSpacing={letterSpacing} setLetterSpacing={setLetterSpacing} isFocusReaderActive={isFocusReaderActive} onToggleFocusReader={() => setIsFocusReaderActive(!isFocusReaderActive)} isChunkReaderActive={isChunkReaderActive} onToggleChunkReader={() => {
           setIsChunkReaderActive(!isChunkReaderActive);
           setChunkReaderIdx(0);
           setChunkReaderAutoPlay(false);
@@ -1914,13 +1953,14 @@
           const sbs = getSideBySideContent(simplifiedReadAloudText);
           const ps = sbs ? [...(sbs.source || []), ...(sbs.target || [])] : simplifiedReadAloudText.split(new RegExp('\\n{2,}'));
           return ps.flatMap(p => p.trim().startsWith('|') ? [] : splitTextToSentences(p)).length || 1;
-        })()} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out" style={{
-            height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5) + 'px'
-          }} /><div className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out" style={{
+        })()} /><ErrorBoundary fallbackMessage="Focus reader encountered an error. Please close and reopen."><FocusReaderOverlay language={leveledTextLanguage} isOpen={isFocusReaderActive} onClose={handleCloseSpeedReader} text={simplifiedDisplayBody.replace(/<[^>]*>/g, '')} /><PerspectiveCrawlOverlay isOpen={isCrawlReaderActive} onClose={() => setIsCrawlReaderActive(false)} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /><KaraokeReaderOverlay isOpen={isKaraokeOverlayActive} isTeacher={isTeacherMode} onClose={() => setIsKaraokeOverlayActive(false)} getAudioUrl={getKaraokeAudioUrl} sentenceList={karaokeReaderSentences} captureOn={saveTtsAsPlayed} onCaptureChange={setSaveTtsAsPlayedEnabled} text={(generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')} /></ErrorBoundary>{immersiveSettings.lineFocus && <><div className="fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none" style={{
+            top: immersiveToolbarBottom + 'px',
+            height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5 - immersiveToolbarBottom) + 'px'
+          }} /><div className="fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out motion-reduce:transition-none" style={{
             top: immersiveRulerY + immersiveSettings.textSize * 2.5 + 'px'
-          }} /><div className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out" style={{
+          }} /><div className="fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out motion-reduce:transition-none" style={{
             top: immersiveRulerY + 'px'
-          }} /></>}<div className="flex-grow overflow-y-auto p-8 md:p-16 custom-scrollbar relative z-10"><div className={`max-w-4xl mx-auto transition-all duration-300`} style={{
+          }} /></>}<div data-immersive-passage tabIndex={0} role="region" aria-label="Reading passage. When Line Focus is on, use Up and Down arrows to move the reading window." onKeyDown={e => { if (e.target === e.currentTarget && immersiveSettings.lineFocus && (e.key === "ArrowUp" || e.key === "ArrowDown")) { e.preventDefault(); const step = immersiveSettings.textSize * lineHeight; setImmersiveRulerY(y => Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, Math.min(window.innerHeight - immersiveSettings.textSize, y + (e.key === "ArrowDown" ? step : -step)))); } }} className="flex-grow overflow-y-auto p-5 md:p-16 custom-scrollbar relative z-10 focus-visible:outline focus-visible:outline-2"><div className={`max-w-4xl mx-auto transition-all duration-300`} style={{
             color: immersiveSettings.fontColor || '#1e293b',
             lineHeight: lineHeight,
             letterSpacing: `${immersiveSettings.wideText ? letterSpacing + 0.15 : letterSpacing}em`,
@@ -2130,7 +2170,7 @@
                 }} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${interactionMode === 'revise' && !isCompareMode ? 'bg-purple-100 text-purple-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'}`} title={t('simplified.tip_revise')} aria-label={t('simplified.revise_mode')} data-help-key="simplified_revise_mode"><Pencil size={12} /> {t('simplified.revise_mode')}</button><button type="button" data-help-key="simplified_compare_mode" onClick={() => {
                   setIsCompareMode(!isCompareMode);
                   stopPlayback();
-                }} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isCompareMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700'}`} title={t('simplified.tip_compare')} aria-label={t('simplified.compare_mode')}><GitCompare size={12} /> {t('simplified.compare_mode')}</button></>}</div>{!isZenMode && <div className="flex flex-wrap items-center justify-center gap-2"><button type="button" aria-label={t('common.refresh')} data-help-key="simplified_immersive_reader" onClick={() => {
+                }} className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 transition-all ${isCompareMode ? 'bg-slate-800 text-white shadow-sm' : 'text-slate-600 hover:text-slate-700'}`} title={t('simplified.tip_compare')} aria-label={t('simplified.compare_mode')}><GitCompare size={12} /> {t('simplified.compare_mode')}</button></>}</div>{!isZenMode && <div className="flex flex-wrap items-center justify-center gap-2">{props.onReadReflect && <button type="button" onClick={openReadingReflection} className="min-h-[44px] px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-sm font-bold">{t('reading_tools.reflect') || 'Read & reflect'}</button>}<button type="button" aria-label={t('common.refresh')} data-help-key="simplified_immersive_reader" onClick={() => {
                 if (generatedContent.immersiveData) {
                   setIsImmersiveReaderActive(true);
                 } else {
@@ -2327,7 +2367,7 @@
                 currentTargetSentenceIdx += targetParaSentences.length;
                 return <><div className={`bg-white/60 rounded-lg p-4 border border-orange-100 hover:border-orange-300 transition-colors ${isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'text-right' : 'text-left'}`} dir={isRtlLang(generatedContent?.config?.language || leveledTextLanguage) ? 'rtl' : 'ltr'}><div className="md:hidden font-bold text-orange-800 text-xs uppercase tracking-wider mb-2">{leveledTextLanguage}</div><div className="text-lg text-slate-800 font-medium leading-relaxed">{renderTextContent(sourceParaSentences, rowSourceStartIdx, false)}</div></div><div className="bg-indigo-50/60 rounded-lg p-4 border border-indigo-100 hover:border-indigo-300 transition-colors relative text-left" dir="ltr"><div className="md:hidden font-bold text-indigo-800 text-xs uppercase tracking-wider mb-2 mt-2 md:mt-0">{t('common.english')}</div><div className="text-base text-slate-700 leading-relaxed">{renderTextContent(targetParaSentences, rowTargetStartIdx, false)}</div></div></>;
               })}</div>;
-          })()}<SourceReferencesPanel referencesText={simplifiedContentParts.references} />{isProcessing && <div className="mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {simplifiedGeneratingMoreLabel}</div>}</div> : <div className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`} style={{ maxWidth: 'min(72ch, 100%)', marginLeft: 'auto', marginRight: 'auto' }} dir={getContentDirection(generatedContent?.config?.language || leveledTextLanguage)}>{generatedContent?.data ? <div className="space-y-4">{(() => {
+          })()}<SourceReferencesPanel referencesText={simplifiedContentParts.references} />{isProcessing && <div className="mt-6 flex items-center justify-center gap-2 text-indigo-500 text-xs font-bold uppercase tracking-wider animate-pulse motion-reduce:animate-none opacity-80"><RefreshCw size={12} className="animate-spin motion-reduce:animate-none" /> {simplifiedGeneratingMoreLabel}</div>}</div> : <div data-simplified-reading-body="true" className={`w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`} style={{ maxWidth: 'min(72ch, 100%)', marginLeft: 'auto', marginRight: 'auto' }} dir={getContentDirection(generatedContent?.config?.language || leveledTextLanguage)}>{generatedContent?.data ? <div className="space-y-4">{(() => {
               // Normalize AI heading lines wrapped in * / ** (e.g. "*Dreams*",
               // "**How Do We Dream?**") into real Markdown headings, so the reader
               // styles them as bold section headers instead of showing the raw
@@ -2371,10 +2411,10 @@
                       // hover must set the same string — setting bare pIdx left
                       // the hovered paragraph permanently dimmed/blurred in
                       // line-focus mode.
-                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} onMouseEnter={() => setFocusedParagraphIndex(paragraphId)} onMouseLeave={() => setFocusedParagraphIndex(null)}>{cleanText}</p>;
+                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} {...lineFocusParagraphProps(paragraphId)}>{cleanText}</p>;
                     }
                     if (sentencesInPara.length === 0) return null;
-                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseEnter={() => setFocusedParagraphIndex(paragraphId)} onMouseLeave={() => setFocusedParagraphIndex(null)}>{interactionMode === 'add-glossary' ? (() => {
+                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} {...lineFocusParagraphProps(paragraphId)}>{interactionMode === 'add-glossary' ? (() => {
                         const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
                         const parts = highlightGlossaryTerms(cleanPara, latestGlossary, false);
                         const partsArray = Array.isArray(parts) ? parts : [parts];
@@ -2453,10 +2493,10 @@
                     const isDimmed = isLineFocusMode && !shouldFocus;
                     if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'add-glossary') {
                       const cleanText = para.replace(/\*\*|\*/g, '');
-                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} onMouseEnter={() => setFocusedParagraphIndex(pIdx)} onMouseLeave={() => setFocusedParagraphIndex(null)}>{cleanText}</p>;
+                      return <p key={pIdx} className={`mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseUp={handleTextMouseUp} {...lineFocusParagraphProps(pIdx)}>{cleanText}</p>;
                     }
                     if (sentencesInPara.length === 0) return null;
-                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} onMouseEnter={() => setFocusedParagraphIndex(pIdx)} onMouseLeave={() => setFocusedParagraphIndex(null)}>{interactionMode === 'cloze' ? sentencesInPara.map((sentence, sIdx) => {
+                    return <p key={pIdx} className={`mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`} {...lineFocusParagraphProps(pIdx)}>{interactionMode === 'cloze' ? sentencesInPara.map((sentence, sIdx) => {
                         const currentGlobalIdx = startIdx + sIdx;
                         const cleanText = sentence.trim().replace(/^#+\s*/, '');
                         return <span key={sIdx}>{formatInteractiveText(cleanText, true)} </span>;

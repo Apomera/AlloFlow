@@ -41,9 +41,13 @@ describe("remediation workflow privacy and capacity invariants", () => {
     expect(cleanupBlock.indexOf("await container.destroy()")).toBeGreaterThan(
       -1,
     );
-    expect(cleanupBlock.indexOf("await failJob(")).toBeLessThan(
-      cleanupBlock.indexOf("await container.destroy()"),
-    );
+    const fence = cleanupBlock.indexOf("await failCurrentWorkflowAttempt(");
+    const release = cleanupBlock.indexOf("await container.destroy()");
+    const deletion = cleanupBlock.indexOf("await this.env.DOCUMENTS.delete(");
+    expect(fence).toBeGreaterThan(-1);
+    expect(deletion).toBeGreaterThan(-1);
+    expect(fence).toBeLessThan(release);
+    expect(release).toBeLessThan(deletion);
   });
 
   it("uses Workflow retry attempts as fenced runner leases", () => {

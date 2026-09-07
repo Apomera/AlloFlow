@@ -1,0 +1,95 @@
+{
+  "checks": [
+    "Real WebGL draws both display styles; split bond colors, label toggles, and texture disposal match the controls.",
+    "CO2 renders two double bonds and N2 renders a triple bond.",
+    "Keyboard Fit model keeps the complete model inside the viewport at 1200, 360, and 320 pixels; targeted axe and reflow checks pass.",
+    "Unmount disposes the label textures."
+  ],
+  "errors": [],
+  "views": [
+    {
+      "name": "methane-ball-stick",
+      "atoms": 5,
+      "bonds": 8,
+      "labels": 5,
+      "textures": 5,
+      "atomRadii": [
+        0.6839999999999999,
+        0.396,
+        0.396,
+        0.396,
+        0.396
+      ],
+      "bondColors": [
+        "03050b",
+        "1d5ff3"
+      ],
+      "camera": [
+        5.878818704819614,
+        4.409114028614712,
+        8.818228057229424
+      ]
+    },
+    {
+      "name": "methane-spheres",
+      "atoms": 5,
+      "bonds": 0,
+      "labels": 5,
+      "textures": 5,
+      "atomRadii": [
+        1.5675,
+        0.9075,
+        0.9075,
+        0.9075,
+        0.9075
+      ],
+      "bondColors": [],
+      "camera": [
+        7.217426183953867,
+        5.413069637965402,
+        10.826139275930803
+      ]
+    },
+    {
+      "name": "carbon-dioxide-double-bonds",
+      "atoms": 3,
+      "bonds": 8,
+      "labels": 3,
+      "textures": 3,
+      "atomRadii": [
+        0.6839999999999999,
+        0.612,
+        0.612
+      ],
+      "bondColors": [
+        "03050b",
+        "dc0e0e"
+      ],
+      "camera": [
+        6.052810563967773,
+        4.539607922975831,
+        9.07921584595166
+      ]
+    }
+  ],
+  "axe": [
+    {
+      "width": 1200,
+      "overflow": false,
+      "insideFrame": true,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "overflow": false,
+      "insideFrame": true,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "insideFrame": true,
+      "violations": []
+    }
+  ]
+}

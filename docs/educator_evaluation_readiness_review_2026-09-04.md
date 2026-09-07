@@ -124,3 +124,14 @@ Recovery survives tab navigation and appears as readable content in the panel-cl
 Formal-observation and SPM screens now list unfinished edits for other records belonging to the selected educator, role, and academic year. Existing records can be reopened from the list. If a record is no longer available, the recovery copy remains readable in a keyboard-accessible text area and can be discarded independently; these controls cannot recreate or update the missing record. Unrelated recovery copies remain intact.
 
 When a saved record changes, the workflow form displays its current saved contents and suspends editing until the recovery copy is reviewed and discarded. Unfinished text stays separately available for comparison and copying, so it cannot appear as the content of a newly locked or finalized record. Recovery remains in memory for the life of the open panel.
+
+
+## September 7 pathway and integration review
+
+The subsequent [engineering review](educator_evaluation_review_2026-09-07.md)
+records fixes for browser/server record round trips, finalized private-note
+redaction, SPM returns, refresh navigation, and Drive packet storage privacy.
+Use the [pathway walkthrough](educator_evaluation_pathway_walkthrough.md) for an
+administrator demonstration. The subsequent review also records outstanding
+advisories in the broader desktop build toolchain and preserves the tenant
+acceptance requirements above.

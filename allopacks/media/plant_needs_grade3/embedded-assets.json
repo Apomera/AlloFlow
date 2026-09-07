@@ -1,0 +1,194 @@
+[
+  {
+    "id": "pl-term-seed",
+    "file": "pl-term-seed.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "An intact bean sits beside a split bean with a small white tip emerging.",
+    "altHash": "img-ak7-267f654d"
+  },
+  {
+    "id": "pl-term-root",
+    "file": "pl-term-root.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A young plant has a branching pale underground system shown through a soil cutaway.",
+    "altHash": "img-vnj-dd221ab4"
+  },
+  {
+    "id": "pl-term-stem",
+    "file": "pl-term-stem.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A young plant has an upright green stalk supporting leaves above a branching underground system.",
+    "altHash": "img-oy3-7e5e0a33"
+  },
+  {
+    "id": "pl-term-leaf",
+    "file": "pl-term-leaf.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A broad green blade with branching veins is attached to a stalk.",
+    "altHash": "img-eaj-6f440a27"
+  },
+  {
+    "id": "pl-term-sunlight",
+    "file": "pl-term-sunlight.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A potted green plant stands beside a bright window.",
+    "altHash": "img-dvn-b82b1cd6"
+  },
+  {
+    "id": "pl-term-water",
+    "file": "pl-term-water.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A watering can pours a small stream onto the soil beside a potted plant.",
+    "altHash": "img-cef-63ae8b02"
+  },
+  {
+    "id": "pl-term-warmth",
+    "file": "pl-term-warmth.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Young green plants stand in a tray indoors near a bright window.",
+    "altHash": "img-hrz-355f9ef2"
+  },
+  {
+    "id": "pl-term-air",
+    "file": "pl-term-air.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A leafy plant bends slightly, with curved strokes suggesting a gentle breeze.",
+    "altHash": "img-hp7-16011ad2"
+  },
+  {
+    "id": "pl-term-grow",
+    "file": "pl-term-grow.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Five successive views show a tree increasing in height, trunk thickness, and leafy crown size above a consistent grassy ground line.",
+    "altHash": "img-zez-5286ad47"
+  },
+  {
+    "id": "pl-term-oxygen",
+    "file": "pl-term-oxygen.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A green plant stands in sunshine, with an arrow pointing outward from one leaf.",
+    "altHash": "img-dx7-65c13bea"
+  },
+  {
+    "id": "pl-img-germination",
+    "file": "pl-img-germination.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Four soil cutaways show a bean, an emerging root, an upward shoot, and a small leafy seedling.",
+    "altHash": "img-1l67-fff2f731"
+  },
+  {
+    "id": "pl-img-stored-food",
+    "file": "pl-img-stored-food.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A young shoot and white root extend between two thick pale bean halves.",
+    "altHash": "img-awv-2fe33b35"
+  },
+  {
+    "id": "pl-img-root-soil",
+    "file": "pl-img-root-soil.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A soil cutaway shows branching roots among soil clumps, blue water films, and small dark spaces.",
+    "altHash": "img-2bgb-9e2b4777"
+  },
+  {
+    "id": "pl-img-drainage",
+    "file": "pl-img-drainage.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two pot cutaways compare roots in porous soil with roots in soil filled with water and a pool at the bottom.",
+    "altHash": "img-1v2b-545c8d80"
+  },
+  {
+    "id": "pl-img-light-comparison",
+    "file": "pl-img-light-comparison.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A compact green plant stands near a bright window; a tall pale plant with few leaves stands in a dim recess.",
+    "altHash": "img-gmf-e163cf18"
+  },
+  {
+    "id": "pl-img-water-comparison",
+    "file": "pl-img-water-comparison.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "An upright plant in moist soil stands beside a drooping plant in dry, cracked soil.",
+    "altHash": "img-rlf-44976272"
+  },
+  {
+    "id": "pl-img-plant-parts",
+    "file": "pl-img-plant-parts.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A soil cutaway reveals the roots beneath a plant's upright stem and broad green leaves.",
+    "altHash": "img-1hk7-7000c5e9"
+  },
+  {
+    "id": "pl-img-leaf-light",
+    "file": "pl-img-leaf-light.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Sunlight shines through attached green leaves, revealing branching veins.",
+    "altHash": "img-15v3-1f8c2027"
+  },
+  {
+    "id": "pl-img-space",
+    "file": "pl-img-space.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Several different young garden plants grow with gaps between them in a raised wooden bed.",
+    "altHash": "img-1j7z-7904eec5"
+  },
+  {
+    "id": "pl-img-nutrients",
+    "file": "pl-img-nutrients.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Branching roots pass among mineral grains and soil clumps coated with blue water films.",
+    "altHash": "img-3hjj-3acba084"
+  },
+  {
+    "id": "pl-img-seedling-care",
+    "file": "pl-img-seedling-care.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A child and an adult examine a small potted plant beside a watering can and trowel.",
+    "altHash": "img-vg7-c3f4cd4e"
+  },
+  {
+    "id": "pl-img-leaf-gases",
+    "file": "pl-img-leaf-gases.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A blue arrow points toward an attached green leaf, and an orange arrow points away from it.",
+    "altHash": "img-ljv-d98ec166"
+  },
+  {
+    "id": "pl-img-seed-dispersal",
+    "file": "pl-img-seed-dispersal.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A bean plant bears green pods and an open dry pod containing pale seeds.",
+    "altHash": "img-1b1z-24566d44"
+  },
+  {
+    "id": "pl-img-compare-fairly",
+    "file": "pl-img-compare-fairly.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two similar plants in matching pots stand on the same bright windowsill beside a watering can.",
+    "altHash": "img-ldn-18da5f3f"
+  }
+]

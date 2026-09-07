@@ -1,0 +1,581 @@
+{
+  "fixedForms": {
+    "1": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 13,
+          "sub": 12
+        },
+        "digitTotal": 40,
+        "onesRegroupItems": 24,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 15
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 13,
+          "sub": 12
+        },
+        "digitTotal": 40,
+        "onesRegroupItems": 24,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 15
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 13,
+          "sub": 12
+        },
+        "digitTotal": 41,
+        "onesRegroupItems": 23,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 16
+      }
+    },
+    "2": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 9,
+          "sub": 10,
+          "mul": 6
+        },
+        "digitTotal": 48,
+        "onesRegroupItems": 17,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 20
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 9,
+          "sub": 9,
+          "mul": 7
+        },
+        "digitTotal": 50,
+        "onesRegroupItems": 16,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 20
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 9,
+          "sub": 9,
+          "mul": 7
+        },
+        "digitTotal": 50,
+        "onesRegroupItems": 17,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 20
+      }
+    },
+    "3": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "mul": 13,
+          "div": 12
+        },
+        "digitTotal": 38,
+        "onesRegroupItems": 0,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 16
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "mul": 13,
+          "div": 12
+        },
+        "digitTotal": 38,
+        "onesRegroupItems": 0,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 15
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "mul": 13,
+          "div": 12
+        },
+        "digitTotal": 38,
+        "onesRegroupItems": 0,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 15
+      }
+    },
+    "4": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 56,
+        "onesRegroupItems": 13,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 22
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 58,
+        "onesRegroupItems": 13,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 22
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 61,
+        "onesRegroupItems": 11,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 25
+      }
+    },
+    "5": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 65,
+        "onesRegroupItems": 11,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 27
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 68,
+        "onesRegroupItems": 11,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 27
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 7,
+          "mul": 6,
+          "sub": 6,
+          "div": 6
+        },
+        "digitTotal": 68,
+        "onesRegroupItems": 10,
+        "trivialItems": 0,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 28
+      }
+    },
+    "K": {
+      "A": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 14,
+          "sub": 11
+        },
+        "digitTotal": 25,
+        "onesRegroupItems": 0,
+        "trivialItems": 6,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 10
+      },
+      "B": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 13,
+          "sub": 12
+        },
+        "digitTotal": 25,
+        "onesRegroupItems": 0,
+        "trivialItems": 8,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 10
+      },
+      "C": {
+        "count": 25,
+        "timeLimit": 120,
+        "operations": {
+          "add": 13,
+          "sub": 12
+        },
+        "digitTotal": 25,
+        "onesRegroupItems": 0,
+        "trivialItems": 9,
+        "duplicates": [],
+        "wrongAnswers": [],
+        "first10Digits": 10
+      }
+    }
+  },
+  "draftForms": {
+    "1": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        37,
+        43
+      ],
+      "regroupRange": [
+        15,
+        20
+      ],
+      "wrongAnswers": 0
+    },
+    "2": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        45,
+        50
+      ],
+      "regroupRange": [
+        4,
+        13
+      ],
+      "wrongAnswers": 0
+    },
+    "3": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        39,
+        45
+      ],
+      "regroupRange": [
+        0,
+        0
+      ],
+      "wrongAnswers": 0
+    },
+    "4": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        55,
+        60
+      ],
+      "regroupRange": [
+        4,
+        8
+      ],
+      "wrongAnswers": 0
+    },
+    "5": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        62,
+        67
+      ],
+      "regroupRange": [
+        4,
+        8
+      ],
+      "wrongAnswers": 0
+    },
+    "6": {
+      "forms": 20,
+      "counts": [
+        25
+      ],
+      "digitsRange": [
+        66,
+        72
+      ],
+      "regroupRange": [
+        2,
+        8
+      ],
+      "wrongAnswers": 0
+    }
+  },
+  "learnerMixing": {
+    "requestedStudent": "Learner A",
+    "includedStudents": [
+      "Learner B",
+      "Learner A"
+    ],
+    "averageAccuracy": 75,
+    "growth": {
+      "op": "add",
+      "label": "Addition",
+      "totalFacts": 0,
+      "secureFacts": 0,
+      "developingFacts": 0,
+      "slowFacts": 0,
+      "focusFacts": 0,
+      "dueFacts": 0,
+      "recentSessions": 2,
+      "recentAccuracy": 75,
+      "latestDcpm": 60,
+      "trendDelta": 40,
+      "recommendation": "Gather a baseline",
+      "priority": -1,
+      "targetFacts": [],
+      "allFacts": []
+    },
+    "comparisonKeys": [
+      "3|practice|-|add|within10|60",
+      "3|practice|-|add|within10|60"
+    ]
+  },
+  "supportKeyCollision": true,
+  "adaptiveAfterThreeSuccesses": {
+    "stats": {
+      "firstTryStreak": 3,
+      "coachedOrMissed": 0,
+      "adjustments": 1,
+      "level": "stretch"
+    },
+    "next": {
+      "a": 52,
+      "b": 19,
+      "op": "add",
+      "symbol": "+",
+      "answer": 71,
+      "studentAnswer": null,
+      "correct": null
+    }
+  },
+  "adaptiveAfterTwoMisses": {
+    "stats": {
+      "firstTryStreak": 0,
+      "coachedOrMissed": 2,
+      "adjustments": 1,
+      "level": "support"
+    },
+    "next": {
+      "a": 54,
+      "b": 33,
+      "op": "add",
+      "symbol": "+",
+      "answer": 87,
+      "studentAnswer": null,
+      "correct": null,
+      "responseMs": null
+    }
+  },
+  "builder": {
+    "requestedPerClick": 3,
+    "calls": 2,
+    "savedArtifacts": 2,
+    "savedProblems": [
+      [
+        {
+          "question": "2 + 2",
+          "expression": "2 + 2",
+          "answer": 5,
+          "steps": [],
+          "_blockType": "computation"
+        }
+      ],
+      [
+        {
+          "question": "2 + 2",
+          "expression": "2 + 2",
+          "answer": 5,
+          "steps": [],
+          "_blockType": "computation"
+        }
+      ]
+    ],
+    "toasts": [
+      [
+        "⏳ Generating assessment... 1 sections",
+        "info"
+      ],
+      [
+        "🔄 Section 1/1: computation (3)...",
+        "info"
+      ],
+      [
+        "⏳ Generating assessment... 1 sections",
+        "info"
+      ],
+      [
+        "🔄 Section 1/1: computation (3)...",
+        "info"
+      ],
+      [
+        "✅ Assessment complete! 1 problems across 1 sections. Check Resources panel.",
+        "success"
+      ],
+      [
+        "✅ Assessment complete! 1 problems across 1 sections. Check Resources panel.",
+        "success"
+      ]
+    ]
+  },
+  "expressionMismatch": [
+    {
+      "question": "4 × 5",
+      "expression": "4 + 5",
+      "answer": "9",
+      "steps": [
+        {
+          "explanation": "Multiply four by five to get twenty.",
+          "latex": "4 \\times 5 = 20"
+        }
+      ],
+      "_originalAnswer": 20,
+      "_verification": {
+        "verified": false,
+        "mismatch": true,
+        "computed": 9,
+        "autoCorrected": true
+      }
+    }
+  ],
+  "quantity": {
+    "selected": 12,
+    "promptRequestsFive": true,
+    "savedProblemCount": 1,
+    "toasts": [
+      [
+        "Math activity generated.",
+        "success"
+      ]
+    ]
+  },
+  "legacySubtractionRequested120": 91,
+  "draftDivisionBelowTemplate": {
+    "count": 147,
+    "examples": [
+      {
+        "grade": "3",
+        "form": "PM01",
+        "problem": {
+          "a": 20,
+          "b": 5,
+          "op": "div",
+          "symbol": "÷",
+          "answer": 4
+        },
+        "minimumDividend": 24
+      },
+      {
+        "grade": "4",
+        "form": "PM01",
+        "problem": {
+          "a": 30,
+          "b": 6,
+          "op": "div",
+          "symbol": "÷",
+          "answer": 5
+        },
+        "minimumDividend": 60
+      },
+      {
+        "grade": "5",
+        "form": "PM01",
+        "problem": {
+          "a": 30,
+          "b": 10,
+          "op": "div",
+          "symbol": "÷",
+          "answer": 3
+        },
+        "minimumDividend": 132
+      }
+    ]
+  },
+  "sourceHashes": {
+    "math_fluency_module.js": "e00e8e85591865b595582e5e703010e21e8cf6c33cb4339d25184683a5aab1bd",
+    "math_create_module.js": "b6fe470a922c9ec84b3b7bc0caa718f65762ca31d7ffd6a129a2298a5fb34768",
+    "generation_helpers_module.js": "9230f9779965f014409e3798614b99a5a4515c1c3a5fa25f980090a70474fbd3",
+    "math_helpers_module.js": "38029583b1fe897d3d7a74b6639c561ef04ae946e2760310c88595c794adfd87",
+    "view_math_module.js": "cc65e237f6a42b02dd02ed5e05c6c691d5bdb2c1fac5e7750000a9e35cea0561",
+    "psychometric_math_probes.json": "3febb421d623dfda9d1448b9e341271fed76d37022ca31609c5ab5aea62da328"
+  },
+  "publicMirrors": {
+    "math_fluency_module.js": true,
+    "math_create_module.js": true,
+    "generation_helpers_module.js": true,
+    "math_helpers_module.js": true,
+    "view_math_module.js": true,
+    "psychometric_math_probes.json": true
+  }
+}

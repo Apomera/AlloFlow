@@ -601,13 +601,113 @@ Snapshot gained `lastCatchPreyBodyKg`, `lastCatchPreyMassKg`, `lastCatchCalories
 
 **Checked and found sound.** Prey behaviour is not another orphan: `behavior` drives the flee/wander branches, `speedMps` sets escape velocity, and `points` feeds the XP award. The 30 percent meal cap matches the tool's own worked problem exactly.
 
+## Twenty-fifth pass: the accessibility layer is not translated, anywhere (2026-09-06)
+
+This pass started by trying to size the flight HUD localisation this file had been deferring, and immediately found that the reason recorded for deferring it was wrong.
+
+**Correcting my own claim.** Item 9 of the next-checks list said `__alloT` was unreachable from `initHuntSim`, so the sim could not be localised. It is reachable. It is declared at line 8396 in an enclosing scope, and `initHuntSim` already calls it four times. Those calls run: this session's probes drove the bird into the exhausted, starving and landing paths with zero page errors, which is direct evidence.
+
+**What is actually wrong is much larger.** `__alloT(key, fallback)` returns the fallback when the key is absent from a language pack. So a missing key renders perfectly in every language, reports nothing, and is permanently English — the failure is invisible by construction. Comparing the keys the tools ask for against the keys the packs contain:
+
+| Key kind | Asked for | Absent from the pack | Untranslated |
+|---|---|---|---|
+| Ordinary visible copy | 48,604 | 3,022 | **6%** |
+| `sr_` and `a11y_` (screen reader, accessibility labels) | 3,596 | 3,542 | **98%** |
+
+Across 147 STEM tools. Consistent to within a few keys across the French, Arabic and Burmese packs, which were checked independently.
+
+For this tool the split is perfectly categorical: **1,526 of 1,526 ordinary keys are translated, and 0 of 175 accessibility keys are.** Not a coverage gap that happens to include accessibility strings — it is exactly and only the accessibility layer.
+
+**What that means in use.** A screen-reader user in any of the 62 shipped languages gets a fully translated visual interface and entirely English announcements. In this tool that includes "Exhausted! Glide to recover.", "Critical hunger! Hunt or land." and "Taking off." — the messages that carry state a sighted player reads off the HUD.
+
+**Not fixed here, deliberately.** The repair is 3,542 keys across 62 packs, which is a translation operation rather than a code change, and `ui_strings.js` and the packs are being actively rewritten by another session right now — its drift failed a test in three consecutive passes today. Writing into that concurrently is how partial-write damage happens. This needs to be a decision and a dedicated run, not a drive-by at the end of a rendering pass.
+
+**What is delivered.** `dev-tools/stem_i18n_a11y_coverage.cjs` measures the gap for any pack or single tool, so the number is checkable rather than an assertion, and a ratchet test in the raptor suite fails if this tool's untranslated accessibility count grows. Run it as `node dev-tools/stem_i18n_a11y_coverage.cjs french arabic`, or with `--tool raptorhunt` for a per-tool breakdown.
+
+## Twenty-sixth pass: closing the census, and the visual field (2026-09-06)
+
+Five earlier passes each found one per-species datum the simulation shipped and ignored, by hand. This pass ran the census once and completely: every SPECIES and PREY field, counted against references inside `initHuntSim`. The first attempt reported every field as an orphan, including `biome` with its 76 known uses — the regex escaping had collapsed inside the shell string. The same trap this file already records for heredocs; the census was rewritten as a file and rerun.
+
+**Result.** Of 30 species fields, 14 have no reference in the simulation. Ten of those are encyclopedia text (`scientific`, `ecology`, `conservation`, `weird`, and so on) and a physics loop is right not to read them. The remaining four are physical and sensory: `talonForcePsi`, `talonLengthMm`, `foveaCount`, `visualFieldDeg`, plus `eyeWeightPctBody` which nothing anywhere reads. Prey fields are clean apart from `terrain`, which is descriptive. The pattern is now closed: what is left is listed, not lurking.
+
+**One of the four had an obvious home.** The encyclopedia teaches that raptors have wide visual fields, the roster ships one per species — 110 degrees for the three owls, 200 for the falcons, 220 for hawks and eagles — and target acquisition used a flat 120-degree cone (`dot < 0.5`) for all eighteen.
+
+The field is peripheral awareness, not tracking, so it is not applied raw: a 220-degree hawk would lock prey behind its own tail. It is capped at a forward hemisphere. The strike gate is untouched and still needs the bird nearly on line (`dot >= 0.7`), so this widens what the HUD is aware of without loosening what it can hit — and the existing off-screen target indicator already handles a lock that is not in frame.
+
+| Species | Visual field | Lock cone before | after |
+|---|---|---|---|
+| Great horned, snowy, barred owl | 110 | 120 | **110** |
+| Peregrine, kestrel, merlin, osprey, gyrfalcon, kite | 200 | 120 | 180 |
+| Red-tail, eagles, goshawk, vulture, condor | 220 | 120 | 180 |
+
+Measured in a browser: owl `lockConeDot` 0.574, peregrine and red-tail 0, zero page errors. The owls narrow by ten degrees, which is the lesson — forward-facing eyes give depth, not coverage — and a species with no datum lands exactly on the old 0.5, so nothing is silently retuned.
+
+**Left as listed.** `talonForcePsi` and `talonLengthMm` have a natural home in strike success (the talon mechanics panel already computes a reach ratio against prey vital depth), but making strikes fail is a gameplay decision, not a correction. `foveaCount` overlaps the acuity work from the thirteenth pass. These are now a census result rather than a surprise waiting for the next reader.
+
+Gates scan the roster: monotonic cone in visual field, every owl narrower than every non-owl, no species below dot 0, no lock cone as tight as the strike cone, and the no-datum fallback equal to the old flat value. Snapshot gained `visualFieldDeg`, `lockFieldDeg`, `lockConeDot`. Census: `scratch/raptor-orphan-census.cjs`.
+
+## Twenty-seventh pass: the call after a catch (2026-09-06)
+
+The ignored-data pattern, this time in audio. After a successful strike the bird calls, and that call was a three-way branch: owl, bald eagle, everyone else. A turkey vulture screeched at the same 1100 Hz sawtooth as a peregrine.
+
+The tool ships a call catalogue, `RAPTOR_CALLS.species`, and its calls section teaches students to tell species apart from it. It records both vultures as `pattern: noise, pitchLabel: broadband` — a hiss, no clean pitch, with its own caveat that the production mechanism is unresolved. It records the kestrel as quick pulses, the owls as spaced repeated hoots, the peregrine as a rapid barking series. The simulation contradicted every one of those.
+
+**Scope, stated exactly.** `pitchRank` is a chart ordering, not a frequency, so a faithful per-species call system would mean inventing eighteen sound profiles, which this work does not do. What the catalogue does carry unambiguously is the call's *shape* — `pattern` and `beats` — so that is what drives the sim now. The three pitch anchors (owl 320 Hz, bald eagle 600, others 1100) are unchanged. Species the catalogue does not name keep the descending screech.
+
+**A correction to my own count.** I first read the catalogue as naming five of the flight roster. It names ten. The extra five were found by the browser, not by me: after aliasing them blind, the peregrine reported `pulses:10`, which is the catalogue's own entry for its *kak-kak-kak* alarm. Red-tailed hawk is `sweep:1`, "a single long downslur" — which is precisely the descending screech the default branch already plays, so that species is right by construction.
+
+| Species | Catalogue | Sim before | after |
+|---|---|---|---|
+| Turkey vulture, condor | broadband noise | 1100 Hz screech | low-passed noise, irregular bursts |
+| Great horned, snowy, barred owl | spaced hoots, 4-9 notes | one descending sine | repeated 320 Hz hoots, count from `beats` |
+| Kestrel, peregrine | quick pulses, 5-10 notes | descending screech | rapid sawtooth notes, count from `beats` |
+| Red-tail, bald eagle, osprey | downslur / piping / whistle | descending screech | unchanged |
+
+The hiss is a `BufferSource`, and the polish suite pins that every one-shot routes through the gated master gain, obeys the six-voice cap and the `document.hidden` guard, and never touches `audioCtx.destination`. The noise path keeps the same variable and the same bookkeeping, so all of that still holds and the pin passes without edits.
+
+**Verification, honestly.** Browser snapshots resolve `noise:5` for the condor, `pulses:5` kestrel, `hoot:5` great horned, `pulses:8` peregrine (the catalogue's 10, clamped), zero page errors. Whether the sounds are *good* is not something a headless probe can say; this pass claims only that the vultures no longer sing and that note counts come from the shipped data.
+
+Two test failures on the first four-file run were the heavy full-render tests timing out under load; both pass in isolation and did not recur on the rerun. The one remaining failure is `ui_strings.js` again, fifth pass running. Snapshot gained `callShape` and `callPattern`.
+
+## Twenty-eighth pass: the debrief, read for consistency (2026-09-06)
+
+A short pass over the end-of-flight debrief, which is student-facing and had not been read since the physics changes. Most of it held up; two things did not, and two suspicions were checked and cleared.
+
+**Checked and sound.** The "Protect your energy budget" coaching fires on any `warning` event, so it mattered whether a non-energy warning existed. There are exactly two producers, stamina depleted and calories depleted, so the advice never fires for another reason. That is now pinned so a third producer forces the decision. And `runMaxSpeed` records `raptor.speed`, which is airspeed, so the high-stoop objective figure is the right quantity.
+
+**Fixed: one number under two names.** The debrief row said "Peak speed" while the HUD metric was renamed "Airspeed" in the eighteenth pass, when the wind chip started showing ground speed beside it. Same value, second label. It reads "Peak airspeed" now.
+
+**Fixed: a label spelled four times.** `'Entered thermal'` was written independently at the producer and at three consumers — the debrief coach, the flight signature, and the mission progress. An edit to any one would have zeroed the thermal count in the others with nothing failing, the same shape as the dead key this file's memory records elsewhere. One constant now, and a gate asserts the bare literal appears exactly once.
+
+**A limit.** The thermal count lives in React state after the mission ends, so the constant is verified structurally (one declaration, one producer, three consumers, `node --check`) and by the continuity spec exercising the code path, not by a probe reading the debrief number end to end.
+
+## Twenty-ninth pass: prey fled from a bird's footprint, not from the bird (2026-09-06)
+
+Prey detection compared the raptor's *horizontal* distance to a radius. No altitude term anywhere: not in the loop, not in `preyEscapeProfile`, and prey sit on the terrain. So a hawk a hundred metres up alerted the rabbit beneath it exactly as one skimming the grass did.
+
+**Shown, not asserted.** The first two probes returned zero alerts at both 1,045 m and 23 m — proving nothing, because nothing was inside the radius at that instant in either run. A probe that samples every half second on a straight track, once level and once climbing, gave the controlled pair:
+
+| Run | Alert at | Altitude | Nearest prey, map | Nearest prey, 3-D |
+|---|---|---|---|---|
+| Level | t = 10.5 s | 15 m | 27.8 m | 33.6 m |
+| Climbing | t = 10.5 s | **99 m** | 27.8 m | **106 m** |
+
+Same prey, same track, same instant. The second is a rabbit bolting from a hawk four times outside the detection radius. It also meant the stoop the tool teaches — height traded for a close approach — was unplayable as stealth: altitude bought nothing.
+
+**The fix, and its anchor.** Detection, the silent-strike pull-up alert, and the calm-down range now use true distance. The base radius rose from 25 to 40 so the ordinary low cruise still alerts (30 m up and 25 m across is 39 m); the owl discount keeps its 15-of-25 ratio as 24-of-40, and the pull-up range keeps its 30-of-25 ratio as 48-of-40. Flee *direction* stays a ground heading. `pd2` was left declared and unread after the change and was removed, since that is the orphan class this file keeps finding.
+
+**A/B after.** The climbing sweep alerts nothing up to 400 m. The level control still alerts — at 20 m altitude and 43.8 m in 3-D. **Cost, stated:** that low alert now fires about 11 m further out horizontally than before (38.8 m against 27.8), the price of a radius anchored for the cruise band rather than for ground level. A hawk five metres up and forty metres away is plainly visible to a rabbit, so this is defensible, but it is a change in feel and it is recorded here rather than hidden.
+
+Snapshot gained `alertedPreyCount`, `nearestPreyHorizontalM`, `nearestPrey3dM`, `altitudeAboveGround`. Probe: `scratch/raptor-alert-probe.cjs <species> <seconds> [level]`.
+
 ## Verified state
 
-Checked after the twenty-fourth pass:
+Checked after the twenty-ninth pass:
 
 - Both live raptor sources are byte-identical (`cmp` clean) and `node --check` passes.
-- 181 of 181 unit tests pass across all four raptor files, in one run.
-- The Playwright suite passed 3 of 3 (1.0 minute).
+- 207 of 208 unit tests pass across all four raptor files. The one failure is the `ui_strings.js` mirror line, another session mid-write; both raptor copies are `cmp`-clean. Seventh pass running for that drift; it has self-resolved every time.
+- The Playwright suite passed 3 of 3 (1.7 minutes).
+- Browser A/B: no alerts on the climbing sweep; the level control alerts at 20 m altitude, 43.8 m in 3-D; zero page errors.
 - Browser probes report zero page errors. The endurance probe's kestrel figure is bit-identical to the pre-change measurement. The catch probe did NOT land a catch, so the prey-energy change is verified by arithmetic against the tool's own reference table rather than end to end; see the twenty-fourth pass.
 - Browser captures across eight biomes report zero page errors, and the snapshot fields `snowLineHeight`, `biomeTempC`, `snowCapCount`, and `landmarkSnowCount` agree with the table above.
 - The browser wind probe (`scratch/raptor-wind-probe.cjs`) reports zero page errors and ground speed matching airspeed plus or minus the wind in all four conditions.
@@ -720,7 +820,7 @@ Harness caveats:
 
 ## Suggested next checks (keep scope narrow)
 
-1. Commit passes four to twenty-four by pathspec as above. Note that `dev-tools/stem_css_structure_scan.cjs` is a new file this work added. Do not deploy unless asked; if a deploy is requested, note that `deploy.sh` skips its own push when the work is pre-committed, so push explicitly.
+1. Commit passes four to twenty-nine by pathspec as above. Note two new files this work added: `dev-tools/stem_css_structure_scan.cjs` and `dev-tools/stem_i18n_a11y_coverage.cjs`. Do not deploy unless asked; if a deploy is requested, note that `deploy.sh` skips its own push when the work is pre-committed, so push explicitly.
 2. Eyeball the six captures once in a real browser at the same sizes. The harness disables bloom and uses SwiftShader, so glow and anti-aliasing differ from a GPU.
 3. Controls follow-ups if wanted: gamepad mapping, which this machine cannot verify headlessly, so it would ship untested; localising the preset labels, action names, and guide prompts through ui_strings. On localisation, note that the surrounding flight HUD strings (the target cue, the phase labels, the landing messages) are English literals too, so doing only the new strings would be a partial job. It belongs in one sweep across the flight HUD.
 4. The wind now advects the bird fully (eighteenth pass), which makes the strongest gusts genuinely hard to fly against for the slowest species: at the 15 m/s clamp and the 1.4x gust peak, 21 m/s of air exceeds the maximum level speed of every species except the gyrfalcon. That is physically honest and matches the encyclopedia's own kiting claim, but if a student reports being unable to make headway, the knob to reconsider is the wind ceiling in the weather drift, not the coupling. Do not reintroduce a fractional multiplier on the drift; that is what the eighteenth pass removed.
@@ -728,7 +828,7 @@ Harness caveats:
 6. Two orphans remain deliberately unused: `stoopDiveBonus`, whose own comment calls it a simulation multiplier, and `eyeWeightPctBody`, which nothing references at all. Wiring the first would change dive balance and needs a design decision about what it should multiply; the second may simply be a teaching datum with no simulation meaning. Neither is a bug on its own, but both are worth a decision rather than being left ambiguous.
 7. The altitude trim still climbs at a flat 8 metres per second for every species. See the sixteenth pass for why it was left alone; changing it is a pacing decision, not a correction.
 8. One species datum is worth a second opinion from someone who knows the literature: the turkey vulture is listed at 3.5, level with the northern goshawk. Turkey vultures are famous for finding carrion by smell rather than by sharp distant vision, so that value looks generous. Nothing was changed, because changing a species datum is a science decision, not a rendering one.
-9. The flight HUD is entirely English literals while the rest of the tool has 1411 `__alloT` calls. This is a scope boundary, not an oversight: `__alloT` is defined inside the React component and `initHuntSim` runs in a different parent function, so the sim cannot reach it. Localising the flight HUD means plumbing a translator into `initHuntSim` and updating the many tests that pin exact literal strings. It is one deliberate sweep, not a drive-by.
+9. **This item said the wrong thing until the twenty-fifth pass and is corrected here.** It claimed the flight HUD could not be localised because `__alloT` is unreachable from `initHuntSim`. That is false: `__alloT` is declared at line 8396 in a scope that encloses both, and `initHuntSim` already calls it four times for screen-reader announcements. Those calls execute — this session's probes drove the bird into the starving and landing paths with zero page errors. The real obstacle is different and worse; see the twenty-fifth pass. Localising the remaining flight HUD literals is still one deliberate sweep because many tests pin exact strings, but nothing in the language of the file prevents it.
 10. If further jerks are reported, add a dedicated continuity test for a successful catch and for forced target replacement. Current coverage: straight flight, frame timing, pause/resume, dive transitions, landing/takeoff, view controls, reduced motion.
 11. Done in the twenty-second pass. If the same guard is ever wanted for another tool, use `dev-tools/stem_css_structure_scan.cjs` rather than writing a fresh line-based one; the reasons a line-based check cannot work here are recorded in that pass.
 

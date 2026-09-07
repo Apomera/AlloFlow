@@ -119,7 +119,69 @@ function buildApBlueprintCoverage(input) {
   };
   const emptyLayers = Object.keys(layerCounts).filter((key) => layerCounts[key] === 0);
 
+  // Cross-reference integrity. The Hub's study-plan view turns these ids into
+  // navigation: a route's sectionId becomes a "Read the lesson first" button and
+  // its itemIds become a practice set. An id that resolves to nothing is a dead
+  // control, and nothing else checks these, so they are checked here.
+  const chapters = asArray(library.chapters);
+  const chapterIdSet = new Set(chapters.map((chapter) => asRecord(chapter).id).filter(Boolean));
+  const sectionIdSet = new Set();
+  const knowledgeCheckIdSet = new Set();
+  chapters.forEach((chapter) => {
+    asArray(asRecord(chapter).sections).forEach((section) => {
+      const record = asRecord(section);
+      if (record.id) sectionIdSet.add(record.id);
+      asArray(record.knowledgeChecks).forEach((check) => { if (asRecord(check).id) knowledgeCheckIdSet.add(asRecord(check).id); });
+    });
+    asArray(asRecord(chapter).knowledgeChecks).forEach((check) => { if (asRecord(check).id) knowledgeCheckIdSet.add(asRecord(check).id); });
+  });
+  const flashcardIdSet = new Set(asArray(library.flashcards).map((card) => asRecord(card).id).filter(Boolean));
+  const memoryAidIdSet = new Set(asArray(library.memoryAids).map((aid) => asRecord(aid).id).filter(Boolean));
+  const itemIdSet = new Set(items.map((item) => asRecord(item).id).filter(Boolean));
+
+  const unresolved = {};
+  const unresolvedExamples = [];
+  let crossReferencesChecked = 0;
+  const checkRef = (kind, owner, id, known) => {
+    if (!id) return;
+    crossReferencesChecked += 1;
+    if (known.has(id)) return;
+    unresolved[kind] = (unresolved[kind] || 0) + 1;
+    if (unresolvedExamples.length < 10) unresolvedExamples.push(kind + ': ' + owner + ' -> ' + id);
+  };
+
+  items.forEach((rawItem) => {
+    const item = asRecord(rawItem);
+    checkRef('item-learning-section', String(item.id || 'item'), item.learningSectionId, sectionIdSet);
+    asArray(item.chapterIds).forEach((id) => checkRef('item-chapter', String(item.id || 'item'), id, chapterIdSet));
+  });
+  asArray(library.topicDiagnosticRoutes).forEach((rawRoute) => {
+    const route = asRecord(rawRoute);
+    const owner = String(route.id || 'route');
+    checkRef('route-chapter', owner, route.chapterId, chapterIdSet);
+    asArray(route.sectionIds).forEach((id) => checkRef('route-section', owner, id, sectionIdSet));
+    asArray(route.flashcardIds).forEach((id) => checkRef('route-flashcard', owner, id, flashcardIdSet));
+    asArray(route.memoryAidIds).forEach((id) => checkRef('route-memory-aid', owner, id, memoryAidIdSet));
+    asArray(route.knowledgeCheckIds).forEach((id) => checkRef('route-knowledge-check', owner, id, knowledgeCheckIdSet));
+    asArray(route.itemIds).forEach((id) => checkRef('route-item', owner, id, itemIdSet));
+    asArray(route.diagnosticSets).forEach((rawSet) => {
+      const set = asRecord(rawSet);
+      const setOwner = String(set.id || owner);
+      checkRef('set-section', setOwner, set.sectionId, sectionIdSet);
+      asArray(set.itemIds).forEach((id) => checkRef('set-item', setOwner, id, itemIdSet));
+    });
+  });
+  ['unitReviewRoutes', 'reviewLadders', 'practiceForms', 'studySessionPlans'].forEach((key) => {
+    asArray(library[key]).forEach((rawEntry) => {
+      const entry = asRecord(rawEntry);
+      const owner = String(entry.id || key);
+      asArray(entry.itemIds).forEach((id) => checkRef(key + '-item', owner, id, itemIdSet));
+    });
+  });
+  const unresolvedCount = Object.keys(unresolved).reduce((sum, key) => sum + unresolved[key], 0);
+
   const gaps = [];
+  if (unresolvedCount) gaps.push('unresolved-cross-references');
   if (!declared) gaps.push('topic-universe-not-declared');
   if (topicsMissing.length) gaps.push('declared-topics-without-items');
   if (topicsOffBlueprint.length) gaps.push('items-on-undeclared-topics');
@@ -160,6 +222,20 @@ function buildApBlueprintCoverage(input) {
     },
     library: layerCounts,
     emptyLibraryLayers: emptyLayers,
+    // Lesson depth per unit. One section per chapter means a unit's entire
+    // native lesson is a single section, which the item routing then points
+    // every question in that unit at.
+    lessonDepth: {
+      chapterCount: layerCounts.chapters,
+      sectionCount: layerCounts.sections,
+      sectionsPerChapter: layerCounts.chapters ? Math.round(layerCounts.sections / layerCounts.chapters * 10) / 10 : null,
+    },
+    crossReferences: {
+      checked: crossReferencesChecked,
+      unresolvedCount,
+      unresolved,
+      examples: unresolvedExamples,
+    },
     gaps,
     // A structural summary, never a release, validity, or readiness judgement.
     assessment: gaps.length ? 'gaps-present' : 'structurally-complete',

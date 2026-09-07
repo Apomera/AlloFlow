@@ -324,13 +324,14 @@ function FabStack(props) {
                     data-student-tool="true"
                     onClick={handleToggleFocusMode}
                     className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${focusMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
-                    title={t('a11y.toggle_focus')}
-                    aria-label={t('a11y.toggle_focus')}
+                    title={t('settings.text.bionic') || 'Bionic Reading Style'}
+                    aria-label={t('settings.text.bionic') || 'Bionic Reading Style'}
                     aria-pressed={focusMode}
                     data-help-key="fab_focus"
+                    aria-describedby="student-tools-bionic-hint"
                   >
                     <span className="alloflow-student-tool-icon" aria-hidden="true"><Eye size={18} /></span>
-                    <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_focus')}</span>
+                    <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('settings.text.bionic') || 'Bionic Reading Style'}</span><span id="student-tools-bionic-hint" className="mt-1 block text-[11px] font-normal">{t('settings.text.bionic_sub') || 'Bolds the beginning of each word'}</span></span>
                   </button>
                   <button
                     data-student-tool="true"
@@ -351,13 +352,14 @@ function FabStack(props) {
                         setFocusedParagraphIndex(null);
                       }}
                       className={`alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isLineFocusMode ? 'bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500' : 'bg-white text-slate-700 hover:bg-slate-50'}`}
-                      title={t('a11y.toggle_line_focus')}
-                      aria-label={t('a11y.toggle_line_focus')}
+                      title={t('student_tools.paragraph_focus') || 'Paragraph focus'}
+                      aria-label={t('student_tools.paragraph_focus') || 'Paragraph focus'}
                       aria-pressed={isLineFocusMode}
                       data-help-key="fab_line_focus"
+                      aria-describedby="student-tools-paragraph-focus-hint"
                     >
                       <span className="alloflow-student-tool-icon" aria-hidden="true"><AlignJustify size={18} /></span>
-                      <span className="min-w-0 text-xs font-bold leading-tight">{t('a11y.toggle_line_focus')}</span>
+                      <span className="min-w-0 text-xs font-bold leading-tight"><span className="block">{t('student_tools.paragraph_focus') || 'Paragraph focus'}</span><span id="student-tools-paragraph-focus-hint" className="mt-1 block text-[11px] font-normal">{t('student_tools.paragraph_focus_hint') || 'Keeps the active paragraph clear'}</span></span>
                     </button>
                   )}
                 </div>

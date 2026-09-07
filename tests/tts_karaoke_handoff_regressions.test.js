@@ -443,7 +443,7 @@ describe('general Leveled Text stalled-preload promotion (2026-08-03)', () => {
     await Promise.resolve();
 
     expect(deps.playSequence).not.toHaveBeenCalled(); // never advanced to the next sentence
-    expect(deps.stopPlayback).toHaveBeenCalledWith('tts-unavailable', 'leveled-es', 17);
+    expect(deps.stopPlayback).toHaveBeenCalledWith('browser-tts-unavailable', 'leveled-es', 17);
     expect(deps.setIsPlaying).toHaveBeenCalledWith(false);
     expect(deps.setIsGeneratingAudio).toHaveBeenCalledWith(false);
     expect(deps.isPlayingRef.current).toBe(false);
@@ -680,7 +680,7 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       json: async () => ({
-        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
       }),
     })));
     return revoke;
@@ -742,7 +742,7 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({
       ok: true,
       json: async () => ({
-        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
       }),
     })));
     const { callTTS } = makeTTS(state);
@@ -754,7 +754,7 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     const refreshed = await callTTS(text, 'Kore', 1, { ...opts, force: true });
     const replay = await callTTS(text, 'Kore', 1, opts);
 
-    const key = JSON.stringify([text, 'Kore', 'English', 'natural-rate-v1']);
+    const key = JSON.stringify([text, 'Kore', 'English', 'natural-rate-v1', 'test-tts']);
     expect(first).toBe('blob:first-clip');
     expect(cached).toBe(first);
     expect(refreshed).toBe('blob:refreshed-clip');
@@ -778,7 +778,7 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
 
     expect(second).toBe(first);
     expect(Array.from(state.urlCache.keys())).toEqual([
-      JSON.stringify(['Cache this resolved voice.', 'Kore', 'English', 'natural-rate-v1']),
+      JSON.stringify(['Cache this resolved voice.', 'Kore', 'English', 'natural-rate-v1', 'test-tts']),
     ]);
     expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
   });
@@ -849,7 +849,7 @@ describe('callTTS urlCache ownership + bounded eviction', () => {
     const fetchMock = vi.fn(async () => ({
       ok: true,
       json: async () => ({
-        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
       }),
     }));
     vi.stubGlobal('fetch', fetchMock);

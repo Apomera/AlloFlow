@@ -1,0 +1,194 @@
+[
+  {
+    "id": "fm-term-force",
+    "file": "fm-term-force.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A hand presses against a wooden box above; below, another hand holds the handle of a red wagon.",
+    "altHash": "img-bbb-5e0bb08e"
+  },
+  {
+    "id": "fm-term-push",
+    "file": "fm-term-push.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A hand touches the left side of a wooden block; a blue arrow above points right, away from the hand.",
+    "altHash": "img-ak7-0754dbf5"
+  },
+  {
+    "id": "fm-term-pull",
+    "file": "fm-term-pull.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A taut rope connects a hand at upper left to a wagon at lower right. An arrow points from the wagon toward the hand.",
+    "altHash": "img-9wz-614093f0"
+  },
+  {
+    "id": "fm-term-friction",
+    "file": "fm-term-friction.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A wooden block rests on thick cream carpet, with carpet fibers visible against its lower edge.",
+    "altHash": "img-e97-2c510961"
+  },
+  {
+    "id": "fm-term-gravity",
+    "file": "fm-term-gravity.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "An orange ball hangs above a level floor. A blue arrow beside it points straight down.",
+    "altHash": "img-41j-89fc3dc4"
+  },
+  {
+    "id": "fm-term-motion",
+    "file": "fm-term-motion.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Four positions of a blue ball run from left to right; the earlier positions are paler than the final one.",
+    "altHash": "img-63f-c6b54382"
+  },
+  {
+    "id": "fm-term-balanced",
+    "file": "fm-term-balanced.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A blue book rests on a table beside two matching vertical arrows, one pointing up and one pointing down.",
+    "altHash": "img-9d7-fb1662d5"
+  },
+  {
+    "id": "fm-term-unbalanced",
+    "file": "fm-term-unbalanced.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A wooden wagon sits beneath a long blue arrow pointing right and a shorter orange arrow pointing left.",
+    "altHash": "img-8af-94565527"
+  },
+  {
+    "id": "fm-term-pattern",
+    "file": "fm-term-pattern.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Three separate horizontal scenes each show an empty ramp and one blue ball resting at a similar distance beyond it.",
+    "altHash": "img-8h7-87e260a7"
+  },
+  {
+    "id": "fm-term-predict",
+    "file": "fm-term-predict.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A child holds a ball at the top of a ramp and points toward an empty circular marker on the floor beyond it.",
+    "altHash": "img-b2n-877484f2"
+  },
+  {
+    "id": "fm-img-push-pull",
+    "file": "fm-img-push-pull.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "At left, a child presses a box forward. At right, another child holds a wagon handle and draws it toward themselves.",
+    "altHash": "img-lej-74c1173b"
+  },
+  {
+    "id": "fm-img-friction-floors",
+    "file": "fm-img-friction-floors.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Matching blocks sit on smooth tile at left and textured carpet at right. A blue arrow beside each block points right.",
+    "altHash": "img-101b-b3b88b81"
+  },
+  {
+    "id": "fm-img-gravity-chair",
+    "file": "fm-img-gravity-chair.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A child sits upright on a chair with their feet resting on the floor.",
+    "altHash": "img-fgr-2fe91af6"
+  },
+  {
+    "id": "fm-img-tug-balanced",
+    "file": "fm-img-tug-balanced.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two hands hold a taut rope with a central red ribbon. Matching blue arrows above point left and right.",
+    "altHash": "img-aj3-052f5597"
+  },
+  {
+    "id": "fm-img-tug-unbalanced",
+    "file": "fm-img-tug-unbalanced.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Cords extend from both sides of a wooden cart. A short orange arrow points left; a longer blue arrow points right.",
+    "altHash": "img-hxv-7f9cbb10"
+  },
+  {
+    "id": "fm-img-bike",
+    "file": "fm-img-bike.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A helmeted child pedals a blue bicycle along a level park path.",
+    "altHash": "img-2297-00356447"
+  },
+  {
+    "id": "fm-img-shoe-grip",
+    "file": "fm-img-shoe-grip.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A blue sneaker touches textured pavement at the heel, with its toe lifted.",
+    "altHash": "img-trz-8123e9ff"
+  },
+  {
+    "id": "fm-img-sliding-block",
+    "file": "fm-img-sliding-block.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A wooden block sits between a long blue arrow pointing right above it and a shorter orange arrow pointing left below.",
+    "altHash": "img-cq7-958934ba"
+  },
+  {
+    "id": "fm-img-ramp-heights",
+    "file": "fm-img-ramp-heights.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two empty wooden ramps rest on books. The shallow ramp at left has one book beneath its raised end; the steeper ramp at right has a taller support with three books.",
+    "altHash": "img-hwn-427b2a62"
+  },
+  {
+    "id": "fm-img-three-rolls",
+    "file": "fm-img-three-rolls.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A hand places one of three blue circular markers clustered on the floor beyond an empty ramp.",
+    "altHash": "img-fsf-d613230a"
+  },
+  {
+    "id": "fm-img-turning-ball",
+    "file": "fm-img-turning-ball.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A dashed curved path ends near a blue ball, with a small arrow following the curve toward the ball.",
+    "altHash": "img-8of-d6d5b1b7"
+  },
+  {
+    "id": "fm-img-wall",
+    "file": "fm-img-wall.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A hand presses its palm flat against a brick wall.",
+    "altHash": "img-exz-a6c930ad"
+  },
+  {
+    "id": "fm-img-magnet-gap",
+    "file": "fm-img-magnet-gap.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A steel paperclip lies across a small gap from a red-and-blue bar magnet. An arrow above the clip points toward the magnet.",
+    "altHash": "img-bmv-30767f17"
+  },
+  {
+    "id": "fm-img-fair-test",
+    "file": "fm-img-fair-test.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A child gently holds a blue ball near the top of a low ramp supported by one book, with clear floor beyond the ramp.",
+    "altHash": "img-l5n-4a85b8c3"
+  }
+]

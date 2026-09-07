@@ -145,7 +145,11 @@ describe('Geology Explorer — a landmark the learner picks is actually on scree
     expect(P.revealCutawayFor('crust', 'not-a-material')).toBe(0);
     expect(source).toContain('beaconReveal = revealCutawayFor(SCENE.id, beacon.key);');
     expect(source).toContain('if (beaconReveal > sliceRef.current) {');
-    expect(source).toContain("announce(beacon.label + '. ' + beacon.detail + (beaconReveal ? ' Cut back to expose it.' : ''));");
+    // The announcement now routes through the translator, so a screen reader speaks it in
+    // the user's language. What this test cares about is unchanged: the "cut back" sentence
+    // is appended only when the cutaway actually moved.
+    expect(source).toContain("cut: beaconReveal ? ' ' + t('stem.geology.sr.cut_back_to_expose', 'Cut back to expose it.') : ''");
+    expect(source).toContain("tf('stem.geology.sr.beacon_focus', '{label}. {detail}{cut}'");
   });
 });
 

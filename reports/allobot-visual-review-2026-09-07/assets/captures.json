@@ -1,0 +1,122 @@
+[
+  {
+    "id": "light-idle--64px",
+    "name": "after-light-idle--64px.png"
+  },
+  {
+    "id": "light-idle--200pct",
+    "name": "after-light-idle--200pct.png"
+  },
+  {
+    "id": "light-happy--64px",
+    "name": "after-light-happy--64px.png"
+  },
+  {
+    "id": "light-happy--200pct",
+    "name": "after-light-happy--200pct.png"
+  },
+  {
+    "id": "light-thinking--64px",
+    "name": "after-light-thinking--64px.png"
+  },
+  {
+    "id": "light-thinking--200pct",
+    "name": "after-light-thinking--200pct.png"
+  },
+  {
+    "id": "light-sad--64px",
+    "name": "after-light-sad--64px.png"
+  },
+  {
+    "id": "light-sad--200pct",
+    "name": "after-light-sad--200pct.png"
+  },
+  {
+    "id": "dark-idle--64px",
+    "name": "after-dark-idle--64px.png"
+  },
+  {
+    "id": "dark-idle--200pct",
+    "name": "after-dark-idle--200pct.png"
+  },
+  {
+    "id": "contrast-idle--64px",
+    "name": "after-contrast-idle--64px.png"
+  },
+  {
+    "id": "contrast-idle--200pct",
+    "name": "after-contrast-idle--200pct.png"
+  },
+  {
+    "id": "light-chrome-top-right--64px",
+    "name": "after-light-chrome-top-right--64px.png"
+  },
+  {
+    "id": "light-chrome-top-right--200pct",
+    "name": "after-light-chrome-top-right--200pct.png"
+  },
+  {
+    "id": "contrast-live-chrome-bottom-left--64px",
+    "name": "after-contrast-live-chrome-bottom-left--64px.png"
+  },
+  {
+    "id": "contrast-live-chrome-bottom-left--200pct",
+    "name": "after-contrast-live-chrome-bottom-left--200pct.png"
+  },
+  {
+    "id": "light-listening--64px",
+    "name": "after-light-listening--64px.png"
+  },
+  {
+    "id": "light-listening--200pct",
+    "name": "after-light-listening--200pct.png"
+  },
+  {
+    "id": "light-talking--64px",
+    "name": "after-light-talking--64px.png"
+  },
+  {
+    "id": "light-talking--200pct",
+    "name": "after-light-talking--200pct.png"
+  },
+  {
+    "id": "light-sleeping--64px",
+    "name": "after-light-sleeping--64px.png"
+  },
+  {
+    "id": "light-sleeping--200pct",
+    "name": "after-light-sleeping--200pct.png"
+  },
+  {
+    "id": "light-prop-gaze-left--64px",
+    "name": "after-light-prop-gaze-left--64px.png"
+  },
+  {
+    "id": "light-prop-gaze-left--200pct",
+    "name": "after-light-prop-gaze-left--200pct.png"
+  },
+  {
+    "id": "light-prop-gaze-right--64px",
+    "name": "after-light-prop-gaze-right--64px.png"
+  },
+  {
+    "id": "light-prop-gaze-right--200pct",
+    "name": "after-light-prop-gaze-right--200pct.png"
+  },
+  {
+    "id": "light-scholar-specs--64px",
+    "name": "after-light-scholar-specs--64px.png"
+  },
+  {
+    "id": "light-scholar-specs--200pct",
+    "name": "after-light-scholar-specs--200pct.png"
+  },
+  {
+    "id": "light-librarian-kit--64px",
+    "name": "after-light-librarian-kit--64px.png"
+  },
+  {
+    "id": "light-librarian-kit--200pct",
+    "name": "after-light-librarian-kit--200pct.png"
+  }
+]

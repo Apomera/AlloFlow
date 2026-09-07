@@ -3663,6 +3663,7 @@
       if (initialPoll.ratingMax != null) setRatingMax(clampInt(initialPoll.ratingMax, 5, 1, 20));
       if (typeof initialPoll.ratingLabels === 'string') setRatingLabels(initialPoll.ratingLabels);
       if (typeof initialPoll.options === 'string') setPollOptions(initialPoll.options);
+      else if (Array.isArray(initialPoll.options)) setPollOptions(initialPoll.options.slice(0, LIVE_POLL_MAX_CHOICES).map(option => normalizeBoundedText(typeof option === 'object' && option ? option.text || option.label : option, LIVE_POLL_CHOICE_MAX_LENGTH)).join('\n'));
       if (initialPoll.afterSubmitMode) setAfterSubmitMode(initialPoll.afterSubmitMode);
       if (initialPoll.feedbackEnabled != null) setFeedbackEnabled(initialPoll.feedbackEnabled === true);
       if (typeof initialPoll.feedbackCriteria === 'string') setFeedbackCriteria(initialPoll.feedbackCriteria);
@@ -5908,6 +5909,10 @@
     const sessionSupportActivityId = buildLiveSessionSupportActivityId(sessionCode);
     const guestRef = R.useRef(null);
     const pollDialogRef = R.useRef(null);
+    const resultsDialogRef = R.useRef(null);
+    const identity = sessionCode + ":" + userUid;
+    const pollOwnerRef = R.useRef(identity);
+    const latestPollIdRef = R.useRef(null);
     const [activePoll, setActivePoll] = R.useState(null);
     const [pollMinimized, setPollMinimized] = R.useState(false);
     const [submitted, setSubmitted] = R.useState(false);
@@ -5923,6 +5928,7 @@
       const restored = readLiveSessionQaDraft(sessionCode, userUid);
       return restored ? restored.text : '';
     });
+    const [qaDraftIdentity, setQaDraftIdentity] = R.useState(identity);
     const [sessionQaSortMode, setSessionQaSortMode] = R.useState('latest');
     const [sessionQaNotice, setSessionQaNotice] = R.useState(null);
     const [supportTrayExpanded, setSupportTrayExpanded] = R.useState(false);
@@ -5946,6 +5952,16 @@
     const hostNonceRef = R.useRef(hostNonce);
     const guestTransportKind = normalizeLiveTransportKind(props.transportKind);
     const guestTransportLabel = guestTransportKind === 'mailbox' ? tr('Google Mailbox live') : guestTransportKind === 'lan' ? tr('Local network live') : tr('Firebase live');
+
+    R.useEffect(function () {
+      if (enabled && pollOwnerRef.current === identity) return;
+      pollOwnerRef.current = null; latestPollIdRef.current = null; studentPollIdRef.current = null;
+      setActivePoll(null); setSharedResults(null); setPeerShowcase(null); setPeerVoteResults(null);
+      setResponseValue(''); setSubmittedResponse(''); setSubmitted(false); setStudentFeedback(null);
+      setTeacherCheckIn(null); setHelpRequested(false); helpRequestedRef.current = false; helpActivityIdRef.current = '';
+      setSessionQaState(null); setSessionQaViewOpen(false); setSubmitNotice(null); setCurrentAttempt(1);
+      statusSentRef.current = ''; retryCountRef.current = 0;
+    }, [identity, enabled]);
 
     R.useEffect(function () {
       if (!enabled) return undefined;
@@ -5978,6 +5994,8 @@
         userUid: userUid,
         codename: codename,
         onPoll: function (p) {
+          if (disposed || !p || !p.id) return;
+          pollOwnerRef.current = identity; latestPollIdRef.current = p.id;
           const samePoll = !!(p && studentPollIdRef.current === p.id);
           studentPollIdRef.current = p && p.id;
           setActivePoll(p);
@@ -5999,11 +6017,12 @@
             setCurrentAttempt(1);
             statusSentRef.current = '';
             setPollMinimized(false);
-            if (savedDraft && savedDraft.type === p.type) setSubmitNotice(tr('Draft restored from this browser.'));
+            setSubmitNotice(savedDraft && savedDraft.type === p.type ? tr('Draft restored from this browser.') : null);
           }
           if (samePoll) setSubmitNotice(p && p.type === 'wordcloud' && p.submissionsLocked ? tr('The teacher paused new terms while reviewing the word cloud. Your draft is still saved.') : null);
         },
         onPollClose: function (payload) {
+          if (disposed) return;
           setActivePoll(function (current) {
             if (!shouldApplyPollClose(current, payload)) return current;
             if (current) clearLivePollDraft(sessionCode, userUid, current.id);
@@ -6027,6 +6046,7 @@
           });
         },
         onPollResults: function (summary) {
+          if (disposed || !summary || (latestPollIdRef.current && summary.pollId !== latestPollIdRef.current)) return;
           clearLivePollDraft(sessionCode, userUid, (summary && summary.pollId) || studentPollIdRef.current);
           setSharedResults(summary); setActivePoll(null); setSubmitted(false); setResponseValue('');
           setSubmittedResponse(''); setStudentFeedback(null); setCurrentAttempt(1);
@@ -6039,6 +6059,7 @@
           studentPollIdRef.current = null; statusSentRef.current = ''; setSubmitNotice(null);
         },
         onPeerShowcase: function (round) {
+          if (disposed) return;
           setPeerShowcase(function (current) {
             if (!current || current.roundId !== round.roundId) {
               setPeerVoteSelection('');
@@ -6050,10 +6071,12 @@
           setSharedResults(null);
         },
         onPeerVoteResults: function (results) {
+          if (disposed) return;
           setPeerVoteResults(results);
           setPeerShowcase(null);
         },
         onPeerShowcaseClose: function (payload) {
+          if (disposed) return;
           setPeerShowcase(function (current) {
             if (current && payload && payload.roundId && current.roundId !== payload.roundId) return current;
             return null;
@@ -6062,17 +6085,20 @@
           setPeerVoteSubmitted(false);
         },
         onSessionQaState: function (packet) {
+          if (disposed) return;
           if (!sessionQaOptIn) return;
           setSessionQaState(packet);
           if (!packet || !packet.enabled) setSessionQaViewOpen(false);
         },
         onSessionQaFeatured: function (packet) {
+          if (disposed) return;
           if (!sessionQaOptIn) return;
           setSessionQaState(function (current) {
             return current ? Object.assign({}, current, { featuredQuestion: packet || null }) : current;
           });
         },
         onFeedback: function (packet) {
+          if (disposed) return;
           setActivePoll(function (current) {
             if (current && current.id === packet.pollId && isFeedbackPoll(current)) {
               setStudentFeedback(packet);
@@ -6082,12 +6108,14 @@
           });
         },
         onCheckIn: function (packet) {
+          if (disposed) return;
           if (packet && (packet.activityId === sessionSupportActivityId || packet.activityId === studentPollIdRef.current)) {
             setTeacherCheckIn(Object.assign({}, packet, { status: 'received' }));
             setSupportTrayExpanded(true);
           }
         },
         onHostClosed: function () {
+          if (disposed) return;
           // Terminal event: the teacher closed the polling panel. Force-clear
           // any active poll so the student is never left answering into a dead
           // channel; keep already-shared results readable. Rejoin quietly in
@@ -6117,19 +6145,22 @@
           scheduleRejoin();
         },
         onConnected: function () {
+          if (disposed) return;
           retryCountRef.current = 0;
           setConnectionState('connected');
           setSubmitNotice(null);
           if (helpRequestedRef.current && helpActivityIdRef.current) guest.sendHelpRequest(helpActivityIdRef.current, true);
         },
-        onDisconnected: function () { setConnectionState('reconnecting'); scheduleRejoin(); },
+        onDisconnected: function () {
+          if (disposed) return; setConnectionState('reconnecting'); scheduleRejoin(); },
         onFailed: function () {
-          setConnectionState(function (prev) { return prev === 'connected' ? prev : 'failed'; });
+          if (disposed) return;
+          setConnectionState('failed');
           scheduleRejoin();
         },
       });
       guestRef.current = guest;
-      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed', err); setConnectionState('failed'); scheduleRejoin(); });
+      guest.join().catch(function (err) { console.warn('[LivePolling GuestOverlay] join failed', err); if (disposed) return; setConnectionState('failed'); scheduleRejoin(); });
       return function () {
         disposed = true;
         if (retryTimerRef.current) { clearTimeout(retryTimerRef.current); retryTimerRef.current = null; }
@@ -6143,14 +6174,15 @@
     R.useEffect(function () {
       const restored = readLiveSessionQaDraft(sessionCode, userUid);
       setSessionQaDraft(restored ? restored.text : '');
+      setQaDraftIdentity(identity);
     }, [sessionCode, userUid]);
 
     R.useEffect(function () {
-      writeLiveSessionQaDraft(sessionCode, userUid, sessionQaDraft);
-    }, [sessionCode, userUid, sessionQaDraft]);
+      if (qaDraftIdentity === identity) writeLiveSessionQaDraft(sessionCode, userUid, sessionQaDraft);
+    }, [sessionCode, userUid, sessionQaDraft, qaDraftIdentity, identity]);
 
     R.useEffect(function () {
-      if (!activePoll || submitted) return;
+      if (!activePoll || submitted || pollOwnerRef.current !== identity) return;
       writeLivePollDraft(sessionCode, userUid, activePoll, responseValue);
     }, [sessionCode, userUid, activePoll, responseValue, submitted]);
 
@@ -6169,10 +6201,10 @@
       const total = Number(summary && summary.totalResponses) || 0;
       const sharedCount = summary && summary.wordCloud ? (Number(summary.approvedResponseCount) || 0) : total;
       return ce('div', {
-        role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Shared poll results'),
+        ref: resultsDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Shared poll results'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
       },
-        ce('div', { style: { background: 'white', maxWidth: 560, width: '100%', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
+        ce('div', { style: { background: 'white', maxWidth: 560, width: '100%', maxHeight: 'calc(100dvh - 2rem)', overflowY: 'auto', overflowWrap: 'anywhere', boxSizing: 'border-box', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
           ce('div', { style: { fontSize: '0.75rem', color: '#1e3a8a', fontWeight: 800, textTransform: 'uppercase', marginBottom: 4 } }, tr('Anonymous class results')),
           ce('h2', { style: { margin: '0 0 0.4rem 0', fontSize: '1.1rem', color: '#0f172a' } }, (summary && summary.prompt) || tr('Poll results')),
           ce('p', { style: { margin: '0 0 0.8rem 0', color: '#475569', fontSize: '0.85rem' } }, tr(sharedCount === 1 ? '{n} response shared by the teacher.' : '{n} responses shared by the teacher.', { n: sharedCount })),
@@ -6202,7 +6234,7 @@
     const renderPeerVoteResults = function (results) {
       const candidates = Array.isArray(results && results.candidates) ? results.candidates : [];
       return ce('div', {
-        role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Peer voting results'),
+        ref: resultsDialogRef, tabIndex: -1, role: 'dialog', 'aria-modal': 'true', 'aria-label': tr('Peer voting results'),
         style: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.55)', zIndex: 10000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }
       },
         ce('div', { style: { background: 'white', maxWidth: 620, width: '100%', maxHeight: '88vh', overflowY: 'auto', borderRadius: 12, padding: '1.25rem', boxShadow: '0 20px 50px rgba(0,0,0,0.3)' } },
@@ -6481,6 +6513,7 @@
 
     const pollDialogVisible = !!(enabled && activePoll && !pollMinimized && !peerVoteResults && !peerShowcase && !sharedResults && !sessionQaViewOpen);
     useLivePollingDialogFocus(pollDialogRef, pollDialogVisible, function () {}, null);
+    useLivePollingDialogFocus(resultsDialogRef, !!(enabled && (peerVoteResults || (!peerShowcase && sharedResults))), function () { setPeerVoteResults(null); setSharedResults(null); }, null);
     if (!enabled) return null;
     if (peerVoteResults) return renderPeerVoteResults(peerVoteResults);
     if (peerShowcase) return renderPeerShowcase(peerShowcase);
@@ -6492,7 +6525,8 @@
     const ratingScale = activePoll.type === 'rating' ? normalizeRatingScale(activePoll) : null;
     const ratingValues = ratingScale ? getRatingValues(ratingScale) : [];
     const hasResponse = activePoll.type === 'rating'
-      ? responseValue !== ''
+      ? responseValue !== '' && ratingValues.includes(Number(responseValue))
+      : activePoll.type === 'mcq' ? (activePoll.options || []).includes(responseValue)
       : activePoll.type === 'wordcloud'
         ? !!normalizeWordCloudTerm(responseValue)
         : !!String(responseValue || '').trim();
@@ -6539,13 +6573,13 @@
         finishSubmitted();
       }
       else if (connectionState === 'failed') {
-        exportResponseForFallback(activePoll.id, payload, codename);
-        clearLivePollDraft(sessionCode, userUid, activePoll.id);
-        if (feedbackConfig.enabled) {
-          setSubmittedResponse(payload);
-          setSubmitNotice(tr('Your response was exported. A direct connection is required to receive private feedback and revise here.'));
+        try {
+          exportResponseForFallback(activePoll.id, payload, codename);
+          writeLivePollDraft(sessionCode, userUid, activePoll, responseValue);
+          setSubmitNotice(tr('Response downloaded, not sent. Give the file to your teacher or reconnect and submit here. Your draft is still available.'));
+        } catch (error) {
+          setSubmitNotice(tr('The response could not be downloaded. Your draft is still here; try again.'));
         }
-        finishSubmitted();
       } else {
         // Channel dropped mid-poll: say so instead of silently ignoring the
         // click (the old dead-submit state). The auto-rejoin keeps working in
@@ -6634,9 +6668,9 @@
         )) :
           activePoll.type === 'rating' ? ce('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', alignItems: 'stretch', flexWrap: 'wrap', margin: '1rem 0' } },
             ratingValues.map(function (n) {
-              const selected = Number(responseValue) === n;
+              const selected = responseValue !== '' && Number(responseValue) === n;
               const label = ratingScale.labels[String(n)];
-              return ce('button', { key: n, onClick: function () { setResponseValue(n); }, style: { minWidth: 54, minHeight: 52, borderRadius: 14, border: '2px solid ' + (selected ? '#1e3a8a' : '#cbd5e1'), background: selected ? '#1e3a8a' : 'white', color: selected ? 'white' : '#0f172a', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0.55rem' } },
+              return ce('button', { key: n, type: 'button', 'aria-pressed': selected, disabled: activePoll.submissionsLocked === true, onClick: function () { setResponseValue(n); }, style: { minWidth: 54, minHeight: 52, borderRadius: 14, border: '2px solid ' + (selected ? '#1e3a8a' : '#cbd5e1'), background: selected ? '#1e3a8a' : 'white', color: selected ? 'white' : '#0f172a', fontWeight: 800, fontSize: '1rem', cursor: 'pointer', padding: '0.4rem 0.55rem' } },
                 ce('span', { style: { display: 'block' } }, n),
                 label ? ce('span', { style: { display: 'block', fontSize: '0.62rem', fontWeight: 600, marginTop: 2, maxWidth: 80, lineHeight: 1.15 } }, label) : null
               );
@@ -6644,14 +6678,14 @@
           ) :
           activePoll.type === 'mcq' ? ce('div', { style: { display: 'flex', flexDirection: 'column', gap: 6, margin: '0.5rem 0 1rem 0' } },
             (activePoll.options || []).map(function (opt, i) {
-              return ce('button', { key: i, onClick: function () { setResponseValue(opt); }, style: { textAlign: 'left', padding: '0.6rem 0.9rem', borderRadius: 8, border: '2px solid ' + (responseValue === opt ? '#1e3a8a' : '#cbd5e1'), background: responseValue === opt ? '#eef2ff' : 'white', cursor: 'pointer', fontWeight: 500 } }, opt);
+              return ce('button', { key: i, type: 'button', 'aria-pressed': responseValue === opt, disabled: activePoll.submissionsLocked === true, onClick: function () { setResponseValue(opt); }, style: { textAlign: 'left', padding: '0.6rem 0.9rem', borderRadius: 8, border: '2px solid ' + (responseValue === opt ? '#1e3a8a' : '#cbd5e1'), background: responseValue === opt ? '#eef2ff' : 'white', cursor: 'pointer', fontWeight: 500 } }, opt);
             })
           ) :
           activePoll.type === 'wordcloud' ? ce('div', { style: { margin: '0.5rem 0 1rem 0' } },
             ce('input', { type: 'text', value: responseValue, maxLength: WORD_CLOUD_MAX_LENGTH, disabled: activePoll.submissionsLocked === true, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your word or short phrase'), placeholder: activePoll.submissionsLocked ? tr('Teacher review in progress') : tr('Enter one word or short phrase'), style: { width: '100%', padding: '0.7rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', background: activePoll.submissionsLocked ? '#f8fafc' : 'white' } }),
             ce('p', { style: { margin: '0.35rem 0 0 0', color: '#64748b', fontSize: '0.72rem' } }, tr('Your term is held for teacher review before it can appear in the class word cloud.'))
           ) :
-          ce('textarea', { value: responseValue, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
+          ce('textarea', { value: responseValue, disabled: activePoll.submissionsLocked === true, maxLength: feedbackConfig.enabled ? FEEDBACK_RESPONSE_MAX_LENGTH : undefined, onChange: function (e) { setResponseValue(e.target.value); }, 'aria-label': tr('Your response'), placeholder: feedbackConfig.enabled && currentAttempt > 1 ? tr('Revise your response using the feedback') : tr('Type your response'), rows: 5, style: { width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: 6, fontFamily: 'inherit', boxSizing: 'border-box', margin: '0 0 1rem 0' } }),
         submitted ? null : ce('button', { onClick: submit, disabled: !canSubmit, style: { minHeight: 48, padding: '0.6rem 1.2rem', borderRadius: 6, border: 'none', background: canSubmit ? (connectionState === 'failed' ? '#b45309' : '#1e3a8a') : '#cbd5e1', color: 'white', cursor: canSubmit ? 'pointer' : 'default', fontWeight: 800, width: '100%' } }, submitButtonLabel),
         ce('button', {
           type: 'button',

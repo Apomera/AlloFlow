@@ -1,0 +1,175 @@
+{
+  "slug": "materials_grade2",
+  "status": "completed-and-integrated",
+  "targetImages": 24,
+  "assets": [
+    {
+      "id": "mt-term-material",
+      "kind": "glossary",
+      "term": "Material",
+      "termIndex": 0,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Four square samples arranged in a two-by-two grid: wood grain, cream woven cloth, clear glass over a tiny leaf visible underneath, and matte gray metal. Clearly different textures."
+    },
+    {
+      "id": "mt-term-property",
+      "kind": "glossary",
+      "term": "Property",
+      "termIndex": 1,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Two scenes side by side: a fingertip makes a deep dent in a soft cushion; another fingertip presses a rigid wood block whose surface stays flat. Close-up."
+    },
+    {
+      "id": "mt-term-hard",
+      "kind": "glossary",
+      "term": "Hard",
+      "termIndex": 2,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up of a fingertip pressing the top of a red brick. The brick stays straight and unchanged; the fingertip slightly flattens against it."
+    },
+    {
+      "id": "mt-term-soft",
+      "kind": "glossary",
+      "term": "Soft",
+      "termIndex": 3,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up of a fingertip pressing into a thick teal cushion, making a very obvious deep local dent with fabric folds."
+    },
+    {
+      "id": "mt-term-bendy",
+      "kind": "glossary",
+      "term": "Bendy",
+      "termIndex": 4,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Two hands hold the ends of one thin blue flexible plastic strip, gently curving it into an arch without a crease or break. Not a rubber band, no stretching."
+    },
+    {
+      "id": "mt-term-rough",
+      "kind": "glossary",
+      "term": "Rough",
+      "termIndex": 5,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up low angled view of a rectangular patch of coarse tan woven fabric. Large uneven threads and raised fibers catch side lighting."
+    },
+    {
+      "id": "mt-term-smooth",
+      "kind": "glossary",
+      "term": "Smooth",
+      "termIndex": 6,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up low angled view of a rectangular clear glass tile lying safely on a pale table. Flat even surface with a clean highlight and polished edges."
+    },
+    {
+      "id": "mt-term-waterproof",
+      "kind": "glossary",
+      "term": "Waterproof",
+      "termIndex": 7,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up at a low angle of one rounded water bead resting ON TOP of a flat red coated fabric square. Dry-looking fabric beneath bead, no wet patch."
+    },
+    {
+      "id": "mt-term-absorb",
+      "kind": "glossary",
+      "term": "Absorb",
+      "termIndex": 8,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Close-up at a low angle of a flat red cotton fabric square with a darker damp patch spreading among its threads. No standing water bead; visible wet fibers."
+    },
+    {
+      "id": "mt-term-test",
+      "kind": "glossary",
+      "term": "Test",
+      "termIndex": 9,
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Square composition. Three separate equal-size dry sample squares in identical shallow trays: white paper towel, blue cotton, and green plastic sheet. One small measuring spoon and a cup of water beside the row. No water poured yet."
+    },
+    {
+      "id": "mt-img-window-sweater",
+      "kind": "panel",
+      "title": "Materials fit different jobs",
+      "caption": "A clear window lets us see outside. A knitted sweater bends with us and can help keep us warm. Different jobs need different properties.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Split scene: at left a hand rests against an intact clear closed window with a tree visible outside; at right a finger indents a folded knitted sweater."
+    },
+    {
+      "id": "mt-img-two-water-jobs",
+      "kind": "panel",
+      "title": "Two jobs for water",
+      "caption": "A bead sits on one sample while water has spread into the other. These pictures illustrate different water behaviors; they do not measure how much water each material can hold.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Two equal flat sample squares side by side at the same angle: red coated fabric with a rounded water bead ON TOP, and red cotton towel with a dark wet patch among threads and no bead."
+    },
+    {
+      "id": "mt-img-wrong-material",
+      "kind": "panel",
+      "title": "Choosing a rain cover",
+      "caption": "Untreated paper towel can soak through and tear when wet. That makes it a poor rain cover. Coated papers can behave differently, so name the sample you test.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. A small toy bear under a miniature plain white PAPER TOWEL canopy held by a simple arch frame. Gentle water drops from above have darkened the paper and made a small tear; a few drops pass through to the toy. A tray catches water. No child in rain."
+    },
+    {
+      "id": "mt-img-fair-test",
+      "kind": "panel",
+      "title": "Prepare a fair comparison",
+      "caption": "Compare equal-size dry samples using the same water amount, waiting time, and method. Change the sample material. Repeat with fresh dry samples.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Top-down view: three identical shallow white trays in a row each hold one equal square sample: white paper towel, blue cotton, green plastic. A single measuring spoon, water cup, and plain hourglass stand nearby. Samples dry; no pouring."
+    },
+    {
+      "id": "mt-img-spill-results",
+      "kind": "panel",
+      "title": "Observe without guessing a winner",
+      "caption": "Notice damp areas and water still on the surface. Wet-patch size alone does not tell us which sample absorbed more. Report what you actually observe.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Top-down view: three equal squares in separate identical trays, white paper towel and blue cotton each have a damp patch, green plastic has a rounded puddle on its surface. No winning symbols or rankings."
+    },
+    {
+      "id": "mt-img-look-around",
+      "kind": "panel",
+      "title": "Find materials around you",
+      "caption": "Find an object, name its job, and describe a useful property. Many objects use several materials together.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Simple tidy kitchen at child eye level: clear window showing a tree, sturdy wooden chair, metal pot on a cool countertop, cotton towel on rail, blue plastic bowl. No stove flames, no writing."
+    },
+    {
+      "id": "mt-img-bend-stretch",
+      "kind": "panel",
+      "title": "Bending is not stretching",
+      "caption": "Bending changes how something curves. Stretching makes it longer. A material can bend without stretching much.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Two separate hand demonstrations side by side: left hands curve a thin blue plastic strip into an arch; right hands stretch a plain orange rubber band horizontally. Both complete visible objects, no broken ends."
+    },
+    {
+      "id": "mt-img-hard-fragile",
+      "kind": "panel",
+      "title": "Hard does not mean unbreakable",
+      "caption": "Ceramic can resist dents yet chip or break. Being hard does not mean being unbreakable. An adult handles sharp or broken samples.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. An intact plain ceramic cup and a separate similar chipped ceramic cup side by side on a teacher tray. One small detached ceramic shard beside chipped cup, no hands, no action impact."
+    },
+    {
+      "id": "mt-img-texture-pair",
+      "kind": "panel",
+      "title": "Compare surface texture",
+      "caption": "Rough and smooth describe surface texture. Look closely before safely touching a sample. Texture is different from how easily it bends.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Two matching tan rectangular samples at identical scale and angle: left very coarse bumpy woven fibers, right a smooth polished wooden surface with subtle grain. Both on pale table."
+    },
+    {
+      "id": "mt-img-clear-cloudy",
+      "kind": "panel",
+      "title": "Seeing through materials",
+      "caption": "Clear material lets you see details through it. Cloudy material lets some light through but hides details. An opaque panel blocks the view.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Three upright small panels in a safe wooden holder. Behind each sits an identical red toy ball. Left panel clear so ball distinct, middle frosted translucent so ball blurry, right opaque wood entirely hides ball with no ghost showing through. No extra visible balls in front."
+    },
+    {
+      "id": "mt-img-same-size",
+      "kind": "panel",
+      "title": "Control the sample size",
+      "caption": "Use a template to keep sample area the same. Keep thickness and layers alike when possible, and describe differences you cannot control.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Top-down arrangement of three equal square dry samples aligned precisely side by side, white paper towel, blue cotton, green plastic. One unmarked square card template above them. No rulers or scissors."
+    },
+    {
+      "id": "mt-img-repeat",
+      "kind": "panel",
+      "title": "Try again with fresh samples",
+      "caption": "Repeat the comparison using fresh dry samples. A used wet sample is a different starting condition. Similar trials make your evidence more dependable.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Three identical separate shallow trays in a horizontal row, each with one fresh dry blue cotton square of the same size. Single cup and measuring spoon nearby. All three samples dry."
+    },
+    {
+      "id": "mt-img-record",
+      "kind": "panel",
+      "title": "Draw what you observed",
+      "caption": "Draw or describe what happened, including water left on top or below a sample. Keep your prediction separate from your observation.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Child at table draws a simple unlettered picture of a cloth square and a water bead on plain paper. Nearby a real green plastic square in a tray holds a bead. Crayon in hand, no words, numbers, charts, headings or symbols."
+    },
+    {
+      "id": "mt-img-reuse",
+      "kind": "panel",
+      "title": "Use it again",
+      "caption": "Reusing an object gives it another job without making it into new material. Recycling is different: it processes suitable materials into new products.",
+      "prompt": "Use case: scientific-educational. Friendly simple painterly classroom illustration for Grade 2, large clear shapes, light cream background, uncluttered and accurate. NO text, letters, numerals, labels, logos, watermarks, arrows or decorative symbols. Landscape 3:2 composition. Two scenes: left a clean plain jar holds colored pencils; right a folded used cotton cloth wipes a small water spill on a table. No recycle symbols or text."
+    }
+  ]
+}

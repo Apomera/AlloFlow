@@ -2318,6 +2318,74 @@ function testPrepStudyPlanLayers(learningLibrary) {
   };
 }
 
+// Written-response workshops were authored in four shapes. Government and
+// Psychology use the fields the renderer reads (taskParts, planningFrame,
+// successCriteria, sampleOutline, stimulus). Physics 1 uses scenario, parts,
+// scoringGuide, and selfCheck; Calculus AB uses scenario, parts, and
+// responsePlanning; Statistics and U.S. History carry a prompt and a selfCheck
+// list only. The renderer mapped over the first shape's lists without guards,
+// so opening the workshops view in the other four packs threw. This folds every
+// shape into one record; lists that a shape does not have come back empty and
+// the view leaves them out rather than crashing.
+function testPrepNormalizeWorkshop(workshop) {
+  const input = workshop && typeof workshop === 'object' && !Array.isArray(workshop) ? workshop : {};
+  const text = (value, limit) => String(value == null ? '' : value).trim().slice(0, limit || 2000);
+  const humanize = (value) => text(value, 120).replace(/[-_]+/g, ' ').replace(/\bshm\b/gi, 'SHM').replace(/^\w/, (char) => char.toUpperCase());
+  const stringList = (value) => (Array.isArray(value) ? value : []).map((entry) => (
+    entry && typeof entry === 'object' ? text(entry.task || entry.prompt || entry.text || entry.criterion || entry.label, 600) : text(entry, 600)
+  )).filter(Boolean);
+  const parts = (Array.isArray(input.parts) ? input.parts : []).filter((part) => part && typeof part === 'object');
+  const scoringGuide = (Array.isArray(input.scoringGuide) ? input.scoringGuide : []).filter((entry) => entry && typeof entry === 'object');
+  const selfCheck = stringList(input.selfCheck);
+
+  let planningFrame = (Array.isArray(input.planningFrame) ? input.planningFrame : [])
+    .filter((step) => step && typeof step === 'object')
+    .map((step) => ({ label: text(step.label, 120), guidance: text(step.guidance, 600) }))
+    .filter((step) => step.label || step.guidance);
+  if (!planningFrame.length && Array.isArray(input.responsePlanning)) {
+    planningFrame = stringList(input.responsePlanning).map((guidance, index) => ({ label: 'Step ' + (index + 1), guidance }));
+  }
+  if (!planningFrame.length && parts.some((part) => part.lookFor)) {
+    planningFrame = parts.map((part, index) => ({
+      label: humanize(part.responseType || part.id || ('Part ' + (index + 1))),
+      guidance: text(part.lookFor, 600),
+    })).filter((step) => step.guidance);
+  }
+
+  let successCriteria = stringList(input.successCriteria);
+  let selfCheckList = [];
+  if (!successCriteria.length && scoringGuide.length) {
+    successCriteria = scoringGuide.map((entry) => [text(entry.criterion, 200), text(entry.evidence, 600)].filter(Boolean).join(': ')).filter(Boolean);
+    selfCheckList = selfCheck;
+  } else if (!successCriteria.length) {
+    successCriteria = selfCheck;
+  } else {
+    selfCheckList = selfCheck;
+  }
+
+  const stimulus = text(input.stimulus || input.scenario, 4000);
+  const prompt = text(input.prompt || input.directions, 2000) || (stimulus ? 'Plan a complete written response to the scenario below.' : '');
+  return {
+    id: testPrepSlug(input.id, ''),
+    title: text(input.title, 240) || 'Written-response workshop',
+    taskType: text(input.taskType, 120) || humanize(input.workshopType || input.responseType || input.type) || 'Written-response planning',
+    prompt,
+    stimulus,
+    topicIds: Array.isArray(input.topicIds) ? input.topicIds.map((id) => text(id, 40)).filter(Boolean) : (input.topicId ? [text(input.topicId, 40)] : []),
+    taskParts: stringList(input.taskParts).length ? stringList(input.taskParts) : stringList(parts),
+    planningFrame,
+    successCriteria,
+    selfCheck: selfCheckList,
+    commonPitfalls: stringList(input.commonPitfalls),
+    sampleOutline: stringList(input.sampleOutline),
+    estimatedMinutes: Math.max(0, Math.round(testPrepFinite(input.estimatedMinutes, 0))),
+    calculatorUse: humanize(input.calculatorUse),
+    reviewNote: text(input.reviewNote || input.scoreMeaning, 1000),
+    reviewStatus: text(input.reviewStatus, 80) || 'source-reviewed-editorial-pass',
+    references: (Array.isArray(input.references) ? input.references : []).map((reference) => text(reference, 500)).filter((reference) => /^https:\/\//i.test(reference)),
+  };
+}
+
 function testPrepSearchPack(pack, learningLibrary, query, options) {
   const input = options && typeof options === 'object' && !Array.isArray(options) ? options : {};
   const normalizedQuery = String(query || '').trim().toLowerCase().slice(0, 120);
@@ -2370,7 +2438,7 @@ function testPrepSearchPack(pack, learningLibrary, query, options) {
   (Array.isArray(library.glossary) ? library.glossary : []).forEach((term) => add('glossary', term.id, term.term, term.definition, '', [term.term, term.definition].concat(term.aliases || []).join(' '), term.reviewStatus));
   (Array.isArray(library.flashcards) ? library.flashcards : []).filter((card) => card.reviewStatus === 'source-reviewed-editorial-pass' && card.contentDisposition !== 'retire-redundant').forEach((card) => add('flashcard', card.id, card.front, card.back, card.domain, [card.front, card.back, card.domain].join(' '), card.reviewStatus));
   (Array.isArray(library.memoryAids) ? library.memoryAids : []).filter((aid) => aid.reviewStatus === 'source-reviewed-editorial-pass').forEach((aid) => add('memory-aid', aid.id, aid.title, aid.content, aid.domain, [aid.title, aid.content].concat(aid.tags || []).join(' '), aid.reviewStatus));
-  (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus || 'source-reviewed-editorial-pass'));
+  (Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : []).map(testPrepNormalizeWorkshop).filter((workshop) => workshop.id).forEach((workshop) => add('constructed-response', workshop.id, workshop.title, workshop.prompt, workshop.taskType, JSON.stringify(workshop), workshop.reviewStatus));
   (Array.isArray(library.foundationalDocumentRoutes) ? library.foundationalDocumentRoutes : []).forEach((route) => add('foundational-document', route.id, route.title, route.studyMove || route.accessNote, 'Foundational document', [route.title, route.documentId, route.topicIds, route.studyMove, route.accessNote].join(' '), route.reviewStatus || 'source-reviewed-editorial-pass'));
   const studyPlan = testPrepStudyPlanLayers(library);
   studyPlan.topicRoutes.forEach((route) => add('topic-route', route.id, route.title, route.nextStep || route.sets.map((set) => set.label).join(' · '), route.unitLabel || 'Topic route', [route.title, route.topicId, route.nextStep, route.masterySignals.join(' ')].join(' '), route.reviewStatus || 'internal-editorial-draft'));
@@ -7233,9 +7301,9 @@ function TestPrepHub(props) {
               })()}
 
               {learningLibrary && libraryMode === 'constructed-response' && (() => {
-                const workshops = Array.isArray(learningLibrary.constructedResponseWorkshops) ? learningLibrary.constructedResponseWorkshops : [];
+                const workshops = (Array.isArray(learningLibrary.constructedResponseWorkshops) ? learningLibrary.constructedResponseWorkshops : []).map(testPrepNormalizeWorkshop).filter((workshop) => workshop.id);
                 const query = librarySearch.trim().toLowerCase();
-                const visibleWorkshops = workshops.filter((workshop) => !query || [workshop.title, workshop.taskType, workshop.prompt, workshop.stimulus, (workshop.topicIds || []).join(' ')].join(' ').toLowerCase().includes(query));
+                const visibleWorkshops = workshops.filter((workshop) => !query || [workshop.title, workshop.taskType, workshop.prompt, workshop.stimulus, workshop.topicIds.join(' ')].join(' ').toLowerCase().includes(query));
                 return <section className="space-y-5" aria-labelledby="written-response-workshops-title">
                   <header className="rounded-xl border border-sky-300 bg-sky-50 p-5">
                     <p className="text-xs font-black uppercase tracking-wider text-sky-800">{selectedPack.shortTitle} application practice</p>
@@ -7250,30 +7318,32 @@ function TestPrepHub(props) {
                         <h5 className="mt-3 text-xl font-black text-slate-900">{workshop.title}</h5>
                         <p className="mt-2 text-sm font-bold leading-relaxed text-slate-800">{workshop.prompt}</p>
                       </header>
-                      <section className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4" aria-label={'Stimulus for ' + workshop.title}>
+                      {workshop.stimulus && <section className="mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4" aria-label={'Stimulus for ' + workshop.title}>
                         <h6 className="font-black text-indigo-950">Stimulus</h6>
                         <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-indigo-950">{workshop.stimulus}</p>
-                      </section>
-                      <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                        <section className="rounded-xl border border-slate-300 p-4">
+                      </section>}
+                      {(workshop.estimatedMinutes > 0 || workshop.calculatorUse) && <p className="mt-3 text-xs font-bold text-slate-600">{[workshop.estimatedMinutes > 0 ? 'About ' + workshop.estimatedMinutes + ' minutes' : '', workshop.calculatorUse].filter(Boolean).join(' · ')}</p>}
+                      {(workshop.taskParts.length > 0 || workshop.planningFrame.length > 0) && <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                        {workshop.taskParts.length > 0 && <section className="rounded-xl border border-slate-300 p-4">
                           <h6 className="font-black text-slate-900">Task parts</h6>
-                          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-800">{workshop.taskParts.map((part) => <li key={part}>{part}</li>)}</ol>
-                        </section>
-                        <section className="rounded-xl border border-slate-300 p-4">
+                          <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-slate-800">{workshop.taskParts.map((part, partIndex) => <li key={partIndex}>{part}</li>)}</ol>
+                        </section>}
+                        {workshop.planningFrame.length > 0 && <section className="rounded-xl border border-slate-300 p-4">
                           <h6 className="font-black text-slate-900">Planning frame</h6>
-                          <ol className="mt-2 space-y-3 text-sm leading-relaxed text-slate-800">{workshop.planningFrame.map((step, stepIndex) => <li key={step.label}><strong>{stepIndex + 1}. {step.label}:</strong> {step.guidance}</li>)}</ol>
-                        </section>
-                      </div>
-                      <details className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
-                        <summary className="cursor-pointer font-black text-amber-950 focus:ring-2 focus:ring-amber-700">Open self-check criteria and sample outline</summary>
+                          <ol className="mt-2 space-y-3 text-sm leading-relaxed text-slate-800">{workshop.planningFrame.map((step, stepIndex) => <li key={stepIndex}><strong>{stepIndex + 1}. {step.label}:</strong> {step.guidance}</li>)}</ol>
+                        </section>}
+                      </div>}
+                      {(workshop.successCriteria.length > 0 || workshop.commonPitfalls.length > 0 || workshop.sampleOutline.length > 0 || workshop.selfCheck.length > 0) && <details className="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4">
+                        <summary className="cursor-pointer font-black text-amber-950 focus:ring-2 focus:ring-amber-700">Open self-check criteria{workshop.sampleOutline.length > 0 ? ' and sample outline' : ''}</summary>
                         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-                          <section><h6 className="font-black text-emerald-950">Success criteria</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion) => <li key={criterion}>{criterion}</li>)}</ul></section>
-                          <section><h6 className="font-black text-rose-950">Common pitfalls</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.commonPitfalls.map((pitfall) => <li key={pitfall}>{pitfall}</li>)}</ul></section>
+                          {workshop.successCriteria.length > 0 && <section><h6 className="font-black text-emerald-950">Success criteria</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.successCriteria.map((criterion, criterionIndex) => <li key={criterionIndex}>{criterion}</li>)}</ul></section>}
+                          {workshop.commonPitfalls.length > 0 && <section><h6 className="font-black text-rose-950">Common pitfalls</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.commonPitfalls.map((pitfall, pitfallIndex) => <li key={pitfallIndex}>{pitfall}</li>)}</ul></section>}
+                          {workshop.selfCheck.length > 0 && <section><h6 className="font-black text-slate-900">Self-check questions</h6><ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.selfCheck.map((question, questionIndex) => <li key={questionIndex}>{question}</li>)}</ul></section>}
                         </div>
-                        <section className="mt-4 rounded-lg bg-white p-4"><h6 className="font-black text-slate-900">Sample outline</h6><ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.sampleOutline.map((point) => <li key={point}>{point}</li>)}</ol></section>
-                      </details>
+                        {workshop.sampleOutline.length > 0 && <section className="mt-4 rounded-lg bg-white p-4"><h6 className="font-black text-slate-900">Sample outline</h6><ol className="mt-2 list-decimal space-y-1 pl-5 text-sm leading-relaxed text-slate-800">{workshop.sampleOutline.map((point, pointIndex) => <li key={pointIndex}>{point}</li>)}</ol></section>}
+                      </details>}
                       <footer className="mt-4 border-t border-slate-200 pt-4">
-                        <p className="text-xs leading-relaxed text-slate-700">{workshop.reviewNote}</p>
+                        {workshop.reviewNote && <p className="text-xs leading-relaxed text-slate-700">{workshop.reviewNote}</p>}
                         <ul className="mt-2 flex flex-wrap gap-3 text-xs">{(workshop.references || []).map((reference) => { const source = testPrepDescribeReference(reference); return <li key={reference}><a href={reference} target="_blank" rel="noreferrer" className="font-bold text-indigo-800 underline">{source.title}</a></li>; })}</ul>
                       </footer>
                     </article>)}

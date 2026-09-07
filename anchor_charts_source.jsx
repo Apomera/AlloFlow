@@ -4,8 +4,8 @@
 // A poster-style class-co-created artifact (title + N labeled sections with
 // bullets + simple icons). AI-generated structure, student/teacher-refined.
 //
-// Hand-drawn aesthetic: marker palette, Patrick Hand / Permanent Marker
-// display fonts, paper texture, slight section-block jitter.
+// Hand-drawn aesthetic: marker palette, paper texture, slight section-block
+// jitter. Text inherits the reader's selected font and scales with typography settings.
 //
 // Per architectural directive, lives as a standalone CDN module — NOT inline
 // in AlloFlowANTI.txt. Mirrors the Note-Taking Templates module shape.
@@ -216,7 +216,7 @@ const AnchorChartSection = React.memo((props) => {
         margin: '12px 6px',
       }}
     >
-      <div className="flex items-start gap-3">
+      <div className="ac-section-layout flex items-start gap-3">
         <div className="ac-icon-slot flex-shrink-0" style={{
           width: 78,
           height: 78,
@@ -248,7 +248,7 @@ const AnchorChartSection = React.memo((props) => {
             >↻</button>
           ) : null}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="ac-section-content flex-1 min-w-0">
           {isEditing ? (
             <input
               type="text"
@@ -256,8 +256,8 @@ const AnchorChartSection = React.memo((props) => {
               onChange={updateLabel}
               className="ac-section-label w-full bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-slate-300 focus:border-slate-600 py-0.5"
               style={{
-                fontFamily: '"Permanent Marker", "Patrick Hand", cursive',
-                fontSize: '22px',
+                fontFamily: 'inherit', fontWeight: 700,
+                fontSize: '1.375rem',
                 color: marker.ink,
                 letterSpacing: '0.02em',
               }}
@@ -267,8 +267,8 @@ const AnchorChartSection = React.memo((props) => {
             <div
               className="ac-section-label"
               style={{
-                fontFamily: '"Permanent Marker", "Patrick Hand", cursive',
-                fontSize: '22px',
+                fontFamily: 'inherit', fontWeight: 700,
+                fontSize: '1.375rem',
                 color: marker.ink,
                 letterSpacing: '0.02em',
                 lineHeight: 1.1,
@@ -293,10 +293,10 @@ const AnchorChartSection = React.memo((props) => {
                       value={studentAnswers[idx] || ''}
                       onChange={(e) => onStudentAnswerChange(idx, e.target.value)}
                       placeholder={t("placeholders.type_answer_here")}
-                      className="flex-1 bg-white/70 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1"
+                      className="flex-1 min-w-0 bg-white/70 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1"
                       style={{
-                        fontFamily: '"Patrick Hand", "Caveat", cursive',
-                        fontSize: '18px',
+                        fontFamily: 'inherit',
+                        fontSize: '1.125rem',
                         color: '#2d3748',
                         borderColor: marker.hex + '60',
                       }}
@@ -315,8 +315,8 @@ const AnchorChartSection = React.memo((props) => {
                         type="text"
                         value={b}
                         onChange={(e) => updateBullet(idx, e.target.value)}
-                        className="flex-1 bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
-                        style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748' }}
+                        className="flex-1 min-w-0 bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5"
+                        style={{ fontFamily: 'inherit', fontSize: '1.125rem', color: '#2d3748' }}
                         aria-label={`Bullet ${idx + 1}`}
                       />
                       <button
@@ -327,7 +327,7 @@ const AnchorChartSection = React.memo((props) => {
                       >✕</button>
                     </>
                   ) : (
-                    <span style={{ fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: '18px', color: '#2d3748', lineHeight: 1.3 }}>{b}</span>
+                    <span style={{ fontFamily: 'inherit', fontSize: '1.125rem', color: '#2d3748', lineHeight: 1.3 }}>{b}</span>
                   )}
                 </li>
               ))
@@ -827,8 +827,19 @@ const AnchorChartView = React.memo((props) => {
           box-shadow: 0 8px 24px rgba(60,40,15,0.08), inset 0 0 0 1px rgba(255,255,255,0.6);
           border-radius: 14px;
         }
+        /* A chart can be narrow inside a comparison grid even on a wide
+           screen. Give its writing area the full width until both columns fit. */
+        .ac-section { container-type: inline-size; }
+        .ac-section-layout { flex-direction: column; }
+        .ac-section-content { width: 100%; }
+        .ac-title, .ac-section-label, .ac-bullets li { overflow-wrap: anywhere; }
+        @container (min-width: 24rem) {
+          .ac-section-layout { flex-direction: row; }
+          .ac-section-content { width: auto; }
+        }
         .ac-title {
-          font-family: "Permanent Marker", "Patrick Hand", cursive;
+          font-family: inherit;
+          font-weight: 700;
           letter-spacing: 0.02em;
         }
         .ac-root button:focus-visible,
@@ -860,7 +871,7 @@ const AnchorChartView = React.memo((props) => {
             <span className="px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900">{chartLabel}</span>
           ) : null}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {isTeacherMode && <button type="button"
             onClick={() => setIsEditing((v) => !v)}
             className={`px-3 py-1.5 text-xs font-bold rounded-full border ${isEditing ? 'bg-amber-600 text-white border-amber-700' : 'bg-white text-amber-800 border-amber-300 hover:bg-amber-50'}`}
@@ -935,11 +946,11 @@ const AnchorChartView = React.memo((props) => {
               onChange={handleTitleChange}
               placeholder="Chart title"
               className="ac-title w-full text-center bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-amber-300 focus:border-amber-600 py-1"
-              style={{ fontSize: '42px', color: '#7a4a1e' }}
+              style={{ fontSize: '2.625rem', color: '#7a4a1e' }}
               aria-label="Chart title"
             />
           ) : (
-            <h1 className="ac-title" style={{ fontSize: '42px', color: '#7a4a1e', margin: 0 }}>{title || '(untitled chart)'}</h1>
+            <h1 className="ac-title break-words" style={{ fontSize: '2.625rem', color: '#7a4a1e', margin: 0 }}>{title || '(untitled chart)'}</h1>
           )}
           {lessonRef.generatedAt ? (
             <div className="text-[11px] text-amber-700/70 italic mt-1">
@@ -961,9 +972,9 @@ const AnchorChartView = React.memo((props) => {
           className="ac-sections"
           style={
             layout === 'comparison'
-              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px', alignItems: 'start' }
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))', gap: '10px', alignItems: 'start' }
               : layout === 'concept-map' || layout === 'grid'
-              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '10px', alignItems: 'start' }
+              ? { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 15rem), 1fr))', gap: '10px', alignItems: 'start' }
               : undefined
           }
         >
@@ -997,7 +1008,7 @@ const AnchorChartView = React.memo((props) => {
                 }}
               >
                 {badgeText ? (
-                  <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10, zIndex: 6, minWidth: 28, height: 28, padding: '0 7px', borderRadius: '999px', background: chartMeta.badgeColor || '#dd6b20', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '"Permanent Marker","Patrick Hand",cursive', fontSize: badgeText.length > 2 ? '12px' : '15px', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{badgeText}</div>
+                  <div aria-hidden="true" style={{ position: 'absolute', top: -10, left: -10, zIndex: 6, minWidth: 28, minHeight: 28, padding: '0 7px', borderRadius: '999px', background: chartMeta.badgeColor || '#dd6b20', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', fontWeight: 700, fontSize: badgeText.length > 2 ? '0.75rem' : '0.9375rem', boxShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>{badgeText}</div>
                 ) : null}
                 {isDropTarget ? (
                   <div className="absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10" aria-hidden="true" />
@@ -1066,7 +1077,7 @@ const AnchorChartView = React.memo((props) => {
               {/* Process layout: a downward connector between consecutive steps. */}
               {layout === 'process' && idx < sections.length - 1 ? (
                 <div className="flex justify-center" aria-hidden="true" style={{ margin: '-2px 0 2px' }}>
-                  <span style={{ fontSize: '24px', color: '#b7791f', lineHeight: 1 }}>↓</span>
+                  <span style={{ fontSize: '1.5rem', color: '#b7791f', lineHeight: 1 }}>↓</span>
                 </div>
               ) : null}
               </React.Fragment>
@@ -1088,7 +1099,7 @@ const AnchorChartView = React.memo((props) => {
         {/* Student submit panel — visible only when interactive armed + viewer is student */}
         {interactive.armed && !isTeacherMode ? (
           <div className="mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4">
-            <div className="flex items-start justify-between gap-3 mb-2">
+            <div className="flex flex-wrap items-start justify-between gap-3 mb-2">
               <div>
                 <div className="text-sm font-bold text-fuchsia-900">🎯 Interactive Anchor Chart</div>
                 <div className="text-[12px] text-fuchsia-800/80 mt-1">{tx('anchor_chart.workspace_hint','Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher.')}</div>

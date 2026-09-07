@@ -21,15 +21,15 @@
       }
     },
     "topics": {
-      "universeDeclared": false,
-      "declaredCount": null,
-      "representedCount": null,
-      "coveragePercent": null,
+      "universeDeclared": true,
+      "declaredCount": 60,
+      "representedCount": 60,
+      "coveragePercent": 100,
       "missing": [],
       "offBlueprint": [],
       "observedCount": 60,
-      "minItemsPerDeclaredTopic": null,
-      "medianItemsPerDeclaredTopic": null,
+      "minItemsPerDeclaredTopic": 4,
+      "medianItemsPerDeclaredTopic": 8.5,
       "itemsPerTopic": {
         "1.1": 9,
         "1.3": 8,
@@ -105,14 +105,14 @@
     },
     "library": {
       "chapters": 8,
-      "sections": 8,
-      "knowledgeChecks": 8,
+      "sections": 24,
+      "knowledgeChecks": 24,
       "flashcards": 8,
       "memoryAids": 8,
       "diagrams": 0,
       "diagramPlacements": 0,
       "glossaryTerms": 0,
-      "constructedResponseWorkshops": 0,
+      "constructedResponseWorkshops": 8,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 0,
       "studySessionPlans": 0,
@@ -123,16 +123,24 @@
       "diagrams",
       "diagramPlacements",
       "glossaryTerms",
-      "constructedResponseWorkshops",
       "topicDiagnosticRoutes",
       "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
-    "gaps": [
-      "topic-universe-not-declared"
-    ],
-    "assessment": "gaps-present",
+    "lessonDepth": {
+      "chapterCount": 8,
+      "sectionCount": 24,
+      "sectionsPerChapter": 3
+    },
+    "crossReferences": {
+      "checked": 1000,
+      "unresolvedCount": 0,
+      "unresolved": {},
+      "examples": []
+    },
+    "gaps": [],
+    "assessment": "structurally-complete",
     "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."
   },
   "reportId": "ap-biology-foundation-qa",
@@ -266,16 +274,16 @@
       "D": 125
     },
     "chapterCount": 8,
-    "sectionCount": 8,
-    "knowledgeCheckCount": 8,
+    "sectionCount": 24,
+    "knowledgeCheckCount": 24,
     "flashcardCount": 8,
     "memoryAidCount": 8,
     "richLessonPrototypeCount": 8,
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "95f2f01eae49cc7ea545c6bd9be32b9dab7dd1dd8f80e8522eed68b099869bd8",
-    "learningLibrarySha256": "3c708bc45dab3dbd99b126416dde30286d1a21845c3c411bb379dd65391e4610",
+    "packSha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479",
+    "learningLibrarySha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
     "factualCrossCheckUrl": "https://openstax.org/details/books/biology-2e"
@@ -285,15 +293,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "95f2f01eae49cc7ea545c6bd9be32b9dab7dd1dd8f80e8522eed68b099869bd8",
-      "deploySha256": "95f2f01eae49cc7ea545c6bd9be32b9dab7dd1dd8f80e8522eed68b099869bd8"
+      "sourceSha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479",
+      "deploySha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "3c708bc45dab3dbd99b126416dde30286d1a21845c3c411bb379dd65391e4610",
-      "deploySha256": "3c708bc45dab3dbd99b126416dde30286d1a21845c3c411bb379dd65391e4610"
+      "sourceSha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae",
+      "deploySha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae"
     }
   ],
   "releaseBlockers": [

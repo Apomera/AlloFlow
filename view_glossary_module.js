@@ -1152,6 +1152,7 @@ function GlossaryView(props) {
     }, 650);
   }
   function submitWordSearchCell(r, c) {
+    if (wordSearchPathTimerRef.current) clearTimeout(wordSearchPathTimerRef.current);
     var next = {
       r: r,
       c: c
@@ -1179,7 +1180,7 @@ function GlossaryView(props) {
       r: wordSearchActive.r,
       c: wordSearchActive.c
     };
-    if (event.key === 'ArrowRight') next.c = Math.min(maxCol, next.c + 1);else if (event.key === 'ArrowLeft') next.c = Math.max(0, next.c - 1);else if (event.key === 'ArrowDown') next.r = Math.min(maxRow, next.r + 1);else if (event.key === 'ArrowUp') next.r = Math.max(0, next.r - 1);else if (event.key === 'Home') next.c = 0;else if (event.key === 'End') next.c = maxCol;else if (event.key === 'Enter' || event.key === ' ') {
+    if (event.key === 'ArrowRight') next.c = Math.max(0, Math.min(maxCol, next.c + (gameData.isRtl ? -1 : 1)));else if (event.key === 'ArrowLeft') next.c = Math.max(0, Math.min(maxCol, next.c + (gameData.isRtl ? 1 : -1)));else if (event.key === 'ArrowDown') next.r = Math.min(maxRow, next.r + 1);else if (event.key === 'ArrowUp') next.r = Math.max(0, next.r - 1);else if (event.key === 'Home') next.c = 0;else if (event.key === 'End') next.c = maxCol;else if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
       submitWordSearchCell(wordSearchActive.r, wordSearchActive.c);
       return;
@@ -2544,6 +2545,7 @@ function GlossaryView(props) {
     id: "word-search-grid",
     role: "grid",
     tabIndex: 0,
+    dir: gameData.isRtl ? 'rtl' : 'ltr',
     "aria-label": (t('glossary.word_search_title') || 'Word search') + '. ' + wordSearchFoundWords.size + ' of ' + gameData.words.length + ' words found.',
     "aria-rowcount": gameData.grid.length,
     "aria-colcount": gameData.grid[0]?.length || 0,

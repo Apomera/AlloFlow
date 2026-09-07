@@ -91,3 +91,25 @@ version**. Re-run the deployment check.
   were withheld, so preview the packet before sharing.
 - **Custody remains with the district.** Move or copy the year folder into the official repository
   under the applicable retention schedule.
+
+
+## Packet storage privacy checks (September 7, 2026)
+
+The helper verifies each evaluation folder's deployment owner, exact parent,
+non-trashed state, private sharing, complete owner-only permission list, and
+disabled editor resharing before using it. Duplicate folder names and unknown,
+group, domain, or link access block filing; review those folders in Drive before
+retrying. Setup reports an unsafe folder as unavailable for sharing.
+
+A new packet file starts empty. Evaluation content is written only after its
+owner, parent, private sharing, and owner-only permissions are verified. After
+adding the reviewed recipient, the helper checks the entire permission list,
+exact role and expiry, and folder path again. Failed attempts remove non-owner
+grants from their newly created file, trash it, and verify the result. If cleanup
+cannot be confirmed, the error provides the file link and calls for manual
+recovery. Do not treat that error as a successful share or a confirmed cleanup.
+
+Access reviews flag additional grants as changed access. Revocation checks for
+remaining non-owner access before reporting verified removal. The helper cannot
+revoke copies an educator has already downloaded. This is a separate deployment
+from the district repository; updating one does not update the other.

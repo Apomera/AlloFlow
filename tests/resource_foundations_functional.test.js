@@ -102,3 +102,110 @@ describe('Read This Page accepts current and legacy scaffold shapes',()=>{
     expect(items.some(item=>item.type==='text' && item.text.includes(expected))).toBe(true);
   });
 });
+
+
+describe('scaffold response fields expose their question context', () => {
+  it('names paragraph blanks with their position and prompt even after completion', () => {
+    mount(Frames, frameProps({ t: key => key }));
+    expect([...host.querySelectorAll('input[type=text]')].map(input => input.getAttribute('aria-label')))
+      .toEqual(['Student response 1: cause', 'Student response 2: effect']);
+  });
+  it('associates each list response with its visible scaffold and distinct number', () => {
+    mount(Frames, frameProps({
+      generatedContent: { id: 'list-1', type: 'sentence-frames', data: { mode: 'list', items: [{text:'My claim is...'}, {text:'The evidence shows...'}] } },
+      t: key => key === 'scaffolds.student_response' ? 'Your response' : ''
+    }));
+    const inputs = [...host.querySelectorAll('textarea')];
+    expect(inputs.map(input => input.getAttribute('aria-label'))).toEqual(['Your response 1', 'Your response 2']);
+    expect(inputs.map(input => document.getElementById(input.getAttribute('aria-describedby'))?.textContent))
+      .toEqual(['My claim is...', 'The evidence shows...']);
+  });
+});
+
+describe('image descriptions protect author edits while AI is pending', () => {
+  const original = { id:'alt-a', type:'image', data:{ imageUrl:'data:image/png;base64,b2xk', altText:'Initial description', altSource:'author', altHash:'initial-hash', decorative:false, prompt:'A plant diagram' } };
+  let field;
+  function deferred() { let resolve, reject; const promise = new Promise((yes,no) => { resolve=yes; reject=no; }); return { promise, resolve, reject }; }
+  function setupDraft(draft) {
+    field = null;
+    let current = structuredClone(original);
+    let history = [current];
+    const addToast = vi.fn();
+    window.AlloModules.AltText = { hashImage: url => 'hash:' + url, draftAlts: vi.fn(() => draft.promise) };
+    window.AlloModules.ImageAltField = props => { field=props; return null; };
+    window.callGeminiVision = vi.fn();
+    const update = vi.fn((id, updater) => {
+      history=history.map(item=>item.id===id?updater(item):item);
+      if(current.id===id) current=updater(current);
+      return true;
+    });
+    const props = () => ({t:key=>key,generatedContent:current,isTeacherMode:true,leveledTextLanguage:'English',singleImageFileRef:React.createRef(),onUpdateResource:update,imageRefinementInput:'',addToast});
+    const render=mount(ImageView,props());
+    return { addToast, update, current:()=>current, history:()=>history,
+      render:()=>render(props()),
+      edit:patch=>{current={...current,data:{...current.data,...patch}};history=history.map(item=>item.id===current.id?current:item);render(props());},
+      navigate:resource=>{current=resource;history.push(resource);render(props());}
+    };
+  }
+  afterEach(() => {
+    delete window.AlloModules.AltText;
+    delete window.AlloModules.ImageAltField;
+    delete window.callGeminiVision;
+  });
+  const result = [{alt:'AI plant description',source:'vision',decorative:false}];
+  it('saves an uncontested generated description and releases busy state', async () => {
+    const draft=deferred(), state=setupDraft(draft);
+    let pending; act(()=>{pending=field.onRegenerate();});
+    expect(field.busy).toBe(true);
+    await act(async()=>{draft.resolve(result);await pending;});
+    state.render();
+    expect(state.current().data.altText).toBe('AI plant description');
+    expect(state.history()[0].data.altText).toBe('AI plant description');
+    expect(field.busy).toBe(false);
+  });
+  it.each([
+    ['description',{altText:'Teacher revision',altSource:'author'}],
+    ['decorative choice',{decorative:true}],
+    ['image',{imageUrl:'data:image/png;base64,bmV3'}],
+    ['prompt',{prompt:'The roots, not the leaves'}]
+  ])('preserves a newer %s', async (_name,patch) => {
+    const draft=deferred(), state=setupDraft(draft);
+    let pending;act(()=>{pending=field.onRegenerate();});
+    state.edit(patch);
+    await act(async()=>{draft.resolve(result);await pending;});
+    expect(state.current().data).toEqual({...original.data,...patch});
+    expect(state.history()[0].data).toEqual({...original.data,...patch});
+  });
+  it('lets another image generate while an old draft is pending without clearing its busy state', async () => {
+    const first=deferred(), second=deferred(), state=setupDraft(first);
+    let pendingFirst,pendingSecond;act(()=>{pendingFirst=field.onRegenerate();});
+    state.navigate({id:'alt-b',type:'image',data:{imageUrl:'data:image/png;base64,dHdv',altText:'Second description',prompt:'A rock'}});
+    expect(field.busy).toBe(false);
+    window.AlloModules.AltText.draftAlts.mockImplementationOnce(()=>second.promise);
+    act(()=>{pendingSecond=field.onRegenerate();});
+    await act(async()=>{first.resolve(result);await pendingFirst;});
+    expect(field.busy).toBe(true);
+    expect(state.history()[0].data.altText).toBe('Initial description');
+    await act(async()=>{second.resolve([{alt:'Rock description',source:'vision',decorative:false}]);await pendingSecond;});
+    expect(state.current().data.altText).toBe('Rock description');
+    expect(field.busy).toBe(false);
+  });
+  it('reports generation failure and allows a new attempt', async () => {
+    const draft=deferred(), state=setupDraft(draft);
+    let pending;act(()=>{pending=field.onRegenerate();});
+    await act(async()=>{draft.reject(new Error('Provider unavailable'));await pending;});
+    expect(field.busy).toBe(false);
+    expect(state.addToast).toHaveBeenCalledWith('The image description could not be generated. Try again or write a description.','error');
+    expect(state.current().data.altText).toBe('Initial description');
+    window.AlloModules.AltText.draftAlts.mockResolvedValueOnce(result);
+    await act(async()=>{await field.onRegenerate();});
+    expect(state.current().data.altText).toBe('AI plant description');
+  });
+  it('discards a draft if the view unmounts', async () => {
+    const draft=deferred(), state=setupDraft(draft);
+    let pending;act(()=>{pending=field.onRegenerate();});
+    act(()=>root.unmount());root=null;
+    await act(async()=>{draft.resolve(result);await pending;});
+    expect(state.update).not.toHaveBeenCalled();
+  });
+});

@@ -125,7 +125,7 @@ describe('human-in-the-loop rebase: wiring', () => {
 
   it('the run discloses that it was collaborative, not purely automated', () => {
     expect(pipe).toContain('humanEditsAdopted: _humanEditsAdopted,');
-    expect(pipe).toContain('humanEditsAdopted: _humanEditsAdopted }');
+    expect(pipe).toMatch(/return \{[^\n]*humanEditsAdopted: _humanEditsAdopted(?:,| \})/);
   });
 
   it('the host supplies html AND the monotonic revision counter', () => {
@@ -275,7 +275,8 @@ describe('reviewed-findings attestation (2026-08-23, #2)', () => {
       expect(src, name + ' save').toContain("reviewedFindings: (cur.reviewedFindings && typeof cur.reviewedFindings === 'object') ? cur.reviewedFindings : null,");
       // A new attestation alone must trigger an autosave - the dedupe key has to see it.
       expect(src, name + ' hashKey').toContain("String(cur.reviewedFindings ? Object.keys(cur.reviewedFindings).length : 0)");
-      expect(src, name + ' restore').toContain("humanEditsAdopted: Number(project.humanEditsAdopted) || 0,");
+      expect(src, name + ' cache restore').toContain("rehydrateVerificationHtmlBinding(parsed.pdfFixResult)");
+      expect(src, name + ' complete metadata copy').toContain("const restored = Object.assign({}, saved);");
     }
     // Both view restore sites (drag-drop loader + continue-previous-session).
     const viewRestores = view.split("reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,").length - 1;
@@ -309,7 +310,9 @@ describe('epoch-mirror self-heal (2026-08-23 field log)', () => {
     for (const [name, src] of [['App.jsx', host], ['AlloFlowANTI.txt', anti]]) {
       const at = src.indexOf('const _onEpochHeal = (ev) => {');
       expect(at, name).toBeGreaterThan(-1);
-      const block = src.slice(at, at + 900);
+      const end = src.indexOf("window.addEventListener('alloflow:remediation-progress', _onEpochHeal)", at);
+      expect(end).toBeGreaterThan(at);
+      const block = src.slice(at, end);
       expect(block, name).toContain('_e === pdfDocumentSelectionEpochRef.current');
       expect(block, name).toContain('_e !== pdfDocumentEpochLive');
       expect(block, name).toContain('setPdfDocumentEpochLive(_e);');
@@ -322,7 +325,9 @@ describe('epoch-mirror self-heal (2026-08-23 field log)', () => {
     // Setting the mirror from an unverified event epoch would let a stale run RESURRECT itself.
     // The guard requires the event to match the authoritative ref before the mirror moves.
     const at = host.indexOf('const _onEpochHeal = (ev) => {');
-    const block = host.slice(at, at + 900);
+    const end = host.indexOf("window.addEventListener('alloflow:remediation-progress', _onEpochHeal)", at);
+    expect(end).toBeGreaterThan(at);
+    const block = host.slice(at, end);
     const guardAt = block.indexOf('_e === pdfDocumentSelectionEpochRef.current');
     const setAt = block.indexOf('setPdfDocumentEpochLive(_e);');
     expect(guardAt).toBeGreaterThan(-1);

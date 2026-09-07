@@ -81,3 +81,60 @@ test('hides the control where the browser cannot speak', async ({ page }) => {
   await expect(page.locator('.grove-receipt')).toBeVisible();
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+// The knowledge check offers the same control, sharing the machinery the grove uses. It
+// reads what is on screen: the question and its options, and once answered, the verdict and
+// the explanation, so a learner who cannot read the feedback still receives it.
+async function mountQuiz(page: any, band: string) {
+  await page.goto(`${harness.url}/__harness`);
+  await page.evaluate(b => {
+    const w = window as any;
+    w.__spoken = [];
+    w.__cancels = 0;
+    Object.defineProperty(w, 'speechSynthesis', { configurable: true,
+      value: { speak: (u: any) => { w.__spoken.push(u.text); w.__lastUtt = u; }, cancel: () => { w.__cancels++; } } });
+    w.SpeechSynthesisUtterance = function (this: any, text: string) { this.text = text; this.rate = 1; } as any;
+    w.__mount({ treeLab: { view: 'quiz', bandOverride: b, tree: w.__alloTreeLabEngine.newTree('oak'), speciesId: 'oak' } });
+    w.__ctx.reduceMotion = true;
+  }, band);
+  await page.waitForTimeout(1200);
+}
+
+test('reads the knowledge check question, its options, then the explanation', async ({ page }) => {
+  await mountQuiz(page, 'g68');
+  const read = page.getByRole('button', { name: /Read this aloud/ });
+  await expect(read).toBeVisible();
+  await expect(read).toHaveAttribute('aria-pressed', 'false');
+  await read.click();
+  await page.waitForTimeout(250);
+  const first = await page.evaluate(() => (window as any).__spoken[0]);
+  expect(first).toContain('?');
+  // Every option is read with its letter, in the order they are shown.
+  for (const letter of ['A. ', 'B. ', 'C. ', 'D. ']) expect(first).toContain(letter);
+  // Nothing is claimed about an answer that has not been given yet.
+  expect(first).not.toMatch(/Evidence connected|revise the model/);
+  await expect(page.getByRole('button', { name: /Stop reading/ })).toHaveAttribute('aria-pressed', 'true');
+
+  await page.locator('.allo-tree-quiz-opt').first().click();
+  await page.waitForTimeout(400);
+  // The stub never fires onend, so the control is still in its speaking state: stop first,
+  // exactly as a learner would before asking for the answer to be read.
+  await page.getByRole('button', { name: /Stop reading/ }).first().click();
+  await page.waitForTimeout(150);
+  await page.getByRole('button', { name: /Read this aloud/ }).first().click();
+  await page.waitForTimeout(250);
+  const second = await page.evaluate(() => { const s = (window as any).__spoken; return s[s.length - 1]; });
+  expect(second).toMatch(/Evidence connected|Not yet/);
+  // The explanation is the bank's own wording, not a summary of it.
+  expect(second.length).toBeGreaterThan(first.length);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('slows the knowledge check reading down for K-2 as well', async ({ page }) => {
+  await mountQuiz(page, 'k2');
+  await page.getByRole('button', { name: /Read this to me/ }).click();
+  await page.waitForTimeout(250);
+  expect(await page.evaluate(() => (window as any).__lastUtt.rate)).toBeLessThan(0.95);
+  expect(await page.evaluate(() => (window as any).__spoken[0])).toContain('A. ');
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

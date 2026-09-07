@@ -209,7 +209,7 @@ function HeaderBar(props) {
 
   const {
     APP_CONFIG, AnimatedNumber, EDGE_TTS_VOICES, FONT_OPTIONS, GEMINI_VOICES,
-    GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, _isCanvasEnv, activeSessionCode,
+    GlobalMuteButton, KOKORO_VOICES, UiLanguageSelector, setConfirmDialog, _isCanvasEnv, activeSessionCode,
     addToast, ai, appId, currentLevelXP,
     customExportCSS, createHomeworkAssignmentLink, dismissHelpOnboarding,
     homeworkExpiryDays, openRecentQrShares, recentQrShareCount, setHomeworkExpiryDays,
@@ -606,6 +606,8 @@ function HeaderBar(props) {
       });
     };
   }, [showReadThisPage, theme]);
+  const selectedAppThemeLabel = t('theme.' + (theme === 'contrast' ? 'high_contrast' : theme)) || theme;
+  const selectedOverlayLabel = ({ none: t('header.overlay_none') || 'None', blue: t('header.reading_theme_blue') || 'Blue', peach: t('header.overlay_peach') || 'Peach', yellow: t('header.overlay_yellow') || 'Yellow' })[colorOverlay] || colorOverlay;
   const notebookLabel = t('cmd.open_notebook') || 'Open my notebook';
   const personalAIConnectLabel = t('header.personal_ai_connect') || 'Connect personal AI';
   const personalAIConnectedLabel = t('header.personal_ai_connected') || 'Personal AI connected';
@@ -993,7 +995,7 @@ function HeaderBar(props) {
                                             <div className={`flex justify-between items-center border-b ${_skin.divider} pb-2`}>
                                                 <h4 id="header-text-settings-title" className="font-bold text-sm">{t('settings.text.header')}</h4>
                                                 <div className="flex items-center gap-2">
-                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-[11px] font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('common.reset')}</button>
+                                                    <button type="button" onClick={resetFontSize} data-help-key="header_settings_text_reset" className={`text-[11px] font-bold flex items-center gap-1 ${_skin.action}`}><RefreshCw size={10}/> {t('header.reset_size_spacing') || 'Reset size & spacing'}</button>
                                                     <button type="button" onClick={handleSetShowTextSettingsToFalse} className={`min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`} aria-label={t('common.close') || 'Close text settings'}>&times;</button>
                                                 </div>
                                             </div>
@@ -1017,6 +1019,8 @@ function HeaderBar(props) {
                                                 aria-label={t('common.toggle_focus_mode')}
                                                 onClick={handleToggleFocusMode}
                                                 data-help-key="header_settings_text_bionic"
+                                                aria-pressed={focusMode}
+                                                aria-describedby="header-bionic-scope"
                                                 className={`w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`}
                                             >
                                                 <div className="flex items-center gap-3">
@@ -1026,6 +1030,7 @@ function HeaderBar(props) {
                                                     <div className="text-left">
                                                         <span className="block text-xs font-bold">{t('settings.text.bionic')}</span>
                                                         <span className="block text-[11px]">{t('settings.text.bionic_sub')}</span>
+                                                        <span id="header-bionic-scope" className="block text-[11px] mt-1">{t('header.bionic_scope') || 'Applies to supported reading passages.'}</span>
                                                     </div>
                                                 </div>
                                                 <div className={`w-10 h-5 rounded-full relative transition-colors ${focusMode ? 'bg-indigo-500' : theme === 'contrast' ? 'bg-yellow-400' : 'bg-slate-500'}`}>
@@ -1038,16 +1043,14 @@ function HeaderBar(props) {
                                                     <span className={`text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded`}>{baseFontSize}px</span>
                                                 </div>
                                             <div className="flex items-center gap-3" data-help-key="header_settings_text_size">
-                                                    <button type="button" aria-label={t('common.minimize')} onClick={() => { setBaseFontSize(Math.max(12, baseFontSize - 1)); setSliderFontSize(Math.max(12, baseFontSize - 1)); }} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16}/></button>
+                                                    <button type="button" aria-label={t('common.minimize')} onClick={() => setSliderFontSize(Math.max(10, baseFontSize - 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Minimize size={16}/></button>
                                                     <input id="header-text-font-size"
-                                                        type="range" min="12" max="24" step="1"
+                                                        type="range" min="10" max="48" step="1"
                                                         value={sliderFontSize}
                                                         onChange={(e) => setSliderFontSize(parseInt(e.target.value))}
-                                                        onMouseUp={() => setBaseFontSize(sliderFontSize)}
-                                                        onTouchEnd={() => setBaseFontSize(sliderFontSize)}
                                                         className="flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                                                     />
-                                                    <button type="button" aria-label={t('common.maximize')} onClick={() => { setBaseFontSize(Math.min(24, baseFontSize + 1)); setSliderFontSize(Math.min(24, baseFontSize + 1)); }} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16}/></button>
+                                                    <button type="button" aria-label={t('common.maximize')} onClick={() => setSliderFontSize(Math.min(48, baseFontSize + 1))} className={`p-2.5 rounded-lg transition-colors ${_skin.ghost}`}><Maximize size={16}/></button>
                                                 </div>
                                             </div>
                                             <div className={`border-t ${_skin.divider} pt-3 mt-3`}>
@@ -1208,7 +1211,7 @@ function HeaderBar(props) {
                                                       const voice = e.target.value;
                                                       if (voice === '__kokoro_unavailable') return;
                                                       setSelectedVoice(voice);
-                                                      if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+                                                      if (canUseKokoroVoicePicker && KOKORO_VOICES.some(v => v.id === voice) && !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && window.__loadKokoroTTS) {
                                                         // Choosing the voice IS the consent to download it. Nothing
                                                         // else on a phone may start this fetch; see the off-desktop
                                                         // guard in callTTS.
@@ -1220,11 +1223,14 @@ function HeaderBar(props) {
                                                             : (t('header.voice_kokoro_downloading') || 'Getting the on-device voice (88 MB, one time). You can keep working.'),
                                                           'info'
                                                         );
-                                                        window.__loadKokoroTTS().then(ok => {
-                                                          window.__kokoroTTSDownloading = false;
-                                                          window.__kokoroLoadUserInitiated = false;
+                                                        Promise.resolve().then(() => window.__loadKokoroTTS()).then(ok => {
                                                           if (ok) addToast(t('header.voice_kokoro_ready_toast') || 'On-device voice ready. It is saved on this device.', 'success');
                                                           else addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+                                                        }).catch(() => {
+                                                          addToast(t('header.voice_kokoro_failed_toast') || 'The on-device voice could not be prepared. Another voice will read for now.', 'error');
+                                                        }).finally(() => {
+                                                          window.__kokoroTTSDownloading = false;
+                                                          window.__kokoroLoadUserInitiated = false;
                                                         });
                                                       }
                                                     }}
@@ -1281,19 +1287,24 @@ function HeaderBar(props) {
                                                 )}
                                                 {/* ── Browser-TTS Fallback Toggle ──
                                                     When Gemini refuses a sentence or exhausts retries, fall back to the
-                                                    system voice instead of skipping. Default off because the system voice
-                                                    sounds jarring next to Gemini. */}
+                                                    system voice instead of skipping. Enabled by default, with an explicit
+                                                    opt-out saved alongside the provider settings. */}
                                                 <div className={`mt-2 p-2 rounded-lg border ${_skin.surface}`}>
                                                     <label className="flex items-start gap-2 cursor-pointer">
                                                         <input
                                                             type="checkbox"
+                                                            id="header-browser-voice-fallback"
                                                             className="mt-0.5 accent-indigo-600"
                                                             defaultChecked={(() => { try { return JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}').browserTtsFallback !== false; } catch { return true; } })()}
                                                             onChange={(e) => {
+                                                                const requested = e.currentTarget.checked;
                                                                 try {
                                                                     const cur = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
-                                                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: e.target.checked }));
-                                                                } catch {}
+                                                                    localStorage.setItem('alloflow_ai_config', JSON.stringify({ ...cur, browserTtsFallback: requested }));
+                                                                } catch (_) {
+                                                                    e.currentTarget.checked = !requested;
+                                                                    addToast(t('header.audio_setting_save_failed') || 'This audio setting could not be saved. Your previous choice is still active.', 'error');
+                                                                }
                                                             }}
                                                             aria-label={t('header.browser_tts_fallback_aria') || 'Use browser voice as fallback when Gemini TTS refuses or fails'}
                                                         />
@@ -1380,12 +1391,15 @@ function HeaderBar(props) {
                         <button type="button"
                           onClick={handleToggleDisableAnimations}
                           data-help-key="header_settings_anim"
+                          aria-pressed={disableAnimations}
+                          aria-describedby="header-motion-scope"
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${disableAnimations ? 'bg-red-700 text-white shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
                           title={disableAnimations ? t('a11y.anim_enable') : t('a11y.anim_disable')}
-                          aria-label={t('a11y.anim_toggle')}
+                          aria-label={t('header.reduce_animations') || 'Reduce animations'}
                         >
                           {disableAnimations ? <ZapOff size={20} aria-hidden="true" /> : <Zap size={20} aria-hidden="true" />}
                         </button>
+                        <span id="header-motion-scope" className="sr-only">{t('header.motion_scope') || 'Your device’s reduced-motion preference also applies.'}</span>
                         <button type="button"
                           onClick={toggleTheme}
                           data-help-key="header_settings_theme"
@@ -1394,8 +1408,8 @@ function HeaderBar(props) {
                               theme === 'dark' ? 'bg-indigo-600 hover:bg-indigo-500 text-yellow-300 shadow-lg shadow-indigo-500/50' :
                               'bg-yellow-400 text-black hover:bg-yellow-300'
                           }`}
-                          title={`${t('settings.theme')}: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`}
-                          aria-label={t('a11y.theme_toggle')}
+                          title={`${t('settings.theme')}: ${selectedAppThemeLabel}`}
+                          aria-label={`${t('a11y.theme_toggle')}: ${selectedAppThemeLabel}`}
                         >
                           {theme === 'light' && <Sun size={20} aria-hidden="true" />}
                           {theme === 'dark' && <Moon size={20} aria-hidden="true" />}
@@ -1405,8 +1419,8 @@ function HeaderBar(props) {
                           onClick={toggleOverlay}
                           data-help-key="header_settings_overlay"
                           className={`p-2 rounded-xl transition-all flex items-center gap-2 ${colorOverlay !== 'none' ? 'bg-white text-indigo-900 shadow-lg' : 'hover:bg-white/10 text-white/80 hover:text-white'}`}
-                          title={`${t('settings.overlay')}: ${colorOverlay}`}
-                          aria-label={t('a11y.overlay_toggle')}
+                          title={`${t('settings.overlay')}: ${selectedOverlayLabel}`}
+                          aria-label={`${t('a11y.overlay_toggle')}: ${selectedOverlayLabel}`}
                         >
                           <Palette size={20} aria-hidden="true" />
                         </button>
@@ -1524,6 +1538,7 @@ function HeaderBar(props) {
                         <button type="button"
                             onClick={handleToggleIsBotVisible}
                             data-help-key="header_bot_toggle"
+                            aria-pressed={isBotVisible}
                             className={`p-2 rounded-xl transition-colors ${isBotVisible ? 'bg-indigo-500 text-white shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
                             title={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
                             aria-label={isBotVisible ? t('toolbar.hide_bot') : t('toolbar.show_bot')}
@@ -1537,6 +1552,7 @@ function HeaderBar(props) {
                         <button type="button"
                             data-help-ignore="true"
                             onClick={handleToggleIsHelpMode}
+                            aria-pressed={isHelpMode}
                             className={`p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
                             title={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
                             aria-label={isHelpMode ? t('help_mode.deactivate') : t('help_mode.activate')}
@@ -1607,7 +1623,7 @@ function HeaderBar(props) {
                                 {t('header.app_language')}
                             </span>
                             <div className="max-w-full scale-90 origin-left sm:origin-center" data-help-key="header_language">
-                                <UiLanguageSelector />
+                                <UiLanguageSelector setConfirmDialog={setConfirmDialog} />
                             </div>
                         </div>
                         {/* Everything other than the language picker stacks into one

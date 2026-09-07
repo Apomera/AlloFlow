@@ -1,0 +1,9 @@
+# Coaster support visual refinement
+
+The track now uses more substantial tapered columns and diagonal braces. Tall supports flare toward separate ground anchors; each column and brace receives its own concrete pad and base plate. Columns meet the actual underside cap position on banked track. Low supports stay compact, and inverted or near-ground sections continue to skip ground columns.
+
+Anchor bolts, column collars, and soft radial contact shadows add close-up depth. These details are instanced in a fixed set of eight mesh batches alongside the main structure. FX Lite hides bolts, collars, and contact shadows while retaining columns, braces, caps, concrete pads, and plates. Theme-aware footing, hardware, tie, and support colors keep the structure visible in daylight, dusk, neon, and blueprint environments.
+
+The change only dresses the scene. Track control points, spline sampling, propulsion, and force calculations are unchanged. The support-frame helper validates coordinates, accounts for banking, bounds brace spread, and avoids undefined horizontal directions. Existing geometry disposal continues to handle each instanced batch on rebuild; the shared contact-shadow shader needs no texture asset.
+
+Validation: 256 focused unit tests passed, including the new support-frame checks and existing coaster, track readability, and visual-presentation checks. The Chromium browser workflow passed and checked batch counts and finite transforms, all four themes, shader errors, FX Lite, rebuild stability, and unchanged analysis. Daylight orbit, side, closer, and neon screenshots were visually reviewed. The main and desktop copies have matching hashes, and the scoped diff check passed. Screenshots and browser results are under scratch/coaster-support-visuals and scratch/coaster-support-browser.log.

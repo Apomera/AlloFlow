@@ -1,0 +1,194 @@
+[
+  {
+    "id": "wx-term-temperature",
+    "file": "wx-term-temperature.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Two matching thermometers have a low red liquid column against a cool blue background and a high red column against a warm yellow background.",
+    "altHash": "img-b4r-ee44e8eb"
+  },
+  {
+    "id": "wx-term-precipitation",
+    "file": "wx-term-precipitation.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Side-by-side scenes show rain falling onto green grass and snowflakes falling onto snow-covered grass beneath gray clouds.",
+    "altHash": "img-lx3-4f79b031"
+  },
+  {
+    "id": "wx-term-weather",
+    "file": "wx-term-weather.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Three views of the same tree, bench, and park path show sunshine, rainfall with puddles, and wind bending branches and blowing leaves.",
+    "altHash": "img-14hv-284a3971"
+  },
+  {
+    "id": "wx-term-climate",
+    "file": "wx-term-climate.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A dry desert basin stretches between rocky mountains, with sparse shrubs, cacti, and exposed sandy soil under a mostly clear sky.",
+    "altHash": "img-14vj-8dc7dc07"
+  },
+  {
+    "id": "wx-term-average",
+    "file": "wx-term-average.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Six matching tanks appear in two rows. The top row has low, medium, and high water levels; a downward arrow leads to three equal middle levels below.",
+    "altHash": "img-15vb-4d911b88"
+  },
+  {
+    "id": "wx-term-pattern",
+    "file": "wx-term-pattern.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Two rows repeat the same seasonal sequence around a park tree: blossoms and new leaves, full green foliage, orange autumn leaves, and bare branches with snow.",
+    "altHash": "img-1lwv-d909a60a"
+  },
+  {
+    "id": "wx-term-forecast",
+    "file": "wx-term-forecast.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A person watches dark clouds through a window. A nearby laptop shows a rain-cloud symbol on a map, and an umbrella rests on the desk.",
+    "altHash": "img-nu7-2b37d224"
+  },
+  {
+    "id": "wx-term-region",
+    "file": "wx-term-region.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A river winds through a broad green valley with forests and grassy slopes, bounded by mountain ridges.",
+    "altHash": "img-167b-86c83b12"
+  },
+  {
+    "id": "wx-term-trend",
+    "file": "wx-term-trend.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Five successive views show a tree increasing in height, trunk thickness, and leafy crown size above a consistent grassy ground line.",
+    "altHash": "img-zez-5286ad47"
+  },
+  {
+    "id": "wx-term-atmosphere",
+    "file": "wx-term-atmosphere.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Earth is shown against dark space, with white cloud bands over land and oceans and a thin blue glow along its curved edge.",
+    "altHash": "img-tl7-7686b4ca"
+  },
+  {
+    "id": "wx-img-mood-personality",
+    "file": "wx-img-mood-personality.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three views of the same house and garden show sunshine, an overcast sky, and falling rain with a wet path.",
+    "altHash": "img-2bmv-1dcd6786"
+  },
+  {
+    "id": "wx-img-observation-series",
+    "file": "wx-img-observation-series.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "The same weather station appears under sunny, rainy, and overcast skies, with its instruments in consistent positions.",
+    "altHash": "img-1cb3-cbabdc4a"
+  },
+  {
+    "id": "wx-img-desert-rain",
+    "file": "wx-img-desert-rain.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Rain falls over a rocky desert with sparse shrubs and cacti. Fresh puddles collect on the ground beneath dark clouds.",
+    "altHash": "img-1o17-60f06ec7"
+  },
+  {
+    "id": "wx-img-same-weather",
+    "file": "wx-img-same-weather.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two sunny scenes contrast a dry cactus landscape with a green forest and flowing river.",
+    "altHash": "img-2b53-2f94152e"
+  },
+  {
+    "id": "wx-img-heat-wave",
+    "file": "wx-img-heat-wave.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A family sits in tree shade drinking from reusable water bottles, with hats beside them and a sunny field beyond.",
+    "altHash": "img-224n-4ba17d98"
+  },
+  {
+    "id": "wx-img-cold-day",
+    "file": "wx-img-cold-day.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "An adult and child in winter coats walk beside a frost-covered field and bare trees. A small breath cloud is visible.",
+    "altHash": "img-1upr-96e4c513"
+  },
+  {
+    "id": "wx-img-climate-regions",
+    "file": "wx-img-climate-regions.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Side-by-side landscapes contrast a dry, sparsely vegetated basin with a dense green forest bordering a river.",
+    "altHash": "img-2w1b-5562bbc3"
+  },
+  {
+    "id": "wx-img-valley-shade",
+    "file": "wx-img-valley-shade.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A mountain valley has a brightly sunlit grassy slope on the left and a shaded rocky slope on the right, with a river below.",
+    "altHash": "img-2bhb-24c3805c"
+  },
+  {
+    "id": "wx-img-city-farm",
+    "file": "wx-img-city-farm.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two sunny scenes show city rooftops and paved streets on the left, and grassy fields and trees on the right.",
+    "altHash": "img-1uqj-de252403"
+  },
+  {
+    "id": "wx-img-tree-rings",
+    "file": "wx-img-tree-rings.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A tree-trunk cross-section shows rings of varying widths around a central point. A magnifying glass enlarges several rings.",
+    "altHash": "img-2r4r-a3830c5f"
+  },
+  {
+    "id": "wx-img-ice-core",
+    "file": "wx-img-ice-core.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A gloved scientist examines a horizontal cylindrical ice core with visible layers and tiny bubbles at a snowy field station.",
+    "altHash": "img-16y7-8ea4a66e"
+  },
+  {
+    "id": "wx-img-weather-station",
+    "file": "wx-img-weather-station.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A white louvered instrument shelter, a pole-mounted cup anemometer, and an open cylindrical rain collector stand in a grassy field.",
+    "altHash": "img-19pb-69d7c7fd"
+  },
+  {
+    "id": "wx-img-forecast-observations",
+    "file": "wx-img-forecast-observations.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A person holding an umbrella and rain jacket looks toward gray clouds. A tablet on the table displays a cloud-and-rain symbol.",
+    "altHash": "img-uc7-4141b526"
+  },
+  {
+    "id": "wx-img-many-records",
+    "file": "wx-img-many-records.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A scientist looks at a row of cylindrical samples beside a tree cross-section and a photograph of a weather station.",
+    "altHash": "img-193v-98e73e8b"
+  }
+]

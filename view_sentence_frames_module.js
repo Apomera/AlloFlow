@@ -49,6 +49,10 @@ function isScaffoldParagraphComplete(text, responses) {
 function SentenceFramesView(props) {
   // State reads
   var t = props.t;
+  const label = (key, fallback) => {
+    const translated = typeof t === 'function' ? t(key) : '';
+    return translated && translated !== key ? translated : fallback;
+  };
   var generatedContent = props.generatedContent;
   var studentWorkStatus = props.studentWorkStatus;
   var onRetrySave = props.onRetrySave;
@@ -180,11 +184,13 @@ function SentenceFramesView(props) {
     rows: getRows(item.text_en || ''),
     placeholder: t('common.placeholder_translation')
   })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    id: `scaffold-prompt-${generatedContent.id}-${idx}`,
     className: "text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1"
   }, item.text), leveledTextLanguage !== 'English' && item.text_en && /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600 italic px-2"
   }, item.text_en), /*#__PURE__*/React.createElement("textarea", {
-    "aria-label": t('scaffolds.student_response') || `Student response for item ${idx + 1}`,
+    "aria-label": `${label('scaffolds.student_response', 'Student response')} ${idx + 1}`,
+    "aria-describedby": `scaffold-prompt-${generatedContent.id}-${idx}`,
     value: studentResponses[generatedContent.id]?.[idx] || '',
     onChange: e => handleStudentInput(generatedContent.id, idx, e.target.value),
     "data-help-key": "scaffolds_student_input",
@@ -212,7 +218,7 @@ function SentenceFramesView(props) {
     text: part,
     responseKey
   }, i) => responseKey ? /*#__PURE__*/React.createElement("input", {
-    "aria-label": t('common.enter_student_responses'),
+    "aria-label": `${label('common.enter_student_responses', 'Student response')} ${(i + 1) / 2}: ${part.replace(/[\[\]]/g, '')}`,
     key: i,
     type: "text",
     value: studentResponses[generatedContent.id]?.[responseKey] || '',

@@ -1,0 +1,893 @@
+{
+  "measurements": [
+    {
+      "name": "mobile-plan",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Plan phase",
+          "height": 602,
+          "scrollHeight": 1396
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": false
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": false
+        },
+        {
+          "text": "Save draft",
+          "disabled": false
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "Import classmate's draft",
+          "disabled": false
+        },
+        {
+          "text": "StoryBuild scenes or paragraphs into a storybook",
+          "disabled": false
+        },
+        {
+          "text": "ComicBuild panels with dialogue, captions, and art",
+          "disabled": false
+        },
+        {
+          "text": "StandardA clean, focused writing canvas",
+          "disabled": false
+        },
+        {
+          "text": "NotebookA lined, notebook-style canvas",
+          "disabled": false
+        },
+        {
+          "text": "Low lightA darker canvas for comfortable writing",
+          "disabled": false
+        },
+        {
+          "text": "✏️Free Write",
+          "disabled": false
+        },
+        {
+          "text": "🗺️Adventure",
+          "disabled": false
+        },
+        {
+          "text": "🔍Mystery",
+          "disabled": false
+        },
+        {
+          "text": "🏰Fairy Tale",
+          "disabled": false
+        },
+        {
+          "text": "🚀Sci-Fi",
+          "disabled": false
+        },
+        {
+          "text": "📜Historical",
+          "disabled": false
+        },
+        {
+          "text": "💬Persuasive Narrative",
+          "disabled": false
+        },
+        {
+          "text": "Add",
+          "disabled": true
+        },
+        {
+          "text": "Optional setup & assignment▼",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": true
+        },
+        {
+          "text": "Continue to Draft",
+          "disabled": true
+        }
+      ],
+      "text": "StoryForge\n\nUntitled story · Story · Plan · Save draft\n\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nRequired to continue: add a title or starting idea.\nPlan your story\n\nName your story, choose a genre, and set vocabulary goals\n\nImport classmate's draft\nWHAT ARE YOU MAKING?\n\nChoose this before drafting. Story and Comic use different building tools.\n\nStory\nBuild scenes or paragraphs into a storybook\nComic\nBuild panels with dialogue, captions, and art\nWRITING VIEW\n\nThis only changes how the Draft canvas looks.\n\nStandard\nA clean, focused writing canvas\nNotebook\nA lined, notebook-style canvas\nLow light\nA darker canvas for comfortable writing\nSTORY TITLE\nPEN NAME\n✍️\nAudit Student\n\nYour codename is your pen name — it keeps your identity private\n\nGENRE\nVOCABULARY GOALS (0 TERMS)\n\nNo vocabulary terms yet — add some below or they'll come from your glossary\n\nAdd\nOptional setup & assignment\n▼\n\nStory shape, art, language, starting idea, and rubric.\n\nBack\nContinue to Draft"
+    },
+    {
+      "name": "mobile-draft",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Draft phase",
+          "height": 602,
+          "scrollHeight": 602
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "Generate Scene Plan",
+          "disabled": true
+        },
+        {
+          "text": "Focus on writing",
+          "disabled": false
+        },
+        {
+          "text": "More tools",
+          "disabled": false
+        },
+        {
+          "text": "▲",
+          "disabled": true
+        },
+        {
+          "text": "▼",
+          "disabled": true
+        },
+        {
+          "text": "Dictate",
+          "disabled": false
+        },
+        {
+          "text": "Help Me",
+          "disabled": false
+        },
+        {
+          "text": "Add Scene",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Review",
+          "disabled": true
+        }
+      ],
+      "text": "StoryForge\n\nThe Hidden Bridge · Story · Draft · Saving\n\nSaving project\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nRequired to continue: draft at least one scene.\nDraft your story\n\nBuild one clear scene at a time\n\nGenerate Scene Plan\nFocus on writing\nMore tools\n\nAI tools are unavailable. You can keep writing and use the self-check.\n\nVOCABULARY GOALS · CLICK TO COPY\n0/0 used\nScene 1\n▲\n▼\nDictate\nHelp Me\nAdd Scene\nBack\nContinue to Review"
+    },
+    {
+      "name": "mobile-review",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Review phase",
+          "height": 586,
+          "scrollHeight": 702
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "More review tools",
+          "disabled": false
+        },
+        {
+          "text": "Get Feedback",
+          "disabled": true
+        },
+        {
+          "text": "Skip self-assessment",
+          "disabled": false
+        },
+        {
+          "text": "Submit Self-Assessment",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Design",
+          "disabled": true
+        }
+      ],
+      "text": "StoryForge\n\nThe Hidden Bridge · Story · Review · Saving\n\nSaving project\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nRequired to continue: complete the self-check or run feedback.\nReview & Feedback\n\nDraft #1 · Reflect, get feedback, and revise before visual design\n\nMore review tools\nGet Feedback\n\nAI tools are unavailable. You can keep writing and use the self-check.\n\nSelf-Assessment First\n\nRate your own draft on each criterion (1-5) before the AI gives feedback. This builds reflection skills.\n\nSkip self-assessment\nVocabulary Usage\n3/5\nStory Structure\n3/5\nCreativity & Detail\n3/5\nGrammar & Mechanics\n3/5\nSubmit Self-Assessment\nWRITING ANALYTICS\nBack\nContinue to Design"
+    },
+    {
+      "name": "mobile-design",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Design phase",
+          "height": 586,
+          "scrollHeight": 586
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "Cover Art",
+          "disabled": false
+        },
+        {
+          "text": "Illustrate All Scenes",
+          "disabled": false
+        },
+        {
+          "text": "Auto-Generate",
+          "disabled": false
+        },
+        {
+          "text": "Preview Prompt First",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Audio",
+          "disabled": false
+        }
+      ],
+      "text": "Self-assessment submitted. You can now get AI feedback.\nStoryForge\n\nThe Hidden Bridge · Story · Design · Saving\n\nSaving project\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nOptional step: add visuals, or continue when the words are enough.\nDesign your story\n\nAdd optional artwork to any scene that benefits from a visual\n\nCover Art\nIllustrate All Scenes\nScene 1\n\nMira discovered a hidden bridge in the forest. She helped her friend cross the river and together they returned safely home.\n\nAuto-Generate\nPreview Prompt First\nBack\nContinue to Audio"
+    },
+    {
+      "name": "mobile-audio",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Audio phase",
+          "height": 602,
+          "scrollHeight": 602
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "Narrate All Scenes",
+          "disabled": false
+        },
+        {
+          "text": "Play All",
+          "disabled": false
+        },
+        {
+          "text": "Detect character voices",
+          "disabled": false
+        },
+        {
+          "text": "Narrate",
+          "disabled": false
+        },
+        {
+          "text": "Record",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Publish",
+          "disabled": false
+        }
+      ],
+      "text": "Self-assessment submitted. You can now get AI feedback.\nStoryForge\n\nThe Hidden Bridge · Story · Audio · Saving\n\nSaving project\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nOptional step: add audio, or continue to publish.\nAdd audio to your story\n\nAI reads each scene aloud — or record your own voice\n\nNarrate All Scenes\nPlay All\nNarration settings — Voice and character voices\nScene 1\nCREATE NARRATION\nNarrate\nPRACTICE OR RECORD MY VOICE\nRecord\n\nMira discovered a hidden bridge in the forest. She helped her friend cross the river and together they returned safely home.\n\nBack\nContinue to Publish"
+    },
+    {
+      "name": "mobile-publish",
+      "viewport": {
+        "w": 390,
+        "h": 844
+      },
+      "regions": [
+        {
+          "label": "Publish phase",
+          "height": 602,
+          "scrollHeight": 1872
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Checklist",
+          "disabled": false
+        },
+        {
+          "text": "Add vocabulary",
+          "disabled": false
+        },
+        {
+          "text": "Finish visual pass",
+          "disabled": false
+        },
+        {
+          "text": "Continue writing",
+          "disabled": false
+        },
+        {
+          "text": "Export Storybook",
+          "disabled": false
+        },
+        {
+          "text": "Slideshow",
+          "disabled": false
+        },
+        {
+          "text": "Export .storyforge",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Export Draft (.json)",
+          "disabled": false
+        },
+        {
+          "text": "Import Classmate's Draft",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Done",
+          "disabled": false
+        }
+      ],
+      "text": "Self-assessment submitted. You can now get AI feedback.\nStoryForge\n\nThe Hidden Bridge · Story · Publish · Saving\n\nSaving project\n☀️\nChoose a step\n1. Plan\n2. Draft\n3. Review\n4. Design\n5. Audio\n6. Publish\nChecklist\nYour artifact is ready to publish.\nYour story is ready to export as a draft\n\nPreview the finished story and choose how to share or save it.\n\nArtifact: Story · Standard writing view\nExport preflight\n3 REFINEMENTS\n\nReady to export with 3 refinements available\n\nWords 21\nArt 0/1\nAudio 0/1\nReview Done\nAdd vocabulary goals\nChoose at least one vocabulary term for the draft.\nAdd vocabulary\nFinish the visual pass\n1 scene still need art.\nFinish visual pass\nDevelop the story draft\nThe current 21-word draft is below the 80-word production target.\nContinue writing\nThe Hidden Bridge\n\nBy Audit Student\n\nFree Write · 0 vocabulary terms\n\nMira discovered a hidden bridge in the forest. She helped her friend cross the river and together they returned safely home.\n\nACHIEVEMENTS (0/10)\n✏️\nFirst Words\n📖\nStoryteller\n📚\nNovelist\n⭐\nVocab Star\n🎨\nIllustrator\n🖼️\nFull Gallery\n🎙️\nNarrator\n🎤\nVoice Actor\n🔄\nReviser\n🏆\nPublished Author\nExport Storybook\nMore output options\n\nDownload a finished story to read or print. Use an editable backup below to continue working on another device.\n\nStorybook and slideshow exports open in new tabs · print or save as PDF\n\nEditable backups and collaboration\nBack\nDone"
+    },
+    {
+      "name": "desktop-publish",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "regions": [
+        {
+          "label": "Publish phase",
+          "height": 556,
+          "scrollHeight": 1278
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Plan",
+          "disabled": false
+        },
+        {
+          "text": "Draft",
+          "disabled": false
+        },
+        {
+          "text": "Review",
+          "disabled": false
+        },
+        {
+          "text": "Design",
+          "disabled": false
+        },
+        {
+          "text": "Audio",
+          "disabled": false
+        },
+        {
+          "text": "Publish",
+          "disabled": false
+        },
+        {
+          "text": "RecommendedAdd vocabulary goals",
+          "disabled": false
+        },
+        {
+          "text": "Add vocabulary",
+          "disabled": false
+        },
+        {
+          "text": "Finish visual pass",
+          "disabled": false
+        },
+        {
+          "text": "Continue writing",
+          "disabled": false
+        },
+        {
+          "text": "Export Storybook",
+          "disabled": false
+        },
+        {
+          "text": "Slideshow",
+          "disabled": false
+        },
+        {
+          "text": "Export .storyforge",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Export Draft (.json)",
+          "disabled": false
+        },
+        {
+          "text": "Import Classmate's Draft",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Done",
+          "disabled": false
+        }
+      ],
+      "text": "Self-assessment submitted. You can now get AI feedback.\nStoryForge\n\nThe Hidden Bridge · Story · Publish · Saving\n\n✏️ Apprentice\n8 XP\nProject\nSaving\nSaving project\n☀️\nPlan\nDraft\nReview\nDesign\nAudio\nPublish\nBUILD CHECKLIST\n5/6 STEPS READY\nReady to export with 3 refinements available\nRECOMMENDED\nAdd vocabulary goals\nSTEP 6 OF 6 · STORY\nPreview and publish\n\nCheck the finished artifact, resolve required items, then choose an output.\n\nYour artifact is ready to publish.\nYour story is ready to export as a draft\n\nPreview the finished story and choose how to share or save it.\n\nArtifact: Story · Standard writing view\nExport preflight\n3 REFINEMENTS\n\nReady to export with 3 refinements available\n\nWords 21\nArt 0/1\nAudio 0/1\nReview Done\nAdd vocabulary goals\nChoose at least one vocabulary term for the draft.\nAdd vocabulary\nFinish the visual pass\n1 scene still need art.\nFinish visual pass\nDevelop the story draft\nThe current 21-word draft is below the 80-word production target.\nContinue writing\nThe Hidden Bridge\n\nBy Audit Student\n\nFree Write · 0 vocabulary terms\n\nMira discovered a hidden bridge in the forest. She helped her friend cross the river and together they returned safely home.\n\nACHIEVEMENTS (0/10)\n✏️\nFirst Words\n📖\nStoryteller\n📚\nNovelist\n⭐\nVocab Star\n🎨\nIllustrator\n🖼️\nFull Gallery\n🎙️\nNarrator\n🎤\nVoice Actor\n🔄\nReviser\n🏆\nPublished Author\nExport Storybook\nMore output options\n\nDownload a finished story to read or print. Use an editable backup below to continue working on another device.\n\nStorybook and slideshow exports open in new tabs · print or save as PDF\n\nEditable backups and collaboration\nBack\nPublish · Step 6 of 6\nDone"
+    },
+    {
+      "name": "desktop-review-skipped-no-ai",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "regions": [
+        {
+          "label": "Review phase",
+          "height": 556,
+          "scrollHeight": 556
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Plan",
+          "disabled": false
+        },
+        {
+          "text": "Draft",
+          "disabled": false
+        },
+        {
+          "text": "Review",
+          "disabled": false
+        },
+        {
+          "text": "Design",
+          "disabled": false
+        },
+        {
+          "text": "Audio",
+          "disabled": false
+        },
+        {
+          "text": "Publish",
+          "disabled": false
+        },
+        {
+          "text": "RecommendedAdd vocabulary goals",
+          "disabled": false
+        },
+        {
+          "text": "More review tools",
+          "disabled": false
+        },
+        {
+          "text": "Get Feedback",
+          "disabled": true
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Design",
+          "disabled": false
+        }
+      ],
+      "text": "Self-assessment submitted. You can now get AI feedback.\nStoryForge\n\nThe Hidden Bridge · Story · Review · Saving\n\n✏️ Apprentice\n16 XP\nProject\nSaving\nSaving project\n☀️\nPlan\nDraft\nReview\nDesign\nAudio\nPublish\nBUILD CHECKLIST\n5/6 STEPS READY\nReady to export with 3 refinements available\nRECOMMENDED\nAdd vocabulary goals\nSTEP 3 OF 6 · STORY\nReview and improve the draft\n\nUse a self-check or feedback pass, then revise anything that is unclear.\n\nReview complete: your draft is ready to design.\nReview & Feedback\n\nDraft #1 · Reflect, get feedback, and revise before visual design\n\nMore review tools\nGet Feedback\n\nAI tools are unavailable. You can keep writing and use the self-check.\n\nWRITING ANALYTICS\nBack\nReview · Step 3 of 6\nContinue to Design"
+    },
+    {
+      "name": "desktop-plan-preview",
+      "viewport": {
+        "w": 1280,
+        "h": 900
+      },
+      "regions": [
+        {
+          "label": "Draft phase",
+          "height": 556,
+          "scrollHeight": 866
+        }
+      ],
+      "buttons": [
+        {
+          "text": "Save project now",
+          "disabled": true
+        },
+        {
+          "text": "Export backup",
+          "disabled": false
+        },
+        {
+          "text": "Import project",
+          "disabled": false
+        },
+        {
+          "text": "Save checkpoint",
+          "disabled": true
+        },
+        {
+          "text": "Saving",
+          "disabled": true
+        },
+        {
+          "text": "☀️",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Plan",
+          "disabled": false
+        },
+        {
+          "text": "Draft",
+          "disabled": false
+        },
+        {
+          "text": "Review",
+          "disabled": false
+        },
+        {
+          "text": "Design",
+          "disabled": true
+        },
+        {
+          "text": "Audio",
+          "disabled": true
+        },
+        {
+          "text": "Publish",
+          "disabled": true
+        },
+        {
+          "text": "RequiredReview the draft",
+          "disabled": false
+        },
+        {
+          "text": "Generate Scene Plan",
+          "disabled": false
+        },
+        {
+          "text": "Focus on writing",
+          "disabled": false
+        },
+        {
+          "text": "More tools",
+          "disabled": false
+        },
+        {
+          "text": "Apply plan",
+          "disabled": false
+        },
+        {
+          "text": "Keep current plan",
+          "disabled": false
+        },
+        {
+          "text": "▲",
+          "disabled": true
+        },
+        {
+          "text": "▼",
+          "disabled": false
+        },
+        {
+          "text": "Dictate",
+          "disabled": false
+        },
+        {
+          "text": "Help Me",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "▲",
+          "disabled": false
+        },
+        {
+          "text": "▼",
+          "disabled": true
+        },
+        {
+          "text": "Dictate",
+          "disabled": false
+        },
+        {
+          "text": "Help Me",
+          "disabled": false
+        },
+        {
+          "text": "",
+          "disabled": false
+        },
+        {
+          "text": "Add Scene",
+          "disabled": false
+        },
+        {
+          "text": "Back",
+          "disabled": false
+        },
+        {
+          "text": "Continue to Review",
+          "disabled": false
+        }
+      ],
+      "text": "Plan suggestions are ready to preview. Your writing has not changed.\nStoryForge\n\nThe Hidden Bridge · Story · Draft · Saving\n\n✏️ Apprentice\n16 XP\nProject\nSaving\nSaving project\n☀️\nPlan\nDraft\nReview\nDesign\nAudio\nPublish\nBUILD CHECKLIST\n3/6 STEPS READY\n1 production blocker to resolve\nREQUIRED\nReview the draft\nSTEP 2 OF 6 · STORY\nDraft the story\n\nBuild the story one scene at a time. Focus on the ideas before visual polish.\n\n2 scenes ready to review.\nDraft your story\n\nBuild one clear scene at a time\n\nGenerate Scene Plan\nFocus on writing\nMore tools\nPreview plan suggestions\n\nApplying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.\n\nA new opening...\nApply plan\nKeep current plan\nVOCABULARY GOALS · CLICK TO COPY\n0/0 used\nScene 1\n▲\n▼\nDictate\nHelp Me\n20 words\n·\n2 sentences\n·\n0 vocab terms\nScene 2\n▲\n▼\nDictate\nHelp Me\n10 words\n·\n1 sentences\n·\n0 vocab terms\nAdd Scene\nBack\nDraft · Step 2 of 6\nContinue to Review"
+    }
+  ],
+  "textareas": [
+    {
+      "id": "sf-paragraph-text-p-0",
+      "label": "Scene 1 text",
+      "placeholder": "Write this scene here..."
+    }
+  ],
+  "errors": []
+}

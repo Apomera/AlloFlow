@@ -376,3 +376,12 @@ A new quote defaults to seven days from now in local time. Reopening a saved quo
 - The guardian digest and repository-level district aggregate are implemented. They do not replace consent/records policy, a district data warehouse, or disclosure review for small groups.
 
 The architectural rationale and roadmap are in [School Rewards + Print Lab design](../../docs/school_rewards_print_lab_design.md).
+
+
+## September 7 store and Print Lab hardening
+
+Deploy matching updated Code.gs and Portal.html, then refresh existing portal tabs. Quote confirmation now includes a fingerprint of the terms shown to the student; missing or changed terms stop confirmation and require a new review. It remains protected by server-side student identity checks.
+
+Authorized staff can use **Download model for review** in the private asset queue. The server verifies stored file size, SHA-256 and model association before downloading or approving it. Drive IDs are not returned. Private storage checks now fail closed when sharing cannot be secured or verified, including explicitly shared folders; the deployment owner must review those permissions before retrying.
+
+Use [the complete local presenter guide](../../docs/school_store_admin_walkthrough.md) for the fictional-data demonstration and live school acceptance checks. The [review report](../../docs/school_store_security_review_2026-09-07.md) records the scope and verification evidence.

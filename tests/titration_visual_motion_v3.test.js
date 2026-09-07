@@ -297,3 +297,21 @@ describe('equipment disclosure target and focus relationship', () => {
     );
   });
 });
+
+describe('notebook persistence during addition feedback', () => {
+  it('does not erase a saved reading when a pending animation timer completes', async () => {
+    vi.useFakeTimers();
+    try {
+      const host = await mountTwoLabInstances();
+      const labs = [...host.querySelectorAll('[data-test-mounted-lab]')];
+      await React.act(async () => labs[0].querySelector('button[aria-label="Add 5 milliliters of titrant"]').click());
+      const save = [...labs[0].querySelectorAll('.titr-notebook button')].find(button => button.textContent === 'Save reading');
+      await React.act(async () => save.click());
+      expect(labs[0].querySelectorAll('.titr-notebook li')).toHaveLength(1);
+      await React.act(async () => { vi.advanceTimersByTime(900); });
+      expect(labs[0].querySelectorAll('.titr-notebook li')).toHaveLength(1);
+      expect(labs[0].querySelector('.titr-notebook li').textContent).toContain('5.0 mL');
+      expect(labs[1].querySelectorAll('.titr-notebook li')).toHaveLength(0);
+    } finally { vi.useRealTimers(); }
+  });
+});

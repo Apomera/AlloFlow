@@ -85,7 +85,7 @@ describe('UDL Chat-owned helpers', () => {
     expect(messages.at(-1)).toMatchObject({ role: 'model', isActionable: true });
   });
 
-  it('contains chat-generation failures without adding a false response', async () => {
+  it('keeps a failed question visible with a safe retry', async () => {
     let messages = [];
     const warnLog = vi.fn();
 
@@ -101,8 +101,8 @@ describe('UDL Chat-owned helpers', () => {
       callGemini: vi.fn(async () => { throw new Error('throttled'); }),
       setUdlMessages: update => { messages = typeof update === 'function' ? update(messages) : update; },
       warnLog,
-    })).resolves.toBeUndefined();
-    expect(messages).toEqual([]);
+    })).resolves.toEqual({ ok: false });
+    expect(messages).toEqual([expect.objectContaining({ role: 'model', type: 'chat-error', retryText: 'Help' })]);
     expect(warnLog).toHaveBeenCalledWith('Unhandled error in generateStandardChatResponse:', expect.any(Error));
   });
 });

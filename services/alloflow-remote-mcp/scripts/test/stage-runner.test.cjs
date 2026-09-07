@@ -39,7 +39,23 @@ test('runner context check traverses nested files and performs no writes', () =>
 
   const checked = run('--check');
   assert.equal(checked.status, 0, checked.stderr || checked.stdout);
-  assert.match(checked.stdout, /Verified 21 staged runner dependencies/u);
+  const stagedManifest = JSON.parse(manifestBefore.toString('utf8'));
+  assert.match(checked.stdout, new RegExp('Verified ' + stagedManifest.files.length + ' staged runner dependencies', 'u'));
+  // Requiring the staged driver exercises all of its eager local imports.
+  const stagedDriver = require(nestedDependency);
+  for (const relative of [...stagedDriver.MODULE_FILES, 'desktop/mcp/remediation_narration_plan.cjs', 'desktop/mcp/zip_writer.cjs']) {
+    assert.deepEqual(fs.readFileSync(path.join(contextRoot, relative)), fs.readFileSync(path.join(repoRoot, relative)),
+      'missing or stale required driver dependency: ' + relative);
+    assert.ok(stagedManifest.files.some(entry => entry.path === relative), 'missing dependency manifest entry: ' + relative);
+  }
+  const policyRelative = 'desktop/mcp/remediation_verification.cjs';
+  const policyBytes = fs.readFileSync(path.join(contextRoot, policyRelative));
+  const policySource = fs.readFileSync(path.join(repoRoot, policyRelative));
+  assert.deepEqual(policyBytes, policySource, 'runner must package the current shared verification policy');
+  assert.deepEqual(stagedManifest.files.find(entry => entry.path === policyRelative), {
+    path: policyRelative, bytes: policyBytes.length,
+    sha256: crypto.createHash('sha256').update(policyBytes).digest('hex'),
+  });
   assert.ok(fs.existsSync(path.join(
     contextRoot,
     'desktop', 'mcp', 'vendor', 'pdf-lib.min.js',
@@ -58,7 +74,6 @@ test('runner context check traverses nested files and performs no writes', () =>
   assert.equal(noticeBytes.includes(0x0d), false, 'staged vendor notice must contain canonical LF bytes');
   assert.equal(noticeBytes.length, noticeContract.bytes);
   assert.equal(crypto.createHash('sha256').update(noticeBytes).digest('hex'), noticeContract.sha256);
-  const stagedManifest = JSON.parse(manifestBefore.toString('utf8'));
   const stagedNoticeRecord = stagedManifest.files.find((entry) => entry.path === 'desktop/mcp/vendor/THIRD_PARTY_NOTICES.md');
   assert.deepEqual(stagedNoticeRecord, {
     path: 'desktop/mcp/vendor/THIRD_PARTY_NOTICES.md',

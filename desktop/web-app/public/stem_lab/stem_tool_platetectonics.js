@@ -3630,6 +3630,31 @@ var d = labToolData.plateTectonics || {};
           // ═══════════════════════════════════════════════════════════
           // PLATE ENCYCLOPEDIA - 100 plates (major + minor + microplate)
           // ═══════════════════════════════════════════════════════════
+          // Scientists shown on the Biographies tab. A named table at render
+          // scope rather than a literal buried in the tab's IIFE: the intro
+          // needs its length to state a count, and a list only the map can
+          // see cannot be counted by anything else.
+          var GEOLOGIST_BIOS = [[__alloT('stem.platetectonics.nicolas_steno', "Nicolas Steno"),"1638-1686",__alloT('stem.platetectonics.geo_cont_danish_anatomist_and_bishop_proposed', "Danish anatomist and bishop. Proposed law of superposition (1669). Later beatified by Catholic Church (2002).")],[__alloT('stem.platetectonics.james_hutton', "James Hutton"),"1726-1797",__alloT('stem.platetectonics.geo_cont_scottish_farmer_physician_geologist_f', "Scottish farmer-physician-geologist. Father of modern geology. Founded uniformitarianism. Siccar Point unconformity his outdoor classroom.")],[__alloT('stem.platetectonics.mary_anning', "Mary Anning"),"1799-1847",__alloT('stem.platetectonics.geo_cont_british_fossil_hunter_lyme_regis_fou', "British fossil hunter, Lyme Regis. Found first ichthyosaur, plesiosaur, and pterosaur. Working class woman; excluded from learned societies despite immense contributions.")],[__alloT('stem.platetectonics.charles_lyell', "Charles Lyell"),"1797-1875",__alloT('stem.platetectonics.geo_cont_scottish_lawyer_turned_geologist_prin', "Scottish lawyer-turned-geologist. Principles of Geology was the standard text for decades. Mentor and friend to Darwin.")],[__alloT('stem.platetectonics.louis_agassiz', "Louis Agassiz"),"1807-1873",__alloT('stem.platetectonics.geo_cont_swiss_american_naturalist_proposed_ic', "Swiss-American naturalist. Proposed ice ages (1837). Founded Harvard Museum of Comparative Zoology. Later opposed Darwin evolution.")],[__alloT('stem.platetectonics.william_smith', "William Smith"),"1769-1839",__alloT('stem.platetectonics.geo_cont_british_canal_surveyor_produced_first', "British canal surveyor. Produced first geological map of a nation. Realized fossils correlated strata. Imprisoned for debt despite his contributions.")],[__alloT('stem.platetectonics.alfred_wegener', "Alfred Wegener"),"1880-1930",__alloT('stem.platetectonics.geo_cont_german_meteorologist_and_polar_explore', "German meteorologist and polar explorer. Proposed continental drift (1912). Died on Greenland ice cap before vindication.")],[__alloT('stem.platetectonics.arthur_holmes', "Arthur Holmes"),"1890-1965",__alloT('stem.platetectonics.geo_cont_british_geologist_pioneered_radiometr', "British geologist. Pioneered radiometric dating and mantle convection. First accurate age of Earth (1913).")],[__alloT('stem.platetectonics.marie_tharp', "Marie Tharp"),"1920-2006",__alloT('stem.platetectonics.geo_cont_american_oceanographer_with_bruce_hee', "American oceanographer. With Bruce Heezen, mapped the ocean floor and discovered mid-Atlantic rift. Long uncredited; recognized later in life.")],[__alloT('stem.platetectonics.harry_hess', "Harry Hess"),"1906-1969",__alloT('stem.platetectonics.geo_cont_princeton_geologist_and_navy_officer', "Princeton geologist and Navy officer. Proposed seafloor spreading (1962). Discovered Pacific guyots during WWII.")],[__alloT('stem.platetectonics.j_tuzo_wilson', "J. Tuzo Wilson"),"1908-1993",__alloT('stem.platetectonics.geo_cont_canadian_geophysicist_defined_transfo', "Canadian geophysicist. Defined transform faults (1965), Wilson Cycle, mantle plumes. Triple international acclaim.")],[__alloT('stem.platetectonics.inge_lehmann', "Inge Lehmann"),"1888-1993",__alloT('stem.platetectonics.geo_cont_danish_seismologist_discovered_earth', "Danish seismologist. Discovered Earth inner core (1936) from seismic waves. Active in research until age 99.")],[__alloT('stem.platetectonics.beno_gutenberg', "Beno Gutenberg"),"1889-1960",__alloT('stem.platetectonics.geo_cont_german_american_seismologist_mantle_c', "German-American seismologist. Mantle-core boundary (Gutenberg discontinuity). Co-author of magnitude scale with Charles Richter.")],[__alloT('stem.platetectonics.charles_richter', "Charles Richter"),"1900-1985",__alloT('stem.platetectonics.geo_cont_american_seismologist_created_magnitu', "American seismologist. Created magnitude scale (1935). Caltech.")],[__alloT('stem.platetectonics.hiroo_kanamori', "Hiroo Kanamori"),"1936-present",__alloT('stem.platetectonics.geo_cont_japanese_american_seismologist_caltec', "Japanese-American seismologist (Caltech). Introduced moment magnitude scale that supplanted Richter for large quakes.")],[__alloT('stem.platetectonics.lucy_jones', "Lucy Jones"),"1955-present",__alloT('stem.platetectonics.geo_cont_american_seismologist_usgs_southern_c', "American seismologist. USGS Southern California science advisor. Public science communicator and advocate for disaster preparedness.")],[__alloT('stem.platetectonics.susan_hough', "Susan Hough"),"1961-present",__alloT('stem.platetectonics.geo_cont_usgs_pasadena_seismologist_books_on_t', "USGS Pasadena seismologist. Books on the history and sociology of earthquakes.")],[__alloT('stem.platetectonics.roger_bilham', "Roger Bilham"),"1949-present",__alloT('stem.platetectonics.geo_cont_university_of_colorado_himalayan_seis', "University of Colorado. Himalayan seismic hazard expert. Often comments on India earthquake risk.")],[__alloT('stem.platetectonics.brian_atwater', "Brian Atwater"),"1951-present",__alloT('stem.platetectonics.geo_cont_usgs_paleoseismologist_confirmed_1700', "USGS paleoseismologist. Confirmed 1700 Cascadia earthquake by combining ghost-forest dating and Japanese tsunami records.")],[__alloT('stem.platetectonics.kelin_wang', "Kelin Wang"),"1956-present",__alloT('stem.platetectonics.geo_cont_geological_survey_of_canada_cascadia', "Geological Survey of Canada. Cascadia and Japan subduction modeler. Slow-slip theorist.")],[__alloT('stem.platetectonics.robin_lacassin', "Robin Lacassin"),"1955-present",__alloT('stem.platetectonics.geo_cont_french_geologist_active_tectonics_of', "French geologist. Active tectonics of Asia and Mediterranean.")],[__alloT('stem.platetectonics.walter_alvarez', "Walter Alvarez"),"1940-present",__alloT('stem.platetectonics.geo_cont_uc_berkeley_geologist_with_father_lui', "UC Berkeley geologist. With father Luis, found iridium spike at K-Pg = asteroid evidence (1980).")],[__alloT('stem.platetectonics.florence_bascom', "Florence Bascom"),"1862-1945",__alloT('stem.platetectonics.geo_cont_first_woman_to_earn_phd_in_geology_in', "First woman to earn PhD in geology in US (Johns Hopkins, 1893). USGS geologist. Trained generation of women geologists at Bryn Mawr.")],[__alloT('stem.platetectonics.ann_whittall_boutwell', "Ann Whittall Boutwell"),"1880-1948",__alloT('stem.platetectonics.geo_cont_usgs_field_geologist_surveyed_western', "USGS field geologist; surveyed Western US copper districts.")],[__alloT('stem.platetectonics.mary_lyell', "Mary Lyell"),"1808-1873",__alloT('stem.platetectonics.geo_cont_british_geologist_wife_and_research_p', "British geologist. Wife and research partner of Charles Lyell. Field notebooks and conchology contributions; long unattributed.")],[__alloT('stem.platetectonics.sue_hendrickson', "Sue Hendrickson"),"1949-present",__alloT('stem.platetectonics.geo_cont_american_fossil_collector_discovered', "American fossil collector. Discovered T. rex Sue, the most complete T. rex ever found, now at Field Museum Chicago.")],[__alloT('stem.platetectonics.robert_hazen', "Robert Hazen"),"1948-present",__alloT('stem.platetectonics.geo_cont_carnegie_institution_mineral_evolutio', "Carnegie Institution. Mineral evolution and origin of life chemistry. Coined mineral evolution: most minerals younger than life.")],[__alloT('stem.platetectonics.marjorie_sweeting', "Marjorie Sweeting"),"1920-1994",__alloT('stem.platetectonics.geo_cont_british_karst_geomorphologist_oxford', "British karst geomorphologist. Oxford geographer; queen of karst.")],[__alloT('stem.platetectonics.bertha_lewis', "Bertha Lewis"),"1900s",__alloT('stem.platetectonics.geo_cont_african_american_geologist_early_howa', "African American geologist; early Howard University faculty; broke barriers in segregated era.")],[__alloT('stem.platetectonics.mei_po_kwan', "Mei-Po Kwan"),"1962-present",__alloT('stem.platetectonics.geo_cont_asian_american_geographer_and_geomorph', "Asian-American geographer and geomorphologist. GIS leadership; bridges geo and social science.")],
+                      [__alloT('stem.platetectonics.john_tuzo_wilson', "John Tuzo Wilson"),"1908-1993",__alloT('stem.platetectonics.geo_cont_proposed_wilson_cycle_transform_faul', "Proposed Wilson Cycle + transform faults. Synthesized plate tectonics theory.") + ' (' + __alloT('stem.platetectonics.geo_coun_canada', "Canada") + ')'],
+                      [__alloT('stem.platetectonics.bruce_heezen', "Bruce Heezen"),"1924-1977",__alloT('stem.platetectonics.geo_cont_worked_with_tharp_mapped_ocean_floor', "Worked with Tharp. Mapped ocean floor topography.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.frederick_vine', "Frederick Vine"),"1939-2024",__alloT('stem.platetectonics.geo_cont_vine_matthews_morley_hypothesis_magn', "Vine-Matthews-Morley hypothesis. Magnetic stripes on seafloor.") + ' (' + "UK" + ')'],
+                      [__alloT('stem.platetectonics.drummond_matthews', "Drummond Matthews"),"1931-1997",__alloT('stem.platetectonics.geo_cont_co_discovered_magnetic_stripes_patte', "Co-discovered magnetic stripes pattern.") + ' (' + "UK" + ')'],
+                      [__alloT('stem.platetectonics.lawrence_morley', "Lawrence Morley"),"1920-2013",__alloT('stem.platetectonics.geo_cont_independent_co_discovery_of_magnetic', "Independent co-discovery of magnetic stripes.") + ' (' + __alloT('stem.platetectonics.geo_coun_canada', "Canada") + ')'],
+                      [__alloT('stem.platetectonics.eduard_suess', "Eduard Suess"),"1831-1914",__alloT('stem.platetectonics.geo_cont_coined_gondwana_tethys_early_contine', "Coined Gondwana + Tethys. Early continental drift advocate.") + ' (' + __alloT('stem.platetectonics.geo_coun_austria', "Austria") + ')'],
+                      [__alloT('stem.platetectonics.harry_reid', "Harry Reid"),"1859-1944",__alloT('stem.platetectonics.geo_cont_elastic_rebound_theory_of_earthquake', "Elastic rebound theory of earthquakes.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.andrija_mohorovi_i', "Andrija Mohorovičić"),"1857-1936",__alloT('stem.platetectonics.geo_cont_discovered_crust_mantle_boundary_moh', "Discovered crust-mantle boundary (Moho).") + ' (' + __alloT('stem.platetectonics.geo_coun_croatia', "Croatia") + ')'],
+                      [__alloT('stem.platetectonics.emil_wiechert', "Emil Wiechert"),"1861-1928",__alloT('stem.platetectonics.geo_cont_earth_core_hypothesis_1897', "Earth core hypothesis (1897).") + ' (' + __alloT('stem.platetectonics.geo_coun_germany', "Germany") + ')'],
+                      [__alloT('stem.platetectonics.richard_oldham', "Richard Oldham"),"1858-1936",__alloT('stem.platetectonics.geo_cont_confirmed_earth_s_core_via_seismolog', "Confirmed Earth's core via seismology.") + ' (' + "UK" + ')'],
+                      [__alloT('stem.platetectonics.joaqu_n_camu_as', "Joaquín Camuñas"),"1858-1939",__alloT('stem.platetectonics.geo_cont_mountain_building_theories', "Mountain building theories.") + ' (' + __alloT('stem.platetectonics.geo_coun_spain', "Spain") + ')'],
+                      [__alloT('stem.platetectonics.lord_kelvin', "Lord Kelvin"),"1824-1907",__alloT('stem.platetectonics.geo_cont_estimated_earth_s_age_initially_inco', "Estimated Earth's age (initially incorrect - too short).") + ' (' + "UK" + ')'],
+                      [__alloT('stem.platetectonics.ernest_rutherford', "Ernest Rutherford"),"1871-1937",__alloT('stem.platetectonics.geo_cont_showed_radioactivity_dates_earth_as', "Showed radioactivity dates Earth as billions of years old.") + ' (' + "NZ/UK" + ')'],
+                      [__alloT('stem.platetectonics.clair_patterson', "Clair Patterson"),"1922-1995",__alloT('stem.platetectonics.geo_cont_determined_earth_s_age_precisely_lea', "Determined Earth's age precisely. Lead pollution research.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.charles_darwin', "Charles Darwin"),"1809-1882",__alloT('stem.platetectonics.geo_cont_coral_atoll_subsidence_beagle_voyage', "Coral atoll subsidence. Beagle voyage geological observations.") + ' (' + "UK" + ')'],
+                      [__alloT('stem.platetectonics.charles_doolittle_walcott', "Charles Doolittle Walcott"),"1850-1927",__alloT('stem.platetectonics.geo_cont_burgess_shale_fossils', "Burgess Shale fossils.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.suzanne_mahlburg_kay', "Suzanne Mahlburg Kay"),"1942-",__alloT('stem.platetectonics.geo_cont_andes_geology', "Andes geology.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.marcia_mcnutt', "Marcia McNutt"),"1952-",__alloT('stem.platetectonics.geo_cont_director_of_us_geological_survey_mar', "Director of US Geological Survey. Marine geophysics.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')'],
+                      [__alloT('stem.platetectonics.robert_berner', "Robert Berner"),"1935-2015",__alloT('stem.platetectonics.geo_cont_global_carbon_cycle', "Global carbon cycle.") + ' (' + __alloT('stem.platetectonics.geo_coun_usa', "USA") + ')']
+                    ];
           var PLATE_DB = [
             {
               id: 1,
@@ -4557,46 +4582,46 @@ var d = labToolData.plateTectonics || {};
               id: 1,
               name: __alloT('stem.platetectonics.divergent', "Divergent"),
               description: __alloT('stem.platetectonics.plates_pull_apart', "Plates pull apart"),
-              process: "Magma rises + new crust forms",
-              features: "Mid-ocean ridges (Mid-Atlantic Ridge); East African Rift",
+              process: __alloT('stem.platetectonics.bd_proc_magma_rises_new_crust_forms', "Magma rises + new crust forms"),
+              features: __alloT('stem.platetectonics.bd_feat_mid_ocean_ridges_mid_atlantic_ridge', "Mid-ocean ridges (Mid-Atlantic Ridge); East African Rift"),
               examples: "Iceland, Mid-Atlantic Ridge, East African Rift",
-              hazards: "Shallow earthquakes; ridge volcanism; new oceanic crust; rift valleys"
+              hazards: __alloT('stem.platetectonics.bd_haza_shallow_earthquakes_ridge_volcanism', "Shallow earthquakes; ridge volcanism; new oceanic crust; rift valleys")
             },
             {
               id: 2,
               name: __alloT('stem.platetectonics.convergent_oceanic_oceanic', "Convergent (oceanic-oceanic)"),
               description: __alloT('stem.platetectonics.two_oceanic_plates_collide', "Two oceanic plates collide"),
-              process: "Denser plate subducts under younger",
-              features: "Volcanic island arcs + ocean trenches",
+              process: __alloT('stem.platetectonics.bd_proc_denser_plate_subducts_under_younger', "Denser plate subducts under younger"),
+              features: __alloT('stem.platetectonics.bd_feat_volcanic_island_arcs_ocean_trenches', "Volcanic island arcs + ocean trenches"),
               examples: "Mariana Trench + arc, Tonga, Japan, Aleutians, Caribbean",
-              hazards: "Deep earthquakes (Wadati-Benioff zone); explosive volcanism; deep trenches"
+              hazards: __alloT('stem.platetectonics.bd_haza_deep_earthquakes_wadati_benioff_zone', "Deep earthquakes (Wadati-Benioff zone); explosive volcanism; deep trenches")
             },
             {
               id: 3,
               name: __alloT('stem.platetectonics.convergent_oceanic_continental', "Convergent (oceanic-continental)"),
               description: __alloT('stem.platetectonics.oceanic_plate_meets_continental', "Oceanic plate meets continental"),
-              process: "Oceanic subducts under continental",
-              features: "Coastal mountain ranges + volcanic arcs + trenches",
+              process: __alloT('stem.platetectonics.bd_proc_oceanic_subducts_under_continental', "Oceanic subducts under continental"),
+              features: __alloT('stem.platetectonics.bd_feat_coastal_mountain_ranges_volcanic_arc', "Coastal mountain ranges + volcanic arcs + trenches"),
               examples: "Andes (Nazca under S. America); Cascades (Juan de Fuca under N. America)",
-              hazards: "Mountain building, andesite volcanoes, megathrust earthquakes"
+              hazards: __alloT('stem.platetectonics.bd_haza_mountain_building_andesite_volcanoes', "Mountain building, andesite volcanoes, megathrust earthquakes")
             },
             {
               id: 4,
               name: __alloT('stem.platetectonics.convergent_continental_continental', "Convergent (continental-continental)"),
               description: __alloT('stem.platetectonics.two_continents_collide', "Two continents collide"),
-              process: "Neither subducts - crumple + thicken",
-              features: "Mountain belts + plateaus",
+              process: __alloT('stem.platetectonics.bd_proc_neither_subducts_crumple_thicken', "Neither subducts - crumple + thicken"),
+              features: __alloT('stem.platetectonics.bd_feat_mountain_belts_plateaus', "Mountain belts + plateaus"),
               examples: "Himalayas (Indian + Eurasian); Alps (African + Eurasian); Zagros (Arabian + Eurasian)",
-              hazards: "Thickened crust, intermediate-depth earthquakes, no volcanism (mostly)"
+              hazards: __alloT('stem.platetectonics.bd_haza_thickened_crust_intermediate_depth_ea', "Thickened crust, intermediate-depth earthquakes, no volcanism (mostly)")
             },
             {
               id: 5,
               name: __alloT('stem.platetectonics.transform', "Transform"),
               description: __alloT('stem.platetectonics.plates_slide_past', "Plates slide past"),
-              process: "No crust created or destroyed",
-              features: "Strike-slip faults",
+              process: __alloT('stem.platetectonics.bd_proc_no_crust_created_or_destroyed', "No crust created or destroyed"),
+              features: __alloT('stem.platetectonics.bd_feat_strike_slip_faults', "Strike-slip faults"),
               examples: "San Andreas Fault (CA); North Anatolian Fault (Turkey); Alpine Fault (NZ)",
-              hazards: "Shallow strike-slip earthquakes; no volcanism; lateral displacement"
+              hazards: __alloT('stem.platetectonics.bd_haza_shallow_strike_slip_earthquakes_no_vo', "Shallow strike-slip earthquakes; no volcanism; lateral displacement")
             }
           ];
 
@@ -4620,7 +4645,7 @@ var d = labToolData.plateTectonics || {};
             },
             {
               id: 3,
-              name: "Sumatra-Andaman",
+              name: __alloT('stem.platetectonics.quake_sumatra_andaman', "Sumatra-Andaman"),
               year: 2004,
               magnitude: "9.1",
               location: "Indian Ocean",
@@ -4652,7 +4677,7 @@ var d = labToolData.plateTectonics || {};
             },
             {
               id: 7,
-              name: "Ecuador-Colombia",
+              name: __alloT('stem.platetectonics.quake_ecuador_colombia', "Ecuador-Colombia"),
               year: 1906,
               magnitude: "8.8",
               location: "Off Pacific coast",
@@ -4684,7 +4709,7 @@ var d = labToolData.plateTectonics || {};
             },
             {
               id: 11,
-              name: "Assam-Tibet",
+              name: __alloT('stem.platetectonics.quake_assam_tibet', "Assam-Tibet"),
               year: 1950,
               magnitude: "8.6",
               location: "India-China border",
@@ -4876,7 +4901,7 @@ var d = labToolData.plateTectonics || {};
             },
             {
               id: 35,
-              name: "Turkey-Syria",
+              name: __alloT('stem.platetectonics.quake_turkey_syria', "Turkey-Syria"),
               year: 2023,
               magnitude: "7.8",
               location: "Gaziantep, Turkey",
@@ -6111,219 +6136,6 @@ var d = labToolData.plateTectonics || {};
             }
           ];
 
-          // FAMOUS GEOLOGISTS
-          var GEOLOGISTS = [
-            {
-              id: 1,
-              name: __alloT('stem.platetectonics.alfred_wegener', "Alfred Wegener"),
-              years: "1880-1930",
-              country: __alloT('stem.platetectonics.geo_coun_germany', "Germany"),
-              contribution: __alloT('stem.platetectonics.geo_cont_proposed_continental_drift_1912_ridi', "Proposed continental drift (1912). Ridiculed in his time. Vindicated 50 years later.")
-            },
-            {
-              id: 2,
-              name: __alloT('stem.platetectonics.harry_hess', "Harry Hess"),
-              years: "1906-1969",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_developed_seafloor_spreading_theory', "Developed seafloor spreading theory (1962). Helped establish plate tectonics.")
-            },
-            {
-              id: 3,
-              name: __alloT('stem.platetectonics.john_tuzo_wilson', "John Tuzo Wilson"),
-              years: "1908-1993",
-              country: __alloT('stem.platetectonics.geo_coun_canada', "Canada"),
-              contribution: __alloT('stem.platetectonics.geo_cont_proposed_wilson_cycle_transform_faul', "Proposed Wilson Cycle + transform faults. Synthesized plate tectonics theory.")
-            },
-            {
-              id: 4,
-              name: __alloT('stem.platetectonics.marie_tharp', "Marie Tharp"),
-              years: "1920-2006",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_mapped_mid_atlantic_ridge_discovered', "Mapped Mid-Atlantic Ridge. Discovered rift valley confirming seafloor spreading.")
-            },
-            {
-              id: 5,
-              name: __alloT('stem.platetectonics.bruce_heezen', "Bruce Heezen"),
-              years: "1924-1977",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_worked_with_tharp_mapped_ocean_floor', "Worked with Tharp. Mapped ocean floor topography.")
-            },
-            {
-              id: 6,
-              name: __alloT('stem.platetectonics.frederick_vine', "Frederick Vine"),
-              years: "1939-2024",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_vine_matthews_morley_hypothesis_magn', "Vine-Matthews-Morley hypothesis. Magnetic stripes on seafloor.")
-            },
-            {
-              id: 7,
-              name: __alloT('stem.platetectonics.drummond_matthews', "Drummond Matthews"),
-              years: "1931-1997",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_co_discovered_magnetic_stripes_patte', "Co-discovered magnetic stripes pattern.")
-            },
-            {
-              id: 8,
-              name: __alloT('stem.platetectonics.lawrence_morley', "Lawrence Morley"),
-              years: "1920-2013",
-              country: __alloT('stem.platetectonics.geo_coun_canada', "Canada"),
-              contribution: __alloT('stem.platetectonics.geo_cont_independent_co_discovery_of_magnetic', "Independent co-discovery of magnetic stripes.")
-            },
-            {
-              id: 9,
-              name: __alloT('stem.platetectonics.james_hutton', "James Hutton"),
-              years: "1726-1797",
-              country: __alloT('stem.platetectonics.geo_coun_scotland', "Scotland"),
-              contribution: __alloT('stem.platetectonics.geo_cont_father_of_modern_geology_deep_time_c', "Father of modern geology. Deep time concept. Uniformitarianism.")
-            },
-            {
-              id: 10,
-              name: __alloT('stem.platetectonics.charles_lyell', "Charles Lyell"),
-              years: "1797-1875",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_principles_of_geology_1830_influence', "Principles of Geology (1830). Influenced Darwin.")
-            },
-            {
-              id: 11,
-              name: __alloT('stem.platetectonics.eduard_suess', "Eduard Suess"),
-              years: "1831-1914",
-              country: __alloT('stem.platetectonics.geo_coun_austria', "Austria"),
-              contribution: __alloT('stem.platetectonics.geo_cont_coined_gondwana_tethys_early_contine', "Coined Gondwana + Tethys. Early continental drift advocate.")
-            },
-            {
-              id: 12,
-              name: __alloT('stem.platetectonics.charles_richter', "Charles Richter"),
-              years: "1900-1985",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_developed_richter_magnitude_scale_19', "Developed Richter magnitude scale (1935).")
-            },
-            {
-              id: 13,
-              name: __alloT('stem.platetectonics.beno_gutenberg', "Beno Gutenberg"),
-              years: "1889-1960",
-              country: __alloT('stem.platetectonics.geo_coun_germany_usa', "Germany/USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_internal_earth_structure_co_develope', "Internal Earth structure. Co-developed Richter scale.")
-            },
-            {
-              id: 14,
-              name: __alloT('stem.platetectonics.inge_lehmann', "Inge Lehmann"),
-              years: "1888-1993",
-              country: __alloT('stem.platetectonics.geo_coun_denmark', "Denmark"),
-              contribution: __alloT('stem.platetectonics.geo_cont_discovered_earth_has_solid_inner_cor', "Discovered Earth has solid inner core (1936).")
-            },
-            {
-              id: 15,
-              name: __alloT('stem.platetectonics.harry_reid', "Harry Reid"),
-              years: "1859-1944",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_elastic_rebound_theory_of_earthquake', "Elastic rebound theory of earthquakes.")
-            },
-            {
-              id: 16,
-              name: __alloT('stem.platetectonics.andrija_mohorovi_i', "Andrija Mohorovičić"),
-              years: "1857-1936",
-              country: __alloT('stem.platetectonics.geo_coun_croatia', "Croatia"),
-              contribution: __alloT('stem.platetectonics.geo_cont_discovered_crust_mantle_boundary_moh', "Discovered crust-mantle boundary (Moho).")
-            },
-            {
-              id: 17,
-              name: __alloT('stem.platetectonics.emil_wiechert', "Emil Wiechert"),
-              years: "1861-1928",
-              country: __alloT('stem.platetectonics.geo_coun_germany', "Germany"),
-              contribution: __alloT('stem.platetectonics.geo_cont_earth_core_hypothesis_1897', "Earth core hypothesis (1897).")
-            },
-            {
-              id: 18,
-              name: __alloT('stem.platetectonics.richard_oldham', "Richard Oldham"),
-              years: "1858-1936",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_confirmed_earth_s_core_via_seismolog', "Confirmed Earth's core via seismology.")
-            },
-            {
-              id: 19,
-              name: __alloT('stem.platetectonics.joaqu_n_camu_as', "Joaquín Camuñas"),
-              years: "1858-1939",
-              country: __alloT('stem.platetectonics.geo_coun_spain', "Spain"),
-              contribution: __alloT('stem.platetectonics.geo_cont_mountain_building_theories', "Mountain building theories.")
-            },
-            {
-              id: 20,
-              name: __alloT('stem.platetectonics.lord_kelvin', "Lord Kelvin"),
-              years: "1824-1907",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_estimated_earth_s_age_initially_inco', "Estimated Earth's age (initially incorrect - too short).")
-            },
-            {
-              id: 21,
-              name: __alloT('stem.platetectonics.ernest_rutherford', "Ernest Rutherford"),
-              years: "1871-1937",
-              country: "NZ/UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_showed_radioactivity_dates_earth_as', "Showed radioactivity dates Earth as billions of years old.")
-            },
-            {
-              id: 22,
-              name: __alloT('stem.platetectonics.arthur_holmes', "Arthur Holmes"),
-              years: "1890-1965",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_first_accurate_radiometric_dating_of', "First accurate radiometric dating of Earth (~4.5 billion years).")
-            },
-            {
-              id: 23,
-              name: __alloT('stem.platetectonics.clair_patterson', "Clair Patterson"),
-              years: "1922-1995",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_determined_earth_s_age_precisely_lea', "Determined Earth's age precisely. Lead pollution research.")
-            },
-            {
-              id: 24,
-              name: __alloT('stem.platetectonics.william_smith', "William Smith"),
-              years: "1769-1839",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_first_geological_map_of_britain_prin', "First geological map of Britain. Principle of faunal succession.")
-            },
-            {
-              id: 25,
-              name: __alloT('stem.platetectonics.charles_darwin', "Charles Darwin"),
-              years: "1809-1882",
-              country: "UK",
-              contribution: __alloT('stem.platetectonics.geo_cont_coral_atoll_subsidence_beagle_voyage', "Coral atoll subsidence. Beagle voyage geological observations.")
-            },
-            {
-              id: 26,
-              name: __alloT('stem.platetectonics.louis_agassiz', "Louis Agassiz"),
-              years: "1807-1873",
-              country: __alloT('stem.platetectonics.geo_coun_switzerland_usa', "Switzerland/USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_ice_age_theory_glacial_geology', "Ice age theory. Glacial geology.")
-            },
-            {
-              id: 27,
-              name: __alloT('stem.platetectonics.charles_doolittle_walcott', "Charles Doolittle Walcott"),
-              years: "1850-1927",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_burgess_shale_fossils', "Burgess Shale fossils.")
-            },
-            {
-              id: 28,
-              name: __alloT('stem.platetectonics.suzanne_mahlburg_kay', "Suzanne Mahlburg Kay"),
-              years: "1942-",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_andes_geology', "Andes geology.")
-            },
-            {
-              id: 29,
-              name: __alloT('stem.platetectonics.marcia_mcnutt', "Marcia McNutt"),
-              years: "1952-",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_director_of_us_geological_survey_mar', "Director of US Geological Survey. Marine geophysics.")
-            },
-            {
-              id: 30,
-              name: __alloT('stem.platetectonics.robert_berner', "Robert Berner"),
-              years: "1935-2015",
-              country: __alloT('stem.platetectonics.geo_coun_usa', "USA"),
-              contribution: __alloT('stem.platetectonics.geo_cont_global_carbon_cycle', "Global carbon cycle.")
-            }
-          ];
 
           // GEOLOGY GLOSSARY
           var GEO_GLOSSARY = [
@@ -6502,248 +6314,6 @@ var d = labToolData.plateTectonics || {};
             ];
 
           // LESSON PLANS - 30 classroom activities
-          var GEO_LESSONS = [
-            {
-              id: 1,
-              title: __alloT('stem.platetectonics.pangaea_puzzle', "Pangaea Puzzle"),
-              grade: "K-2",
-              materials: "Continent cut-outs",
-              duration: "30 min",
-              concept: "Reassemble continents to form Pangaea"
-            },
-            {
-              id: 2,
-              title: __alloT('stem.platetectonics.convection_demo', "Convection Demo"),
-              grade: "3-5",
-              materials: "Hot/cold water + food coloring",
-              duration: "20 min",
-              concept: "Observe convection currents in liquid"
-            },
-            {
-              id: 3,
-              title: __alloT('stem.platetectonics.paper_plate_plates', "Paper Plate Plates"),
-              grade: "3-5",
-              materials: "Paper plates + rope",
-              duration: "30 min",
-              concept: "Model plate boundary motions"
-            },
-            {
-              id: 4,
-              title: __alloT('stem.platetectonics.build_a_volcano', "Build a Volcano"),
-              grade: "3-5",
-              materials: "Baking soda + vinegar + clay",
-              duration: "60 min",
-              concept: "Eruption simulation"
-            },
-            {
-              id: 5,
-              title: __alloT('stem.platetectonics.cookie_tectonics', "Cookie Tectonics"),
-              grade: "3-5",
-              materials: "Different cookies + frosting",
-              duration: "30 min",
-              concept: "Boundary types via food"
-            },
-            {
-              id: 6,
-              title: __alloT('stem.platetectonics.crack_up_earth', "Crack-Up Earth"),
-              grade: "3-5",
-              materials: "Eggshell + boiled egg",
-              duration: "20 min",
-              concept: "Plate analogue"
-            },
-            {
-              id: 7,
-              title: __alloT('stem.platetectonics.seismic_wave_slinky', "Seismic Wave Slinky"),
-              grade: "3-5",
-              materials: "Slinky + table",
-              duration: "30 min",
-              concept: "Demonstrate P and S waves"
-            },
-            {
-              id: 8,
-              title: __alloT('stem.platetectonics.earthquake_bingo', "Earthquake Bingo"),
-              grade: "K-2",
-              materials: "Bingo cards + facts",
-              duration: "20 min",
-              concept: "Vocabulary review"
-            },
-            {
-              id: 9,
-              title: __alloT('stem.platetectonics.mountain_building', "Mountain Building"),
-              grade: "3-5",
-              materials: "Different colored clay",
-              duration: "45 min",
-              concept: "Layer + compress to form folds"
-            },
-            {
-              id: 10,
-              title: __alloT('stem.platetectonics.sand_volcano', "Sand Volcano"),
-              grade: "K-2",
-              materials: "Sandbox + dye",
-              duration: "30 min",
-              concept: "Magma + lava observation"
-            },
-            {
-              id: 11,
-              title: __alloT('stem.platetectonics.plate_boundary_diagram', "Plate Boundary Diagram"),
-              grade: "6-8",
-              materials: "Worksheet + colored pencils",
-              duration: "45 min",
-              concept: "Map of 7 major plates + boundaries"
-            },
-            {
-              id: 12,
-              title: __alloT('stem.platetectonics.locating_an_earthquake', "Locating an Earthquake"),
-              grade: "6-8",
-              materials: "World map + 3 stations data",
-              duration: "60 min",
-              concept: "Triangulation method"
-            },
-            {
-              id: 13,
-              title: __alloT('stem.platetectonics.earthquake_damage_assessment', "Earthquake Damage Assessment"),
-              grade: "6-8",
-              materials: "Photos + Mercalli scale",
-              duration: "45 min",
-              concept: "Apply Mercalli intensity"
-            },
-            {
-              id: 14,
-              title: __alloT('stem.platetectonics.magnitude_vs_intensity', "Magnitude vs Intensity"),
-              grade: "6-8",
-              materials: "Worksheet + data",
-              duration: "30 min",
-              concept: "Distinguish two earthquake scales"
-            },
-            {
-              id: 15,
-              title: __alloT('stem.platetectonics.volcano_hazard_map', "Volcano Hazard Map"),
-              grade: "6-8",
-              materials: "Topographic map + vent location",
-              duration: "60 min",
-              concept: "Predict lahar/pyroclastic flow paths"
-            },
-            {
-              id: 16,
-              title: __alloT('stem.platetectonics.rock_cycle_diagram', "Rock Cycle Diagram"),
-              grade: "6-8",
-              materials: "Rock samples + cards",
-              duration: "45 min",
-              concept: "Identify igneous, sedimentary, metamorphic"
-            },
-            {
-              id: 17,
-              title: __alloT('stem.platetectonics.mineral_id_lab', "Mineral ID Lab"),
-              grade: "6-8",
-              materials: "Mineral kit + Mohs picks",
-              duration: "60 min",
-              concept: "Identify unknown minerals"
-            },
-            {
-              id: 18,
-              title: __alloT('stem.platetectonics.streak_plate_test', "Streak Plate Test"),
-              grade: "6-8",
-              materials: "Streak plates + minerals",
-              duration: "30 min",
-              concept: "Mineral identification skill"
-            },
-            {
-              id: 19,
-              title: __alloT('stem.platetectonics.crystal_growing', "Crystal Growing"),
-              grade: "3-5",
-              materials: "Salt + sugar + glass",
-              duration: "1 week",
-              concept: "Crystallization in lab"
-            },
-            {
-              id: 20,
-              title: __alloT('stem.platetectonics.pangaea_animation', "Pangaea Animation"),
-              grade: "6-8",
-              materials: "Stop-motion app + cut-outs",
-              duration: "90 min",
-              concept: "Create animated continental drift"
-            },
-            {
-              id: 21,
-              title: __alloT('stem.platetectonics.gis_earthquake_map', "GIS Earthquake Map"),
-              grade: "9-12",
-              materials: "USGS + GIS software",
-              duration: "90 min",
-              concept: "Map global earthquakes"
-            },
-            {
-              id: 22,
-              title: __alloT('stem.platetectonics.plate_motion_calculation', "Plate Motion Calculation"),
-              grade: "9-12",
-              materials: "GPS data + math",
-              duration: "60 min",
-              concept: "Calculate plate speed using GPS"
-            },
-            {
-              id: 23,
-              title: __alloT('stem.platetectonics.seismic_wave_travel_time', "Seismic Wave Travel Time"),
-              grade: "9-12",
-              materials: "Travel-time graph",
-              duration: "60 min",
-              concept: "Calculate epicenter distance"
-            },
-            {
-              id: 24,
-              title: __alloT('stem.platetectonics.tsunami_travel_modeling', "Tsunami Travel Modeling"),
-              grade: "9-12",
-              materials: "Map + speed equation",
-              duration: "90 min",
-              concept: "Predict tsunami arrival times"
-            },
-            {
-              id: 25,
-              title: __alloT('stem.platetectonics.volcanic_explosivity_index', "Volcanic Explosivity Index"),
-              grade: "9-12",
-              materials: "Historical eruptions + VEI",
-              duration: "60 min",
-              concept: "Calculate + classify VEI"
-            },
-            {
-              id: 26,
-              title: __alloT('stem.platetectonics.tectonic_speed_comparison', "Tectonic Speed Comparison"),
-              grade: "9-12",
-              materials: "GPS data + multiple plates",
-              duration: "90 min",
-              concept: "Rank plate speeds"
-            },
-            {
-              id: 27,
-              title: __alloT('stem.platetectonics.boundary_map_project', "Boundary Map Project"),
-              grade: "9-12",
-              materials: "Map + research",
-              duration: "Week",
-              concept: "Detailed boundary analysis"
-            },
-            {
-              id: 28,
-              title: __alloT('stem.platetectonics.magnitude_statistics', "Magnitude Statistics"),
-              grade: "9-12",
-              materials: "USGS data + spreadsheet",
-              duration: "90 min",
-              concept: "Earthquake frequency analysis"
-            },
-            {
-              id: 29,
-              title: __alloT('stem.platetectonics.wegener_s_evidence_report', "Wegener's Evidence Report"),
-              grade: "9-12",
-              materials: "Research + presentation",
-              duration: "2 weeks",
-              concept: "Evaluate continental drift evidence"
-            },
-            {
-              id: 30,
-              title: __alloT('stem.platetectonics.hotspot_trail_analysis', "Hotspot Trail Analysis"),
-              grade: "9-12",
-              materials: "Hawaii data + math",
-              duration: "90 min",
-              concept: "Calculate Pacific plate motion"
-            }
-          ];
 
 
         // ========== TSUNAMI HISTORY DB ==========
@@ -12262,6 +11832,34 @@ var d = labToolData.plateTectonics || {};
 
                 ),
 
+                React.createElement("div", { 'data-pt-boundary-detail': 'true' },
+
+                  React.createElement("h4", { className: "font-black mb-1 " + (isDark ? "text-red-300" : "text-red-800") }, __alloT('stem.platetectonics.boundary_types_in_detail', "Boundary Types in Detail")),
+
+                  React.createElement("p", { className: "text-xs mb-2 " + (isDark ? "text-slate-400" : "text-slate-600") }, __alloT('stem.platetectonics.the_table_above_names_the_motions_the', "The table above names the motions. These five say what each one builds, where you can go and see it, and what it hands the people who live there.")),
+
+                  React.createElement("ul", null, BOUNDARIES.map(function (bd) {
+
+                    return React.createElement("li", { key: bd.id, className: "py-2 border-b " + (isDark ? "border-slate-800" : "border-red-100") },
+
+                      React.createElement("div", { className: "font-bold " + (isDark ? "text-red-300" : "text-red-700") }, bd.name),
+
+                      React.createElement("div", { className: "text-xs mb-1 " + (isDark ? "text-slate-400" : "text-slate-600") }, bd.description),
+
+                      [[__alloT('stem.platetectonics.bd_l_how_it_works', "How it works"), bd.process], [__alloT('stem.platetectonics.bd_l_what_it_builds', "What it builds"), bd.features], [__alloT('stem.platetectonics.bd_l_where_to_see_it', "Where to see it"), bd.examples], [__alloT('stem.platetectonics.bd_l_what_it_does_to_people', "What it does to people"), bd.hazards]].map(function (p) {
+
+                        return React.createElement("div", { key: p[0], className: "text-xs " + (isDark ? "text-slate-300" : "text-slate-700") },
+
+                          React.createElement("span", { className: "font-semibold " + (isDark ? "text-slate-200" : "text-slate-900") }, p[0] + ": "), p[1]);
+
+                      })
+
+                    );
+
+                  }))
+
+                ),
+
                 React.createElement("div", null,
 
                   React.createElement("h4", { className: "font-black mb-1 " + (isDark ? "text-red-300" : "text-red-800") }, __alloT('stem.platetectonics.key_facts', "Key Facts")),
@@ -12595,10 +12193,10 @@ var d = labToolData.plateTectonics || {};
             simTab === "biographies" && React.createElement('div', { className: 'space-y-4' },
               React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-cyan-200 bg-cyan-50' },
                 React.createElement('h3', { className: 'text-xl font-black text-cyan-800 mb-2' }, __alloT('stem.platetectonics.geologist_biographies', "Geologist Biographies")),
-                React.createElement('p', { className: 'text-xs text-cyan-700 mb-3' }, __alloT('stem.platetectonics.30_scientists_who_shaped_our_understan', "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.")),
+                React.createElement('p', { className: 'text-xs text-cyan-700 mb-3' }, __alloT('stem.platetectonics.30_scientists_who_shaped_our_understan', "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.").replace('{n}', GEOLOGIST_BIOS.length)),
                 React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                   (function() {
-                    var B = [["Nicolas Steno","1638-1686","Danish anatomist and bishop. Proposed law of superposition (1669). Later beatified by Catholic Church (2002)."],["James Hutton","1726-1797","Scottish farmer-physician-geologist. Father of modern geology. Founded uniformitarianism. Siccar Point unconformity his outdoor classroom."],["Mary Anning","1799-1847","British fossil hunter, Lyme Regis. Found first ichthyosaur, plesiosaur, and pterosaur. Working class woman; excluded from learned societies despite immense contributions."],["Charles Lyell","1797-1875","Scottish lawyer-turned-geologist. Principles of Geology was the standard text for decades. Mentor and friend to Darwin."],["Louis Agassiz","1807-1873","Swiss-American naturalist. Proposed ice ages (1837). Founded Harvard Museum of Comparative Zoology. Later opposed Darwin evolution."],["William Smith","1769-1839","British canal surveyor. Produced first geological map of a nation. Realized fossils correlated strata. Imprisoned for debt despite his contributions."],["Alfred Wegener","1880-1930","German meteorologist and polar explorer. Proposed continental drift (1912). Died on Greenland ice cap before vindication."],["Arthur Holmes","1890-1965","British geologist. Pioneered radiometric dating and mantle convection. First accurate age of Earth (1913)."],["Marie Tharp","1920-2006","American oceanographer. With Bruce Heezen, mapped the ocean floor and discovered mid-Atlantic rift. Long uncredited; recognized later in life."],["Harry Hess","1906-1969","Princeton geologist and Navy officer. Proposed seafloor spreading (1962). Discovered Pacific guyots during WWII."],["J. Tuzo Wilson","1908-1993","Canadian geophysicist. Defined transform faults (1965), Wilson Cycle, mantle plumes. Triple international acclaim."],["Inge Lehmann","1888-1993","Danish seismologist. Discovered Earth inner core (1936) from seismic waves. Active in research until age 99."],["Beno Gutenberg","1889-1960","German-American seismologist. Mantle-core boundary (Gutenberg discontinuity). Co-author of magnitude scale with Charles Richter."],["Charles Richter","1900-1985","American seismologist. Created magnitude scale (1935). Caltech."],["Hiroo Kanamori","1936-present","Japanese-American seismologist (Caltech). Introduced moment magnitude scale that supplanted Richter for large quakes."],["Lucy Jones","1955-present","American seismologist. USGS Southern California science advisor. Public science communicator and advocate for disaster preparedness."],["Susan Hough","1961-present","USGS Pasadena seismologist. Books on the history and sociology of earthquakes."],["Roger Bilham","1949-present","University of Colorado. Himalayan seismic hazard expert. Often comments on India earthquake risk."],["Brian Atwater","1951-present","USGS paleoseismologist. Confirmed 1700 Cascadia earthquake by combining ghost-forest dating and Japanese tsunami records."],["Kelin Wang","1956-present","Geological Survey of Canada. Cascadia and Japan subduction modeler. Slow-slip theorist."],["Robin Lacassin","1955-present","French geologist. Active tectonics of Asia and Mediterranean."],["Walter Alvarez","1940-present","UC Berkeley geologist. With father Luis, found iridium spike at K-Pg = asteroid evidence (1980)."],["Florence Bascom","1862-1945","First woman to earn PhD in geology in US (Johns Hopkins, 1893). USGS geologist. Trained generation of women geologists at Bryn Mawr."],["Ann Whittall Boutwell","1880-1948","USGS field geologist; surveyed Western US copper districts."],["Mary Lyell","1808-1873","British geologist. Wife and research partner of Charles Lyell. Field notebooks and conchology contributions; long unattributed."],["Sue Hendrickson","1949-present","American fossil collector. Discovered T. rex Sue, the most complete T. rex ever found, now at Field Museum Chicago."],["Robert Hazen","1948-present","Carnegie Institution. Mineral evolution and origin of life chemistry. Coined mineral evolution: most minerals younger than life."],["Marjorie Sweeting","1920-1994","British karst geomorphologist. Oxford geographer; queen of karst."],["Bertha Lewis","1900s","African American geologist; early Howard University faculty; broke barriers in segregated era."],["Mei-Po Kwan","1962-present","Asian-American geographer and geomorphologist. GIS leadership; bridges geo and social science."]];
+                    var B = GEOLOGIST_BIOS;
                     return B.map(function(b, i) {
                       return React.createElement('div', { key: i, className: 'p-3 rounded-lg bg-white border border-cyan-200' },
                         React.createElement('div', { className: 'flex justify-between mb-1' },
@@ -12652,10 +12250,67 @@ var d = labToolData.plateTectonics || {};
                 // that does now offers the trip.
                 React.createElement('div', { className: 'space-y-2' },
                   (function() {
-                    var L = [["Graham Cracker Plate Boundaries","3-6","20 min","Frosting and graham crackers model 3 plate boundaries: push together (mountains), pull apart (rifts), slide past (transform). Show plate motion and collision."],["Convection Currents in a Pan","5-8","15 min","Heat water in a pyrex dish with food coloring drops. Observe rising warm and sinking cool fluid. Model mantle convection."],["Pangaea Puzzle","4-7","30 min","Cut out continents, fit them like a puzzle to form Pangaea. Match fossil and mountain belt distribution."],["Earthquake Magnitude Scale Demo","6-9","20 min","Stack sugar cubes; drop weights of increasing mass to compare magnitudes. Visualize logarithmic scale."],["Seismograph from a Marker","5-8","40 min","Build a simple seismograph: marker, bottle of sand, paper strip. Pull strip while bumping table."],["Tsunami in a Tank","4-8","25 min","Create waves by raising one end of a long tank. Place model coastlines. Discuss why some shorelines amplify."],["Volcano with Baking Soda and Vinegar","2-5","20 min","Classic. Add red food coloring and dish soap for visual oomph. Discuss why gas and lava push up."],["Make Crystals (sugar or salt)","3-8","5 days","Grow sugar or salt crystals from a saturated solution. Discuss mineral formation and how igneous rocks crystallize."],["Density Tower of Rocks","5-8","30 min","Use water, oil, syrup and rocks of different densities. Show why oceanic crust subducts beneath continental."],["Bend the Earth (clay folds)","3-6","15 min","Stack clay layers in different colors; push from sides to make folds. Compare to actual Appalachians folds."],["Earth Layers Hardboiled Egg","2-5","10 min","Crack a hardboiled egg slightly. Shell = crust, white = mantle, yolk = core. Visual and edible."],["M&M Model of Plate Boundaries","3-6","20 min","Use 2 M&Ms as plates: push, pull, slide. Make features (mountains crinkle, gap forms)."],["Rock Cycle Stations","4-8","45 min","Five stations: weathering, deposition, lithification, metamorphism, melting. Students rotate through each."],["Build a Stratovolcano (papier-mache)","3-7","90 min","Multi-day project. Discuss layering of ash and lava. Bonus: cross-section diagram."],["GPS Plate Motion Graph","7-12","40 min","Use UNAVCO data. Plot real GPS station motion. Calculate plate velocity in cm per year."],["Seismic Wave Slinky","4-9","15 min","Use a slinky to model P-waves (compressional, push-pull) and S-waves (transverse, sideways)."],["Continental Drift Evidence Lab","6-9","40 min","Print fossil, glacier, and mountain belt maps for Gondwana continents. Students cut and arrange to fit Pangaea."],["Earthquake Triangulation","7-11","40 min","Given P and S wave arrival times at 3 stations, locate the epicenter. Practice with prepared data sheets."],["Build a Caldera (jello eruption)","3-7","30 min","Jello in a bowl with a balloon underneath. Empty the balloon; jello sinks = caldera formation."],["Trench and Subduction Demo","5-8","20 min","Use a wet sponge as oceanic plate, a chunk of wood as continent. Push sponge under wood; sponge curls down."],["Field Trip Planning","4-12","variable","Plan a local field trip to a geological feature. Research site, plan stops, make student worksheet."],["Climate and Plate Tectonics Connection","8-12","60 min","Discuss how plate motion affects climate: Antarctica isolation, Panama closure, Himalaya monsoons."],["Volcanic Hazards Plan","6-12","45 min","Pick a real city near a volcano (Naples, Tacoma, Catania). Design a hazards and evacuation plan."],["Earthquake Drop-Cover-Hold","K-12","15 min","Practice the recommended earthquake response. Discuss what to do in different locations (school, car, outdoors)."],["Rock and Mineral Identification","5-9","60 min","Set up stations with 10 rocks. Provide hardness picks, streak plates, and magnifier. Students key out."],["Geological Map Reading","8-12","45 min","Introduce contour lines and symbols. Use a real USGS quad map to read elevation and rock types."],["Fossil Casting","3-7","40 min","Use plaster and shells to make positive and negative casts. Discuss how fossils form."],["Glacial Striations Demo","4-8","15 min","Press sandpaper and ice on chocolate or modeling clay. Observe scratches that mimic glacial striations."],["Wegener Debate","7-12","50 min","Half class plays Wegener (1912), half plays critics. Debate the evidence and lack of mechanism. Discuss what changed by 1960s."],["Earth Time Walk","K-12","20 min","Use a 46m rope to represent 4.6 billion years; mark life origin, dinosaurs, humans. Visceral deep time experience."]];
+                    var L = [["Graham Cracker Plate Boundaries","3-6","20 min","Frosting and graham crackers model 3 plate boundaries: push together (mountains), pull apart (rifts), slide past (transform). Show plate motion and collision."],["Convection Currents in a Pan","5-8","15 min","Heat water in a pyrex dish with food coloring drops. Observe rising warm and sinking cool fluid. Model mantle convection."],["Pangaea Puzzle","4-7","30 min","Cut out continents, fit them like a puzzle to form Pangaea. Match fossil and mountain belt distribution."],["Earthquake Magnitude Scale Demo","6-9","20 min","Stack sugar cubes; drop weights of increasing mass to compare magnitudes. Visualize logarithmic scale."],["Seismograph from a Marker","5-8","40 min","Build a simple seismograph: marker, bottle of sand, paper strip. Pull strip while bumping table."],["Tsunami in a Tank","4-8","25 min","Create waves by raising one end of a long tank. Place model coastlines. Discuss why some shorelines amplify."],["Volcano with Baking Soda and Vinegar","2-5","20 min","Classic. Add red food coloring and dish soap for visual oomph. Discuss why gas and lava push up."],["Make Crystals (sugar or salt)","3-8","5 days","Grow sugar or salt crystals from a saturated solution. Discuss mineral formation and how igneous rocks crystallize."],["Density Tower of Rocks","5-8","30 min","Use water, oil, syrup and rocks of different densities. Show why oceanic crust subducts beneath continental."],["Bend the Earth (clay folds)","3-6","15 min","Stack clay layers in different colors; push from sides to make folds. Compare to actual Appalachians folds."],["Earth Layers Hardboiled Egg","2-5","10 min","Crack a hardboiled egg slightly. Shell = crust, white = mantle, yolk = core. Visual and edible."],["M&M Model of Plate Boundaries","3-6","20 min","Use 2 M&Ms as plates: push, pull, slide. Make features (mountains crinkle, gap forms)."],["Rock Cycle Stations","4-8","45 min","Five stations: weathering, deposition, lithification, metamorphism, melting. Students rotate through each."],["Build a Stratovolcano (papier-mache)","3-7","90 min","Multi-day project. Discuss layering of ash and lava. Bonus: cross-section diagram."],["GPS Plate Motion Graph","7-12","40 min","Use UNAVCO data. Plot real GPS station motion. Calculate plate velocity in cm per year."],["Seismic Wave Slinky","4-9","15 min","Use a slinky to model P-waves (compressional, push-pull) and S-waves (transverse, sideways)."],["Continental Drift Evidence Lab","6-9","40 min","Print fossil, glacier, and mountain belt maps for Gondwana continents. Students cut and arrange to fit Pangaea."],["Earthquake Triangulation","7-11","40 min","Given P and S wave arrival times at 3 stations, locate the epicenter. Practice with prepared data sheets."],["Build a Caldera (jello eruption)","3-7","30 min","Jello in a bowl with a balloon underneath. Empty the balloon; jello sinks = caldera formation."],["Trench and Subduction Demo","5-8","20 min","Use a wet sponge as oceanic plate, a chunk of wood as continent. Push sponge under wood; sponge curls down."],["Field Trip Planning","4-12","variable","Plan a local field trip to a geological feature. Research site, plan stops, make student worksheet."],["Climate and Plate Tectonics Connection","8-12","60 min","Discuss how plate motion affects climate: Antarctica isolation, Panama closure, Himalaya monsoons."],["Volcanic Hazards Plan","6-12","45 min","Pick a real city near a volcano (Naples, Tacoma, Catania). Design a hazards and evacuation plan."],["Earthquake Drop-Cover-Hold","K-12","15 min","Practice the recommended earthquake response. Discuss what to do in different locations (school, car, outdoors)."],["Rock and Mineral Identification","5-9","60 min","Set up stations with 10 rocks. Provide hardness picks, streak plates, and magnifier. Students key out."],["Geological Map Reading","8-12","45 min","Introduce contour lines and symbols. Use a real USGS quad map to read elevation and rock types."],["Fossil Casting","3-7","40 min","Use plaster and shells to make positive and negative casts. Discuss how fossils form."],["Glacial Striations Demo","4-8","15 min","Press sandpaper and ice on chocolate or modeling clay. Observe scratches that mimic glacial striations."],["Wegener Debate","7-12","50 min","Half class plays Wegener (1912), half plays critics. Debate the evidence and lack of mechanism. Discuss what changed by 1960s."],["Earth Time Walk","K-12","20 min","Use a 46m rope to represent 4.6 billion years; mark life origin, dinosaurs, humans. Visceral deep time experience."],
+                      [__alloT('stem.platetectonics.convection_demo', "Convection Demo"),"3-5","20 min","Observe convection currents in liquid. Materials: Hot/cold water + food coloring."],
+                      [__alloT('stem.platetectonics.paper_plate_plates', "Paper Plate Plates"),"3-5","30 min","Model plate boundary motions. Materials: Paper plates + rope."],
+                      [__alloT('stem.platetectonics.build_a_volcano', "Build a Volcano"),"3-5","60 min","Eruption simulation. Materials: Baking soda + vinegar + clay."],
+                      [__alloT('stem.platetectonics.cookie_tectonics', "Cookie Tectonics"),"3-5","30 min","Boundary types via food. Materials: Different cookies + frosting."],
+                      [__alloT('stem.platetectonics.crack_up_earth', "Crack-Up Earth"),"3-5","20 min","Plate analogue. Materials: Eggshell + boiled egg."],
+                      [__alloT('stem.platetectonics.earthquake_bingo', "Earthquake Bingo"),"K-2","20 min","Vocabulary review. Materials: Bingo cards + facts."],
+                      [__alloT('stem.platetectonics.mountain_building', "Mountain Building"),"3-5","45 min","Layer + compress to form folds. Materials: Different colored clay."],
+                      [__alloT('stem.platetectonics.sand_volcano', "Sand Volcano"),"K-2","30 min","Magma + lava observation. Materials: Sandbox + dye."],
+                      [__alloT('stem.platetectonics.plate_boundary_diagram', "Plate Boundary Diagram"),"6-8","45 min","Map of 7 major plates + boundaries. Materials: Worksheet + colored pencils."],
+                      [__alloT('stem.platetectonics.locating_an_earthquake', "Locating an Earthquake"),"6-8","60 min","Triangulation method. Materials: World map + 3 stations data."],
+                      [__alloT('stem.platetectonics.earthquake_damage_assessment', "Earthquake Damage Assessment"),"6-8","45 min","Apply Mercalli intensity. Materials: Photos + Mercalli scale."],
+                      [__alloT('stem.platetectonics.magnitude_vs_intensity', "Magnitude vs Intensity"),"6-8","30 min","Distinguish two earthquake scales. Materials: Worksheet + data."],
+                      [__alloT('stem.platetectonics.volcano_hazard_map', "Volcano Hazard Map"),"6-8","60 min","Predict lahar/pyroclastic flow paths. Materials: Topographic map + vent location."],
+                      [__alloT('stem.platetectonics.rock_cycle_diagram', "Rock Cycle Diagram"),"6-8","45 min","Identify igneous, sedimentary, metamorphic. Materials: Rock samples + cards."],
+                      [__alloT('stem.platetectonics.mineral_id_lab', "Mineral ID Lab"),"6-8","60 min","Identify unknown minerals. Materials: Mineral kit + Mohs picks."],
+                      [__alloT('stem.platetectonics.streak_plate_test', "Streak Plate Test"),"6-8","30 min","Mineral identification skill. Materials: Streak plates + minerals."],
+                      [__alloT('stem.platetectonics.crystal_growing', "Crystal Growing"),"3-5","1 week","Crystallization in lab. Materials: Salt + sugar + glass."],
+                      [__alloT('stem.platetectonics.pangaea_animation', "Pangaea Animation"),"6-8","90 min","Create animated continental drift. Materials: Stop-motion app + cut-outs."],
+                      [__alloT('stem.platetectonics.gis_earthquake_map', "GIS Earthquake Map"),"9-12","90 min","Map global earthquakes. Materials: USGS + GIS software."],
+                      [__alloT('stem.platetectonics.plate_motion_calculation', "Plate Motion Calculation"),"9-12","60 min","Calculate plate speed using GPS. Materials: GPS data + math."],
+                      [__alloT('stem.platetectonics.seismic_wave_travel_time', "Seismic Wave Travel Time"),"9-12","60 min","Calculate epicenter distance. Materials: Travel-time graph."],
+                      [__alloT('stem.platetectonics.tsunami_travel_modeling', "Tsunami Travel Modeling"),"9-12","90 min","Predict tsunami arrival times. Materials: Map + speed equation."],
+                      [__alloT('stem.platetectonics.volcanic_explosivity_index', "Volcanic Explosivity Index"),"9-12","60 min","Calculate + classify VEI. Materials: Historical eruptions + VEI."],
+                      [__alloT('stem.platetectonics.tectonic_speed_comparison', "Tectonic Speed Comparison"),"9-12","90 min","Rank plate speeds. Materials: GPS data + multiple plates."],
+                      [__alloT('stem.platetectonics.boundary_map_project', "Boundary Map Project"),"9-12","Week","Detailed boundary analysis. Materials: Map + research."],
+                      [__alloT('stem.platetectonics.magnitude_statistics', "Magnitude Statistics"),"9-12","90 min","Earthquake frequency analysis. Materials: USGS data + spreadsheet."],
+                      [__alloT('stem.platetectonics.wegener_s_evidence_report', "Wegener's Evidence Report"),"9-12","2 weeks","Evaluate continental drift evidence. Materials: Research + presentation."],
+                      [__alloT('stem.platetectonics.hotspot_trail_analysis', "Hotspot Trail Analysis"),"9-12","90 min","Calculate Pacific plate motion. Materials: Hawaii data + math."]
+                    ];
                     // Where an activity has a counterpart in this tool. Titles
                     // are the key so the data row above stays byte-identical.
                     var HOME = {
+                      'Convection Demo': ['sim', 'turn on mantle drift and watch the cells'],
+                      'Paper Plate Plates': ['sim', 'push the plates together yourself'],
+                      'Build a Volcano': ['volcanoes', 'the 3D volcano cutaway'],
+                      'Cookie Tectonics': ['boundaries', 'the three boundary types side by side'],
+                      'Crack-Up Earth': ['encyclopedia', 'the plates the shell breaks into'],
+                      'Earthquake Bingo': ['glossary', 'the terms the cards come from'],
+                      'Mountain Building': ['mountains', 'ranges and how each one formed'],
+                      'Sand Volcano': ['volcanoes', 'what the magma type builds'],
+                      'Plate Boundary Diagram': ['boundaries', 'twenty named boundaries'],
+                      'Locating an Earthquake': ['earthquake', 'triangulate a real epicenter'],
+                      'Earthquake Damage Assessment': ['earthquake', 'magnitude against intensity'],
+                      'Magnitude vs Intensity': ['earthquake', 'the two scales, side by side'],
+                      'Volcano Hazard Map': ['volcanoes', 'hazards by volcano type'],
+                      'Rock Cycle Diagram': ['rocks', 'the rock reference'],
+                      'Mineral ID Lab': ['minerals', 'the mineral catalogue'],
+                      'Streak Plate Test': ['minerals', 'streak and hardness, mineral by mineral'],
+                      'Crystal Growing': ['minerals', 'how each mineral forms'],
+                      'Pangaea Animation': ['timeline', 'run the drift time-lapse'],
+                      'GIS Earthquake Map': ['quakeStories', 'the recorded quakes to plot'],
+                      'Plate Motion Calculation': ['encyclopedia', 'measured motion, plate by plate'],
+                      'Seismic Wave Travel Time': ['earthquake', 'read S-P time off the trace'],
+                      'Tsunami Travel Modeling': ['tsunamis', 'tsunami case studies'],
+                      'Volcanic Explosivity Index': ['eruptions', 'eruptions ranked by size'],
+                      'Tectonic Speed Comparison': ['encyclopedia', 'plate speeds to rank'],
+                      'Boundary Map Project': ['boundaries', 'twenty named boundaries'],
+                      'Magnitude Statistics': ['quakeStories', 'the magnitudes to count'],
+                      'Wegener\'s Evidence Report': ['history', 'the evidence Wegener had'],
+                      'Hotspot Trail Analysis': ['hotspots', 'hotspot tracks and their ages'],
                       'Graham Cracker Plate Boundaries': ['sim', 'build all three boundaries in the simulator'],
                       'Convection Currents in a Pan': ['sim', 'turn on mantle drift and watch the cells'],
                       'Pangaea Puzzle': ['timeline', 'run the drift time-lapse'],
@@ -12835,6 +12490,48 @@ var d = labToolData.plateTectonics || {};
                     });
                   })()
                 )
+              ),
+
+              // ── The recorded catalogue ──
+              // EARTHQUAKE_DB holds 58 notable earthquakes and was referenced
+              // ONCE, by its own definition: the tab rendered its ten deep case
+              // studies and nothing else, so the reference list a student would
+              // scan for "was there a big one near me?" could not be opened.
+              //
+              // Kept as a SECOND section rather than merged into the stories:
+              // the ten carry evidence, legacy and lesson, and folding 58
+              // one-line entries in beside them would bury the narrative the
+              // tab is built around. One search box filters both.
+              React.createElement('div', { className: 'p-4 rounded-2xl border-2 border-red-200 bg-white' },
+                React.createElement('h3', { className: 'text-lg font-black text-red-800 mb-1' },
+                  __alloT('stem.platetectonics.quake_catalog_heading', 'More recorded earthquakes')),
+                (function() {
+                  var q = (d['_quakeStoriesSearch'] || '').toLowerCase();
+                  var hits = EARTHQUAKE_DB.filter(function(e) {
+                    if (!q) return true;
+                    return (e.name + ' ' + e.location + ' ' + e.notes + ' ' + e.year).toLowerCase().indexOf(q) !== -1;
+                  });
+                  return [
+                    React.createElement('p', { key: 'count', className: 'text-xs text-red-700 mb-3' },
+                      __alloT('stem.platetectonics.quake_catalog_count', '{n} of {total} in the catalogue — the same search filters both sections.')
+                        .replace('{n}', hits.length).replace('{total}', EARTHQUAKE_DB.length)),
+                    hits.length ? React.createElement('div', { key: 'rows', className: 'space-y-2', 'data-pt-quake-catalog': String(hits.length) },
+                      hits.map(function(e) {
+                        return React.createElement('div', { key: e.id, className: 'p-3 rounded-lg bg-red-50 border border-red-200' },
+                          React.createElement('div', { className: 'flex justify-between gap-2 mb-1 flex-wrap' },
+                            React.createElement('div', { className: 'font-bold text-sm text-red-900' }, e.name),
+                            React.createElement('div', { className: 'text-[11px] font-mono whitespace-nowrap text-red-700' },
+                              e.year + '  ·  M' + e.magnitude)
+                          ),
+                          React.createElement('div', { className: 'text-[11px] font-bold text-slate-700' }, e.location),
+                          React.createElement('div', { className: 'text-[11px] text-slate-700' }, e.notes)
+                        );
+                      })
+                    ) : React.createElement('div', { key: 'none', role: 'status',
+                      className: 'p-3 rounded-lg text-xs italic border text-slate-600 border-slate-300' },
+                      __alloT('stem.platetectonics.quake_catalog_no_match', 'No catalogue entries match that search — the case studies above are searched separately.'))
+                  ];
+                })()
               )
             ),
 

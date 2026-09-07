@@ -14,18 +14,8 @@
   if (!document.getElementById("anchor-charts-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "anchor-charts-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } textarea, input { border: none !important; background: white !important; } }";
+    _s.textContent = "@media (prefers-reduced-motion: reduce) { .ac-root *, .ac-root *::before, .ac-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } .ac-root textarea, .ac-root input { border: none !important; background: white !important; } }";
     document.head.appendChild(_s);
-  }
-  // Lazy-load the hand-drawn display fonts (Patrick Hand + Permanent Marker)
-  // from Google Fonts. Only injected once; safe if the user is offline (the
-  // CSS @font-face falls back to the system "cursive" stack defined inline).
-  if (!document.getElementById("anchor-charts-fonts")) {
-    var _fl = document.createElement("link");
-    _fl.id = "anchor-charts-fonts";
-    _fl.rel = "stylesheet";
-    _fl.href = "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&family=Caveat:wght@400;700&display=swap";
-    document.head.appendChild(_fl);
   }
   (function() {
     if (document.getElementById('allo-live-anchor-charts')) return;
@@ -231,7 +221,7 @@ const AnchorChartSection = React.memo((props) => {
         margin: "12px 6px"
       }
     },
-    /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "ac-icon-slot flex-shrink-0", style: {
+    /* @__PURE__ */ React.createElement("div", { className: "ac-section-layout flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "ac-icon-slot flex-shrink-0", style: {
       width: 78,
       height: 78,
       background: "#fff",
@@ -254,7 +244,7 @@ const AnchorChartSection = React.memo((props) => {
         style: { borderColor: marker.hex, color: marker.ink }
       },
       "\u21BB"
-    ) : null), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0" }, isEditing ? /* @__PURE__ */ React.createElement(
+    ) : null), /* @__PURE__ */ React.createElement("div", { className: "ac-section-content flex-1 min-w-0" }, isEditing ? /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
@@ -262,8 +252,9 @@ const AnchorChartSection = React.memo((props) => {
         onChange: updateLabel,
         className: "ac-section-label w-full bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-slate-300 focus:border-slate-600 py-0.5",
         style: {
-          fontFamily: '"Permanent Marker", "Patrick Hand", cursive',
-          fontSize: "22px",
+          fontFamily: "inherit",
+          fontWeight: 700,
+          fontSize: "1.375rem",
           color: marker.ink,
           letterSpacing: "0.02em"
         },
@@ -274,8 +265,9 @@ const AnchorChartSection = React.memo((props) => {
       {
         className: "ac-section-label",
         style: {
-          fontFamily: '"Permanent Marker", "Patrick Hand", cursive',
-          fontSize: "22px",
+          fontFamily: "inherit",
+          fontWeight: 700,
+          fontSize: "1.375rem",
           color: marker.ink,
           letterSpacing: "0.02em",
           lineHeight: 1.1
@@ -289,10 +281,10 @@ const AnchorChartSection = React.memo((props) => {
         value: studentAnswers[idx] || "",
         onChange: (e) => onStudentAnswerChange(idx, e.target.value),
         placeholder: t("placeholders.type_answer_here"),
-        className: "flex-1 bg-white/70 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1",
+        className: "flex-1 min-w-0 bg-white/70 outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b-2 border-dotted py-0.5 px-1",
         style: {
-          fontFamily: '"Patrick Hand", "Caveat", cursive',
-          fontSize: "18px",
+          fontFamily: "inherit",
+          fontSize: "1.125rem",
           color: "#2d3748",
           borderColor: marker.hex + "60"
         },
@@ -304,8 +296,8 @@ const AnchorChartSection = React.memo((props) => {
         type: "text",
         value: b,
         onChange: (e) => updateBullet(idx, e.target.value),
-        className: "flex-1 bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5",
-        style: { fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: "18px", color: "#2d3748" },
+        className: "flex-1 min-w-0 bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dotted border-slate-200 focus:border-slate-400 py-0.5",
+        style: { fontFamily: "inherit", fontSize: "1.125rem", color: "#2d3748" },
         "aria-label": `Bullet ${idx + 1}`
       }
     ), /* @__PURE__ */ React.createElement(
@@ -317,7 +309,7 @@ const AnchorChartSection = React.memo((props) => {
         "aria-label": `Remove bullet ${idx + 1} from ${label || `section ${sectionIndex + 1}`}`
       },
       "\u2715"
-    )) : /* @__PURE__ */ React.createElement("span", { style: { fontFamily: '"Patrick Hand", "Caveat", cursive', fontSize: "18px", color: "#2d3748", lineHeight: 1.3 } }, b)))), isEditing ? /* @__PURE__ */ React.createElement(
+    )) : /* @__PURE__ */ React.createElement("span", { style: { fontFamily: "inherit", fontSize: "1.125rem", color: "#2d3748", lineHeight: 1.3 } }, b)))), isEditing ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -780,8 +772,19 @@ ${bulletText}`;
           box-shadow: 0 8px 24px rgba(60,40,15,0.08), inset 0 0 0 1px rgba(255,255,255,0.6);
           border-radius: 14px;
         }
+        /* A chart can be narrow inside a comparison grid even on a wide
+           screen. Give its writing area the full width until both columns fit. */
+        .ac-section { container-type: inline-size; }
+        .ac-section-layout { flex-direction: column; }
+        .ac-section-content { width: 100%; }
+        .ac-title, .ac-section-label, .ac-bullets li { overflow-wrap: anywhere; }
+        @container (min-width: 24rem) {
+          .ac-section-layout { flex-direction: row; }
+          .ac-section-content { width: auto; }
+        }
         .ac-title {
-          font-family: "Permanent Marker", "Patrick Hand", cursive;
+          font-family: inherit;
+          font-weight: 700;
           letter-spacing: 0.02em;
         }
         .ac-root button:focus-visible,
@@ -805,7 +808,7 @@ ${bulletText}`;
           .ac-section { box-shadow: none !important; }
           .ac-paper { box-shadow: none !important; border: 1px solid #ccc; }
         }
-      `), /* @__PURE__ */ React.createElement("div", { className: "ac-toolbar ac-no-print flex flex-wrap items-center justify-between gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB}"), " Anchor Chart", chartType && chartType !== "reference" ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900" }, chartLabel) : null), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
+      `), /* @__PURE__ */ React.createElement("div", { className: "ac-toolbar ac-no-print flex flex-wrap items-center justify-between gap-2 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-amber-800 uppercase tracking-wider flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, "\u{1F4CB}"), " Anchor Chart", chartType && chartType !== "reference" ? /* @__PURE__ */ React.createElement("span", { className: "px-2 py-0.5 bg-amber-100 border border-amber-300 rounded-full text-amber-900" }, chartLabel) : null), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -900,14 +903,14 @@ ${bulletText}`;
       onChange: handleTitleChange,
       placeholder: "Chart title",
       className: "ac-title w-full text-center bg-transparent outline-none focus:ring-2 focus:ring-amber-600 focus:ring-offset-1 border-b border-dashed border-amber-300 focus:border-amber-600 py-1",
-      style: { fontSize: "42px", color: "#7a4a1e" },
+      style: { fontSize: "2.625rem", color: "#7a4a1e" },
       "aria-label": "Chart title"
     }
-  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title", style: { fontSize: "42px", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), chartMeta.caption ? layout === "concept-map" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center mb-1" }, /* @__PURE__ */ React.createElement("div", { style: { width: 2, height: 16, background: "#cbb27e" }, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/80 italic" }, chartMeta.caption)) : /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] text-amber-700/80 italic mb-1" }, chartMeta.caption) : null, /* @__PURE__ */ React.createElement(
+  ) : /* @__PURE__ */ React.createElement("h1", { className: "ac-title break-words", style: { fontSize: "2.625rem", color: "#7a4a1e", margin: 0 } }, title || "(untitled chart)"), lessonRef.generatedAt ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic mt-1" }, "Created ", new Date(lessonRef.generatedAt).toLocaleDateString()) : null), chartMeta.caption ? layout === "concept-map" ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center mb-1" }, /* @__PURE__ */ React.createElement("div", { style: { width: 2, height: 16, background: "#cbb27e" }, "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/80 italic" }, chartMeta.caption)) : /* @__PURE__ */ React.createElement("div", { className: "text-center text-[11px] text-amber-700/80 italic mb-1" }, chartMeta.caption) : null, /* @__PURE__ */ React.createElement(
     "div",
     {
       className: "ac-sections",
-      style: layout === "comparison" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "10px", alignItems: "start" } : layout === "concept-map" || layout === "grid" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "10px", alignItems: "start" } : void 0
+      style: layout === "comparison" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 13.75rem), 1fr))", gap: "10px", alignItems: "start" } : layout === "concept-map" || layout === "grid" ? { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 15rem), 1fr))", gap: "10px", alignItems: "start" } : void 0
     },
     sections.map((s, idx) => {
       const isDraggingThis = dragSrcIdx === idx;
@@ -941,7 +944,7 @@ ${bulletText}`;
             transition: "opacity 0.15s"
           }
         },
-        badgeText ? /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: { position: "absolute", top: -10, left: -10, zIndex: 6, minWidth: 28, height: 28, padding: "0 7px", borderRadius: "999px", background: chartMeta.badgeColor || "#dd6b20", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: '"Permanent Marker","Patrick Hand",cursive', fontSize: badgeText.length > 2 ? "12px" : "15px", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" } }, badgeText) : null,
+        badgeText ? /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", style: { position: "absolute", top: -10, left: -10, zIndex: 6, minWidth: 28, minHeight: 28, padding: "0 7px", borderRadius: "999px", background: chartMeta.badgeColor || "#dd6b20", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit", fontWeight: 700, fontSize: badgeText.length > 2 ? "0.75rem" : "0.9375rem", boxShadow: "0 1px 3px rgba(0,0,0,0.3)" } }, badgeText) : null,
         isDropTarget ? /* @__PURE__ */ React.createElement("div", { className: "absolute -top-1 left-2 right-2 h-1 bg-amber-500 rounded-full shadow-md pointer-events-none z-10", "aria-hidden": "true" }) : null,
         isEditing ? /* @__PURE__ */ React.createElement(
           "div",
@@ -1023,7 +1026,7 @@ ${bulletText}`;
             addToast: addToastProp
           }
         )
-      ), layout === "process" && idx < sections.length - 1 ? /* @__PURE__ */ React.createElement("div", { className: "flex justify-center", "aria-hidden": "true", style: { margin: "-2px 0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "24px", color: "#b7791f", lineHeight: 1 } }, "\u2193")) : null);
+      ), layout === "process" && idx < sections.length - 1 ? /* @__PURE__ */ React.createElement("div", { className: "flex justify-center", "aria-hidden": "true", style: { margin: "-2px 0 2px" } }, /* @__PURE__ */ React.createElement("span", { style: { fontSize: "1.5rem", color: "#b7791f", lineHeight: 1 } }, "\u2193")) : null);
     })
   ), isEditing ? /* @__PURE__ */ React.createElement("div", { className: "text-center mt-3 space-y-2" }, /* @__PURE__ */ React.createElement(
     "button",
@@ -1034,7 +1037,7 @@ ${bulletText}`;
       "data-help-key": "anchor_chart_add_section"
     },
     "+ Add section"
-  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: use the arrow buttons or drag the handle on any section to reorder.") : null) : null, interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} Interactive Anchor Chart"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, tx("anchor_chart.workspace_hint", "Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher."))), /* @__PURE__ */ React.createElement(
+  ), sections.length > 1 ? /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-amber-700/70 italic" }, "Tip: use the arrow buttons or drag the handle on any section to reorder.") : null) : null, interactive.armed && !isTeacherMode ? /* @__PURE__ */ React.createElement("div", { className: "mt-6 ac-no-print rounded-xl border-2 border-fuchsia-300 bg-gradient-to-br from-fuchsia-50 to-purple-50 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3 mb-2" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-fuchsia-900" }, "\u{1F3AF} Interactive Anchor Chart"), /* @__PURE__ */ React.createElement("div", { className: "text-[12px] text-fuchsia-800/80 mt-1" }, tx("anchor_chart.workspace_hint", "Fill in your answers above. Check the workspace save status before leaving. AI feedback does not submit your work to your teacher."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

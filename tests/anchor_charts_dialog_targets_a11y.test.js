@@ -63,7 +63,7 @@ describe('Anchor Charts dialog and target accessibility', () => {
     expect(source.match(/className="min-h-6 text-\[11px\]/g)).toHaveLength(2);
     expect(source).toContain('role="status" aria-live="polite" aria-atomic="true"');
     expect(source).toContain('role="alert">Couldn\'t reach the AI grader');
-    expect(source).toContain("label + ' section icon'");
+    expect(source).toContain('alt="" role="presentation"');
   });
 
   it('moves focus into the rubric dialog, wraps it, closes with Escape, and restores the opener', async () => {
@@ -115,6 +115,7 @@ describe('Anchor Charts dialog and target accessibility', () => {
     expect(document.activeElement).toBe(opener);
 
     const image = host.querySelector('img');
-    expect(image.getAttribute('alt')).toBe('Evaporation section icon');
+    expect(image.getAttribute('alt')).toBe('');
+    expect(image.getAttribute('role')).toBe('presentation');
   });
 });

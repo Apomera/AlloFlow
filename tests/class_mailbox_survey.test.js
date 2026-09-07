@@ -319,3 +319,27 @@ describe('retention', () => {
         expect(JSON.stringify(state)).not.toContain('Sensitive detail');
     });
 });
+
+describe('optional numeric survey limits', () => {
+  it.each([{}, { min: null, max: null }, { min: '', max: ' ' }])('keeps unset limits unbounded through hosting, submission, and rereading: %j', bounds => {
+    const { call } = makeGsSandbox();
+    const { hosted, admin } = hostSurvey(call, { items: [{ type: 'numeric', text: 'Temperature change', ...bounds }] });
+    expect(hosted.ok).toBe(true);
+    const student = join(call);
+    expect(student.ok).toBe(true);
+    const saved = call({ a: 'activityupsert', ...actor(student), answers: JSON.stringify({ i1: -2.5 }) });
+    expect(saved.ok).toBe(true);
+    expect(saved.own.answers.i1).toBe(-2.5);
+    const reread = call({ a: 'getactivitysummary', ...actor(student) });
+    expect(reread.own.answers.i1).toBe(-2.5);
+    expect(reread.items[0]).toMatchObject({ min: null, max: null });
+    expect(call({ a: 'getactivityadmin', admin, id: ID, aid: AID }).ok).toBe(true);
+  });
+  it('preserves an explicit zero minimum with no upper limit', () => {
+    const { call } = makeGsSandbox();
+    expect(hostSurvey(call, { items: [{ type: 'numeric', text: 'Hours', min: 0, max: null }] }).hosted.ok).toBe(true);
+    const student = join(call);
+    expect(call({ a: 'activityupsert', ...actor(student), answers: JSON.stringify({ i1: -1 }) }).e).toBe('bad-answers');
+    expect(call({ a: 'activityupsert', ...actor(student), answers: JSON.stringify({ i1: 2.5 }) }).own.answers.i1).toBe(2.5);
+  });
+});

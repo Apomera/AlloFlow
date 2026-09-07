@@ -85,7 +85,7 @@ describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-
     for (const file of ['ui_modals_source.jsx', 'ui_modals_module.js', 'desktop/web-app/public/ui_modals_module.js']) {
       const source = readFileSync(resolve(process.cwd(), file), 'utf8');
       expect(source).toContain('window.__alloQuizChannelSend');
-      expect(source).toContain("p2pSend('boss:' + currentQuestionIndex, responseValue)");
+      expect(source).toContain("p2pSend('boss:' + currentQuestionIndex + (quizState.roundId ? ':' + quizState.roundId : ''), responseValue)");
       const channelIndex = source.indexOf("p2pSend('boss:'");
       const receiptIndex = source.indexOf('quizState.responseReceipts.${user.uid}');
       expect(channelIndex).toBeGreaterThan(-1);
@@ -128,7 +128,7 @@ describe('class-vs-boss: P2P-first answers + anonymous results sharing (2026-07-
     expect(anti).toContain('"quizState.responseReceipts": {}');
     expect(teacher).toContain('"quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}');
     expect(teacher.split('"quizState.responseReceipts": {}').length - 1).toBeGreaterThanOrEqual(4);
-    expect(teacher).toContain('const updates = { "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} }');
+    expect(teacher).toContain('const updates = { "quizState.phase": "idle", "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} }');
   });
 
   it('teacher can share anonymous per-question results; students render them', () => {

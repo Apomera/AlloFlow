@@ -63,12 +63,17 @@
   input.hdr:focus { outline: none; border-color: var(--accent); }
   .nameinput { max-width: 170px; }
   button.hdr:disabled { pointer-events: none; }
+  button.hdr[aria-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
   .flash { font-size: 11px; font-weight: 600; opacity: 0; transition: opacity .3s ease; white-space: nowrap; }
   .aibar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 7px 12px; background: #172033; border-bottom: 1px solid var(--line); flex: 0 0 auto; }
   .aibar .ailabel { font-size: 12px; font-weight: 700; color: #a5b4fc; white-space: nowrap; }
   .aiinput { flex: 1 1 220px; min-width: 160px; max-width: 520px; }
   .aistatus { font-size: 11px; font-weight: 600; color: var(--dim); }
   .aibar button.hdr:disabled { opacity: 0.5; }
+  /* toolbar controls: readable text and a real touch target; the header wraps */
+  select, button.hdr, input.hdr { min-height: 44px; font-size: 13px; }
+  .tpl label, .aistatus, .flash { font-size: 12px; }
+  .privacy { font-size: 12px; color: #94a3b8; }
 </style>
 </head>
 <body>
@@ -99,7 +104,7 @@
   <button class="hdr" id="aiDiagramBtn" aria-label="Generate a labeled diagram from your description">◇ Diagram</button>
   <button class="hdr" id="aiRecordBtn" aria-label="Generate a diagram and record it being drawn as a video">🎬 Record drawing</button>
   <button class="hdr" id="aiImageBtn" aria-label="Generate a picture from your description">🖼️ Image</button>
-  <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" disabled>✏️ Edit selected image</button>
+  <button class="hdr" id="aiEditImgBtn" aria-label="Edit the selected image with AI" aria-disabled="true">✏️ Edit selected image</button>
   <span id="aiStatus" class="aistatus" role="status" aria-live="polite"></span>
 </div>
 <div id="excal"><div class="loadmsg" id="loadmsg">Loading the whiteboard…</div></div>
@@ -127,7 +132,45 @@
   // until then we post with '*'. Outbound is the user's own drawing, not a secret,
   // and postMessage still only reaches window.opener regardless of targetOrigin.
   var openerOrigin = null;
-  var toOpener = function (payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(payload, openerOrigin || '*'); } catch (_) {} };
+  // "Whoever opened me" is not a trust boundary. The app opens this window by
+  // NAME, and a page already open in the same browser can create a window of
+  // that name first; the browser then navigates that page's window here and
+  // it stays window.opener. Save and AI therefore wait for an ack from an
+  // origin AlloFlow actually runs on, and drawing-bearing messages are posted
+  // only to that pinned origin. hello/closed carry nothing and may go to '*'.
+  // An opaque opener ('null', the desktop bundle) is accepted as before; the
+  // residual case is a sandboxed-frame opener, far narrower than any page.
+  function isTrustedOpenerOrigin(origin) {
+    var o = String(origin || '');
+    if (o === 'null') return true;
+    try {
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host);
+    } catch (_) { return false; }
+  }
+  var linked = false;
+  var HANDSHAKE_TYPES = { 'allocwb-hello': 1, 'allocwb-closed': 1 };
+  var toOpener = function (payload) {
+    try {
+      if (!window.opener || window.opener.closed) return;
+      var handshake = !!(payload && HANDSHAKE_TYPES[payload.type]);
+      if (!handshake && !linked) return;
+      var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';
+      window.opener.postMessage(payload, target);
+    } catch (_) {}
+  };
+  function setLinked(on) {
+    linked = !!on;
+    var save = document.getElementById('saveBtn');
+    if (save) {
+      save.setAttribute('aria-disabled', linked ? 'false' : 'true');
+      save.title = linked ? '' : 'Waiting for AlloFlow to connect\u2026';
+    }
+    updateAiButtons();
+  }
 
   // ── Graphic-organizer templates as Excalidraw element skeletons ──
   // convertToExcalidrawElements fills in ids/bindings; each is a starting
@@ -201,14 +244,28 @@
     }));
   }
 
+  // Placed below whatever is already drawn, never over it: choosing a template
+  // used to replace the whole scene, so a student who picked one mid-way lost
+  // their drawing with no confirmation.
+  function offsetSkeletonBelow(skeleton, existing) {
+    if (!existing || !existing.length) return skeleton;
+    var below = sceneBounds(existing)[3] + 80;
+    var top = Infinity;
+    skeleton.forEach(function (s) { if (typeof s.y === 'number' && s.y < top) top = s.y; });
+    if (!isFinite(top)) return skeleton;
+    var dy = below - top;
+    return skeleton.map(function (s) { return Object.assign({}, s, { y: (Number(s.y) || 0) + dy }); });
+  }
   function loadTemplate(key) {
     if (!excalidrawAPI || !key || !TEMPLATES[key]) return;
     try {
-      var skeleton = TEMPLATES[key];
+      var cur = (excalidrawAPI.getSceneElements() || []).filter(function (e) { return !e.isDeleted; });
+      var skeleton = offsetSkeletonBelow(TEMPLATES[key], cur);
       var elements = (typeof E.convertToExcalidrawElements === 'function')
         ? E.convertToExcalidrawElements(skeleton) : skeleton;
-      excalidrawAPI.updateScene({ elements: elements });
+      excalidrawAPI.updateScene({ elements: cur.concat(elements) });
       try { excalidrawAPI.scrollToContent(elements, { fitToContent: true }); } catch (_) {}
+      flash(cur.length ? 'Template added below your drawing \u2713' : 'Template added \u2713', true);
       toOpener({ type: 'allocwb-template', template: key });
     } catch (e) { console.warn('[Whiteboard] template load failed', e); }
   }
@@ -216,7 +273,7 @@
   function exportPng() {
     if (!excalidrawAPI || typeof E.exportToBlob !== 'function') return;
     var els = excalidrawAPI.getSceneElements();
-    if (!els || !els.length) { alert('Draw something first, or pick a template.'); return; }
+    if (!els || !els.length) { flash('Draw something first, or pick a template.', false); return; }
     E.exportToBlob({
       elements: els, appState: excalidrawAPI.getAppState(), files: excalidrawAPI.getFiles(),
       mimeType: 'image/png', quality: 1, exportPadding: 16
@@ -291,11 +348,11 @@
     el.textContent = msg || '';
     el.style.color = good === false ? '#f87171' : (good === true ? '#34d399' : '#94a3b8');
   }
+  // A disabled button leaves the tab order, so pressing Diagram dropped the
+  // keyboard user's focus to the page for the whole generation. aria-disabled
+  // keeps the element; aiRequest refuses the click instead.
   function setAiBusy(busy) {
     aiBusyFlag = busy;
-    var diag = document.getElementById('aiDiagramBtn'); if (diag) diag.disabled = busy;
-    var img = document.getElementById('aiImageBtn'); if (img) img.disabled = busy;
-    var rec = document.getElementById('aiRecordBtn'); if (rec) rec.disabled = busy;
     updateAiButtons();
   }
   function scheduleAiButtonSync() {
@@ -303,8 +360,13 @@
     aiButtonsRAF = requestAnimationFrame(function () { aiButtonsRAF = 0; updateAiButtons(); });
   }
   function updateAiButtons() {
-    var b = document.getElementById('aiEditImgBtn');
-    if (b) b.disabled = aiBusyFlag || !getSelectedImage();
+    var off = aiBusyFlag || !linked;
+    ['aiDiagramBtn', 'aiImageBtn', 'aiRecordBtn'].forEach(function (id) {
+      var b = document.getElementById(id);
+      if (b && !b.disabled) b.setAttribute('aria-disabled', off ? 'true' : 'false');
+    });
+    var e = document.getElementById('aiEditImgBtn');
+    if (e) e.setAttribute('aria-disabled', (off || !getSelectedImage()) ? 'true' : 'false');
   }
   function getSelectedImage() {
     try {
@@ -323,6 +385,8 @@
   }
   function aiRequest(mode, opts) {
     if (!window.opener || window.opener.closed) { aiStatus('Open the Whiteboard from AlloFlow to use AI assist.', false); return; }
+    if (!linked) { aiStatus('Waiting for AlloFlow to connect\u2026', false); return; }
+    if (aiBusyFlag) return;
     if (!excalidrawAPI) return;
     var record = !!(opts && opts.record);
     var promptEl = document.getElementById('aiPrompt');
@@ -725,7 +789,12 @@
 
   // Boot
   mount();
-  document.getElementById('tplSel').addEventListener('change', function (ev) { loadTemplate(ev.target.value); });
+  document.getElementById('tplSel').addEventListener('change', function (ev) {
+    loadTemplate(ev.target.value);
+    // back to the placeholder, so the same template can be added again and
+    // the control reads as an action rather than a sticky state
+    ev.target.value = '';
+  });
   document.getElementById('exportBtn').addEventListener('click', exportPng);
   var saveBtn = document.getElementById('saveBtn');
   if (saveBtn) {
@@ -733,7 +802,11 @@
       saveBtn.disabled = true; saveBtn.style.opacity = '0.5'; saveBtn.style.cursor = 'not-allowed';
       saveBtn.title = 'Open the Whiteboard from AlloFlow to save into your resources.';
     } else {
-      saveBtn.addEventListener('click', saveToAlloFlow);
+      setLinked(false); // until the opener acks from a trusted origin
+      saveBtn.addEventListener('click', function () {
+        if (!linked) { flash('Waiting for AlloFlow to connect\u2026', false); return; }
+        saveToAlloFlow();
+      });
     }
   }
 
@@ -772,7 +845,13 @@
       // silent -- strictly worse than the '*' fallback documented above, which
       // still reaches window.opener and nothing else. Learning a real origin
       // remains an upgrade; learning 'null' was a downgrade to muteness.
-      if (d.type === 'allocwb-ack') { if (ev.origin && ev.origin !== 'null') openerOrigin = ev.origin; return; }
+      if (d.type === 'allocwb-ack') {
+        if (!isTrustedOpenerOrigin(ev.origin)) return;
+        openerOrigin = ev.origin;
+        setLinked(true);
+        return;
+      }
+      if (!linked) return;
       if (openerOrigin && ev.origin !== openerOrigin) return;   // once learned, pin to the opener's origin
       if (d.type === 'allocwb-ai-image' && d.requestId && aiPending[d.requestId]) {
         var m1 = aiPending[d.requestId].mode; delete aiPending[d.requestId]; setAiBusy(false);
@@ -796,6 +875,7 @@
     } catch (_) {}
   });
 
+  window.__alloWhiteboardTrust = { isTrustedOpenerOrigin: isTrustedOpenerOrigin, offsetSkeletonBelow: offsetSkeletonBelow };
   var hello = function () { toOpener({ type: 'allocwb-hello' }); };
   hello(); setTimeout(hello, 900);
   window.addEventListener('beforeunload', function () { toOpener({ type: 'allocwb-closed' }); });

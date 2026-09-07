@@ -1,0 +1,17 @@
+{
+  "before": {
+    "periodMs": 3000,
+    "floatRangeCssPx": 8
+  },
+  "after": {
+    "periodMs": 6000,
+    "floatRangeCssPx": 2
+  },
+  "quiet": {
+    "float": "paused",
+    "breath": "paused",
+    "eyes": "translate(0px, 0px)"
+  },
+  "listeningLamp": "running",
+  "reducedMotionAnimations": 0
+}

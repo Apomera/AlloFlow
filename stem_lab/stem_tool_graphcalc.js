@@ -409,7 +409,7 @@
           explorer: [
             { icon: '\uD83D\uDCA1', title: __alloT('stem.graphcalc.entering_functions', 'Entering Functions'), text: __alloT('stem.graphcalc.type_y_mx_b_where_m_is_the_slope_and_b', 'Type y = mx + b where m is the slope and b is the y-intercept. Try: 2x + 3') },
             { icon: '\uD83D\uDD0D', title: __alloT('stem.graphcalc.zoom_window', 'Zoom & Window'), text: __alloT('stem.graphcalc.use_zoom_presets_to_change_how_much_of', 'Use zoom presets to change how much of the graph you see.') },
-            { icon: '\uD83D\uDCCA', title: __alloT('stem.graphcalc.reading_the_table', 'Reading the Table'), text: __alloT('stem.graphcalc.the_table_shows_exact_y_values_for_eac', 'The table shows exact y-values for each x.') },
+            { icon: '\uD83D\uDCCA', title: __alloT('stem.graphcalc.reading_the_table', 'Reading the Table'), text: __alloT('stem.graphcalc.table_rounded_values', 'The table shows computed y-values, rounded for display. Undefined means the expression has no finite real value at that x.') },
             { icon: '\uD83C\uDFAF', title: __alloT('stem.graphcalc.multiple_functions', 'Multiple Functions'), text: __alloT('stem.graphcalc.enter_different_equations_to_compare_t', 'Enter different equations to compare them. Where lines cross is an intersection!') }
           ],
           analyst: [
@@ -479,8 +479,8 @@
                 if (d.sliderB != null) _tScope.b = d.sliderB;
                 if (d.sliderC != null) _tScope.c = d.sliderC;
                 var ty = tCompiled.evaluate(_tScope);
-                tableRows.push({ x: Number(tx.toFixed(4)), y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : '---' });
-              } catch (e) { tableRows.push({ x: tx, y: 'ERR' }); }
+                tableRows.push({ x: Number(tx.toFixed(4)), y: typeof ty === 'number' && isFinite(ty) ? Number(ty.toFixed(4)) : __alloT('stem.graphcalc.undefined_real_value','Undefined in the real numbers') });
+              } catch (e) { tableRows.push({ x: tx, y: __alloT('stem.graphcalc.cannot_evaluate','Cannot evaluate') }); }
             });
           } catch (e) { tableRows = [{ x: 0, y: 'Invalid expression' }]; }
         }
@@ -588,6 +588,23 @@
           });
         }
 
+        // Use the same estimate for the canvas and its readable explanation.
+        var tangentEstimate = { y: NaN, slope: NaN };
+        if (d.showDeriv && window.math && funcs[0] && funcs[0].expr) {
+          try {
+            var tangentCompiled = window.math.compile(gcCleanExpr(funcs[0].expr));
+            var tangentScope = { x: derivX };
+            if (d.sliderA != null) tangentScope.a = d.sliderA;
+            if (d.sliderB != null) tangentScope.b = d.sliderB;
+            if (d.sliderC != null) tangentScope.c = d.sliderC;
+            var tangentY = tangentCompiled.evaluate(tangentScope), tangentH = 0.0001;
+            var slopeRight = (tangentCompiled.evaluate(Object.assign({}, tangentScope, { x: derivX + tangentH })) - tangentY) / tangentH;
+            var slopeLeft = (tangentY - tangentCompiled.evaluate(Object.assign({}, tangentScope, { x: derivX - tangentH }))) / tangentH;
+            tangentEstimate.y = tangentY;
+            if (Number.isFinite(tangentY) && Number.isFinite(slopeLeft) && Number.isFinite(slopeRight) && Math.abs(slopeLeft - slopeRight) <= 0.01 * Math.max(1, Math.abs(slopeLeft), Math.abs(slopeRight))) tangentEstimate.slope = (slopeLeft + slopeRight) / 2;
+          } catch (e) { /* The readout explains unavailable estimates. */ }
+        }
+
         /* ── Canvas (callback ref, no useEffect) ── */
         var canvasRef = function(canvas) {
           if (!canvas || !window.math) return;
@@ -668,10 +685,7 @@
           // Derivative tangent
           if (d.showDeriv && funcs[0] && funcs[0].expr) {
             try {
-              var dc = math.compile(gcCleanExpr(funcs[0].expr)); var dx = derivX;
-              var dsc = Object.assign({ x: dx }, sA);
-              var slope = (dc.evaluate(Object.assign({}, dsc, { x: dx + 0.0001 })) - dc.evaluate(Object.assign({}, dsc, { x: dx - 0.0001 }))) / 0.0002;
-              var yAtX = dc.evaluate(dsc);
+              var dx = derivX, yAtX = tangentEstimate.y, slope = tangentEstimate.slope;
               if (typeof slope === 'number' && isFinite(slope)) {
                 c.strokeStyle = '#fb923c'; c.lineWidth = 1.5; c.setLineDash([6, 3]); c.beginPath();
                 c.moveTo(toPixelX(win.xmin), toPixelY(yAtX + slope * (win.xmin - dx)));
@@ -766,8 +780,8 @@
             if (!fn.expr || !fn.expr.trim()) return;
             try {
               var value = window.math.compile(gcCleanExpr(fn.expr)).evaluate(traceScope);
-              if (typeof value === 'number' && isFinite(value)) traceValues.push('y' + (index + 1) + ' = ' + Number(value.toPrecision(5)));
-            } catch (e) { /* invalid functions are already reported by their equation field */ }
+              traceValues.push('y' + (index + 1) + ' = ' + (typeof value === 'number' && isFinite(value) ? Number(value.toPrecision(5)) : __alloT('stem.graphcalc.undefined_real_value','Undefined in the real numbers')));
+            } catch (e) { traceValues.push('y'+(index+1)+': '+__alloT('stem.graphcalc.cannot_evaluate','Cannot evaluate')); }
           });
         }
         var traceSummary = 'Trace x = ' + Number(traceX.toPrecision(5)) + (traceValues.length ? '; ' + traceValues.join('; ') : '; enter a function to read its y value');
@@ -865,7 +879,8 @@
                   h('span', { style: { fontSize: '10px', color: gcText } }, 'x='),
                   h('input', { type: 'range', min: win.xmin, max: win.xmax, step: graphStep, value: derivX, 'aria-label': 'Tangent x position: ' + Number(derivX.toPrecision(4)), onChange: function(e) { upd('derivX', parseFloat(e.target.value)); }, style: { flex: 1, minHeight: '24px', accentColor: gcAccent } }),
                   h('span', { style: { fontFamily: 'monospace', fontSize: '11px', color: gcAccent, fontWeight: 'bold' } }, Number(derivX.toPrecision(4)))
-                )
+                ),
+                h('p',{'data-graphcalc-tangent':true,role:'status',style:{fontSize:12,color:gcText,margin:'6px 0 0',lineHeight:1.5}},Number.isFinite(tangentEstimate.slope)?__alloT('stem.graphcalc.tangent_slope_estimate','Estimated slope ≈ ')+Number(tangentEstimate.slope.toPrecision(5))+'. '+__alloT('stem.graphcalc.tangent_estimate_reason','This numerical estimate compares nearby slopes; use it as evidence alongside the graph.'):__alloT('stem.graphcalc.tangent_unavailable','No reliable finite tangent estimate here. Check the function and its domain; a corner or vertical tangent can make this estimate unavailable.'))
               ) : null,
               // Analysis results
               d.showAnalysis ? h('div', { style: { padding: '8px 12px', borderTop: '1px solid ' + gcBorder, background: gcCard } },
@@ -988,24 +1003,44 @@
               (d._sideTab || 'coach') === 'inquiry' ? (function() {
                 var iq = d.quadHunt || { a: 1, hVertex: 0, kVertex: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
                 function setIQ(patch) { upd('quadHunt', Object.assign({}, iq, patch)); }
-                var state = Math.abs(iq.a) < 0.1 ? 'degenerate' : (iq.a > 0 ? 'up' : 'down');
+                var state = iq.a === 0 ? 'degenerate' : (iq.a > 0 ? 'up' : 'down');
                 var stateMeta = {
                   up:         { label: __alloT('stem.graphcalc.opens_up_min_at_vertex', '🙂 Opens UP (min at vertex)'),   color: gcText, bg: gcCard, border: '#10b981' },
                   down:       { label: __alloT('stem.graphcalc.opens_down_max_at_vertex', '🙁 Opens DOWN (max at vertex)'), color: gcText, bg: gcCard, border: '#ef4444' },
-                  degenerate: { label: __alloT('stem.graphcalc.nearly_a_line', '➖ Nearly a line'),               color: gcText, bg: gcCard, border: '#94a3b8' }
+                  degenerate: { label: __alloT('stem.graphcalc.constant_line', '➖ Constant function: horizontal line'),               color: gcText, bg: gcCard, border: '#94a3b8' }
                 }[state];
+                var inquiryX = function(x) { return 18 + (x + 14) / 28 * 264; };
+                var inquiryY = function(y) { return 182 - (y + 14) / 28 * 164; };
+                var inquiryPath = '';
+                for (var qi = 0; qi <= 280; qi++) {
+                  var qx = -14 + qi / 10, qy = iq.a * (qx - iq.hVertex) * (qx - iq.hVertex) + iq.kVertex;
+                  inquiryPath += (qi ? ' L' : 'M') + inquiryX(qx).toFixed(2) + ',' + inquiryY(qy).toFixed(2);
+                }
+                var inquirySummary = iq.a === 0 ? __alloT('stem.graphcalc.constant_no_vertex','Horizontal line; no unique vertex. y = ') + iq.kVertex : __alloT('stem.graphcalc.vertex_coordinates','Vertex (h, k) = ') + '(' + iq.hVertex + ', ' + iq.kVertex + ')';
                 function logObs() {
                   setIQ({ log: (iq.log || []).concat([{ a: iq.a, h: iq.hVertex, k: iq.kVertex, st: state }]).slice(-8) });
                 }
                 return h('div', { style: { flex: 1, overflowY: 'auto', padding: '8px', color: gcText } },
                   h('div', { style: { fontSize: '12px', fontWeight: 'bold', color: gcAccent, marginBottom: '6px' } }, __alloT('stem.graphcalc.quadratic_discovery', '❔ Quadratic discovery')),
                   h('p', { style: { fontSize: '10px', color: gcMuted, lineHeight: 1.4, marginBottom: '8px' } },
-                    __alloT('stem.graphcalc.sliders_for_vertex_h_k_and_stretch_a_d', 'Sliders for vertex (h, k) and stretch a. Discrete 3-state outcome shows the parabola direction. No score, no reveal — sweep and notice.')),
+                    __alloT('stem.graphcalc.quadratic_observation_prompt', 'Change h, k, or a one at a time. Use the linked graph below to compare position, opening direction, and width.')),
                   h('div', { style: { marginBottom: '8px', padding: '8px', borderRadius: '6px', textAlign: 'center', background: stateMeta.bg, border: '1px solid ' + stateMeta.border } },
                     h('div', { style: { fontSize: '11px', fontWeight: 'bold', color: stateMeta.color } }, stateMeta.label),
                     h('div', { style: { fontSize: '10px', color: gcText, marginTop: '3px', fontFamily: 'monospace' } },
                       'y = ' + iq.a.toFixed(2) + '(x − ' + iq.hVertex + ')² + ' + iq.kVertex)
                   ),
+                  h('figure', { 'data-quadratic-inquiry': true, style: { margin: '0 0 10px', padding: 8, borderRadius: 8, background: gcPanel, border: '1px solid ' + gcBorder } },
+                    h('svg', { viewBox: '0 0 300 200', role: 'img', 'aria-label': __alloT('stem.graphcalc.quadratic_linked_graph','Graph linked to the inquiry sliders. ') + inquirySummary, style: { width: '100%', display: 'block' } },
+                      h('defs', null, h('clipPath', { id: 'graphcalc-inquiry-clip' }, h('rect', { x: 18, y: 18, width: 264, height: 164 }))),
+                      h('rect', { x: 18, y: 18, width: 264, height: 164, fill: 'none', stroke: gcBorder }),
+                      h('line', { x1: 18, x2: 282, y1: inquiryY(0), y2: inquiryY(0), stroke: gcMuted }),
+                      h('line', { x1: inquiryX(0), x2: inquiryX(0), y1: 18, y2: 182, stroke: gcMuted }),
+                      h('text', { x: 284, y: inquiryY(0) - 5, fill: gcText, fontSize: 11 }, 'x'),
+                      h('text', { x: inquiryX(0) + 5, y: 14, fill: gcText, fontSize: 11 }, 'y'),
+                      h('path', { 'data-quadratic-inquiry-curve': true, d: inquiryPath, fill: 'none', stroke: gcAccent, strokeWidth: 2.5, clipPath: 'url(#graphcalc-inquiry-clip)' }),
+                      iq.a !== 0 && h('circle', { 'data-quadratic-inquiry-vertex': true, cx: inquiryX(iq.hVertex), cy: inquiryY(iq.kVertex), r: 4, fill: gcAccent, stroke: gcText, strokeWidth: 1 })),
+                    h('figcaption', { role: 'status', style: { color: gcText, fontSize: 12, lineHeight: 1.5 } }, inquirySummary),
+                    h('p', { style: { color: gcMuted, fontSize: 11, margin: '4px 0 0' } }, __alloT('stem.graphcalc.quadratic_graph_window','Fixed window: −14 to 14 on both axes. Portions outside the window are clipped.'))),
                   [
                     { key: 'a',       label: __alloT('stem.graphcalc.stretch_a', 'stretch a'),  val: iq.a,       min: -3,  max: 3,   step: 0.1 },
                     { key: 'hVertex', label: __alloT('stem.graphcalc.vertex_h', 'vertex h'),   val: iq.hVertex, min: -10, max: 10,  step: 1 },
@@ -1023,7 +1058,7 @@
                     h('button', { onClick: function() { setIQ({ a: 1, hVertex: 0, kVertex: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                       style: { padding: '3px 8px', fontSize: '10px', fontWeight: 600, background: 'transparent', color: gcMuted, border: '1px solid ' + gcBorder, borderRadius: '4px', cursor: 'pointer' } }, __alloT('stem.graphcalc.reset', '↺ Reset'))
                   ),
-                  (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: '#cbd5e1', marginBottom: '8px' } },
+                  (iq.log || []).length > 0 && h('table', { style: { fontSize: '9px', width: '100%', borderCollapse: 'collapse', color: gcText, marginBottom: '8px' } },
                     h('thead', null, h('tr', { style: { background: gcCard } },
                       ['a', 'h', 'k', 'state'].map(function(c, i) { return h('th', { key: 'h' + i, scope: 'col', style: { padding: '3px', borderBottom: '1px solid rgba(99,102,241,0.2)', textAlign: 'left' } }, c); }))),
                     h('tbody', null, iq.log.map(function(o, idx) {
@@ -1054,7 +1089,7 @@
                   ),
                   h('div', { style: { padding: '6px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '4px' } },
                     h('label', { style: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', fontWeight: 'bold', color: gcText, cursor: 'pointer' } },
-                      h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
+                      h('input', { type: 'checkbox', style: { width: 24, height: 24, flexShrink: 0, margin: 0 }, checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); } }),
                       __alloT('stem.graphcalc.i_understand_explain_in_my_own_words', 'I understand — explain in my own words')),
                     iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); },
                       'aria-label': __alloT('stem.graphcalc.explanation_input', 'Graphing calculator explanation'),
@@ -1062,7 +1097,7 @@
                       style: { width: '100%', marginTop: '4px', minHeight: '50px', padding: '4px', background: gcPanel, color: gcText, border: '1px solid rgba(16,185,129,0.45)', borderRadius: '4px', fontSize: '10px', fontFamily: 'monospace' }, rows: 4 })
                   ),
                   h('div', { style: { marginTop: '6px', padding: '6px', fontSize: '9px', fontStyle: 'italic', color: gcMuted, background: gcCard, borderRadius: '4px' } },
-                    __alloT('stem.graphcalc.design_note_discrete_3_state_marker_no', 'Design note: discrete 3-state marker; no score, no reveal — by design.'))
+                    __alloT('stem.graphcalc.quadratic_constant_reason', 'When a = 0, y = k is constant and h has no effect. The horizontal line has no unique vertex.'))
                 );
               })() : null
             )

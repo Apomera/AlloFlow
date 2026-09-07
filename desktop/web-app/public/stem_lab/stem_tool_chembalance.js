@@ -37,6 +37,47 @@
     renderTool: function(id, ctx) { var tool = this._registry[id]; if (!tool || !tool.render) return null; return tool.render(ctx); }
   };
 
+  // Scoped calculator styles are shipped with the lazy-loaded tool.
+  var CHEM_CALCULATOR_CSS = [
+    ".chem-calculator{--chem-paper:#fff;--chem-soft:#f3f7f8;--chem-text:#172b3a;--chem-muted:#455b6a;--chem-line:#b7cbd0;--chem-accent:#09676b;--chem-tint:#e7f4f2;--chem-button:#09676b;max-width:1080px;margin-inline:auto;color:var(--chem-text)}",
+    ".theme-dark .chem-calculator{--chem-paper:#142531;--chem-soft:#1b303d;--chem-text:#edf5f8;--chem-muted:#bdd1dc;--chem-line:#57737f;--chem-accent:#94e6da;--chem-tint:#173c3e;--chem-button:#09676b}",
+    ".theme-contrast .chem-calculator{--chem-paper:#000;--chem-soft:#000;--chem-text:#fff;--chem-muted:#fff;--chem-line:#fff;--chem-accent:#ff0;--chem-tint:#000;--chem-button:#000}",
+    ".chem-calculator .chem-yield-panel{background:var(--chem-paper);border:1px solid var(--chem-line);border-top:4px solid var(--chem-accent);border-radius:20px;padding:clamp(14px,3vw,26px);margin-block:24px;box-shadow:0 8px 24px #12333e0a;color:var(--chem-text)}",
+    ".chem-calculator .chem-yield-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px}",
+    ".chem-calculator .chem-yield-header h4{font-size:22px;line-height:1.25;color:var(--chem-text);margin:0;letter-spacing:-.025em}",
+    ".chem-calculator .chem-calc-badge{font-size:11px;font-weight:700;color:var(--chem-accent);border:1px solid var(--chem-line);border-radius:999px;padding:5px 10px;letter-spacing:.04em;background:var(--chem-tint)}",
+    ".chem-calculator .chem-step{display:flex;align-items:center;gap:9px;margin:20px 0 12px;font-size:14px;font-weight:700;color:var(--chem-text)}",
+    ".chem-calculator .chem-step-number{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex-shrink:0;border-radius:9px;background:var(--chem-tint);color:var(--chem-accent);border:1px solid var(--chem-line);font-size:12px;font-variant-numeric:tabular-nums}",
+    ".chem-calculator .chem-yield-workspace{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:24px;align-items:start}",
+    ".chem-calculator .chem-yield-workspace>div{min-width:0}",
+    ".chem-calculator .chem-yield-panel input,.chem-calculator .chem-yield-panel select{min-height:46px;background:var(--chem-paper);border:1px solid var(--chem-line);color:var(--chem-text);border-radius:10px;font-size:15px;max-width:100%;font-variant-numeric:tabular-nums}",
+    ".chem-calculator .chem-yield-panel input::placeholder{color:var(--chem-muted);opacity:1}",
+    ".chem-calculator .chem-yield-panel label{font-size:13px;color:var(--chem-text);margin-bottom:6px}",
+    ".chem-calculator .chem-yield-panel p,.chem-calculator .chem-yield-panel li{color:var(--chem-muted);font-size:13px;line-height:1.6}",
+    ".chem-calculator .chem-yield-panel .chem-setup-button{min-height:46px;background:var(--chem-button);color:#fff;border:1px solid var(--chem-accent);border-radius:10px}",
+    ".chem-calculator .chem-yield-panel :is(input,select,button,summary):focus-visible{outline:3px solid var(--chem-accent);outline-offset:3px;box-shadow:none}",
+    ".chem-calculator .chem-balanced-equation{font-size:15px;line-height:1.7;background:var(--chem-soft);border:1px solid var(--chem-line);padding:12px 14px;border-radius:10px;color:var(--chem-text);overflow-wrap:anywhere}",
+    ".chem-calculator .chem-yield-result{background:var(--chem-tint);border:1px solid var(--chem-line);border-radius:14px;padding:18px;overflow-wrap:anywhere;color:var(--chem-text)}",
+    ".chem-calculator .chem-yield-result>div{color:var(--chem-text)}",
+    ".chem-calculator .chem-yield-total{font-size:21px;font-weight:800;line-height:1.5;font-variant-numeric:tabular-nums;margin-top:14px;margin-bottom:18px;color:var(--chem-text)}",
+    ".chem-calculator .chem-yield-result details{border-top:1px solid var(--chem-line);padding-top:8px;margin-top:16px}",
+    ".chem-calculator .chem-yield-result summary{color:var(--chem-accent);min-height:44px;margin-bottom:12px}",
+    ".chem-calculator .chem-yield-result li{padding:10px;background:var(--chem-paper);border:1px solid var(--chem-line);border-radius:8px;font-variant-numeric:tabular-nums}",
+    ".chem-calculator .chem-yield-pending{border:1px dashed var(--chem-line);border-radius:14px;padding:22px;background:var(--chem-soft);color:var(--chem-muted);line-height:1.6;font-size:14px}",
+    ".chem-calculator .chem-example-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:10px;margin-top:12px}",
+    ".chem-calculator .chem-example{display:flex;flex-direction:column;gap:5px;text-align:start;padding:14px;border:1px solid var(--chem-line);border-radius:12px;background:var(--chem-soft);color:var(--chem-text);min-height:80px;overflow-wrap:anywhere}",
+    ".chem-calculator .chem-example:hover{background:var(--chem-tint);border-color:var(--chem-accent)}",
+    ".chem-calculator .chem-example span{font-size:12px;color:var(--chem-muted)}",
+    ".chem-calculator .chem-mass-entry,.chem-calculator .chem-mass-result{border-radius:16px;padding:18px;border:1px solid var(--chem-line);background:var(--chem-paper);color:var(--chem-text)}",
+    ".chem-calculator .chem-mass-entry{background:var(--chem-soft)}",
+    ".chem-calculator .chem-mass-result{margin-top:12px}",
+    ".chem-calculator .chem-mass-heading{flex-wrap:wrap;gap:10px}",
+    ".chem-calculator .chem-result-label{display:block;font-size:13px;font-weight:600;margin-bottom:7px;color:var(--chem-muted)}",
+    ".chem-calculator .chem-result-value{display:block;font-size:clamp(26px,3vw,36px);line-height:1.25;letter-spacing:-.025em}",
+    ".chem-calculator .chem-result-moles{display:block;font-size:14px;font-weight:500;color:var(--chem-muted);margin-top:6px}",
+    "@media(forced-colors:active){.chem-calculator{--chem-paper:Canvas;--chem-soft:Canvas;--chem-text:CanvasText;--chem-muted:CanvasText;--chem-line:CanvasText;--chem-accent:Highlight;--chem-tint:Canvas;--chem-button:ButtonFace}.chem-calculator .chem-yield-panel .chem-setup-button{color:ButtonText}.chem-calculator .chem-yield-panel{box-shadow:none}}"
+  ].join('\n');
+
   // ── Grade band helpers ──
   var getGradeBand = function(ctx) {
     var g = parseInt(ctx.gradeLevel, 10);
@@ -262,22 +303,18 @@
           top2.elems[el] = (top2.elems[el] || 0) + n2;
         }
       } else if (clean[i] === '·' || clean[i] === '.') {
-        // Hydrate / addition dot: "·5H2O" = 5 waters of crystallization. Read the
-        // multiplier, parse the remainder of the formula, and fold it in multiplied
-        // by that count — so the molar mass of CuSO4·5H2O counts all five waters,
-        // not one. (Previously the dot AND the multiplier digit were skipped, giving
-        // a badly wrong molar mass for every hydrate.)
-        i++;
-        var hcnt = '';
-        while (i < clean.length && clean[i] >= '0' && clean[i] <= '9') { hcnt += clean[i]; i++; }
-        var hn = hcnt ? parseInt(hcnt, 10) : 1;
-        var sub = parseFormula(clean.slice(i));
+        // Addition segments are independent: a multiplier applies only until the next dot.
+        var parts = clean.slice(i + 1).split(/[.·]/);
         var topH = stack[stack.length - 1];
-        topH.mass += sub.mass * hn;
-        var hk = Object.keys(sub.elems);
-        for (var hi = 0; hi < hk.length; hi++) {
-          topH.elems[hk[hi]] = (topH.elems[hk[hi]] || 0) + sub.elems[hk[hi]] * hn;
-        }
+        parts.forEach(function(part) {
+          var multiplier = part.match(/^\d+/);
+          var count = multiplier ? Number(multiplier[0]) : 1;
+          var sub = parseFormula(multiplier ? part.slice(multiplier[0].length) : part);
+          topH.mass += sub.mass * count;
+          Object.keys(sub.elems).forEach(function(el) {
+            topH.elems[el] = (topH.elems[el] || 0) + sub.elems[el] * count;
+          });
+        });
         break;
       } else { i++; }
     }
@@ -316,7 +353,8 @@
         depth--;
         if (depth < 0) return 'Formula has a closing parenthesis without a matching opening parenthesis';
       } else if (/^\d+$/.test(token)) {
-        if (parseInt(token, 10) < 1) return 'Subscripts and hydrate multipliers must be positive whole numbers';
+        if (Number(token) < 1) return 'Subscripts and hydrate multipliers must be positive whole numbers';
+        if (!Number.isSafeInteger(Number(token))) return 'A subscript or hydrate multiplier exceeds the supported integer range';
         var followsSpecies = /^[A-Z][a-z]?$/.test(prev) || prev === ')';
         var hydrateMultiplier = (prev === '.' || prev === '\u00b7') && (/^[A-Z][a-z]?$/.test(next) || next === '(');
         if (!followsSpecies && !hydrateMultiplier) return 'A number must follow an element or group, or be a hydrate multiplier';
@@ -425,6 +463,16 @@
     return { ok: true, coefficients: ints, balancedString: balancedString, alreadyBalanced: alreadyBalanced, reactantCount: nR, species: species, elements: elements };
   }
 
+  function chemAmount(raw) {
+    if (raw == null || String(raw).trim() === '') return null;
+    var value = Number(raw);
+    return isFinite(value) && value >= 0 ? value : NaN;
+  }
+  function chemNumber(value) {
+    // Keep small nonzero quantities visible instead of rounding them to zero.
+    return Number(value.toPrecision(8)).toString();
+  }
+
   // stoichiometry — limiting reagent + theoretical/percent yield from balanced coefficients.
   function stoichiometry(opts) {
     if (!opts || !opts.coefficients || !opts.species) return { error: 'Balance the equation first' };
@@ -433,22 +481,40 @@
     var ratios = [];
     var given = opts.given || [];
     for (var i = 0; i < given.length; i++) {
-      var gv = given[i], idx = gv.index, mm = molar(idx);
+      var gv = given[i], idx = gv.index;
+      if (!Number.isInteger(idx) || !species[idx]) return { error: 'Choose a valid reactant' };
+      var mm = molar(idx);
       if (!(mm > 0)) return { error: 'Unknown molar mass for ' + species[idx].formula };
-      var moles = (gv.moles != null) ? gv.moles : (gv.grams != null ? gv.grams / mm : null);
-      if (moles == null || isNaN(moles) || moles < 0) return { error: 'Enter a valid amount for ' + species[idx].formula };
+      var amount = chemAmount(gv.moles != null ? gv.moles : gv.grams);
+      var moles = amount == null ? null : (gv.moles != null ? amount : amount / mm);
+      if (moles == null || !isFinite(moles) || moles < 0) return { error: 'Enter a valid amount for ' + species[idx].formula };
       var coef = coefs[idx]; if (!coef) return { error: 'Zero coefficient for ' + species[idx].formula };
       ratios.push({ index: idx, moles: moles, perCoef: moles / coef });
     }
     if (!ratios.length) return { error: 'Enter how much of each reactant you have' };
     var lim = ratios[0]; for (var rr = 1; rr < ratios.length; rr++) if (ratios[rr].perCoef < lim.perCoef) lim = ratios[rr];
-    var pIdx = opts.productIndex, pCoef = coefs[pIdx], pMM = molar(pIdx);
+    var pIdx = opts.productIndex;
+    if (!Number.isInteger(pIdx) || !species[pIdx]) return { error: 'Choose a valid product' };
+    var pCoef = coefs[pIdx], pMM = molar(pIdx);
     if (!(pMM > 0)) return { error: 'Unknown molar mass for the product' };
     var molesProduct = lim.perCoef * pCoef, theoreticalGrams = molesProduct * pMM;
+    if (!isFinite(theoreticalGrams) || !isFinite(molesProduct)) return { error: 'Amounts are too large to calculate. Use smaller values.' };
     var out = { limitingIndex: lim.index, limitingFormula: species[lim.index].formula, molesProduct: molesProduct, theoreticalGrams: theoreticalGrams, productFormula: species[pIdx].formula };
-    if (opts.actualGrams != null && opts.actualGrams !== '' && !isNaN(opts.actualGrams)) {
-      out.actualGrams = Number(opts.actualGrams);
-      out.percentYield = theoreticalGrams > 0 ? (out.actualGrams / theoreticalGrams) * 100 : null;
+    out.limitingFormulas = ratios.filter(function(r) {
+      return Math.abs(r.perCoef - lim.perCoef) <= 1e-10 * Math.max(Math.abs(r.perCoef), Math.abs(lim.perCoef));
+    }).map(function(r) { return species[r.index].formula; });
+    out.productCoefficient = pCoef;
+    out.productMolarMass = pMM;
+    out.steps = ratios.map(function(r) {
+      return { formula: species[r.index].formula, moles: r.moles, coefficient: coefs[r.index], possibleProductMoles: r.perCoef * pCoef };
+    });
+    if (out.steps.some(function(step) { return !isFinite(step.possibleProductMoles); })) return { error: 'Amounts are too large to calculate. Use smaller values.' };
+    var actual = chemAmount(opts.actualGrams);
+    if (actual != null) {
+      if (!isFinite(actual)) return { error: 'Enter a finite, non-negative actual yield.' };
+      out.actualGrams = actual;
+      out.percentYield = theoreticalGrams > 0 ? (actual / theoreticalGrams) * 100 : null;
+      if (out.percentYield != null && !isFinite(out.percentYield)) return { error: 'Amounts are too large to calculate. Use smaller values.' };
     }
     return out;
   }
@@ -3676,7 +3742,7 @@
         };
 
         // ═══ STOICH STATE ═══
-        var stoichFormula = d._stoichFormula || 'H2O';
+        var stoichFormula = d._stoichFormula != null ? d._stoichFormula : 'H2O';
         // Deterministic auto-balancer state (ground-truth math; never the LLM tutor).
         var runAutoBalance = function() { var inp = (d._balanceInput || '').trim(); upd('_balanceResult', inp ? balanceEquation(inp) : null); };
         var _balRes = d._balanceResult || null;
@@ -4827,7 +4893,7 @@
                 ),
                 h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.autobalance_hint', 'Type a neutral molecular equation. Solved exactly by atom-conservation math - the AI tutor is never the authority on coefficients. Ionic equations require separate charge conservation and are not supported here.')),
                 h('div', { className: 'flex flex-col gap-2 sm:flex-row' },
-                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { upd('_balanceInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
+                  h('input', { type: 'text', value: d._balanceInput || '', onChange: function(e) { updMulti({ _balanceInput: e.target.value, _balanceResult: null }); }, onKeyDown: function(e) { if (e.key === 'Enter') runAutoBalance(); }, placeholder: 'H2 + O2 -> H2O', 'aria-label': __alloT('stem.chembalance.equation_to_balance', 'Equation to balance'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-indigo-300 rounded-lg focus:border-indigo-500 focus:outline-none' }),
                   h('button', { type: 'button', onClick: runAutoBalance, className: 'w-full sm:w-auto min-h-[40px] px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors text-sm whitespace-nowrap' }, __alloT('stem.chembalance.balance_it', 'Balance'))
                 ),
                 _balRes && _balRes.ok && h('div', { role: 'status', 'aria-live': 'polite', className: 'mt-3 bg-white rounded-lg p-3 border border-emerald-300' },
@@ -4970,7 +5036,8 @@
           // ════════════════════════════════════════
           // STOICHIOMETRY SUB-TOOL
           // ════════════════════════════════════════
-          subtool === 'stoich' && h('div', null,
+          subtool === 'stoich' && h('div', { className: 'chem-calculator' },
+            h('style', null, CHEM_CALCULATOR_CSS),
             h('p', { className: 'text-xs text-slate-600 italic mb-3' },
               gradeText(
                 'Figure out how heavy molecules are! Type a chemical formula to see.',
@@ -4980,7 +5047,7 @@
               )(band)
             ),
             // Formula input
-            h('div', { className: 'bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
+            h('div', { className: 'chem-mass-entry bg-gradient-to-r from-teal-50 to-cyan-50 rounded-xl p-3 border border-teal-200 mb-3' },
               h('label', { className: 'text-[0.6875rem] font-bold text-teal-600 uppercase tracking-wider block mb-1' }, __alloT('stem.chembalance.enter_chemical_formula', '\uD83E\uDDEE Enter Chemical Formula')),
               h('input', { type: 'text', value: stoichFormula, onChange: function(e) { upd('_stoichFormula', e.target.value); }, placeholder: __alloT('stem.chembalance.e_g_h2o_nacl_ca_oh_2', 'e.g. H2O, NaCl, Ca(OH)2'), 'aria-label': __alloT('stem.chembalance.chemical_formula_input', 'Chemical formula input'), className: 'w-full px-3 py-2 text-sm font-mono font-bold border border-teal-600 rounded-lg focus:border-teal-400 tracking-widest mb-2' }),
               // Presets
@@ -5009,9 +5076,16 @@
               var result = parseFormula(formulaCheck);
               var mass = result.mass;
               var elems = result.elems;
+              var amountUnit = d._stoichUnit || (stoichGrams !== '' ? 'grams' : 'moles');
+              var rawAmount = amountUnit === 'moles' ? stoichMoles : stoichGrams;
+              var amount = chemAmount(rawAmount);
+              var converted = amount == null ? null : (amountUnit === 'moles' ? amount * mass : amount / mass);
+              var amountError = amount != null && (!isFinite(amount) || !isFinite(converted));
+              if (amountUnit === 'moles') stoichGrams = amount == null || amountError ? '' : chemNumber(converted);
+              else stoichMoles = amount == null || amountError ? '' : chemNumber(converted);
               if (mass <= 0) return h('p', { role: 'alert', className: 'text-xs text-slate-600 italic' }, __alloT('stem.chembalance.enter_a_valid_formula_above_2', 'Enter a valid formula above'));
-              return h('div', { role: 'region', 'aria-label': __alloT('stem.chembalance.a11y_molar_mass_result', 'Molar mass result'), className: 'bg-white rounded-xl border p-3 mb-3' },
-                h('div', { className: 'flex items-center gap-3 mb-3' },
+              return h('div', { role: 'region', 'aria-label': __alloT('stem.chembalance.a11y_molar_mass_result', 'Molar mass result'), className: 'chem-mass-result bg-white rounded-xl border p-3 mb-3' },
+                h('div', { className: 'chem-mass-heading flex items-center gap-3 mb-3' },
                   h('p', { className: 'text-lg font-bold text-teal-700' }, 'Molar Mass: ' + mass.toFixed(3) + ' g/mol'),
                   h('span', { className: 'px-2 py-0.5 bg-teal-100 text-teal-700 text-[0.6875rem] font-bold rounded-full' }, stoichFormula)
                 ),
@@ -5027,17 +5101,19 @@
                     );
                   })
                 ),
+                h('p', { id: 'chem-conversion-help', className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.conversion_help', 'Edit either amount. The other is recalculated using the current formula: moles = grams ÷ molar mass.')),
+                amountError && h('p', { id: 'chem-conversion-error', role: 'alert', className: 'text-sm text-red-700 mb-2' }, __alloT('stem.chembalance.amount_error', 'Enter a finite, non-negative amount.')),
                 // Gram-mole converter
                 h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-3' },
                   h('div', null,
                     h('label', { className: 'text-[0.6875rem] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.grams_moles', 'Grams \u2192 Moles')),
-                    h('input', { type: 'number', value: stoichGrams, onChange: function(e) { var g = parseFloat(e.target.value); upd('_stoichGrams', e.target.value); if (!isNaN(g) && mass > 0) upd('_stoichMoles', (g / mass).toFixed(4)); }, placeholder: 'grams', 'aria-label': __alloT('stem.chembalance.grams_to_convert_to_moles', 'Grams to convert to moles'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
-                    stoichGrams && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichGrams + 'g = ' + (parseFloat(stoichGrams) / mass).toFixed(4) + ' mol')
+                    h('input', { type: 'number', min: 0, step: 'any', value: stoichGrams, 'aria-invalid': amountError && amountUnit === 'grams', 'aria-describedby': 'chem-conversion-help' + (amountError ? ' chem-conversion-error' : ''), onChange: function(e) { updMulti({ _stoichUnit: 'grams', _stoichGrams: e.target.value, _stoichMoles: '' }); }, placeholder: 'grams', 'aria-label': __alloT('stem.chembalance.grams_to_convert_to_moles', 'Grams to convert to moles'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
+                    !amountError && stoichGrams !== '' && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichGrams + 'g = ' + stoichMoles + ' mol')
                   ),
                   h('div', null,
                     h('label', { className: 'text-[0.6875rem] font-bold text-slate-600 block mb-1' }, __alloT('stem.chembalance.moles_grams', 'Moles \u2192 Grams')),
-                    h('input', { type: 'number', value: stoichMoles, onChange: function(e) { var m = parseFloat(e.target.value); upd('_stoichMoles', e.target.value); if (!isNaN(m) && mass > 0) upd('_stoichGrams', (m * mass).toFixed(4)); }, placeholder: 'moles', 'aria-label': __alloT('stem.chembalance.moles_to_convert_to_grams', 'Moles to convert to grams'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
-                    stoichMoles && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichMoles + ' mol = ' + (parseFloat(stoichMoles) * mass).toFixed(4) + 'g')
+                    h('input', { type: 'number', min: 0, step: 'any', value: stoichMoles, 'aria-invalid': amountError && amountUnit === 'moles', 'aria-describedby': 'chem-conversion-help' + (amountError ? ' chem-conversion-error' : ''), onChange: function(e) { updMulti({ _stoichUnit: 'moles', _stoichMoles: e.target.value, _stoichGrams: '' }); }, placeholder: 'moles', 'aria-label': __alloT('stem.chembalance.moles_to_convert_to_grams', 'Moles to convert to grams'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' }),
+                    !amountError && stoichMoles !== '' && h('p', { className: 'text-xs font-bold text-teal-800 mt-1' }, stoichMoles + ' mol = ' + stoichGrams + 'g')
                   )
                 )
               );
@@ -5046,43 +5122,95 @@
               var yr = d._yieldResult || null;
               var runYield = function() { var inp = (d._yieldInput || '').trim(); upd('_yieldResult', inp ? balanceEquation(inp) : null); };
               var sr = null;
+              var productIndex = yr && yr.ok ? yr.reactantCount : null;
+              var savedProductValid = d._yieldProductIndex == null || (yr && yr.ok && Number.isInteger(d._yieldProductIndex) && d._yieldProductIndex >= yr.reactantCount && d._yieldProductIndex < yr.species.length);
+              if (savedProductValid && d._yieldProductIndex != null) productIndex = d._yieldProductIndex;
+              var actualYield = savedProductValid && d._yieldActual != null ? d._yieldActual : '';
+              var missingReactants = [];
               if (yr && yr.ok) {
                 var given = [];
-                for (var qi = 0; qi < yr.reactantCount; qi++) { var gv = (d._yieldGrams || {})[qi]; if (gv !== undefined && gv !== '' && !isNaN(gv)) given.push({ index: qi, grams: parseFloat(gv) }); }
-                if (given.length === yr.reactantCount) sr = stoichiometry({ coefficients: yr.coefficients, species: yr.species, given: given, productIndex: yr.reactantCount, actualGrams: (d._yieldActual !== undefined && d._yieldActual !== '') ? parseFloat(d._yieldActual) : undefined });
+                for (var qi = 0; qi < yr.reactantCount; qi++) { var gv = (d._yieldGrams || {})[qi]; if (gv != null && String(gv).trim() !== '') given.push({ index: qi, grams: gv }); else missingReactants.push(yr.species[qi].formula); }
+                if (given.length === yr.reactantCount) sr = stoichiometry({ coefficients: yr.coefficients, species: yr.species, given: given, productIndex: productIndex, actualGrams: actualYield });
               }
-              return h('div', { className: 'bg-gradient-to-br from-purple-50 to-slate-50 rounded-xl p-3 border-2 border-purple-200 mb-3' },
-                h('div', { className: 'flex items-center gap-2 mb-1 flex-wrap' },
-                  h('span', { 'aria-hidden': 'true' }, '\u2696\uFE0F'),
-                  h('h4', { className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.yield_title', 'Limiting reagent & yield')),
-                  h('span', { className: 'ml-auto text-xs font-bold uppercase tracking-wide text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full' }, __alloT('stem.chembalance.calc_badge_2', 'Calculated \u00B7 not AI'))
+              return h('div', { className: 'chem-yield-panel', 'aria-labelledby': 'chem-yield-title' },
+                h('div', { className: 'chem-yield-header' },
+                  h('h4', { id: 'chem-yield-title', className: 'font-bold text-slate-800 text-sm' }, __alloT('stem.chembalance.yield_title', 'Limiting reagent & yield')),
+                  h('span', { className: 'chem-calc-badge' }, __alloT('stem.chembalance.calc_badge_2', 'Calculated \u00B7 not AI'))
                 ),
-                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.yield_hint', 'Type a reaction, then enter how many grams of each reactant you have.')),
+                h('p', { className: 'text-xs text-slate-500 mb-2' }, __alloT('stem.chembalance.yield_workflow_hint', 'Enter a reaction and choose Set up. Select a product, then enter each reactant’s mass.')),
+                h('h5', { className: 'chem-step' }, h('span', { className: 'chem-step-number', 'aria-hidden': 'true' }, '01'), __alloT('stem.chembalance.yield_step_reaction', 'Set up a reaction')),
                 h('div', { className: 'flex flex-col gap-2 mb-2 sm:flex-row' },
-                  h('input', { type: 'text', value: d._yieldInput || '', onChange: function(e) { upd('_yieldInput', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') runYield(); }, placeholder: 'N2 + H2 -> NH3', 'aria-label': __alloT('stem.chembalance.reaction_for_yield', 'Reaction for the yield calculator'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none' }),
-                  h('button', { type: 'button', onClick: runYield, className: 'w-full sm:w-auto min-h-[40px] px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap' }, __alloT('stem.chembalance.set_up', 'Set up'))
+                  h('input', { type: 'text', value: d._yieldInput || '', onChange: function(e) { updMulti({ _yieldInput: e.target.value, _yieldResult: null, _yieldGrams: {}, _yieldActual: '', _yieldProductIndex: null }); }, onKeyDown: function(e) { if (e.key === 'Enter') runYield(); }, placeholder: 'N2 + H2 -> NH3', 'aria-label': __alloT('stem.chembalance.reaction_for_yield', 'Reaction for the yield calculator'), className: 'min-w-0 flex-1 px-3 py-2 text-sm font-mono border border-purple-300 rounded-lg focus:border-purple-500 focus:outline-none' }),
+                  h('button', { type: 'button', onClick: runYield, className: 'chem-setup-button w-full sm:w-auto min-h-[40px] px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-700 text-sm whitespace-nowrap' }, __alloT('stem.chembalance.set_up', 'Set up'))
                 ),
-                yr && !yr.ok && h('div', { className: 'bg-rose-50 rounded-lg p-2 border border-rose-200 text-xs text-rose-700' }, '\u26A0 ' + yr.error),
-                yr && yr.ok && h('div', null,
-                  h('div', { dir: 'auto', className: 'text-xs font-mono font-bold text-slate-700 mb-2 break-words' }, yr.balancedString),
+                yr && !yr.ok && h('div', { role: 'alert', className: 'bg-rose-50 rounded-lg p-2 border border-rose-200 text-xs text-rose-700' }, '\u26A0 ' + yr.error),
+                yr && yr.ok && h('div', { dir: 'auto', className: 'chem-balanced-equation font-mono' }, yr.balancedString),
+                yr && yr.ok && h('div', { className: 'chem-yield-workspace' },
+                  h('div', null,
+                  h('h5', { className: 'chem-step' }, h('span', { className: 'chem-step-number', 'aria-hidden': 'true' }, '02'), __alloT('stem.chembalance.yield_step_amounts', 'Choose product & quantities')),
+                  h('div', { className: 'mb-3' },
+                    h('label', { htmlFor: 'chem-yield-product', className: 'text-xs font-bold text-slate-700 block mb-1' }, __alloT('stem.chembalance.yield_product_label', 'Product to calculate')),
+                    h('select', { id: 'chem-yield-product', value: productIndex, 'aria-describedby': 'chem-yield-product-help', onChange: function(e) { updMulti({ _yieldProductIndex: Number(e.target.value), _yieldActual: '' }); }, className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' },
+                      yr.species.slice(yr.reactantCount).map(function(sp, pi) {
+                        return h('option', { key: pi, value: yr.reactantCount + pi }, sp.formula);
+                      })
+                    ),
+                    h('p', { id: 'chem-yield-product-help', className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.chembalance.yield_selected_product', 'Calculating yield for:') + ' ' + yr.species[productIndex].formula + '. ' + __alloT('stem.chembalance.yield_product_measurement', 'Enter the actual yield of this product only. Changing products clears that measurement.')),
+                    !savedProductValid && h('p', { role: 'status', className: 'text-xs text-amber-800 mt-1' }, __alloT('stem.chembalance.yield_product_recovery', 'The saved product choice is unavailable. The first product is selected; re-enter its actual yield.'))
+                  ),
                   h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2' },
                     yr.species.slice(0, yr.reactantCount).map(function(sp, ri) {
                       return h('div', { key: ri },
                         h('label', { className: 'text-[0.6875rem] font-bold text-slate-600 block mb-0.5' }, sp.formula + ' (g)'),
-                        h('input', { type: 'number', value: (d._yieldGrams || {})[ri] || '', onChange: function(e) { var ng = Object.assign({}, d._yieldGrams || {}); ng[ri] = e.target.value; upd('_yieldGrams', ng); }, placeholder: 'grams', 'aria-label': sp.formula + ' grams available', className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
+                        h('input', { type: 'number', min: 0, step: 'any', value: (d._yieldGrams || {})[ri] != null ? d._yieldGrams[ri] : '', onChange: function(e) { var ng = Object.assign({}, d._yieldGrams || {}); ng[ri] = e.target.value; upd('_yieldGrams', ng); }, placeholder: 'grams', 'aria-label': sp.formula + ' grams available', className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
                       );
                     })
                   ),
+                  missingReactants.length > 0 && h('p', { role: 'status', className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.yield_missing_amounts', 'Enter grams for:') + ' ' + missingReactants.join(', ') + '.'),
                   h('div', { className: 'mb-2' },
                     h('label', { className: 'text-[0.6875rem] font-bold text-slate-600 block mb-0.5' }, __alloT('stem.chembalance.actual_yield_opt', 'Actual yield (g, optional)')),
-                    h('input', { type: 'number', value: d._yieldActual || '', onChange: function(e) { upd('_yieldActual', e.target.value); }, placeholder: 'grams produced', 'aria-label': __alloT('stem.chembalance.actual_grams_produced', 'Actual grams produced'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
+                    h('input', { type: 'number', min: 0, step: 'any', value: actualYield, 'aria-describedby': 'chem-yield-product-help', onChange: function(e) { updMulti({ _yieldProductIndex: productIndex, _yieldActual: e.target.value }); }, placeholder: 'grams produced', 'aria-label': __alloT('stem.chembalance.actual_grams_produced', 'Actual grams produced'), className: 'w-full min-h-[40px] px-3 py-2 text-sm border border-slate-400 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-1' })
                   ),
-                  sr && !sr.error && h('div', { className: 'bg-white rounded-lg p-3 border border-emerald-300 text-sm' },
-                    h('div', { className: 'font-bold text-slate-800 mb-1' }, '\u2192 ' + __alloT('stem.chembalance.limiting', 'Limiting reagent') + ': ' + sr.limitingFormula),
-                    h('div', { className: 'text-slate-700' }, __alloT('stem.chembalance.theoretical', 'Theoretical yield') + ': ' + sr.theoreticalGrams.toFixed(2) + ' g ' + sr.productFormula + ' (' + sr.molesProduct.toFixed(3) + ' mol)'),
-                    (sr.percentYield != null) && h('div', { className: 'text-slate-700 font-bold mt-0.5' }, __alloT('stem.chembalance.percent_yield', 'Percent yield') + ': ' + sr.percentYield.toFixed(1) + '%')
                   ),
-                  sr && sr.error && h('div', { className: 'text-xs text-amber-700 mt-1' }, sr.error)
+                  h('div', null,
+                  h('h5', { className: 'chem-step' }, h('span', { className: 'chem-step-number', 'aria-hidden': 'true' }, '03'), __alloT('stem.chembalance.yield_step_result', 'Read the prediction')),
+                  !sr && h('p', { className: 'chem-yield-pending' }, __alloT('stem.chembalance.yield_pending_result', 'Your predicted yield will appear here once each reactant has an amount. You can then expand the calculation to check every mole ratio.')),
+                  sr && !sr.error && h('div', { className: 'chem-yield-result' },
+                    h('div', { className: 'font-bold text-slate-800 mb-1' }, '\u2192 ' + __alloT('stem.chembalance.limiting', 'Limiting reagent') + ': ' + sr.limitingFormulas.join(', ')),
+                    sr.limitingFormulas.length > 1 && h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.chembalance.reagents_tied', 'These reactants are used up together in the balanced ratio.')),
+                    h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'chem-yield-total' },
+                      h('span', { className: 'chem-result-label' }, __alloT('stem.chembalance.theoretical', 'Theoretical yield') + ': '),
+                      h('span', { className: 'chem-result-value' }, chemNumber(sr.theoreticalGrams) + ' g ' + sr.productFormula),
+                      h('span', { className: 'chem-result-moles' }, ' (' + chemNumber(sr.molesProduct) + ' mol)')
+                    ),
+                    h('details', { className: 'mt-2 mb-2' },
+                      h('summary', { className: 'cursor-pointer min-h-[40px] py-2 text-sm font-bold text-teal-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 rounded' }, __alloT('stem.chembalance.yield_show_work', 'How this was calculated')),
+                      h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.chembalance.yield_compare_moles', 'Compare how much of the selected product each reactant could form if the others were in excess. The smallest amount determines the theoretical yield.')),
+                      h('ul', { className: 'space-y-2 text-xs text-slate-700' }, sr.steps.map(function(step, si) {
+                        return h('li', { key: si, className: 'break-words' }, chemNumber(step.moles) + ' mol ' + step.formula + ' × (' + sr.productCoefficient + ' mol ' + sr.productFormula + ' / ' + step.coefficient + ' mol ' + step.formula + ') = ' + chemNumber(step.possibleProductMoles) + ' mol ' + sr.productFormula);
+                      })),
+                      h('p', { className: 'text-xs text-slate-700 mt-2 break-words' }, chemNumber(sr.molesProduct) + ' mol ' + sr.productFormula + ' × ' + chemNumber(sr.productMolarMass) + ' g/mol = ' + chemNumber(sr.theoreticalGrams) + ' g ' + sr.productFormula),
+                      h('p', { className: 'text-xs text-slate-600 mt-2' }, __alloT('stem.chembalance.yield_model_assumption', 'This is the maximum predicted by the balanced equation, assuming complete reaction. Apply significant-figure rules for your measurements.'))
+                    ),
+                    (sr.percentYield != null) && h('div', { className: 'text-slate-700 font-bold mt-0.5' }, __alloT('stem.chembalance.percent_yield', 'Percent yield') + ': ' + sr.percentYield.toFixed(1) + '%'),
+                    sr.percentYield > 100 && h('p', { role: 'status', className: 'text-xs text-amber-800 mt-1' }, __alloT('stem.chembalance.yield_above_theory', 'This exceeds the theoretical yield. Check measurements, units, and whether the product contains solvent or impurities.')),
+                    sr.actualGrams != null && sr.percentYield == null && h('p', { role: 'status', className: 'text-xs text-slate-600 mt-1' }, __alloT('stem.chembalance.zero_theoretical_yield', 'Percent yield is undefined because the theoretical yield is zero.'))
+                  ),
+                  sr && sr.error && h('div', { role: 'alert', className: 'text-xs text-amber-700 mt-1' }, sr.error)
+                  )
+                ),
+                !yr && !(d._yieldInput || '').trim() && h('div', { className: 'mt-4' },
+                  h('h5', { className: 'chem-step' }, __alloT('stem.chembalance.yield_examples', 'Try a practice example')),
+                  h('p', null, __alloT('stem.chembalance.yield_examples_hint', 'Each example loads a reaction and practice masses. Change the amounts to explore what limits the yield.')),
+                  h('div', { className: 'chem-example-list' }, [
+                    { label: __alloT('stem.chembalance.yield_example_water', 'Water formation'), equation: 'H2 + O2 -> H2O', grams: { 0: '2.016', 1: '15.999' } },
+                    { label: __alloT('stem.chembalance.yield_example_ammonia', 'Ammonia synthesis'), equation: 'N2 + H2 -> NH3', grams: { 0: '28.014', 1: '2.016' } },
+                    { label: __alloT('stem.chembalance.yield_example_methane', 'Methane combustion'), equation: 'CH4 + O2 -> CO2 + H2O', grams: { 0: '16.043', 1: '31.998' } }
+                  ].map(function(example) {
+                    return h('button', { key: example.equation, type: 'button', className: 'chem-example', 'aria-label': __alloT('stem.chembalance.yield_load_example', 'Load practice example:') + ' ' + example.label, onClick: function() { updMulti({ _yieldInput: example.equation, _yieldResult: balanceEquation(example.equation), _yieldGrams: example.grams, _yieldActual: '', _yieldProductIndex: null }); } },
+                      h('strong', null, example.label), h('span', null, balanceEquation(example.equation).balancedString)
+                    );
+                  }))
                 )
               );
             })()

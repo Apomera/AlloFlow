@@ -43,9 +43,9 @@
     "dashboard_title": "ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ / ಸಾಧನಗಳು",
     "dashboard_text": "ಸಾಧನ ನ್ಯಾವಿಗೇಶನ್ ಬಾರ್ ಮತ್ತು ಶಿಕ್ಷಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಪ್ರವೇಶ ಬಿಂದು.\n### ಸಾಧನ ನ್ಯಾವಿಗೇಶನ್ ಬಾರ್\n• **ಸಾಧನ ಐಕಾನ್‌ಗಳು**: ಯಾವುದೇ ಜನರೇಟರ್‌ಗೆ ಒಂದು-ಕ್ಲಿಕ್ ಜಿಗಿತ (ರಸಪ್ರಶ್ನೆ, ಶಬ್ದಕೋಶ, ಅಡ್ವೆಂಚರ್, ಇತ್ಯಾದಿ).\n• **ಸ್ಥಿತಿ ಡಾಟ್‌ಗಳು**: ಹಸಿರು = ಸಕ್ರಿಯ ವಿಷಯ, ಕಿತ್ತಳೆ = ಸಂಸ್ಕರಣೆ, ಬೂದು = ಖಾಲಿ.\n• **ತಾರ್ಕಿಕ ಹರಿವು**: ಸಾಧನಗಳನ್ನು ಇನ್‌ಪುಟ್ → ರಚಿಸಿ → ರಫ್ತು ಎಡದಿಂದ-ಬಲಕ್ಕೆ ಕ್ರಮಬದ್ಧಗೊಳಿಸಲಾಗಿದೆ.\n### ಶಿಕ್ಷಕ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಬಟನ್\nವಿದ್ಯಾರ್ಥಿ ಪ್ರಗತಿಯನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಮೀಸಲಾದ ಪ್ಯಾನೆಲ್ - **ಶಿಕ್ಷಕ ಗ್ರೇಡಿಂಗ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್** ತೆರೆಯಲು ಡ್ಯಾಶ್‌ಬೋರ್ಡ್ ಐಕಾನ್ ಕ್ಲಿಕ್ ಮಾಡಿ:\n• **ವಿದ್ಯಾರ್ಥಿ JSON ಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ**: ವಿದ್ಯಾರ್ಥಿಗಳು ತಮ್ಮ ಕೆಲಸವನ್ನು JSON ಫೈಲ್‌ಗಳಾಗಿ ರಫ್ತು ಮಾಡುತ್ತಾರೆ; ಬ್ಯಾಚ್ ವಿಶ್ಲೇಷಣೆಗಾಗಿ ಅವುಗಳನ್ನು ಇಲ್ಲಿ ಅಪ್‌ಲೋಡ್ ಮಾಡಿ.\n• **ವಿದ್ಯಾರ್ಥಿ ರೋಸ್ಟರ್**: ಅಡ್ಡಹೆಸರು, ದಿನಾಂಕ, ರಸಪ್ರಶ್ನೆ ಪ್ರಗತಿ ಮತ್ತು ಅಡ್ವೆಂಚರ್ ಮಟ್ಟದೊಂದಿಗೆ ಎಲ್ಲಾ ಅಪ್‌ಲೋಡ್ ಮಾಡಿದ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ವೀಕ್ಷಿಸಿ.\n• **ವೈಯಕ್ತಿಕ ಪರಿಶೀಲನೆ**: ಯಾವುದೇ ವಿದ್ಯಾರ್ಥಿಯ ಸಂಪೂರ್ಣ ಇತಿಹಾಸವನ್ನು ನೋಡಲು ಕ್ಲಿಕ್ ಮಾಡಿ•ರಸಪ್ರಶ್ನೆಗಳು, ಅಡ್ವೆಂಚರ್‌ಗಳು, ಪ್ರತಿಕ್ರಿಯೆಗಳು.\n• **ಗ್ರೇಡ್ ಮಾಡಲಾಗಿದೆ ಎಂದು ಗುರುತಿಸಿ**: ನೀವು ಯಾವ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಪರಿಶೀಲಿಸಿದ್ದೀರಿ ಎಂದು ಟ್ರ್ಯಾಕ್ ಮಾಡಲು ಚೆಕ್‌ಬಾಕ್ಸ್.\n• **ತರಗತಿ ಒಳನೋಟಗಳ ಟ್ಯಾಬ್**: ಸಾಮಾನ್ಯ ತಪ್ಪುಗ್ರಹಿಕೆಗಳು ಮತ್ತು ತರಗತಿ-ವ್ಯಾಪಿ ಕಾರ್ಯಕ್ಷಮತೆಯನ್ನು ತೋರಿಸುವ ವಿಶ್ಲೇಷಣಾ ಚಾರ್ಟ್‌ಗಳು.\n• **CSV ಗೆ ರಫ್ತು**: ಗ್ರೇಡ್‌ಬುಕ್ ಆಮದುಗಾಗಿ ತರಗತಿ ಡೇಟಾವನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ.\n### ಸಂಬಂಧಿತ ಹೆಡರ್ ಕ್ರಿಯೆಗಳು\n• **ಪಾಠಕ್ಕೆ ಜಿಗಿಯಿರಿ**: ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಪಾಠ ಯೋಜನೆಗೆ ತ್ವರಿತ-ಮರಳುವಿಕೆ.\n• **ನೋಟ ಟಾಗಲ್**: ಶಿಕ್ಷಕ ಮತ್ತು ವಿದ್ಯಾರ್ಥಿ ನೋಟಗಳ ನಡುವೆ ಬದಲಾಯಿಸಿ.\n### ಪ್ರೊ ಸಲಹೆ\nತರಗತಿಯ ಕೊನೆಯಲ್ಲಿ ವಿದ್ಯಾರ್ಥಿಗಳು ತಮ್ಮ JSON ಉಳಿತಾಯಗಳನ್ನು ರಫ್ತು ಮಾಡಲಿ, ನಂತರ ಪರಿಣಾಮಕಾರಿ ರಾತ್ರಿ ಗ್ರೇಡಿಂಗ್‌ಗಾಗಿ ಅವುಗಳನ್ನು ಇಲ್ಲಿ ಬ್ಯಾಚ್-ಅಪ್‌ಲೋಡ್ ಮಾಡಿ!",
     "actions_title": "ಆಕ್ಷನ್ ಬಾರ್",
-    "actions_text": "ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ ಹೊಂದಿಸಲು, ಲೈವ್ ಸೆಷನ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು, ಸಂಪನ್ಮೂಲಗಳನ್ನು ಅನುವಾದಿಸಲು ಮತ್ತು ರಫ್ತು ಸಾಧನಗಳನ್ನು ತೆರೆಯಲು ಹೆಡರ್‌ನ ನಿಯಂತ್ರಣಗಳನ್ನು ಬಳಸಿ.\n### ತಲುಪಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ\n• ಅನುವಾದಿತ ವಿಷಯದ ಅರ್ಥ ಮತ್ತು ನಿಖರತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.\n• ಆಯ್ದ ಸಂಪನ್ಮೂಲಗಳು ಮತ್ತು ಲಭ್ಯವಿರುವ ಡೌನ್‌ಲೋಡ್ ಸ್ವರೂಪಗಳನ್ನು ನೋಡಲು Document Builder ತೆರೆಯಿರಿ. ಕಲಿಯುವವರೊಂದಿಗೆ ಹಂಚುವ ಮೊದಲು ಫಲಿತಾಂಶವನ್ನು ಮುನ್ನೋಟ ಮಾಡಿ.\n• ಸೇರುವ ಕೋಡ್ ಪಡೆಯಲು ಲೈವ್ ಸೆಷನ್ ಆರಂಭಿಸಿ, ಅಥವಾ ಸ್ವತಂತ್ರ ಕೆಲಸಕ್ಕಾಗಿ ಬೆಂಬಲಿತ ಮನೆಕೆಲಸ ಹಂಚಿಕೆ ರಚಿಸಿ.\n### ಅನ್ವೇಷಣೆ ಮುಂದುವರಿಸಿ\nಶಿಕ್ಷಕ ಮತ್ತು ಕಲಿಕೆ ಸಾಧನಗಳ ಮೆನುಗಳು ಯೋಜನೆ, ಮೌಲ್ಯಮಾಪನ, ಸೃಜನಶೀಲ ಮತ್ತು ಸಂವಾದಾತ್ಮಕ ಹೆಚ್ಚಿನ ಚಟುವಟಿಕೆಗಳನ್ನು ತೆರೆಯುತ್ತವೆ. ಆ ಆಯ್ಕೆಗಳನ್ನು ಅನ್ವೇಷಿಸುವ ಮೊದಲು ಕೇಂದ್ರೀಕೃತ ಪಾಠವನ್ನು ಕಟ್ಟಲು ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
+    "actions_text": "ಇಂಟರ್‌ಫೇಸ್ ಭಾಷೆ ಹೊಂದಿಸಲು, ಲೈವ್ ಸೆಷನ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು, ಸಂಪನ್ಮೂಲಗಳನ್ನು ಅನುವಾದಿಸಲು ಮತ್ತು ರಫ್ತು ಸಾಧನಗಳನ್ನು ತೆರೆಯಲು ಹೆಡರ್‌ನ ನಿಯಂತ್ರಣಗಳನ್ನು ಬಳಸಿ.\n### ತಲುಪಿಸುವ ಮೊದಲು ಪರಿಶೀಲಿಸಿ\n• ಅನುವಾದಿತ ವಿಷಯದ ಅರ್ಥ ಮತ್ತು ನಿಖರತೆಯನ್ನು ಪರಿಶೀಲಿಸಿ.\n• ಆಯ್ದ ಸಂಪನ್ಮೂಲಗಳು ಮತ್ತು ಲಭ್ಯವಿರುವ ಡೌನ್‌ಲೋಡ್ ಸ್ವರೂಪಗಳನ್ನು ನೋಡಲು ದಸ್ತಾವೇಜು ನಿರ್ಮಾಪಕ ತೆರೆಯಿರಿ. ಕಲಿಯುವವರೊಂದಿಗೆ ಹಂಚುವ ಮೊದಲು ಫಲಿತಾಂಶವನ್ನು ಮುನ್ನೋಟ ಮಾಡಿ.\n• ಸೇರುವ ಕೋಡ್ ಪಡೆಯಲು ಲೈವ್ ಸೆಷನ್ ಆರಂಭಿಸಿ, ಅಥವಾ ಸ್ವತಂತ್ರ ಕೆಲಸಕ್ಕಾಗಿ ಬೆಂಬಲಿತ ಮನೆಕೆಲಸ ಹಂಚಿಕೆ ರಚಿಸಿ.\n### ಅನ್ವೇಷಣೆ ಮುಂದುವರಿಸಿ\nಶಿಕ್ಷಕ ಮತ್ತು ಕಲಿಕೆ ಸಾಧನಗಳ ಮೆನುಗಳು ಯೋಜನೆ, ಮೌಲ್ಯಮಾಪನ, ಸೃಜನಶೀಲ ಮತ್ತು ಸಂವಾದಾತ್ಮಕ ಹೆಚ್ಚಿನ ಚಟುವಟಿಕೆಗಳನ್ನು ತೆರೆಯುತ್ತವೆ. ಆ ಆಯ್ಕೆಗಳನ್ನು ಅನ್ವೇಷಿಸುವ ಮೊದಲು ಕೇಂದ್ರೀಕೃತ ಪಾಠವನ್ನು ಕಟ್ಟಲು ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
     "history_title": "ಅಧಿವೇಶನ ಇತಿಹಾಸ",
-    "history_text": "ಇತಿಹಾಸ ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿನ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಹಿಡಿದಿಡುತ್ತದೆ. ಉಳಿಸಿದ ಅಂಶವನ್ನು ತೆರೆದು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹಿಂದಿನ ಫಲಿತಾಂಶಕ್ಕೆ ಹಿಂತಿರುಗಿ.\n### ಬ್ಯಾಕಪ್ ಇಟ್ಟುಕೊಳ್ಳಿ\n• ಬೇರೆ ಸಾಧನದಲ್ಲಿ ಮುಂದುವರಿಸಲು ಅಥವಾ ನಂತರ ನಿಮ್ಮ ಕೆಲಸವನ್ನು ಮರಳಿ ಪಡೆಯಲು ಯೋಜನೆಯ ಬ್ಯಾಕಪ್ ಉಳಿಸಿ. ಪ್ರಗತಿಯನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನೂ ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ತೋರಿಸುತ್ತದೆ.\n• ಒಂದು ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿ ಹಲವು ಪಾಠಗಳ ಸಾಮಗ್ರಿ ಇರಬಹುದು. ರಫ್ತು ಮಾಡುವ ಅಥವಾ ಹಂಚುವ ಮೊದಲು ಆಯ್ಕೆ ಮಾಡಿದ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.\n### ಮಾರ್ಗದರ್ಶಿತ ಪಾಠ ಪ್ಯಾಕೇಜ್‌ಗಳು\nಆ ಪಾಠದ ಆಯ್ದ ಸಂಪನ್ಮೂಲಗಳೊಂದಿಗೆ ಕೆಲಸ ಮಾಡಲು ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ನಿಂದ Document Builder ತೆರೆಯಿರಿ. ಸಾಮಾನ್ಯ Builder ವಿಶಾಲವಾದ ಕಾರ್ಯಕ್ಷೇತ್ರವನ್ನು ಬಳಸಬಹುದು, ಆದ್ದರಿಂದ ತಲುಪಿಸುವ ಮೊದಲು ಅದರ ವಿಷಯವನ್ನು ಪರಿಶೀಲಿಸಿ.",
+    "history_text": "ಇತಿಹಾಸ ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿನ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಹಿಡಿದಿಡುತ್ತದೆ. ಉಳಿಸಿದ ಅಂಶವನ್ನು ತೆರೆದು ಪರಿಶೀಲಿಸಿ ಅಥವಾ ಹಿಂದಿನ ಫಲಿತಾಂಶಕ್ಕೆ ಹಿಂತಿರುಗಿ.\n### ಬ್ಯಾಕಪ್ ಇಟ್ಟುಕೊಳ್ಳಿ\n• ಬೇರೆ ಸಾಧನದಲ್ಲಿ ಮುಂದುವರಿಸಲು ಅಥವಾ ನಂತರ ನಿಮ್ಮ ಕೆಲಸವನ್ನು ಮರಳಿ ಪಡೆಯಲು ಯೋಜನೆಯ ಬ್ಯಾಕಪ್ ಉಳಿಸಿ. ಪ್ರಗತಿಯನ್ನು ಈ ಸಾಧನದಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆಯೇ ಎಂಬುದನ್ನೂ ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ತೋರಿಸುತ್ತದೆ.\n• ಒಂದು ಕಾರ್ಯಕ್ಷೇತ್ರದಲ್ಲಿ ಹಲವು ಪಾಠಗಳ ಸಾಮಗ್ರಿ ಇರಬಹುದು. ರಫ್ತು ಮಾಡುವ ಅಥವಾ ಹಂಚುವ ಮೊದಲು ಆಯ್ಕೆ ಮಾಡಿದ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.\n### ಮಾರ್ಗದರ್ಶಿತ ಪಾಠ ಪ್ಯಾಕೇಜ್‌ಗಳು\nಆ ಪಾಠದ ಆಯ್ದ ಸಂಪನ್ಮೂಲಗಳೊಂದಿಗೆ ಕೆಲಸ ಮಾಡಲು ಮಾರ್ಗದರ್ಶಿತ ಮೋಡ್ ನಿಂದ ದಸ್ತಾವೇಜು ನಿರ್ಮಾಪಕ ತೆರೆಯಿರಿ. ಸಾಮಾನ್ಯ Builder ವಿಶಾಲವಾದ ಕಾರ್ಯಕ್ಷೇತ್ರವನ್ನು ಬಳಸಬಹುದು, ಆದ್ದರಿಂದ ತಲುಪಿಸುವ ಮೊದಲು ಅದರ ವಿಷಯವನ್ನು ಪರಿಶೀಲಿಸಿ.",
     "spotlight_title": "ಸ್ಪಾಟ್‌ಲೈಟ್",
     "spotlight_message": "{name} ಗೆ ಹಲೋ ಹೇಳಿ!",
     "dbq_title": "ದಸ್ತಾವೇಜು-ಆಧಾರಿತ ಪ್ರಶ್ನೆಗಳು",
@@ -509,7 +509,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "ದಸ್ತಾವೇಜು ನಿರ್ಮಾಪಕ",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "ಥೀಮ್ ಬದಲಿಸಿ",
     "close_story_forge": "StoryForge ಮುಚ್ಚಿ",
     "story_creation_phases": "ಕಥೆ ರಚನೆಯ ಹಂತಗಳು",
-    "doc_builder": "Document Builder",
+    "doc_builder": "ದಸ್ತಾವೇಜು ನಿರ್ಮಾಪಕ",
     "close_doc_builder": "Document Builder ಮುಚ್ಚಿ",
     "font_size": "ಅಕ್ಷರ ಗಾತ್ರ",
     "target_word_count": "ಗುರಿ ಪದ ಸಂಖ್ಯೆ ಗುರಿ",
@@ -5071,10 +5071,10 @@
     "locked": "ಲಾಕ್ ಆಗಿದೆ",
     "escaped": "ನೀವು ತಪ್ಪಿಸಿಕೊಂಡಿರಿ!",
     "escaped_desc": "ನೀವು ಎಲ್ಲಾ ಒಗಟುಗಳನ್ನು ಬಿಡಿಸಿ ಕೋಣೆಯಿಂದ ತಪ್ಪಿಸಿಕೊಂಡಿರಿ!",
-    "time_up": "? ಸಮಯ ಮುಗಿಯಿತು!",
+    "time_up": "⏰ ಸಮಯ ಮುಗಿಯಿತು!",
     "reveal_hint": "ಸುಳಿವು ತೋರಿಸಿ",
-    "puzzles_remaining": "{{count}} ಒಗಟುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ",
-    "time_remaining": "ಸಮಯ: {{time}}",
+    "puzzles_remaining": "{count} ಒಗಟುಗಳು ಬಾಕಿ ಉಳಿದಿವೆ",
+    "time_remaining": "ಸಮಯ: {time}",
     "progress": "ಪ್ರಗತಿ",
     "start": "ಎಸ್ಕೇಪ್ ರೂಮ್ ಪ್ರಾರಂಭಿಸಿ",
     "start_hint": "ವಸ್ತುಗಳನ್ನು ಪರಿಶೀಲಿಸಲು ಪ್ರಾರಂಭಿಸಲು ಟೈಮರ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸಿ",
@@ -5085,8 +5085,8 @@
     "room_complete": "ಕೋಣೆ ಪೂರ್ಣಗೊಂಡಿತು!",
     "loading_error": "ಕೋಣೆಯ ಡೇಟಾವನ್ನು ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ",
     "no_puzzle": "ಈ ವಸ್ತುವಿಗೆ ಯಾವುದೇ ಒಗಟು ಸಿಗಲಿಲ್ಲ",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "ಪರಿಪೂರ್ಣ ಎಸ್ಕೇಪ್! +{{xp}} ಬೋನಸ್ XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "ಪರಿಪೂರ್ಣ ಎಸ್ಕೇಪ್! +{xp} ಬೋನಸ್ XP",
     "puzzle_mcq": "ಬಹು ಆಯ್ಕೆ",
     "puzzle_sequence": "ಕ್ರಮದಲ್ಲಿ ಇರಿಸಿ",
     "puzzle_cipher": "ಸಂದೇಶವನ್ನು ಡಿಕೋಡ್ ಮಾಡಿ",
@@ -5144,7 +5144,7 @@
     "clue": "ಸುಳಿವು",
     "clue_found": "ಸುಳಿವು ಪತ್ತೆಯಾಯಿತು!",
     "clue_revealed": "ಈ ಸುಳಿವು ಮತ್ತೊಂದು ಒಗಟಿಗೆ ಸಹಾಯ ಮಾಡಬಹುದು...",
-    "clues_collected": "ಸುಳಿವುಗಳು: {{count}}/{{total}}",
+    "clues_collected": "ಸುಳಿವುಗಳು: {count}/{total}",
     "use_clue": "ಸುಳಿವು ಬಳಸಿ",
     "final_door": "ನಿರ್ಗಮನ ಬಾಗಿಲು",
     "final_door_ready": "ನಿರ್ಗಮನ ಬಾಗಿಲು ಈಗ ಅನ್‌ಲಾಕ್ ಆಗಿದೆ!",
@@ -5170,12 +5170,12 @@
     "left": "ಬಾಕಿ",
     "wrong_attempts": "ತಪ್ಪು ಪ್ರಯತ್ನಗಳು",
     "time_penalty": "-{seconds} ಸೆಕೆಂಡುಗಳು!",
-    "game_over_time": "? ಸಮಯ ಮುಗಿಯಿತು! ನಿಮ್ಮ ಸಮಯ ಮುಗಿದಿದೆ.",
+    "game_over_time": "⏰ ಸಮಯ ಮುಗಿಯಿತು! ನಿಮ್ಮ ಸಮಯ ಮುಗಿದಿದೆ.",
     "streak": "ಸತತ ಸಾಧನೆ",
     "streak_bonus": "ಸತತ ಸಾಧನೆ ಬೋನಸ್! x{multiplier}",
     "streak_lost": "ಸತತ ಸಾಧನೆ ಕಳೆದುಹೋಯಿತು!",
     "one_minute_warning": "ಒಂದು ನಿಮಿಷ ಬಾಕಿ!",
-    "thirty_seconds_warning": "? ಕೇವಲ 30 ಸೆಕೆಂಡುಗಳು ಬಾಕಿ!",
+    "thirty_seconds_warning": "⏰ ಕೇವಲ 30 ಸೆಕೆಂಡುಗಳು ಬಾಕಿ!",
     "timer_paused": "ಟೈಮರ್ ವಿರಾಮಗೊಂಡಿದೆ",
     "timer_resume": "ಮುಂದುವರಿಸಿ",
     "settings_btn": "ರೂಮ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "ನಿಮ್ಮ ತರಗತಿಯೊಂದಿಗೆ ಬಹು-ಆಟಗಾರ ಎಸ್ಕೇಪ್ ರೂಮ್ ಪ್ರಾರಂಭಿಸಿ",
     "team_mode": "ತಂಡದ ಸವಾಲು",
     "team_race": "ತಪ್ಪಿಸಿಕೊಳ್ಳಲು ಓಟ!",
-    "team_progress": "{{team}} ಪ್ರಗತಿ: {{solved}}/{{total}}",
+    "team_progress": "{team} ಪ್ರಗತಿ: {solved}/{total}",
     "waiting_host": "ಶಿಕ್ಷಕರು ಪ್ರಾರಂಭಿಸಲು ಕಾಯುತ್ತಿದೆ...",
-    "team_escaped": "{{team}} ತಂಡ ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
+    "team_escaped": "{team} ತಂಡ ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
     "all_teams_done": "ಎಲ್ಲಾ ತಂಡಗಳು ಮುಗಿಸಿದವು!",
     "your_team": "ನಿಮ್ಮ ತಂಡ",
     "team_red": "ಕೆಂಪು ತಂಡ",
@@ -5198,7 +5198,7 @@
     "team_green": "ಹಸಿರು ತಂಡ",
     "team_yellow": "ಹಳದಿ ತಂಡ",
     "team_all": "ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳು",
-    "teams_competing": "{{count}} ತಂಡಗಳು ಸ್ಪರ್ಧಿಸುತ್ತಿವೆ",
+    "teams_competing": "{count} ತಂಡಗಳು ಸ್ಪರ್ಧಿಸುತ್ತಿವೆ",
     "first_escape": "ಮೊದಲು ತಪ್ಪಿಸಿಕೊಂಡವರು!",
     "end_game": "ಆಟ ಮುಗಿಸಿ",
     "end_game_confirm": "ಎಲ್ಲಾ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಎಸ್ಕೇಪ್ ರೂಮ್ ಮುಗಿಸಬೇಕೆ?",
@@ -5211,8 +5211,8 @@
     "resume_game": "ಆಟ ಮುಂದುವರಿಸಿ",
     "game_paused_by_teacher": "ಶಿಕ್ಷಕರಿಂದ ಆಟ ವಿರಾಮಗೊಂಡಿದೆ",
     "celebration_title": "ಅಭಿನಂದನೆಗಳು!",
-    "you_escaped": "ನಿಮ್ಮ ತಂಡ {{time}}ರಲ್ಲಿ ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
-    "other_team_escaped": "{{team}} ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
+    "you_escaped": "ನಿಮ್ಮ ತಂಡ {time}ರಲ್ಲಿ ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
+    "other_team_escaped": "{team} ತಪ್ಪಿಸಿಕೊಂಡಿತು!",
     "class_escaped": "ತರಗತಿಯ ವಿಜಯ!",
     "everyone_escaped": "ತಪ್ಪಿಸಿಕೊಳ್ಳಲು ಎಲ್ಲರೂ ಒಟ್ಟಾಗಿ ಕೆಲಸ ಮಾಡಿದರು!",
     "hurry_up": "ಮುಂದುವರಿಸಿ! ನೀವು ಇನ್ನೂ ತಪ್ಪಿಸಿಕೊಳ್ಳಬಹುದು!",
@@ -5240,7 +5240,7 @@
     "load_saved": "ಉಳಿಸಿದ್ದನ್ನು ಲೋಡ್ ಮಾಡಿ",
     "loaded_saved": "ಉಳಿಸಿದ ಎಸ್ಕೇಪ್ ರೂಮ್ ಲೋಡ್ ಆಗಿದೆ! ಪರಿಶೀಲಿಸಿ ಮತ್ತು ಸಿದ್ಧವಾದಾಗ ಪ್ರಾರಂಭಿಸಿ.",
     "no_saved": "ಯಾವುದೇ ಉಳಿಸಿದ ಎಸ್ಕೇಪ್ ರೂಮ್ ಕಂಡುಬಂದಿಲ್ಲ",
-    "preview_confirmed": "? ಎಸ್ಕೇಪ್ ರೂಮ್ ಲಾಕ್ ಆಗಿದೆ • ಆಡಲು ಸಿದ್ಧ!",
+    "preview_confirmed": "✅ ಎಸ್ಕೇಪ್ ರೂಮ್ ಲಾಕ್ ಆಗಿದೆ • ಆಡಲು ಸಿದ್ಧ!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x ಸತತ ಸಾಧನೆ ಬೋನಸ್!)",
     "loaded_from_resource": "ಸಂಪನ್ಮೂಲದಿಂದ ಲೋಡ್ ಆಗಿದೆ."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbench ಗೆ ಕಳುಹಿಸಿ",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "ಅತ್ಯುತ್ತಮ ಕೆಲಸ!",
       "partial": "ಒಳ್ಳೆಯ ಪ್ರಯತ್ನ, ಮುಂದುವರಿಸಿ!",
       "incorrect": "ಸರಿಯಾಗಿಲ್ಲ • ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ!",
-      "error": "ಮೌಲ್ಯಮಾಪನ ಮಾಡಲಾಗಲಿಲ್ಲ • ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      "error": "ಮೌಲ್ಯಮಾಪನ ಮಾಡಲಾಗಲಿಲ್ಲ — ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       "verdict_correct": "ಸರಿ!",
       "verdict_partial": "ಭಾಗಶಃ ಸರಿ",
       "verdict_incorrect": "ಸರಿಯಾಗಿಲ್ಲ",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **ಅಂತಿಮ ಮಟ್ಟ**: {level}",
       "log_header": "ಸಾಹಸ ದಾಖಲೆ",
       "chapter_separator": "***",
-      "user_label": "? ನೀವು",
+      "user_label": "➤ ನೀವು",
       "print_button": "ಕಥಾಪುಸ್ತಕ ಮುದ್ರಿಸಿ"
     },
     "answer_key_title": "ಉತ್ತರ ಕೀಲಿ",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "ಅದರ ವ್ಯಾಖ್ಯಾನವನ್ನು ನೋಡಲು ಪಠ್ಯದಲ್ಲಿ ಯಾವುದೇ ಪದದ ಮೇಲೆ ನೀವು ಕ್ಲಿಕ್ ಮಾಡಬಹುದು!",
     "simplified_cloze": "ಶಬ್ದಕೋಶ ಕೌಶಲ್ಯಗಳನ್ನು ಪರೀಕ್ಷಿಸಲು 'Cloze' ಮೋಡ್ ಅನ್ನು ಪ್ರಯತ್ನಿಸಿ.",
     "simplified_quiz": "ಈ ಪಠ್ಯ ಚೆನ್ನಾಗಿ ಕಾಣುತ್ತದೆ. ಅರ್ಥವಾಗಿದೆಯೇ ಎಂದು ಪರಿಶೀಲಿಸಲು ನಾವು Exit Ticket ಅನ್ನು ರಚಿಸೋಣವೇ?",
-    "simplified_glossary": "'{term1}' ಮತ್ತು '{term2}' ನಂತಹ ಪದಗಳಿಗೆ ಬೆಂಬಲ ಬೇಕಾಗಬಹುದು • ಒಂದು ಪದಕೋಶ ಸಹಾಯ ಮಾಡಬಹುದು!",
+    "simplified_glossary": "'{term1}' ಮತ್ತು '{term2}' ನಂತಹ ಪದಗಳಿಗೆ ಬೆಂಬಲ ಬೇಕಾಗಬಹುದು — ಒಂದು ಪದಕೋಶ ಸಹಾಯ ಮಾಡಬಹುದು!",
     "simplified_glossary_fallback": "ಈ ಕೆಲವು ಪದಗಳು ಕಷ್ಟಕರವಾಗಿವೆ. ಒಂದು ಪದಕೋಶ ಈ ಪಠ್ಯವನ್ನು ಬೆಂಬಲಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
     "simplified_outline": "ದೃಶ್ಯ ಕಲಿಕೆಯ ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಈ ವಿಷಯದ Graphic Organizer ಸಹಾಯವಾಗಬಹುದು.",
     "glossary_bingo": "ಈ ಪದಗಳನ್ನು Bingo, Memory Match, Crosswords, ಅಥವಾ Word Search ನಂತಹ ಪದ ಆಟಗಳಾಗಿ ಪರಿವರ್ತಿಸಬಹುದು!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "ಈ ರಸಪ್ರಶ್ನೆ ಕಠಿಣವಾಗಿದೆ ಎಂದು ಖಚಿತಪಡಿಸಿಕೊಳ್ಳಬೇಕೇ? Standard Audit ಚಲಾಯಿಸಿ.",
     "adventure_sim": "ಸಾಹಸಗಳು ವಿದ್ಯಾರ್ಥಿಗಳು ಕಲಿತದ್ದನ್ನು ಸುರಕ್ಷಿತ ಸಿಮ್ಯುಲೇಶನ್‌ನಲ್ಲಿ ಅನ್ವಯಿಸಲು ಅವಕಾಶ ನೀಡುತ್ತವೆ.",
     "adventure_inventory": "ಯಾವ ವಸ್ತುಗಳನ್ನು ಸಂಗ್ರಹಿಸಲಾಗಿದೆ ಎಂದು ನೋಡಲು 'Inventory' ಪರಿಶೀಲಿಸಿ.",
-    "adventure_context": "{topic} ಕುರಿತ ನಿಮ್ಮ ಸಾಹಸವು ಹೆಚ್ಚು ಸಂಪನ್ಮೂಲಗಳೊಂದಿಗೆ ಸಮೃದ್ಧವಾಗುತ್ತದೆ • {suggestion} ಸೇರಿಸಲು ಪ್ರಯತ್ನಿಸಿ!",
+    "adventure_context": "{topic} ಕುರಿತ ನಿಮ್ಮ ಸಾಹಸವು ಹೆಚ್ಚು ಸಂಪನ್ಮೂಲಗಳೊಂದಿಗೆ ಸಮೃದ್ಧವಾಗುತ್ತದೆ — {suggestion} ಸೇರಿಸಲು ಪ್ರಯತ್ನಿಸಿ!",
     "adventure_context_fallback": "ನೀವು ಹೆಚ್ಚು ಸಂಪನ್ಮೂಲಗಳನ್ನು ರಚಿಸಿದಷ್ಟೂ, ಸಾಹಸದ ಸಂದರ್ಭ ಹೆಚ್ಚು ಸಮೃದ್ಧವಾಗುತ್ತದೆ.",
     "timeline_drag": "ಅನುಕ್ರಮವನ್ನು ಮರುಜೋಡಿಸಲು ಘಟನೆಗಳನ್ನು ಎಳೆದು ಬಿಡಿ.",
     "timeline_visualize": "ಇದು ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಕಾರಣ-ಪರಿಣಾಮ ಸಂಬಂಧಗಳನ್ನು ದೃಶ್ಯೀಕರಿಸಲು ಸಹಾಯ ಮಾಡುತ್ತದೆ.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "ಮೋಜಿನ ಮಳೆ ದಿನದ ಚಟುವಟಿಕೆಗಾಗಿ Adventure Mode ಪ್ರಯತ್ನಿಸಿ.",
     "parent_read_along": "ಒಟ್ಟಿಗೆ ಓದುವ ಅಭ್ಯಾಸ ಮಾಡಲು 'Read Along' ಬಳಸಿ.",
     "fallback_lesson_plan": "ನಿಮ್ಮ ಬಳಿ ಉತ್ತಮ ಸಂಪನ್ಮೂಲಗಳಿವೆ. ಅವುಗಳನ್ನು ಪಾಠ ಯೋಜನೆಯಾಗಿ ಸಂಯೋಜಿಸಬೇಕೇ?",
-    "fallback_brainstorm": "ತೊಡಕಿನಲ್ಲಿದ್ದೀರಾ? ನನ್ನೊಂದಿಗೆ ಚಾಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ ಮತ್ತು Blueprint Mode ಸಕ್ರಿಯಗೊಳಿಸಲು Auto-Complete ಟಾಗಲ್ ಮಾಡಿ • ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಪಾಠವನ್ನು ವಿನ್ಯಾಸಗೊಳಿಸಲು ನಾನು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ!",
-    "fallback_export": "ನಿಮ್ಮ ಬಳಿ {topic} ಕುರಿತು {count} ಸಂಪನ್ಮೂಲಗಳಿವೆ • ಅವುಗಳನ್ನು ಒಂದೇ PDF ಆಗಿ ರಫ್ತು ಮಾಡಿ!",
+    "fallback_brainstorm": "ತೊಡಕಿನಲ್ಲಿದ್ದೀರಾ? ನನ್ನೊಂದಿಗೆ ಚಾಟ್ ಮಾಡಲು ಪ್ರಯತ್ನಿಸಿ ಮತ್ತು Blueprint Mode ಸಕ್ರಿಯಗೊಳಿಸಲು Auto-Complete ಟಾಗಲ್ ಮಾಡಿ — ನಿಮ್ಮ ಸಂಪೂರ್ಣ ಪಾಠವನ್ನು ವಿನ್ಯಾಸಗೊಳಿಸಲು ನಾನು ಸಹಾಯ ಮಾಡುತ್ತೇನೆ!",
+    "fallback_export": "ನಿಮ್ಮ ಬಳಿ {topic} ಕುರಿತು {count} ಸಂಪನ್ಮೂಲಗಳಿವೆ — ಅವುಗಳನ್ನು ಒಂದೇ PDF ಆಗಿ ರಫ್ತು ಮಾಡಿ!",
     "fallback_export_fallback": "ನೀವು ಈ ಎಲ್ಲಾ ಸಂಪನ್ಮೂಲಗಳನ್ನು ಒಂದೇ PDF ಪ್ಯಾಕೆಟ್ ಆಗಿ ರಫ್ತು ಮಾಡಬಹುದು.",
     "fallback_guide": "ನೀವು ದಿಕ್ಕು ತಪ್ಪಿದರೆ AI Guide ನಲ್ಲಿ 'Show Me' ಆಯ್ಕೆ ಮಾಡಿ!",
     "intro_greeting": "ನನ್ನ ಧ್ವನಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಹೊಂದಿಸಲು ನನ್ನ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ.",
@@ -9234,7 +9234,7 @@
     "text_generated": "{topic} ಕುರಿತ ನಿಮ್ಮ ಅಳವಡಿಸಿದ ಪಠ್ಯ ಸಿದ್ಧವಾಗಿದೆ! ಪದದ ವ್ಯಾಖ್ಯೆ ನೋಡಲು ಒಂದು ಪದದ ಮೇಲೆ ಕ್ಲಿಕ್ ಮಾಡಿ, ಅಥವಾ ತಿಳಿವಳಿಕೆಯನ್ನು ಆಳಗೊಳಿಸಲು Glossary ಅಥವಾ Quiz ನಂತಹ ಸಾಧನಗಳನ್ನು ಅನ್ವೇಷಿಸಿ.",
     "flashcards_created": "ಫ್ಲ್ಯಾಶ್‌ಕಾರ್ಡ್‌ಗಳನ್ನು ರಚಿಸಲಾಗಿದೆ! ಅವುಗಳನ್ನು Quizlet ಗೆ ರಫ್ತು ಮಾಡಬಹುದು, ಮುದ್ರಿಸಬಹುದು, ಅಥವಾ Memory Game ಪ್ರಯತ್ನಿಸಬಹುದು.",
     "quiz_generated": "ರಸಪ್ರಶ್ನೆ ಸಿದ್ಧ! ತರಗತಿಗಾಗಿ Presentation Mode ಬಳಸಿ, ಅಥವಾ ಮುಕ್ತ ಪ್ರತಿಕ್ರಿಯೆಗಳಿಗಾಗಿ Auto-Grader ಪ್ರಯತ್ನಿಸಿ.",
-    "glossary_generated": "ಪದಕೋಶ ಪೂರ್ಣಗೊಂಡಿದೆ! ಪದ ಆಟಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ • Bingo, Memory Match, Crosswords, Word Search, ಮತ್ತು ಇನ್ನಷ್ಟು!",
+    "glossary_generated": "ಪದಕೋಶ ಪೂರ್ಣಗೊಂಡಿದೆ! ಪದ ಆಟಗಳನ್ನು ಪ್ರಯತ್ನಿಸಿ — Bingo, Memory Match, Crosswords, Word Search, ಮತ್ತು ಇನ್ನಷ್ಟು!",
     "adventure_started": "ನಿಮ್ಮ ಸಾಹಸ ಪ್ರಾರಂಭವಾಗುತ್ತದೆ! ನಿಮ್ಮ ಕ್ರಿಯೆಯನ್ನು ಕೆಳಗೆ ಟೈಪ್ ಮಾಡಿ, ಅಥವಾ ಮುಂದೆ ಏನಾಗುತ್ತದೆ ಎಂದು ನಿರ್ಧರಿಸಲು ಆಯ್ಕೆ ಬಟನ್‌ಗಳನ್ನು ಬಳಸಿ.",
     "adventure_scene": "ನೀವು ಏನು ಮಾಡುತ್ತೀರಿ? ಪ್ರತಿ ಆಯ್ಕೆಯೂ ನಿಮ್ಮ ಕಥೆಯನ್ನು ರೂಪಿಸುತ್ತದೆ!",
     "analysis_complete": "ವಿಶ್ಲೇಷಣೆ ಪೂರ್ಣಗೊಂಡಿದೆ! ಅನ್ವೇಷಿಸಲು ಯೋಗ್ಯವಾದ ಕೆಲವು ಪದಸಂಪತ್ತು ಮತ್ತು ಪ್ರಮುಖ ಪರಿಕಲ್ಪನೆಗಳನ್ನು ನಾನು ಕಂಡುಕೊಂಡೆ.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "ಅನುಕ್ರಮ ನಿರ್ಮಾಪಕ",
     "type_timeline_desc": "ತರಗತಿ ಮಟ್ಟಕ್ಕೆ ಹೊಂದಿಸಿದ ಅನುಕ್ರಮಣ ಚಟುವಟಿಕೆ",
     "full_pack": "ಪೂರ್ಣ ಸಂಪನ್ಮೂಲ ಪ್ಯಾಕ್ • ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆಮಾಡಿ",
-    "deselect_all": "? ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ",
+    "deselect_all": "↩ ಎಲ್ಲವನ್ನೂ ಆಯ್ಕೆ ರದ್ದುಮಾಡಿ",
     "estimate": "ಅಂದಾಜು",
     "api_calls": "API ಕರೆಗಳು",
     "start_batch": "ರಚಿಸಿ",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "ನಿಮ್ಮ ವೈಯಕ್ತಿಕ ಆವೃತ್ತಿಯನ್ನು ರಚಿಸಲಾಗುತ್ತಿದೆ...",
     "bridge_projection": "ಪ್ರೊಜೆಕ್ಷನ್ ಮೋಡ್",
     "bridge_exit_projection": "ಪ್ರೊಜೆಕ್ಷನ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ",
-    "bridge_offline_info": "ಲೈವ್ ಸೆಷನ್ ಇಲ್ಲ • ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಮುನ್ನೋಟ",
+    "bridge_offline_info": "ಲೈವ್ ಸೆಷನ್ ಇಲ್ಲ — ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಮುನ್ನೋಟ",
     "bridge_term_saved": "\"{term}\" ಅನ್ನು ಪದಕೋಶಕ್ಕೆ ಉಳಿಸಲಾಗಿದೆ",
     "bridge_term_save_failed": "ಪದವನ್ನು ಉಳಿಸಲು ವಿಫಲವಾಗಿದೆ",
     "bridge_save_term": "ಪದಕೋಶಕ್ಕೆ ಉಳಿಸಿ",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "ಕಸ್ಟಮ್ ಭಾಷೆ...",
     "bridge_f2f_custom_placeholder": "ಉದಾ. ಯೊರೂಬಾ, ಟಿಗ್ರಿನ್ಯಾ, ದಾರಿ...",
     "bridge_all_saved": "ಎಲ್ಲಾ ಪದಗಳನ್ನು ಗ್ಲಾಸರಿಗೆ ಉಳಿಸಲಾಗಿದೆ!",
-    "bridge_terms_saved": "? ಎಲ್ಲಾ ಉಳಿಸಲಾಗಿದೆ",
+    "bridge_terms_saved": "✅ ಎಲ್ಲಾ ಉಳಿಸಲಾಗಿದೆ",
     "fullpack_group_target": "ಗುರಿ ಗುಂಪು",
     "fullpack_group_current": "ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳು",
     "fullpack_group_all": "ಎಲ್ಲಾ ಗುಂಪುಗಳು",
@@ -12427,7 +12427,11 @@
       "trapezoid": "ಟ್ರಾಪಿಜಾಯ್ಡ್",
       "simpson": "ಸಿಂಪ್ಸನ್",
       "rectangles_n": "ಆಯತಗಳು (n)",
-      "coeff_a": "ಗುಣಾಂಕ a"
+      "coeff_a": "ಗುಣಾಂಕ a",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ.",
+      "a11y_back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_snapshot": "ಸ್ನ್ಯಾಪ್‌ಶಾಟ್",
+      "a11y_next": "ಮುಂದೆ"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ ಈ ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಆಡಿಯೋ ಬೆಂಬಲಿತವಲ್ಲ",
@@ -12551,13 +12555,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI ವಿವರಣೆಯನ್ನು ಈ ಮಟ್ಟದಲ್ಲಿ ರಚಿಸಿ",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "ಓದುವ ಮಟ್ಟ:",
+      "aria_reading_level_group": "ಓದುವ ಮಟ್ಟ",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14182,8 +14186,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? ಸರಿ! It\\",
-      "that": "? That\\",
+      "correct_it": "✅ ಸರಿ! It\\",
+      "that": "❌ That\\",
       "linear": "ರೇಖೀಯ",
       "quadratic": "ವರ್ಗ",
       "cubic": "ಘನ",
@@ -14457,7 +14461,8 @@
       "angle_u00b0": "ಕೋನ (°)",
       "velocity_ms": "ವೇಗ (m/s)",
       "gravity_msu00b2": "ಗುರುತ್ವಾಕರ್ಷಣೆ (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 ಯಾದೃಚ್ಛಿಕ: ",
@@ -14485,7 +14490,10 @@
       "codominant_desc": "ಎರಡೂ ಅಲೀಲ್‌ಗಳು ಸಂಪೂರ್ಣವಾಗಿ ವ್ಯಕ್ತವಾಗುತ್ತವೆ. ಹೆಟೆರೋಜೈಗೋಟ್ ಎರಡೂ ಲಕ್ಷಣಗಳನ್ನು ಒಂದೇ ಸಮಯದಲ್ಲಿ ತೋರಿಸುತ್ತದೆ.",
       "sexLinked_desc": "ಲಕ್ಷಣವು X ಕ್ರೋಮೋಸೋಮ್‌ನಲ್ಲಿ ಸಾಗುತ್ತದೆ. ಇದು X-ಲಿಂಕ್ಡ್ RECESSIVE ಆನುವಂಶಿಕತೆಯನ್ನು ತೋರಿಸುತ್ತದೆ (ಹಿಮೋಫಿಲಿಯಾ, ಕೆಂಪು-ಹಸಿರು ಬಣ್ಣಕುರುಡುತನ): ಪುರುಷರಿಗೆ (XY) ಒಂದು ಪ್ರತಿಯೇ ಸಾಕು; ಸ್ತ್ರೀಯರಿಗೆ (XX) ಎರಡು ಬೇಕು.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_snapshot": "ಸ್ನ್ಯಾಪ್‌ಶಾಟ್",
+      "a11y_close_flashcard": "ಫ್ಲ್ಯಾಶ್‌ಕಾರ್ಡ್ ಮುಚ್ಚಿ"
     },
     "circuit": {
       "meter_status_ammeter_short": "ಅಸುರಕ್ಷಿತ ಸ್ಥಾನ: ಶಾರ್ಟ್-ಸರ್ಕ್ಯೂಟ್ ಮಾರ್ಗ",
@@ -14777,8 +14785,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? ಸರಿ! ",
-      "it": "? It\\"
+      "correct": "✅ ಸರಿ! ",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "ಮೊದಲ ಪರಿಹಾರ",
@@ -14894,8 +14902,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? ಸರಿ!",
-      "answer": "? ಉತ್ತರ: ",
+      "correct": "✅ ಸರಿ!",
+      "answer": "❌ ಉತ್ತರ: ",
       "hydrogen": "ಹೈಡ್ರೋಜನ್",
       "helium": "ಹೀಲಿಯಂ",
       "lithium": "ಲಿಥಿಯಂ",
@@ -15037,7 +15045,7 @@
       "reddish_metal_used_since_the": "ಕಂಚಿನ ಯುಗದಿಂದ ಬಳಸುತ್ತಿರುವ ಕೆಂಪು ಲೋಹ",
       "bluishwhite_metal_that_prevents_rust": "ತುಕ್ಕು ತಡೆಯುವ ನೀಲಿ-ಬಿಳಿ ಲೋಹ",
       "best_conductor_of_electricity_among": "ಎಲ್ಲಾ ಲೋಹಗಳಲ್ಲಿ ವಿದ್ಯುತ್‌ನ ಅತ್ಯುತ್ತಮ ವಾಹಕ",
-      "dense_soft_shiny_precious_metal": "ಸಾಂದ್ರ, ಮೃದು, ಹೊಳಪಿನ ಅಮೂಲ್ಯ ಲೋಹ • ಎಂದಿಗೂ ತುಕ್ಕು ಹಿಡಿಯುವುದಿಲ್ಲ",
+      "dense_soft_shiny_precious_metal": "ಸಾಂದ್ರ, ಮೃದು, ಹೊಳಪಿನ ಅಮೂಲ್ಯ ಲೋಹ — ಎಂದಿಗೂ ತುಕ್ಕು ಹಿಡಿಯುವುದಿಲ್ಲ",
       "strong_as_steel_but_45": "ಉಕ್ಕಿನಷ್ಟು ಬಲಿಷ್ಠ ಆದರೆ 45% ಹಗುರ",
       "shiny_metal_that_gives_rubies": "ಮಾಣಿಕ್ಯಗಳಿಗೆ ಕೆಂಪು ಬಣ್ಣ ನೀಡುವ ಹೊಳಪಿನ ಲೋಹ",
       "essential_for_steel_production_and": "ಉಕ್ಕಿನ ಉತ್ಪಾದನೆ ಮತ್ತು ಮೂಳೆ ಆರೋಗ್ಯಕ್ಕೆ ಅಗತ್ಯ",
@@ -16143,7 +16151,9 @@
       "our_sun_is_born": "ನಮ್ಮ ಸೂರ್ಯ ಜನಿಸುತ್ತಾನೆ",
       "present_day": "ಇಂದಿನ ದಿನ",
       "the_far_future": "ದೂರದ ಭವಿಷ್ಯ",
-      "universe": "ಬ್ರಹ್ಮಾಂಡ: "
+      "universe": "ಬ್ರಹ್ಮಾಂಡ: ",
+      "a11y_back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_simulation_speed": "ಅನುಕರಣೆಯ ವೇಗ"
     },
     "rocks": {
       "igneous": "ಅಗ್ನಿಶಿಲೆ",
@@ -19068,7 +19078,10 @@
       "garage_desc": "ಎಂಜಿನ್‌ಗಳು, ತುಕ್ಕು ಮತ್ತು ಪ್ರತಿಕ್ರಿಯೆಗಳು — ರಸಾಯನಶಾಸ್ತ್ರದ ಕಾರ್ಯಾಗಾರ.",
       "classroom_desc": "ಬೀಕರ್‌ಗಳು ಮತ್ತು ಪ್ರಯೋಗಗಳಿರುವ ನಿಜವಾದ ವಿಜ್ಞಾನ ತರಗತಿ.",
       "outdoors_desc": "ಹೊರಗೆ ಹೆಜ್ಜೆ ಇಡಿ — ಪ್ರಕೃತಿಯೇ ಎಲ್ಲಕ್ಕಿಂತ ದೊಡ್ಡ ಪ್ರಯೋಗಾಲಯ.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_snapshot": "ಸ್ನ್ಯಾಪ್‌ಶಾಟ್",
+      "a11y_next": "ಮುಂದೆ"
     },
     "converter": {
       "u2705_saved_to_history": "✅ ಇತಿಹಾಸಕ್ಕೆ ಉಳಿಸಲಾಗಿದೆ!",
@@ -19621,7 +19634,7 @@
       "fractions": "ಭಿನ್ನರಾಶಿಗಳು",
       "unit_converter": "ಮಾನಕ ಪರಿವರ್ತಕ",
       "life_earth_science": "ಜೀವ ಮತ್ತು ಭೂ ವಿಜ್ಞಾನ",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "ಜೀವಕೋಶ ಸಿಮ್ಯುಲೇಟರ್",
       "galaxy_explorer": "ನಕ್ಷತ್ರಪುಂಜ ಅನ್ವೇಷಕ",
       "universe_timelapse": "ವಿಶ್ವ ಕಾಲ-ವಿಳಂಬ",
       "rocks_minerals": "ಶಿಲೆಗಳು ಮತ್ತು ಖನಿಜಗಳು",
@@ -19855,7 +19868,40 @@
       "read_what_special_education_law_actually": "ವಿಶೇಷ ಶಿಕ್ಷಣ ಕಾನೂನು ನಿಜವಾಗಿ ಏನು ಹೇಳುತ್ತದೆ ಎಂಬುದನ್ನು ಅದರದೇ ಮಾತುಗಳಲ್ಲಿ ಓದಿ. IDEAದ ಭಾಗ B ಮತ್ತು ವಿಭಾಗ 504ರ ನಿಜವಾದ ಪಠ್ಯ, eCFRನಿಂದ ತಂದದ್ದು ಮತ್ತು ದಿನಾಂಕ ಸಹಿತ, ಹುಡುಕಬಹುದಾದದ್ದು, ಸಂಯುಕ್ತ ಮತ್ತು ರಾಜ್ಯ ನಿಯಮಗಳು ಪಕ್ಕಪಕ್ಕ. ಏನನ್ನೂ ಪುನಃ ಬರೆಯುವುದಿಲ್ಲ ಅಥವಾ ಸೃಷ್ಟಿಸುವುದಿಲ್ಲ: ಅಧಿಕೃತ ಪಠ್ಯ ಲೋಡ್ ಆಗಿಲ್ಲದಿದ್ದರೆ, ಸಾಧನ ಊಹಿಸದೆ ಅದನ್ನೇ ಹೇಳುತ್ತದೆ.",
       "applied_k_12_behavior_practice_what": "ಪೂರ್ವ ಪ್ರಾಥಮಿಕದಿಂದ ಹನ್ನೆರಡನೆಯವರೆಗೆ ಅನ್ವಯಿಕ ವರ್ತನೆ ಅಭ್ಯಾಸ: ಶಾಲಾ ಮನಶ್ಶಾಸ್ತ್ರಜ್ಞರು ಮತ್ತು ಶಿಕ್ಷಕರು ಈ ವಿಜ್ಞಾನದೊಂದಿಗೆ ನಿಜವಾಗಿ ಏನು ಮಾಡುತ್ತಾರೆ. ಮೂರು ಹಂತದ PBIS ಚೌಕಟ್ಟು, FBA ಕಾರ್ಯಗಳಿಗೆ ಜೋಡಿಸಿದ ಪರ್ಯಾಯ ವರ್ತನೆಗಳು, ಹಿನ್ನೆಲೆ ಘಟನೆಗಳು (ಹೆಚ್ಚಿನ BIPಗಳು ತಪ್ಪಿಸಿಕೊಳ್ಳುವ ನಿಧಾನ ಪ್ರಚೋದಕಗಳು), ಜೆಫ್ ಕಾಲ್ವಿನ್‌ರ ಏಳು ಹಂತದ ಸಿಡಿತ ಚಕ್ರ, ಮತ್ತು ಮೇನ್‌ನ ಅಧ್ಯಾಯ 33ರ ಮೇಲೆ ನಿಂತ ಬಂಧನ ಮತ್ತು ಪ್ರತ್ಯೇಕತೆಯ ನೈತಿಕತೆ. BehaviorLabನ ಸಹೋದರ ಸಾಧನ.",
       "marine_biology_behavioral_science_of_octopuses": "ಆಕ್ಟೋಪಸ್, ಸ್ಕ್ವಿಡ್, ಕಟಲ್‌ಫಿಶ್ ಮತ್ತು ನಾಟಿಲಸ್‌ನ ಸಾಗರ ಜೀವಶಾಸ್ತ್ರ ಮತ್ತು ವರ್ತನೆ ವಿಜ್ಞಾನ. ಮುಖ್ಯಾಂಶ: Hunter Sim — ಪ್ರಭೇದ, ಆವಾಸ, ಬೇಟೆ ಮತ್ತು ತಂತ್ರವನ್ನು ಆರಿಸಿ, ಮರೆಮಾಚುವ ಸಣ್ಣ ಆಟ ಆಡಿ, ದಾಳಿಯ ಸಮಯವನ್ನು ಅಳೆಯಿರಿ. ಕ್ಷೇತ್ರ ಟಿಪ್ಪಣಿಯ ಜೀವಶಾಸ್ತ್ರ ಸಂಗತಿಗಳನ್ನು ತೆರೆಯುತ್ತದೆ (ಕ್ರೊಮ್ಯಾಟೊಫೋರ್ ಯಂತ್ರ, 9 ಮಿದುಳುಗಳು, ನೀಲಿ ರಕ್ತ, ಜೆಟ್ ಚಾಲನೆ). 10 ಪ್ರಭೇದಗಳ ಕ್ಷೇತ್ರ ಮಾರ್ಗದರ್ಶಿ, ಬುದ್ಧಿ, ಮರೆಮಾಚುವಿಕೆ ಮತ್ತು ಜೆಟ್ ವೇಗದ ಅಂಕಿಗಳೊಂದಿಗೆ.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ಮತ್ತು HS-PS2. ಅಂತರ, ಎತ್ತರ, ಭಾರ ಮತ್ತು ಸಾಮಗ್ರಿ ಹೊಂದಿಸಬಹುದಾದ ಟ್ರಸ್ ಒತ್ತಡ ಅನುಕರಣಕ, ಸೇತುವೆ ಪ್ರಕಾರಗಳ ಹೋಲಿಕೆ (ತೊಲೆ, ಟ್ರಸ್, ಕಮಾನು, ತೂಗು, ಕೇಬಲ್ ಆಧಾರಿತ), ಸಾಮಗ್ರಿ ದತ್ತಸಂಚಯ, ಬಲದ ಪ್ರಕಾರಗಳು, ನೈಜ ಪ್ರಕರಣ ಅಧ್ಯಯನಗಳು (Tacoma Narrows, Hyatt Regency, Tay, Silver, ಜೊತೆಗೆ Brooklyn, Golden Gate, Akashi ಮತ್ತು Millau), ಎಂಜಿನಿಯರಿಂಗ್ ವಿನ್ಯಾಸ ಚಕ್ರ, AP ಶೈಲಿಯ ಪರೀಕ್ಷೆ ಮತ್ತು ಮುದ್ರಿಸಬಹುದಾದ ವಿನ್ಯಾಸ ವಿವರಗಳು."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ಮತ್ತು HS-PS2. ಅಂತರ, ಎತ್ತರ, ಭಾರ ಮತ್ತು ಸಾಮಗ್ರಿ ಹೊಂದಿಸಬಹುದಾದ ಟ್ರಸ್ ಒತ್ತಡ ಅನುಕರಣಕ, ಸೇತುವೆ ಪ್ರಕಾರಗಳ ಹೋಲಿಕೆ (ತೊಲೆ, ಟ್ರಸ್, ಕಮಾನು, ತೂಗು, ಕೇಬಲ್ ಆಧಾರಿತ), ಸಾಮಗ್ರಿ ದತ್ತಸಂಚಯ, ಬಲದ ಪ್ರಕಾರಗಳು, ನೈಜ ಪ್ರಕರಣ ಅಧ್ಯಯನಗಳು (Tacoma Narrows, Hyatt Regency, Tay, Silver, ಜೊತೆಗೆ Brooklyn, Golden Gate, Akashi ಮತ್ತು Millau), ಎಂಜಿನಿಯರಿಂಗ್ ವಿನ್ಯಾಸ ಚಕ್ರ, AP ಶೈಲಿಯ ಪರೀಕ್ಷೆ ಮತ್ತು ಮುದ್ರಿಸಬಹುದಾದ ವಿನ್ಯಾಸ ವಿವರಗಳು.",
+      "the_gutenberg_style_screw_press_as": "ಗುಟನ್‌ಬರ್ಗ್ ಶೈಲಿಯ ತಿರುಪು ಮುದ್ರಣಯಂತ್ರ ಚಾಲನೆಯಲ್ಲಿರುವ ಅನುಕರಣೆಯಾಗಿ. ಸಲಾಕೆ ಎಳೆಯಿರಿ, ನಿಮ್ಮದೇ ಅಚ್ಚು ಜೋಡಿಸಿ, ಮುದ್ರೆಯನ್ನು ನೋಡಿ. ಜೊತೆಗೆ ವಸ್ತು ವಿಜ್ಞಾನ (ಸೀಸ-ತವರ-ಆಂಟಿಮನಿ ಮಿಶ್ರಲೋಹ), ಅರ್ಥಶಾಸ್ತ್ರ (ಪ್ರತಿ ಪುಸ್ತಕದ ವೆಚ್ಚ ಕುಸಿದದ್ದು), ಇತಿಹಾಸ (ಧರ್ಮಸುಧಾರಣೆ, ವೈಜ್ಞಾನಿಕ ಕ್ರಾಂತಿ), ಅಕ್ಷರಕಲೆ, ಮತ್ತು ಮುದ್ರಣಯಂತ್ರದ ಹಿಂದಿನ ಜನರು (ಇತಿಹಾಸ ಮರೆತ ಮಹಿಳಾ ಮುದ್ರಕರೂ ಸೇರಿ). ಪ್ರೌಢಶಾಲೆಯ ಅಂತರಶಿಸ್ತೀಯ ಕೆಲಸಕ್ಕಾಗಿ ಕಟ್ಟಿದ್ದು.",
+      "three_js_stoop_simulator_deep_science": "Three.js ನಲ್ಲಿ ನೆಗೆತದ ಅನುಕರಣಕ ಮತ್ತು ಬೇಟೆಯ ಹಕ್ಕಿಗಳ ಬೇಟೆ ಯಂತ್ರಶಾಸ್ತ್ರದ ಆಳ ವಿಜ್ಞಾನ. 240 mph ವೇಗದಲ್ಲಿ ಪೆರೆಗ್ರಿನ್ ಗಿಡುಗವಾಗಿ ಹಾರಿ, 530 psi ಉಗುರುಗಳ ಹಾರ್ಪಿಯಾಗಿ, ಅಥವಾ ಶಬ್ದವಿಲ್ಲದ ಕೊಂಬಿನ ಗೂಬೆಯಾಗಿ. 8 ಪ್ರಭೇದ, 12 ವಿಭಾಗ: ಉಗುರಿನ ಬಲ, ದೃಷ್ಟಿ (ಮನುಷ್ಯನಿಗಿಂತ 4-8× ತೀಕ್ಷ್ಣ, ಕೆಸ್ಟ್ರೆಲ್‌ಗಳಲ್ಲಿ ನೇರಳಾತೀತ), ಹಾರಾಟದ ಭೌತಶಾಸ್ತ್ರ, ಗೂಬೆಗಳ ನಿಶ್ಶಬ್ದ ಹಾರಾಟ, ಅಂತಿಮ ವೇಗದ ಗಣಕ, DDT ನಂತರದ ಚೇತರಿಕೆ ಮತ್ತು ಮುಂದುವರಿದ ಸಂರಕ್ಷಣಾ ಬಿಕ್ಕಟ್ಟುಗಳು, ಹಾಗೂ ಕ್ಷೇತ್ರದಲ್ಲಿ ನೆರಳಿನ ಆಕಾರ ಮತ್ತು ಒಟ್ಟಾರೆ ರೂಪದಿಂದ ಗುರುತಿಸುವಿಕೆ.",
+      "practice_reading_and_completing_the_documents": "ವಯಸ್ಕ ಬದುಕು ಯಾವ ದಾಖಲೆಗಳ ಮೇಲೆ ನಡೆಯುತ್ತದೋ ಅವನ್ನು ಓದುವ ಮತ್ತು ತುಂಬುವ ಅಭ್ಯಾಸ ಮಾಡಿ: ಉದ್ಯೋಗ ಅರ್ಜಿಗಳು, W-4 ನಮೂನೆಗಳು, ಬಾಡಿಗೆ ಒಪ್ಪಂದಗಳು, ವೈದ್ಯಕೀಯ ದಾಖಲಾತಿ ನಮೂನೆಗಳು, ಚಾಲನಾ ಅನುಮತಿಗಳು, ಮತ್ತು ನಿಮ್ಮದೇ IEP ಸಭೆಯ ಆಹ್ವಾನ. ಪ್ರತಿ ಚೌಕವನ್ನೂ ಸರಳ ಭಾಷೆಯಲ್ಲಿ ಬಿಡಿಸಿ ಹೇಳಲಾಗಿದೆ, ನಿಮಗೆ ದುಬಾರಿಯಾಗಬಹುದಾದ ಚೌಕಗಳನ್ನು ಗುರುತಿಸಲಾಗಿದೆ, ಯಾರಾದರೂ ಈಗಲೇ ಸಹಿ ಹಾಕಿಸಬೇಕೆಂದಾಗಿನ ಒತ್ತಡದ ಸನ್ನಿವೇಶಗಳು, ಮತ್ತು ಸಮಯ ಕೇಳಲು ಸಿದ್ಧ ವಾಕ್ಯಗಳು. ಎಲ್ಲ ಅಭ್ಯಾಸವೂ ಕಲ್ಪಿತ ವ್ಯಕ್ತಿಯೊಂದಿಗೇ ನಡೆಯುತ್ತದೆ, ಎಂದಿಗೂ ನಿಮ್ಮ ನಿಜ ಮಾಹಿತಿಯೊಂದಿಗಲ್ಲ.",
+      "how_swimming_works_stroke_physics_survival": "ಈಜು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ (ಚಲನೆಗಳ ಭೌತಶಾಸ್ತ್ರ ಮತ್ತು ಬದುಕುಳಿಯುವ ಕೌಶಲ) ಮತ್ತು ಪ್ರತಿ ಈಜುಗಾರನಿಗೂ ತಣ್ಣೀರು, ಹಿಮ್ಮೊಗದ ಪ್ರವಾಹ, ಮಂಜುಗಡ್ಡೆ, ಜೀವರಕ್ಷಕ ಕವಚ ಮತ್ತು ರಕ್ಷಣೆಯ ಬಗ್ಗೆ ತಿಳಿದಿರಬೇಕಾದ್ದು. ಚಲನೆಗಳ ದೃಶ್ಯ ವಿಶ್ಲೇಷಣೆ, ತೇಲುವಿಕೆ ಮತ್ತು ಮುಂದೂಡುವಿಕೆಯ ವಿಜ್ಞಾನ, ಹಾಗೂ ನಿಜವಾಗಿಯೂ ಜೀವ ಉಳಿಸುವ ಬದುಕುಳಿಯುವ ಕೌಶಲಗಳು (ಬೆನ್ನ ಮೇಲೆ ತೇಲುವುದು, ಮೊಟ್ಟೆ ಬೀಸುವ ಒದೆತ, HELP, ಗುಂಪಾಗಿ ಸೇರುವುದು). ಮೂಲಗಳು: CDC, USCG, AAP, NAA, NOAA, USA Swimming. ಶೈಕ್ಷಣಿಕ ಉದ್ದೇಶಕ್ಕೆ ಮಾತ್ರ: ನಿಜವಾಗಿ ಈಜು ಕಲಿಯಲು ಈಜು ತರಬೇತುದಾರರನ್ನು ಹುಡುಕಿ.",
+      "tax_paycheck_calculator_data_literacy_decision": "ತೆರಿಗೆ ಮತ್ತು ವೇತನ ಚೀಟಿ ಗಣಕ, ದತ್ತಾಂಶ ಸಾಕ್ಷರತೆ, ನಿರ್ಧಾರ ಮ್ಯಾಟ್ರಿಕ್ಸ್, ಒಪ್ಪಂದ ಓದುಗ, ದಾಖಲೆಗಳು ಮತ್ತು ಕಾಗದದ ಕೆಲಸ, ಸಂಚಾರ ಯೋಜನೆ, ಉದ್ಯೋಗ ಸಿದ್ಧತೆ, ಜೀವನವೃತ್ತಾಂತ ರಚನೆ, ಸಂಗ್ರಹಪುಟದ ಸಾಕ್ಷ್ಯಗಳ ಜೋಡಣೆ, ಸಂದರ್ಶನ ಅಭ್ಯಾಸ, ಸಂವಹನ ಕೌಶಲ, ಸಮಯ ನಿರ್ವಹಣೆ, ಆರೋಗ್ಯ ವಿಮೆ, ಹಲ್ಲಿನ ಆರೈಕೆ, ದೇಹದ ಆರೈಕೆಯ ಎರ್ಗೊನಾಮಿಕ್ಸ್, ನಿದ್ದೆಯ ದಿನಚರಿ, ಔಷಧ ಲೇಬಲ್‌ಗಳು, ಭೇಟಿಯ ಸಿದ್ಧತೆ, ಮನೆಯ ಸುರಕ್ಷತೆ, ಡಿಜಿಟಲ್ ಸುರಕ್ಷತೆ, ಆಹಾರದ ಬಗ್ಗೆ ನಿರಾಳತೆ, ಮತ್ತು ದೈನಂದಿನ ಬದುಕಿಗೆ ಅನ್ವಯಿಕ ವಿಜ್ಞಾನ.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 ಮತ್ತು HS-LS4. ಸೂಕ್ಷ್ಮಜೀವಿ ಜಗತ್ತು: ಬ್ಯಾಕ್ಟೀರಿಯಾ (ಉಪಯುಕ್ತ ಮತ್ತು ರೋಗಕಾರಕ), ವೈರಸ್‌ಗಳು (COVID, ಜ್ವರ, HIV, ಫೇಜ್, ದಡಾರ), ಸೂಕ್ಷ್ಮದರ್ಶನ (ಬೆಳಕು, ಹಂತ ವ್ಯತ್ಯಾಸ, ಪ್ರತಿದೀಪ್ತ, ಎಲೆಕ್ಟ್ರಾನ್, AFM), ಪ್ರತಿಜೀವಕ ನಿರೋಧದ ವಿಕಾಸ, ಮಾನವ, ಮಣ್ಣು ಮತ್ತು ಸಾಗರದ ಸೂಕ್ಷ್ಮಜೀವಿ ಸಮೂಹ, ಲಸಿಕೆಗಳು ಮತ್ತು ರೋಗನಿರೋಧಕ ವ್ಯವಸ್ಥೆ, ಹುದುಗುವಿಕೆ (ಹುಳಿ ಹಿಟ್ಟು, ಮೊಸರು, ಕಿಮ್ಚಿ, ಸೌರ್‌ಕ್ರೌಟ್, ಕೊಂಬುಚಾ, ಚೀಸ್), ಪ್ರಕರಣ ಅಧ್ಯಯನ (Snow, Fleming, MRSA, COVID ಮತ್ತು mRNA, FMT), ರಸಪ್ರಶ್ನೆ, ಮತ್ತು ಪ್ರಯೋಗಾಲಯ ಸುರಕ್ಷತೆ ಹಾಗೂ ಸೂಕ್ಷ್ಮಜೀವಿಗಳ ಮುದ್ರಿಸಬಹುದಾದ ಆಕರ.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "ಹನ್ನೊಂದು ಪ್ರದೇಶಗಳಲ್ಲಿ ಪರಿಸರ ಆರೈಕೆಯ ಹದಿನೈದು ಅಭಿಯಾನಗಳು. ಮೇನ್‌ನ ಐದು ಸುದೀರ್ಘ, ಬಹುಕಾಲಿಕ ಅಭಿಯಾನಗಳು, ಜೊತೆಗೆ ಐದೂ ಯಂತ್ರಶಾಸ್ತ್ರದ ಕುಟುಂಬಗಳನ್ನು ಮುಟ್ಟುವ ಹತ್ತು ಅಂತರಪ್ರಾದೇಶಿಕ ಸನ್ನಿವೇಶಗಳು: ಬೆಂಕಿ (ಆಸ್ಟ್ರೇಲಿಯಾದ Yarralin, ಉತ್ತರ ಕ್ಯಾಲಿಫೋರ್ನಿಯಾದ Karuk), ಸಂರಕ್ಷಣೆ (Yellowstone, ರುವಾಂಡಾದ Akagera), ಸಾರ್ವಜನಿಕ ಆರೋಗ್ಯ (ಮುಂಬೈನಲ್ಲಿ ಡೆಂಗ್ಯೂ, ಲೈಬೀರಿಯಾದಲ್ಲಿ 2014ರ ಎಬೋಲಾ), ಜಲಾನಯನ (Klamath ನದಿ, Murray-Darling ಜಲಾನಯನ), ಮತ್ತು ಹವಾಮಾನ (ಮಾರ್ಷಲ್ ದ್ವೀಪಗಳು, ಬಾಂಗ್ಲಾದೇಶದ ಮುಖಜ ಭೂಮಿ). ಕುಟುಂಬ ಜೋಡಣೆಯ ಒಳನೋಟಗಳು, ಮೇನ್‌ನ ಅಭಿಯಾನ ಮತ್ತು ಅದೇ ಯಂತ್ರಶಾಸ್ತ್ರ ಕುಟುಂಬದ ಅಂತರಪ್ರಾದೇಶಿಕ ಸನ್ನಿವೇಶ ಪೂರ್ಣಗೊಳಿಸಿದಾಗ ತೆರೆದುಕೊಳ್ಳುತ್ತವೆ.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 ಮತ್ತು MS-ESS3-3. ನಿಜವಾಗಿಯೂ ಪರಸ್ಪರ ಘರ್ಷಿಸುವ ಅವಶ್ಯಕತೆಗಳ ಎದುರು 144 ನಿವೇಶನಗಳ ಜಾಲದ ಮೇಲೆ ಒಂದು ಪಟ್ಟಣ ವಿನ್ಯಾಸಗೊಳಿಸಿ. ಮೂರು ಪಟ್ಟಣ, ಪ್ರತಿಯೊಂದರಲ್ಲೂ ಬೇರೆ ಬಂಧಿಸುವ ಮಿತಿ: Riverbend, ಅಲ್ಲಿ ಮಳೆನೀರು ಮತ್ತು ಸಾಲಪತ್ರ ಒತ್ತುತ್ತವೆ; Mesa Hollow, ಅಲ್ಲಿ ಅಂತರ್ಜಲ ಸ್ಥಿರ, ತೋಟಗಳು ಅದನ್ನು ಕುಡಿಯುತ್ತಿವೆ; ಮತ್ತು Harborlight, ಅಲ್ಲಿ ಯೋಜನೆ 2050ರಲ್ಲೂ ಕೆಲಸ ಮಾಡಬೇಕು. ತರ್ಕಬದ್ಧ ವಿಧಾನದ ಹರಿವು, ಜಲ ಸಮತೋಲನ, ಸಮುದ್ರ ಮಟ್ಟ ಏರಿಕೆಯ ಸಡಿಲಿಕೆ, ಜಾಲದ ಮೇಲಿನ ನಡಿಗೆ ದೂರ, ಮತ್ತು ವೆಚ್ಚ ಸಹಿತ ರಸ್ತೆ ಜಾಲ — ಪ್ರತಿಯೊಂದೂ ತೆರೆದು ತನ್ನ ಸೂತ್ರ ತೋರಿಸುತ್ತದೆ. Assumption Lab ಒಂದೇ ಯೋಜನೆಯನ್ನು ಪ್ರಕಟಿತ ಎರಡು ಪ್ರಾಚಲ ಗುಂಪುಗಳ ಮೇಲೆ ಮತ್ತೆ ನಡೆಸುತ್ತದೆ, ಇದರಿಂದ ವಿದ್ಯಾರ್ಥಿಗಳು ಯಾವ ತೀರ್ಮಾನಗಳು ಎರಡರಲ್ಲೂ ಉಳಿಯುತ್ತವೆ ಎಂದು ಕಾಣುತ್ತಾರೆ. ನಕ್ಷೆ, ಸಂಪಾದಿಸಬಹುದಾದ ನಿವೇಶನ ಕೋಷ್ಟಕ, ಮತ್ತು ಅದೇ ಯೋಜನೆಯ ತ್ರಿಆಯಾಮದ ಮಾದರಿ. ಚರ್ಚೆಯ ಪ್ರಶ್ನೆಗಳು ಮತ್ತು ದಾಖಲಿತ ಇತಿಹಾಸ, ಸಾಧನ ಮಾದರಿ ಮಾಡಲು ನಿರಾಕರಿಸುವ ಪ್ರಶ್ನೆಗಳನ್ನು ಹೊತ್ತಿವೆ. ಅಂಕವಿಲ್ಲ, ಉತ್ತರ ಕೀಲಿಯೂ ಇಲ್ಲ.",
+      "codap_data_science": "CODAP: ದತ್ತಾಂಶ ವಿಜ್ಞಾನ",
+      "lumen_research_canvas": "Lumen: ಸಂಶೋಧನಾ ಫಲಕ",
+      "evolab_evolution": "EvoLab: ವಿಕಾಸ",
+      "dino_lab": "ಡೈನೋಸಾರ್ ಪ್ರಯೋಗಾಲಯ",
+      "nutritionlab_nutrition_science": "NutritionLab: ಪೋಷಣ ವಿಜ್ಞಾನ",
+      "birdlab_i_spy_ornithology": "BirdLab: ಹುಡುಕಿ ಗುರುತಿಸುವ ಪಕ್ಷಿಶಾಸ್ತ್ರ",
+      "openbim_companion": "OpenBIM: ಸಂಗಾತಿ ಮಾರ್ಗದರ್ಶಿ",
+      "applab_ai_app_generator": "AppLab: ಎಐನಿಂದ ಆ್ಯಪ್ ರಚನಕಾರ",
+      "access_lens": "ಪ್ರವೇಶಸಾಧ್ಯತೆ ಮಸೂರ",
+      "sim_shelf": "ಅನುಕರಣೆಗಳ ಕಪಾಟು",
+      "zoom_gallery": "ಝೂಮ್ ಗ್ಯಾಲರಿ",
+      "sourcebook": "ಆಕರ ಗ್ರಂಥ",
+      "wheel_fire_pottery_lab": "ಚಕ್ರ ಮತ್ತು ಬೆಂಕಿ: ಕುಂಬಾರಿಕೆ ಪ್ರಯೋಗಾಲಯ",
+      "echo_navigator": "ಪ್ರತಿಧ್ವನಿ ದಿಕ್ಸೂಚಿ",
+      "learning_lab_how_learning_works": "Learning Lab: ಕಲಿಕೆ ಹೇಗೆ ನಡೆಯುತ್ತದೆ",
+      "weldlab_welding_metal_joining": "WeldLab: ಬೆಸುಗೆ ಮತ್ತು ಲೋಹ ಜೋಡಣೆ",
+      "bikelab_physics_repair": "BikeLab: ಭೌತಶಾಸ್ತ್ರ ಮತ್ತು ದುರಸ್ತಿ",
+      "fisherlab_boating_fishing_sim": "FisherLab: ದೋಣಿ ಚಾಲನೆ ಮತ್ತು ಮೀನುಗಾರಿಕೆ ಅನುಕರಣಕ",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: ಚಿಪ್ಪುಮೀನಿನ ತೋಟದ ಅನುಕರಣಕ",
+      "throwlab_sports_physics": "ThrowLab: ಕ್ರೀಡಾ ಭೌತಶಾಸ್ತ್ರ",
+      "skatelab_skate_bmx_physics": "SkateLab: ಸ್ಕೇಟ್ ಮತ್ತು BMX ಭೌತಶಾಸ್ತ್ರ",
+      "playlab_strategy_on_the_field": "PlayLab: ಅಂಗಳದಲ್ಲಿ ತಂತ್ರ",
+      "kepler_colony": "ಕೆಪ್ಲರ್ ವಸಾಹತು",
+      "birdlab_life_list": "BirdLab: ಜೀವನ ಪಟ್ಟಿ",
+      "petslab_decoder": "PetsLab: ಸಂಕೇತ ಬಿಡಿಸುವವನು"
     },
     "area": {
       "volume": "ಗಾತ್ರ..."
@@ -19895,7 +19941,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_snapshot": "ಸ್ನ್ಯಾಪ್‌ಶಾಟ್",
+      "a11y_next": "ಮುಂದೆ",
+      "a11y_simulation_speed": "ಅನುಕರಣೆಯ ವೇಗ",
+      "a11y_close_flashcard": "ಫ್ಲ್ಯಾಶ್‌ಕಾರ್ಡ್ ಮುಚ್ಚಿ"
     },
     "solar_sys": {
       "venus": "ಶುಕ್ರ",
@@ -20717,7 +20768,8 @@
       "scaled_volume_changed": "🔵 ಅಳತೆ ಮಾಡಲಾಗಿದೆ (ಗಾತ್ರ ಬದಲಾಗಿದೆ)",
       "skewed_shape_deformed": "🟠 ವಾಲಿದೆ (ಆಕಾರ ವಿರೂಪಗೊಂಡಿದೆ)",
       "degenerate_volume_0": "💀 ಕ್ಷೀಣಿಸಿದೆ (ಗಾತ್ರ → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "ಟ್ಯುಟೋರಿಯಲ್ ಪ್ರಗತಿ"
     },
     "numberline": {
       "first_mark": "ಮೊದಲ ಗುರುತು",
@@ -22860,7 +22912,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} ವರ್ಷ ಆರಂಭವಾಗುತ್ತದೆ."
     },
     "optics": {
       "optics_lab": "ದೃಗ್ವಿಜ್ಞಾನ ಪ್ರಯೋಗಾಲಯ",
@@ -23206,7 +23259,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "ಸ್ಥಳೀಯ ವಿಶ್ಲೇಷಣಾತ್ಮಕ SQL ಪ್ರಶ್ನೆ"
     },
     "geosandbox": {
       "loading_3d_engine": "3D ಎಂಜಿನ್ ಲೋಡ್ ಆಗುತ್ತಿದೆ...",
@@ -23556,7 +23610,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "ಶಿಲ್ಪ ತೆಗೆದುಹಾಕಲಾಗಿದೆ"
     },
     "algebraCAS": {
       "solve": "🔍 ಪರಿಹರಿಸಿ",
@@ -26152,7 +26207,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "economicslab": {
       "six_figures": "ಆರು ಅಂಕಿಗಳ ಆದಾಯ",
@@ -28132,7 +28188,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ಚಿಂತನೆ ಉಳಿಸಲಾಗಿದೆ."
     },
     "anatomy": {
       "skeletal": "ಅಸ್ಥಿಪಂಜರ",
@@ -28714,7 +28771,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D ಕ್ಯಾಮೆರಾ ಮರುಹೊಂದಿಸಿ"
     },
     "dna": {
       "back_to_tools": "ಪರಿಕರಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
@@ -30091,7 +30149,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ಚಿಂತನೆ ಉಳಿಸಲಾಗಿದೆ."
     },
     "angles": {
       "back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
@@ -30905,7 +30964,8 @@
       "explain_how_each_parameter_shapes_a_si": "ಪ್ರತಿ ನಿಯತಾಂಕ ಸೈನ್ ಅಲೆಯನ್ನು ಹೇಗೆ ರೂಪಿಸುತ್ತದೆ ಎಂದು ವಿವರಿಸಿ.",
       "design_note_discrete_5_state_marker_no": "ವಿನ್ಯಾಸ ಟಿಪ್ಪಣಿ: ವಿವಿಕ್ತ 5-ಸ್ಥಿತಿ ಗುರುತು; ಅಲೆ ಅಂಕಗಳಿಲ್ಲ; ಬಹಿರಂಗಪಡಿಸುವಿಕೆಯಿಲ್ಲ — ವಿನ್ಯಾಸದ ಪ್ರಕಾರ.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "typingpractice": {
       "typing_practice_menu": "ಟೈಪಿಂಗ್ ಅಭ್ಯಾಸ ಮೆನು",
@@ -31259,7 +31319,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ"
     },
     "music": {
       "edm_lead": "EDM ಲೀಡ್",
@@ -31778,7 +31839,7 @@
       "sculpt_engine_failed": "ಶಿಲ್ಪ ಎಂಜಿನ್ ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.",
       "sculpt_failed": "ಶಿಲ್ಪ ವಿಫಲವಾಯಿತು — ಸರಳ ವಿವರಣೆ ಪ್ರಯತ್ನಿಸಿ.",
       "sr_sculpted": "ಶಿಲ್ಪ ಇರಿಸಲಾಗಿದೆ",
-      "sr_art_cleared": "ಶಿಲ್ಪ ತೆಗೆಯಲಾಗಿದೆ",
+      "sr_art_cleared": "ಶಿಲ್ಪ ತೆಗೆದುಹಾಕಲಾಗಿದೆ",
       "assess_failed": "ತರಬೇತುದಾರ ಪ್ರತಿಕ್ರಿಯಿಸಲಾಗಲಿಲ್ಲ — ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
       "sr_assessed": "ತರಬೇತುದಾರರ ಪ್ರತಿಕ್ರಿಯೆ ಬಿಲ್ಡರ್ ಫಲಕದ ಕೆಳಗೆ ಸಿದ್ಧವಾಗಿದೆ",
       "recall_needs_more": "ಮೊದಲು 2 ಗುಂಪುಗಳಲ್ಲಿ ಕನಿಷ್ಠ 4 ಆಲೋಚನೆಗಳನ್ನು ಸೇರಿಸಿ",
@@ -34668,7 +34729,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ: {value1}"
     },
     "artstudio": {
       "back_to_tools": "ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
@@ -35433,7 +35495,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "ಆಫ್",
+      "sr_nothing_to_redo": "ಮತ್ತೆ ಮಾಡಲು ಏನೂ ಇಲ್ಲ.",
+      "sr_nothing_to_undo": "ರದ್ದುಗೊಳಿಸಲು ಏನೂ ಇಲ್ಲ.",
+      "sr_dir_left": "ಎಡ",
+      "sr_dir_right": "ಬಲ"
     },
     "arithmetic": {
       "selected": " ಆಯ್ಕೆಯಾಗಿದೆ.",
@@ -39479,7 +39546,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ಅನ್ನು ಖಮಧ್ಯದಲ್ಲಿರುವ ರೇಡಿಯಂಟ್ ಮತ್ತು 6.5 ಮಿತಿ ಕಾಂತಿಮಾನದ ಆಧಾರದ ಮೇಲೆ ಪ್ರಮಾಣೀಕರಿಸಲಾಗಿದೆ. ಈ ಅಂದಾಜು ಸ್ವಚ್ಛವಾದ, ಚಂದ್ರನಿಲ್ಲದ ಆಕಾಶ ಮತ್ತು 2.2 ಜನಸಂಖ್ಯಾ ಸೂಚ್ಯಂಕವನ್ನು ಊಹಿಸುತ್ತದೆ. ಬೋರ್ಟಲ್ ವರ್ಗಗಳು ಮಿತಿ ಕಾಂತಿಮಾನವನ್ನು ಸ್ಥೂಲವಾಗಿ ಮಾತ್ರ ಸೂಚಿಸುತ್ತವೆ; ಪ್ರಮಾಣಕ್ಕಿಂತ ಕತ್ತಲಾದ ಆಕಾಶ ZHR ಅನ್ನು ಮೀರಬಹುದು. ರೇಡಿಯಂಟ್‌ನ ಕಡಿಮೆ ಎತ್ತರ ಮತ್ತು ಹೆಚ್ಚು ಪ್ರಕಾಶಮಾನವಾದ ಆಕಾಶ ಅಂದಾಜನ್ನು ಕಡಿಮೆ ಮಾಡುತ್ತವೆ.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ"
     },
     "autorepair": {
       "back_to_menu": "ಮೆನುವಿಗೆ ಹಿಂತಿರುಗಿ",
@@ -40220,7 +40288,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ಅಂಕ: {value2}ರಲ್ಲಿ {value1}",
+      "a11y_open_2": "{value1} ತೆರೆಯಿರಿ",
+      "a11y_option": "ಆಯ್ಕೆ {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "ಹೊರಪದರ",
@@ -40323,7 +40394,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41069,7 +41141,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ.",
+      "a11y_investigation_progress": "ತನಿಖೆಯ ಪ್ರಗತಿ",
+      "a11y_flight_debrief": "ಹಾರಾಟದ ವಿಮರ್ಶೆ",
+      "a11y_tutorial_progress": "ಟ್ಯುಟೋರಿಯಲ್ ಪ್ರಗತಿ"
     },
     "behaviorlab": {
       "chain_reaction": "ಸರಪಳಿ ಕ್ರಿಯೆ",
@@ -41241,7 +41317,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43753,7 +43829,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "ಅನ್ವೇಷಿಸಿದ ಮಾಡ್ಯೂಲ್: {value1}",
+      "a11y_score_out_of": "ಅಂಕ: {value2}ರಲ್ಲಿ {value1}",
+      "sr_selected": "ಆಯ್ಕೆಯಾದದ್ದು: {value1}",
+      "sr_quiz_reset": "ರಸಪ್ರಶ್ನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ"
     },
     "brainatlas": {
       "group_systems": "ವ್ಯವಸ್ಥೆಗಳು",
@@ -48909,7 +48989,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "ಉತ್ತರ ಆಯ್ಕೆಮಾಡಿ: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "ರಸಪ್ರಶ್ನೆ ಪರಿಣತ",
@@ -50053,7 +50134,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "ಆಯ್ಕೆಯಾದದ್ದು: {value1}"
     },
     "echotrainer": {
       "wall": "ಗೋಡೆ",
@@ -51512,7 +51594,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "ಅನ್ವೇಷಿಸಿದ ಮಾಡ್ಯೂಲ್: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "ಕಾರ್ಬನ್ ಕ್ಯಾಲ್ಕುಲೇಟರ್",
@@ -52592,7 +52675,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+      "sr_getting_critique": "ವಿಮರ್ಶೆ ತರಲಾಗುತ್ತಿದೆ...",
+      "sr_critique_ready": "ವಿಮರ್ಶೆ ಸಿದ್ಧವಾಗಿದೆ."
     },
     "flightsim": {
       "game_controls": "🎮 ಆಟದ ನಿಯಂತ್ರಣಗಳು",
@@ -52801,7 +52887,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "ಹಾರಾಟ ಸಿಮ್ಯುಲೇಟರ್‌ನ ಕಾಕ್‌ಪಿಟ್ ನೋಟ. W/S ಪಿಚ್, A/D ಬ್ಯಾಂಕ್, Shift/Ctrl ಥ್ರಾಟಲ್, ಆವರಣ ಚಿಹ್ನೆಗಳು ಫ್ಲ್ಯಾಪ್‌ಗಳನ್ನು ನಿಯಂತ್ರಿಸುತ್ತವೆ, X ಚಕ್ರದ ಬ್ರೇಕ್, Q ರಸಪ್ರಶ್ನೆ, F ಬಲಗಳು, Space ವಿರಾಮ, I ಮಾಹಿತಿ.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52813,7 +52899,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "ಪೋರ್ಟ್‌ಲ್ಯಾಂಡ್, ME ನಿಂದ ಮುಕ್ತ ಹಾರಾಟ",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -52859,7 +52945,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "ಶಾಂಘೈ ಟವರ್",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58682,7 +58768,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "ಅನ್ವೇಷಿಸಿದ ಮಾಡ್ಯೂಲ್: {value1}",
+      "sr_loaded": "{value1} ಲೋಡ್ ಆಗಿದೆ",
+      "sr_showing": "{value1} ತೋರಿಸಲಾಗುತ್ತಿದೆ",
+      "sr_opening": "{value1} ತೆರೆಯಲಾಗುತ್ತಿದೆ"
     },
     "platetectonics": {
       "pacific": "ಪೆಸಿಫಿಕ್",
@@ -58949,7 +59039,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63504,7 +63594,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "ವಿವರಣೆ ಸಿದ್ಧವಾಗಿದೆ.",
+      "sr_off": "ಆಫ್",
+      "sr_edge_left": "ಎಡ",
+      "sr_edge_right": "ಬಲ",
+      "sr_correct": "ಸರಿ.",
+      "sr_not_quite": "ಸರಿಯಾಗಿ ಅಲ್ಲ."
     },
     "printingpress": {
       "menu": "← ಮೆನು",
@@ -65643,7 +65739,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_open": "{value1} ತೆರೆಯಿರಿ",
+      "sr_selected": "ಆಯ್ಕೆಯಾದದ್ದು: {value1}",
+      "sr_loaded": "{value1} ಲೋಡ್ ಆಗಿದೆ",
+      "sr_opening": "{value1} ತೆರೆಯಲಾಗುತ್ತಿದೆ",
+      "sr_correct": "ಸರಿ.",
+      "sr_not_quite": "ಸರಿಯಾಗಿ ಅಲ್ಲ.",
+      "sr_year_begins": "{value1} ವರ್ಷ ಆರಂಭವಾಗುತ್ತದೆ.",
+      "sr_question_reset_try_again": "ಪ್ರಶ್ನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.",
+      "sr_not_quite_see_the_explanation": "ಸರಿಯಾಗಿ ಅಲ್ಲ: ವಿವರಣೆ ನೋಡಿ."
     },
     "raptorhunt": {
       "glossary": "ಪದಕೋಶ",
@@ -67292,7 +67398,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} ತೆರೆಯಿರಿ",
+      "a11y_flight_debrief": "ಹಾರಾಟದ ವಿಮರ್ಶೆ"
     },
     "renewables": {
       "menu": "← ಮೆನು",
@@ -67992,7 +68100,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+      "sr_getting_critique": "ವಿಮರ್ಶೆ ತರಲಾಗುತ್ತಿದೆ...",
+      "sr_critique_ready": "ವಿಮರ್ಶೆ ಸಿದ್ಧವಾಗಿದೆ.",
+      "sr_quiz_reset": "ರಸಪ್ರಶ್ನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ"
     },
     "roadready": {
       "let_s_start": "ಪ್ರಾರಂಭಿಸೋಣ →",
@@ -70859,7 +70971,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_local_analytical_sql_query": "ಸ್ಥಳೀಯ ವಿಶ್ಲೇಷಣಾತ್ಮಕ SQL ಪ್ರಶ್ನೆ"
     },
     "stewardship": {
       "sector": "ವಲಯ",
@@ -71436,7 +71550,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+      "sr_question_reset_try_again": "ಪ್ರಶ್ನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ. ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ."
     },
     "throwlab": {
       "scenarios": "ಸನ್ನಿವೇಶಗಳು",
@@ -71661,7 +71777,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D ಕ್ಯಾಮೆರಾ ಮರುಹೊಂದಿಸಿ",
+      "sr_coach_is_offline": "ತರಬೇತುದಾರ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದಾರೆ.",
+      "sr_drill_stopped": "ಅಭ್ಯಾಸ ನಿಲ್ಲಿಸಲಾಗಿದೆ."
     },
     "weldlab": {
       "menu": "← ಮೆನು",
@@ -73223,7 +73342,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "ಅನ್ವೇಷಿಸಿದ ಮಾಡ್ಯೂಲ್: {value1}",
+      "a11y_score_out_of": "ಅಂಕ: {value2}ರಲ್ಲಿ {value1}",
+      "sr_quiz_reset": "ರಸಪ್ರಶ್ನೆ ಮರುಹೊಂದಿಸಲಾಗಿದೆ",
+      "sr_loaded": "{value1} ಲೋಡ್ ಆಗಿದೆ",
+      "sr_showing": "{value1} ತೋರಿಸಲಾಗುತ್ತಿದೆ",
+      "sr_not_quite_see_the_explanation": "ಸರಿಯಾಗಿ ಅಲ್ಲ: ವಿವರಣೆ ನೋಡಿ."
     },
     "worldbuilder": {
       "grade_level": "ತರಗತಿ ಮಟ್ಟ",
@@ -74129,7 +74254,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "ಓದುವ ಮಟ್ಟ",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74816,7 +74941,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "ಜೀವನ ವೃಕ್ಷ",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76671,7 +76796,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "ಆಯ್ಕೆ {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D ಕ್ಯಾಮೆರಾ ನೋಟಗಳು"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -76739,7 +76866,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "ತರಬೇತುದಾರ ಆಫ್‌ಲೈನ್‌ನಲ್ಲಿದ್ದಾರೆ.",
+      "sr_drill_stopped": "ಅಭ್ಯಾಸ ನಿಲ್ಲಿಸಲಾಗಿದೆ."
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76751,6 +76880,22 @@
       "finish": "ಅರ್ಥವಾಯಿತು!",
       "replay": "ಸಲಹೆಗಳು",
       "replay_aria": "ಟ್ಯುಟೋರಿಯಲ್ ತೋರಿಸಿ"
+    },
+    "pets": {
+      "sr_back_to_menu": "ಮೆನುಗೆ ಹಿಂತಿರುಗಿ",
+      "sr_getting_critique": "ವಿಮರ್ಶೆ ತರಲಾಗುತ್ತಿದೆ...",
+      "sr_critique_ready": "ವಿಮರ್ಶೆ ಸಿದ್ಧವಾಗಿದೆ."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM ಸಾಧನಗಳಿಗೆ ಹಿಂತಿರುಗಿ",
+      "a11y_3d_camera_views": "3D ಕ್ಯಾಮೆರಾ ನೋಟಗಳು"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "ತನಿಖೆಯ ಪ್ರಗತಿ"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "ಮತ್ತೆ ಮಾಡಲು ಏನೂ ಇಲ್ಲ.",
+      "sr_nothing_to_undo": "ರದ್ದುಗೊಳಿಸಲು ಏನೂ ಇಲ್ಲ."
     }
   },
   "glossary_health": {
@@ -77353,7 +77498,7 @@
       "person": "ವ್ಯಕ್ತಿ\\",
       "phase_label": "ಹಂತದ ಲೇಬಲ್",
       "rationale_which_antecedent_does_this_address": "ತಾರ್ಕಿಕತೆ (ಇದು ಯಾವ ಪೂರ್ವಗಾಮಿಯನ್ನು ಪರಿಹರಿಸುತ್ತದೆ?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "ನಿಮ್ಮ ವಿಧಾನದ ಬಗ್ಗೆ ಚಿಂತಿಸಿ...\\n• ಏನು ಚೆನ್ನಾಗಿ ಕೆಲಸ ಮಾಡಿತು?\\n• ನೀವು ಬೇರೆ ಏನು ಮಾಡುತ್ತಿದ್ದಿರಿ?\\n• ಮುಂದೆ ಯಾವ ತಂತ್ರಗಳನ್ನು ಅಭ್ಯಾಸ ಮಾಡಲು ಬಯಸುತ್ತೀರಿ?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "ನಿಮ್ಮ ವಿಧಾನದ ಬಗ್ಗೆ ಚಿಂತಿಸಿ...\n• ಏನು ಚೆನ್ನಾಗಿ ಕೆಲಸ ಮಾಡಿತು?\n• ನೀವು ಬೇರೆ ಏನು ಮಾಡುತ್ತಿದ್ದಿರಿ?\n• ಮುಂದೆ ಯಾವ ತಂತ್ರಗಳನ್ನು ಅಭ್ಯಾಸ ಮಾಡಲು ಬಯಸುತ್ತೀರಿ?",
       "reinforcement_how_you": "⭐ ಬಲವರ್ಧನೆ (ನೀವು ಹೇಗೆ\\",
       "replacement_behavior_functionally_equivalent": "✅ ಬದಲಿ ವರ್ತನೆ (ಕ್ರಿಯಾತ್ಮಕವಾಗಿ ಸಮಾನ)",
       "respond_as_the_counselor": "ಸಲಹೆಗಾರನಂತೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ...",
@@ -77361,7 +77506,7 @@
       "search_81_tools": "🔍  80+ ಉಪಕರಣಗಳನ್ನು ಹುಡುಕಿ…",
       "search_aba_terms": "🔍 ABA ಪದಗಳನ್ನು ಹುಡುಕಿ...",
       "search_terms_eg_reinforcement_fba_data": "🔍 ಪದಗಳನ್ನು ಹುಡುಕಿ... (ಉದಾ. \"ಬಲವರ್ಧನೆ\", \"FBA\", \"ಡೇಟಾ\")",
-      "session_1_3nsession_2_7nsession_3_5n": "ಸೆಷನ್ 1: 3\\nಸೆಷನ್ 2: 7\\nಸೆಷನ್ 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "ಸೆಷನ್ 1: 3\nಸೆಷನ್ 2: 7\nಸೆಷನ್ 3: 5\n...",
       "setting_eg_math_class_cafeteria": "ಸ್ಥಳ (ಉದಾ., ಗಣಿತ ತರಗತಿ, ಕೆಫೆಟೇರಿಯಾ)",
       "share_what_you_notice_at_home_strengths_concerns_c": "ಮನೆಯಲ್ಲಿ ನೀವು ಗಮನಿಸುವುದನ್ನು ಹಂಚಿಕೊಳ್ಳಿ — ಸಾಮರ್ಥ್ಯಗಳು, ಕಾಳಜಿಗಳು, ಸಾಂಸ್ಕೃತಿಕ ಸಂದರ್ಭ, ಅಥವಾ ಶಾಲಾ ತಂಡಕ್ಕೆ ಸಲಹೆಗಳು...",
       "step_description": "ಹಂತದ ವಿವರಣೆ...",
@@ -78942,7 +79087,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "ಕುಳಿಯ ಎತ್ತರ",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80609,7 +80754,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "ಪರಿಕಲ್ಪನೆಯ ಚಿತ್ರ",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80645,10 +80790,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "ಪ್ರತಿ ಪರಿಕಲ್ಪನೆಯನ್ನು ಸಜ್ಜುಗೊಳಿಸಿ",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "ಸಜ್ಜುಗೊಳಿಸುವ ಪ್ರಗತಿ",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80660,7 +80805,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "ಸಂಭಾವ್ಯ ಹೆಸರುಗಳು",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80671,7 +80816,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "ಪರಿಕಲ್ಪನೆಯ ಸ್ಮರಣೆ",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82229,7 +82374,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect ಮುಚ್ಚಿ",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82238,7 +82383,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "ಕಾರ್ಯಗಳನ್ನು ಫಿಲ್ಟರ್ ಮಾಡಿ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82276,15 +82421,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "ಪ್ರಶ್ನೆ {n}",
+    "q_choices_aria": "ಪ್ರಶ್ನೆ {n} ಗೆ ಆಯ್ಕೆಗಳು, ಪ್ರತಿ ಸಾಲಿಗೆ ಒಂದು",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "ಪ್ರಶ್ನೆ {n} ತೆಗೆದುಹಾಕಿ",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "ಪ್ರಶ್ನೆ {n} ಗೆ ಸ್ಕೇಲ್ ಹಂತಗಳು",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "ಪ್ರಶ್ನೆ {n} ಗೆ ಉತ್ತರದ ಪ್ರಕಾರ",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82294,10 +82439,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} ಗೆ ಆಯ್ಕೆ ಮಾಡಬಹುದಾದ ಲಿಂಕ್",
+    "scale_high_aria": "ಮೇಲಿನ ತುದಿಗೆ ಲೇಬಲ್",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "ಕೆಳ ತುದಿಗೆ ಲೇಬಲ್",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82317,7 +82462,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "ಕಾರ್ಯಗಳ ಸ್ಥಿತಿಯ ಸಾರಾಂಶ",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82333,9 +82478,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "ಸ್ವಯಂಚಾಲಿತವಾಗಿ ನವೀಕರಿಸುತ್ತದೆ",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "ಆಯ್ಕೆ ಮಾಡಬಹುದಾದ ಮನೆಗೆಲಸದ ಲಿಂಕ್",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82344,7 +82489,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "ಮನೆಗೆಲಸದ QR ಕೋಡ್",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84792,7 +84937,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "ಸೂಚನೆಗಳು ಮತ್ತು ಮೌಲ್ಯಮಾಪನ ಕೋಷ್ಟಕಗಳಿಗಾಗಿ ಬೆಳವಣಿಗೆಯ ಹಂತ ಆರಿಸಿ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84800,7 +84945,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "ಶಿಕ್ಷಕ ನೋಟವನ್ನು ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಿ",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84831,17 +84976,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "ಧ್ವನಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡಿಂಗ್ ವಿರಾಮಗೊಳಿಸಿ",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "ಧ್ವನಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡಿಂಗ್ ಮುಂದುವರಿಸಿ",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "ಧ್ವನಿ ಟಿಪ್ಪಣಿ ರೆಕಾರ್ಡ್ ಮಾಡಲು ಪ್ರಾರಂಭಿಸಿ",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "ರೆಕಾರ್ಡಿಂಗ್ ನಿಲ್ಲಿಸಿ",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85227,22 +85372,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven ಮನ್ನಣೆಯ ಕಾರಣ",
+    "recent_deliveries_aria": "ಇತ್ತೀಚಿನ ಖಾಸಗಿ AlloHaven ಮನ್ನಣೆಗಳು",
+    "token_amount_aria": "AlloHaven ಟೋಕನ್ ಪ್ರಮಾಣ",
+    "token_cap_aria": "ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ಪ್ರತಿ ಸೆಷನ್‌ಗೆ AlloHaven ಟೋಕನ್ ಮಿತಿ"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "ಗುರಿ ಸಾಧಿಸುತ್ತಿರುವಾಗಲೇ ಅನುಮತಿಸಲಾದ ವಿನಾಯಿತಿಗಳು",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "ಈ ಗುರಿಗಾಗಿ ಆ್ಯಪ್ ಟ್ರ್ಯಾಕ್ ಮಾಡುವ ಐಚ್ಛಿಕ ಪ್ರಗತಿ ಸಂಕೇತ",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "ಇಡೀ ತಂಡ ಒಟ್ಟಿಗೆ, ಅಥವಾ ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿ ಪ್ರತ್ಯೇಕವಾಗಿ",
+    "name_aria": "ತರಗತಿ ಗುರಿಯ ಹೆಸರು, ಈ ಸಾಧನದಲ್ಲಿ ಮಾತ್ರ ಇರಿಸಲಾಗುತ್ತದೆ",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "ಈ ಗುರಿ ಯಾವ ವಿದ್ಯಾರ್ಥಿಗಳನ್ನು ಒಳಗೊಂಡಿದೆ",
+    "template_aria": "ತರಗತಿ ಗುರಿಯ ಆರಂಭಿಕ ಟೆಂಪ್ಲೇಟ್",
+    "tokens_aria": "ಈ ಗುರಿ ಸಾಧಿಸಿದಾಗ ಪ್ರತಿ ವಿದ್ಯಾರ್ಥಿಗೆ ನೀಡುವ ಟೋಕನ್‌ಗಳು"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85260,7 +85405,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox ನಿರ್ವಾಹಕ ಟೋಕನ್ (ಐಚ್ಛಿಕ)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85290,17 +85435,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "ಕೈ ಎತ್ತಲಾಗಿದೆ",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "ಆಯ್ಕೆ ಮಾಡಬಹುದಾದ ಲೈವ್ ಮೇಲ್‌ಬಾಕ್ಸ್ ಸೇರುವ ಲಿಂಕ್",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox ನ ಲೈವ್ ಸೆಷನ್",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85327,7 +85472,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "ನೈಜ-ಸಮಯದ ಸಂಪರ್ಕ",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85359,7 +85504,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox ವೆಬ್ ಆ್ಯಪ್‌ನ URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

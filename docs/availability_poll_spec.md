@@ -1,10 +1,10 @@
 # Availability Poll (working name) — spec
 
-A free, unlimited-slot scheduling poll: propose a set of options, share a link or
-QR, collect availability, see the winner. Doodle's free tier caps how many slots
-you can offer; this has no such cap because there is no vendor in the middle.
+A scheduling poll: propose options, share a link or QR, collect availability,
+and compare the results. The current assignment authoring flow accepts up to
+50 options.
 
-**Status (2026-08-05): FEATURE COMPLETE, never run in a browser.**
+**Status (2026-09-07): availability submission and saved-response restoration verified in Chromium using actual mailbox handlers with simulated Google services.**
 
 Built, with tests:
 
@@ -17,8 +17,10 @@ Built, with tests:
 | authoring, ballot, organizer grid | `view_header_source.jsx` + monolith | - |
 | AI option drafting (§7) | `view_header_source.jsx` | 12 |
 
-★ The whole client is UNVERIFIED. The server logic is well covered, but no part
-of the UI has rendered once. Expect the first run to surface something.
+The browser review covered the mobile ballot and response restoration; component
+tests cover save recovery and navigation. Production Google services, physical
+devices, and the full authoring-to-link flow remain outside that walkthrough.
+See [the refinement review](shared-activity-refinements-2026-09-07.md).
 
 ---
 

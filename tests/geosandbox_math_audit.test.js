@@ -439,7 +439,7 @@ describe('the panel warns before the press', () => {
       loadTool('stem_lab/stem_tool_geosandbox.js', 'geoSandbox');
       return renderTool('geoSandbox', {
         _threeLoaded: true,
-        geoSandbox: { mode: m, construction: { objects: [RECT_FLAT], selection: 1 } },
+        geoSandbox: { mode: m, showNavigationHints: true, construction: { objects: [RECT_FLAT], selection: 1 } },
       });
     };
     // "U: undo" was shown in sculpt mode while U was bound for stretch alone.

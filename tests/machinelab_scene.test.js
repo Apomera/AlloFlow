@@ -1621,3 +1621,44 @@ describe('Siege Field wave 32: one heap, no clipping', () => {
     for (const forbidden of ['applyDamage', 'debrisSettle', 'debrisStart', 'debrisStep']) expect(wall).not.toContain(forbidden);
   });
 });
+
+describe('Siege Field wave 33: the wood moves with the wind', () => {
+  it('keeps what each crown needs to be re-placed, phased per tree', () => {
+    const src = source();
+    expect(src).toContain("crowns.push({ x: tx, y: ty, z: tz, s: sc, lift: 1.7 * sc + 0.6, spin: dummy.rotation.y, ax: 1, ay: 1, phase: hash01(tries, 53, 13) * 6.28 });");
+    expect(src).toContain('broadCrowns.push({ x: bx, y: by, z: bz, s: bsc, lift: 2.2 * bsc + 0.9, spin: 0,');
+    expect(src).toContain('S.wood = [{ mesh: foliage, crowns: crowns }, { mesh: canopy, crowns: broadCrowns }];');
+  });
+
+  it('leans the crowns downwind on the same wind the sock and the flags read', () => {
+    const src = source();
+    expect(src).toContain('var lean = swayOn ? Math.max(-0.34, Math.min(0.34, wind * 0.021)) : 0;');
+    expect(src).toContain('var gust = swayOn ? (0.035 + windAbs * 0.006) : 0;');
+    expect(src).toContain('var tilt = lean + (swayOn ? Math.sin(tSec * 1.4 + cw2.phase) * gust : 0);');
+  });
+
+  it('leans a crown about the top of its own trunk, not about its centre', () => {
+    const src = source();
+    expect(src).toContain('wd.position.set(cw2.x + Math.sin(tilt) * cw2.lift * 0.5, cw2.y + Math.cos(tilt) * cw2.lift, cw2.z);');
+    // At rest the crown sits exactly where the build put it.
+    const lift = 1.7 * 1.4 + 0.6;
+    expect(0 + Math.sin(0) * lift * 0.5).toBe(0);
+    expect(Math.cos(0) * lift).toBeCloseTo(lift, 12);
+  });
+
+  it('is ambient life: still with ambient off, and stood upright once when it stops', () => {
+    const src = source();
+    expect(src).toContain('var swayOn = ambient;');
+    expect(src).toContain('if (swayOn || S.woodLeaning) {');
+    expect(src).toContain('S.woodLeaning = swayOn;');
+  });
+
+  it('rebuilds the instance matrices rather than the wood', () => {
+    const src = source();
+    expect(src).toContain('band.mesh.setMatrixAt(ci5, wd.matrix);');
+    expect(src).toContain('band.mesh.instanceMatrix.needsUpdate = true;');
+    // Nothing here touches geometry or materials, so no rebuild is implied.
+    const sway = src.slice(src.indexOf('// The wood. A crown leans downwind'), src.indexOf('if (S.sock) {'));
+    expect(sway).not.toContain('new THREE.');
+  });
+});

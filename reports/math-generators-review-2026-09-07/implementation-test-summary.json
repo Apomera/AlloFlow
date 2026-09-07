@@ -1,0 +1,16 @@
+{
+  "checkedAt": "2026-09-07T06:00:17.376Z",
+  "files": 18,
+  "tests": 376,
+  "passed": 376,
+  "failed": 0,
+  "pending": 0,
+  "method": "Latest result per suite: full focused run plus rerun of the corrected handoff source-location contract.",
+  "reports": [
+    "implementation-tests.json",
+    "implementation-handoff-tests.json"
+  ],
+  "buildChecks": "implementation-build-checks.json",
+  "shippedAnswersAudited": 450,
+  "draftAnswersAudited": 3000
+}

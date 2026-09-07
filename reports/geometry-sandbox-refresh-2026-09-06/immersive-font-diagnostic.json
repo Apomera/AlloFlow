@@ -1,0 +1,320 @@
+{
+  "failedRequests": [],
+  "badResponses": [],
+  "pageErrors": [],
+  "textEntities": [
+    {
+      "id": "labelTitle",
+      "data": {
+        "anchor": "left",
+        "width": 2.9,
+        "value": "A box.",
+        "align": "left",
+        "wrapCount": 34,
+        "color": "#a78bfa",
+        "side": "double",
+        "alphaTest": 0.5,
+        "baseline": "center",
+        "font": "roboto",
+        "fontImage": "",
+        "height": 0,
+        "letterSpacing": 0,
+        "lineHeight": 0,
+        "negate": true,
+        "opacity": 1,
+        "shader": "sdf",
+        "tabSize": 4,
+        "transparent": true,
+        "whiteSpace": "normal",
+        "wrapPixels": 0,
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": 0.001
+      },
+      "keys": [
+        "el",
+        "id",
+        "attrName",
+        "evtDetail",
+        "initialized",
+        "objectPool",
+        "events",
+        "attrValue",
+        "nextData",
+        "oldData",
+        "previousOldData",
+        "parsingAttrValue",
+        "throttledEmitComponentChanged",
+        "data",
+        "shaderData",
+        "geometry",
+        "material",
+        "shaderObject",
+        "explicitGeoDimensionsChecked",
+        "texture",
+        "isPlaying",
+        "currentFont",
+        "mesh"
+      ],
+      "meshes": [
+        {
+          "type": "Mesh",
+          "visible": true,
+          "vertices": 20,
+          "material": "RawShaderMaterial",
+          "uniforms": {
+            "alphaTest": 0.5,
+            "color": "object",
+            "map": {
+              "texture": true,
+              "width": 512,
+              "height": 512,
+              "complete": true,
+              "src": "https://cdn.aframe.io/fonts/Roboto-msdf.png"
+            },
+            "negate": "boolean",
+            "opacity": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "label3d",
+      "data": {
+        "anchor": "left",
+        "width": 2.9,
+        "value": "V = (L × W) × H = 3.36 × 1.35 = 4.54 units³",
+        "align": "left",
+        "wrapCount": 48,
+        "color": "#f7faff",
+        "side": "double",
+        "alphaTest": 0.5,
+        "baseline": "center",
+        "font": "roboto",
+        "fontImage": "",
+        "height": 0,
+        "letterSpacing": 0,
+        "lineHeight": 0,
+        "negate": true,
+        "opacity": 1,
+        "shader": "sdf",
+        "tabSize": 4,
+        "transparent": true,
+        "whiteSpace": "normal",
+        "wrapPixels": 0,
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": 0.001
+      },
+      "keys": [
+        "el",
+        "id",
+        "attrName",
+        "evtDetail",
+        "initialized",
+        "objectPool",
+        "events",
+        "attrValue",
+        "nextData",
+        "oldData",
+        "previousOldData",
+        "parsingAttrValue",
+        "throttledEmitComponentChanged",
+        "data",
+        "shaderData",
+        "geometry",
+        "material",
+        "shaderObject",
+        "explicitGeoDimensionsChecked",
+        "texture",
+        "isPlaying",
+        "currentFont",
+        "mesh"
+      ],
+      "meshes": [
+        {
+          "type": "Mesh",
+          "visible": true,
+          "vertices": 104,
+          "material": "RawShaderMaterial",
+          "uniforms": {
+            "alphaTest": 0.5,
+            "color": "object",
+            "map": {
+              "texture": true,
+              "width": 512,
+              "height": 512,
+              "complete": true,
+              "src": "https://cdn.aframe.io/fonts/Roboto-msdf.png"
+            },
+            "negate": "boolean",
+            "opacity": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "labelAxis",
+      "data": {
+        "anchor": "left",
+        "width": 2.9,
+        "value": "Selected: Height Y = 1.35 units",
+        "align": "left",
+        "wrapCount": 48,
+        "color": "#fde68a",
+        "side": "double",
+        "alphaTest": 0.5,
+        "baseline": "center",
+        "font": "roboto",
+        "fontImage": "",
+        "height": 0,
+        "letterSpacing": 0,
+        "lineHeight": 0,
+        "negate": true,
+        "opacity": 1,
+        "shader": "sdf",
+        "tabSize": 4,
+        "transparent": true,
+        "whiteSpace": "normal",
+        "wrapPixels": 0,
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": 0.001
+      },
+      "keys": [
+        "el",
+        "id",
+        "attrName",
+        "evtDetail",
+        "initialized",
+        "objectPool",
+        "events",
+        "attrValue",
+        "nextData",
+        "oldData",
+        "previousOldData",
+        "parsingAttrValue",
+        "throttledEmitComponentChanged",
+        "data",
+        "shaderData",
+        "geometry",
+        "material",
+        "shaderObject",
+        "explicitGeoDimensionsChecked",
+        "texture",
+        "isPlaying",
+        "currentFont",
+        "mesh"
+      ],
+      "meshes": [
+        {
+          "type": "Mesh",
+          "visible": true,
+          "vertices": 104,
+          "material": "RawShaderMaterial",
+          "uniforms": {
+            "alphaTest": 0.5,
+            "color": "object",
+            "map": {
+              "texture": true,
+              "width": 512,
+              "height": 512,
+              "complete": true,
+              "src": "https://cdn.aframe.io/fonts/Roboto-msdf.png"
+            },
+            "negate": "boolean",
+            "opacity": 1
+          }
+        }
+      ]
+    },
+    {
+      "id": "labelDelta",
+      "data": {
+        "anchor": "left",
+        "width": 2.9,
+        "value": "Y MID-SLICE | L × W = 3.36 units²",
+        "align": "left",
+        "wrapCount": 48,
+        "color": "#fde68a",
+        "side": "double",
+        "alphaTest": 0.5,
+        "baseline": "center",
+        "font": "roboto",
+        "fontImage": "",
+        "height": 0,
+        "letterSpacing": 0,
+        "lineHeight": 0,
+        "negate": true,
+        "opacity": 1,
+        "shader": "sdf",
+        "tabSize": 4,
+        "transparent": true,
+        "whiteSpace": "normal",
+        "wrapPixels": 0,
+        "xOffset": 0,
+        "yOffset": 0,
+        "zOffset": 0.001
+      },
+      "keys": [
+        "el",
+        "id",
+        "attrName",
+        "evtDetail",
+        "initialized",
+        "objectPool",
+        "events",
+        "attrValue",
+        "nextData",
+        "oldData",
+        "previousOldData",
+        "parsingAttrValue",
+        "throttledEmitComponentChanged",
+        "data",
+        "shaderData",
+        "geometry",
+        "material",
+        "shaderObject",
+        "explicitGeoDimensionsChecked",
+        "texture",
+        "isPlaying",
+        "currentFont",
+        "mesh"
+      ],
+      "meshes": [
+        {
+          "type": "Mesh",
+          "visible": true,
+          "vertices": 92,
+          "material": "RawShaderMaterial",
+          "uniforms": {
+            "alphaTest": 0.5,
+            "color": "object",
+            "map": {
+              "texture": true,
+              "width": 512,
+              "height": 512,
+              "complete": true,
+              "src": "https://cdn.aframe.io/fonts/Roboto-msdf.png"
+            },
+            "negate": "boolean",
+            "opacity": 1
+          }
+        }
+      ]
+    }
+  ],
+  "fontRequests": [
+    {
+      "name": "https://cdn.aframe.io/fonts/Roboto-msdf.json",
+      "duration": 435.5,
+      "transferSize": 0
+    },
+    {
+      "name": "https://cdn.aframe.io/fonts/Roboto-msdf.png",
+      "duration": 159.5,
+      "transferSize": 0
+    }
+  ],
+  "baselineFormula": "V = (L × W) × H = 3.36 × 1.35 = 4.54 units³"
+}

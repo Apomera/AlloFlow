@@ -95,7 +95,9 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
       expect(source).toContain('Free Build Studio');
       expect(source).toContain('Open a blank Free Build Sandbox');
       expect(source).toContain('defaultPrintEnvelope');
-      expect(source).toContain('Default Print Lab block envelope');
+      expect(source).toContain('Print Lab block envelope');
+      expect(source).toContain('FALLBACK_BED_MM');
+      expect(source).toContain('HANDOFF_UNIT_MM');
     });
 
     it(`selects only a connected student build for Print Lab — ${path}`, () => {
@@ -171,9 +173,18 @@ describe('Geometry World sandbox and Print Lab bridge', () => {
   });
 });
 
+// The dock only sizes a print for the student's own blocks; the engine says
+// which layer a measured cell belongs to.
+function studentEngineAt(key, blockType = 'stone') {
+  return { blocks: { [key]: { userData: { blockType, gridPos: { x: 0, y: 1, z: 0 } } } } };
+}
+
 describe('Geometry World bridge runtime behavior', () => {
-  it('shows a default print envelope after a connected build is measured', () => {
+  it('says what the printer will make solid, in cubic units and millimetres', () => {
+    // The envelope is a bounding box. A build of slabs and wedges prints much
+    // less than its box, and the tool exists to teach exactly that difference.
     const cfg = loadBuilderWithCore();
+    window.__geoWorldEngine = studentEngineAt('0,1,0');
     const ctx = makeCtx({
       toolData: {
         geometryWorld: {
@@ -181,7 +192,73 @@ describe('Geometry World bridge runtime behavior', () => {
           worldActive: true,
           selectedBlock: 0,
           selectedShape: 0,
-          measureResult: { isComplete: true, count: 12, L: 10, W: 8, H: 6 },
+          measureResult: {
+            isComplete: true, count: 12, L: 3, W: 2, H: 2, blocks: [{ x: 0, y: 1, z: 0 }],
+            totalVolume: 9.75, formattedVolume: '9\u00BE',
+            shapeCounts: { cube: 8, halfB: 2, halfA: 1, quarter: 1 },
+          },
+        },
+      },
+    });
+    const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
+      return cfg.render(ctx);
+    }));
+    expect(html).toContain('data-gwe-print-volume="true"');
+    expect(html).toContain('Prints solid at 9\u00BE cubic units = 1,218.75 mm\u00B3 at 5 mm per block (8 cubes, 1 diagonal half, 2 half slabs, 1 quarter wedge).');
+
+    const pure = window.StemLab.geometryWorldBuilderPure;
+    expect(pure.printVolumeSentence({ totalVolume: 1, formattedVolume: '1', shapeCounts: { cube: 1 } }))
+      .toBe('Prints solid at 1 cubic unit = 125 mm\u00B3 at 5 mm per block (1 cube).');
+    expect(pure.printVolumeSentence({ totalVolume: 1, shapeCounts: { halfA: 2 } }))
+      .toBe('Prints solid at 1 cubic unit = 125 mm\u00B3 at 5 mm per block (2 diagonal halves).');
+    // A measurement that never carried a volume gets no sentence rather than NaN.
+    expect(pure.printVolumeSentence({ count: 3 })).toBeNull();
+  });
+
+  it('does not quote a print size for the ground or a lesson structure', () => {
+    // M measures whatever the crosshair rests on. The sandbox floor is a
+    // 25 x 25 x 1 structure that used to be quoted as a 125 x 125 x 5 mm print
+    // that fits, when Send would have refused it as not the student's work.
+    const cfg = loadBuilderWithCore();
+    window.__geoWorldEngine = studentEngineAt('0,0,0', 'grass');
+    const ctx = makeCtx({
+      toolData: {
+        geometryWorld: {
+          activeLesson: 'builderSandbox',
+          worldActive: true,
+          selectedBlock: 0,
+          selectedShape: 0,
+          measureResult: { isComplete: true, count: 625, L: 25, W: 25, H: 1, blocks: [{ x: 0, y: 0, z: 0 }] },
+        },
+      },
+    });
+    const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
+      return cfg.render(ctx);
+    }));
+    expect(html).not.toContain('Print Lab block envelope');
+    expect(html).not.toContain('125 × 125 × 5 mm');
+    expect(html).toContain('That measurement was the ground or a lesson structure.');
+    // The count and bounds still show; they are true, just not printable.
+    expect(html).toContain('25×25×1');
+    expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
+      studentEngineAt('0,0,0', 'grass'), { blocks: [{ x: 0, y: 0, z: 0 }] })).toBe(false);
+    expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
+      studentEngineAt('0,1,0'), { blocks: [{ x: 0, y: 1, z: 0 }] })).toBe(true);
+    expect(window.StemLab.geometryWorldBuilderPure.measurementIsStudentBuild(
+      { blocks: { '0,1,0': { userData: { blockType: 'stone', _lessonBlock: true } } } }, { blocks: [{ x: 0, y: 1, z: 0 }] })).toBe(false);
+  });
+
+  it('shows a default print envelope after a connected build is measured', () => {
+    const cfg = loadBuilderWithCore();
+    window.__geoWorldEngine = studentEngineAt('0,1,0');
+    const ctx = makeCtx({
+      toolData: {
+        geometryWorld: {
+          activeLesson: 'builderSandbox',
+          worldActive: true,
+          selectedBlock: 0,
+          selectedShape: 0,
+          measureResult: { isComplete: true, count: 12, L: 10, W: 8, H: 6, blocks: [{ x: 0, y: 1, z: 0 }] },
         },
       },
     });
@@ -189,16 +266,148 @@ describe('Geometry World bridge runtime behavior', () => {
       return cfg.render(ctx);
     }));
 
-    expect(html).toContain('Default Print Lab block envelope');
+    expect(html).toContain('Print Lab block envelope');
     expect(html).toContain('50 × 40 × 30 mm');
-    expect(html).toContain('Within the default 220 × 220 × 250 mm');
+    expect(html).toContain('Fits the 220 × 220 × 250 mm printer profile at 5 mm per block');
+    expect(html).toContain('default printer profile');
     expect(window.StemLab.geometryWorldBuilderPure.defaultPrintEnvelope({ L: 50, W: 2, H: 2 })).toEqual({
       widthMm: 250,
       depthMm: 10,
       heightMm: 10,
       label: '250 × 10 × 10 mm',
-      fitsDefaultProfile: false,
+      profileLabel: '220 × 220 × 250 mm',
+      usingSavedProfile: false,
+      over: ['width'],
+      fits: false,
     });
+  });
+
+  it('measures against the printer profile the school saved in Print Lab', () => {
+    const cfg = loadBuilderWithCore();
+    window.__geoWorldEngine = studentEngineAt('0,1,0');
+    const ctx = makeCtx({
+      toolData: {
+        geometryWorld: {
+          activeLesson: 'builderSandbox',
+          worldActive: true,
+          selectedBlock: 0,
+          selectedShape: 0,
+          // 150 x 150 x 30 mm at 5 mm per block: inside the default bed,
+          // outside the small printer this school actually owns on two axes.
+          measureResult: { isComplete: true, count: 12, L: 30, W: 30, H: 6, blocks: [{ x: 0, y: 1, z: 0 }] },
+        },
+        printLab: { profile: { name: 'Lab mini', bedWidthMm: 120, bedDepthMm: 120, bedHeightMm: 120 } },
+      },
+    });
+    const html = ReactDOMServer.renderToStaticMarkup(React.createElement(function Host() {
+      return cfg.render(ctx);
+    }));
+
+    expect(html).toContain('150 × 150 × 30 mm');
+    expect(html).toContain('The width and depth dimensions are larger than the 120 × 120 × 120 mm printer profile');
+    expect(html).toContain('data-fit="false"');
+    expect(html).toContain('printer profile saved in Print Lab');
+    expect(html).not.toContain('220 × 220 × 250 mm');
+  });
+
+  it('returns the same fit verdict as Print Lab for every size and profile', () => {
+    loadBuilderWithCore();
+    const builder = window.StemLab.geometryWorldBuilderPure;
+    const envelope = builder.defaultPrintEnvelope;
+    const fallback = builder.FALLBACK_BED_MM;
+    const unitMm = builder.HANDOFF_UNIT_MM;
+    loadPrintLab();
+    const print = window.StemLab.printLabPure;
+
+    // The dock's fallback is Print Lab's own default bed, not a second opinion.
+    expect(fallback).toEqual({
+      width: print.DEFAULT_PRINTER_PROFILE.bedWidthMm,
+      depth: print.DEFAULT_PRINTER_PROFILE.bedDepthMm,
+      height: print.DEFAULT_PRINTER_PROFILE.bedHeightMm,
+    });
+    expect(unitMm).toBe(5);
+
+    const profiles = [
+      undefined,
+      { bedWidthMm: 220, bedDepthMm: 220, bedHeightMm: 250 },
+      { bedWidthMm: 120, bedDepthMm: 120, bedHeightMm: 120 },
+      { bedWidthMm: 350, bedDepthMm: 350, bedHeightMm: 400 },
+      // Out-of-range values fall back on both sides rather than being trusted.
+      { bedWidthMm: 5, bedDepthMm: 'wide', bedHeightMm: null },
+    ];
+    const builds = [
+      { L: 1, W: 1, H: 1 },
+      { L: 24, W: 24, H: 24 },
+      { L: 24, W: 24, H: 25 },
+      { L: 25, W: 24, H: 24 },
+      { L: 30, W: 8, H: 6 },
+      { L: 44, W: 44, H: 50 },
+      { L: 45, W: 10, H: 10 },
+      { L: 70, W: 70, H: 80 },
+    ];
+
+    let disagreements = 0;
+    let overCases = 0;
+    profiles.forEach((profile) => {
+      const normalized = print.normalizePrinterProfile(profile || {});
+      builds.forEach((build) => {
+        const mine = envelope(build, profile);
+        const theirs = print.geometryWorldPrinterFit(
+          { width: mine.widthMm, depth: mine.depthMm, height: mine.heightMm },
+          normalized,
+        );
+        if (mine.fits !== theirs.fits) disagreements += 1;
+        if (!mine.fits) overCases += 1;
+        expect(mine.over).toEqual(theirs.over);
+        expect(mine.profileLabel).toBe(theirs.profileLabel);
+      });
+    });
+    expect(disagreements).toBe(0);
+    // The table has to contain real failures, or agreement proves nothing.
+    expect(overCases).toBeGreaterThan(5);
+  });
+
+  it('drops a shared face only when both neighbours present the same polygon on it', () => {
+    // Each block is a closed shell, so touching neighbours keep a coincident pair
+    // of faces between them. Print Lab's preflight counts every shared edge of
+    // such a pair as non-manifold: measured, a slab on a cube drew 4 and a mixed
+    // 12-block build 17, and the enclosed volume stopped being reported. The rule
+    // is decided from the triangles, not a shape table.
+    loadBuilderWithCore();
+    const pure = window.StemLab.geometryWorldBuilderPure;
+    const tri = (n, a, b, c) => ({ n, v: [a, b, c] });
+    // A unit square on the plane x = 1 facing +x, split one way ...
+    const squarePlusX = [tri([1, 0, 0], [1, 0, 0], [1, 1, 0], [1, 1, 1]), tri([1, 0, 0], [1, 0, 0], [1, 1, 1], [1, 0, 1])];
+    // ... and the same square facing -x, split the OTHER way, as the neighbour's face.
+    const squareMinusX = [tri([-1, 0, 0], [1, 0, 1], [1, 1, 0], [1, 0, 0]), tri([-1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0])];
+    // A half-height rectangle facing -x on the same plane: a slab's side.
+    const halfMinusX = [tri([-1, 0, 0], [1, 0, 1], [1, 0.5, 0], [1, 0, 0]), tri([-1, 0, 0], [1, 0, 1], [1, 0.5, 1], [1, 0.5, 0])];
+    const other = tri([0, 1, 0], [0, 1, 0], [0, 1, 1], [1, 1, 1]);   // an unrelated top face
+
+    const a = { position: { x: 0, y: 0, z: 0 }, triangles: squarePlusX.concat([other]) };
+    const b = { position: { x: 1, y: 0, z: 0 }, triangles: squareMinusX.concat([other]) };
+    const selected = { '0,0,0': true, '1,0,0': true };
+    // Identical polygon, different triangulation: both faces go, the tops stay.
+    expect(pure.unionSurface([a, b], selected)).toHaveLength(2);
+
+    const c = { position: { x: 1, y: 0, z: 0 }, triangles: halfMinusX.concat([other]) };
+    const a2 = { position: { x: 0, y: 0, z: 0 }, triangles: squarePlusX.concat([other]) };
+    // A partial overlap is real geometry on both sides: nothing is dropped. The
+    // same triangle objects are reused from the call above on purpose: the rule
+    // must not leave marks on its inputs.
+    expect(pure.unionSurface([a2, c], selected)).toHaveLength(6);
+    expect(Object.keys(squarePlusX[0])).toEqual(['n', 'v']);
+
+    // A neighbour that is not part of the selection never culls anything.
+    expect(pure.unionSurface([{ position: { x: 0, y: 0, z: 0 }, triangles: squarePlusX.slice() }], { '0,0,0': true })).toHaveLength(2);
+
+    // The signature ignores triangulation and vertex order but not area.
+    expect(pure.faceSignature(squarePlusX)).toBe(pure.faceSignature(squareMinusX));
+    expect(pure.faceSignature(squarePlusX)).not.toBe(pure.faceSignature(halfMinusX));
+    // Only axis-aligned triangles on integer cell boundaries are candidates.
+    expect(pure.axisPlane(tri([0, 0.7071, 0.7071], [0, 0, 0], [1, 0, 0], [1, 1, 1]))).toBeNull();
+    expect(pure.axisPlane(tri([0, 1, 0], [0, 0.5, 0], [1, 0.5, 0], [1, 0.5, 1]))).toBeNull();
+    expect(pure.axisPlane(tri([0, -1, 0], [0, 2, 0], [1, 2, 1], [1, 2, 0]))).toEqual({ axis: 1, sign: -1, coordinate: 2 });
   });
 
   it('sanitizes editable source data and rejects a mismatched binary STL length', () => {

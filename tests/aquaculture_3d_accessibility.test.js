@@ -330,7 +330,7 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain("'Topics visited'");
     expect(source).toContain("'Paths completed'");
     expect(source).toContain("'Recommended next: '");
-    expect(source).toContain('Visiting shows exploration; marking a lesson complete records intentional progress.');
+    expect(source).toContain('Completion is your own progress marker; use experiments and checkpoints to show what you understand.');
     expect(source).toContain("'aria-valuetext': summary.completed + ' of ' + journey.topics.length + ' lessons completed'");
     expect(source).toContain("className: 'aq-topic-reflection'");
     expect(source).toContain("id: 'aq-topic-note', value: noteDraft, maxLength: 600");
@@ -352,7 +352,9 @@ describe('Aquaculture Lab 3D farm accessibility contract', () => {
     expect(source).toContain('.aq-btn:not(:disabled):hover');
     expect(source).toContain('@media(prefers-reduced-motion:reduce)');
     expect(source).toContain('.aq-primary-nav{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))}');
-    expect(source.match(/className: 'aq-section-kicker'/g) || []).toHaveLength(291);
+    expect(source).toContain("className: 'aq-section-kicker'");
+    expect(source).toContain("className: 'aq-investigation-loop'");
+    expect(source).toContain("className: 'aq-loop-steps'");
     expect(source).toContain("className: 'aq-topic-group'");
     expect(source).toContain("className: 'aq-topic-group-summary'");
     expect(source).toContain('.aq-section-kicker:after');

@@ -157,6 +157,7 @@ function HeaderBar(props) {
     GlobalMuteButton,
     KOKORO_VOICES,
     UiLanguageSelector,
+    setConfirmDialog,
     _isCanvasEnv,
     activeSessionCode,
     addToast,
@@ -583,6 +584,8 @@ function HeaderBar(props) {
       });
     };
   }, [showReadThisPage, theme]);
+  const selectedAppThemeLabel = t("theme." + (theme === "contrast" ? "high_contrast" : theme)) || theme;
+  const selectedOverlayLabel = { none: t("header.overlay_none") || "None", blue: t("header.reading_theme_blue") || "Blue", peach: t("header.overlay_peach") || "Peach", yellow: t("header.overlay_yellow") || "Yellow" }[colorOverlay] || colorOverlay;
   const notebookLabel = t("cmd.open_notebook") || "Open my notebook";
   const personalAIConnectLabel = t("header.personal_ai_connect") || "Connect personal AI";
   const personalAIConnectedLabel = t("header.personal_ai_connected") || "Personal AI connected";
@@ -857,7 +860,7 @@ function HeaderBar(props) {
     /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold hidden xl:inline" }, t("immersive.label_text")),
     showTextSettings ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 12 }) : /* @__PURE__ */ React.createElement(ChevronDown, { size: 12 })
   ), showTextSettings && _headerPortal(
-    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: `text-[11px] font-bold flex items-center gap-1 ${_skin.action}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("common.reset")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-font-family", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "fixed inset-0 z-[10000]", onClick: handleSetShowTextSettingsToFalse }), /* @__PURE__ */ React.createElement("div", { ref: _textSettingsRef, tabIndex: -1, role: "dialog", "aria-modal": "true", "aria-labelledby": "header-text-settings-title", className: `allo-header-settings-dialog fixed top-28 right-20 w-72 p-5 rounded-xl shadow-2xl border z-[10001] animate-in fade-in zoom-in-95 motion-reduce:animate-none duration-200 ${_skin.panel}` }, /* @__PURE__ */ React.createElement("div", { className: "space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: `flex justify-between items-center border-b ${_skin.divider} pb-2` }, /* @__PURE__ */ React.createElement("h4", { id: "header-text-settings-title", className: "font-bold text-sm" }, t("settings.text.header")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: resetFontSize, "data-help-key": "header_settings_text_reset", className: `text-[11px] font-bold flex items-center gap-1 ${_skin.action}` }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 10 }), " ", t("header.reset_size_spacing") || "Reset size & spacing"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSetShowTextSettingsToFalse, className: `min-w-6 min-h-6 rounded focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${_skin.dismiss}`, "aria-label": t("common.close") || "Close text settings" }, "\xD7"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-font-family", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.font_family")), /* @__PURE__ */ React.createElement(
       "select",
       {
         id: "header-text-font-family",
@@ -874,31 +877,25 @@ function HeaderBar(props) {
         "aria-label": t("common.toggle_focus_mode"),
         onClick: handleToggleFocusMode,
         "data-help-key": "header_settings_text_bionic",
+        "aria-pressed": focusMode,
+        "aria-describedby": "header-bionic-scope",
         className: `w-full flex items-center justify-between p-3 rounded-lg border-2 transition-all group ${focusMode ? _skin.accent : `${_skin.surface} border-transparent hover:border-slate-300`}`
       },
-      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : _skin.chip}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px]" }, t("settings.text.bionic_sub")))),
+      /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `p-1.5 rounded-md ${focusMode ? "bg-indigo-500 text-white" : _skin.chip}` }, /* @__PURE__ */ React.createElement(Eye, { size: 16 })), /* @__PURE__ */ React.createElement("div", { className: "text-left" }, /* @__PURE__ */ React.createElement("span", { className: "block text-xs font-bold" }, t("settings.text.bionic")), /* @__PURE__ */ React.createElement("span", { className: "block text-[11px]" }, t("settings.text.bionic_sub")), /* @__PURE__ */ React.createElement("span", { id: "header-bionic-scope", className: "block text-[11px] mt-1" }, t("header.bionic_scope") || "Applies to supported reading passages."))),
       /* @__PURE__ */ React.createElement("div", { className: `w-10 h-5 rounded-full relative transition-colors ${focusMode ? "bg-indigo-500" : theme === "contrast" ? "bg-yellow-400" : "bg-slate-500"}` }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-1 w-3 h-3 bg-white rounded-full shadow-sm transition-all duration-300 ${focusMode ? "left-6" : "left-1"}` }))
-    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-font-size", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => {
-      setBaseFontSize(Math.max(12, baseFontSize - 1));
-      setSliderFontSize(Math.max(12, baseFontSize - 1));
-    }, className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-font-size", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.size")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, baseFontSize, "px")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3", "data-help-key": "header_settings_text_size" }, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.minimize"), onClick: () => setSliderFontSize(Math.max(10, baseFontSize - 1)), className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Minimize, { size: 16 })), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "header-text-font-size",
         type: "range",
-        min: "12",
-        max: "24",
+        min: "10",
+        max: "48",
         step: "1",
         value: sliderFontSize,
         onChange: (e) => setSliderFontSize(parseInt(e.target.value)),
-        onMouseUp: () => setBaseFontSize(sliderFontSize),
-        onTouchEnd: () => setBaseFontSize(sliderFontSize),
         className: "flex-grow h-1.5 bg-indigo-100 rounded-lg appearance-none cursor-pointer accent-indigo-600"
       }
-    ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.maximize"), onClick: () => {
-      setBaseFontSize(Math.min(24, baseFontSize + 1));
-      setSliderFontSize(Math.min(24, baseFontSize + 1));
-    }, className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Maximize, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3 mt-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-line-height", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.line_height")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, lineHeight)), /* @__PURE__ */ React.createElement(
+    ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": t("common.maximize"), onClick: () => setSliderFontSize(Math.min(48, baseFontSize + 1)), className: `p-2.5 rounded-lg transition-colors ${_skin.ghost}` }, /* @__PURE__ */ React.createElement(Maximize, { size: 16 })))), /* @__PURE__ */ React.createElement("div", { className: `border-t ${_skin.divider} pt-3 mt-3` }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "header-text-line-height", className: `text-xs font-bold flex items-center gap-1 ${_skin.label}` }, t("settings.text.line_height")), /* @__PURE__ */ React.createElement("span", { className: `text-[11px] font-mono ${_skin.chip} px-1.5 py-0.5 rounded` }, lineHeight)), /* @__PURE__ */ React.createElement(
       "input",
       {
         id: "header-text-line-height",
@@ -1017,18 +1014,21 @@ function HeaderBar(props) {
           const voice = e.target.value;
           if (voice === "__kokoro_unavailable") return;
           setSelectedVoice(voice);
-          if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && window.__loadKokoroTTS) {
+          if (canUseKokoroVoicePicker && KOKORO_VOICES.some((v) => v.id === voice) && !window._kokoroTTS?.ready && !window.__kokoroTTSDownloading && window.__loadKokoroTTS) {
             window.__kokoroTTSDownloading = true;
             window.__kokoroLoadUserInitiated = true;
             addToast(
               kokoroCapability.isIOS ? t("header.voice_kokoro_downloading_ios") || "Getting the on-device voice (88 MB). It reads offline afterwards, though this browser may ask for it again after a few weeks unused." : t("header.voice_kokoro_downloading") || "Getting the on-device voice (88 MB, one time). You can keep working.",
               "info"
             );
-            window.__loadKokoroTTS().then((ok) => {
-              window.__kokoroTTSDownloading = false;
-              window.__kokoroLoadUserInitiated = false;
+            Promise.resolve().then(() => window.__loadKokoroTTS()).then((ok) => {
               if (ok) addToast(t("header.voice_kokoro_ready_toast") || "On-device voice ready. It is saved on this device.", "success");
               else addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+            }).catch(() => {
+              addToast(t("header.voice_kokoro_failed_toast") || "The on-device voice could not be prepared. Another voice will read for now.", "error");
+            }).finally(() => {
+              window.__kokoroTTSDownloading = false;
+              window.__kokoroLoadUserInitiated = false;
             });
           }
         },
@@ -1044,6 +1044,7 @@ function HeaderBar(props) {
       "input",
       {
         type: "checkbox",
+        id: "header-browser-voice-fallback",
         className: "mt-0.5 accent-indigo-600",
         defaultChecked: (() => {
           try {
@@ -1053,10 +1054,13 @@ function HeaderBar(props) {
           }
         })(),
         onChange: (e) => {
+          const requested = e.currentTarget.checked;
           try {
             const cur = JSON.parse(localStorage.getItem("alloflow_ai_config") || "{}");
-            localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...cur, browserTtsFallback: e.target.checked }));
-          } catch {
+            localStorage.setItem("alloflow_ai_config", JSON.stringify({ ...cur, browserTtsFallback: requested }));
+          } catch (_) {
+            e.currentTarget.checked = !requested;
+            addToast(t("header.audio_setting_save_failed") || "This audio setting could not be saved. Your previous choice is still active.", "error");
           }
         },
         "aria-label": t("header.browser_tts_fallback_aria") || "Use browser voice as fallback when Gemini TTS refuses or fails"
@@ -1107,20 +1111,22 @@ function HeaderBar(props) {
       type: "button",
       onClick: handleToggleDisableAnimations,
       "data-help-key": "header_settings_anim",
+      "aria-pressed": disableAnimations,
+      "aria-describedby": "header-motion-scope",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${disableAnimations ? "bg-red-700 text-white shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
       title: disableAnimations ? t("a11y.anim_enable") : t("a11y.anim_disable"),
-      "aria-label": t("a11y.anim_toggle")
+      "aria-label": t("header.reduce_animations") || "Reduce animations"
     },
     disableAnimations ? /* @__PURE__ */ React.createElement(ZapOff, { size: 20, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Zap, { size: 20, "aria-hidden": "true" })
-  ), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("span", { id: "header-motion-scope", className: "sr-only" }, t("header.motion_scope") || "Your device\u2019s reduced-motion preference also applies."), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: toggleTheme,
       "data-help-key": "header_settings_theme",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${theme === "light" ? "bg-white/10 hover:bg-white/20 text-white" : theme === "dark" ? "bg-indigo-600 hover:bg-indigo-500 text-yellow-300 shadow-lg shadow-indigo-500/50" : "bg-yellow-400 text-black hover:bg-yellow-300"}`,
-      title: `${t("settings.theme")}: ${theme.charAt(0).toUpperCase() + theme.slice(1)}`,
-      "aria-label": t("a11y.theme_toggle")
+      title: `${t("settings.theme")}: ${selectedAppThemeLabel}`,
+      "aria-label": `${t("a11y.theme_toggle")}: ${selectedAppThemeLabel}`
     },
     theme === "light" && /* @__PURE__ */ React.createElement(Sun, { size: 20, "aria-hidden": "true" }),
     theme === "dark" && /* @__PURE__ */ React.createElement(Moon, { size: 20, "aria-hidden": "true" }),
@@ -1132,8 +1138,8 @@ function HeaderBar(props) {
       onClick: toggleOverlay,
       "data-help-key": "header_settings_overlay",
       className: `p-2 rounded-xl transition-all flex items-center gap-2 ${colorOverlay !== "none" ? "bg-white text-indigo-900 shadow-lg" : "hover:bg-white/10 text-white/80 hover:text-white"}`,
-      title: `${t("settings.overlay")}: ${colorOverlay}`,
-      "aria-label": t("a11y.overlay_toggle")
+      title: `${t("settings.overlay")}: ${selectedOverlayLabel}`,
+      "aria-label": `${t("a11y.overlay_toggle")}: ${selectedOverlayLabel}`
     },
     /* @__PURE__ */ React.createElement(Palette, { size: 20, "aria-hidden": "true" })
   )), /* @__PURE__ */ React.createElement("div", { id: "tour-header-tools", className: `relative z-40 flex items-center gap-2 p-2 rounded-2xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, !isStudentLinkMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
@@ -1248,6 +1254,7 @@ function HeaderBar(props) {
       type: "button",
       onClick: handleToggleIsBotVisible,
       "data-help-key": "header_bot_toggle",
+      "aria-pressed": isBotVisible,
       className: `p-2 rounded-xl transition-colors ${isBotVisible ? "bg-indigo-500 text-white shadow-md" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
       title: isBotVisible ? t("toolbar.hide_bot") : t("toolbar.show_bot"),
       "aria-label": isBotVisible ? t("toolbar.hide_bot") : t("toolbar.show_bot")
@@ -1259,6 +1266,7 @@ function HeaderBar(props) {
       type: "button",
       "data-help-ignore": "true",
       onClick: handleToggleIsHelpMode,
+      "aria-pressed": isHelpMode,
       className: `p-2 rounded-xl transition-colors ${isHelpMode ? "bg-yellow-400 text-slate-900 shadow-md animate-pulse" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
       title: isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate"),
       "aria-label": isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate")
@@ -1323,7 +1331,7 @@ function HeaderBar(props) {
       "aria-label": t("toolbar.about_aria")
     },
     /* @__PURE__ */ React.createElement(Info, { size: 20 })
-  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, null))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "w-full flex flex-wrap items-center gap-2 sm:gap-3 justify-start sm:justify-end relative z-10 mt-2 min-w-0" }, /* @__PURE__ */ React.createElement("div", { id: "tour-header-actions", className: `w-full sm:w-auto sm:ml-auto flex flex-wrap items-center justify-start sm:justify-end gap-2 p-1.5 rounded-xl backdrop-blur-xl border shadow-inner transition-all ${theme === "contrast" ? "border-yellow-400 bg-black" : "bg-white/10 border-white/20"}` }, /* @__PURE__ */ React.createElement("div", { className: "w-full sm:w-auto flex flex-col items-start sm:flex-row sm:items-center gap-1.5 px-1 sm:pr-2 sm:border-r sm:border-white/10" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-indigo-100/70 uppercase tracking-wider hidden md:block text-right leading-tight" }, t("header.app_language")), /* @__PURE__ */ React.createElement("div", { className: "max-w-full scale-90 origin-left sm:origin-center", "data-help-key": "header_language" }, /* @__PURE__ */ React.createElement(UiLanguageSelector, { setConfirmDialog }))), /* @__PURE__ */ React.createElement("div", { className: "flex-1 min-w-0 w-full sm:w-auto sm:flex-none flex flex-col items-stretch sm:items-end gap-1.5" }, isTeacherMode && /* @__PURE__ */ React.createElement(
     "div",
     {
       "data-header-utility-cluster": "teacher",

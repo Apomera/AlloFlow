@@ -327,7 +327,7 @@ function ConceptSortView(props) {
             csRefineItemImage(item.id);
           }
         },
-        placeholder: "Edit image: e.g. brighter colors, add a border…",
+        placeholder: t("placeholders.edit_image_prompt"),
         disabled: isBusy,
         className: "flex-1 text-[11px] bg-white border border-amber-300 rounded px-2 py-1 outline-none focus:ring-2 focus:ring-amber-400 placeholder:text-slate-400",
         "aria-label": `Refinement prompt for ${item.content}`
@@ -343,7 +343,7 @@ function ConceptSortView(props) {
     }, /*#__PURE__*/React.createElement("input", {
       type: "text",
       autoFocus: true,
-      placeholder: "New item (e.g. photosynthesis)",
+      placeholder: t("placeholders.new_item_example"),
       value: csAddingText,
       onChange: e => setCsAddingText(e.target.value),
       onKeyDown: e => {
@@ -379,7 +379,8 @@ function ConceptSortView(props) {
     onGameComplete: handleGameCompletion,
     onExplainIncorrect: handleExplainConceptSortItem,
     imageScale: conceptSortImageScale,
-    onImageScaleChange: setConceptSortImageScale
+    onImageScaleChange: setConceptSortImageScale,
+    allowAddItems: Boolean(isTeacherMode)
   })));
 }
 

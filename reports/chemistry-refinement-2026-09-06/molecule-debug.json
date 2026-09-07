@@ -1,0 +1,383 @@
+[
+  {
+    "text": "",
+    "name": "Back to tools",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🧬 Real structures",
+    "name": "Open Molecule Shelf real structures viewer",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "− Hide mode guide",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🔬ViewInspect a 3D model and formula readout.Selected",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🧬Real StructuresOpen the Mol* protein and DNA viewer.Launch",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "⚗️CreateCombine atoms and discover compounds.Open",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🧱BuildDrag atoms and sketch bonds.Open",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🗂️ResearchUse the periodic table as a stable reference.Open",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "⚖️ReactBalance equations and inspect products.Open",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🔬 View🔬 Viewer",
+    "name": "Switch to Viewer mode",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "⚗️ Create⚗️ Compound Creator",
+    "name": "Switch to Compound Creator mode",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🧱 Build🧱 Build",
+    "name": "Switch to Build mode",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🗂️ Table🗂️ Periodic Table",
+    "name": "Switch to Periodic Table mode",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "⚗️ React⚗️ Reactions",
+    "name": "Switch to Reactions mode",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "H₂O (Water)",
+    "name": "View molecule: H₂O (Water)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CO₂ (Carbon Dioxide)",
+    "name": "View molecule: CO₂ (Carbon Dioxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CH₄ (Methane)",
+    "name": "View molecule: CH₄ (Methane)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "NaCl (Table Salt)",
+    "name": "View molecule: NaCl (Table Salt)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "NH₃ (Ammonia)",
+    "name": "View molecule: NH₃ (Ammonia)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "O₂ (Oxygen Gas)",
+    "name": "View molecule: O₂ (Oxygen Gas)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "N₂ (Nitrogen Gas)",
+    "name": "View molecule: N₂ (Nitrogen Gas)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "H₂O₂ (Hydrogen Peroxide)",
+    "name": "View molecule: H₂O₂ (Hydrogen Peroxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "HCl (Hydrochloric Acid)",
+    "name": "View molecule: HCl (Hydrochloric Acid)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "H₂SO₄ (Sulfuric Acid)",
+    "name": "View molecule: H₂SO₄ (Sulfuric Acid)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "C₂H₅OH (Ethanol)",
+    "name": "View molecule: C₂H₅OH (Ethanol)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CaCO₃ (Calcium Carbonate)",
+    "name": "View molecule: CaCO₃ (Calcium Carbonate)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "C₆H₁₂O₆ (Glucose)",
+    "name": "View molecule: C₆H₁₂O₆ (Glucose)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "NaOH (Sodium Hydroxide)",
+    "name": "View molecule: NaOH (Sodium Hydroxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Fe₂O₃ (Iron Oxide)",
+    "name": "View molecule: Fe₂O₃ (Iron Oxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "O₃ (Ozone)",
+    "name": "View molecule: O₃ (Ozone)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CO (Carbon Monoxide)",
+    "name": "View molecule: CO (Carbon Monoxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "NO₂ (Nitrogen Dioxide)",
+    "name": "View molecule: NO₂ (Nitrogen Dioxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "SO₂ (Sulfur Dioxide)",
+    "name": "View molecule: SO₂ (Sulfur Dioxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "N₂O (Nitrous Oxide)",
+    "name": "View molecule: N₂O (Nitrous Oxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CH₃OH (Methanol)",
+    "name": "View molecule: CH₃OH (Methanol)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "HNO₃ (Nitric Acid)",
+    "name": "View molecule: HNO₃ (Nitric Acid)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "H₃PO₄ (Phosphoric Acid)",
+    "name": "View molecule: H₃PO₄ (Phosphoric Acid)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "C₃H₈ (Propane)",
+    "name": "View molecule: C₃H₈ (Propane)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "C₄H₁₀ (Butane)",
+    "name": "View molecule: C₄H₁₀ (Butane)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "SiO₂ (Silicon Dioxide)",
+    "name": "View molecule: SiO₂ (Silicon Dioxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "KCl (Potassium Chloride)",
+    "name": "View molecule: KCl (Potassium Chloride)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "MgO (Magnesium Oxide)",
+    "name": "View molecule: MgO (Magnesium Oxide)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "NaHCO₃ (Baking Soda)",
+    "name": "View molecule: NaHCO₃ (Baking Soda)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CH₃COOH (Acetic Acid)",
+    "name": "View molecule: CH₃COOH (Acetic Acid)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "KNO₃ (Potassium Nitrate)",
+    "name": "View molecule: KNO₃ (Potassium Nitrate)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "CuSO₄ (Copper Sulfate)",
+    "name": "View molecule: CuSO₄ (Copper Sulfate)",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Ball & stick",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Sphere model",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Atom labels",
+    "name": null,
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Fit model",
+    "name": "Fit model",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Front",
+    "name": "Front view",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Side",
+    "name": "Side view",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Top",
+    "name": "Top view",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "+",
+    "name": "Zoom in",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "−",
+    "name": "Zoom out",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Reset",
+    "name": "Reset view",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "🔬 Ask",
+    "name": "Ask Chem Tutor",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "What is an ionic bond?",
+    "name": "Ask: What is an ionic bond?",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "Why is water a polar molecule?",
+    "name": "Ask: Why is water a polar molecule?",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "How does rust form?",
+    "name": "Ask: How does rust form?",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "What is pH?",
+    "name": "Ask: What is pH?",
+    "hidden": "true",
+    "display": "block"
+  },
+  {
+    "text": "✕",
+    "name": "Dismiss Tutorial",
+    "display": "flex"
+  },
+  {
+    "text": "Next →",
+    "name": "Next",
+    "display": "block"
+  },
+  {
+    "text": "Browse 53 topics",
+    "name": null,
+    "display": "block"
+  }
+]

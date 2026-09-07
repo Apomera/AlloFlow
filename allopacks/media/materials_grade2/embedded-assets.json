@@ -1,0 +1,194 @@
+[
+  {
+    "id": "mt-term-material",
+    "file": "mt-term-material.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Four square samples show wood grain, woven cloth, clear glass with a leaf visible beneath it, and gray metal.",
+    "altHash": "img-huf-12445701"
+  },
+  {
+    "id": "mt-term-property",
+    "file": "mt-term-property.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A fingertip makes a dent in a blue cushion at left. At right, a fingertip presses a wooden block whose top stays flat.",
+    "altHash": "img-9s7-d823b933"
+  },
+  {
+    "id": "mt-term-hard",
+    "file": "mt-term-hard.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A fingertip presses against the top of a red brick. The fingertip flattens slightly while the brick keeps its shape.",
+    "altHash": "img-8kv-b268ef67"
+  },
+  {
+    "id": "mt-term-soft",
+    "file": "mt-term-soft.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A finger presses deeply into a teal cushion, making a dent surrounded by fabric folds.",
+    "altHash": "img-acr-2e6bd70c"
+  },
+  {
+    "id": "mt-term-bendy",
+    "file": "mt-term-bendy.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Two hands hold the ends of a thin blue strip curved into an arch, with no visible break.",
+    "altHash": "img-7cv-b36985d0"
+  },
+  {
+    "id": "mt-term-rough",
+    "file": "mt-term-rough.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Coarse tan cloth has thick crossing threads, uneven raised fibers, and open gaps in its weave.",
+    "altHash": "img-13tn-f2e044fb"
+  },
+  {
+    "id": "mt-term-smooth",
+    "file": "mt-term-smooth.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A clear rectangular glass tile rests on a pale table, with an even flat surface and a bright reflected highlight.",
+    "altHash": "img-8vr-916885de"
+  },
+  {
+    "id": "mt-term-waterproof",
+    "file": "mt-term-waterproof.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A rounded clear water bead sits on top of a red fabric square, with no spreading wet patch visible.",
+    "altHash": "img-dyj-0318872c"
+  },
+  {
+    "id": "mt-term-absorb",
+    "file": "mt-term-absorb.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A red woven square has a darker damp patch spreading among its threads, without a standing water bead.",
+    "altHash": "img-l5r-ff2cbf05"
+  },
+  {
+    "id": "mt-term-test",
+    "file": "mt-term-test.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Three trays hold white paper, a fluffy blue sample, and a green sheet. A measuring spoon and cup of water sit nearby.",
+    "altHash": "img-8mv-4bcb65ab"
+  },
+  {
+    "id": "mt-img-window-sweater",
+    "file": "mt-img-window-sweater.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "At left, a hand rests against a window with a tree visible outside. At right, a finger makes a dent in a folded purple sweater.",
+    "altHash": "img-10cj-e68b3b01"
+  },
+  {
+    "id": "mt-img-two-water-jobs",
+    "file": "mt-img-two-water-jobs.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A clear rounded bead sits on the left red square. The right red towel square has a dark damp patch among its loops.",
+    "altHash": "img-13lr-a502190f"
+  },
+  {
+    "id": "mt-img-wrong-material",
+    "file": "mt-img-wrong-material.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Water drips through a tear in a damp paper canopy onto a toy bear sitting in a tray below.",
+    "altHash": "img-lp3-144af48e"
+  },
+  {
+    "id": "mt-img-fair-test",
+    "file": "mt-img-fair-test.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three trays hold white, blue, and green sample squares. A measuring spoon, water cup, and hourglass stand in front.",
+    "altHash": "img-gov-dc51f277"
+  },
+  {
+    "id": "mt-img-spill-results",
+    "file": "mt-img-spill-results.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "White and blue samples have dark damp patches in separate trays. A green sheet in a third tray has a clear puddle on its surface.",
+    "altHash": "img-gw7-4c01f3dc"
+  },
+  {
+    "id": "mt-img-look-around",
+    "file": "mt-img-look-around.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A kitchen contains a window showing a tree, a wooden chair, a metal pot, a white towel, and a blue bowl.",
+    "altHash": "img-w6v-54cff49e"
+  },
+  {
+    "id": "mt-img-bend-stretch",
+    "file": "mt-img-bend-stretch.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Hands curve a blue strip into an arch at left. At right, another pair of hands pulls an orange rubber band into a long narrow loop.",
+    "altHash": "img-f3j-0fd5ead3"
+  },
+  {
+    "id": "mt-img-hard-fragile",
+    "file": "mt-img-hard-fragile.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two ceramic cups sit on a tray. The left cup is intact; the right has a chipped rim, with a detached piece beside it.",
+    "altHash": "img-glb-1a578e5e"
+  },
+  {
+    "id": "mt-img-texture-pair",
+    "file": "mt-img-texture-pair.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two tan rectangular samples sit side by side: raised woven fibers at left and an even wooden surface with grain at right.",
+    "altHash": "img-w0n-53337824"
+  },
+  {
+    "id": "mt-img-clear-cloudy",
+    "file": "mt-img-clear-cloudy.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three upright panels sit in a wooden holder. A red ball is clear through the left panel, blurred through the middle, and not visible through the wooden right panel.",
+    "altHash": "img-f6n-8c28f2d4"
+  },
+  {
+    "id": "mt-img-same-size",
+    "file": "mt-img-same-size.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three similarly sized square samples lie in a row: white textured paper, fluffy blue fibers, and a shiny green sheet. A square white template sits above.",
+    "altHash": "img-clv-169a2525"
+  },
+  {
+    "id": "mt-img-repeat",
+    "file": "mt-img-repeat.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three separate trays each hold a blue square with no visible wet patch. A measuring spoon and water cup sit in front.",
+    "altHash": "img-hxj-3b046c3a"
+  },
+  {
+    "id": "mt-img-record",
+    "file": "mt-img-record.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A child draws a green square with a blue bead on paper. Beside the drawing, a green sample in a tray holds a clear water bead.",
+    "altHash": "img-syv-3529a06f"
+  },
+  {
+    "id": "mt-img-reuse",
+    "file": "mt-img-reuse.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A clear jar holds colored pencils at left. At right, a hand presses a folded cloth into a small spill on a wooden table.",
+    "altHash": "img-t4n-858cfe9a"
+  }
+]

@@ -22,15 +22,15 @@
       }
     },
     "topics": {
-      "universeDeclared": false,
-      "declaredCount": null,
-      "representedCount": null,
-      "coveragePercent": null,
+      "universeDeclared": true,
+      "declaredCount": 91,
+      "representedCount": 91,
+      "coveragePercent": 100,
       "missing": [],
       "offBlueprint": [],
       "observedCount": 91,
-      "minItemsPerDeclaredTopic": null,
-      "medianItemsPerDeclaredTopic": null,
+      "minItemsPerDeclaredTopic": 3,
+      "medianItemsPerDeclaredTopic": 8,
       "itemsPerTopic": {
         "1.1": 8,
         "1.2": 9,
@@ -137,14 +137,14 @@
     },
     "library": {
       "chapters": 9,
-      "sections": 9,
-      "knowledgeChecks": 9,
+      "sections": 27,
+      "knowledgeChecks": 27,
       "flashcards": 9,
       "memoryAids": 9,
       "diagrams": 0,
       "diagramPlacements": 0,
       "glossaryTerms": 0,
-      "constructedResponseWorkshops": 0,
+      "constructedResponseWorkshops": 9,
       "topicDiagnosticRoutes": 0,
       "remediationPlaybooks": 0,
       "studySessionPlans": 0,
@@ -155,16 +155,24 @@
       "diagrams",
       "diagramPlacements",
       "glossaryTerms",
-      "constructedResponseWorkshops",
       "topicDiagnosticRoutes",
       "remediationPlaybooks",
       "studySessionPlans",
       "spacedReviewPlans"
     ],
-    "gaps": [
-      "topic-universe-not-declared"
-    ],
-    "assessment": "gaps-present",
+    "lessonDepth": {
+      "chapterCount": 9,
+      "sectionCount": 27,
+      "sectionsPerChapter": 3
+    },
+    "crossReferences": {
+      "checked": 1400,
+      "unresolvedCount": 0,
+      "unresolved": {},
+      "examples": []
+    },
+    "gaps": [],
+    "assessment": "structurally-complete",
     "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."
   },
   "reportId": "ap-chemistry-foundation-qa",
@@ -401,16 +409,16 @@
       "D": 175
     },
     "chapterCount": 9,
-    "sectionCount": 9,
-    "knowledgeCheckCount": 9,
+    "sectionCount": 27,
+    "knowledgeCheckCount": 27,
     "flashcardCount": 9,
     "memoryAidCount": 9,
     "richLessonPrototypeCount": 9,
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "d2863cdb8ef0d12d151a3d49f193da457e92597ec9c0d1d9910f638e17963e13",
-    "learningLibrarySha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68",
+    "packSha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4",
+    "learningLibrarySha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-chemistry",
     "factualCrossCheckUrl": "https://openstax.org/details/books/chemistry-2e"
@@ -420,15 +428,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "d2863cdb8ef0d12d151a3d49f193da457e92597ec9c0d1d9910f638e17963e13",
-      "deploySha256": "d2863cdb8ef0d12d151a3d49f193da457e92597ec9c0d1d9910f638e17963e13"
+      "sourceSha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4",
+      "deploySha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68",
-      "deploySha256": "19c62bb27051c382064742ddd31107358704c8e41346dd4f77cd00ec9ccd6d68"
+      "sourceSha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff",
+      "deploySha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff"
     }
   ],
   "releaseBlockers": [

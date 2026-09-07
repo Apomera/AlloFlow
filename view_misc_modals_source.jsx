@@ -9,6 +9,27 @@
 // Total ~527 lines extracted from AlloFlowANTI.txt.
 // Closure deps generated via SCOPE-AWARE enumerator (handles param shadowing).
 
+// Schema fields are local drafts. Applying a form never executes a command.
+function AlloCommandFields({ fields, params, tx, disabled, styles, onApply, onDirty = () => {} }) {
+  const [values, setValues] = React.useState(() => ({ ...params }));
+  React.useEffect(() => () => onDirty(false), []);
+  const entries = Object.entries(fields || {});
+  if (!entries.length) return null;
+  return <form className="space-y-2 mt-3" onSubmit={event => { event.preventDefault(); Promise.resolve(onApply(values)).then(() => onDirty(false)).catch(() => {}); }}>
+    {entries.map(([key, field]) => <label key={key} className="block text-xs">
+      <span className="block mb-1 font-medium">{tx(field.labelKey || 'cmd.param_' + key, field.label || key)}</span>
+      <input name={key} type={field.type === 'integer' ? 'number' : 'text'} step={field.type === 'integer' ? 1 : undefined}
+        min={field.min} maxLength={field.maxLength || 200} required={!!field.required} disabled={disabled}
+        value={values[key] == null ? '' : String(values[key])}
+        onChange={event => { onDirty(true); setValues(previous => ({ ...previous, [key]: event.target.value })); }}
+        className={`w-full min-w-0 rounded border p-2 ${styles.input}`} />
+    </label>)}
+    <button type="submit" disabled={disabled} className={`px-3 py-1.5 rounded-lg text-xs font-bold ${styles.secondaryButton}`}>
+      {tx('chat_guide.apply_fields', 'Apply details')}
+    </button>
+  </form>;
+}
+
 // ── UDLGuideModal (UDL Guide Modal) — gate: showUDLGuide ──
 function UDLGuideModal(props) {
   // The Talk control reflects the live voice-loop state.
@@ -85,6 +106,15 @@ function UDLGuideModal(props) {
   // resources land in full view while the conversation stays alive. Local state
   // on purpose: the component stays mounted for the whole session.
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [dirtyFields, setDirtyFields] = useState({});
+  const markFieldsDirty = (id, dirty) => setDirtyFields(previous => {
+      if (!!previous[id] === dirty) return previous;
+      return { ...previous, [id]: dirty };
+  });
+  const hasUnappliedFields = Object.values(dirtyFields).some(Boolean);
+  const tx = (key, fallback) => { const value = typeof t === 'function' ? t(key, fallback) : null; return value && value !== key ? value : fallback; };
+  const latestOperation = [...(udlMessages || [])].reverse().find(message => message.operationKind);
+  const activeOperation = latestOperation && latestOperation.operationStatus !== 'closed' ? latestOperation : null;
   if (!(showUDLGuide)) return null;
   if (isCollapsed) {
       return (
@@ -115,7 +145,7 @@ function UDLGuideModal(props) {
       );
   }
   return (
-        <div style={{ zIndex: showStemLab ? 10490 : undefined }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
+        <div style={{ zIndex: showStemLab ? 10490 : undefined, maxWidth: isUDLGuideExpanded ? undefined : 'calc(100vw - 2rem)' }} className={`allo-docsuite fixed z-[100] rounded-2xl flex flex-col animate-in fade-in slide-in-from-right-5 duration-300 overflow-hidden transition-all ${isUDLGuideExpanded ? 'inset-4 top-24' : 'top-24 right-4 bottom-4 w-96'} ${isSpotlightMode ? 'opacity-20 hover:opacity-100 pointer-events-none hover:pointer-events-auto' : 'opacity-100'} ${chatStyles.container}`}>
           <div className={`p-4 flex justify-between items-center shrink-0 ${chatStyles.header}`}>
             <div className="flex items-center gap-2 font-bold">
                <HelpCircle size={18} /> {t('chat_guide.header')}
@@ -234,45 +264,27 @@ function UDLGuideModal(props) {
         <div className={`flex-1 p-4 overflow-y-auto space-y-4 custom-scrollbar ${chatStyles.body}`} ref={udlScrollRef}>
           {udlMessages.map((msg, idx) => (
             <div key={idx} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-              {!msg.type && (
+              {(!msg.type || (msg.type === 'choices' && msg.operationKind)) && (
                 <div className={`max-w-[85%] p-3 rounded-xl text-sm shadow-sm ${msg.role === 'user' ? `${chatStyles.userBubble} rounded-br-none` : `${chatStyles.modelBubble} rounded-bl-none`}`}>
                    {renderFormattedText(msg.text)}
                 </div>
               )}
-              {msg.type === 'blueprint' && activeBlueprint && (
-                  <div className="w-full">
-                      <InteractiveBlueprintCard
-                          config={activeBlueprint}
-                          run={blueprintExecutionResult}
-                          isRunning={!!isExecutingBlueprint}
-                          onStopRun={handleStopBlueprintRun}
-                          onRebuildStep={handleRebuildBlueprintStep}
-                          onOpenErrorLog={handleOpenGenerationErrorLog}
-                          onCopyDiagnostics={handleCopyBlueprintDiagnostics}
-                          onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
-                          summarizeFailureReason={getSafeGenerationFailureReason}
-                          onSaveTemplate={handleSaveLessonTemplate}
-                          onPreviewStep={handlePreviewBlueprintStep}
-                          onUpdate={handleBlueprintUIUpdate}
-                          onConfirm={handleExecuteBlueprint}
-                          onCancel={() => {
-                              // isExecutingBlueprint had NO reader anywhere in the app
-                              // until this line, so Cancel stayed live mid-run: it nulled
-                              // the plan while the executor was still emitting steps.
-                              if (isExecutingBlueprint) { addToast(t('blueprint.cancel_while_running') || 'This plan is still generating. Wait for it to finish.', 'info'); return; }
-                              // Cancel discards the PLAN, not its history: if it ever ran,
-                              // it is filed to the archive first (guarded for stale hosts).
-                              if (typeof archiveLivePlan === 'function') archiveLivePlan();
-                              setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.cancel_msg') }]);
-                              setActiveBlueprint(null);
-                              // Clear the record too: a run persisted without its plan
-                              // rehydrates as an orphan board with nothing to describe.
-                              if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
-                          }}
-                      />
-                  </div>
+              {msg.type === 'blueprint' && (
+                <div className={`max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`} data-testid="blueprint-history">
+                  {renderFormattedText(msg.text || tx('chat_guide.lesson_shared', 'A lesson plan was added to this conversation.'))}
+                  {msg.blueprintSummary && <p className="mt-1 text-xs">{Array.isArray(msg.blueprintSummary) ? msg.blueprintSummary.join(' → ') : msg.blueprintSummary}</p>}
+                </div>
               )}
-              {msg.type === 'choices' && (
+              {msg.type === 'chat-error' && (
+                <div role="alert" className={`max-w-[92%] p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
+                  {renderFormattedText(msg.text)}
+                  <button type="button" disabled={isChatProcessing} className={`block mt-2 px-3 py-1.5 rounded-lg ${chatStyles.secondaryButton}`}
+                    onClick={() => handleSendUDLMessage({ action: 'retry-chat', text: msg.retryText })}>
+                    {tx('chat_guide.retry_reply', 'Retry response')}
+                  </button>
+                </div>
+              )}
+              {msg.type === 'choices' && !msg.operationKind && (
                   <div className={`max-w-[92%] p-3 rounded-xl text-sm shadow-sm ${chatStyles.modelBubble} rounded-bl-none`}>
                       {renderFormattedText(msg.text)}
                       <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={t('chat_guide.header')}>
@@ -413,39 +425,6 @@ function UDLGuideModal(props) {
               </ul>
             </div>
           )}
-          {/* Restored-plan mount (Stage 4). The card normally renders from a
-              `type:'blueprint'` chat message — but udlMessages is ephemeral
-              useState in no save path, so after a reload a perfectly persisted
-              plan would have nowhere to appear. Mount it from STATE whenever a
-              plan exists and no blueprint message is carrying it. */}
-          {activeBlueprint && !(udlMessages || []).some(m => m && m.type === 'blueprint') && (
-            <div className="w-full">
-              <p className={`text-[11px] mb-1 ${chatStyles.subText}`}>
-                {t('blueprint.restored_notice') || 'Your saved lesson plan:'}
-              </p>
-              <InteractiveBlueprintCard
-                  config={activeBlueprint}
-                  run={blueprintExecutionResult}
-                  isRunning={!!isExecutingBlueprint}
-                  onStopRun={handleStopBlueprintRun}
-                  onRebuildStep={handleRebuildBlueprintStep}
-                  onOpenErrorLog={handleOpenGenerationErrorLog}
-                  onCopyDiagnostics={handleCopyBlueprintDiagnostics}
-                  onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
-                  summarizeFailureReason={getSafeGenerationFailureReason}
-                  onSaveTemplate={handleSaveLessonTemplate}
-                  onPreviewStep={handlePreviewBlueprintStep}
-                  onUpdate={handleBlueprintUIUpdate}
-                  onConfirm={handleExecuteBlueprint}
-                  onCancel={() => {
-                      if (isExecutingBlueprint) { addToast(t('blueprint.cancel_while_running') || 'This plan is still generating. Wait for it to finish.', 'info'); return; }
-                      if (typeof archiveLivePlan === 'function') archiveLivePlan();
-                      setActiveBlueprint(null);
-                      if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
-                  }}
-              />
-            </div>
-          )}
           {isChatProcessing && (
             <div className="flex items-start">
                <div className={`p-3 rounded-xl rounded-bl-none flex items-center gap-2 text-sm ${chatStyles.modelBubble}`}>
@@ -454,6 +433,85 @@ function UDLGuideModal(props) {
             </div>
           )}
         </div>
+        {(activeOperation || activeBlueprint) && (
+          <div style={{ maxHeight: '45%' }} className={`shrink-0 border-t overflow-y-auto p-3 space-y-3 custom-scrollbar ${chatStyles.body}`} data-testid="allobot-active-work">
+            {activeOperation && (
+              <section aria-label={tx('chat_guide.active_workflow', 'Current command workflow')} data-testid="active-command-workflow"
+                className={`p-3 rounded-xl text-sm ${chatStyles.modelBubble}`}>
+                <div role="status" aria-live="polite">{renderFormattedText(activeOperation.text)}</div>
+                {activeOperation.commandReview && <AlloCommandFields
+                  key={activeOperation.operationId + ':' + JSON.stringify(activeOperation.commandReview.params)}
+                  fields={activeOperation.commandReview.fields} params={activeOperation.commandReview.params}
+                  onDirty={dirty => markFieldsDirty(activeOperation.operationId, dirty)}
+                  tx={tx} disabled={isChatProcessing} styles={chatStyles}
+                  onApply={params => handleSendUDLMessage({ action: 'command-params', requestId: activeOperation.commandReview.requestId, params })} />}
+                {activeOperation.workflowMode === 'edit' && (activeOperation.workflowSteps || []).map((step, index, steps) => (
+                  <div key={step.stepId} className="border rounded-lg p-2 mt-2" data-testid="workflow-step-editor">
+                    <p className="font-bold">{index + 1}. {step.label}</p>
+                    <AlloCommandFields key={step.stepId + ':' + JSON.stringify(step.params)} fields={step.fields} params={step.params}
+                      onDirty={dirty => markFieldsDirty(step.stepId, dirty)}
+                      tx={tx} disabled={isChatProcessing} styles={chatStyles}
+                      onApply={params => handleSendUDLMessage({ action: 'workflow-params', workflowId: activeOperation.workflowId, stepId: step.stepId, params })} />
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      <button type="button" disabled={isChatProcessing || index === 0} className={`px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`}
+                        aria-label={tx('chat_guide.move_up', 'Move up') + ': ' + step.label}
+                        onClick={() => handleSendUDLMessage({ action: 'workflow-move', workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index - 1 })}>{tx('chat_guide.move_up', 'Move up')}</button>
+                      <button type="button" disabled={isChatProcessing || index === steps.length - 1} className={`px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`}
+                        aria-label={tx('chat_guide.move_down', 'Move down') + ': ' + step.label}
+                        onClick={() => handleSendUDLMessage({ action: 'workflow-move', workflowId: activeOperation.workflowId, stepId: step.stepId, toIndex: index + 1 })}>{tx('chat_guide.move_down', 'Move down')}</button>
+                      <button type="button" disabled={isChatProcessing} className={`px-2 py-1 rounded disabled:opacity-40 ${chatStyles.secondaryButton}`}
+                        aria-label={tx('chat_guide.remove_step', 'Remove step') + ': ' + step.label}
+                        onClick={() => handleSendUDLMessage({ action: 'workflow-remove', workflowId: activeOperation.workflowId, stepId: step.stepId })}>{tx('chat_guide.remove_step', 'Remove step')}</button>
+                    </div>
+                  </div>
+                ))}
+                {hasUnappliedFields && <p role="status" className="mt-2 text-xs">{tx('chat_guide.apply_before_run', 'Apply your edited details before running the plan.')}</p>}
+                <div className="flex flex-wrap gap-2 mt-3" role="group" aria-label={tx('chat_guide.workflow_actions', 'Workflow actions')}>
+                  {(activeOperation.choices || []).map((choice, index) => (
+                    <button key={index} type="button"
+                      disabled={choice.disabled || (isChatProcessing && choice.value !== '__allo_plan_stop') || (hasUnappliedFields && ['__allo_do', '__allo_plan_run'].includes(choice.value))}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold disabled:opacity-40 ${chatStyles.button}`}
+                      onClick={() => handleSendUDLMessage(choice.value)}>{choice.label}</button>
+                  ))}
+                </div>
+              </section>
+            )}
+            {activeBlueprint && (
+              <details open data-testid="active-lesson-blueprint">
+                <summary className="cursor-pointer text-sm font-bold mb-2">{tx('chat_guide.active_lesson', 'Current lesson plan')}</summary>
+                <InteractiveBlueprintCard
+                          config={activeBlueprint}
+                          run={blueprintExecutionResult}
+                          isRunning={!!isExecutingBlueprint}
+                          onStopRun={handleStopBlueprintRun}
+                          onRebuildStep={handleRebuildBlueprintStep}
+                          onOpenErrorLog={handleOpenGenerationErrorLog}
+                          onCopyDiagnostics={handleCopyBlueprintDiagnostics}
+                          onDownloadDiagnostics={handleDownloadBlueprintDiagnostics}
+                          summarizeFailureReason={getSafeGenerationFailureReason}
+                          onSaveTemplate={handleSaveLessonTemplate}
+                          onPreviewStep={handlePreviewBlueprintStep}
+                          onUpdate={handleBlueprintUIUpdate}
+                          onConfirm={handleExecuteBlueprint}
+                          onCancel={() => {
+                              // isExecutingBlueprint had NO reader anywhere in the app
+                              // until this line, so Cancel stayed live mid-run: it nulled
+                              // the plan while the executor was still emitting steps.
+                              if (isExecutingBlueprint) { addToast(t('blueprint.cancel_while_running') || 'This plan is still generating. Wait for it to finish.', 'info'); return; }
+                              // Cancel discards the PLAN, not its history: if it ever ran,
+                              // it is filed to the archive first (guarded for stale hosts).
+                              if (typeof archiveLivePlan === 'function') archiveLivePlan();
+                              setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.cancel_msg') }]);
+                              setActiveBlueprint(null);
+                              // Clear the record too: a run persisted without its plan
+                              // rehydrates as an orphan board with nothing to describe.
+                              if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
+                          }}
+                      />
+              </details>
+            )}
+          </div>
+        )}
         {/* Stage 6 preview overlay. Scoped INSIDE the panel (absolute, not
             fixed) so it covers the transcript without becoming a page-level
             modal — activeView and generatedContent are never touched, so it

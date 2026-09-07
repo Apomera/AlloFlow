@@ -1,0 +1,62 @@
+{
+  "focusedTests": {
+    "passed": 162,
+    "failed": 0,
+    "suites": [
+      {
+        "name": "allobot_accessory_integrity.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_disable_and_mic_feedback.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_generation_animation.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_idle_sleep_and_hide.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_keyboard_movement_a11y.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_motion_a11y.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_runtime_behavior.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_student_tips.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_visual_qa_harness.test.js",
+        "status": "passed"
+      }
+    ]
+  },
+  "motion": {
+    "before": {
+      "periodMs": 3000,
+      "floatRangeCssPx": 8
+    },
+    "after": {
+      "periodMs": 6000,
+      "floatRangeCssPx": 2
+    },
+    "quiet": {
+      "float": "paused",
+      "breath": "paused",
+      "eyes": "translate(0px, 0px)"
+    },
+    "listeningLamp": "running",
+    "reducedMotionAnimations": 0
+  },
+  "captures": 30
+}

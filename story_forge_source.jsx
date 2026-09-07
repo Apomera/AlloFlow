@@ -401,7 +401,7 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
     const lettering = getComicLetteringStats(dialogue);
     const space = normalizeComicLetteringSpace(thumbnail.letteringSpace);
     const hasBubbles = comicDialogueHasBubbles(dialogue);
-    const hasText = String(paragraph?.text || paragraph?.scaffoldFrame || '').trim();
+    const hasText = getStoryForgeSectionText(paragraph, dialogue, true).trim();
     if (image.imageUrl) stats.artPanels += 1;
     if (image.imageUrl && !String(thumbnail.altText || '').trim()) stats.missingAltText += 1;
     if (hasBubbles) stats.bubblePanels += 1;
@@ -429,6 +429,7 @@ const getComicExportProof = (pages = [], context = {}) => {
     });
   }
   const rows = pageList.map((page) => {
+    const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
     const proofContext = { ...context, comicPrintSafety: printSafety, pageCount: pageList.length };
     const stats = getComicPageProductionStats(page, proofContext);
     const panels = Array.isArray(page.panels) ? page.panels : [];
@@ -447,7 +448,7 @@ const getComicExportProof = (pages = [], context = {}) => {
       return !(rough.focalPoint && rough.composition && rough.letteringSpace);
     }).length;
 
-    const emptyPanelTargets = targetPanels((paragraph) => !String(paragraph?.text || paragraph?.scaffoldFrame || '').trim());
+    const emptyPanelTargets = targetPanels((paragraph) => !getStoryForgeSectionText(paragraph, context.panelDialogue?.[paragraph?.id], true).trim());
     const missingArtTargets = targetPanels((paragraph) => !((context.illustrations || {})[paragraph?.id] || {}).imageUrl);
     const missingAltTextTargets = targetPanels((paragraph) => {
       const image = (context.illustrations || {})[paragraph?.id] || {};
@@ -478,7 +479,7 @@ const getComicExportProof = (pages = [], context = {}) => {
       return getComicLetteringStats(dialogue).level === 'crowded';
     });
     const issues = [];
-    if (stats.emptyPanels > 0) issues.push({ key: 'empty-panels', label: `${stats.emptyPanels} empty panel${stats.emptyPanels === 1 ? '' : 's'}`, detail: 'Add a caption or scaffold to every panel before export.', blocking: true });
+    if (stats.emptyPanels > 0) issues.push({ key: 'empty-panels', label: `${stats.emptyPanels} empty panel${stats.emptyPanels === 1 ? '' : 's'}`, detail: 'Add narration or dialogue to every panel before export.', blocking: true });
     if (stats.artPanels < stats.total) issues.push({ key: 'missing-art', label: `${stats.total - stats.artPanels} panel${stats.total - stats.artPanels === 1 ? '' : 's'} missing art`, detail: 'Add or intentionally mark the art brief before final delivery.', blocking: false });
     if (stats.missingAltText > 0) issues.push({ key: 'missing-alt-text', label: `${stats.missingAltText} art description${stats.missingAltText === 1 ? '' : 's'} missing`, detail: 'Add accessible descriptions for illustrated panels.', blocking: false });
     if (missingDirectionPanels > 0) issues.push({ key: 'missing-direction', label: `${missingDirectionPanels} visual direction${missingDirectionPanels === 1 ? '' : 's'} incomplete`, detail: 'Set shot, angle, mood, and pacing move for the art team.', blocking: false });
@@ -653,9 +654,10 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const layoutMode = context.layoutMode === 'comic' ? 'comic' : 'prose';
   const sectionLabel = layoutMode === 'comic' ? 'panel' : 'scene';
   const totalSections = paragraphs.length;
-  const writtenSections = paragraphs.filter((p) => countWords(p?.text) >= (layoutMode === 'comic' ? 2 : 5)).length;
-  const contentSections = paragraphs.filter((p) => String(p?.text || '').trim()).length;
-  const totalWords = paragraphs.reduce((sum, p) => sum + countWords(p?.text), 0);
+  const sectionText = p => getStoryForgeSectionText(p, (context.panelDialogue || {})[p?.id], layoutMode === 'comic');
+  const writtenSections = paragraphs.filter((p) => countWords(sectionText(p)) >= (layoutMode === 'comic' ? 2 : 5)).length;
+  const contentSections = paragraphs.filter((p) => sectionText(p).trim()).length;
+  const totalWords = paragraphs.reduce((sum, p) => sum + countWords(sectionText(p)), 0);
   const storyCueReady = Boolean(String(context.storyTitle || context.storyPrompt || context.sourceTopic || '').trim());
   const vocabTerms = Array.isArray(context.vocabTerms) ? context.vocabTerms : [];
   const vocabTotal = vocabTerms.length;
@@ -695,7 +697,7 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const addIssue = (list, phase, code, label, detail) => list.push({ phase, code, label, detail });
 
   if (!contentSections) {
-    addIssue(blockers, 'write', 'missing-story-content', layoutMode === 'comic' ? 'Comic panels need captions' : 'Draft is empty', layoutMode === 'comic' ? 'Add a short narration caption to each planned panel.' : 'Write at least one complete scene before exporting.');
+    addIssue(blockers, 'write', 'missing-story-content', layoutMode === 'comic' ? 'Start your first panel' : 'Start your first scene', layoutMode === 'comic' ? 'Add narration or dialogue to your planned panels.' : 'Write at least one complete scene before exporting.');
   } else if (contentSections < totalSections && layoutMode !== 'comic') {
     addIssue(warnings, 'write', 'incomplete-story-sections', 'Some story sections are empty', `${totalSections - contentSections} section${totalSections - contentSections === 1 ? '' : 's'} still need writing.`);
   }
@@ -706,11 +708,11 @@ const getStoryForgeProjectReadiness = (context = {}) => {
     addIssue(warnings, 'illustrate', 'missing-illustrations', 'Finish the visual pass', `${totalSections - illustratedSections} ${sectionLabel}${totalSections - illustratedSections === 1 ? '' : 's'} still need art.`);
   }
   if (!reviewSignalCount) {
-    addIssue(warnings, 'review', 'review-not-run', layoutMode === 'comic' ? 'Run a comic flow review' : 'Review the draft', 'Complete at least one review or revision pass before publishing.');
+    addIssue(blockers, 'review', 'review-not-run', layoutMode === 'comic' ? 'Run a comic flow review' : 'Review the draft', 'Complete at least one review or revision pass before publishing.');
   }
 
   if (layoutMode === 'comic') {
-    if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, 'write', 'empty-comic-panels', 'Fill every comic panel', `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? '' : 's'} have no narration caption.`);
+    if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, 'write', 'empty-comic-panels', 'Fill every comic panel', `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? '' : 's'} have no narration or dialogue.`);
     if (comicStats.unplacedBubbles > 0) addIssue(warnings, 'illustrate', 'unplaced-lettering', 'Place every lettering bubble', `${comicStats.unplacedBubbles} bubble panel${comicStats.unplacedBubbles === 1 ? '' : 's'} need a safe anchor.`);
     if (comicStats.gutterRiskPanels > 0) addIssue(warnings, 'illustrate', 'gutter-lettering-conflict', 'Move lettering away from the gutter', `${comicStats.gutterRiskPanels} panel${comicStats.gutterRiskPanels === 1 ? '' : 's'} place lettering in the binding risk area.`);
     if (comicStats.crowdedBubbles > 0) addIssue(warnings, 'write', 'crowded-lettering', 'Trim crowded lettering', `${comicStats.crowdedBubbles} panel${comicStats.crowdedBubbles === 1 ? '' : 's'} exceed the recommended lettering load.`);
@@ -1674,6 +1676,76 @@ const STORY_STARTERS = {
   ],
 };
 
+// Lesson resources are proposals, never replacements for the authored project.
+const prepareStoryForgeLessonImport = (resource) => {
+  if (!resource || typeof resource !== 'object') throw new Error('Unsupported resource');
+  if (resource.type === 'glossary') {
+    const raw = resource.data?.terms || resource.data;
+    if (!Array.isArray(raw)) throw new Error('Invalid vocabulary');
+    const terms = raw.filter(item => item && typeof item === 'object').map(item => ({ term: item.term || item.word, definition: item.definition || item.def || '' }));
+    const clean = sanitizeVocabTerms(terms) || [];
+    if (!clean.length) throw new Error('Empty vocabulary');
+    return { kind: 'vocabulary', terms: clean, total: terms.length };
+  }
+  if (resource.type === 'sentence-frames' || resource.type === 'timeline') {
+    if (typeof resource.data !== 'string') throw new Error('Invalid lesson plan');
+    const frames = resource.data.split(/\r?\n/).map(line => line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim()).filter(Boolean);
+    if (!frames.length) throw new Error('Empty lesson plan');
+    const suggestions = normalizeStoryForgePlan({ frames: frames.slice(0, MAX_DRAFT_PARAGRAPHS) });
+    return { kind: 'plan', suggestions, total: frames.length };
+  }
+  if (resource.type === 'simplified' || resource.type === 'lesson-plan') {
+    const text = typeof resource.data === 'string' ? resource.data : resource.type === 'simplified' ? resource.data?.originalText : '';
+    if (typeof text !== 'string' || !text.trim()) throw new Error('Empty starting idea');
+    return { kind: 'prompt', prompt: text.trim().slice(0, 500), total: 1 };
+  }
+  throw new Error('Unsupported resource');
+};
+const mergeStoryForgeVocabulary = (existing, incoming) => {
+  const result = [...(sanitizeVocabTerms(existing) || [])];
+  const key = term => term.normalize('NFKC').toLowerCase();
+  const known = new Set(result.map(item => key(item.term)));
+  for (const item of sanitizeVocabTerms(incoming) || []) {
+    if (result.length >= 64) break;
+    if (!known.has(key(item.term))) { result.push(item); known.add(key(item.term)); }
+  }
+  return result;
+};
+const storyForgeSectionHasWork = (section, maps = []) => Boolean(section && (
+  [section.text, section.scaffoldFrame, section.plotBeat].some(value => typeof value === 'string' && value.trim()) ||
+  maps.some(map => map && map[section.id] != null)
+));
+
+// Authored content is shared by comic feedback, vocabulary coverage, and counts.
+const getStoryForgeSectionText = (paragraph, dialogue = {}, comic = false) => [
+  typeof paragraph?.text === 'string' ? paragraph.text : '',
+  ...(comic ? ['speech', 'thought', 'sfx'].map(key => typeof dialogue?.[key] === 'string' ? dialogue[key] : '') : []),
+].filter(text => text.trim()).join('\n');
+
+// Validate suggestions before offering a preview; never use AI output as the authored section list.
+const normalizeStoryForgePlan = (data, comic = false) => {
+  const items = comic ? data?.panels : data?.frames;
+  if (!Array.isArray(items) || !items.length || items.length > MAX_DRAFT_PARAGRAPHS) throw new Error('Invalid plan size');
+  return items.map(item => {
+    const caption = comic ? item?.caption : item;
+    if (typeof caption !== 'string' || !caption.trim() || caption.length > 5000) throw new Error('Invalid plan section');
+    return { scaffoldFrame: caption.trim(), plotBeat: comic && PLOT_BEATS.some(beat => beat.value === item.beat) ? item.beat : '' };
+  });
+};
+const mergeStoryForgePlan = (paragraphs, suggestions, ids) => {
+  const next = paragraphs.map(paragraph => ({ ...paragraph }));
+  suggestions.forEach((suggestion, index) => {
+    const existing = next.find(paragraph => paragraph.id === ids[index]);
+    if (existing) {
+      existing.scaffoldFrame = suggestion.scaffoldFrame;
+      if (!existing.plotBeat) existing.plotBeat = suggestion.plotBeat;
+    } else if (!ids[index] && next.length < MAX_DRAFT_PARAGRAPHS) {
+      next.push({ id: 'p-plan-' + Date.now() + '-' + index, text: '', ...suggestion });
+    }
+  });
+  return next;
+};
+
 // ── Reading level calculation ──
 const computeReadingLevel = (text) => {
   if (!text || text.trim().length < 20) return null;
@@ -1836,7 +1908,7 @@ const getStoryForgeRestoredPhase = (value = {}) => {
   const phase = PHASES.includes(draft.phase) ? draft.phase : 'configure';
   const phaseIndex = PHASES.indexOf(phase);
   const hasStoryCue = Boolean(String(draft.storyTitle || draft.storyPrompt || draft.sourceTopic || '').trim());
-  const hasDraftContent = Array.isArray(draft.paragraphs) && draft.paragraphs.some(section => String(section?.text || '').trim());
+  const hasDraftContent = Array.isArray(draft.paragraphs) && draft.paragraphs.some(section => getStoryForgeSectionText(section, draft.panelDialogue?.[section?.id], draft.artifactType === 'comic' || draft.layoutMode === 'comic').trim());
   const reviewIsCurrent = Boolean(
     typeof draft.reviewedDraftSignature === 'string' &&
     draft.reviewedDraftSignature &&
@@ -2217,6 +2289,10 @@ const StoryForge = React.memo(({
   // Coercing to a string would make those fallbacks dead code and surface raw
   // key names in the UI.
   const t = tFunc || ((k) => k);
+  const ux = (key, fallback) => {
+    const value = t('storyforge_updates.' + key);
+    return typeof value === 'string' && value !== 'storyforge_updates.' + key ? value : fallback;
+  };
   // Announcement text. The host t() also returns undefined when a lang pack
   // holds a GROUP OBJECT where a leaf string belongs — it checks the pack
   // before the English fallback, so a mis-nested key never reaches English.
@@ -2225,6 +2301,11 @@ const StoryForge = React.memo(({
   const ta = (key, params) => {
     const v = t(key, params);
     return typeof v === 'string' ? v : String(key || '');
+  };
+  const notifyAiUnavailable = () => {
+    const message = ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.');
+    if (addToast) addToast(message, 'info');
+    sfAnnounce(message);
   };
   // Localized DISPLAY name for an XP level. LEVELS[].name itself stays English
   // data: it is the identity in nextLevel's findIndex and is persisted into
@@ -2270,6 +2351,18 @@ const StoryForge = React.memo(({
   // ── Phase state ──
   const [phase, setPhase] = useState('configure');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [planProposal, setPlanProposal] = useState(null);
+  const [lessonImportProposal, setLessonImportProposal] = useState(null);
+  const lessonImportPreviewRef = useRef(null);
+  const [projectMutationBusy, setProjectMutationBusy] = useState(false);
+  const projectMutationBusyRef = useRef(false);
+  const projectRevisionRef = useRef(null);
+  const [projectActionUndo, setProjectActionUndo] = useState(null);
+  const [showProjectHealth, setShowProjectHealth] = useState(false);
+  const planStateRef = useRef('');
+  const planRequestRef = useRef(0);
+  const planPreviewRef = useRef(null);
+  useEffect(() => () => { planRequestRef.current += 1; }, []);
 
   // ── Configure state ──
   const [storyTitle, setStoryTitle] = useState('');
@@ -2407,6 +2500,7 @@ const StoryForge = React.memo(({
     panelDialogue,
   }), [artifactType, rubricText, vocabTerms, language, customLanguage, paragraphs, panelDialogue]);
   const [panelDirections, setPanelDirections] = useState({}); // keyed by paragraph id: { shot, angle, mood, transition }
+  planStateRef.current = JSON.stringify({ isOpen, paragraphs, panelDialogue, panelDirections, artifactType });
   const [panelThumbnails, setPanelThumbnails] = useState({}); // keyed by paragraph id: { focalPoint, composition, letteringSpace, letteringX, letteringY, letteringWidth, sketchNote }
   const [panelLayouts, setPanelLayouts] = useState({}); // keyed by paragraph id: { frame, colSpan, rowSpan }
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
@@ -3470,6 +3564,7 @@ const StoryForge = React.memo(({
   };
   const hasMeaningfulDraft = () => isStoryForgeProjectMeaningful(createProjectSnapshot());
   const persistDraftToStorage = async ({ announce = false, allowDuringHydration = false } = {}) => {
+    if (projectMutationBusyRef.current) return false;
     if (!allowDuringHydration && (draftHydrationState !== 'ready' || showRestorePrompt)) {
       setDraftSaveState('paused');
       if (draftHydrationState === 'awaiting' && !showRestorePrompt) setShowRestorePrompt(true);
@@ -3529,6 +3624,7 @@ const StoryForge = React.memo(({
       if (addToast) addToast(ta('a11y.storyforge_toast_checkpoint_could_not_be_saved'), 'error');
       return false;
     }
+    revisionHistoryRef.current = next;
     setRevisionHistory(next);
     setVaultStorageMode('vault');
     setDraftSaveState('saved');
@@ -3541,13 +3637,39 @@ const StoryForge = React.memo(({
     return true;
   };
 
-  const restoreRevisionCheckpoint = (revision) => {
+  const runRecoverableProjectEdit = async (label, commit, { version = projectRevisionRef.current, checkpoint = true } = {}) => {
+    if (projectMutationBusyRef.current || draftHydrationState !== 'ready' || isProcessing) return false;
+    projectMutationBusyRef.current = true;
+    setProjectMutationBusy(true);
+    const changed = () => {
+      if (version === projectRevisionRef.current) return false;
+      const message = ux('edit_changed', 'Your project changed while saving. Nothing was replaced. Try the action again.');
+      if (addToast) addToast(message, 'info');
+      sfAnnounce(message);
+      return true;
+    };
+    try {
+      if (changed()) return false;
+      if (checkpoint && !(await saveRevisionCheckpoint(label))) return false;
+      if (changed()) return false;
+      const previous = checkpoint ? revisionHistoryRef.current[0] : null;
+      commit();
+      setProjectActionUndo(previous);
+      return true;
+    } finally {
+      projectMutationBusyRef.current = false;
+      setProjectMutationBusy(false);
+    }
+  };
+  const restoreRevisionCheckpoint = async (revision) => {
     if (!revision?.snapshot) return;
-    applySanitizedProject(revision.snapshot);
-    setIsDirty(true);
-    setDraftSaveState('saving');
-    if (addToast) addToast(ta('a11y.storyforge_toast_checkpoint_restored').replace('{0}', revision.label || 'Production checkpoint'), 'success');
-    sfAnnounce(ta('a11y.storyforge_checkpoint_restored').replace('{0}', revision.label || 'Production checkpoint'));
+    await runRecoverableProjectEdit(ux('before_restore', 'Before restoring checkpoint'), () => {
+      applySanitizedProject(revision.snapshot);
+      setIsDirty(true);
+      setDraftSaveState('saving');
+      if (addToast) addToast(ta('a11y.storyforge_toast_checkpoint_restored').replace('{0}', revision.label || 'Production checkpoint'), 'success');
+      sfAnnounce(ta('a11y.storyforge_checkpoint_restored').replace('{0}', revision.label || 'Production checkpoint'));
+    });
   };
   const draftSaveLabel = draftHydrationState === 'awaiting'
     ? 'Review draft'
@@ -3706,6 +3828,19 @@ const StoryForge = React.memo(({
   const [comicFlowReport, setComicFlowReport] = useState(null);
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
+  // An identity token detects edits during asynchronous checkpoint writes without serializing media.
+  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload, comicFlowReport]);
+  useEffect(() => { if (lessonImportProposal) lessonImportPreviewRef.current?.focus(); }, [lessonImportProposal]);
+  useEffect(() => {
+    if (!focusMode || phase !== 'write') return;
+    const timer = setTimeout(() => {
+      const card = document.getElementById('sf-para-' + paragraphs[focusParagraphIdx]?.id);
+      const editor = card?.querySelector('textarea');
+      editor?.focus({ preventScroll: true });
+      card?.scrollIntoView({ block: 'nearest', behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [focusMode, focusParagraphIdx, phase]);
   const isCurrentDraftReviewed = Boolean(
     reviewedDraftSignature && reviewedDraftSignature === currentReviewDraftSignature
   );
@@ -3741,18 +3876,20 @@ const StoryForge = React.memo(({
     }
   }, [glossaryTerms]);
 
+  const authoredSections = useMemo(() => paragraphs.map(p => getStoryForgeSectionText(p, panelDialogue[p.id], layoutMode === 'comic')), [paragraphs, panelDialogue, layoutMode]);
+  const authoredText = authoredSections.join('\n\n');
   // ── Vocab usage tracking ──
   const vocabUsage = useMemo(() => {
-    const fullText = paragraphs.map(p => p.text).join(' ');
+    const fullText = authoredText;
     const usage = {};
     vocabTerms.forEach(v => {
       usage[v.term] = termUsed(fullText, v.term);
     });
     return usage;
-  }, [paragraphs, vocabTerms]);
+  }, [authoredText, vocabTerms]);
 
   const vocabUsedCount = useMemo(() => Object.values(vocabUsage).filter(Boolean).length, [vocabUsage]);
-  const totalWords = useMemo(() => paragraphs.reduce((sum, p) => sum + p.text.trim().split(/\s+/).filter(Boolean).length, 0), [paragraphs]);
+  const totalWords = useMemo(() => countWords(authoredText), [authoredText]);
   const comicExportProof = useMemo(() => layoutMode === 'comic'
     ? getComicExportProof(comicPageGroups, { panelDialogue, panelDirections, panelThumbnails, panelLayouts, illustrations, comicPrintSafety })
     : null,
@@ -3788,27 +3925,28 @@ const StoryForge = React.memo(({
 
   // ── Reading level ──
   const readingLevel = useMemo(() => {
-    const fullText = paragraphs.map(p => p.text).join(' ');
-    return computeReadingLevel(fullText);
-  }, [paragraphs]);
+    if (language !== 'en' || countWords(authoredText) < 100) return null;
+    return computeReadingLevel(authoredText);
+  }, [authoredText, language]);
 
   // ── Per-paragraph stats ──
-  const paragraphStats = useMemo(() => paragraphs.map(p => {
-    const words = p.text.trim().split(/\s+/).filter(Boolean);
-    const sentences = p.text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const pVocab = vocabTerms.filter(v => termUsed(p.text, v.term));
+  const paragraphStats = useMemo(() => authoredSections.map(text => {
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const pVocab = vocabTerms.filter(v => termUsed(text, v.term));
     return { wordCount: words.length, sentenceCount: sentences.length, vocabUsed: pVocab.length };
-  }), [paragraphs, vocabTerms]);
+  }), [authoredSections, vocabTerms]);
 
   // ── Word frequency analysis (for Review phase) ──
   const wordFrequency = useMemo(() => {
-    const fullText = paragraphs.map(p => p.text).join(' ');
+    if (language !== 'en') return [];
+    const fullText = authoredText;
     const words = fullText.toLowerCase().replace(/[^a-z\s'-]/g, '').split(/\s+/).filter(w => w.length > 3);
     const stopWords = new Set(['that','this','with','from','your','have','they','been','their','were','will','would','could','should','about','which','there','these','those','than','what','when','then','into','also','very','just','more','some','only','over','such','after','other','like','most','each','made','them','does','many','much','well','back','even','here','come','make','good','know','take','said','much']);
     const freq = {};
     words.forEach(w => { if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1; });
     return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 15);
-  }, [paragraphs]);
+  }, [authoredText, language]);
 
   const overusedWords = useMemo(() => wordFrequency.filter(([, count]) => count >= 4).map(([word]) => word), [wordFrequency]);
 
@@ -3929,7 +4067,11 @@ const StoryForge = React.memo(({
         else if (showCloseConfirm) setShowCloseConfirm(false);
         else if (showDiscardDraftConfirm) cancelDiscardDraftConfirmation();
         else if (showRestorePrompt) dismissRestorePrompt();
-        else safeClose();
+        else if (modalRootRef.current?.querySelector('[data-sf-project-menu][open]')) {
+          const menu = modalRootRef.current.querySelector('[data-sf-project-menu][open]');
+          menu.open = false;
+          menu.querySelector('summary')?.focus();
+        } else safeClose();
         e.preventDefault();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === 's' && isOpen) {
@@ -3941,6 +4083,21 @@ const StoryForge = React.memo(({
     return () => window.removeEventListener('keydown', handler);
   }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, showDiscardDraftConfirm, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
 
+  // Dismiss the project disclosure when moving to another task in the workspace.
+  useEffect(() => {
+    if (!isOpen) return undefined;
+    const dismiss = (event) => {
+      const menu = modalRootRef.current?.querySelector('[data-sf-project-menu][open]');
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('focusin', dismiss);
+    return () => {
+      document.removeEventListener('pointerdown', dismiss);
+      document.removeEventListener('focusin', dismiss);
+    };
+  }, [isOpen]);
+
   // ── Focus management: move focus into the dialog on open, trap Tab inside it, and
   //    restore focus to the trigger on close (WCAG 2.4.3 Focus Order / 2.1.2 No Keyboard Trap escape). ──
   useEffect(() => {
@@ -3949,7 +4106,7 @@ const StoryForge = React.memo(({
     if (!root || typeof document === 'undefined') return undefined;
     // Remember what had focus so we can restore it when the dialog closes.
     previouslyFocusedRef.current = document.activeElement;
-    const FOCUSABLE = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const FOCUSABLE = 'summary,a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
     const getFocusable = () => Array.from(root.querySelectorAll(FOCUSABLE)).filter(el => el.getClientRects().length > 0);
     // Defer so the first render is committed before we move focus in.
     const focusTimer = setTimeout(() => {
@@ -4053,7 +4210,7 @@ const StoryForge = React.memo(({
       saveTimerRef.current = null;
     }
     if (!isOpen) return undefined;
-    if (draftHydrationState !== 'ready' || showRestorePrompt) {
+    if (draftHydrationState !== 'ready' || showRestorePrompt || projectMutationBusy) {
       setDraftSaveState('paused');
       return undefined;
     }
@@ -4099,9 +4256,12 @@ const StoryForge = React.memo(({
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
 
   const applySanitizedDraft = (value) => {
+    setLessonImportProposal(null);
+    setPlanProposal(null);
+    setProjectActionUndo(null);
     const draft = sanitizeStoryForgeDraft(value);
     const restoredPhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
     resetComicHistory();
@@ -4356,44 +4516,33 @@ const StoryForge = React.memo(({
 
   // ── Import from lesson resources ──
   const importFromResource = (resource) => {
-    if (!resource) return;
-    if (resource.type === 'glossary') {
-      const terms = resource.data?.terms || resource.data || [];
-      if (Array.isArray(terms) && terms.length > 0) {
-        setVocabTerms(terms.map(g => ({ term: g.term || g.word || '', definition: g.def || g.definition || '' })).filter(v => v.term));
-        if (addToast) addToast(ta('a11y.storyforge_toast_imported_glossary_terms').replace('{0}', terms.length), 'success');
-      }
-    } else if (resource.type === 'simplified') {
-      const text = typeof resource.data === 'string' ? resource.data : resource.data?.originalText || '';
-      if (text) {
-        setStoryPrompt('Write a creative story inspired by this text: ' + text.substring(0, 300));
-        if (addToast) addToast(t('toasts.imported_topic_from_reading_passage'), 'success');
-      }
-    } else if (resource.type === 'sentence-frames') {
-      const frames = typeof resource.data === 'string' ? resource.data.split('\n').filter(Boolean) : [];
-      if (frames.length > 0) {
-        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: f.replace(/^[\d.)\-\s]+/, '').trim(), plotBeat: '' })));
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta('a11y.storyforge_toast_imported_scaffold_frames').replace('{0}', frames.length), 'success');
-      }
-    } else if (resource.type === 'lesson-plan') {
-      const planText = typeof resource.data === 'string' ? resource.data : '';
-      if (planText) {
-        setStoryPrompt(planText.substring(0, 500));
-        if (addToast) addToast(t('toasts.imported_lesson_plan_as_story'), 'success');
-      }
-    } else if (resource.type === 'timeline') {
-      const timelineText = typeof resource.data === 'string' ? resource.data : '';
-      if (timelineText) {
-        const events = timelineText.split('\n').filter(l => l.trim().length > 10).slice(0, 8);
-        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: '', scaffoldFrame: e.trim(), plotBeat: '' })));
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta('a11y.storyforge_toast_imported_timeline_events_as_scaffolds').replace('{0}', events.length), 'success');
-      }
+    try {
+      const proposal = prepareStoryForgeLessonImport(resource);
+      setLessonImportProposal({ ...proposal, title: String(resource.title || resource.type).slice(0, 160), version: projectRevisionRef.current, sectionIds: paragraphs.map(p => p.id) });
+    } catch (error) {
+      const message = ux('lesson_invalid', 'This resource has no supported content to import. Your project has not changed.');
+      if (addToast) addToast(message, 'info');
+      sfAnnounce(message);
     }
   };
+  const applyLessonImport = async () => {
+    const proposal = lessonImportProposal;
+    if (!proposal) return;
+    const saved = await runRecoverableProjectEdit(ux('before_lesson', 'Before lesson import'), () => {
+      if (proposal.kind === 'vocabulary') setVocabTerms(current => mergeStoryForgeVocabulary(current, proposal.terms));
+      else if (proposal.kind === 'prompt') setStoryPrompt(proposal.prompt);
+      else {
+        setParagraphs(current => mergeStoryForgePlan(current, proposal.suggestions, proposal.sectionIds));
+        setScaffoldsGenerated(true);
+      }
+      setIsDirty(true);
+      setLessonImportProposal(null);
+      sfAnnounce(ux('lesson_applied', 'Lesson resource applied. Your writing is preserved and a checkpoint is available.'));
+    }, { version: proposal.version });
+    if (!saved && proposal.version !== projectRevisionRef.current) setLessonImportProposal(null);
+  };
 
-  // ── Phase navigation with focus management ──
+  // ── Phase navigation with focus management ──  // ── Phase navigation with focus management ──
   const phaseIdx = PHASES.indexOf(phase);
   const hasStoryCue = Boolean(storyTitle.trim() || storyPrompt.trim() || sourceTopic);
   const hasDraftContent = projectReadiness.metrics.contentSections > 0;
@@ -4553,13 +4702,13 @@ const StoryForge = React.memo(({
 
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
-    const newId = `p-${Date.now()}`;
-    setParagraphs(prev => [...prev, { id: newId, text: '', scaffoldFrame: '', plotBeat: '' }]);
+    const newId = `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setParagraphs(prev => prev.length >= maxParagraphs ? prev : [...prev, { id: newId, text: '', scaffoldFrame: '', plotBeat: '' }]);
     if (!isDirty) setIsDirty(true);
     // Auto-scroll to new paragraph after render
     setTimeout(() => {
       const el = document.getElementById('sf-para-' + newId);
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (el) { el.querySelector('textarea')?.focus({ preventScroll: true }); el.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' }); }
     }, 100);
   };
 
@@ -4604,7 +4753,14 @@ const StoryForge = React.memo(({
     }, 100);
   };
 
-  const removeParagraph = (idx) => {
+  const removeParagraph = async (idx) => {
+    if (paragraphs.length <= 1 || !paragraphs[idx]) return;
+    const checkpoint = storyForgeSectionHasWork(paragraphs[idx], [audioSegments, illustrations, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+    await runRecoverableProjectEdit(ux('before_remove', 'Before removing a section'), () => {
+      removeParagraphNow(idx);
+    }, { checkpoint });
+  };
+  const removeParagraphNow = (idx) => {
     if (paragraphs.length <= 1) return;
     const removedId = paragraphs[idx]?.id;
     if (removedId) {
@@ -4692,7 +4848,11 @@ const StoryForge = React.memo(({
   };
 
   const generateScaffolds = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { sfAnnounce(ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')); return; }
+    const requestId = ++planRequestRef.current;
+    const requestState = planStateRef.current;
+    const sectionIds = paragraphs.map(p => p.id);
+    setPlanProposal(null);
     setIsProcessing(true);
     try {
       const genreHint = GENRE_TEMPLATES[genre]?.scaffoldHint;
@@ -4739,83 +4899,51 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
 
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
-      if (isComicMode && Array.isArray(data.panels)) {
-        const validBeats = new Set(PLOT_BEATS.map(b => b.value).filter(Boolean));
-        const panels = data.panels.slice(0, maxParagraphs);
-        const newParagraphs = panels.map((panel, i) => {
-          const previous = paragraphs[i] || {};
-          const caption = panel && typeof panel.caption === 'string'
-            ? panel.caption
-            : (panel && typeof panel.scaffoldFrame === 'string' ? panel.scaffoldFrame : '');
-          const beat = panel && typeof panel.beat === 'string' ? panel.beat : '';
-          return {
-            id: previous.id || `p-${Date.now()}-${i}`,
-            text: previous.text || '',
-            scaffoldFrame: caption,
-            plotBeat: validBeats.has(beat) ? beat : (previous.plotBeat || ''),
-          };
-        });
-        const bubbleUpdates = {};
-        const directionUpdates = {};
-        panels.forEach((panel, i) => {
-          if (!panel || typeof panel !== 'object') return;
-          const id = newParagraphs[i]?.id;
-          if (!id) return;
-          const clean = sanitizePanelDialogue({ [id]: {
-            speaker: typeof panel.speaker === 'string' ? panel.speaker : '',
-            speech: typeof panel.speech === 'string' ? panel.speech : '',
-            thought: typeof panel.thought === 'string' ? panel.thought : '',
-            sfx: typeof panel.sfx === 'string' ? panel.sfx : '',
-          } })[id];
-          if (clean) bubbleUpdates[id] = clean;
-          const cleanDirection = sanitizePanelDirections({ [id]: {
-            shot: typeof panel.shot === 'string' ? panel.shot : '',
-            angle: typeof panel.angle === 'string' ? panel.angle : '',
-            mood: typeof panel.mood === 'string' ? panel.mood : '',
-            transition: typeof panel.transition === 'string' ? panel.transition : '',
-          } })[id];
-          if (cleanDirection) directionUpdates[id] = cleanDirection;
-        });
-        setParagraphs(newParagraphs);
-        if (Object.keys(bubbleUpdates).length > 0) {
-          setPanelDialogue(prev => {
-            const next = { ...prev };
-            Object.keys(bubbleUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...bubbleUpdates[id] }; });
-            return next;
-          });
-        }
-        if (Object.keys(directionUpdates).length > 0) {
-          setPanelDirections(prev => {
-            const next = { ...prev };
-            Object.keys(directionUpdates).forEach((id) => { next[id] = { ...(next[id] || {}), ...directionUpdates[id] }; });
-            return next;
-          });
-        }
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta('a11y.storyforge_toast_comic_panel_plan_generated'), 'success');
-        awardXP(5, 'Generated comic panel plan');
-      } else if (data.frames && Array.isArray(data.frames)) {
-        const newParagraphs = data.frames.map((frame, i) => ({
-          id: paragraphs[i]?.id || `p-${Date.now()}-${i}`,
-          text: paragraphs[i]?.text || '',
-          scaffoldFrame: frame,
-          plotBeat: paragraphs[i]?.plotBeat || '',
-        }));
-        setParagraphs(newParagraphs);
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(t('toasts.scaffold_frames_generated'), 'success');
-        awardXP(5, 'Generated scaffolds');
+      const suggestions = normalizeStoryForgePlan(data, isComicMode);
+      if (requestId !== planRequestRef.current) return;
+      if (requestState !== planStateRef.current) {
+        if (addToast) addToast(ux('plan_stale', 'Your draft changed. Generate a new plan to keep your latest edits.'), 'info');
+        return;
       }
+      setPlanProposal({ suggestions, sectionIds, signature: requestState });
+      sfAnnounce(ux('plan_preview_ready', 'Plan suggestions are ready to preview. Your writing has not changed.'));
     } catch (err) {
       console.warn('Scaffold generation failed:', err);
       if (addToast) addToast(t('toasts.failed_generate_scaffolds'), 'error');
+    } finally {
+      if (requestId === planRequestRef.current) setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
+
+  const applyPlanProposal = async () => {
+    const proposal = planProposal;
+    if (!proposal) return;
+    setIsProcessing(true);
+    try {
+      if (proposal.signature !== planStateRef.current) {
+        setPlanProposal(null);
+        if (addToast) addToast(ux('plan_stale', 'Your draft changed. Generate a new plan to keep your latest edits.'), 'info');
+        return;
+      }
+      if (!(await saveRevisionCheckpoint(ux('before_plan', 'Before applying plan')))) return;
+      if (proposal.signature !== planStateRef.current) {
+        setPlanProposal(null);
+        if (addToast) addToast(ux('plan_stale', 'Your draft changed. Generate a new plan to keep your latest edits.'), 'info');
+        return;
+      }
+      setParagraphs(current => mergeStoryForgePlan(current, proposal.suggestions, proposal.sectionIds));
+      setScaffoldsGenerated(true);
+      setIsDirty(true);
+      setPlanProposal(null);
+      sfAnnounce(ux('plan_applied', 'Plan applied. Your writing and dialogue were preserved.'));
+    } finally { setIsProcessing(false); }
+  };
+
+  useEffect(() => { if (planProposal) planPreviewRef.current?.focus(); }, [planProposal]);
 
   // ── Help Me Write — AI coaching per paragraph ──
   const helpMeWrite = async (idx) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     setHelpMeParagraphIdx(idx);
     setHelpMeResult(null);
     const p = paragraphs[idx];
@@ -4848,7 +4976,7 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
   // ═══════════════════════════════════════════════════════════
 
   const draftComicBubbles = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (targetIdx === null || idx === targetIdx) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -4953,7 +5081,7 @@ Return ONLY JSON:
   };
 
   const tightenComicBubbles = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => {
         const dialogue = panelDialogue[p.id] || {};
@@ -5051,7 +5179,7 @@ Return ONLY JSON:
   };
 
   const draftComicCameraPass = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -5139,7 +5267,7 @@ Return ONLY JSON:
   };
 
   const draftComicThumbnailPass = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -5228,7 +5356,7 @@ Return ONLY JSON:
   };
 
   const checkGrammarAndStyle = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     setGrammarLoading(true);
     try {
       const fullText = paragraphs.map((p, i) => `[P${i + 1}] ${p.text}`).join('\n\n');
@@ -5317,7 +5445,7 @@ Return ONLY JSON:
   };
 
   const draftComicContinuity = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const panelBrief = paragraphs
       .map((p, idx) => ({
         panel: idx + 1,
@@ -5419,7 +5547,7 @@ Return ONLY JSON:
       setPromptPreview({ paragraphId, text: sourceText, idx, prompt: savedPrompt });
       return;
     }
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const style = getStyleDesc();
     const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
     const promptResult = await onCallGemini(
@@ -5682,7 +5810,7 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const detectCharacters = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     setIsProcessing(true);
     try {
       const fullText = paragraphs.map(p => p.text).join('\n\n');
@@ -5927,14 +6055,14 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const gradeStory = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     setIsProcessing(true);
     try {
-      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text}`).join('\n\n');
+      const fullText = authoredSections.map((text, i) => `[${artifactType === 'comic' ? 'Panel' : 'Scene'} ${i + 1}] ${text}`).join('\n\n');
       const vocabReport = vocabTerms.map(v => {
-        const ft = paragraphs.map(p => p.text).join(' ');
+        const ft = authoredText;
         const used = termUsed(ft, v.term);
-        const sample = paragraphs.find(p => termUsed(p.text, v.term))?.text.substring(0, 100) || null;
+        const sample = authoredSections.find(text => termUsed(text, v.term))?.substring(0, 100) || null;
         return { term: v.term, used, contextSample: sample };
       });
 
@@ -6006,7 +6134,7 @@ Return ONLY JSON:
   // Anti-fabrication: hard-restricts to authors-died-pre-1929 + traditional/anonymous;
   // uncertain flag asks Gemini to skip text rather than invent.
   const findMentorStory = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 80) {
       if (addToast) addToast(t('toasts.write_bit_more_before_finding'), 'info');
@@ -6095,7 +6223,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
   // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
   // ── AI-suggest the emotional fortune of each paragraph (Story Arc curve) ──
   const suggestValenceArc = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const written = paragraphs.filter(p => p.text.trim().length > 0);
     if (written.length < 2) { if (addToast) addToast(t('toasts.write_bit_more_before_checking') || 'Write a bit more first.', 'info'); return; }
     setValenceLoading(true);
@@ -6118,7 +6246,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
   };
 
   const checkSenses = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 30) {
       if (addToast) addToast(t('toasts.write_bit_more_before_checking'), 'info');
@@ -6170,7 +6298,7 @@ Return ONLY JSON in this shape:
   // and offers a concrete sensory/action revision ("she pressed her back to
   // the wall, holding her breath"). Foundational craft move for grades 4-8.
   const analyzeShowTell = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const fullText = paragraphs.map(p => p.text.trim()).filter(Boolean).join('\n\n');
     if (fullText.length < 60) {
       if (addToast) addToast(t('toasts.write_bit_more_before_checking_2'), 'info');
@@ -6223,7 +6351,7 @@ Return ONLY JSON:
   // specific revision suggestion per character. Skips arc analysis for stories
   // with no named characters (returns an encouraging note instead).
   const analyzeCharacterArcs = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
     const wordCount = fullText.split(/\s+/).filter(Boolean).length;
     if (wordCount < 80) {
@@ -6289,7 +6417,7 @@ Return ONLY JSON:
   // speaker is unclear, and lack of action beats around long exchanges.
   // Returns concrete in-context tag replacements rather than a generic word list.
   const analyzeDialogue = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
     if (!fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
       if (addToast) addToast(t('toasts.dialogue_detected_try_adding_quoted'), 'info');
@@ -6736,7 +6864,7 @@ Return ONLY JSON:
   };
 
   const synthesizeRevisionPlan = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) { notifyAiUnavailable(); return; }
     setRevisionPlanLoading(true);
     try {
       const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join('\n\n');
@@ -8144,6 +8272,30 @@ const comicAltCoverageLabel = layoutMode === 'comic'
       <div id="allo-live-storyforge" aria-live="polite" aria-atomic="true" className="sr-only" />
       {/* WCAG 2.3.3 — reduced-motion safety net: kills persistent animations within StoryForge under prefers-reduced-motion */}
       <style>{`
+        .sf-mobile-workflow{display:none}
+        .sf-project-header{position:relative;z-index:60}.sf-project-menu-panel{z-index:260;max-height:calc(100dvh - 6rem);overflow-y:auto;overscroll-behavior:contain}
+        .sf-modal-root .sf-focus-jump{width:44px;height:44px;flex-shrink:0}
+        [data-sf-focus-navigation]>button{min-height:44px;max-width:45%}
+        @media(max-width:639px){.sf-project-header [data-sf-project-menu]{position:static}.sf-project-menu-panel{right:12px;top:100%;width:calc(100vw - 24px)}.sf-focus-summary{order:3;width:100%}.sf-focus-jumps{max-width:100%}}
+        .sf-modal-root.theme-dark .sf-undo-notice{background:#172554;color:#e0e7ff;border-color:#6366f1}
+        .sf-modal-root.theme-contrast .sf-undo-notice{background:#000;color:#ff0;border-color:#ff0}
+        .sf-modal-root.theme-dark .sf-mobile-workflow,.sf-modal-root.theme-dark .sf-mobile-workflow :is(select,button){background:#0f172a;color:#f1f5f9;border-color:#64748b}
+        .sf-modal-root.theme-contrast .sf-mobile-workflow,.sf-modal-root.theme-contrast .sf-mobile-workflow :is(select,button){background:#000;color:#ff0;border-color:#ff0}
+        @media(max-width:639px){
+          .sf-mobile-workflow{display:flex;gap:8px;padding:6px 12px;background:#fff;border-bottom:1px solid #cbd5e1;flex-shrink:0}
+          .sf-mobile-workflow select{flex:1;min-width:0;border:1px solid #64748b;border-radius:8px;padding:8px;min-height:44px;color:#0f172a;background:#fff}
+          .sf-mobile-workflow button{min-height:44px;padding:8px;color:#0f172a;border:1px solid #64748b;border-radius:8px;background:#fff}
+          .sf-workflow-dashboard nav{display:none}
+          .sf-project-health[data-expanded="false"]{display:none}
+          .sf-project-health[data-expanded="true"]{padding-top:8px;max-height:25vh;overflow:auto}
+          .sf-step-guide{padding:6px 12px}
+          .sf-step-guide h2,.sf-step-guide p,.sf-step-guide .sf-step-kicker{display:none}
+          .sf-step-guide #sf-phase-requirements{padding:6px 8px;font-size:12px}
+          [data-sf-step-summary]{display:none}
+          [data-sf-footer-action="back"]{flex:0 0 auto!important}
+          [data-sf-footer-action="next"]{flex:1!important}
+        }
+
         .sf-modal-root button{min-width:24px;min-height:24px}
         .sf-modal-root .sf-panel-sequence-card{position:relative}
         .sf-modal-root .sf-panel-dragging{opacity:.55}
@@ -8323,7 +8475,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           </div>
         </div>
       )}
-      <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
+      <div className="sf-project-header bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0">
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <BookOpen size={24} />
           <div className="min-w-0">
@@ -8367,9 +8519,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               aria-label={ta('a11y.storyforge_attr_open_project_menu')}
             >
               <BookOpen size={15} aria-hidden="true" />
-              <span className="hidden sm:inline">{ta('a11y.storyforge_ui_project')}</span>
+              <span>{ta('a11y.storyforge_ui_project')}</span>
             </summary>
-            <div className="absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl" role="group" aria-label={ta('a11y.storyforge_attr_project_actions')}>
+            <div className="sf-project-menu-panel absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl" role="group" aria-label={ta('a11y.storyforge_attr_project_actions')}>
               <div className="border-b border-slate-200 px-2 pb-3">
                 <p className="truncate text-sm font-black" data-sf-project-menu-title>{storyTitle.trim() || `Untitled ${artifactType === 'comic' ? 'comic' : 'story'}`}</p>
                 <p className="mt-0.5 text-xs text-slate-500">{ta(artifactType === 'comic' ? 'a11y.storyforge_ui_comic' : 'a11y.storyforge_ui_story')} · {phaseLabel(phaseIdx)} · {draftSaveLabel}</p>
@@ -8382,11 +8534,28 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               ) : (
                 <div className="mt-3 grid gap-2">
-                  <button type="button" data-sf-project-menu-save onClick={() => void persistDraftToStorage({ announce: true })} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_save_project_now')}</button>
+                  <button type="button" data-sf-project-menu-save onClick={() => void persistDraftToStorage({ announce: true })} disabled={projectMutationBusy || draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"><Save size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_save_project_now')}</button>
                   <button type="button" data-sf-project-menu-export onClick={() => void exportStoryForgeProject()} disabled={draftHydrationState !== 'ready'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><Download size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_export_backup')}</button>
-                  <button type="button" data-sf-project-menu-import onClick={importDraftJSON} disabled={draftHydrationState !== 'ready'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><RefreshCw size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_import_project')}</button>
-                  <button type="button" data-sf-project-menu-checkpoint onClick={() => void saveRevisionCheckpoint()} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><Star size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_save_checkpoint')}</button>
+                  <button type="button" data-sf-project-menu-import onClick={importDraftJSON} disabled={projectMutationBusy || draftHydrationState !== 'ready'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><RefreshCw size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_import_project')}</button>
+                  <button type="button" data-sf-project-menu-checkpoint onClick={() => void saveRevisionCheckpoint()} disabled={projectMutationBusy || draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"><Star size={14} aria-hidden="true" /> {ta('a11y.storyforge_ui_save_checkpoint')}</button>
                 </div>
+              )}
+              {draftHydrationState === 'ready' && (
+                <section className="mt-3 border-t border-slate-200 pt-3" aria-labelledby="sf-menu-checkpoints-title">
+                  <h3 id="sf-menu-checkpoints-title" className="text-xs font-bold text-slate-800">{ux('checkpoints', 'Checkpoints')}</h3>
+                  <label className="mt-2 block text-xs text-slate-700">
+                    {ux('checkpoint_name', 'Name the next checkpoint')}
+                    <input data-sf-checkpoint-name value={revisionLabel} onChange={e => setRevisionLabel(e.target.value.slice(0, 100))} className="mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm" placeholder={ux('checkpoint_example', 'For example: before the ending')} />
+                  </label>
+                  <p className="mt-2 text-xs text-slate-600">{ux('checkpoint_restore_help', 'Restoring saves your current version first, so you can undo it.')}</p>
+                  {revisionHistory.length === 0 ? <p className="mt-2 text-xs text-slate-600">{ux('no_checkpoints', 'No checkpoints yet. Name one above, then choose Save checkpoint.')}</p> : (
+                    <ul className="mt-2 space-y-1">{revisionHistory.slice(0, 6).map(revision => (
+                      <li key={revision.id}><button type="button" data-sf-menu-checkpoint={revision.id} disabled={projectMutationBusy || isProcessing} onClick={event => { const menu = event.currentTarget.closest('details'); if (menu) menu.open = false; void restoreRevisionCheckpoint(revision); }} className="min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-left text-xs text-slate-800 hover:bg-slate-100 disabled:opacity-50">
+                        <span className="block font-bold">{revision.label}</span><span className="block mt-1">{new Date(revision.savedAt).toLocaleString()}</span>
+                      </button></li>
+                    ))}</ul>
+                  )}
+                </section>
               )}
               <p className="mt-3 px-2 text-[11px] leading-relaxed text-slate-500">{ta('a11y.storyforge_ui_backups_and_checkpoints_preserve_work_before')}</p>
             </div>
@@ -8444,6 +8613,16 @@ const comicAltCoverageLabel = layoutMode === 'comic'
         </section>
       )}
 
+      {projectActionUndo && <div className="sf-undo-notice flex shrink-0 flex-wrap items-center gap-2 border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900">
+        <span role="status" className="flex-1">{ux('previous_saved', 'Your previous version is saved.')}</span>
+        <button type="button" data-sf-undo-project-edit disabled={projectMutationBusy || isProcessing} onClick={() => void restoreRevisionCheckpoint(projectActionUndo)} className="min-h-11 rounded-lg border border-indigo-400 px-3 py-2 font-bold disabled:opacity-50">{ux('undo_last_change', 'Undo last change')}</button>
+        <button type="button" onClick={() => setProjectActionUndo(null)} className="min-h-11 rounded-lg px-2 underline">{ux('dismiss', 'Dismiss')}</button>
+      </div>}
+      <div className="sf-mobile-workflow">
+        <label htmlFor="sf-mobile-step" className="sr-only">{ux('choose_step', 'Choose a step')}</label>
+        <select id="sf-mobile-step" value={phase} onChange={e => changePhase(e.target.value)}>{PHASES.map((p, i) => <option key={p} value={p} disabled={!canEnterPhase(p)}>{i + 1}. {phaseLabel(i)}</option>)}</select>
+        <button type="button" aria-expanded={showProjectHealth} aria-controls="sf-project-health" onClick={() => setShowProjectHealth(v => !v)}>{ux('checklist', 'Checklist')}</button>
+      </div>
       {/* Workflow readiness */}
       <div className="sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0">
         <nav className="px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto" role="navigation" aria-label={t("a11y.story_creation_phases")}>
@@ -8486,7 +8665,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
             );
           })}
         </nav>
-        <div className="sf-project-health px-3 sm:px-6 pb-3">
+        <div id="sf-project-health" data-expanded={showProjectHealth} className="sf-project-health px-3 sm:px-6 pb-3">
           <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
             <div className="min-w-0 flex-1">
               <div className="flex items-center justify-between gap-3 text-[11px] font-black uppercase text-slate-600">
@@ -8496,9 +8675,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200" role="progressbar" aria-label={ta('a11y.storyforge_attr_artifact_production_readiness')} aria-valuemin="0" aria-valuemax="100" aria-valuenow={projectReadiness.percent}>
                 <div className={`h-full rounded-full transition-all ${projectReadiness.blockers.length ? 'bg-rose-500' : projectReadiness.warnings.length ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${projectReadiness.percent}%` }} />
               </div>
-              <div className="mt-1 text-[11px] font-medium text-slate-500">{projectReadiness.summary}</div>
+              <div className="mt-1 text-[11px] font-medium text-slate-500">{phase === 'configure' && !hasStoryCue ? ux('start_hint', 'Choose Story or Comic, then add a title or starting idea.') : projectReadiness.summary}</div>
             </div>
-            {primaryReadinessIssue && (
+            {primaryReadinessIssue && !(phase === 'configure' && !hasStoryCue) && (
               <button
                 type="button"
                 data-sf-focusable
@@ -8507,7 +8686,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 title={primaryReadinessIssue.detail}
               >
                 <span className="min-w-0 flex-1">
-                  <span className="block text-[9px] uppercase tracking-widest opacity-75">{projectReadiness.blockers.length ? 'Required' : 'Recommended'}</span>
+                  <span className="block text-[9px] uppercase tracking-widest">{projectReadiness.blockers.length ? 'Required' : 'Recommended'}</span>
                   <span className="block truncate">{primaryReadinessIssue.label}</span>
                 </span>
                 <ArrowRight size={14} className="shrink-0" aria-hidden="true" />
@@ -8516,10 +8695,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
           </div>
         </div>
       </div>
-      <section className="bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-3 shrink-0" aria-labelledby="sf-current-step-title">
+      <section className="sf-step-guide bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-3 shrink-0" aria-labelledby="sf-current-step-title">
         <div className="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5">
           <div className="min-w-0 flex-1">
-            <div className="text-[10px] font-black uppercase tracking-widest text-rose-600">
+            <div className="sf-step-kicker text-[10px] font-black uppercase tracking-widest text-rose-700">
               {ta('a11y.storyforge_ui_step_of').replace('{0}', phaseIdx + 1).replace('{1}', PHASES.length)} · {optLabel('artifact', artifactType, ARTIFACT_TYPES[artifactType].label)}
             </div>
             <h2 id="sf-current-step-title" className="text-base font-black text-slate-800">{currentPhaseGuide.title}</h2>
@@ -8555,6 +8734,29 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
+              {lessonImportProposal && (
+                <section ref={lessonImportPreviewRef} tabIndex={-1} data-sf-lesson-preview aria-labelledby="sf-lesson-preview-title" className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
+                  <h3 id="sf-lesson-preview-title" className="font-bold text-indigo-900">{ux('lesson_preview', 'Preview lesson import')}: {lessonImportProposal.title}</h3>
+                  <p className="mt-2 text-sm text-indigo-900">{ux('lesson_preserves', 'Your scenes, writing, dialogue, and artwork stay intact. Applying saves a checkpoint first.')}</p>
+                  {lessonImportProposal.kind === 'plan' && <>
+                    <p className="mt-2 text-sm text-slate-800">{ux('lesson_prompts', 'These planning prompts replace the prompts for matching sections. Extra authored sections are kept.')}</p>
+                    <ol className="my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800">{lessonImportProposal.suggestions.map((item, index) => <li key={index}>{item.scaffoldFrame}</li>)}</ol>
+                    {lessonImportProposal.total > maxParagraphs && <p className="text-sm font-bold text-amber-900">{ux('lesson_limit', 'Only the first {0} sections fit in this project.').replace('{0}', maxParagraphs)}</p>}
+                  </>}
+                  {lessonImportProposal.kind === 'vocabulary' && <>
+                    <p className="mt-2 text-sm text-slate-800">{ux('lesson_vocab', 'New goals are added. Existing goals and definitions are kept; duplicates are skipped. Projects support up to 64 goals.')}</p>
+                    <ul className="my-3 list-disc pl-5 text-sm text-slate-800">{lessonImportProposal.terms.map((item, index) => <li key={index}>{item.term}</li>)}</ul>
+                  </>}
+                  {lessonImportProposal.kind === 'prompt' && <>
+                    {storyPrompt && <p className="mt-3 text-sm text-slate-700"><strong>{ux('current_idea', 'Current starting idea')}: </strong>{storyPrompt}</p>}
+                    <p className="my-3 text-sm text-slate-800"><strong>{ux('new_idea', 'New starting idea')}: </strong>{lessonImportProposal.prompt}</p>
+                  </>}
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" data-sf-apply-lesson onClick={() => void applyLessonImport()} disabled={projectMutationBusy || isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50">{ux('apply_lesson', 'Apply lesson resource')}</button>
+                    <button type="button" onClick={() => setLessonImportProposal(null)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800">{ux('cancel_lesson', 'Keep current project')}</button>
+                  </div>
+                </section>
+              )}
               {/* ── Import from Lesson Resources ── */}
               {lessonResources && lessonResources.length > 0 && (
                 <div className="bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4">
@@ -8576,48 +8778,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <p className="text-[11px] text-indigo-400 mt-1.5">{ta('a11y.storyforge_ui_click_to_auto_fill_vocabulary_prompts')}</p>
                 </div>
               )}
-
-              {/* Title & Author */}
-              <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{artifactType === 'comic' ? 'Comic title' : 'Story title'}</label>
-                    <input
-                      id="sf-title"
-                      type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
-                      placeholder={artifactType === 'comic' ? 'Give your comic a title' : 'Give your story a title'}
-                      className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("labels.pen_name")}</label>
-                    <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
-                      <span className="text-base">✍️</span> {authorName}
-                    </div>
-                    <p className="text-[11px] text-slate-500 mt-1">{ta('a11y.storyforge_ui_your_codename_is_your_pen_name')}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Genre Picker */}
-              <div className="bg-white rounded-2xl border-2 border-indigo-100 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <BookOpen size={16} /> Genre
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Object.entries(GENRE_TEMPLATES).map(([key, g]) => (
-                    <button type="button"
-                      key={key}
-                      onClick={() => setGenre(key)}
-                      className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
-                        genre === key ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-indigo-300'
-                      }`}
-                    >
-                      {g.emoji}<br/>{genreLabel(key)}
-                    </button>
-                  ))}
-                </div>
-              </div>
 
               {/* Artifact type picker */}
               <div data-sf-artifact-picker className="bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm">
@@ -8697,6 +8857,49 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   </div>
                 )}
               </div>
+
+              {/* Title & Author */}
+              <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="sf-title" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{artifactType === 'comic' ? 'Comic title' : 'Story title'}</label>
+                    <input
+                      id="sf-title"
+                      type="text" value={storyTitle} onChange={(e) => setStoryTitle(e.target.value)}
+                      placeholder={artifactType === 'comic' ? 'Give your comic a title' : 'Give your story a title'}
+                      className="w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1">{t("labels.pen_name")}</label>
+                    <div className="w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2">
+                      <span className="text-base">✍️</span> {authorName}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1">{ta('a11y.storyforge_ui_your_codename_is_your_pen_name')}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Genre Picker */}
+              <details data-sf-genre-options className="bg-white rounded-2xl border-2 border-indigo-100 p-5 shadow-sm">
+                <summary className="text-sm font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2">
+                  <BookOpen size={16} /> Genre
+                </summary>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {Object.entries(GENRE_TEMPLATES).map(([key, g]) => (
+                    <button type="button"
+                      key={key}
+                      onClick={() => setGenre(key)}
+                      aria-pressed={genre === key}
+                      className={`p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${
+                        genre === key ? 'border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md' : 'border-slate-200 text-slate-600 hover:border-indigo-300'
+                      }`}
+                    >
+                      {g.emoji}<br/>{genreLabel(key)}
+                    </button>
+                  ))}
+                </div>
+              </details>
 
               {/* Vocab Terms */}
               <div className="bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm">
@@ -8926,13 +9129,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div className="flex gap-2 items-center flex-wrap sm:justify-end">
                   <button type="button"
                     onClick={generateScaffolds}
-                    disabled={isProcessing}
+                    disabled={!onCallGemini || isProcessing}
                     className="px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <Sparkles size={14} /> {layoutMode === 'comic'
                       ? (scaffoldsGenerated ? 'Regenerate Panel Plan' : 'Generate Panel Plan')
                       : (scaffoldsGenerated ? 'Regenerate Scene Plan' : 'Generate Scene Plan')}
                   </button>
+                  <button type="button" aria-pressed={focusMode} onClick={() => { setFocusMode(!focusMode); setFocusParagraphIdx(0); }} className="min-h-11 rounded-full border border-indigo-300 px-4 py-2 text-xs font-bold text-indigo-800">{focusMode ? ux('all_scenes', 'All scenes') : ux('focus_writing', 'Focus on writing')}</button>
                   <button
                     type="button"
                     onClick={() => setShowWritingTools(value => !value)}
@@ -8945,6 +9149,18 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
+              {!onCallGemini && <p role="status" className="text-xs text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
+              {planProposal && (
+                <section ref={planPreviewRef} tabIndex={-1} aria-labelledby="sf-plan-preview-title" className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
+                  <h4 id="sf-plan-preview-title" className="font-bold text-indigo-900">{ux('plan_preview', 'Preview plan suggestions')}</h4>
+                  <p className="mt-1 text-sm text-indigo-900">{ux('plan_preserves', 'Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.')}</p>
+                  <ol className="my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800">{planProposal.suggestions.map((item, i) => <li key={i}>{item.scaffoldFrame}</li>)}</ol>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => void applyPlanProposal()} disabled={isProcessing} className="min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50">{ux('apply_plan', 'Apply plan')}</button>
+                    <button type="button" onClick={() => setPlanProposal(null)} className="min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800">{ux('keep_draft', 'Keep current plan')}</button>
+                  </div>
+                </section>
+              )}
                   {showWritingTools && (
                   <div
                     id="sf-writing-tools-panel"
@@ -8982,6 +9198,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         <button type="button"
                           key={key}
                           onClick={() => selectWritingView(key)}
+                          aria-pressed={writingView === key}
                           className={`px-3 py-1 rounded-full text-[11px] font-bold transition-all ${
                             writingView === key ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-600 hover:text-slate-700'
                           }`}
@@ -9103,7 +9320,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {/* Vocab Ingredients Bar — STICKY so it's always visible while writing */}
               <div className="bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm" style={{ backdropFilter: 'blur(8px)', background: 'rgba(255,241,242,0.92)' }}>
                 <div className="flex items-center justify-between mb-1.5">
-                  <div className="text-[11px] font-bold text-rose-500 uppercase tracking-widest">{ta('a11y.storyforge_ui_vocabulary_goals_click_to_copy')}</div>
+                  <div className="text-[11px] font-bold text-rose-700 uppercase tracking-widest">{ta('a11y.storyforge_ui_vocabulary_goals_click_to_copy')}</div>
                   <div className="text-[11px] font-bold text-rose-700">
                     {vocabTerms.filter(v => vocabUsage[v.term]).length}/{vocabTerms.length} used
                   </div>
@@ -9232,7 +9449,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
               {/* Focus Mode Navigation Bar */}
               {focusMode && (
-                <div className="flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3">
+                <div data-sf-focus-navigation className="flex flex-wrap items-center justify-between gap-2 bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3">
                   <button type="button"
                     onClick={() => setFocusParagraphIdx(Math.max(0, focusParagraphIdx - 1))}
                     disabled={focusParagraphIdx === 0}
@@ -9240,24 +9457,24 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   >
                     ← Previous
                   </button>
-                  <div className="text-center">
+                  <div className="sf-focus-summary text-center">
                     <div className="text-xs font-bold text-indigo-700">{layoutMode === 'comic' ? 'Panel' : 'Scene'} {focusParagraphIdx + 1} of {paragraphs.length}</div>
-                    <div className="text-[11px] text-indigo-400 mt-0.5">
+                    <div className="text-[11px] text-indigo-700 mt-0.5">
                       {paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? '...' : '') : 'Free write'}
                     </div>
                     {/* Mini progress dots */}
-                    <div className="flex justify-center gap-1 mt-1.5">
+                    <div className="sf-focus-jumps flex flex-wrap justify-center gap-1 mt-1.5" role="group" aria-label={ux('choose_section', 'Choose a section')}>
                       {paragraphs.map((pp, pi) => (
                         <button type="button"
                           key={pi}
                           onClick={() => setFocusParagraphIdx(pi)}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            pi === focusParagraphIdx ? 'bg-indigo-600 scale-125' : pp.text.trim().length > 10 ? 'bg-green-400' : 'bg-slate-300'
+                          className={`sf-focus-jump rounded-lg border font-bold transition-colors ${
+                            pi === focusParagraphIdx ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-900 border-indigo-300'
                           }`}
-                          title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${pp.text.trim().length > 10 ? ' (written)' : ' (empty)'}`}
-                          aria-label={ta(layoutMode === 'comic' ? (pp.text.trim().length > 10 ? 'a11y.storyforge_aria_jump_panel_written' : 'a11y.storyforge_aria_jump_panel_empty') : (pp.text.trim().length > 10 ? 'a11y.storyforge_aria_jump_scene_written' : 'a11y.storyforge_aria_jump_scene_empty')).replace('{0}', pi + 1)}
+                          title={`Jump to ${layoutMode === 'comic' ? 'panel' : 'scene'} ${pi + 1}${(authoredSections[pi] || '').trim().length > 0 ? ' (written)' : ' (empty)'}`}
+                          aria-label={ta(layoutMode === 'comic' ? ((authoredSections[pi] || '').trim().length > 0 ? 'a11y.storyforge_aria_jump_panel_written' : 'a11y.storyforge_aria_jump_panel_empty') : ((authoredSections[pi] || '').trim().length > 0 ? 'a11y.storyforge_aria_jump_scene_written' : 'a11y.storyforge_aria_jump_scene_empty')).replace('{0}', pi + 1)}
                           aria-current={pi === focusParagraphIdx ? 'true' : undefined}
-                        />
+                        >{pi + 1}</button>
                       ))}
                     </div>
                   </div>
@@ -9270,10 +9487,10 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         setFocusParagraphIdx(focusParagraphIdx + 1);
                       }
                     }}
-                    className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                    data-sf-focus-next disabled={focusParagraphIdx >= paragraphs.length - 1 && paragraphs.length >= maxParagraphs} className="px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
                   >
                     {focusParagraphIdx >= paragraphs.length - 1
-                      ? (artifactType === 'comic' ? '+ New panel' : '+ New scene')
+                      ? (paragraphs.length >= maxParagraphs ? ux('section_limit', 'Section limit reached') : artifactType === 'comic' ? '+ New panel' : '+ New scene')
                       : 'Next →'}
                   </button>
                 </div>
@@ -9333,7 +9550,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             ? 'bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50'
                             : dictation.isDictating && dictatingParagraphIdx === idx
                             ? 'bg-red-100 border-red-300 text-red-600 animate-pulse motion-reduce:animate-none'
-                            : 'bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700'
+                            : 'bg-blue-50 border-blue-200/50 text-blue-700 hover:bg-blue-100 hover:text-blue-700'
                         }`}
                         aria-label={language === 'other' ? 'Voice typing unavailable for a custom language' : (dictation.isDictating && dictatingParagraphIdx === idx ? 'Stop dictation' : 'Start dictation')}
                       >
@@ -9342,13 +9559,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <button type="button"
                         onClick={() => helpMeWrite(idx)}
                         disabled={isProcessing}
-                        className="text-amber-500 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
+                        className="text-amber-700 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40"
                         aria-label={t("a11y.get_writing_suggestions")}
                       >
                         <Sparkles size={10} /> Help Me
                       </button>
                       {paragraphs.length > 1 && (
-                        <button type="button" onClick={() => removeParagraph(idx)} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={ta(layoutMode === 'comic' ? 'a11y.storyforge_aria_remove_panel' : 'a11y.storyforge_aria_remove_scene').replace('{0}', idx + 1)}>
+                        <button type="button" onClick={() => void removeParagraph(idx)} disabled={projectMutationBusy || isProcessing} className="text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors" aria-label={ta(layoutMode === 'comic' ? 'a11y.storyforge_aria_remove_panel' : 'a11y.storyforge_aria_remove_scene').replace('{0}', idx + 1)}>
                           <Trash2 size={14} />
                         </button>
                       )}
@@ -10824,27 +11041,27 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   {showReviewTools && (
                   <>
                   {!gradingResult && (
-                    <button type="button" onClick={checkSenses} disabled={sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
+                    <button type="button" onClick={checkSenses} disabled={!onCallGemini || sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={findMentorStory} disabled={mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
+                    <button type="button" onClick={findMentorStory} disabled={!onCallGemini || mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
                       🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={analyzeShowTell} disabled={showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
+                    <button type="button" onClick={analyzeShowTell} disabled={!onCallGemini || showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
                       🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={analyzeCharacterArcs} disabled={arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
+                    <button type="button" onClick={analyzeCharacterArcs} disabled={!onCallGemini || arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={analyzeDialogue} disabled={dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
+                    <button type="button" onClick={analyzeDialogue} disabled={!onCallGemini || dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
                       💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
@@ -10854,19 +11071,19 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     </button>
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
-                    <button type="button" onClick={synthesizeRevisionPlan} disabled={revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
+                    <button type="button" onClick={synthesizeRevisionPlan} disabled={!onCallGemini || revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
                       🗺️ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
                   </>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={gradeStory} disabled={isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
+                    <button type="button" onClick={gradeStory} disabled={!onCallGemini || isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {isProcessing ? 'Grading...' : 'Get Feedback'}
                     </button>
                   )}
                   {gradingResult && (
-                    <button type="button" onClick={reviseStory} className="px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2">
+                    <button type="button" onClick={reviseStory} className="px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2">
                       <RefreshCw size={16} /> Revise Draft
                     </button>
                   )}
@@ -10883,6 +11100,13 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               )}
 
+              {!gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && (
+                <div role="status" className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+                  <p className="text-sm text-indigo-900">{ux('review_choices', 'Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.')}</p>
+                  <button type="button" onClick={() => setSelfAssessmentSubmitted(false)} className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white">{ux('return_selfcheck', 'Return to self-check')}</button>
+                </div>
+              )}
+              {!onCallGemini && <p className="text-sm text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
               {/* ═══ Pre-grade Self-Assessment ═══ */}
               {!gradingResult && !selfAssessmentSubmitted && (
                 <div className="bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5">
@@ -10891,36 +11115,38 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <h4 className="text-base font-black text-violet-800 flex items-center gap-2">
                         <Star size={18} /> Self-Assessment First
                       </h4>
-                      <p className="text-xs text-violet-700 mt-1">{ta('a11y.storyforge_ui_rate_your_own_draft_on_each')}</p>
+                      <p className="text-xs text-violet-700 mt-1">{ux('rating_instructions', 'Reread your draft and choose how you feel about each criterion. Ratings start at 3; adjust them to match your work.')}</p>
                     </div>
                     <button type="button"
-                      onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce(ta('a11y.storyforge_self_assessment_skipped_ai_grading_is_now')); }}
-                      className="text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
+                      onClick={() => { setSelfAssessmentSubmitted(true); sfAnnounce(ux('selfcheck_return', 'You can return to the self-check at any time.')); }}
+                      className="text-xs text-violet-700 hover:text-violet-800 font-bold underline shrink-0 min-h-11"
                     >
                       Skip self-assessment
                     </button>
                   </div>
                   <div className="space-y-2">
-                    {getRubricCriteria().map((c) => (
-                      <div key={c} className="flex items-center gap-3 bg-white border border-violet-100 rounded-xl px-3 py-2">
-                        <label htmlFor={`sf-self-${c}`} className="text-xs font-bold text-violet-800 flex-1 min-w-0 truncate">{c}</label>
-                        <input
-                          id={`sf-self-${c}`}
-                          type="range" min="1" max="5" step="1"
+                    {getRubricCriteria().map((c, index) => (
+                      <div key={c} className="flex flex-col sm:flex-row sm:items-center gap-2 bg-white border border-violet-100 rounded-xl px-3 py-2">
+                        <label htmlFor={`sf-self-${index}`} className="text-xs font-bold text-violet-800 flex-1 min-w-0 break-words">{c}</label>
+                        <select
+                          id={`sf-self-${index}`}
+                          data-sf-self-rating
                           value={selfAssessment[c] || 3}
                           onChange={(e) => setSelfAssessment(prev => ({ ...prev, [c]: parseInt(e.target.value, 10) }))}
-                          className="w-32 accent-violet-600"
-                          aria-label={ta('a11y.storyforge_aria_self_rating_for_out_of_5').replace('{0}', c).replace('{1}', selfAssessment[c] || 3)}
-                        />
-                        <div className="bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center">
-                          {selfAssessment[c] || 3}/5
-                        </div>
+                          className="min-h-11 w-full sm:w-52 rounded-lg border border-violet-300 bg-white px-2 text-sm text-violet-900"
+                        >
+                          <option value="1">{ux('rating_1', '1 — I need help getting started')}</option>
+                          <option value="2">{ux('rating_2', '2 — I am beginning')}</option>
+                          <option value="3">{ux('rating_3', '3 — I am developing this')}</option>
+                          <option value="4">{ux('rating_4', '4 — I can do this well')}</option>
+                          <option value="5">{ux('rating_5', '5 — I can explain my choices')}</option>
+                        </select>
                       </div>
                     ))}
                   </div>
                   <button type="button"
                     onClick={() => {
-                      // Fill any unset criteria with 3 (the slider's visual default) so comparison works.
+                      // Keep the displayed starting rating for unchanged criteria so comparison works.
                       const filled = {};
                       getRubricCriteria().forEach(c => { filled[c] = selfAssessment[c] || 3; });
                       setSelfAssessment(filled);
@@ -11364,15 +11590,15 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               )}
 
               {/* Writing Analytics */}
-              <div className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
-                <h4 className="text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">{t("headings.writing_analytics")}</h4>
+              <details data-sf-analytics className="bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm">
+                <summary className="cursor-pointer text-sm font-bold text-slate-700 uppercase tracking-wider mb-3">{t("headings.writing_analytics")}</summary>
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
                     <div className="text-2xl font-black text-slate-800">{totalWords}</div>
                     <div className="text-[11px] text-slate-600 font-bold">{ta('a11y.storyforge_ui_words')}</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
-                    <div className="text-2xl font-black text-slate-800">{readingLevel?.sentences || 0}</div>
+                    <div className="text-2xl font-black text-slate-800">{authoredText.split(/[.!?]+/).filter(text => text.trim()).length}</div>
                     <div className="text-[11px] text-slate-600 font-bold">{ta('a11y.storyforge_ui_sentences')}</div>
                   </div>
                   <div className="text-center p-3 bg-slate-50 rounded-xl">
@@ -11387,20 +11613,17 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className={`text-2xl font-black ${readingLevel ? 'text-indigo-600' : 'text-slate-300'}`}>
                       {readingLevel ? `${readingLevel.grade}` : '—'}
                     </div>
-                    <div className="text-[11px] text-slate-600 font-bold">{ta('a11y.storyforge_ui_reading_grade')}</div>
+                    <div className="text-[11px] text-slate-600 font-bold">{ux('reading_estimate', 'Text complexity estimate')}</div>
                   </div>
                 </div>
                 {readingLevel && (
                   <div className="mt-3 text-xs text-slate-600">
                     Avg {readingLevel.avgWordsPerSentence} {ta('a11y.storyforge_ui_words_sentence_flesch_kincaid_grade_level')} {readingLevel.grade}
-                    {(() => {
-                      const target = gradeLevelToNumber(gradeLevel);
-                      if (target == null) return null; // unknown grade label — don't show a misleading verdict
-                      return <span>{readingLevel.grade <= target + 1 ? ' · ✓ On target' : ' · ⚠ May be above target level'}</span>;
-                    })()}
+                    <span> · {ux('estimate_note', 'Approximate English text complexity, not a writing quality score.')}</span>
                   </div>
                 )}
 
+                {!readingLevel && <p className="mt-2 text-xs text-slate-600">{ux('estimate_threshold', 'A complexity estimate is available for English drafts with at least 100 words.')}</p>}
                 {/* Story Arc — emotional fortune curve (Vonnegut shapes) */}
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
@@ -11458,7 +11681,6 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     );
                   })()}
                 </div>
-              </div>
 
               {/* Word Frequency Analysis */}
               {wordFrequency.length > 0 && (
@@ -11469,7 +11691,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <div key={word} className={`px-3 py-1.5 rounded-full text-xs font-bold border-2 ${
                         count >= 4 ? 'bg-amber-100 border-amber-300 text-amber-800' : 'bg-slate-50 border-slate-200 text-slate-600'
                       }`} title={`"${word}" used ${count} times`}>
-                        {word} <span className="text-[11px] opacity-60">×{count}</span>
+                        {word} <span className="text-[11px]">×{count}</span>
                       </div>
                     ))}
                   </div>
@@ -11481,7 +11703,9 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               )}
 
-              {!gradingResult && !isProcessing && (
+              </details>
+
+              {!gradingResult && !isProcessing && onCallGemini && (
                 <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
                   <Star size={48} className="text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow &amp; Grow feedback on your draft</p>
@@ -11965,13 +12189,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 )}
                 </div>
               </details>
+              <p className="text-slate-600 text-sm text-center">{ux('output_help', 'Download a finished story to read or print. Use an editable backup below to continue working on another device.')}</p>
               <p className="text-slate-500 text-xs text-center">
                 {artifactType === 'comic' ? 'Comic' : 'Storybook'} and slideshow exports open in new tabs · print or save as PDF
               </p>
 
               <details data-sf-project-tools className="bg-white rounded-2xl border border-slate-200 p-4">
                 <summary className="cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500">
-                  <span className="inline-flex items-center gap-2"><Save size={16} aria-hidden="true" /> Project files &amp; collaboration</span>
+                  <span className="inline-flex items-center gap-2"><Save size={16} aria-hidden="true" /> {ux('project_files', 'Editable backups and collaboration')}</span>
                 </summary>
                 <p className="mt-1 text-xs text-slate-500">{ta('a11y.storyforge_ui_export_or_import_a_portable_project')}</p>
                 <div className="mt-3 space-y-4">
@@ -11993,7 +12218,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <span className="sr-only">{ta('a11y.storyforge_ui_checkpoint_name')}</span>
                     <input value={revisionLabel} onChange={(e) => setRevisionLabel(e.target.value.slice(0, 100))} placeholder={ta('a11y.storyforge_attr_checkpoint_name')} className="w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700" aria-label={ta('a11y.storyforge_attr_checkpoint_name')} />
                   </label>
-                  <button type="button" onClick={() => void saveRevisionCheckpoint()} disabled={draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50" aria-label={ta('a11y.storyforge_attr_save_revision_checkpoint')}>
+                  <button type="button" onClick={() => void saveRevisionCheckpoint()} disabled={projectMutationBusy || draftHydrationState !== 'ready' || draftSaveState === 'saving'} className="px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50" aria-label={ta('a11y.storyforge_attr_save_revision_checkpoint')}>
                     <Save size={14} /> Checkpoint
                   </button>
                 </div>

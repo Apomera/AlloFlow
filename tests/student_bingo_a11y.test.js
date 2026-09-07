@@ -43,7 +43,8 @@ describe('Student Bingo accessibility', () => {
     expect(source).toContain('<X size={24} aria-hidden="true" />');
     expect(source).toContain('motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95');
     expect(source).toContain('motion-safe:animate-bounce');
-    expect(source).toContain('motion-safe:animate-[stamp_0.3s_ease-out_forwards]');
+    expect(source).not.toContain('backdrop-blur-[1px]');
+    expect(source).toContain('absolute top-1 right-1');
     expect(source).toContain('isWon && !reducedMotion && <ConfettiExplosion />');
     expect(source).toContain('alt="" aria-hidden="true"');
     expect(source).toContain('flex flex-wrap justify-between');

@@ -65,7 +65,9 @@ const HARNESS = `<!doctype html>
     return request ? request.call(el) : Promise.resolve();
   };
 </script>
+<script src="/printable_model_module.js"></script>
 <script src="/stem_lab/stem_tool_geometryworld.js"></script>
+<script src="/stem_lab/stem_tool_geometryworld_builder.js"></script>
 <script>
   var e = React.createElement;
 
@@ -210,7 +212,55 @@ const HARNESS = `<!doctype html>
       var a = get(idx ? idx[i] : i), b = get(idx ? idx[i + 1] : i + 1), c = get(idx ? idx[i + 2] : i + 2);
       vol += a.dot(new THREE.Vector3().crossVectors(b, c)) / 6;
     }
-    return { volume: Math.abs(Math.round(vol * 10000) / 10000), shape: m.userData.shape, claimed: m.userData.volume };
+    // Signed on purpose: an inside-out mesh has the right magnitude and the wrong
+    // sign, and abs() hid exactly that for the two hand-authored wedges.
+    return { volume: Math.round(vol * 10000) / 10000, shape: m.userData.shape, claimed: m.userData.volume };
+  };
+
+  // Signed volume of what the Print Lab exporter actually writes for one cell.
+  window.__stlSignedVolume = function (x, y, z) {
+    var en = window.__geoWorldEngine;
+    var pure = window.StemLab.geometryWorldBuilderPure;
+    if (!en || !pure) return null;
+    var bundle = pure.buildGeometryWorldStl(en, [{ x: x, y: y, z: z }], { title: 'probe' });
+    var dv = new DataView(bundle.buffer), n = dv.getUint32(80, true), off = 84, vol = 0;
+    for (var i = 0; i < n; i++) {
+      off += 12;
+      var v = [];
+      for (var k = 0; k < 3; k++) { v.push([dv.getFloat32(off, true), dv.getFloat32(off + 4, true), dv.getFloat32(off + 8, true)]); off += 12; }
+      off += 2;
+      var a = v[0], b = v[1], c = v[2];
+      vol += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6;
+    }
+    return { triangles: n, volume: Math.round(vol * 10000) / 10000 };
+  };
+
+  // Print Lab's own preflight (printable_model_module.js) on the bytes the
+  // exporter writes for the given cells, at 5 mm per block.
+  window.__preflightCells = function (cells) {
+    var en = window.__geoWorldEngine;
+    var pure = window.StemLab.geometryWorldBuilderPure;
+    var Printable = window.AlloModules && window.AlloModules.PrintableModel;
+    if (!en || !pure || !Printable) return null;
+    var bundle = pure.buildGeometryWorldStl(en, cells.map(function (c) { return { x: c[0], y: c[1], z: c[2] }; }), { title: 'probe' });
+    var r = Printable.inspectStl(new Uint8Array(bundle.buffer), 5, Printable.normalizeProfile({}));
+    return { triangles: bundle.triangleCount, status: r.status, openEdges: r.openEdges, nonManifoldEdges: r.nonManifoldEdges,
+      windingInconsistencies: r.windingInconsistencies, components: r.connectedComponents, enclosedVolumeMm3: r.enclosedVolumeMm3,
+      issues: (r.issues || []).map(function (i) { return i.code; }) };
+  };
+
+  window.__logHistogram = function () {
+    var en = window.__geoWorldEngine, h = {};
+    if (!en) return null;
+    en.sessionLog.forEach(function (e) { h[e.type] = (h[e.type] || 0) + 1; });
+    return h;
+  };
+
+  window.__spriteCensus = function () {
+    var en = window.__geoWorldEngine, sprites = 0;
+    if (!en) return null;
+    en.scene.traverse(function (o) { if (o.isSprite) sprites++; });
+    return { sprites: sprites, npcs: en.npcs.length };
   };
 
   window.__liveRegion = function () {
@@ -620,6 +670,84 @@ test.describe('Geometry World — real WebGL', () => {
       expect(r.claimed, expected[i].shape + ' metadata').toBeCloseTo(expected[i].volume, 6);
       expect(r.volume, expected[i].shape + ' actual enclosed volume').toBeCloseTo(expected[i].volume, 3);
     }
+  });
+
+  test('the STL a slicer receives is outward-wound for every shape', async ({ page }) => {
+    // __meshVolume above is signed now, so the volume test already fails on an
+    // inside-out mesh. This goes one step further and reads the bytes the Print
+    // Lab exporter writes: a negative signed volume is what a slicer reports as
+    // flipped normals, and it is how a 12-block build summed to 8.25 units.
+    await mount(page, { _introShownOnce: true });
+    const shapes = [['cube', 1], ['halfB', 0.5], ['halfA', 0.5], ['quarter', 0.25]] as const;
+    for (let i = 0; i < shapes.length; i += 1) {
+      for (let rot = 0; rot < 4; rot += 1) {
+        const at: [number, number, number] = [30 + i * 2, 7, 30 + rot * 2];
+        await page.evaluate(([x, y, z, s, r]) => (window as any).__placeShaped(x, y, z, s, r),
+          [...at, shapes[i][0], rot] as [number, number, number, string, number]);
+        const r = await page.evaluate(([x, y, z]) => (window as any).__stlSignedVolume(x, y, z), at);
+        expect(r.volume, shapes[i][0] + ' rot ' + rot).toBeCloseTo(shapes[i][1], 3);
+      }
+    }
+  });
+
+  test('a slab or wedge standing on a cube passes Print Lab preflight as one closed solid', async ({ page }) => {
+    // Every block is its own closed shell, so neighbours used to keep a coincident
+    // pair of faces between them and Print Lab counted each shared edge as
+    // non-manifold: 4 for a slab on a cube, 17 for a mixed build, and no enclosed
+    // volume reported. The exporter now drops a face wherever both sides present
+    // the same polygon on the shared boundary, so these stacks are watertight and
+    // the preflight reports the volume the lesson taught.
+    await mount(page, { _introShownOnce: true });
+    const stacks: Array<[string, number, number]> = [['halfB', 0, 0.5], ['halfA', 2, 0.5], ['quarter', 1, 0.25]];
+    for (let i = 0; i < stacks.length; i += 1) {
+      const [shape, rot, top] = stacks[i];
+      const x = 30 + i * 3;
+      await page.evaluate(([x, s, r]) => { (window as any).__placeShaped(x, 7, 30, 'cube', 0); (window as any).__placeShaped(x, 8, 30, s, r); }, [x, shape, rot] as [number, string, number]);
+      const r = await page.evaluate(([x]) => (window as any).__preflightCells([[x, 7, 30], [x, 8, 30]]), [x]);
+      expect(r, shape).not.toBeNull();
+      expect(r.openEdges, shape + ' open edges').toBe(0);
+      expect(r.nonManifoldEdges, shape + ' non-manifold edges').toBe(0);
+      expect(r.windingInconsistencies, shape + ' winding').toBe(0);
+      expect(r.components, shape + ' shells').toBe(1);
+      expect(r.status, shape + ' status').toBe('PASS');
+      // 1 cube + the shape on top, at 5 mm per block: 125 mm³ per cubic unit.
+      expect(r.enclosedVolumeMm3, shape + ' enclosed mm³').toBeCloseTo((1 + top) * 125, 2);
+    }
+  });
+
+  test('loading a lesson logs no block placements', async ({ page }) => {
+    // The ground and every lesson structure arrive through placeBlock, and the
+    // logging wrapper counted them: 1,646 block_place events before the student
+    // had touched anything, so 'Master Builder' (100 blocks) unlocked on load and
+    // the MTSS report counted scenery as student work.
+    await mount(page, { _introShownOnce: true });
+    const world = await page.evaluate(() => (window as any).__worldState());
+    expect(world.totalBlocks).toBeGreaterThan(100);
+    const before = await page.evaluate(() => (window as any).__logHistogram());
+    expect(before.block_place || 0).toBe(0);
+    await page.evaluate(() => (window as any).__placeShaped(2, 1, 2, 'cube', 0));
+    const after = await page.evaluate(() => (window as any).__logHistogram());
+    expect(after.block_place).toBe(1);
+  });
+
+  test('switching lessons leaves no character sprites behind', async ({ page }) => {
+    await mount(page, { _introShownOnce: true });
+    const withNpcs = await page.evaluate(() => (window as any).__spriteCensus());
+    expect(withNpcs.npcs).toBeGreaterThan(0);
+    // Each character owns a name label, a Press-E prompt, a ? marker when it has a
+    // question, and a speech bubble once the loop has created one. The old
+    // teardown removed only the first two, so the ? and the bubble stayed in the
+    // sky of whatever lesson came next, the blank sandbox included.
+    await page.waitForTimeout(600);
+    await page.evaluate(() => {
+      const en = (window as any).__geoWorldEngine;
+      en.loadLesson((window as any).StemLab.geometryWorldBuilderPure.FREE_BUILD_LESSON);
+    });
+    await page.waitForTimeout(300);
+    const census = await page.evaluate(() => (window as any).__spriteCensus());
+    expect(census.npcs).toBe(0);
+    // The sun is the only sprite a character-free world should carry.
+    expect(census.sprites).toBe(1);
   });
 
   test('keeps HUD presets playable across desktop, tablet, phone, landscape, and fullscreen', async ({ page }) => {

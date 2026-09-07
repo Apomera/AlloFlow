@@ -23,12 +23,12 @@ function makeAreaGrader(answer) {
     'challenge', 'answer', 'streak', 'bestStreak', 'score',
     'basicSolved', 'distSolved', 'multiSolved', 'wordSolved', 'challengeTypesUsed', '_a',
     'upd', 'sfxCorrect', 'sfxWrong', 'sfxStreak', 'announceToSR',
-    'awardXP', 'checkBadges',
+    'awardXP', 'checkBadges', 'feedback',
     source.slice(start, end) + '\nreturn checkChallenge;'
   )(
     { a: 4, b: 6, answer: 24, mode: 'word' }, answer, 0, 0, { correct: 0, total: 0 },
     0, 0, 0, 0, { word: true }, {},
-    (patch) => patches.push(patch), noop, noop, noop, noop, noop, noop,
+    (patch) => patches.push(patch), noop, noop, noop, noop, noop, noop, null,
   );
   checkChallenge();
   return patches.find((patch) => patch.feedback);

@@ -1,5 +1,7 @@
 # School Rewards: five-minute administrator demo
 
+For the complete store and Print Lab presentation, use the [local 10–12 minute administrator walkthrough](school_store_admin_walkthrough.md). It exercises the actual backend with fictional records and simulated Google services.
+
 Use `school-rewards-practice.html` from this local package in a browser. It contains the real portal with a fictional ledger saved only in that browser. The toolbar's **Demo guide** repeats this route inside the page, so a presenter can follow it without this document.
 
 ## Before presenting

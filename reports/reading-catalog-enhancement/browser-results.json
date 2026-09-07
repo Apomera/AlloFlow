@@ -1,0 +1,14 @@
+{
+  "passed": true,
+  "checks": [
+    "cover sizing and preservation",
+    "saved preference",
+    "picture zoom and reset",
+    "Escape keeps reader open and restores focus",
+    "mobile catalog scrolling",
+    "mobile zoom overflow containment",
+    "image failure fallback",
+    "no browser errors"
+  ],
+  "errors": []
+}

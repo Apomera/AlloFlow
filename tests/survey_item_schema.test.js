@@ -225,3 +225,16 @@ describe('the three surfaces agree on the same instrument', () => {
     expect(returned[0].labels.map((c) => c.text)).toEqual(RESEARCH_SUITE_ITEM.labels.map((c) => c.text));
   });
 });
+
+describe('numeric bound preservation', () => {
+  it.each([{}, {min:null,max:null}, {min:' ',max:''}])('keeps unset limits unbounded on repeated normalization: %j', bounds => {
+    const item = S.normalizeItem({type:'numeric',text:'Change',...bounds});
+    expect(item).toMatchObject({min:null,max:null});
+    expect(S.normalizeItem(item)).toEqual(item);
+    const { activities } = S.toMailboxActivities([item], {identityMode:'anonymous'});
+    expect(S.fromMailboxActivity(activities[0])[0]).toMatchObject({min:null,max:null});
+  });
+  it('preserves zero and fractional bounds', () => {
+    expect(S.normalizeItem({type:'numeric',text:'Hours',min:0,max:2.5})).toMatchObject({min:0,max:2.5});
+  });
+});

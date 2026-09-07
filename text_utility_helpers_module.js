@@ -105,7 +105,7 @@ const GlossaryTermSpan = ({ item, leveledTextLanguage, isDarkBg, isLineFocusMode
   );
 };
 const highlightGlossaryTerms = (text, glossary, isCloze = false, isDarkBg = false, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang: wordSearchLang2, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] highlightGlossaryTerms fired");
   } catch (_) {
@@ -262,7 +262,7 @@ const _extractRepairCitationMarkers = (value) => {
   return markers;
 };
 const repairGeneratedText = async (originalText, issue, targetLength, context, preserveCitations = false, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang: wordSearchLang2, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] repairGeneratedText fired");
   } catch (_) {
@@ -320,7 +320,7 @@ const repairGeneratedText = async (originalText, issue, targetLength, context, p
   }
 };
 const generateHelpfulHint = async (type, text, shouldSpeak = false, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang: wordSearchLang2, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] generateHelpfulHint fired");
   } catch (_) {
@@ -423,30 +423,39 @@ const generateHelpfulHint = async (type, text, shouldSpeak = false, deps) => {
     warnLog("Hint generation failed", e);
   }
 };
-const generateWordSearch = (targetLang = wordSearchLang, deps) => {
-  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang: wordSearchLang2, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
+const generateWordSearch = (targetLang, deps) => {
+  const { gradeLevel, leveledTextLanguage, currentUiLanguage, selectedLanguages, studentInterests, sourceTopic, inputText, history, generatedContent, apiKey, glossaryDefinitionLevel, wordSearchLang, creativeMode, standardsInput, targetStandards, dokLevel, alloBotRef, isLineFocusMode, clozeInstanceSet, setGeneratedContent, setHistory, setError, setIsProcessing, setGenerationStep, setHelpfulHint, setHintHistory, setClozeInstanceSet, setFoundWords, setGameData, setGameMode, setSelectedLetters, setShowWordSearchAnswers, addToast, t, warnLog, debugLog, callGemini, cleanJson, safeJsonParse, sanitizeTruncatedCitations, normalizeResourceLinks, fetchTTSBytes, callTTS, playSound, handleScoreUpdate, getDefaultTitle, ClozeInput, highlightGlossaryTerms: highlightGlossaryTerms2, repairGeneratedText: repairGeneratedText2, getReadableContent, generateHelpfulHint: generateHelpfulHint2 } = deps;
   try {
     if (window._DEBUG_PHASE_M) console.log("[PhaseM] generateWordSearch fired");
   } catch (_) {
   }
   if (!generatedContent || generatedContent.type !== "glossary") return;
-  const candidates = generatedContent?.data.map((item) => {
+  targetLang = targetLang || wordSearchLang || "English";
+  const segmenter = typeof Intl.Segmenter === "function" ? new Intl.Segmenter(void 0, { granularity: "grapheme" }) : null;
+  const cellsOf = (value) => segmenter ? Array.from(segmenter.segment(value), (part) => part.segment) : Array.from(value);
+  const candidates = (Array.isArray(generatedContent.data) ? generatedContent.data : []).map((item) => {
+    if (!item) return null;
     let text = item.term;
-    if (targetLang !== "English" && item.translations && item.translations[targetLang]) {
-      const trans = item.translations[targetLang];
+    if (targetLang !== "English") {
+      const trans = item.translations?.[targetLang];
+      if (typeof trans !== "string" || !trans.trim()) return null;
       if (trans.includes(":")) {
         text = trans.substring(0, trans.indexOf(":")).trim();
       } else {
         text = trans;
       }
     }
-    if (!text) return null;
-    const clean = text.replace(/[^\p{L}\p{N}]/gu, "").toUpperCase();
+    if (typeof text !== "string" || !text.trim()) return null;
+    const clean = text.normalize("NFC").replace(/[^\p{L}\p{M}\p{N}]/gu, "").replace(/[\uFE0E\uFE0F\u20E3]/g, "").toUpperCase();
+    const cells = cellsOf(clean).filter((cell) => /[\p{L}\p{N}]/u.test(cell));
+    const shortScript = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Devanagari}\p{Script=Thai}]/u.test(clean);
     return {
-      clean,
+      clean: cells.join(""),
+      cells,
+      minLength: shortScript ? 2 : 3,
       display: text.toUpperCase()
     };
-  }).filter((item) => item && item.clean.length >= 3 && item.clean.length <= 15);
+  }).filter((item) => item && item.cells.length >= item.minLength && item.cells.length <= 15);
   if (candidates.length === 0) {
     addToast(t("glossary.word_search_notifications.no_terms"), "error");
     return;
@@ -460,9 +469,9 @@ const generateWordSearch = (targetLang = wordSearchLang, deps) => {
   candidates.forEach((c) => {
     if (!uniqueCandidates.has(c.clean)) uniqueCandidates.set(c.clean, c);
   });
-  const sortedCandidates = Array.from(uniqueCandidates.values()).sort((a, b) => b.clean.length - a.clean.length).slice(0, 12);
+  const sortedCandidates = Array.from(uniqueCandidates.values()).sort((a, b) => b.cells.length - a.cells.length).slice(0, 12);
   for (const candidate of sortedCandidates) {
-    const word = candidate.clean;
+    const word = candidate.cells;
     let placed = false;
     let attempts = 0;
     while (!placed && attempts < 100) {
@@ -518,13 +527,20 @@ const generateWordSearch = (targetLang = wordSearchLang, deps) => {
       attempts++;
     }
   }
-  const charPool = candidates.map((c) => c.clean).join("") || "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  if (!placedWords.length) {
+    addToast(t("glossary.word_search_notifications.no_terms"), "error");
+    return;
+  }
+  const charPool = candidates.flatMap((c) => c.cells);
   for (let r = 0; r < size; r++) {
     for (let c = 0; c < size; c++) {
       if (grid[r][c] === "") grid[r][c] = charPool[Math.floor(Math.random() * charPool.length)];
     }
   }
-  const newGameData = { grid, words: placedWords, solutions: Array.from(solutionSet), language: targetLang, wordLocations };
+  const letterCount = charPool.filter((cell) => /\p{L}/u.test(cell)).length;
+  const rtlCount = charPool.filter((cell) => /[\p{Script=Arabic}\p{Script=Hebrew}\p{Script=Thaana}]/u.test(cell)).length;
+  const isRtl = rtlCount > letterCount / 2;
+  const newGameData = { grid, isRtl, words: placedWords, solutions: Array.from(solutionSet), language: targetLang, wordLocations };
   setGameData(newGameData);
   setGameMode("wordsearch");
   setSelectedLetters(/* @__PURE__ */ new Set());

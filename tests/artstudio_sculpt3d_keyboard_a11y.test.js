@@ -138,6 +138,23 @@ function makePrim3D() {
   };
 }
 
+function buttonWithLabel(html, label) {
+  const found = (html.match(/<button\b[^>]*>/g) || [])
+    .find((tag) => tag.includes('aria-label="' + label + '"'));
+  if (!found) throw new Error('no button labelled ' + label);
+  return found;
+}
+
+// Every switched-off button has to look switched off, either through an inline
+// grey or through a Tailwind disabled: variant. A control that is off but looks
+// live is a trap: the click does nothing and says nothing.
+function livingLookingDisabledButtons(html) {
+  const buttons = html.match(/<button\b[^>]*>/g) || [];
+  return buttons.filter((tag) => / disabled(=|\s|>)/.test(tag)
+    && !/cursor:not-allowed/.test(tag)
+    && !/disabled:(opacity|bg-|text-|border-|cursor)/.test(tag));
+}
+
 describe('Art Studio Sculpt 3D accessibility', () => {
   let host;
   let root;
@@ -193,6 +210,74 @@ describe('Art Studio Sculpt 3D accessibility', () => {
       await Promise.resolve();
     });
   }
+
+  it('shows a locked part which controls it switched off, and leaves none looking live', () => {
+    resetStemLab();
+    window.THREE = makeThree();
+    window.AlloModules = { ...(originalAlloModules || {}), Prim3D: makePrim3D() };
+    loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
+
+    const unlocked = renderTool('artStudio', {
+      artStudio: {
+        tab: 'sculpt3d',
+        sculptSel: 0,
+        sculptRecipe: { name: 'Robot', parts: [{ shape: 'box', color: '#ff0000' }] },
+      },
+    }, { callGemini: vi.fn() });
+    const locked = renderTool('artStudio', {
+      artStudio: {
+        tab: 'sculpt3d',
+        sculptSel: 0,
+        sculptRecipe: { name: 'Robot', parts: [{ shape: 'box', color: '#ff0000', locked: true }] },
+      },
+    }, { callGemini: vi.fn() });
+
+    // Locking switches off move, size, spin and the form profiles. The Lock
+    // button already flips to Unlock; nothing used to say what it switched off.
+    expect(locked).toContain('This part is locked, so the move, size, spin and form controls stay off.');
+    expect(unlocked).not.toContain('id="artstudio-part-state-help"');
+
+    const lockedOff = (locked.match(/cursor:not-allowed/g) || []).length;
+    const unlockedOff = (unlocked.match(/cursor:not-allowed/g) || []).length;
+    expect(lockedOff).toBeGreaterThan(unlockedOff + 8);
+
+    // The invariant, not just the count: nothing is off while still looking live.
+    expect(livingLookingDisabledButtons(locked)).toEqual([]);
+    expect(livingLookingDisabledButtons(unlocked)).toEqual([]);
+  });
+
+  it('greys the sculpt actions that are switched off and explains why', () => {
+    resetStemLab();
+    window.THREE = makeThree();
+    window.AlloModules = { ...(originalAlloModules || {}), Prim3D: makePrim3D() };
+    loadTool('stem_lab/stem_tool_artstudio.js', 'artStudio');
+
+    // A switched-off control that looks exactly like a live one is a trap: the
+    // click does nothing and says nothing. With no sculpture yet, Undo, Redo,
+    // Model and Print Lab are all off, so all four must look off.
+    const empty = renderTool('artStudio', { artStudio: { tab: 'sculpt3d' } }, { callGemini: vi.fn() });
+    ['Undo sculpture change', 'Redo sculpture change', 'Export sculpture JSON model',
+      'Continue this sculpture in Print Lab'].forEach((label) => {
+      expect(buttonWithLabel(empty, label)).toMatch(/cursor:not-allowed/);
+    });
+    expect(empty).toContain('id="artstudio-sculpt-actions-help"');
+    expect(empty).toContain('aria-describedby="artstudio-sculpt-actions-help"');
+    expect(empty).toContain('Model and Print Lab need at least one part in this sculpture.');
+    expect(empty).toContain('Undo and Redo switch on once you have made a change.');
+
+    // With a sculpture present, Model and Print Lab come back; Undo and Redo
+    // stay off because nothing has been changed yet, which is what the
+    // explanation says, so it is no longer needed.
+    const built = renderTool('artStudio', {
+      artStudio: { tab: 'sculpt3d', sculptRecipe: { name: 'Robot', parts: [{ shape: 'box', color: '#ff0000' }] } },
+    }, { callGemini: vi.fn() });
+    ['Export sculpture JSON model', 'Continue this sculpture in Print Lab'].forEach((label) => {
+      expect(buttonWithLabel(built, label)).not.toMatch(/cursor:not-allowed/);
+    });
+    // Undo and Redo stay off: a loaded sculpture is not a change you can undo.
+    expect(buttonWithLabel(built, 'Undo sculpture change')).toMatch(/cursor:not-allowed/);
+    expect(built).not.toContain('id="artstudio-sculpt-actions-help"');
+  });
 
   it('renders a named preview, keyboard help, shortcuts, grouped actions, and named icon controls', () => {
     resetStemLab();

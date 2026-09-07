@@ -102,6 +102,17 @@
       "diagrams",
       "glossaryTerms"
     ],
+    "lessonDepth": {
+      "chapterCount": 8,
+      "sectionCount": 24,
+      "sectionsPerChapter": 3
+    },
+    "crossReferences": {
+      "checked": 4110,
+      "unresolvedCount": 0,
+      "unresolved": {},
+      "examples": []
+    },
     "gaps": [
       "topic-universe-not-declared"
     ],
@@ -344,8 +355,8 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5",
-    "learningLibrarySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
+    "packSha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9",
+    "learningLibrarySha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
     "factualCrossCheckUrl": "https://openstax.org/details/books/college-physics-2e"
@@ -355,15 +366,15 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5",
-      "deploySha256": "aa80a0fddc0575dc81763775e0685a18c87a26d0e7d326bc1e16f8d75a08bfd5"
+      "sourceSha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9",
+      "deploySha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9"
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5",
-      "deploySha256": "27fb3665466c69f3f6dc9413c666e0b0d0684341211088dab470fa745409ebc5"
+      "sourceSha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098",
+      "deploySha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098"
     }
   ],
   "releaseBlockers": [

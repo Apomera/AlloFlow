@@ -408,14 +408,198 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     revise: reviseColonyCharterFromTrial
   };
 
+  var COLONY_TECH_SCIENCE = [
+    {id:'solar',name:'Solar arrays',kind:'Established principle',color:'#facc15',principle:'Photovoltaic cells convert absorbed light into electrical energy.',limit:'Output depends on illumination, area, efficiency, and storage. These panels follow the campaign production rules, not a stellar irradiance model.',source:'https://www.energy.gov/cmei/systems/solar-photovoltaic-cell-basics',sourceName:'DOE: photovoltaic cells'},
+    {id:'waterReclaim',name:'Water recovery',kind:'Demonstrated technology',color:'#22d3ee',principle:'Filtration and processing recover usable water from waste streams. Recycling reduces the amount that must be replaced.',limit:'Recovery is not perfect and needs energy and maintenance. The campaign combines recovery and extraction; it does not create matter.',source:'https://www.nasa.gov/missions/station/iss-research/nasa-achieves-water-recovery-milestone-on-international-space-station/',sourceName:'NASA: water recovery'},
+    {id:'greenhouse',name:'Protected greenhouse',kind:'Established principle',color:'#4ade80',principle:'Plants use light energy, water, and carbon dioxide to form biomass. An enclosure lets engineers manage growing conditions.',limit:'Food production also needs nutrients, suitable temperature, and gas management. Visible planting beds are a scenario illustration, not proof that an alien surface supports life.',source:'https://science.nasa.gov/earth/earth-observatory/the-carbon-cycle/',sourceName:'NASA: the carbon cycle'},
+    {id:'atmo',name:'Atmospheric processor',kind:'Demonstration → speculative scale',color:'#a5b4fc',principle:'Electrochemistry can separate useful gases from local feedstocks. MOXIE demonstrated oxygen production from Martian carbon dioxide.',limit:'A planet-wide processor is speculative. Gas inventories, energy demand, byproducts, escape, and timescales limit what is possible. The animation does not mean air has become breathable.',source:'https://www.nasa.gov/solar-system/nasas-oxygen-generating-experiment-moxie-completes-mars-mission/',sourceName:'NASA: MOXIE results'},
+    {id:'fusion',name:'Fusion plant',kind:'Real physics · speculative colony plant',color:'#fb923c',principle:'Fusion of light atomic nuclei can release energy. Magnetic confinement is one approach to controlling a hot plasma.',limit:'A reliable compact colony power plant is a sci-fi assumption. Confinement, fuel supply, heat extraction, materials, and continuous operation remain engineering challenges.',source:'https://www.energy.gov/topics/fusion-energy',sourceName:'DOE: fusion energy'},
+    {id:'shield',name:'Shielding station',kind:'Real shielding · speculative field',color:'#c084fc',principle:'Materials can attenuate radiation; magnetic fields deflect charged particles. Different hazards require different protection.',limit:'The luminous arc is a fictional field visual. It does not establish protection against all radiation or meteoroids. Actual shielding depends on particles, materials, thickness, and geometry.',source:'https://www.nasa.gov/science-research/heliophysics/real-martians-how-to-protect-astronauts-from-space-radiation-on-mars/',sourceName:'NASA: shielding research'}
+  ];
+  function colonyVisualSnapshot(turn, progress, buildings, efficiency) {
+    efficiency=efficiency||{};buildings=Array.isArray(buildings)?buildings:[];turn=isFinite(Number(turn))?Number(turn):0;progress=isFinite(Number(progress))?Number(progress):0;
+    return {turn:Math.max(0,Math.floor(Number(turn)||0)),progress:Math.max(0,Math.min(100,Number(progress)||0)),
+      installed:(buildings||[]).filter(function(id,index,all){return typeof id==='string'&&all.indexOf(id)===index;}).slice().sort(),
+      operating:(buildings||[]).filter(function(id,index,all){return typeof id==='string' && all.indexOf(id)===index && (efficiency[id]===undefined || Number(efficiency[id])>0);}).slice().sort()};
+  }
+  function ColonyTerraformScene(props) {
+    var React=props.React,h=React.createElement;
+    var canvasRef=React.useRef(null),live=React.useRef(null);
+    var statusPair=React.useState('loading'),status=statusPair[0],setStatus=statusPair[1];
+    var cameraPair=React.useState('overview'),view=cameraPair[0],setView=cameraPair[1];
+    var anglePair=React.useState(0),angle=anglePair[0],setAngle=anglePair[1];
+    var techPair=React.useState('atmo'),selected=techPair[0],setSelected=techPair[1];
+    var motionPair=React.useState(true),motion=motionPair[0],setMotion=motionPair[1];
+    var snapshot=colonyVisualSnapshot(props.turn,props.progress,props.buildings,props.efficiency);
+    var previous=React.useRef(snapshot),changePair=React.useState(''),change=changePair[0],setChange=changePair[1];
+    var signature=JSON.stringify(snapshot);
+    React.useEffect(function(){
+      var before=previous.current;
+      if(before.turn!==snapshot.turn){
+        var additions=snapshot.installed.filter(function(id){return before.installed.indexOf(id)<0;});
+        setChange('Sol '+before.turn+' → '+snapshot.turn+': scenario restoration '+before.progress+' → '+snapshot.progress+'%.'+(additions.length?' Installed: '+additions.join(', ')+'.':''));
+      }
+      // Same-sol construction remains visible immediately; a turn comparison
+      // retains the earlier sol until the campaign actually advances.
+      if(before.turn!==snapshot.turn)previous.current=snapshot;
+    },[signature]);
+    live.current={snapshot:snapshot,view:view,angle:angle,selected:selected,motion:motion,phase:props.phase};
+    React.useEffect(function(){
+      var canvas=canvasRef.current,alive=true,disposed=false,raf=0,renderer=null,scene=null,ro=null,io=null;
+      var onScreen=true,last=0,frames=0,media=window.matchMedia?window.matchMedia('(prefers-reduced-motion: reduce)'):null;
+      function release(){
+        if(disposed)return;disposed=true;cancelAnimationFrame(raf);
+        if(ro)ro.disconnect();if(io)io.disconnect();window.removeEventListener('resize',resize);canvas.removeEventListener('webglcontextlost',lost);
+        if(scene){var geos=new Set(),mats=new Set();scene.traverse(function(obj){if(obj.geometry)geos.add(obj.geometry);if(obj.material)mats.add(obj.material);});geos.forEach(function(g){g.dispose();});mats.forEach(function(m){m.dispose();});}
+        if(renderer){renderer.dispose();renderer.forceContextLoss();}canvas.dataset.colonyDisposed='true';
+      }
+      function lost(event){event.preventDefault();if(alive){setStatus('unavailable');release();}}
+      var camera;
+      function resize(){if(!renderer||disposed)return;var box=canvas.getBoundingClientRect();var width=Math.max(1,box.width),height=Math.max(1,box.height);renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix();}
+      function init(THREE){
+        if(!alive)return;
+        try {
+          scene=new THREE.Scene();scene.background=new THREE.Color('#101e35');scene.fog=new THREE.Fog('#26384b',24,65);
+          renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true,alpha:false});renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));renderer.outputEncoding=THREE.sRGBEncoding;
+          camera=new THREE.PerspectiveCamera(43,1,0.1,100);camera.position.set(15,13,19);
+          scene.add(new THREE.HemisphereLight(0xc4e9ff,0x65412c,1.15));var sun=new THREE.DirectionalLight(0xffdab3,1.6);sun.position.set(-14,20,9);scene.add(sun);
+          function material(color,extra){return new THREE.MeshStandardMaterial(Object.assign({color:color,roughness:0.65,metalness:0.15},extra||{}));}
+          var metal=material('#d1dbe2'),dark=material('#24374b'),cyan=material('#39d5ed',{emissive:'#076574',emissiveIntensity:0.6}),gold=material('#eeb948'),green=material('#4e9d6c'),glass=material('#79ddec',{transparent:true,opacity:0.28,roughness:0.18,depthWrite:false,side:THREE.DoubleSide});
+          var boxGeo=new THREE.BoxGeometry(1,1,1),cylGeo=new THREE.CylinderGeometry(0.5,0.5,1,16),sphereGeo=new THREE.SphereGeometry(1,20,12);
+          function mesh(parent,geo,mat,x,y,z,sx,sy,sz){var m=new THREE.Mesh(geo,mat);m.position.set(x||0,y||0,z||0);m.scale.set(sx||1,sy||1,sz||1);parent.add(m);return m;}
+          function box(parent,mat,x,y,z,sx,sy,sz){return mesh(parent,boxGeo,mat,x,y,z,sx,sy,sz);}
+          function cylinder(parent,mat,x,y,z,sx,sy,sz){return mesh(parent,cylGeo,mat,x,y,z,sx,sy,sz);}
+          var earthGeo=new THREE.PlaneGeometry(54,48,34,30);earthGeo.rotateX(-Math.PI/2);var positions=earthGeo.attributes.position;
+          function height(x,z){var edge=Math.max(0,(Math.sqrt(x*x+z*z)-12)/10);return -0.3+edge*(0.8+Math.sin(x*0.42)*0.65+Math.cos(z*0.36)*0.7);}
+          for(var v=0;v<positions.count;v++)positions.setY(v,height(positions.getX(v),positions.getZ(v)));earthGeo.computeVertexNormals();
+          var ground=mesh(scene,earthGeo,material('#7a5949'),0,0,0);
+          for(var r=0;r<32;r++){var a=r*2.3999,rad=13+(r%4)*2.6,x=Math.cos(a)*rad,z=Math.sin(a)*rad;var rock=mesh(scene,new THREE.DodecahedronGeometry(1,0),material(r%2?'#6a6670':'#8b7565'),x,height(x,z)+0.6,z,0.45+r%3*0.35,0.6+r%4*0.2,0.65);rock.rotation.set(r,0,r*0.4);}
+          cylinder(scene,dark,0,-0.03,0,5.4,0.35,5.4);
+          var dome=new THREE.SphereGeometry(2.25,32,16,0,Math.PI*2,0,Math.PI/2);mesh(scene,dome,glass,0,0.2,0);
+          for(var rib=0;rib<6;rib++){var arch=new THREE.Mesh(new THREE.TorusGeometry(2.27,0.035,6,36,Math.PI),metal);arch.rotation.y=rib*Math.PI/6;arch.position.y=0.2;scene.add(arch);}
+          cylinder(scene,metal,0,0.35,0,2.8,0.7,2.8);box(scene,cyan,0,0.95,0,0.7,0.7,0.7);
+          var pathsMat=material('#63788b');
+          var sites={solar:[-7,4],waterReclaim:[6,4],hydroponics:[-5,-3],greenhouse:[-7,-6],atmo:[6,-5],fusion:[0,-8],shield:[0,7],biodome:[-10,0]};
+          var groups={},indicators={},rotors=[],pipes=[],seedBeds=[],buildScale={},currentProgress=live.current.snapshot.progress;
+          Object.keys(sites).forEach(function(id){
+            var site=sites[id],g=new THREE.Group();g.name='colony-tech-'+id;g.position.set(site[0],0,site[1]);scene.add(g);groups[id]=g;
+            var len=Math.sqrt(site[0]*site[0]+site[1]*site[1]);var path=box(scene,pathsMat,site[0]/2,-0.14,site[1]/2,0.3,0.08,len);path.rotation.y=Math.atan2(site[0],site[1]);
+            cylinder(scene,dark,site[0],-0.05,site[1],3.6,0.18,3.6);
+            var ring=new THREE.Mesh(new THREE.TorusGeometry(1.8,0.035,5,40),cyan.clone());ring.rotation.x=Math.PI/2;ring.position.set(site[0],0.08,site[1]);scene.add(ring);indicators[id]=ring;
+            var bead=mesh(scene,sphereGeo,cyan,site[0],0.1,site[1],0.07,0.07,0.07);pipes.push({mesh:bead,id:id,site:site});
+            buildScale[id]=live.current.snapshot.installed.indexOf(id)>=0?1:0;
+            if(id==='solar'){
+              for(var panel=0;panel<4;panel++){var px=(panel%2-0.5)*1.5,pz=(Math.floor(panel/2)-0.5)*1.6;cylinder(g,metal,px,0.6,pz,0.12,1.2,0.12);var plate=box(g,material('#185aa3',{metalness:0.6,roughness:0.28}),px,1.15,pz,1.25,0.08,1.4);plate.rotation.x=-0.4;for(var wire=0;wire<3;wire++){var strip=box(g,cyan,px-0.42+wire*0.42,1.2,pz,0.012,0.015,1.4);strip.rotation.x=-0.4;}}
+            }else if(id==='waterReclaim'){
+              for(var tank=0;tank<3;tank++){cylinder(g,metal,tank-1,0.9,0,0.75,1.8,0.75);cylinder(g,cyan,tank-1,1,0,0.77,0.2,0.77);}box(g,dark,0,0.3,0.9,2.5,0.5,0.6);
+            }else if(id==='greenhouse'||id==='hydroponics'||id==='biodome'){
+              box(g,metal,0,0.2,0,2.8,0.35,2.4);var cap=mesh(g,dome,glass,0,0.4,0,0.64,0.64,0.64);for(var plant=0;plant<12;plant++){box(g,green,(plant%4-1.5)*0.5,0.6,(Math.floor(plant/4)-1)*0.6,0.2,0.35,0.3);}if(id==='biodome')g.scale.setScalar(1.2);
+            }else if(id==='atmo'){
+              box(g,dark,0,0.25,0,2.9,0.5,2.3);cylinder(g,metal,-0.8,1.5,0,0.85,2.6,0.85);cylinder(g,metal,0.75,1,0,1,1.8,1);var intake=mesh(g,new THREE.TorusGeometry(0.55,0.13,8,24),cyan,-0.8,2.8,0);intake.rotation.x=Math.PI/2;for(var fin=0;fin<6;fin++){var blade=box(g,dark,0.8,1.8,0,0.07,0.5,1.4);blade.rotation.y=fin*Math.PI/3;}
+            }else if(id==='fusion'){
+              cylinder(g,metal,0,0.25,0,3,0.5,3);var torus=mesh(g,new THREE.TorusGeometry(1,0.28,12,32),material('#e7ab64'),0,1.1,0);torus.rotation.x=Math.PI/2;var plasma=mesh(g,new THREE.TorusGeometry(1,0.07,8,40),material('#ffb1e0',{emissive:'#ef4292',emissiveIntensity:1}),0,1.43,0);plasma.rotation.x=Math.PI/2;rotors.push({mesh:plasma,id:id});for(var coil=0;coil<8;coil++){var ca=coil*Math.PI/4;box(g,dark,Math.cos(ca)*1.2,1.1,Math.sin(ca)*1.2,0.3,1.1,0.3);}box(g,metal,2.1,0.85,0,0.12,1.5,2.8);
+            }else if(id==='shield'){
+              cylinder(g,metal,0,0.5,0,1.2,1,1.2);cylinder(g,dark,0,1.5,0,0.2,2.3,0.2);var coil=mesh(g,new THREE.TorusGeometry(0.85,0.1,8,30),material('#bd95eb',{emissive:'#7136b3',emissiveIntensity:0.5}),0,2.3,0);rotors.push({mesh:coil,id:id});
+            }
+          });
+          // These are LOCAL illustrative trial plots, not a prediction of global
+          // breathable atmosphere or calibrated planetary climate.
+          for(var bed=0;bed<24;bed++){
+            var bx=(bed%8-3.5)*1.15,bz=10+Math.floor(bed/8)*1.05;
+            var tray=box(scene,material('#614536'),bx,-0.05,bz,1,0.18,0.8);
+            var shoot=mesh(scene,new THREE.ConeGeometry(0.22,0.6,5),green,bx,0.32,bz);seedBeds.push({tray:tray,shoot:shoot});
+          }
+          var field=mesh(scene,new THREE.SphereGeometry(3,24,12,0,Math.PI*2,0,Math.PI/2),new THREE.MeshBasicMaterial({color:'#b48af4',wireframe:true,transparent:true,opacity:0.12}),0,0.3,7);
+          var selectRing=mesh(scene,new THREE.TorusGeometry(2,0.07,6,48),new THREE.MeshBasicMaterial({color:'#fff1af'}),6,0.12,-5);selectRing.rotation.x=Math.PI/2;
+          var cameraPos=new THREE.Vector3(),look=new THREE.Vector3(),targetLook=new THREE.Vector3();
+          var skyDay=new THREE.Color('#223d57'),skyNight=new THREE.Color('#101b31');
+          resize();window.addEventListener('resize',resize);canvas.addEventListener('webglcontextlost',lost);
+          if(window.ResizeObserver){ro=new ResizeObserver(resize);ro.observe(canvas);}
+          if(window.IntersectionObserver){io=new IntersectionObserver(function(entries){onScreen=entries[0].isIntersecting;},{threshold:0.01});io.observe(canvas);}
+          setStatus('ready');
+          var lastStillFrame='';
+          function frame(now){
+            if(!alive||disposed)return;raf=requestAnimationFrame(frame);
+            if(now-last<32)return;var dt=Math.min(0.1,(now-last)/1000||0.033);last=now;
+            if(!onScreen||document.hidden)return;
+            var data=live.current,snap=data.snapshot,reduced=!!(media&&media.matches),animate=data.motion&&!reduced;
+            var stillFrame=JSON.stringify([snap,data.view,data.angle,data.selected,data.phase,canvas.width,canvas.height]);
+            if(!animate&&stillFrame===lastStillFrame)return;lastStillFrame=animate?'':stillFrame;
+            var blend=animate?1-Math.exp(-4*dt):1;
+            currentProgress+=(snap.progress-currentProgress)*blend;
+            Object.keys(groups).forEach(function(id){
+              var target=snap.installed.indexOf(id)>=0?1:0;buildScale[id]+=(target-buildScale[id])*blend;
+              groups[id].visible=buildScale[id]>0.01;groups[id].scale.setScalar(Math.max(0.001,buildScale[id]));
+              indicators[id].material.opacity=target?0.8:0.2;indicators[id].material.transparent=true;
+            });
+            var patches=currentProgress/100*seedBeds.length;
+            seedBeds.forEach(function(b,i){var cover=Math.max(0,Math.min(1,patches-i));b.shoot.scale.setScalar(Math.max(0.001,cover));b.shoot.visible=cover>0.01;b.tray.material.color.setRGB(0.38-cover*0.18,0.27+cover*0.14,0.21-cover*0.02);});
+            pipes.forEach(function(p,index){var active=snap.operating.indexOf(p.id)>=0;p.mesh.visible=active;var fraction=animate?((now*0.00018+index*0.12)%1):0.5;p.mesh.position.set(p.site[0]*(1-fraction),0.12,p.site[1]*(1-fraction));});
+            rotors.forEach(function(r){if(animate&&snap.operating.indexOf(r.id)>=0)r.mesh.rotation.z+=dt*0.5;});
+            field.visible=snap.operating.indexOf('shield')>=0;
+            var site=sites[data.selected]||[0,0];selectRing.position.set(site[0],0.12,site[1]);
+            var dist=data.view==='habitat'?11:data.view==='works'?18:27,elevation=data.view==='habitat'?6:data.view==='works'?10:18;
+            targetLook.set(data.view==='works'?site[0]*0.65:0,0.6,data.view==='works'?site[1]*0.65:1.5);
+            var az=0.62+data.angle;cameraPos.set(targetLook.x+Math.sin(az)*dist,elevation,targetLook.z+Math.cos(az)*dist);
+            camera.position.lerp(cameraPos,blend);look.lerp(targetLook,blend);camera.lookAt(look);
+            scene.background.copy(data.phase==='day'?skyDay:skyNight);
+            renderer.render(scene,camera);frames++;
+            canvas.dataset.colonyFrames=String(frames);canvas.dataset.colonyTurn=String(snap.turn);canvas.dataset.colonyTerraform=String(snap.progress);
+            canvas.dataset.colonyVisibleTech=Object.keys(groups).filter(function(id){return groups[id].visible;}).sort().join(',');
+            canvas.dataset.colonyOperatingTech=snap.operating.join(',');canvas.dataset.colonyMotion=animate?'animated':'still';canvas.dataset.colonyCamera=data.view;
+          }
+          raf=requestAnimationFrame(frame);
+        }catch(error){release();if(alive)setStatus('unavailable');}
+      }
+      if(window.THREE)init(window.THREE);
+      else if(window.StemLab&&window.StemLab.ensureThree)window.StemLab.ensureThree({orbit:false}).then(function(){if(window.THREE)init(window.THREE);else if(alive)setStatus('unavailable');}).catch(function(){if(alive)setStatus('unavailable');});
+      else setStatus('unavailable');
+      return function(){alive=false;release();};
+    },[]);
+    var tech=COLONY_TECH_SCIENCE.find(function(item){return item.id===selected;}),installed=snapshot.installed.indexOf(selected)>=0,operating=snapshot.operating.indexOf(selected)>=0;
+    var button={minHeight:44,padding:'8px 12px',border:'1px solid #537083',borderRadius:8,background:'#13283c',color:'#e2e8f0',fontSize:12,fontWeight:700,cursor:'pointer'};
+    return h('section',{'data-colony-3d':'true','aria-label':'Terraforming engineering observatory',style:{background:'#0c1c2b',borderTop:'1px solid #355067',borderBottom:'1px solid #355067'}},
+      h('div',{style:{position:'relative'}},
+        h('canvas',{ref:canvasRef,'data-colony-3d-canvas':'true',role:'img','aria-label':'3D colony. Installed systems: '+(snapshot.installed.join(', ')||'central habitat only')+'. Scenario restoration '+snapshot.progress+' percent.',style:{display:status==='unavailable'?'none':'block',width:'100%',height:'clamp(300px,45vw,470px)'}}),
+        status!=='ready'&&h('p',{role:'status',style:{padding:20,color:'#e2e8f0'}},status==='loading'?'Preparing 3D habitat…':'3D is unavailable. Open the 2D system diagram below; planning and turn controls still work.'),
+        status==='ready'&&h('div',{style:{position:'absolute',left:12,top:12,padding:'7px 10px',border:'1px solid #547184',borderRadius:8,background:'rgba(7,20,34,0.9)',color:'#d7f4ff',fontSize:12,pointerEvents:'none'}},'SOL '+snapshot.turn+' · '+(props.phase||'MISSION PREVIEW').toUpperCase()+' · Restoration '+snapshot.progress+'%')),
+      h('div',{style:{padding:12,display:'flex',flexWrap:'wrap',gap:7},role:'group','aria-label':'3D colony camera'},['overview','habitat','works'].map(function(choice){return h('button',{key:choice,type:'button','aria-pressed':choice===view,onClick:function(){setView(choice);},style:button},choice==='overview'?'Overview':choice==='habitat'?'Habitat close-up':'Engineering close-up');}),
+        h('button',{type:'button','aria-label':'Rotate colony view left',onClick:function(){setAngle(angle-0.45);},style:button},'↶'),h('button',{type:'button','aria-label':'Rotate colony view right',onClick:function(){setAngle(angle+0.45);},style:button},'↷'),h('button',{type:'button','aria-pressed':!motion,onClick:function(){setMotion(!motion);},style:button},motion?'Pause visual motion':'Resume visual motion'),
+        props.playing&&h('button',{type:'button',onClick:props.onTurn,style:button},'Go to turn controls')),
+      h('p',{style:{margin:'0 14px 10px',fontSize:11,lineHeight:1.5,color:'#cbd5e1'}},'Structures follow installed technologies. Trial plots illustrate the campaign restoration score; the scenery and animated speeds are not a climate, radiation, or breathable-air model. Camera and motion controls do not advance turns.'),
+      change&&h('p',{role:'status','data-colony-turn-change':'true',style:{margin:'0 14px 10px',fontSize:12,color:'#86efac'}},change),
+      h('div',{role:'group','aria-label':'Inspect engineering technology',style:{padding:'0 12px',display:'flex',flexWrap:'wrap',gap:6}},COLONY_TECH_SCIENCE.map(function(item){return h('button',{key:item.id,type:'button','aria-pressed':selected===item.id,onClick:function(){setSelected(item.id);},style:Object.assign({},button,{borderColor:selected===item.id?item.color:'#537083'})},item.name);})),
+      h('div',{'data-colony-tech-inspector':selected,style:{margin:12,padding:14,border:'1px solid '+tech.color,borderRadius:12,background:'#102333'}},
+        h('div',{style:{fontSize:11,fontWeight:800,color:tech.color}},tech.kind+' · '+(installed?(operating?'Installed':'Installed · offline'):'Not installed')),
+        h('h4',{style:{fontSize:18,margin:'6px 0',color:'#f1f5f9'}},tech.name),h('p',{style:{fontSize:13,lineHeight:1.5,margin:'6px 0',color:'#e2e8f0'}},tech.principle),h('p',{style:{fontSize:12,lineHeight:1.5,margin:'6px 0',color:'#cbd5e1'}},tech.limit),
+        h('a',{href:tech.source,target:'_blank',rel:'noopener noreferrer',style:{display:'inline-block',padding:'10px 0',color:'#7dd3fc',fontSize:12,textDecoration:'underline'}},tech.sourceName),
+        props.playing&&!installed&&h('button',{type:'button',disabled:props.phase!=='day',onClick:props.onBuild,style:Object.assign({},button,{marginLeft:12})},'Open technology construction'))
+    );
+  }
+
+  // Baseline construction comparison: explicit costs, no free resources or turn advancement.
+  function projectColonyHabitat(reserves, net, cost, production) {
+    var result = { current: {}, afterBuild: {}, proposedNet: {}, next: {}, affordable: true };
+    ['food','water','energy','materials','science'].forEach(function(key) {
+      var amount = Number(reserves[key]) || 0, rate = Number(net[key]) || 0;
+      var expense = Number(cost[key]) || 0, gain = Number(production[key]) || 0;
+      result.current[key] = amount + rate;
+      result.afterBuild[key] = amount - expense;
+      result.proposedNet[key] = rate + gain;
+      result.next[key] = amount - expense + rate + gain;
+      if (amount < expense) result.affordable = false;
+    });
+    return result;
+  }
+
   window.StemLab.registerTool('spaceColony', {
     icon: '\uD83C\uDFD5\uFE0F',
     label: 'Kepler Colony',
-    desc: 'Colonize an alien planet! Turn-based cooperative strategy where mastering science unlocks colony survival.',
+    desc: 'Lead the Centauri habitat mission: scout, model resource loops, and build an evidence-based colony.',
     color: 'indigo',
     category: 'strategy',
     questHooks: [
-      { id: 'establish_colony', label: 'Establish a colony on Kepler-442b', icon: '\uD83D\uDE80', check: function(d) { return !!d.colony; }, progress: function(d) { return d.colony ? 'Established!' : 'Not yet'; } },
+      { id: 'establish_colony', label: 'Establish a habitat colony', icon: '\uD83D\uDE80', check: function(d) { return !!d.colony; }, progress: function(d) { return d.colony ? 'Established!' : 'Not yet'; } },
       { id: 'survive_10_turns', label: 'Survive 10 turns', icon: '\uD83C\uDF1F', check: function(d) { return (d.colonyTurn || 0) >= 10; }, progress: function(d) { return (d.colonyTurn || 0) + '/10 turns'; } },
       { id: 'build_5_structures', label: 'Build 5 colony structures', icon: '\uD83C\uDFD7\uFE0F', check: function(d) { return (d.colonyBuildings || []).length >= 5; }, progress: function(d) { return (d.colonyBuildings || []).length + '/5'; } },
       { id: 'answer_5_questions', label: 'Answer 5 science questions correctly', icon: '\uD83E\uDDE0', check: function(d) { var s = d.colonyStats || {}; return (s.correct || 0) >= 5; }, progress: function(d) { var s = d.colonyStats || {}; return (s.correct || 0) + '/5'; } },
@@ -441,6 +625,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var d = labToolData || {};
           var upd = function (k, v) { setLabToolData(function (n) { var o = Object.assign({}, n); o[k] = v; return o; }); };
           var colony = d.colony || null;
+          var colonyWorldName = colony ? (colony.planet || 'Kepler-442b') : 'Centauri Haven (fictional)';
           var turn = d.colonyTurn || 0;
           var resources = d.colonyRes || { food: 40, energy: 30, water: 30, materials: 20, science: 10 };
           var buildings = d.colonyBuildings || [];
@@ -715,7 +900,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           var alienDefs = {
             name: t('stem.spacecolony.the_keth_ora', 'The Keth\u2019ora'),
             icon: '\uD83D\uDC7E',
-            desc: t('stem.spacecolony.silicon_based_lifeforms_indigenous_to_', 'Silicon-based lifeforms indigenous to Kepler-442b. Communicate through bioluminescent patterns.'),
+            desc: t('stem.spacecolony.silicon_based_lifeforms_indigenous_to_', 'Silicon-based lifeforms indigenous to ' + colonyWorldName + '. Communicate through bioluminescent patterns.'),
             trades: [
               { give: { materials: 10 }, get: { science: 8 }, name: t('stem.spacecolony.knowledge_exchange', 'Knowledge Exchange') },
               { give: { food: 8 }, get: { materials: 12 }, name: t('stem.spacecolony.organic_trade', 'Organic Trade') },
@@ -1711,12 +1896,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
             rule: { title: 'Closed-loop observation cycle', condition: 'always', benefitResource: 'science', benefitAmount: 2, costResource: 'water', costAmount: 1, duration: 4 },
             explanation: 'A transparent seed sphere and sensor ring turn the colony commitment to ecological observation into a visible structure. It produces science while consuming water, so the model remains a strategic tradeoff.'
           });
-          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden', 'data-spacecolony-root': 'true' },
+          function renderHabitatCommand() {
+            var h = React.createElement;
+            var loops = [{id:'food',name:'Food loop',building:'hydroponics',color:'#86efac',x:170}, {id:'water',name:'Water loop',building:'waterReclaim',color:'#67e8f9',x:390}, {id:'energy',name:'Power loop',building:'solar',color:'#fde68a',x:610}];
+            var chosen = loops.find(function(loop) { return loop.id === d.colonyHabitatLoop; }) || loops[0];
+            var definition = buildingDefs.find(function(building) { return building.id === chosen.building; });
+            var installed = buildings.indexOf(chosen.building) >= 0;
+            var stocks = colony ? resources : missionProfile.start;
+            var net = Object.assign({},baselineForecast);
+            if (!colony) { net.food -= 6; net.water -= 3; }
+            var projection = projectColonyHabitat(stocks,net,installed ? {} : definition.cost,installed ? {} : definition.production);
+            var evidence = fieldEvidence.find(function(item) { return item.id === d.colonyHabitatEvidence; });
+            var plans = d.colonyHabitatPlans || [];
+            var lastPlan = plans[plans.length-1];
+            var textStyle = {fontFamily:'system-ui',fill:'#e2e8f0',fontSize:14};
+            var buttonStyle = {minHeight:44,padding:'8px 12px',border:'1px solid #64748b',borderRadius:9,background:'#12283b',color:'#e0f2fe',fontWeight:700,cursor:'pointer'};
+            return h('section', {'data-centauri-habitat':'true','aria-labelledby':'centauri-habitat-title',style:{marginBottom:22,border:'1px solid #356079',borderRadius:20,overflow:'hidden',background:'#081823',color:'#e2e8f0'}},
+              h('style',null,'@keyframes habitat-flow{to{stroke-dashoffset:32}}[data-centauri-habitat] .habitat-flow{animation:habitat-flow 3s linear infinite}@media(prefers-reduced-motion:reduce){[data-centauri-habitat] .habitat-flow{animation:none}}[data-centauri-habitat] button:focus-visible{outline:3px solid #fbbf24;outline-offset:3px}'),
+              h('div',{style:{padding:'18px 20px 8px',display:'flex',flexWrap:'wrap',justifyContent:'space-between',gap:12}},
+                h('div',null,h('div',{style:{fontSize:11,letterSpacing:2,color:'#67e8f9',fontWeight:800}},'KEPLER COLONY / HABITAT COMMAND'),h('h3',{id:'centauri-habitat-title',style:{fontSize:26,margin:'6px 0',fontWeight:850}},colonyWorldName),h('p',{style:{fontSize:13,color:'#cbd5e1',margin:0}},'Scout → compare → build → observe. Keep the outpost running before attempting wider environmental change.')),
+                h('span',{style:{fontSize:12,color:'#fde68a'}},colony ? 'Sol '+turn+' · '+settlers.length+' settlers' : 'Mission preview · 6 settlers')),
+              h(ColonyTerraformScene,{React:React,turn:turn,progress:terraform,buildings:buildings,efficiency:buildingEff,phase:turnPhase,playing:!!colony,onTurn:function(){var target=document.querySelector('[data-colony-turn-controls]');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},onBuild:function(){upd('showBuild',true);setTimeout(function(){var target=document.getElementById('spacecolony-construction');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},0);}}),
+              h('details',{style:{padding:12}},h('summary',{style:{minHeight:44,cursor:'pointer',color:'#a5f3fc',fontSize:13}},'2D system diagram'),
+              h('svg',{viewBox:'0 0 780 310',role:'img','aria-label':'Habitat systems: '+loops.map(function(loop){return loop.name+' '+(buildings.indexOf(loop.building)>=0?'online':'planned');}).join(', '),style:{display:'block',width:'100%',background:'linear-gradient(#0b1c32,#29414d)'}},
+                h('circle',{cx:680,cy:52,r:24,fill:'#ffcc87',opacity:0.9}),h('circle',{cx:713,cy:35,r:7,fill:'#fff2bd',opacity:0.8}),
+                h('path',{d:'M0 184L110 118 195 180 320 143 440 185 570 135 780 181V310H0Z',fill:'#405360'}),
+                h('path',{d:'M0 225L140 194 320 214 495 188 665 215 780 198V310H0Z',fill:'#243e48'}),
+                h('ellipse',{cx:390,cy:178,rx:88,ry:18,fill:'#07131d',opacity:0.55}),
+                h('path',{d:'M315 166A75 68 0 0 1 465 166Z',fill:'#123e52',stroke:'#a5f3fc',strokeWidth:2}),
+                h('path',{d:'M330 164Q350 85 390 98Q430 85 450 164M390 99V164',fill:'none',stroke:'#5899af',strokeWidth:2}),
+                h('rect',{x:372,y:135,width:36,height:32,rx:7,fill:'#fef3c7',opacity:0.85}),
+                h('text',{x:390,y:191,textAnchor:'middle',style:textStyle},'SEALED HABITAT'),
+                loops.map(function(loop) {
+                  var online = buildings.indexOf(loop.building)>=0;
+                  return h('g',{key:loop.id},
+                    h('path',{d:'M390 175V214H'+loop.x+'V239',fill:'none',stroke:loop.color,strokeWidth:online?4:2,strokeDasharray:online?'9 7':'3 7',className:online?'habitat-flow':undefined,opacity:online?0.9:0.4}),
+                    h('rect',{x:loop.x-72,y:237,width:144,height:47,rx:12,fill:'#0b2130',stroke:chosen.id===loop.id?'#ffffff':loop.color,strokeWidth:chosen.id===loop.id?3:1}),
+                    h('text',{x:loop.x,y:257,textAnchor:'middle',style:Object.assign({},textStyle,{fill:loop.color,fontWeight:700})},loop.name),
+                    h('text',{x:loop.x,y:274,textAnchor:'middle',style:Object.assign({},textStyle,{fontSize:11})},online?'ONLINE':'PLANNED'),
+                    loop.id==='food' ? h('path',{d:'M139 237V209Q170 170 201 209V237Z',fill:online?'#21794f':'#24413c',stroke:loop.color}) : loop.id==='water' ? h('g',null,[0,1,2].map(function(i){return h('rect',{key:i,x:354+i*25,y:211,width:22,height:26,rx:6,fill:online?'#087e99':'#244451',stroke:loop.color});})) : h('path',{d:'M565 231L579 202H652L640 231ZM587 204L576 228M610 204L600 228M633 204L624 228M574 217H646',fill:online?'#22558a':'#2b414c',stroke:loop.color}));
+                }),
+                h('text',{x:18,y:27,style:Object.assign({},textStyle,{fontSize:11,fill:'#cbd5e1'})},'Illustrative scene · fictional surface and sky')),
+              ),
+              h('div',{style:{padding:18,display:'grid',gap:14}},
+                h('div',{role:'group','aria-label':'Inspect habitat loop',style:{display:'flex',flexWrap:'wrap',gap:8}},loops.map(function(loop){return h('button',{key:loop.id,type:'button','aria-pressed':chosen.id===loop.id,onClick:function(){upd('colonyHabitatLoop',loop.id);},style:Object.assign({},buttonStyle,{flex:'1 1 150px',borderColor:chosen.id===loop.id?loop.color:'#64748b'})},loop.name+' · '+stocks[loop.id]+' units · '+(net[loop.id]>=0?'+':'')+net[loop.id]+'/sol');})),
+                h('div',{'data-habitat-projection':'true',style:{padding:14,border:'1px solid #345568',borderRadius:12,background:'#102431'}},
+                  h('h4',{style:{fontSize:17,margin:'0 0 7px',color:chosen.color}},installed?definition.name+' is online':'What if we build '+definition.name+'?'),
+                  h('p',{style:{fontSize:12,margin:'0 0 10px',color:'#cbd5e1'}},installed?'This system is already included in the current forecast.': 'One-time cost: '+Object.keys(definition.cost).map(function(key){return definition.cost[key]+' '+key;}).join(' · ')+'. Production assumes 100% efficiency.'),
+                  h('div',{style:{overflowX:'auto'}},h('table',{style:{width:'100%',fontSize:13,borderCollapse:'collapse'}},h('caption',{style:{textAlign:'left',color:'#94a3b8',paddingBottom:8}},'Baseline next-sol reserves (game units)'),h('thead',null,h('tr',null,['Resource','Current plan','With proposal'].map(function(label){return h('th',{key:label,scope:'col',style:{textAlign:'left',padding:6}},label);}))),h('tbody',null,['food','water','energy','materials','science'].map(function(key){return h('tr',{key:key},h('th',{scope:'row',style:{padding:6,textAlign:'left',fontWeight:500}},key),h('td',{style:{padding:6}},projection.current[key]),h('td',{'data-habitat-projected':key,style:{padding:6,color:projection.next[key]<0?'#fda4af':'#a5f3fc'}},projection.next[key]));})))),
+                  !projection.affordable && h('p',{style:{color:'#fda4af',fontSize:12}},'Insufficient construction reserves. Negative values show the shortfall; this proposal cannot be built yet.'),
+                  h('p',{style:{fontSize:11,lineHeight:1.5,color:'#cbd5e1',marginBottom:0}},'This baseline includes settlers, installed building efficiency, and founding doctrine. Weather, events, policies, research, and other campaign modifiers can change the result. These game units are not oxygen percentages or a calibrated climate forecast.')),
+                colony && h('div',{style:{display:'grid',gap:8}},
+                  h('label',null,h('span',{style:{fontSize:13}},'Link field evidence (optional)'),h('select',{'aria-label':'Habitat field evidence',value:evidence?evidence.id:'',onChange:function(event){upd('colonyHabitatEvidence',event.target.value);},style:Object.assign({},buttonStyle,{display:'block',width:'100%',marginTop:5})},h('option',{value:''},'No field evidence linked'),fieldEvidence.map(function(item){return h('option',{key:item.id,value:item.id},item.title || item.source || item.id);}))),
+                  evidence && h('p',{style:{fontSize:12,color:'#a5f3fc',margin:0}},evidence.observation || evidence.description || 'Recorded expedition evidence'),
+                  h('label',null,h('span',{style:{fontSize:13}},'Why does this design help, and what remains uncertain?'),h('textarea',{'aria-label':'Habitat design reasoning',value:d.colonyHabitatReasoning||'',maxLength:1200,onChange:function(event){upd('colonyHabitatReasoning',event.target.value);},rows:3,style:{display:'block',width:'100%',boxSizing:'border-box',marginTop:5,padding:10,borderRadius:8,border:'1px solid #64748b',background:'#081823',color:'#e2e8f0'}})),
+                  h('div',{style:{display:'flex',flexWrap:'wrap',gap:8}},
+                    h('button',{type:'button',disabled:!(d.colonyHabitatReasoning||'').trim(),style:buttonStyle,onClick:function(){
+                      var reasoning=(d.colonyHabitatReasoning||'').trim();if(!reasoning)return;
+                      var signature=JSON.stringify([turn,chosen.id,reasoning,evidence?evidence.id:null,stocks,net,buildings]);
+                      setLabToolData(function(previous){
+                        var saved=previous.colonyHabitatPlans||[];if(saved.some(function(item){return item.signature===signature;}))return previous;
+                        var plan={signature:signature,turn:turn,world:colonyWorldName,loop:chosen.id,building:chosen.building,reasoning:reasoning,projection:JSON.parse(JSON.stringify(projection)),evidence:evidence?JSON.parse(JSON.stringify(evidence)):null};
+                        var fact='Plan for '+definition.name+': '+reasoning+' Baseline next-sol '+chosen.id+': '+projection.current[chosen.id]+' → '+projection.next[chosen.id]+' game units.'+(evidence?' Linked evidence: '+(evidence.title||evidence.id)+'.':' No field evidence linked.');
+                        return Object.assign({},previous,{colonyHabitatPlans:saved.concat([plan]).slice(-20),scienceJournal:(previous.scienceJournal||[]).concat([{turn:turn,source:'Habitat design',fact:fact}])});
+                      });scAnnounce('Habitat design saved to the science journal.');
+                    }},'Save habitat design'),
+                    h('button',{type:'button',disabled:turnPhase!=='day'||installed,style:buttonStyle,onClick:function(){upd('showBuild',true);setTimeout(function(){var target=document.getElementById('spacecolony-construction');if(target){target.focus();target.scrollIntoView({block:'start',behavior:'instant'});}},0);}},'Open construction')),
+                  turnPhase!=='day' && h('small',{style:{color:'#cbd5e1'}},'Begin the day shift to open construction. Saving a design does not spend resources.'),
+                  lastPlan && h('p',{'data-habitat-saved':'true',style:{fontSize:12,color:'#86efac',margin:0}},'Saved on Sol '+lastPlan.turn+': '+lastPlan.reasoning)),
+                h('details',null,h('summary',{style:{cursor:'pointer',minHeight:32,fontSize:13,color:'#fde68a'}},'Mission science and the Solar System connection'),h('button',{type:'button',style:buttonStyle,onClick:function(){setLabToolData(function(previous){return Object.assign({},previous,{solarSystem:Object.assign({},previous.solarSystem||{},{viewTab:'drone'})});});if(typeof setStemLabTool==='function')setStemLabTool('solarSystem');}},'Practice with Solar System drones'),h('p',{style:{fontSize:12,lineHeight:1.6,color:'#cbd5e1'}},'Use Solar System drone exploration to practice observing, sampling, and recognizing model limits. In Kepler Colony, link this campaign’s field evidence to a habitat design, test it through construction and turns, then revise. Sample inventories are not transferred between planets. The alien biosphere, surface, and advanced technologies are fiction; global terraforming progress is a game mechanic. The immediate objective is a functioning sealed habitat.')))
+            );
+          }
+          return React.createElement('div', { className: 'bg-gradient-to-b from-slate-900 to-indigo-950 rounded-2xl p-4 md:p-6 border border-slate-700 overflow-hidden', 'data-spacecolony-root': 'true', style: {width:'100%',minWidth:0,boxSizing:'border-box',alignSelf:'flex-start',flex:'0 0 auto'} },
             React.createElement('div', { className: 'flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-5' },
               React.createElement('div', { className: 'flex items-center gap-3 min-w-0' },
                 React.createElement('button', { type: 'button', onClick: function () { upd('selectedTool', null); }, 'aria-label': t('stem.spacecolony.back_to_colony_overview', 'Back to colony overview'), title: t('stem.spacecolony.back', 'Back'), className: 'transition-colors grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-slate-600 bg-slate-800 text-slate-200 hover:border-indigo-400 hover:text-white text-lg' }, '\u2190'),
                 React.createElement('h2', { className: 'text-xl font-bold text-white tracking-tight' }, t('stem.spacecolony.kepler_colony', '\uD83D\uDE80 Kepler Colony') + (colony ? ' · ' + colonyName : '')),
-                React.createElement('span', { className: 'hidden sm:inline-flex text-[0.6875rem] text-indigo-200 bg-indigo-900/70 border border-indigo-700 px-2 py-1 rounded-full' }, 'Systems Biology Mission')
+                React.createElement('span', { className: 'hidden sm:inline-flex text-[0.6875rem] text-indigo-200 bg-indigo-900/70 border border-indigo-700 px-2 py-1 rounded-full' }, 'Habitat Engineering Mission')
               ),
               colony && React.createElement('div', { className: 'flex gap-1 text-[0.6875rem] items-center flex-wrap' },
                 [
@@ -1742,6 +1998,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 turnPhase && React.createElement('span', { className: 'px-1.5 py-0.5 rounded-full text-[0.6875rem] font-bold uppercase tracking-wider', style: { background: turnPhase === 'dawn' ? '#f59e0b30' : turnPhase === 'dusk' ? '#6366f130' : '#22c55e30', color: turnPhase === 'dawn' ? '#fbbf24' : turnPhase === 'dusk' ? '#818cf8' : '#4ade80' } }, turnPhase === 'dawn' ? '\u2600\uFE0F Dawn' : turnPhase === 'day' ? '\u2600 Day' : '\uD83C\uDF19 Dusk')
               )
             ),
+            renderHabitatCommand(),
             // SETUP
             colonyPhase === 'setup' && React.createElement('section', { 'data-spacecolony-life-support': 'true', 'aria-labelledby': 'spacecolony-mission-title', className: 'py-4 md:py-8 max-w-6xl mx-auto text-center' },
               React.createElement('div', { className: 'grid gap-5 lg:grid-cols-[1.25fr_.75fr] lg:items-stretch mb-6 text-left' },
@@ -1749,9 +2006,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   React.createElement('div', { className: 'absolute -right-10 -top-12 text-[9rem] opacity-[0.07] pointer-events-none', 'aria-hidden': 'true' }, '\uD83C\uDF0D'),
                   React.createElement('div', { className: 'relative' },
                     React.createElement('span', { className: 'inline-flex rounded-full border border-emerald-500/40 bg-emerald-950/70 px-3 py-1 text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-emerald-200' }, 'Life-support brief'),
-                    React.createElement('h3', { id: 'spacecolony-mission-title', className: 'text-3xl md:text-4xl font-black mt-4 mb-3 tracking-tight text-white' }, 'Build a living world'),
+                    React.createElement('h3', { id: 'spacecolony-mission-title', className: 'text-3xl md:text-4xl font-black mt-4 mb-3 tracking-tight text-white' }, 'Establish your first habitat'),
                     React.createElement('p', { className: 'text-slate-200 text-sm md:text-base max-w-2xl leading-relaxed' },
-                      t('stem.spacecolony.you_have_arrived_at_a_habitable_exopla', 'You have arrived at a habitable exoplanet 1,206 light-years from Earth. Build a self-sustaining colony by mastering real science. Every building requires passing a science challenge. Every turn brings new surprises from the Fate Roll. Your 6 settlers are counting on you, Commander!')
+                      'Your six settlers have reached a fictional world in the Alpha Centauri system. Start with a sealed outpost: scout the terrain, compare resource plans, and use science challenges to build its systems. Planet-wide terraforming remains a speculative campaign mechanic.'
                     ),
                     React.createElement('div', { className: 'mt-6 grid gap-3 sm:grid-cols-3', 'aria-label': 'Mission route' },
                       [['01', '\uD83C\uDF31', 'Sustain life', 'Balance food, water, and energy.'], ['02', '\uD83E\uDDEC', 'Prove the science', 'Unlock systems with evidence.'], ['03', '\uD83C\uDF0D', 'Adapt the ecosystem', 'Track feedback over time.']].map(function (item) {
@@ -1879,11 +2136,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               React.createElement('button', {
                 type: 'button',
+                'data-spacecolony-launch': 'true',
                 onClick: function () {
                   var startMap = generateMap();
                   var initPickups = generatePickups(startMap.tiles);
                   setLabToolData(function (previous) {
                     return Object.assign({}, previous, {
+                      colonyScenario: 'centauri-habitat',
+                      colonyHabitatPlans: [], colonyHabitatReasoning: '',
                       colonyMissionProfile: missionProfile.id,
                       colonyMap: startMap,
                       colonyPhase: 'playing',
@@ -1899,7 +2159,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       colonyBuildings: [],
                       colonySettlers: JSON.parse(JSON.stringify(defaultSettlers)),
                       colonyLog: ['SOL 1: ' + colonyName + ' founded under the ' + missionProfile.name + '. First command: ' + missionProfile.firstMove],
-                      colony: { name: colonyName, planet: 'Kepler-442b', protocol: missionProfile.name },
+                      colony: { name: colonyName, planet: colonyWorldName, protocol: missionProfile.name },
                       colonyValues: Object.assign({}, missionProfile.values),
                       colonyHappiness: 70,
                       colonyEquity: 75,
@@ -2097,7 +2357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               React.createElement('style', null, t('stem.spacecolony.keyframes_kp_fadein_from_opacity_0_tra', '@keyframes kp-fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-pulse{0%,100%{opacity:1}50%{opacity:.6}}@keyframes kp-glow{0%,100%{box-shadow:0 0 5px rgba(99,102,241,.3)}50%{box-shadow:0 0 20px rgba(99,102,241,.6)}}@keyframes kp-fateRoll{0%{transform:scale(.5) rotate(0);opacity:0}50%{transform:scale(1.3) rotate(180deg);opacity:1}100%{transform:scale(1) rotate(360deg);opacity:1}}@keyframes kp-barFill{from{width:0}}@keyframes kp-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}@keyframes kp-slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes kp-shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-2px)}20%,40%,60%,80%{transform:translateX(2px)}}@keyframes kp-sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}@keyframes kp-breathe{0%,100%{transform:scale(1);opacity:.8}50%{transform:scale(1.02);opacity:1}}')),
               // ══ DAWN PHASE OVERLAY ══
-              turnPhase === 'dawn' && React.createElement('div', {
+              turnPhase === 'dawn' && React.createElement('div', { 'data-colony-turn-controls':'dawn', tabIndex:-1,
                 className: 'relative mb-4 rounded-2xl overflow-hidden',
                 style: { background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 30%, #f59e0b20 100%)', animation: 'kp-fadeIn 0.5s ease-out' }
               },
@@ -2154,7 +2414,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   }, '\u2600\uFE0F Begin Day \u2014 ' + maxAP + ' Actions Available')
                 )
               ),
-              React.createElement('section', { id: 'spacecolony-fs-workspace', 'data-spacecolony-fullscreen-workspace': 'true', role: 'region', 'aria-label': t('stem.spacecolony.colony_map_workspace', 'Colony map and navigation controls') },
+              React.createElement('section', { id: 'spacecolony-fs-workspace', style:{position:'relative'}, 'data-spacecolony-fullscreen-workspace': 'true', role: 'region', 'aria-label': t('stem.spacecolony.colony_map_workspace', 'Colony map and navigation controls') },
               React.createElement('style', null, '#spacecolony-fs-workspace:fullscreen,#spacecolony-fs-workspace:-webkit-full-screen{box-sizing:border-box;display:flex;flex-direction:column;width:100vw;height:100vh;overflow:hidden;padding:12px;background:#020617;color:#e2e8f0}#spacecolony-fs-workspace:fullscreen #spacecolony-fs-wrap,#spacecolony-fs-workspace:-webkit-full-screen #spacecolony-fs-wrap{flex:1;min-height:0}#spacecolony-fs-workspace:fullscreen #spacecolony-fs-wrap canvas,#spacecolony-fs-workspace:-webkit-full-screen #spacecolony-fs-wrap canvas{width:100%;height:100%;max-height:none;margin-bottom:0;object-fit:contain}'),
               React.createElement('div', { className: 'flex flex-wrap justify-between items-center gap-2 mb-1' },
                 React.createElement('div', { className: 'flex gap-1 items-center', role: 'toolbar', 'aria-label': t('stem.spacecolony.map_navigation_controls', 'Map navigation controls') },
@@ -2211,7 +2471,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 12px rgba(0,0,0,0.4)'
                   }
                 }, '⛶')
-              ),
               ),
               // ── Minimap ──
               React.createElement('div', { className: 'relative', style: { width: '120px', height: '120px', position: 'absolute', right: '16px', top: '80px', zIndex: 10 } },
@@ -2286,6 +2545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                   style: { width: '120px', height: '120px', opacity: 0.85 },
                   title: t('stem.spacecolony.click_to_navigate', 'Click to navigate')
                 })
+              ),
               ),
               // Selected tile
               selectedTile && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: (function(){ var tColors = { plains: { bg: 'linear-gradient(135deg, #14532d, #0f172a)', bc: '#16a34a40' }, mountain: { bg: 'linear-gradient(135deg, #44403c, #0f172a)', bc: '#78716c40' }, volcanic: { bg: 'linear-gradient(135deg, #7f1d1d, #0f172a)', bc: '#ef444440' }, ice: { bg: 'linear-gradient(135deg, #164e63, #0f172a)', bc: '#06b6d440' }, desert: { bg: 'linear-gradient(135deg, #78350f, #0f172a)', bc: '#f59e0b40' }, ocean: { bg: 'linear-gradient(135deg, #1e3a5f, #0f172a)', bc: '#3b82f640' }, radiation: { bg: 'linear-gradient(135deg, #581c87, #0f172a)', bc: '#a855f740' }, colony: { bg: 'linear-gradient(135deg, #312e81, #0f172a)', bc: '#6366f140' } }; var tc = tColors[selectedTile.tile.type] || tColors.plains; return { background: tc.bg, borderColor: tc.bc, animation: 'kp-fadeIn 0.3s ease-out' }; })() },
@@ -2384,7 +2644,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               // Actions
               // ══ ALWAYS-VISIBLE AP ACTION BAR ══
-              turnPhase === 'day' && React.createElement('div', { className: 'mb-3 rounded-2xl overflow-hidden', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', border: '1px solid #334155' } },
+              turnPhase === 'day' && React.createElement('div', { 'data-colony-turn-controls':'day', tabIndex:-1, className: 'mb-3 rounded-2xl overflow-hidden', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b)', border: '1px solid #334155' } },
                 React.createElement('div', { className: 'px-3 pt-3 pb-2 flex items-center justify-between' },
                   React.createElement('div', { className: 'flex items-center gap-2' },
                     React.createElement('span', { className: 'text-[0.6875rem] font-bold uppercase tracking-wider text-slate-600' }, t('stem.spacecolony.actions', 'Actions')),
@@ -2414,7 +2674,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 )
               ),
               // ══ DUSK PHASE OVERLAY ══
-              turnPhase === 'dusk' && React.createElement('div', { className: 'mb-4 rounded-2xl overflow-hidden relative', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b, #312e81)', border: '1px solid #4c1d9540', animation: 'kp-fadeIn 0.5s ease-out' } },
+              turnPhase === 'dusk' && React.createElement('div', { 'data-colony-turn-controls':'dusk', tabIndex:-1, className: 'mb-4 rounded-2xl overflow-hidden relative', style: { background: 'linear-gradient(135deg, #0f172a, #1e1b4b, #312e81)', border: '1px solid #4c1d9540', animation: 'kp-fadeIn 0.5s ease-out' } },
                 React.createElement('div', { className: 'relative p-5' },
                   React.createElement('div', { className: 'text-center mb-4' },
                     React.createElement('div', { className: 'text-3xl mb-1' }, '\uD83C\uDF19'),
@@ -2611,7 +2871,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     upd('colonyRes', nr2); upd('colonyTurn', nt);
                     if (aiHintsEnabled && callGemini) {
                     upd('colonyEventLoading', true);
-                    var ctx2 = 'Colony on Kepler-442b, turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
+                    var ctx2 = 'Colony on ' + colonyWorldName + ', turn ' + nt + '. Resources: food=' + nr2.food + ' energy=' + nr2.energy + ' water=' + nr2.water + ' materials=' + nr2.materials + ' science=' + nr2.science + '. Buildings: ' + (buildings.length > 0 ? buildings.join(', ') : 'none') + '. ' + settlers.length + ' settlers. Terraforming: ' + newTf + '%. ' + (wx ? 'Current weather: ' + wx.name + '. ' : 'Weather: calm. ') + 'Tech tier reached: ' + (buildings.indexOf('biodome') >= 0 ? 4 : buildings.indexOf('atmo') >= 0 || buildings.indexOf('fusion') >= 0 ? 3 : buildings.indexOf('lab') >= 0 || buildings.indexOf('medbay') >= 0 ? 2 : buildings.length > 0 ? 1 : 0) + '.';
                     callGemini('You are the AI game master for an educational space colony on an alien planet. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Colony values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '/100. Sometimes let colony values influence event themes (high ecology = nature events, high tradition = cultural discovery events, low equity = social tension events). ' + ctx2 + '\n\nGenerate a planet event. Include a REAL science concept. Return ONLY valid JSON:\n{"emoji":"<emoji>","title":"<event>","description":"<2-3 sentences>","lesson":"<real science concept, 2-3 sentences>","choices":[{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"},{"label":"<choice>","effects":{"food":<n>,"energy":<n>,"water":<n>,"materials":<n>,"science":<n>,"morale":<n>},"outcome":"<result>"}]}\n\nEvents: alien microbes, geologic discoveries, meteor showers, equipment failures, resource finds, atmospheric anomalies, alien ruins. Effects: -5 to +10 resources, -15 to +15 morale. One choice should reward scientific knowledge.', true).then(function (result) {
                       try {
                         var cl = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim(); var s2 = cl.indexOf('{'); if (s2 > 0) cl = cl.substring(s2); var e2 = cl.lastIndexOf('}'); if (e2 > 0) cl = cl.substring(0, e2 + 1);
@@ -2713,7 +2973,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
                     // Colony Charter (generated once at turn 20 from colony values)
                     if (aiHintsEnabled && callGemini && nt === 20 && !d.colonyCharter) {
-                      callGemini('Generate a founding charter for a space colony on planet Kepler-442b. The colony has these values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '. They have adopted these cultural traditions: ' + (traditions.length > 0 ? traditions.join(', ') : 'none yet') + '. Write a brief founding charter (4-5 sentences) that reflects these values. It should feel like a real historical document — inspirational, specific, and grounded in the colony\u2019s unique blend of cultures and science. Do NOT use bullet points. Write it as flowing prose.', true).then(function (charter) {
+                      callGemini('Generate a founding charter for a space colony on planet ' + colonyWorldName + '. The colony has these values: collectivism=' + colonyValues.collectivism + ', innovation=' + colonyValues.innovation + ', ecology=' + colonyValues.ecology + ', tradition=' + colonyValues.tradition + ', openness=' + colonyValues.openness + '. Equity: ' + equity + '. They have adopted these cultural traditions: ' + (traditions.length > 0 ? traditions.join(', ') : 'none yet') + '. Write a brief founding charter (4-5 sentences) that reflects these values. It should feel like a real historical document — inspirational, specific, and grounded in the colony\u2019s unique blend of cultures and science. Do NOT use bullet points. Write it as flowing prose.', true).then(function (charter) {
                         upd('colonyCharter', charter);
                         if (d.colonyTTS) colonySpeak('The colony charter has been drafted. A founding document for a new civilization.', 'narrator');
                         var nl29 = gameLog.slice(); nl29.push('\uD83D\uDCDC Colony Charter drafted!'); upd('colonyLog', nl29);
@@ -2751,7 +3011,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     if (!localDecisionTriggered && aiHintsEnabled && callGemini && nt > 2 && nt % 5 === 0 && !d.activeDilemma) {
                       var valStr = Object.keys(colonyValues).map(function (k2) { return k2 + ':' + colonyValues[k2]; }).join(', ');
                       upd('dilemmaLoading', true);
-                      callGemini('You are creating a governance dilemma for a space colony on alien planet Kepler-442b. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function (result) {
+                      callGemini('You are creating a governance dilemma for a space colony on alien planet ' + colonyWorldName + '. Colony values: ' + valStr + '. Equity: ' + equity + '/100. Population: ' + settlers.length + '. This colony values diverse knowledge traditions. Create a nuanced moral/political/cultural dilemma with NO clear right answer (like NationStates). The dilemma should involve balancing competing goods (e.g. innovation vs tradition, individual freedom vs collective welfare, rapid growth vs sustainability, scientific progress vs cultural preservation). Sometimes draw on wisdom from real-world cultural traditions (African, Indigenous, Asian, etc.) as viable solutions. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Return ONLY valid JSON: {"emoji":"<emoji>","title":"<dilemma>","description":"<3-4 sentence scenario>","choices":[{"text":"<choice A>","values":{"collectivism":<-10 to 10>,"innovation":<-10 to 10>,"ecology":<-10 to 10>,"tradition":<-10 to 10>,"openness":<-10 to 10>},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<1-2 sentence result>"},{"text":"<choice B>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"},{"text":"<choice C>","values":{same},"equity":<-10 to 10>,"happiness":<-5 to 5>,"outcome":"<result>"}],"lesson":"<real social science or cultural insight, 2-3 sentences>"}', true).then(function (result) {
                         try {
                           var cl7 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                           var s8 = cl7.indexOf('{'); if (s8 > 0) cl7 = cl7.substring(s8);
@@ -2767,7 +3027,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                     // Major disaster (rare — every ~20 turns)
                     if (aiHintsEnabled && callGemini && nt > 1 && nt % 20 === 0 && Math.random() < 0.5) {
                       upd('disasterLoading', true);
-                      callGemini('Generate a MAJOR disaster event for a space colony on alien planet Kepler-442b. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<option1>","<option2>","<option3>","<option4>","<option5>","<option6>"],"correctIndex":<index 0-5 of the one correct mitigation, placed at a RANDOM position among the options>,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Do NOT always put the correct answer first.', true).then(function (result) {
+                      callGemini('Generate a MAJOR disaster event for a space colony on alien planet ' + colonyWorldName + '. Turn ' + nt + '. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. The disaster should be science-based (asteroid impact, volcanic eruption, alien plague, equipment catastrophe, radiation storm). Return ONLY valid JSON: {"emoji":"<emoji>","title":"<disaster name>","description":"<dramatic 3-4 sentences>","lesson":"<real science about this type of disaster, 2-3 sentences>","question":"<science question to mitigate damage>","options":["<option1>","<option2>","<option3>","<option4>","<option5>","<option6>"],"correctIndex":<index 0-5 of the one correct mitigation, placed at a RANDOM position among the options>,"fullDamage":{"food":<-5 to -15>,"energy":<-5 to -15>,"water":<-5 to -15>,"materials":<-5 to -15>,"morale":<-10 to -20>},"mitigatedDamage":{"food":<0 to -5>,"energy":<0 to -5>,"water":<0 to -5>,"materials":<0 to -5>,"morale":<-3 to -8>}}. Do NOT always put the correct answer first.', true).then(function (result) {
                         try {
                           var cl6 = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
                           var s7 = cl6.indexOf('{'); if (s7 > 0) cl6 = cl6.substring(s7);
@@ -2831,7 +3091,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
 
                     // Colony Radio — AI broadcast every 8 turns
                     if (aiHintsEnabled && callGemini && nt > 3 && nt % 8 === 0) {
-                      callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet Kepler-442b. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (broadcast) {
+                      callGemini('You are the radio host for a space colony called "' + colonyName + '" on planet ' + colonyWorldName + '. Give a brief radio news broadcast (3-4 sentences) reporting on recent colony events. Turn: ' + nt + '. Population: ' + settlers.length + '. Buildings: ' + buildings.length + '. Terraform: ' + terraform + '%. Era: ' + era + '. Season: ' + ((seasonDefs[(seasonCycle || {}).index] || {}).name || 'Calm') + '. Recent events from log: ' + gameLog.slice(-5).join('; ') + '. Make it feel like a real news broadcast — upbeat, informative, with a sign-off. Grade level: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (broadcast) {
                         upd('colonyRadio', broadcast);
                         if (d.colonyTTS) colonySpeak(broadcast, 'narrator');
                       });
@@ -3195,7 +3455,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                         // Optional AI adds atmosphere; the authored outcome and lesson remain complete offline.
                         var valShiftDesc = Object.keys(ch2.values || {}).filter(function (vk4) { return ch2.values[vk4] !== 0; }).map(function (vk4) { return vk4 + (ch2.values[vk4] > 0 ? ' rose' : ' fell'); }).join(', ');
                         if (aiHintsEnabled && callGemini) {
-                          callGemini('You are the narrator for a space colony on Kepler-442b. The colony council just decided: "' + ch2.text + '" in response to the dilemma "' + d.activeDilemma.title + '". The outcome is: ' + ch2.outcome + '. Colony value shifts: ' + valShiftDesc + '. Equity changed by ' + (ch2.equity || 0) + '. Narrate the consequences in 3-4 dramatic, reflective sentences. Include how this affects daily life in the colony and what it reveals about the colonists\u2019 values. Be thoughtful, not preachy. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (narration) {
+                          callGemini('You are the narrator for a space colony on ' + colonyWorldName + '. The colony council just decided: "' + ch2.text + '" in response to the dilemma "' + d.activeDilemma.title + '". The outcome is: ' + ch2.outcome + '. Colony value shifts: ' + valShiftDesc + '. Equity changed by ' + (ch2.equity || 0) + '. Narrate the consequences in 3-4 dramatic, reflective sentences. Include how this affects daily life in the colony and what it reveals about the colonists\u2019 values. Be thoughtful, not preachy. Target audience: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (narration) {
                             upd('dilemmaNarration', narration);
                             if (d.colonyTTS) colonySpeak(narration, 'narrator');
                           }).catch(function () {
@@ -3393,7 +3653,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               ),
               d.maintChallengeLoading && React.createElement('div', { className: 'bg-amber-900/50 rounded-xl p-3 border border-amber-700 mb-3 text-center text-amber-300 text-xs' }, t('stem.spacecolony.generating_maintenance_challenge', '\u23F3 Generating maintenance challenge...')),
               // Build panel
-              d.showBuild && React.createElement('div', { className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderColor: '#4338ca40', animation: 'kp-fadeIn 0.3s ease-out' } },
+              d.showBuild && React.createElement('div', { id: 'spacecolony-construction', tabIndex: -1, className: 'rounded-xl p-3 border mb-3', style: { background: 'linear-gradient(135deg, #1e1b4b, #0f172a)', borderColor: '#4338ca40', animation: 'kp-fadeIn 0.3s ease-out' } },
                 React.createElement('div', { className: 'flex items-center justify-between mb-2' },
                   React.createElement('h4', { className: 'text-sm font-bold text-amber-400' }, t('stem.spacecolony.buildings', '\uD83C\uDFD7 Buildings')),
                   builtThisTurn && React.createElement('span', { className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-400 border border-amber-700/30' }, t('stem.spacecolony.built_this_turn', '\u2705 Built this turn'))
@@ -3623,7 +3883,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           if (d.settlerChatLoading) return;
                           upd('talkSettler', si2);
                           upd('settlerChatLoading', true);
-                          callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the Kepler-442b space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function (result) {
+                          callGemini('You are ' + st.name + ', a ' + st.role + ' (specialty: ' + st.specialty + ') on the ' + colonyWorldName + ' space colony. Morale: ' + st.morale + '%, Health: ' + st.health + '%. Colony has ' + buildings.length + ' buildings, turn ' + turn + '. Resources: food=' + resources.food + ' energy=' + resources.energy + '. Give a brief in-character update (2-3 sentences) about your work, mood, and a science fact related to your specialty. Be personable and educational.', true).then(function (result) {
                             upd('settlerChat', result); upd('settlerChatLoading', false);
                             if (d.colonyTTS) colonySpeak(result, st.role === 'Medic' || st.role === 'Botanist' || st.role === 'Chemist' ? 'female' : 'narrator');
                             if (typeof addXP === 'function') addXP(5, 'Talked to ' + st.name);
@@ -3904,7 +4164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                             nj7.push({ turn: turn, source: 'Tradition: ' + td3.name + ' (' + td3.origin + ')', fact: td3.fact });
                             upd('scienceJournal', nj7);
                             if (addToast) addToast(td3.icon + ' ' + td3.name + ' adopted!', 'success');
-                            callGemini('The space colony on Kepler-442b has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
+                            callGemini('The space colony on ' + colonyWorldName + ' has adopted the ' + td3.name + ' cultural tradition from ' + td3.origin + ' heritage. Fact: ' + td3.fact + '. Narrate how the colony integrates this wisdom into daily life in 2-3 thoughtful sentences. Be respectful and authentic. Target: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '.', true).then(function (tradNarr) {
                               upd('tradNarration', tradNarr);
                               if (d.colonyTTS) colonySpeak(tradNarr, 'narrator');
                             }).catch(function () {
@@ -4054,7 +4314,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                           // In-flight guard: avoid stacking mentor calls.
                           if (d.mentorChatLoading) return;
                           upd('mentorChatLoading', gs4.name);
-                          callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet Kepler-442b in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function (mentorResult) {
+                          callGemini('You are an AI reconstruction of ' + gs4.name + ', a famous scientist, running on the quantum computers of a space colony on planet ' + colonyWorldName + ' in the far future. A colonist is consulting you for advice. Stay in character as ' + gs4.name + '. Respond warmly but share real scientific knowledge from your field (' + gs4.specialty + '). Reference your real historical achievements. Give practical advice that would help the colony. Keep response to 3-4 sentences. Difficulty: ' + (gradeDifficultyMap[gradeLevel] || 'medium') + '. Current colony situation: Turn ' + turn + ', ' + settlers.length + ' settlers, ' + buildings.length + ' buildings, ' + terraform + '% terraformed.', true).then(function (mentorResult) {
                             upd('mentorChat', { name: gs4.name, icon: gs4.icon, text: mentorResult }); upd('mentorChatLoading', null);
                             if (d.colonyTTS) colonySpeak(mentorResult, gs4.specialty === 'biology' || gs4.name === 'Mae Jemison' || gs4.name === 'Rachel Carson' || gs4.name === 'Rosalind Franklin' || gs4.name === 'Ada Lovelace' ? 'female' : 'narrator');
                           }).catch(function () { upd('mentorChatLoading', null); });
@@ -4582,9 +4842,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 { key: 'radiation', label: 'Rad', val: iq.radiation, color: '#fb923c' }
               ];
               return React.createElement('div', { className: 'mt-3 p-3 rounded-xl border', style: { background: '#0f172a', borderColor: '#7c3aed', color: '#e2e8f0' } },
-                React.createElement('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, t('stem.spacecolony.life_support_balance_discovery', '\uD83D\uDEF0\uFE0F Life-support balance discovery')),
+                React.createElement('h3', { style: { fontSize: 14, fontWeight: 800, color: '#a78bfa', margin: '0 0 6px 0' } }, 'Independent subsystem sandbox'),
                 React.createElement('p', { style: { fontSize: 12, color: '#cbd5e1', lineHeight: 1.5, marginBottom: 10 } },
-                  t('stem.spacecolony.five_sliders_allocate_energy_to_each_l', 'Five sliders allocate energy to each life-support subsystem. Widget classifies colony state into 5 discrete levels and renders animated gauge visualization. No score on tuning \u2014 find the equilibrium that lets settlers thrive.')),
+                  'Explore how a simple weakest-link model responds to five fictional performance indices. These percentages are not air composition or measured habitat conditions. This separate exercise does not change your colony resources or settlers.'),
                 // Discrete state badge
                 React.createElement('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                   React.createElement('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
@@ -4656,7 +4916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                 iq.stuckRevealed && React.createElement('div', { style: { padding: 10, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 4, fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
                   React.createElement('ul', { style: { margin: 0, paddingLeft: 18 } },
                     React.createElement('li', null, t('stem.spacecolony.set_one_subsystem_to_100_and_the_rest_', 'Set one subsystem to 100% and the rest to 50%. Compare to all-uniform 60%.')),
-                    React.createElement('li', null, t('stem.spacecolony.real_space_habitats_run_o_at_95_why_so', 'Real space habitats run O\u2082 at ~95%. Why so high?')),
+                    React.createElement('li', null, 'These percentages are fictional subsystem performance indices, not the oxygen concentration of breathable air.'),
                     React.createElement('li', null, t('stem.spacecolony.find_two_settings_that_produce_same_st', 'Find two settings that produce same state. What\'s the shared minimum?')),
                     React.createElement('li', null, t('stem.spacecolony.can_you_reach_thriving_with_one_subsys', 'Can you reach "thriving" with one subsystem at 50%? What does that imply about balance vs peak?')))),
                 React.createElement('div', { style: { padding: 10, background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: 4 } },

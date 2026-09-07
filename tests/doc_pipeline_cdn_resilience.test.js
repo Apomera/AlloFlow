@@ -34,7 +34,9 @@ const makeLoader = makeLoaderFactory();
 // the instant their <script> src is set. `startLoaded` simulates an already-present global.
 // `badUrls` report a failed load through the script's error event (what a CSP-blocked or
 // 404ing mirror does in a browser) instead of silently never defining the global.
-function env(goodUrls, startLoaded, badUrls = []) {
+// `hollowUrls` fire load WITHOUT defining the global: what an HTML page served as a script
+// does in Firefox/Safari (captive portal, SPA fallback on a missing path).
+function env(goodUrls, startLoaded, badUrls = [], hollowUrls = []) {
   let loaded = !!startLoaded;
   const win = {};
   const counters = { injected: 0 }; // <script> tags created — proof of whether a chain was re-polled
@@ -48,6 +50,7 @@ function env(goodUrls, startLoaded, badUrls = []) {
         this._src = v;
         if (goodUrls.includes(v)) loaded = true;
         if (badUrls.includes(v)) setTimeout(() => { if (typeof this.onerror === 'function') this.onerror(new Error('blocked')); }, 0);
+        if (hollowUrls.includes(v)) setTimeout(() => { if (typeof this.onload === 'function') this.onload(); }, 0);
       },
       get src() { return this._src; },
     }),
@@ -123,6 +126,18 @@ describe('_loadCdnScript — resilient CDN loader', () => {
     expect(e.counters.injected).toBe(3); // every mirror was tried, in order
     expect(Date.now() - started).toBeLessThan(1500); // two blocked mirrors cost milliseconds, not 10s
     expect(e.win.__alloflowCdnDown).toBeUndefined();
+  });
+
+  it('fails over a mirror that loads an HTML page (load fires, global never appears) within a beat', async () => {
+    // Observed live on 2026-09-06: the AlloFlow CDN answers a missing path with 200 + the app
+    // shell. Chrome refuses it as a script; Firefox/Safari fire load on it. The loader must not
+    // sit out its 12s poll on such a mirror.
+    const e = env(['https://c/lib.js'], false, [], ['https://a/lib.js', 'https://b/lib.js']);
+    const started = Date.now();
+    const ok = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js', 'https://c/lib.js'], e.isReady, { timeout: 5000 });
+    expect(ok).toBe(true);
+    expect(e.counters.injected).toBe(3);
+    expect(Date.now() - started).toBeLessThan(2000); // two hollow mirrors cost ~250ms each, not 10s
   });
 
   it('short-circuits when the global is already present (no injection needed)', async () => {

@@ -16,6 +16,10 @@ function isScaffoldParagraphComplete(text, responses) {
 function SentenceFramesView(props) {
   // State reads
   var t = props.t;
+  const label = (key, fallback) => {
+    const translated = typeof t === 'function' ? t(key) : '';
+    return translated && translated !== key ? translated : fallback;
+  };
   var generatedContent = props.generatedContent;
   var studentWorkStatus = props.studentWorkStatus;
   var onRetrySave = props.onRetrySave;
@@ -142,10 +146,11 @@ function SentenceFramesView(props) {
                                                 </>
                                             ) : (
                                                 <>
-                                                    <p className="text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
+                                                    <p id={`scaffold-prompt-${generatedContent.id}-${idx}`} className="text-lg font-medium text-slate-800 mb-1 font-serif px-2 py-1">{item.text}</p>
                                                     {leveledTextLanguage !== 'English' && item.text_en && <p className="text-sm text-slate-600 italic px-2">{item.text_en}</p>}
                                                     <textarea
-                                                        aria-label={t('scaffolds.student_response') || `Student response for item ${idx + 1}`}
+                                                        aria-label={`${label('scaffolds.student_response', 'Student response')} ${idx + 1}`}
+                                                        aria-describedby={`scaffold-prompt-${generatedContent.id}-${idx}`}
                                                         value={studentResponses[generatedContent.id]?.[idx] || ''}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
                                                         data-help-key="scaffolds_student_input"
@@ -177,7 +182,7 @@ function SentenceFramesView(props) {
                                 <div className="text-lg leading-loose text-slate-800 font-serif px-2 py-1">
                                     {scaffoldParagraphParts(generatedContent?.data.text).map(({ text: part, responseKey }, i) => (
                                         responseKey ?
-                                        <input aria-label={t('common.enter_student_responses')}
+                                        <input aria-label={`${label('common.enter_student_responses', 'Student response')} ${(i + 1) / 2}: ${part.replace(/[\[\]]/g, '')}`}
                                             key={i}
                                             type="text"
                                             value={studentResponses[generatedContent.id]?.[responseKey] || ''}

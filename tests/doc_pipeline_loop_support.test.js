@@ -120,10 +120,23 @@ describe('reconcileOcrPages — Tesseract/Vision merge', () => {
     expect(r.disagreements).toHaveLength(1);
     expect(r.disagreements[0].pageNum).toBe(1);
   });
-  it('does NOT flag a disagreement within tolerance', () => {
-    const base = 'x'.repeat(300);
-    const r = reconcileOcrPages([{ text: base }], [{ text: base + 'x'.repeat(15) }]); // +15 chars on 315 → within 10% and <20
+  it('normalizes small whitespace differences without reporting a content conflict', () => {
+    const base = 'Please record each observation and explain the result. '.repeat(6);
+    const spaced = base.replace('record each', 'record \n\t each');
+    const r = reconcileOcrPages([{ pageNum: 7, text: base }], [{ pageNum: 7, text: spaced }]);
     expect(r.disagreements).toHaveLength(0);
+    expect(r.pages).toHaveLength(1);
+    expect(r.pages[0].pageNum).toBe(7);
+  });
+  it('flags substantive instructions even when the length difference is small', () => {
+    const base = 'Please record each observation and explain the result. '.repeat(6);
+    const changed = base + 'Do not copy.';
+    expect(changed.length - base.length).toBeLessThan(20);
+    const r = reconcileOcrPages([{ pageNum: 7, text: base }], [{ pageNum: 7, text: changed }]);
+    expect(r.disagreements).toHaveLength(1);
+    expect(r.disagreements[0]).toMatchObject({ pageNum: 7, reason: 'text-conflict', requiresReview: true });
+    expect(r.disagreements[0].tesseractText).toBe(base);
+    expect(r.disagreements[0].visionText).toBe(changed);
   });
   it('carries Tesseract word boxes + page dims onto the merged page (even when Vision text wins)', () => {
     const words = [{ t: 'hi', x0: 1, y0: 2, x1: 3, y1: 4 }];

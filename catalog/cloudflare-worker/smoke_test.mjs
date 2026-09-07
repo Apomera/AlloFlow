@@ -176,6 +176,52 @@ const run = async () => {
   // restore the success mock
   globalThis.fetch = async (url, init) => { lastGh = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
 
+  // ── /submit abuse controls (SUBMIT_RATE bound) ──
+  // Freeze the clock so the fixed minute window cannot roll over mid-test.
+  const realNow = Date.now;
+  Date.now = () => 1800000000000;
+  const rateStore = new Map();
+  const RATEKV = { put: async (k, v) => { rateStore.set(k, v); }, get: async (k) => rateStore.get(k) || null };
+  const ENVRATE = { ...ENV, SUBMIT_RATE: RATEKV, SUBMIT_RATE_PER_MINUTE: '2' };
+  const ipReq = (body, ip) => req('/submit', { method: 'POST', headers: { 'Content-Type': 'application/json', 'CF-Connecting-IP': ip }, body: JSON.stringify(body) });
+  const distinct = (n) => ({ ...validLesson, metadata: { ...validMeta, title: 'Lesson ' + n } });
+  // 23. identical body twice → the second is 409 (the commit already happened once)
+  r = await worker.fetch(ipReq(validLesson, '1.1.1.1'), ENVRATE);
+  ok(r.status === 201, '/submit first copy → 201 (got ' + r.status + ')');
+  r = await worker.fetch(ipReq(validLesson, '1.1.1.1'), ENVRATE);
+  ok(r.status === 409, '/submit exact duplicate → 409 (got ' + r.status + ')');
+  // 24. per-IP minute cap of 2: second distinct body allowed, third refused
+  r = await worker.fetch(ipReq(distinct(2), '1.1.1.1'), ENVRATE);
+  ok(r.status === 201, '/submit second distinct body within cap → 201 (got ' + r.status + ')');
+  r = await worker.fetch(ipReq(distinct(3), '1.1.1.1'), ENVRATE);
+  ok(r.status === 429, '/submit third in a minute → 429 (got ' + r.status + ')');
+  // 25. another IP is unaffected
+  r = await worker.fetch(ipReq(distinct(4), '2.2.2.2'), ENVRATE);
+  ok(r.status === 201, '/submit other IP unaffected → 201 (got ' + r.status + ')');
+  // 26. a failed commit must NOT poison the dedupe key: the retry succeeds
+  globalThis.fetch = async () => new Response('forbidden', { status: 403 });
+  r = await worker.fetch(ipReq(distinct(5), '3.3.3.3'), ENVRATE);
+  ok(r.status === 502, '/submit commit failure → 502 (got ' + r.status + ')');
+  globalThis.fetch = async (url, init) => { lastGh = { url: String(url), init }; return new Response(JSON.stringify({ content: { path: 'ok' } }), { status: 201 }); };
+  r = await worker.fetch(ipReq(distinct(5), '3.3.3.3'), ENVRATE);
+  ok(r.status === 201, '/submit retry after a failed commit → 201, not 409 (got ' + r.status + ')');
+  // 27. namespace not bound → fail open, exactly today's production behaviour
+  r = await worker.fetch(ipReq(distinct(6), '1.1.1.1'), ENV);
+  ok(r.status === 201, '/submit without SUBMIT_RATE bound → 201 (got ' + r.status + ')');
+  // 28. Turnstile is enforced only once the secret is configured
+  const ENVTS = { ...ENV, TURNSTILE_SECRET: 'ts-secret' };
+  r = await worker.fetch(jsonPost('/submit', distinct(7)), ENVTS);
+  ok(r.status === 403, '/submit Turnstile configured + no token → 403 (got ' + r.status + ')');
+  r = await worker.fetch(jsonPost('/submit', { ...distinct(8), turnstile_token: 'bad' }), ENVTS);
+  ok(r.status === 403, '/submit Turnstile configured + rejected token → 403 (got ' + r.status + ')');
+  r = await worker.fetch(jsonPost('/submit', distinct(9)), ENV);
+  ok(r.status === 201, '/submit without TURNSTILE_SECRET ignores the check → 201 (got ' + r.status + ')');
+  // 29. an AlloPack-shaped lesson_payload (what the in-app form sends for a .allopack.json)
+  const packShaped = { ...validLesson, lesson_payload: { allopack: { spec: '0.1', title: 'Moon' }, history: [{ id: 'r1', type: 'glossary', title: 'Moon', data: [] }] } };
+  r = await worker.fetch(jsonPost('/submit', packShaped), ENV);
+  ok(r.status === 201, '/submit AlloPack-format lesson_payload → 201 (got ' + r.status + ')');
+  Date.now = realNow;
+
   // ── scanForPii pattern matrix (asserted via the committed /submit record) ──
   async function piiTypesFor(text) {
     lastGh = null;

@@ -226,3 +226,15 @@ describe('blueprint lane copy-sync guardrails', () => {
       expect(src).toContain('blueprint.execution_started');
     });
 });
+
+
+describe('question phrasing never authorizes a plan edit', () => {
+  it.each(['Why include a glossary?', 'Would you change anything about this plan?', 'How does adding a quiz help?'])(
+    '%s stays in the question lane', async question => {
+      const { deps } = makeDeps({ messages: [], guidedFlowState: REVIEWING, intent: 'QUESTION' });
+      await handleSendUDLMessage(question, deps);
+      expect(deps.generateStandardChatResponse).toHaveBeenCalledOnce();
+      expect(deps.modifyBlueprintWithAI).not.toHaveBeenCalled();
+      expect(deps.handleExecuteBlueprint).not.toHaveBeenCalled();
+    });
+});

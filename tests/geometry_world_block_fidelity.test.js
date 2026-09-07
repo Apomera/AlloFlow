@@ -49,8 +49,11 @@ describe('Geometry World place/remove wrappers preserve the full signature', () 
 
     it(`only logs a block event when the block map actually changed — ${p}`, () => {
       // A bounced placement (occupied cell) or a refused break (indestructible
-      // lesson block) used to still write an event into the research CSV.
-      expect(src).toContain("if (!had && engine.blocks[key]) {");
+      // lesson block) used to still write an event into the research CSV. And the
+      // ground plus every lesson structure arrive through the same placeBlock, so
+      // without the _placingLessonBlocks guard a 25 x 25 floor was 625 student
+      // placements: 'Master Builder' unlocked on load.
+      expect(src).toContain("if (!had && engine.blocks[key] && !engine._placingLessonBlocks) {");
       expect(src).toContain("if (had && !engine.blocks[key]) {");
     });
 

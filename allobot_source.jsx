@@ -939,7 +939,8 @@ const useAlloCoarsePointer = () => {
 const ALLOBOT_RENDER_PX = 64;
 const ALLOBOT_FINE_DETAIL_MIN_PX = 96;
 const ALLOBOT_SHOWS_FINE_DETAIL = ALLOBOT_RENDER_PX >= ALLOBOT_FINE_DETAIL_MIN_PX;
-const ALLOBOT_AMBIENT_GAZE_SCALE = 0.8;
+const ALLOBOT_AMBIENT_GAZE_SCALE = 0.4;
+const ALLOBOT_EMPTY_HISTORY = Object.freeze([]);
 const STEM_DISCIPLINE_ACCESSORY = { math: 'math-tools', engineering: 'gear', creative: 'artist', strategy: 'game-pad', applied: 'hard-hat', science: 'microscope' };
 const STEM_DISCIPLINE_OVERRIDE = { cellularLab: 'science', geoSandbox: 'science', lumen: 'science', dataPlot: 'math', dataStudio: 'math', alloBotSage: 'engineering', worldBuilder: 'creative', echoTrainer: 'science' };
 function alloStemDiscipline(toolId) {
@@ -1820,7 +1821,7 @@ const ALLOBOT_HELD_ITEM_SUPPORT_GRIP = Object.freeze({
   book: { x: 77, y: 70 },
 });
 
-const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = '', generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = [], isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
+const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, holdingPointer = false, onReadMore, onClick, onVoiceSettingsClick, onMicClick, onToggleMute, onHide, isListening, isIdleDisabled = false, disableAnimations = false, stemLabTool = null, showStemLab = false, soundEnabled = false, selectedVoice, voiceSpeed = 1, voiceVolume = 1, onGenerateAudio, theme = 'light', colorOverlay = 'none', onSpeechEnd, onSpeechStart, activeView, generationType = null, generationProgress = null, generationError = null, generationStep = '', generationStage: generationStageSignal = null, generationBatchType = null, isFlying = false, isSystemAudioActive = false, history = ALLOBOT_EMPTY_HISTORY, isParentMode = false, isStudentMode = false, isEducatorMode = false, hasSeenBotIntro = true, onBotIntroSeen, topic, canPlayIntro = true, aimAt = null, idleSleepMs = 180000 }, ref) => {
   const motionDisabled = useAlloMotionDisabled(disableAnimations);
   const coarsePointer = useAlloCoarsePointer();
   // Touch build: always shown (there is no hover to reveal them with), pushed
@@ -1879,15 +1880,17 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
   }, []);
   const [keyboardMoveStatus, setKeyboardMoveStatus] = useState('');
   const [isHovered, setIsHovered] = useState(false);
+  const [isControlFocused, setIsControlFocused] = useState(false);
+  const isEngaged = isHovered || isControlFocused;
   const hoverGazeEngaged = isHovered && !coarsePointer && !motionDisabled;
   const [eyePosition, setEyePosition] = useState({ x: 0, y: 0 });
   const [visorPosition, setVisorPosition] = useState({ x: 0, y: 0 });
-  // Leaving the avatar only drops the hover boost; the ambient glance keeps
-  // following the pointer. Losing the window or the page recenters the face so
-  // it never sits frozen mid-glance while nothing is moving.
+  // A small glance acknowledges nearby activity, then settles. Direct hover
+  // remains more expressive; losing the window recenters the face immediately.
   const resetHoverGaze = useCallback(() => setIsHovered(false), []);
   const restGaze = useCallback(() => {
       setIsHovered(false);
+      setIsControlFocused(false);
       setEyePosition({ x: 0, y: 0 });
       setVisorPosition({ x: 0, y: 0 });
   }, []);
@@ -1904,12 +1907,41 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       };
   }, [restGaze]);
   const containerRef = useRef(null);
+  const [isWorkspaceActive, setIsWorkspaceActive] = useState(false);
+  const quietPresence = isWorkspaceActive && !isEngaged;
+  useEffect(() => {
+      if (motionDisabled) { setIsWorkspaceActive(false); return undefined; }
+      let settleTimer = null;
+      const handleWorkspaceActivity = (event) => {
+          if (event.target instanceof Node && containerRef.current?.contains(event.target)) return;
+          setIsWorkspaceActive(true);
+          if (settleTimer) clearTimeout(settleTimer);
+          settleTimer = setTimeout(() => { settleTimer = null; setIsWorkspaceActive(false); }, 3000);
+      };
+      // Scroll capture also catches reading panes that do not scroll the window.
+      const events = ['keydown', 'input', 'wheel', 'scroll'];
+      events.forEach(type => window.addEventListener(type, handleWorkspaceActivity, { capture: true, passive: true }));
+      return () => {
+          if (settleTimer) clearTimeout(settleTimer);
+          events.forEach(type => window.removeEventListener(type, handleWorkspaceActivity, true));
+      };
+  }, [motionDisabled]);
   const [isDocumentHidden, setIsDocumentHidden] = useState(() => {
       try { return typeof document !== 'undefined' && document.visibilityState === 'hidden'; } catch (e) { return false; }
   });
   const [isGenerationOffscreen, setIsGenerationOffscreen] = useState(false);
   const generationMotionPaused = isDocumentHidden || isGenerationOffscreen;
-  useEffect(() => { try { var _bot = containerRef.current; var _svg = _bot && _bot.querySelector("svg"); if (!_svg || typeof _svg.pauseAnimations !== "function") return; try { if (motionDisabled) { _svg.pauseAnimations(); _svg.setCurrentTime(0); } else if (generationMotionPaused) { _svg.pauseAnimations(); } else { _svg.unpauseAnimations(); } } catch (e) {} } catch (e) {} }, [motionDisabled, generationMotionPaused]);
+  useEffect(() => {
+      // Satellite controls also contain SVGs. Pause the avatar timeline itself,
+      // including hologram SMIL, rather than the first control icon.
+      const svg = containerRef.current?.querySelector('svg[data-allobot-detail]');
+      if (!svg || typeof svg.pauseAnimations !== 'function') return;
+      try {
+          if (motionDisabled) { svg.pauseAnimations(); svg.setCurrentTime(0); }
+          else if (generationMotionPaused) svg.pauseAnimations();
+          else svg.unpauseAnimations();
+      } catch (_) {}
+  }, [motionDisabled, generationMotionPaused]);
   useEffect(() => {
       if (typeof document === 'undefined') return undefined;
       const handleVisibilityChange = () => setIsDocumentHidden(document.visibilityState === 'hidden');
@@ -1975,21 +2007,28 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       return () => { stopped = true; if (timer) clearTimeout(timer); };
   }, [_aimX, _aimY, isDocumentHidden]);
   useEffect(() => {
-      // Cursor tracking is a helpful visual cue, so it runs whenever a fine
-      // pointer moves: a gentle ambient glance from anywhere on the page and a
-      // fuller turn while the pointer is directly over Allobot. What once read
-      // as "watchful" was the dark pupils, not the glance itself, so the eye
-      // cores stay pastel (see eyeCoreVisual). Coarse pointers and reduced
-      // motion keep the face centered.
-      if (motionDisabled || coarsePointer) {
+      // Keep the pastel bead eyes responsive without following every reading
+      // or typing movement. A stopped pointer gets a relaxed, centered face.
+      if (motionDisabled || coarsePointer || generationMotionPaused || quietPresence) {
           setEyePosition({ x: 0, y: 0 });
           setVisorPosition({ x: 0, y: 0 });
           return;
       }
+      let settleTimer = null;
+      const settle = () => {
+          if (settleTimer) clearTimeout(settleTimer);
+          if (!isHovered) settleTimer = setTimeout(() => {
+              settleTimer = null;
+              setEyePosition({ x: 0, y: 0 });
+              setVisorPosition({ x: 0, y: 0 });
+          }, 1600);
+      };
+      settle();
       const ambientScale = isHovered ? 1 : ALLOBOT_AMBIENT_GAZE_SCALE;
       const sensitivity = isHovered ? 140 : 320;
       const handleMouseMove = (e) => {
           if (!containerRef.current) return;
+          settle();
           const rect = containerRef.current.getBoundingClientRect();
           const centerX = rect.left + rect.width / 2;
           const centerY = rect.top + rect.height / 2;
@@ -2012,8 +2051,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           });
       };
       window.addEventListener('mousemove', handleMouseMove);
-      return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [motionDisabled, isHovered, coarsePointer]);
+      return () => {
+          window.removeEventListener('mousemove', handleMouseMove);
+          if (settleTimer) clearTimeout(settleTimer);
+      };
+  }, [motionDisabled, isHovered, coarsePointer, generationMotionPaused, quietPresence]);
   const [customMessage, setCustomMessage] = useState(null);
   const [isTruncated, setIsTruncated] = useState(false);
   const [isTalking, setIsTalking] = useState(false);
@@ -2478,7 +2520,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       }
   }, [effectiveMood, isSleeping, generationHistorySignature, generationOutcome]);
   useEffect(() => {
-      if (!isTalking || motionDisabled) {
+      if (!isTalking || motionDisabled || generationMotionPaused) {
           setViseme('neutral');
           return;
       }
@@ -2490,30 +2532,21 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           if (Math.random() > 0.8) index = (index + 1) % mouthShapes.length;
       }, 180);
       return () => clearInterval(interval);
-  }, [isTalking, motionDisabled]);
+  }, [isTalking, motionDisabled, generationMotionPaused]);
+  const lastAntennaGreetingRef = useRef(-Infinity);
   useEffect(() => {
-      if (isSleeping || motionDisabled || isDocumentHidden || isFlightActive || effectiveMood === 'thinking') {
-          setAntennaAction(null);
-          return;
-      }
-      let actionTimer = null;
-      const timer = setInterval(() => {
-          if (Math.random() > 0.3) return;
-          if (actionTimer) clearTimeout(actionTimer);
-          const actionRoll = Math.random();
-          if (actionRoll < 0.5) {
-              setAntennaAction('bounce');
-              actionTimer = setTimeout(() => { actionTimer = null; setAntennaAction(null); }, 1900);
-          } else {
-              setAntennaAction('signal');
-              actionTimer = setTimeout(() => { actionTimer = null; setAntennaAction(null); }, 4000);
-          }
-      }, 5000);
-      return () => {
-          clearInterval(timer);
-          if (actionTimer) clearTimeout(actionTimer);
-      };
-  }, [isSleeping, motionDisabled, isDocumentHidden, isFlightActive, effectiveMood]);
+      // Pointer or keyboard engagement gets one greeting. The cooldown also
+      // prevents repeated greetings while tabbing between satellite controls.
+      // Idle antenna broadcasts used to look like an unexplained alert.
+      setAntennaAction(null);
+      if (motionDisabled || !(hoverGazeEngaged || isControlFocused) || isSleeping || generationMotionPaused || isFlightActive || isDragging || isListening || effectiveMood === 'thinking') return undefined;
+      const now = Date.now();
+      if (now - lastAntennaGreetingRef.current < 12000) return undefined;
+      lastAntennaGreetingRef.current = now;
+      setAntennaAction('bounce');
+      const actionTimer = setTimeout(() => setAntennaAction(null), 900);
+      return () => clearTimeout(actionTimer);
+  }, [hoverGazeEngaged, isControlFocused, motionDisabled, isSleeping, generationMotionPaused, isFlightActive, isDragging, isListening, effectiveMood]);
   const flightAudioNodesRef = useRef(null);
   const stopFlightAudio = useCallback(() => {
       const nodes = flightAudioNodesRef.current;
@@ -3581,17 +3614,20 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         recentTipHistoryRef.current = [chosen, ...recentTipHistoryRef.current.filter(tip => tip !== chosen)].slice(0, 10);
         return chosen;
     };
+    // Both idle timers must defer to the same busy states. A long generation
+    // or microphone session must not be interrupted by the fallback tip.
+    const ambientBlocked = () => generationMotionPaused || isDragging || isTalkingRef.current || isListening || isSystemAudioActive || isFlightActive || effectiveMood === 'thinking' || customMessage || isIdleDisabled || isSleeping;
     const scheduleAmbientAction = () => {
         const delay = 60000 + Math.random() * 60000;
         ambientTimer = setTimeout(() => {
-            if (isDocumentHidden || isDragging || isTalkingRef.current || customMessage || isIdleDisabled || isSleeping) {
+            if (ambientBlocked() || Date.now() - lastActivityTime < 30000) {
                 scheduleAmbientAction();
                 return;
             }
              if (!motionDisabled) {
-                 const anims = ['wave', 'backflip', 'shrug', 'look-around'];
-                 const action = anims[Math.floor(Math.random() * anims.length)];
-                 setIdleAnimation(action);
+                 // Unprompted personality should be a brief glance. Large
+                 // gestures remain available to explicit interactions.
+                 setIdleAnimation('look-around');
                  if (ambientAnimationTimer) clearTimeout(ambientAnimationTimer);
                  ambientAnimationTimer = setTimeout(() => {
                      ambientAnimationTimer = null;
@@ -3608,7 +3644,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     const checkFallbackInactivity = () => {
         const now = Date.now();
         if (now - lastActivityTime > 300000 && !hasSpokenFallback) {
-             if (!isDragging && !isTalkingRef.current && !isSystemAudioActive && !customMessage && !isIdleDisabled && !isSleeping) {
+             if (!ambientBlocked()) {
                  const tip = getRandomTip();
                  speak(tip, false);
                  hasSpokenFallback = true;
@@ -3618,24 +3654,36 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
     };
     fallbackTimer = setInterval(checkFallbackInactivity, 10000);
     const resetInactivity = () => {
+        if (ambientAnimationTimer) {
+            clearTimeout(ambientAnimationTimer);
+            ambientAnimationTimer = null;
+            setIdleAnimation(current => current === 'look-around' ? null : current);
+        }
         lastActivityTime = Date.now();
         hasSpokenFallback = false;
     };
     window.addEventListener('mousemove', resetInactivity);
     window.addEventListener('keydown', resetInactivity);
     window.addEventListener('click', resetInactivity);
-    window.addEventListener('scroll', resetInactivity);
+    window.addEventListener('scroll', resetInactivity, true);
+    window.addEventListener('input', resetInactivity);
+    window.addEventListener('wheel', resetInactivity, { passive: true });
     scheduleAmbientAction();
     return () => {
         clearTimeout(ambientTimer);
-        if (ambientAnimationTimer) clearTimeout(ambientAnimationTimer);
+        if (ambientAnimationTimer) {
+            clearTimeout(ambientAnimationTimer);
+            setIdleAnimation(current => current === 'look-around' ? null : current);
+        }
         clearInterval(fallbackTimer);
         window.removeEventListener('mousemove', resetInactivity);
         window.removeEventListener('keydown', resetInactivity);
         window.removeEventListener('click', resetInactivity);
-        window.removeEventListener('scroll', resetInactivity);
+        window.removeEventListener('scroll', resetInactivity, true);
+        window.removeEventListener('input', resetInactivity);
+        window.removeEventListener('wheel', resetInactivity);
     };
-  }, [speak, isDocumentHidden, isDragging, isTalking, isSystemAudioActive, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled]);
+  }, [speak, generationMotionPaused, isDragging, isTalking, isSystemAudioActive, customMessage, isIdleDisabled, isSleeping, activeView, history, isParentMode, isStudentMode, isEducatorMode, topic, t, motionDisabled, isListening, isFlightActive, effectiveMood]);
   const resetDragInteraction = useCallback(() => {
     setIsDragging(false);
     setIsSquashed(false);
@@ -3904,7 +3952,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
           ? 'thinking'
           : (isListening
               ? 'listening'
-              : (isTalking ? 'talking' : (antennaAction === 'signal' ? 'signal' : (antennaAction === 'bounce' ? 'active' : 'ready')))));
+              : (isTalking ? 'talking' : (antennaAction === 'bounce' ? 'active' : 'ready'))));
   const antennaCoreFill = isSleeping
       ? (theme === 'contrast' ? '#FFFFFF' : '#64748B')
       : '#FACC15';
@@ -4146,7 +4194,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       case 'happy':
         return "M 43 57 Q 50 59 57 57 Q 50 65 43 57";
       case 'sad':
-        return "M 45 62 Q 50 56 55 62 Q 50 56 45 62";
+        return "M 45 60.5 Q 50 57.5 55 60.5 Q 50 57.5 45 60.5";
       case 'thinking':
         return "M 47 59 Q 50 57 53 59 Q 50 61 47 59";
       case 'idle':
@@ -4660,7 +4708,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         [data-allobot-control-visibility="persistent"] .allobot-satellite--tr { top: -10px; right: -10px; }
         [data-allobot-control-visibility="persistent"] .allobot-satellite--bl { bottom: -10px; left: -10px; }
         [data-allobot-control-visibility="persistent"] .allobot-satellite--br { bottom: -10px; right: -10px; }
-        @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-8px); } }
+        @keyframes allo-float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-2px); } }
         /* allo-talk keyframe removed — defined but never applied to any element. Audit confirmed dead code. */
         @keyframes allo-backflip { 0% { transform: translateY(0) rotate(0deg); } 40% { transform: translateY(-50px) rotate(-180deg); } 100% { transform: translateY(0) rotate(-360deg); } }
         @keyframes allo-wave { 0%, 100% { transform: rotate(0deg); } 25% { transform: rotate(-8deg); } 55% { transform: rotate(6deg); } 80% { transform: rotate(-3deg); } }
@@ -4671,8 +4719,8 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         }
         @keyframes allo-look-around {
             0%, 100% { transform: translateX(0) rotate(0deg); }
-            25% { transform: translateX(-3px) rotate(-2deg); }
-            65% { transform: translateX(3px) rotate(2deg); }
+            25% { transform: translateX(-1px) rotate(-1deg); }
+            65% { transform: translateX(1px) rotate(1deg); }
         }
         @keyframes allo-puff { 0% { transform: scale(1); opacity: 1; filter: blur(0px); } 100% { transform: scale(1.5); opacity: 0; filter: blur(4px); } }
         @keyframes jetpack-flame { 0%, 100% { opacity: 1; transform: scaleY(1); } 50% { opacity: 0.7; transform: scaleY(0.85); } }
@@ -4726,27 +4774,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .animate-dust-right { animation: dust-right 0.6s ease-out forwards; }
         .animate-dust-puff { animation: dust-puff 0.8s ease-out forwards; }
         @keyframes antenna-sway {
-            0%, 100% { transform: rotate(-5deg); }
-            50% { transform: rotate(5deg); }
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
         }
-        .animate-antenna-sway { animation: antenna-sway 4s ease-in-out infinite; }
+        .animate-antenna-sway { animation: antenna-sway 10s ease-in-out infinite; }
         @keyframes antenna-tri-bounce {
-            0% { transform: translateY(0); }
-            15% { transform: translateY(-12px); animation-timing-function: ease-out; }
-            30% { transform: translateY(0); animation-timing-function: ease-in; }
-            45% { transform: translateY(-12px); animation-timing-function: ease-out; }
-            60% { transform: translateY(0); animation-timing-function: ease-in; }
-            75% { transform: translateY(-12px); animation-timing-function: ease-out; }
-            90% { transform: translateY(0); animation-timing-function: ease-in; }
-            100% { transform: translateY(0); }
+            0%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-2.5px); }
+            70% { transform: translateY(0.5px); }
         }
-        .animate-antenna-tri-bounce { animation: antenna-tri-bounce 1.5s ease-in-out forwards; }
-        @keyframes signal-wave {
-            0% { transform: scale(0.5); opacity: 0.8; stroke-width: 4; }
-            50% { opacity: 0.5; }
-            100% { transform: scale(3.5); opacity: 0; stroke-width: 0; }
-        }
-        .animate-signal-wave { animation: signal-wave 2s ease-out infinite; transform-origin: 50px 5px; }
+        .animate-antenna-tri-bounce { animation: antenna-tri-bounce 0.9s ease-in-out forwards; }
+        @keyframes allobot-lamp-glow { 0%, 100% { opacity: 1; } 50% { opacity: 0.82; } }
+        .animate-allobot-lamp-glow { animation: allobot-lamp-glow 2.4s ease-in-out infinite; }
         @keyframes antenna-spring {
             0% { transform: rotate(var(--start-deg)); }
             20% { transform: rotate(calc(var(--start-deg) * -0.6)); }
@@ -4762,26 +4801,26 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .mouth-transition { transition: d 0.12s cubic-bezier(0.4, 0, 0.2, 1); }
         @keyframes bot-breathe {
             0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02, 0.98); }
+            50% { transform: scale(1.008, 0.994); }
         }
-        .animate-bot-breathe { animation: bot-breathe 3s ease-in-out infinite; }
+        .animate-bot-breathe { animation: bot-breathe 6s ease-in-out infinite; }
         @keyframes shadow-pulse {
             0%, 100% { transform: translateY(0px) scale(1); opacity: 1; }
-            50% { transform: translateY(8px) scale(0.6); opacity: 0.3; }
+            50% { transform: translateY(2px) scale(0.94); opacity: 0.85; }
         }
-        .animate-shadow-pulse { animation: shadow-pulse 3s ease-in-out infinite; transform-origin: 50px 90px; }
+        .animate-shadow-pulse { animation: shadow-pulse 6s ease-in-out infinite; transform-origin: 50px 90px; }
         @keyframes zzz-float {
             0% { transform: translate(0, 0) scale(0.5); opacity: 0; }
             20% { opacity: 1; }
             100% { transform: translate(20px, -30px) scale(1.2); opacity: 0; }
         }
         .animate-zzz { animation: zzz-float 2.5s infinite linear; }
-        .animate-allo-float { animation: allo-float 3s ease-in-out infinite; }
+        .animate-allo-float { animation: allo-float 6s ease-in-out infinite; }
         .animate-allo-puff { animation: allo-puff 0.4s ease-out forwards; }
         .animate-allo-wave { animation: allo-wave 0.9s ease-in-out 1; transform-origin: center bottom; }
         .animate-allo-backflip { animation: allo-backflip 1.2s ease-in-out 1; }
         .animate-allo-shrug { animation: allo-shrug 0.9s ease-in-out 1; transform-origin: center bottom; }
-        .animate-allo-look-around { animation: allo-look-around 1.1s ease-in-out 1; transform-origin: center bottom; }
+        .animate-allo-look-around { animation: allo-look-around 1.8s ease-in-out 1; transform-origin: center bottom; }
         .animate-jetpack-flame { animation: jetpack-flame 0.1s ease-in-out infinite; transform-origin: top; }
         .animate-bot-fly-tilt { animation: bot-fly-tilt 2s ease-in-out infinite; }
         .animate-bot-land { animation: bot-land 0.5s ease-out forwards; }
@@ -4791,20 +4830,16 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         .animate-bot-confetti { animation: bot-confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
         @keyframes float-hands {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-3px); }
+            50% { transform: translateY(-1.25px); }
         }
-        /* The arms must share the body's 3s period. At 3.5s they drifted a half
-           second per cycle and only realigned every 21s, so the arms rose while
-           the body settled and the shoulders looked unhinged — intermittently,
-           which is why it was hard to point at. The small negative delay keeps
-           them a beat behind the body rather than in lockstep, which is how a
-           limb follows a torso. */
-        .animate-float-hands { animation: float-hands 3s ease-in-out infinite; animation-delay: -0.25s; }
+        /* Attached parts share the body's six-second rhythm. A small delay
+           gives the hands follow-through without letting the limbs drift. */
+        .animate-float-hands { animation: float-hands 6s ease-in-out infinite; animation-delay: -0.25s; }
         @keyframes allo-glow-breathe {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.74; }
+            50% { opacity: 0.92; }
         }
-        .animate-glow-breathe { animation: allo-glow-breathe 3s ease-in-out infinite; }
+        .animate-glow-breathe { animation: allo-glow-breathe 6s ease-in-out infinite; }
         /* Sub-pixel decoration, hidden while the bot is drawn small. Structural
            parts (arms, hands, feet, cheeks, the eyes) are never hidden here. */
         [data-allobot-detail="compact"] [data-allobot-eye-sparkle],
@@ -4892,7 +4927,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 @keyframes allobotFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.6px); } }
 @keyframes allobotPerk { 0%, 80%, 100% { transform: translateY(0); } 90% { transform: translateY(-2.5px); } }
 @keyframes allobotTwinkle { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
-.animate-allobot-float { animation: allobotFloat 4s ease-in-out infinite; }
+.animate-allobot-float { animation: allobotFloat 6s ease-in-out infinite; }
 .animate-allobot-perk { animation: allobotPerk 7s ease-in-out infinite; }
 .animate-allobot-twinkle { animation: allobotTwinkle 3s ease-in-out infinite; }
 /* Bespoke signatures (rotate around the element's own base). */
@@ -4918,7 +4953,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 @keyframes allobotPop { 0% { transform: translateY(0); } 35% { transform: translateY(-6px); } 70% { transform: translateY(-1px); } 100% { transform: translateY(0); } }
 /* Thinking bobs the prop at half the body period, so it stays in phase with
    the breath every cycle instead of beating against it at 0.85s. */
-.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 1.5s ease-in-out infinite; }
+.allobot-thinking .animate-allobot-float, .allobot-thinking .animate-allobot-perk { animation: allobotWorking 3s ease-in-out infinite; }
 .allobot-pop .animate-allobot-float, .allobot-pop .animate-allobot-perk { animation: allobotPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1; }
 /* Generation signatures. These stay inside the existing hologram so the
    orange body remains the universal working state. Every class includes
@@ -4964,7 +4999,10 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
 .animate-allobot-generation-completion-check { animation: allobotGenerationCompletionCheck 0.45s ease-out 0.08s 1 both; }
 .allobot-generation-complete-static { opacity: 1 !important; }
 .allobot-generation-complete-static .animate-allobot-generation-completion-check { stroke-dashoffset: 0 !important; opacity: 1 !important; }
-.allobot-generation-paused, .allobot-generation-paused * { animation-play-state: paused !important; }
+.allobot-generation-paused, .allobot-generation-paused *,
+[data-allobot-visibility="paused"], [data-allobot-visibility="paused"] * { animation-play-state: paused !important; }
+/* Pause decoration while typing or scrolling; voice and progress cues remain legible. */
+[data-allobot-presence="quiet"] :is(.animate-allo-float, .animate-bot-breathe, .animate-shadow-pulse, .animate-float-hands, .animate-glow-breathe, .animate-antenna-sway, .animate-allobot-float, .animate-allobot-perk, .animate-allobot-twinkle, .animate-allobot-tick, .animate-allobot-sway, .animate-allobot-stopwatch-hand, .animate-allobot-inbox-drop, .animate-allobot-progress-pulse, .animate-allobot-maze-flag, .animate-allobot-folder-page) { animation-play-state: paused !important; }
 /* Exit transition: the outgoing accessory fades up briefly before the new enters. */
 @keyframes allobotExit { to { opacity: 0; transform: translateY(-3px); } }
 .allobot-exiting > * { animation: allobotExit 0.2s ease-in forwards; }
@@ -5020,12 +5058,18 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
       data-allobot-control-visibility={coarsePointer ? 'persistent' : 'reveal'}
       data-allobot-control-live={isListening ? 'true' : 'false'}
       data-allobot-body-state={bodyVisualState}
+      data-allobot-presence={quietPresence ? 'quiet' : (isEngaged ? 'engaged' : 'resting')}
+      data-allobot-visibility={generationMotionPaused ? 'paused' : 'visible'}
       tabIndex={isSleeping ? undefined : 0} data-help-key="bot_avatar"
       data-allobot-hud-lift={hudHeadroomLift > 0 ? String(hudHeadroomLift) : undefined}
       aria-keyshortcuts={isSleeping ? undefined : 'ArrowLeft ArrowRight ArrowUp ArrowDown'}
       aria-describedby={isSleeping ? undefined : moveInstructionsId}
       aria-label={isSleeping ? undefined : t('bot.aria_active')}
       onKeyDown={handleKeyDown}
+      onFocusCapture={() => setIsControlFocused(true)}
+      onBlurCapture={(event) => {
+          if (!(event.relatedTarget instanceof Node) || !event.currentTarget.contains(event.relatedTarget)) setIsControlFocused(false);
+      }}
       className={`fixed z-[10000] group ${motionDisabled ? 'allobot-motion-disabled' : ''} ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${isSleeping ? 'opacity-60 grayscale-[0.5]' : ''} outline-none focus:ring-4 focus:ring-indigo-400 focus:ring-offset-4 rounded-full`}
       style={{
         // The STEAM Lab modal sets an inline zIndex of 10020 (its z-[9999] class is
@@ -5035,7 +5079,7 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
         zIndex: showStemLab ? 10500 : undefined,
         top: `${position.y + hudHeadroomLift}px`,
         right: `${position.x}px`,
-        transform: motionDisabled ? 'translateY(0px) scale(1)' : `translateY(${isHovered && !isDragging && !isSleeping ? '-5px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : '1'})`,
+        transform: motionDisabled ? 'translateY(0px) scale(1)' : `translateY(${isHovered && !isDragging && !isSleeping ? '-2px' : '0px'}) scale(${isSquashed ? '1.1, 0.9' : '1'})`,
         touchAction: 'none',
         transition: motionDisabled
             ? 'none'
@@ -5623,20 +5667,13 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         />
                     )}
                     <path data-allobot-antenna-layer="stalk" d="M50 16V5" stroke={colors.antenna} strokeWidth="4" strokeLinecap="round" />
-                    {antennaAction === 'signal' && !motionDisabled && !isSleeping && effectiveMood !== 'thinking' && (
-                        <g data-allobot-antenna-layer="signal-waves">
-                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" />
-                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={STYLE_ANIMATION_DELAY_HALF} />
-                            <circle cx="50" cy="5" r="10" stroke={colors.antenna} strokeWidth="2" fill="none" className="animate-signal-wave" style={{ animationDelay: '1.0s' }} />
-                        </g>
-                    )}
                     <g
                         data-allobot-antenna-lamp={antennaVisualState}
                         className={
-                            effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-ping" :
-                            (!motionDisabled && (isListening || isTalking) ? "animate-pulse motion-reduce:animate-none" :
-                            (isSleeping ? "" :
-                            (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" : "")))
+                            effectiveMood === 'thinking' && !motionDisabled && !isSleeping ? "animate-allobot-lamp-glow" :
+                            (isSleeping || motionDisabled ? "" :
+                            (antennaAction === 'bounce' ? "animate-antenna-tri-bounce" :
+                            ((isListening || isTalking) ? "animate-allobot-lamp-glow" : "")))
                         }
                         style={{ transformOrigin: '50px 5px' }}
                     >
@@ -6203,18 +6240,11 @@ const AlloBot = React.memo(React.forwardRef(({ mood = 'idle', accessory = null, 
                         opacity={visorVisual.cueOpacity}
                     >
                         {effectiveMood === 'happy' && <path d="M33 42 Q38 39 43 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                        {effectiveMood === 'sad' && <path d="M33 42.5 Q38 40 43 38.5" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'sad' && <path d="M33 41.5 Q38 40.5 43 39.5" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'thinking' && <path d="M33.5 40.6 Q38 40.1 42.5 40.6" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'happy' && <path d="M57 42 Q62 39 67 42" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                        {effectiveMood === 'sad' && <path d="M57 38.5 Q62 40 67 42.5" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
+                        {effectiveMood === 'sad' && <path d="M57 39.5 Q62 40.5 67 41.5" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
                         {effectiveMood === 'thinking' && <path d="M57 39 Q62 37 67 39" stroke={colors.eye} strokeWidth="2" fill="none" strokeLinecap="round" />}
-                        {effectiveMood === 'sad' && (
-                            <path
-                                data-allobot-face-cue="sad-tear"
-                                d="M29 58.4 C29 58.4 27 60 27 61 A2 2 0 0 0 31 61 C31 60 29 58.4 29 58.4 Z"
-                                fill={colors.eye}
-                            />
-                        )}
                         {effectiveMood === 'thinking' && (
                             <g data-allobot-face-cue="thinking-dots" fill={colors.eye}>
                                 <circle cx="74" cy="52" r="1.1" />

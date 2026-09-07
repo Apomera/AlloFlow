@@ -4909,10 +4909,10 @@
     "locked": "잠김",
     "escaped": "당신 Escaped!",
     "escaped_desc": "당신 solved 모든 퍼즐 및 escaped room!",
-    "time_up": "? 시간's Up!",
+    "time_up": "⏰ 시간's Up!",
     "reveal_hint": "Reveal 힌트",
-    "puzzles_remaining": "{{count}} 퍼즐 remaining",
-    "time_remaining": "시간: {{time}}",
+    "puzzles_remaining": "{count} 퍼즐 remaining",
+    "time_remaining": "시간: {time}",
     "progress": "진행 상황",
     "start": "시작 방탈출",
     "start_hint": "시작 timer 에 begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room 완료!",
     "loading_error": "방 데이터를 불러올 수 없습니다",
     "no_puzzle": "No 퍼즐 found 위한 이것 object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "완벽 escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "완벽 escape! +{xp} bonus XP",
     "puzzle_mcq": "여러 선택",
     "puzzle_sequence": "Put 안에 Order",
     "puzzle_cipher": "Decode 메시지",
@@ -4982,17 +4982,17 @@
     "clue": "단서",
     "clue_found": "단서를 발견했습니다!",
     "clue_revealed": "이 단서는 다른 퍼즐을 푸는 데 도움이 될 수 있습니다...",
-    "clues_collected": "단서: {{count}}/{{total}}",
+    "clues_collected": "단서: {count}/{total}",
     "use_clue": "사용 Clue",
-    "final_door": "The Exit Door",
+    "final_door": "출구 문",
     "final_door_ready": "exit door 입니다 지금 unlocked!",
     "final_door_locked": "해결 더 많이 퍼즐 에 unlock",
     "final_door_title": "최종 도전",
     "final_door_desc": "사용 everything you've learned 에 답변 이것 synthesis 질문.",
     "final_puzzle": "사용하여 무엇 you've learned, 답변 이것:",
     "final_answer_placeholder": "유형 당신의 답변 here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "출구 문에 다가가기",
+    "unlock_door": "문 잠금 해제",
     "victory_perfect": "완벽 Escape! No wrong 답변! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "힌트",
@@ -5008,12 +5008,12 @@
     "left": "남음",
     "wrong_attempts": "오답 횟수",
     "time_penalty": "-{seconds} 초!",
-    "game_over_time": "? 시간's Up! 당신 ran out 의 시간.",
+    "game_over_time": "⏰ 시간's Up! 당신 ran out 의 시간.",
     "streak": "연속",
     "streak_bonus": "연속 정답 보너스! x{multiplier}",
     "streak_lost": "연속 정답이 끊겼습니다!",
     "one_minute_warning": "1분 남았습니다!",
-    "thirty_seconds_warning": "? 만 30 초 left!",
+    "thirty_seconds_warning": "⏰ 만 30 초 left!",
     "timer_paused": "타이머 일시 정지",
     "timer_resume": "다시 시작",
     "settings_btn": "Room 설정",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "시작 multiplayer 방탈출 함께 당신의 학급",
     "team_mode": "Team 도전",
     "team_race": "Race 에 Escape!",
-    "team_progress": "{{team}} 진행 상황: {{solved}}/{{total}}",
+    "team_progress": "{team} 진행 상황: {solved}/{total}",
     "waiting_host": "Waiting 위한 교사 에 시작...",
-    "team_escaped": "{{team}} 팀이 탈출했습니다!",
+    "team_escaped": "{team} 팀이 탈출했습니다!",
     "all_teams_done": "모든 Teams Finished!",
     "your_team": "당신의 Team",
     "team_red": "빨강 팀",
@@ -5036,7 +5036,7 @@
     "team_green": "초록 팀",
     "team_yellow": "노랑 팀",
     "team_all": "모든 학생",
-    "teams_competing": "{{count}}개 팀이 경쟁 중입니다",
+    "teams_competing": "{count}개 팀이 경쟁 중입니다",
     "first_escape": "첫 번째 에 Escape!",
     "end_game": "End 게임",
     "end_game_confirm": "End 방탈출 위한 모든 학생?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume 게임",
     "game_paused_by_teacher": "게임 paused by 교사",
     "celebration_title": "축하합니다!",
-    "you_escaped": "당신의 team escaped 안에 {{time}}!",
-    "other_team_escaped": "{{team}}이(가) 탈출했습니다!",
+    "you_escaped": "당신의 team escaped 안에 {time}!",
+    "other_team_escaped": "{team}이(가) 탈출했습니다!",
     "class_escaped": "학급 Victory!",
     "everyone_escaped": "모두 worked 함께 에 escape!",
     "hurry_up": "Keep going! 당신 수 있습니다 still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "불러오기 저장",
     "loaded_saved": "저장 방탈출 loaded! 검토 및 실행 때 ready.",
     "no_saved": "No 저장됨 방탈출 found",
-    "preview_confirmed": "? 방탈출 locked • ready 에 재생!",
+    "preview_confirmed": "✅ 방탈출 locked • ready 에 재생!",
     "xp_earned_streak": "+{xp} XP ({multiplier}배 연속 보너스!)",
     "loaded_from_resource": "Loaded 에서 리소스."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "전문가 워크벤치로 보내기",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent 작업!",
       "partial": "좋은 effort, keep going!",
       "incorrect": "아닙니다 quite 올바른 • 시도 again!",
-      "error": "Could 아닙니다 evaluate • 부디 시도 again.",
+      "error": "Could 아닙니다 evaluate — 부디 시도 again.",
       "verdict_correct": "올바른!",
       "verdict_partial": "Partially 올바른",
       "verdict_incorrect": "아닙니다 Quite 올바른",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **최종 수준**: {level}",
       "log_header": "모험 Log",
       "chapter_separator": "***",
-      "user_label": "? 당신",
+      "user_label": "➤ 당신",
       "print_button": "인쇄 동화책"
     },
     "answer_key_title": "답변 키",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "당신 수 있습니다 클릭 어떤 단어 안에 텍스트 에 보기 its 정의!",
     "simplified_cloze": "시도 '클로즈' 모드 에 시험 어휘 기술.",
     "simplified_quiz": "이것 텍스트 looks 좋은. Should we 생성 Exit Ticket 에 확인 understanding?",
-    "simplified_glossary": "단어 like '{term1}' 및 '{term2}' might 필요 지원 • 용어집 could 도움말!",
+    "simplified_glossary": "단어 like '{term1}' 및 '{term2}' might 필요 지원 — 용어집 could 도움말!",
     "simplified_glossary_fallback": "이 용어들 중 일부는 까다롭습니다. 용어집이 이 텍스트를 이해하는 데 도움이 될 것입니다.",
     "simplified_outline": "시각 학습자 might benefit 에서 Graphic Organizer 의 이것 콘텐츠.",
     "glossary_bingo": "이 용어들을 Bingo, Memory Match, 십자말풀이, 단어 찾기 같은 단어 게임으로 만들 수 있습니다!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "원하는 에 ensure 이것 퀴즈 입니다 rigorous? 실행 표준 Audit.",
     "adventure_sim": "모험 허용 학생 에 apply 무엇 그들've learned 안에 safe simulation.",
     "adventure_inventory": "'인벤토리'를 확인하여 어떤 항목이 수집되었는지 보세요.",
-    "adventure_context": "당신의 모험 에 대해 {topic} gets richer 함께 더 많이 리소스 • 시도 adding {suggestion}!",
+    "adventure_context": "당신의 모험 에 대해 {topic} gets richer 함께 더 많이 리소스 — 시도 adding {suggestion}!",
     "adventure_context_fallback": "리소스를 더 많이 생성할수록 모험의 맥락이 더 풍부해집니다.",
     "timeline_drag": "드래그 및 드롭 이벤트 에 reorder sequence.",
     "timeline_visualize": "이것은 학생들이 인과 관계를 시각화하는 데 도움이 됩니다.",
@@ -8869,8 +8869,8 @@
     "parent_adventure": "시도 모험 모드 위한 fun rainy-day 활동.",
     "parent_read_along": "사용 '읽기 Along' 에 연습 읽기 함께.",
     "fallback_lesson_plan": "훌륭한 리소스가 있습니다. 이를 수업 계획으로 종합해 볼까요?",
-    "fallback_brainstorm": "Feeling stuck? 시도 chatting 함께 me 및 전환 자동-완료 에 activate Blueprint 모드 • I'll 도움말 당신 design 당신의 entire 수업!",
-    "fallback_export": "당신 있습니다 {count} 리소스 위에 {topic} • 내보내기 them as single PDF!",
+    "fallback_brainstorm": "Feeling stuck? 시도 chatting 함께 me 및 전환 자동-완료 에 activate Blueprint 모드 — I'll 도움말 당신 design 당신의 entire 수업!",
+    "fallback_export": "당신 있습니다 {count} 리소스 위에 {topic} — 내보내기 them as single PDF!",
     "fallback_export_fallback": "당신 수 있습니다 내보내기 모든 these 리소스 as single PDF packet.",
     "fallback_guide": "선택 '표시 Me' 안에 AI Guide 만약 당신 get lost!",
     "intro_greeting": "클릭 me 에 조정 my 음성 설정.",
@@ -9019,7 +9019,7 @@
     "text_generated": "당신의 adapted 텍스트 위에 {topic} 입니다 ready! 시도 클릭 단어 에 보기 its 정의, 또는 탐색 도구 like 용어집 또는 퀴즈 에 deepen understanding.",
     "flashcards_created": "플래시카드가 생성되었습니다! Quizlet으로 내보내거나, 인쇄하거나, Memory Game을 해 볼 수 있습니다.",
     "quiz_generated": "퀴즈 준비 완료! 학급용으로 프레젠테이션 모드를 사용하거나 개방형 응답에 자동 채점기를 시도해 보십시오.",
-    "glossary_generated": "용어집 완료! 단어 게임을 해 보세요 • Bingo, Memory Match, 십자말풀이, 단어 찾기 등!",
+    "glossary_generated": "용어집 완료! 단어 게임을 해 보세요 — Bingo, Memory Match, 십자말풀이, 단어 찾기 등!",
     "adventure_started": "당신의 모험이 시작됩니다! 아래에 행동을 입력하거나 선택 버튼을 사용하여 다음에 무슨 일이 일어날지 결정하세요.",
     "adventure_scene": "무엇 것입니다 당신 do? Every 선택 도형 당신의 이야기!",
     "analysis_complete": "분석 완료! I found 일부 어휘 및 키 개념 worth exploring.",
@@ -10156,7 +10156,7 @@
     "type_timeline": "순서 빌더",
     "type_timeline_desc": "Sequencing 활동 adapted 에 학년 수준",
     "full_pack": "전체 리소스 Pack • 선택 모든",
-    "deselect_all": "? Deselect 모든",
+    "deselect_all": "↩ Deselect 모든",
     "estimate": "예상",
     "api_calls": "API 호출",
     "start_batch": "생성",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating 당신의 personalized 버전...",
     "bridge_projection": "Projection 모드",
     "bridge_exit_projection": "종료 프로젝션",
-    "bridge_offline_info": "No 실시간 세션 • preview 위에 이것 device 만",
+    "bridge_offline_info": "No 실시간 세션 — preview 위에 이것 device 만",
     "bridge_term_saved": "저장 \"{term}\" 에 용어집",
     "bridge_term_save_failed": "Failed 에 저장 용어",
     "bridge_save_term": "저장 에 용어집",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "사용자 정의 언어...",
     "bridge_f2f_custom_placeholder": "예: Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "모든 용어 저장됨 에 용어집!",
-    "bridge_terms_saved": "? 모든 저장",
+    "bridge_terms_saved": "✅ 모든 저장",
     "fullpack_group_target": "대상 그룹",
     "fullpack_group_current": "현재 설정",
     "fullpack_group_all": "모든 그룹",
@@ -12182,7 +12182,11 @@
       "trapezoid": "사다리꼴",
       "simpson": "심슨",
       "rectangles_n": "직사각형 (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "설명이 준비되었습니다.",
+      "a11y_back_to_tools": "도구로 돌아가기",
+      "a11y_snapshot": "스냅숏",
+      "a11y_next": "다음"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ 이 브라우저는 오디오를 지원하지 않습니다",
@@ -12306,13 +12310,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI 설명 생성, 수준은",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "읽기 수준:",
+      "aria_reading_level_group": "읽기 수준",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13937,8 +13941,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? 올바른! It\\",
-      "that": "? 저것\\",
+      "correct_it": "✅ 올바른! It\\",
+      "that": "❌ 저것\\",
       "linear": "일차",
       "quadratic": "이차",
       "cubic": "삼차",
@@ -14212,7 +14216,8 @@
       "angle_u00b0": "각도 (°)",
       "velocity_ms": "속도 (m/s)",
       "gravity_msu00b2": "중력 (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "설명이 준비되었습니다."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14240,7 +14245,10 @@
       "codominant_desc": "두 대립유전자가 모두 완전히 발현됩니다. 이형접합체는 두 형질을 동시에 보입니다.",
       "sexLinked_desc": "이 형질은 X 염색체에 있습니다. 이는 X 연관 열성 유전(혈우병, 적록 색맹 등)을 나타냅니다. 남성(XY)은 발현에 사본 하나만 필요하지만 여성(XX)은 두 개가 필요합니다.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM 도구로 돌아가기",
+      "a11y_snapshot": "스냅숏",
+      "a11y_close_flashcard": "카드 닫기"
     },
     "circuit": {
       "meter_status_ammeter_short": "안전하지 않은 배치: 단락 경로",
@@ -14532,8 +14540,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? 올바른!",
-      "it": "? It\\"
+      "correct": "✅ 올바른!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "첫 풀이",
@@ -14649,8 +14657,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? 올바른!",
-      "answer": "? 답변:",
+      "correct": "✅ 올바른!",
+      "answer": "❌ 답변:",
       "hydrogen": "수소",
       "helium": "헬륨",
       "lithium": "리튬",
@@ -14792,7 +14800,7 @@
       "reddish_metal_used_since_the": "Reddish metal 사용됨 since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal 저것 prevents rust",
       "best_conductor_of_electricity_among": "최고 conductor 의 electricity among 모든 metals",
-      "dense_soft_shiny_precious_metal": "밀도가 높고 부드러우며 광택이 나는 귀금속 • 절대 녹슬지 않습니다",
+      "dense_soft_shiny_precious_metal": "밀도가 높고 부드러우며 광택이 나는 귀금속 — 절대 녹슬지 않습니다",
       "strong_as_steel_but_45": "Strong as steel 하지만 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal 저것 gives rubies 그들의 red 색상",
       "essential_for_steel_production_and": "Essential 위한 steel production 및 bone 건강",
@@ -15898,7 +15906,9 @@
       "our_sun_is_born": "Our Sun 입니다 Born",
       "present_day": "현재",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "도구로 돌아가기",
+      "a11y_simulation_speed": "시뮬레이션 속도"
     },
     "rocks": {
       "igneous": "화성암",
@@ -18823,7 +18833,10 @@
       "garage_desc": "엔진, 녹, 반응 — 화학 작업장",
       "classroom_desc": "비커와 실험이 있는 실제 과학 교실",
       "outdoors_desc": "밖으로 나가 보세요 — 자연은 가장 큰 실험실입니다.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "도구로 돌아가기",
+      "a11y_snapshot": "스냅숏",
+      "a11y_next": "다음"
     },
     "converter": {
       "u2705_saved_to_history": "✅ 기록에 저장됨!",
@@ -19610,7 +19623,40 @@
       "read_what_special_education_law_actually": "특수교육법이 실제로 무엇이라 말하는지, 그 자체의 말로 읽으세요. IDEA 파트 B와 제504조의 실제 조문을 eCFR에서 가져와 날짜를 찍고, 검색할 수 있으며, 연방과 주 규정을 나란히 둡니다. 무엇도 바꿔 쓰거나 생성하지 않습니다. 공식 조문이 불러와지지 않으면 도구가 추측 대신 그렇다고 말합니다.",
       "applied_k_12_behavior_practice_what": "유치원부터 고등학교까지의 응용 행동 실무 — 학교심리사와 교사가 이 과학으로 실제로 무엇을 하는지. 3단계 PBIS 틀, FBA 기능에 대응시킨 대체 행동, 배경 사건(대부분의 BIP가 놓치는 느린 유발 요인), Geoff Colvin의 7단계 행동 폭발 주기, 그리고 메인주 제33장에 근거한 신체 제지와 격리의 윤리. BehaviorLab의 자매 도구.",
       "marine_biology_behavioral_science_of_octopuses": "문어, 오징어, 갑오징어, 앵무조개의 해양생물학과 행동과학. 대표 콘텐츠: Hunter Sim — 종, 서식지, 먹이, 전술을 고르고 위장 미니게임을 하며 덮치는 순간을 맞추세요. 야외 노트식 생물학 상식이 열립니다(색소포의 작동, 뇌 9개, 파란 피, 분사 추진). 10종 야외 도감에 지능·위장·분사 속도 수치가 함께 실려 있습니다.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, HS-PS2. 경간·높이·하중·재료를 조절하는 트러스 응력 시뮬레이터, 교량 형식 비교(거더, 트러스, 아치, 현수, 사장), 재료 데이터베이스, 힘의 종류, 실제 사례 연구(Tacoma Narrows, Hyatt Regency, Tay, Silver, 그리고 Brooklyn, Golden Gate, Akashi, Millau), 공학 설계 주기, AP 형식 퀴즈, 인쇄용 설계 사양서."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, HS-PS2. 경간·높이·하중·재료를 조절하는 트러스 응력 시뮬레이터, 교량 형식 비교(거더, 트러스, 아치, 현수, 사장), 재료 데이터베이스, 힘의 종류, 실제 사례 연구(Tacoma Narrows, Hyatt Regency, Tay, Silver, 그리고 Brooklyn, Golden Gate, Akashi, Millau), 공학 설계 주기, AP 형식 퀴즈, 인쇄용 설계 사양서.",
+      "the_gutenberg_style_screw_press_as": "구텐베르크식 나사 압축 인쇄기를 실제로 돌아가는 시뮬레이션으로. 손잡이를 당기고, 직접 활자를 짜고, 찍힌 자국을 보세요. 여기에 재료과학(납·주석·안티모니 합금), 경제(책 한 권 비용의 붕괴), 역사(종교개혁, 과학혁명), 타이포그래피, 그리고 인쇄기 뒤에 있던 사람들(역사가 잊은 여성 인쇄공까지). 중학교 교과 통합 수업을 위해 만들었습니다.",
+      "three_js_stoop_simulator_deep_science": "Three.js 급강하 시뮬레이터와 맹금류 사냥 역학의 깊은 과학. 240 mph로 나는 매가 되어 보고, 530 psi 발톱의 하피수리가 되어 보고, 소리 없는 큰뿔부엉이가 되어 보세요. 8종, 12개 절: 발톱 힘, 시력(사람의 4-8배, 황조롱이는 자외선까지), 비행 물리, 올빼미의 무음 비행, 종단속도 계산기, DDT 이후의 회복과 지금도 진행 중인 보전 위기, 그리고 실루엣과 전체 인상으로 하는 야외 식별.",
+      "practice_reading_and_completing_the_documents": "어른의 삶이 굴러가는 서류를 읽고 채우는 연습을 하세요. 입사 지원서, W-4 양식, 임대차 계약, 진료 접수지, 운전 허가, 그리고 당신 자신의 IEP 회의 초대장. 모든 칸을 쉬운 말로 풀고, 대가를 치를 수 있는 칸에는 표시를 하고, 누군가 지금 서명하라고 몰아붙일 때를 대비한 압박 상황과 시간을 달라고 말하는 문장까지. 모든 연습은 지어낸 사람으로 하며, 절대 당신의 실제 정보를 쓰지 않습니다.",
+      "how_swimming_works_stroke_physics_survival": "수영이 어떻게 되는지(영법의 물리와 생존 기술), 그리고 헤엄치는 사람이라면 알아야 할 찬물, 이안류, 얼음, 구명조끼, 구조에 관한 것들. 영법을 눈으로 뜯어보고, 부력과 추진의 과학을 익히고, 실제로 목숨을 구하는 생존 기술(배영 뜨기, 선헤엄, HELP 자세, 모여 있기)을 배웁니다. 출처: CDC, USCG, AAP, NAA, NOAA, USA Swimming. 교육용으로만: 실제로 수영을 배우려면 수영 지도자를 찾으세요.",
+      "tax_paycheck_calculator_data_literacy_decision": "세금과 급여명세 계산기, 데이터 문해력, 의사결정 행렬, 계약서 읽기, 기록과 서류 업무, 이동 계획, 취업 준비, 이력서 작성, 포트폴리오 증빙 정리, 면접 연습, 의사소통 기술, 시간 관리, 건강보험, 치아 관리, 몸 관리의 인간공학, 수면 습관, 약품 표시, 진료 준비, 집 안전, 디지털 안전, 음식 앞에서의 편안함, 그리고 일상생활을 위한 응용과학.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3, HS-LS4. 미생물의 세계: 세균(이로운 것과 병을 일으키는 것), 바이러스(COVID, 독감, HIV, 파지, 홍역), 현미경법(광학, 위상차, 형광, 전자, AFM), 항생제 내성의 진화, 사람·토양·바다의 미생물군, 백신과 면역계, 발효(사워도우, 요구르트, 김치, 사우어크라우트, 콤부차, 치즈), 사례 연구(Snow, Fleming, MRSA, COVID와 mRNA, FMT), 퀴즈, 그리고 인쇄용 실험실 안전·미생물 참고 자료.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "열한 개 지역에 걸친 열다섯 개의 환경 돌봄 캠페인. 메인주의 여러 시기에 걸친 긴 캠페인 다섯 개, 여기에 다섯 개 메커닉 계열을 모두 아우르는 지역 간 시나리오 열 개: 불(오스트레일리아의 Yarralin, 북캘리포니아의 Karuk), 보전(Yellowstone, 르완다의 Akagera), 공중보건(뭄바이 뎅기열, 라이베리아의 2014년 에볼라), 유역(Klamath 강, Murray-Darling 분지), 기후(마셜 제도, 방글라데시 삼각주). 같은 메커닉 계열에서 메인주 캠페인과 지역 간 시나리오를 모두 마치면 계열 짝짓기 통찰이 열립니다.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3, MS-ESS3-3. 144개 필지 격자 위에, 실제로 서로 충돌하는 요건들을 상대로 마을을 설계하세요. 마을 셋, 각각 다른 결정적 제약이 있습니다. Riverbend는 빗물과 채권이 조입니다. Mesa Hollow는 대수층이 고정되어 있고 농장이 그것을 마시고 있습니다. Harborlight는 계획이 2050년에도 통해야 합니다. 합리식 유출, 물수지, 해수면 상승 여유, 네트워크상의 도보 거리, 그리고 비용이 매겨진 도로망 — 각각 펼치면 그 공식이 보입니다. Assumption Lab은 같은 계획을 공표된 두 매개변수 묶음으로 다시 돌려, 어떤 결론이 둘 다 견디는지 학생들이 보게 합니다. 지도, 편집 가능한 필지 표, 같은 계획의 3D 모델. 토론 발문과 기록된 역사가, 이 도구가 모형화하기를 거부한 질문들을 떠맡습니다. 점수도 없고 정답지도 없습니다.",
+      "codap_data_science": "CODAP: 데이터 과학",
+      "lumen_research_canvas": "Lumen: 연구 캔버스",
+      "evolab_evolution": "EvoLab: 진화",
+      "dino_lab": "공룡 실험실",
+      "nutritionlab_nutrition_science": "NutritionLab: 영양 과학",
+      "birdlab_i_spy_ornithology": "BirdLab: 찾아보는 조류학",
+      "openbim_companion": "OpenBIM: 동반 안내서",
+      "applab_ai_app_generator": "AppLab: AI 앱 생성기",
+      "access_lens": "접근성 렌즈",
+      "sim_shelf": "시뮬레이션 선반",
+      "zoom_gallery": "확대 갤러리",
+      "sourcebook": "출처 자료집",
+      "wheel_fire_pottery_lab": "물레와 불: 도예 실험실",
+      "echo_navigator": "메아리 길잡이",
+      "learning_lab_how_learning_works": "Learning Lab: 학습은 어떻게 일어나는가",
+      "weldlab_welding_metal_joining": "WeldLab: 용접과 금속 접합",
+      "bikelab_physics_repair": "BikeLab: 물리와 정비",
+      "fisherlab_boating_fishing_sim": "FisherLab: 항해와 낚시 시뮬레이터",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: 홍합 양식 시뮬레이터",
+      "throwlab_sports_physics": "ThrowLab: 스포츠 물리",
+      "skatelab_skate_bmx_physics": "SkateLab: 스케이트와 BMX 물리",
+      "playlab_strategy_on_the_field": "PlayLab: 경기장의 전략",
+      "kepler_colony": "케플러 식민지",
+      "birdlab_life_list": "BirdLab: 라이프 리스트",
+      "petslab_decoder": "PetsLab: 행동 해독기"
     },
     "area": {
       "volume": "부피..."
@@ -19650,7 +19696,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "도구로 돌아가기",
+      "a11y_snapshot": "스냅숏",
+      "a11y_next": "다음",
+      "a11y_simulation_speed": "시뮬레이션 속도",
+      "a11y_close_flashcard": "카드 닫기"
     },
     "solar_sys": {
       "venus": "금성",
@@ -20472,7 +20523,8 @@
       "scaled_volume_changed": "🔵 크기 조정됨 (부피 변경)",
       "skewed_shape_deformed": "🟠 기울어짐 (형태 변형)",
       "degenerate_volume_0": "💀 퇴화됨 (부피 → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "길잡이 진행 상황"
     },
     "numberline": {
       "first_mark": "첫 표시",
@@ -22615,7 +22667,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1}년이 시작됩니다."
     },
     "optics": {
       "optics_lab": "광학 실험실",
@@ -22961,7 +23014,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "로컬 분석용 SQL 질의"
     },
     "geosandbox": {
       "loading_3d_engine": "3D 엔진 로드 중...",
@@ -23311,7 +23365,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "조각을 지웠습니다"
     },
     "algebraCAS": {
       "solve": "🔍 풀기",
@@ -25927,7 +25982,8 @@
       "bench_punchline_c": " mm이며, 이는 같은 1 mL가 250 mL 비커에서 이르는 높이의 약 ",
       "bench_punchline_d": "배입니다. 비커에서는 두께 ",
       "bench_punchline_e": " mm의 얇은 막이 되어 눈으로 볼 수도, 하물며 읽을 수도 없습니다. 뷰렛으로 적정하고 비커로 하지 않는 이유가 바로 이것입니다.",
-      "explain_label": "당신의 설명"
+      "explain_label": "당신의 설명",
+      "sr_explanation_ready": "설명이 준비되었습니다."
     },
     "economicslab": {
       "six_figures": "6자리 수입",
@@ -27907,7 +27963,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "성찰을 저장했습니다."
     },
     "anatomy": {
       "system_explorer": "계통 탐험가",
@@ -28489,7 +28546,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D 카메라 초기화"
     },
     "dna": {
       "back_to_tools": "도구로 돌아가기",
@@ -29866,7 +29924,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "성찰을 저장했습니다."
     },
     "angles": {
       "back_to_tools": "도구로 돌아가기",
@@ -30680,7 +30739,8 @@
       "explain_how_each_parameter_shapes_a_si": "각 매개변수가 사인파를 어떻게 형성하는지 설명하세요.",
       "design_note_discrete_5_state_marker_no": "설계 노트: 이산적인 5가지 상태 표시; 파동 점수 없음; 정답 공개 없음 — 의도된 설계.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "설명이 준비되었습니다."
     },
     "typingpractice": {
       "typing_practice_menu": "타자 연습 메뉴",
@@ -31034,7 +31094,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "메뉴로 돌아가기"
     },
     "music": {
       "edm_lead": "EDM 리드",
@@ -33585,7 +33646,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "답 고르기: {value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34349,7 +34411,7 @@
       "sculpt_engine_failed": "조각 엔진을 불러올 수 없습니다.",
       "sculpt_failed": "조각에 실패했습니다 — 더 간단한 설명을 시도하세요.",
       "sr_sculpted": "조각을 배치함",
-      "sr_art_cleared": "조각을 제거함",
+      "sr_art_cleared": "조각을 지웠습니다",
       "assess_failed": "코치가 응답할 수 없습니다 — 다시 시도하세요.",
       "sr_assessed": "코칭 피드백이 빌더 패널 아래에 준비되었습니다",
       "recall_needs_more": "먼저 2개 그룹에 최소 4개의 아이디어를 추가하세요",
@@ -35208,7 +35270,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "꺼짐",
+      "sr_nothing_to_redo": "다시 실행할 것이 없습니다.",
+      "sr_nothing_to_undo": "실행 취소할 것이 없습니다.",
+      "sr_dir_left": "왼쪽",
+      "sr_dir_right": "오른쪽"
     },
     "arithmetic": {
       "selected": " 선택했습니다.",
@@ -39254,7 +39321,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR는 천정 복사점과 한계 등급 6.5를 기준으로 표준화되어 있습니다. 이 대략적인 추정치는 맑고 달이 없는 하늘과 개체수 지수 2.2를 가정합니다. 보틀 등급은 한계 등급을 대략적으로만 나타내며, 표준보다 어두운 하늘에서는 ZHR을 넘을 수 있습니다. 복사점 고도가 낮거나 하늘이 밝으면 추정치가 줄어듭니다.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM 도구로 돌아가기"
     },
     "autorepair": {
       "back_to_menu": "메뉴로 돌아가기",
@@ -39995,7 +40063,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "점수: {value2}점 중 {value1}점",
+      "a11y_open_2": "{value1} 열기",
+      "a11y_option": "보기 {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "지각",
@@ -40098,7 +40169,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "설명이 준비되었습니다."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40844,7 +40916,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "설명이 준비되었습니다.",
+      "a11y_investigation_progress": "탐구 진행 상황",
+      "a11y_flight_debrief": "비행 되짚기",
+      "a11y_tutorial_progress": "길잡이 진행 상황"
     },
     "behaviorlab": {
       "chain_reaction": "연쇄 반응",
@@ -41018,7 +41094,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "설명이 준비되었습니다.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43528,7 +43604,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "살펴본 모듈: {value1}",
+      "a11y_score_out_of": "점수: {value2}점 중 {value1}점",
+      "sr_selected": "선택됨: {value1}",
+      "sr_quiz_reset": "퀴즈를 초기화했습니다"
     },
     "brainatlas": {
       "group_systems": "계통",
@@ -48684,7 +48764,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "답 고르기: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "퀴즈 마스터",
@@ -49828,7 +49909,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "선택됨: {value1}"
     },
     "echotrainer": {
       "wall": "벽",
@@ -51287,7 +51369,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "살펴본 모듈: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "탄소 계산기",
@@ -52367,7 +52450,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "메뉴로 돌아가기",
+      "sr_getting_critique": "평을 가져오는 중...",
+      "sr_critique_ready": "평이 준비되었습니다."
     },
     "flightsim": {
       "game_controls": "🎮 게임 조작",
@@ -52573,7 +52659,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "비행 시뮬레이터 조종석 화면. W/S 피치, A/D 뱅크, Shift/Ctrl 스로틀, 대괄호로 플랩 조작, X 휠 브레이크, Q 퀴즈, F 힘, Space 일시정지, I 정보.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52585,7 +52671,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "포틀랜드(ME) 출발 자유 비행",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52632,7 +52718,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "상하이 타워",
       "learn": "Learn",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
@@ -58457,7 +58543,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "살펴본 모듈: {value1}",
+      "sr_loaded": "{value1} 불러옴",
+      "sr_showing": "{value1} 표시 중",
+      "sr_opening": "{value1} 여는 중"
     },
     "platetectonics": {
       "pacific": "태평양",
@@ -58719,7 +58809,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63279,7 +63369,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "설명이 준비되었습니다.",
+      "sr_off": "꺼짐",
+      "sr_edge_left": "왼쪽",
+      "sr_edge_right": "오른쪽",
+      "sr_correct": "정답입니다.",
+      "sr_not_quite": "조금 다릅니다."
     },
     "playlab": {
       "back": "← 뒤로",
@@ -63347,7 +63443,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "코치가 오프라인입니다.",
+      "sr_drill_stopped": "연습을 멈췄습니다."
     },
     "printingpress": {
       "menu": "← 메뉴",
@@ -65486,7 +65584,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "메뉴로 돌아가기",
+      "a11y_open": "{value1} 열기",
+      "sr_selected": "선택됨: {value1}",
+      "sr_loaded": "{value1} 불러옴",
+      "sr_opening": "{value1} 여는 중",
+      "sr_correct": "정답입니다.",
+      "sr_not_quite": "조금 다릅니다.",
+      "sr_year_begins": "{value1}년이 시작됩니다.",
+      "sr_question_reset_try_again": "문제를 초기화했습니다. 다시 해 보세요.",
+      "sr_not_quite_see_the_explanation": "조금 다릅니다. 설명을 보세요."
     },
     "raptorhunt": {
       "show_answer": "표시 답변",
@@ -67135,7 +67243,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} 열기",
+      "a11y_flight_debrief": "비행 되짚기"
     },
     "renewables": {
       "menu": "← 메뉴",
@@ -67835,7 +67945,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "메뉴로 돌아가기",
+      "sr_getting_critique": "평을 가져오는 중...",
+      "sr_critique_ready": "평이 준비되었습니다.",
+      "sr_quiz_reset": "퀴즈를 초기화했습니다"
     },
     "roadready": {
       "let_s_start": "시작합시다 →",
@@ -70702,7 +70816,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM 도구로 돌아가기",
+      "a11y_local_analytical_sql_query": "로컬 분석용 SQL 질의"
     },
     "stewardship": {
       "back": "← 뒤로",
@@ -71279,7 +71395,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "메뉴로 돌아가기",
+      "sr_question_reset_try_again": "문제를 초기화했습니다. 다시 해 보세요."
     },
     "throwlab": {
       "back": "← 뒤로",
@@ -71504,7 +71622,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D 카메라 초기화",
+      "sr_coach_is_offline": "코치가 오프라인입니다.",
+      "sr_drill_stopped": "연습을 멈췄습니다."
     },
     "weldlab": {
       "menu": "← 메뉴",
@@ -73066,7 +73187,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "살펴본 모듈: {value1}",
+      "a11y_score_out_of": "점수: {value2}점 중 {value1}점",
+      "sr_quiz_reset": "퀴즈를 초기화했습니다",
+      "sr_loaded": "{value1} 불러옴",
+      "sr_showing": "{value1} 표시 중",
+      "sr_not_quite_see_the_explanation": "조금 다릅니다. 설명을 보세요."
     },
     "worldbuilder": {
       "grade_level": "학년 수준",
@@ -73972,7 +74099,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "읽기 수준",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74659,7 +74786,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "생명의 나무",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76514,7 +76641,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "보기 {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D 카메라 시점"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76526,6 +76655,22 @@
       "finish": "알겠어요!",
       "replay": "도움말",
       "replay_aria": "튜토리얼 보기"
+    },
+    "pets": {
+      "sr_back_to_menu": "메뉴로 돌아가기",
+      "sr_getting_critique": "평을 가져오는 중...",
+      "sr_critique_ready": "평이 준비되었습니다."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM 도구로 돌아가기",
+      "a11y_3d_camera_views": "3D 카메라 시점"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "탐구 진행 상황"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "다시 실행할 것이 없습니다.",
+      "sr_nothing_to_undo": "실행 취소할 것이 없습니다."
     }
   },
   "glossary_health": {
@@ -77128,7 +77273,7 @@
       "person": "사람\\",
       "phase_label": "단계 명칭",
       "rationale_which_antecedent_does_this_address": "근거 (어떤 선행 사건을 다루는지?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "접근 방식을 성찰해 보십시오...\\n• 무엇이 잘 되었습니까?\\n• 무엇을 다르게 하시겠습니까?\\n• 다음에 어떤 전략을 연습하고 싶으십니까?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "접근 방식을 성찰해 보십시오...\n• 무엇이 잘 되었습니까?\n• 무엇을 다르게 하시겠습니까?\n• 다음에 어떤 전략을 연습하고 싶으십니까?",
       "reinforcement_how_you": "⭐ Reinforcement (어떻게 당신\\",
       "replacement_behavior_functionally_equivalent": "✅ 대체 행동 (기능적으로 동등함)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77136,7 +77281,7 @@
       "search_81_tools": "🔍 검색 80+ 도구…",
       "search_aba_terms": "🔍 검색 ABA 용어...",
       "search_terms_eg_reinforcement_fba_data": "🔍 검색 용어... (e.g. \"reinforcement\", \"FBA\", \"데이터\")",
-      "session_1_3nsession_2_7nsession_3_5n": "세션 1: 3\\n세션 2: 7\\n세션 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "세션 1: 3\n세션 2: 7\n세션 3: 5\n...",
       "setting_eg_math_class_cafeteria": "설정 (e.g., 수학 학급, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "가정에서 관찰하신 것을 공유해 주십시오 — 강점, 우려 사항, 문화적 맥락, 또는 학교 팀을 위한 제안...",
       "step_description": "단계 description...",
@@ -78607,7 +78752,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "홈 높이",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80590,7 +80735,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "개념 이미지",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80626,10 +80771,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "모든 개념에 사물 배치하기",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "배치 진행 상황",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80642,7 +80787,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "가능한 이름",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80654,7 +80799,7 @@
     "recall_mode_label": "How to answer",
     "recall_mode_typed": "Type",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "개념 회상",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82211,7 +82356,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect 닫기",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82220,7 +82365,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "과제 필터링",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82258,15 +82403,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "{n}번 문항",
+    "q_choices_aria": "{n}번 문항의 선택지, 한 줄에 하나씩",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "{n}번 문항 삭제",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "{n}번 문항의 척도 단계",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "{n}번 문항의 답변 유형",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82276,10 +82421,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title}의 선택할 수 있는 링크",
+    "scale_high_aria": "높은 쪽 끝의 레이블",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "낮은 쪽 끝의 레이블",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82299,7 +82444,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "과제 상태 요약",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82315,9 +82460,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "자동으로 업데이트됩니다",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "선택할 수 있는 숙제 링크",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82326,7 +82471,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "숙제 QR 코드",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84774,7 +84919,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "발문과 채점 기준의 발달 수준 선택",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84782,7 +84927,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "교사 보기 켜기 또는 끄기",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84813,17 +84958,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "음성 메모 녹음 일시정지",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "음성 메모 녹음 다시 시작",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "음성 메모 녹음 시작",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "녹음 정지",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85209,22 +85354,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven 인정 사유",
+    "recent_deliveries_aria": "최근의 비공개 AlloHaven 인정",
+    "token_amount_aria": "AlloHaven 토큰 수량",
+    "token_cap_aria": "학생 한 명당 세션당 AlloHaven 토큰 상한"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "목표를 충족하면서 허용되는 예외",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "이 목표에 대해 앱이 추적하는 선택적 진행 신호",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "팀 전체가 함께, 또는 학생별로 각각",
+    "name_aria": "학급 목표 이름, 이 기기에만 저장됩니다",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "이 목표가 포함하는 학생",
+    "template_aria": "학급 목표 시작 템플릿",
+    "tokens_aria": "이 목표를 달성했을 때 학생 한 명당 지급되는 토큰"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85242,7 +85387,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox 관리자 토큰(선택 사항)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85272,17 +85417,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "손 들었음",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "선택할 수 있는 라이브 메일함 참여 링크",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox의 라이브 세션",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85309,7 +85454,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "실시간 연결",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85341,7 +85486,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox 웹 앱의 URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

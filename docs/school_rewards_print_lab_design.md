@@ -38,7 +38,7 @@ The same surface now includes explicit Analyze, Conservative Repair, Job Ticket,
 
 - allowlisted `RECIPE`, `GLB`, and `STL` inputs
 - a 5 MiB browser file cap, 250,000-triangle cap, 128-mesh cap, physical-size guardrails, and a configurable printer bed profile
-- constrained recipe inspection and conservative upper-bound material estimation
+- constrained recipe inspection and rough material scenarios with an explicit fixed shell-fraction assumption
 - binary/ASCII STL inspection, including degenerate triangles, connected components, signed-volume/winding advisories, and open/non-manifold edges
 - opt-in conservative STL cleanup that removes degenerate triangles and welds near-identical vertices while reporting exactly what changed
 - GLB v2 metadata inspection, embedded-resource enforcement, and rejection of decoder-dependent content the pilot cannot safely decode

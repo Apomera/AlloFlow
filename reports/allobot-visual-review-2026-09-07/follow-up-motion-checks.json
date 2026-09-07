@@ -1,0 +1,61 @@
+{
+  "accessories": [
+    {
+      "accessory": "behavior-watch",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    },
+    {
+      "accessory": "bard-cap",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "centered accessory"
+    },
+    {
+      "accessory": "test-prep-kit",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    },
+    {
+      "accessory": "source-inbox",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    },
+    {
+      "accessory": "progress-orbit",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    },
+    {
+      "accessory": "maze-scroll",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    },
+    {
+      "accessory": "resource-folder",
+      "atRest": "running",
+      "duringWork": "paused",
+      "entrance": "running"
+    }
+  ],
+  "resume": "running",
+  "keyboardGreeting": true,
+  "keyboardControls": true,
+  "listeningDuringWork": "running",
+  "generationDuringWork": "running",
+  "offscreen": {
+    "avatarPaused": true,
+    "controlIconPaused": false
+  },
+  "onscreenResumed": true,
+  "reducedMotion": {
+    "svgPaused": true,
+    "svgTime": 0,
+    "runningAnimations": 0
+  }
+}

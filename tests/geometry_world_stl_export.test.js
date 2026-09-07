@@ -28,7 +28,7 @@ function loadStlMath() {
   expect(end).toBeGreaterThan(start);
   // eslint-disable-next-line no-new-func
   return new Function(SOURCE.slice(start, end)
-    + '\nreturn { applyMatrix4, triangleNormal, stlTrianglesFromMesh, coversFullFace };')();
+    + '\nreturn { applyMatrix4, triangleNormal, stlTrianglesFromMesh, coversFullFace, windOutward };')();
 }
 
 const stl = loadStlMath();
@@ -153,6 +153,67 @@ describe('coversFullFace', () => {
     expect(stl.coversFullFace(undefined)).toBe(false);
     expect(stl.coversFullFace(block('cube', 'grass'))).toBe(false);
     expect(stl.coversFullFace({})).toBe(false);
+  });
+});
+
+// Signed enclosed volume by the divergence theorem: positive when every triangle
+// is wound counter-clockwise seen from outside, which is what STL and three.js
+// both take to mean "this side is out".
+function signedVolume(verts) {
+  let vol = 0;
+  for (let i = 0; i + 8 < verts.length; i += 9) {
+    const a = verts.slice(i, i + 3), b = verts.slice(i + 3, i + 6), c = verts.slice(i + 6, i + 9);
+    vol += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6;
+  }
+  return Math.round(vol * 10000) / 10000;
+}
+
+/** The two hand-authored vertex tables, in the order they appear: halfA, quarter. */
+function authoredShapeVertices() {
+  const start = SOURCE.indexOf('  function createShapeGeometry(shapeId) {');
+  const end = SOURCE.indexOf('  function applyMatrix4(e, v) {');
+  expect(start).toBeGreaterThan(-1);
+  expect(end).toBeGreaterThan(start);
+  const body = SOURCE.slice(start, end);
+  const tables = [...body.matchAll(/new Float32Array\(\[([\s\S]*?)\]\)/g)]
+    .map((m) => m[1].replace(/\/\/[^\n]*/g, '').split(',').map((s) => s.trim()).filter(Boolean).map(Number));
+  expect(tables).toHaveLength(2);
+  tables.forEach((t) => expect(t.every(Number.isFinite)).toBe(true));
+  return { halfA: tables[0], quarter: tables[1] };
+}
+
+describe('hand-authored shapes are wound outward', () => {
+  // Both tables are written clockwise seen from outside, so their raw signed
+  // volume is negative: face normals pointed INTO the solid. On screen that culled
+  // the near faces and lit the far ones, so a wedge read as a dark hollow; in the
+  // STL a 12-block build summed to 8.25 units instead of 9.75. createShapeGeometry
+  // passes both tables through windOutward, which is what this pins.
+  it('the raw tables are inside-out, which is why windOutward exists', () => {
+    const { halfA, quarter } = authoredShapeVertices();
+    expect(signedVolume(halfA)).toBeCloseTo(-0.5, 4);
+    expect(signedVolume(quarter)).toBeCloseTo(-0.25, 4);
+  });
+
+  it('windOutward turns them right-side out with the volume each claims', () => {
+    const { halfA, quarter } = authoredShapeVertices();
+    expect(signedVolume(stl.windOutward(halfA.slice()))).toBeCloseTo(0.5, 4);
+    expect(signedVolume(stl.windOutward(quarter.slice()))).toBeCloseTo(0.25, 4);
+  });
+
+  it('windOutward is applied to both authored shapes and nothing else', () => {
+    const start = SOURCE.indexOf('  function createShapeGeometry(shapeId) {');
+    const end = SOURCE.indexOf('  function applyMatrix4(e, v) {');
+    const body = SOURCE.slice(start, end);
+    expect(body.match(/BufferAttribute\(windOutward\(verts\), 3\)/g)).toHaveLength(2);
+    // BoxGeometry is already outward-wound; wrapping it would turn the cube inside out.
+    expect(body).not.toMatch(/windOutward\(new THREE\.BoxGeometry/);
+  });
+
+  it('windOutward is an involution and leaves a partial trailing triangle alone', () => {
+    const tri = [0, 0, 0, 1, 0, 0, 0, 1, 0, 9, 9];
+    const once = stl.windOutward(tri.slice());
+    expect(once).toEqual([0, 0, 0, 0, 1, 0, 1, 0, 0, 9, 9]);
+    expect(stl.windOutward(once.slice())).toEqual(tri);
   });
 });
 

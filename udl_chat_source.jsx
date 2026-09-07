@@ -327,14 +327,34 @@ const resolveBlueprintSourceChoice = (options = {}) => {
 
 // Standard coaching replies are exclusively a UDL Chat concern. Keeping the
 // prompt builder here avoids routing chat-owned state back through the host.
+const _chatText = (t, key, fallback, params = {}) => {
+  let value;
+  try { value = typeof t === 'function' ? t(key, params) : null; } catch (_) {}
+  if (typeof value !== 'string' || !value || value === key) value = fallback;
+  return value.replace(/\{(\w+)\}/g, (match, name) => params[name] == null ? match : String(params[name]));
+};
+const _isReviewQuestion = (text) => /^(?:why|what|how|when|which|should|would)\b|^(?:can|could) you (?:explain|tell|describe|clarify)\b/i.test(String(text || '').trim());
+let _botInteractionSerial = 0;
+const _botInteractionId = () => 'bot-' + Date.now().toString(36) + '-' + (++_botInteractionSerial);
+const _workflowMetadata = (pending, status = 'review') => {
+  if (!pending.id) pending.id = (pending.workflow && pending.workflow.workflowId) || _botInteractionId();
+  return { operationKind: 'command-plan', operationId: pending.id, operationStatus: status };
+};
+const _workflowMode = pending => pending.mode || (pending.saving ? 'save' : pending.editing ? 'edit' : 'review');
+const _setWorkflowMode = (pending, mode) => { pending.mode = mode; delete pending.saving; delete pending.editing; };
+const _blueprintChatMessage = (config, text) => ({
+  role: 'model', type: 'blueprint', text, blueprintId: config.blueprintId || _botInteractionId(),
+  blueprintSummary: (config.resourcePlan || []).map(row => row.tool || row.type).filter(Boolean).join(', '),
+});
+
 const _generateStandardChatResponse = async (userText, deps = {}) => {
   const {
     udlMessages, history, inputText, isParentMode, isIndependentMode,
     currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
-    callGemini, setUdlMessages, warnLog,
+    callGemini, setUdlMessages, warnLog, t,
   } = deps;
   try {
-    const historyText = udlMessages.map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
+    const historyText = (udlMessages || []).slice(-20).map(m => `${m.role === 'user' ? 'User' : 'Expert'}: ${m.text}`).join('\n');
     const resourceContext = history.length > 0
       ? history.map(h => `- ${h.type}: ${h.title}`).join('\n')
       : 'No resources generated yet.';
@@ -358,28 +378,18 @@ const _generateStandardChatResponse = async (userText, deps = {}) => {
           - Source Material (Excerpt): "${truncatedInput || 'No source text provided yet.'}"
           - Generated Resources History:
           ${resourceContext}
-          INTERACTION PROTOCOL (Follow these phases strictly):
-          **PHASE 1: DISCOVERY & COACHING**
-          If the user's request is broad or lacks specific context, do NOT provide a list of strategies yet.
-          - Ask 1-2 probing questions to help the ${isParentMode ? 'parent' : (isIndependentMode ? 'learner' : 'teacher')} clarify their goal, ${isIndependentMode ? 'sticking point' : 'student barrier'}, or specific need.
-          - Example: "${isParentMode ? 'That sounds fun! What part does your child find tricky?' : (isIndependentMode ? 'Great goal! Which part of this topic feels shakiest when you try to explain it out loud?' : 'That sounds like a great topic. What is the specific barrier your students are facing?')}",
-          **PHASE 2: CONFIRMATION**
-          Once you feel you have sufficient context from the conversation, explicitly ASK the user if they are ready for the solution.
-          - Example: "I have a clear picture now. Shall I generate the specific actionable steps for you?",
-          **PHASE 3: DELIVERY (Rigid Format)**
-          IF (and ONLY IF) the user confirms (e.g. "Yes", "Go ahead", "Please do"), output the advice in a STRICT, SAVABLE FORMAT.
-          - REMOVE ALL CONVERSATIONAL FILLER. Do not say "Here is the plan" or "I hope this helps".
-          - Start immediately with the first strategy.
-          - Use Bold Headers and Bullet Points only.
-          Example of Phase 3 Output:
-          **Strategy: [Name]**
-          - **Action:** [Specific Step]
-          - **Rationale:** [Why it works]
-          Conversation History:
+                     CONVERSATION GUIDANCE:
+           - Answer a specific question directly using the lesson context. A question about a plan is not permission to change it.
+           - If essential context is missing, ask one focused question; otherwise offer useful guidance now.
+           - Do not require a separate confirmation merely to explain or suggest something.
+           - Only actual app actions or generation go through the app's review controls. Never claim you executed an action from this conversation response.
+           - Use concise prose for explanations. When giving actionable strategies, use **Strategy: [Name]** with **Action:** and **Rationale:** bullets so the teacher can save them.
+Conversation History:
           ${historyText}
           User: ${userText}
           Expert:`;
     const responseText = await callGemini(fullPrompt);
+    if (typeof responseText !== 'string' || !responseText.trim()) throw new Error('Empty conversation response');
     const hasStrategyHeader = /[*]{2}Strategy:.*[*]{2}/i.test(responseText);
     const hasActionableBullets = /-\s+[*]{2}.*[*]{2}:/i.test(responseText);
     const isActionable = hasStrategyHeader || hasActionableBullets;
@@ -388,8 +398,12 @@ const _generateStandardChatResponse = async (userText, deps = {}) => {
       text: responseText,
       isActionable,
     }]);
+    return { ok: true };
   } catch (error) {
-    warnLog('Unhandled error in generateStandardChatResponse:', error);
+    if (typeof warnLog === 'function') warnLog('Unhandled error in generateStandardChatResponse:', error);
+    setUdlMessages(prev => [...prev, { role: 'model', type: 'chat-error', retryText: userText,
+      text: _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
+    return { ok: false };
   }
 };
 
@@ -579,6 +593,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
       callGemini,
       setUdlMessages,
       warnLog,
+      t,
     });
   const modifyBlueprintWithAI = typeof modifyBlueprintWithAIOverride === 'function'
     ? modifyBlueprintWithAIOverride
@@ -1193,7 +1208,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                              // renderer ignores msg.text, so the 'presented' guidance
                              // was invisible until it moved onto the chooser.
                              setUdlMessages(prev => [...prev,
-                                 { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                                 _blueprintChatMessage(config, t('chat_guide.blueprint.presented')),
                                  buildBlueprintReviewChoices()
                              ]);
                              setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
@@ -1247,7 +1262,7 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                         // uiIds repeat across plans and would badge these rows as landed.
                         if (typeof setBlueprintExecutionResult === 'function') setBlueprintExecutionResult(null);
                         setUdlMessages(prev => [...prev,
-                             { role: 'model', type: 'blueprint', text: t('chat_guide.blueprint.presented') },
+                             _blueprintChatMessage(config, t('chat_guide.blueprint.presented')),
                              buildBlueprintReviewChoices()
                          ]);
                          setGuidedFlowState(prev => ({ ...prev, currentStage: 'blueprint_review', pendingBlueprintContext: null }));
@@ -1292,8 +1307,9 @@ const handleSendUDLMessage = async (manualText = null, deps) => {
                      // Asking used to REWRITE the plan and answer "Blueprint
                      // updated!" — the classifier fails safe to QUESTION, so a
                      // misread now leaves the plan alone instead of editing it.
-                     const _isQuestion = _pendingMode === 'question'
-                         || (!_pendingMode && !hasBlueprintEditRequest && intentResult.intent === 'QUESTION');
+                     const _explicitEdit = /^(?:please\s+)?(?:add|include|remove|delete|replace|swap|change|revise|update|make|set|move|reorder)\b/i.test(textToSend.trim());
+                     const _isQuestion = _isReviewQuestion(textToSend) || _pendingMode === 'question'
+                         || (!_pendingMode && ((intentResult.intent === 'QUESTION' && !_explicitEdit) || (!hasBlueprintEditRequest && intentResult.intent !== 'MODIFY')));
                      if (_isQuestion) {
                          setIsChatProcessing(true);
                          try {
@@ -2208,7 +2224,7 @@ function _createBotCommandWorkflowService(AC, ctx) {
 }
 
 function _preparePendingCommandWorkflow(AC, ctx, steps, originalText, extras) {
-  const pending = Object.assign({ steps: Array.isArray(steps) ? steps : [], originalText: originalText || '' }, extras || {});
+  const pending = Object.assign({ id: _botInteractionId(), mode: 'review', steps: Array.isArray(steps) ? steps : [], originalText: originalText || '' }, extras || {});
   const service = _createBotCommandWorkflowService(AC, ctx);
   if (!service) return pending;
   const created = service.createDraft({
@@ -2258,21 +2274,31 @@ function _commandWorkflowPlanCard(pending, AC, ctx, t, prefix) {
     : (t('chat_guide.plan_confirm2') || 'Dry run passed. Run all steps, edit the workflow, or keep chatting.');
   const choices = [];
   if (!blocked) choices.push({ label: '\u25B6 ' + (t('chat_guide.plan_run') || 'Run all'), value: '__allo_plan_run' });
-  choices.push({ label: '\u270F Edit steps', value: '__allo_plan_edit' });
+  choices.push({ label: _chatText(t, 'chat_guide.plan_edit_steps', 'Edit steps'), value: '__allo_plan_edit' });
+  choices.push({ label: _chatText(t, 'chat_guide.plan_ask', 'Ask about this plan'), value: '__allo_plan_ask' });
   const audience = AC && typeof AC.getCommandAudience === 'function' ? AC.getCommandAudience(ctx || {}) : 'teacher';
   if (audience === 'teacher') {
-    choices.push({ label: '\u2606 Save as Command Blueprint', value: '__allo_plan_save' });
-    choices.push({ label: '\u25A4 Saved Command Blueprints', value: '__allo_plan_library' });
+    choices.push({ label: _chatText(t, 'chat_guide.plan_save', 'Save as Command Blueprint'), value: '__allo_plan_save' });
+    choices.push({ label: _chatText(t, 'cmd.open_command_blueprints', 'Saved Command Blueprints'), value: '__allo_plan_library' });
   }
   choices.push({ label: (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' });
-  return { role: 'model', type: 'choices', text: intro + '\n\n' + lines + '\n\n' + footer, choices };
+  const workflowSteps = steps.map((step, index) => {
+    const contract = AC && AC.getCommandContract ? AC.getCommandContract(step.commandId) : {};
+    return { ...step, stepId: pending.workflow && pending.workflow.steps[index] && pending.workflow.steps[index].stepId,
+      label: (commands.find(command => command.id === step.commandId) || {}).label || step.commandId,
+      fields: Object.fromEntries((contract.params || []).map(key => [key, (contract.paramSchema || {})[key] || { type: 'string', label: key }])) };
+  });
+  return { role: 'model', type: 'choices', ..._workflowMetadata(pending), workflowId: pending.workflow && pending.workflow.workflowId,
+    workflowMode: _workflowMode(pending), workflowSteps,
+    text: intro + '\n\n' + lines + '\n\n' + footer, choices };
+
 }
 
 function _commandWorkflowLibraryCard(service, ctx, t, mode, prefix, hasCurrentPlan = true) {
   const returnChoices = () => hasCurrentPlan ? [
-    { label: 'Back to current plan', value: '__allo_plan_show' },
+    { label: _chatText(t, 'chat_guide.plan_back', 'Back to current plan'), value: '__allo_plan_show' },
     { label: (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
-  ] : [{ label: 'Close library', value: '__allo_plan_skip' }];
+  ] : [{ label: _chatText(t, 'chat_guide.plan_close_library', 'Close library'), value: '__allo_plan_skip' }];
   const report = service && typeof service.listSaved === 'function' ? service.listSaved(ctx) : null;
   if (!report || !report.ok) {
     const message = report && report.errors && report.errors[0] && report.errors[0].message;
@@ -2294,11 +2320,45 @@ function _commandWorkflowLibraryCard(service, ctx, t, mode, prefix, hasCurrentPl
 // Every host binding arrives via deps; the host wrapper is contract-gated.
 async function planAndSendUdlMessage(manualText, deps) {
   const {
+    captureIntentSnapshot, restoreIntentSnapshot, inputText, setInputText, answerUdlQuestion, setIsChatProcessing = () => {},
     _alloCmdCtx, _botCommandPlanningRef, _pendingBotCmdRef, _pendingBotPlanRef, _planRunRef, _planUndoRef, lastIntentSnapshotRef, setActiveView, setGeneratedContent, setHistory, setUdlInput, setUdlMessages, udlInput, udlMessages, _sendUdlToChat, activeView, generatedContent, history, t,
   } = deps;
 
     const _AC = window.AlloModules && window.AlloModules.AlloCommands;
-    const _rawUtter = (manualText != null ? manualText : udlInput) || '';
+    const _inputAction = manualText && typeof manualText === 'object' ? manualText : null;
+    const _rawUtter = _inputAction ? '' : String((manualText != null ? manualText : udlInput) || '');
+    const answerQuestion = async text => {
+      setIsChatProcessing(true);
+      try {
+        if (typeof answerUdlQuestion === 'function') return await answerUdlQuestion(text);
+        setUdlMessages(prev => [...prev, { role: 'model', type: 'chat-error', retryText: text,
+          text: _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
+        return { ok: false };
+      } catch (_) {
+        setUdlMessages(prev => [...prev, { role: 'model', type: 'chat-error', retryText: text,
+          text: _chatText(t, 'chat_guide.reply_failed', 'I could not get a response. Your question is kept; retry when you are ready.') }]);
+        return { ok: false };
+      } finally { setIsChatProcessing(false); }
+    };
+    const closeOperation = (pending, text) => setUdlMessages(prev => [...prev, { role: 'model', text,
+      ..._workflowMetadata(pending, 'closed') }]);
+    const libraryCard = (...args) => ({ ..._commandWorkflowLibraryCard(...args), ..._workflowMetadata(_pendingBotPlanRef.current || {}) });
+    const commandCard = (pending, prefix) => {
+      if (!pending.id) pending.id = _botInteractionId();
+      const contract = _AC && _AC.getCommandContract ? _AC.getCommandContract(pending.commandId) : {};
+      return { role: 'model', type: 'choices', operationKind: 'command', operationId: pending.id, operationStatus: 'review',
+        text: prefix || _chatText(t, 'chat_guide.cmd_confirm_prompt', 'It looks like you want to **{label}**. Run that, or keep chatting?', { label: pending.label || pending.commandId }),
+        commandReview: { requestId: pending.id, params: pending.params || {}, fields: Object.fromEntries((contract.params || []).map(key => [key, (contract.paramSchema || {})[key] || { type: 'string', label: key }])) },
+        choices: [ { label: _chatText(t, 'chat_guide.cmd_confirm_do', 'Do it'), value: '__allo_do' },
+          { label: _chatText(t, 'chat_guide.cmd_confirm_skip', 'Just chat'), value: '__allo_skip' } ] };
+    };
+    const commandMessage = (result, id) => {
+      const view = _AC && typeof _AC.formatCommandResult === 'function' ? _AC.formatCommandResult(result, { t }) : {
+        status: !result || !result.handled || result.ok === false ? 'error' : result.pending ? 'pending' : 'success',
+        text: (result && result.narration) || _chatText(t, 'voice.action_unavailable', 'That action is no longer available here, so nothing was changed.')
+      };
+      return { role: 'model', text: view.text, operationKind: 'command', operationId: id, operationStatus: view.status };
+    };
     const _previousBotPlanning = _botCommandPlanningRef.current || {};
     if (_previousBotPlanning.controller) { try { _previousBotPlanning.controller.abort(); } catch (_) {} }
     const _botPlanningSerial = (Number(_previousBotPlanning.serial) || 0) + 1;
@@ -2319,6 +2379,10 @@ async function planAndSendUdlMessage(manualText, deps) {
       setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (t('chat_guide.plan_busy') || 'A plan is still running — say “stop” to end it after the current step, or wait for it to finish.') }]);
       return;
     }
+    if (_inputAction && _inputAction.action === 'retry-chat') {
+      await answerQuestion(String(_inputAction.text || ''));
+      return;
+    }
     // Standalone teacher entry from the command palette. Seed a library-only
     // pending state so load/delete chips reuse the exact reviewed workflow path
     // without inventing a second modal or execution route.
@@ -2327,14 +2391,14 @@ async function planAndSendUdlMessage(manualText, deps) {
       const _libraryService = _AC ? _createBotCommandWorkflowService(_AC, _libraryCtx) : null;
       _pendingBotPlanRef.current = { libraryOnly: true, steps: [], originalText: '', editing: false, saving: false };
       setUdlInput('');
-      setUdlMessages(prev => [...prev, _commandWorkflowLibraryCard(_libraryService, _libraryCtx, t, null, null, false)]);
+      setUdlMessages(prev => [...prev, libraryCard(_libraryService, _libraryCtx, t, null, null, false)]);
       return;
     }
     // Stray plan sentinels with no pending plan (e.g. a double-click on an
     // old chip after the run ended): swallow them instead of leaking the
     // literal "__allo_plan_run" into the chat/router.
     const _isStoredPlanSentinel = /^__allo_plan_(?:load|delete):/.test(String(_rawUtter));
-    if (!_pendingBotPlanRef.current && (_rawUtter === '__allo_plan_run' || _rawUtter === '__allo_plan_skip' || _rawUtter === '__allo_plan_stop' || _rawUtter === '__allo_plan_edit' || _rawUtter === '__allo_plan_show' || _rawUtter === '__allo_plan_save' || _rawUtter === '__allo_plan_library' || _rawUtter === '__allo_plan_delete' || _isStoredPlanSentinel)) {
+    if (!_pendingBotPlanRef.current && (_rawUtter === '__allo_plan_run' || _rawUtter === '__allo_plan_skip' || _rawUtter === '__allo_plan_stop' || _rawUtter === '__allo_plan_edit' || _rawUtter === '__allo_plan_ask' || _rawUtter === '__allo_plan_show' || _rawUtter === '__allo_plan_save' || _rawUtter === '__allo_plan_library' || _rawUtter === '__allo_plan_delete' || _isStoredPlanSentinel)) {
       setUdlInput('');
       return;
     }
@@ -2355,11 +2419,12 @@ async function planAndSendUdlMessage(manualText, deps) {
         setGeneratedContent(_snap.generatedContent);
         setHistory(_snap.history);
         setActiveView(_snap.activeView);
+        if (typeof setInputText === 'function' && typeof _snap.inputText === 'string') setInputText(_snap.inputText);
         if (_snap.settings) {
           lastIntentSnapshotRef.current = _snap.settings;
-          try { restoreIntentSnapshot(); } catch (_) {}
+          if (typeof restoreIntentSnapshot !== 'function' || restoreIntentSnapshot() === false) throw new Error('Settings restore failed');
         }
-        setUdlMessages(prev => [...prev, { role: 'model', text: '↩ ' + (t('chat_guide.plan_undone') || 'Restored your content and settings to the moment before the plan ran.') }]);
+        setUdlMessages(prev => [...prev, { role: 'model', ..._workflowMetadata({ id: 'undo' }, 'closed'), text: '↩ ' + (t('chat_guide.plan_undone') || 'Restored your content and settings to the moment before the plan ran.') }]);
         try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_undone') || 'Plan undone — content and settings restored.'); } catch (_) {}
       } catch (_) {
         setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_undo_failed') || 'The undo didn’t fully apply — check your content before continuing.') }]);
@@ -2377,27 +2442,60 @@ async function planAndSendUdlMessage(manualText, deps) {
     // (1) Resolving a confirm chip we posted on the previous turn.
     const _pending = _pendingBotCmdRef.current;
     if (_pending) {
+      if (_inputAction && _inputAction.action === 'command-params') {
+        if (_inputAction.requestId !== _pending.id) return;
+        _pending.params = _AC.sanitizeCommandParams(_pending.commandId, _inputAction.params || {});
+        setUdlMessages(prev => [...prev, commandCard(_pending)]);
+        return;
+      }
       const _reply = String(_rawUtter).trim().toLowerCase();
       const _isDo = _rawUtter === '__allo_do' || ['yes','yeah','yep','ok','okay','do it','sure','confirm','run it','go'].indexOf(_reply) >= 0;
-      const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_skip' || ['no','nope','just chat','cancel','stop','chat','nevermind','never mind'].indexOf(_reply) >= 0;
       if (_isDo || _isSkip) {
         _pendingBotCmdRef.current = null;
         setUdlInput('');
         if (_isDo && _AC && typeof _AC.runCommandById === 'function') {
           try {
             const _res = await _AC.runCommandById(_alloCmdCtx(), _pending.commandId, _pending.params, { confirmed: true });
-            const _narr = (_res && _res.narration) || (t('chat_guide.cmd_done') || 'Done.');
-            setUdlMessages(prev => [...prev, { role: 'model', text: '✅ ' + _narr }]);
-            try { if (window.alloAnnounce) window.alloAnnounce(_narr); } catch (_) {}
+            if (_res && _res.needsInput) {
+              _pending.needsInput = true;
+              _pendingBotCmdRef.current = _pending;
+              setUdlMessages(prev => [...prev, commandCard(_pending, _res.narration)]);
+              return;
+            }
+            const id = _pending.id || _botInteractionId();
+            const message = commandMessage(_res, id);
+            setUdlMessages(prev => [...prev, message]);
+            try { if (window.alloAnnounce) window.alloAnnounce(message.text); } catch (_) {}
+            if (_res && _res.pending && _res.completion) {
+              Promise.resolve(_res.completion).then(result => {
+                setUdlMessages(prev => prev.map(item => item.operationId === id && item.operationStatus === 'pending' ? commandMessage(result, id) : item));
+              }).catch(() => {
+                setUdlMessages(prev => prev.map(item => item.operationId === id && item.operationStatus === 'pending' ? commandMessage({ handled: true, ok: false, narration: _chatText(t, 'cmd.failed', 'That command could not finish.') }, id) : item));
+              });
+            }
           } catch (_) {
-            setUdlMessages(prev => [...prev, { role: 'model', text: (t('chat_guide.cmd_failed') || "I couldn't run that — try the ⌘K command menu.") }]);
+            setUdlMessages(prev => [...prev, commandMessage({ handled: true, ok: false, narration: _chatText(t, 'chat_guide.cmd_failed', 'I could not run that command.') }, _pending.id)]);
           }
           return;
         }
-        // "Just chat" — answer the original message conversationally.
+        closeOperation(_pending, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
+        if (_isSkip && !['__allo_skip', 'just chat', 'chat'].includes(_reply)) return;
+        if (_isDo) { setUdlMessages(prev => [...prev, commandMessage(null, _pending.id)]); return; }
         return _sendUdlToChat(_pending.originalText);
       }
-      // Any other message cancels the pending confirmation and is handled below.
+      if (_pending.needsInput && _AC && _AC.getCommandContract) {
+        const fields = _AC.getCommandContract(_pending.commandId).params || [];
+        if (fields.length === 1 && _rawUtter.trim()) {
+          _pending.params = _AC.sanitizeCommandParams(_pending.commandId, { [fields[0]]: _rawUtter });
+          _pending.needsInput = false;
+          setUdlInput('');
+          setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, commandCard(_pending)]);
+          return;
+        }
+      }
+      // Any other message closes the pending confirmation and is handled below.
+      closeOperation(_pending, _chatText(t, 'chat_guide.command_closed', 'The proposed command is closed.'));
       _pendingBotCmdRef.current = null;
     }
 
@@ -2411,7 +2509,8 @@ async function planAndSendUdlMessage(manualText, deps) {
     if (_pendingPlan) {
       const _reply = String(_rawUtter).trim().toLowerCase();
       const _isRun = _rawUtter === '__allo_plan_run' || ['yes','yeah','yep','ok','okay','do it','run it','run all','go'].indexOf(_reply) >= 0;
-      const _isSkip = _rawUtter === '__allo_plan_skip' || ['no','nope','just chat','cancel','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      const _isSkip = _rawUtter === '__allo_plan_skip' || ['no','nope','just chat','cancel','stop','chat','nevermind','never mind'].indexOf(_reply) >= 0;
+      const _isAsk = _rawUtter === '__allo_plan_ask';
       const _isEdit = _rawUtter === '__allo_plan_edit';
       const _isShow = _rawUtter === '__allo_plan_show';
       const _isSave = _rawUtter === '__allo_plan_save';
@@ -2421,29 +2520,58 @@ async function planAndSendUdlMessage(manualText, deps) {
       const _deleteSavedMatch = String(_rawUtter).match(/^__allo_plan_delete:(.+)$/);
       const _workflowCtx = _alloCmdCtx();
       const _workflowService = _AC ? _createBotCommandWorkflowService(_AC, _workflowCtx) : null;
+      if (_inputAction && /^workflow-/.test(_inputAction.action || '')) {
+        if (_inputAction.workflowId !== (_pendingPlan.workflow && _pendingPlan.workflow.workflowId)) return;
+        if (!_workflowService || !_pendingPlan.workflow) return;
+        if (!_pendingPlan.workflow.steps.some(step => step.stepId === _inputAction.stepId)) return;
+        const changes = _inputAction.action === 'workflow-params'
+          ? { replaceSteps: _pendingPlan.workflow.steps.map(step => step.stepId === _inputAction.stepId ? { ...step, params: _inputAction.params || {} } : step) }
+          : _inputAction.action === 'workflow-param'
+          ? { setParam: { stepId: _inputAction.stepId, key: _inputAction.key, value: _inputAction.value } }
+          : _inputAction.action === 'workflow-remove' ? { removeStepId: _inputAction.stepId }
+          : _inputAction.action === 'workflow-move' ? { moveStep: { stepId: _inputAction.stepId, toIndex: _inputAction.toIndex } } : null;
+        if (!changes) return;
+        const revision = _workflowService.revise(_pendingPlan.workflow, changes, _workflowCtx);
+        if (revision && revision.ok) {
+          _pendingPlan.workflow = revision.value;
+          _pendingPlan.steps = revision.value.steps.map(step => ({ commandId: step.commandId, params: step.params, why: step.why }));
+          _pendingPlan.dryRun = _workflowService.dryRun(revision.value, _workflowCtx);
+          _setWorkflowMode(_pendingPlan, 'edit');
+          setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t)]);
+        } else {
+          setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t,
+            _chatText(t, 'chat_guide.plan_edit_failed', 'That edit could not be applied. The workflow is unchanged.'))]);
+        }
+        return;
+      }
+      if (_isAsk) {
+        _setWorkflowMode(_pendingPlan, 'ask');
+        setUdlInput('');
+        setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t,
+          _chatText(t, 'chat_guide.blueprint.question_prompt', 'Go ahead. I will answer without changing the plan.'))]);
+        return;
+      }
       if (_isSave) {
-        _pendingPlan.saving = true;
-        _pendingPlan.editing = false;
+        _setWorkflowMode(_pendingPlan, 'save');
         _pendingBotPlanRef.current = _pendingPlan;
         setUdlInput('');
-        setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: 'What should this Command Blueprint be called? It will stay on this device and reopen as a draft.', choices: [
-          { label: 'Back to current plan', value: '__allo_plan_show' },
+        setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan), text: _chatText(t, 'chat_guide.plan_name_prompt', 'What should this Command Blueprint be called? It will stay on this device and reopen as a draft.'), choices: [
+          { label: _chatText(t, 'chat_guide.plan_back', 'Back to current plan'), value: '__allo_plan_show' },
           { label: (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
         ] }]);
         return;
       }
       if (_isLibrary) {
-        _pendingPlan.saving = false;
-        _pendingPlan.editing = false;
+        _setWorkflowMode(_pendingPlan, 'library');
         _pendingBotPlanRef.current = _pendingPlan;
         setUdlInput('');
-        setUdlMessages(prev => [...prev, _commandWorkflowLibraryCard(_workflowService, _workflowCtx, t, null, null, !_pendingPlan.libraryOnly)]);
+        setUdlMessages(prev => [...prev, libraryCard(_workflowService, _workflowCtx, t, null, null, !_pendingPlan.libraryOnly)]);
         return;
       }
       if (_isDeleteLibrary) {
         _pendingBotPlanRef.current = _pendingPlan;
         setUdlInput('');
-        setUdlMessages(prev => [...prev, _commandWorkflowLibraryCard(_workflowService, _workflowCtx, t, 'delete', null, !_pendingPlan.libraryOnly)]);
+        setUdlMessages(prev => [...prev, libraryCard(_workflowService, _workflowCtx, t, 'delete', null, !_pendingPlan.libraryOnly)]);
         return;
       }
       if (_loadSavedMatch) {
@@ -2465,7 +2593,7 @@ async function planAndSendUdlMessage(manualText, deps) {
           setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_loadedPending, _AC, _workflowCtx, t, 'Loaded "' + (_loadedPending.templateName || 'Command Blueprint') + '" as a draft and ran a fresh safety check.')]);
         } else {
           const _loadError = _loaded && _loaded.errors && _loaded.errors[0] && _loaded.errors[0].message;
-          setUdlMessages(prev => [...prev, _commandWorkflowLibraryCard(_workflowService, _workflowCtx, t, null, _loadError || 'That saved Command Blueprint could not be loaded.', !_pendingPlan.libraryOnly)]);
+          setUdlMessages(prev => [...prev, libraryCard(_workflowService, _workflowCtx, t, null, _loadError || 'That saved Command Blueprint could not be loaded.', !_pendingPlan.libraryOnly)]);
         }
         return;
       }
@@ -2475,46 +2603,46 @@ async function planAndSendUdlMessage(manualText, deps) {
         try { _savedWorkflowId = decodeURIComponent(_deleteSavedMatch[1]); } catch (_) {}
         const _deleted = _workflowService && _workflowService.deleteSaved(_savedWorkflowId, _workflowCtx);
         const _deleteError = _deleted && _deleted.errors && _deleted.errors[0] && _deleted.errors[0].message;
-        setUdlMessages(prev => [...prev, _commandWorkflowLibraryCard(_workflowService, _workflowCtx, t, null, _deleted && _deleted.ok ? 'Saved Command Blueprint deleted.' : (_deleteError || 'That saved Command Blueprint could not be deleted.'), !_pendingPlan.libraryOnly)]);
+        setUdlMessages(prev => [...prev, libraryCard(_workflowService, _workflowCtx, t, null, _deleted && _deleted.ok ? 'Saved Command Blueprint deleted.' : (_deleteError || 'That saved Command Blueprint could not be deleted.'), !_pendingPlan.libraryOnly)]);
         return;
       }
-      if (_pendingPlan.saving && _rawUtter !== '__allo_plan_run' && _rawUtter !== '__allo_plan_skip') {
+      if (_workflowMode(_pendingPlan) === 'save' && !_isSkip && !/^__allo_/.test(_rawUtter) && !_inputAction) {
         setUdlInput('');
         const _saved = _workflowService && _pendingPlan.workflow && _workflowService.saveSaved(_pendingPlan.workflow, _rawUtter, _workflowCtx);
         if (_saved && _saved.ok) {
           _pendingPlan.workflow = _saved.value.workflow;
           _pendingPlan.templateName = _saved.value.name;
-          _pendingPlan.saving = false;
+          _setWorkflowMode(_pendingPlan, 'review');
           _pendingBotPlanRef.current = _pendingPlan;
           setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t, 'Saved as "' + _saved.value.name + '". It will require a fresh review each time it is loaded.')]);
         } else {
           const _saveError = _saved && _saved.errors && _saved.errors[0] && _saved.errors[0].message;
-          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: _saveError || 'That Command Blueprint could not be saved.', choices: [
-            { label: 'Try another name', value: '__allo_plan_save' },
-            { label: 'Back to current plan', value: '__allo_plan_show' }
+          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan), text: _saveError || 'That Command Blueprint could not be saved.', choices: [
+            { label: _chatText(t, 'chat_guide.plan_try_name', 'Try another name'), value: '__allo_plan_save' },
+            { label: _chatText(t, 'chat_guide.plan_back', 'Back to current plan'), value: '__allo_plan_show' }
           ] }]);
         }
         return;
       }
       if (_isEdit) {
-        _pendingPlan.editing = true;
+        _setWorkflowMode(_pendingPlan, 'edit');
         _pendingBotPlanRef.current = _pendingPlan;
         setUdlInput('');
-        setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: 'Tell me one plan edit: "remove step 2", "move step 3 first", or "set step 1 grade to 4". Any edit returns the workflow to draft review.', choices: [
-          { label: 'Show current plan', value: '__allo_plan_show' },
+        setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan), workflowId: _pendingPlan.workflow && _pendingPlan.workflow.workflowId, workflowMode: 'edit', workflowSteps: _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t).workflowSteps, text: _chatText(t, 'chat_guide.plan_edit_prompt', 'Edit the numbered steps below, or describe one change. Every edit returns the workflow to draft review.'), choices: [
+          { label: _chatText(t, 'chat_guide.plan_show', 'Show current plan'), value: '__allo_plan_show' },
           { label: (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
         ] }]);
         return;
       }
       if (_isShow) {
-        _pendingPlan.editing = false;
-        _pendingPlan.saving = false;
+        if (_workflowService && _pendingPlan.workflow) _pendingPlan.dryRun = _workflowService.dryRun(_pendingPlan.workflow, _workflowCtx);
+        _setWorkflowMode(_pendingPlan, 'review');
         _pendingBotPlanRef.current = _pendingPlan;
         setUdlInput('');
         setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_pendingPlan, _AC, _workflowCtx, t)]);
         return;
       }
-      if (_pendingPlan.editing && !_isRun && !_isSkip) {
+      if (_workflowMode(_pendingPlan) === 'edit' && !_isRun && !_isSkip && !_isReviewQuestion(_rawUtter)) {
         setUdlInput('');
         if (_workflowService && _pendingPlan.workflow) {
           const _revision = _workflowService.reviseFromText(_pendingPlan.workflow, _rawUtter, _workflowCtx);
@@ -2523,15 +2651,15 @@ async function planAndSendUdlMessage(manualText, deps) {
               workflow: _revision.value,
               steps: _revision.value.steps.map(step => ({ commandId: step.commandId, params: step.params, why: step.why })),
               dryRun: _workflowService.dryRun(_revision.value, _workflowCtx),
-              editing: false
+              mode: 'review'
             });
             _pendingBotPlanRef.current = _nextPending;
             setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, _commandWorkflowPlanCard(_nextPending, _AC, _workflowCtx, t, 'Workflow updated: ' + (_revision.summary || 'edit applied.'))]);
           } else {
             const _editError = _revision && _revision.errors && _revision.errors[0] && _revision.errors[0].message;
-            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: 'I could not apply that edit. ' + (_editError || 'Try a numbered step edit.'), choices: [
-              { label: 'Try another edit', value: '__allo_plan_edit' },
-              { label: 'Show current plan', value: '__allo_plan_show' },
+            setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan), text: 'I could not apply that edit. ' + (_editError || 'Try a numbered step edit.'), choices: [
+              { label: _chatText(t, 'chat_guide.plan_try_edit', 'Try another edit'), value: '__allo_plan_edit' },
+              { label: _chatText(t, 'chat_guide.plan_show', 'Show current plan'), value: '__allo_plan_show' },
               { label: (t('chat_guide.plan_skip') || 'Just chat'), value: '__allo_plan_skip' }
             ] }]);
           }
@@ -2541,9 +2669,11 @@ async function planAndSendUdlMessage(manualText, deps) {
         return;
       }
       if (_isSkip) {
+        closeOperation(_pendingPlan, _chatText(t, 'chat_guide.plan_closed', 'The command workflow is closed.'));
         _pendingBotPlanRef.current = null;
         setUdlInput('');
         if (_pendingPlan.libraryOnly) return;
+        if (!['__allo_plan_skip', 'just chat', 'chat'].includes(_reply)) return;
         return _sendUdlToChat(_pendingPlan.originalText);
       }
       if (_isRun) {
@@ -2570,16 +2700,20 @@ async function planAndSendUdlMessage(manualText, deps) {
           // merely to the state before the continuation.
           if (!_pendingPlan.resume || !_planUndoRef.current) {
             try {
+              if (typeof captureIntentSnapshot !== 'function' || typeof restoreIntentSnapshot !== 'function') throw new Error('Snapshot helpers unavailable');
+              lastIntentSnapshotRef.current = null;
               captureIntentSnapshot('plan');
-              _planUndoRef.current = { generatedContent, history, activeView, settings: lastIntentSnapshotRef.current };
+              if (!lastIntentSnapshotRef.current) throw new Error('Snapshot unavailable');
+              _planUndoRef.current = { generatedContent, history, activeView, inputText, settings: lastIntentSnapshotRef.current };
             } catch (_) { _planUndoRef.current = null; }
           }
-          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
+          setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan, 'running'), text: '▶ ' + (t('chat_guide.plan_running') || 'Running the plan — I’ll report each step here.'), choices: [
             { label: '🛑 ' + (t('chat_guide.plan_stop') || 'Stop after current step'), value: '__allo_plan_stop' }
           ] }]);
           try {
             const _pr = await _AC.runPlan(() => _alloCmdCtx(), _steps, {
               shouldStop: () => _planRunRef.current.stop,
+              stopAfterCurrent: true,
               onStep: (i, phase, cmd, narr) => {
                 if (phase === 'start') { setUdlMessages(prev => [...prev, { role: 'model', text: '⏳ ' + (i + 1) + '/' + _steps.length + ' — ' + ((cmd && cmd.label) || 'working') + '...' }]); }
                 else {
@@ -2589,8 +2723,8 @@ async function planAndSendUdlMessage(manualText, deps) {
               }
             });
             if (_pr && _pr.ok) {
-              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.'), choices: [
-                { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+              setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan, 'completed'), text: '🎉 ' + (t('chat_guide.plan_done') || 'All steps finished.'), choices: [
+                ...(_planUndoRef.current ? [{ label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }] : [])
               ] }]);
               try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.plan_done') || 'All steps finished.'); } catch (_) {}
             } else {
@@ -2600,21 +2734,21 @@ async function planAndSendUdlMessage(manualText, deps) {
               if (_canResume) {
                 _pendingBotPlanRef.current = _preparePendingCommandWorkflow(_AC, _alloCmdCtx(), _remaining, _pendingPlan.originalText, { resume: true });
                 const _countLabel = _remaining.length + ' remaining step' + (_remaining.length === 1 ? '' : 's');
-                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan, 'paused'), text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + ' ' + (t('chat_guide.plan_resume_exact') || 'The finished steps are kept. You can resume the exact remaining sequence without re-entering it.'), choices: [
                   { label: '▶ ' + (t('chat_guide.plan_resume') || 'Resume') + ' (' + _countLabel + ')', value: '__allo_plan_run' },
-                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                  ...(_planUndoRef.current ? [{ label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }] : [])
                 ] }]);
               } else if (_hasFinished) {
                 const _held = _remaining.length ? (' ' + _remaining.length + ' later step' + (_remaining.length === 1 ? ' is' : 's are') + ' still held.') : '';
-                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
-                  { label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }
+                setUdlMessages(prev => [...prev, { role: 'model', type: 'choices', ..._workflowMetadata(_pendingPlan, _pr.timedOut ? 'waiting' : 'paused'), text: '⚠️ ' + (_pr.reason || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + _held + ' ' + ((_pr && _pr.timedOut) ? (t('chat_guide.plan_timeout_wait') || 'Wait for the current background task to finish before starting another command.') : (t('chat_guide.plan_resume_hint') || 'The finished steps are kept.')), choices: [
+                  ...(_planUndoRef.current ? [{ label: '↩ ' + (t('chat_guide.plan_undo') || 'Undo plan (restore content & settings)'), value: '__allo_plan_undo' }] : [])
                 ] }]);
               } else {
-                setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
+                setUdlMessages(prev => [...prev, { role: 'model', ..._workflowMetadata(_pendingPlan, 'failed'), text: '⚠️ ' + ((_pr && _pr.reason) || (t('chat_guide.plan_failed') || 'The plan stopped early.')) + (_remaining.length ? ' The remaining sequence is preserved; resolve the blocker and ask to run it again.' : '') }]);
               }
             }
           } catch (_) {
-            setUdlMessages(prev => [...prev, { role: 'model', text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
+            setUdlMessages(prev => [...prev, { role: 'model', ..._workflowMetadata(_pendingPlan, 'failed'), text: '⚠️ ' + (t('chat_guide.plan_failed') || 'The plan stopped early.') }]);
           } finally {
             _planRunRef.current = { running: false, stop: false };
           }
@@ -2623,15 +2757,33 @@ async function planAndSendUdlMessage(manualText, deps) {
         // "Just chat" — answer the original message conversationally.
         return _sendUdlToChat(_pendingPlan.originalText);
       }
+      if (!_isRun && !_isSkip && !_inputAction && (_workflowMode(_pendingPlan) === 'ask' || _isReviewQuestion(_rawUtter))) {
+        const pendingAtQuestion = _pendingPlan;
+        const planContext = '\n\nCurrent proposed command workflow (context only; do not execute or edit):\n' +
+          _pendingPlan.steps.map((step, i) => (i + 1) + '. ' + step.commandId + ' ' + JSON.stringify(step.params || {})).join('\n');
+        setUdlInput('');
+        setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }]);
+        await answerQuestion(_rawUtter + planContext);
+        if (_pendingBotPlanRef.current === pendingAtQuestion) {
+          _setWorkflowMode(_pendingPlan, 'review');
+          if (_workflowService && _pendingPlan.workflow) _pendingPlan.dryRun = _workflowService.dryRun(_pendingPlan.workflow, _alloCmdCtx());
+          setUdlMessages(prev => [...prev, _commandWorkflowPlanCard(_pendingPlan, _AC, _alloCmdCtx(), t,
+            _chatText(t, 'chat_guide.blueprint.still_pending', 'The plan is unchanged. Ready when you are.'))]);
+        }
+        return;
+      }
+      closeOperation(_pendingPlan, _chatText(t, 'chat_guide.plan_switched', 'The previous command workflow was set aside for your new request.'));
       // Any other message cancels the pending plan and is handled below.
       _pendingBotPlanRef.current = null;
     }
+
+    if (_inputAction) return;
 
     // (2) If the last bot message is an on-screen chooser (the pack-choice
     //     buttons OR our own confirm chip), the reply belongs to that chooser —
     //     hand it straight to the chat module, never the command router.
     const _lastMsg = (Array.isArray(udlMessages) && udlMessages.length) ? udlMessages[udlMessages.length - 1] : null;
-    const _awaitingChoice = !!(_lastMsg && _lastMsg.role === 'model' && _lastMsg.type === 'choices');
+    const _awaitingChoice = !!(_lastMsg && _lastMsg.role === 'model' && _lastMsg.type === 'choices' && _lastMsg.stage);
 
     // (3) Command PREVIEW — a match only PROPOSES a confirm chip; nothing runs
     //     until the user clicks "Do it".
@@ -2678,15 +2830,8 @@ async function planAndSendUdlMessage(manualText, deps) {
             _releaseBotCommandPlanning();
             _pendingBotCmdRef.current = { commandId: _match.commandId, params: _match.params || {}, label: _match.label, originalText: _rawUtter };
             if (!manualText) setUdlInput('');
-            const _label = _match.label || (t('chat_guide.cmd_generic') || 'run a command');
-            const _q = (t('chat_guide.cmd_confirm_prompt') || 'It looks like you want to **{label}**. Run that, or keep chatting?').replace('{label}', _label);
-            // This preview returns before _sendUdlToChat can record the turn.
-            // Keep the exact request immediately beside the review card.
-            setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, { role: 'model', type: 'choices', text: _q, choices: [
-              { label: '▶ ' + (t('chat_guide.cmd_confirm_do') || 'Do it'), value: '__allo_do' },
-              { label: '💬 ' + (t('chat_guide.cmd_confirm_skip') || 'Just chat'), value: '__allo_skip' }
-            ] }]);
-            try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'That looks like a command. Confirm to run it, or keep chatting.'); } catch (_) {}
+            setUdlMessages(prev => [...prev, { role: 'user', text: String(_rawUtter) }, commandCard(_pendingBotCmdRef.current)]);
+            try { if (window.alloAnnounce) window.alloAnnounce(t('chat_guide.cmd_confirm_aria') || 'Confirm to run this command, or keep chatting.'); } catch (_) {}
             return;
           }
           // Fallback for an older cached module without preview support: it would
@@ -2694,7 +2839,7 @@ async function planAndSendUdlMessage(manualText, deps) {
           // that result rather than double-processing the message.
           if (_match && _match.handled && !_match.preview) {
             _releaseBotCommandPlanning();
-            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: '✅ ' + (_match.narration || 'Done.') }]);
+            setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, commandMessage(_match, _botInteractionId())]);
             if (!manualText) setUdlInput('');
             try { if (window.alloAnnounce) window.alloAnnounce(_match.narration); } catch (_) {}
             return;
@@ -2731,6 +2876,11 @@ async function planAndSendUdlMessage(manualText, deps) {
         const _staleBotPlanning = !_isCurrentBotCommandPlanning() || !!(error && error.name === 'AbortError');
         _releaseBotCommandPlanning();
         if (_staleBotPlanning) return;
+        if (error && error.code === 'COMMAND_PLAN_INPUT_TOO_LONG') {
+          setUdlMessages(prev => [...prev, { role: 'user', text: _rawUtter }, { role: 'model', text: error.message }]);
+          setUdlInput('');
+          return;
+        }
         /* the router must never break the chat */
       }
       _releaseBotCommandPlanning();

@@ -43,9 +43,9 @@
     "dashboard_title": "Pano / Araçlar",
     "dashboard_text": "Araç Gezinme Çubuğu ve Öğretmen Panosu erişim noktası.\n### Araç Gezinme Çubuğu\n• **Araç Simgeleri**: Herhangi bir oluşturucuya (Sınav, Sözlük, Macera vb.) tek tıklamayla atlayın.\n• **Durum Noktaları**: Yeşil = etkin içerik, Turuncu = işleniyor, Gri = boş.\n• **Mantıksal Akış**: Araçlar Girdi → Oluştur → Dışa Aktar şeklinde soldan sağa sıralanır.\n### Öğretmen Panosu Düğmesi\nÖğrenci ilerlemesini takip etmeye yönelik özel bir panel olan **Öğretmen Notlandırma Panosu**'nu açmak için Pano simgesine tıklayın:\n• **Öğrenci JSON'larını Yükle**: Öğrenciler çalışmalarını JSON dosyaları olarak dışa aktarır; toplu analiz için buraya yükleyin.\n• **Öğrenci Listesi**: Yüklenen tüm öğrencileri takma ad, tarih, sınav ilerlemesi ve Macera düzeyiyle görüntüleyin.\n• **Bireysel İnceleme**: Tüm geçmişlerini görmek için herhangi bir öğrenciye tıklayın•sınavlar, maceralar, yanıtlar.\n• **Notlandırıldı Olarak İşaretle**: Hangi öğrencileri incelediğinizi takip etmek için onay kutusu.\n• **Sınıf İçgörüleri Sekmesi**: Yaygın yanlış anlamaları ve sınıf genelindeki performansı gösteren analiz grafikleri.\n• **CSV'ye Dışa Aktar**: Not defteri içe aktarımı için sınıf verilerini indirin.\n### İlgili Üstbilgi Eylemleri\n• **Derse Atla**: En son ders planınıza hızlı dönüş.\n• **Görünüm Geçişi**: Öğretmen ve Öğrenci görünümleri arasında geçiş yapın.\n### Profesyonel İpucu\nÖğrencilerin ders sonunda JSON kayıtlarını dışa aktarmasını sağlayın, ardından verimli gece notlandırması için bunları buraya toplu yükleyin!",
     "actions_title": "Eylem Çubuğu",
-    "actions_text": "Arayüz dilini ayarlamak, canlı oturumları yönetmek, kaynakları çevirmek ve dışa aktarma araçlarını açmak için başlıktaki denetimleri kullanın.\n### Teslimden önce gözden geçirin\n• Çevrilmiş içeriği anlam ve doğruluk açısından denetleyin.\n• Seçili kaynakları ve mevcut indirme biçimlerini görmek için Document Builder açın. Öğrencilerle paylaşmadan önce sonucu önizleyin.\n• Katılım kodu almak için canlı bir oturum başlatın veya bağımsız çalışma için desteklenen bir ödev paylaşımı oluşturun.\n### Keşfetmeye devam edin\nEğitimci ve Öğrenme araç menüleri, ek planlama, değerlendirme, yaratıcı ve etkileşimli etkinlikler açar. Rehberli Mod, bu seçenekleri keşfetmeden önce odaklanmış bir ders kurmanıza yardımcı olur.",
+    "actions_text": "Arayüz dilini ayarlamak, canlı oturumları yönetmek, kaynakları çevirmek ve dışa aktarma araçlarını açmak için başlıktaki denetimleri kullanın.\n### Teslimden önce gözden geçirin\n• Çevrilmiş içeriği anlam ve doğruluk açısından denetleyin.\n• Seçili kaynakları ve mevcut indirme biçimlerini görmek için Belge Oluşturucu açın. Öğrencilerle paylaşmadan önce sonucu önizleyin.\n• Katılım kodu almak için canlı bir oturum başlatın veya bağımsız çalışma için desteklenen bir ödev paylaşımı oluşturun.\n### Keşfetmeye devam edin\nEğitimci ve Öğrenme araç menüleri, ek planlama, değerlendirme, yaratıcı ve etkileşimli etkinlikler açar. Rehberli Mod, bu seçenekleri keşfetmeden önce odaklanmış bir ders kurmanıza yardımcı olur.",
     "history_title": "Oturum Geçmişi",
-    "history_text": "Geçmiş, geçerli çalışma alanınızdaki kaynakları tutar. Kaydedilmiş bir öğeyi gözden geçirmek veya daha önceki bir sonuca dönmek için açın.\n### Bir yedek saklayın\n• Başka bir cihazda devam etmek veya çalışmanızı sonradan kurtarmak için proje yedeği kaydedin. Rehberli Mod ayrıca ilerlemenin bu cihaza kaydedilip kaydedilmediğini gösterir.\n• Bir çalışma alanı birden fazla dersin materyalini içerebilir. Dışa aktarmadan veya paylaşmadan önce seçili kaynakları denetleyin.\n### Rehberli ders paketleri\nO dersin seçili kaynaklarıyla çalışmak için Rehberli Mod içinden Document Builder açın. Genel Builder daha geniş çalışma alanını kullanabilir; bu nedenle teslimden önce içeriğini gözden geçirin.",
+    "history_text": "Geçmiş, geçerli çalışma alanınızdaki kaynakları tutar. Kaydedilmiş bir öğeyi gözden geçirmek veya daha önceki bir sonuca dönmek için açın.\n### Bir yedek saklayın\n• Başka bir cihazda devam etmek veya çalışmanızı sonradan kurtarmak için proje yedeği kaydedin. Rehberli Mod ayrıca ilerlemenin bu cihaza kaydedilip kaydedilmediğini gösterir.\n• Bir çalışma alanı birden fazla dersin materyalini içerebilir. Dışa aktarmadan veya paylaşmadan önce seçili kaynakları denetleyin.\n### Rehberli ders paketleri\nO dersin seçili kaynaklarıyla çalışmak için Rehberli Mod içinden Belge Oluşturucu açın. Genel Builder daha geniş çalışma alanını kullanabilir; bu nedenle teslimden önce içeriğini gözden geçirin.",
     "spotlight_title": "Vurgu",
     "spotlight_message": "{name} ile tanışın!",
     "dbq_title": "Belge Tabanlı Sorular",
@@ -509,7 +509,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "Belge Oluşturucu",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "Temayı değiştir",
     "close_story_forge": "StoryForge'u kapat",
     "story_creation_phases": "Öykü oluşturma aşamaları",
-    "doc_builder": "Document Builder",
+    "doc_builder": "Belge Oluşturucu",
     "close_doc_builder": "Belge oluşturucuyu kapat",
     "font_size": "Yazı tipi boyutu",
     "target_word_count": "Hedef kelime sayısı amacı",
@@ -5071,10 +5071,10 @@
     "locked": "Kilitli",
     "escaped": "Kaçtın!",
     "escaped_desc": "Tüm bulmacaları çözdün ve odadan kaçtın!",
-    "time_up": "? Süre Doldu!",
+    "time_up": "⏰ Süre Doldu!",
     "reveal_hint": "İpucunu Göster",
-    "puzzles_remaining": "{{count}} bulmaca kaldı",
-    "time_remaining": "Süre: {{time}}",
+    "puzzles_remaining": "{count} bulmaca kaldı",
+    "time_remaining": "Süre: {time}",
     "progress": "İlerleme",
     "start": "Kaçış Odasını Başlat",
     "start_hint": "Nesneleri incelemeye başlamak için zamanlayıcıyı başlat",
@@ -5085,8 +5085,8 @@
     "room_complete": "Oda Tamamlandı!",
     "loading_error": "Oda verileri yüklenemedi",
     "no_puzzle": "Bu nesne için bulmaca bulunamadı",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Kusursuz kaçış! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Kusursuz kaçış! +{xp} bonus XP",
     "puzzle_mcq": "Çoktan Seçmeli",
     "puzzle_sequence": "Sıraya Diz",
     "puzzle_cipher": "Mesajı Çöz",
@@ -5144,7 +5144,7 @@
     "clue": "İpucu",
     "clue_found": "İpucu Bulundu!",
     "clue_revealed": "Bu ipucu başka bir bulmacada işine yarayabilir...",
-    "clues_collected": "İpuçları: {{count}}/{{total}}",
+    "clues_collected": "İpuçları: {count}/{total}",
     "use_clue": "İpucunu Kullan",
     "final_door": "Çıkış Kapısı",
     "final_door_ready": "Çıkış kapısının kilidi artık açıldı!",
@@ -5170,12 +5170,12 @@
     "left": "kaldı",
     "wrong_attempts": "Yanlış Denemeler",
     "time_penalty": "-{seconds} saniye!",
-    "game_over_time": "? Süre Doldu! Zamanın tükendi.",
+    "game_over_time": "⏰ Süre Doldu! Zamanın tükendi.",
     "streak": "Seri",
     "streak_bonus": "Seri Bonusu! x{multiplier}",
     "streak_lost": "Seri bozuldu!",
     "one_minute_warning": "Bir dakika kaldı!",
-    "thirty_seconds_warning": "? Yalnızca 30 saniye kaldı!",
+    "thirty_seconds_warning": "⏰ Yalnızca 30 saniye kaldı!",
     "timer_paused": "Zamanlayıcı Duraklatıldı",
     "timer_resume": "Devam Et",
     "settings_btn": "Oda Ayarları",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "Sınıfınızla çok oyunculu kaçış odasını başlatın",
     "team_mode": "Takım Mücadelesi",
     "team_race": "Kaçışa Yarış!",
-    "team_progress": "{{team}} İlerlemesi: {{solved}}/{{total}}",
+    "team_progress": "{team} İlerlemesi: {solved}/{total}",
     "waiting_host": "Öğretmenin başlatması bekleniyor...",
-    "team_escaped": "{{team}} Takımı Kaçtı!",
+    "team_escaped": "{team} Takımı Kaçtı!",
     "all_teams_done": "Tüm Takımlar Tamamladı!",
     "your_team": "Takımın",
     "team_red": "Kırmızı Takım",
@@ -5198,7 +5198,7 @@
     "team_green": "Yeşil Takım",
     "team_yellow": "Sarı Takım",
     "team_all": "Tüm Öğrenciler",
-    "teams_competing": "{{count}} takım yarışıyor",
+    "teams_competing": "{count} takım yarışıyor",
     "first_escape": "Kaçan İlk Takım!",
     "end_game": "Oyunu Bitir",
     "end_game_confirm": "Kaçış odası tüm öğrenciler için bitirilsin mi?",
@@ -5211,8 +5211,8 @@
     "resume_game": "Oyuna Devam Et",
     "game_paused_by_teacher": "Oyun öğretmen tarafından duraklatıldı",
     "celebration_title": "Tebrikler!",
-    "you_escaped": "Takımın {{time}} içinde kaçtı!",
-    "other_team_escaped": "{{team}} kaçtı!",
+    "you_escaped": "Takımın {time} içinde kaçtı!",
+    "other_team_escaped": "{team} kaçtı!",
     "class_escaped": "Sınıf Zaferi!",
     "everyone_escaped": "Herkes kaçmak için birlikte çalıştı!",
     "hurry_up": "Devam et! Hâlâ kaçabilirsin!",
@@ -5240,7 +5240,7 @@
     "load_saved": "Kaydedileni Yükle",
     "loaded_saved": "Kaydedilen Kaçış Odası yüklendi! Gözden geçir ve hazır olduğunda başlat.",
     "no_saved": "Kaydedilmiş Kaçış Odası bulunamadı",
-    "preview_confirmed": "? Kaçış Odası kilitlendi • oynamaya hazır!",
+    "preview_confirmed": "✅ Kaçış Odası kilitlendi • oynamaya hazır!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x seri bonusu!)",
     "loaded_from_resource": "Kaynaktan yüklendi."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Uzman Çalışma Tezgahına gönder",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "Mükemmel çalışma!",
       "partial": "Güzel çaba, devam et!",
       "incorrect": "Tam doğru değil • tekrar dene!",
-      "error": "Değerlendirilemedi • lütfen tekrar deneyin.",
+      "error": "Değerlendirilemedi — lütfen tekrar deneyin.",
       "verdict_correct": "Doğru!",
       "verdict_partial": "Kısmen Doğru",
       "verdict_incorrect": "Tam Doğru Değil",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **Son Seviye**: {level}",
       "log_header": "Macera Günlüğü",
       "chapter_separator": "***",
-      "user_label": "? SEN",
+      "user_label": "➤ SEN",
       "print_button": "Hikaye Kitabını Yazdır"
     },
     "answer_key_title": "Cevap Anahtarı",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "Tanımını görmek için metindeki herhangi bir kelimeye tıklayabilirsiniz!",
     "simplified_cloze": "Kelime becerilerini test etmek için 'Cloze' modunu deneyin.",
     "simplified_quiz": "Bu metin harika görünüyor. Anlamayı kontrol etmek için bir Çıkış Bileti oluşturalım mı?",
-    "simplified_glossary": "'{term1}' ve '{term2}' gibi kelimeler destek gerektirebilir • bir Sözlük yardımcı olabilir!",
+    "simplified_glossary": "'{term1}' ve '{term2}' gibi kelimeler destek gerektirebilir — bir Sözlük yardımcı olabilir!",
     "simplified_glossary_fallback": "Bu terimlerin bazıları zorlayıcı. Bir Sözlük bu metni desteklemeye yardımcı olur.",
     "simplified_outline": "Görsel öğrenenler bu içeriğin bir Graphic Organizer'ından yararlanabilir.",
     "glossary_bingo": "Bu terimleri Bingo, Hafıza Eşleştirme, Bulmaca veya Kelime Avı gibi kelime oyunlarına dönüştürebilirsiniz!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "Bu testin titiz olduğundan emin olmak ister misiniz? Bir Standart Denetim çalıştırın.",
     "adventure_sim": "Maceralar, öğrencilerin öğrendiklerini güvenli bir simülasyonda uygulamalarını sağlar.",
     "adventure_inventory": "Hangi öğelerin toplandığını görmek için 'Envanter'i kontrol edin.",
-    "adventure_context": "{topic} hakkındaki maceranız daha fazla kaynakla zenginleşir • bir {suggestion} eklemeyi deneyin!",
+    "adventure_context": "{topic} hakkındaki maceranız daha fazla kaynakla zenginleşir — bir {suggestion} eklemeyi deneyin!",
     "adventure_context_fallback": "Ne kadar çok kaynak oluşturursanız, macera bağlamı o kadar zenginleşir.",
     "timeline_drag": "Sıralamayı yeniden düzenlemek için olayları sürükleyip bırakın.",
     "timeline_visualize": "Bu, öğrencilerin neden-sonuç ilişkilerini görselleştirmesine yardımcı olur.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "Yağmurlu bir gün için eğlenceli bir etkinlik olarak Macera Modu'nu deneyin.",
     "parent_read_along": "Birlikte okuma alıştırması yapmak için 'Birlikte Oku'yu kullanın.",
     "fallback_lesson_plan": "Harika kaynaklarınız var. Bunları bir Ders Planında birleştirelim mi?",
-    "fallback_brainstorm": "Tıkandınız mı? Benimle sohbet etmeyi deneyin ve Otomatik Tamamlama'yı açarak Taslak Modu'nu etkinleştirin • tüm dersinizi tasarlamanıza yardımcı olacağım!",
-    "fallback_export": "{topic} hakkında {count} kaynağınız var • bunları tek bir PDF olarak dışa aktarın!",
+    "fallback_brainstorm": "Tıkandınız mı? Benimle sohbet etmeyi deneyin ve Otomatik Tamamlama'yı açarak Taslak Modu'nu etkinleştirin — tüm dersinizi tasarlamanıza yardımcı olacağım!",
+    "fallback_export": "{topic} hakkında {count} kaynağınız var — bunları tek bir PDF olarak dışa aktarın!",
     "fallback_export_fallback": "Tüm bu kaynakları tek bir PDF paketi olarak dışa aktarabilirsiniz.",
     "fallback_guide": "Yolunuzu kaybederseniz AI Kılavuzu'nda 'Bana Göster'i seçin!",
     "intro_greeting": "Ses ayarlarımı düzenlemek için bana tıklayın.",
@@ -9234,7 +9234,7 @@
     "text_generated": "{topic} hakkındaki uyarlanmış metniniz hazır! Bir kelimeye tıklayarak tanımını görmeyi deneyin veya anlamayı derinleştirmek için Sözlük ya da Test gibi araçları keşfedin.",
     "flashcards_created": "Bilgi kartları oluşturuldu! Bunları Quizlet'e aktarabilir, yazdırabilir veya Hafıza Oyunu'nu deneyebilirsiniz.",
     "quiz_generated": "Test hazır! Sınıf için Sunum Modu'nu kullanın veya açık uçlu yanıtlar için Otomatik Değerlendirici'yi deneyin.",
-    "glossary_generated": "Sözlük tamamlandı! Kelime oyunlarını deneyin • Bingo, Hafıza Eşleştirme, Bulmaca, Kelime Avı ve daha fazlası!",
+    "glossary_generated": "Sözlük tamamlandı! Kelime oyunlarını deneyin — Bingo, Hafıza Eşleştirme, Bulmaca, Kelime Avı ve daha fazlası!",
     "adventure_started": "Maceranız başlıyor! Eyleminizi aşağıya yazın veya sırada ne olacağına karar vermek için seçim düğmelerini kullanın.",
     "adventure_scene": "Ne yapacaksın? Her seçim hikayeni şekillendirir!",
     "analysis_complete": "Analiz tamamlandı! Keşfetmeye değer bazı kelimeler ve temel kavramlar buldum.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "Sıralama Oluşturucu",
     "type_timeline_desc": "Sınıf düzeyine uyarlanmış sıralama etkinliği",
     "full_pack": "Tam Kaynak Paketi • Tümünü Seç",
-    "deselect_all": "? Tüm Seçimi Kaldır",
+    "deselect_all": "↩ Tüm Seçimi Kaldır",
     "estimate": "Tahmin",
     "api_calls": "API çağrısı",
     "start_batch": "Oluştur",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "Kişiselleştirilmiş sürümünüz oluşturuluyor...",
     "bridge_projection": "Yansıtma Modu",
     "bridge_exit_projection": "Yansıtmadan Çık",
-    "bridge_offline_info": "Canlı oturum yok • yalnızca bu cihazda önizleme",
+    "bridge_offline_info": "Canlı oturum yok — yalnızca bu cihazda önizleme",
     "bridge_term_saved": "\"{term}\" sözlüğe kaydedildi",
     "bridge_term_save_failed": "Terim kaydedilemedi",
     "bridge_save_term": "Sözlüğe kaydet",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "Özel dil...",
     "bridge_f2f_custom_placeholder": "örn. Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "Tüm terimler sözlüğe kaydedildi!",
-    "bridge_terms_saved": "? Tümü Kaydedildi",
+    "bridge_terms_saved": "✅ Tümü Kaydedildi",
     "fullpack_group_target": "Hedef Grup",
     "fullpack_group_current": "Mevcut Ayarlar",
     "fullpack_group_all": "Tüm Gruplar",
@@ -12429,7 +12429,11 @@
       "trapezoid": "Yamuk",
       "simpson": "Simpson",
       "rectangles_n": "Dikdörtgenler (n)",
-      "coeff_a": "Katsayı a"
+      "coeff_a": "Katsayı a",
+      "sr_explanation_ready": "Açıklama hazır.",
+      "a11y_back_to_tools": "Araçlara dön",
+      "a11y_snapshot": "Anlık görüntü",
+      "a11y_next": "İleri"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Bu tarayıcıda ses desteklenmiyor",
@@ -12553,7 +12557,7 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Yapay Zekâ açıklamasını şu seviyede oluştur:",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
@@ -14184,8 +14188,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Doğru! Bu\\",
-      "that": "? Bu\\",
+      "correct_it": "✅ Doğru! Bu\\",
+      "that": "❌ Bu\\",
       "linear": "Doğrusal",
       "quadratic": "İkinci Derece",
       "cubic": "Üçüncü Derece",
@@ -14459,7 +14463,8 @@
       "angle_u00b0": "Açı (°)",
       "velocity_ms": "Hız (m/s)",
       "gravity_msu00b2": "Yer çekimi (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Açıklama hazır."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Rastgele: ",
@@ -14487,7 +14492,10 @@
       "codominant_desc": "Her iki alel de tamamen ifade edilir. Heterozigot, iki özelliği aynı anda gösterir.",
       "sexLinked_desc": "Özellik X kromozomunda taşınır. Bu, X'e bağlı RECESSIVE kalıtımı modeller (hemofili ve kırmızı-yeşil renk körlüğü gibi): erkekler (XY) için bir kopya yeterlidir; kadınlar (XX) için iki kopya gerekir.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM araçlarına dön",
+      "a11y_snapshot": "Anlık görüntü",
+      "a11y_close_flashcard": "Kartı kapat"
     },
     "circuit": {
       "meter_status_ammeter_short": "Güvensiz yerleşim: kısa devre yolu",
@@ -14779,8 +14787,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Doğru! ",
-      "it": "? Bu\\"
+      "correct": "✅ Doğru! ",
+      "it": "❌ Bu\\"
     },
     "inequality": {
       "badge_first_solve_label": "İlk Çözüm",
@@ -14896,8 +14904,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Doğru!",
-      "answer": "? Cevap: ",
+      "correct": "✅ Doğru!",
+      "answer": "❌ Cevap: ",
       "hydrogen": "Hidrojen",
       "helium": "Helyum",
       "lithium": "Lityum",
@@ -15039,7 +15047,7 @@
       "reddish_metal_used_since_the": "Tunç Çağı'ndan beri kullanılan kırmızımsı metal",
       "bluishwhite_metal_that_prevents_rust": "Paslanmayı önleyen mavimsi-beyaz metal",
       "best_conductor_of_electricity_among": "Tüm metaller arasında en iyi elektrik iletkeni",
-      "dense_soft_shiny_precious_metal": "Yoğun, yumuşak, parlak değerli metal • asla paslanmaz",
+      "dense_soft_shiny_precious_metal": "Yoğun, yumuşak, parlak değerli metal — asla paslanmaz",
       "strong_as_steel_but_45": "Çelik kadar güçlü ama %45 daha hafif",
       "shiny_metal_that_gives_rubies": "Yakutlara kırmızı rengini veren parlak metal",
       "essential_for_steel_production_and": "Çelik üretimi ve kemik sağlığı için gereklidir",
@@ -16145,7 +16153,9 @@
       "our_sun_is_born": "Güneşimiz Doğar",
       "present_day": "Günümüz",
       "the_far_future": "Uzak Gelecek",
-      "universe": "Evren: "
+      "universe": "Evren: ",
+      "a11y_back_to_tools": "Araçlara dön",
+      "a11y_simulation_speed": "Benzetim hızı"
     },
     "rocks": {
       "igneous": "Magmatik",
@@ -19070,7 +19080,10 @@
       "garage_desc": "Motorlar, pas ve tepkimeler — bir kimya atölyesi.",
       "classroom_desc": "Beherler ve deneylerle dolu gerçek bir fen sınıfı.",
       "outdoors_desc": "Dışarı çık — doğa, hepsinin en büyük laboratuvarıdır.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Araçlara dön",
+      "a11y_snapshot": "Anlık görüntü",
+      "a11y_next": "İleri"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Geçmişe kaydedildi!",
@@ -19623,7 +19636,7 @@
       "fractions": "Kesirler",
       "unit_converter": "Birim Dönüştürücü",
       "life_earth_science": "Yaşam ve Yer Bilimleri",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "Hücre Simülatörü",
       "galaxy_explorer": "Galaksi Kâşifi",
       "universe_timelapse": "Evren Zaman Atlamalı",
       "rocks_minerals": "Kayaçlar ve Mineraller",
@@ -19633,7 +19646,7 @@
       "decomposer": "Ayrıştırıcı",
       "break_materials_into_elements": "Malzemeleri elementlere ayırın",
       "human_anatomy": "İnsan Anatomisi",
-      "brain_atlas": "Brain Atlas",
+      "brain_atlas": "Beyin Atlası",
       "molecule_builder": "Molekül Oluşturucu",
       "physics_chemistry": "Fizik ve Kimya",
       "wave_simulator": "Dalga Simülatörü",
@@ -19857,7 +19870,40 @@
       "read_what_special_education_law_actually": "Özel eğitim hukukunun gerçekte ne söylediğini kendi sözleriyle oku. IDEA Bölüm B'nin ve 504. Kısım'ın gerçek metni, eCFR'den çekilmiş ve tarih damgalı, aranabilir, federal ve eyalet kuralları yan yana. Hiçbir şey başka sözcüklerle anlatılmaz ya da üretilmez: resmî metin yüklenmemişse araç tahmin etmek yerine bunu söyler.",
       "applied_k_12_behavior_practice_what": "Anaokulundan liseye uygulamalı davranış pratiği: okul psikologlarının ve öğretmenlerin bilimle gerçekte ne yaptığı. Üç katmanlı PBIS çerçevesi, FBA işlevlerine eşlenen yerine koyma davranışları, ortam olayları (çoğu BIP'in kaçırdığı yavaş tetikleyiciler), Geoff Colvin'in yedi evreli patlama döngüsü ve Maine'in 33. Bölümüne dayanan bağlama ile tecrit etiği. BehaviorLab'in kardeş aracı.",
       "marine_biology_behavioral_science_of_octopuses": "Ahtapot, kalamar, mürekkep balığı ve nautilusun deniz biyolojisi ve davranış bilimi. Başrolde: Hunter Sim — tür, yaşam alanı, av ve taktik seç, kamuflaj mini oyununu oyna, saldırının anını yakala. Saha defteri biyoloji bilgilerini açar (kromatofor mekaniği, 9 beyin, mavi kan, jet itişi). Zekâ, kamuflaj ve jet hızı verileriyle 10 türlük saha rehberi.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ve HS-PS2. Ayarlanabilir açıklık, yükseklik, yük ve malzemeli kafes kiriş gerilme benzeticisi, köprü türü karşılaştırması (kiriş, kafes, kemer, asma, eğik askılı), malzeme veritabanı, kuvvet türleri, gerçek vaka incelemeleri (Tacoma Narrows, Hyatt Regency, Tay, Silver, ayrıca Brooklyn, Golden Gate, Akashi ve Millau), mühendislik tasarım döngüsü, AP tarzı sınav ve yazdırılabilir tasarım föyleri."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ve HS-PS2. Ayarlanabilir açıklık, yükseklik, yük ve malzemeli kafes kiriş gerilme benzeticisi, köprü türü karşılaştırması (kiriş, kafes, kemer, asma, eğik askılı), malzeme veritabanı, kuvvet türleri, gerçek vaka incelemeleri (Tacoma Narrows, Hyatt Regency, Tay, Silver, ayrıca Brooklyn, Golden Gate, Akashi ve Millau), mühendislik tasarım döngüsü, AP tarzı sınav ve yazdırılabilir tasarım föyleri.",
+      "the_gutenberg_style_screw_press_as": "Gutenberg tipi vidalı baskı presi çalışan bir benzetim olarak. Kolu çek, kendi harflerini diz, izi gör. Üstüne malzeme bilimi (kurşun-kalay-antimon alaşımı), iktisat (kitap başına maliyetin çöküşü), tarih (Reform, bilimsel devrim), tipografi ve presin ardındaki insanlar (tarihin unuttuğu kadın matbaacılar dahil). Ortaokulda disiplinler arası çalışma için yapıldı.",
+      "three_js_stoop_simulator_deep_science": "Three.js ile dalış benzetimi ve yırtıcı kuş avlanma mekaniğinin derin bilimi. 240 mph hızla bir gökdoğan, 530 psi pençeli bir harpi ya da sessiz bir Amerika puhusu olarak uç. 8 tür ve 12 bölüm: pençe kuvveti, görme (insanın 4-8 katı, kerkenezlerde morötesi), uçuş fiziği, baykuşların sessiz uçuşu, limit hız hesaplayıcısı, DDT sonrası toparlanma ve süregiden koruma krizleri, siluet ve genel görünümle arazide tanıma.",
+      "practice_reading_and_completing_the_documents": "Yetişkin hayatının üzerinde döndüğü belgeleri okumayı ve doldurmayı çalış: iş başvuruları, W-4 formları, kira sözleşmeleri, tıbbi kabul formları, sürücü belgesi başvuruları ve kendi IEP toplantı davetin. Her alan sade dille çözülüyor, sana pahalıya patlayabilecek kutucuklar işaretleniyor, biri şimdi imzalamanı istediğinde işe yarayacak baskı senaryoları ve süre istemek için hazır cümleler var. Bütün alıştırmalar uydurma bir kişiyle yapılır, asla gerçek bilgilerinle değil.",
+      "how_swimming_works_stroke_physics_survival": "Yüzmek nasıl işler (kulaç fiziği ve hayatta kalma becerileri) ve her yüzücünün soğuk su, ters akıntı, buz, can yeleği ve kurtarma konusunda bilmesi gerekenler. Kulaçların görsel çözümlemesi, kaldırma kuvveti ile itkinin bilimi ve gerçekten hayat kurtaran hayatta kalma becerileri (sırtüstü süzülme, makas ayak, HELP, kümelenme). Kaynaklar: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Yalnızca eğitim amaçlıdır: gerçekten yüzme öğrenmek için bir yüzme eğitmeni bul.",
+      "tax_paycheck_calculator_data_literacy_decision": "Vergi ve maaş bordrosu hesaplayıcısı, veri okuryazarlığı, karar matrisi, sözleşme okuyucu, kayıtlar ve evrak işleri, ulaşım planlaması, işe hazırlık, özgeçmiş oluşturma, portfolyo kanıtlarını düzenleme, mülakat provası, iletişim becerileri, zaman yönetimi, sağlık sigortası, diş bakımı, beden bakımı ergonomisi, uyku düzeni, ilaç prospektüsleri, randevu hazırlığı, evde güvenlik, dijital güvenlik, yemekle rahat bir ilişki ve gündelik hayat için uygulamalı bilim.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 ve HS-LS4. Mikrop dünyası: bakteriler (yararlı ve hastalık yapan), virüsler (COVID, grip, HIV, fajlar, kızamık), mikroskopi (ışık, faz kontrast, floresan, elektron, AFM), antibiyotik direncinin evrimi, insan, toprak ve okyanus mikrobiyomu, aşılar ve bağışıklık sistemi, fermantasyon (ekşi maya, yoğurt, kimchi, lahana turşusu, kombucha, peynir), vaka çalışmaları (Snow, Fleming, MRSA, COVID ve mRNA, FMT), sınav ve yazdırılabilir laboratuvar güvenliği ile mikrop başvuru kaynağı.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "On bir bölgede on beş çevre sorumluluğu kampanyası. Beş uzun, çok dönemli Maine kampanyası ve beş mekanik ailesinin tümünü kapsayan on bölgeler arası senaryo: ateş (Avustralya'da Yarralin, Kuzey Kaliforniya'da Karuk), koruma (Yellowstone, Ruanda'da Akagera), halk sağlığı (Mumbai'de dang humması, 2014'te Liberya'da ebola), havzalar (Klamath Nehri, Murray-Darling Havzası) ve iklim (Marshall Adaları, Bangladeş deltası). Aile eşleştirme çıkarımları, aynı mekanik ailesinden Maine kampanyasını ve bölgeler arası senaryoyu bitirdiğinde açılır.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 ve MS-ESS3-3. Gerçekten birbiriyle çelişen gereklilikler karşısında 144 parsellik bir ızgarada bir kasaba tasarla. Üç kasaba, her birinde farklı bir bağlayıcı kısıt: Riverbend, yağmur suyu ile tahvilin sıktığı yer; Mesa Hollow, akiferin sabit olduğu ve çiftliklerin onu içtiği yer; ve Harborlight, planın 2050'de de tutması gereken yer. Rasyonel yöntemle akış, su dengesi, deniz seviyesi yükselme payı, ağ üzerinde yürüme mesafesi ve maliyetlendirilmiş bir yol ağı — her biri formülünü göstermek için açılıyor. Assumption Lab, aynı planı yayımlanmış iki parametre kümesiyle yeniden çalıştırır, böylece öğrenciler hangi sonuçların ikisinden de sağ çıktığını görür. Harita, düzenlenebilir parsel tablosu ve aynı planın 3B modeli. Tartışma soruları ile belgelenmiş tarih, aracın modellemeyi reddettiği soruları taşır. Puan yok, cevap anahtarı yok.",
+      "codap_data_science": "CODAP: veri bilimi",
+      "lumen_research_canvas": "Lumen: araştırma tuvali",
+      "evolab_evolution": "EvoLab: evrim",
+      "dino_lab": "Dinozor laboratuvarı",
+      "nutritionlab_nutrition_science": "NutritionLab: beslenme bilimi",
+      "birdlab_i_spy_ornithology": "BirdLab: gizli nesne kuş bilimi",
+      "openbim_companion": "OpenBIM: yol arkadaşı",
+      "applab_ai_app_generator": "AppLab: yapay zekâ ile uygulama üretici",
+      "access_lens": "Erişilebilirlik merceği",
+      "sim_shelf": "Benzetim rafı",
+      "zoom_gallery": "Yakınlaştırma galerisi",
+      "sourcebook": "Kaynak kitabı",
+      "wheel_fire_pottery_lab": "Çark ve ateş: çömlek laboratuvarı",
+      "echo_navigator": "Yankı seyircisi",
+      "learning_lab_how_learning_works": "Learning Lab: öğrenme nasıl işler",
+      "weldlab_welding_metal_joining": "WeldLab: kaynak ve metal birleştirme",
+      "bikelab_physics_repair": "BikeLab: fizik ve onarım",
+      "fisherlab_boating_fishing_sim": "FisherLab: denizcilik ve balıkçılık benzetimi",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: midye çiftliği benzetimi",
+      "throwlab_sports_physics": "ThrowLab: spor fiziği",
+      "skatelab_skate_bmx_physics": "SkateLab: kaykay ve BMX fiziği",
+      "playlab_strategy_on_the_field": "PlayLab: sahada strateji",
+      "kepler_colony": "Kepler kolonisi",
+      "birdlab_life_list": "BirdLab: yaşam listesi",
+      "petslab_decoder": "PetsLab: çözümleyici"
     },
     "area": {
       "volume": "Hacim..."
@@ -19897,7 +19943,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Araçlara dön",
+      "a11y_snapshot": "Anlık görüntü",
+      "a11y_next": "İleri",
+      "a11y_simulation_speed": "Benzetim hızı",
+      "a11y_close_flashcard": "Kartı kapat"
     },
     "solar_sys": {
       "venus": "Venüs",
@@ -20719,7 +20770,8 @@
       "scaled_volume_changed": "🔵 Ölçeklendi (hacim değişti)",
       "skewed_shape_deformed": "🟠 Eğik (şekil deforme oldu)",
       "degenerate_volume_0": "💀 Dejenere (hacim → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Rehberin ilerlemesi"
     },
     "numberline": {
       "first_mark": "İlk İşaret",
@@ -22862,7 +22914,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} yılı başlıyor."
     },
     "optics": {
       "optics_lab": "Optik Laboratuvarı",
@@ -23208,7 +23261,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Yerel analitik SQL sorgusu"
     },
     "geosandbox": {
       "loading_3d_engine": "3D motor yükleniyor...",
@@ -23558,7 +23612,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Heykel kaldırıldı"
     },
     "algebraCAS": {
       "solve": "🔍 Çöz",
@@ -26174,7 +26229,8 @@
       "ml_over": " mL, şu kadar tayin üzerinden: ",
       "sr_level_suffix": " level",
       "trials_suffix": ".",
-      "sr_seconds_remaining": " saniye kaldı"
+      "sr_seconds_remaining": " saniye kaldı",
+      "sr_explanation_ready": "Açıklama hazır."
     },
     "economicslab": {
       "six_figures": "Altı basamak",
@@ -28154,7 +28210,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Düşünce kaydedildi."
     },
     "anatomy": {
       "system_explorer": "Sistem Kaşifi",
@@ -28736,7 +28793,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D kamerayı sıfırla"
     },
     "dna": {
       "back_to_tools": "Araçlara dön",
@@ -30113,7 +30171,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Düşünce kaydedildi."
     },
     "angles": {
       "back_to_tools": "Araçlara dön",
@@ -30927,7 +30986,8 @@
       "explain_how_each_parameter_shapes_a_si": "Her parametrenin bir sinüs dalgasını nasıl şekillendirdiğini açıkla.",
       "design_note_discrete_5_state_marker_no": "Tasarım notu: ayrık 5 durumlu işaretçi; dalga puanı yok; ifşa yok — tasarım gereği.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Açıklama hazır."
     },
     "typingpractice": {
       "typing_practice_menu": "Klavye Alıştırması menüsü",
@@ -31281,7 +31341,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Menüye dön"
     },
     "music": {
       "edm_lead": "EDM Lead",
@@ -34690,7 +34751,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Cevap seç: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Araçlara dön",
@@ -35455,7 +35517,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "kapalı",
+      "sr_nothing_to_redo": "Yinelenecek bir şey yok.",
+      "sr_nothing_to_undo": "Geri alınacak bir şey yok.",
+      "sr_dir_left": "sol",
+      "sr_dir_right": "sağ"
     },
     "arithmetic": {
       "selected": " seçildi.",
@@ -39501,7 +39568,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR, başucundaki bir radyant ve 6,5 sınır kadir değerine göre standartlaştırılmıştır. Bu yaklaşık tahmin açık, aysız bir gökyüzü ve 2,2 popülasyon indeksi varsayar. Bortle sınıfları sınır kadir değerini yalnızca kabaca gösterir; standarttan daha karanlık gökyüzü ZHR'yi aşabilir. Radyantın daha düşük yüksekliği ve daha parlak gökyüzü tahmini azaltır.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM araçlarına dön"
     },
     "autorepair": {
       "back_to_menu": "Menüye dön",
@@ -40242,7 +40310,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Puan: {value2} üzerinden {value1}",
+      "a11y_open_2": "{value1} aç",
+      "a11y_option": "Seçenek {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Kabuk",
@@ -40345,7 +40416,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Açıklama hazır."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41091,7 +41163,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Açıklama hazır.",
+      "a11y_investigation_progress": "Araştırmanın ilerlemesi",
+      "a11y_flight_debrief": "Uçuş değerlendirmesi",
+      "a11y_tutorial_progress": "Rehberin ilerlemesi"
     },
     "behaviorlab": {
       "chain_reaction": "Zincirleme tepkime",
@@ -41265,7 +41341,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Açıklama hazır.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43775,7 +43851,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Keşfedilen modül: {value1}",
+      "a11y_score_out_of": "Puan: {value2} üzerinden {value1}",
+      "sr_selected": "Seçildi: {value1}",
+      "sr_quiz_reset": "Sınav sıfırlandı"
     },
     "brainatlas": {
       "group_systems": "Sistemler",
@@ -48931,7 +49011,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Cevap seç: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Sınav Ustası",
@@ -50075,7 +50156,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Seçildi: {value1}"
     },
     "echotrainer": {
       "wall": "Duvar",
@@ -51534,7 +51616,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Keşfedilen modül: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Karbon hesaplayıcı",
@@ -52614,7 +52697,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Menüye dön",
+      "sr_getting_critique": "Değerlendirme alınıyor...",
+      "sr_critique_ready": "Değerlendirme hazır."
     },
     "flightsim": {
       "game_controls": "🎮 OYUN KONTROLLERİ",
@@ -52822,7 +52908,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Uçuş simülatörü kokpit görünümü. W/S yunuslama, A/D yatış, Shift/Ctrl gaz kolu, köşeli parantezler flapları kontrol eder, X tekerlek frenleri, Q sınav, F kuvvetler, Space duraklat, I bilgi.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52834,7 +52920,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Portland, ME'den Serbest Uçuş",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52881,7 +52967,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Şangay Kulesi",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58704,7 +58790,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Keşfedilen modül: {value1}",
+      "sr_loaded": "{value1} yüklendi",
+      "sr_showing": "{value1} gösteriliyor",
+      "sr_opening": "{value1} açılıyor"
     },
     "platetectonics": {
       "pacific": "Pasifik",
@@ -58966,7 +59056,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63526,7 +63616,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Açıklama hazır.",
+      "sr_off": "kapalı",
+      "sr_edge_left": "sol",
+      "sr_edge_right": "sağ",
+      "sr_correct": "Doğru.",
+      "sr_not_quite": "Tam değil."
     },
     "playlab": {
       "back": "← Geri",
@@ -63594,7 +63690,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Koç çevrimdışı.",
+      "sr_drill_stopped": "Alıştırma durduruldu."
     },
     "printingpress": {
       "menu": "← Menü",
@@ -65733,7 +65831,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Menüye dön",
+      "a11y_open": "{value1} aç",
+      "sr_selected": "Seçildi: {value1}",
+      "sr_loaded": "{value1} yüklendi",
+      "sr_opening": "{value1} açılıyor",
+      "sr_correct": "Doğru.",
+      "sr_not_quite": "Tam değil.",
+      "sr_year_begins": "{value1} yılı başlıyor.",
+      "sr_question_reset_try_again": "Soru sıfırlandı. Tekrar dene.",
+      "sr_not_quite_see_the_explanation": "Tam değil: açıklamaya bak."
     },
     "raptorhunt": {
       "anatomy": "Anatomi",
@@ -67382,7 +67490,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} aç",
+      "a11y_flight_debrief": "Uçuş değerlendirmesi"
     },
     "renewables": {
       "menu": "← Menü",
@@ -68082,7 +68192,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Menüye dön",
+      "sr_getting_critique": "Değerlendirme alınıyor...",
+      "sr_critique_ready": "Değerlendirme hazır.",
+      "sr_quiz_reset": "Sınav sıfırlandı"
     },
     "roadready": {
       "let_s_start": "Başlayalım →",
@@ -70949,7 +71063,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM araçlarına dön",
+      "a11y_local_analytical_sql_query": "Yerel analitik SQL sorgusu"
     },
     "stewardship": {
       "back": "← Geri",
@@ -71526,7 +71642,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Menüye dön",
+      "sr_question_reset_try_again": "Soru sıfırlandı. Tekrar dene."
     },
     "throwlab": {
       "back": "← Geri",
@@ -71751,7 +71869,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D kamerayı sıfırla",
+      "sr_coach_is_offline": "Koç çevrimdışı.",
+      "sr_drill_stopped": "Alıştırma durduruldu."
     },
     "weldlab": {
       "menu": "← Menü",
@@ -73313,7 +73434,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Keşfedilen modül: {value1}",
+      "a11y_score_out_of": "Puan: {value2} üzerinden {value1}",
+      "sr_quiz_reset": "Sınav sıfırlandı",
+      "sr_loaded": "{value1} yüklendi",
+      "sr_showing": "{value1} gösteriliyor",
+      "sr_not_quite_see_the_explanation": "Tam değil: açıklamaya bak."
     },
     "worldbuilder": {
       "grade_level": "Sınıf düzeyi",
@@ -74906,7 +75033,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Yaşam ağacı",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76761,7 +76888,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Seçenek {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D kamera görünümleri"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76773,6 +76902,22 @@
       "finish": "Anladım!",
       "replay": "İpuçları",
       "replay_aria": "Öğreticiyi göster"
+    },
+    "pets": {
+      "sr_back_to_menu": "Menüye dön",
+      "sr_getting_critique": "Değerlendirme alınıyor...",
+      "sr_critique_ready": "Değerlendirme hazır."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM araçlarına dön",
+      "a11y_3d_camera_views": "3D kamera görünümleri"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Araştırmanın ilerlemesi"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Yinelenecek bir şey yok.",
+      "sr_nothing_to_undo": "Geri alınacak bir şey yok."
     }
   },
   "glossary_health": {
@@ -77375,7 +77520,7 @@
       "person": "Kişi\\",
       "phase_label": "Aşama etiketi",
       "rationale_which_antecedent_does_this_address": "Gerekçe (bu hangi öncülü ele alıyor?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Yaklaşımınız üzerine düşünün...\\n• Ne iyi gitti?\\n• Neyi farklı yapardınız?\\n• Bundan sonra hangi stratejileri uygulamak istiyorsunuz?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Yaklaşımınız üzerine düşünün...\n• Ne iyi gitti?\n• Neyi farklı yapardınız?\n• Bundan sonra hangi stratejileri uygulamak istiyorsunuz?",
       "reinforcement_how_you": "⭐ Pekiştirme (nasıl\\",
       "replacement_behavior_functionally_equivalent": "✅ Yerine geçen davranış (işlevsel olarak eşdeğer)",
       "respond_as_the_counselor": "Danışman olarak yanıt verin...",
@@ -77383,7 +77528,7 @@
       "search_81_tools": "🔍  80+ aracı ara…",
       "search_aba_terms": "🔍 ABA terimlerini ara...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Terimleri ara... (örn. \"pekiştirme\", \"FBA\", \"veri\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Oturum 1: 3\\nOturum 2: 7\\nOturum 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Oturum 1: 3\nOturum 2: 7\nOturum 3: 5\n...",
       "setting_eg_math_class_cafeteria": "Ortam (örn. Matematik dersi, Kafeterya)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Evde gözlemlediklerinizi paylaşın — güçlü yönler, kaygılar, kültürel bağlam veya okul ekibine öneriler...",
       "step_description": "Adım açıklaması...",
@@ -78964,7 +79109,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Çentik yüksekliği",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80630,7 +80775,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Kavram görseli",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80666,10 +80811,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Her kavramı döşe",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Döşeme ilerlemesi",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80682,7 +80827,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Olası adlar",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80693,7 +80838,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Kavramı hatırlama",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82251,7 +82396,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect'i kapat",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82260,7 +82405,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Ödevleri filtrele",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82298,15 +82443,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Soru {n}",
+    "q_choices_aria": "Soru {n} için seçenekler, her satıra bir tane",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Soru {n} kaldır",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Soru {n} için ölçek adımları",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Soru {n} için yanıt türü",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82316,10 +82461,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} için seçilebilir bağlantı",
+    "scale_high_aria": "Üst uç için etiket",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Alt uç için etiket",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82339,7 +82484,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Ödev durumu özeti",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82355,9 +82500,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Otomatik olarak güncellenir",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Seçilebilir ev ödevi bağlantısı",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82366,7 +82511,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Ev ödevi QR kodu",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84814,7 +84959,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Yönergeler ve değerlendirme ölçekleri için gelişim düzeyini seçin",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84822,7 +84967,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Eğitimci görünümünü aç veya kapat",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84853,17 +84998,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Sesli not kaydını duraklat",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Sesli not kaydını sürdür",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Sesli not kaydını başlat",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Kaydı durdur",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85249,22 +85394,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven takdir gerekçesi",
+    "recent_deliveries_aria": "Son özel AlloHaven takdirleri",
+    "token_amount_aria": "AlloHaven jeton miktarı",
+    "token_cap_aria": "Öğrenci başına oturumluk AlloHaven jeton sınırı"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Hedefi yine de karşılarken izin verilen istisnalar",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Bu hedef için uygulamanın izlediği isteğe bağlı ilerleme sinyali",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Tüm takım birlikte veya her öğrenci ayrı ayrı",
+    "name_aria": "Sınıf hedefinin adı, yalnızca bu cihazda saklanır",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Bu hedefin hangi öğrencileri kapsadığı",
+    "template_aria": "Sınıf hedefi başlangıç şablonu",
+    "tokens_aria": "Bu hedefe ulaşıldığında öğrenci başına verilen jetonlar"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85282,7 +85427,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox yönetici belirteci (isteğe bağlı)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85312,17 +85457,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "el kaldırıldı",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Seçilebilir canlı posta kutusu katılım bağlantısı",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox canlı oturumu",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85349,7 +85494,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "gerçek zamanlı bağlantı",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85381,7 +85526,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox web uygulaması URL'si",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

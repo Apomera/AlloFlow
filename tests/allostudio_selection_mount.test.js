@@ -94,11 +94,12 @@ describe('AlloStudio real-React mount', () => {
 
   it('loads a template without a caught render error', () => {
     const { host } = mount();
-    const use = buttons(host).find((b) => /use_template/.test(b.textContent || ''));
+    const use = buttons(host).find((b) => /Use template/.test(b.textContent || ''));
     expect(use, 'no "use template" button found — the picker markup changed').toBeTruthy();
     const errors = clickCapturingErrors(use);
     expect(errors.filter((e) => /is not a function|Cannot read propert/.test(e))).toEqual([]);
     // Taking a template moves past the picker into the editor chrome.
-    expect(buttons(host).length).toBeGreaterThan(60);
+    expect(host.querySelector('[aria-label="Document title"]')).toBeTruthy();
+    expect(buttons(host).some((b) => /Export/.test(b.textContent || ''))).toBe(true);
   });
 });

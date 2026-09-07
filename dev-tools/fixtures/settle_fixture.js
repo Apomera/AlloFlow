@@ -33,8 +33,14 @@
         h('style', null,
           '@keyframes settle-fixture-drift{from{transform:translateX(0)}to{transform:translateX(24px)}}' +
           '.settle-fixture-box{animation:settle-fixture-drift 3s linear 1;}'),
+        // ★ width: 240, and it matters. Full-width, this box's 24px drift ended
+        // 12px PAST the column edge; the sample lands ~1.65s into the 3s drift
+        // (~13px, ~1px over, under the 2px slack) and under load a later frame
+        // crossed it - one run in twenty reported an overflows-tool-column
+        // finding, and three unchanged re-runs read 0. A fixture that sits at a
+        // detector's threshold is a coin, not a calibration.
         h('div', { className: 'settle-fixture-box',
-          style: { padding: 8, border: '1px solid #334155', borderRadius: 8, color: '#0f172a' } },
+          style: { width: 240, padding: 8, border: '1px solid #334155', borderRadius: 8, color: '#0f172a' } },
           'This box drifts for three seconds after mount.'),
         h('p', { style: { fontSize: 12, color: '#0f172a', marginTop: 8 } },
           'Everything here is high-contrast and inside its column: the fixture measures the ' +

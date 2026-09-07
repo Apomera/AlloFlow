@@ -367,7 +367,7 @@ const formatInteractiveText = (text, isCloze = false, isDarkBg = false, deps) =>
     const isItalic = part.startsWith("*") && part.endsWith("*");
     let content = part;
     if (isBold) content = part.slice(2, -2);
-    if (isItalic) content = part.slice(1, -1);
+    else if (isItalic) content = part.slice(1, -1);
     const subParts = content.split(/(\$\$[\s\S]+?\$\$|\$[^\$]+?\$|\[.*?\]\(.*?\))/g);
     const renderedSubParts = subParts.filter((sp) => sp != null).map((subPart, sIdx) => {
       if (subPart.startsWith("$") && subPart.endsWith("$") || subPart.startsWith("$$") && subPart.endsWith("$$")) {

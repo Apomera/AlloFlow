@@ -24,7 +24,7 @@
   }
 
   function sourceTextFrom(ctx) {
-    return String((ctx && (ctx.sourceText || ctx.inputText)) || '').trim();
+    return String((ctx && (ctx.readingSource ? ctx.readingSource.text : (ctx.sourceText || ctx.inputText))) || '').trim();
   }
 
   function sourceProvenanceFor(ctx, content) {
@@ -51,6 +51,7 @@
     var descriptor = sourceDescriptor(ctx, content);
     var title = descriptor.title === 'Current AlloFlow source' ? 'Lumen study project' : descriptor.title;
     var project = E.makeProject({ title: title, activeMode: 'study' });
+    if (ctx && ctx.readingSource) return E.connectReadingSource(project, ctx.readingSource);
     if (!content) return project;
     try {
       return E.upsertSource(project, {
@@ -270,6 +271,91 @@
     throw lastUnavailable || new Error('The full page could not be imported. Open it and paste its text instead.');
   }
 
+
+  function ReadingWorkspace(props) {
+    var ctx = props.ctx, React = ctx.React, h = React.createElement, E = evidenceApi(), project = props.project;
+    var nodes = project.evidenceNodes.filter(function (n) { return !n.stale && project.sources.some(function (s) { return s.id === n.sourceId && s.active !== false; }); });
+    var _node = React.useState(''), nodeId = _node[0], setNodeId = _node[1];
+    var _mode = React.useState('reflection'), mode = _mode[0], setMode = _mode[1];
+    var _drafts = React.useState({}), drafts = _drafts[0], setDrafts = _drafts[1];
+    var _message = React.useState(''), message = _message[0], setMessage = _message[1];
+    var _filter = React.useState('all'), filter = _filter[0], setFilter = _filter[1];
+    var _speaking = React.useState(false), speaking = _speaking[0], setSpeaking = _speaking[1];
+    var ownsSpeech = React.useRef(false), panelRef = React.useRef(null);
+    var preferredId = ctx.readingSource ? E.readingSourceSpec(ctx.readingSource).id : '';
+    var node = nodes.find(function (n) { return n.id === nodeId; }) || nodes.find(function (n) { return n.sourceId === preferredId; }) || nodes[0];
+    var source = node && project.sources.find(function (s) { return s.id === node.sourceId; });
+    var saved = project.artifacts.find(function (a) { return a.id === props.activeNote; });
+    var draftKey = (node ? node.id : '') + '|' + mode;
+    var prior = mode !== 'vocabulary' && node && project.artifacts.find(function (a) { return a.type === mode && !a.stale && a.citations && a.citations[0] && a.citations[0].evidenceId === node.id; });
+    var draft = drafts[draftKey] || prior || { body: '', quote: '', question: '', word: '', understanding: 'unsure', practiceStage: 'listen' };
+    function change(field, value) { setDrafts(function (all) { var next = Object.assign({}, all); next[draftKey] = Object.assign({}, draft); next[draftKey][field] = value; return next; }); setMessage('Changes are ready to save.'); }
+    function stop() { if (ownsSpeech.current) { ownsSpeech.current = false; try { root.AlloSpeechPlayer.stop(); } catch (_) {} } setSpeaking(false); }
+    React.useEffect(function () {
+      function stateChanged(ev) { if (ownsSpeech.current && ev.detail && !ev.detail.isPlaying && ev.detail.status !== 'loading') { ownsSpeech.current = false; setSpeaking(false); } }
+      root.addEventListener('allo-speech-state', stateChanged);
+      return function () { root.removeEventListener('allo-speech-state', stateChanged); if (ownsSpeech.current) { try { root.AlloSpeechPlayer.stop(); } catch (_) {} } };
+    }, []);
+    React.useEffect(function () { stop(); }, [node && node.id, mode, props.activeNote]);
+    React.useEffect(function () { if (props.activeNote && panelRef.current) panelRef.current.focus(); }, [props.activeNote]);
+    function listen() {
+      if (!root.AlloSpeechPlayer || typeof root.AlloSpeechPlayer.speak !== 'function') { setMessage('Read-aloud is unavailable. You can read with a partner and continue.'); return; }
+      stop(); ownsSpeech.current = true; setSpeaking(true);
+      try { Promise.resolve(root.AlloSpeechPlayer.speak(node.content, { language: source.language || '' })).catch(function () { ownsSpeech.current = false; setSpeaking(false); setMessage('Read-aloud could not start. Try again or continue with a partner.'); }); }
+      catch (_) { ownsSpeech.current = false; setSpeaking(false); setMessage('Read-aloud could not start. You can continue with a partner.'); }
+    }
+    function save(type) {
+      try {
+        if (!type && mode === 'vocabulary' && !(draft.word || '').trim()) throw new Error('Enter a word or phrase first.');
+        var entry = Object.assign({}, type === 'bookmark' ? {} : draft, { type: type || mode, evidenceId: node.id, title: (type === 'bookmark' ? 'Bookmark' : mode === 'vocabulary' ? draft.word || 'My word' : mode === 'practice' ? 'Rereading practice' : 'Read & reflect') + ' · ' + source.title });
+        var next = E.saveReadingEntry(project, entry);
+        props.setProject(next); setMessage('Saved to your Lumen notes.');
+      } catch (err) { setMessage(err.message); }
+    }
+    function button(label, fn, extra) { return h('button', Object.assign({ type: 'button', className: 'min-h-[44px] px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-800 text-sm font-bold', onClick: fn }, extra || {}), label); }
+    function field(label, name) { return h('label', { className: 'block mt-3 text-sm font-bold' }, label, h('textarea', { value: draft[name] || '', rows: 2, maxLength: 4000, onChange: function (ev) { change(name, ev.target.value); }, className: 'mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2 text-slate-900 font-normal' })); }
+    function options(items) { return items.map(function (item) { return h('option', { key: item[0], value: item[0] }, item[1]); }); }
+    function returnTo(citation) { if (ctx.onReturnToReading) ctx.onReturnToReading(citation); }
+    var notes = project.artifacts.filter(function (a) { return filter === 'all' || (filter === 'revisit' ? a.understanding === 'reread' || a.understanding === 'unsure' : a.type === filter); });
+    var savedPanel = saved ? h('section', { className: 'mt-3 p-3 border rounded-xl bg-white', 'aria-label': 'Opened study note' },
+      h('h4', { className: 'font-bold m-0' }, saved.title),
+      saved.stale ? h('p', { role: 'status', className: 'text-orange-800' }, 'Source changed or was removed. These are the saved passages; review the current source before reusing this note.') : null,
+      h('p', { className: 'whitespace-pre-wrap text-sm', dir: 'auto' }, saved.body),
+      saved.quote ? h('blockquote', { className: 'border-l-2 pl-3 whitespace-pre-wrap' }, saved.quote) : null,
+      saved.question ? h('p', { className: 'text-sm whitespace-pre-wrap' }, 'Question: ' + saved.question) : null,
+      saved.type === 'practice' ? h('p', null, 'Practice step: ' + saved.practiceStage) : null,
+      E.noteCitations(project, saved).map(function (citation, index) { return h('details', { key: index, className: 'my-2 border rounded-lg p-2' },
+        h('summary', { className: 'cursor-pointer font-bold text-sm' }, citation.title + ' · version ' + citation.sourceVersion + ' · ' + citation.locatorLabel),
+        h('blockquote', { className: 'whitespace-pre-wrap leading-relaxed text-sm', dir: 'auto' }, citation.passage),
+        citation.anchor && ctx.onReturnToReading ? button('Return to passage', function () { returnTo(citation); }) : null); }),
+      !E.noteCitations(project, saved).length ? h('p', { className: 'text-sm' }, 'This older note has no retained passage. Its original text is preserved.') : null,
+      h('label', { className: 'block text-sm font-bold mt-3' }, 'Note title', h('input', { value: saved.title, maxLength: 240, onChange: function (ev) { var title = ev.target.value; props.setProject(function (p) { return E.editSavedNote(p, saved.id, { title: title, annotation: saved.annotation || '' }); }); }, className: 'block border rounded-lg p-2 w-full font-normal' })),
+      h('label', { className: 'block text-sm font-bold mt-3' }, 'My annotation (saved automatically)', h('textarea', { value: saved.annotation || '', rows: 3, maxLength: 8000, onChange: function (ev) { var value = ev.target.value; props.setProject(function (p) { return E.editSavedNote(p, saved.id, { title: saved.title, annotation: value }); }); }, className: 'block border rounded-lg p-2 w-full font-normal' })),
+      h('div', { className: 'flex gap-2 flex-wrap mt-2' },
+        !saved.stale && saved.type !== 'grounded-note' && saved.citations && nodes.some(function (n) { return n.id === saved.citations[0].evidenceId; }) ? button('Continue this entry', function () { setNodeId(saved.citations[0].evidenceId); setMode(saved.type === 'bookmark' ? 'reflection' : saved.type); if (saved.type === 'vocabulary') { setDrafts(function (all) { var next = Object.assign({}, all); next[saved.citations[0].evidenceId + '|vocabulary'] = saved; return next; }); } props.setActiveNote(''); }) : null,
+        button('Close note', function () { props.setActiveNote(''); }))) : null;
+    return h('section', { ref: panelRef, tabIndex: -1, 'aria-label': 'Reading workspace', className: 'mb-4 p-4 rounded-2xl border border-teal-300 bg-teal-50 text-slate-900 outline-none focus:ring-2 focus:ring-teal-700' },
+      h('h3', { className: 'font-extrabold text-lg m-0' }, 'Read & reflect'),
+      h('p', { className: 'text-sm mt-1' }, 'Read a short passage, capture your thinking, or practise reading it again. Every activity is optional. No AI or recording is needed.'),
+      h('p', { className: 'text-xs' }, 'Personal notes on this device · ' + (ctx.studentNickname || 'This profile')), savedPanel,
+      node ? h(React.Fragment, null,
+        h('label', { className: 'block font-bold text-sm mt-3' }, 'Passage', h('select', { value: node.id, onChange: function (ev) { setNodeId(ev.target.value); setMessage(''); }, className: 'block w-full border rounded-lg p-2 mt-1 bg-white' }, nodes.map(function (n) { var src = project.sources.find(function (s) { return s.id === n.sourceId; }); return h('option', { value: n.id, key: n.id }, src.title + ' · ' + n.locatorLabel); }))),
+        h('blockquote', { className: 'whitespace-pre-wrap leading-relaxed p-3 mx-0 border-l-4 border-teal-600 bg-white rounded-r-lg', dir: 'auto', 'data-reading-passage': true }, node.content),
+        h('div', { className: 'flex flex-wrap gap-2' }, button('Bookmark passage', function () { save('bookmark'); }), source.readingAnchor && ctx.onReturnToReading ? button('Open in reader', function () { returnTo(E.citationSnapshot(project, node.id)); }) : null),
+        h('div', { className: 'mt-3 flex flex-wrap gap-2', role: 'group', 'aria-label': 'Reading activity' }, [['reflection', 'Reflect'], ['vocabulary', 'My words'], ['practice', 'Listen–try–reread']].map(function (item) { return button(item[1], function () { setMode(item[0]); setMessage(''); }, { key: item[0], 'aria-pressed': mode === item[0] }); })),
+        mode === 'practice' ? h('div', { className: 'mt-3' },
+          h('ol', { className: 'flex flex-wrap gap-3 pl-5 text-sm', 'aria-label': 'Practice steps' }, ['listen', 'try', 'reread', 'reflect'].map(function (step, index) { return h('li', { key: step, 'aria-current': draft.practiceStage === step ? 'step' : undefined }, button((index + 1) + '. ' + step, function () { stop(); change('practiceStage', step); })); })),
+          h('p', { className: 'text-sm' }, draft.practiceStage === 'try' ? 'Read the passage aloud on your own or with a partner. Take as much time as you need.' : draft.practiceStage === 'reread' ? 'Read it again. Replay the model whenever it helps.' : draft.practiceStage === 'reflect' ? 'What became easier? What would you like to practise next?' : 'Listen to a model of the passage, or ask a partner to read it.'),
+          button(speaking ? 'Stop model' : 'Listen to model', speaking ? stop : listen), field('My practice reflection', 'body')) : mode === 'vocabulary' ? h(React.Fragment, null,
+            h('label', { className: 'block font-bold text-sm mt-3' }, 'Word or phrase', h('input', { value: draft.word || '', maxLength: 120, onChange: function (ev) { change('word', ev.target.value); }, className: 'block w-full p-2 border rounded-lg bg-white' })), field('Meaning in this passage (in my own words)', 'body')) : h(React.Fragment, null, field('Gist — what is this passage mostly about?', 'body'), field('Supporting evidence — copy an exact excerpt (optional)', 'quote')),
+        h('label', { className: 'block font-bold text-sm mt-3' }, 'How is my understanding?', h('select', { value: draft.understanding, onChange: function (ev) { change('understanding', ev.target.value); }, className: 'block w-full border rounded-lg p-2 mt-1 bg-white' }, options([['clear','Clear for now'],['unsure','I have a question'],['reread','I want to reread']]))),
+        field('My question or next step (optional)', 'question'),
+        h('div', { className: 'mt-3' }, button('Save ' + (mode === 'practice' ? 'practice' : mode === 'vocabulary' ? 'word' : 'reflection'), function () { save(); }))) : h('p', null, 'Add a source to start reading.'),
+      h('p', { role: 'status', 'aria-live': 'polite', className: 'text-sm mt-2' }, message),
+      h('label', { className: 'block text-sm font-bold mt-4' }, 'Show saved entries', h('select', { value: filter, onChange: function (ev) { setFilter(ev.target.value); }, className: 'block w-full min-w-0 border rounded-lg p-2 bg-white mt-1' }, options([['all','All notes, bookmarks & words'],['revisit','Passages to revisit'],['reflection','Reflections'],['vocabulary','My words'],['bookmark','Bookmarks'],['practice','Rereading practice']]))),
+      notes.length ? h('ul', { className: 'pl-0 list-none space-y-2 mt-2' }, notes.slice().reverse().map(function (a) { return h('li', { key: a.id }, button(a.title + (a.stale ? ' — source changed' : ''), function () { props.setActiveNote(a.id); }, { 'aria-pressed': props.activeNote === a.id })); })) : h('p', { className: 'text-sm' }, 'No saved entries in this view.'));
+  }
+
   function StudyComponent(props) {
     var ctx = props && props.ctx;
     var React = ctx && ctx.React;
@@ -288,6 +374,7 @@
     var _project = React.useState(initialRef.current), project = _project[0], setProject = _project[1];
     var _hydrated = React.useState(false), hydrated = _hydrated[0], setHydrated = _hydrated[1];
     var _storageStatus = React.useState('loading'), storageStatus = _storageStatus[0], setStorageStatus = _storageStatus[1];
+    var _activeNote = React.useState(''), activeNote = _activeNote[0], setActiveNote = _activeNote[1];
     var _question = React.useState(''), question = _question[0], setQuestion = _question[1];
     var _retrieved = React.useState([]), retrieved = _retrieved[0], setRetrieved = _retrieved[1];
     var _answer = React.useState(null), answer = _answer[0], setAnswer = _answer[1];
@@ -319,7 +406,7 @@
     var searchSessionRef = React.useRef({ count: 0, lastAt: 0 });
 
     var role = ctx && ctx.isTeacherMode === false ? 'learner' : 'teacher';
-    var scope = role + '|' + String((ctx && ctx.studentNickname) || 'default');
+    var scope = E.readingScope(ctx);
     var storeRef = React.useRef(null);
     if (!storeRef.current) storeRef.current = E.createProjectStore({ storageDB: storageApi(ctx), localStorage: localStorageApi(), scope: scope });
 
@@ -327,11 +414,11 @@
       var cancelled = false;
       storeRef.current.load().then(function (saved) {
         if (cancelled) return;
-        if (saved && saved.sources && saved.sources.length) setProject(saved);
+        setProject(E.connectReadingSource(saved || initialRef.current, ctx.readingSource));
         setHydrated(true);
         setStorageStatus(saved ? 'restored' : 'ready');
       }).catch(function () {
-        if (!cancelled) { setHydrated(true); setStorageStatus('unavailable'); }
+        if (!cancelled) { setProject(E.connectReadingSource(initialRef.current, ctx.readingSource)); setHydrated(true); setStorageStatus('unavailable'); }
       });
       return function () { cancelled = true; };
     }, []);
@@ -342,19 +429,17 @@
     }, [viewerEvidenceId]);
 
     React.useEffect(function () {
-      if (!hydrated || !project) return undefined;
-      var cancelled = false;
-      var timer = setTimeout(function () {
-        storeRef.current.save(project).then(function (result) {
-          if (!cancelled) setStorageStatus(result.ok ? 'saved' : 'unavailable');
-        });
-      }, 450);
-      return function () { cancelled = true; clearTimeout(timer); };
+      if (!hydrated || !project) return;
+      var active = true;
+      setStorageStatus('saving');
+      storeRef.current.save(project).then(function (result) { if (active) setStorageStatus(result.ok ? 'saved' : 'unavailable'); });
+      return function () { active = false; };
     }, [hydrated, project]);
 
     var currentText = sourceTextFrom(ctx);
     var currentHash = currentText ? E.hashString(E.cleanText(currentText)) : '';
-    var currentSource = project.sources.find(function (source) { return source.id === 'source-current'; });
+    var currentSourceId = ctx.readingSource ? E.readingSourceSpec(ctx.readingSource).id : 'source-current';
+    var currentSource = project.sources.find(function (source) { return source.id === currentSourceId; });
     var currentChanged = !!(currentText && currentSource && currentSource.contentHash !== currentHash);
     var currentAvailable = !!currentText;
     var nodeById = {};
@@ -369,6 +454,7 @@
     function importCurrent() {
       setError('');
       try {
+        if (ctx.readingSource) { setProject(E.connectReadingSource(project, ctx.readingSource)); return; }
         var descriptor = sourceDescriptor(ctx, currentText);
         var next = E.upsertSource(project, {
           id: 'source-current',
@@ -590,6 +676,10 @@
         return;
       }
       setActiveEvidence(hits[0].node.id);
+      if (hits.some(function (row) { var source = project.sources.find(function (s) { return s.id === row.node.sourceId; }); return source && source.allowAI === false; })) {
+        setError('These passages are available for local reading and reflection. Their provider does not permit this AI handoff.');
+        return;
+      }
       if (!hasProvider(ctx)) {
         setError('No text AI is configured. You can still inspect the retrieved evidence passages.');
         return;
@@ -634,10 +724,10 @@
     function newProject() {
       var fresh = initialProjectFromContext(ctx) || E.makeProject({ title: 'Lumen study project' });
       setProject(fresh);
-      setQuestion(''); setRetrieved([]); setAnswer(null); setError(''); setViewerEvidenceId(''); setSourceLabelDrafts({});
+      setActiveNote(''); setQuestion(''); setRetrieved([]); setAnswer(null); setError(''); setViewerEvidenceId(''); setSourceLabelDrafts({});
       setShowDiscover(false); setDiscoverQuery(''); setDiscoverResults([]); setSelectedDiscovery({}); setImportStatus({}); setDiscoverMessage('');
       setShowFiles(false); setSelectedFiles([]); setFileStatus({}); setFileMessage('');
-      storeRef.current.clear();
+      // The serialized save queue replaces this project without racing a clear.
       announce('New evidence project started.');
     }
 
@@ -781,12 +871,18 @@
           h('h2', { className: 'font-extrabold text-lg text-slate-900 m-0' }, 'Study Sources'),
           h('p', { className: 'text-xs text-slate-600 m-0' }, 'Ask, inspect and save only what your evidence supports.')),
         h('span', { role: 'status', 'aria-live': 'polite', className: 'ml-auto text-[11px] text-slate-500' }, storageLabel),
+        scope !== role + '|' + String(ctx.studentNickname || 'default') ? h('button', { type: 'button', className: 'min-h-[44px] text-sm underline', onClick: async function () {
+          var legacyStore = E.createProjectStore({ storageDB: storageApi(ctx), localStorage: localStorageApi(), scope: role + '|' + String(ctx.studentNickname || 'default') });
+          var legacy = await legacyStore.load();
+          if (legacy) { setProject(function (p) { return E.importSavedProject(p, legacy); }); announce('Older Lumen notes copied into this profile. The original project is preserved.'); }
+          else setError('No older Lumen notes were found for this device identity.');
+        } }, 'Import older Lumen notes') : null,
         h('button', { type: 'button', onClick: newProject, className: 'text-xs underline text-slate-600' }, 'New project')),
 
       currentAvailable ? h('div', { className: 'mt-3 p-3 rounded-xl border ' + (currentChanged ? 'border-orange-400 bg-orange-50' : 'border-blue-200 bg-blue-50') },
         h('div', { className: 'flex items-center gap-3 flex-wrap' },
           h('div', { className: 'flex-1 min-w-[220px]' },
-            h('p', { className: 'font-bold text-sm m-0' }, currentSource ? (currentChanged ? 'AlloFlow’s current source has changed' : 'Current AlloFlow source is connected') : 'Use the source already loaded in AlloFlow'),
+            h('p', { className: 'font-bold text-sm m-0' }, currentSource ? (currentChanged ? 'AlloFlow’s current source has changed' : (ctx.readingSource ? 'Current reading passage is connected' : 'Current AlloFlow source is connected')) : 'Use the source already loaded in AlloFlow'),
             h('p', { className: 'text-xs mt-1 mb-0 text-slate-600' }, currentChanged ? 'Updating it will mark dependent notes stale instead of silently reusing old evidence.' : 'Lumen keeps its passages and citations inside this evidence project.')),
           (!currentSource || currentChanged) ? h('button', { type: 'button', onClick: importCurrent, className: 'px-3 py-2 rounded-lg bg-blue-700 text-white text-xs font-bold hover:bg-blue-800' }, currentSource ? 'Update source' : 'Use current source') : null)) : null,
 
@@ -870,10 +966,11 @@
           project.artifacts.length ? h('div', { className: 'mt-4' },
             h('h3', { className: 'font-extrabold text-sm text-slate-800 m-0' }, 'Saved notes (' + project.artifacts.length + ')'),
             h('ul', { className: 'mt-2 space-y-2 pl-5 text-xs text-slate-700' }, project.artifacts.slice().reverse().map(function (artifact) {
-              return h('li', { key: artifact.id, className: artifact.stale ? 'text-orange-800' : '' }, artifact.title, artifact.stale ? ' — source changed' : '');
+              return h('li', { key: artifact.id, className: artifact.stale ? 'text-orange-800' : '' }, h('button', { type: 'button', onClick: function () { setActiveNote(artifact.id); }, className: 'min-h-[44px] text-left underline font-bold' }, artifact.title, artifact.stale ? ' — source changed' : ''));
             }))) : null),
 
-        h('main', null,
+        h('main', { className: ctx.readingSource ? 'min-w-0 order-first lg:order-last' : 'min-w-0' },
+          hydrated ? h('details', { open: !!ctx.readingSource || !!activeNote, className: 'mb-4' }, h('summary', { className: 'min-h-[44px] cursor-pointer font-bold text-teal-900' }, 'Reading workspace · reflections, words & practice'), h(ReadingWorkspace, { ctx: ctx, project: project, setProject: setProject, activeNote: activeNote, setActiveNote: setActiveNote })) : null,
           h('form', { onSubmit: ask, className: 'p-4 rounded-2xl border border-amber-300 bg-white shadow-sm' },
             h('label', { htmlFor: 'lumen-study-question', className: 'block font-extrabold text-sm text-slate-800' }, 'What do you want to understand?'),
             h('div', { className: 'mt-2 flex flex-col sm:flex-row gap-2 items-stretch' },
@@ -891,13 +988,15 @@
   }
 
   function render(ctx) {
+    if (ctx && ctx.readingSource && ctx.readingSource.ownerScope && ctx.readingSource.ownerScope !== evidenceApi().readingScope(ctx)) ctx = Object.assign({}, ctx, { readingSource: null });
     var React = ctx && ctx.React;
-    return React && React.createElement ? React.createElement(StudyComponent, { ctx: ctx }) : null;
+    return React && React.createElement ? React.createElement(StudyComponent, { ctx: ctx, key: evidenceApi().readingScope(ctx) + '|' + String(ctx.readingSource && ctx.readingSource.requestId || '') }) : null;
   }
 
   return Object.freeze({
     render: render,
     Component: StudyComponent,
+    ReadingWorkspace: ReadingWorkspace,
     initialProjectFromContext: initialProjectFromContext,
     sourceProvenanceFor: sourceProvenanceFor,
     sourceDescriptor: sourceDescriptor,

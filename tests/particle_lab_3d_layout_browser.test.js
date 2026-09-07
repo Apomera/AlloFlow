@@ -6,8 +6,8 @@ import { chromium } from 'playwright';
 const root = process.cwd();
 let browser, css;
 
-async function mount(viewport, state = {}, theme = 'default') {
-  const page = await browser.newPage({ viewport, reducedMotion: 'reduce' });
+async function mount(viewport, state = {}, theme = 'default', pageOptions = {}, prepare = null) {
+  const page = await browser.newPage({ viewport, reducedMotion: 'reduce', ...pageOptions });
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.route('**/*', route => route.abort());
@@ -17,12 +17,15 @@ async function mount(viewport, state = {}, theme = 'default') {
     await page.addScriptTag({ path: path.join(root, file) });
   }
   await page.evaluate(() => { window.StemLab = { registerTool: (id, config) => { window.particleConfig = config; }, isRegistered: () => false }; });
+  if (prepare) await page.evaluate(prepare); // runs after THREE loads and before the tool captures it
   await page.addScriptTag({ path: path.join(root, 'stem_lab/stem_tool_particlelab3d.js') });
   await page.evaluate(({ state, theme }) => {
     function Lab() {
       const [toolData, setToolData] = React.useState({ particleLab3d: { quality: 'eco', ...state } });
       window.savedParticleData = toolData.particleLab3d;
-      return particleConfig.render({ React, toolData, setToolData, theme: theme === 'default' ? 'light' : theme, isDark: theme === 'dark', isContrast: theme === 'contrast', announceToSR: () => {}, addToast: () => {}, t: (key, fallback) => fallback || key });
+      window.toolRenders = (window.toolRenders || 0) + 1; // whole-tree render count
+      const countedSetToolData = (fn) => { window.hostSaves = (window.hostSaves || 0) + 1; setToolData(fn); };
+      return particleConfig.render({ React, toolData, setToolData: countedSetToolData, theme: theme === 'default' ? 'light' : theme, isDark: theme === 'dark', isContrast: theme === 'contrast', announceToSR: () => {}, addToast: () => {}, t: (key, fallback) => fallback || key });
     }
     ReactDOM.createRoot(document.querySelector('#root')).render(React.createElement(React.Fragment, null,
       React.createElement(window.AlloModules.AppStyles.AppStyles), React.createElement(Lab)));
@@ -389,7 +392,7 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
       expect(await lit()).toBeGreaterThan(0.005);
       expect(errors).toEqual([]);
     } finally { await page.close(); }
-  }, 60000);
+  }, 120000); // three rebuilds (one at ultra with 2048 px shadow maps) plus three screenshots: 55 s alone on a loaded machine
 
   it('does not narrate the running simulation through a live region', async () => {
     // The chamber activity card used to be role="status" aria-live="polite" while its detail line carried
@@ -480,7 +483,10 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
     const { page, errors } = await mount({ width: 1440, height: 900 }, { preset: 'diffusion', trace: true, systemProbe: true }, 'contrast');
     try {
       const probe = await page.evaluate(() => {
-        const overlays = Array.from(document.querySelectorAll('#particle-viewport > div')).map(el => getComputedStyle(el).backgroundColor);
+        // Only sheets that span the chamber matter here; the touch hint is a 27 px caption whose black-and-yellow
+        // contrast treatment is deliberate (and it is display:none under a fine pointer anyway).
+        const viewportArea = (() => { const r = document.querySelector('#particle-viewport').getBoundingClientRect(); return r.width * r.height; })();
+        const overlays = Array.from(document.querySelectorAll('#particle-viewport > div')).filter(el => { const r = el.getBoundingClientRect(); return r.width * r.height > viewportArea * 0.25; }).map(el => getComputedStyle(el).backgroundColor);
         const gradients = Array.from(document.querySelectorAll('#particle-lab-root [class*="bg-gradient"]')).map(el => getComputedStyle(el).backgroundImage);
         return { overlays, gradients, gradientCount: gradients.length };
       });
@@ -501,6 +507,198 @@ describe('Particle lab unobstructed chamber in a real browser', () => {
         return bright / (d.length / 16);
       }, shot.toString('base64'));
       expect(lit).toBeGreaterThan(0.005);
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('orbits and zooms the chamber from the keyboard and stills the chrome under reduced motion', async () => {
+    // mount() emulates prefers-reduced-motion: reduce, so the scene's own idle motion is off and only
+    // user-driven camera moves change the pixels. Sample the canvas before and after each key.
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { running: false });
+    try {
+      const canvas = page.locator('#particle-viewport canvas');
+      // readPixels reads a cleared buffer once the frame is composited (no preserveDrawingBuffer), so sample the
+      // centre of the canvas through a clipped page screenshot instead. The HUD overlays sit at the edges.
+      const sample = async () => {
+        const box = await canvas.boundingBox();
+        return page.screenshot({ clip: { x: box.x + box.width / 2 - 120, y: box.y + box.height / 2 - 120, width: 240, height: 240 } });
+      };
+      const settle = () => page.waitForTimeout(250);
+      await canvas.focus();
+      expect(await canvas.getAttribute('aria-keyshortcuts')).toContain('ArrowLeft');
+      await settle();
+      const before = await sample();
+      await settle();
+      expect((await sample()).equals(before)).toBe(true); // control: nothing moves on its own under reduced motion
+      for (let i = 0; i < 4; i += 1) await page.keyboard.press('ArrowLeft');
+      await settle();
+      const orbited = await sample();
+      expect(orbited.equals(before)).toBe(false);
+      for (let i = 0; i < 4; i += 1) await page.keyboard.press('Minus');
+      await settle();
+      const zoomed = await sample();
+      expect(zoomed.equals(orbited)).toBe(false);
+      // The letter shortcuts still fire from the canvas. The first cut of the arrow block sat between the Space check
+      // and its else-if chain, which silently disabled every letter key on the canvas; jsdom caught it, this pins it in Chromium.
+      await canvas.focus();
+      await page.keyboard.press('d');
+      await page.waitForFunction(() => document.querySelector('#particle-readouts')?.hidden === true);
+      await page.keyboard.press('d');
+      await page.waitForFunction(() => document.querySelector('#particle-readouts')?.hidden === false);
+      // Arrows must not steal from real controls: a slider keeps its own arrow-key behaviour.
+      const slider = page.locator('#particle-lab-root input[type="range"]').first();
+      await slider.focus();
+      const valueBefore = await slider.inputValue();
+      await page.keyboard.press('ArrowRight');
+      expect(await slider.inputValue()).not.toBe(valueBefore);
+      // Reduced motion also stills the chrome: the live-simulation dot and the telemetry ping.
+      await page.getByRole('button', { name: /Run$/ }).first().click();
+      const animations = await page.evaluate(() => Array.from(document.querySelectorAll('#particle-lab-root .animate-pulse, #particle-lab-root .animate-ping')).map(el => getComputedStyle(el).animationName));
+      expect(animations.length).toBeGreaterThan(0);
+      expect(animations.every(name => name === 'none')).toBe(true);
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('does not reallocate the canvas every frame on a HiDPI screen', async () => {
+    // resize() compared canvas.width (device pixels) with clientWidth (CSS pixels), so at any pixel ratio above 1 the
+    // sizes never matched and renderer.setSize reset the backing store on every animation frame: 60 resets in 60 frames
+    // at DPR 2 with the default balanced quality. Every phone and most laptops run there; the DPR 1 eco harness never saw it.
+    const { page, errors } = await mount({ width: 900, height: 700 }, { quality: 'balanced' }, 'default', { deviceScaleFactor: 2 });
+    try {
+      const count = () => page.evaluate(async () => {
+        const c = document.querySelector('#particle-viewport canvas');
+        const proto = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, 'width'); let sets = 0;
+        Object.defineProperty(c, 'width', { get() { return proto.get.call(this); }, set(v) { sets += 1; proto.set.call(this, v); }, configurable: true });
+        let frames = 0; await new Promise(res => { const tick = () => { if (++frames >= 60) res(); else requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+        delete c.width;
+        return { sets, width: c.width, clientWidth: c.clientWidth };
+      });
+      const idle = await count();
+      expect(idle.sets).toBe(0);
+      expect(idle.width).toBe(Math.floor(idle.clientWidth * 1.5)); // balanced caps the ratio at 1.5 even on a DPR 2 screen
+      // A real layout change still resizes the buffer, once, and lands on the new device-pixel width.
+      await page.setViewportSize({ width: 700, height: 700 });
+      await page.waitForFunction(() => { const c = document.querySelector('#particle-viewport canvas'); return c.width === Math.floor(c.clientWidth * 1.5); });
+      const after = await count();
+      expect(after.sets).toBe(0);
+      expect(after.clientWidth).not.toBe(idle.clientWidth); // the dock drops below at 700 px, so the canvas actually widens
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('rebuilds the scene once per slider drag, not once per tick', async () => {
+    // Count WebGLRenderer constructions: each scene rebuild makes one. Before the debounce a drag across the
+    // container slider was 11 rebuilds (scratch/particle_probe_dragrebuild.mjs); a real drag fires an input
+    // event per pixel, so students on phones were paying a full teardown per finger movement.
+    const { page, errors } = await mount({ width: 1280, height: 900 }, {}, 'default', {}, () => {
+      const Orig = THREE.WebGLRenderer; window.rendererBuilds = 0;
+      THREE.WebGLRenderer = function (options) { window.rendererBuilds += 1; return new Orig(options); };
+      THREE.WebGLRenderer.prototype = Orig.prototype;
+    });
+    try {
+      const before = await page.evaluate(() => window.rendererBuilds);
+      expect(before).toBe(1);
+      const slider = page.getByLabel('Container edge length and volume', { exact: true });
+      // Ticks are dispatched from inside the page 25 ms apart so harness round-trips cannot stretch the gaps.
+      await slider.evaluate(async (el) => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+        for (const v of [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]) { set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 25)); }
+      });
+      await page.waitForFunction(() => window.savedParticleData.boxSize === 18, null, { timeout: 20000 });
+      await page.waitForSelector('#particle-stage[aria-busy="false"]');
+      expect(await page.evaluate(() => window.rendererBuilds)).toBe(2);
+      expect(await slider.inputValue()).toBe('18');
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('idles cheaply while paused and saves a slider drag once', async () => {
+    // Before: 14 whole-tree renders in 3 s while PAUSED (the metrics publish never checked whether anything moved),
+    // and 87 host saves for one temperature drag. The fps readout used to jitter under swiftshader (a budget of 6
+    // failed with 8 on a loaded run); it now publishes only while running.
+    const { page, errors } = await mount({ width: 1280, height: 900 }, { running: false });
+    try {
+      await page.waitForTimeout(600);
+      const r0 = await page.evaluate(() => window.toolRenders);
+      await page.waitForTimeout(3000);
+      const idleRenders = (await page.evaluate(() => window.toolRenders)) - r0;
+      expect(idleRenders).toBeLessThanOrEqual(2); // the fps readout no longer publishes while paused, so this is load-proof
+      const slider = page.locator('input[type="range"][aria-label="Temperature in kelvin"]');
+      const s0 = await page.evaluate(() => window.hostSaves || 0);
+      // Each tick re-renders the tool, so on a loaded machine a gap can exceed the 250 ms debounce and legitimately
+      // flush mid-drag; count those gaps and allow exactly one extra save per gap.
+      const stamps = await slider.evaluate(async (el) => {
+        const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set; const stamps = [];
+        for (let v = 40; v <= 900; v += 10) { stamps.push(performance.now()); set.call(el, String(v)); el.dispatchEvent(new Event('input', { bubbles: true })); await new Promise(r => setTimeout(r, 16)); }
+        return stamps;
+      });
+      const longGaps = stamps.slice(1).filter((s, i) => s - stamps[i] > 250).length;
+      await page.waitForFunction(() => window.savedParticleData.temperature === 900, null, { timeout: 10000 });
+      const saves = (await page.evaluate(() => window.hostSaves)) - s0;
+      expect(saves).toBeLessThanOrEqual(1 + longGaps);
+      expect(saves).toBeLessThan(10); // and nowhere near the 87 of before
+      expect(await slider.inputValue()).toBe('900');
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('scrolls the page with one finger over the chamber and orbits with two', async () => {
+    // Before: OrbitControls prevented the default on every touchstart, so a one-finger swipe over the chamber
+    // scrolled 0 px on a phone where the chamber fills over half the screen (scratch/particle_probe_touchscroll.mjs).
+    const { page, errors } = await mount({ width: 393, height: 727 }, { running: false }, 'default', { hasTouch: true });
+    try {
+      const canvas = page.locator('#particle-viewport canvas');
+      const cdp = await page.context().newCDPSession(page);
+      const touch = async (points) => {
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: points.map(p => p[0]) });
+        for (let i = 1; i < points[0].length; i += 1) { await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: points.map(p => p[i]) }); await page.waitForTimeout(16); }
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+        await page.waitForTimeout(400);
+      };
+      let box = await canvas.boundingBox();
+      const x = box.x + box.width / 2;
+      const y0 = await page.evaluate(() => scrollY);
+      await touch([Array.from({ length: 11 }, (_, i) => ({ x, y: box.y + box.height * (0.8 - 0.06 * i) }))]);
+      expect((await page.evaluate(() => scrollY)) - y0).toBeGreaterThan(50);
+      // Two fingers moving together: the camera orbits and the page stays put.
+      await canvas.scrollIntoViewIfNeeded(); await page.waitForTimeout(300);
+      box = await canvas.boundingBox();
+      const clip = { x: box.x + box.width / 2 - 100, y: box.y + box.height / 2 - 100, width: 200, height: 200 };
+      const cx = box.x + box.width / 2, cy = box.y + box.height / 2;
+      const before = await page.screenshot({ clip });
+      const y1 = await page.evaluate(() => scrollY);
+      await touch([Array.from({ length: 13 }, (_, i) => ({ x: cx - 40 + i * 8, y: cy })), Array.from({ length: 13 }, (_, i) => ({ x: cx + 40 + i * 8, y: cy }))]);
+      expect((await page.evaluate(() => scrollY)) - y1).toBe(0);
+      expect((await page.screenshot({ clip })).equals(before)).toBe(false);
+      expect(errors).toEqual([]);
+    } finally { await page.close(); }
+  }, 60000);
+
+  it('pauses the GPU draw while the chamber is off screen and resumes when it returns', async () => {
+    // Before: ~41 draws a second with the chamber 3,000 px above the viewport on a 5,900 px phone page.
+    const { page, errors } = await mount({ width: 393, height: 727 }, {}, 'default', {}, () => {
+      const Orig = THREE.WebGLRenderer; window.draws = 0;
+      THREE.WebGLRenderer = function (options) { const r = new Orig(options); const render = r.render; r.render = function () { window.draws += 1; return render.apply(r, arguments); }; return r; };
+      THREE.WebGLRenderer.prototype = Orig.prototype;
+    });
+    try {
+      const drawsIn = async (ms) => { const d0 = await page.evaluate(() => window.draws); await page.waitForTimeout(ms); return (await page.evaluate(() => window.draws)) - d0; };
+      await page.locator('#particle-essential-controls button').first().click();
+      await page.waitForFunction(() => document.querySelector('#particle-stage-activity')?.textContent.includes('Live simulation'));
+      await page.locator('#particle-viewport canvas').scrollIntoViewIfNeeded();
+      expect(await drawsIn(1500)).toBeGreaterThan(10);
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+      await page.waitForTimeout(300);
+      const bottom = await page.evaluate(() => document.querySelector('#particle-viewport canvas').getBoundingClientRect().bottom);
+      expect(bottom).toBeLessThan(0); // the chamber really is above the viewport
+      expect(await drawsIn(1500)).toBe(0);
+      // The experiment itself keeps running: the measured readout text keeps changing while off screen.
+      const readout = () => page.evaluate(() => document.querySelector('#particle-readouts')?.textContent);
+      const r0 = await readout(); await page.waitForTimeout(1200);
+      expect(await readout()).not.toBe(r0);
+      await page.locator('#particle-viewport canvas').scrollIntoViewIfNeeded();
+      expect(await drawsIn(1500)).toBeGreaterThan(10);
       expect(errors).toEqual([]);
     } finally { await page.close(); }
   }, 60000);

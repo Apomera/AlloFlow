@@ -92,6 +92,9 @@ Surfaced **289 missing keys** on first run — all are real visible-in-UI bugs i
 ### `enumerate_block_scope_aware.js`
 Slice-level free-variable analyzer using Babel AST. Takes `(file, startLine, endLine)`, wraps the slice as a function body, walks the AST tracking function/block scopes and hoisting, reports identifiers not resolvable in any enclosing scope. Hardened against shadowing bugs (excludes `history`/`location` from the GLOBALS exclusion set after the May 2026 QuizPanel `history.some` bug).
 
+### `geometry_world_gl_probe.mjs` (NEW - Sep 6, chromium on SwiftShader)
+Geometry World on real WebGL from the command line. `stem_tool_shot.cjs` never gets past this tool's loading screen, so this lifts the harness out of `tests/e2e/18-geometry-world-gl.spec.ts`, serves the working tree (React and three from the tree, no network), mounts the tool, and screenshots it or runs a probe file inside the page and prints its JSON. `--mode lesson|sandbox`, `--blocks '[[x,y,z,type,shape,rot],...]'`, `--camera x,y,z,tx,ty,tz`, `--preset night`, `--pre printable_model_module.js` (extra scripts before the tool), `--eval probe.js`, `--out shot.png`. It waits for the sandbox lesson to load before placing (blocks placed earlier are wiped) and for a preset fade to land (`engine._envDone`; the software renderer clamps the frame step, so the clock is not enough). Do not run it while a Playwright suite is running.
+
 ### `jsx_phantom_ref_check.cjs`
 Verifies every identifier a JSX block uses still has a definition. Supports `--moving`/`--deleting` flags to simulate post-extraction state and predict orphan-ref errors before making the deletes. Use before any JSX-block extraction.
 
@@ -217,11 +220,17 @@ logging and coverage reporting each broke a detector or a baseline on first atte
 | known-bad blob | `git show f25a88533:stem_lab/stem_tool_pets.js > /tmp/kb.js`, then run it `--deep` | **7** |
 | current pets | `stem_lab/stem_tool_pets.js --deep` | **0** (and 0 at `--deep-cap=34`) |
 | clipped text | `dev-tools/fixtures/clipped_text_fixture.js` | **1** |
+| clipped by an ancestor | `dev-tools/fixtures/ancestor_clip_fixture.js` | **1** naming the ancestor (the scrollable, line-clamped, fitting and collapsed cards stay silent) |
 | overflow column | `dev-tools/fixtures/overflow_column_fixture.js --narrow` | **4** (incl. a control pushed wholly off; the transform-parked skip link stays silent) |
+| overflow column, left | `dev-tools/fixtures/overflow_left_fixture.js` | **1** on the **left** (the decorative bleed, the scroller and the skip link stay silent) |
 | deep coverage | `dev-tools/fixtures/deep_cap_fixture.js --deep --deep-cap=12` | 0 findings **+** `12 of 15 matched controls` |
 | svg text ink | `dev-tools/fixtures/svg_text_fixture.js` | **1** (the genuine cut, not the rotated label's leading) |
 | settle caveat | `dev-tools/fixtures/settle_fixture.js` | 0 findings **+** the `(1200ms cap)` caveat; silent at `--settle-cap=5000` |
 | contrast ink | `dev-tools/fixtures/contrast_ink_fixture.js --contrast` | **1** (the `!important` pin) |
+| % height from the class list | `dev-tools/fixtures/pct_height_class_fixture.js` | **3** (`h-full` in an auto block parent, `h-full` in an auto **flex** parent, inline `50%`); the `h-40` parent stays silent |
+| opacity in the ink | `dev-tools/fixtures/opacity_ink_fixture.js` | **1** naming `at opacity 0.28` (the 0.7, disabled and full-strength labels stay silent) |
+| band (blind) | `dev-tools/fixtures/band_fixture.js --narrow` *and* `--viewport=1280x900` | **0** — a single-width sweep cannot see it |
+| band (found) | `dev-tools/fixtures/band_fixture.js --widths=768,1024,1280` | **2** **+** `clean at 768px, 1280px` |
 | contrast ink, host CSS off | same file `--contrast --no-host-css` | **4** (the pin + the three the host rescues) |
 
 `--gate` mode must fail on **defects only**, never on caveats — check both directions:
@@ -268,9 +277,132 @@ Never `2>&1` into the JSON file: that both corrupts the JSON and throws away the
 lines. The gate prints `[n/total] <file>` per file on stderr; if that log stops growing, or
 no chromium process is alive while node still runs, the sweep is hung, not busy.
 
+**★★★ The detector measured only the RIGHT edge until Sep 6.** `overflows-tool-column` read
+`r.right - sr.right` and nothing else, so half of its own family was invisible to it for as long
+as it existed. The left half is the *worse* half: a right spill at least raises a horizontal
+scrollbar, while an LTR page has nothing to the left of its own origin to scroll to — that content
+is unreachable, not merely awkward. It also matters for the language packs, since an RTL locale
+flips the overflow direction and a right-only detector reads clean on exactly the layouts most
+likely to break. Both edges are now measured and the finding names the side.
+
 **★ Run it narrow.** `--narrow` (768x1024) or `--viewport=WxH` is a fourth axis alongside the
 three themes: every sweep before Sep 5 ran at 1280x1000, which is a teacher's laptop, not the
 Chromebook a student is on.
+
+**★★★ Opacity is part of the ink.** Until Sep 6 the contrast detectors read `color` at full
+strength and never looked at `opacity`, so a slate-700 label under `opacity-30` scored ~10:1 while
+the painted pixel is ~2:1 — a false negative in the one direction a contrast gate must not have.
+The group alpha (the product of every ancestor's `opacity` up to the slot, times the colour's own
+alpha) is now folded into the ink before it is judged, and the finding names both the source colour
+and what it paints as. Disabled controls stay exempt, as WCAG 1.4.3 says. The same pass replaced the
+detector's `[A-Za-z0-9]` emoji-exemption with `\p{L}\p{N}`: the ASCII form also exempted every Greek
+symbol a science lab paints with `color` (Δ, μ, Ω) and would go blind to Japanese or Arabic prose.
+
+**★★★ `clipped-text` only knew about self-inflicted clips.** It judged an element whose *own*
+`overflow:hidden` cuts its *own* text — so the commonest Tailwind shape, a fixed-height
+`overflow-hidden` card cutting off the paragraph inside it, was never measured, and
+`overflows-tool-column` only sees spills past the *slot* edge, never an inner card edge. The detector
+now walks up to the nearest clipping ancestor and measures the text's box against that ancestor's
+padding box. A scrollable box on the way wins (the rest is reachable), a line-clamp announces the cut,
+and a ~zero-height clipper is a collapsed panel rather than clipped prose. Baselines held (known-bad
+7, pets 0) and the four heaviest `overflow-hidden` users (solarsystem 99, companionplanting 97,
+birdlab, weathersystems) all read 0. **One defect, one kind:** a text box that also crosses the
+*slot* edge is `overflows-tool-column`'s (it already says "CUT OFF by an ancestor" there), so the
+ancestor branch owns clips at an *inner* card edge only — without that partition the overflow
+fixture's clipped table reported twice (4 → 6), which the suite caught on the first run.
+
+**★★★ The specified height lives in the class list too.** `collapsed-percent-height` read only the
+inline `style.height`, so `h-full` — **364 uses** across the lab — plus `h-1/2` and `h-[28%]` were
+invisible to it for as long as it existed. Computed style is no help (it returns the *used* px value,
+never the specified percentage), so the detector now reads the Tailwind utility from the class list.
+A parent whose height is definite (inline, or any Tailwind `h-*`) is silent. **There is deliberately
+no flex-parent guard:** a first cut skipped flex parents on the theory that they stretch the child
+anyway. That is true only under `align-items: stretch` *and* only when the item's cross size is
+`auto` — an explicit `height: 100%` wins over stretch, then resolves to `auto` against the indefinite
+container, so `h-full` inside a flex row is exactly as collapsed as inside a block (measured: 0.0px in
+a 40px parent). The guard also silenced three of the known-bad blob's seven findings (7 → 4) and bought
+nothing, since a genuinely stretched child is taller than 3px and already silent. The four heaviest
+`h-full` users (companionplanting 41, aquarium, evolab, beehive) all read 0, so the class is armed
+rather than harvested.
+
+**★ A fixture at a detector's threshold is a coin, not a calibration.** The settle fixture read 1 in
+one suite run under a concurrent full sweep and 0 in three unchanged re-runs. The fixture was the
+cause: a full-width box with 12px padding drifting `translateX(24px)` ends 12px past the column edge,
+the sample lands ~1.65s into the 3s drift (~1px over, inside the 2px slack), and a later frame under
+load crosses it. It now has `width: 240`, so no frame nears the edge. Re-run a drifted calibration
+*unchanged* before touching anything — three clean re-runs prove a race, and a race in a fixture is
+fixed in the fixture.
+
+**The calibration runner retries once.** Under three concurrent browsers one check came back
+`ERROR (Command failed: C:\Program Files\nodejs\node.exe C:\Users\ca` — truncated to uselessness — and
+passed alone. `check_gate_fixtures` now prints the gate's last stderr line, retries once, and marks a
+pass-on-retry as such, so an environment hiccup is neither spelled like a drift nor hidden.
+
+### Left alone deliberately — findings whose fix is a design call
+
+These reproduce, they are real, and they are **not** mine to decide. Each has a written remedy so
+the owner does not have to re-derive it.
+
+| tool | finding | why it is deferred |
+|---|---|---|
+| machinelab | energy-ledger table cut off 13px@1280 / 269px@768 | remedy is known (wrap `h('table', …)` in a div with `overflowX: 'auto'`) but the lane is active |
+| skatelab | contact / pulse-end phase markers overlap | the labels need a ≥628px strip and it measures 348–589; fixing it means re-scoping a `@container` rule |
+| weathersystems | Immersive 3D feature callout covers the panel's "All analytical layers are visible" status line (220px × its full line height, under a 90%-opaque ground) | structural: the panel's height is *width*-dependent (its button row wraps at 1024) while the callout sits at an **authored** `top: '31%'`. Clamping the callout out of the top ~220px would break `cloudLayer`, authored at 17%; dimming the status line while a callout is open is the other option. Either way it re-scopes someone's authored anchor. |
+| migration | "Moderate Breeze" span 48px past the right edge at 640, neither clipped nor scrollable | **hot lane** (modified minutes before the board, uncommitted) — not touched; re-measure when cold |
+| bridgelab | SVG labels "H (out)" / "H" cut 24 / 4.7 user units on the left at 640 | **hot lane** (uncommitted edits in flight) — not touched. Source: `h('text', { x: fx - Hpx - 10, textAnchor: 'end', … }, 'H (out)')` — an end-anchored label placed left of a force arrow's tail; when the arrow is long enough that `fx - Hpx - 10` minus the label's width goes below the viewBox's left edge, the label leaves the canvas. Remedy: clamp `x` to at least the label's width, or flip `textAnchor` to `'start'` (placing it right of the tail) when it would. |
+| fisherlab | schematic caption clipped 1.47 user units left | real ink (the italic overhangs its own advance — `sideBearingTotal` is *negative*), but it is one glyph edge of a caption whose advance misses its canvas by 0.3%. Every fix is a typographic choice. |
+
+**★★★ A stylesheet fix that matches and does nothing: look for an inline `none`.** throwlab's
+canvas spilled 38px at 640. Restoring the grid's `minmax(0,1fr)` guard fixed the track and left the
+canvas at 640px; a `max-width:100%` rule was in the DOM, matched the element, and had no effect,
+because the computed `max-width` was `none` *inline* — the React style prop declares
+`width:'100%', maxWidth:'none', height:'auto'` (the author wanted a responsive canvas) and the HiDPI
+helper then pins `style.width = '640px'; style.height = '360px'`. An inline style reads `""` when
+unset and `"none"` when someone set it; that string is the tell. The helper now writes
+`width:100%; max-width:<logical>px; height:auto; aspect-ratio` instead, which is byte-for-byte the
+old behaviour on any screen at least as wide as the bitmap.
+
+**★ Parked by distance.** The first 640px board reported three skip links "9999px past the left
+edge" — the classic `left: -9999px` park, which `invisible()`'s transform clause never sees. A real
+spill lands a few hundred px out; nothing overflows by more than the column is wide while sitting
+*entirely* outside it. So: entirely outside the slot **and** farther away than the slot is wide means
+parked, whatever the mechanism. Both halves matter — a 1500px table in a 640px column spills 860px but
+starts inside, and the overflow fixture's "Pushed clean off" control is entirely outside but ~40px
+away; both are still reported. `overflow_left_fixture.js` carries the `-9999px` link and stays at 1.
+
+**Routine widths are the Tailwind breakpoints, not round numbers.** Both 1024-only finds sat at
+*exactly* `lg`; a layout is densest immediately above a breakpoint, where the new column count lands
+but the room for it barely does. Sweep 640 (`sm`), 768 (`md`), 1024 (`lg`), 1280 (`xl`) and 1536
+(`2xl`), and use `--widths=` when a finding needs its band mapped.
+
+**★★★ A responsive defect lives in a BAND, not at a width.** The coding lab's header shoved six
+controls clean off the tool column, and *both* widths this gate habitually sweeps said clean:
+below 960px a media query wrapped the row, above ~1630px the row fit on one line. Only the middle
+broke. skatelab is the same shape from the other direction — its markers overlap at 768 and 1024
+but **not** at 800, 900 or 1280, because a sidebar reflow makes the timeline strip *narrower* at
+1024 than at 768. Width is not monotonic, so two samples prove nothing about the range between
+them.
+
+`--widths=768,1024,1280` measures every mounted view at each width inside **one** page build. The
+page build is the expensive part and is paid once, so a three-width band costs far less than three
+sweeps. Findings carry the widths they appear at, and the report names the widths where the same
+view was clean:
+
+```
+overflows-tool-column
+  extends 180px past the right edge of the tool column (1024px wide) ...
+  widths: 1024px   (clean at 768px, 1280px — a BAND, so widths between these are unmeasured)
+```
+
+`dev-tools/fixtures/band_fixture.js` is the calibration, and it is deliberately a *disagreement*:
+the same fixture reports 0 at `--narrow`, 0 at `--viewport=1280x900`, and 2 at
+`--widths=768,1024,1280`. That proves the flag finds something a routine sweep cannot, rather than
+merely proving the flag runs.
+
+★CAVEAT: `--widths` **resizes** a page mounted at `VIEWPORT.width`. A component that reads its
+width only at mount will not re-render, so a finding seen only at a resized width should be
+confirmed with a dedicated `--viewport=<W>x<H>` run before it is treated as real — and the reverse
+(a defect a resize hides) is why `--widths` does not replace the per-width boards.
 
 **★★★ A closed `<details>` still has layout boxes.** Chromium gives the collapsed subtree
 `content-visibility: hidden`, so painting is skipped but geometry is not — `getBoundingClientRect()`

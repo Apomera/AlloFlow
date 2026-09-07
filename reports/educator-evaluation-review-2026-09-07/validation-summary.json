@@ -1,0 +1,85 @@
+{
+  "reviewDate": "2026-09-07",
+  "generatedAt": "2026-09-07T04:52:51.497084+00:00",
+  "latestResults": {
+    "files": 64,
+    "passed": 957,
+    "failed": 0,
+    "missingFiles": []
+  },
+  "evidence": {
+    "broadRun": "final-regression-results.json",
+    "finalRetest": "final-retest-results.json",
+    "retestedFiles": [
+      "educator_evaluation_copy_integrity.test.js",
+      "educator_evaluation_core.test.js",
+      "educator_evaluation_live_bridge.test.js",
+      "educator_evaluation_packet.test.js",
+      "educator_evaluation_roundtrip_security.test.js",
+      "educator_evaluation_share_helper.test.js",
+      "educator_evaluation_share_setup.test.js"
+    ],
+    "note": "The broad run had one failing browser assertion and one packet-suite worker startup timeout. The final targeted run passed all 126 checks across seven affected suites. Latest suite results replace those earlier results; all 64 evaluation suites are accounted for."
+  },
+  "browser": {
+    "ok": true,
+    "calls": 75,
+    "formalFinalized": true,
+    "spmLocked": true,
+    "annualFinalized": true,
+    "educatorStatementLocked": true,
+    "privateDraftsHidden": true,
+    "crossEducatorAccessBlocked": true,
+    "mobileOverflow": false,
+    "errors": []
+  },
+  "demo": {
+    "ok": true,
+    "url": "http://127.0.0.1:8768/",
+    "statuses": [
+      200,
+      404,
+      405
+    ],
+    "errors": []
+  },
+  "rootDependencies": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "desktopDependenciesBefore": {
+    "info": 0,
+    "low": 11,
+    "moderate": 24,
+    "high": 30,
+    "critical": 3,
+    "total": 68
+  },
+  "desktopDependenciesAfter": {
+    "info": 0,
+    "low": 9,
+    "moderate": 9,
+    "high": 14,
+    "critical": 0,
+    "total": 32
+  },
+  "desktopRuntimeCheck": "passed",
+  "firebaseInitializationSmoke": "passed",
+  "sourceSha256": {
+    "educator_evaluation_source.jsx": "80140ef0a5723b5d914161ceb3adde09c5bd2208e72bffbc55fae8f0a7932246",
+    "educator_evaluation_module.js": "1698d878a373badb233d186c6bb351122762f05f846db1ef5fef03bce4525205",
+    "educator_evaluation_standalone.js": "c2749cdf6dc33d7b8dc2dec69c3e1cea8c15b248763611aa4aee146cf1aed723",
+    "apps_script/educator_evaluation/Code.gs": "4f129e34a778a14681644bd060dbdb39fe22c3532ac1193176d81a6e19f3040d",
+    "apps_script/educator_evaluation/Portal.html": "5b75bd04b31788878af5ac665bd0d99a52f8ca4bf759df755c584468a9ce6a70",
+    "apps_script/educator_evaluation_share/Code.gs": "e3b39c4653f6885b8879eeb363728b29e04c2bf71f9d146d74cb81384a6e7f8b",
+    "desktop/web-app/package.json": "7a08b8071ce5594ad1a0eeccc0f8c1aaf23586dec55e84457558db3a8a294a3b",
+    "desktop/web-app/package-lock.json": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f",
+    "desktop/runtime/alloflow-desktop-runtime.cjs": "a1daa21ef218769660aad4d666e36c40449c6c2bc36c188f12b252abb992edc4"
+  },
+  "liveDistrictAcceptance": "not performed",
+  "deployed": false
+}

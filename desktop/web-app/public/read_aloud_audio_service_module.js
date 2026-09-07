@@ -8,6 +8,55 @@ if(window.AlloModules&&window.AlloModules.ReadAloudAudioServiceModule){console.l
 // to an adapter; storage, synthesis, encoding, persistence, and events are
 // injected so this module stays usable in the browser and in Node/jsdom tests.
 
+// Inspect containers before compact encoding. WAV audio may contain metadata
+// chunks, stereo samples, or a sample rate other than Gemini's 24 kHz.
+const inspectReadAloudAudioBytes = (input, fallbackMime = 'audio/mpeg') => {
+    const bytes = input instanceof Uint8Array ? input
+        : ArrayBuffer.isView(input) ? new Uint8Array(input.buffer, input.byteOffset, input.byteLength)
+            : new Uint8Array(input);
+    const ascii = (offset, value) => offset + value.length <= bytes.length &&
+        [...value].every((character, index) => bytes[offset + index] === character.charCodeAt(0));
+    if (ascii(0, 'RIFF') && ascii(8, 'WAVE')) {
+        const result = { mime: 'audio/wav', pcm: null };
+        if (bytes.length < 12) return result;
+        const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+        const end = view.getUint32(4, true) + 8;
+        if (end > bytes.length || end < 12) return result;
+        let format = null, data = null, dataChunks = 0, offset = 12;
+        while (offset + 8 <= end) {
+            const size = view.getUint32(offset + 4, true), start = offset + 8;
+            if (size > end - start) return result;
+            if (ascii(offset, 'fmt ') && size >= 16) {
+                format = {
+                    encoding: view.getUint16(start, true),
+                    channels: view.getUint16(start + 2, true),
+                    sampleRate: view.getUint32(start + 4, true),
+                    byteRate: view.getUint32(start + 8, true),
+                    blockAlign: view.getUint16(start + 12, true),
+                    bits: view.getUint16(start + 14, true),
+                };
+            }
+            if (ascii(offset, 'data')) { dataChunks++; data = { offset: start, length: size }; }
+            offset = start + size + (size % 2);
+        }
+        if (offset !== end || !format || !data || dataChunks !== 1 || !data.length ||
+            format.encoding !== 1 || format.channels !== 1 || format.bits !== 16 ||
+            format.blockAlign !== 2 || format.byteRate !== format.sampleRate * 2 ||
+            data.length % 2 || format.sampleRate < 8000 || format.sampleRate > 192000) return result;
+        result.pcm = bytes.subarray(data.offset, data.offset + data.length);
+        result.sampleRate = format.sampleRate;
+        return result;
+    }
+    if (ascii(0, 'OggS')) return { mime: 'audio/ogg' };
+    if (ascii(0, 'fLaC')) return { mime: 'audio/flac' };
+    if (bytes[0] === 0x1a && bytes[1] === 0x45 && bytes[2] === 0xdf && bytes[3] === 0xa3) return { mime: 'audio/webm' };
+    if (ascii(4, 'ftyp')) return { mime: 'audio/mp4' };
+    if (ascii(0, 'ID3')) return { mime: 'audio/mpeg' };
+    if (bytes[0] === 0xff && (bytes[1] & 0xf6) === 0xf0) return { mime: 'audio/aac' };
+    if (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0) return { mime: 'audio/mpeg' };
+    return { mime: fallbackMime || 'audio/mpeg' };
+};
+
 const createReadAloudAudioService = (dependencies = {}) => {
     const getStoreModule = typeof dependencies.getStoreModule === 'function'
         ? dependencies.getStoreModule
@@ -301,6 +350,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 engineVersion: profile.engineVersion,
                 model: profile.model,
                 modelVersion: profile.modelVersion,
+                requestedProvider: profile.requestedProvider,
+                requestedModel: profile.requestedModel,
                 directionFingerprint: profile.directionFingerprint,
                 voiceResolverVersion: profile.voiceResolverVersion,
             };
@@ -317,6 +368,8 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 engineVersion: profile.engineVersion,
                 model: profile.model,
                 modelVersion: profile.modelVersion,
+                requestedProvider: profile.requestedProvider,
+                requestedModel: profile.requestedModel,
                 directionFingerprint: profile.directionFingerprint,
                 voiceResolverVersion: profile.voiceResolverVersion == null ? 2 : profile.voiceResolverVersion,
                 createdAt: new Date().toISOString(),
@@ -425,6 +478,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 resourceType,
                 lane,
                 operation: 'resolve',
+                force: options.force === true,
                 signal: options.signal,
                 reason: options.reason || 'resolve',
                 priority: options.priority,
@@ -567,6 +621,7 @@ const createReadAloudAudioService = (dependencies = {}) => {
                 resourceType,
                 lane,
                 operation: 'regenerate',
+                force: true,
                 signal: options.signal,
                 reason: options.reason || 'regenerate',
                 priority: options.priority,
@@ -1477,6 +1532,7 @@ const enumerateGlossaryReadAloudSegments = (resource, options = {}) => {
     return segments;
 };
 
+window.AlloModules.inspectReadAloudAudioBytes = inspectReadAloudAudioBytes;
 window.AlloModules.createGlossaryEntryId = createGlossaryEntryId;
 window.AlloModules.normalizeGlossaryEntries = normalizeGlossaryEntries;
 window.AlloModules.enumerateGlossaryReadAloudSegments = enumerateGlossaryReadAloudSegments;

@@ -2256,7 +2256,9 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).not.toContain('var profile = world && world.profile;\n    var count = profile && profile.pedestrianCount');
     expect(src).toContain('var ribbonVerts = new Float32Array(ribbonRows * 3 * 3)');
     expect(src).toContain('var ribbonIdx = new Uint16Array((ribbonRows - 1) * 12)');
-    expect(src).toContain('roadCrownHeight(x_offset, iw.profile || chunk, roadHalfW)');
+    expect(src).toContain('roadCrownHeight(offset, iw.profile || chunk, roadHalfW)');
+    expect(src).toContain('var roadPaintGeometry = function(centerZ, lateral, width, length)');
+    expect(src).toContain('if (length >= step)');
     expect(src).toContain('function roadShoulderDrainageDrop(lateralBeyondEdge, profileOrChunk)');
     expect(src).toContain('function roadLaneArrowSpecs(profileOrChunk)');
     expect(src).toContain('function mainRoadLocalPoint(world, x, y)');
@@ -2273,7 +2275,8 @@ describe('RoadReady visual geometry invariants', () => {
     expect(src).not.toContain('(hash % 60)');
     expect(src).not.toContain('(hash % 14)');
     expect(src).not.toContain('Rain puddles on the shoulder (rain weather only)');
-    expect(src).toContain('var isNoPass = chunk.oneWay || chunk.isHighway');
+    expect(src).toContain("var chunkNoPass = (chunk.biome === 'rural' || chunk.hasIntersection);");
+    expect(src).toContain('oneWayRoadLayoutFor(chunk).laneDividerOffsets.forEach');
     expect(src).toContain('var detailLaneDividerOffsets = chunk.oneWay');
     expect(src).toContain('roadLaneArrowSpecs(chunk).forEach(function(arrowSpec)');
     expect(src).toContain('shSide * (roadLayout.pavedHalfWidth + 0.8)');

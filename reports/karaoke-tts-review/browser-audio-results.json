@@ -1,0 +1,45 @@
+{
+  "browser": "148.0.7778.96",
+  "checks": [
+    {
+      "sourceRate": 16000,
+      "sourceDuration": 2,
+      "savedMime": "audio/mpeg",
+      "decodedDuration": 2.088,
+      "frequencyHz": 440,
+      "originalBytes": 64058,
+      "savedBytes": 16704,
+      "reloaded": true
+    },
+    {
+      "sourceRate": 22050,
+      "sourceDuration": 2,
+      "savedMime": "audio/mpeg",
+      "decodedDuration": 2.0636666666666668,
+      "frequencyHz": 440,
+      "originalBytes": 88258,
+      "savedBytes": 16509,
+      "reloaded": true
+    },
+    {
+      "sourceRate": 24000,
+      "sourceDuration": 2,
+      "savedMime": "audio/mpeg",
+      "decodedDuration": 2.064,
+      "frequencyHz": 440,
+      "originalBytes": 96058,
+      "savedBytes": 16512,
+      "reloaded": true
+    },
+    {
+      "sourceRate": 44100,
+      "sourceDuration": 2,
+      "savedMime": "audio/mpeg",
+      "decodedDuration": 2.037541666666667,
+      "frequencyHz": 440,
+      "originalBytes": 176458,
+      "savedBytes": 16302,
+      "reloaded": true
+    }
+  ]
+}

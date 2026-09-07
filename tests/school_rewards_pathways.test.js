@@ -299,3 +299,28 @@ describe('School Rewards complete portal pathways', () => {
     expect([...staff.errors, ...pupil.errors, ...cashier.errors, ...admin.errors]).toEqual([]);
   });
 });
+
+describe('quote freshness across portal refreshes', () => {
+  it('rejects an old displayed quote and lets the student review and accept the replacement', async () => {
+    const { h, window, student, category } = seedStore();
+    h.call('awardSchoolRewardsPoints', { studentId: student.id, categoryId: category.id, amount: 40, reason: 'Quote confirmation practice', idempotencyKey: 'fresh_quote_funding1' });
+    h.setActive(STUDENT);
+    const model = h.call('createSchoolRewardsPrintModel', { title: 'Fresh quote token', sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 1, 1], position: [0, 0, 0], rotation: [0, 0, 0], color: '#64748b' }] }, widthMm: 20, depthMm: 20, heightMm: 20, triangleCount: 12, idempotencyKey: 'fresh_quote_model1' }).model;
+    const request = h.call('submitSchoolRewardsPrintRequest', { modelId: model.id, windowId: window.id, idempotencyKey: 'fresh_quote_submit1' }).request;
+    const quote = { requestId: request.id, action: 'QUOTE', quotePoints: 10, quoteExpiresAt: '2099-01-02T02:15:37.250Z', approvedMaterialId: 'PLA', preflightDecision: 'APPROVED', idempotencyKey: 'fresh_quote_review1' };
+    h.setActive(STAFF); h.call('reviewSchoolRewardsPrintRequest', quote);
+    const pupil = await openPortal(h, STUDENT); await pupil.click('[data-tab="print"]');
+    expect(pupil.$('[data-print-confirm]').textContent).toContain('10 points');
+    h.setActive(STAFF); h.call('reviewSchoolRewardsPrintRequest', { ...quote, quotePoints: 15, idempotencyKey: 'fresh_quote_review2' });
+    await pupil.click('[data-print-confirm]');
+    expect(pupil.$('#notice').textContent).toContain('quote has changed');
+    expect(h.rows('PointHolds')).toHaveLength(1);
+    const refreshed = await openPortal(h, STUDENT, null, { ...pupil.dom.window.sessionStorage });
+    await refreshed.click('[data-tab="print"]');
+    expect(refreshed.$('[data-print-confirm]').textContent).toContain('15 points');
+    await refreshed.click('[data-print-confirm]');
+    expect(refreshed.$('#notice').textContent).toContain('points reserved');
+    expect(h.rows('PointHolds')).toHaveLength(2);
+    expect(refreshed.errors).toEqual([]);
+  }, 60000);
+});

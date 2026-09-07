@@ -4909,10 +4909,10 @@
     "locked": "Naka-lock",
     "escaped": "ikaw Escaped!",
     "escaped_desc": "ikaw solved lahat ang palaisipans at escaped ang room!",
-    "time_up": "? Oras's Up!",
+    "time_up": "⏰ Oras's Up!",
     "reveal_hint": "Reveal pahiwatig",
-    "puzzles_remaining": "{{count}} palaisipans remaining",
-    "time_remaining": "Oras: {{time}}",
+    "puzzles_remaining": "{count} palaisipans remaining",
+    "time_remaining": "Oras: {time}",
     "progress": "pag-unlad",
     "start": "Simulan Escape Room",
     "start_hint": "Simulan ang timer sa begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Kumpletuhin!",
     "loading_error": "Could hindi i-load room datos",
     "no_puzzle": "No palaisipan found para sa ito object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Perpekto escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Perpekto escape! +{xp} bonus XP",
     "puzzle_mcq": "Maramihan Choice",
     "puzzle_sequence": "Put sa Order",
     "puzzle_cipher": "Decode ang mensahe",
@@ -4982,7 +4982,7 @@
     "clue": "Pahiwatig",
     "clue_found": "Nadiskubre ang Palatandaan!",
     "clue_revealed": "Ito clue maaaring tulong kasama another palaisipan...",
-    "clues_collected": "Mga Palatandaan: {{count}}/{{total}}",
+    "clues_collected": "Mga Palatandaan: {count}/{total}",
     "use_clue": "Gamitin Clue",
     "final_door": "Ang Exit Door",
     "final_door_ready": "Ang exit door ay ngayon unlocked!",
@@ -5008,12 +5008,12 @@
     "left": "natitira",
     "wrong_attempts": "Maling mga Pagtatangka",
     "time_penalty": "-{seconds} segundo!",
-    "game_over_time": "? Oras's Up! ikaw ran out ng oras.",
+    "game_over_time": "⏰ Oras's Up! ikaw ran out ng oras.",
     "streak": "Sunod-sunod",
     "streak_bonus": "Streak Bonus! x{multiplier}",
     "streak_lost": "Nawala ang streak!",
     "one_minute_warning": "Isang minuto na lang ang natitira!",
-    "thirty_seconds_warning": "? Lamang 30 segundo left!",
+    "thirty_seconds_warning": "⏰ Lamang 30 segundo left!",
     "timer_paused": "Naka-pause ang Timer",
     "timer_resume": "Ipagpatuloy",
     "settings_btn": "Room mga setting",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Simulan multiplayer escape room kasama iyong klase",
     "team_mode": "Koponan hamon",
     "team_race": "Race sa Escape!",
-    "team_progress": "{{team}} pag-unlad: {{solved}}/{{total}}",
+    "team_progress": "{team} pag-unlad: {solved}/{total}",
     "waiting_host": "Waiting para sa guro sa simulan...",
-    "team_escaped": "{{team}} Koponan Escaped!",
+    "team_escaped": "{team} Koponan Escaped!",
     "all_teams_done": "lahat Koponans Finished!",
     "your_team": "iyong Koponan",
     "team_red": "Red Koponan",
@@ -5036,7 +5036,7 @@
     "team_green": "Green Koponan",
     "team_yellow": "Yellow Koponan",
     "team_all": "lahat mag-aaral",
-    "teams_competing": "{{count}} koponans competing",
+    "teams_competing": "{count} koponans competing",
     "first_escape": "una sa Escape!",
     "end_game": "End laro",
     "end_game_confirm": "End ang escape room para sa lahat mag-aaral?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Ipagpatuloy ang laro",
     "game_paused_by_teacher": "laro paused by guro",
     "celebration_title": "Binabati kita!",
-    "you_escaped": "iyong koponan escaped sa {{time}}!",
-    "other_team_escaped": "Nakatakas ang {{team}}!",
+    "you_escaped": "iyong koponan escaped sa {time}!",
+    "other_team_escaped": "Nakatakas ang {team}!",
     "class_escaped": "klase Victory!",
     "everyone_escaped": "Everyone worked together sa escape!",
     "hurry_up": "Keep going! ikaw maaari still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "I-load I-saved",
     "loaded_saved": "I-saved Escape Room loaded! Pagsusuri at ilunsad kapag ready.",
     "no_saved": "Walang nahanap na naka-save na Escape Room",
-    "preview_confirmed": "? Escape Room locked • ready sa maglaro!",
+    "preview_confirmed": "✅ Escape Room locked • ready sa maglaro!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x streak bonus!)",
     "loaded_from_resource": "Loaded mula sa mga mapagkukunan."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Ipadala sa Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent trabaho!",
       "partial": "mahusay effort, keep going!",
       "incorrect": "hindi quite tama • subukan again!",
-      "error": "Could hindi evaluate • pakiusap subukan again.",
+      "error": "Could hindi evaluate — pakiusap subukan again.",
       "verdict_correct": "Tama!",
       "verdict_partial": "Partially Tama",
       "verdict_incorrect": "hindi Quite Tama",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **Final antas**: {level}",
       "log_header": "Pakikipagsapalaran Log",
       "chapter_separator": "***",
-      "user_label": "? ikaw",
+      "user_label": "➤ ikaw",
       "print_button": "I-print aklat ng kwento"
     },
     "answer_key_title": "mga sagot Susi",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "ikaw maaari i-click anumang mga salita sa ang teksto sa tingnan its kahulugan!",
     "simplified_cloze": "Subukan ang 'Cloze' mode sa pagsusulit bokabularyo kasanayan.",
     "simplified_quiz": "Ito teksto looks mahusay. Should we bumuo isang Exit Ticket sa suriin understanding?",
-    "simplified_glossary": "mga salita like '{term1}' at '{term2}' might kailangan suporta • isang glosaryo could tulong!",
+    "simplified_glossary": "mga salita like '{term1}' at '{term2}' might kailangan suporta — isang glosaryo could tulong!",
     "simplified_glossary_fallback": "Ilan ng these termino ay tricky. isang glosaryo would tulong suporta ito teksto.",
     "simplified_outline": "biswal mga nag-aaral might benefit mula sa isang Graphic Organizer ng ito nilalaman.",
     "glossary_bingo": "ikaw maaari turn these termino sa loob mga salita laro like Bingo, Memory Tumugma, Crosswords, o mga salita Maghanap!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "Gusto sa ensure ito quiz ay rigorous? Patakbuhin isang pamantayan Audit.",
     "adventure_sim": "Adventures payagan mag-aaral sa apply ano sila've learned sa isang safe simulation.",
     "adventure_inventory": "Suriin ang 'imbentaryo' sa tingnan ano aytem maaaring been collected.",
-    "adventure_context": "iyong pakikipagsapalaran tungkol {topic} gets richer kasama higit pa mga mapagkukunan • subukan adding isang {suggestion}!",
+    "adventure_context": "iyong pakikipagsapalaran tungkol {topic} gets richer kasama higit pa mga mapagkukunan — subukan adding isang {suggestion}!",
     "adventure_context_fallback": "Ang higit pa mga mapagkukunan ikaw bumuo, ang richer ang pakikipagsapalaran konteksto becomes.",
     "timeline_drag": "I-drag at i-drop mga kaganapan sa reorder ang sequence.",
     "timeline_visualize": "Ito tumutulong mag-aaral i-visualize cause-at-effect relationships.",
@@ -8869,8 +8869,8 @@
     "parent_adventure": "Subukan ang Pakikipagsapalaran mode para sa isang fun rainy-day aktibidad.",
     "parent_read_along": "Gamitin 'Basahin Along' sa magsanay pagbabasa together.",
     "fallback_lesson_plan": "ikaw maaaring mahusay mga mapagkukunan. Synthesize them sa loob isang aralin Plano?",
-    "fallback_brainstorm": "Feeling stuck? Subukan chatting kasama me at i-toggle Awtomatiko-Kumpletuhin sa activate Blueprint mode • I'll tulong ikaw design iyong entire aralin!",
-    "fallback_export": "ikaw maaaring {count} mga mapagkukunan sa {topic} • i-export them as isang single PDF!",
+    "fallback_brainstorm": "Feeling stuck? Subukan chatting kasama me at i-toggle Awtomatiko-Kumpletuhin sa activate Blueprint mode — I'll tulong ikaw design iyong entire aralin!",
+    "fallback_export": "ikaw maaaring {count} mga mapagkukunan sa {topic} — i-export them as isang single PDF!",
     "fallback_export_fallback": "ikaw maaari i-export lahat these mga mapagkukunan as isang single PDF packet.",
     "fallback_guide": "Pumili 'Ipakita Me' sa ang AI Guide kung ikaw get lost!",
     "intro_greeting": "I-click me sa isaayos my boses mga setting.",
@@ -9019,7 +9019,7 @@
     "text_generated": "iyong adapted teksto sa {topic} ay ready! Subukan i-clicking isang mga salita sa tingnan its kahulugan, o tuklasin mga kasangkapan like glosaryo o quiz sa deepen understanding.",
     "flashcards_created": "Nalikha ang mga flashcard! Maaari mo itong i-export sa Quizlet, i-print, o subukan ang Memory Game.",
     "quiz_generated": "quiz ready! Gamitin Presentation mode para sa ang klase, o subukan ang Awtomatiko-Grader para sa buksan responses.",
-    "glossary_generated": "glosaryo kumpletuhin! Subukan ang mga salita laro • Bingo, Memory Tumugma, Crosswords, mga salita Maghanap, at higit pa!",
+    "glossary_generated": "glosaryo kumpletuhin! Subukan ang mga salita laro — Bingo, Memory Tumugma, Crosswords, mga salita Maghanap, at higit pa!",
     "adventure_started": "iyong pakikipagsapalaran begins! Uri iyong action below, o gamitin ang pagpipilian mga button sa decide ano happens susunod.",
     "adventure_scene": "ano ay ikaw do? Every pagpipilian hugis iyong kwento!",
     "analysis_complete": "Pagsusuri kumpletuhin! I found ilan bokabularyo at susi mga konsepto worth exploring.",
@@ -10156,7 +10156,7 @@
     "type_timeline": "Tagagawa ng Sunod-sunod",
     "type_timeline_desc": "Sequencing aktibidad adapted sa antas ng grado",
     "full_pack": "Buo mga mapagkukunan Pack • Pumili lahat",
-    "deselect_all": "? Deselect lahat",
+    "deselect_all": "↩ Deselect lahat",
     "estimate": "Tantya",
     "api_calls": "API calls",
     "start_batch": "Bumuo",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating iyong personalized bersyon...",
     "bridge_projection": "Projection mode",
     "bridge_exit_projection": "Lumabas sa Projection",
-    "bridge_offline_info": "No sa direkta sesyon • preview sa ito device lamang",
+    "bridge_offline_info": "No sa direkta sesyon — preview sa ito device lamang",
     "bridge_term_saved": "I-saved \"{term}\" sa glosaryo",
     "bridge_term_save_failed": "Nabigong i-save ang termino",
     "bridge_save_term": "I-save sa glosaryo",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "Custom wika...",
     "bridge_f2f_custom_placeholder": "hal. Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "lahat termino na-i-save sa glosaryo!",
-    "bridge_terms_saved": "? lahat I-saved",
+    "bridge_terms_saved": "✅ lahat I-saved",
     "fullpack_group_target": "Target Grupo",
     "fullpack_group_current": "Kasalukuyan mga setting",
     "fullpack_group_all": "lahat Grupos",
@@ -12182,7 +12182,11 @@
       "trapezoid": "Trapesyo",
       "simpson": "Simpson",
       "rectangles_n": "parihaba (n)",
-      "coeff_a": "Coeff isang"
+      "coeff_a": "Coeff isang",
+      "sr_explanation_ready": "Handa na ang paliwanag.",
+      "a11y_back_to_tools": "Bumalik sa mga kasangkapan",
+      "a11y_snapshot": "Kuha",
+      "a11y_next": "Susunod"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Hindi sinusuportahan ng browser na ito ang audio",
@@ -12306,7 +12310,7 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Mag-generate ng AI explanation sa level na",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
@@ -13937,8 +13941,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Tama! It\\",
-      "that": "? Iyan\\",
+      "correct_it": "✅ Tama! It\\",
+      "that": "❌ Iyan\\",
       "linear": "Linyar",
       "quadratic": "Kwadratiko",
       "cubic": "Kubiko",
@@ -14212,7 +14216,8 @@
       "angle_u00b0": "Anggulo (°)",
       "velocity_ms": "Bilis (m/s)",
       "gravity_msu00b2": "Grabidad (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Handa na ang paliwanag."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14240,7 +14245,10 @@
       "codominant_desc": "Lubusang naipapahayag ang parehong allele. Ipinapakita ng heterozygote ang dalawang katangian nang sabay.",
       "sexLinked_desc": "Nasa X chromosome ang katangian. Ipinapakita nito ang X-linked RECESSIVE inheritance (hal. hemophilia at red-green color blindness): isang kopya lang ang kailangan ng lalaki (XY); dalawa ang kailangan ng babae (XX).",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Bumalik sa mga kasangkapang STEM",
+      "a11y_snapshot": "Kuha",
+      "a11y_close_flashcard": "Isara ang kard"
     },
     "circuit": {
       "meter_status_ammeter_short": "Hindi ligtas na paglalagay: short-circuit path",
@@ -14532,8 +14540,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Tama!",
-      "it": "? It\\"
+      "correct": "✅ Tama!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "Unang Solusyon",
@@ -14649,8 +14657,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Tama!",
-      "answer": "? mga sagot:",
+      "correct": "✅ Tama!",
+      "answer": "❌ mga sagot:",
       "hydrogen": "Hydrogen",
       "helium": "Helium",
       "lithium": "Lithium",
@@ -14792,7 +14800,7 @@
       "reddish_metal_used_since_the": "Reddish metal ginamit since ang Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal iyan prevents rust",
       "best_conductor_of_electricity_among": "Pinakamahusay conductor ng electricity among lahat metals",
-      "dense_soft_shiny_precious_metal": "Siksik, malambot, makinang na mamahaling metal • hindi kailanman kinakalawang",
+      "dense_soft_shiny_precious_metal": "Siksik, malambot, makinang na mamahaling metal — hindi kailanman kinakalawang",
       "strong_as_steel_but_45": "Strong as steel ngunit 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal iyan gives rubies kanilang red kulay",
       "essential_for_steel_production_and": "Essential para sa steel production at bone health",
@@ -15898,7 +15906,9 @@
       "our_sun_is_born": "Our Sun ay Born",
       "present_day": "Kasalukuyan",
       "the_far_future": "Ang Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Bumalik sa mga kasangkapan",
+      "a11y_simulation_speed": "Bilis ng simulasyon"
     },
     "rocks": {
       "igneous": "Igneous",
@@ -18823,7 +18833,10 @@
       "garage_desc": "Mga makina, kalawang, at reaksyon — workshop ng chemistry.",
       "classroom_desc": "Tunay na science classroom na may beaker at mga eksperimento.",
       "outdoors_desc": "Lumabas — ang kalikasan ang pinakamalaking laboratoryo.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Bumalik sa mga kasangkapan",
+      "a11y_snapshot": "Kuha",
+      "a11y_next": "Susunod"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Na-save sa kasaysayan!",
@@ -19368,10 +19381,10 @@
       "angle_explorer": "anggulo Explorer",
       "multiplication_table": "multiplikasyon talahanayan",
       "advanced_math": "advanced Matematika",
-      "function_grapher": "Function Grapher",
-      "inequality_grapher": "Inequality Grapher",
+      "function_grapher": "Tagaguhit ng Punsyon",
+      "inequality_grapher": "Tagaguhit ng Di-pagkakapantay",
       "graph_inequalities_on_number_lines": "graph inequalities sa numero linya at coordinate planes.",
-      "calculus_visualizer": "Calculus Visualizer",
+      "calculus_visualizer": "Biswalisador ng Kalkulo",
       "probability": "Posibilidad",
       "fractions": "praksyon",
       "unit_converter": "Converter ng Yunit",
@@ -19383,18 +19396,18 @@
       "interactive_rock_cycle_mineral_properties": "interactive rock cycle, mineral properties & geology",
       "water_cycle": "Siklo ng Tubig",
       "rock_cycle": "Siklo ng Bato",
-      "decomposer": "Decomposer",
+      "decomposer": "Tagabulok",
       "break_materials_into_elements": "Break mga materyales sa loob elements",
       "human_anatomy": "Anatomiya ng Tao",
       "brain_atlas": "Atlas ng Utak",
       "molecule_builder": "molekyul Builder",
       "physics_chemistry": "Pisika at Kimika",
-      "wave_simulator": "Wave Simulator",
+      "wave_simulator": "Simulator ng Alon",
       "circuit_builder": "Tagagawa ng Circuit",
       "equation_balancer": "ChemLab: Mga Reaksiyon at Elemento",
       "balance_chemical_equations_with_visual": "Balance chemical ekwasyon kasama biswal atom counting.",
       "punnett_square": "Punnett parisukat",
-      "physics_simulator": "Physics Simulator",
+      "physics_simulator": "Simulator ng Pisika",
       "data_plotter": "datos Plotter",
       "plot_data_points_fit_trend": "Plot datos punto, fit trend linya, kalkulahin correlation.",
       "arts_music": "Arts & musika",
@@ -19610,7 +19623,40 @@
       "read_what_special_education_law_actually": "Basahin kung ano talaga ang sinasabi ng batas sa espesyal na edukasyon, sa sarili nitong mga salita. Ang tunay na teksto ng IDEA Bahagi B at Seksyon 504, kinuha mula sa eCFR at may petsa, mahahanap, na magkatabi ang mga tuntuning pederal at pang-estado. Walang binabago ang pananalita ni ginagawa: kung hindi na-load ang opisyal na teksto, sinasabi iyon ng kasangkapan sa halip na manghula.",
       "applied_k_12_behavior_practice_what": "Inilapat na praktika sa pag-uugali mula kindergarten hanggang mataas na paaralan — kung ano talaga ang ginagawa ng mga psychologist sa paaralan at ng mga guro sa agham na ito. Tatlong antas na balangkas ng PBIS, mga kapalit na pag-uugaling nakaugnay sa mga tungkulin mula sa FBA, mga pangyayaring pantahanan (ang mabagal na pampukaw na nalalampasan ng karamihang BIP), ang pitong yugtong ikot ng pagsabog ni Geoff Colvin, at ang etika ng pagpigil at paghihiwalay na nakaangkla sa Kabanata 33 ng Maine. Kapatid na kasangkapan ng BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Biyolohiyang pandagat at agham ng pag-uugali ng pugita, pusit, kalamares, at nautilus. Pangunahin: Hunter Sim — pumili ng espesye, tirahan, biktima, at taktika, laruin ang minigame ng pagbabalatkayo, at tamaan ang oras ng pagdaklot. Nagbubukas ng mga biyolohikong kuryosidad na parang tala sa parang (mekanika ng chromatophore, 9 utak, asul na dugo, pagtulak sa pamamagitan ng jet). Gabay sa parang na 10 espesye na may datos sa katalinuhan, pagbabalatkayo, at bilis ng jet.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, at HS-PS2. Simulator ng tensyon sa truss na maaaring baguhin ang haba, taas, karga, at materyal, paghahambing ng uri ng tulay (biga, truss, arko, sabitan, kableng hila), talaan ng materyales, uri ng puwersa, tunay na pag-aaral ng kaso (Tacoma Narrows, Hyatt Regency, Tay, Silver, at Brooklyn, Golden Gate, Akashi, at Millau), ikot ng disenyong inhinyeriya, pagsusulit na tulad ng AP, at naipi-print na tukoy ng disenyo."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, at HS-PS2. Simulator ng tensyon sa truss na maaaring baguhin ang haba, taas, karga, at materyal, paghahambing ng uri ng tulay (biga, truss, arko, sabitan, kableng hila), talaan ng materyales, uri ng puwersa, tunay na pag-aaral ng kaso (Tacoma Narrows, Hyatt Regency, Tay, Silver, at Brooklyn, Golden Gate, Akashi, at Millau), ikot ng disenyong inhinyeriya, pagsusulit na tulad ng AP, at naipi-print na tukoy ng disenyo.",
+      "the_gutenberg_style_screw_press_as": "Ang tornilyong imprenta na tulad ng kay Gutenberg bilang isang gumaganang simulasyon. Hilahin ang baras, ihanay ang sarili mong mga letra, tingnan ang bakas. Kasama pa ang agham ng materyales (haluang tingga-lata-antimonyo), ekonomiya (pagbagsak ng halaga bawat aklat), kasaysayan (Repormasyon, rebolusyong siyentipiko), tipograpiya, at ang mga taong nasa likod ng imprenta (pati ang mga babaeng manlilimbag na nalimutan ng kasaysayan). Ginawa para sa gawaing tumatawid sa mga asignatura sa hayskul.",
+      "three_js_stoop_simulator_deep_science": "Simulator ng pagsisid gamit ang Three.js at malalim na agham ng mekanika ng panghuhuli ng mga ibong maninila. Lumipad bilang peregrino sa 240 mph, bilang harpy na may kukong 530 psi, o bilang tahimik na kuwagong may sungay. 8 espesye at 12 bahagi: lakas ng kuko, paningin (4-8× ng tao, ultrabiyoleta sa mga kestrel), pisika ng paglipad, tahimik na paglipad ng kuwago, kalkulador ng terminal na bilis, pagbangon matapos ang DDT at ang tuloy-tuloy na krisis sa konserbasyon, at pagkilala sa parang gamit ang anino at pangkabuuang anyo.",
+      "practice_reading_and_completing_the_documents": "Magsanay sa pagbasa at pagsagot ng mga dokumentong pinagkakabitan ng buhay ng nasa hustong gulang: aplikasyon sa trabaho, W-4 na porma, kasunduan sa upa, porma ng pagpapatingin, permit sa pagmamaneho, at ang paanyaya sa sarili mong pulong para sa IEP. Bawat patlang ay isinalaysay sa payak na wika, minarkahan ang mga kahon na maaaring magpahirap sa iyo, may mga eksena ng presyon kapag may gustong pumirma ka agad, at mga handang pangungusap para humingi ng oras. Lahat ng pagsasanay ay gumagamit ng gawa-gawang tao, hindi kailanman ang tunay mong impormasyon.",
+      "how_swimming_works_stroke_physics_survival": "Kung paano gumagana ang paglangoy (pisika ng mga estilo at kasanayan sa pananatiling buhay) at ang dapat malaman ng bawat manlalangoy tungkol sa malamig na tubig, alon paurong, yelo, life jacket, at pagsagip. Biswal na pagbabahagi ng bawat estilo, agham ng lutang at pagtulak, at ang mga kasanayang talagang nagliligtas (nakatihayang lutang, sipang parang pagbatis ng itlog, tindig na HELP, pagkukumpulan). Pinagkunan: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Pang-edukasyon lamang: para talagang matutong lumangoy, humanap ng guro sa paglangoy.",
+      "tax_paycheck_calculator_data_literacy_decision": "Kalkulador ng buwis at sahod, literasiya sa datos, matris ng pagpapasya, tagabasa ng kontrata, mga tala at papeles, pagpaplano ng biyahe, kahandaan sa trabaho, pagbuo ng resume, pag-aayos ng ebidensya sa portfolio, pagsasanay sa panayam, kasanayan sa pakikipag-usap, pamamahala ng oras, segurong pangkalusugan, pag-aalaga sa ngipin, ergonomiya ng pag-aalaga sa katawan, gawi sa pagtulog, etiketa ng gamot, paghahanda sa pagpapatingin, kaligtasan sa bahay, kaligtasan sa digital, panatag na pakikitungo sa pagkain, at agham na inilapat sa pang-araw-araw na buhay.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3, at HS-LS4. Ang daigdig ng mikrobyo: bakterya (kapaki-pakinabang at sanhi ng sakit), mga birus (COVID, trangkaso, HIV, phage, tigdas), mikroskopiya (liwanag, phase contrast, fluorescent, elektron, AFM), ebolusyon ng pagtutol sa antibiyotiko, mikrobyoma ng tao, lupa, at karagatan, bakuna at sistemang panlaban, pagpapaasim (sourdough, yogurt, kimchi, sauerkraut, kombucha, keso), pag-aaral ng kaso (Snow, Fleming, MRSA, COVID at mRNA, FMT), pagsusulit, at naipi-print na sanggunian sa kaligtasan sa laboratoryo at sa mga mikrobyo.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Labinlimang kampanya sa pangangalaga ng kapaligiran sa labing-isang rehiyon. Limang mahaba at maraming panahong kampanya ng Maine, dagdag ang sampung senaryong tumatawid sa rehiyon na sumasaklaw sa lahat ng limang pamilya ng mekanika: apoy (Yarralin sa Australia, Karuk sa hilagang California), konserbasyon (Yellowstone, Akagera sa Rwanda), pampublikong kalusugan (dengue sa Mumbai, ebola noong 2014 sa Liberia), palanggana ng tubig (Ilog Klamath, Palanggana ng Murray-Darling), at klima (Kapuluang Marshall, delta ng Bangladesh). Bumubukas ang mga kabatiran sa pagpapares ayon sa pamilya kapag natapos mo ang kampanya ng Maine at ang tumatawid-rehiyong senaryo mula sa iisang pamilya ng mekanika.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3, at MS-ESS3-3. Magdisenyo ng isang bayan sa isang grid na 144 na lote laban sa mga kahingiang talagang nagsasalungatan. Tatlong bayan, bawat isa ay may kanya-kanyang mapagpasyang hadlang: Riverbend, kung saan pumipiga ang tubig-ulan at ang bono; Mesa Hollow, kung saan nakatakda ang akwipero at iniinom ito ng mga bukirin; at Harborlight, kung saan kailangang gumana pa rin ang plano sa 2050. Agos ayon sa rational method, balanse ng tubig, allowance sa pagtaas ng dagat, layo ng lakad sa network, at isang network ng kalsadang may halaga — bawat isa ay mabubuksan para ipakita ang pormula nito. Muling pinatatakbo ng Assumption Lab ang iisang plano sa dalawang inilathalang set ng parametro, para makita ng mga mag-aaral kung aling konklusyon ang nakaliligtas sa dalawa. Mapa, natatatanggal-baguhing talaan ng lote, at isang 3D na modelo ng parehong plano. Ang mga tanong sa talakayan at ang dokumentadong kasaysayan ang nagdadala ng mga tanong na tumatangging modelohin ng kasangkapan. Walang puntos at walang susi sa sagot.",
+      "codap_data_science": "CODAP: agham ng datos",
+      "lumen_research_canvas": "Lumen: kanbas ng pananaliksik",
+      "evolab_evolution": "EvoLab: ebolusyon",
+      "dino_lab": "Lab ng dinosauro",
+      "nutritionlab_nutrition_science": "NutritionLab: agham ng nutrisyon",
+      "birdlab_i_spy_ornithology": "BirdLab: ornitolohiyang hanap-kilala",
+      "openbim_companion": "OpenBIM: kasamang gabay",
+      "applab_ai_app_generator": "AppLab: gumagawa ng app gamit ang AI",
+      "access_lens": "Lente ng aksesibilidad",
+      "sim_shelf": "Estante ng simulasyon",
+      "zoom_gallery": "Galerya ng paglapit",
+      "sourcebook": "Aklat ng pinagkunan",
+      "wheel_fire_pottery_lab": "Gulong at apoy: lab ng palayok",
+      "echo_navigator": "Tagagabay sa alingawngaw",
+      "learning_lab_how_learning_works": "Learning Lab: paano gumagana ang pagkatuto",
+      "weldlab_welding_metal_joining": "WeldLab: paghihinang at pagdugtong ng metal",
+      "bikelab_physics_repair": "BikeLab: pisika at pagkukumpuni",
+      "fisherlab_boating_fishing_sim": "FisherLab: simulasyon ng paglalayag at pangingisda",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: simulasyon ng taniman ng tahong",
+      "throwlab_sports_physics": "ThrowLab: pisika ng palakasan",
+      "skatelab_skate_bmx_physics": "SkateLab: pisika ng skate at BMX",
+      "playlab_strategy_on_the_field": "PlayLab: estratehiya sa larangan",
+      "kepler_colony": "Kolonyang Kepler",
+      "birdlab_life_list": "BirdLab: talaan habambuhay",
+      "petslab_decoder": "PetsLab: tagabasa ng kilos"
     },
     "area": {
       "volume": "volume..."
@@ -19650,7 +19696,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Bumalik sa mga kasangkapan",
+      "a11y_snapshot": "Kuha",
+      "a11y_next": "Susunod",
+      "a11y_simulation_speed": "Bilis ng simulasyon",
+      "a11y_close_flashcard": "Isara ang kard"
     },
     "solar_sys": {
       "venus": "Venus",
@@ -20472,7 +20523,8 @@
       "scaled_volume_changed": "🔵 Na-scale (nagbago ang volume)",
       "skewed_shape_deformed": "🟠 Pahilig (nadeporma ang hugis)",
       "degenerate_volume_0": "💀 Degenerate (volume → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Pag-usad ng gabay"
     },
     "numberline": {
       "first_mark": "Unang Marka",
@@ -22615,7 +22667,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Nagsisimula ang taong {value1}."
     },
     "optics": {
       "optics_lab": "Optics Lab",
@@ -22961,7 +23014,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Lokal na analitikong SQL na tanong"
     },
     "geosandbox": {
       "loading_3d_engine": "Naglo-load ng 3D engine...",
@@ -23311,7 +23365,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Inalis ang eskultura"
     },
     "algebraCAS": {
       "solve": "🔍 Lutasin",
@@ -25907,7 +25962,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "Handa na ang paliwanag."
     },
     "economicslab": {
       "six_figures": "Kita na anim na digit",
@@ -27887,7 +27943,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Nailigtas ang pagninilay."
     },
     "anatomy": {
       "system_explorer": "Tagatuklas ng Sistema",
@@ -28469,7 +28526,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "I-reset ang 3D na kamera"
     },
     "dna": {
       "back_to_tools": "Bumalik sa mga tool",
@@ -29846,7 +29904,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Nailigtas ang pagninilay."
     },
     "angles": {
       "back_to_tools": "Bumalik sa mga tool",
@@ -30660,7 +30719,8 @@
       "explain_how_each_parameter_shapes_a_si": "Ipaliwanag kung paano hinuhubog ng bawat parameter ang sine wave.",
       "design_note_discrete_5_state_marker_no": "Design note: discrete 5-state marker; walang wave score; walang reveal — sinadya sa disenyo.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Handa na ang paliwanag."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu ng Typing Practice",
@@ -31014,7 +31074,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Bumalik sa menu"
     },
     "music": {
       "edm_lead": "EDM Lead",
@@ -32285,7 +32346,7 @@
       "sculpt_engine_failed": "Hindi ma-load ang sculpting engine.",
       "sculpt_failed": "Nabigo ang sculpting — subukan ang mas simpleng paglalarawan.",
       "sr_sculpted": "Nailagay ang eskultura",
-      "sr_art_cleared": "Naalis ang eskultura",
+      "sr_art_cleared": "Inalis ang eskultura",
       "assess_failed": "Hindi makasagot ang coach — subukan ulit.",
       "sr_assessed": "Handa na ang coaching feedback sa ibaba ng builder panel",
       "recall_needs_more": "Magdagdag muna ng hindi bababa sa 4 na ideya sa 2 grupo",
@@ -34423,7 +34484,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Piliin ang sagot: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Balik sa mga kasangkapan",
@@ -35188,7 +35250,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "patay",
+      "sr_nothing_to_redo": "Walang maaaring ulitin.",
+      "sr_nothing_to_undo": "Walang maaaring bawiin.",
+      "sr_dir_left": "kaliwa",
+      "sr_dir_right": "kanan"
     },
     "arithmetic": {
       "selected": " ang napili.",
@@ -39234,7 +39301,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "Ang ZHR ay isinasatandard sa isang radiant sa senit at hangganang magnitude na 6.5. Ipinapalagay ng tinatayang bilang na ito ang malinaw at walang buwang langit at population index na 2.2. Ang mga klase ng Bortle ay magaspang lamang na nagpapahiwatig ng hangganang magnitude; ang langit na mas madilim kaysa sa pamantayan ay maaaring lumampas sa ZHR. Ang mas mababang taas ng radiant at mas maliwanag na langit ay nagpapababa sa tantiya.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Bumalik sa mga kasangkapang STEM"
     },
     "autorepair": {
       "back_to_menu": "Bumalik sa menu",
@@ -39975,7 +40043,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Puntos: {value1} sa {value2}",
+      "a11y_open_2": "Buksan ang {value1}",
+      "a11y_option": "Pagpipilian {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Balat",
@@ -40078,7 +40149,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Handa na ang paliwanag."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40824,7 +40896,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Handa na ang paliwanag.",
+      "a11y_investigation_progress": "Pag-usad ng pagsisiyasat",
+      "a11y_flight_debrief": "Balik-tanaw sa paglipad",
+      "a11y_tutorial_progress": "Pag-usad ng gabay"
     },
     "behaviorlab": {
       "chain_reaction": "Reaksyong nagkakadena",
@@ -40999,7 +41075,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Handa na ang paliwanag.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43508,7 +43584,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Modyul na natuklasan: {value1}",
+      "a11y_score_out_of": "Puntos: {value1} sa {value2}",
+      "sr_selected": "Napili: {value1}",
+      "sr_quiz_reset": "Na-reset ang pagsusulit"
     },
     "brainatlas": {
       "group_systems": "Mga sistema",
@@ -48664,7 +48744,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Piliin ang sagot: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Dalubhasa sa Pagsusulit",
@@ -49808,7 +49889,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Napili: {value1}"
     },
     "echotrainer": {
       "back_to_stem_lab": "Bumalik sa STEAM Lab",
@@ -51267,7 +51349,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Modyul na natuklasan: {value1}"
     },
     "fireecology": {
       "the_science": "🔬 Ang Agham",
@@ -52347,7 +52430,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Bumalik sa menu",
+      "sr_getting_critique": "Kinukuha ang puna...",
+      "sr_critique_ready": "Handa na ang puna."
     },
     "flightsim": {
       "game_controls": "🎮 MGA KONTROL NG LARO",
@@ -52550,7 +52636,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Cockpit view ng flight simulator. W/S pitch, A/D bank, Shift/Ctrl throttle, kinokontrol ng mga bracket ang flaps, X preno ng gulong, Q pagsusulit, F puwersa, Space pause, I impormasyon.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52562,7 +52648,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Malayang Paglipad mula sa Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52609,7 +52695,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Shanghai Tower",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58437,7 +58523,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Modyul na natuklasan: {value1}",
+      "sr_loaded": "Na-load ang {value1}",
+      "sr_showing": "Ipinapakita ang {value1}",
+      "sr_opening": "Binubuksan ang {value1}"
     },
     "platetectonics": {
       "pacific": "Pasipiko",
@@ -58652,7 +58742,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63259,7 +63349,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Handa na ang paliwanag.",
+      "sr_off": "patay",
+      "sr_edge_left": "kaliwa",
+      "sr_edge_right": "kanan",
+      "sr_correct": "Tama.",
+      "sr_not_quite": "Hindi masyado."
     },
     "playlab": {
       "back_to_stem_lab": "Bumalik sa STEAM Lab",
@@ -63327,7 +63423,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Offline ang tagapaggabay.",
+      "sr_drill_stopped": "Itinigil ang pagsasanay."
     },
     "printingpress": {
       "print": "🖨️ I-print",
@@ -65466,7 +65564,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Bumalik sa menu",
+      "a11y_open": "Buksan ang {value1}",
+      "sr_selected": "Napili: {value1}",
+      "sr_loaded": "Na-load ang {value1}",
+      "sr_opening": "Binubuksan ang {value1}",
+      "sr_correct": "Tama.",
+      "sr_not_quite": "Hindi masyado.",
+      "sr_year_begins": "Nagsisimula ang taong {value1}.",
+      "sr_question_reset_try_again": "Na-reset ang tanong. Subukan muli.",
+      "sr_not_quite_see_the_explanation": "Hindi masyado: tingnan ang paliwanag."
     },
     "raptorhunt": {
       "show_answer": "Ipakita mga sagot",
@@ -67115,7 +67223,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Buksan ang {value1}",
+      "a11y_flight_debrief": "Balik-tanaw sa paglipad"
     },
     "renewables": {
       "wind": "Hangin",
@@ -67815,7 +67925,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Bumalik sa menu",
+      "sr_getting_critique": "Kinukuha ang puna...",
+      "sr_critique_ready": "Handa na ang puna.",
+      "sr_quiz_reset": "Na-reset ang pagsusulit"
     },
     "roadready": {
       "let_s_start": "Simulan na natin →",
@@ -70682,7 +70796,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Bumalik sa mga kasangkapang STEM",
+      "a11y_local_analytical_sql_query": "Lokal na analitikong SQL na tanong"
     },
     "stewardship": {
       "back": "← Bumalik",
@@ -71259,7 +71375,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Bumalik sa menu",
+      "sr_question_reset_try_again": "Na-reset ang tanong. Subukan muli."
     },
     "throwlab": {
       "back_to_stem_lab": "Bumalik sa STEAM Lab",
@@ -71484,7 +71602,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "I-reset ang 3D na kamera",
+      "sr_coach_is_offline": "Offline ang tagapaggabay.",
+      "sr_drill_stopped": "Itinigil ang pagsasanay."
     },
     "weldlab": {
       "print": "🖨️ I-print",
@@ -73046,7 +73167,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Modyul na natuklasan: {value1}",
+      "a11y_score_out_of": "Puntos: {value1} sa {value2}",
+      "sr_quiz_reset": "Na-reset ang pagsusulit",
+      "sr_loaded": "Na-load ang {value1}",
+      "sr_showing": "Ipinapakita ang {value1}",
+      "sr_not_quite_see_the_explanation": "Hindi masyado: tingnan ang paliwanag."
     },
     "worldbuilder": {
       "stable": "Matatag",
@@ -76494,7 +76621,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Pagpipilian {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Mga tanaw ng 3D na kamera"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76505,6 +76634,22 @@
       "next": "Susunod",
       "finish": "Naintindihan!",
       "replay_aria": "Ipakita ang tutorial"
+    },
+    "pets": {
+      "sr_back_to_menu": "Bumalik sa menu",
+      "sr_getting_critique": "Kinukuha ang puna...",
+      "sr_critique_ready": "Handa na ang puna."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Bumalik sa mga kasangkapang STEM",
+      "a11y_3d_camera_views": "Mga tanaw ng 3D na kamera"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Pag-usad ng pagsisiyasat"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Walang maaaring ulitin.",
+      "sr_nothing_to_undo": "Walang maaaring bawiin."
     }
   },
   "glossary_health": {
@@ -77107,7 +77252,7 @@
       "person": "Tao\\",
       "phase_label": "Yugto",
       "rationale_which_antecedent_does_this_address": "Katwiran (aling antecedent ang tinutugunan nito?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect sa iyong approach...\\n• ano worked well?\\n• ano would ikaw do differently?\\n• ano mga estratehiya do ikaw gusto sa magsanay susunod?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect sa iyong approach...\n• ano worked well?\n• ano would ikaw do differently?\n• ano mga estratehiya do ikaw gusto sa magsanay susunod?",
       "reinforcement_how_you": "⭐ Reinforcement (paano ikaw\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement pag-uugali (functionally katumbas)",
       "respond_as_the_counselor": "Respond as ang counselor...",
@@ -77115,7 +77260,7 @@
       "search_81_tools": "🔍 Maghanap 80+ mga kasangkapan…",
       "search_aba_terms": "🔍 Maghanap ABA termino...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Maghanap termino... (e.g. \"reinforcement\", \"FBA\", \"datos\")",
-      "session_1_3nsession_2_7nsession_3_5n": "sesyon 1: 3\\nSesyon 2: 7\\nSesyon 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "sesyon 1: 3\nSesyon 2: 7\nSesyon 3: 5\n...",
       "setting_eg_math_class_cafeteria": "setting (e.g., Matematika klase, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Ibahagi ano ikaw notice at home — strengths, concerns, cultural konteksto, o suggestions para sa ang school koponan...",
       "step_description": "hakbang description...",
@@ -78586,7 +78731,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Taas ng notch",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80777,7 +80922,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Larawan ng konsepto",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80813,10 +80958,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Punuan ang bawat konsepto",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Progreso ng pagpupuno",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80830,7 +80975,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Mga posibleng pangalan",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80841,7 +80986,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Pag-alala sa konsepto",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82399,7 +82544,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Isara ang Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82408,7 +82553,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "I-filter ang mga takdang-aralin",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82446,15 +82591,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Tanong {n}",
+    "q_choices_aria": "Mga pagpipilian para sa tanong {n}, isa bawat linya",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Alisin ang tanong {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Mga hakbang ng scale para sa tanong {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Uri ng sagot para sa tanong {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82464,10 +82609,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Napipiling link para sa {title}",
+    "scale_high_aria": "Label para sa mataas na dulo",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Label para sa mababang dulo",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82487,7 +82632,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Buod ng status ng mga takdang-aralin",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82503,9 +82648,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Awtomatikong nag-a-update",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Napipiling link ng takdang-aralin",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82514,7 +82659,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "QR code ng takdang-aralin",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84962,7 +85107,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Piliin ang antas ng pag-unlad para sa mga pahiwatig at rubrik",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84970,7 +85115,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "I-on o i-off ang view ng guro",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85001,17 +85146,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "I-pause ang pagre-record ng voice note",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Ipagpatuloy ang pagre-record ng voice note",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Simulan ang pagre-record ng voice note",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Itigil ang pagre-record",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85397,22 +85542,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Dahilan ng pagkilala sa AlloHaven",
+    "recent_deliveries_aria": "Mga kamakailang pribadong pagkilala sa AlloHaven",
+    "token_amount_aria": "Dami ng token ng AlloHaven",
+    "token_cap_aria": "Limitasyon ng token ng AlloHaven bawat mag-aaral bawat sesyon"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Mga eksepsiyong pinapayagan habang naaabot pa rin ang layunin",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Opsyonal na senyales ng progreso na sinusubaybayan ng app para sa layuning ito",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Buong koponan nang sabay, o bawat mag-aaral nang isa-isa",
+    "name_aria": "Pangalan ng layunin ng klase, nasa device na ito lamang",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Aling mga mag-aaral ang saklaw ng layuning ito",
+    "template_aria": "Panimulang template para sa layunin ng klase",
+    "tokens_aria": "Mga token na ibinibigay sa bawat mag-aaral kapag naabot ang layuning ito"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85430,7 +85575,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Admin token ng Class Mailbox (opsyonal)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85460,17 +85605,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "nakataas ang kamay",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Napipiling link para sumali sa live na mailbox",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Live na sesyon ng Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85497,7 +85642,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "koneksyong real-time",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85529,7 +85674,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL ng web app ng Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

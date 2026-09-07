@@ -42,6 +42,99 @@ function group(objects, selectedId = null) {
   return R.buildConstructionGroup(window.THREE, objects, selectedId, false, 'u');
 }
 
+describe('construction appearance keeps geometry and selection intact', () => {
+  function models() {
+    return [
+      { id: 1, type: 'point', position: [0, 0, 0] },
+      Object.assign({ id: 2 }, P.stretchPoint({ type: 'point', position: [0, 0, 0] }, 'x', 3)),
+      Object.assign({ id: 3 }, builtRect()),
+      Object.assign(builtPrism(), { id: 4 }),
+      Object.assign({ id: 5 }, P.taperRect(builtRect(), 'z', 4, 0.5)),
+      Object.assign({ id: 6 }, P.revolveRect(builtRect(), 'y', 360, 24)),
+    ];
+  }
+  function render(objects, selectedId, appearance) {
+    return R.buildConstructionGroup(window.THREE, objects, selectedId, false, 'u', appearance);
+  }
+  function materials(node) {
+    const result = [];
+    node.traverse((child) => { if (child.material) result.push(child.material); });
+    return result;
+  }
+  function visualState(node) {
+    return materials(node).map((m) => ({
+      opacity: m.opacity, transparent: m.transparent, depthWrite: m.depthWrite,
+      depthTest: m.depthTest, color: m.color, side: m.side,
+      polygonOffset: m.polygonOffset, polygonOffsetFactor: m.polygonOffsetFactor,
+    }));
+  }
+
+  it('preserves existing materials when options are omitted or use the default translucent display', () => {
+    const objects = models();
+    const legacy = render(objects, 4);
+    const defaults = render(objects, 4, { surface: 'translucent', dimUnselected: false });
+    expect(visualState(defaults)).toEqual(visualState(legacy));
+    expect(objects.slice(2).map((_, i) => findByKind(legacy.children[i + 2], 'Mesh').material.opacity)).toEqual([0.75, 0.7, 0.72, 0.72]);
+  });
+
+  it('makes surface fills opaque without changing geometry, selected outlines, or coplanar offsets', () => {
+    const objects = models();
+    const before = render(objects, 4);
+    const solid = render(objects, 4, { surface: 'solid' });
+    objects.slice(2).forEach((_, i) => {
+      const object = solid.children[i + 2];
+      const fill = findByKind(object, 'Mesh');
+      expect(fill.material).toMatchObject({ opacity: 1, transparent: false, depthWrite: true, side: window.THREE.DoubleSide });
+      expect(worldVertices(object)).toEqual(worldVertices(before.children[i + 2]));
+    });
+    expect(findByKind(solid.children[2], 'Mesh').material).toMatchObject({ polygonOffset: true, polygonOffsetFactor: 1 });
+    expect(findByKind(solid.children[3], 'LineSegments').material).toMatchObject({ opacity: 0.95, color: 0xfbbf24, depthTest: false });
+    expect(findByKind(solid.children[3], 'LineSegments').renderOrder).toBe(3000);
+  });
+
+  it('dims every unselected component while keeping the selected shape fully emphasized', () => {
+    const objects = models();
+    const before = render(objects, 4, { surface: 'solid' });
+    const dimmed = render(objects, 4, { surface: 'solid', dimUnselected: true });
+    dimmed.children.forEach((object, i) => {
+      if (objects[i].id === 4) {
+        expect(visualState(object)).toEqual(visualState(before.children[i]));
+      } else {
+        materials(object).forEach((material, j) => {
+          expect(material.opacity).toBeCloseTo(materials(before.children[i])[j].opacity * 0.22, 8);
+          expect(material.transparent).toBe(true);
+          expect(material.depthWrite).toBe(false);
+        });
+      }
+    });
+    expect(materials(dimmed.children[1])).toHaveLength(3); // segment and both endpoints
+  });
+
+  it('leaves the whole scene undimmed when selection is empty or no longer exists', () => {
+    const objects = models();
+    [null, 999].forEach((selection) => {
+      expect(visualState(render(objects, selection, { dimUnselected: true }))).toEqual(visualState(render(objects, selection)));
+    });
+  });
+
+  it('keeps dimmed shapes visible with selectable ancestor metadata and unchanged source objects', () => {
+    const objects = models();
+    const snapshot = JSON.parse(JSON.stringify(objects));
+    const dimmed = render(objects, 4, { dimUnselected: true });
+    dimmed.children.forEach((object, i) => {
+      expect(object.userData).toMatchObject({ objId: objects[i].id, objType: objects[i].type });
+      object.traverse((child) => {
+        expect(child.visible).toBe(true);
+        if (!child.material) return;
+        let selectable = child;
+        while (selectable && selectable.userData.objId == null) selectable = selectable.parent;
+        expect(selectable.userData.objId).toBe(objects[i].id);
+      });
+    });
+    expect(objects).toEqual(snapshot);
+  });
+});
+
 describe('face winding — solids are not culled from any angle', () => {
   it('winds every prism face outward, base included', () => {
     const g = group([builtPrism()]);

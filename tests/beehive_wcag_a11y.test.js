@@ -769,7 +769,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   });
 
   it('lets learners switch between overview-first and stage-first layouts without losing content', async () => {
-    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true });
+    await mount({ viewMode: 'beekeeper', beeView: 'scene', day: 5, motionPaused: true, focusLayout: false });
     let layoutButton = host.querySelector('[data-beehive-focus-layout="true"]');
     let pulse = host.querySelector('[data-beehive-pulse="true"]');
     let stage = document.getElementById('beehive-canvas-wrap');
@@ -785,7 +785,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     stage = document.getElementById('beehive-canvas-wrap');
     expect(layoutButton.getAttribute('aria-pressed')).toBe('true');
     expect(host.querySelector('[data-beehive-root="true"]').getAttribute('data-beehive-layout')).toBe('stage-first');
-    expect(Boolean(stage.compareDocumentPosition(pulse) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
+    expect(Boolean(pulse.compareDocumentPosition(stage) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);
     expect(host.querySelector('[data-beehive-learning-brief="true"]')).toBeTruthy();
     expect(host.querySelector('[data-beehive-journey-disclosure="true"]')).toBeTruthy();
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Stage-first layout enabled');

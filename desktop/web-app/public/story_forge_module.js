@@ -395,7 +395,7 @@ const getComicLetteringStats = (dialogue = {}) => {
 const comicDialogueHasBubbles = (dialogue = {}) => Boolean(
   String(dialogue.speech || "").trim() || String(dialogue.thought || "").trim()
 );
-const getComicAutoLetteringSpace = (pageLayout = "grid", pageIndex = 0, gutterSide2 = "") => {
+const getComicAutoLetteringSpace = (pageLayout = "grid", pageIndex = 0, gutterSide = "") => {
   const patterns = {
     grid: ["top", "bottom", "top-right", "bottom-left", "top-left", "bottom-right"],
     splash: ["top", "bottom", "top-left", "top-right", "bottom-left", "bottom-right"],
@@ -404,14 +404,14 @@ const getComicAutoLetteringSpace = (pageLayout = "grid", pageIndex = 0, gutterSi
   };
   const options = patterns[pageLayout] || patterns.grid;
   const preferred = options[Math.max(0, Number(pageIndex) || 0) % options.length];
-  if (!letteringTouchesSide(preferred, gutterSide2)) return preferred;
-  return options.find((space) => !letteringTouchesSide(space, gutterSide2)) || "top";
+  if (!letteringTouchesSide(preferred, gutterSide)) return preferred;
+  return options.find((space) => !letteringTouchesSide(space, gutterSide)) || "top";
 };
 const getComicPageProductionStats = (page = {}, context = {}) => {
   const panels = Array.isArray(page.panels) ? page.panels : [];
   const total = panels.length;
   const printSafety = sanitizeComicPrintSafety(context.comicPrintSafety);
-  const gutterSide2 = getComicPageGutterSide(page.page, page.layout, printSafety);
+  const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
   const stats = {
     total,
     artPanels: 0,
@@ -435,13 +435,13 @@ const getComicPageProductionStats = (page = {}, context = {}) => {
     const lettering = getComicLetteringStats(dialogue);
     const space = normalizeComicLetteringSpace(thumbnail.letteringSpace);
     const hasBubbles = comicDialogueHasBubbles(dialogue);
-    const hasText = String(paragraph?.text || paragraph?.scaffoldFrame || "").trim();
+    const hasText = getStoryForgeSectionText(paragraph, dialogue, true).trim();
     if (image.imageUrl) stats.artPanels += 1;
     if (image.imageUrl && !String(thumbnail.altText || "").trim()) stats.missingAltText += 1;
     if (hasBubbles) stats.bubblePanels += 1;
     if (hasBubbles && space && space !== "none") stats.placedBubbles += 1;
     if (hasBubbles && (!space || space === "none")) stats.unplacedBubbles += 1;
-    if (hasBubbles && letteringTouchesSide(space, gutterSide2)) stats.gutterRiskPanels += 1;
+    if (hasBubbles && letteringTouchesSide(space, gutterSide)) stats.gutterRiskPanels += 1;
     if (lettering.level === "crowded") stats.crowdedBubbles += 1;
     if (!hasText) stats.emptyPanels += 1;
     if (layout.frame || layout.colSpan !== void 0 || layout.rowSpan !== void 0) stats.customLayouts += 1;
@@ -463,6 +463,7 @@ const getComicExportProof = (pages = [], context = {}) => {
     });
   }
   const rows = pageList.map((page) => {
+    const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
     const proofContext = { ...context, comicPrintSafety: printSafety, pageCount: pageList.length };
     const stats = getComicPageProductionStats(page, proofContext);
     const panels = Array.isArray(page.panels) ? page.panels : [];
@@ -475,7 +476,7 @@ const getComicExportProof = (pages = [], context = {}) => {
       const rough = (context.panelThumbnails || {})[paragraph?.id] || {};
       return !(rough.focalPoint && rough.composition && rough.letteringSpace);
     }).length;
-    const emptyPanelTargets = targetPanels((paragraph) => !String(paragraph?.text || paragraph?.scaffoldFrame || "").trim());
+    const emptyPanelTargets = targetPanels((paragraph) => !getStoryForgeSectionText(paragraph, context.panelDialogue?.[paragraph?.id], true).trim());
     const missingArtTargets = targetPanels((paragraph) => !((context.illustrations || {})[paragraph?.id] || {}).imageUrl);
     const missingAltTextTargets = targetPanels((paragraph) => {
       const image = (context.illustrations || {})[paragraph?.id] || {};
@@ -506,7 +507,7 @@ const getComicExportProof = (pages = [], context = {}) => {
       return getComicLetteringStats(dialogue).level === "crowded";
     });
     const issues = [];
-    if (stats.emptyPanels > 0) issues.push({ key: "empty-panels", label: `${stats.emptyPanels} empty panel${stats.emptyPanels === 1 ? "" : "s"}`, detail: "Add a caption or scaffold to every panel before export.", blocking: true });
+    if (stats.emptyPanels > 0) issues.push({ key: "empty-panels", label: `${stats.emptyPanels} empty panel${stats.emptyPanels === 1 ? "" : "s"}`, detail: "Add narration or dialogue to every panel before export.", blocking: true });
     if (stats.artPanels < stats.total) issues.push({ key: "missing-art", label: `${stats.total - stats.artPanels} panel${stats.total - stats.artPanels === 1 ? "" : "s"} missing art`, detail: "Add or intentionally mark the art brief before final delivery.", blocking: false });
     if (stats.missingAltText > 0) issues.push({ key: "missing-alt-text", label: `${stats.missingAltText} art description${stats.missingAltText === 1 ? "" : "s"} missing`, detail: "Add accessible descriptions for illustrated panels.", blocking: false });
     if (missingDirectionPanels > 0) issues.push({ key: "missing-direction", label: `${missingDirectionPanels} visual direction${missingDirectionPanels === 1 ? "" : "s"} incomplete`, detail: "Set shot, angle, mood, and pacing move for the art team.", blocking: false });
@@ -664,9 +665,10 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const layoutMode = context.layoutMode === "comic" ? "comic" : "prose";
   const sectionLabel = layoutMode === "comic" ? "panel" : "scene";
   const totalSections = paragraphs.length;
-  const writtenSections = paragraphs.filter((p) => countWords(p?.text) >= (layoutMode === "comic" ? 2 : 5)).length;
-  const contentSections = paragraphs.filter((p) => String(p?.text || "").trim()).length;
-  const totalWords = paragraphs.reduce((sum, p) => sum + countWords(p?.text), 0);
+  const sectionText = (p) => getStoryForgeSectionText(p, (context.panelDialogue || {})[p?.id], layoutMode === "comic");
+  const writtenSections = paragraphs.filter((p) => countWords(sectionText(p)) >= (layoutMode === "comic" ? 2 : 5)).length;
+  const contentSections = paragraphs.filter((p) => sectionText(p).trim()).length;
+  const totalWords = paragraphs.reduce((sum, p) => sum + countWords(sectionText(p)), 0);
   const storyCueReady = Boolean(String(context.storyTitle || context.storyPrompt || context.sourceTopic || "").trim());
   const vocabTerms = Array.isArray(context.vocabTerms) ? context.vocabTerms : [];
   const vocabTotal = vocabTerms.length;
@@ -704,7 +706,7 @@ const getStoryForgeProjectReadiness = (context = {}) => {
   const warnings = [];
   const addIssue = (list, phase, code, label, detail) => list.push({ phase, code, label, detail });
   if (!contentSections) {
-    addIssue(blockers, "write", "missing-story-content", layoutMode === "comic" ? "Comic panels need captions" : "Draft is empty", layoutMode === "comic" ? "Add a short narration caption to each planned panel." : "Write at least one complete scene before exporting.");
+    addIssue(blockers, "write", "missing-story-content", layoutMode === "comic" ? "Start your first panel" : "Start your first scene", layoutMode === "comic" ? "Add narration or dialogue to your planned panels." : "Write at least one complete scene before exporting.");
   } else if (contentSections < totalSections && layoutMode !== "comic") {
     addIssue(warnings, "write", "incomplete-story-sections", "Some story sections are empty", `${totalSections - contentSections} section${totalSections - contentSections === 1 ? "" : "s"} still need writing.`);
   }
@@ -715,10 +717,10 @@ const getStoryForgeProjectReadiness = (context = {}) => {
     addIssue(warnings, "illustrate", "missing-illustrations", "Finish the visual pass", `${totalSections - illustratedSections} ${sectionLabel}${totalSections - illustratedSections === 1 ? "" : "s"} still need art.`);
   }
   if (!reviewSignalCount) {
-    addIssue(warnings, "review", "review-not-run", layoutMode === "comic" ? "Run a comic flow review" : "Review the draft", "Complete at least one review or revision pass before publishing.");
+    addIssue(blockers, "review", "review-not-run", layoutMode === "comic" ? "Run a comic flow review" : "Review the draft", "Complete at least one review or revision pass before publishing.");
   }
   if (layoutMode === "comic") {
-    if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, "write", "empty-comic-panels", "Fill every comic panel", `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? "" : "s"} have no narration caption.`);
+    if (comicStats.emptyPanels > 0 && contentSections > 0) addIssue(blockers, "write", "empty-comic-panels", "Fill every comic panel", `${comicStats.emptyPanels} panel${comicStats.emptyPanels === 1 ? "" : "s"} have no narration or dialogue.`);
     if (comicStats.unplacedBubbles > 0) addIssue(warnings, "illustrate", "unplaced-lettering", "Place every lettering bubble", `${comicStats.unplacedBubbles} bubble panel${comicStats.unplacedBubbles === 1 ? "" : "s"} need a safe anchor.`);
     if (comicStats.gutterRiskPanels > 0) addIssue(warnings, "illustrate", "gutter-lettering-conflict", "Move lettering away from the gutter", `${comicStats.gutterRiskPanels} panel${comicStats.gutterRiskPanels === 1 ? "" : "s"} place lettering in the binding risk area.`);
     if (comicStats.crowdedBubbles > 0) addIssue(warnings, "write", "crowded-lettering", "Trim crowded lettering", `${comicStats.crowdedBubbles} panel${comicStats.crowdedBubbles === 1 ? "" : "s"} exceed the recommended lettering load.`);
@@ -1621,6 +1623,70 @@ const STORY_STARTERS = {
     "After what happened at recess, I knew I had to convince my classmates that things needed to change."
   ]
 };
+const prepareStoryForgeLessonImport = (resource) => {
+  if (!resource || typeof resource !== "object") throw new Error("Unsupported resource");
+  if (resource.type === "glossary") {
+    const raw = resource.data?.terms || resource.data;
+    if (!Array.isArray(raw)) throw new Error("Invalid vocabulary");
+    const terms = raw.filter((item) => item && typeof item === "object").map((item) => ({ term: item.term || item.word, definition: item.definition || item.def || "" }));
+    const clean = sanitizeVocabTerms(terms) || [];
+    if (!clean.length) throw new Error("Empty vocabulary");
+    return { kind: "vocabulary", terms: clean, total: terms.length };
+  }
+  if (resource.type === "sentence-frames" || resource.type === "timeline") {
+    if (typeof resource.data !== "string") throw new Error("Invalid lesson plan");
+    const frames = resource.data.split(/\r?\n/).map((line) => line.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim()).filter(Boolean);
+    if (!frames.length) throw new Error("Empty lesson plan");
+    const suggestions = normalizeStoryForgePlan({ frames: frames.slice(0, MAX_DRAFT_PARAGRAPHS) });
+    return { kind: "plan", suggestions, total: frames.length };
+  }
+  if (resource.type === "simplified" || resource.type === "lesson-plan") {
+    const text = typeof resource.data === "string" ? resource.data : resource.type === "simplified" ? resource.data?.originalText : "";
+    if (typeof text !== "string" || !text.trim()) throw new Error("Empty starting idea");
+    return { kind: "prompt", prompt: text.trim().slice(0, 500), total: 1 };
+  }
+  throw new Error("Unsupported resource");
+};
+const mergeStoryForgeVocabulary = (existing, incoming) => {
+  const result = [...sanitizeVocabTerms(existing) || []];
+  const key = (term) => term.normalize("NFKC").toLowerCase();
+  const known = new Set(result.map((item) => key(item.term)));
+  for (const item of sanitizeVocabTerms(incoming) || []) {
+    if (result.length >= 64) break;
+    if (!known.has(key(item.term))) {
+      result.push(item);
+      known.add(key(item.term));
+    }
+  }
+  return result;
+};
+const storyForgeSectionHasWork = (section, maps = []) => Boolean(section && ([section.text, section.scaffoldFrame, section.plotBeat].some((value) => typeof value === "string" && value.trim()) || maps.some((map) => map && map[section.id] != null)));
+const getStoryForgeSectionText = (paragraph, dialogue = {}, comic = false) => [
+  typeof paragraph?.text === "string" ? paragraph.text : "",
+  ...comic ? ["speech", "thought", "sfx"].map((key) => typeof dialogue?.[key] === "string" ? dialogue[key] : "") : []
+].filter((text) => text.trim()).join("\n");
+const normalizeStoryForgePlan = (data, comic = false) => {
+  const items = comic ? data?.panels : data?.frames;
+  if (!Array.isArray(items) || !items.length || items.length > MAX_DRAFT_PARAGRAPHS) throw new Error("Invalid plan size");
+  return items.map((item) => {
+    const caption = comic ? item?.caption : item;
+    if (typeof caption !== "string" || !caption.trim() || caption.length > 5e3) throw new Error("Invalid plan section");
+    return { scaffoldFrame: caption.trim(), plotBeat: comic && PLOT_BEATS.some((beat) => beat.value === item.beat) ? item.beat : "" };
+  });
+};
+const mergeStoryForgePlan = (paragraphs, suggestions, ids) => {
+  const next = paragraphs.map((paragraph) => ({ ...paragraph }));
+  suggestions.forEach((suggestion, index) => {
+    const existing = next.find((paragraph) => paragraph.id === ids[index]);
+    if (existing) {
+      existing.scaffoldFrame = suggestion.scaffoldFrame;
+      if (!existing.plotBeat) existing.plotBeat = suggestion.plotBeat;
+    } else if (!ids[index] && next.length < MAX_DRAFT_PARAGRAPHS) {
+      next.push({ id: "p-plan-" + Date.now() + "-" + index, text: "", ...suggestion });
+    }
+  });
+  return next;
+};
 const computeReadingLevel = (text) => {
   if (!text || text.trim().length < 20) return null;
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
@@ -1769,7 +1835,7 @@ const getStoryForgeRestoredPhase = (value = {}) => {
   const phase = PHASES.includes(draft.phase) ? draft.phase : "configure";
   const phaseIndex = PHASES.indexOf(phase);
   const hasStoryCue = Boolean(String(draft.storyTitle || draft.storyPrompt || draft.sourceTopic || "").trim());
-  const hasDraftContent = Array.isArray(draft.paragraphs) && draft.paragraphs.some((section) => String(section?.text || "").trim());
+  const hasDraftContent = Array.isArray(draft.paragraphs) && draft.paragraphs.some((section) => getStoryForgeSectionText(section, draft.panelDialogue?.[section?.id], draft.artifactType === "comic" || draft.layoutMode === "comic").trim());
   const reviewIsCurrent = Boolean(
     typeof draft.reviewedDraftSignature === "string" && draft.reviewedDraftSignature && draft.reviewedDraftSignature === getStoryForgeReviewSignature(draft)
   );
@@ -2080,9 +2146,18 @@ const StoryForge = React.memo(({
   // Optional: (audioBase64, mimeType, referenceText) => Promise<result> — ORF analysis
 }) => {
   const t = tFunc || ((k) => k);
+  const ux = (key, fallback) => {
+    const value = t("storyforge_updates." + key);
+    return typeof value === "string" && value !== "storyforge_updates." + key ? value : fallback;
+  };
   const ta = (key, params) => {
     const v = t(key, params);
     return typeof v === "string" ? v : String(key || "");
+  };
+  const notifyAiUnavailable = () => {
+    const message = ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.");
+    if (addToast) addToast(message, "info");
+    sfAnnounce(message);
   };
   const levelLabel = (lvl) => {
     if (!lvl) return "";
@@ -2117,6 +2192,20 @@ const StoryForge = React.memo(({
   };
   const [phase, setPhase] = useState("configure");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [planProposal, setPlanProposal] = useState(null);
+  const [lessonImportProposal, setLessonImportProposal] = useState(null);
+  const lessonImportPreviewRef = useRef(null);
+  const [projectMutationBusy, setProjectMutationBusy] = useState(false);
+  const projectMutationBusyRef = useRef(false);
+  const projectRevisionRef = useRef(null);
+  const [projectActionUndo, setProjectActionUndo] = useState(null);
+  const [showProjectHealth, setShowProjectHealth] = useState(false);
+  const planStateRef = useRef("");
+  const planRequestRef = useRef(0);
+  const planPreviewRef = useRef(null);
+  useEffect(() => () => {
+    planRequestRef.current += 1;
+  }, []);
   const [storyTitle, setStoryTitle] = useState("");
   const authorName = codename || "Creative Writer";
   const SAVE_KEY = SAVE_KEY_BASE + "_" + (String(codename || "anon").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "") || "anon");
@@ -2226,6 +2315,7 @@ const StoryForge = React.memo(({
     panelDialogue
   }), [artifactType, rubricText, vocabTerms, language, customLanguage, paragraphs, panelDialogue]);
   const [panelDirections, setPanelDirections] = useState({});
+  planStateRef.current = JSON.stringify({ isOpen, paragraphs, panelDialogue, panelDirections, artifactType });
   const [panelThumbnails, setPanelThumbnails] = useState({});
   const [panelLayouts, setPanelLayouts] = useState({});
   const [panelResizeDrag, setPanelResizeDrag] = useState(null);
@@ -2642,7 +2732,7 @@ const StoryForge = React.memo(({
     let bubblePanels = 0;
     pageList.forEach((page) => {
       const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-      const gutterSide2 = getComicPageGutterSide(page.page, page.layout, printSafety);
+      const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
       (page.panels || []).forEach(({ paragraph }, pageIndex) => {
         const id = paragraph?.id;
         if (!id) return;
@@ -2650,8 +2740,8 @@ const StoryForge = React.memo(({
         if (!comicDialogueHasBubbles(dialogue)) return;
         bubblePanels += 1;
         const currentSpace = normalizeComicLetteringSpace((panelThumbnails[id] || {}).letteringSpace);
-        if (currentSpace && currentSpace !== "none" && !letteringTouchesSide(currentSpace, gutterSide2)) return;
-        assignments[id] = getComicAutoLetteringSpace(page.layout, pageIndex, gutterSide2);
+        if (currentSpace && currentSpace !== "none" && !letteringTouchesSide(currentSpace, gutterSide)) return;
+        assignments[id] = getComicAutoLetteringSpace(page.layout, pageIndex, gutterSide);
       });
     });
     const ids = Object.keys(assignments);
@@ -3271,6 +3361,7 @@ const StoryForge = React.memo(({
   };
   const hasMeaningfulDraft = () => isStoryForgeProjectMeaningful(createProjectSnapshot());
   const persistDraftToStorage = async ({ announce = false, allowDuringHydration = false } = {}) => {
+    if (projectMutationBusyRef.current) return false;
     if (!allowDuringHydration && (draftHydrationState !== "ready" || showRestorePrompt)) {
       setDraftSaveState("paused");
       if (draftHydrationState === "awaiting" && !showRestorePrompt) setShowRestorePrompt(true);
@@ -3328,6 +3419,7 @@ const StoryForge = React.memo(({
       if (addToast) addToast(ta("a11y.storyforge_toast_checkpoint_could_not_be_saved"), "error");
       return false;
     }
+    revisionHistoryRef.current = next;
     setRevisionHistory(next);
     setVaultStorageMode("vault");
     setDraftSaveState("saved");
@@ -3339,13 +3431,39 @@ const StoryForge = React.memo(({
     sfAnnounce(ta("a11y.storyforge_checkpoint_saved").replace("{0}", checkpoint.label));
     return true;
   };
-  const restoreRevisionCheckpoint = (revision) => {
+  const runRecoverableProjectEdit = async (label, commit, { version = projectRevisionRef.current, checkpoint = true } = {}) => {
+    if (projectMutationBusyRef.current || draftHydrationState !== "ready" || isProcessing) return false;
+    projectMutationBusyRef.current = true;
+    setProjectMutationBusy(true);
+    const changed = () => {
+      if (version === projectRevisionRef.current) return false;
+      const message = ux("edit_changed", "Your project changed while saving. Nothing was replaced. Try the action again.");
+      if (addToast) addToast(message, "info");
+      sfAnnounce(message);
+      return true;
+    };
+    try {
+      if (changed()) return false;
+      if (checkpoint && !await saveRevisionCheckpoint(label)) return false;
+      if (changed()) return false;
+      const previous = checkpoint ? revisionHistoryRef.current[0] : null;
+      commit();
+      setProjectActionUndo(previous);
+      return true;
+    } finally {
+      projectMutationBusyRef.current = false;
+      setProjectMutationBusy(false);
+    }
+  };
+  const restoreRevisionCheckpoint = async (revision) => {
     if (!revision?.snapshot) return;
-    applySanitizedProject(revision.snapshot);
-    setIsDirty(true);
-    setDraftSaveState("saving");
-    if (addToast) addToast(ta("a11y.storyforge_toast_checkpoint_restored").replace("{0}", revision.label || "Production checkpoint"), "success");
-    sfAnnounce(ta("a11y.storyforge_checkpoint_restored").replace("{0}", revision.label || "Production checkpoint"));
+    await runRecoverableProjectEdit(ux("before_restore", "Before restoring checkpoint"), () => {
+      applySanitizedProject(revision.snapshot);
+      setIsDirty(true);
+      setDraftSaveState("saving");
+      if (addToast) addToast(ta("a11y.storyforge_toast_checkpoint_restored").replace("{0}", revision.label || "Production checkpoint"), "success");
+      sfAnnounce(ta("a11y.storyforge_checkpoint_restored").replace("{0}", revision.label || "Production checkpoint"));
+    });
   };
   const draftSaveLabel = draftHydrationState === "awaiting" ? "Review draft" : draftHydrationState !== "ready" || showRestorePrompt ? "Save paused" : draftSaveState === "saving" ? "Saving" : draftSaveState === "error" ? "Save failed" : draftSaveState === "saved" ? "Saved" : "Save draft";
   const draftSaveDescription = draftSaveError || (lastDraftSavedAt ? `${vaultStorageMode === "vault" ? "Project vault" : "Browser storage"} \xB7 Last saved at ${new Date(lastDraftSavedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : draftHydrationState !== "ready" || showRestorePrompt ? "Choose whether to restore the saved draft first" : "Save this project in the browser vault");
@@ -3471,6 +3589,20 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   const [comicFlowReport, setComicFlowReport] = useState(null);
   const [comicFlowLoading, setComicFlowLoading] = useState(false);
   const [draftCount, setDraftCount] = useState(1);
+  projectRevisionRef.current = useMemo(() => ({}), [isOpen, SAVE_KEY, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload, comicFlowReport]);
+  useEffect(() => {
+    if (lessonImportProposal) lessonImportPreviewRef.current?.focus();
+  }, [lessonImportProposal]);
+  useEffect(() => {
+    if (!focusMode || phase !== "write") return;
+    const timer = setTimeout(() => {
+      const card = document.getElementById("sf-para-" + paragraphs[focusParagraphIdx]?.id);
+      const editor = card?.querySelector("textarea");
+      editor?.focus({ preventScroll: true });
+      card?.scrollIntoView({ block: "nearest", behavior: prefersReducedMotion ? "auto" : "smooth" });
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [focusMode, focusParagraphIdx, phase]);
   const isCurrentDraftReviewed = Boolean(
     reviewedDraftSignature && reviewedDraftSignature === currentReviewDraftSignature
   );
@@ -3500,16 +3632,18 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       })).filter((v) => v.term));
     }
   }, [glossaryTerms]);
+  const authoredSections = useMemo(() => paragraphs.map((p) => getStoryForgeSectionText(p, panelDialogue[p.id], layoutMode === "comic")), [paragraphs, panelDialogue, layoutMode]);
+  const authoredText = authoredSections.join("\n\n");
   const vocabUsage = useMemo(() => {
-    const fullText = paragraphs.map((p) => p.text).join(" ");
+    const fullText = authoredText;
     const usage = {};
     vocabTerms.forEach((v) => {
       usage[v.term] = termUsed(fullText, v.term);
     });
     return usage;
-  }, [paragraphs, vocabTerms]);
+  }, [authoredText, vocabTerms]);
   const vocabUsedCount = useMemo(() => Object.values(vocabUsage).filter(Boolean).length, [vocabUsage]);
-  const totalWords = useMemo(() => paragraphs.reduce((sum, p) => sum + p.text.trim().split(/\s+/).filter(Boolean).length, 0), [paragraphs]);
+  const totalWords = useMemo(() => countWords(authoredText), [authoredText]);
   const comicExportProof = useMemo(
     () => layoutMode === "comic" ? getComicExportProof(comicPageGroups, { panelDialogue, panelDirections, panelThumbnails, panelLayouts, illustrations, comicPrintSafety }) : null,
     [layoutMode, comicPageGroups, panelDialogue, panelDirections, panelThumbnails, panelLayouts, illustrations, comicPrintSafety]
@@ -3542,17 +3676,18 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   }), [storyTitle, storyPrompt, sourceTopic, genre, layoutMode, paragraphs, vocabTerms, vocabUsedCount, illustrations, audioSegments, comicPageGroups, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelThumbnails, panelLayouts, isCurrentDraftReviewed]);
   const readinessByPhase = useMemo(() => Object.fromEntries(projectReadiness.phases.map((item) => [item.key, item])), [projectReadiness]);
   const readingLevel = useMemo(() => {
-    const fullText = paragraphs.map((p) => p.text).join(" ");
-    return computeReadingLevel(fullText);
-  }, [paragraphs]);
-  const paragraphStats = useMemo(() => paragraphs.map((p) => {
-    const words = p.text.trim().split(/\s+/).filter(Boolean);
-    const sentences = p.text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-    const pVocab = vocabTerms.filter((v) => termUsed(p.text, v.term));
+    if (language !== "en" || countWords(authoredText) < 100) return null;
+    return computeReadingLevel(authoredText);
+  }, [authoredText, language]);
+  const paragraphStats = useMemo(() => authoredSections.map((text) => {
+    const words = text.trim().split(/\s+/).filter(Boolean);
+    const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+    const pVocab = vocabTerms.filter((v) => termUsed(text, v.term));
     return { wordCount: words.length, sentenceCount: sentences.length, vocabUsed: pVocab.length };
-  }), [paragraphs, vocabTerms]);
+  }), [authoredSections, vocabTerms]);
   const wordFrequency = useMemo(() => {
-    const fullText = paragraphs.map((p) => p.text).join(" ");
+    if (language !== "en") return [];
+    const fullText = authoredText;
     const words = fullText.toLowerCase().replace(/[^a-z\s'-]/g, "").split(/\s+/).filter((w) => w.length > 3);
     const stopWords = /* @__PURE__ */ new Set(["that", "this", "with", "from", "your", "have", "they", "been", "their", "were", "will", "would", "could", "should", "about", "which", "there", "these", "those", "than", "what", "when", "then", "into", "also", "very", "just", "more", "some", "only", "over", "such", "after", "other", "like", "most", "each", "made", "them", "does", "many", "much", "well", "back", "even", "here", "come", "make", "good", "know", "take", "said", "much"]);
     const freq = {};
@@ -3560,7 +3695,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       if (!stopWords.has(w)) freq[w] = (freq[w] || 0) + 1;
     });
     return Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 15);
-  }, [paragraphs]);
+  }, [authoredText, language]);
   const overusedWords = useMemo(() => wordFrequency.filter(([, count]) => count >= 4).map(([word]) => word), [wordFrequency]);
   const sentenceVariety = useMemo(() => paragraphs.map((p) => {
     const sentences = p.text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
@@ -3666,7 +3801,11 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
         else if (showCloseConfirm) setShowCloseConfirm(false);
         else if (showDiscardDraftConfirm) cancelDiscardDraftConfirmation();
         else if (showRestorePrompt) dismissRestorePrompt();
-        else safeClose();
+        else if (modalRootRef.current?.querySelector("[data-sf-project-menu][open]")) {
+          const menu = modalRootRef.current.querySelector("[data-sf-project-menu][open]");
+          menu.open = false;
+          menu.querySelector("summary")?.focus();
+        } else safeClose();
         e.preventDefault();
       }
       if ((e.ctrlKey || e.metaKey) && e.key === "s" && isOpen) {
@@ -3679,10 +3818,23 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   }, [isOpen, exportConsent, importConfirmation, showCloseConfirm, showRestorePrompt, showDiscardDraftConfirm, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, draftCount, phase, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, draftHydrationState, comicProductionSnapshotKey, comicCanUndo, comicCanRedo]);
   useEffect(() => {
     if (!isOpen) return void 0;
+    const dismiss = (event) => {
+      const menu = modalRootRef.current?.querySelector("[data-sf-project-menu][open]");
+      if (menu && !menu.contains(event.target)) menu.open = false;
+    };
+    document.addEventListener("pointerdown", dismiss);
+    document.addEventListener("focusin", dismiss);
+    return () => {
+      document.removeEventListener("pointerdown", dismiss);
+      document.removeEventListener("focusin", dismiss);
+    };
+  }, [isOpen]);
+  useEffect(() => {
+    if (!isOpen) return void 0;
     const root = modalRootRef.current;
     if (!root || typeof document === "undefined") return void 0;
     previouslyFocusedRef.current = document.activeElement;
-    const FOCUSABLE = 'a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+    const FOCUSABLE = 'summary,a[href],area[href],button:not([disabled]),input:not([disabled]):not([type="hidden"]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
     const getFocusable = () => Array.from(root.querySelectorAll(FOCUSABLE)).filter((el) => el.getClientRects().length > 0);
     const focusTimer = setTimeout(() => {
       const f = getFocusable();
@@ -3795,7 +3947,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       saveTimerRef.current = null;
     }
     if (!isOpen) return void 0;
-    if (draftHydrationState !== "ready" || showRestorePrompt) {
+    if (draftHydrationState !== "ready" || showRestorePrompt || projectMutationBusy) {
       setDraftSaveState("paused");
       return void 0;
     }
@@ -3845,8 +3997,11 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     };
-  }, [isOpen, draftHydrationState, showRestorePrompt, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
+  }, [isOpen, draftHydrationState, showRestorePrompt, projectMutationBusy, storyTitle, genre, vocabTerms, artStyle, customArtStyle, storyPrompt, rubricText, paragraphs, scaffoldsGenerated, phase, draftCount, language, customLanguage, storyShape, valenceByPara, artifactType, writingView, layoutMode, comicPageLayout, comicPageComposer, comicPrintSafety, comicContinuity, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers, reviewedDraftSignature, illustrations, coverArt, audioSegments, audioStorePayload]);
   const applySanitizedDraft = (value) => {
+    setLessonImportProposal(null);
+    setPlanProposal(null);
+    setProjectActionUndo(null);
     const draft = sanitizeStoryForgeDraft(value);
     const restoredPhase = getStoryForgeRestoredPhase({ ...draft, sourceTopic });
     resetComicHistory();
@@ -4112,41 +4267,30 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     awardXP(10, "Saved artifact to portfolio");
   };
   const importFromResource = (resource) => {
-    if (!resource) return;
-    if (resource.type === "glossary") {
-      const terms = resource.data?.terms || resource.data || [];
-      if (Array.isArray(terms) && terms.length > 0) {
-        setVocabTerms(terms.map((g) => ({ term: g.term || g.word || "", definition: g.def || g.definition || "" })).filter((v) => v.term));
-        if (addToast) addToast(ta("a11y.storyforge_toast_imported_glossary_terms").replace("{0}", terms.length), "success");
-      }
-    } else if (resource.type === "simplified") {
-      const text = typeof resource.data === "string" ? resource.data : resource.data?.originalText || "";
-      if (text) {
-        setStoryPrompt("Write a creative story inspired by this text: " + text.substring(0, 300));
-        if (addToast) addToast(t("toasts.imported_topic_from_reading_passage"), "success");
-      }
-    } else if (resource.type === "sentence-frames") {
-      const frames = typeof resource.data === "string" ? resource.data.split("\n").filter(Boolean) : [];
-      if (frames.length > 0) {
-        setParagraphs(frames.slice(0, 8).map((f, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: f.replace(/^[\d.)\-\s]+/, "").trim(), plotBeat: "" })));
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta("a11y.storyforge_toast_imported_scaffold_frames").replace("{0}", frames.length), "success");
-      }
-    } else if (resource.type === "lesson-plan") {
-      const planText = typeof resource.data === "string" ? resource.data : "";
-      if (planText) {
-        setStoryPrompt(planText.substring(0, 500));
-        if (addToast) addToast(t("toasts.imported_lesson_plan_as_story"), "success");
-      }
-    } else if (resource.type === "timeline") {
-      const timelineText = typeof resource.data === "string" ? resource.data : "";
-      if (timelineText) {
-        const events = timelineText.split("\n").filter((l) => l.trim().length > 10).slice(0, 8);
-        setParagraphs(events.map((e, i) => ({ id: `p-${i}`, text: "", scaffoldFrame: e.trim(), plotBeat: "" })));
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta("a11y.storyforge_toast_imported_timeline_events_as_scaffolds").replace("{0}", events.length), "success");
-      }
+    try {
+      const proposal = prepareStoryForgeLessonImport(resource);
+      setLessonImportProposal({ ...proposal, title: String(resource.title || resource.type).slice(0, 160), version: projectRevisionRef.current, sectionIds: paragraphs.map((p) => p.id) });
+    } catch (error) {
+      const message = ux("lesson_invalid", "This resource has no supported content to import. Your project has not changed.");
+      if (addToast) addToast(message, "info");
+      sfAnnounce(message);
     }
+  };
+  const applyLessonImport = async () => {
+    const proposal = lessonImportProposal;
+    if (!proposal) return;
+    const saved = await runRecoverableProjectEdit(ux("before_lesson", "Before lesson import"), () => {
+      if (proposal.kind === "vocabulary") setVocabTerms((current) => mergeStoryForgeVocabulary(current, proposal.terms));
+      else if (proposal.kind === "prompt") setStoryPrompt(proposal.prompt);
+      else {
+        setParagraphs((current) => mergeStoryForgePlan(current, proposal.suggestions, proposal.sectionIds));
+        setScaffoldsGenerated(true);
+      }
+      setIsDirty(true);
+      setLessonImportProposal(null);
+      sfAnnounce(ux("lesson_applied", "Lesson resource applied. Your writing is preserved and a checkpoint is available."));
+    }, { version: proposal.version });
+    if (!saved && proposal.version !== projectRevisionRef.current) setLessonImportProposal(null);
   };
   const phaseIdx = PHASES.indexOf(phase);
   const hasStoryCue = Boolean(storyTitle.trim() || storyPrompt.trim() || sourceTopic);
@@ -4264,12 +4408,15 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
   };
   const addParagraph = () => {
     if (paragraphs.length >= maxParagraphs) return;
-    const newId = `p-${Date.now()}`;
-    setParagraphs((prev) => [...prev, { id: newId, text: "", scaffoldFrame: "", plotBeat: "" }]);
+    const newId = `p-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    setParagraphs((prev) => prev.length >= maxParagraphs ? prev : [...prev, { id: newId, text: "", scaffoldFrame: "", plotBeat: "" }]);
     if (!isDirty) setIsDirty(true);
     setTimeout(() => {
       const el = document.getElementById("sf-para-" + newId);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el) {
+        el.querySelector("textarea")?.focus({ preventScroll: true });
+        el.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
+      }
     }, 100);
   };
   const duplicatePanelAfter = (idx) => {
@@ -4310,7 +4457,14 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
       if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 100);
   };
-  const removeParagraph = (idx) => {
+  const removeParagraph = async (idx) => {
+    if (paragraphs.length <= 1 || !paragraphs[idx]) return;
+    const checkpoint = storyForgeSectionHasWork(paragraphs[idx], [audioSegments, illustrations, panelDialogue, panelDirections, panelThumbnails, panelLayouts, panelStickers]);
+    await runRecoverableProjectEdit(ux("before_remove", "Before removing a section"), () => {
+      removeParagraphNow(idx);
+    }, { checkpoint });
+  };
+  const removeParagraphNow = (idx) => {
     if (paragraphs.length <= 1) return;
     const removedId = paragraphs[idx]?.id;
     if (removedId) {
@@ -4431,7 +4585,14 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     movePanelToIndex(idx, Math.max(0, Math.min(paragraphs.length - 1, target)));
   };
   const generateScaffolds = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      sfAnnounce(ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check."));
+      return;
+    }
+    const requestId = ++planRequestRef.current;
+    const requestState = planStateRef.current;
+    const sectionIds = paragraphs.map((p) => p.id);
+    setPlanProposal(null);
     setIsProcessing(true);
     try {
       const genreHint = GENRE_TEMPLATES[genre]?.scaffoldHint;
@@ -4476,83 +4637,54 @@ ${langInstruction}
 Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
       const result = await onCallGemini(prompt, true);
       const data = JSON.parse(cleanJson(result));
-      if (isComicMode && Array.isArray(data.panels)) {
-        const validBeats = new Set(PLOT_BEATS.map((b) => b.value).filter(Boolean));
-        const panels = data.panels.slice(0, maxParagraphs);
-        const newParagraphs = panels.map((panel, i) => {
-          const previous = paragraphs[i] || {};
-          const caption = panel && typeof panel.caption === "string" ? panel.caption : panel && typeof panel.scaffoldFrame === "string" ? panel.scaffoldFrame : "";
-          const beat = panel && typeof panel.beat === "string" ? panel.beat : "";
-          return {
-            id: previous.id || `p-${Date.now()}-${i}`,
-            text: previous.text || "",
-            scaffoldFrame: caption,
-            plotBeat: validBeats.has(beat) ? beat : previous.plotBeat || ""
-          };
-        });
-        const bubbleUpdates = {};
-        const directionUpdates = {};
-        panels.forEach((panel, i) => {
-          if (!panel || typeof panel !== "object") return;
-          const id = newParagraphs[i]?.id;
-          if (!id) return;
-          const clean = sanitizePanelDialogue({ [id]: {
-            speaker: typeof panel.speaker === "string" ? panel.speaker : "",
-            speech: typeof panel.speech === "string" ? panel.speech : "",
-            thought: typeof panel.thought === "string" ? panel.thought : "",
-            sfx: typeof panel.sfx === "string" ? panel.sfx : ""
-          } })[id];
-          if (clean) bubbleUpdates[id] = clean;
-          const cleanDirection = sanitizePanelDirections({ [id]: {
-            shot: typeof panel.shot === "string" ? panel.shot : "",
-            angle: typeof panel.angle === "string" ? panel.angle : "",
-            mood: typeof panel.mood === "string" ? panel.mood : "",
-            transition: typeof panel.transition === "string" ? panel.transition : ""
-          } })[id];
-          if (cleanDirection) directionUpdates[id] = cleanDirection;
-        });
-        setParagraphs(newParagraphs);
-        if (Object.keys(bubbleUpdates).length > 0) {
-          setPanelDialogue((prev) => {
-            const next = { ...prev };
-            Object.keys(bubbleUpdates).forEach((id) => {
-              next[id] = { ...next[id] || {}, ...bubbleUpdates[id] };
-            });
-            return next;
-          });
-        }
-        if (Object.keys(directionUpdates).length > 0) {
-          setPanelDirections((prev) => {
-            const next = { ...prev };
-            Object.keys(directionUpdates).forEach((id) => {
-              next[id] = { ...next[id] || {}, ...directionUpdates[id] };
-            });
-            return next;
-          });
-        }
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(ta("a11y.storyforge_toast_comic_panel_plan_generated"), "success");
-        awardXP(5, "Generated comic panel plan");
-      } else if (data.frames && Array.isArray(data.frames)) {
-        const newParagraphs = data.frames.map((frame, i) => ({
-          id: paragraphs[i]?.id || `p-${Date.now()}-${i}`,
-          text: paragraphs[i]?.text || "",
-          scaffoldFrame: frame,
-          plotBeat: paragraphs[i]?.plotBeat || ""
-        }));
-        setParagraphs(newParagraphs);
-        setScaffoldsGenerated(true);
-        if (addToast) addToast(t("toasts.scaffold_frames_generated"), "success");
-        awardXP(5, "Generated scaffolds");
+      const suggestions = normalizeStoryForgePlan(data, isComicMode);
+      if (requestId !== planRequestRef.current) return;
+      if (requestState !== planStateRef.current) {
+        if (addToast) addToast(ux("plan_stale", "Your draft changed. Generate a new plan to keep your latest edits."), "info");
+        return;
       }
+      setPlanProposal({ suggestions, sectionIds, signature: requestState });
+      sfAnnounce(ux("plan_preview_ready", "Plan suggestions are ready to preview. Your writing has not changed."));
     } catch (err) {
       console.warn("Scaffold generation failed:", err);
       if (addToast) addToast(t("toasts.failed_generate_scaffolds"), "error");
+    } finally {
+      if (requestId === planRequestRef.current) setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
+  const applyPlanProposal = async () => {
+    const proposal = planProposal;
+    if (!proposal) return;
+    setIsProcessing(true);
+    try {
+      if (proposal.signature !== planStateRef.current) {
+        setPlanProposal(null);
+        if (addToast) addToast(ux("plan_stale", "Your draft changed. Generate a new plan to keep your latest edits."), "info");
+        return;
+      }
+      if (!await saveRevisionCheckpoint(ux("before_plan", "Before applying plan"))) return;
+      if (proposal.signature !== planStateRef.current) {
+        setPlanProposal(null);
+        if (addToast) addToast(ux("plan_stale", "Your draft changed. Generate a new plan to keep your latest edits."), "info");
+        return;
+      }
+      setParagraphs((current) => mergeStoryForgePlan(current, proposal.suggestions, proposal.sectionIds));
+      setScaffoldsGenerated(true);
+      setIsDirty(true);
+      setPlanProposal(null);
+      sfAnnounce(ux("plan_applied", "Plan applied. Your writing and dialogue were preserved."));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+  useEffect(() => {
+    if (planProposal) planPreviewRef.current?.focus();
+  }, [planProposal]);
   const helpMeWrite = async (idx) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     setHelpMeParagraphIdx(idx);
     setHelpMeResult(null);
     const p = paragraphs[idx];
@@ -4581,7 +4713,10 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
     }
   };
   const draftComicBubbles = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const selectedPanels = paragraphs.map((p, idx) => ({ p, idx })).filter(({ p, idx }) => (targetIdx === null || idx === targetIdx) && (p.text || p.scaffoldFrame || "").trim().length > 0);
     if (selectedPanels.length === 0) {
       if (addToast) addToast(ta("a11y.storyforge_toast_add_a_narration_caption_before_drafting_comic"), "info");
@@ -4687,7 +4822,10 @@ Return ONLY JSON:
     }
   };
   const tightenComicBubbles = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const selectedPanels = paragraphs.map((p, idx) => {
       const dialogue = panelDialogue[p.id] || {};
       return { p, idx, dialogue, lettering: getComicLetteringStats(dialogue) };
@@ -4778,7 +4916,10 @@ Return ONLY JSON:
     }
   };
   const draftComicCameraPass = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const selectedPanels = paragraphs.map((p, idx) => ({ p, idx })).filter(({ p, idx }) => (typeof targetIdx === "number" ? idx === targetIdx : true) && (p.text || p.scaffoldFrame || "").trim().length > 0);
     if (selectedPanels.length === 0) {
       if (addToast) addToast(typeof targetIdx === "number" ? "Add a caption before directing this panel." : "Add panel captions before running a camera pass.", "info");
@@ -4865,7 +5006,10 @@ Return ONLY JSON:
     }
   };
   const draftComicThumbnailPass = async (targetIdx = null) => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const selectedPanels = paragraphs.map((p, idx) => ({ p, idx })).filter(({ p, idx }) => (typeof targetIdx === "number" ? idx === targetIdx : true) && (p.text || p.scaffoldFrame || "").trim().length > 0);
     if (selectedPanels.length === 0) {
       if (addToast) addToast(typeof targetIdx === "number" ? "Add a caption before roughing this panel." : "Add panel captions before running thumbnail roughs.", "info");
@@ -4953,7 +5097,10 @@ Return ONLY JSON:
     }
   };
   const checkGrammarAndStyle = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     setGrammarLoading(true);
     try {
       const fullText = paragraphs.map((p, i) => `[P${i + 1}] ${p.text}`).join("\n\n");
@@ -5032,7 +5179,10 @@ Return ONLY JSON:
     return /NO TEXT/i.test(base) && /NO WORDS/i.test(base) ? base : `${base} STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.`;
   };
   const draftComicContinuity = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const panelBrief = paragraphs.map((p, idx) => ({
       panel: idx + 1,
       caption: (p.text || p.scaffoldFrame || "").slice(0, 500),
@@ -5128,7 +5278,10 @@ Return ONLY JSON:
       setPromptPreview({ paragraphId, text: sourceText, idx, prompt: savedPrompt });
       return;
     }
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const style = getStyleDesc();
     const sourceLimit = layoutMode === "comic" ? 1100 : 700;
     const promptResult = await onCallGemini(
@@ -5390,7 +5543,10 @@ Return ONLY the image prompt text, nothing else.`
     setCoverArtLoading(false);
   };
   const detectCharacters = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     setIsProcessing(true);
     try {
       const fullText = paragraphs.map((p) => p.text).join("\n\n");
@@ -5637,14 +5793,17 @@ Return ONLY JSON: { "characters": [{"name": "CharName", "description": "brief 5-
     sfAnnounce(ta("a11y.storyforge_narration_playback_stopped_because_the_audio_clip"));
   };
   const gradeStory = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     setIsProcessing(true);
     try {
-      const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text}`).join("\n\n");
+      const fullText = authoredSections.map((text, i) => `[${artifactType === "comic" ? "Panel" : "Scene"} ${i + 1}] ${text}`).join("\n\n");
       const vocabReport = vocabTerms.map((v) => {
-        const ft = paragraphs.map((p) => p.text).join(" ");
+        const ft = authoredText;
         const used = termUsed(ft, v.term);
-        const sample = paragraphs.find((p) => termUsed(p.text, v.term))?.text.substring(0, 100) || null;
+        const sample = authoredSections.find((text) => termUsed(text, v.term))?.substring(0, 100) || null;
         return { term: v.term, used, contextSample: sample };
       });
       const defaultRubric = `| Criteria | 1 - Beginning | 3 - Developing | 5 - Exemplary |
@@ -5703,7 +5862,10 @@ Return ONLY JSON:
     changePhase("write");
   };
   const findMentorStory = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
     if (fullText.length < 80) {
       if (addToast) addToast(t("toasts.write_bit_more_before_finding"), "info");
@@ -5792,7 +5954,10 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     setMentorLoading(false);
   };
   const suggestValenceArc = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const written = paragraphs.filter((p) => p.text.trim().length > 0);
     if (written.length < 2) {
       if (addToast) addToast(t("toasts.write_bit_more_before_checking") || "Write a bit more first.", "info");
@@ -5825,7 +5990,10 @@ Return ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} in
     setValenceLoading(false);
   };
   const checkSenses = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
     if (fullText.length < 30) {
       if (addToast) addToast(t("toasts.write_bit_more_before_checking"), "info");
@@ -5872,7 +6040,10 @@ Return ONLY JSON in this shape:
     setSensesLoading(false);
   };
   const analyzeShowTell = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const fullText = paragraphs.map((p) => p.text.trim()).filter(Boolean).join("\n\n");
     if (fullText.length < 60) {
       if (addToast) addToast(t("toasts.write_bit_more_before_checking_2"), "info");
@@ -5914,7 +6085,10 @@ Return ONLY JSON:
     setShowTellLoading(false);
   };
   const analyzeCharacterArcs = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
     const wordCount = fullText.split(/\s+/).filter(Boolean).length;
     if (wordCount < 80) {
@@ -5971,7 +6145,10 @@ Return ONLY JSON:
     setArcLoading(false);
   };
   const analyzeDialogue = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
     if (!fullText.includes('"') && !fullText.includes("\u201C") && !fullText.includes("\u201D\x9D")) {
       if (addToast) addToast(t("toasts.dialogue_detected_try_adding_quoted"), "info");
@@ -6376,7 +6553,10 @@ Return ONLY JSON:
     return false;
   };
   const synthesizeRevisionPlan = async () => {
-    if (!onCallGemini) return;
+    if (!onCallGemini) {
+      notifyAiUnavailable();
+      return;
+    }
     setRevisionPlanLoading(true);
     try {
       const fullText = paragraphs.map((p, i) => `[Paragraph ${i + 1}] ${p.text.trim()}`).filter(Boolean).join("\n\n");
@@ -6882,7 +7062,7 @@ ${panelsHtml}
     const globalProofHtml = proof.globalIssues.length ? `<div class="proof-global">${proof.globalIssues.map((issue) => `<div><strong>${escapeHtml(issue.label)}</strong><span>${escapeHtml(issue.detail)}</span></div>`).join("")}</div>` : "";
     const pageProofVisualHtml = packPages.map((page) => {
       const row = proof.rows.find((item) => item.page === page.page) || { status: "Review", issues: [] };
-      const gutterSide2 = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
+      const gutterSide = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
       const panelVisualHtml = (page.panels || []).map(({ paragraph, idx: panelIdx }, pageIndex) => {
         const p = paragraph || {};
         const dialogue = panelDialogue[p.id] || {};
@@ -6906,16 +7086,16 @@ ${panelsHtml}
         return panelMarkup;
       }).join("");
       const issueSummary = row.issues.length ? row.issues.slice(0, 3).map((issue) => issue.label).join(" - ") : "All page checks clear.";
-      const guideMarkup = (packPrintSafety.showGuides ? '<div class="page-proof-guide page-proof-safe" aria-hidden="true"></div>' : "") + (packPrintSafety.showGuides && packPrintSafety.includeBleed && packPrintSafety.format !== "digital" ? '<div class="page-proof-guide page-proof-bleed" aria-hidden="true"></div>' : "") + (packPrintSafety.showGuides && gutterSide2 ? '<div class="page-proof-guide page-proof-gutter page-proof-gutter-' + escapeHtml(gutterSide2) + '" aria-hidden="true"></div>' : "");
-      return '<article class="page-proof-sheet" data-page-proof-status="' + escapeHtml(row.status) + '">\n<div class="page-proof-header"><div><h3>Page ' + escapeHtml(page.page) + "</h3><span>" + escapeHtml(getComicPageLayoutLabel(page.layout)) + " - Panels " + escapeHtml(page.startPanel) + "-" + escapeHtml(page.endPanel) + " - " + escapeHtml(getComicReadingOrderLabel(page.layout)) + '</span></div><strong class="page-proof-status ' + (row.status === "Ready" ? "ready" : "review") + '">' + escapeHtml(row.status) + '</strong></div>\n<div class="page-proof-canvas format-' + escapeHtml(packPrintSafety.format) + " layout-" + escapeHtml(page.layout) + '">' + (panelVisualHtml || '<div class="page-proof-empty-page">No panels assigned</div>') + guideMarkup + '</div>\n<div class="page-proof-footer"><span>' + escapeHtml(getComicPrintFormatLabel(packPrintSafety.format)) + (gutterSide2 ? " - " + escapeHtml(gutterSide2) + " gutter" : "") + "</span><span>" + escapeHtml(issueSummary) + "</span></div>\n</article>";
+      const guideMarkup = (packPrintSafety.showGuides ? '<div class="page-proof-guide page-proof-safe" aria-hidden="true"></div>' : "") + (packPrintSafety.showGuides && packPrintSafety.includeBleed && packPrintSafety.format !== "digital" ? '<div class="page-proof-guide page-proof-bleed" aria-hidden="true"></div>' : "") + (packPrintSafety.showGuides && gutterSide ? '<div class="page-proof-guide page-proof-gutter page-proof-gutter-' + escapeHtml(gutterSide) + '" aria-hidden="true"></div>' : "");
+      return '<article class="page-proof-sheet" data-page-proof-status="' + escapeHtml(row.status) + '">\n<div class="page-proof-header"><div><h3>Page ' + escapeHtml(page.page) + "</h3><span>" + escapeHtml(getComicPageLayoutLabel(page.layout)) + " - Panels " + escapeHtml(page.startPanel) + "-" + escapeHtml(page.endPanel) + " - " + escapeHtml(getComicReadingOrderLabel(page.layout)) + '</span></div><strong class="page-proof-status ' + (row.status === "Ready" ? "ready" : "review") + '">' + escapeHtml(row.status) + '</strong></div>\n<div class="page-proof-canvas format-' + escapeHtml(packPrintSafety.format) + " layout-" + escapeHtml(page.layout) + '">' + (panelVisualHtml || '<div class="page-proof-empty-page">No panels assigned</div>') + guideMarkup + '</div>\n<div class="page-proof-footer"><span>' + escapeHtml(getComicPrintFormatLabel(packPrintSafety.format)) + (gutterSide ? " - " + escapeHtml(gutterSide) + " gutter" : "") + "</span><span>" + escapeHtml(issueSummary) + "</span></div>\n</article>";
     }).join("");
     const pagePlanHtml = packPages.map((page) => {
       const turnLabel = getComicPageTurnLabel(page.turn);
-      const gutterSide2 = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
+      const gutterSide = getComicPageGutterSide(page.page, page.layout, packPrintSafety);
       return `<div class="page-plan-row">
         <strong>Page ${page.page}</strong>
         <span>${escapeHtml(getComicPageLayoutLabel(page.layout))}</span>
-        <span>Panels ${page.startPanel}-${page.endPanel}${gutterSide2 ? ` - ${escapeHtml(gutterSide2)} gutter` : ""}</span>
+        <span>Panels ${page.startPanel}-${page.endPanel}${gutterSide ? ` - ${escapeHtml(gutterSide)} gutter` : ""}</span>
         <em>${turnLabel ? escapeHtml(turnLabel) : page.page < packPages.length ? "Turn unset" : "Final page"}${page.note ? ` - ${escapeHtml(page.note)}` : ""}</em>
       </div>`;
     }).join("");
@@ -7501,8 +7681,8 @@ show();
     const resizingPanel = panelResizeDrag?.pId === p.id;
     const mangaFlow = previewLayout === "manga";
     const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-    const gutterSide2 = pageForPanel ? getComicPageGutterSide(pageForPanel.page, previewLayout, printSafety) : "";
-    return /* @__PURE__ */ React.createElement("div", { key: p.id, id: "sf-comic-preview-panel-" + p.id, tabIndex: -1, "data-sf-comic-panel-proof-target": "true", className: `sf-comic-page-panel bg-white rounded-lg overflow-hidden shadow-md relative ${getComicPanelFramePreviewClass(layoutFrame.frame)} ${!normalizeComicPanelFrame(layoutFrame.frame) && previewLayout === "splash" && pageIndex === 0 ? "col-span-2" : ""}`, style: { ...getComicPanelGridStyle(layoutFrame, previewLayout, pageIndex), border: "3px solid #1e293b", direction: "ltr" } }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-2 ${mangaFlow ? "right-2" : "left-2"} z-20 w-7 h-7 rounded-full bg-slate-950 text-white border-2 border-white shadow-md flex items-center justify-center text-xs font-black` }, idx + 1), printSafety.showGuides && /* @__PURE__ */ React.createElement(React.Fragment, null, printSafety.includeBleed && printSafety.format !== "digital" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-10 border-4 border-amber-300/30 pointer-events-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-3 z-10 rounded-md border border-dashed border-emerald-300/90 pointer-events-none", "aria-hidden": "true" }), gutterSide2 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 bottom-0 ${gutterSide2 === "left" ? "left-0" : "right-0"} z-10 w-3 bg-rose-400/25 pointer-events-none`, "aria-hidden": "true" })), illustrations[p.id]?.imageUrl && (() => {
+    const gutterSide = pageForPanel ? getComicPageGutterSide(pageForPanel.page, previewLayout, printSafety) : "";
+    return /* @__PURE__ */ React.createElement("div", { key: p.id, id: "sf-comic-preview-panel-" + p.id, tabIndex: -1, "data-sf-comic-panel-proof-target": "true", className: `sf-comic-page-panel bg-white rounded-lg overflow-hidden shadow-md relative ${getComicPanelFramePreviewClass(layoutFrame.frame)} ${!normalizeComicPanelFrame(layoutFrame.frame) && previewLayout === "splash" && pageIndex === 0 ? "col-span-2" : ""}`, style: { ...getComicPanelGridStyle(layoutFrame, previewLayout, pageIndex), border: "3px solid #1e293b", direction: "ltr" } }, /* @__PURE__ */ React.createElement("div", { className: `absolute top-2 ${mangaFlow ? "right-2" : "left-2"} z-20 w-7 h-7 rounded-full bg-slate-950 text-white border-2 border-white shadow-md flex items-center justify-center text-xs font-black` }, idx + 1), printSafety.showGuides && /* @__PURE__ */ React.createElement(React.Fragment, null, printSafety.includeBleed && printSafety.format !== "digital" && /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 z-10 border-4 border-amber-300/30 pointer-events-none", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-3 z-10 rounded-md border border-dashed border-emerald-300/90 pointer-events-none", "aria-hidden": "true" }), gutterSide && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 bottom-0 ${gutterSide === "left" ? "left-0" : "right-0"} z-10 w-3 bg-rose-400/25 pointer-events-none`, "aria-hidden": "true" })), illustrations[p.id]?.imageUrl && (() => {
       const dialogue = panelDialogue[p.id] || {};
       const rough = panelThumbnails[p.id] || {};
       const space = normalizeComicLetteringSpace(rough.letteringSpace);
@@ -7577,6 +7757,30 @@ show();
     ), /* @__PURE__ */ React.createElement("div", { className: "p-2.5 relative space-y-1.5" }, (p.text || p.scaffoldFrame || "").trim() && /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-md px-2 py-1 text-[11px] text-amber-800 italic leading-snug" }, smartTruncate(p.text || p.scaffoldFrame, 200)), (panelDialogue[p.id] || {}).speech && (!illustrations[p.id]?.imageUrl || !normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) || normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) === "none") && /* @__PURE__ */ React.createElement("div", { className: "relative" }, (panelDialogue[p.id] || {}).speaker && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-blue-600 mb-0.5" }, panelDialogue[p.id].speaker, ":"), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-2 border-slate-800 rounded-2xl p-2 text-xs text-slate-800 leading-relaxed", style: { borderRadius: "18px" } }, panelDialogue[p.id].speech), /* @__PURE__ */ React.createElement("div", { className: "absolute -bottom-1.5 left-4 w-3 h-3 bg-white border-b-2 border-r-2 border-slate-800", style: { transform: "rotate(45deg)" } })), (panelDialogue[p.id] || {}).thought && (!illustrations[p.id]?.imageUrl || !normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) || normalizeComicLetteringSpace((panelThumbnails[p.id] || {}).letteringSpace) === "none" || Boolean((panelDialogue[p.id] || {}).speech)) && /* @__PURE__ */ React.createElement("div", { className: "bg-purple-50 border-2 border-purple-300 rounded-2xl p-2 text-[11px] text-purple-700 italic leading-relaxed", style: { borderRadius: "20px", borderStyle: "dashed" } }, "\u{1F4AD} ", panelDialogue[p.id].thought), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mt-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-0.5" }, ["\u{1F4A5}", "\u2764\uFE0F", "\u2B50", "\u{1F602}", "\u{1F631}", "\u{1F525}", "\u{1F480}", "\u{1F31F}"].map((emoji) => /* @__PURE__ */ React.createElement("button", { type: "button", key: emoji, onClick: () => setPanelStickers((prev) => ({ ...prev, [p.id]: prev[p.id] === emoji ? null : emoji })), className: `text-sm hover:scale-125 transition-transform ${panelStickers[p.id] === emoji ? "scale-125" : "opacity-50 hover:opacity-100"}`, title: `Add ${emoji} sticker` }, emoji))), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 font-bold" }, ta("a11y.storyforge_ui_panel").replace("{0}", idx + 1)))));
   };
   return /* @__PURE__ */ React.createElement("div", { ref: modalRootRef, tabIndex: -1, className: `sf-modal-root theme-${hostTheme} fixed inset-0 z-[200] ${hostTheme === "default" ? "bg-slate-100/95" : "bg-slate-900/95"} backdrop-blur-sm flex flex-col ${animClass}`, role: "dialog", "aria-modal": "true", "aria-label": t("a11y.story_forge_studio") }, /* @__PURE__ */ React.createElement("div", { className: "allo-docsuite", style: { display: "contents" } }, /* @__PURE__ */ React.createElement("audio", { ref: audioRef, onEnded: handleAudioEnded, onError: handleAudioPlaybackError, className: "hidden" }), /* @__PURE__ */ React.createElement("div", { "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }, playbackIdx >= 0 && paragraphs[playbackIdx] ? `Now reading ${artifactType === "comic" ? "panel" : "scene"} ${playbackIdx + 1}${audioSegments[paragraphs[playbackIdx].id]?.sentences?.[sentenceIdx] ? ": " + audioSegments[paragraphs[playbackIdx].id].sentences[sentenceIdx] : ""}` : ""), /* @__PURE__ */ React.createElement("div", { id: "allo-live-storyforge", "aria-live": "polite", "aria-atomic": "true", className: "sr-only" }), /* @__PURE__ */ React.createElement("style", null, `
+        .sf-mobile-workflow{display:none}
+        .sf-project-header{position:relative;z-index:60}.sf-project-menu-panel{z-index:260;max-height:calc(100dvh - 6rem);overflow-y:auto;overscroll-behavior:contain}
+        .sf-modal-root .sf-focus-jump{width:44px;height:44px;flex-shrink:0}
+        [data-sf-focus-navigation]>button{min-height:44px;max-width:45%}
+        @media(max-width:639px){.sf-project-header [data-sf-project-menu]{position:static}.sf-project-menu-panel{right:12px;top:100%;width:calc(100vw - 24px)}.sf-focus-summary{order:3;width:100%}.sf-focus-jumps{max-width:100%}}
+        .sf-modal-root.theme-dark .sf-undo-notice{background:#172554;color:#e0e7ff;border-color:#6366f1}
+        .sf-modal-root.theme-contrast .sf-undo-notice{background:#000;color:#ff0;border-color:#ff0}
+        .sf-modal-root.theme-dark .sf-mobile-workflow,.sf-modal-root.theme-dark .sf-mobile-workflow :is(select,button){background:#0f172a;color:#f1f5f9;border-color:#64748b}
+        .sf-modal-root.theme-contrast .sf-mobile-workflow,.sf-modal-root.theme-contrast .sf-mobile-workflow :is(select,button){background:#000;color:#ff0;border-color:#ff0}
+        @media(max-width:639px){
+          .sf-mobile-workflow{display:flex;gap:8px;padding:6px 12px;background:#fff;border-bottom:1px solid #cbd5e1;flex-shrink:0}
+          .sf-mobile-workflow select{flex:1;min-width:0;border:1px solid #64748b;border-radius:8px;padding:8px;min-height:44px;color:#0f172a;background:#fff}
+          .sf-mobile-workflow button{min-height:44px;padding:8px;color:#0f172a;border:1px solid #64748b;border-radius:8px;background:#fff}
+          .sf-workflow-dashboard nav{display:none}
+          .sf-project-health[data-expanded="false"]{display:none}
+          .sf-project-health[data-expanded="true"]{padding-top:8px;max-height:25vh;overflow:auto}
+          .sf-step-guide{padding:6px 12px}
+          .sf-step-guide h2,.sf-step-guide p,.sf-step-guide .sf-step-kicker{display:none}
+          .sf-step-guide #sf-phase-requirements{padding:6px 8px;font-size:12px}
+          [data-sf-step-summary]{display:none}
+          [data-sf-footer-action="back"]{flex:0 0 auto!important}
+          [data-sf-footer-action="next"]{flex:1!important}
+        }
+
         .sf-modal-root button{min-width:24px;min-height:24px}
         .sf-modal-root .sf-panel-sequence-card{position:relative}
         .sf-modal-root .sf-panel-dragging{opacity:.55}
@@ -7676,7 +7880,7 @@ show();
   }, className: "px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-bold hover:bg-amber-700 transition-colors" }, t("ui_common.save_draft_close")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => {
     setShowCloseConfirm(false);
     onClose();
-  }, className: "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, ta("a11y.storyforge_ui_cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), importConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: importConfirmationDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-import-confirm-title", "aria-describedby": "sf-import-confirm-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-full bg-amber-100 p-2 text-amber-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "sf-import-confirm-title", className: "text-lg font-black text-slate-900" }, ta("a11y.storyforge_ui_replace_current_project")), /* @__PURE__ */ React.createElement("p", { id: "sf-import-confirm-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, ta("a11y.storyforge_ui_importing_this_file_replaces_the_current")))), /* @__PURE__ */ React.createElement("dl", { className: "mt-5 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_incoming_project")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-black text-slate-900" }, importConfirmation.title)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_format")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, "v", importConfirmation.version || STORYFORGE_PROJECT_VERSION, " \xB7 ", importConfirmation.layoutMode === "comic" ? "Comic" : "Story")), importConfirmation.layoutMode === "comic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_pages")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.pageCount)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_panels")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.panelCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_source")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-bold text-slate-800" }, importConfirmation.exportedBy || "Not provided")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_exported")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.exportedAt ? new Date(importConfirmation.exportedAt).toLocaleDateString() : "Not provided"))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, ta("a11y.storyforge_ui_keep_current_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation("checkpoint"), className: "rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50" }, "Save checkpoint & import"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-import-confirm-action": "replace", onClick: () => finishImportConfirmation(true), className: "rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700" }, ta("a11y.storyforge_ui_replace_and_import"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { className: "truncate text-lg font-black sm:text-xl" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs", title: `${storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`} - ${phaseLabel(phaseIdx)} - ${draftSaveLabel}` }, /* @__PURE__ */ React.createElement("span", { "data-sf-header-project-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-artifact": true }, artifactType === "comic" ? "Comic" : "Story"), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", null, phaseLabel(phaseIdx)), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-save-state": true }, draftSaveLabel)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "hidden md:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2", title: `${xpData.totalXP} XP \xB7 ${levelLabel(currentLevel)}${xpData.streak > 1 ? ` \xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", levelLabel(currentLevel)), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\u{1F525}", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_grade").replace("{0}", readingLevel.grade)))), /* @__PURE__ */ React.createElement("details", { "data-sf-project-menu": true, className: "relative" }, /* @__PURE__ */ React.createElement(
+  }, className: "px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors" }, t("ui_common.close_anyway"))))), exportConsent && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: exportConsentDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-export-consent-title", "aria-describedby": "sf-export-consent-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-cyan-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-export-consent-title", className: "text-lg font-black text-slate-900" }, exportConsent.title), /* @__PURE__ */ React.createElement("p", { id: "sf-export-consent-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, exportConsent.message), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, ta("a11y.storyforge_ui_cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishExportConsent(true), className: "rounded-lg bg-cyan-700 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-800" }, exportConsent.confirmLabel || "Export file")))), importConfirmation && /* @__PURE__ */ React.createElement("div", { role: "presentation", className: "fixed inset-0 z-[230] bg-black/70 flex items-center justify-center p-4" }, /* @__PURE__ */ React.createElement("div", { ref: importConfirmationDialogRef, role: "alertdialog", "aria-modal": "true", "aria-labelledby": "sf-import-confirm-title", "aria-describedby": "sf-import-confirm-message", tabIndex: -1, className: "sf-dialog-card w-full max-w-lg rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-2xl" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "rounded-full bg-amber-100 p-2 text-amber-700", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { id: "sf-import-confirm-title", className: "text-lg font-black text-slate-900" }, ta("a11y.storyforge_ui_replace_current_project")), /* @__PURE__ */ React.createElement("p", { id: "sf-import-confirm-message", className: "mt-2 text-sm leading-relaxed text-slate-700" }, ta("a11y.storyforge_ui_importing_this_file_replaces_the_current")))), /* @__PURE__ */ React.createElement("dl", { className: "mt-5 grid gap-2 rounded-xl border border-amber-200 bg-amber-50/60 p-3 text-xs sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_incoming_project")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-black text-slate-900" }, importConfirmation.title)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_format")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, "v", importConfirmation.version || STORYFORGE_PROJECT_VERSION, " \xB7 ", importConfirmation.layoutMode === "comic" ? "Comic" : "Story")), importConfirmation.layoutMode === "comic" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_pages")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.pageCount)), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_panels")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.panelCount))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_source")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 truncate font-bold text-slate-800" }, importConfirmation.exportedBy || "Not provided")), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("dt", { className: "font-bold uppercase tracking-wide text-amber-800" }, ta("a11y.storyforge_ui_exported")), /* @__PURE__ */ React.createElement("dd", { className: "mt-1 font-bold text-slate-800" }, importConfirmation.exportedAt ? new Date(importConfirmation.exportedAt).toLocaleDateString() : "Not provided"))), /* @__PURE__ */ React.createElement("div", { className: "mt-5 flex flex-wrap justify-end gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation(false), className: "rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 hover:bg-slate-50" }, ta("a11y.storyforge_ui_keep_current_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, onClick: () => finishImportConfirmation("checkpoint"), className: "rounded-lg border border-amber-500 bg-white px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-50" }, "Save checkpoint & import"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-import-confirm-action": "replace", onClick: () => finishImportConfirmation(true), className: "rounded-lg bg-amber-600 px-4 py-2 text-sm font-bold text-white hover:bg-amber-700" }, ta("a11y.storyforge_ui_replace_and_import"))))), /* @__PURE__ */ React.createElement("div", { className: "sf-project-header bg-gradient-to-r from-rose-600 to-pink-600 p-3 sm:p-4 text-white flex justify-between items-center gap-2 shadow-lg shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex min-w-0 flex-1 items-center gap-3" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 24 }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { className: "truncate text-lg font-black sm:text-xl" }, t("headings.story_forge")), /* @__PURE__ */ React.createElement("p", { className: "max-w-[58vw] truncate text-[11px] font-semibold text-rose-100 sm:max-w-[42vw] sm:text-xs", title: `${storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`} - ${phaseLabel(phaseIdx)} - ${draftSaveLabel}` }, /* @__PURE__ */ React.createElement("span", { "data-sf-header-project-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-artifact": true }, artifactType === "comic" ? "Comic" : "Story"), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", null, phaseLabel(phaseIdx)), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, " \xB7 "), /* @__PURE__ */ React.createElement("span", { "data-sf-header-save-state": true }, draftSaveLabel)))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 sm:gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "hidden md:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2", title: `${xpData.totalXP} XP \xB7 ${levelLabel(currentLevel)}${xpData.streak > 1 ? ` \xB7 ${xpData.streak}-day streak` : ""}` }, /* @__PURE__ */ React.createElement("span", null, currentLevel.emoji, " ", levelLabel(currentLevel)), /* @__PURE__ */ React.createElement("span", { className: "text-rose-200" }, xpData.totalXP, " XP"), xpData.streak > 1 && /* @__PURE__ */ React.createElement("span", { className: "text-amber-700" }, "\u{1F525}", xpData.streak), nextLevel && /* @__PURE__ */ React.createElement("div", { className: "w-12 h-1.5 bg-white/20 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-amber-300 rounded-full transition-all", style: { width: `${Math.min(100, (xpData.totalXP - currentLevel.min) / (nextLevel.min - currentLevel.min) * 100)}%` } }))), totalWords > 0 && /* @__PURE__ */ React.createElement("div", { className: "hidden lg:flex bg-white/20 px-3 py-1 rounded-full text-xs font-bold items-center gap-2" }, /* @__PURE__ */ React.createElement("span", null, totalWords, " words"), /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, vocabUsedCount, "/", vocabTerms.length, " terms"), readingLevel && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", null, "\xB7"), /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_grade").replace("{0}", readingLevel.grade)))), /* @__PURE__ */ React.createElement("details", { "data-sf-project-menu": true, className: "relative" }, /* @__PURE__ */ React.createElement(
     "summary",
     {
       "data-sf-focusable": true,
@@ -7685,8 +7889,12 @@ show();
       "aria-label": ta("a11y.storyforge_attr_open_project_menu")
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 15, "aria-hidden": "true" }),
-    /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline" }, ta("a11y.storyforge_ui_project"))
-  ), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl", role: "group", "aria-label": ta("a11y.storyforge_attr_project_actions") }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 px-2 pb-3" }, /* @__PURE__ */ React.createElement("p", { className: "truncate text-sm font-black", "data-sf-project-menu-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs text-slate-500" }, ta(artifactType === "comic" ? "a11y.storyforge_ui_comic" : "a11y.storyforge_ui_story"), " \xB7 ", phaseLabel(phaseIdx), " \xB7 ", draftSaveLabel)), draftHydrationState === "awaiting" ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "px-2 text-xs leading-relaxed text-amber-800" }, ta("a11y.storyforge_ui_a_saved_project_is_waiting_restore")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-restore": true, onClick: restoreDraft, className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-amber-700 px-3 py-2 text-left text-xs font-bold text-white hover:bg-amber-800" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_restore_saved_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-recovery-options": true, onClick: () => setShowRestorePrompt(true), className: "min-h-10 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-left text-xs font-bold text-amber-900 hover:bg-amber-50" }, ta("a11y.storyforge_ui_review_recovery_options"))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-save": true, onClick: () => void persistDraftToStorage({ announce: true }), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_save_project_now")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-export": true, onClick: () => void exportStoryForgeProject(), disabled: draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_export_backup")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-import": true, onClick: importDraftJSON, disabled: draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_import_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-checkpoint": true, onClick: () => void saveRevisionCheckpoint(), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Star, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_save_checkpoint"))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 px-2 text-[11px] leading-relaxed text-slate-500" }, ta("a11y.storyforge_ui_backups_and_checkpoints_preserve_work_before")))), /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_project"))
+  ), /* @__PURE__ */ React.createElement("div", { className: "sf-project-menu-panel absolute right-0 z-[260] mt-2 w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-slate-200 bg-white p-3 text-slate-800 shadow-2xl", role: "group", "aria-label": ta("a11y.storyforge_attr_project_actions") }, /* @__PURE__ */ React.createElement("div", { className: "border-b border-slate-200 px-2 pb-3" }, /* @__PURE__ */ React.createElement("p", { className: "truncate text-sm font-black", "data-sf-project-menu-title": true }, storyTitle.trim() || `Untitled ${artifactType === "comic" ? "comic" : "story"}`), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs text-slate-500" }, ta(artifactType === "comic" ? "a11y.storyforge_ui_comic" : "a11y.storyforge_ui_story"), " \xB7 ", phaseLabel(phaseIdx), " \xB7 ", draftSaveLabel)), draftHydrationState === "awaiting" ? /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-2" }, /* @__PURE__ */ React.createElement("p", { className: "px-2 text-xs leading-relaxed text-amber-800" }, ta("a11y.storyforge_ui_a_saved_project_is_waiting_restore")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-restore": true, onClick: restoreDraft, className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-amber-700 px-3 py-2 text-left text-xs font-bold text-white hover:bg-amber-800" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_restore_saved_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-recovery-options": true, onClick: () => setShowRestorePrompt(true), className: "min-h-10 w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-left text-xs font-bold text-amber-900 hover:bg-amber-50" }, ta("a11y.storyforge_ui_review_recovery_options"))) : /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-save": true, onClick: () => void persistDraftToStorage({ announce: true }), disabled: projectMutationBusy || draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg bg-rose-600 px-3 py-2 text-left text-xs font-bold text-white hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Save, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_save_project_now")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-export": true, onClick: () => void exportStoryForgeProject(), disabled: draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Download, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_export_backup")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-import": true, onClick: importDraftJSON, disabled: projectMutationBusy || draftHydrationState !== "ready", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_import_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-project-menu-checkpoint": true, onClick: () => void saveRevisionCheckpoint(), disabled: projectMutationBusy || draftHydrationState !== "ready" || draftSaveState === "saving", className: "flex min-h-10 w-full items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 text-left text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60" }, /* @__PURE__ */ React.createElement(Star, { size: 14, "aria-hidden": "true" }), " ", ta("a11y.storyforge_ui_save_checkpoint"))), draftHydrationState === "ready" && /* @__PURE__ */ React.createElement("section", { className: "mt-3 border-t border-slate-200 pt-3", "aria-labelledby": "sf-menu-checkpoints-title" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-menu-checkpoints-title", className: "text-xs font-bold text-slate-800" }, ux("checkpoints", "Checkpoints")), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs text-slate-700" }, ux("checkpoint_name", "Name the next checkpoint"), /* @__PURE__ */ React.createElement("input", { "data-sf-checkpoint-name": true, value: revisionLabel, onChange: (e) => setRevisionLabel(e.target.value.slice(0, 100)), className: "mt-1 w-full rounded-lg border border-slate-400 p-2 text-sm", placeholder: ux("checkpoint_example", "For example: before the ending") })), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, ux("checkpoint_restore_help", "Restoring saves your current version first, so you can undo it.")), revisionHistory.length === 0 ? /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, ux("no_checkpoints", "No checkpoints yet. Name one above, then choose Save checkpoint.")) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-1" }, revisionHistory.slice(0, 6).map((revision) => /* @__PURE__ */ React.createElement("li", { key: revision.id }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-menu-checkpoint": revision.id, disabled: projectMutationBusy || isProcessing, onClick: (event) => {
+    const menu = event.currentTarget.closest("details");
+    if (menu) menu.open = false;
+    void restoreRevisionCheckpoint(revision);
+  }, className: "min-h-11 w-full rounded-lg border border-slate-300 px-3 py-2 text-left text-xs text-slate-800 hover:bg-slate-100 disabled:opacity-50" }, /* @__PURE__ */ React.createElement("span", { className: "block font-bold" }, revision.label), /* @__PURE__ */ React.createElement("span", { className: "block mt-1" }, new Date(revision.savedAt).toLocaleString())))))), /* @__PURE__ */ React.createElement("p", { className: "mt-3 px-2 text-[11px] leading-relaxed text-slate-500" }, ta("a11y.storyforge_ui_backups_and_checkpoints_preserve_work_before")))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7738,7 +7946,7 @@ show();
       "aria-labelledby": "sf-recovery-banner-title"
     },
     /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0" }, /* @__PURE__ */ React.createElement("h2", { id: "sf-recovery-banner-title", className: "text-sm font-black text-amber-950" }, ta("a11y.storyforge_ui_saved_project_waiting"), " ", /* @__PURE__ */ React.createElement("span", { className: "break-words" }, recoverySummary.title)), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 text-xs text-amber-900" }, recoverySummary.artifactLabel, " \xB7 ", ta("a11y.storyforge_ui_resume_safely_at"), " ", recoverySummary.resumePhaseLabel, recoverySummary.savedAt ? " \xB7 Saved " + new Date(recoverySummary.savedAt).toLocaleString() : "")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-2 sm:flex-row" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-banner-restore-draft": true, onClick: restoreDraft, className: "min-h-11 rounded-lg bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800" }, ta("a11y.storyforge_ui_restore_project")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-focusable": true, "data-sf-open-recovery-options": true, onClick: () => setShowRestorePrompt(true), className: "min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 text-xs font-bold text-amber-900 hover:bg-amber-100" }, ta("a11y.storyforge_ui_review_recovery_options"))))
-  ), /* @__PURE__ */ React.createElement("div", { className: "sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("nav", { className: "px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto", role: "navigation", "aria-label": t("a11y.story_creation_phases") }, PHASES.map((p, i) => {
+  ), projectActionUndo && /* @__PURE__ */ React.createElement("div", { className: "sf-undo-notice flex shrink-0 flex-wrap items-center gap-2 border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" }, /* @__PURE__ */ React.createElement("span", { role: "status", className: "flex-1" }, ux("previous_saved", "Your previous version is saved.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-undo-project-edit": true, disabled: projectMutationBusy || isProcessing, onClick: () => void restoreRevisionCheckpoint(projectActionUndo), className: "min-h-11 rounded-lg border border-indigo-400 px-3 py-2 font-bold disabled:opacity-50" }, ux("undo_last_change", "Undo last change")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setProjectActionUndo(null), className: "min-h-11 rounded-lg px-2 underline" }, ux("dismiss", "Dismiss"))), /* @__PURE__ */ React.createElement("div", { className: "sf-mobile-workflow" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "sf-mobile-step", className: "sr-only" }, ux("choose_step", "Choose a step")), /* @__PURE__ */ React.createElement("select", { id: "sf-mobile-step", value: phase, onChange: (e) => changePhase(e.target.value) }, PHASES.map((p, i) => /* @__PURE__ */ React.createElement("option", { key: p, value: p, disabled: !canEnterPhase(p) }, i + 1, ". ", phaseLabel(i)))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-expanded": showProjectHealth, "aria-controls": "sf-project-health", onClick: () => setShowProjectHealth((v) => !v) }, ux("checklist", "Checklist"))), /* @__PURE__ */ React.createElement("div", { className: "sf-workflow-dashboard bg-white border-b border-slate-200 shrink-0" }, /* @__PURE__ */ React.createElement("nav", { className: "px-2 sm:px-6 pt-3 pb-2 flex items-center justify-start sm:justify-center gap-1 overflow-x-auto", role: "navigation", "aria-label": t("a11y.story_creation_phases") }, PHASES.map((p, i) => {
     const Icon = phaseIcons[i];
     const phaseHealth = readinessByPhase[p] || { status: "attention", score: 0, detail: "" };
     const isCurrent = i === phaseIdx;
@@ -7762,7 +7970,7 @@ show();
       /* @__PURE__ */ React.createElement("span", null, phaseLabel(i)),
       /* @__PURE__ */ React.createElement("span", { className: `hidden sm:block w-1.5 h-1.5 rounded-full ${isCurrent ? "bg-white" : isReady ? "bg-emerald-500" : phaseHealth.status === "blocked" ? "bg-rose-500" : phaseHealth.status === "progress" ? "bg-blue-500" : "bg-amber-500"}`, "aria-hidden": "true" })
     ));
-  })), /* @__PURE__ */ React.createElement("div", { className: "sf-project-health px-3 sm:px-6 pb-3" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 text-[11px] font-black uppercase text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_build_checklist")), /* @__PURE__ */ React.createElement("span", null, projectReadiness.readyCount, "/", PHASES.length, " ", ta("a11y.storyforge_ui_steps_ready"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": ta("a11y.storyforge_attr_artifact_production_readiness"), "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": projectReadiness.percent }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all ${projectReadiness.blockers.length ? "bg-rose-500" : projectReadiness.warnings.length ? "bg-amber-500" : "bg-emerald-500"}`, style: { width: `${projectReadiness.percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-medium text-slate-500" }, projectReadiness.summary)), primaryReadinessIssue && /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("div", { id: "sf-project-health", "data-expanded": showProjectHealth, className: "sf-project-health px-3 sm:px-6 pb-3" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 text-[11px] font-black uppercase text-slate-600" }, /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_build_checklist")), /* @__PURE__ */ React.createElement("span", null, projectReadiness.readyCount, "/", PHASES.length, " ", ta("a11y.storyforge_ui_steps_ready"))), /* @__PURE__ */ React.createElement("div", { className: "mt-1 h-2 overflow-hidden rounded-full bg-slate-200", role: "progressbar", "aria-label": ta("a11y.storyforge_attr_artifact_production_readiness"), "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": projectReadiness.percent }, /* @__PURE__ */ React.createElement("div", { className: `h-full rounded-full transition-all ${projectReadiness.blockers.length ? "bg-rose-500" : projectReadiness.warnings.length ? "bg-amber-500" : "bg-emerald-500"}`, style: { width: `${projectReadiness.percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "mt-1 text-[11px] font-medium text-slate-500" }, phase === "configure" && !hasStoryCue ? ux("start_hint", "Choose Story or Comic, then add a title or starting idea.") : projectReadiness.summary)), primaryReadinessIssue && !(phase === "configure" && !hasStoryCue) && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7771,9 +7979,9 @@ show();
       className: `sf-health-action min-w-0 sm:max-w-xs rounded-lg border px-3 py-2 text-left text-xs font-bold flex items-center gap-2 ${projectReadiness.blockers.length ? "border-rose-200 bg-rose-50 text-rose-800 hover:bg-rose-100" : "border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100"}`,
       title: primaryReadinessIssue.detail
     },
-    /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[9px] uppercase tracking-widest opacity-75" }, projectReadiness.blockers.length ? "Required" : "Recommended"), /* @__PURE__ */ React.createElement("span", { className: "block truncate" }, primaryReadinessIssue.label)),
+    /* @__PURE__ */ React.createElement("span", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("span", { className: "block text-[9px] uppercase tracking-widest" }, projectReadiness.blockers.length ? "Required" : "Recommended"), /* @__PURE__ */ React.createElement("span", { className: "block truncate" }, primaryReadinessIssue.label)),
     /* @__PURE__ */ React.createElement(ArrowRight, { size: 14, className: "shrink-0", "aria-hidden": "true" })
-  )))), /* @__PURE__ */ React.createElement("section", { className: "bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-3 shrink-0", "aria-labelledby": "sf-current-step-title" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest text-rose-600" }, ta("a11y.storyforge_ui_step_of").replace("{0}", phaseIdx + 1).replace("{1}", PHASES.length), " \xB7 ", optLabel("artifact", artifactType, ARTIFACT_TYPES[artifactType].label)), /* @__PURE__ */ React.createElement("h2", { id: "sf-current-step-title", className: "text-base font-black text-slate-800" }, currentPhaseGuide.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, currentPhaseGuide.outcome)), /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("section", { className: "sf-step-guide bg-slate-50 border-b border-slate-200 px-3 sm:px-6 py-3 shrink-0", "aria-labelledby": "sf-current-step-title" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-5" }, /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("div", { className: "sf-step-kicker text-[10px] font-black uppercase tracking-widest text-rose-700" }, ta("a11y.storyforge_ui_step_of").replace("{0}", phaseIdx + 1).replace("{1}", PHASES.length), " \xB7 ", optLabel("artifact", artifactType, ARTIFACT_TYPES[artifactType].label)), /* @__PURE__ */ React.createElement("h2", { id: "sf-current-step-title", className: "text-base font-black text-slate-800" }, currentPhaseGuide.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-0.5" }, currentPhaseGuide.outcome)), /* @__PURE__ */ React.createElement(
     "div",
     {
       id: "sf-phase-requirements",
@@ -7781,7 +7989,7 @@ show();
       className: "sm:max-w-sm rounded-lg border px-3 py-2 text-xs font-bold " + (canGoNext() || phase === "export" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-amber-200 bg-amber-50 text-amber-900")
     },
     currentPhaseRequirement
-  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": ta("a11y.storyforge_aria_phase").replace("{0}", PHASE_LABELS[phaseIdx]) }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-3 py-4 sm:p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Plan your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your ", artifactType === "comic" ? "comic" : "story", ", choose a genre, and set vocabulary goals"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("div", { className: "flex-grow overflow-y-auto", ref: phaseContentRef, tabIndex: -1, role: "region", "aria-label": ta("a11y.storyforge_aria_phase").replace("{0}", PHASE_LABELS[phaseIdx]) }, /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto px-3 py-4 sm:p-6" }, phase === "configure" && /* @__PURE__ */ React.createElement("div", { className: `space-y-6 ${animClass}` }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black text-slate-800" }, "Plan your ", artifactType === "comic" ? "comic" : "story"), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm mt-1" }, "Name your ", artifactType === "comic" ? "comic" : "story", ", choose a genre, and set vocabulary goals"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 justify-center mt-2 flex-wrap" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-3 py-1 bg-cyan-100 text-cyan-700 rounded-full text-[11px] font-bold hover:bg-cyan-200 transition-colors inline-flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Plus, { size: 10 }), " Import classmate's draft"))), lessonImportProposal && /* @__PURE__ */ React.createElement("section", { ref: lessonImportPreviewRef, tabIndex: -1, "data-sf-lesson-preview": true, "aria-labelledby": "sf-lesson-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h3", { id: "sf-lesson-preview-title", className: "font-bold text-indigo-900" }, ux("lesson_preview", "Preview lesson import"), ": ", lessonImportProposal.title), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-indigo-900" }, ux("lesson_preserves", "Your scenes, writing, dialogue, and artwork stay intact. Applying saves a checkpoint first.")), lessonImportProposal.kind === "plan" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-800" }, ux("lesson_prompts", "These planning prompts replace the prompts for matching sections. Extra authored sections are kept.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, lessonImportProposal.suggestions.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: index }, item.scaffoldFrame))), lessonImportProposal.total > maxParagraphs && /* @__PURE__ */ React.createElement("p", { className: "text-sm font-bold text-amber-900" }, ux("lesson_limit", "Only the first {0} sections fit in this project.").replace("{0}", maxParagraphs))), lessonImportProposal.kind === "vocabulary" && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-800" }, ux("lesson_vocab", "New goals are added. Existing goals and definitions are kept; duplicates are skipped. Projects support up to 64 goals.")), /* @__PURE__ */ React.createElement("ul", { className: "my-3 list-disc pl-5 text-sm text-slate-800" }, lessonImportProposal.terms.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: index }, item.term)))), lessonImportProposal.kind === "prompt" && /* @__PURE__ */ React.createElement(React.Fragment, null, storyPrompt && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("strong", null, ux("current_idea", "Current starting idea"), ": "), storyPrompt), /* @__PURE__ */ React.createElement("p", { className: "my-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("strong", null, ux("new_idea", "New starting idea"), ": "), lessonImportProposal.prompt)), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-apply-lesson": true, onClick: () => void applyLessonImport(), disabled: projectMutationBusy || isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_lesson", "Apply lesson resource")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setLessonImportProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("cancel_lesson", "Keep current project")))), lessonResources && lessonResources.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-indigo-50 to-violet-50 border-2 border-indigo-200 rounded-2xl p-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-[11px] font-bold text-indigo-600 uppercase tracking-widest mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 12 }), " Import from Lesson Resources"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, lessonResources.filter((r) => ["glossary", "simplified", "sentence-frames", "lesson-plan", "timeline"].includes(r.type)).map((r, ri) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -7791,28 +7999,7 @@ show();
     },
     r.type === "glossary" ? "\u{1F4D6}" : r.type === "simplified" ? "\u{1F4C4}" : r.type === "sentence-frames" ? "\u270F\uFE0F" : r.type === "lesson-plan" ? "\u{1F4CB}" : "\u{1F4C5}",
     r.title || r.type
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-400 mt-1.5" }, ta("a11y.storyforge_ui_click_to_auto_fill_vocabulary_prompts"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "sf-title", className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, artifactType === "comic" ? "Comic title" : "Story title"), /* @__PURE__ */ React.createElement(
-    "input",
-    {
-      id: "sf-title",
-      type: "text",
-      value: storyTitle,
-      onChange: (e) => setStoryTitle(e.target.value),
-      placeholder: artifactType === "comic" ? "Give your comic a title" : "Give your story a title",
-      className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
-    }
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("labels.pen_name")), /* @__PURE__ */ React.createElement("div", { className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-base" }, "\u270D\uFE0F"), " ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, ta("a11y.storyforge_ui_your_codename_is_your_pen_name"))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-indigo-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Genre"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" }, Object.entries(GENRE_TEMPLATES).map(([key, g]) => /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      key,
-      onClick: () => setGenre(key),
-      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
-    },
-    g.emoji,
-    /* @__PURE__ */ React.createElement("br", null),
-    genreLabel(key)
-  )))), /* @__PURE__ */ React.createElement("div", { "data-sf-artifact-picker": true, className: "bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Type, { size: 16 }), " What are you making?"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, ta("a11y.storyforge_ui_choose_this_before_drafting_story_and")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, Object.entries(ARTIFACT_TYPES).map(([key, m]) => /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-indigo-400 mt-1.5" }, ta("a11y.storyforge_ui_click_to_auto_fill_vocabulary_prompts"))), /* @__PURE__ */ React.createElement("div", { "data-sf-artifact-picker": true, className: "bg-white rounded-2xl border-2 border-blue-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-blue-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Type, { size: 16 }), " What are you making?"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, ta("a11y.storyforge_ui_choose_this_before_drafting_story_and")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, Object.entries(ARTIFACT_TYPES).map(([key, m]) => /* @__PURE__ */ React.createElement(
     "button",
     {
       key,
@@ -7850,7 +8037,29 @@ show();
     },
     /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black" }, item.label),
     /* @__PURE__ */ React.createElement("div", { className: "text-[10px] leading-snug opacity-75 mt-0.5" }, item.desc)
-  ))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Vocabulary Goals (", vocabTerms.length, " terms)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" }, vocabTerms.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", null, v.term), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeVocabTerm(i), className: "text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity", "aria-label": ta("a11y.storyforge_aria_remove").replace("{0}", v.term) }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vocabTerms.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-sm italic" }, ta("a11y.storyforge_ui_no_vocabulary_terms_yet_add_some"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
+  ))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "sf-title", className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, artifactType === "comic" ? "Comic title" : "Story title"), /* @__PURE__ */ React.createElement(
+    "input",
+    {
+      id: "sf-title",
+      type: "text",
+      value: storyTitle,
+      onChange: (e) => setStoryTitle(e.target.value),
+      placeholder: artifactType === "comic" ? "Give your comic a title" : "Give your story a title",
+      className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg focus:ring-2 focus:ring-rose-300 font-bold"
+    }
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-600 uppercase tracking-wider mb-1" }, t("labels.pen_name")), /* @__PURE__ */ React.createElement("div", { className: "w-full text-sm p-2.5 border border-slate-400 rounded-lg bg-slate-50 font-bold text-slate-700 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-base" }, "\u270D\uFE0F"), " ", authorName), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-500 mt-1" }, ta("a11y.storyforge_ui_your_codename_is_your_pen_name"))))), /* @__PURE__ */ React.createElement("details", { "data-sf-genre-options": true, className: "bg-white rounded-2xl border-2 border-indigo-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "text-sm font-bold text-indigo-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Genre"), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" }, Object.entries(GENRE_TEMPLATES).map(([key, g]) => /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      key,
+      onClick: () => setGenre(key),
+      "aria-pressed": genre === key,
+      className: `p-3 rounded-xl border-2 text-center text-xs font-bold transition-all ${genre === key ? "border-indigo-500 bg-indigo-50 text-indigo-700 shadow-md" : "border-slate-200 text-slate-600 hover:border-indigo-300"}`
+    },
+    g.emoji,
+    /* @__PURE__ */ React.createElement("br", null),
+    genreLabel(key)
+  )))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-rose-100 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-rose-700 uppercase tracking-wider mb-3 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16 }), " Vocabulary Goals (", vocabTerms.length, " terms)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 mb-4" }, vocabTerms.map((v, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "bg-rose-50 border border-rose-200 rounded-full px-3 py-1 text-sm font-bold text-rose-800 flex items-center gap-2 group" }, /* @__PURE__ */ React.createElement("span", null, v.term), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeVocabTerm(i), className: "text-rose-700 hover:text-rose-600 opacity-60 group-hover:opacity-100 focus:opacity-100 transition-opacity", "aria-label": ta("a11y.storyforge_aria_remove").replace("{0}", v.term) }, /* @__PURE__ */ React.createElement(X, { size: 12 })))), vocabTerms.length === 0 && /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-sm italic" }, ta("a11y.storyforge_ui_no_vocabulary_terms_yet_add_some"))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row gap-2" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       id: "sf-new-vocab-term",
@@ -7994,13 +8203,16 @@ show();
     {
       type: "button",
       onClick: generateScaffolds,
-      disabled: isProcessing,
+      disabled: !onCallGemini || isProcessing,
       className: "px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
     " ",
     layoutMode === "comic" ? scaffoldsGenerated ? "Regenerate Panel Plan" : "Generate Panel Plan" : scaffoldsGenerated ? "Regenerate Scene Plan" : "Generate Scene Plan"
-  ), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-pressed": focusMode, onClick: () => {
+    setFocusMode(!focusMode);
+    setFocusParagraphIdx(0);
+  }, className: "min-h-11 rounded-full border border-indigo-300 px-4 py-2 text-xs font-bold text-indigo-800" }, focusMode ? ux("all_scenes", "All scenes") : ux("focus_writing", "Focus on writing")), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8010,7 +8222,7 @@ show();
       className: "px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
     },
     showWritingTools ? "Hide tools" : "More tools"
-  ))), showWritingTools && /* @__PURE__ */ React.createElement(
+  ))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), planProposal && /* @__PURE__ */ React.createElement("section", { ref: planPreviewRef, tabIndex: -1, "aria-labelledby": "sf-plan-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-plan-preview-title", className: "font-bold text-indigo-900" }, ux("plan_preview", "Preview plan suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("plan_preserves", "Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, planProposal.suggestions.map((item, i) => /* @__PURE__ */ React.createElement("li", { key: i }, item.scaffoldFrame))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void applyPlanProposal(), disabled: isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_plan", "Apply plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPlanProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("keep_draft", "Keep current plan")))), showWritingTools && /* @__PURE__ */ React.createElement(
     "div",
     {
       id: "sf-writing-tools-panel",
@@ -8034,6 +8246,7 @@ show();
           type: "button",
           key,
           onClick: () => selectWritingView(key),
+          "aria-pressed": writingView === key,
           className: `px-3 py-1 rounded-full text-[11px] font-bold transition-all ${writingView === key ? "bg-white text-slate-800 shadow-sm" : "text-slate-600 hover:text-slate-700"}`,
           "aria-label": item.desc,
           title: item.desc
@@ -8126,7 +8339,7 @@ show();
         grammarLoading ? "Checking..." : "Check Writing"
       ))
     ))
-  ), grammarResults._overallTip && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-emerald-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase tracking-widest" }, t("ui_common.writing_coach_tip")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 mt-0.5" }, grammarResults._overallTip)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setGrammarResults({}), className: "text-emerald-700 hover:text-emerald-600 ml-auto shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm", style: { backdropFilter: "blur(8px)", background: "rgba(255,241,242,0.92)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-500 uppercase tracking-widest" }, ta("a11y.storyforge_ui_vocabulary_goals_click_to_copy")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700" }, vocabTerms.filter((v) => vocabUsage[v.term]).length, "/", vocabTerms.length, " used")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-rose-100 rounded-full mb-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
+  ), grammarResults._overallTip && /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-2xl p-3 flex items-start gap-2" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 14, className: "text-emerald-500 mt-0.5 shrink-0" }), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-emerald-600 uppercase tracking-widest" }, t("ui_common.writing_coach_tip")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-emerald-800 mt-0.5" }, grammarResults._overallTip)), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setGrammarResults({}), className: "text-emerald-700 hover:text-emerald-600 ml-auto shrink-0" }, /* @__PURE__ */ React.createElement(X, { size: 14 }))), /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-rose-50 to-pink-50 border border-rose-200 rounded-2xl p-3 sticky top-0 z-30 shadow-sm", style: { backdropFilter: "blur(8px)", background: "rgba(255,241,242,0.92)" } }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1.5" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_vocabulary_goals_click_to_copy")), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-rose-700" }, vocabTerms.filter((v) => vocabUsage[v.term]).length, "/", vocabTerms.length, " used")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-rose-100 rounded-full mb-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "h-full rounded-full transition-all duration-500", style: {
     width: vocabTerms.length > 0 ? Math.round(vocabTerms.filter((v) => vocabUsage[v.term]).length / vocabTerms.length * 100) + "%" : "0%",
     background: vocabTerms.filter((v) => vocabUsage[v.term]).length === vocabTerms.length ? "linear-gradient(90deg, #22c55e, #16a34a)" : "linear-gradient(90deg, #f43f5e, #e11d48)"
   } })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-1.5" }, vocabTerms.map((v, i) => {
@@ -8202,7 +8415,7 @@ show();
         ].map(([label, ok]) => /* @__PURE__ */ React.createElement("span", { key: label, className: `text-[9px] font-black rounded-full px-1.5 py-0.5 ${ok ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-400"}` }, label)))
       );
     })));
-  })()), focusMode && /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3" }, /* @__PURE__ */ React.createElement(
+  })()), focusMode && /* @__PURE__ */ React.createElement("div", { "data-sf-focus-navigation": true, className: "flex flex-wrap items-center justify-between gap-2 bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-3" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -8211,17 +8424,18 @@ show();
       className: "px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 disabled:opacity-30 transition-colors flex items-center gap-1"
     },
     "\u2190 Previous"
-  ), /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700" }, layoutMode === "comic" ? "Panel" : "Scene", " ", focusParagraphIdx + 1, " of ", paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-400 mt-0.5" }, paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? "..." : "") : "Free write"), /* @__PURE__ */ React.createElement("div", { className: "flex justify-center gap-1 mt-1.5" }, paragraphs.map((pp, pi) => /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("div", { className: "sf-focus-summary text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-indigo-700" }, layoutMode === "comic" ? "Panel" : "Scene", " ", focusParagraphIdx + 1, " of ", paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-indigo-700 mt-0.5" }, paragraphs[focusParagraphIdx]?.scaffoldFrame ? paragraphs[focusParagraphIdx].scaffoldFrame.substring(0, 60) + (paragraphs[focusParagraphIdx].scaffoldFrame.length > 60 ? "..." : "") : "Free write"), /* @__PURE__ */ React.createElement("div", { className: "sf-focus-jumps flex flex-wrap justify-center gap-1 mt-1.5", role: "group", "aria-label": ux("choose_section", "Choose a section") }, paragraphs.map((pp, pi) => /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       key: pi,
       onClick: () => setFocusParagraphIdx(pi),
-      className: `w-2 h-2 rounded-full transition-all ${pi === focusParagraphIdx ? "bg-indigo-600 scale-125" : pp.text.trim().length > 10 ? "bg-green-400" : "bg-slate-300"}`,
-      title: `Jump to ${layoutMode === "comic" ? "panel" : "scene"} ${pi + 1}${pp.text.trim().length > 10 ? " (written)" : " (empty)"}`,
-      "aria-label": ta(layoutMode === "comic" ? pp.text.trim().length > 10 ? "a11y.storyforge_aria_jump_panel_written" : "a11y.storyforge_aria_jump_panel_empty" : pp.text.trim().length > 10 ? "a11y.storyforge_aria_jump_scene_written" : "a11y.storyforge_aria_jump_scene_empty").replace("{0}", pi + 1),
+      className: `sf-focus-jump rounded-lg border font-bold transition-colors ${pi === focusParagraphIdx ? "bg-indigo-700 text-white border-indigo-700" : "bg-white text-indigo-900 border-indigo-300"}`,
+      title: `Jump to ${layoutMode === "comic" ? "panel" : "scene"} ${pi + 1}${(authoredSections[pi] || "").trim().length > 0 ? " (written)" : " (empty)"}`,
+      "aria-label": ta(layoutMode === "comic" ? (authoredSections[pi] || "").trim().length > 0 ? "a11y.storyforge_aria_jump_panel_written" : "a11y.storyforge_aria_jump_panel_empty" : (authoredSections[pi] || "").trim().length > 0 ? "a11y.storyforge_aria_jump_scene_written" : "a11y.storyforge_aria_jump_scene_empty").replace("{0}", pi + 1),
       "aria-current": pi === focusParagraphIdx ? "true" : void 0
-    }
+    },
+    pi + 1
   )))), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -8236,9 +8450,11 @@ show();
           setFocusParagraphIdx(focusParagraphIdx + 1);
         }
       },
+      "data-sf-focus-next": true,
+      disabled: focusParagraphIdx >= paragraphs.length - 1 && paragraphs.length >= maxParagraphs,
       className: "px-3 py-1.5 bg-white border border-indigo-200 rounded-lg text-xs font-bold text-indigo-600 hover:bg-indigo-100 transition-colors flex items-center gap-1"
     },
-    focusParagraphIdx >= paragraphs.length - 1 ? artifactType === "comic" ? "+ New panel" : "+ New scene" : "Next \u2192"
+    focusParagraphIdx >= paragraphs.length - 1 ? paragraphs.length >= maxParagraphs ? ux("section_limit", "Section limit reached") : artifactType === "comic" ? "+ New panel" : "+ New scene" : "Next \u2192"
   )), paragraphs.map((p, idx) => focusMode && idx !== focusParagraphIdx ? null : /* @__PURE__ */ React.createElement(React.Fragment, { key: p.id }, /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -8271,7 +8487,7 @@ show();
         onClick: () => toggleDictation(idx),
         disabled: language === "other",
         title: language === "other" ? "Voice typing works only with the listed languages (it would otherwise transcribe in English). Pick a language from the list to use it." : "Start dictation",
-        className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${language === "other" ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50" : dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse motion-reduce:animate-none" : "bg-blue-50 border-blue-200/50 text-blue-500 hover:bg-blue-100 hover:text-blue-700"}`,
+        className: `text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full border transition-colors ${language === "other" ? "bg-slate-50 border-slate-200 text-slate-400 cursor-not-allowed opacity-50" : dictation.isDictating && dictatingParagraphIdx === idx ? "bg-red-100 border-red-300 text-red-600 animate-pulse motion-reduce:animate-none" : "bg-blue-50 border-blue-200/50 text-blue-700 hover:bg-blue-100 hover:text-blue-700"}`,
         "aria-label": language === "other" ? "Voice typing unavailable for a custom language" : dictation.isDictating && dictatingParagraphIdx === idx ? "Stop dictation" : "Start dictation"
       },
       /* @__PURE__ */ React.createElement(Mic, { size: 10 }),
@@ -8283,12 +8499,12 @@ show();
         type: "button",
         onClick: () => helpMeWrite(idx),
         disabled: isProcessing,
-        className: "text-amber-500 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40",
+        className: "text-amber-700 hover:text-amber-700 text-[11px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 hover:bg-amber-100 border border-amber-200/50 transition-colors disabled:opacity-40",
         "aria-label": t("a11y.get_writing_suggestions")
       },
       /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
       " Help Me"
-    ), paragraphs.length > 1 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => removeParagraph(idx), className: "text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors", "aria-label": ta(layoutMode === "comic" ? "a11y.storyforge_aria_remove_panel" : "a11y.storyforge_aria_remove_scene").replace("{0}", idx + 1) }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 })))),
+    ), paragraphs.length > 1 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void removeParagraph(idx), disabled: projectMutationBusy || isProcessing, className: "text-slate-500 hover:text-red-500 focus:text-red-500 p-1 rounded transition-colors", "aria-label": ta(layoutMode === "comic" ? "a11y.storyforge_aria_remove_panel" : "a11y.storyforge_aria_remove_scene").replace("{0}", idx + 1) }, /* @__PURE__ */ React.createElement(Trash2, { size: 14 })))),
     p.scaffoldFrame && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 bg-amber-50 border-b border-amber-100 text-xs text-amber-700 italic flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 12, className: "shrink-0" }), " ", p.scaffoldFrame),
     genre !== "free" && /* @__PURE__ */ React.createElement("div", { className: "px-4 py-2 bg-indigo-50/60 border-b border-indigo-100 flex items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: `sf-beat-${p.id}`, className: "text-[11px] font-bold text-indigo-700 uppercase tracking-widest shrink-0" }, "\u{1F4CD} Plot Beat"), /* @__PURE__ */ React.createElement(
       "select",
@@ -9137,31 +9353,32 @@ show();
       className: "px-4 py-2.5 bg-white text-slate-700 rounded-full text-sm font-bold hover:bg-slate-50 border border-slate-300"
     },
     showReviewTools ? "Hide review tools" : "More review tools"
-  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-500 text-white rounded-full text-sm font-bold hover:bg-amber-600 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700" }, "Start fresh review")), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, ta("a11y.storyforge_ui_rate_your_own_draft_on_each"))), /* @__PURE__ */ React.createElement(
+  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: !onCallGemini || sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: !onCallGemini || mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: !onCallGemini || showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: !onCallGemini || arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: !onCallGemini || dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: !onCallGemini || revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", isProcessing ? "Grading..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-600 px-4 py-2 text-xs font-bold text-white hover:bg-amber-700" }, "Start fresh review")), !gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("review_choices", "Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSelfAssessmentSubmitted(false), className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white" }, ux("return_selfcheck", "Return to self-check"))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, ux("rating_instructions", "Reread your draft and choose how you feel about each criterion. Ratings start at 3; adjust them to match your work."))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => {
         setSelfAssessmentSubmitted(true);
-        sfAnnounce(ta("a11y.storyforge_self_assessment_skipped_ai_grading_is_now"));
+        sfAnnounce(ux("selfcheck_return", "You can return to the self-check at any time."));
       },
-      className: "text-[11px] text-violet-500 hover:text-violet-700 font-bold underline shrink-0"
+      className: "text-xs text-violet-700 hover:text-violet-800 font-bold underline shrink-0 min-h-11"
     },
     "Skip self-assessment"
-  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, getRubricCriteria().map((c) => /* @__PURE__ */ React.createElement("div", { key: c, className: "flex items-center gap-3 bg-white border border-violet-100 rounded-xl px-3 py-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: `sf-self-${c}`, className: "text-xs font-bold text-violet-800 flex-1 min-w-0 truncate" }, c), /* @__PURE__ */ React.createElement(
-    "input",
+  )), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, getRubricCriteria().map((c, index) => /* @__PURE__ */ React.createElement("div", { key: c, className: "flex flex-col sm:flex-row sm:items-center gap-2 bg-white border border-violet-100 rounded-xl px-3 py-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: `sf-self-${index}`, className: "text-xs font-bold text-violet-800 flex-1 min-w-0 break-words" }, c), /* @__PURE__ */ React.createElement(
+    "select",
     {
-      id: `sf-self-${c}`,
-      type: "range",
-      min: "1",
-      max: "5",
-      step: "1",
+      id: `sf-self-${index}`,
+      "data-sf-self-rating": true,
       value: selfAssessment[c] || 3,
       onChange: (e) => setSelfAssessment((prev) => ({ ...prev, [c]: parseInt(e.target.value, 10) })),
-      className: "w-32 accent-violet-600",
-      "aria-label": ta("a11y.storyforge_aria_self_rating_for_out_of_5").replace("{0}", c).replace("{1}", selfAssessment[c] || 3)
-    }
-  ), /* @__PURE__ */ React.createElement("div", { className: "bg-violet-100 text-violet-800 text-xs font-black px-2 py-0.5 rounded-full min-w-[2.25rem] text-center" }, selfAssessment[c] || 3, "/5")))), /* @__PURE__ */ React.createElement(
+      className: "min-h-11 w-full sm:w-52 rounded-lg border border-violet-300 bg-white px-2 text-sm text-violet-900"
+    },
+    /* @__PURE__ */ React.createElement("option", { value: "1" }, ux("rating_1", "1 \u2014 I need help getting started")),
+    /* @__PURE__ */ React.createElement("option", { value: "2" }, ux("rating_2", "2 \u2014 I am beginning")),
+    /* @__PURE__ */ React.createElement("option", { value: "3" }, ux("rating_3", "3 \u2014 I am developing this")),
+    /* @__PURE__ */ React.createElement("option", { value: "4" }, ux("rating_4", "4 \u2014 I can do this well")),
+    /* @__PURE__ */ React.createElement("option", { value: "5" }, ux("rating_5", "5 \u2014 I can explain my choices"))
+  )))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9225,11 +9442,7 @@ show();
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-500"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-500"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));
-  })())), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.writing_analytics")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, totalWords), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_words"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, readingLevel?.sentences || 0), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_sentences"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, artifactType === "comic" ? "Panels" : "Scenes")), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, vocabUsedCount, "/", vocabTerms.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_vocab_used"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${readingLevel ? "text-indigo-600" : "text-slate-300"}` }, readingLevel ? `${readingLevel.grade}` : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_reading_grade")))), readingLevel && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-xs text-slate-600" }, "Avg ", readingLevel.avgWordsPerSentence, " ", ta("a11y.storyforge_ui_words_sentence_flesch_kincaid_grade_level"), " ", readingLevel.grade, (() => {
-    const target = gradeLevelToNumber(gradeLevel);
-    if (target == null) return null;
-    return /* @__PURE__ */ React.createElement("span", null, readingLevel.grade <= target + 1 ? " \xB7 \u2713 On target" : " \xB7 \u26A0 May be above target level");
-  })()), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_narrative_arc"), " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case tracking-normal text-slate-500 font-medium" }, ta("a11y.storyforge_ui_fortune_over_time"))), onCallGemini && /* @__PURE__ */ React.createElement(
+  })())), /* @__PURE__ */ React.createElement("details", { "data-sf-analytics": true, className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.writing_analytics")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, totalWords), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_words"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, authoredText.split(/[.!?]+/).filter((text) => text.trim()).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_sentences"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, artifactType === "comic" ? "Panels" : "Scenes")), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, vocabUsedCount, "/", vocabTerms.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_vocab_used"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${readingLevel ? "text-indigo-600" : "text-slate-300"}` }, readingLevel ? `${readingLevel.grade}` : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ux("reading_estimate", "Text complexity estimate")))), readingLevel && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-xs text-slate-600" }, "Avg ", readingLevel.avgWordsPerSentence, " ", ta("a11y.storyforge_ui_words_sentence_flesch_kincaid_grade_level"), " ", readingLevel.grade, /* @__PURE__ */ React.createElement("span", null, " \xB7 ", ux("estimate_note", "Approximate English text complexity, not a writing quality score."))), !readingLevel && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, ux("estimate_threshold", "A complexity estimate is available for English drafts with at least 100 words.")), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_narrative_arc"), " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case tracking-normal text-slate-500 font-medium" }, ta("a11y.storyforge_ui_fortune_over_time"))), onCallGemini && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9273,7 +9486,7 @@ show();
         }
       ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 w-6 text-right tabular-nums" }, v > 0 ? "+" + v : v));
     })), anySet && match ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1.5" }, match.weak ? "Closest shape (loosely): " : "Your story looks like a ", /* @__PURE__ */ React.createElement("span", { className: "font-black" }, match.emoji, " ", match.label), match.weak ? "" : "!", " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 font-medium" }, ta("a11y.storyforge_ui_a_craft_lens_not_a_rule"))) : /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-500 italic" }, `Drag a point or tap "Suggest arc" to map your story's emotional ups & downs.`));
-  })())), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] opacity-60" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!")), !gradingResult && !isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your draft')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, ta("a11y.storyforge_ui_reading_your_draft_and_preparing_feedback"))), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: ta("a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not") }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, ta("a11y.storyforge_ui_ai_estimate_draft_feedback_not_a"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " ", ta("a11y.storyforge_ui_you")), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
+  })()), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px]" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!"))), !gradingResult && !isProcessing && onCallGemini && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your draft')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, ta("a11y.storyforge_ui_reading_your_draft_and_preparing_feedback"))), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: ta("a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not") }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, ta("a11y.storyforge_ui_ai_estimate_draft_feedback_not_a"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " ", ta("a11y.storyforge_ui_you")), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
     const aiScoreNum = (() => {
       const m = String(s.score || "").match(/(\d+(?:\.\d+)?)/);
       return m ? parseFloat(m[1]) : null;
@@ -9389,10 +9602,10 @@ show();
     ))), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-4 bg-slate-900", "aria-live": "polite" }, focusedComicPreviewPage && (() => {
       const page = focusedComicPreviewPage;
       const printSafety = sanitizeComicPrintSafety(comicPrintSafety);
-      const gutterSide2 = getComicPageGutterSide(page.page, page.layout, printSafety);
+      const gutterSide = getComicPageGutterSide(page.page, page.layout, printSafety);
       const turnLabel = getComicPageTurnLabel(page.turn);
       const previewPageStats = getComicPageProductionStats(page, { panelDialogue, panelThumbnails, panelLayouts, illustrations, comicPrintSafety });
-      return /* @__PURE__ */ React.createElement("section", { id: `sf-comic-preview-page-${page.page}`, role: "tabpanel", className: "overflow-hidden rounded-lg border border-slate-700 bg-slate-950/75 shadow-lg", "aria-label": ta("a11y.storyforge_aria_comic_page").replace("{0}", page.page) }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-widest" }, "Page ", page.page, " \xB7 ", getComicPageLayoutLabel(page.layout)), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-300 font-bold" }, ta("a11y.storyforge_ui_panels"), " ", page.startPanel, "-", page.endPanel, " \xB7 ", getComicReadingOrderLabel(page.layout))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-1 ${previewPageStats.status === "Review" ? "border-rose-300/50 bg-rose-400/20 text-rose-100" : previewPageStats.status === "Ready" ? "border-emerald-300/50 bg-emerald-400/20 text-emerald-100" : "border-white/20 bg-white/10 text-white"}` }, previewPageStats.status), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, ta("a11y.storyforge_ui_art"), " ", previewPageStats.artPanels, "/", previewPageStats.total), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, ta("a11y.storyforge_ui_lettering"), " ", previewPageStats.placedBubbles, "/", previewPageStats.bubblePanels), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, getComicPrintFormatLabel(printSafety.format)), gutterSide2 && /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-rose-300/40 bg-rose-400/20 px-2 py-1" }, gutterSide2, " gutter"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 grid gap-3 ${page.layout === "strip" ? "grid-cols-1" : "grid-cols-2"}`, style: { direction: page.layout === "manga" ? "rtl" : "ltr" } }, page.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, page.layout, pageIndex, page))), previewPageStats.attention > 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-rose-950/40 text-rose-100 border-t border-rose-900/60 text-[11px] font-bold flex flex-wrap gap-x-3 gap-y-1" }, previewPageStats.unplacedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.unplacedBubbles, " ", ta("a11y.storyforge_ui_lettering_anchor"), previewPageStats.unplacedBubbles === 1 ? "" : "s", " needed"), previewPageStats.gutterRiskPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.gutterRiskPanels, " ", ta("a11y.storyforge_ui_gutter_conflict").replace("{0}", previewPageStats.gutterRiskPanels === 1 ? "" : "s")), previewPageStats.crowdedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.crowdedBubbles, " ", ta("a11y.storyforge_ui_crowded_bubble_panel").replace("{0}", previewPageStats.crowdedBubbles === 1 ? "" : "s")), previewPageStats.emptyPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.emptyPanels, " ", ta("a11y.storyforge_ui_empty_panel").replace("{0}", previewPageStats.emptyPanels === 1 ? "" : "s"))), (turnLabel || page.note) && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-900 text-slate-200 border-t border-slate-700 text-[11px] font-bold" }, turnLabel && /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_page_turn").replace("{0}", turnLabel)), page.note && /* @__PURE__ */ React.createElement("span", null, turnLabel ? " \xB7 " : "", page.note)));
+      return /* @__PURE__ */ React.createElement("section", { id: `sf-comic-preview-page-${page.page}`, role: "tabpanel", className: "overflow-hidden rounded-lg border border-slate-700 bg-slate-950/75 shadow-lg", "aria-label": ta("a11y.storyforge_aria_comic_page").replace("{0}", page.page) }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-3 py-2 bg-slate-950 text-white border-b border-slate-700" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-black uppercase tracking-widest" }, "Page ", page.page, " \xB7 ", getComicPageLayoutLabel(page.layout)), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] text-slate-300 font-bold" }, ta("a11y.storyforge_ui_panels"), " ", page.startPanel, "-", page.endPanel, " \xB7 ", getComicReadingOrderLabel(page.layout))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-1.5 text-[10px] font-black uppercase tracking-widest" }, /* @__PURE__ */ React.createElement("span", { className: `rounded-full border px-2 py-1 ${previewPageStats.status === "Review" ? "border-rose-300/50 bg-rose-400/20 text-rose-100" : previewPageStats.status === "Ready" ? "border-emerald-300/50 bg-emerald-400/20 text-emerald-100" : "border-white/20 bg-white/10 text-white"}` }, previewPageStats.status), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, ta("a11y.storyforge_ui_art"), " ", previewPageStats.artPanels, "/", previewPageStats.total), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, ta("a11y.storyforge_ui_lettering"), " ", previewPageStats.placedBubbles, "/", previewPageStats.bubblePanels), /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-white/20 bg-white/10 px-2 py-1" }, getComicPrintFormatLabel(printSafety.format)), gutterSide && /* @__PURE__ */ React.createElement("span", { className: "rounded-full border border-rose-300/40 bg-rose-400/20 px-2 py-1" }, gutterSide, " gutter"))), /* @__PURE__ */ React.createElement("div", { className: `p-3 grid gap-3 ${page.layout === "strip" ? "grid-cols-1" : "grid-cols-2"}`, style: { direction: page.layout === "manga" ? "rtl" : "ltr" } }, page.panels.map(({ paragraph, idx: panelIdx }, pageIndex) => renderComicPreviewPanel(paragraph, panelIdx, page.layout, pageIndex, page))), previewPageStats.attention > 0 && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-rose-950/40 text-rose-100 border-t border-rose-900/60 text-[11px] font-bold flex flex-wrap gap-x-3 gap-y-1" }, previewPageStats.unplacedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.unplacedBubbles, " ", ta("a11y.storyforge_ui_lettering_anchor"), previewPageStats.unplacedBubbles === 1 ? "" : "s", " needed"), previewPageStats.gutterRiskPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.gutterRiskPanels, " ", ta("a11y.storyforge_ui_gutter_conflict").replace("{0}", previewPageStats.gutterRiskPanels === 1 ? "" : "s")), previewPageStats.crowdedBubbles > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.crowdedBubbles, " ", ta("a11y.storyforge_ui_crowded_bubble_panel").replace("{0}", previewPageStats.crowdedBubbles === 1 ? "" : "s")), previewPageStats.emptyPanels > 0 && /* @__PURE__ */ React.createElement("span", null, previewPageStats.emptyPanels, " ", ta("a11y.storyforge_ui_empty_panel").replace("{0}", previewPageStats.emptyPanels === 1 ? "" : "s"))), (turnLabel || page.note) && /* @__PURE__ */ React.createElement("div", { className: "px-3 py-2 bg-slate-900 text-slate-200 border-t border-slate-700 text-[11px] font-bold" }, turnLabel && /* @__PURE__ */ React.createElement("span", null, ta("a11y.storyforge_ui_page_turn").replace("{0}", turnLabel)), page.note && /* @__PURE__ */ React.createElement("span", null, turnLabel ? " \xB7 " : "", page.note)));
     })()))
   ) : (
     /* ── Prose Layout ── */
@@ -9458,7 +9671,7 @@ show();
     },
     /* @__PURE__ */ React.createElement(Star, { size: 18 }),
     " Save to Portfolio"
-  ))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-xs text-center" }, artifactType === "comic" ? "Comic" : "Storybook", " and slideshow exports open in new tabs \xB7 print or save as PDF"), /* @__PURE__ */ React.createElement("details", { "data-sf-project-tools": true, className: "bg-white rounded-2xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16, "aria-hidden": "true" }), " Project files & collaboration")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-500" }, ta("a11y.storyforge_ui_export_or_import_a_portable_project")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-4" }, /* @__PURE__ */ React.createElement("div", { "data-sf-project-vault": true, className: "bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16 }), " Project Vault"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, vaultStorageMode === "vault" ? "Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser." : "Save a portable project package to preserve artwork and narration across browsers or devices."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportStoryForgeProject, className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2", "aria-label": ta("a11y.storyforge_attr_export_full_story_forge_project") }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export .storyforge"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2", "aria-label": ta("a11y.storyforge_attr_import_story_forge_project") }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import project"), /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, ta("a11y.storyforge_ui_checkpoint_name")), /* @__PURE__ */ React.createElement("input", { value: revisionLabel, onChange: (e) => setRevisionLabel(e.target.value.slice(0, 100)), placeholder: ta("a11y.storyforge_attr_checkpoint_name"), className: "w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700", "aria-label": ta("a11y.storyforge_attr_checkpoint_name") })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void saveRevisionCheckpoint(), disabled: draftHydrationState !== "ready" || draftSaveState === "saving", className: "px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50", "aria-label": ta("a11y.storyforge_attr_save_revision_checkpoint") }, /* @__PURE__ */ React.createElement(Save, { size: 14 }), " Checkpoint")), revisionHistory.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-emerald-100 pt-3", "aria-label": ta("a11y.storyforge_attr_saved_project_checkpoints") }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_recent_checkpoints")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, revisionHistory.slice(0, 6).map((revision) => /* @__PURE__ */ React.createElement("button", { key: revision.id, type: "button", "data-sf-restore-checkpoint": revision.id, onClick: () => restoreRevisionCheckpoint(revision), className: "px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100", title: `Restore ${revision.label}` }, revision.label, " \xB7 ", new Date(revision.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Pass the Torch"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, ta("a11y.storyforge_ui_export_your_draft_as_a_file")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportDraftJSON, className: "px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export Draft (.json)"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import Classmate's Draft")))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" }, /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm text-center" }, ux("output_help", "Download a finished story to read or print. Use an editable backup below to continue working on another device.")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-500 text-xs text-center" }, artifactType === "comic" ? "Comic" : "Storybook", " and slideshow exports open in new tabs \xB7 print or save as PDF"), /* @__PURE__ */ React.createElement("details", { "data-sf-project-tools": true, className: "bg-white rounded-2xl border border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer rounded-lg text-sm font-black text-slate-700 focus-visible:ring-2 focus-visible:ring-rose-500" }, /* @__PURE__ */ React.createElement("span", { className: "inline-flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16, "aria-hidden": "true" }), " ", ux("project_files", "Editable backups and collaboration"))), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-500" }, ta("a11y.storyforge_ui_export_or_import_a_portable_project")), /* @__PURE__ */ React.createElement("div", { className: "mt-3 space-y-4" }, /* @__PURE__ */ React.createElement("div", { "data-sf-project-vault": true, className: "bg-white rounded-2xl border-2 border-emerald-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-emerald-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Save, { size: 16 }), " Project Vault"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, vaultStorageMode === "vault" ? "Your writing, artwork, cover, continuity notes, production audits, and durable narration data are saved in this browser." : "Save a portable project package to preserve artwork and narration across browsers or devices."), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 items-end" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportStoryForgeProject, className: "px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2", "aria-label": ta("a11y.storyforge_attr_export_full_story_forge_project") }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export .storyforge"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg text-xs font-bold hover:bg-emerald-200 transition-colors flex items-center gap-2", "aria-label": ta("a11y.storyforge_attr_import_story_forge_project") }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import project"), /* @__PURE__ */ React.createElement("label", { className: "flex-1 min-w-[180px]" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, ta("a11y.storyforge_ui_checkpoint_name")), /* @__PURE__ */ React.createElement("input", { value: revisionLabel, onChange: (e) => setRevisionLabel(e.target.value.slice(0, 100)), placeholder: ta("a11y.storyforge_attr_checkpoint_name"), className: "w-full px-3 py-2 text-xs rounded-lg border border-emerald-200 bg-emerald-50/40 text-slate-700", "aria-label": ta("a11y.storyforge_attr_checkpoint_name") })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void saveRevisionCheckpoint(), disabled: projectMutationBusy || draftHydrationState !== "ready" || draftSaveState === "saving", className: "px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-colors flex items-center gap-2 disabled:opacity-50", "aria-label": ta("a11y.storyforge_attr_save_revision_checkpoint") }, /* @__PURE__ */ React.createElement(Save, { size: 14 }), " Checkpoint")), revisionHistory.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 border-t border-emerald-100 pt-3", "aria-label": ta("a11y.storyforge_attr_saved_project_checkpoints") }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_recent_checkpoints")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, revisionHistory.slice(0, 6).map((revision) => /* @__PURE__ */ React.createElement("button", { key: revision.id, type: "button", "data-sf-restore-checkpoint": revision.id, onClick: () => restoreRevisionCheckpoint(revision), className: "px-3 py-1.5 rounded-full border border-emerald-200 bg-emerald-50 text-[11px] font-bold text-emerald-800 hover:bg-emerald-100", title: `Restore ${revision.label}` }, revision.label, " \xB7 ", new Date(revision.savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-cyan-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-cyan-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Pass the Torch"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-3" }, ta("a11y.storyforge_ui_export_your_draft_as_a_file")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col sm:flex-row sm:flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: exportDraftJSON, className: "px-4 py-2 bg-cyan-600 text-white rounded-lg text-xs font-bold hover:bg-cyan-700 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Download, { size: 14 }), " Export Draft (.json)"), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-import-draft": true, onClick: importDraftJSON, className: "px-4 py-2 bg-cyan-100 text-cyan-700 rounded-lg text-xs font-bold hover:bg-cyan-200 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Plus, { size: 14 }), " Import Classmate's Draft")))))))), /* @__PURE__ */ React.createElement("div", { className: "bg-white border-t border-slate-200 p-3 sm:p-4 flex flex-wrap sm:flex-nowrap justify-between items-center gap-2 shrink-0 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]" }, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9493,7 +9706,7 @@ show();
   window.AlloModules.StoryForge = StoryForge;
   // Test seam (read-only): expose pure reading-level and comic layout helpers for characterization
   // tests (tests/story_forge_golden.test.js). Zero behavior change.
-  try { window.AlloModules.StoryForge._meta = { computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, getStoryForgeReviewSignature: getStoryForgeReviewSignature, getStoryForgeRestoredPhase: getStoryForgeRestoredPhase, validateStoryForgeImport: validateStoryForgeImport, normalizeStoryForgeModeSelection: normalizeStoryForgeModeSelection, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
+  try { window.AlloModules.StoryForge._meta = { prepareStoryForgeLessonImport, mergeStoryForgeVocabulary, storyForgeSectionHasWork, getComicExportProof, normalizeStoryForgePlan, mergeStoryForgePlan, getStoryForgeSectionText, computeReadingLevel: computeReadingLevel, gradeLevelToNumber: gradeLevelToNumber, clampComicLetteringWidth: clampComicLetteringWidth, sanitizePanelThumbnails: sanitizePanelThumbnails, createComicProductionSnapshot: createComicProductionSnapshot, getStoryForgeReviewSignature: getStoryForgeReviewSignature, getStoryForgeRestoredPhase: getStoryForgeRestoredPhase, validateStoryForgeImport: validateStoryForgeImport, normalizeStoryForgeModeSelection: normalizeStoryForgeModeSelection, sanitizeStoryForgeDraft: sanitizeStoryForgeDraft, sanitizeStoryForgeProject: sanitizeStoryForgeProject, sanitizeAudioSegments: sanitizeAudioSegments, getImageBase64Payload: getImageBase64Payload, sanitizeContinuityReferences: sanitizeContinuityReferences, sanitizeComicContinuityAudit: sanitizeComicContinuityAudit, isStoryForgeDraftMeaningful: isStoryForgeDraftMeaningful, isStoryForgeProjectMeaningful: isStoryForgeProjectMeaningful, getComicPageProductionStats: getComicPageProductionStats, getComicContinuityAudit: getComicContinuityAudit, getStoryForgeProjectReadiness: getStoryForgeProjectReadiness }; } catch (e) {}
 
   console.log('[StoryForge] Module registered');
 })();

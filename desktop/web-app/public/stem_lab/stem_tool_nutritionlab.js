@@ -1461,7 +1461,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
           nlTextarea({ value: form.items, onChange: function(e) { setForm(Object.assign({}, form, { items: e.target.value })); }, placeholder: 'What did you eat? (just list — no judgment)', rows: 2 }),
           nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8 } },
             nlH('span', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #475569)', fontWeight: 700 } }, 'Energy after: '),
-            nlH('input', { type: 'range', min: 1, max: 10, value: form.energy, onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value) })); }, 'aria-label': 'Energy after meal, from 1 to 10', style: { flex: 1 } }),
+            nlH('input', { type: 'range', min: 1, max: 10, value: form.energy, onChange: function(e) { setForm(Object.assign({}, form, { energy: parseInt(e.target.value) })); }, 'aria-label': __alloNLT('stem.nutritionlab.a11y_energy_after_meal_from_1_to_10', 'Energy after meal, from 1 to 10'), style: { flex: 1 } }),
             nlH('strong', { style: { color: '#059669', fontFamily: 'ui-monospace, Menlo, monospace' } }, form.energy + '/10')
           ),
           nlTextarea({ value: form.notes, onChange: function(e) { setForm(Object.assign({}, form, { notes: e.target.value })); }, placeholder: 'Notes (optional)', rows: 2 }),
@@ -1536,14 +1536,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
         ),
         nlH('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, fontSize: 11, color: '#0c4a6e' } },
           nlH('span', null, 'Daily target:'),
-          nlH('input', { type: 'number', value: targetMl, onChange: function(e) { setTarget(parseInt(e.target.value) || 2500); }, 'aria-label': 'Daily water target in milliliters', style: { width: 80, padding: '3px 6px', borderRadius: 4, border: '1px solid #bae6fd', fontSize: 11 } }),
+          nlH('input', { type: 'number', value: targetMl, onChange: function(e) { setTarget(parseInt(e.target.value) || 2500); }, 'aria-label': __alloNLT('stem.nutritionlab.a11y_daily_water_target_in_milliliters', 'Daily water target in milliliters'), style: { width: 80, padding: '3px 6px', borderRadius: 4, border: '1px solid #bae6fd', fontSize: 11 } }),
           nlH('span', null, 'mL (NAM AI: ~2700 for teen girls, ~3700 for teen boys)')
         )
       ),
       nlCard(null,
         nlH('div', { style: { display: 'flex', flexDirection: 'column', gap: 8 } },
           nlH('div', { style: { display: 'grid', gridTemplateColumns: '100px 1fr', gap: 8 } },
-            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, 'aria-label': 'Water amount in milliliters', style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
+            nlH('input', { type: 'number', value: form.ml, onChange: function(e) { setForm(Object.assign({}, form, { ml: parseInt(e.target.value) || 0 })); }, 'aria-label': __alloNLT('stem.nutritionlab.a11y_water_amount_in_milliliters', 'Water amount in milliliters'), style: { padding: '8px 10px', borderRadius: 8, border: '1px solid var(--allo-stem-border, #cbd5e1)', fontSize: 13 } }),
             nlSelect({ value: form.source, onChange: function(e) { setForm(Object.assign({}, form, { source: e.target.value })); } }, source_opts)
           ),
           nlH('div', { style: { display: 'flex', gap: 4 } },
@@ -16499,6 +16499,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     slot.impl = impl;
     return slot.Type;
   }
+  var __alloNLCtx = null;
+  // Module-scope translator: the render-scoped __alloT closes over ctx and is
+  // not in scope in the helpers below, so those calls would throw.
+  var __alloNLT = function (k, fb) {
+    var v;
+    try { v = (__alloNLCtx && typeof __alloNLCtx.t === "function") ? __alloNLCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
+
   window.StemLab.registerTool('nutritionLab', {
     name: 'NutritionLab — Nutrition Science',
     icon: '🥗',
@@ -16506,6 +16515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('nutritionLab')
     category: 'biology',
     aliases: ['nutrition', 'food labels', 'macros', 'micronutrients'],
     render: function(ctx) {
+      __alloNLCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // Fills {value1}-style placeholders, so a translation can reorder them.
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };

@@ -1015,7 +1015,7 @@
         return _initPromise;
     }
 
-    async function _generateBatchAudio(text, voice, cacheKey, signal) {
+    async function _generateBatchAudio(text, voice, cacheKey, signal, force = false) {
         const result = await _sendToWorker(
             'generate_batch',
             { text, voice, speed: SYNTHESIS_SPEED },
@@ -1034,7 +1034,7 @@
         // Another identical request may have completed while this worker
         // request was queued. Reuse it instead of replacing a live URL.
         const raced = _cacheGet(cacheKey, text, voice);
-        if (raced) return raced;
+        if (raced && !force) return raced;
 
         const audioBlob = new Blob([result.buffer], { type: 'audio/wav' });
         const audioUrl = URL.createObjectURL(audioBlob);
@@ -1048,6 +1048,7 @@
 
         options = options || {};
         const signal = options.signal;
+        const force = options.force === true;
         if (signal && signal.aborted) throw _signalAbortError(signal);
         voice = resolveVoice(voice);
 
@@ -1064,7 +1065,7 @@
 
         const cacheKey = _cacheKey(text, voice);
         const cached = _cacheGet(cacheKey, text, voice);
-        if (cached) return cached;
+        if (cached && !force) return cached;
 
         // A signal-free prewarm owns shareable background work. A later active
         // caller may cancel only its wait; the owner keeps generating and fills
@@ -1072,7 +1073,7 @@
         // AbortSignal still cancels the worker request when no owner exists.
         const batchKey = JSON.stringify(['kokoro-batch-v1', text, voice, SYNTHESIS_SPEED, _currentDtype]);
         const sharedEntry = _backgroundBatchInFlight.get(batchKey);
-        if (sharedEntry) {
+        if (sharedEntry && !force) {
             try {
                 return await _awaitWithSignal(sharedEntry.promise, signal);
             } catch (e) {
@@ -1085,7 +1086,7 @@
         let batchPromise;
         if (!signal) {
             const entry = { promise: null };
-            entry.promise = _generateBatchAudio(text, voice, cacheKey, null).finally(() => {
+            entry.promise = _generateBatchAudio(text, voice, cacheKey, null, force).finally(() => {
                 if (_backgroundBatchInFlight.get(batchKey) === entry) {
                     _backgroundBatchInFlight.delete(batchKey);
                 }
@@ -1093,7 +1094,7 @@
             _backgroundBatchInFlight.set(batchKey, entry);
             batchPromise = entry.promise;
         } else {
-            batchPromise = _generateBatchAudio(text, voice, cacheKey, signal);
+            batchPromise = _generateBatchAudio(text, voice, cacheKey, signal, force);
         }
 
         try {

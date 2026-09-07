@@ -58,7 +58,13 @@ describe('generation describes the drawn pixels', () => {
     const panel = src('view_sidebar_panels_source.jsx');
     expect(panel).toContain("/^all selected languages$/i.test(output) ? (selectedLanguages || []) : (/^english$/i.test(output) ? [] : [output])");
     expect(panel).toContain("t('glossary.follows_output_language')");
-    expect(src('AlloFlowANTI.txt')).toContain('          leveledTextLanguage, selectedLanguages, setAutoRemoveWords, setGlossaryCustomInstructions,');
+    const host = src('AlloFlowANTI.txt');
+    const startOfGenerator = host.indexOf('moduleKey="SidebarPanels.GeneratorActionsView"');
+    expect(startOfGenerator).toBeGreaterThan(-1);
+    const generatorProps = host.slice(startOfGenerator, host.indexOf('</CDNModuleGate>', startOfGenerator));
+    for (const prop of ['leveledTextLanguage', 'selectedLanguages', 'setAutoRemoveWords', 'setGlossaryCustomInstructions']) {
+      expect(new RegExp('\\b' + prop + '\\b').test(generatorProps), prop + ' reaches GeneratorActionsView').toBe(true);
+    }
     expect(src('help_strings.js')).toContain('They follow the Output Language in Universal Settings');
   });
 
@@ -108,12 +114,19 @@ describe('edits keep descriptions honest', () => {
   });
 });
 
-describe('icons next to their label are decorative', () => {
+describe('glossary descriptions and decorative icons remain distinct', () => {
   it('in the live views', () => {
     const glossary = src('view_glossary_source.jsx');
     expect(glossary).not.toContain('alt={`${item.term} icon`}');
     expect(glossary).not.toContain('alt="Visual"');
-    expect((glossary.match(/alt="" role="presentation"/g) || []).length).toBeGreaterThanOrEqual(3);
+    expect((glossary.match(/alt=\{getGlossaryImageAlt\(/g) || []).length).toBe(3);
+    expect((glossary.match(/role=\{getGlossaryImageAlt\([^}]+\? undefined : "presentation"\}/g) || []).length).toBe(3);
+    const helperSource = glossary.slice(0, glossary.indexOf('// Lazy Lucide'));
+    const imageAlt = new Function(helperSource + '\nreturn getGlossaryImageAlt;')();
+    expect(imageAlt({term:'Plant',image:PNG})).toBe('');
+    expect(imageAlt({image:PNG,imageAlt:'Roots take up water.'})).toBe('Roots take up water.');
+    expect(imageAlt({image:PNG,imageAlt:'Roots take up water.',imageDecorative:true})).toBe('');
+    expect(imageAlt({image:PNG,imageAlt:'Old picture.',imageAltHash:'stale-hash'})).toBe('');
     expect(src('anchor_charts_source.jsx')).toContain('<img src={iconUrl} alt="" role="presentation"');
   });
 });

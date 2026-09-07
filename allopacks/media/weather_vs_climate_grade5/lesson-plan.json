@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "sourcePack": "allopacks/weather_vs_climate_grade5.allopack.json",
+  "jobs": [
+    {
+      "id": "wx-img-mood-personality",
+      "title": "Weather changes quickly",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Three views of the same small house and garden during one season: sunny morning, overcast sky, then rainfall wetting the same path. Same building and tree layout each time. No time labels or clocks.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-observation-series",
+      "title": "Repeated observations",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Three equal wide panels show the same simple outdoor weather station in the same meadow under sunny, rainy, and overcast skies. Same instrument shelter and grassy landscape. Instruments should not show any digits or text. This is repeated observation, not a claim that three observations establish climate.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-desert-rain",
+      "title": "Rain in a dry region",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A broad arid rocky desert with sparse cacti and shrubs during a brief rain shower. Dark raincloud above, falling rain and small fresh puddles; distant dry mountains remain. No lush vegetation appearing suddenly.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-same-weather",
+      "title": "Same day, different regions",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Two equal scenes side by side under similarly clear sunny skies: a dry cactus landscape on the left and a lush temperate forest landscape on the right. No thermometer readings. Compare environments while showing the same broad weather condition.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-heat-wave",
+      "title": "A hot day",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A family resting together in deep tree shade on a bright summer afternoon, drinking from plain reusable water bottles, hats resting nearby. Comfortable safe ordinary scene, no distress, no thermometer or medical imagery. No branded clothes or writing.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-cold-day",
+      "title": "A cold day",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A child in a winter coat and hat walking with an adult beside a frost-covered grassy field, visible small breath mist and bare trees. A clear cool morning, ordinary safe scene. No dramatic blizzard, text, logos or temperature readings.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-climate-regions",
+      "title": "Contrasting landscapes",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Side-by-side panoramic representative landscapes: sparse vegetation in an arid rocky basin versus a lush humid tropical forest beside a river. Natural non-cartoon vegetation, no specific country map or flags. This is representative landscape imagery, not a record of measured climate.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-valley-shade",
+      "title": "Sun and shade",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A single mountain valley with one grassy slope brightly lit by sunlight and the opposite slope in cool mountain shadow. Both slopes visible in the same continuous landscape, river at bottom, plausible sun direction. No temperature colors or measurements; show only visible sunlight and shade.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-city-farm",
+      "title": "Urban and rural surfaces",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Two equal scenes in the same sunny season: a small city block with asphalt and rooftops on the left, fields with trees and grassy soil on the right. No people necessary, no signs or building letters. No red heat overlays or numerical temperature claims.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-tree-rings",
+      "title": "Natural records: tree rings",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Close-up educational naturalistic illustration of a clean tree-trunk cross section, with many irregular concentric growth rings surrounding an off-center pith and rough bark at outer edge. A plain magnifying glass enlarges a few rings. No cut marks, text or hands. Ring widths vary naturally; no numbered rings.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-ice-core",
+      "title": "Natural records: ice",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A scientist in warm unbranded field clothing and gloves carefully examining a long cylindrical ice core lying horizontally in a plain open support tray at a snowy research site. Subtle visible internal layering and tiny bubbles, no writing or markings on tray or clothing. No claim that each visible layer is exactly a year.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-weather-station",
+      "title": "Measuring conditions",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. An outdoor weather station in an open grassy field: a small white louvered instrument shelter raised on four legs, a nearby pole with a recognizable three-cup anemometer, and a plain cylindrical rain collector with open top. No readable instrument scales, compass letters, text or logos. Uncluttered correct equipment.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-forecast-observations",
+      "title": "Using observations",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. An adult looking out at approaching gray clouds while preparing a plain rain jacket and closed umbrella near a window. On the table a tablet shows only a simple cloud-and-raindrop pictogram with no interface text, numbers or map claims. Safe everyday planning.",
+      "status": "planned"
+    },
+    {
+      "id": "wx-img-many-records",
+      "title": "Looking across many records",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A scientist at a desk comparing a neat row of plain clear ice-core sample cylinders with a tree cross-section and an outdoor weather-station photograph pinned on a board. No papers with fabricated writing, no graphs, no text on any object. Naturalistic educational illustration about combining different kinds of environmental observations.",
+      "status": "planned"
+    }
+  ]
+}

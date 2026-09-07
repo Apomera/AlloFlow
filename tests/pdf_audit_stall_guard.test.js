@@ -199,7 +199,7 @@ describe('PDF audit names its current step while the spinner is up', () => {
       expect(loadingBranch).toContain('_auditStageLine()');
       // "nothing is stuck" is now conditional on progress, and a stalled step names the way out.
       expect(loadingBranch).toContain('data-audit-stalled');
-      expect(src).toMatch(/_stall \? (null|'') : /);
+      expect(src).toMatch(/_stall \? (null|''|"") : /);
       expect(src).toContain('const _AUDIT_STALL_AFTER_SEC = 180;');
     }
   });

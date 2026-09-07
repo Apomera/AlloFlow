@@ -1,0 +1,281 @@
+{
+  "slug": "plant_needs_grade3",
+  "assets": [
+    {
+      "id": "pl-term-seed",
+      "kind": "glossary",
+      "term": "Seed",
+      "termIndex": 0,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Close-up of one intact dry bean seed and beside it one bean seed just splitting with a tiny white root tip emerging. No leaf already on the unopened seed, no soil cross-section.",
+      "alt": "An intact bean sits beside a split bean with a small white tip emerging.",
+      "file": "pl-term-seed.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-root",
+      "kind": "glossary",
+      "term": "Root",
+      "termIndex": 1,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A young bean plant shown in a clean soil cutaway, with branching pale roots below ground and small green leaves above. Focus on roots growing into soil; no roots floating in air.",
+      "alt": "A young plant has a branching pale underground system shown through a soil cutaway.",
+      "file": "pl-term-root.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-stem",
+      "kind": "glossary",
+      "term": "Stem",
+      "termIndex": 2,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A healthy young bean plant with a clearly visible upright green stem connecting roots at soil level to two pairs of leaves. Simple pale background, realistic leaf attachments.",
+      "alt": "A young plant has an upright green stalk supporting leaves above a branching underground system.",
+      "file": "pl-term-stem.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-leaf",
+      "kind": "glossary",
+      "term": "Leaf",
+      "termIndex": 3,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Close-up of one healthy green bean leaf attached to a short stem, with branching veins visible. Natural leaf shape, no cutaway chloroplasts or symbols.",
+      "alt": "A broad green blade with branching veins is attached to a stalk.",
+      "file": "pl-term-leaf.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-sunlight",
+      "kind": "glossary",
+      "term": "Sunlight",
+      "termIndex": 4,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A young green bean plant in a plain terracotta pot by a bright window, with sunlight falling onto its leaves. No faces on sun, floating food symbols or text.",
+      "alt": "A potted green plant stands beside a bright window.",
+      "file": "pl-term-sunlight.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-water",
+      "kind": "glossary",
+      "term": "Water",
+      "termIndex": 5,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A small watering-can spout releasing a gentle stream of water onto the soil around a healthy potted seedling. Avoid splashing directly onto leaves, no flooded saucer or branded can.",
+      "alt": "A watering can pours a small stream onto the soil beside a potted plant.",
+      "file": "pl-term-water.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-warmth",
+      "kind": "glossary",
+      "term": "Warmth",
+      "termIndex": 6,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A seedling tray indoors in gentle warm daylight near a window, with green seedlings growing from moist soil. No heater, flame, thermometer or suggestion that hotter is always better.",
+      "alt": "Young green plants stand in a tray indoors near a bright window.",
+      "file": "pl-term-warmth.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-air",
+      "kind": "glossary",
+      "term": "Air",
+      "termIndex": 7,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A healthy outdoor leafy plant with gently moving leaves in a light breeze. A few subtle curved motion strokes beside the leaves suggest movement of air, but no colored gas clouds or visible molecules.",
+      "alt": "A leafy plant bends slightly, with curved strokes suggesting a gentle breeze.",
+      "file": "pl-term-air.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-term-grow",
+      "kind": "glossary",
+      "term": "Grow",
+      "termIndex": 8,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. A single strip of five clearly separated views of the exact same young tree against the same simple grassy setting over an extended growing period. From left to right the tree gradually increases in trunk height, trunk thickness and leafy crown size, always green and healthy. Same lighting and season, no weather symbols, no calendar, no text or numbers. Consistent ground line and camera scale so gradual directional change is visually obvious. This is an everyday growth trend analogy, not a climate data graph.",
+      "alt": "Five successive views show a tree increasing in height, trunk thickness, and leafy crown size above a consistent grassy ground line.",
+      "file": "pl-term-grow.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "reusedFrom": [
+        "weather_vs_climate_grade5",
+        "wx-term-trend"
+      ],
+      "provenance": "Reused reviewed artwork from weather_vs_climate_grade5/wx-term-trend"
+    },
+    {
+      "id": "pl-term-oxygen",
+      "kind": "glossary",
+      "term": "Oxygen",
+      "termIndex": 9,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A healthy green plant lit by sunlight, with a single simple arrow pointing from a leaf out toward clear surrounding air. No droplets, smoke or bubbles outside leaves. The arrow is a conceptual gas-release symbol; the gas itself is invisible.",
+      "alt": "A green plant stands in sunshine, with an arrow pointing outward from one leaf.",
+      "file": "pl-term-oxygen.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "pl-img-germination",
+      "kind": "panel",
+      "title": "A seed begins to grow",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Four equally sized panels show a bean seed in moist soil developing over time: intact seed; split seed with tiny root; root growing downward and a curved shoot upward; seedling above soil with two seed leaves. Same soil cross-section and orientation, roots below ground at every stage.",
+      "alt": "Four soil cutaways show a bean, an emerging root, an upward shoot, and a small leafy seedling.",
+      "file": "pl-img-germination.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "A bean germinates when conditions are suitable. It needs water, oxygen, and a suitable temperature; its stored food supports early growth."
+    },
+    {
+      "id": "pl-img-stored-food",
+      "kind": "panel",
+      "title": "Starting with stored food",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Close-up botanical educational illustration of a germinating bean. Two large pale seed halves remain attached below a tiny green shoot with a short white root below. No fruit, loose food objects or molecular symbols. Pale background and clear anatomy.",
+      "alt": "A young shoot and white root extend between two thick pale bean halves.",
+      "file": "pl-img-stored-food.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "These thick seed leaves are called cotyledons. They store food that supports the young bean plant before its leaves can make enough food."
+    },
+    {
+      "id": "pl-img-root-soil",
+      "kind": "panel",
+      "title": "Roots and soil",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A small plant in a soil cutaway with fine branching roots running through crumbly soil. Some pore spaces contain tiny water films while other small pore spaces are empty. No underground pool or roots in a large cavern.",
+      "alt": "A soil cutaway shows branching roots among soil clumps, blue water films, and small dark spaces.",
+      "file": "pl-img-root-soil.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Roots absorb water and dissolved nutrients. Roots also need oxygen in the spaces between soil particles. Water is colored blue here to make the model clear."
+    },
+    {
+      "id": "pl-img-drainage",
+      "kind": "panel",
+      "title": "Water and air around roots",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two identical plain pots in cross-section. Left contains crumbly moist soil and healthy roots with small pore spaces; right contains visibly saturated soil and pooling water near roots. No dead plant as a guaranteed outcome, no colored warning icons. Both plants same species and comparable size.",
+      "alt": "Two pot cutaways compare roots in porous soil with roots in soil filled with water and a pool at the bottom.",
+      "file": "pl-img-drainage.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Too much water can fill soil spaces and limit oxygen around roots. This comparison shows soil conditions, not a prediction that every flooded plant dies immediately."
+    },
+    {
+      "id": "pl-img-light-comparison",
+      "kind": "panel",
+      "title": "Comparing access to light",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two similar young bean plants in identical pots: a green compact plant beside a bright window and a pale elongated seedling in a dim alcove. Plain comparison illustration, no light bulb icons, numbers or labels.",
+      "alt": "A compact green plant stands near a bright window; a tall pale plant with few leaves stands in a dim recess.",
+      "file": "pl-img-light-comparison.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Young green plants need light to make food. With too little light, seedlings may grow pale and stretched. Other conditions must be controlled in a real test."
+    },
+    {
+      "id": "pl-img-water-comparison",
+      "kind": "panel",
+      "title": "Comparing access to water",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two same-species bean plants in matching pots under the same daylight: one upright in moist soil, one with drooping leaves in visibly dry soil. No exaggerated dying face or skull; show a plausible comparison without text.",
+      "alt": "An upright plant in moist soil stands beside a drooping plant in dry, cracked soil.",
+      "file": "pl-img-water-comparison.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Too little water can make a plant wilt. Check the soil and other conditions before deciding why a real plant is drooping."
+    },
+    {
+      "id": "pl-img-plant-parts",
+      "kind": "panel",
+      "title": "Roots, stem, and leaves",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A complete small bean plant shown in a soil cutaway, its pale branching roots, upright stem and several healthy leaves all clearly separated. Pale background, no flowers, fruit or arrows.",
+      "alt": "A soil cutaway reveals the roots beneath a plant's upright stem and broad green leaves.",
+      "file": "pl-img-plant-parts.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Roots anchor the plant and absorb water and nutrients. The stem supports the leaves and carries materials between plant parts."
+    },
+    {
+      "id": "pl-img-leaf-light",
+      "kind": "panel",
+      "title": "Leaves capture light",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Close-up of sunlight falling across healthy green leaves on an attached branch. Fine leaf veins and natural textures visible; no glowing sugar cubes or food entering the plant.",
+      "alt": "Sunlight shines through attached green leaves, revealing branching veins.",
+      "file": "pl-img-leaf-light.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Green leaves capture light energy to make sugars from water and carbon dioxide."
+    },
+    {
+      "id": "pl-img-space",
+      "kind": "panel",
+      "title": "Room to grow",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A raised garden bed with several young plants spaced apart, each surrounded by open soil and room for leaves. No ruler or measurement scale, no claim that all species need identical spacing.",
+      "alt": "Several different young garden plants grow with gaps between them in a raised wooden bed.",
+      "file": "pl-img-space.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Growing plants need room for roots and leaves. Appropriate spacing depends on the kind of plant and its mature size."
+    },
+    {
+      "id": "pl-img-nutrients",
+      "kind": "panel",
+      "title": "Water and dissolved nutrients",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A realistic educational soil cutaway around healthy branching plant roots, showing tiny water films among mineral grains. No piles of food, glowing nutrient orbs or fertilizer labels. Natural soil and fine roots are the focus.",
+      "alt": "Branching roots pass among mineral grains and soil clumps coated with blue water films.",
+      "file": "pl-img-nutrients.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Roots absorb mineral nutrients dissolved in water, not whole stones or lumps of soil. Blue water and enlarged soil details are model aids."
+    },
+    {
+      "id": "pl-img-seedling-care",
+      "kind": "panel",
+      "title": "Observing a seedling",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A child with an adult gently checking a small potted seedling beside a window, looking at leaves and soil without pulling the plant out. Plain clothing, no writing or logos; safe everyday gardening.",
+      "alt": "A child and an adult examine a small potted plant beside a watering can and trowel.",
+      "file": "pl-img-seedling-care.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Observe gently, check soil moisture, and record changes over time. A plant's appearance is evidence to investigate, not a complete diagnosis."
+    },
+    {
+      "id": "pl-img-leaf-gases",
+      "kind": "panel",
+      "title": "Invisible gases move",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A single enlarged green leaf attached to a plant, with one blue arrow toward the leaf and one orange arrow away from it, separated clearly. No letters, gas bubbles or visible mist. Conceptual directions only; the app will provide the gas names.",
+      "alt": "A blue arrow points toward an attached green leaf, and an orange arrow points away from it.",
+      "file": "pl-img-leaf-gases.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "For photosynthesis, carbon dioxide enters and oxygen is released. The colored arrows symbolize invisible gases; plants also use oxygen for respiration during day and night."
+    },
+    {
+      "id": "pl-img-seed-dispersal",
+      "kind": "panel",
+      "title": "A plant's life continues",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A mature bean plant bearing several green pods alongside one opened dry pod exposing bean seeds. Realistic pod and leaf shapes, no flowers turning directly into unrelated fruit, pale background.",
+      "alt": "A bean plant bears green pods and an open dry pod containing pale seeds.",
+      "file": "pl-img-seed-dispersal.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Beans form seeds inside pods. With suitable conditions, a viable seed can begin another plant's life cycle."
+    },
+    {
+      "id": "pl-img-compare-fairly",
+      "kind": "panel",
+      "title": "A fair comparison",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two identical pots with similar young bean plants on the same windowsill, with one small plain watering can nearby. Same pot size, soil level and light. No labels, marks, arrows or claim about experimental results.",
+      "alt": "Two similar plants in matching pots stand on the same bright windowsill beside a watering can.",
+      "file": "pl-img-compare-fairly.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "For a fair comparison, use similar plants and keep pot size, soil, light, and temperature alike. Change only the condition you are investigating and record observations."
+    }
+  ],
+  "review": {
+    "date": "2026-09-07",
+    "reviewer": "AI visual and content review",
+    "educatorReview": "pending",
+    "textPolicy": "No text embedded in artwork; native editable labels and captions",
+    "rejectedRevision": null
+  }
+}

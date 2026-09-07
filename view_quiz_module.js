@@ -6466,7 +6466,7 @@ function QuizView(props) {
       try {
         var node = document.getElementById('assessment-question-' + next);
         if (node && typeof node.scrollIntoView === 'function') node.scrollIntoView({
-          behavior: 'smooth',
+          behavior: document.querySelector('.reduce-motion') || window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth',
           block: 'start'
         });
       } catch (e) {}
@@ -8523,7 +8523,7 @@ function QuizView(props) {
     className: "fill-current"
   }) : /*#__PURE__*/React.createElement(CheckSquare, {
     size: 14
-  }), showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : isParentMode ? 'Hide Scores' : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : isParentMode ? 'View Scores' : t('quiz.show_key'))))), isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && /*#__PURE__*/React.createElement(ErrorBoundary, {
+  }), showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : isParentMode ? 'Hide Scores' : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : isParentMode ? 'View Scores' : t('quiz.show_key'))))), isTeacherMode && activeSessionCode && (sessionData?.escapeRoomState?.isActive || sessionData?.escapeRoomState?.isGameOver) && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Escape room controls encountered an error. Refreshing..."
   }, /*#__PURE__*/React.createElement(EscapeRoomTeacherControls, {
     sessionData: sessionData,

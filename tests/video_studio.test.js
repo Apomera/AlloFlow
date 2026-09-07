@@ -91,7 +91,8 @@ it('makes local captioning and filler scans cancelable and stale-safe', () => {
     expect(html).toContain("var EDITOR_FOCUS_DEFAULT = 'basics';");
     expect(html).toContain("basics: ['takes', 'timeline', 'trim', 'captions'],");
     expect(html).toContain('setEditorFocusMode(EDITOR_FOCUS_DEFAULT, false);');
-    expect(html).not.toContain("setEditorFocusMode('all', false);");
+    // Tool navigation may reveal All tools; the initial mode must still be Basics.
+    expect(html).not.toContain("var EDITOR_FOCUS_DEFAULT = 'all';");
   });
 
   it('keeps every richer focus mode reachable, and workflow templates still open them', () => {

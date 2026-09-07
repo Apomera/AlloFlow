@@ -1,0 +1,290 @@
+{
+  "results": [
+    {
+      "name": "Reader-settings",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-line-focus",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "FocusReaderOverlay",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "KaraokeReaderOverlay",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerspectiveCrawlOverlay",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "Focus-long-word",
+      "metrics": {
+        "width": 1280,
+        "bodyWidth": 1280,
+        "dialogs": [
+          {
+            "width": 1280,
+            "scrollWidth": 1280,
+            "height": 900,
+            "scrollHeight": 900
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-settings",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-line-focus",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "FocusReaderOverlay",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "KaraokeReaderOverlay",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerspectiveCrawlOverlay",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Focus-long-word",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-settings",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-line-focus",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "FocusReaderOverlay",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "KaraokeReaderOverlay",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "PerspectiveCrawlOverlay",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Focus-long-word",
+      "metrics": {
+        "width": 320,
+        "bodyWidth": 320,
+        "dialogs": [
+          {
+            "width": 320,
+            "scrollWidth": 320,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader-high-contrast",
+      "metrics": {
+        "width": 390,
+        "bodyWidth": 390,
+        "dialogs": [
+          {
+            "width": 390,
+            "scrollWidth": 390,
+            "height": 844,
+            "scrollHeight": 844
+          }
+        ]
+      }
+    }
+  ],
+  "errors": []
+}

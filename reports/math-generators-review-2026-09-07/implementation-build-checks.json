@@ -1,0 +1,57 @@
+{
+  "checkedAt": "2026-09-07T05:57:09.553Z",
+  "modules": [
+    {
+      "name": "generation_helpers_module.js",
+      "syntax": "pass",
+      "publicMirror": "identical",
+      "sha256": "298c299ecbd43b18c81b4f7e7a8e2b5e035506586a2d791b99105f9ba38090e2"
+    },
+    {
+      "name": "math_helpers_module.js",
+      "syntax": "pass",
+      "publicMirror": "identical",
+      "sha256": "876f9d9cb9076cc1312e798cc7a06b790705af0931993d7b2248e9975fb56add"
+    },
+    {
+      "name": "view_math_module.js",
+      "syntax": "pass",
+      "publicMirror": "identical",
+      "sha256": "411726797dfb9209585b73e4afe05280bfb9f3a6795c82baf7ff80eb22be9a05"
+    },
+    {
+      "name": "math_fluency_module.js",
+      "syntax": "pass",
+      "publicMirror": "identical",
+      "sha256": "ad33d21f254551929c40c7d6e8ed67f386f1ee02fa607b27b9cf45b700f01803"
+    },
+    {
+      "name": "math_create_module.js",
+      "syntax": "pass",
+      "publicMirror": "identical",
+      "sha256": "e2fdcf1d12f4bb1c6c6e442c230788faca323b68d1789d3605368fe317d27d57"
+    }
+  ],
+  "hosts": [
+    {
+      "path": "AlloFlowANTI.txt",
+      "jsxParse": "pass"
+    },
+    {
+      "path": "desktop/web-app/src/AlloFlowANTI.txt",
+      "jsxParse": "pass"
+    },
+    {
+      "path": "desktop/web-app/src/App.jsx",
+      "jsxParse": "pass"
+    }
+  ],
+  "draft": {
+    "sha256": "b72c207eb874908a4264d7b03f4721c3ebcead2d72a1e1605539626958e9fdb2",
+    "deterministic": true,
+    "forms": 120,
+    "answers": 3000,
+    "blueprintVersion": 2,
+    "published": false
+  }
+}

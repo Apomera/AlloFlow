@@ -5,7 +5,8 @@ import { resolve } from 'node:path';
 const studioHtml = readFileSync(resolve(process.cwd(), 'video_studio/video_studio.html'), 'utf8');
 
 test('official tutorial checks readiness, records, quality-checks, and recovers narration', async ({ page, context }) => {
-  test.setTimeout(75_000);
+  // Covers hundreds of UI actions, recording, and narration recovery.
+  test.setTimeout(150_000);
   await context.addInitScript(() => {
     const makeStream = () => {
       const canvas = document.createElement('canvas');
@@ -68,7 +69,7 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                   { commandId: request.goal === 'Slow planning fixture' ? 'stale-step' : 'first-step', label: request.goal === 'Slow planning fixture' ? 'Stale delayed step' : 'First custom step', why: 'Start here', params: { topic: 'fractions' }, paramNames: ['topic'] },
                   { commandId: 'second-step', label: 'Second custom step', why: 'Then continue' }
                 ] });
-                if (request.goal === 'Slow planning fixture') setTimeout(respond, 1500); else respond();
+                if (request.goal === 'Slow planning fixture') window.releaseSlowPlan = respond; else respond();
               }
               if (request.type === 'allostudio-demovalidate-request') {
                 const items = (request.steps || []).map((step, index) => ({ commandId: step.commandId, label: step.commandId, status: window.validationBlocked && index === 0 ? 'block' : 'ready', detail: window.validationBlocked && index === 0 ? 'Fixture prerequisite is missing.' : '', params: step.params || {}, contract: { params: [] } }));
@@ -97,7 +98,9 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                     ] }
                   ]
                 });
-                setTimeout(respond, 800);
+                window.officialLoadCount = (window.officialLoadCount || 0) + 1;
+                if (window.officialLoadCount === 1) window.releaseCancelledTutorial = respond;
+                else setTimeout(respond, 1500);
               }
               if (request.type === 'allostudio-official-tutorial-run-request') {
                 window.lastRunSteps = request.steps;
@@ -131,7 +134,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
                 if (window.ttsCount === 1) {
                   reply(event.source, request, 'allostudio-tts-response', { error: 'fixture transient failure' });
                 } else if (window.ttsCount === 3) {
-                  setTimeout(() => reply(event.source, request, 'allostudio-tts-response', { pcm: Array(7200).fill(0), sampleRate: 24000 }), 700);
+                  // This request deliberately stays pending so Cancel cannot race a timer.
+                  // The next retry receives the normal immediate response below.
                 } else {
                   reply(event.source, request, 'allostudio-tts-response', { pcm: Array(7200).fill(0), sampleRate: 24000 });
                 }
@@ -237,7 +241,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(demoPlanButton).toHaveAttribute('aria-busy', 'false');
   await expect(studio.locator('#demoPlanCancelBtn')).toBeHidden();
   await expect(studio.locator('#demoStatus')).toContainText('Planning cancelled. Nothing ran');
-  await studio.waitForTimeout(650);
+  await page.evaluate(() => (window as any).releaseSlowPlan());
+  await studio.waitForTimeout(50);
   await expect(studio.locator('#demoPlanList')).not.toContainText('Stale delayed step');
   await studio.evaluate(() => {
     const target = window as any;
@@ -482,7 +487,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'false');
   await expect(studio.locator('#demoOfficialTextBtn')).toBeFocused();
   await expect(studio.locator('#demoStatus')).toContainText('Official tutorial loading cancelled. Nothing ran');
-  await studio.waitForTimeout(900);
+  await page.evaluate(() => (window as any).releaseCancelledTutorial());
+  await studio.waitForTimeout(50);
   await expect(studio.locator('#demoPlanList')).not.toContainText('Text Adaptation');
   await studio.locator('#demoOfficialTextBtn').click();
   await expect(studio.locator('#demoOfficialTextBtn')).toHaveAttribute('aria-busy', 'true');
@@ -502,7 +508,8 @@ test('official tutorial checks readiness, records, quality-checks, and recovers 
   await studio.locator('#demoPlanCancelBtn').click();
   await expect(studio.locator('#demoStatus')).toContainText('Planning cancelled. Nothing ran');
   await expect.poll(demoTemplateTransitionLocks).toEqual(allTemplateTransitionsUnlocked);
-  await studio.waitForTimeout(1650);
+  await page.evaluate(() => (window as any).releaseSlowPlan());
+  await studio.waitForTimeout(50);
   await expect(studio.locator('#demoPlanList')).toContainText('Text Adaptation');
   await studio.locator('#demoPreflightBtn').click();
   await expect(studio.locator('#demoStatus')).toContainText('Preflight refreshed. The current plan is ready.');

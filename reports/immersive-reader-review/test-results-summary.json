@@ -1,0 +1,17 @@
+{
+  "passed": 218,
+  "failed": 2,
+  "total": 220,
+  "failures": [
+    {
+      "file": "read_aloud_artifact_host_integration.test.js",
+      "title": "read-aloud artifact host integration loads the contract, shared audio preparer, and private Persona runtime in both hosts",
+      "message": "AssertionError: expected '// @mode react\\n// Canvas source for …' to match /loadModule\\('[A-Za-z]+Module', 'http…/\\"
+    },
+    {
+      "file": "tts_karaoke_handoff_regressions.test.js",
+      "title": "general Leveled Text stalled-preload promotion (2026-08-03) stops playback instead of skipping when synthesis yields no audio and browser fallback is off",
+      "message": "AssertionError: expected \"vi.fn()\" to be called with arguments: [ 'tts-unavailable', 'leveled-es', 17 ]"
+    }
+  ]
+}

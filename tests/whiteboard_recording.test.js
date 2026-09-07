@@ -132,10 +132,15 @@ describe('whiteboard AI drawing recorder', () => {
   // a REAL origin is an upgrade; learning 'null' was a downgrade to muteness.
   it('learns the opener origin from the ack only when it is a real one', () => {
     const source = html();
-    expect(source).toContain("if (d.type === 'allocwb-ack') { if (ev.origin && ev.origin !== 'null') openerOrigin = ev.origin; return; }");
+    // 2026-09-06: the ack now goes through an origin allowlist (see
+    // whiteboard_bridge_review.test.js), and the property this test always
+    // guarded is kept in a new shape: an opaque 'null' opener is accepted, but
+    // 'null' is never used as a postMessage targetOrigin, because that made
+    // every later post throw into its own catch and the bridge go mute.
+    expect(source).toContain("if (d.type === 'allocwb-ack') {\n        if (!isTrustedOpenerOrigin(ev.origin)) return;");
     expect(source).not.toContain("if (d.type === 'allocwb-ack') { openerOrigin = ev.origin; return; }");
-    // The '*' fallback stays: outbound here is the user's own drawing, and the
-    // file argues that case explicitly where openerOrigin is declared.
-    expect(source).toContain("openerOrigin || '*'");
+    expect(source).toContain("var target = (linked && openerOrigin && openerOrigin !== 'null') ? openerOrigin : '*';");
+    // and the allowlist itself admits the opaque opener rather than muting it
+    expect(source).toContain("if (o === 'null') return true;");
   });
 });

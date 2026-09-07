@@ -948,8 +948,8 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
       'footing: new THREE.MeshStandardMaterial', 'cap:     new THREE.MeshStandardMaterial',
-      'columns, concrete footings, and cross caps', 'const foot = new THREE.InstancedMesh',
-      'const cap = new THREE.InstancedMesh', 'for(const mesh of [sup, foot, cap])',
+      'Structural dressing: grounded columns, flared braces, pads and anchor hardware.', 'const foot = new THREE.InstancedMesh',
+      'const cap = new THREE.InstancedMesh', 'for(const [mesh, count, name, detail] of',
       'const stationEdgeMat = new THREE.MeshBasicMaterial', 'illuminated platform edges and a compact entrance arch',
       'const stationSignalMats = {', 'three-aspect dispatch signal at the station exit',
       'function updateStationVisuals(now){', "phase < 1.3 ? 'amber' : 'green'", 'updateStationVisuals(now);',
@@ -983,7 +983,7 @@ describe('coaster lab — build-your-own discovery and visual feedback', () => {
     const src = readFileSync(resolve(process.cwd(), p), 'utf8');
     for (const marker of [
       'id="clab-btnUndo"', 'id="clab-btnRedo"', 'function syncHistoryButtons(){',
-      'const previewGroup = new THREE.Group()', 'function showElementPreview(kind){', "b.addEventListener('focus'",
+      'const previewGroup = new THREE.Group()', 'function showElementPreview(kind, pinned = false){', "b.addEventListener('focus'",
       'id="clab-designChallenge"', 'Build a smooth 20 m hill', 'Create 3 seconds of airtime',
       'Finish below 4.0 vertical g', 'function updateDesignChallenge(tele = lastTele){', 'sim.tele.designKey = JSON.stringify(design.points)',
     ]) expect(src).toContain(marker);
@@ -2227,10 +2227,10 @@ it.each(TOOL_PATHS)('%s: track depth, direction, and section landmarks remain th
   for (const marker of [
     'courseArrow: new THREE.MeshBasicMaterial',
     'const sectionBeaconMat = new THREE.MeshBasicMaterial',
-    'new THREE.CylinderGeometry(0.06, 0.07, 1, 6)',
-    'if(attachY > 4){',
+    'new THREE.CylinderGeometry(0.10, 0.14, 1, 8)',
+    'if(attach.y > 6 && horizontal > 0.001){',
     'braceQuat.setFromUnitVectors(supportYAxis, braceDir.normalize())',
-    'supportGroup.add(brace);',
+    'supportGroup.add(mesh);',
     'new THREE.ConeGeometry(0.18, 0.58, 3).rotateX(Math.PI / 2)',
     'm4.makeBasis(t.side[i], t.up[i], t.T[i])',
     'courseArrows.count = arrowUsed;',
@@ -2269,7 +2269,7 @@ it.each(TOOL_PATHS)('%s: lift and brake zones carry distinct functional track dr
     'brakeFin: new THREE.MeshStandardMaterial',
     'brakeLight: new THREE.MeshBasicMaterial',
     'const catwalkIdx = [], railPts = [];',
-    'new THREE.BoxGeometry(0.72, 0.08, 0.55)',
+    'const deck = new THREE.Mesh(coasterWalkwayGeometry(',
     'new THREE.BoxGeometry(0.07, 0.9, 0.07)',
     'new THREE.TubeGeometry(railCurve, railPts.length * 2, 0.055, 6, false)',
     'const brakeStartS = Math.max(0, t.L - brakeLen());',
@@ -2474,9 +2474,9 @@ it.each(TOOL_PATHS)('%s: train wheels show theme-aware physical rotation with re
   for (const marker of [
     'const trainWheelMarkers = [];',
     'const trainWheelHubMat = new THREE.MeshStandardMaterial',
-    'const wheelHubGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.15, 10)',
+    'const wheelHubGeo = new THREE.CylinderGeometry(0.07, 0.07, 0.15, 16)',
     'const wheelMarkerGeo = new THREE.BoxGeometry(0.025, 0.24, 0.035);',
-    'w.add(hub, marker); trainWheelMarkers.push(marker);',
+    'w.add(hub, marker, rim); trainWheelMarkers.push(marker);',
     'trainWheelHubMat.color.setHex(cfg.rail); trainWheelHubMat.emissive.setHex(cfg.railGlow);',
     'const animateWheels = !reducedMotion();',
     'const carArc = sim.S - Math.floor(i / 4) * CAR_GAP;',

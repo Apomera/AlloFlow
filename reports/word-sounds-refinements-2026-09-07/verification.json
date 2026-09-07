@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-07",
+  "files": 54,
+  "uniqueTestsVerified": 586,
+  "passed": 586,
+  "failed": 0,
+  "verificationMethod": "Full suite: 584/586 passed. The only two failures were byte-order differences in shared UI-string mirrors. Values were confirmed identical before syncing canonical key order; both affected files were rerun successfully. No application logic changed after the full run.",
+  "targetedRerunTests": 44,
+  "newRefinementTests": 40,
+  "browserTestsPassed": 1,
+  "browserMedia": "mocked",
+  "publicMirrors": "byte-identical",
+  "moduleSha256": {
+    "word_sounds_module.js": "6c7856d57e4ef80d6cb22f0a0d2844906b96d84b42e207afe50ab70700f1f7c6",
+    "word_sounds_setup_module.js": "57a933ef69541af6c96d406cba8f3ad095e5f1421f2e0031eb7d89e961589feb",
+    "allo_data_module.js": "f2fe15de1552584357bb30125e13001b92f198b2bb9a0b55d91cc51e614bcfde",
+    "misc_components_module.js": "3405eb4246af0acec1c18099bed3b02cb04ed497083e1ae78fc79ab7a1027703",
+    "ui_strings.js": "541ad78cceadfb0a8f407a1893aad5417bc1591be82b0f5b58271fa09b2e5142"
+  },
+  "deployed": false
+}

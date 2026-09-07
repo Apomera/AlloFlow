@@ -259,7 +259,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('var targetHeight = (showTarget && mission && mission.d >= 3 ? mission.H : THIN) * presentationScale');
     expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
     expect(source).toContain('lift: Math.max(1.4, Math.max(currentHeight, targetHeight) + clearance)');
-    expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
+    expect(source).toContain('positionMeasurePanel(lastMissionState, activeLesson())');
   });
   it('restores only validated local session state', () => {
     expect(source).toContain("var STORAGE_KEY = 'alloflow_stretch_lab_v1'");
@@ -291,7 +291,7 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('clears persisted and in-memory session state without creating an undo entry', () => {
     expect(source).toContain('freshStart: function ()');
     expect(source).toContain('this.nudgeTimer = null; this.nudgeStart = null; this.resizeStart = null; this.history = []');
-    expect(source).toContain("missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null");
+    expect(source).toContain("missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explore'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; workspaceMode = 'free'; backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = false; presentation = normalizePresentation(); LAUNCH_STATE = null; SAVED_STATE = null");
     expect(source).toContain('localStorage.removeItem(STORAGE_KEY)');
     expect(source).toContain('if (suppressNextSave) { suppressNextSave = false; return; }');
     expect(source).toContain("this.apply(false, 'Started over with a fresh point and first mission.')");
@@ -336,7 +336,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('return 0.98 + boundaryLines * 0.22 + (comparing ? 0.32 : 0)');
     expect(source).toContain("labelBack.setAttribute('height', r1(cardHeight))");
     expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
-    expect(source).toContain("showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null");
+    expect(source).toContain("showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explore'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; workspaceMode = 'free'; backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = false; presentation = normalizePresentation(); LAUNCH_STATE = null; SAVED_STATE = null");
   });
   it('tracks current and completed guided missions accessibly', () => {
     expect(source).toContain('id="missionSteps" role="list" aria-label="Mission progress"');
@@ -350,7 +350,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('Math.max(0, Math.min(saved.completedMask, 15))');
     expect(source).toContain('completedMask: completedMask');
     expect(source).toContain('completedMask |= (1 << missionIndex)');
-    expect(source).toContain("completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null");
+    expect(source).toContain("completedMask = 0; viewScaleIndex = 1; focusMode = 'explore'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; workspaceMode = 'free'; backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = false; presentation = normalizePresentation(); LAUNCH_STATE = null; SAVED_STATE = null");
     expect(source).toContain('for (var i = 0; i < MISSIONS.length; i++) if (completedMask & (1 << i)) count++');
   });
 
@@ -450,7 +450,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('Immersive mode entered. Aim at a handle, hold trigger or grip, and pull continuously.');
     expect(source).toContain('Immersive mode exited. Desktop controls restored.');
     expect(source).toContain("if (labelWrap) labelWrap.setAttribute('visible', false)");
-    expect(source).toContain("if (labelWrap) labelWrap.setAttribute('visible', true)");
+    expect(source).toContain("if (labelWrap) labelWrap.setAttribute('visible', showMeasureCard)");
   });
 
   it('scopes spatial control semantics to immersive mode', () => {
@@ -465,7 +465,7 @@ describe('Immersive Geometry stretch mechanics', () => {
   it('restores a usable desktop focus target after leaving immersive mode', () => {
     expect(source).toContain('if (hud.contains(document.activeElement)) lastHudFocus = document.activeElement');
     expect(source).toContain('if (document.activeElement && document.activeElement.blur) document.activeElement.blur()');
-    expect(source).toContain('var restore = lastHudFocus && !lastHudFocus.disabled ? lastHudFocus : missionHint');
+    expect(source).toContain('var restore = lastHudFocus && !lastHudFocus.disabled && lastHudFocus.getClientRects().length ? lastHudFocus : hudToggle');
     expect(source).toContain('if (restore && restore.focus) restore.focus()');
   });
   it('keeps spatial controls visually and semantically in sync with geometry state', () => {
@@ -490,7 +490,7 @@ describe('Immersive Geometry stretch mechanics', () => {
   });
   it('snaps directional nudges that would cross the active mission target', () => {
     expect(source).toContain('this.activeMission = mission');
-    expect(source).toContain('var current = this[key], rawNext = current + sign * STEP');
+    expect(source).toContain('var current = this[key], rawNext = current + sign * normalizeResizeStep(this.resizeStep)');
     expect(source).toContain('this.activeMission && this.axis < this.activeMission.d');
     expect(source).toContain('sign > 0 && current < target && rawNext > target');
     expect(source).toContain('sign < 0 && current > target && rawNext < target');
@@ -555,8 +555,8 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('view.y = 0');
     expect(source).toContain('if (view.lengthSq() < 0.0001) view.set(0, 0, -1); else view.normalize()');
     expect(source).toContain('eye.x + view.x * panelDistance');
-    expect(source).toContain('Math.max(0.85, eye.y - 0.3)');
-    expect(source).toContain('spatialPanel.object3D.scale.setScalar(0.88)');
+    expect(source).toContain('Math.max(0.2, eye.y + presentation.panelHeight)');
+    expect(source).toContain('spatialPanel.object3D.scale.setScalar(presentation.panelSize)');
     expect(source).toContain('Math.atan2(-view.x, -view.z)');
   });
 
@@ -578,7 +578,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('var y = workspacePose.baseY + panel.lift');
     expect(source).toContain('workspacePose.centerX == null ? workspacePose.x : workspacePose.centerX');
     expect(source).toContain('labelWrap.object3D.rotation.set(0, workspacePose.yaw, 0)');
-    expect(source).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
+    expect(source).toContain('positionMeasurePanel(lastMissionState, activeLesson())');
   });
   it('compares mission length, area, and volume from raw dimensions', () => {
     expect(source).toContain('function metricValue(d, dimensions)');
@@ -624,7 +624,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('var clearance = cardHeight / 2 + 0.32');
     const toggle = source.match(/function toggleBoundaryMeasures\(value, announce\) \{[\s\S]*?\n  \}/);
     expect(toggle).not.toBeNull();
-    expect(toggle[0]).toContain('positionMeasurePanel(lastMissionState, MISSIONS[missionIndex])');
+    expect(toggle[0]).toContain('positionMeasurePanel(lastMissionState, activeLesson())');
   });
   it('isolates lab shortcuts from scene locomotion', () => {
     expect(source).toContain('wasd-controls="enabled: false"');
@@ -770,8 +770,8 @@ describe('Immersive Geometry stretch mechanics', () => {
 
   it('keeps desktop solids centered at a stable oblique viewing distance', () => {
     expect(source).toContain('function positionDesktopWorkspace(s, viewDir)');
-    expect(source).toContain('var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -18 }');
-    expect(source).toContain('THREE.MathUtils.degToRad(FLAT_DESKTOP_POSE.yawDeg)');
+    expect(source).toContain('var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -42 }');
+    expect(source).toContain("THREE.MathUtils.degToRad(presentation.viewAngle === 'front' ? 0 : presentation.viewAngle === 'side' ? -90 : FLAT_DESKTOP_POSE.yawDeg)");
     expect(source).toContain('workspacePose.x = centerX - offsetX; workspacePose.z = centerZ - offsetZ');
     expect(source).toContain('else positionDesktopWorkspace(lastMissionState)');
     expect(source).toContain('else positionDesktopWorkspace(s)');
@@ -783,8 +783,8 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('function flatFramingMetrics()');
     expect(source).toContain('var tanV = Math.tan(THREE.MathUtils.degToRad(fov) / 2), tanH = tanV * (w / h)');
     expect(source).toContain('if (rect.height > 0 && rect.width > w * 0.6 && rect.top > h * 0.4)');
-    expect(source).toContain('var distance = Math.max(forward, halfWidth / (m.tanH * fill) + depth / 2, contentHeight / (m.tanV * band * fill))');
-    expect(source).toContain('var midNdc = (1 + m.bottomNdc) / 2');
+    expect(source).toContain('var distance = Math.max(forward, halfWidth / (m.tanH * fill) + halfDepth, contentHeight / (m.tanV * band * fill) + halfDepth');
+    expect(source).toContain('var midNdc = (m.topNdc + m.bottomNdc) / 2');
     expect(source).toContain('contentMid = Math.min(contentMid, m.eyeY + forward * Math.tan(THREE.MathUtils.degToRad(20)))');
     expect(source).toContain("window.addEventListener('resize', scheduleFlatReframe)");
     expect(source).toContain("window.addEventListener('orientationchange', scheduleFlatReframe)");
@@ -923,7 +923,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('function updateFocusModeHelp()');
     expect(source).toContain('renderMeasureLabels(lastMissionState);');
     expect(source).toContain("var comparing = focusMode !== 'explore' && !!(component && component.comparisonState);" );
-    expect(source).toContain("this.focusMode !== 'compare'");
+    expect(source).toContain("var visible = this.d >= 2 && this.focusMode === 'explain'");
     expect(source).toContain("this.focusMode === 'explain'");
     expect(source).toContain("this.focusMode !== 'explore'");
     expect(source).toContain('function rState(n) { return Math.round(n * 100) / 100; }');
@@ -979,7 +979,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('<div id="guideStatus" class="sr-only" role="status" aria-live="polite"></div>');
     expect(source).toContain("guideStatus = document.getElementById('guideStatus')");
     expect(source).toContain("var priorStep = guideStatus ? guideStatus.getAttribute('data-step') : null;");
-    expect(source).toContain("if (guideStatus && priorStep !== String(d))");
+    expect(source).toContain("if (workspaceMode === 'lesson' && guideStatus && priorStep !== String(d))");
     expect(source).toContain("guideStatus.setAttribute('data-step', String(d))");
     expect(source).toContain("guideStatus.textContent = 'Guided exploration step ' + (d + 1)");
   });
@@ -1045,7 +1045,7 @@ describe('Immersive Geometry stretch mechanics', () => {
     expect(source).toContain('this.showcaseTimer = setTimeout(advance, this.reduceMotion ? 1200 : 1450);');
     expect(source).toContain('stopShowcase: function (announce, message)');
     expect(source).toContain("this.showcaseHalo = document.createElement('a-ring')");
-    expect(source).toContain("this.showcaseBadge = document.createElement('a-text')");
+    expect(source).toContain("this.showcaseBadge = createLabText()");
     expect(source).toContain("this.el.emit('showcasestep'");
     expect(source).toContain("this.el.emit('showcasestop'");
     expect(source).toContain('stateComponent.showcaseActive');

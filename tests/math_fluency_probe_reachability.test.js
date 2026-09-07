@@ -156,8 +156,8 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     expect(fluency).toContain('delete window.__alloFluencyPendingConfig;');
     expect(fluency).toContain('> 120000) return;'); // stale-slot rejection
     expect(fluency).toContain('var options = [20, 40, 60, 80, 120, 150];'); // snap to real options
-    expect(fluency).toContain("window.addEventListener('alloflow:fluency-pending-config', consumePending);");
-    expect(fluency).toContain("window.removeEventListener('alloflow:fluency-pending-config', consumePending);");
+    expect(fluency).toContain("window.addEventListener('alloflow:fluency-pending-config', receive);");
+    expect(fluency).toContain("window.removeEventListener('alloflow:fluency-pending-config', receive);");
     // and the snap logic actually snaps
     const snap = (wanted) => [20, 40, 60, 80, 120, 150].reduce((best, opt) => Math.abs(opt - wanted) < Math.abs(best - wanted) ? opt : best, 20);
     expect(snap(25)).toBe(20);
@@ -181,8 +181,9 @@ describe('the state of play, pinned so it is not re-argued from memory', () => {
     expect(fn).toContain('setExpandedTools');
   });
 
-  it('MathFluencyPanel is self-contained, so it needs six props, not the host state', () => {
-    const panel = fluency.slice(fluency.indexOf('function MathFluencyPanel(props) {'), fluency.indexOf('function MathFluencyPanel(props) {') + 1200);
+  it('the keyed session consumes host services while the panel owns learner identity', () => {
+    const panel = fluency.slice(fluency.indexOf('function MathFluencySession(props) {'), fluency.indexOf('function MathFluencySession(props) {') + 2200);
+    expect(fluency).toContain('h(MathFluencySession, Object.assign({}, props, { key:');
     ['gradeLevel', 't', 'addToast', 'onProbeComplete', 'storageDB', 'handleScoreUpdate']
       .forEach((prop) => expect(panel).toContain('props.' + prop));
     expect(panel).not.toContain('props.mathFluencyProblems');

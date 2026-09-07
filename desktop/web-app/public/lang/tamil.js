@@ -4909,10 +4909,10 @@
     "locked": "பூட்டியது",
     "escaped": "நீங்கள் Escaped!",
     "escaped_desc": "நீங்கள் solved எல்லாம் புதிர் மற்றும் escaped room!",
-    "time_up": "? நேரம் முடிந்தது!",
+    "time_up": "⏰ நேரம் முடிந்தது!",
     "reveal_hint": "Reveal குறிப்பு",
-    "puzzles_remaining": "{{count}} புதிர் remaining",
-    "time_remaining": "நேரம்: {{time}}",
+    "puzzles_remaining": "{count} புதிர் remaining",
+    "time_remaining": "நேரம்: {time}",
     "progress": "முன்னேற்றம்",
     "start": "தொடங்கு Escape Room",
     "start_hint": "தொடங்கு timer க்கு begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room முடி!",
     "loading_error": "Could இல்லை ஏற்று room தரவு",
     "no_puzzle": "இல்லை புதிர் found க்கு இது object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "சரியான தப்பித்தல்! +{{xp}} போனஸ் XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "சரியான தப்பித்தல்! +{xp} போனஸ் XP",
     "puzzle_mcq": "பல தேர்வு",
     "puzzle_sequence": "Put இல் Order",
     "puzzle_cipher": "Decode செய்தி",
@@ -4982,17 +4982,17 @@
     "clue": "துப்பு",
     "clue_found": "துப்பு கண்டுபிடிக்கப்பட்டது!",
     "clue_revealed": "இது clue may உதவி உடன் another புதிர்...",
-    "clues_collected": "துப்புகள்: {{count}}/{{total}}",
+    "clues_collected": "துப்புகள்: {count}/{total}",
     "use_clue": "பயன்படுத்து Clue",
-    "final_door": "The Exit Door",
+    "final_door": "வெளியேறும் கதவு",
     "final_door_ready": "exit door ஆகும் இப்போது unlocked!",
     "final_door_locked": "தீர் மேலும் புதிர் க்கு unlock",
     "final_door_title": "Final சவால்",
     "final_door_desc": "பயன்படுத்து everything you've learned க்கு பதில் இது synthesis கேள்வி.",
     "final_puzzle": "Using என்ன you've learned, பதில் இது:",
     "final_answer_placeholder": "Type உங்கள் பதில் here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "வெளியேறும் கதவை அணுகவும்",
+    "unlock_door": "கதவின் பூட்டைத் திறக்கவும்",
     "victory_perfect": "Perfect Escape! இல்லை wrong பதில்! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "குறிப்பு",
@@ -5008,12 +5008,12 @@
     "left": "மீதம்",
     "wrong_attempts": "தவறான முயற்சிகள்",
     "time_penalty": "-{seconds} விநாடிகள்!",
-    "game_over_time": "? Time's Up! நீங்கள் ran out இன் time.",
+    "game_over_time": "⏰ Time's Up! நீங்கள் ran out இன் time.",
     "streak": "தொடர்",
     "streak_bonus": "தொடர்ச்சி போனஸ்! x{multiplier}",
     "streak_lost": "தொடர்ச்சி இழக்கப்பட்டது!",
     "one_minute_warning": "ஒரு நிமிடம் மட்டுமே மீதம்!",
-    "thirty_seconds_warning": "? 30 விநாடிகள் மட்டுமே மீதம்!",
+    "thirty_seconds_warning": "⏰ 30 விநாடிகள் மட்டுமே மீதம்!",
     "timer_paused": "டைமர் இடைநிறுத்தப்பட்டது",
     "timer_resume": "தொடர்",
     "settings_btn": "Room அமைப்புகள்",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "தொடங்கு multiplayer தப்பிக்கும் அறை உடன் உங்கள் வகுப்பு",
     "team_mode": "Team சவால்",
     "team_race": "Race க்கு Escape!",
-    "team_progress": "{{team}} முன்னேற்றம்: {{solved}}/{{total}}",
+    "team_progress": "{team} முன்னேற்றம்: {solved}/{total}",
     "waiting_host": "Waiting க்கு ஆசிரியர் க்கு தொடங்கு...",
-    "team_escaped": "{{team}} அணி தப்பித்தது!",
+    "team_escaped": "{team} அணி தப்பித்தது!",
     "all_teams_done": "எல்லாம் Teams Finished!",
     "your_team": "உங்கள் Team",
     "team_red": "சிவப்பு அணி",
@@ -5036,7 +5036,7 @@
     "team_green": "பச்சை அணி",
     "team_yellow": "மஞ்சள் அணி",
     "team_all": "எல்லாம் மாணவர்",
-    "teams_competing": "{{count}} அணி competing",
+    "teams_competing": "{count} அணி competing",
     "first_escape": "முதல் க்கு Escape!",
     "end_game": "End விளையாட்டு",
     "end_game_confirm": "End தப்பிக்கும் அறை க்கு எல்லாம் மாணவர்?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume விளையாட்டு",
     "game_paused_by_teacher": "விளையாட்டு paused by ஆசிரியர்",
     "celebration_title": "வாழ்த்துக்கள்!",
-    "you_escaped": "உங்கள் அணி escaped இல் {{time}}!",
-    "other_team_escaped": "{{team}} தப்பித்தது!",
+    "you_escaped": "உங்கள் அணி escaped இல் {time}!",
+    "other_team_escaped": "{team} தப்பித்தது!",
     "class_escaped": "வகுப்பு Victory!",
     "everyone_escaped": "Everyone worked together க்கு escape!",
     "hurry_up": "Keep going! நீங்கள் முடியும் still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "ஏற்று சேமி",
     "loaded_saved": "சேமி Escape Room loaded! Review மற்றும் தொடங்கு போது ready.",
     "no_saved": "இல்லை சேமிக்கப்பட்டது Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready க்கு விளையாடு!",
+    "preview_confirmed": "✅ Escape Room locked • ready க்கு விளையாடு!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x தொடர்ச்சி போனஸ்!)",
     "loaded_from_resource": "Loaded இருந்து வளங்கள்."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbench-க்கு அனுப்பு",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "சிறப்பான வேலை!",
       "partial": "நல்ல effort, keep going!",
       "incorrect": "இல்லை quite right • முயற்சி again!",
-      "error": "Could இல்லை evaluate • தயவுசெய்து முயற்சி again.",
+      "error": "Could இல்லை evaluate — தயவுசெய்து முயற்சி again.",
       "verdict_correct": "சரி!",
       "verdict_partial": "பகுதியளவில் சரி",
       "verdict_incorrect": "இல்லை Quite Right",
@@ -7906,7 +7906,7 @@
       "meta_info": "{date} • **Final நிலை**: {level}",
       "log_header": "சாகசம் Log",
       "chapter_separator": "***",
-      "user_label": "? நீங்கள்",
+      "user_label": "➤ நீங்கள்",
       "print_button": "அச்சிடு கதை புத்தகம்"
     },
     "answer_key_title": "பதில் Key",
@@ -8855,7 +8855,7 @@
     "simplified_def_fallback": "அதன் வரையறையைப் பார்க்க உரையில் உள்ள எந்தச் சொல்லையும் கிளிக் செய்யலாம்!",
     "simplified_cloze": "முயற்சி 'Cloze' பயன்முறை க்கு சோதனை சொற்களஞ்சியம் திறன்.",
     "simplified_quiz": "இது உரை looks great. Should we உருவாக்கு ஒரு Exit Ticket க்கு check understanding?",
-    "simplified_glossary": "சொல் like '{term1}' மற்றும் '{term2}' might need ஆதரவு • ஒரு சொல்லகராதி could உதவி!",
+    "simplified_glossary": "சொல் like '{term1}' மற்றும் '{term2}' might need ஆதரவு — ஒரு சொல்லகராதி could உதவி!",
     "simplified_glossary_fallback": "இந்தச் சொற்களில் சில தந்திரமானவை. ஒரு சொல்லகராதி இந்த உரைக்கு ஆதரவளிக்க உதவும்.",
     "simplified_outline": "காட்சி learners might benefit இருந்து ஒரு Graphic Organizer இன் இது உள்ளடக்கம்.",
     "glossary_bingo": "நீங்கள் முடியும் turn these சொல் உள்ளே சொல் விளையாட்டு like Bingo, Memory Match, Crosswords, அல்லது சொல் தேடு!",
@@ -8866,7 +8866,7 @@
     "quiz_rigor": "Want க்கு ensure இது வினாடி வினா ஆகும் rigorous? இயக்கு ஒரு தரநிலை Audit.",
     "adventure_sim": "சாகசம் allow மாணவர் க்கு apply என்ன they've learned இல் ஒரு safe simulation.",
     "adventure_inventory": "Check 'Inventory' க்கு பார் என்ன பொருள் உள்ளது been collected.",
-    "adventure_context": "உங்கள் சாகசம் about {topic} gets richer உடன் மேலும் வளங்கள் • முயற்சி adding ஒரு {suggestion}!",
+    "adventure_context": "உங்கள் சாகசம் about {topic} gets richer உடன் மேலும் வளங்கள் — முயற்சி adding ஒரு {suggestion}!",
     "adventure_context_fallback": "நீங்கள் எவ்வளவு அதிக வளங்களை உருவாக்குகிறீர்களோ, அவ்வளவு செழுமையாக சாகச சூழல் மாறும்.",
     "timeline_drag": "இழு மற்றும் விடு events க்கு reorder sequence.",
     "timeline_visualize": "இது மாணவர்களுக்கு காரண-விளைவு உறவுகளை காட்சிப்படுத்த உதவுகிறது.",
@@ -8878,7 +8878,7 @@
     "parent_read_along": "பயன்படுத்து 'படி Along' க்கு பயிற்சி செய் reading together.",
     "fallback_lesson_plan": "நீங்கள் உள்ளது great வளங்கள். Synthesize them உள்ளே ஒரு பாடம் Plan?",
     "fallback_brainstorm": "சிக்கிக்கொண்டதாக உணர்கிறீர்களா? என்னுடன் அரட்டையடித்து Blueprint Mode-ஐ செயல்படுத்த Auto-Complete-ஐ மாற்ற முயற்சிக்கவும் — உங்கள் முழு பாடத்தையும் வடிவமைக்க நான் உதவுவேன்!",
-    "fallback_export": "நீங்கள் உள்ளது {count} வளங்கள் மீது {topic} • ஏற்றுமதி them as ஒரு single PDF!",
+    "fallback_export": "நீங்கள் உள்ளது {count} வளங்கள் மீது {topic} — ஏற்றுமதி them as ஒரு single PDF!",
     "fallback_export_fallback": "இந்த வளங்கள் அனைத்தையும் ஒரே PDF தொகுப்பாக ஏற்றுமதி செய்யலாம்.",
     "fallback_guide": "நீங்கள் வழி தவறிவிட்டால் AI Guide இல் 'Show Me' ஐத் தேர்ந்தெடுக்கவும்!",
     "intro_greeting": "கிளிக் செய் me க்கு adjust my குரல் அமைப்புகள்.",
@@ -9027,7 +9027,7 @@
     "text_generated": "{topic} பற்றிய உங்கள் தழுவிய உரை தயாராக உள்ளது! அதன் வரையறையைப் பார்க்க ஒரு சொல்லைக் கிளிக் செய்ய முயற்சிக்கவும், அல்லது புரிதலை ஆழப்படுத்த சொல்லகராதி அல்லது வினாடி வினா போன்ற கருவிகளை ஆராயவும்.",
     "flashcards_created": "பயிற்சி அட்டைகள் உருவாக்கப்பட்டன! அவற்றை Quizlet க்கு ஏற்றுமதி செய்யலாம், அச்சிடலாம், அல்லது Memory Game ஐ முயற்சிக்கலாம்.",
     "quiz_generated": "வினாடி வினா ready! பயன்படுத்து Presentation பயன்முறை க்கு வகுப்பு, அல்லது முயற்சி Auto-Grader க்கு திற responses.",
-    "glossary_generated": "சொல்லகராதி முடி! முயற்சி சொல் விளையாட்டு • Bingo, Memory Match, Crosswords, சொல் தேடு, மற்றும் மேலும்!",
+    "glossary_generated": "சொல்லகராதி முடி! முயற்சி சொல் விளையாட்டு — Bingo, Memory Match, Crosswords, சொல் தேடு, மற்றும் மேலும்!",
     "adventure_started": "உங்கள் சாகசம் தொடங்குகிறது! கீழே உங்கள் செயலைத் தட்டச்சு செய்யவும், அல்லது அடுத்து என்ன நடக்கும் என்பதைத் தீர்மானிக்க தேர்வுப் பொத்தான்களைப் பயன்படுத்தவும்.",
     "adventure_scene": "என்ன விருந்து நீங்கள் do? Every தேர்வு வடிவம் உங்கள் கதை!",
     "analysis_complete": "Analysis முடி! I found some சொற்களஞ்சியம் மற்றும் key concepts worth exploring.",
@@ -10165,7 +10165,7 @@
     "type_timeline": "வரிசை உருவாக்கி",
     "type_timeline_desc": "Sequencing activity adapted க்கு வகுப்பு நிலை",
     "full_pack": "முழு வளத் தொகுப்பு • அனைத்தையும் தேர்ந்தெடு",
-    "deselect_all": "? Deselect எல்லாம்",
+    "deselect_all": "↩ Deselect எல்லாம்",
     "estimate": "மதிப்பீடு",
     "api_calls": "API அழைப்புகள்",
     "start_batch": "உருவாக்கு",
@@ -10194,7 +10194,7 @@
     "bridge_generating": "Creating உங்கள் personalized பதிப்பு...",
     "bridge_projection": "Projection பயன்முறை",
     "bridge_exit_projection": "வெளியேறு திட்டமிடல்",
-    "bridge_offline_info": "இல்லை நேரடி அமர்வு • preview மீது இது device only",
+    "bridge_offline_info": "இல்லை நேரடி அமர்வு — preview மீது இது device only",
     "bridge_term_saved": "சேமி \"{term}\" க்கு சொல்லகராதி",
     "bridge_term_save_failed": "Failed க்கு சேமி சொல்",
     "bridge_save_term": "சேமி க்கு சொல்லகராதி",
@@ -10220,7 +10220,7 @@
     "bridge_f2f_custom_lang": "Custom மொழி...",
     "bridge_f2f_custom_placeholder": "எ.கா. யோருபா, டிக்ரின்யா, தாரி...",
     "bridge_all_saved": "எல்லாம் சொல் சேமிக்கப்பட்டது க்கு சொல்லகராதி!",
-    "bridge_terms_saved": "? எல்லாம் சேமி",
+    "bridge_terms_saved": "✅ எல்லாம் சேமி",
     "fullpack_group_target": "இலக்குக் குழு",
     "fullpack_group_current": "Current அமைப்புகள்",
     "fullpack_group_all": "எல்லாம் Groups",
@@ -12187,7 +12187,11 @@
       "trapezoid": "டிராப்பீசியம்",
       "simpson": "சிம்ப்சன்",
       "rectangles_n": "செவ்வகம் (n)",
-      "coeff_a": "Coeff ஒரு"
+      "coeff_a": "Coeff ஒரு",
+      "sr_explanation_ready": "விளக்கம் தயார்.",
+      "a11y_back_to_tools": "கருவிகளுக்குத் திரும்பு",
+      "a11y_snapshot": "நிலைப்படம்",
+      "a11y_next": "அடுத்து"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ இந்த உலாவி ஒலியை ஆதரிக்கவில்லை",
@@ -12311,13 +12315,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI விளக்கத்தை இந்த நிலையில் உருவாக்கு",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "வாசிப்பு நிலை:",
+      "aria_reading_level_group": "வாசிப்பு நிலை",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13942,8 +13946,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? சரி! It\\",
-      "that": "? அது\\",
+      "correct_it": "✅ சரி! It\\",
+      "that": "❌ அது\\",
       "linear": "நேரியல்",
       "quadratic": "இருபடி",
       "cubic": "முப்படி",
@@ -14217,7 +14221,8 @@
       "angle_u00b0": "கோணம் (°)",
       "velocity_ms": "வேகம் (m/s)",
       "gravity_msu00b2": "ஈர்ப்பு விசை (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "விளக்கம் தயார்."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14245,7 +14250,10 @@
       "codominant_desc": "இரு அலீல்களும் முழுமையாக வெளிப்படுகின்றன. ஹெட்டெரோசைகோட் இரு பண்புகளையும் ஒரே நேரத்தில் காட்டுகிறது.",
       "sexLinked_desc": "இந்தப் பண்பு X குரோமோசோமில் உள்ளது. இது X-இணைந்த RECESSIVE மரபுரிமையை மாதிரியாக்குகிறது (ஹீமோஃபீலியா, சிவப்பு-பச்சை நிறக்குருடு போன்றவை): ஆண்களுக்கு (XY) ஒரு நகல் போதும்; பெண்களுக்கு (XX) இரண்டு தேவை.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM கருவிகளுக்குத் திரும்பு",
+      "a11y_snapshot": "நிலைப்படம்",
+      "a11y_close_flashcard": "அட்டையை மூடு"
     },
     "circuit": {
       "meter_status_ammeter_short": "பாதுகாப்பற்ற இடம்: குறுக்கு-சுற்று பாதை",
@@ -14537,8 +14545,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? It\\"
+      "correct": "✅ Correct!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "முதல் தீர்வு",
@@ -14654,8 +14662,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? சரி!",
-      "answer": "? பதில்:",
+      "correct": "✅ சரி!",
+      "answer": "❌ பதில்:",
       "hydrogen": "ஹைட்ரஜன்",
       "helium": "ஹீலியம்",
       "lithium": "லித்தியம்",
@@ -14797,7 +14805,7 @@
       "reddish_metal_used_since_the": "Reddish metal பயன்படுத்தப்பட்டது since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal அது prevents rust",
       "best_conductor_of_electricity_among": "Best conductor இன் electricity among எல்லாம் metals",
-      "dense_soft_shiny_precious_metal": "அடர்த்தியான, மென்மையான, மினுமினுக்கும் விலையுயர்ந்த உலோகம் • துருப் பிடிக்காது",
+      "dense_soft_shiny_precious_metal": "அடர்த்தியான, மென்மையான, மினுமினுக்கும் விலையுயர்ந்த உலோகம் — துருப் பிடிக்காது",
       "strong_as_steel_but_45": "Strong as steel ஆனால் 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal அது gives rubies their red நிறம்",
       "essential_for_steel_production_and": "Essential க்கு steel production மற்றும் bone health",
@@ -14948,7 +14956,7 @@
       "accessible_summary_heading": "Current simulation state",
       "accessible_summary_help": "Every camera and layer action has a keyboard-accessible button. Focus the canvas for arrow-key orbiting, plus and minus zoom, bracket-key star selection, Escape to clear, and R to reset.",
       "accessible_summary_title": "Text alternative for the 3-D scene",
-      "aria_back_to_tools": "Back to tools",
+      "aria_back_to_tools": "கருவிகளுக்குத் திரும்பு",
       "aria_bh_lifecycle": "Possible stages in a black hole's history",
       "aria_blackhole_canvas": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.",
       "aria_camera_controls": "Galaxy camera controls",
@@ -15903,7 +15911,9 @@
       "our_sun_is_born": "Our Sun ஆகும் Born",
       "present_day": "இன்றைய நாள்",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "கருவிகளுக்குத் திரும்பு",
+      "a11y_simulation_speed": "உருவகப்படுத்தலின் வேகம்"
     },
     "rocks": {
       "igneous": "தீப்பாறை",
@@ -18828,7 +18838,10 @@
       "garage_desc": "இயந்திரங்கள், துரு மற்றும் வினைகள் — வேதியியல் பணிமனை.",
       "classroom_desc": "பீக்கர்கள் மற்றும் சோதனைகளுடன் கூடிய உண்மையான அறிவியல் வகுப்பறை.",
       "outdoors_desc": "வெளியே செல்லுங்கள் — இயற்கையே எல்லாவற்றிலும் பெரிய ஆய்வகம்.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "கருவிகளுக்குத் திரும்பு",
+      "a11y_snapshot": "நிலைப்படம்",
+      "a11y_next": "அடுத்து"
     },
     "converter": {
       "u2705_saved_to_history": "✅ வரலாற்றில் சேமிக்கப்பட்டது!",
@@ -19615,7 +19628,40 @@
       "read_what_special_education_law_actually": "சிறப்புக் கல்விச் சட்டம் உண்மையில் என்ன சொல்கிறது என்பதை அதன் சொந்த வார்த்தைகளிலேயே படியுங்கள். IDEA இன் பகுதி B மற்றும் பிரிவு 504 இன் உண்மையான உரை, eCFR இலிருந்து பெறப்பட்டு தேதியிடப்பட்டது, தேடக்கூடியது, மத்திய மற்றும் மாநில விதிகள் அருகருகே. எதுவும் மாற்றி எழுதப்படுவதுமில்லை உருவாக்கப்படுவதுமில்லை: அதிகாரப்பூர்வ உரை ஏற்றப்படவில்லை என்றால், கருவி ஊகிக்காமல் அதையே சொல்கிறது.",
       "applied_k_12_behavior_practice_what": "மழலையர் முதல் மேல்நிலை வரை பயன்பாட்டு நடத்தைப் பயிற்சி: பள்ளி உளவியலாளர்களும் ஆசிரியர்களும் இந்த அறிவியலைக் கொண்டு உண்மையில் என்ன செய்கிறார்கள். மூன்று அடுக்கு PBIS கட்டமைப்பு, FBA செயற்பாடுகளுடன் இணைக்கப்பட்ட மாற்று நடத்தைகள், சூழல் நிகழ்வுகள் (பெரும்பாலான BIP தவறவிடும் மெதுவான தூண்டிகள்), ஜெஃப் கால்வினின் ஏழு கட்ட வெடிப்புச் சுழற்சி, மெயினின் அத்தியாயம் 33 ஐ அடிப்படையாகக் கொண்ட கட்டுப்படுத்தல் மற்றும் தனிமைப்படுத்தல் நெறிமுறை. BehaviorLab இன் உடன்பிறப்புக் கருவி.",
       "marine_biology_behavioral_science_of_octopuses": "ஆக்டோபஸ், ஸ்க்விட், கட்டில்ஃபிஷ், நாட்டிலஸ் ஆகியவற்றின் கடல் உயிரியலும் நடத்தை அறிவியலும். முதன்மையானது: Hunter Sim — இனம், வாழிடம், இரை, தந்திரம் ஆகியவற்றைத் தேர்ந்தெடுத்து, மறைவூட்ட சிறு விளையாட்டை விளையாடி, தாக்குதலின் நேரத்தைக் கணியுங்கள். களக்குறிப்பு உயிரியல் தகவல்களைத் திறக்கிறது (குரோமட்டோஃபோர் இயக்கம், 9 மூளைகள், நீல இரத்தம், சீறல் உந்துகை). 10 இனங்களின் களக் கையேடு, அறிவு, மறைவூட்டம், சீறல் வேக விவரங்களுடன்.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, HS-PS2. இடைவெளி, உயரம், சுமை, பொருள் ஆகியவற்றை மாற்றக்கூடிய கூண்டுத் தாங்கி அழுத்த உருவகப்படுத்தி, பாலம் வகைகளின் ஒப்பீடு (உத்திரம், கூண்டு, வளைவு, தொங்கு, கம்பி இழுவை), பொருள் தரவுத்தளம், விசை வகைகள், உண்மை வழக்காய்வுகள் (Tacoma Narrows, Hyatt Regency, Tay, Silver, மேலும் Brooklyn, Golden Gate, Akashi, Millau), பொறியியல் வடிவமைப்புச் சுழற்சி, AP பாணித் தேர்வு, அச்சிடக்கூடிய வடிவமைப்பு விவரக்குறிப்புகள்."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1, HS-PS2. இடைவெளி, உயரம், சுமை, பொருள் ஆகியவற்றை மாற்றக்கூடிய கூண்டுத் தாங்கி அழுத்த உருவகப்படுத்தி, பாலம் வகைகளின் ஒப்பீடு (உத்திரம், கூண்டு, வளைவு, தொங்கு, கம்பி இழுவை), பொருள் தரவுத்தளம், விசை வகைகள், உண்மை வழக்காய்வுகள் (Tacoma Narrows, Hyatt Regency, Tay, Silver, மேலும் Brooklyn, Golden Gate, Akashi, Millau), பொறியியல் வடிவமைப்புச் சுழற்சி, AP பாணித் தேர்வு, அச்சிடக்கூடிய வடிவமைப்பு விவரக்குறிப்புகள்.",
+      "the_gutenberg_style_screw_press_as": "குட்டன்பெர்க் பாணி திருகு அச்சகம் ஒரு இயங்கும் உருவகப்படுத்துதலாக. கம்பியை இழுங்கள், உங்கள் சொந்த எழுத்துருக்களை அடுக்குங்கள், பதிவைப் பாருங்கள். மேலும் பொருள் அறிவியல் (ஈயம்-தகரம்-அந்திமனி கலவை), பொருளியல் (ஒரு புத்தகத்தின் செலவு சரிந்தது), வரலாறு (சீர்திருத்தம், அறிவியல் புரட்சி), எழுத்தமைவு, மற்றும் அச்சகத்தின் பின்னால் இருந்த மனிதர்கள் (வரலாறு மறந்த பெண் அச்சாளர்களும் அடக்கம்). நடுநிலைப் பள்ளியின் இடைத்துறை வேலைக்காக கட்டப்பட்டது.",
+      "three_js_stoop_simulator_deep_science": "Three.js இல் பாய்ச்சல் உருவகப்படுத்தி மற்றும் வேட்டைப் பறவைகளின் வேட்டை இயக்கவியல் பற்றிய ஆழமான அறிவியல். 240 mph வேகத்தில் பெரிகிரின் வல்லூறாகப் பறங்கள், 530 psi நகங்களுடன் ஹார்பியாக, அல்லது ஒலியற்ற கொம்பு ஆந்தையாக. 8 இனங்கள், 12 பிரிவுகள்: நக விசை, பார்வை (மனிதனை விட 4-8× கூர்மை, வெளிர்பருந்துகளில் புற ஊதா), பறத்தல் இயற்பியல், ஆந்தைகளின் ஒலியற்ற பறத்தல், முடிவு வேகக் கணிப்பான், DDT க்குப் பிறகான மீட்சி மற்றும் தொடரும் பாதுகாப்பு நெருக்கடிகள், மேலும் நிழலுருவும் ஒட்டுமொத்தத் தோற்றமும் கொண்டு களத்தில் அடையாளம் காணல்.",
+      "practice_reading_and_completing_the_documents": "வயது வந்தோர் வாழ்க்கை எந்த ஆவணங்களின் மேல் இயங்குகிறதோ அவற்றைப் படிக்கவும் நிரப்பவும் பயிற்சி பெறுங்கள்: வேலை விண்ணப்பங்கள், W-4 படிவங்கள், வாடகை ஒப்பந்தங்கள், மருத்துவ சேர்க்கைப் படிவங்கள், ஓட்டுநர் அனுமதிகள், மற்றும் உங்கள் சொந்த IEP கூட்ட அழைப்பு. ஒவ்வொரு புலமும் எளிய மொழியில் விளக்கப்பட்டுள்ளது, உங்களுக்கு விலை போகக்கூடிய கட்டங்கள் குறிக்கப்பட்டுள்ளன, யாரோ உடனே கையெழுத்திட வேண்டும் என விரும்பும் நேரத்துக்கான அழுத்தக் காட்சிகள், மற்றும் நேரம் கேட்பதற்கான தயார் வாக்கியங்கள். எல்லாப் பயிற்சியும் கற்பனை நபர் ஒருவரைக் கொண்டே நடக்கிறது, ஒருபோதும் உங்கள் உண்மைத் தகவலைக் கொண்டு அல்ல.",
+      "how_swimming_works_stroke_physics_survival": "நீச்சல் எப்படி வேலை செய்கிறது (அசைவுகளின் இயற்பியலும் உயிர்பிழைப்புத் திறன்களும்) மற்றும் ஒவ்வொரு நீச்சல்காரரும் குளிர்ந்த நீர், திரும்பும் நீரோட்டங்கள், பனிக்கட்டி, உயிர்காக்கும் அங்கி, மீட்பு பற்றி அறிய வேண்டியவை. அசைவுகளின் காட்சிப் பகுப்பு, மிதப்பு மற்றும் உந்துகையின் அறிவியல், மேலும் உண்மையிலேயே உயிர் காக்கும் உயிர்பிழைப்புத் திறன்கள் (முதுகில் மிதத்தல், முட்டையடிப்பு உதை, HELP, குழுவாகக் கூடுதல்). ஆதாரங்கள்: CDC, USCG, AAP, NAA, NOAA, USA Swimming. கல்வி நோக்கம் மட்டுமே: உண்மையில் நீச்சல் கற்க ஒரு நீச்சல் பயிற்றுநரைத் தேடுங்கள்.",
+      "tax_paycheck_calculator_data_literacy_decision": "வரி மற்றும் ஊதியச் சீட்டுக் கணிப்பான், தரவு எழுத்தறிவு, முடிவு அணி, ஒப்பந்த வாசிப்பான், பதிவேடுகளும் ஆவண வேலையும், போக்குவரத்துத் திட்டமிடல், வேலைக்கான தயார்நிலை, சுயவிவரம் உருவாக்கம், தொகுப்பேட்டுச் சான்றுகளை ஒழுங்குபடுத்தல், நேர்காணல் பயிற்சி, தொடர்புத் திறன்கள், நேர மேலாண்மை, மருத்துவக் காப்பீடு, பல் பராமரிப்பு, உடல் பராமரிப்பின் பணிச்சூழலியல், தூக்க வழக்கங்கள், மருந்துச் சீட்டுகள், சந்திப்புத் தயாரிப்பு, வீட்டுப் பாதுகாப்பு, இணையப் பாதுகாப்பு, உணவின்மேல் நிம்மதி, மற்றும் அன்றாட வாழ்வுக்கான பயன்பாட்டு அறிவியல்.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 மற்றும் HS-LS4. நுண்ணுயிர் உலகம்: பாக்டீரியா (பயனுள்ளவை, நோய் உண்டாக்குபவை), வைரஸ்கள் (COVID, காய்ச்சல், HIV, பேஜ், தட்டம்மை), நுண்ணோக்கியியல் (ஒளி, கட்ட வேறுபாடு, ஒளிர்வு, எலக்ட்ரான், AFM), நுண்ணுயிர் எதிர்ப்பி எதிர்ப்பின் பரிணாமம், மனித, மண், கடல் நுண்ணுயிரிச் சூழல், தடுப்பூசிகளும் நோய் எதிர்ப்பு அமைப்பும், நொதித்தல் (புளிப்பு மாவு, தயிர், கிம்ச்சி, சார்க்ராட், கொம்புச்சா, சீஸ்), வழக்காய்வுகள் (Snow, Fleming, MRSA, COVID மற்றும் mRNA, FMT), வினாடி வினா, மற்றும் ஆய்வக பாதுகாப்பு மற்றும் நுண்ணுயிர் குறித்த அச்சிடக்கூடிய குறிப்பேடு.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "பதினொரு பகுதிகளில் சுற்றுச்சூழல் பராமரிப்புக்கான பதினைந்து பிரச்சாரங்கள். மெயினின் ஐந்து நீண்ட, பல காலகட்டப் பிரச்சாரங்கள், மேலும் ஐந்து இயக்கவியல் குடும்பங்களையும் தொடும் பத்து பகுதிகளுக்கு இடையிலான காட்சிகள்: நெருப்பு (ஆஸ்திரேலியாவில் Yarralin, வட கலிபோர்னியாவில் Karuk), பாதுகாப்பு (Yellowstone, ருவாண்டாவில் Akagera), பொது சுகாதாரம் (மும்பையில் டெங்கு, லைபீரியாவில் 2014 எபோலா), நீர்ப்பிடிப்பு (Klamath ஆறு, Murray-Darling வடிநிலம்), மற்றும் காலநிலை (மார்ஷல் தீவுகள், வங்கதேச டெல்டா). குடும்ப இணை நுண்ணறிவுகள், மெயின் பிரச்சாரத்தையும் அதே இயக்கவியல் குடும்பத்தின் பகுதிகளுக்கு இடையிலான காட்சியையும் முடிக்கும்போது திறக்கின்றன.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 மற்றும் MS-ESS3-3. உண்மையிலேயே ஒன்றுக்கொன்று முரண்படும் தேவைகளுக்கு எதிராக 144 நிலப்பகுதிகள் கொண்ட கட்டத்தில் ஒரு நகரை வடிவமையுங்கள். மூன்று நகரங்கள், ஒவ்வொன்றிலும் வெவ்வேறு கட்டுப்படுத்தும் தடை: Riverbend, அங்கே மழைநீரும் கடன் பத்திரமும் நெருக்குகின்றன; Mesa Hollow, அங்கே நிலத்தடி நீர்நிலை நிலையானது, பண்ணைகள் அதைக் குடிக்கின்றன; மற்றும் Harborlight, அங்கே திட்டம் 2050 இலும் இயங்க வேண்டும். பகுத்தறிவு முறையில் நீரோட்டம், நீர் சமநிலை, கடல் மட்ட உயர்வுக்கான இடைவெளி, வலையமைப்பில் நடைத் தூரம், விலை மதிப்பிடப்பட்ட சாலை வலையமைப்பு — ஒவ்வொன்றும் திறந்து தன் சூத்திரத்தைக் காட்டும். Assumption Lab ஒரே திட்டத்தை வெளியிடப்பட்ட இரு அளவுரு தொகுப்புகளில் மீண்டும் இயக்குகிறது, இரண்டிலும் எந்த முடிவுகள் தாக்குப்பிடிக்கின்றன என மாணவர்கள் காணும் வகையில். வரைபடம், திருத்தக்கூடிய நிலப்பகுதி அட்டவணை, மற்றும் அதே திட்டத்தின் முப்பரிமாண மாதிரி. கலந்துரையாடல் வினாக்களும் ஆவணப்படுத்தப்பட்ட வரலாறும், கருவி மாதிரியாக்க மறுக்கும் கேள்விகளைச் சுமக்கின்றன. மதிப்பெண் இல்லை, விடைக் குறிப்பும் இல்லை.",
+      "codap_data_science": "CODAP: தரவு அறிவியல்",
+      "lumen_research_canvas": "Lumen: ஆய்வுத் திரை",
+      "evolab_evolution": "EvoLab: பரிணாமம்",
+      "dino_lab": "டைனோசர் ஆய்வகம்",
+      "nutritionlab_nutrition_science": "NutritionLab: ஊட்டச்சத்து அறிவியல்",
+      "birdlab_i_spy_ornithology": "BirdLab: தேடிக் கண்டறியும் பறவையியல்",
+      "openbim_companion": "OpenBIM: துணை வழிகாட்டி",
+      "applab_ai_app_generator": "AppLab: செயற்கை நுண்ணறிவு செயலி உருவாக்கி",
+      "access_lens": "அணுகல் வில்லை",
+      "sim_shelf": "உருவகப்படுத்தல் அலமாரி",
+      "zoom_gallery": "பெரிதாக்கல் கூடம்",
+      "sourcebook": "மூல நூல்",
+      "wheel_fire_pottery_lab": "சக்கரமும் நெருப்பும்: மட்பாண்ட ஆய்வகம்",
+      "echo_navigator": "எதிரொலி வழிகாட்டி",
+      "learning_lab_how_learning_works": "Learning Lab: கற்றல் எப்படி நடக்கிறது",
+      "weldlab_welding_metal_joining": "WeldLab: பற்றவைப்பும் உலோக இணைப்பும்",
+      "bikelab_physics_repair": "BikeLab: இயற்பியலும் பழுதுநீக்கமும்",
+      "fisherlab_boating_fishing_sim": "FisherLab: படகோட்டல், மீன்பிடி உருவகப்படுத்தி",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: மட்டி பண்ணை உருவகப்படுத்தி",
+      "throwlab_sports_physics": "ThrowLab: விளையாட்டு இயற்பியல்",
+      "skatelab_skate_bmx_physics": "SkateLab: ஸ்கேட், BMX இயற்பியல்",
+      "playlab_strategy_on_the_field": "PlayLab: களத்தில் உத்தி",
+      "kepler_colony": "கெப்ளர் குடியேற்றம்",
+      "birdlab_life_list": "BirdLab: வாழ்நாள் பட்டியல்",
+      "petslab_decoder": "PetsLab: குறிவிடுவி"
     },
     "area": {
       "volume": "கனஅளவு..."
@@ -19655,7 +19701,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "கருவிகளுக்குத் திரும்பு",
+      "a11y_snapshot": "நிலைப்படம்",
+      "a11y_next": "அடுத்து",
+      "a11y_simulation_speed": "உருவகப்படுத்தலின் வேகம்",
+      "a11y_close_flashcard": "அட்டையை மூடு"
     },
     "solar_sys": {
       "venus": "சுக்கிரன்",
@@ -20477,7 +20528,8 @@
       "scaled_volume_changed": "🔵 அளவிடப்பட்டது (கனஅளவு மாறியது)",
       "skewed_shape_deformed": "🟠 சாய்வானது (வடிவம் சிதைந்தது)",
       "degenerate_volume_0": "💀 சிதைந்தது (கனஅளவு → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "பயிற்சி வழிகாட்டியின் முன்னேற்றம்"
     },
     "numberline": {
       "first_mark": "முதல் குறி",
@@ -22620,7 +22672,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} ஆண்டு தொடங்குகிறது."
     },
     "optics": {
       "optics_lab": "ஒளியியல் ஆய்வகம்",
@@ -22966,7 +23019,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "உள்ளூர் பகுப்பாய்வு SQL வினவல்"
     },
     "geosandbox": {
       "loading_3d_engine": "3D இயந்திரம் ஏற்றப்படுகிறது...",
@@ -23316,7 +23370,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "சிற்பம் அகற்றப்பட்டது"
     },
     "algebraCAS": {
       "solve": "🔍 தீர்க்கவும்",
@@ -25912,7 +25967,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "விளக்கம் தயார்."
     },
     "economicslab": {
       "six_figures": "ஆறு இலக்க வருமானம்",
@@ -27892,7 +27948,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "சிந்தனை சேமிக்கப்பட்டது."
     },
     "anatomy": {
       "system_explorer": "தொகுதி ஆய்வாளர்",
@@ -28474,7 +28531,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D கேமராவை மீட்டமை"
     },
     "dna": {
       "back_to_tools": "கருவிகளுக்குத் திரும்பு",
@@ -29851,7 +29909,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "சிந்தனை சேமிக்கப்பட்டது."
     },
     "angles": {
       "back_to_tools": "கருவிகளுக்குத் திரும்பு",
@@ -30665,7 +30724,8 @@
       "explain_how_each_parameter_shapes_a_si": "ஒவ்வொரு அளபுருவும் சைன் அலையை எவ்வாறு வடிவமைக்கிறது என்பதை விளக்கு.",
       "design_note_discrete_5_state_marker_no": "வடிவமைப்புக் குறிப்பு: தனித்த 5-நிலைக் குறி; அலை மதிப்பெண் இல்லை; வெளிப்படுத்தல் இல்லை — வடிவமைப்பின்படி.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "விளக்கம் தயார்."
     },
     "typingpractice": {
       "typing_practice_menu": "தட்டச்சுப் பயிற்சி பட்டி",
@@ -31019,7 +31079,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "பட்டிக்குத் திரும்பு"
     },
     "music": {
       "edm_lead": "EDM லீட்",
@@ -34428,7 +34489,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "விடையைத் தேர்ந்தெடு: {value1}"
     },
     "artstudio": {
       "back_to_tools": "கருவிகளுக்குத் திரும்பு",
@@ -35193,7 +35255,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "அணைப்பு",
+      "sr_nothing_to_redo": "மீண்டும் செய்ய எதுவும் இல்லை.",
+      "sr_nothing_to_undo": "செயல்தவிர்க்க எதுவும் இல்லை.",
+      "sr_dir_left": "இடது",
+      "sr_dir_right": "வலது"
     },
     "arithmetic": {
       "selected": " தேர்ந்தெடுக்கப்பட்டது.",
@@ -39239,7 +39306,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ஆனது உச்சிப் புள்ளியில் உள்ள கதிர்ப்புள்ளி மற்றும் 6.5 எல்லைப் பொலிவெண் அடிப்படையில் தரப்படுத்தப்பட்டுள்ளது. இந்த தோராயமான மதிப்பீடு தெளிவான, நிலவற்ற வானத்தையும் 2.2 எண்ணிக்கைக் குறியீட்டையும் கருதுகிறது. போர்ட்டில் வகுப்புகள் எல்லைப் பொலிவெண்ணை தோராயமாக மட்டுமே காட்டுகின்றன; தரத்தை விட இருண்ட வானம் ZHR ஐ மீறலாம். கதிர்ப்புள்ளியின் குறைந்த உயரமும் ஒளிர்வான வானமும் மதிப்பீட்டைக் குறைக்கின்றன.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM கருவிகளுக்குத் திரும்பு"
     },
     "autorepair": {
       "back_to_menu": "பட்டிக்குத் திரும்பவும்",
@@ -39980,7 +40048,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "மதிப்பெண்: {value2}இல் {value1}",
+      "a11y_open_2": "{value1} திற",
+      "a11y_option": "விருப்பம் {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "மேலோடு",
@@ -40083,7 +40154,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "விளக்கம் தயார்."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40829,7 +40901,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "விளக்கம் தயார்.",
+      "a11y_investigation_progress": "ஆய்வின் முன்னேற்றம்",
+      "a11y_flight_debrief": "பறப்பு மதிப்பாய்வு",
+      "a11y_tutorial_progress": "பயிற்சி வழிகாட்டியின் முன்னேற்றம்"
     },
     "behaviorlab": {
       "chain_reaction": "சங்கிலித் தொடர் வினை",
@@ -41003,7 +41079,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "விளக்கம் தயார்.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43513,7 +43589,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "ஆராயப்பட்ட தொகுதி: {value1}",
+      "a11y_score_out_of": "மதிப்பெண்: {value2}இல் {value1}",
+      "sr_selected": "தேர்ந்தெடுக்கப்பட்டது: {value1}",
+      "sr_quiz_reset": "வினாடி வினா மீட்டமைக்கப்பட்டது"
     },
     "brainatlas": {
       "group_systems": "தொகுதிகள்",
@@ -48669,7 +48749,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "விடையைத் தேர்ந்தெடு: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "வினாடி வினா வல்லுநர்",
@@ -49813,7 +49894,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "தேர்ந்தெடுக்கப்பட்டது: {value1}"
     },
     "echotrainer": {
       "wall": "சுவர்",
@@ -51272,7 +51354,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "ஆராயப்பட்ட தொகுதி: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "கார்பன் கால்குலேட்டர்",
@@ -52352,7 +52435,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "பட்டிக்குத் திரும்பு",
+      "sr_getting_critique": "மதிப்பீடு பெறப்படுகிறது...",
+      "sr_critique_ready": "மதிப்பீடு தயார்."
     },
     "flightsim": {
       "game_controls": "🎮 விளையாட்டு கட்டுப்பாடுகள்",
@@ -52561,7 +52647,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "விமான உருவகப்படுத்தியின் விமானி அறைக் காட்சி. W/S மேல்கீழ் சாய்வு, A/D பக்கவாட்டு சாய்வு, Shift/Ctrl உந்துவிசைக் கைப்பிடி, அடைப்புக்குறிகள் இறக்கைத் தட்டுகளைக் கட்டுப்படுத்துகின்றன, X சக்கர பிரேக், Q வினாடி வினா, F விசைகள், Space இடைநிறுத்தம், I தகவல்.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52573,7 +52659,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "போர்ட்லாந்து, ME இலிருந்து சுதந்திரப் பறப்பு",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52620,7 +52706,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "ஷாங்காய் கோபுரம்",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58442,7 +58528,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "ஆராயப்பட்ட தொகுதி: {value1}",
+      "sr_loaded": "{value1} ஏற்றப்பட்டது",
+      "sr_showing": "{value1} காட்டப்படுகிறது",
+      "sr_opening": "{value1} திறக்கப்படுகிறது"
     },
     "platetectonics": {
       "pacific": "பசிபிக்",
@@ -58708,7 +58798,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63264,7 +63354,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "விளக்கம் தயார்.",
+      "sr_off": "அணைப்பு",
+      "sr_edge_left": "இடது",
+      "sr_edge_right": "வலது",
+      "sr_correct": "சரி.",
+      "sr_not_quite": "சரியாக இல்லை."
     },
     "playlab": {
       "save": "சேமி",
@@ -63332,7 +63428,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "பயிற்றுநர் இணைப்பில் இல்லை.",
+      "sr_drill_stopped": "பயிற்சி நிறுத்தப்பட்டது."
     },
     "printingpress": {
       "menu": "← பட்டி",
@@ -65471,7 +65569,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "பட்டிக்குத் திரும்பு",
+      "a11y_open": "{value1} திற",
+      "sr_selected": "தேர்ந்தெடுக்கப்பட்டது: {value1}",
+      "sr_loaded": "{value1} ஏற்றப்பட்டது",
+      "sr_opening": "{value1} திறக்கப்படுகிறது",
+      "sr_correct": "சரி.",
+      "sr_not_quite": "சரியாக இல்லை.",
+      "sr_year_begins": "{value1} ஆண்டு தொடங்குகிறது.",
+      "sr_question_reset_try_again": "வினா மீட்டமைக்கப்பட்டது. மீண்டும் முயற்சி செய்.",
+      "sr_not_quite_see_the_explanation": "சரியாக இல்லை: விளக்கத்தைப் பார்."
     },
     "raptorhunt": {
       "show_answer": "காட்டு பதில்",
@@ -67120,7 +67228,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} திற",
+      "a11y_flight_debrief": "பறப்பு மதிப்பாய்வு"
     },
     "renewables": {
       "menu": "← பட்டி",
@@ -67820,7 +67930,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "பட்டிக்குத் திரும்பு",
+      "sr_getting_critique": "மதிப்பீடு பெறப்படுகிறது...",
+      "sr_critique_ready": "மதிப்பீடு தயார்.",
+      "sr_quiz_reset": "வினாடி வினா மீட்டமைக்கப்பட்டது"
     },
     "roadready": {
       "let_s_start": "தொடங்குவோம் →",
@@ -70687,7 +70801,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM கருவிகளுக்குத் திரும்பு",
+      "a11y_local_analytical_sql_query": "உள்ளூர் பகுப்பாய்வு SQL வினவல்"
     },
     "stewardship": {
       "sector": "துறை",
@@ -71264,7 +71380,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "பட்டிக்குத் திரும்பு",
+      "sr_question_reset_try_again": "வினா மீட்டமைக்கப்பட்டது. மீண்டும் முயற்சி செய்."
     },
     "throwlab": {
       "scenarios": "சூழ்நிலைகள்",
@@ -71489,7 +71607,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D கேமராவை மீட்டமை",
+      "sr_coach_is_offline": "பயிற்றுநர் இணைப்பில் இல்லை.",
+      "sr_drill_stopped": "பயிற்சி நிறுத்தப்பட்டது."
     },
     "weldlab": {
       "menu": "← பட்டி",
@@ -73051,7 +73172,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "ஆராயப்பட்ட தொகுதி: {value1}",
+      "a11y_score_out_of": "மதிப்பெண்: {value2}இல் {value1}",
+      "sr_quiz_reset": "வினாடி வினா மீட்டமைக்கப்பட்டது",
+      "sr_loaded": "{value1} ஏற்றப்பட்டது",
+      "sr_showing": "{value1} காட்டப்படுகிறது",
+      "sr_not_quite_see_the_explanation": "சரியாக இல்லை: விளக்கத்தைப் பார்."
     },
     "worldbuilder": {
       "grade_level": "வகுப்பு நிலை",
@@ -73957,7 +74084,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "வாசிப்பு நிலை",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74644,7 +74771,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "வாழ்க்கை மரம்",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76499,7 +76626,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "விருப்பம் {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D கேமரா காட்சிகள்"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76511,6 +76640,22 @@
       "finish": "புரிந்தது!",
       "replay": "குறிப்புகள்",
       "replay_aria": "பயிற்சியைக் காட்டு"
+    },
+    "pets": {
+      "sr_back_to_menu": "பட்டிக்குத் திரும்பு",
+      "sr_getting_critique": "மதிப்பீடு பெறப்படுகிறது...",
+      "sr_critique_ready": "மதிப்பீடு தயார்."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM கருவிகளுக்குத் திரும்பு",
+      "a11y_3d_camera_views": "3D கேமரா காட்சிகள்"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "ஆய்வின் முன்னேற்றம்"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "மீண்டும் செய்ய எதுவும் இல்லை.",
+      "sr_nothing_to_undo": "செயல்தவிர்க்க எதுவும் இல்லை."
     }
   },
   "glossary_health": {
@@ -77113,7 +77258,7 @@
       "person": "நபர்\\",
       "phase_label": "கட்ட பெயர்",
       "rationale_which_antecedent_does_this_address": "காரணம் (இது எந்த முன்-நிகழ்வை நிவர்த்தி செய்கிறது?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "உங்கள் அணுகுமுறையில் சிந்திக்கவும்...\\n• என்ன நன்றாக வேலை செய்தது?\\n• நீங்கள் என்ன வேறுபட்டு செய்வீர்கள்?\\n• அடுத்து என்ன உத்திகளைப் பயிற்சி செய்ய விரும்புகிறீர்கள்?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "உங்கள் அணுகுமுறையில் சிந்திக்கவும்...\n• என்ன நன்றாக வேலை செய்தது?\n• நீங்கள் என்ன வேறுபட்டு செய்வீர்கள்?\n• அடுத்து என்ன உத்திகளைப் பயிற்சி செய்ய விரும்புகிறீர்கள்?",
       "reinforcement_how_you": "⭐ Reinforcement (எப்படி நீங்கள்\\",
       "replacement_behavior_functionally_equivalent": "✅ மாற்று நடத்தை (செயல்பாட்டு ரீதியாக சமமான)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77121,7 +77266,7 @@
       "search_81_tools": "🔍 தேடு 80+ கருவிகள்…",
       "search_aba_terms": "🔍 தேடு ABA சொல்...",
       "search_terms_eg_reinforcement_fba_data": "🔍 தேடு சொல்... (e.g. \"reinforcement\", \"FBA\", \"தரவு\")",
-      "session_1_3nsession_2_7nsession_3_5n": "அமர்வு 1: 3\\nஅமர்வு 2: 7\\nஅமர்வு 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "அமர்வு 1: 3\nஅமர்வு 2: 7\nஅமர்வு 3: 5\n...",
       "setting_eg_math_class_cafeteria": "சூழல் (எ.கா., கணித வகுப்பு, உணவகம்)",
       "share_what_you_notice_at_home_strengths_concerns_c": "வீட்டில் நீங்கள் கவனிப்பதைப் பகிரவும் — பலங்கள், கவலைகள், கலாச்சாரச் சூழல், அல்லது பள்ளிக் குழுவிற்கான பரிந்துரைகள்...",
       "step_description": "படி description...",
@@ -78592,7 +78737,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "பள்ளத்தின் உயரம்",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80785,7 +80930,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "கருத்தின் படம்",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80821,10 +80966,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "ஒவ்வொரு கருத்தையும் தளவாடங்களால் நிரப்பவும்",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "நிரப்புதலின் முன்னேற்றம்",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80836,7 +80981,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "சாத்தியமான பெயர்கள்",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80847,7 +80992,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "கருத்தை நினைவுகூர்தல்",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82405,7 +82550,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect ஐ மூடு",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82414,7 +82559,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "ஒப்படைப்புகளை வடிகட்டு",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82452,15 +82597,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "வினா {n}",
+    "q_choices_aria": "வினா {n} க்கான தேர்வுகள், ஒரு வரிக்கு ஒன்று",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "வினா {n} ஐ அகற்று",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "வினா {n} க்கான அளவுகோல் படிகள்",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "வினா {n} க்கான விடை வகை",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82470,10 +82615,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} க்கான தேர்ந்தெடுக்கக்கூடிய இணைப்பு",
+    "scale_high_aria": "மேல் முனைக்கான பெயர்ச்சீட்டு",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "கீழ் முனைக்கான பெயர்ச்சீட்டு",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82493,7 +82638,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "ஒப்படைப்புகளின் நிலைச் சுருக்கம்",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82509,9 +82654,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "தானாகப் புதுப்பிக்கப்படுகிறது",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "தேர்ந்தெடுக்கக்கூடிய வீட்டுப்பாட இணைப்பு",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82520,7 +82665,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "வீட்டுப்பாடத்தின் QR குறியீடு",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84968,7 +85113,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "தூண்டுதல்களுக்கும் மதிப்பீட்டு அட்டவணைகளுக்கும் வளர்ச்சி நிலையைத் தேர்ந்தெடுக்கவும்",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84976,7 +85121,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "ஆசிரியர் காட்சியை இயக்கவும் அல்லது நிறுத்தவும்",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85007,17 +85152,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "குரல் குறிப்புப் பதிவை இடைநிறுத்தவும்",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "குரல் குறிப்புப் பதிவைத் தொடரவும்",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "குரல் குறிப்பைப் பதிவு செய்யத் தொடங்கவும்",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "பதிவை நிறுத்தவும்",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85403,22 +85548,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven பாராட்டுக்கான காரணம்",
+    "recent_deliveries_aria": "சமீபத்திய தனிப்பட்ட AlloHaven பாராட்டுகள்",
+    "token_amount_aria": "AlloHaven டோக்கன் அளவு",
+    "token_cap_aria": "ஒரு மாணவருக்கு ஒரு அமர்வுக்கான AlloHaven டோக்கன் வரம்பு"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "இலக்கை அடைந்தபடியே அனுமதிக்கப்படும் விதிவிலக்குகள்",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "இந்த இலக்குக்காக செயலி கண்காணிக்கும் விருப்பத் தேர்வு முன்னேற்றக் குறியீடு",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "குழு முழுவதும் ஒன்றாக, அல்லது ஒவ்வொரு மாணவரும் தனித்தனியாக",
+    "name_aria": "வகுப்பு இலக்கின் பெயர், இந்தச் சாதனத்தில் மட்டுமே வைக்கப்படும்",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "இந்த இலக்கு எந்த மாணவர்களை உள்ளடக்கும்",
+    "template_aria": "வகுப்பு இலக்கின் தொடக்க வார்ப்புரு",
+    "tokens_aria": "இந்த இலக்கை அடையும்போது ஒவ்வொரு மாணவருக்கும் வழங்கப்படும் டோக்கன்கள்"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85436,7 +85581,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox நிர்வாக டோக்கன் (விருப்பத் தேர்வு)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85466,17 +85611,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "கை உயர்த்தப்பட்டது",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "தேர்ந்தெடுக்கக்கூடிய நேரலை அஞ்சல்பெட்டி இணைப்பு",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox இன் நேரலை அமர்வு",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85503,7 +85648,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "நிகழ்நேர இணைப்பு",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85535,7 +85680,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox வலைச் செயலியின் URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

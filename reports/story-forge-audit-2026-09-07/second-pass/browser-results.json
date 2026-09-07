@@ -1,0 +1,43 @@
+{
+  "lessonImportPreservedWriting": true,
+  "checkpointRestoreUndo": true,
+  "removeUndo": true,
+  "failedSavePreservedWriting": true,
+  "focusLimit": 8,
+  "targets": [
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    },
+    {
+      "width": 44,
+      "height": 44
+    }
+  ],
+  "errors": [],
+  "accessibility": []
+}

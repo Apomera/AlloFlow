@@ -20,7 +20,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   const Views = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuestionBoardView;
   const packId = String(mailbox?.id || '');
   const activityId = String(activity?.activityId || '');
-  const scope = `${packId}:${activityId}`;
+  const scope = `${mailbox?.url || ""}:${packId}:${activityId}:${mode}`;
   const [board, setBoard] = React.useState(null);
   const [draft, setDraft] = React.useState('');
   const [error, setError] = React.useState('');
@@ -47,6 +47,10 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       })()
     });
   }, [Transport, packId, activityId, admin, isTeacher, mailbox?.url, mailbox?.secret]);
+  const transportRef = React.useRef(transport);
+  transportRef.current = transport;
+  const mutationRef = React.useRef(null);
+  const refreshSequenceRef = React.useRef(0);
 
   // The student's own name travels with their questions. It is display only —
   // the server never uses it for authorization, uid does. There is nothing to
@@ -74,7 +78,16 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     setBoard(null);
     setDraft('');
     setError('');
-  }, [scope]);
+    setBusy(false);
+    mutationRef.current = null;
+    refreshSequenceRef.current += 1;
+  }, [transport, scope]);
+  React.useEffect(() => {
+    transportRef.current = transport;
+    return () => {
+      if (transportRef.current === transport) transportRef.current = null;
+    };
+  }, [transport]);
   const report = React.useCallback(result => {
     if (!result || result.ok) return false;
     // A refusal and a dead connection need different words. Guessing wrong
@@ -93,15 +106,23 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     setError(result.transport ? 'The board could not reach the class mailbox. Check the connection and try again.' : messages[result.reason] || 'That could not be saved. Try again.');
     return true;
   }, []);
-  const refresh = React.useCallback(async () => {
-    if (!transport) return;
-    const result = await transport.load();
-    if (result.ok) {
-      setBoard(result.board);
-      setError('');
-      return;
+  const refresh = React.useCallback(async (force = false) => {
+    if (!transport || !force && mutationRef.current) return;
+    const sequence = ++refreshSequenceRef.current;
+    try {
+      const result = await transport.load();
+      if (transportRef.current !== transport || sequence !== refreshSequenceRef.current) return;
+      if (result.ok) {
+        setBoard(result.board);
+        setError('');
+        return;
+      }
+      report(result);
+    } catch (error) {
+      if (transportRef.current === transport && sequence === refreshSequenceRef.current) report({
+        transport: true
+      });
     }
-    report(result);
   }, [transport, report]);
 
   // Poll cadence matches the other durable sidecars: responsive while the tab
@@ -124,57 +145,75 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       if (timer) clearTimeout(timer);
     };
   }, [transport, refresh]);
-  const post = React.useCallback(async text => {
-    if (!transport || busy) return;
+  const mutate = React.useCallback(async (operation, posted = false) => {
+    if (!transport || mutationRef.current) return;
+    const token = {
+      transport
+    };
+    mutationRef.current = token;
+    refreshSequenceRef.current += 1;
     setBusy(true);
+    setError('');
     try {
-      const result = await transport.addItem(text);
-      if (result.ok) {
-        setBoard(result.board);
-        setDraft('');
-        setError('');
-        addToast('Question posted', 'success');
-      } else if (report(result)) {
-        addToast('That question was not posted', 'error');
+      const result = await operation();
+      if (transportRef.current !== transport || mutationRef.current !== token) return;
+      if (result && result.ok) {
+        if (result.board) setBoard(result.board);else await refresh(true);
+        if (transportRef.current !== transport || mutationRef.current !== token) return;
+        if (posted) {
+          setDraft('');
+          addToast('Question posted', 'success');
+        }
+      } else {
+        report(result || {
+          transport: true
+        });
       }
+    } catch (error) {
+      if (transportRef.current === transport && mutationRef.current === token) report({
+        transport: true
+      });
     } finally {
-      setBusy(false);
+      if (mutationRef.current === token) {
+        mutationRef.current = null;
+        setBusy(false);
+      }
     }
-  }, [transport, busy, addToast, report]);
-  const moderate = React.useCallback(async (item, status) => {
-    if (!transport) return;
-    const result = await transport.setStatus(item.uid, item.id, status);
-    if (result.ok) {
-      refresh();
-      return;
-    }
-    if (report(result)) addToast('That change was not saved', 'error');
-  }, [transport, refresh, addToast, report]);
-  const toggleAnswered = React.useCallback(async (item, next) => {
-    if (!transport) return;
-    const result = await transport.setAnswered(item.uid, item.id, next === true, '');
-    if (result.ok) {
-      refresh();
-      return;
-    }
-    if (report(result)) addToast('That change was not saved', 'error');
-  }, [transport, refresh, addToast, report]);
+  }, [transport, refresh, report, addToast]);
+  const post = React.useCallback(text => mutate(() => transport.addItem(text), true), [transport, mutate]);
+  const moderate = React.useCallback((item, status) => mutate(() => transport.setStatus(item.uid, item.id, status)), [transport, mutate]);
+  const toggleAnswered = React.useCallback((item, next) => mutate(() => transport.setAnswered(item.uid, item.id, next === true, '')), [transport, mutate]);
   if (!Transport || !Contract || !Views) {
     return /*#__PURE__*/React.createElement("p", {
       className: "rounded border border-slate-300 bg-slate-50 p-3 text-xs text-slate-700"
     }, "The questions board is still loading. Give it a moment, then reopen this panel.");
   }
   if (!board) {
-    return /*#__PURE__*/React.createElement("p", {
-      className: "p-3 text-xs text-slate-600",
-      role: "status"
-    }, error || 'Loading the board...');
+    return /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 p-3"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-slate-700",
+      role: error ? 'alert' : 'status'
+    }, error || 'Loading the board...'), error && /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      onClick: () => refresh(),
+      className: "min-h-11 rounded border border-indigo-500 bg-white px-3 font-bold text-indigo-800"
+    }, "Retry loading board"));
   }
   const actor = transport.actor();
   const Surface = isTeacher ? Views.QuestionBoardTeacher : Views.QuestionBoardStudent;
   return /*#__PURE__*/React.createElement("div", {
-    className: "space-y-2"
-  }, error && /*#__PURE__*/React.createElement("p", {
+    className: "space-y-2",
+    "aria-busy": busy
+  }, busy && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-sm font-bold text-indigo-800"
+  }, "Saving\u2026"), /*#__PURE__*/React.createElement("fieldset", {
+    disabled: busy,
+    className: "min-w-0 space-y-2"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "sr-only"
+  }, "Question board controls"), error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "rounded border border-rose-300 bg-rose-50 p-2 text-xs text-rose-900"
   }, error), !isTeacher && /*#__PURE__*/React.createElement("label", {
@@ -186,7 +225,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     maxLength: 40,
     placeholder: "So your teacher knows who asked",
     className: "mt-1 w-full rounded border border-slate-300 p-2 text-sm font-normal"
-  })), Surface({
+  })), React.createElement(Surface, {
     contract: Contract,
     board,
     actor,
@@ -197,7 +236,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     onApprove: item => moderate(item, 'approved'),
     onHide: item => moderate(item, 'hidden'),
     onToggleAnswered: toggleAnswered
-  }));
+  })));
 });
 function _alloNormalizeSharedRatingActivity(value) {
   if (!value || value.type !== 'rating') return null;
@@ -238,6 +277,22 @@ function _alloSharedActivityUiMeta(activity) {
       shortLabel: 'SV',
       title: 'Survey',
       dialogId: 'shared-assignment-survey-title'
+    };
+  }
+  if (activity?.type === 'availability') {
+    return {
+      isRating: false,
+      shortLabel: 'AP',
+      title: 'Availability poll',
+      dialogId: 'shared-assignment-availability-title'
+    };
+  }
+  if (activity?.type === 'signup') {
+    return {
+      isRating: false,
+      shortLabel: 'SU',
+      title: 'Sign-up sheet',
+      dialogId: 'shared-assignment-signup-title'
     };
   }
   const isRating = activity?.type === 'rating';
@@ -389,6 +444,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
   }, (_, index) => String(Array.isArray(sharedAssignmentActivity.labels) ? sharedAssignmentActivity.labels[index] || '' : '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40));
   // Survey rows are shaped here, then the server revalidates them and creates
   // item and option ids. Likert labels remain positional.
+  let surveyIssue = '';
   const surveyWireItems = sharedAssignmentActivity?.type === 'survey' ? (Array.isArray(sharedAssignmentActivity.surveyItems) ? sharedAssignmentActivity.surveyItems : []).map(surveyItem => {
     const text = String(surveyItem?.text || '').replace(/\s+/g, ' ').trim().slice(0, 240);
     if (!text) return null;
@@ -416,12 +472,17 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
       entry.options = String(surveyItem?.optionsText || '').split(/\r?\n/).map(line => line.replace(/\s+/g, ' ').trim().slice(0, 80)).filter(Boolean).slice(0, 12).map(label => ({
         label
       }));
-      if (entry.options.length < 2) return null;
+      if (entry.options.length < 2) {
+        surveyIssue = `Add at least two choices for “${text}”.`;
+        return null;
+      }
     } else if (kind === 'numeric') {
-      const min = Number(surveyItem?.min);
-      const max = Number(surveyItem?.max);
-      if (isFinite(min)) entry.min = min;
-      if (isFinite(max)) entry.max = max;
+      for (const bound of ['min', 'max']) {
+        const value = surveyItem?.[bound];
+        if (value == null || String(value).trim() === '') continue;
+        if (!Number.isFinite(Number(value))) surveyIssue = `Use a valid numeric limit for “${text}”.`;else entry[bound] = Number(value);
+      }
+      if (entry.min != null && entry.max != null && entry.min >= entry.max) surveyIssue = `The minimum must be less than the maximum for “${text}”.`;
     }
     return entry;
   }).filter(Boolean).slice(0, 12) : [];
@@ -430,7 +491,7 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
     activityId: 'AC-' + generateUUID(),
     type: sharedActivityType,
     delivery: 'shared_async',
-    prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240) || (sharedActivityType === 'rating' ? 'How would you rate your understanding?' : sharedActivityType === 'availability' ? 'Which of these times could you make?' : sharedActivityType === 'signup' ? 'Choose a time that works for you' : 'What word or short phrase best captures your thinking?'),
+    prompt: String(sharedAssignmentActivity.prompt || '').replace(/\s+/g, ' ').trim().slice(0, 240) || (sharedActivityType === 'rating' ? 'How would you rate your understanding?' : sharedActivityType === 'availability' ? 'Which of these times could you make?' : sharedActivityType === 'signup' ? 'Choose a time that works for you' : sharedActivityType === 'survey' ? 'Share your feedback' : 'What word or short phrase best captures your thinking?'),
     minParticipants: Math.max(3, Math.min(10, Number(sharedAssignmentActivity.minParticipants) || 3)),
     revealPolicy: sharedActivityType === 'word_cloud' ? sharedAssignmentActivity.revealPolicy === 'auto_publish' ? 'auto_publish' : 'teacher_review' : undefined,
     minValue: sharedActivityType === 'rating' ? ratingMin : undefined,
@@ -449,6 +510,10 @@ async function _alloBuildAssignmentPackEncoded(options = {}, dependencies = {}) 
     deleteAt: sharedActivityType === 'availability' || sharedActivityType === 'signup' || sharedActivityType === 'survey' ? new Date(Date.parse(expiresAt) + 7 * 24 * 60 * 60 * 1000).toISOString() : undefined
   }) : null;
   if (sharedActivity && sharedActivity.type === 'survey') {
+    if (surveyIssue) {
+      addToast(surveyIssue, 'info');
+      return null;
+    }
     if (!surveyWireItems.length) {
       addToast('Add at least one survey question first.', 'info');
       return null;
@@ -638,9 +703,17 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   const isRating = activityMeta.isRating;
   const packId = String(mailbox?.id || '');
   const activityId = String(effectiveActivity?.activityId || '');
-  const activityScope = `${packId}:${activityId}`;
+  const activityScope = JSON.stringify([mailbox?.url || '', packId, activityId, mode]);
   const mailboxUrl = String(mailbox?.url || '');
   const packSecret = String(mailbox?.secret || '');
+  const scopeToken = React.useMemo(() => ({}), [activityScope, packSecret, admin, effectiveActivity?.type]);
+  const scopeTokenRef = React.useRef(scopeToken);
+  scopeTokenRef.current = scopeToken;
+  const credentialRequestRef = React.useRef(null);
+  const mutationRef = React.useRef(null);
+  const draftDirtyRef = React.useRef(false);
+  const [saveNotice, setSaveNotice] = React.useState('');
+  const [surveyInvalidId, setSurveyInvalidId] = React.useState('');
   const credentialRef = React.useRef(null);
   const activeActivityScopeRef = React.useRef(activityScope);
   const requestSequenceRef = React.useRef(0);
@@ -668,6 +741,16 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   const storageKey = `allo_shared_activity_v1:${packId}:${activityId}`;
   React.useEffect(() => {
     credentialRef.current = null;
+    credentialRequestRef.current = null;
+    mutationRef.current = null;
+    draftDirtyRef.current = false;
+    scopeTokenRef.current = scopeToken;
+    setSaveNotice('');
+    setSurveyInvalidId('');
+    setPollPicks({});
+    setPollName('');
+    setSignupClaims([]);
+    setSignupName('');
     lastAppliedSummaryRef.current = {
       scope: activityScope,
       sequence: 0,
@@ -681,18 +764,22 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     setError('');
     setBusy(false);
     setLastUpdatedAt(0);
-  }, [activityScope]);
+    return () => {
+      if (scopeTokenRef.current === scopeToken) scopeTokenRef.current = null;
+    };
+  }, [activityScope, scopeToken]);
 
   // Writes into the respondent MAP, never over it, so one person answering
   // does not evict another who used the same device.
   const rememberCredential = React.useCallback((credential, slotKey, label) => {
+    if (scopeTokenRef.current !== scopeToken) throw new Error('Activity changed');
     credentialRef.current = credential;
     try {
       const next = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, credential, label);
       localStorage.setItem(storageKey, JSON.stringify(next));
     } catch (_) {}
     return credential;
-  }, [storageKey]);
+  }, [storageKey, scopeToken]);
 
   // "Someone else is answering": mint a FRESH identity rather than reusing
   // whatever is cached. The server issues a new uid per join, so this is the
@@ -736,6 +823,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     } catch (_) {}
   }, [storageKey]);
   const ensureCredential = React.useCallback(async () => {
+    if (scopeTokenRef.current !== scopeToken) throw new Error('Activity changed');
     if (isTeacher) return null;
     const current = credentialRef.current;
     if (current?.uid && current?.pt) return current;
@@ -746,49 +834,68 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         return saved;
       }
     } catch (_) {}
-    const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
+    if (credentialRequestRef.current?.scopeToken === scopeToken) return credentialRequestRef.current.promise;
+    const request = {
+      scopeToken
+    };
+    request.promise = _alloMailboxCallWithRetry(mailboxUrl, {
       a: 'joinactivity',
       id: packId,
       k: packSecret,
       aid: activityId
-    });
-    return rememberCredential({
+    }).then(joined => rememberCredential({
       uid: joined.uid,
       pt: joined.pt
-    }, 's1', '');
-  }, [activityId, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
+    }, 's1', '')).finally(() => {
+      if (credentialRequestRef.current === request) credentialRequestRef.current = null;
+    });
+    credentialRequestRef.current = request;
+    return request.promise;
+  }, [activityId, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey, scopeToken]);
   const callStudentUpdate = React.useCallback(async payload => {
     let credential = await ensureCredential();
-    const send = current => _alloMailboxCallWithRetry(mailboxUrl, {
-      a: 'activityupsert',
-      id: packId,
-      aid: activityId,
-      uid: current.uid,
-      pt: current.pt,
-      ...payload
-    });
+    const send = current => {
+      if (scopeTokenRef.current !== scopeToken) throw new Error('Activity changed');
+      return _alloMailboxCallWithRetry(mailboxUrl, {
+        a: 'activityupsert',
+        id: packId,
+        aid: activityId,
+        uid: current.uid,
+        pt: current.pt,
+        ...payload
+      });
+    };
     try {
       return await send(credential);
     } catch (requestError) {
-      if (!String(requestError?.code || '').includes('denied')) throw requestError;
+      if (scopeTokenRef.current !== scopeToken || !String(requestError?.code || '').includes('denied')) throw requestError;
       clearCredential();
       credential = await ensureCredential();
       return send(credential);
     }
-  }, [activityId, clearCredential, ensureCredential, mailboxUrl, packId]);
+  }, [activityId, clearCredential, ensureCredential, mailboxUrl, packId, scopeToken]);
   const applySharedActivitySummary = React.useCallback((result, requestSequence, requestScope) => {
+    if (scopeTokenRef.current !== scopeToken) return false;
     const nextOrder = _alloNextSharedActivitySummaryOrder(lastAppliedSummaryRef.current, result, requestSequence, requestScope, activeActivityScopeRef.current);
     if (!nextOrder) return false;
     lastAppliedSummaryRef.current = nextOrder;
     setSummary(result);
+    if (!draftDirtyRef.current) {
+      setPollPicks(result?.own?.picks || {});
+      setPollName(result?.own?.name || '');
+      setSignupClaims(result?.own?.claims || []);
+      setSignupName(result?.own?.name || '');
+      setSurveyAnswers(result?.own?.answers || {});
+      setSurveyName(result?.own?.name || '');
+    }
     setLastUpdatedAt(Date.now());
     return true;
-  }, []);
+  }, [scopeToken]);
   const refresh = React.useCallback(async ({
     quiet = false,
     retryCredential = true
   } = {}) => {
-    if (!mailboxUrl || !packId || !activityId) return null;
+    if (!mailboxUrl || !packId || !activityId || mutationRef.current || scopeTokenRef.current !== scopeToken) return null;
     const requestSequence = ++requestSequenceRef.current;
     if (!quiet) setBusy(true);
     try {
@@ -811,7 +918,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
             pt: credential.pt
           });
         } catch (requestError) {
-          if (!retryCredential || !String(requestError?.code || '').includes('denied')) throw requestError;
+          if (scopeTokenRef.current !== scopeToken || !retryCredential || !String(requestError?.code || '').includes('denied')) throw requestError;
           clearCredential();
           const retry = await ensureCredential();
           result = await _alloMailboxCallWithRetry(mailboxUrl, {
@@ -827,21 +934,21 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       if (applied) {
         if (result?.own?.text) setTerm(current => current || result.own.text);
         if (Number.isInteger(result?.own?.value)) setRatingValue(current => current == null ? result.own.value : current);
-        setError('');
+        if (!quiet) setError('');
       }
       return result;
     } catch (requestError) {
       const currentOrder = lastAppliedSummaryRef.current || {
         sequence: 0
       };
-      if (!quiet && activeActivityScopeRef.current === activityScope && requestSequence >= currentOrder.sequence) {
+      if (!quiet && activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken && requestSequence >= currentOrder.sequence) {
         setError(`The ${activityMeta.title.toLowerCase()} could not update. Check the connection and try again.`);
       }
       return null;
     } finally {
-      if (!quiet && activeActivityScopeRef.current === activityScope) setBusy(false);
+      if (!quiet && !mutationRef.current && activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
-  }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId]);
+  }, [activityId, activityScope, admin, applySharedActivitySummary, clearCredential, ensureCredential, isTeacher, mailboxUrl, packId, scopeToken]);
   React.useEffect(() => {
     let cancelled = false;
     let timer = null;
@@ -898,11 +1005,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       }
       addToast(result?.own?.status === 'approved' ? 'Your word is now part of the anonymous class cloud.' : 'Your word was saved and is waiting for teacher review.', 'success');
     } catch (requestError) {
-      if (activeActivityScopeRef.current === activityScope) {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('Your word was not saved. Check the connection and use Save again.');
       }
     } finally {
-      if (activeActivityScopeRef.current === activityScope) setBusy(false);
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
   };
   const submitRating = async event => {
@@ -924,11 +1031,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       }
       addToast('Your rating was saved anonymously. You can update it while the assignment is open.', 'success');
     } catch (requestError) {
-      if (activeActivityScopeRef.current === activityScope) {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('Your rating was not saved. Check the connection and use Save again.');
       }
     } finally {
-      if (activeActivityScopeRef.current === activityScope) setBusy(false);
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
     }
   };
   const moderate = async (uid, status) => {
@@ -946,15 +1053,60 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       const refreshed = await refresh({
         quiet: true
       });
-      if (activeActivityScopeRef.current === activityScope) {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError(refreshed ? '' : 'That change saved, but the moderation list could not refresh. Check the connection and refresh again.');
       }
     } catch (requestError) {
-      if (activeActivityScopeRef.current === activityScope) {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
         setError('That moderation change did not save. Please try again.');
       }
     } finally {
-      if (activeActivityScopeRef.current === activityScope) setBusy(false);
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
+    }
+  };
+  const markDraftChanged = () => {
+    draftDirtyRef.current = true;
+    setSaveNotice('');
+    setError('');
+    setSurveyInvalidId('');
+  };
+  const saveSharedResponse = async (payload, message) => {
+    if (busy || mutationRef.current || !summary || summary.closed || scopeTokenRef.current !== scopeToken) return;
+    const mutation = {
+      scopeToken
+    };
+    mutationRef.current = mutation;
+    const sequence = ++requestSequenceRef.current;
+    setBusy(true);
+    setError('');
+    setSaveNotice('');
+    try {
+      const result = await callStudentUpdate(payload);
+      if (scopeTokenRef.current !== scopeToken || mutationRef.current !== mutation) return;
+      if (!result || result.ok === false) throw Object.assign(new Error('Response not saved'), {
+        code: result?.e
+      });
+      draftDirtyRef.current = false;
+      applySharedActivitySummary(result, sequence, activityScope);
+      setSaveNotice(message);
+      addToast(message, 'success');
+    } catch (requestError) {
+      if (scopeTokenRef.current !== scopeToken || mutationRef.current !== mutation) return;
+      const code = String(requestError?.code || requestError?.message || '');
+      const message = code.includes('slot-full') ? 'That slot filled before your choice was saved. ' + ((summary?.own?.claims || []).length ? 'Your previous reservation is unchanged. ' : 'No reservation was made. ') + 'Review the updated slots and choose again.' : code.includes('poll-closed') ? 'This activity closed before your changes were saved.' : 'Your changes were not saved. Your draft is still here; check the connection and try Save again.';
+      if (code.includes('slot-full') || code.includes('poll-closed')) {
+        mutationRef.current = null;
+        await refresh({
+          quiet: true
+        });
+        if (scopeTokenRef.current !== scopeToken || mutationRef.current) return;
+      }
+      setError(message);
+    } finally {
+      if (scopeTokenRef.current === scopeToken && (!mutationRef.current || mutationRef.current === mutation)) {
+        mutationRef.current = null;
+        setBusy(false);
+      }
     }
   };
   const terms = Array.isArray(summary?.terms) ? summary.terms : [];
@@ -988,7 +1140,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     });
   }
   return /*#__PURE__*/React.createElement("section", {
-    className: "rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left",
+    "aria-busy": busy,
+    className: "min-w-0 break-words rounded-2xl border border-sky-200 bg-gradient-to-b from-sky-50 to-white p-4 text-left",
     "aria-label": `Shared ${activityMeta.title.toLowerCase()}`
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start gap-3"
@@ -1009,7 +1162,15 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-1 text-sm font-bold leading-snug text-slate-800"
   }, effectiveActivity?.prompt || summary?.prompt), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[11px] leading-relaxed text-slate-600"
-  }, isRating ? 'Anonymous class totals update while this assignment is open. Ratings are formative and never marked correct or incorrect.' : 'Anonymous class totals update while this assignment is open. The teacher does not need to be logged in.'))), !isTeacher && isRating && /*#__PURE__*/React.createElement("form", {
+  }, isPoll || isSignup || isSurvey ? isTeacher ? 'Review responses here as participants complete this assignment.' : 'Answer in your own time. Saved responses remain available when you reopen this assignment.' : isRating ? 'Anonymous class totals update while this assignment is open. Ratings are formative and never marked correct or incorrect.' : 'Anonymous class totals update while this assignment is open. The teacher does not need to be logged in.'))), !summary && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-3 text-sm text-slate-700"
+  }, busy ? 'Loading activity…' : 'Activity unavailable. Use Refresh to try again.'), saveNotice && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-3 rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-800"
+  }, saveNotice), (isPoll || isSignup || isSurvey) && summary && /*#__PURE__*/React.createElement("p", {
+    className: "mt-3 text-xs text-slate-600"
+  }, summary.identityMode === 'real_name' ? isTeacher ? 'Names are shown with individual responses.' : 'The organizer can see your name and responses.' : summary.identityMode === 'codename' ? isTeacher ? 'Individual responses are shown under assigned codenames.' : 'The organizer can see responses under your assigned codename.' : 'The organizer sees anonymous combined results.', summary.closesAt ? ' Closes ' + new Date(summary.closesAt).toLocaleString() + '.' : ''), !isTeacher && isRating && /*#__PURE__*/React.createElement("form", {
     onSubmit: submitRating,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
   }, /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {
@@ -1048,6 +1209,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-2 text-[11px] font-bold text-slate-600"
   }, statusText)), isPoll && !isTeacher && /*#__PURE__*/React.createElement("form", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3",
+    onChangeCapture: markDraftChanged,
+    onClickCapture: event => {
+      if (event.target.closest('button')?.type === 'button') markDraftChanged();
+    },
     onSubmit: async event => {
       event.preventDefault();
       if (busy) return;
@@ -1063,18 +1228,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         addToast('Add your name so the organizer knows who can make it.', 'info');
         return;
       }
-      try {
-        await callStudentUpdate({
-          picks: marks,
-          nm: summary?.identityMode === 'real_name' ? pollName.trim().slice(0, 40) : ''
-        });
-        addToast('Your availability was saved. You can change it until the poll closes.', 'success');
-      } catch (submitError) {
-        addToast('That did not save: ' + (submitError && submitError.message || 'unknown'), 'error');
-      }
+      await saveSharedResponse({
+        picks: marks,
+        nm: summary?.identityMode === 'real_name' ? pollName.trim().slice(0, 40) : ''
+      }, 'Your availability was saved. You can change it until the poll closes.');
     }
   }, /*#__PURE__*/React.createElement("fieldset", {
-    disabled: busy || summary?.closed
+    disabled: busy || !summary || summary?.closed,
+    className: "min-w-0"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'This poll has closed' : 'Which of these could you make?'), summary?.identityMode === 'real_name' && /*#__PURE__*/React.createElement("label", {
@@ -1115,10 +1276,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       next[opt.id] = mark;
       return next;
     }),
-    className: `rounded-md px-2 py-1 text-[11px] font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-[11px] font-black ${pollPicks[opt.id] === mark ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
   }, mark === 'yes' ? 'Yes' : mark === 'maybe' ? 'Maybe' : 'No')))))), /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
+    className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
   }, busy ? 'Saving...' : 'Save my availability'))), isPoll && isTeacher && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -1162,7 +1323,12 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     key: opt.id,
     className: "px-2 py-1 text-slate-700"
   }, row.picks?.[opt.id] === 'yes' ? 'Yes' : row.picks?.[opt.id] === 'maybe' ? 'Maybe' : row.picks?.[opt.id] === 'no' ? 'No' : '-')))))))), isSurvey && !isTeacher && /*#__PURE__*/React.createElement("form", {
+    noValidate: true,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3",
+    onChangeCapture: markDraftChanged,
+    onClickCapture: event => {
+      if (event.target.closest('button')?.type === 'button') markDraftChanged();
+    },
     onSubmit: async event => {
       event.preventDefault();
       if (busy) return;
@@ -1173,10 +1339,25 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         if (value !== undefined && value !== null && String(value).trim() !== '') payload[formItem.id] = value;
       });
       const missing = formItems.filter(formItem => formItem.required && payload[formItem.id] === undefined);
-      if (missing.length) {
-        addToast('Answer the required questions first: ' + missing.map(formItem => formItem.text).join(' · '), 'info');
+      const invalid = formItems.find(item => {
+        const value = payload[item.id];
+        if (value === undefined) return false;
+        if (item.type === 'numeric') return !Number.isFinite(Number(value)) || item.min != null && Number(value) < item.min || item.max != null && Number(value) > item.max;
+        if (item.type === 'likert') return !Number.isInteger(value) || value < 1 || value > (item.steps || 5);
+        if (item.type === 'choice') return !(item.options || []).some(option => option.id === value);
+        return false;
+      });
+      const problem = missing[0] || invalid;
+      if (problem) {
+        setSurveyInvalidId(problem.id);
+        setError(missing.length ? `Answer the required question: ${problem.text}` : `Check your answer to “${problem.text}”${problem.type === 'numeric' ? `. Enter a number${problem.min != null ? ' at least ' + problem.min : ''}${problem.max != null ? ' no greater than ' + problem.max : ''}.` : '.'}`);
+        const row = [...event.currentTarget.querySelectorAll('[data-survey-item]')].find(node => node.dataset.surveyItem === problem.id);
+        (row?.querySelector('input, textarea') || row?.querySelector('button'))?.focus();
         return;
       }
+      formItems.forEach(item => {
+        if (item.type === 'numeric' && payload[item.id] !== undefined) payload[item.id] = Number(payload[item.id]);
+      });
       if (!Object.keys(payload).length) {
         addToast('Answer at least one question first.', 'info');
         return;
@@ -1185,18 +1366,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         addToast('Add your name so the organizer knows who answered.', 'info');
         return;
       }
-      try {
-        await callStudentUpdate({
-          answers: JSON.stringify(payload),
-          nm: summary?.identityMode === 'real_name' ? surveyName.trim().slice(0, 40) : ''
-        });
-        addToast('Your answers were saved. You can change them until this closes.', 'success');
-      } catch (submitError) {
-        addToast('That did not save: ' + (submitError && submitError.message || 'unknown'), 'error');
-      }
+      await saveSharedResponse({
+        answers: JSON.stringify(payload),
+        nm: summary?.identityMode === 'real_name' ? surveyName.trim().slice(0, 40) : ''
+      }, 'Your answers were saved. You can change them until this closes.');
     }
   }, /*#__PURE__*/React.createElement("fieldset", {
-    disabled: busy || summary?.closed
+    disabled: busy || !summary || summary?.closed,
+    className: "min-w-0"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'This survey has closed' : 'A few quick questions'), (summary?.info || effectiveActivity?.info) && /*#__PURE__*/React.createElement("p", {
@@ -1214,6 +1391,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-3 space-y-3"
   }, (summary?.items && summary.items.length ? summary.items : effectiveActivity?.items || []).map(formItem => /*#__PURE__*/React.createElement("div", {
     key: formItem.id,
+    "data-survey-item": formItem.id,
     className: "rounded-lg border border-slate-200 px-2 py-2"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-slate-800"
@@ -1231,12 +1409,13 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   }, (_, at) => at + 1).map(tick => /*#__PURE__*/React.createElement("button", {
     key: tick,
     type: "button",
+    "aria-label": `${tick}${formItem.labels?.[tick - 1] ? ": " + formItem.labels[tick - 1] : ""}`,
     "aria-pressed": surveyAnswers[formItem.id] === tick,
     onClick: () => setSurveyAnswers(previous => ({
       ...previous,
       [formItem.id]: tick
     })),
-    className: `min-h-9 min-w-9 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-xs font-black ${surveyAnswers[formItem.id] === tick ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
   }, tick))), ((formItem.labels || [])[0] || (formItem.labels || [])[(formItem.steps || 5) - 1]) && /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex justify-between text-[10px] font-bold text-slate-500"
   }, /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[0] || ''), /*#__PURE__*/React.createElement("span", null, (formItem.labels || [])[(formItem.steps || 5) - 1] || ''))), formItem.type === 'choice' && /*#__PURE__*/React.createElement("div", {
@@ -1251,9 +1430,11 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       ...previous,
       [formItem.id]: option.id
     })),
-    className: `rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    className: `min-h-11 rounded-md px-2 py-1.5 text-left text-xs font-bold ${surveyAnswers[formItem.id] === option.id ? 'bg-sky-700 text-white' : 'bg-slate-100 text-slate-700'}`
   }, option.label))), formItem.type === 'freetext' && /*#__PURE__*/React.createElement("textarea", {
     "aria-label": formItem.text,
+    "aria-required": formItem.required || undefined,
+    "aria-invalid": surveyInvalidId === formItem.id || undefined,
     value: String(surveyAnswers[formItem.id] || ''),
     onChange: event => setSurveyAnswers(previous => ({
       ...previous,
@@ -1264,20 +1445,34 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-2 w-full rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
   }), formItem.type === 'numeric' && /*#__PURE__*/React.createElement("input", {
     type: "number",
+    step: "any",
+    "aria-required": formItem.required || undefined,
+    "aria-invalid": surveyInvalidId === formItem.id || undefined,
     "aria-label": formItem.text,
     value: surveyAnswers[formItem.id] ?? '',
     min: formItem.min ?? undefined,
     max: formItem.max ?? undefined,
     onChange: event => setSurveyAnswers(previous => ({
       ...previous,
-      [formItem.id]: event.target.value === '' ? undefined : Number(event.target.value)
+      [formItem.id]: event.target.value
     })),
     className: "mt-2 w-32 rounded-md border border-slate-300 px-2 py-1.5 text-xs text-slate-800"
-  })))), summary?.own && /*#__PURE__*/React.createElement("p", {
+  }), !formItem.required && surveyAnswers[formItem.id] !== undefined && String(surveyAnswers[formItem.id]).trim() !== '' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    className: "mt-2 min-h-11 rounded border border-slate-300 px-3 text-xs font-bold text-slate-700",
+    "aria-label": `Clear answer: ${formItem.text}`,
+    onClick: () => setSurveyAnswers(previous => {
+      const next = {
+        ...previous
+      };
+      delete next[formItem.id];
+      return next;
+    })
+  }, "Clear answer")))), summary?.own && /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[11px] font-bold text-emerald-700"
-  }, "Your answers are recorded. Submitting again replaces them."), /*#__PURE__*/React.createElement("button", {
+  }, draftDirtyRef.current ? 'You have unsaved changes. Save to replace your recorded answers.' : 'Your answers are recorded. Submitting again replaces them.'), /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
+    className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
   }, busy ? 'Saving...' : summary?.own ? 'Update my answers' : 'Send my answers'))), isSurvey && isTeacher && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
   }, /*#__PURE__*/React.createElement("p", {
@@ -1331,6 +1526,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     }, shown);
   }))))))), isSignup && !isTeacher && /*#__PURE__*/React.createElement("form", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3",
+    onChangeCapture: markDraftChanged,
+    onClickCapture: event => {
+      if (event.target.closest('button')?.type === 'button') markDraftChanged();
+    },
     onSubmit: async event => {
       event.preventDefault();
       if (busy) return;
@@ -1338,21 +1537,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         addToast('Add your name so the organizer knows who has the slot.', 'info');
         return;
       }
-      try {
-        await callStudentUpdate({
-          claims: signupClaims,
-          nm: summary?.identityMode === 'real_name' ? signupName.trim().slice(0, 40) : ''
-        });
-        addToast(signupClaims.length ? 'You are signed up.' : 'Your slot was released.', 'success');
-      } catch (submitError) {
-        // The server refuses the WHOLE submission if a slot filled up
-        // while this page was open, so say which one went.
-        const code = String(submitError?.code || submitError?.message || '');
-        addToast(code.includes('slot-full') ? 'Someone just took that slot. Pick another one.' : 'That did not save: ' + (submitError?.message || 'unknown'), 'error');
-      }
+      await saveSharedResponse({
+        claims: signupClaims,
+        nm: summary?.identityMode === 'real_name' ? signupName.trim().slice(0, 40) : ''
+      }, signupClaims.length ? 'Your reservation is saved.' : 'Your slot was released.');
     }
   }, /*#__PURE__*/React.createElement("fieldset", {
-    disabled: busy || summary?.closed
+    disabled: busy || !summary || summary?.closed,
+    className: "min-w-0"
   }, /*#__PURE__*/React.createElement("legend", {
     className: "block text-xs font-black text-slate-800"
   }, summary?.closed ? 'Sign-ups have closed' : 'Choose a slot'), summary?.identityMode === 'real_name' && /*#__PURE__*/React.createElement("label", {
@@ -1366,7 +1558,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-3 space-y-2"
   }, (summary?.slots || []).map(slot => {
     const mine = signupClaims.indexOf(slot.id) >= 0;
-    const gone = slot.remaining <= 0 && !mine;
+    const reserved = (summary?.own?.claims || []).includes(slot.id);
+    const gone = slot.remaining <= 0 && !reserved;
     const limit = summary?.maxPerPerson || 1;
     return /*#__PURE__*/React.createElement("div", {
       key: slot.id,
@@ -1377,7 +1570,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       className: "ml-2 text-[10px] font-black uppercase tracking-wide"
     }, gone ? 'Full' : slot.remaining + ' of ' + slot.capacity + ' left')), /*#__PURE__*/React.createElement("button", {
       type: "button",
-      disabled: gone,
+      disabled: gone && !mine,
       "aria-pressed": mine,
       onClick: () => setSignupClaims(previous => {
         if (previous.indexOf(slot.id) >= 0) return previous.filter(id => id !== slot.id);
@@ -1386,14 +1579,14 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         const next = previous.concat([slot.id]);
         return next.length > limit ? next.slice(next.length - limit) : next;
       }),
-      className: `rounded-md px-2 py-1 text-[11px] font-black disabled:opacity-40 ${mine ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'}`
-    }, mine ? 'Mine - tap to release' : gone ? 'Full' : 'Take it'));
+      className: `min-h-11 min-w-11 rounded-md px-2 py-1 text-[11px] font-black disabled:opacity-40 ${mine ? 'bg-emerald-700 text-white' : 'bg-slate-100 text-slate-700'}`
+    }, mine ? reserved ? 'Reserved · deselect' : 'Selected · remove' : reserved ? 'Keep reservation' : gone ? 'Full' : 'Select slot'));
   })), /*#__PURE__*/React.createElement("button", {
     type: "submit",
-    className: "mt-3 rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
+    className: "mt-3 min-h-11 w-full rounded-lg bg-sky-700 px-3 py-1.5 text-xs font-black text-white disabled:opacity-50"
   }, busy ? 'Saving...' : 'Save my choice'), /*#__PURE__*/React.createElement("p", {
-    className: "mt-1 text-[10px] text-slate-500"
-  }, (summary?.maxPerPerson || 1) > 1 ? 'You can take up to ' + summary.maxPerPerson + ' slots.' : 'You can hold one slot at a time.'))), isSignup && isTeacher && /*#__PURE__*/React.createElement("div", {
+    className: "mt-1 text-xs text-slate-600"
+  }, "Select or deselect slots, then save to confirm your changes.", ' ', (summary?.maxPerPerson || 1) > 1 ? 'You can take up to ' + summary.maxPerPerson + ' slots.' : 'You can hold one slot at a time.'))), isSignup && isTeacher && /*#__PURE__*/React.createElement("div", {
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
@@ -1436,7 +1629,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "font-bold text-slate-600"
   }, statusText || 'Submit before viewing the class cloud.'), /*#__PURE__*/React.createElement("span", {
     className: "text-slate-500"
-  }, term.length, "/60"))), /*#__PURE__*/React.createElement("div", {
+  }, term.length, "/60"))), !isPoll && !isSignup && !isSurvey && /*#__PURE__*/React.createElement("div", {
     className: "mt-4",
     "aria-live": "polite"
   }, isRating ? summary?.revealed && distribution.length > 0 ? /*#__PURE__*/React.createElement("div", {
@@ -1534,7 +1727,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "rounded-md border border-rose-300 bg-white px-2 py-1 text-[10px] font-black text-rose-800 disabled:opacity-50"
   }, "Refresh status")), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex items-center justify-between gap-2 text-[10px] text-slate-500"
-  }, /*#__PURE__*/React.createElement("span", null, isRating ? 'Anonymous aggregate only · not scored' : summary?.revealPolicy === 'auto_publish' ? 'Automatic publishing with basic contact/profanity holds' : 'Teacher review required before publishing'), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", null, isPoll || isSignup || isSurvey ? summary?.closed ? 'Closed for responses' : isTeacher ? 'Results update automatically' : draftDirtyRef.current ? 'Unsaved changes · save to confirm' : 'Changes take effect when you save' : isRating ? 'Anonymous aggregate only · not scored' : summary?.revealPolicy === 'auto_publish' ? 'Automatic publishing with basic contact/profanity holds' : 'Teacher review required before publishing'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => refresh(),
     disabled: busy,

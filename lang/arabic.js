@@ -5139,7 +5139,7 @@
       "correct": "عمل ممتاز!",
       "partial": "جهد جيد، تابع!",
       "incorrect": "ليس صحيحًا تمامًا • حاول مجددًا!",
-      "error": "تعذَّر التقييم • يُرجى المحاولة مجددًا.",
+      "error": "تعذَّر التقييم — يُرجى المحاولة مجددًا.",
       "verdict_correct": "صحيح!",
       "verdict_partial": "صحيح جزئيًا",
       "verdict_incorrect": "ليس صحيحًا تمامًا",
@@ -5929,7 +5929,7 @@
     "simplified_def_fallback": "يمكنك النقر على أي كلمة في النص لرؤية تعريفها!",
     "simplified_cloze": "جرّب وضع 'ملء الفراغات' لاختبار مهارات المفردات.",
     "simplified_quiz": "هذا النص رائع. هل ننشئ بطاقة خروج للتحقق من الفهم؟",
-    "simplified_glossary": "كلمات مثل '{term1}' و '{term2}' قد تحتاج إلى دعم • قد يساعد المسرد!",
+    "simplified_glossary": "كلمات مثل '{term1}' و '{term2}' قد تحتاج إلى دعم — قد يساعد المسرد!",
     "simplified_glossary_fallback": "بعض هذه المصطلحات صعبة. سيساعد المسرد في دعم هذا النص.",
     "simplified_outline": "قد يستفيد المتعلمون البصريون من منظِّم بصري لهذا المحتوى.",
     "glossary_bingo": "يمكنك تحويل هذه المصطلحات إلى ألعاب كلمات مثل BINGO ومطابقة الذاكرة والكلمات المتقاطعة والبحث عن الكلمات!",
@@ -5940,7 +5940,7 @@
     "quiz_rigor": "هل تريد ضمان أن هذا الاختبار صارم؟ شغِّل تدقيق المعايير.",
     "adventure_sim": "تسمح المغامرات للطلاب بتطبيق ما تعلموه في محاكاة آمنة.",
     "adventure_inventory": "تحقق من 'المخزون' لرؤية ما تم جمعه من عناصر.",
-    "adventure_context": "تصبح مغامرتك عن {topic} أغنى بمزيد من الموارد • جرّب إضافة {suggestion}!",
+    "adventure_context": "تصبح مغامرتك عن {topic} أغنى بمزيد من الموارد — جرّب إضافة {suggestion}!",
     "adventure_context_fallback": "كلما أنشأت المزيد من الموارد، أصبح سياق المغامرة أغنى.",
     "timeline_drag": "اسحب وأفلت الأحداث لإعادة ترتيب التسلسل.",
     "timeline_visualize": "يساعد ذلك الطلاب على تصوُّر علاقات السبب والنتيجة.",
@@ -5951,8 +5951,8 @@
     "parent_adventure": "جرّب وضع المغامرة لنشاط ممتع في يوم ممطر.",
     "parent_read_along": "استخدم 'اقرأ معي' لممارسة القراءة معًا.",
     "fallback_lesson_plan": "لديك موارد رائعة. هل نوليفها في خطة درس؟",
-    "fallback_brainstorm": "تشعر بالعَلَق؟ جرّب الدردشة معي وبدِّل الإكمال التلقائي لتفعيل وضع المخطط • سأساعدك في تصميم درسك كاملًا!",
-    "fallback_export": "لديك {count} موارد عن {topic} • صدِّرها كملف PDF واحد!",
+    "fallback_brainstorm": "تشعر بالعَلَق؟ جرّب الدردشة معي وبدِّل الإكمال التلقائي لتفعيل وضع المخطط — سأساعدك في تصميم درسك كاملًا!",
+    "fallback_export": "لديك {count} موارد عن {topic} — صدِّرها كملف PDF واحد!",
     "fallback_export_fallback": "يمكنك تصدير جميع هذه الموارد كحزمة PDF واحدة.",
     "fallback_guide": "اختر 'أرني' في دليل الذكاء الاصطناعي إذا ضللت الطريق!",
     "intro_greeting": "انقر علي لتعديل إعدادات صوتي.",
@@ -6128,7 +6128,7 @@
     "text_generated": "نصك المكيَّف عن {topic} جاهز! جرّب النقر على كلمة لرؤية تعريفها، أو استكشف أدوات مثل المسرد أو الاختبار لتعميق الفهم.",
     "flashcards_created": "تم إنشاء البطاقات التعليمية! يمكنك تصديرها إلى Quizlet أو طباعتها أو تجربة لعبة الذاكرة.",
     "quiz_generated": "الاختبار جاهز! استخدم وضع العرض للصف، أو جرّب المقيِّم التلقائي للاستجابات المفتوحة.",
-    "glossary_generated": "اكتمل المسرد! جرّب ألعاب الكلمات • BINGO، مطابقة الذاكرة، الكلمات المتقاطعة، البحث عن الكلمات، والمزيد!",
+    "glossary_generated": "اكتمل المسرد! جرّب ألعاب الكلمات — BINGO، مطابقة الذاكرة، الكلمات المتقاطعة، البحث عن الكلمات، والمزيد!",
     "adventure_started": "تبدأ مغامرتك! اكتب إجراءك أدناه، أو استخدم أزرار الاختيار لتقرير ما يحدث بعد ذلك.",
     "adventure_scene": "ماذا ستفعل؟ كل اختيار يشكِّل قصتك!",
     "analysis_complete": "اكتمل التحليل! وجدت بعض المفردات والمفاهيم الرئيسية الجديرة بالاستكشاف.",
@@ -7655,7 +7655,7 @@
     "bridge_generating": "جارٍ إنشاء نسختك الشخصية...",
     "bridge_projection": "وضع العرض",
     "bridge_exit_projection": "الخروج من العرض",
-    "bridge_offline_info": "لا توجد جلسة مباشرة • معاينة على هذا الجهاز فقط",
+    "bridge_offline_info": "لا توجد جلسة مباشرة — معاينة على هذا الجهاز فقط",
     "bridge_term_saved": "تم حفظ \"{term}\" في المسرد",
     "bridge_term_save_failed": "فشل حفظ المصطلح",
     "bridge_save_term": "حفظ في المسرد",
@@ -8621,7 +8621,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "إرسال إلى منضدة عمل الخبراء",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -8650,7 +8650,7 @@
       "anchor_missing": "No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix.",
       "aria": "Content recovery word review",
       "close": "Close",
-      "close_aria": "Close review",
+      "close_aria": "أغلِق المراجعة",
       "done": "Review complete:",
       "heading": "Word",
       "insert": "Insert at match",
@@ -9698,8 +9698,8 @@
     "escaped_desc": "لقد حللت كل الألغاز وهربت من الغرفة!",
     "time_up": "⏰ انتهى الوقت!",
     "reveal_hint": "كشف التلميح",
-    "puzzles_remaining": "{{count}} ألغاز متبقية",
-    "time_remaining": "الوقت: {{time}}",
+    "puzzles_remaining": "{count} ألغاز متبقية",
+    "time_remaining": "الوقت: {time}",
     "progress": "التقدم",
     "start": "ابدأ غرفة الهروب",
     "start_hint": "ابدأ المؤقت لتبدأ فحص الكائنات",
@@ -9710,8 +9710,8 @@
     "room_complete": "اكتملت الغرفة!",
     "loading_error": "تعذَّر تحميل بيانات الغرفة",
     "no_puzzle": "لا يوجد لغز لهذا الكائن",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "هروب مثالي! +{{xp}} XP إضافية",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "هروب مثالي! +{xp} XP إضافية",
     "puzzle_mcq": "اختيار من متعدد",
     "puzzle_sequence": "ضع بالترتيب",
     "puzzle_cipher": "فك الرسالة",
@@ -9769,7 +9769,7 @@
     "clue": "دليل",
     "clue_found": "تم اكتشاف دليل!",
     "clue_revealed": "قد يساعد هذا الدليل في لغز آخر...",
-    "clues_collected": "الأدلة: {{count}}/{{total}}",
+    "clues_collected": "الأدلة: {count}/{total}",
     "use_clue": "استخدم الدليل",
     "final_door": "باب المخرج",
     "final_door_ready": "تم فتح باب المخرج الآن!",
@@ -9813,9 +9813,9 @@
     "launch_live_tooltip": "ابدأ غرفة هروب متعددة اللاعبين مع صفك",
     "team_mode": "تحدي الفِرَق",
     "team_race": "تسابق للهروب!",
-    "team_progress": "{{team}} التقدم: {{solved}}/{{total}}",
+    "team_progress": "{team} التقدم: {solved}/{total}",
     "waiting_host": "في انتظار بدء المعلم...",
-    "team_escaped": "{{team}} هربت!",
+    "team_escaped": "{team} هربت!",
     "all_teams_done": "كل الفِرَق انتهت!",
     "your_team": "فريقك",
     "team_red": "الفريق الأحمر",
@@ -9823,7 +9823,7 @@
     "team_green": "الفريق الأخضر",
     "team_yellow": "الفريق الأصفر",
     "team_all": "جميع الطلاب",
-    "teams_competing": "{{count}} فِرَق متنافسة",
+    "teams_competing": "{count} فِرَق متنافسة",
     "first_escape": "أول من يهرب!",
     "end_game": "إنهاء اللعبة",
     "end_game_confirm": "إنهاء غرفة الهروب لجميع الطلاب؟",
@@ -9836,8 +9836,8 @@
     "resume_game": "استئناف اللعبة",
     "game_paused_by_teacher": "تم إيقاف اللعبة من قبل المعلم",
     "celebration_title": "تهانينا!",
-    "you_escaped": "هرب فريقك في {{time}}!",
-    "other_team_escaped": "{{team}} هربت!",
+    "you_escaped": "هرب فريقك في {time}!",
+    "other_team_escaped": "{team} هربت!",
     "class_escaped": "نصر الصف!",
     "everyone_escaped": "عمل الجميع معًا للهروب!",
     "hurry_up": "تابع! لا يزال بإمكانك الهروب!",
@@ -9865,7 +9865,7 @@
     "load_saved": "تحميل المحفوظ",
     "loaded_saved": "تم تحميل غرفة الهروب المحفوظة! راجع وأطلق عند الجاهزية.",
     "no_saved": "لم يتم العثور على غرفة هروب محفوظة",
-    "preview_confirmed": "✓ تم قفل غرفة الهروب • جاهزة للعب!",
+    "preview_confirmed": "✓ تم قفل غرفة الهروب — جاهزة للعب!",
     "xp_earned_streak": "+{xp} XP (مكافأة متتالية x{multiplier}!)",
     "loaded_from_resource": "تم التحميل من المورد."
   },
@@ -12305,7 +12305,11 @@
       "trapezoid": "شبه منحرف",
       "simpson": "سيمبسون",
       "rectangles_n": "مستطيلات (n)",
-      "coeff_a": "المعامل a"
+      "coeff_a": "المعامل a",
+      "sr_explanation_ready": "الشرح جاهز.",
+      "a11y_back_to_tools": "العودة إلى الأدوات",
+      "a11y_snapshot": "لقطة",
+      "a11y_next": "التالي"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ الصوت غير مدعوم في هذا المتصفح",
@@ -12429,13 +12433,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "أنشئ شرح الذكاء الاصطناعي على مستوى",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "مستوى القراءة:",
+      "aria_reading_level_group": "مستوى القراءة",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -12443,14 +12447,14 @@
       "aria_second_amplitude": "Second wave amplitude",
       "aria_second_frequency": "Second wave frequency",
       "aria_second_phase": "Second wave phase",
-      "aria_select_answer": "Select answer: ",
+      "aria_select_answer": "اختر الإجابة:",
       "aria_selected": " (selected)",
       "aria_show_second": "Show second wave",
       "aria_slit_separation": "Slit separation",
       "aria_source_speed": "Source speed as fraction of wave speed",
       "aria_standing_string": "Standing wave on a string",
       "aria_step_frame": "Step the animation forward one frame",
-      "aria_switch_to": "Switch to ",
+      "aria_switch_to": "انتقِل إلى",
       "aria_tension_newtons": "Tension in newtons",
       "aria_toggle_sound": "Toggle Sound",
       "aria_topics_suffix": " topics",
@@ -14335,7 +14339,8 @@
       "angle_u00b0": "الزاوية (°)",
       "velocity_ms": "السرعة (m/s)",
       "gravity_msu00b2": "الجاذبية (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "الشرح جاهز."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 عشوائي: ",
@@ -14363,7 +14368,10 @@
       "codominant_desc": "يُعبَّر عن كلا الأليلين بالكامل. تُظهر الكائنات متغايرة الزيجوت الصفتين في الوقت نفسه.",
       "sexLinked_desc": "تحمل الصفة على كروموسوم X. يوضّح هذا الوراثة المتنحية المرتبطة بـ X (مثل الهيموفيليا وعمى الألوان الأحمر-الأخضر): يحتاج الذكور (XY) إلى نسخة واحدة فقط لتظهر الصفة؛ وتحتاج الإناث (XX) إلى نسختين.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "العودة إلى أدوات STEM",
+      "a11y_snapshot": "لقطة",
+      "a11y_close_flashcard": "إغلاق البطاقة"
     },
     "circuit": {
       "meter_status_ammeter_short": "وضع غير آمن: مسار دارة قصر",
@@ -16021,7 +16029,9 @@
       "our_sun_is_born": "ولادة شمسنا",
       "present_day": "اليوم الحاضر",
       "the_far_future": "المستقبل البعيد",
-      "universe": "الكون: "
+      "universe": "الكون: ",
+      "a11y_back_to_tools": "العودة إلى الأدوات",
+      "a11y_simulation_speed": "سرعة المحاكاة"
     },
     "rocks": {
       "igneous": "ناري",
@@ -19685,7 +19695,10 @@
       "garage_desc": "محركات وصدأ وتفاعلات — ورشة كيمياء.",
       "classroom_desc": "مختبر علوم حقيقي فيه دوارق وتجارب.",
       "outdoors_desc": "اخرج إلى الطبيعة — فهي أكبر مختبر على الإطلاق.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "العودة إلى الأدوات",
+      "a11y_snapshot": "لقطة",
+      "a11y_next": "التالي"
     },
     "converter": {
       "u2705_saved_to_history": "✅ تم الحفظ في السجل!",
@@ -20472,7 +20485,40 @@
       "read_what_special_education_law_actually": "اقرأ ما يقوله قانون التربية الخاصة فعلًا، بكلماته هو. النص الحقيقي للجزء B من IDEA والقسم 504، مجلوبًا من eCFR ومؤرخًا، قابلًا للبحث، مع القواعد الاتحادية وقواعد الولاية جنبًا إلى جنب. لا شيء يُعاد صياغته أو يُولَّد: إن لم يكن النص الرسمي محمّلًا، تقول الأداة ذلك بدل أن تخمّن.",
       "applied_k_12_behavior_practice_what": "ممارسة سلوكية تطبيقية من الروضة إلى الثانوية: ما يفعله فعلًا الأخصائيون النفسيون المدرسيون والمعلمون بهذا العلم. إطار PBIS ثلاثي المستويات، وسلوكيات بديلة مرتبطة بوظائف FBA، وأحداث السياق (المحفزات البطيئة التي تفوت معظم خطط BIP)، ودورة الانفعال ذات المراحل السبع لجيف كولفن، وأخلاقيات التقييد والعزل المستندة إلى الفصل 33 في مين. أداة شقيقة لـ BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "أحياء بحرية وعلم سلوك الأخطبوط والحبار والسبيدج والنوتي. في الصدارة: Hunter Sim — اختر النوع والموئل والفريسة والتكتيك، والعب لعبة التمويه المصغرة، وضبط توقيت الانقضاض. يفتح طرائف بيولوجية من دفتر الميدان (ميكانيكا الخلايا الصبغية، 9 أدمغة، دم أزرق، الدفع النفاث). دليل ميداني لعشرة أنواع مع بيانات الذكاء والتمويه وسرعة الاندفاع.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1 وHS-ETS1 وHS-PS2. محاكي إجهاد الجمالون ببحر وارتفاع وحمل ومادة قابلة للضبط، ومقارنة أنواع الجسور (كمري، جمالوني، قوسي، معلق، مشدود بالكابلات)، وقاعدة بيانات المواد، وأنواع القوى، ودراسات حالة واقعية (Tacoma Narrows، Hyatt Regency، Tay، Silver، إضافة إلى Brooklyn وGolden Gate وAkashi وMillau)، ودورة التصميم الهندسي، واختبار بنمط AP، ومواصفات تصميم قابلة للطباعة."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1 وHS-ETS1 وHS-PS2. محاكي إجهاد الجمالون ببحر وارتفاع وحمل ومادة قابلة للضبط، ومقارنة أنواع الجسور (كمري، جمالوني، قوسي، معلق، مشدود بالكابلات)، وقاعدة بيانات المواد، وأنواع القوى، ودراسات حالة واقعية (Tacoma Narrows، Hyatt Regency، Tay، Silver، إضافة إلى Brooklyn وGolden Gate وAkashi وMillau)، ودورة التصميم الهندسي، واختبار بنمط AP، ومواصفات تصميم قابلة للطباعة.",
+      "the_gutenberg_style_screw_press_as": "مكبس اللولب على طراز غوتنبرغ كمحاكاة تعمل فعلًا. اسحب الذراع، اصفّ حروفك بنفسك، وانظر إلى الأثر. إضافة إلى علم المواد (سبيكة الرصاص والقصدير والأنتيمون)، والاقتصاد (انهيار كلفة الكتاب الواحد)، والتاريخ (الإصلاح الديني، الثورة العلمية)، وفن الطباعة، والناس خلف المكبس (ومنهم الطابعات اللواتي نسيهنّ التاريخ). صُمم لعمل متعدد التخصصات في المرحلة الإعدادية.",
+      "three_js_stoop_simulator_deep_science": "محاكي الانقضاض في Three.js وعلم عميق لميكانيكا صيد الجوارح. طِر شاهينًا بسرعة 240 mph، أو هاربية بمخالب قوتها 530 psi، أو بومة قرناء صامتة. 8 أنواع و12 قسمًا عن قوة المخالب، والبصر (أحدّ من بصر الإنسان بـ 4-8 مرات، والأشعة فوق البنفسجية عند العويسق)، وفيزياء الطيران، والطيران الصامت للبوم، وحاسبة السرعة الحدية، والتعافي بعد DDT وأزمات الحفظ المستمرة، والتعرّف الميداني بالظل الخارجي والهيئة العامة.",
+      "practice_reading_and_completing_the_documents": "تدرّب على قراءة وتعبئة الوثائق التي تدور عليها حياة الكبار: طلبات العمل، ونماذج W-4، وعقود الإيجار، واستمارات الدخول الطبي، ورخص القيادة، ودعوة اجتماع IEP الخاص بك. كل حقل مشروح بلغة واضحة، والخانات التي قد تكلفك مؤشَّر عليها، ومشاهد ضغط لحين يريد أحدهم أن توقّع الآن، وعبارات جاهزة لطلب مهلة. كل التدريب يجري على شخص متخيَّل، لا على بياناتك الحقيقية أبدًا.",
+      "how_swimming_works_stroke_physics_survival": "كيف تعمل السباحة (فيزياء الضربات ومهارات النجاة) وما ينبغي لكل سابح أن يعرفه عن الماء البارد، والتيارات المرتدة، والجليد، وسترات النجاة، والإنقاذ. تفكيك بصري للضربات، وعلم الطفو والدفع، ومهارات النجاة (الطفو على الظهر، ركل الخفّاقة، HELP، التجمّع) التي تنقذ الأرواح فعلًا. المصادر: CDC وUSCG وAAP وNAA وNOAA وUSA Swimming. لأغراض تعليمية فقط: لتتعلم السباحة حقًا ابحث عن مدرب سباحة.",
+      "tax_paycheck_calculator_data_literacy_decision": "حاسبة الضرائب وكشف الراتب، والثقافة في التعامل مع البيانات، ومصفوفة القرار، وقارئ العقود، والسجلات والمعاملات الورقية، وتخطيط التنقل، والاستعداد للعمل، وبناء السيرة الذاتية، وتنظيم أدلة الحقيبة المهنية، والتدرب على المقابلات، ومهارات التواصل، وإدارة الوقت، والتأمين الصحي، والعناية بالأسنان، وأرغونوميا العناية بالجسم، وروتين النوم، ونشرات الأدوية، والتحضير للمواعيد، والسلامة المنزلية، والسلامة الرقمية، والطمأنينة تجاه الطعام، والعلوم التطبيقية للحياة اليومية.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1 وHS-LS1 وHS-LS3 وHS-LS4. عالم الميكروبات: البكتيريا (النافعة والممرضة)، والفيروسات (COVID، والإنفلونزا، وHIV، والعاثيات، والحصبة)، والمجهرية (الضوئية، وتباين الطور، والتألق، والإلكترونية، وAFM)، وتطور مقاومة المضادات الحيوية، وميكروبيوم الإنسان والتربة والمحيط، واللقاحات وجهاز المناعة، والتخمير (العجين المخمّر، واللبن، والكيمتشي، والمخلل الملفوف، والكمبوتشا، والجبن)، ودراسات حالة (Snow، وFleming، وMRSA، وCOVID وmRNA، وFMT)، واختبار، ومرجع قابل للطباعة عن السلامة المخبرية والميكروبات.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "خمس عشرة حملة للرعاية البيئية في إحدى عشرة منطقة. خمس حملات طويلة متعددة الفترات من مين، إضافة إلى عشرة سيناريوهات عابرة للمناطق تغطي عائلات الميكانيكا الخمس جميعها: النار (Yarralin في أستراليا، Karuk في شمال كاليفورنيا)، والحفظ (Yellowstone، وAkagera في رواندا)، والصحة العامة (حمى الضنك في مومباي، وإيبولا 2014 في ليبيريا)، وأحواض التصريف (نهر Klamath، وحوض Murray-Darling)، والمناخ (جزر مارشال، ودلتا بنغلاديش). تُفتح رؤى الاقتران بحسب العائلة عندما تُنهي حملة مين والسيناريو العابر للمناطق من عائلة الميكانيكا نفسها.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1 وHS-ETS1-3 وMS-ESS3-3. صمّم بلدة على شبكة من 144 قطعة في مواجهة متطلبات تتعارض فعلًا. ثلاث بلدات، لكل واحدة قيد حاسم مختلف: Riverbend حيث تضغط مياه الأمطار والسند المالي؛ وMesa Hollow حيث الطبقة الحاملة للماء ثابتة والمزارع تشربها؛ وHarborlight حيث يجب أن تظل الخطة صالحة في 2050. الجريان بالطريقة العقلانية، والموازنة المائية، وهامش ارتفاع مستوى البحر، ومسافة المشي على الشبكة، وشبكة طرق مسعّرة، ويمكن فتح كل منها ليعرض معادلته. يعيد Assumption Lab تشغيل الخطة نفسها بمجموعتي معاملات منشورتين، ليرى الطلاب أي الاستنتاجات ينجو من كلتيهما. خريطة، وجدول قطع قابل للتحرير، ونموذج ثلاثي الأبعاد للخطة نفسها. تحمل أسئلة النقاش والتاريخ الموثّق تلك الأسئلة التي يرفض الأداة نمذجتها. لا درجة ولا مفتاح إجابات.",
+      "codap_data_science": "CODAP: علم البيانات",
+      "lumen_research_canvas": "Lumen: لوحة البحث",
+      "evolab_evolution": "EvoLab: التطور",
+      "dino_lab": "مختبر الديناصورات",
+      "nutritionlab_nutrition_science": "NutritionLab: علم التغذية",
+      "birdlab_i_spy_ornithology": "BirdLab: علم الطيور بالبحث البصري",
+      "openbim_companion": "OpenBIM: دليل مرافق",
+      "applab_ai_app_generator": "AppLab: مولّد تطبيقات بالذكاء الاصطناعي",
+      "access_lens": "عدسة إمكانية الوصول",
+      "sim_shelf": "رفّ المحاكاة",
+      "zoom_gallery": "معرض التقريب",
+      "sourcebook": "كتاب المصادر",
+      "wheel_fire_pottery_lab": "الدولاب والنار: مختبر الفخار",
+      "echo_navigator": "ملّاح الصدى",
+      "learning_lab_how_learning_works": "Learning Lab: كيف يحدث التعلّم",
+      "weldlab_welding_metal_joining": "WeldLab: اللحام ووصل المعادن",
+      "bikelab_physics_repair": "BikeLab: الفيزياء والإصلاح",
+      "fisherlab_boating_fishing_sim": "FisherLab: محاكي الإبحار والصيد",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: محاكي مزرعة بلح البحر",
+      "throwlab_sports_physics": "ThrowLab: فيزياء الرياضة",
+      "skatelab_skate_bmx_physics": "SkateLab: فيزياء التزلج وBMX",
+      "playlab_strategy_on_the_field": "PlayLab: الخطة في الملعب",
+      "kepler_colony": "مستعمرة كبلر",
+      "birdlab_life_list": "BirdLab: قائمة العمر",
+      "petslab_decoder": "PetsLab: مفكّك الشيفرة"
     },
     "area": {
       "volume": "الحجم..."
@@ -20512,7 +20558,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "العودة إلى الأدوات",
+      "a11y_snapshot": "لقطة",
+      "a11y_next": "التالي",
+      "a11y_simulation_speed": "سرعة المحاكاة",
+      "a11y_close_flashcard": "إغلاق البطاقة"
     },
     "solar_sys": {
       "venus": "الزهرة",
@@ -21585,7 +21636,8 @@
       "scaled_volume_changed": "🔵 مُحجّم (تغيّر الحجم)",
       "skewed_shape_deformed": "🟠 مائل (تشوّه الشكل)",
       "degenerate_volume_0": "💀 منحل (الحجم → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "تقدّم الشرح التعليمي"
     },
     "numberline": {
       "first_mark": "العلامة الأولى",
@@ -23728,7 +23780,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "تبدأ سنة {value1}."
     },
     "optics": {
       "optics_lab": "مختبر البصريات",
@@ -24074,7 +24127,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "استعلام SQL تحليلي محلي"
     },
     "geosandbox": {
       "loading_3d_engine": "جارٍ تحميل محرك 3D...",
@@ -24424,7 +24478,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "أُزيل المنحوت"
     },
     "algebraCAS": {
       "solve": "🔍 حل",
@@ -27040,7 +27095,8 @@
       "ml_over": " mL على ",
       "trials_suffix": " تقديرات",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " ثانية متبقية"
+      "sr_seconds_remaining": " ثانية متبقية",
+      "sr_explanation_ready": "الشرح جاهز."
     },
     "economicslab": {
       "six_figures": "ستة أرقام",
@@ -29020,7 +29076,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "حُفظ التأمل."
     },
     "anatomy": {
       "system_explorer": "مستكشف الأجهزة",
@@ -29656,7 +29713,8 @@
       "function_label": "الوظيفة",
       "hear_name_title": "الاستماع إلى النطق",
       "hear_name_prefix": "الاستماع إلى الاسم: ",
-      "hear_it": "استمع"
+      "hear_it": "استمع",
+      "a11y_reset_3d_camera": "إعادة ضبط كاميرا 3D"
     },
     "dna": {
       "back_to_tools": "العودة إلى الأدوات",
@@ -31033,7 +31091,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "حُفظ التأمل."
     },
     "angles": {
       "back_to_tools": "العودة إلى الأدوات",
@@ -31847,7 +31906,8 @@
       "explain_how_each_parameter_shapes_a_si": "اشرح كيف يشكّل كل معامل موجة جيبية.",
       "design_note_discrete_5_state_marker_no": "ملاحظة تصميم: مؤشر منفصل من 5 حالات؛ بلا نقاط للموجة؛ بلا كشف — بحسب التصميم.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "الشرح جاهز."
     },
     "typingpractice": {
       "typing_practice_menu": "قائمة تدريب الطباعة",
@@ -32201,7 +32261,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "العودة إلى القائمة"
     },
     "music": {
       "edm_lead": "قيادة EDM",
@@ -34752,7 +34813,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "اختيار الإجابة: {value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -35516,7 +35578,7 @@
       "sculpt_engine_failed": "تعذّر تحميل محرّك النحت.",
       "sculpt_failed": "فشل النحت — جرّب وصفًا أبسط.",
       "sr_sculpted": "تم وضع المنحوتة",
-      "sr_art_cleared": "تمت إزالة المنحوتة",
+      "sr_art_cleared": "أُزيل المنحوت",
       "assess_failed": "لم يستطع المدرّب الرد — حاول مرة أخرى.",
       "sr_assessed": "ملاحظات المدرّب جاهزة أسفل لوحة البناء",
       "recall_needs_more": "أضِف أولًا 4 أفكار على الأقل في مجموعتين",
@@ -36375,7 +36437,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "مُطفأ",
+      "sr_nothing_to_redo": "لا شيء لإعادته.",
+      "sr_nothing_to_undo": "لا شيء للتراجع عنه.",
+      "sr_dir_left": "يسار",
+      "sr_dir_right": "يمين"
     },
     "arithmetic": {
       "selected": " مُختارة.",
@@ -40421,7 +40488,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "يُعاير ZHR على مُشعّ عند سَمْت الرأس وقدر حدّي 6.5. يفترض هذا التقدير التقريبي سماءً صافية بلا قمر ومؤشّر تعداد 2.2. لا تدل فئات بورتل على القدر الحدّي إلا بصورة تقريبية؛ والسماء الأحلك من المعيارية قد تتجاوز ZHR. وانخفاض ارتفاع المشعّ وزيادة سطوع السماء يقلّلان التقدير.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "العودة إلى أدوات STEM"
     },
     "autorepair": {
       "back_to_menu": "العودة إلى القائمة",
@@ -41162,7 +41230,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "النتيجة: {value1} من {value2}",
+      "a11y_open_2": "فتح {value1}",
+      "a11y_option": "الخيار {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "القشرة",
@@ -41265,7 +41336,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "الشرح جاهز."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -42011,7 +42083,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "الشرح جاهز.",
+      "a11y_investigation_progress": "تقدّم التحقيق",
+      "a11y_flight_debrief": "مراجعة الرحلة",
+      "a11y_tutorial_progress": "تقدّم الشرح التعليمي"
     },
     "behaviorlab": {
       "chain_reaction": "تفاعل متسلسل",
@@ -42183,7 +42259,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "الشرح جاهز.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -44695,7 +44771,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "الوحدة المستكشفة: {value1}",
+      "a11y_score_out_of": "النتيجة: {value1} من {value2}",
+      "sr_selected": "المحدد: {value1}",
+      "sr_quiz_reset": "أُعيد ضبط الاختبار"
     },
     "brainatlas": {
       "group_systems": "الأجهزة",
@@ -49851,7 +49931,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "اختيار الإجابة: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "بطل الاختبارات",
@@ -50995,7 +51076,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "المحدد: {value1}"
     },
     "echotrainer": {
       "wall": "الجدار",
@@ -52454,7 +52536,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "الوحدة المستكشفة: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "حاسبة الكربون",
@@ -53534,7 +53617,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "العودة إلى القائمة",
+      "sr_getting_critique": "جارٍ جلب التقييم...",
+      "sr_critique_ready": "التقييم جاهز."
     },
     "flightsim": {
       "game_controls": "🎮 أدوات التحكم باللعبة",
@@ -53740,7 +53826,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "منظر قمرة القيادة في محاكي الطيران. W/S الميل الطولي، A/D الميل الجانبي، Shift/Ctrl ذراع الوقود، الأقواس تتحكم في القلابات، X مكابح العجلات، Q اختبار، F القوى، Space إيقاف مؤقت، I معلومات.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -53752,7 +53838,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "رحلة حرة من بورتلاند، ME",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -53798,7 +53884,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "برج شنغهاي",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -59624,7 +59710,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "الوحدة المستكشفة: {value1}",
+      "sr_loaded": "تم تحميل {value1}",
+      "sr_showing": "عرض {value1}",
+      "sr_opening": "جارٍ فتح {value1}"
     },
     "platetectonics": {
       "pacific": "الهادئ",
@@ -59890,7 +59980,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -64446,7 +64536,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "الشرح جاهز.",
+      "sr_off": "مُطفأ",
+      "sr_edge_left": "يسار",
+      "sr_edge_right": "يمين",
+      "sr_correct": "صحيح.",
+      "sr_not_quite": "ليس تمامًا."
     },
     "playlab": {
       "save": "حفظ",
@@ -64514,7 +64610,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "المرشد غير متصل.",
+      "sr_drill_stopped": "أُوقف التمرين."
     },
     "printingpress": {
       "menu": "← القائمة",
@@ -66653,7 +66751,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "العودة إلى القائمة",
+      "a11y_open": "فتح {value1}",
+      "sr_selected": "المحدد: {value1}",
+      "sr_loaded": "تم تحميل {value1}",
+      "sr_opening": "جارٍ فتح {value1}",
+      "sr_correct": "صحيح.",
+      "sr_not_quite": "ليس تمامًا.",
+      "sr_year_begins": "تبدأ سنة {value1}.",
+      "sr_question_reset_try_again": "أُعيد ضبط السؤال. حاول مرة أخرى.",
+      "sr_not_quite_see_the_explanation": "ليس تمامًا: انظر إلى الشرح."
     },
     "raptorhunt": {
       "anatomy": "التشريح",
@@ -68302,7 +68410,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "فتح {value1}",
+      "a11y_flight_debrief": "مراجعة الرحلة"
     },
     "renewables": {
       "menu": "← القائمة",
@@ -69002,7 +69112,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "العودة إلى القائمة",
+      "sr_getting_critique": "جارٍ جلب التقييم...",
+      "sr_critique_ready": "التقييم جاهز.",
+      "sr_quiz_reset": "أُعيد ضبط الاختبار"
     },
     "roadready": {
       "let_s_start": "لنبدأ →",
@@ -71869,7 +71983,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "العودة إلى أدوات STEM",
+      "a11y_local_analytical_sql_query": "استعلام SQL تحليلي محلي"
     },
     "stewardship": {
       "sector": "قطاع",
@@ -72446,7 +72562,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "العودة إلى القائمة",
+      "sr_question_reset_try_again": "أُعيد ضبط السؤال. حاول مرة أخرى."
     },
     "throwlab": {
       "scenarios": "السيناريوهات",
@@ -72671,7 +72789,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "إعادة ضبط كاميرا 3D",
+      "sr_coach_is_offline": "المرشد غير متصل.",
+      "sr_drill_stopped": "أُوقف التمرين."
     },
     "weldlab": {
       "menu": "← القائمة",
@@ -74233,7 +74354,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "الوحدة المستكشفة: {value1}",
+      "a11y_score_out_of": "النتيجة: {value1} من {value2}",
+      "sr_quiz_reset": "أُعيد ضبط الاختبار",
+      "sr_loaded": "تم تحميل {value1}",
+      "sr_showing": "عرض {value1}",
+      "sr_not_quite_see_the_explanation": "ليس تمامًا: انظر إلى الشرح."
     },
     "worldbuilder": {
       "grade_level": "مستوى الصف",
@@ -75139,7 +75266,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "مستوى القراءة",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -75826,7 +75953,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "شجرة الحياة",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -77681,7 +77808,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "الخيار {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "مشاهد كاميرا 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -77693,6 +77822,22 @@
       "finish": "فهمت!",
       "replay": "نصائح",
       "replay_aria": "أظهر الدرس"
+    },
+    "pets": {
+      "sr_back_to_menu": "العودة إلى القائمة",
+      "sr_getting_critique": "جارٍ جلب التقييم...",
+      "sr_critique_ready": "التقييم جاهز."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "العودة إلى أدوات STEM",
+      "a11y_3d_camera_views": "مشاهد كاميرا 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "تقدّم التحقيق"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "لا شيء لإعادته.",
+      "sr_nothing_to_undo": "لا شيء للتراجع عنه."
     }
   },
   "resource_builder": {
@@ -78030,7 +78175,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "ارتفاع الثلمة",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -81547,7 +81692,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "صورة المفهوم",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -81582,10 +81727,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "أثِّث كل مفهوم",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "تقدّم التأثيث",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -81597,7 +81742,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "الأسماء المحتملة",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -81608,7 +81753,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "استرجاع المفهوم",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -83166,7 +83311,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "إغلاق Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -83175,7 +83320,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "تصفية الواجبات",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -83213,15 +83358,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "السؤال {n}",
+    "q_choices_aria": "خيارات السؤال {n}، واحد في كل سطر",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "إزالة السؤال {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "درجات المقياس للسؤال {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "نوع الإجابة للسؤال {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -83231,10 +83376,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "رابط قابل للتحديد لـ {title}",
+    "scale_high_aria": "تسمية الطرف الأعلى",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "تسمية الطرف الأدنى",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -83254,7 +83399,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "ملخص حالة الواجبات",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -83270,9 +83415,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "يُحدَّث تلقائيًا",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "رابط الواجب المنزلي القابل للتحديد",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -83281,7 +83426,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "رمز QR للواجب المنزلي",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -85729,7 +85874,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "اختر المستوى النمائي للتوجيهات وسلالم التقييم",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -85737,7 +85882,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "تفعيل عرض المعلّم أو إيقافه",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85768,17 +85913,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "إيقاف تسجيل الملاحظة الصوتية مؤقتًا",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "استئناف تسجيل الملاحظة الصوتية",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "بدء تسجيل ملاحظة صوتية",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "إيقاف التسجيل",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -86164,22 +86309,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "سبب تقدير AlloHaven",
+    "recent_deliveries_aria": "تقديرات AlloHaven الخاصة الأخيرة",
+    "token_amount_aria": "عدد توكنات AlloHaven",
+    "token_cap_aria": "حد توكنات AlloHaven لكل طالب في الجلسة"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "الاستثناءات المسموح بها مع تحقيق الهدف",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "إشارة تقدم اختيارية يتتبعها التطبيق لهذا الهدف",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "الفريق كله معًا، أو كل طالب على حدة",
+    "name_aria": "اسم هدف الصف، يُحفظ على هذا الجهاز فقط",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "الطلاب الذين يشملهم هذا الهدف",
+    "template_aria": "قالب البداية لهدف الصف",
+    "tokens_aria": "التوكنات الممنوحة لكل طالب عند تحقيق هذا الهدف"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -86197,7 +86342,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "رمز إدارة Class Mailbox (اختياري)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -86227,17 +86372,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "يد مرفوعة",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "رابط انضمام مباشر إلى الصندوق قابل للتحديد",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "جلسة مباشرة في Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -86264,7 +86409,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "اتصال في الوقت الفعلي",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -86296,7 +86441,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "رابط تطبيق الويب Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

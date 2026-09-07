@@ -200,7 +200,7 @@ describe('render-surface guards (source pins)', () => {
   it('table of values never prints NaN, integral chip admits divergence', () => {
     expect(src).toContain("isFinite(fy) ? fy.toFixed(2) : 'undefined'");
     expect(src).toContain('integralDefined');
-    expect(src).toContain('"diverges"');
+    expect(src).toContain('The integral diverges at the vertical asymptote.');
   });
 
   it('keyboard shortcut label matches the nine families the handler accepts', () => {

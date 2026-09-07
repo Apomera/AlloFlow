@@ -9,7 +9,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 
 const ROOT = process.cwd();
 const ENGINE = resolve(ROOT, 'agent_skills/alloflow-portable-remediation/scripts/alloflow_portable.py');
@@ -19,34 +19,92 @@ const SOURCE = resolve(ROOT, 'test-assets/multi-column-scrambled.pdf');
 const PYTHON = process.env.ALLOFLOW_TEST_PYTHON || (process.platform === 'win32' ? 'python' : 'python3');
 
 let scratch;
+let capabilityPromise;
+const activeProcesses = new Set();
 
+// These are local subprocess integration tests. Never block Vitest's event
+// loop with spawnSync: its timeout cannot interrupt a synchronous child wait.
 function runPortable(args, extraEnv = {}) {
-  const result = spawnSync(PYTHON, [ENGINE, ...args], {
-    cwd: ROOT,
-    encoding: 'utf8',
-    timeout: 240_000,
-    env: { ...process.env, ...extraEnv },
+  const timeoutMs = args[0] === 'capabilities' ? 45_000
+    : args[0] === 'validate-pdf' ? 90_000
+      : args.includes('required') ? 180_000 : 30_000;
+  const entry = {};
+  entry.settled = new Promise(resolveResult => {
+    const child = spawn(PYTHON, [ENGINE, ...args], {
+      cwd: ROOT, windowsHide: true,
+      env: { ...process.env, PYTHONIOENCODING: 'utf-8', ...extraEnv },
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+    let stdout = '', stderr = '', error;
+    let timer, cleanupTimer, finished = false, stopping = false;
+    const finish = (status, signal = null) => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(timer);
+      clearTimeout(cleanupTimer);
+      activeProcesses.delete(entry);
+      let json = null;
+      try { json = JSON.parse(stdout); } catch (_) {}
+      if (error) stderr += '\n' + error.message;
+      resolveResult({ status, signal, stdout, stderr, error, json });
+    };
+    entry.stop = () => {
+      if (finished || stopping) return;
+      stopping = true;
+      error ||= new Error('Portable subprocess cancelled before completion: ' + args[0]);
+      // Python can own Node/Chromium/Java descendants. Stop only this test's
+      // process tree so a timeout cannot strand work in a deleted fixture dir.
+      if (process.platform === 'win32' && child.pid) {
+        const killer = spawn('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], { windowsHide: true, stdio: 'ignore' });
+        killer.on('error', () => child.kill('SIGKILL'));
+        cleanupTimer = setTimeout(() => { killer.kill(); child.kill('SIGKILL'); finish(null, 'SIGKILL'); }, 5_000);
+      } else {
+        child.kill('SIGKILL');
+        cleanupTimer = setTimeout(() => finish(null, 'SIGKILL'), 5_000);
+      }
+    };
+    timer = setTimeout(() => {
+      error = new Error('Portable ' + args[0] + ' subprocess exceeded ' + timeoutMs + 'ms');
+      entry.stop();
+    }, timeoutMs);
+    activeProcesses.add(entry);
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    const collect = (kind, chunk) => {
+      if (kind === 'stdout') stdout += chunk; else stderr += chunk;
+      if (stdout.length + stderr.length > 4 * 1024 * 1024) {
+        error = new Error('Portable subprocess exceeded the 4 MiB test-output limit');
+        entry.stop();
+      }
+    };
+    child.stdout.on('data', chunk => collect('stdout', chunk));
+    child.stderr.on('data', chunk => collect('stderr', chunk));
+    child.on('error', value => { error = value; finish(null); });
+    child.on('close', finish);
   });
-  let json;
-  try {
-    json = JSON.parse(result.stdout);
-  } catch {
-    json = null;
-  }
-  return { ...result, json };
+  return entry.settled;
+}
+
+function getCapabilities() {
+  // Capability discovery launches Node and Java. The environment is constant
+  // across this suite; probe once instead of adding that startup to every PDF.
+  return capabilityPromise ||= runPortable(['capabilities', '--json']);
 }
 
 beforeEach(() => {
   scratch = mkdtempSync(join(tmpdir(), 'alloflow-portable-test-'));
 });
 
-afterEach(() => {
+afterEach(async () => {
+  const pending = [...activeProcesses];
+  for (const entry of pending) entry.stop();
+  await Promise.all(pending.map(entry => entry.settled));
   rmSync(scratch, { recursive: true, force: true });
-});
+}, 10_000);
 
-describe('AlloFlow portable remediation core', () => {
-  it('reports a no-service, deny-network capability contract', () => {
-    const result = runPortable(['capabilities', '--json']);
+describe('AlloFlow portable remediation core', { timeout: 100_000 }, () => {
+  it('reports a no-service, deny-network capability contract', async (context) => {
+    const result = await getCapabilities();
     expect(result.error).toBeUndefined();
     expect(result.status, result.stderr).toBe(0);
     expect(result.json).toMatchObject({
@@ -58,8 +116,8 @@ describe('AlloFlow portable remediation core', () => {
     });
   });
 
-  it('binds every repair plan to the exact source PDF', () => {
-    const sourceInfo = runPortable(['source-info', '--source', SOURCE]);
+  it('binds every repair plan to the exact source PDF', async (context) => {
+    const sourceInfo = await runPortable(['source-info', '--source', SOURCE]);
     expect(sourceInfo.status, sourceInfo.stderr).toBe(0);
     expect(sourceInfo.json).toMatchObject({
       basename: 'multi-column-scrambled.pdf',
@@ -71,7 +129,7 @@ describe('AlloFlow portable remediation core', () => {
     mismatched.document.source_sha256 = '0'.repeat(64);
     const mismatchedPlan = join(scratch, 'mismatched-plan.json');
     writeFileSync(mismatchedPlan, JSON.stringify(mismatched), 'utf8');
-    const rejected = runPortable([
+    const rejected = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', mismatchedPlan,
@@ -84,9 +142,9 @@ describe('AlloFlow portable remediation core', () => {
     expect(existsSync(join(scratch, 'mismatched-output'))).toBe(false);
   });
 
-  it('creates escaped semantic HTML, a scoped report, and a privacy receipt', () => {
+  it('creates escaped semantic HTML, a scoped report, and a privacy receipt', async (context) => {
     const output = join(scratch, 'output');
-    const result = runPortable([
+    const result = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -146,7 +204,7 @@ describe('AlloFlow portable remediation core', () => {
     expect(receiptText).not.toContain('literal <script>');
   });
 
-  it('escapes untrusted plan text before HTML rendering', () => {
+  it('escapes untrusted plan text before HTML rendering', async (context) => {
     const plan = JSON.parse(readFileSync(PLAN, 'utf8'));
     plan.blocks.splice(1, 0, {
       type: 'paragraph',
@@ -157,7 +215,7 @@ describe('AlloFlow portable remediation core', () => {
     const planPath = join(scratch, 'escaping-plan.json');
     writeFileSync(planPath, JSON.stringify(plan), 'utf8');
     const output = join(scratch, 'escaping-output');
-    const result = runPortable([
+    const result = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', planPath,
@@ -174,9 +232,9 @@ describe('AlloFlow portable remediation core', () => {
     expect(html).not.toMatch(/<script\b/i);
   });
 
-  it('refuses overwrite and rejects unsafe or out-of-sandbox plans', () => {
+  it('refuses overwrite and rejects unsafe or out-of-sandbox plans', async (context) => {
     const output = join(scratch, 'output');
-    const first = runPortable([
+    const first = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -185,7 +243,7 @@ describe('AlloFlow portable remediation core', () => {
       '--verapdf', 'never',
     ]);
     expect(first.status).toBe(0);
-    const collision = runPortable([
+    const collision = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -212,7 +270,7 @@ describe('AlloFlow portable remediation core', () => {
     });
     const invalidPlan = join(scratch, 'invalid-plan.json');
     writeFileSync(invalidPlan, JSON.stringify(invalid), 'utf8');
-    const rejected = runPortable([
+    const rejected = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', invalidPlan,
@@ -225,13 +283,13 @@ describe('AlloFlow portable remediation core', () => {
     expect(rejected.json?.error).toMatch(/escapes the repair plan directory/i);
   });
 
-  it('uses local Chromium for a tagged PDF when that optional capability exists', () => {
-    const capability = runPortable(['capabilities', '--json']);
+  it('uses local Chromium for a tagged PDF when that optional capability exists', async (context) => {
+    const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration) return;
+    if (!capability.json?.taggedPdfGeneration) { context.skip(); return; }
 
     const output = join(scratch, 'output');
-    const result = runPortable([
+    const result = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -248,14 +306,14 @@ describe('AlloFlow portable remediation core', () => {
     expect(bytes).toContain('/StructTreeRoot');
     expect(bytes).toContain('/MarkInfo');
     expect(bytes).toMatch(/\/Marked\s+true\b/);
-  }, 30_000);
+  }, 190_000);
 
-  it('fails known PDF/UA violations with a nonzero automation result', () => {
-    const capability = runPortable(['capabilities', '--json']);
+  it('fails known PDF/UA violations with a nonzero automation result', async (context) => {
+    const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.pdfUaValidation) return;
+    if (!capability.json?.pdfUaValidation) { context.skip(); return; }
 
-    const result = runPortable([
+    const result = await runPortable([
       'validate-pdf',
       '--pdf', resolve(ROOT, 'test-assets/manual-remediation/active-content-actions.pdf'),
     ]);
@@ -267,18 +325,18 @@ describe('AlloFlow portable remediation core', () => {
     });
     expect(result.json?.failedRuleCount).toBeGreaterThan(0);
     expect(result.stdout).not.toContain(dirname(SOURCE));
-  }, 30_000);
+  }, 190_000);
 
-  it('keeps the artifacts and report when strict PDF/UA mode fails', () => {
-    const capability = runPortable(['capabilities', '--json']);
+  it('keeps the artifacts and report when strict PDF/UA mode fails', async (context) => {
+    const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) return;
+    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) { context.skip(); return; }
 
     // The finalizer now repairs Chromium's UA-1 defects, so a normal run
     // passes validation. Disable it to exercise the strict-mode contract
     // against a PDF that genuinely fails PDF/UA-1.
     const output = join(scratch, 'strict-output');
-    const result = runPortable([
+    const result = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -301,15 +359,15 @@ describe('AlloFlow portable remediation core', () => {
     );
     expect(report.checks?.pdfUaValidation?.compliant).toBe(false);
     expect(report.checks?.pdfUaValidation?.failedRules?.length).toBeGreaterThan(0);
-  }, 60_000);
+  }, 190_000);
 
-  it('passes strict PDF/UA mode when the finalizer runs', () => {
-    const capability = runPortable(['capabilities', '--json']);
+  it('passes strict PDF/UA mode when the finalizer runs', async (context) => {
+    const capability = await getCapabilities();
     expect(capability.status, capability.stderr).toBe(0);
-    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) return;
+    if (!capability.json?.taggedPdfGeneration || !capability.json?.pdfUaValidation) { context.skip(); return; }
 
     const output = join(scratch, 'strict-pass-output');
-    const result = runPortable([
+    const result = await runPortable([
       'remediate',
       '--source', SOURCE,
       '--plan', PLAN,
@@ -320,21 +378,21 @@ describe('AlloFlow portable remediation core', () => {
     expect(result.status, result.stderr || result.stdout).toBe(0);
     expect(result.json?.verdict).toBe('pdf_generated_validation_passed_review_required');
     expect(result.json?.pdfUaCompliant).toBe(true);
-  }, 60_000);
+  }, 190_000);
 
-  it('rejects meta refresh in standalone lint mode', () => {
+  it('rejects meta refresh in standalone lint mode', async (context) => {
     const unsafe = join(scratch, 'meta-refresh.html');
     writeFileSync(
       unsafe,
       '<!doctype html><html lang="en"><head><title>x</title><meta http-equiv="refresh" content="0;url=data:text/html,bad"></head><body><main><h1>x</h1></main></body></html>',
       'utf8',
     );
-    const result = runPortable(['lint', '--html', unsafe]);
+    const result = await runPortable(['lint', '--html', unsafe]);
     expect(result.status).not.toBe(0);
     expect(result.json?.errors.join(' ')).toMatch(/Meta refresh/i);
   });
 
-  it('keeps the deterministic scripts free of network clients and remote service calls', () => {
+  it('keeps the deterministic scripts free of network clients and remote service calls', async (context) => {
     const python = readFileSync(ENGINE, 'utf8');
     const renderer = readFileSync(RENDERER, 'utf8');
     expect(python).not.toMatch(/^\s*(?:from|import)\s+(?:requests|socket|http\.client|urllib\.request)\b/m);

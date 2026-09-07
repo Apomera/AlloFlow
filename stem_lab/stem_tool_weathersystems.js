@@ -7495,7 +7495,17 @@ var geographyGroup = new THREE.Group();
                 style: { borderColor: mixColor(metric.color, chartSurface, dark ? 0.55 : 0.6), backgroundColor: mixColor(metric.color, metric.color, 0, dark ? 0.1 : 0.07) }
               },
                 h('div', { className: 'flex items-start justify-between gap-2' },
-                  h('div', null,
+                  // ★ `min-w-0` + `shrink-0`, and both are load-bearing at exactly ONE
+                  // width. The grid above is `grid-cols-2 lg:grid-cols-4`, so at Tailwind's
+                  // `lg` (1024px) each card drops to 151px while this row still wants 176px.
+                  // A flex item defaults to `min-width: auto`, so the label column refused to
+                  // shrink below its own min-content, `justify-between` pushed the surplus
+                  // rightwards, and the trend chip landed 37px outside its own card - inside a
+                  // section that is `overflow-hidden`, so the reader could not scroll to it
+                  // either. It was clean at 768, 900, 1152 and 1280 and broken only in the
+                  // band just above the breakpoint. Letting the label column shrink lets its
+                  // text wrap instead; both classes are no-ops whenever the row already fits.
+                  h('div', { className: 'min-w-0' },
                     // Identity rides on the mark beside the label, never on coloured text.
                     h('p', { className: 'flex items-center gap-1.5 text-xs font-black' },
                       h('span', { className: 'inline-block h-2.5 w-2.5 shrink-0 rounded-full', style: { backgroundColor: metric.color }, 'aria-hidden': 'true' }),
@@ -7504,7 +7514,7 @@ var geographyGroup = new THREE.Group();
                     ),
                     h('p', { className: 'mt-1 text-sm font-black tabular-nums' }, metric.start + (metric.id === 'precipitation' ? '%' : metric.unit) + ' → ' + metric.end + (metric.id === 'precipitation' ? '%' : metric.unit))
                   ),
-                  h('span', { className: 'rounded-full px-2 py-1 text-xs font-black' }, lensSelected ? 'Selected' : trend.icon + ' ' + trend.label)
+                  h('span', { className: 'shrink-0 rounded-full px-2 py-1 text-xs font-black' }, lensSelected ? 'Selected' : trend.icon + ' ' + trend.label)
                 ),
                 h('div', { className: 'relative mt-3 h-2 rounded-full ' + (dark ? 'bg-slate-800' : 'bg-white'), 'aria-hidden': 'true' },
                   h('span', { className: 'absolute inset-y-0 left-1/2 w-px -translate-x-1/2', style: { backgroundColor: chartBaseline } }),

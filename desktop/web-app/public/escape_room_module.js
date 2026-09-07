@@ -116,6 +116,116 @@
   // FACTORY: createEscapeRoomEngine
   // ═══════════════════════════════════════════════════════════════
 
+
+  // Preserve accents while accepting canonically equivalent keyboard input.
+  var normalizeEscapeAnswer = function(value) {
+    return String(value == null ? '' : value).normalize('NFC').trim().replace(/\s+/g, ' ').toLowerCase();
+  };
+
+  var escapeRoomLanguageDirective = function(state) {
+    var language = String(state.leveledTextLanguage || 'English').trim() || 'English';
+    // A room has one consistent answer language; a multi-language selection uses its first language.
+    if (language.toLowerCase() === 'all selected languages') {
+      language = (state.selectedLanguages || []).find(function(value) {
+        return typeof value === 'string' && value.trim() && value.trim().toLowerCase() !== 'all selected languages';
+      }) || 'English';
+    }
+    return 'LANGUAGE: Write ALL student-facing text in ' + language + ', using its regional spelling and vocabulary. ' +
+      'This includes room themes and descriptions, object names, questions, hints, options, sentences, items, matching pairs, riddles, answers, acceptableAnswers, wordbanks, and revealedClue values. ' +
+      'Keep JSON keys, ids, linkedObjectId, revealsClueFor, and puzzle type values in English; keep numeric indices unchanged. ' +
+      'Scrambled letters must come from the answer in the requested language.\n';
+  };
+
+  // Each tile represents a whole grapheme, including combining marks and emoji.
+  var escapeRoomLetters = function(word) {
+    var text = String(word || '').normalize('NFC');
+    var letters = typeof Intl !== 'undefined' && Intl.Segmenter
+      ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), function(part) { return part.segment; })
+      : Array.from(text);
+    return letters.filter(function(letter) { return letter.trim(); });
+  };
+
+  // A shared keyboard contract for the solo and editor dialogs.
+  function useEscapeRoomDialog(open, close) {
+    var ref = useRef(null);
+    var triggerRef = useRef(null);
+    var wasOpen = useRef(false);
+    var closeRef = useRef(close);
+    closeRef.current = close;
+    // Capture before React commits autoFocus inputs.
+    if (open && !wasOpen.current) triggerRef.current = document.activeElement;
+    wasOpen.current = !!open;
+    useEffect(function() {
+      if (!open || !ref.current) return;
+      var dialog = ref.current;
+      var trigger = triggerRef.current;
+      var focusable = function() {
+        return Array.prototype.slice.call(dialog.querySelectorAll('button, input, select, textarea, a[href], [tabindex]')).filter(function(el) {
+          return !el.disabled && el.tabIndex >= 0 && !el.closest('[hidden], [aria-hidden="true"]');
+        });
+      };
+      (focusable()[0] || dialog).focus();
+      var onKeyDown = function(event) {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          closeRef.current();
+        } else if (event.key === 'Tab') {
+          var controls = focusable();
+          var first = controls[0] || dialog;
+          var last = controls[controls.length - 1] || dialog;
+          if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) {
+            event.preventDefault(); last.focus();
+          } else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement))) {
+            event.preventDefault(); first.focus();
+          }
+        }
+      };
+      dialog.addEventListener('keydown', onKeyDown);
+      return function() {
+        dialog.removeEventListener('keydown', onKeyDown);
+        if (trigger && trigger.isConnected && !trigger.disabled) trigger.focus();
+        else {
+          var next = document.querySelector('[data-escape-room-next]:not([disabled])');
+          if (next) next.focus();
+        }
+      };
+    }, [open]);
+    return ref;
+  }
+
+  var escapeRoomPresets = {
+    easy: { timePerPuzzle: 45, lives: 99, hints: 5, xpMultiplier: 0.5 },
+    normal: { timePerPuzzle: 30, lives: 3, hints: 3, xpMultiplier: 1 },
+    hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2 }
+  };
+  var escapeRoomAttempt = function() {
+    return { selectedObject: null, discoveredClues: {}, finalDoorUnlocked: false, showFinalDoor: false,
+      solvedPuzzles: new Set(), hintsUsed: {}, totalHintsUsed: 0, wrongAttempts: 0,
+      currentStreak: 0, bestStreak: 0, streakMultiplier: 1, xpEarned: 0, runScore: 0,
+      textInput: '', sequenceOrder: [], matchingPairs: [], matchingSelected: null,
+      puzzleDrafts: {}, showClueAnimation: false, isEscaped: false, isGameOver: false,
+      gameOverReason: null, timerPaused: true, hasStarted: false };
+  };
+  var rememberEscapeRoomDraft = function(room) {
+    var puzzle = room.selectedObject && (room.puzzles || []).find(function(p) { return p.linkedObjectId === room.selectedObject.id; });
+    var drafts = Object.assign({}, room.puzzleDrafts);
+    if (puzzle && !room.solvedPuzzles.has(puzzle.id)) drafts[puzzle.id] = {
+      textInput: room.textInput || '', sequenceOrder: (room.sequenceOrder || []).slice(),
+      matchingPairs: (room.matchingPairs || []).slice(), matchingSelected: room.matchingSelected || null
+    };
+    return Object.assign({}, room, { puzzleDrafts: drafts, selectedObject: null });
+  };
+  // Stable content identity keeps different rooms separate while preserving replay high scores.
+  var escapeRoomScoreId = function(room) {
+    var content = JSON.stringify({ room: room.room, puzzles: (room.puzzles || []).map(function(p) {
+      return [p.id, p.type, p.question, p.sentence, p.encodedText, p.answer, p.options, p.correctIndex, p.items, p.correctOrder, p.pairs];
+    }), finalDoor: room.finalDoorPuzzle && [room.finalDoorPuzzle.sentence, room.finalDoorPuzzle.answer] });
+    var hash = 2166136261;
+    for (var i=0; i<content.length; i++) hash = Math.imul(hash ^ content.charCodeAt(i), 16777619);
+    return 'escape-room-' + (hash >>> 0).toString(16);
+  };
+
   function createEscapeRoomEngine(deps) {
     var callGemini = deps.callGemini;
     var addToast = deps.addToast;
@@ -142,6 +252,18 @@
     var setHistoryDep = deps.setHistory || null;
     var getCurrentResourceId = deps.getCurrentResourceId || function() { return null; };
 
+    var canPlay = function(state) {
+      var room = state.escapeRoomState;
+      return room && room.isActive && !room.isPreview && !room.isGenerating && !room.isEscaped && !room.isGameOver &&
+        state.isEscapeTimerRunning !== false && (room.timerEnabled === false || !Number.isFinite(state.escapeTimeLeft) || state.escapeTimeLeft > 0);
+    };
+    var awardXP = function(state, points, suffix) {
+      var id = escapeRoomScoreId(state.escapeRoomState) + ':' + suffix;
+      var previous = state.completedActivities && typeof state.completedActivities.get === 'function' ? state.completedActivities.get(id) || 0 : 0;
+      handleScoreUpdate(points, 'Escape Room', id);
+      return Math.max(0, points - previous);
+    };
+
     // ── generateEscapeRoom ──
     var generateEscapeRoom = async function() {
       var state = getState();
@@ -158,10 +280,10 @@
         hard: { timePerPuzzle: 20, lives: 1, hints: 1, xpMultiplier: 2.0 }
       };
       var selectedDifficulty = (escapeRoomState && escapeRoomState.difficulty) || 'normal';
-      var preset = difficultyPresets[selectedDifficulty];
+      var preset = difficultyPresets[selectedDifficulty] || difficultyPresets.normal;
       var totalTime = puzzleCount * preset.timePerPuzzle;
       setState.setEscapeRoomState(function(prev) {
-        return Object.assign({}, prev, {
+        return Object.assign({}, prev, escapeRoomAttempt(), {
           isActive: true,
           isGenerating: true,
           room: null,
@@ -189,7 +311,7 @@
       });
       setState.setEscapeTimeLeft(totalTime);
       setState.setIsEscapeTimerRunning(false);
-      var escapeRoomPrompt = 'You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
+      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an ADVANCED educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
 'SOURCE CONTENT:\n' +
 inputText.substring(0, 6000) + '\n' +
 'TASK:\n' +
@@ -310,7 +432,7 @@ inputText.substring(0, 6000) + '\n' +
               processed.shuffledItems = derangeShuffle(indices);
             }
             if (p.type === 'scramble' && p.scrambledWord) {
-              processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
+              processed.displayLetters = derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord));
             }
             if (p.type === 'matching' && p.pairs) {
               processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
@@ -395,7 +517,7 @@ inputText.substring(0, 6000) + '\n' +
     };
 
     var createLiveTeamProgress = function() {
-      return {
+      return { progressVersion: 2, maxHints: 3, solved: {}, misses: {},
         solvedPuzzles: [],
         isEscaped: false,
         lives: 3,
@@ -433,7 +555,7 @@ inputText.substring(0, 6000) + '\n' +
           timeRemaining: 300
         });
       });
-      var escapeRoomPrompt = 'You are creating an educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
+      var escapeRoomPrompt = escapeRoomLanguageDirective(state) + 'You are creating an educational Escape Room with DIVERSE PUZZLE TYPES based on the following content.\n' +
 'SOURCE CONTENT:\n' +
 inputText.substring(0, 6000) + '\n' +
 'TASK:\n' +
@@ -474,14 +596,14 @@ inputText.substring(0, 6000) + '\n' +
             if (normalizedType === 'sequence' && p.items) {
               var indices = p.items.map(function(_, idx) { return idx; });
               shuffledItems = derangeShuffle(indices);
-              correctOrder = p.items.map(function(_, idx) { return idx; });
+              correctOrder = p.correctOrder || indices;
             }
             var processed = Object.assign({}, p, {
               type: normalizedType,
               linkedObject: data.objects.find(function(o) { return o.id === p.linkedObjectId; }) || data.objects[i],
               shuffledItems: shuffledItems,
               correctOrder: correctOrder,
-              displayLetters: normalizedType === 'scramble' && p.scrambledWord ? derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); })) : null
+              displayLetters: normalizedType === 'scramble' && p.scrambledWord ? derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord)) : null
             });
             if (normalizedType === 'matching' && p.pairs) {
               processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
@@ -509,6 +631,7 @@ inputText.substring(0, 6000) + '\n' +
                   Yellow: createLiveTeamProgress()
                 },
                 timeRemaining: 300,
+                endsAt: Date.now() + 300000,
                 isGameOver: false,
                 isPaused: false,
                 startedAt: Date.now(),
@@ -567,6 +690,7 @@ inputText.substring(0, 6000) + '\n' +
       var data = generatedContent && generatedContent.data || {};
       var questions = Array.isArray(data.questions) ? data.questions : [];
       var title = data.title || generatedContent && generatedContent.title || translateQuest('title', 'Concept Quest');
+      try {
       var quest = questEngine.createSession({
         title: translateQuest('session_title', '{title}: Concept Quest', { title: title }),
         objective: translateQuest('objective', 'Navigate together, use lesson concepts as abilities, and defeat the final misconception.'),
@@ -575,10 +699,10 @@ inputText.substring(0, 6000) + '\n' +
       });
       var allProgress = createLiveTeamProgress();
       allProgress.questVotes = {};
+      allProgress.questVoteTurns = {};
       allProgress.questActions = {};
       allProgress.questRoles = {};
       allProgress.isEscaped = false;
-      try {
         if (doc && db && updateDoc) {
           var sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
           await updateDoc(sessionRef, {
@@ -610,7 +734,7 @@ inputText.substring(0, 6000) + '\n' +
         addToast(translateQuest('launched', 'Concept Quest launched. You are the co-GM.'), 'success');
       } catch (e) {
         warnLog('Concept Quest launch failed:', e);
-        addToast(translateQuest('launch_failed', 'Concept Quest could not launch.'), 'error');
+        addToast(e && e.message || translateQuest('launch_failed', 'Concept Quest could not launch.'), 'error');
       }
     };
 
@@ -639,7 +763,7 @@ inputText.substring(0, 6000) + '\n' +
       var user = state.user;
       var activeSessionAppId = state.activeSessionAppId;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle) return;
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
       playSound('correct');
       var newSolved = new Set(escapeRoomState.solvedPuzzles);
       newSolved.add(puzzleId);
@@ -647,21 +771,31 @@ inputText.substring(0, 6000) + '\n' +
       if (puzzle.revealsClueFor && puzzle.revealedClue) {
         newClues[puzzle.revealsClueFor] = puzzle.revealedClue;
       }
-      var shouldUnlockDoor = newSolved.size >= 4 && !escapeRoomState.finalDoorUnlocked;
+      var allSolved = newSolved.size >= escapeRoomState.puzzles.length;
+      var shouldUnlockDoor = allSolved && !!escapeRoomState.finalDoorPuzzle && !escapeRoomState.finalDoorUnlocked;
       var baseXP = 20;
       var calculatedStreak = (escapeRoomState.currentStreak || 0) + 1;
       var streakMultiplier = calculatedStreak >= 5 ? 3 : calculatedStreak >= 3 ? 2 : 1;
-      var difficultyMultiplier = escapeRoomState.difficulty === 'hard' ? 1.5 :
-                                  escapeRoomState.difficulty === 'easy' ? 0.75 : 1;
+      var difficultyMultiplier = (escapeRoomPresets[escapeRoomState.difficulty] || escapeRoomPresets.normal).xpMultiplier;
       var hintPenalty = ((escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzleId]) ? 1 : 0) * 5;
       var escapeTimeLeft = state.escapeTimeLeft;
-      var timeBonus = escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 180 ? 10 :
-                      escapeRoomState.timerEnabled && escapeRoomState.timeRemaining > 60 ? 5 : 0;
+      var timeBonus = escapeRoomState.timerEnabled !== false && escapeTimeLeft > 180 ? 10 :
+                      escapeRoomState.timerEnabled !== false && escapeTimeLeft > 60 ? 5 : 0;
       var puzzleXP = Math.max(5, Math.round((baseXP * streakMultiplier * difficultyMultiplier) + timeBonus - hintPenalty));
-      handleScoreUpdate(puzzleXP, "Escape Room Puzzle", puzzleId);
+      var completionBonus = allSolved ? (escapeRoomState.difficulty === 'hard' ? 75 : escapeRoomState.difficulty === 'easy' ? 25 : 50) : 0;
+      var finishWithoutDoor = allSolved && !escapeRoomState.finalDoorPuzzle;
+      var perfectBonus = finishWithoutDoor && !escapeRoomState.wrongAttempts && !escapeRoomState.totalHintsUsed ? 50 : 0;
+      var earned = awardXP(state, puzzleXP, 'puzzle:' + puzzleId);
+      if (completionBonus) earned += awardXP(state, completionBonus, 'complete');
+      if (perfectBonus) earned += awardXP(state, perfectBonus, 'perfect');
+      if (finishWithoutDoor) setState.setIsEscapeTimerRunning(false);
       setState.setEscapeRoomState(function(prev) {
         return Object.assign({}, prev, {
           solvedPuzzles: newSolved,
+          xpEarned: (prev.xpEarned || 0) + earned,
+          runScore: (prev.runScore || 0) + puzzleXP + completionBonus + perfectBonus,
+          isEscaped: finishWithoutDoor,
+          timerPaused: finishWithoutDoor,
           selectedObject: null,
           discoveredClues: newClues,
           finalDoorUnlocked: shouldUnlockDoor || prev.finalDoorUnlocked,
@@ -704,64 +838,55 @@ inputText.substring(0, 6000) + '\n' +
         addToast('\uD83D\uDD25\uD83D\uDD25\uD83D\uDD25 ' + t('escape_room.streak_bonus', { streak: 5, multiplier: 3 }), 'success');
       }
       if (puzzle.revealsClueFor && puzzle.revealedClue) {
-        setTimeout(function() {
-          addToast(t('escape_room.clue_found') + ' ' + puzzle.revealedClue, 'info');
-          setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showClueAnimation: false }); });
-        }, 500);
+        addToast(t('escape_room.clue_found') + ' ' + puzzle.revealedClue, 'info');
       }
       var xpMessage = streakMultiplier > 1
         ? t('escape_room.xp_earned_streak', { xp: puzzleXP, multiplier: streakMultiplier })
         : t('escape_room.xp_earned', { xp: puzzleXP });
       addToast(t('escape_room.correct') + ' ' + xpMessage, 'success');
-      if (shouldUnlockDoor) {
-        setTimeout(function() {
-          addToast(t('escape_room.final_door_ready'), 'info');
-        }, 1500);
-      }
-      if (newSolved.size >= escapeRoomState.puzzles.length) {
-        var completionBonus = escapeRoomState.difficulty === 'hard' ? 75 :
-                              escapeRoomState.difficulty === 'easy' ? 25 : 50;
-        handleScoreUpdate(completionBonus, "Escape Room Complete", 'escape-room-complete-' + (escapeRoomState.theme || 'default'));
-        addToast('\uD83C\uDFC6 ' + t('escape_room.all_solved_bonus', { xp: completionBonus }), 'success');
-      }
+      if (shouldUnlockDoor) addToast(t('escape_room.final_door_ready'), 'info');
+      if (completionBonus) addToast(t('escape_room.all_solved_bonus', { xp: completionBonus }), 'success');
     };
 
     // ── handleSelectObject ──
     var handleSelectObject = function(obj) {
       var state = getState();
-      var escapeRoomState = state.escapeRoomState;
-      if (!obj || (escapeRoomState.solvedPuzzles && escapeRoomState.solvedPuzzles.has && escapeRoomState.solvedPuzzles.has(obj.id))) return;
+      var room = state.escapeRoomState;
+      if (!obj || !canPlay(state)) return;
+      var puzzle = room.puzzles.find(function(p) { return p.linkedObjectId === obj.id; });
+      if (!puzzle || room.solvedPuzzles.has(puzzle.id)) return;
       setState.setEscapeRoomState(function(prev) {
-        return Object.assign({}, prev, {
-          selectedObject: obj,
-          timerPaused: false
-        });
+        var remembered = rememberEscapeRoomDraft(prev);
+        var draft = remembered.puzzleDrafts[puzzle.id] || { textInput: '', sequenceOrder: [], matchingPairs: [], matchingSelected: null };
+        return Object.assign({}, remembered, draft, { selectedObject: obj, timerPaused: false, hasStarted: true });
       });
       playSound('click');
     };
 
-    // ── handleWrongAnswer ──
+    // A mistake changes the same clock shown to the player, plus the selected life budget.
     var handleWrongAnswer = function(puzzleId) {
       var state = getState();
-      var escapeRoomState = state.escapeRoomState;
+      var room = state.escapeRoomState;
+      if (!canPlay(state) || (puzzleId && room.solvedPuzzles.has(puzzleId))) return;
+      var timed = room.timerEnabled !== false;
+      var remaining = Number.isFinite(state.escapeTimeLeft) ? state.escapeTimeLeft : (room.timeRemaining || 0);
+      var nextTime = timed ? Math.max(0, remaining - 10) : remaining;
+      var maxLives = Number.isFinite(room.maxLives) ? room.maxLives : (escapeRoomPresets[room.difficulty] || escapeRoomPresets.normal).lives;
+      var currentLives = Number.isFinite(room.lives) ? room.lives : maxLives;
+      var finiteLives = maxLives < 99;
+      var nextLives = finiteLives ? Math.max(0, currentLives - 1) : currentLives;
+      var reason = timed && nextTime === 0 ? 'time' : finiteLives && nextLives === 0 ? 'lives' : null;
       playSound('incorrect');
-      var timePenalty = 10;
-      var newTimeRemaining = Math.max(0, (escapeRoomState.timeRemaining || 0) - timePenalty);
+      if (timed) setState.setEscapeTimeLeft(nextTime);
+      if (reason) setState.setIsEscapeTimerRunning(false);
       setState.setEscapeRoomState(function(prev) {
-        return Object.assign({}, prev, {
-          wrongAttempts: (prev.wrongAttempts || 0) + 1,
-          currentStreak: 0,
-          timeRemaining: newTimeRemaining
-        });
+        return Object.assign({}, prev, { wrongAttempts: (prev.wrongAttempts || 0) + 1, currentStreak: 0,
+          streakMultiplier: 1, timeRemaining: nextTime, lives: nextLives, maxLives: maxLives,
+          isGameOver: !!reason, gameOverReason: reason, timerPaused: !!reason,
+          selectedObject: reason ? null : prev.selectedObject, showFinalDoor: reason ? false : prev.showFinalDoor });
       });
-      if (newTimeRemaining <= 0) {
-        addToast(t('escape_room.game_over_time'), 'error');
-        setTimeout(function() {
-          setState.setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false, hasEscaped: false }); });
-        }, 2000);
-      } else {
-        addToast(t('escape_room.incorrect') + ' ' + t('escape_room.time_penalty', { seconds: timePenalty }), 'error');
-      }
+      addToast(reason ? t(reason === 'time' ? 'escape_room.game_over_time' : 'escape_room.game_over') :
+        t('escape_room.incorrect') + (timed ? ' ' + t('escape_room.time_penalty', { seconds: 10 }) : '') + (finiteLives ? ' ' + t('escape_room.lives_remaining', { count: nextLives }) : ''), 'error');
     };
 
     // ── handleEscapeRoomAnswer ──
@@ -769,7 +894,7 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
       if (selectedIndex === puzzle.correctIndex) {
         handlePuzzleSolved(puzzleId);
       } else {
@@ -782,7 +907,7 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
       var isCorrect = JSON.stringify(userOrder) === JSON.stringify(puzzle.correctOrder);
       if (isCorrect) {
         handlePuzzleSolved(puzzleId);
@@ -796,9 +921,9 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-      var normalizedUser = String(userAnswer || '').toLowerCase().trim();
-      var normalizedAnswer = String(puzzle.answer || '').toLowerCase().trim();
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      var normalizedUser = normalizeEscapeAnswer(userAnswer);
+      var normalizedAnswer = normalizeEscapeAnswer(puzzle.answer);
       if (!normalizedAnswer) { handleWrongAnswer(puzzleId); return; }
       if (normalizedUser === normalizedAnswer) {
         handlePuzzleSolved(puzzleId);
@@ -812,7 +937,9 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      if ((column !== 'left' && column !== 'right') || !puzzle.pairs.some(function(pair) { return pair[column] === item; })) return;
+      if ((escapeRoomState.matchingPairs || []).some(function(pair) { return pair[column === 'left' ? 0 : 1] === item; })) return;
       var currentSelected = escapeRoomState.matchingSelected;
       if (!currentSelected) {
         setState.setEscapeRoomState(function(prev) {
@@ -851,9 +978,9 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
-      var normalizedUser = String(userAnswer || '').toUpperCase().trim().replace(/\s/g, '');
-      var normalizedAnswer = String(puzzle.answer || '').toUpperCase().trim().replace(/\s/g, '');
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
+      var normalizedUser = normalizeEscapeAnswer(userAnswer).replace(/\s/g, '');
+      var normalizedAnswer = normalizeEscapeAnswer(puzzle.answer).replace(/\s/g, '');
       if (!normalizedAnswer) { handleWrongAnswer(puzzleId); return; }
       if (normalizedUser === normalizedAnswer) {
         handlePuzzleSolved(puzzleId);
@@ -872,25 +999,25 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var finalPuzzle = escapeRoomState.finalDoorPuzzle;
-      if (!finalPuzzle) return;
-      var normalizedUser = userAnswer.toLowerCase().trim();
-      var normalizedMain = finalPuzzle.answer.toLowerCase().trim();
-      var acceptableAnswers = (finalPuzzle.acceptableAnswers || []).map(function(a) { return a.toLowerCase().trim(); });
-      var isCorrect = normalizedUser === normalizedMain ||
-                      acceptableAnswers.indexOf(normalizedUser) !== -1 ||
-                      acceptableAnswers.some(function(a) { return normalizedUser.indexOf(a) !== -1 || a.indexOf(normalizedUser) !== -1; });
+      if (!finalPuzzle || !escapeRoomState.finalDoorUnlocked || !canPlay(state)) return;
+      var normalizedUser = normalizeEscapeAnswer(userAnswer);
+      if (!normalizedUser) return;
+      var acceptableAnswers = [finalPuzzle.answer].concat(Array.isArray(finalPuzzle.acceptableAnswers) ? finalPuzzle.acceptableAnswers : [])
+        .map(normalizeEscapeAnswer).filter(Boolean);
+      var isCorrect = acceptableAnswers.indexOf(normalizedUser) !== -1;
       if (isCorrect) {
         playSound('correct');
-        var isPerfect = (escapeRoomState.wrongAttempts || 0) === 0;
+        var isPerfect = (escapeRoomState.wrongAttempts || 0) === 0 && !escapeRoomState.totalHintsUsed;
+        var perfectEarned = 0;
         if (isPerfect) {
           var bonusXP = 50;
-          setGlobalPoints(function(prev) { return prev + bonusXP; });
+          perfectEarned = awardXP(state, bonusXP, 'perfect');
           addToast(t('escape_room.victory_perfect'), 'success');
         } else {
           addToast(t('escape_room.victory_normal'), 'success');
         }
         setState.setEscapeRoomState(function(prev) {
-          return Object.assign({}, prev, { isEscaped: true, showFinalDoor: false });
+          return Object.assign({}, prev, { isEscaped: true, showFinalDoor: false, timerPaused: true, xpEarned: (prev.xpEarned || 0) + perfectEarned, runScore: (prev.runScore || 0) + (isPerfect ? 50 : 0) });
         });
         setState.setIsEscapeTimerRunning(false);
       } else {
@@ -899,7 +1026,15 @@ inputText.substring(0, 6000) + '\n' +
     };
 
     // ── resetEscapeRoom ──
-    var resetEscapeRoom = function() {
+    var resetEscapeRoom = function(options) {
+      setState.setIsEscapeTimerRunning(false);
+      if (options && options.replay === true) {
+        var room = getState().escapeRoomState;
+        var config = { room: room.room, objects: room.objects, puzzles: room.puzzles, finalDoor: room.finalDoorPuzzle };
+        if (_hydrateConfig(config, room.difficulty)) confirmEscapeRoomPreview();
+        return;
+      }
+      setState.setEscapeTimeLeft(300);
       setState.setEscapeRoomState({
         isActive: false,
         room: null,
@@ -946,7 +1081,7 @@ inputText.substring(0, 6000) + '\n' +
       var state = getState();
       var escapeRoomState = state.escapeRoomState;
       var puzzle = escapeRoomState.puzzles.find(function(p) { return p.id === puzzleId; });
-      if (!puzzle) return;
+      if (!puzzle || !canPlay(state) || escapeRoomState.solvedPuzzles.has(puzzleId)) return;
       if (escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzleId]) {
         var hintText = puzzle.hint || (puzzle.hints && puzzle.hints[0]);
         if (hintText) {
@@ -963,8 +1098,7 @@ inputText.substring(0, 6000) + '\n' +
         addToast(t('escape_room.no_hint_available') || 'No hint available for this puzzle', 'info');
         return;
       }
-      var hintCost = 5;
-      setGlobalPoints(function(prev) { return Math.max(0, prev - hintCost); });
+      // Charge the hint once, as a reduction to this puzzle's reward when solved.
       setState.setEscapeRoomState(function(prev) {
         var newHintsUsed = Object.assign({}, prev.hintsUsed);
         newHintsUsed[puzzleId] = true;
@@ -1121,7 +1255,7 @@ inputText.substring(0, 6000) + '\n' +
     // loadEscapeRoomFromConfig (resource-embedded path). Random
     // shuffle on every call — by design; repeat plays vary.
     var _hydrateConfig = function(config, difficulty) {
-      if (!config || !config.room || !config.puzzles) {
+      if (!config || !config.room || !Array.isArray(config.puzzles) || !config.puzzles.length || !Array.isArray(config.objects) || !config.objects.length || config.puzzles.some(function(p) { return !p || !p.id || !config.objects.some(function(o) { return o && o.id === p.linkedObjectId; }); })) {
         addToast(t('escape_room.invalid_save') || 'Saved data is corrupted', 'error');
         return false;
       }
@@ -1129,12 +1263,12 @@ inputText.substring(0, 6000) + '\n' +
         var processed = Object.assign({}, p, {
           linkedObject: (config.objects && config.objects.find(function(o) { return o.id === p.linkedObjectId; })) || (config.objects && config.objects[i]) || { emoji: '\uD83D\uDD2E', name: 'Puzzle ' + (i+1) }
         });
-        if (normalizedType === 'sequence' && p.items) {
+        if (p.type === 'sequence' && p.items) {
           var indices = p.items.map(function(_, idx) { return idx; });
           processed.shuffledItems = derangeShuffle(indices);
         }
         if (p.type === 'scramble' && p.scrambledWord) {
-          processed.displayLetters = derangeShuffle(p.scrambledWord.split('').filter(function(c) { return c.trim(); }));
+          processed.displayLetters = derangeShuffle(escapeRoomLetters(p.answer || p.scrambledWord));
         }
         if (p.type === 'matching' && p.pairs) {
           processed.leftColumn = derangeShuffle(p.pairs.map(function(pair) { return pair.left; }));
@@ -1161,7 +1295,7 @@ inputText.substring(0, 6000) + '\n' +
       var preset = diffPresets[diff] || diffPresets.normal;
       var totalTime = processedPuzzles.length * preset.timePerPuzzle;
       setState.setEscapeRoomState(function(prev) {
-        return Object.assign({}, prev, {
+        return Object.assign({}, prev, escapeRoomAttempt(), {
           isActive: false,
           isPreview: true,
           isGenerating: false,
@@ -1275,36 +1409,39 @@ inputText.substring(0, 6000) + '\n' +
   // TIMER EFFECT HOOK (for use from host)
   // ═══════════════════════════════════════════════════════════════
 
-  function useEscapeRoomTimer(deps) {
-    var isEscapeTimerRunning = deps.isEscapeTimerRunning;
-    var escapeTimeLeft = deps.escapeTimeLeft;
-    var setEscapeTimeLeft = deps.setEscapeTimeLeft;
-    var setIsEscapeTimerRunning = deps.setIsEscapeTimerRunning;
-    var setEscapeRoomState = deps.setEscapeRoomState;
-    var addToast = deps.addToast;
-    var t = deps.t;
-
-    useEffect(function() {
-      var interval = null;
-      if (isEscapeTimerRunning && escapeTimeLeft > 0) {
-        interval = setInterval(function() {
-          setEscapeTimeLeft(function(prevTime) {
-            var newTime = prevTime - 1;
-            if (newTime === 60) {
-              addToast(t('escape_room.one_minute_warning'), 'warning');
-            } else if (newTime === 30) {
-              addToast(t('escape_room.thirty_seconds_warning'), 'error');
-            }
-            return newTime;
-          });
-        }, 1000);
-      } else if (escapeTimeLeft === 0 && isEscapeTimerRunning) {
-        setIsEscapeTimerRunning(false);
-        addToast(t('escape_room.time_up'), 'error');
-        setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false }); });
+  function startEscapeRoomClock(deps) {
+    var room = deps.escapeRoomState || {};
+    if (!deps.isEscapeTimerRunning || room.isActive === false || room.isEscaped || room.isGameOver || room.timerEnabled === false) return;
+    var last = Math.max(0, Number(deps.escapeTimeLeft) || 0);
+    var deadline = Date.now() + last * 1000;
+    var interval;
+    var tick = function() {
+      var next = Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+      if (next === last && next > 0) return;
+      if (next > 0 && last > 30 && next <= 30) deps.addToast(deps.t('escape_room.thirty_seconds_warning'), 'error');
+      else if (next > 30 && last > 60 && next <= 60) deps.addToast(deps.t('escape_room.one_minute_warning'), 'warning');
+      last = next;
+      deps.setEscapeTimeLeft(next);
+      deps.setEscapeRoomState(function(prev) {
+        if (!prev.isActive || prev.isEscaped || prev.isGameOver) return prev;
+        return Object.assign({}, prev, { timeRemaining: next }, next === 0 ? {
+          isGameOver: true, gameOverReason: 'time', timerPaused: true, selectedObject: null, showFinalDoor: false
+        } : {});
+      });
+      if (next === 0) {
+        clearInterval(interval);
+        deps.setIsEscapeTimerRunning(false);
+        deps.addToast(deps.t('escape_room.game_over_time'), 'error');
       }
-      return function() { clearInterval(interval); };
-    }, [isEscapeTimerRunning, escapeTimeLeft, t, addToast]);
+    };
+    if (last === 0) tick();
+    else interval = setInterval(tick, 250);
+    return function() { clearInterval(interval); };
+  }
+  function useEscapeRoomTimer(deps) {
+    var room = deps.escapeRoomState || {};
+    useEffect(function() { return startEscapeRoomClock(deps); }, [deps.isEscapeTimerRunning, deps.escapeTimeLeft,
+      room.isActive, room.isEscaped, room.isGameOver, room.timerEnabled, deps.t, deps.addToast]);
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -1322,7 +1459,31 @@ inputText.substring(0, 6000) + '\n' +
     var setSoundEnabled = props.setSoundEnabled;
     var playSound = props.playSound;
     var handleSetIsEscapeTimerRunningToTrue = props.handleSetIsEscapeTimerRunningToTrue;
+    var toggleTimer = function() {
+      setEscapeRoomState(function(prev) { return Object.assign({}, rememberEscapeRoomDraft(prev), { timerPaused: !!isEscapeTimerRunning, hasStarted: true, showFinalDoor: false }); });
+      if (props.setIsEscapeTimerRunning) props.setIsEscapeTimerRunning(!isEscapeTimerRunning);
+      else if (!isEscapeTimerRunning && handleSetIsEscapeTimerRunningToTrue) handleSetIsEscapeTimerRunningToTrue();
+    };
+    var outcomeRef = useRef(null);
+    var terminal = !!(escapeRoomState && (escapeRoomState.isEscaped || escapeRoomState.isGameOver));
+    useEffect(function() { if (terminal && outcomeRef.current) outcomeRef.current.focus(); }, [terminal]);
+    var previousPhase = useRef({ running: isEscapeTimerRunning, terminal: terminal });
+    useEffect(function() {
+      var previous = previousPhase.current;
+      if (!terminal && escapeRoomState && escapeRoomState.isActive &&
+          (previous.running !== isEscapeTimerRunning || previous.terminal)) {
+        var next = document.querySelector('[data-escape-room-next]:not([disabled])');
+        if (next) next.focus();
+      }
+      previousPhase.current = { running: isEscapeTimerRunning, terminal: terminal };
+    }, [isEscapeTimerRunning, terminal, escapeRoomState && escapeRoomState.isActive]);
 
+    var puzzleDialogRef = useEscapeRoomDialog(!!(escapeRoomState && escapeRoomState.isActive && escapeRoomState.selectedObject), function() {
+      setEscapeRoomState(rememberEscapeRoomDraft);
+    });
+    var finalDialogRef = useEscapeRoomDialog(!!(escapeRoomState && escapeRoomState.isActive && escapeRoomState.showFinalDoor && escapeRoomState.finalDoorPuzzle), function() {
+      setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); });
+    });
     if (!escapeRoomState || !escapeRoomState.isActive) return null;
 
     // ── Generating spinner ──
@@ -1344,11 +1505,7 @@ inputText.substring(0, 6000) + '\n' +
       var totalPuzzles = escapeRoomState.totalPuzzles;
       var wrongAttempts = escapeRoomState.wrongAttempts || 0;
       var hintsUsed = escapeRoomState.totalHintsUsed || 0;
-      var xpMultiplier = escapeRoomState.xpMultiplier || 1;
-      var baseXP = puzzlesSolved * 20;
-      var bonusXP = wrongAttempts === 0 ? 50 : 0;
-      var hintPenalty = hintsUsed * 5;
-      var totalXP = Math.round((baseXP + bonusXP - hintPenalty) * xpMultiplier);
+      var totalXP = escapeRoomState.xpEarned || 0;
       var rating = 'good';
       var ratingEmoji = '\uD83D\uDC4D';
       var ratingColor = 'text-blue-400';
@@ -1359,7 +1516,7 @@ inputText.substring(0, 6000) + '\n' +
       }
       return h('div', { className: 'flex-grow flex flex-col items-center justify-center gap-6 text-center p-6' },
         h('div', { className: 'text-8xl animate-bounce' }, ratingEmoji),
-        h('h3', { className: 'text-4xl font-black ' + ratingColor },
+        h('h3', { ref: outcomeRef, 'data-escape-room-next': '', tabIndex: -1, className: 'text-4xl font-black ' + ratingColor },
           t('escape_room.performance_' + rating) || (rating === 'perfect' ? 'Perfect Escape!' : rating === 'great' ? 'Great Job!' : 'Good Effort!')
         ),
         h('p', { className: 'text-slate-400' }, t('escape_room.escaped_desc')),
@@ -1389,19 +1546,32 @@ inputText.substring(0, 6000) + '\n' +
           h('div', { className: 'text-lg font-bold text-purple-400 mb-2' }, t('escape_room.xp_earned_label') || 'XP Earned'),
           h('div', { className: 'text-4xl font-black text-purple-400' }, '+' + totalXP + ' XP'),
           h('div', { className: 'text-xs text-slate-400 mt-2' },
-            baseXP + ' base' + (bonusXP > 0 ? ' + ' + bonusXP + ' bonus' : '') + (hintPenalty > 0 ? ' - ' + hintPenalty + ' hints' : '') + (xpMultiplier !== 1 ? ' \u00D7 ' + xpMultiplier : '')
+            t('common.score') + ': ' + (escapeRoomState.runScore || 0) + ' XP'
           )
         ),
         h('div', { className: 'flex gap-4 mt-4' },
           h('button', {
-            'aria-label': t('common.reset_escape_room'),
-            onClick: handlers.resetEscapeRoom,
+            'aria-label': t('escape_room.play_again'),
+            onClick: function() { handlers.resetEscapeRoom({ replay: true }); },
             className: 'bg-purple-600 text-white px-6 py-3 rounded-full font-bold hover:bg-purple-700 transition-colors flex items-center gap-2'
           }, h(RefreshCw, { size: 18 }), t('escape_room.play_again')),
           h('button', {
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isActive: false }); }); },
             className: 'bg-slate-700 text-white px-6 py-3 rounded-full font-bold hover:bg-slate-600 transition-colors'
           }, t('escape_room.close') || 'Close')
+        )
+      );
+    };
+
+    var renderGameOver = function() {
+      return h('div', { className: 'flex flex-col items-center justify-center gap-6 text-center p-6 flex-grow' },
+        h('h3', { ref: outcomeRef, tabIndex: -1, className: 'text-3xl font-bold text-amber-300' },
+          t(escapeRoomState.gameOverReason === 'time' ? 'escape_room.game_over_time' : 'escape_room.game_over')),
+        h('p', { className: 'text-slate-300' }, t('escape_room.puzzles_solved') + ': ' + escapeRoomState.solvedPuzzles.size + '/' + escapeRoomState.puzzles.length),
+        h('p', { className: 'text-purple-300' }, t('escape_room.xp_earned', { xp: escapeRoomState.xpEarned || 0 })),
+        h('div', { className: 'flex flex-wrap gap-3 justify-center' },
+          h('button', { onClick: function() { handlers.resetEscapeRoom({ replay: true }); }, className: 'bg-purple-600 text-white px-6 py-3 rounded-full font-bold focus:ring-2 focus:ring-purple-300' }, t('escape_room.play_again')),
+          h('button', { onClick: function() { handlers.resetEscapeRoom(); }, className: 'bg-slate-700 text-white px-6 py-3 rounded-full font-bold focus:ring-2 focus:ring-slate-300' }, t('escape_room.close'))
         )
       );
     };
@@ -1419,8 +1589,8 @@ inputText.substring(0, 6000) + '\n' +
         h('button', {
           key: 'close-btn',
           'aria-label': t('common.close'),
-          onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { selectedObject: null }); }); },
-          className: 'absolute top-4 right-4 text-slate-600 hover:text-white'
+          onClick: function() { setEscapeRoomState(rememberEscapeRoomDraft); },
+          className: 'absolute top-4 right-4 text-slate-300 hover:text-white min-w-11 min-h-11 focus:outline-none focus:ring-2 focus:ring-purple-400 rounded'
         }, h(X, { size: 24 }))
       );
 
@@ -1429,7 +1599,7 @@ inputText.substring(0, 6000) + '\n' +
         h('div', { key: 'header', className: 'flex items-center gap-3 mb-6' },
           h('span', { className: 'text-4xl' }, escapeRoomState.selectedObject.emoji),
           h('div', null,
-            h('h3', { className: 'text-xl font-bold text-white' }, escapeRoomState.selectedObject.name),
+            h('h3', { id: 'escape-room-object-title', className: 'text-xl font-bold text-white' }, escapeRoomState.selectedObject.name),
             h('p', { className: 'text-slate-500 text-sm' }, escapeRoomState.selectedObject.description)
           )
         )
@@ -1444,6 +1614,9 @@ inputText.substring(0, 6000) + '\n' +
           t('escape_room.type_' + (puzzle.type || 'mcq'))
         )
       );
+      if (props.setIsEscapeTimerRunning) typeHintRow.push(h('button', {
+        key: 'pause', onClick: toggleTimer, className: 'px-3 py-2 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-purple-400'
+      }, t('escape_room.pause')));
       if (puzzle.hint || (puzzle.hints && puzzle.hints.length > 0)) {
         var hintUsed = escapeRoomState.hintsUsed && escapeRoomState.hintsUsed[puzzle.id];
         var hintsRem = escapeRoomState.hintsRemaining || 0;
@@ -1468,7 +1641,7 @@ inputText.substring(0, 6000) + '\n' +
         );
       }
       questionChildren.push(
-        h('div', { key: 'type-hint-row', className: 'flex items-center justify-between gap-2 mb-2' }, typeHintRow)
+        h('div', { key: 'type-hint-row', className: 'flex flex-wrap items-center justify-between gap-2 mb-2' }, typeHintRow)
       );
       questionChildren.push(
         h('p', { key: 'question-text', className: 'text-lg text-white font-medium' }, puzzle.question)
@@ -1655,7 +1828,7 @@ inputText.substring(0, 6000) + '\n' +
           cipherChildren.push(
             h('input', {
               key: 'cipher-input',
-              'aria-label': t('common.escape_room_enter_answer'),
+              'aria-label': t('escape_room.enter_answer_label'),
               type: 'text',
               value: escapeRoomState.textInput || '',
               onChange: function(e) { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: e.target.value }); }); },
@@ -1687,7 +1860,7 @@ inputText.substring(0, 6000) + '\n' +
             h('div', { key: 'matched', className: 'space-y-2 mb-4', role: 'status', 'aria-live': 'polite' },
               h('p', { className: 'text-green-400 text-xs font-bold' }, t('escape_room.matched_pairs')),
               mp.map(function(pair, idx) {
-                return h('div', { key: idx, className: 'flex items-center gap-2 p-2 bg-green-900/30 rounded-lg text-green-400 text-sm', role: 'status' },
+                return h('div', { key: idx, className: 'flex items-center gap-2 p-2 bg-green-900/30 rounded-lg text-green-400 text-sm' },
                   h(CheckCircle, { size: 14, 'aria-hidden': 'true' }),
                   h('span', null, pair[0] + ' \u2194 ' + pair[1])
                 );
@@ -1759,7 +1932,7 @@ inputText.substring(0, 6000) + '\n' +
       // ── Scramble ──
       if (puzzle.type === 'scramble') {
         var scrChildren = [];
-        var letters = puzzle.displayLetters || (puzzle.scrambledWord ? puzzle.scrambledWord.split('') : []);
+        var letters = puzzle.displayLetters || (puzzle.scrambledWord ? escapeRoomLetters(puzzle.scrambledWord) : []);
         scrChildren.push(
           h('p', { key: 'scr-sr', className: 'sr-only', 'aria-live': 'polite' },
             (t('escape_room.scramble_sr_desc') || 'Scrambled letters:') + ' ' + letters.join(', ')
@@ -1785,11 +1958,11 @@ inputText.substring(0, 6000) + '\n' +
         scrChildren.push(
           h('input', {
             key: 'scr-input',
-            'aria-label': t('common.enter_escape_room_state'),
+            'aria-label': t('escape_room.enter_unscrambled'),
             id: 'scramble-input',
             type: 'text',
             value: escapeRoomState.textInput || '',
-            onChange: function(e) { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: e.target.value.toUpperCase() }); }); },
+            onChange: function(e) { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { textInput: e.target.value }); }); },
             placeholder: t('escape_room.unscramble_placeholder'),
             className: 'w-full p-4 bg-slate-700 rounded-xl text-white font-mono text-xl text-center tracking-widest border-2 border-slate-600 focus:border-purple-400 focus:ring-2 focus:ring-purple-400 outline-none uppercase',
             'aria-describedby': 'scramble-hint'
@@ -1818,11 +1991,9 @@ inputText.substring(0, 6000) + '\n' +
             h('div', {
               key: 'fil-sentence',
               className: 'bg-slate-900 p-4 rounded-xl text-white text-center text-lg',
-              role: 'status',
-              'aria-live': 'polite',
               'aria-label': t('escape_room.sentence_with_blank') || 'Sentence with blank',
               id: 'fillin-sentence'
-            }, puzzle.sentence.replace('___', escapeRoomState.textInput ? '[' + escapeRoomState.textInput + ']' : '______'))
+            }, puzzle.sentence.replace(/_{3,}/, function() { return escapeRoomState.textInput ? '[' + escapeRoomState.textInput + ']' : '______'; }))
           );
         }
         if (puzzle.wordbank && puzzle.wordbank.length > 0) {
@@ -1858,7 +2029,7 @@ inputText.substring(0, 6000) + '\n' +
           filChildren.push(
             h('input', {
               key: 'fil-input',
-              'aria-label': t('common.enter_escape_room_state'),
+              'aria-label': t('escape_room.enter_unscrambled'),
               id: 'fillin-text-input',
               type: 'text',
               autoFocus: true,
@@ -1887,11 +2058,12 @@ inputText.substring(0, 6000) + '\n' +
 
     // ── Final Door button ──
     var renderFinalDoorButton = function() {
-      if (!escapeRoomState.finalDoorUnlocked || !escapeRoomState.finalDoorPuzzle || escapeRoomState.isEscaped) return null;
+      if (!escapeRoomState.finalDoorUnlocked || !escapeRoomState.finalDoorPuzzle || terminal || !isEscapeTimerRunning) return null;
       return h('div', { className: 'fixed bottom-8 left-1/2 -translate-x-1/2 z-40 animate-in fade-in slide-in-from-bottom-4 duration-500' },
         h('button', {
           onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: true, textInput: '' }); }); },
           className: 'flex items-center gap-3 px-6 py-4 bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-500 text-slate-900 font-bold rounded-2xl shadow-2xl hover:scale-105 transition-transform animate-pulse border-4 border-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-200',
+          'data-escape-room-next': '',
           'aria-label': t('escape_room.approach_door') || 'Approach the final door'
         },
           h(DoorOpen, { size: 28, className: 'animate-bounce', 'aria-hidden': 'true' }),
@@ -1947,18 +2119,17 @@ inputText.substring(0, 6000) + '\n' +
         onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); }); },
         role: 'dialog',
         'aria-modal': 'true',
-        'aria-labelledby': 'final-door-title'
+        'aria-labelledby': 'final-door-title',
+        ref: finalDialogRef,
+        tabIndex: -1
       },
         h('div', {
-          role: 'button',
-          tabIndex: 0,
-          onKeyDown: function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } },
-          className: 'bg-gradient-to-b from-slate-800 to-slate-900 w-full max-w-2xl rounded-2xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] p-8 relative',
+          className: 'bg-gradient-to-b from-slate-800 to-slate-900 w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] p-8 relative',
           onClick: function(e) { e.stopPropagation(); }
         },
           h('button', {
             onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showFinalDoor: false }); }); },
-            className: 'absolute top-4 right-4 text-slate-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded',
+            className: 'absolute top-4 right-4 text-slate-300 hover:text-white min-w-11 min-h-11 focus:outline-none focus:ring-2 focus:ring-yellow-400 rounded',
             'aria-label': t('escape_room.close') || 'Close'
           }, h(X, { size: 24, 'aria-hidden': 'true' })),
           h('div', { className: 'text-center mb-8' },
@@ -1999,14 +2170,15 @@ inputText.substring(0, 6000) + '\n' +
           !isEscapeTimerRunning
             ? h('div', { className: 'mt-4' },
                 h('button', {
-                  'aria-label': t('common.play'),
-                  onClick: handleSetIsEscapeTimerRunningToTrue,
+                  'data-escape-room-next': '',
+                  'aria-label': escapeRoomState.hasStarted ? t('escape_room.resume') : t('escape_room.start'),
+                  onClick: toggleTimer,
                   className: 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white px-8 py-3 rounded-full font-bold text-lg transition-all shadow-lg shadow-green-900/50 flex items-center gap-3 mx-auto animate-pulse'
                 },
                   h(Play, { size: 20 }),
-                  t('escape_room.start') || 'Start Escape Room'
+                  escapeRoomState.hasStarted ? t('escape_room.resume') : t('escape_room.start')
                 ),
-                h('p', { className: 'text-slate-500 text-sm mt-2' }, t('escape_room.start_hint') || 'Start the timer to begin inspecting objects')
+                h('p', { role: escapeRoomState.hasStarted ? 'status' : undefined, className: 'text-slate-400 text-sm mt-2' }, escapeRoomState.hasStarted ? t('escape_room.timer_paused') : t('escape_room.start_hint'))
               )
             : h('p', { className: 'text-purple-400 text-sm mt-2' }, t('escape_room.click_to_inspect'))
         ),
@@ -2017,6 +2189,7 @@ inputText.substring(0, 6000) + '\n' +
             var isDisabled = isSolved || !isEscapeTimerRunning;
             return h('button', {
               key: obj.id,
+              'data-escape-room-next': '',
               onClick: function() { if (!isDisabled) handlers.handleSelectObject(obj); },
               disabled: isDisabled,
               className: 'relative flex flex-col items-center gap-2 p-4 rounded-xl transition-all transform ' + (isEscapeTimerRunning ? 'hover:scale-110' : '') + ' ' +
@@ -2042,6 +2215,8 @@ inputText.substring(0, 6000) + '\n' +
       mainContent = renderGenerating();
     } else if (escapeRoomState.isEscaped) {
       mainContent = renderVictory();
+    } else if (escapeRoomState.isGameOver) {
+      mainContent = renderGameOver();
     } else {
       mainContent = renderRoomContent();
     }
@@ -2053,7 +2228,7 @@ inputText.substring(0, 6000) + '\n' +
           h('div', { className: 'absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(168,85,247,0.2),transparent_70%)]' })
         ),
         // Top bar
-        h('div', { className: 'flex justify-between items-start mb-6 relative z-10' },
+        h('div', { className: 'flex flex-col gap-4 sm:flex-row sm:justify-between items-start mb-6 relative z-10' },
           h('div', { className: 'text-left' },
             h('h2', { className: 'text-3xl font-black text-purple-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3' },
               h(DoorOpen, { size: 32 }),
@@ -2064,7 +2239,13 @@ inputText.substring(0, 6000) + '\n' +
               ? h('p', { className: 'text-slate-500 text-sm mt-1 font-medium' }, escapeRoomState.room.theme)
               : null
           ),
-          h('div', { className: 'flex gap-2 items-center' },
+          h('div', { className: 'flex flex-wrap gap-2 items-center' },
+            !terminal && isEscapeTimerRunning && props.setIsEscapeTimerRunning ? h('button', {
+              onClick: toggleTimer, className: 'px-3 py-2 rounded-lg bg-slate-700 text-white text-sm focus:ring-2 focus:ring-purple-400'
+            }, t('escape_room.pause')) : null,
+            // Lives are a visible budget; easy mode uses the existing unlimited sentinel.
+            h('div', { className: 'px-3 py-1.5 rounded-lg bg-slate-800 text-rose-300', 'aria-label': t('escape_room.lives') },
+              t('escape_room.lives') + ': ' + ((escapeRoomState.maxLives || 3) >= 99 ? '\u221E' : (Number.isFinite(escapeRoomState.lives) ? escapeRoomState.lives : 3))),
             // Timer
             h('div', { className: 'px-3 py-1.5 rounded-lg flex items-center gap-2 ' + (escapeTimeLeft <= 60 ? 'bg-red-900/50 animate-pulse' : 'bg-slate-800/50') },
               h(Clock, { size: 16, className: escapeTimeLeft <= 60 ? 'text-red-400' : 'text-slate-400' }),
@@ -2097,16 +2278,16 @@ inputText.substring(0, 6000) + '\n' +
         // Selected object puzzle dialog
         escapeRoomState.selectedObject
           ? h('div', {
-              role: 'button',
-              tabIndex: 0,
-              onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
               className: 'fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4',
-              onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { selectedObject: null }); }); }
+              onClick: function() { setEscapeRoomState(rememberEscapeRoomDraft); }
             },
               h('div', {
-                className: 'bg-slate-800 w-full max-w-2xl rounded-2xl border-4 border-purple-500 shadow-2xl p-6 relative',
+                className: 'bg-slate-800 w-full max-w-2xl max-h-[90dvh] overflow-y-auto rounded-2xl border-4 border-purple-500 shadow-2xl p-6 relative',
                 role: 'dialog',
                 'aria-modal': 'true',
+                'aria-labelledby': 'escape-room-object-title',
+                ref: puzzleDialogRef,
+                tabIndex: -1,
                 onClick: function(e) { e.stopPropagation(); }
               }, renderPuzzleDialog())
             )
@@ -2129,7 +2310,15 @@ inputText.substring(0, 6000) + '\n' +
     var handlers = props.handlers;
     var t = props.t;
     var hasSourceOrAnalysis = props.hasSourceOrAnalysis;
+    var difficultyPreset = escapeRoomPresets[escapeRoomState.difficulty] || escapeRoomPresets.normal;
+    var estimatedTime = (escapeRoomState.puzzleCount || 10) * difficultyPreset.timePerPuzzle;
 
+    var settingsDialogRef = useEscapeRoomDialog(!!(escapeRoomState && escapeRoomState.showSettings), function() {
+      setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); });
+    });
+    var previewDialogRef = useEscapeRoomDialog(!!(escapeRoomState && escapeRoomState.isPreview && escapeRoomState.room), function() {
+      setEscapeRoomState(function(prev) { return Object.assign({}, prev, { isPreview: false }); });
+    });
     var settingsDialog = null;
     var previewDialog = null;
 
@@ -2137,14 +2326,14 @@ inputText.substring(0, 6000) + '\n' +
     if (escapeRoomState.showSettings) {
       var hasSaved = typeof handlers.hasSavedEscapeRoom === 'function' ? handlers.hasSavedEscapeRoom() : false;
       settingsDialog = h('div', {
-        role: 'button',
-        tabIndex: 0,
-        onKeyDown: function(e) { if (e.key === 'Escape') e.currentTarget.click(); },
         className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm animate-in fade-in duration-300',
         onClick: function() { setEscapeRoomState(function(prev) { return Object.assign({}, prev, { showSettings: false }); }); }
       },
         h('div', {
           className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-hidden max-w-md w-full mx-4 transform transition-all animate-in zoom-in-95 duration-300',
+          ref: settingsDialogRef,
+          tabIndex: -1,
+          'aria-label': t('escape_room.settings_btn'),
           role: 'dialog',
           'aria-modal': 'true',
           onClick: function(e) { e.stopPropagation(); }
@@ -2181,9 +2370,9 @@ inputText.substring(0, 6000) + '\n' +
                 })
               ),
               h('p', { className: 'text-xs text-slate-500 mt-2 text-center' },
-                escapeRoomState.difficulty === 'easy' ? '45s per puzzle \u2022 99 lives \u2022 5 hints' :
-                escapeRoomState.difficulty === 'normal' ? '30s per puzzle \u2022 3 lives \u2022 3 hints' :
-                '20s per puzzle \u2022 1 life \u2022 1 hint'
+                t('escape_room.time_remaining', { time: Math.floor(estimatedTime / 60) + ':' + String(estimatedTime % 60).padStart(2, '0') }) +
+                ' \u2022 ' + t('escape_room.lives') + ': ' + (difficultyPreset.lives >= 99 ? '\u221E' : difficultyPreset.lives) +
+                ' \u2022 ' + t('escape_room.hints_remaining', { count: difficultyPreset.hints })
               )
             ),
             // Puzzle count slider
@@ -2239,6 +2428,9 @@ inputText.substring(0, 6000) + '\n' +
       },
         h('div', {
           className: 'bg-white rounded-3xl p-6 md:p-8 shadow-2xl border-4 border-amber-400 relative overflow-y-auto max-w-3xl w-full mx-4 my-8 max-h-[90vh] transform transition-all animate-in zoom-in-95 duration-300',
+          ref: previewDialogRef,
+          tabIndex: -1,
+          'aria-label': t('escape_room.preview_title'),
           role: 'dialog',
           'aria-modal': 'true',
           onClick: function(e) { e.stopPropagation(); }
@@ -2280,20 +2472,20 @@ inputText.substring(0, 6000) + '\n' +
               puzzleChildren.push(
                 h('div', { key: 'hdr', className: 'flex items-center gap-2 mb-2' },
                   h('span', { className: 'text-xl' }, (puzzle.linkedObject && puzzle.linkedObject.emoji) || '\uD83D\uDD2E'),
-                  h('span', { className: 'font-bold text-slate-700' }, (puzzle.linkedObject && puzzle.linkedObject.name) || ('Puzzle ' + (idx + 1))),
+                  h('span', { className: 'font-bold text-slate-700' }, (puzzle.linkedObject && puzzle.linkedObject.name) || t('share_collect.q_aria', { n: idx + 1 })),
                   h('span', { className: 'px-2 py-0.5 rounded-full text-xs font-bold uppercase ' + typeColorClass }, puzzle.type)
                 )
               );
               // Question input
               var editField = puzzle.sentence != null ? 'sentence' : (puzzle.encodedText != null ? 'encodedText' : 'question');
-              var editLabel = editField === 'sentence' ? 'Sentence' : editField === 'encodedText' ? 'Riddle' : 'Question';
+              var editLabel = editField === 'sentence' ? t('escape_room.sentence_with_blank') : editField === 'encodedText' ? t('escape_room.riddle_challenge') : t('quiz.question_label');
               puzzleChildren.push(
                 h('div', { key: 'q' },
                   h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, editLabel),
                   h('input', {
                     type: 'text',
                     value: puzzle[editField] || '',
-                    'aria-label': editLabel + ' for puzzle ' + (idx + 1),
+                    'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + editLabel,
                     onChange: function(e) {
                       handlers.updateEscapeRoomPuzzle(idx, editField, e.target.value);
                     },
@@ -2314,7 +2506,7 @@ inputText.substring(0, 6000) + '\n' +
                         h('input', {
                           type: 'text',
                           value: opt,
-                          'aria-label': 'Option ' + String.fromCharCode(65 + optIdx) + ' for puzzle ' + (idx + 1),
+                          'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.option') + ' ' + String.fromCharCode(65 + optIdx),
                           onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'options', { index: optIdx, text: e.target.value }); },
                           className: 'flex-1 p-1.5 text-xs border rounded-lg outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-1 transition-colors ' +
                             (optIdx === puzzle.correctIndex ? 'border-green-600 bg-green-50' : 'border-slate-200')
@@ -2328,7 +2520,7 @@ inputText.substring(0, 6000) + '\n' +
               if (puzzle.type === 'scramble') {
                 puzzleChildren.push(
                   h('p', { key: 'scr-ans', className: 'text-xs text-slate-500' },
-                    '\u2705 Answer: ', h('strong', null, puzzle.answer)
+                    t('export.answer_label') + ' ', h('strong', null, puzzle.answer)
                   )
                 );
               }
@@ -2336,7 +2528,7 @@ inputText.substring(0, 6000) + '\n' +
               if (puzzle.type === 'fillin' || puzzle.type === 'cipher') {
                 puzzleChildren.push(
                   h('p', { key: 'fil-ans', className: 'text-xs text-slate-500' },
-                    '\u2705 Answer: ', h('strong', null, puzzle.answer), ' | Wordbank: ' + ((puzzle.wordbank || []).join(', '))
+                    t('export.answer_label') + ' ', h('strong', null, puzzle.answer), ' | ' + t('simplified.word_bank') + ': ' + ((puzzle.wordbank || []).join(', '))
                   )
                 );
               }
@@ -2352,7 +2544,7 @@ inputText.substring(0, 6000) + '\n' +
               if (puzzle.type === 'matching' && puzzle.pairs) {
                 puzzleChildren.push(
                   h('p', { key: 'match-ans', className: 'text-xs text-slate-500' },
-                    '\uD83D\uDD17 Pairs: ' + puzzle.pairs.map(function(p) { return p.left + '\u2194' + p.right; }).join(', ')
+                    t('matching.pairs') + ': ' + puzzle.pairs.map(function(p) { return p.left + '\u2194' + p.right; }).join(', ')
                   )
                 );
               }
@@ -2360,11 +2552,11 @@ inputText.substring(0, 6000) + '\n' +
               if (puzzle.hint) {
                 puzzleChildren.push(
                   h('div', { key: 'hint' },
-                    h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, 'Hint'),
+                    h('label', { className: 'text-xs font-bold text-slate-500 uppercase' }, t('escape_room.hint')),
                     h('input', {
                       type: 'text',
                       value: puzzle.hint,
-                      'aria-label': 'Hint for puzzle ' + (idx + 1),
+                      'aria-label': t('share_collect.q_aria', { n: idx + 1 }) + ': ' + t('escape_room.hint'),
                       onChange: function(e) { handlers.updateEscapeRoomPuzzle(idx, 'hint', e.target.value); },
                       className: 'w-full mt-1 p-2 text-xs border border-slate-400 rounded-lg focus:border-amber-400 focus:ring-1 focus:ring-amber-200 outline-none'
                     })
@@ -2383,16 +2575,16 @@ inputText.substring(0, 6000) + '\n' +
           // Final door puzzle
           escapeRoomState.finalDoorPuzzle
             ? h('div', { className: 'mb-6 p-4 bg-gradient-to-r from-red-50 to-orange-50 rounded-2xl border border-red-200' },
-                h('h4', { className: 'font-bold text-red-800 mb-2' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEAA '), 'Final Door Puzzle'),
+                h('h4', { className: 'font-bold text-red-800 mb-2' }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDEAA '), t('escape_room.final_door_title')),
                 h('input', {
                   type: 'text',
                   value: escapeRoomState.finalDoorPuzzle.sentence || '',
-                  'aria-label': 'Final door puzzle sentence',
+                  'aria-label': t('escape_room.final_door_title') + ': ' + t('escape_room.sentence_with_blank'),
                   onChange: function(e) { handlers.updateEscapeRoomFinalDoor('sentence', e.target.value); },
                   className: 'w-full p-2 text-sm border border-red-200 rounded-lg focus:border-red-400 mb-2'
                 }),
                 h('p', { className: 'text-xs text-red-600' },
-                  '\u2705 Answer: ', h('strong', null, escapeRoomState.finalDoorPuzzle.answer)
+                  t('export.answer_label') + ' ', h('strong', null, escapeRoomState.finalDoorPuzzle.answer)
                 )
               )
             : null,
@@ -2430,6 +2622,7 @@ inputText.substring(0, 6000) + '\n' +
   window.AlloModules.EscapeRoomGameplay = EscapeRoomGameplay;
   window.AlloModules.EscapeRoomDialogs = EscapeRoomDialogs;
   window.AlloModules.useEscapeRoomTimer = useEscapeRoomTimer;
+  window.AlloModules.startEscapeRoomClock = startEscapeRoomClock;
   window.AlloModules.EscapeRoomModule = true;
 
   console.log('[EscapeRoomModule] Loaded successfully');

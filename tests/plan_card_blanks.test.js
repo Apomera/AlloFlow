@@ -29,7 +29,8 @@ beforeAll(() => {
   }
   if (end < 0) throw new Error('could not brace-match the function');
   // eslint-disable-next-line no-new-func
-  planCard = new Function(src.slice(start, end) + '; return _commandWorkflowPlanCard;')();
+  const helpers = src.slice(src.indexOf('const _chatText ='), src.indexOf('const _generateStandardChatResponse ='));
+  planCard = new Function(helpers + src.slice(start, end) + '; return _commandWorkflowPlanCard;')();
 });
 
 const t = (_k, fb) => fb;

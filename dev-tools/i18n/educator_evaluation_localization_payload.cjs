@@ -5087,7 +5087,7 @@ module.exports = [
   },
   {
     "key": "educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b",
-    "english": "Under Maine PEPG this record holds the Student Learning &amp; Growth measure; SPM/SLO remain familiar aliases."
+    "english": "Under Maine PEPG this record holds the Student Learning & Growth measure; SPM/SLO remain familiar aliases."
   },
   {
     "key": "educator_evaluation.undo_import_s0uszg",

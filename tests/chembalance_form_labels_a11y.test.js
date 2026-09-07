@@ -75,10 +75,10 @@ describe('ChemBalance form-control accessibility', () => {
     }
   });
 
-  it('keeps all 16 form declarations and repaired names explicit in source', () => {
+  it('keeps all 17 form declarations and repaired names explicit in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(16);
+    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(17);
     expect(source).toContain('filter_chemistry_glossary_terms');
     expect(source).toContain("htmlFor: 'chem-ph-hypothesis'");
     expect(source).toContain("id: 'chem-ph-hypothesis'");

@@ -79,7 +79,17 @@ function ImageView(props) {
   var setGeneratedContent = props.setGeneratedContent;
   var setImageRefinementInput = props.setImageRefinementInput;
   var handleUpdateVisualPanel = props.handleUpdateVisualPanel;
-  const [altBusy, setAltBusy] = React.useState(false);
+  const [altRequest, setAltRequest] = React.useState(null);
+  const altRequestRef = React.useRef(null);
+  const currentImageRef = React.useRef(null);
+  currentImageRef.current = {
+    id: generatedContent?.id,
+    imageUrl: generatedContent?.data?.imageUrl
+  };
+  const altBusy = !!altRequest && altRequest.id === generatedContent?.id && altRequest.imageUrl === generatedContent?.data?.imageUrl;
+  React.useEffect(() => () => {
+    altRequestRef.current = null;
+  }, []);
   var handleRefinePanel = props.handleRefinePanel;
   var handleUpdateVisualLabel = props.handleUpdateVisualLabel;
   var handleSpeak = props.handleSpeak;
@@ -231,8 +241,13 @@ function ImageView(props) {
     };
     const regenerate = async () => {
       const vision = typeof window.callGeminiVision === 'function' ? window.callGeminiVision : null;
-      if (!A || !vision || !currentUrl) return;
-      setAltBusy(true);
+      if (!A || !vision || !currentUrl || altBusy) return;
+      const request = {
+        id: generatedContent?.id,
+        imageUrl: currentUrl
+      };
+      altRequestRef.current = request;
+      setAltRequest(request);
       try {
         const [r] = await A.draftAlts([{
           id: 0,
@@ -242,14 +257,32 @@ function ImageView(props) {
           language: leveledTextLanguage,
           callGeminiVision: vision
         });
-        if (r) patch({
-          altText: r.decorative ? '' : r.alt,
-          altSource: r.source,
-          decorative: r.decorative === true,
-          altHash: A.hashImage(currentUrl)
-        });
+        if (r && altRequestRef.current === request) {
+          // An AI draft must not replace a description or decorative
+          // choice the author changed while the request was pending.
+          updateImageResource(item => item.data.imageUrl === currentUrl && ['altText', 'altSource', 'altHash', 'decorative', 'prompt'].every(key => item.data[key] === d[key]) ? {
+            ...item,
+            data: {
+              ...item.data,
+              altText: r.decorative ? '' : r.alt,
+              altSource: r.source,
+              decorative: r.decorative === true,
+              altHash: A.hashImage(currentUrl)
+            }
+          } : item);
+        }
+      } catch (_) {
+        const active = currentImageRef.current;
+        if (altRequestRef.current === request && active.id === request.id && active.imageUrl === request.imageUrl && typeof addToast === 'function') {
+          const key = 'a11y.alt.regenerate_failed';
+          const translated = typeof t === 'function' ? t(key) : '';
+          addToast(translated && translated !== key ? translated : 'The image description could not be generated. Try again or write a description.', 'error');
+        }
       } finally {
-        setAltBusy(false);
+        if (altRequestRef.current === request) {
+          altRequestRef.current = null;
+          setAltRequest(null);
+        }
       }
     };
     return React.createElement(window.AlloModules.ImageAltField, {
@@ -362,7 +395,7 @@ function ImageView(props) {
     className: "flex-none flex items-center justify-center gap-2 bg-purple-50 text-purple-600 py-2 px-4 rounded-lg hover:bg-purple-100 transition-colors font-medium border border-purple-200"
   }, /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: '18px'
+      fontSize: '1.125rem'
     }
   }, "📷")), /*#__PURE__*/React.createElement("button", {
     "aria-label": t('common.regenerate'),

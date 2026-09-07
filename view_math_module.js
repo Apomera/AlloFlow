@@ -749,7 +749,7 @@ function MathView(props) {
   var mathSelfAnswerInputId = problemKey => 'math-self-answer-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var mathEditButtonId = problemKey => 'math-edit-toggle-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var answeredSelfGradeCount = mathProblems.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
-  var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length;
+  var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length && !mathProblems.some(problem => problem._verification?.reviewRequired);
   var selfGradeHelpId = 'math-self-grade-help-' + _mathStableHash(mathResourceId);
   var activeCheckIndex = mathProblems.findIndex(problem => getMathCheckResult(problem.__viewKey)?.checking === true);
   var activeHintIndex = mathProblems.findIndex(problem => getMathHintState(problem.__viewKey).loading === true);
@@ -1097,7 +1097,14 @@ function MathView(props) {
     size: 14
   })))), /*#__PURE__*/React.createElement("h2", {
     className: "text-2xl md:text-3xl font-bold text-indigo-900 font-serif leading-tight"
-  }, mathTitle || 'Math Practice'), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
+  }, mathTitle || 'Math Practice'), Number(generatedContent.data.preparation?.requested) > 0 && (() => {
+    const requested = Number(generatedContent.data.preparation.requested);
+    const reviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
+    return /*#__PURE__*/React.createElement("p", {
+      role: "status",
+      className: "mt-2 text-sm text-slate-700"
+    }, requested, " requested · ", mathProblems.length, " available · ", reviewCount, " need teacher review", requested > mathProblems.length ? ' · ' + (requested - mathProblems.length) + ' missing' : '');
+  })(), mathSelfGradeMode && /*#__PURE__*/React.createElement("p", {
     id: selfGradeHelpId,
     className: "mt-2 text-sm font-medium text-emerald-800"
   }, hasAllSelfGradeAnswers ? `All ${mathProblems.length} problems are answered. Review your responses, then submit.` : `Answered ${answeredSelfGradeCount} of ${mathProblems.length}. Answer every problem to enable Submit Assessment.`)), graphHtml && /*#__PURE__*/React.createElement("div", {
@@ -1154,7 +1161,10 @@ function MathView(props) {
     className: "text-lg font-medium text-slate-800 font-serif"
   }, /*#__PURE__*/React.createElement("span", {
     className: "sr-only"
-  }, `Problem ${pIdx + 1}: `), formatInlineText(formatMathQuestion(problem), false)), problem._verification && /*#__PURE__*/React.createElement("span", {
+  }, `Problem ${pIdx + 1}: `), formatInlineText(formatMathQuestion(problem), false)), problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
+    role: "alert",
+    className: "mt-2 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950"
+  }, "This problem needs teacher review before answers can be checked. Its question, answer, or expression is missing or inconsistent."), problem._verification && /*#__PURE__*/React.createElement("span", {
     style: {
       fontSize: "11px",
       marginLeft: "6px",
@@ -1177,7 +1187,7 @@ function MathView(props) {
     role: "alert",
     "data-math-manipulative-error": getMathManipulativeResponseAvailability(problem).reason,
     className: "ml-0 sm:ml-12 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-semibold text-red-800"
-  }, _mathManipulativeFallbackMessage(getMathManipulativeResponseAvailability(problem))), mathSelfGradeMode ? /*#__PURE__*/React.createElement("div", {
+  }, _mathManipulativeFallbackMessage(getMathManipulativeResponseAvailability(problem))), problem._verification?.reviewRequired && (!isTeacherMode || mathSelfGradeMode) ? null : mathSelfGradeMode ? /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-12 mt-4 space-y-2"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: mathSelfAnswerInputId(problem.__viewKey),
@@ -1200,7 +1210,7 @@ function MathView(props) {
       ..._mathPlainRecord(previous),
       [problem.__viewKey]: appendInlineMath(currentValue, result.latex)
     } : previous)
-  }), `Open accessible math keyboard for answer ${pIdx + 1}`, !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && /*#__PURE__*/React.createElement("div", {
+  }), `Open accessible math keyboard for answer ${pIdx + 1}`, !canSetMathStudentAnswers)) : isTeacherMode ? /*#__PURE__*/React.createElement(React.Fragment, null, isIndependentMode && !problem._verification?.reviewRequired && /*#__PURE__*/React.createElement("div", {
     className: "ml-0 sm:ml-12 mt-4 mb-4 space-y-3"
   }, problem.manipulativeSupport && (() => {
     // Inline accessible diagram (step 2): show the parametric scaffold inline +

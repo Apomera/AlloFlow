@@ -356,6 +356,29 @@ function uploadSchoolRewardsPrintAsset(request) {
   });
 }
 
+// Staff retrieve the exact stored bytes without exposing Drive links to students.
+function getSchoolRewardsPrintAssetForReview(request) {
+  var actor = requireRole_(['admin', 'staff']); request = object_(request);
+  var assetId = id_(request.assetId, 'print asset');
+  return locked_(function() {
+    var book = book_(), asset = requirePrintAsset_(book, assetId), model = requirePrintModel_(book, asset.modelId);
+    var bytes = readPrivatePrintAsset_(asset, model);
+    return { ok: true, fileName: 'school-print-model.' + model.sourceFormat.toLowerCase(), mimeType: asset.mimeType,
+      base64: Utilities.base64EncodeWebSafe(bytes), byteSize: bytes.length, contentHash: asset.contentHash };
+  });
+}
+function readPrivatePrintAsset_(asset, model) {
+  if (asset.ownerStudentId !== model.ownerStudentId || asset.sourceFormat !== model.sourceFormat || !sameContentHash_(asset.contentHash, model.contentHash)) throw srError_('reconciliation', 'The asset does not reconcile with its model version.');
+  var file;
+  try { file = DriveApp.getFileById(asset.driveFileId); } catch (_) { throw srError_('asset_missing', 'The private Drive asset is unavailable.'); }
+  if (!file) throw srError_('asset_missing', 'The private Drive asset is unavailable.');
+  assertPrivateStorage_(file);
+  if (file.getSize() < 1 || file.getSize() > SR_MAX_PRINT_ASSET_BYTES) throw srError_('size_mismatch', 'The stored model asset size no longer matches the uploaded version.');
+  var bytes = file.getBlob().getBytes();
+  if (bytes.length !== asset.byteSize || bytes.length !== model.byteSize || !sameSha256_(model.contentHash, sha256Bytes_(bytes))) throw srError_('hash_mismatch', 'The stored model asset no longer matches its SHA-256 hash. Upload the original file as a new model version.');
+  validatePrintAssetMagic_(model.sourceFormat, bytes);
+  return bytes;
+}
 function reviewSchoolRewardsPrintAsset(request) {
   var actor = requireRole_(['admin', 'staff']); request = object_(request);
   var assetId = id_(request.assetId, 'print asset'), action = text_(request.action, 20, '').toUpperCase();
@@ -369,7 +392,7 @@ function reviewSchoolRewardsPrintAsset(request) {
     if (asset.status !== 'PENDING') throw srError_('invalid_transition', 'Only an asset awaiting review can be reviewed.');
     if (asset.ownerStudentId !== model.ownerStudentId || asset.sourceFormat !== model.sourceFormat || !sameContentHash_(asset.contentHash, model.contentHash)) throw srError_('reconciliation', 'The asset does not reconcile with its model version.');
     if (action === 'VERIFY') {
-      if (!DriveApp.getFileById(asset.driveFileId)) throw srError_('asset_missing', 'The private Drive asset is unavailable.');
+      readPrivatePrintAsset_(asset, model);
       asset.status = 'VERIFIED'; model.printableFileId = asset.driveFileId; model.originalFileId = model.originalFileId || asset.driveFileId; model.clientPreflightStatus = 'READY';
     } else {
       asset.status = 'REJECTED'; model.clientPreflightStatus = 'ASSET_REJECTED';
@@ -646,12 +669,15 @@ function reviewSchoolRewardsPrintRequest(request) {
 function confirmSchoolRewardsPrintQuote(request) {
   var actor = requireRole_(['student']); request = object_(request);
   var requestId = id_(request.requestId, 'print request'), key = idemKey_(request.idempotencyKey);
-  var operation = printIdemOperation_('print_quote_confirm', actor, { requestId: requestId });
+  var quoteToken = text_(request.quoteToken, 100, '');
+  var operation = printIdemOperation_('print_quote_confirm', actor, { requestId: requestId, quoteToken: quoteToken });
   return locked_(function() {
     var prior = idemResult_(key, operation); if (prior) return prior;
     var book = book_(); assertNoPendingCoreOperation_(book, '');
     var item = requirePrintRequest_(book, requestId);
     if (item.studentId !== actor.studentId) throw srError_('denied', 'Students can confirm only their own quote.');
+    if (!quoteToken) throw srError_('quote_changed', 'Refresh the portal and review the current quote before confirming.');
+    if (!secureTextEqual_(quoteToken, printQuoteToken_(item))) throw srError_('quote_changed', 'This quote has changed. Refresh the portal and review the new quote before confirming.');
     var existingHold = pointHoldForPurpose_(book, 'PRINT_REQUEST', item.id);
     if (existingHold && existingHold.status === 'ACTIVE') {
       if (existingHold.studentId !== item.studentId || existingHold.amount !== item.quotePoints) throw srError_('reconciliation', 'The existing point reservation does not match this quote.');
@@ -734,7 +760,7 @@ function fulfillSchoolRewardsPrintRequest(request) {
     var item = requirePrintRequest_(book, requestId);
     if (['READY', 'FULFILLING', 'FULFILLED'].indexOf(item.status) < 0) throw srError_('invalid_transition', 'Only a ready print can be fulfilled.');
     var hold = pointHoldById_(book, item.holdId);
-    if (!hold || ['ACTIVE', 'CAPTURED'].indexOf(hold.status) < 0 || hold.amount !== item.quotePoints) throw srError_('reconciliation', 'The print request point reservation does not reconcile.');
+    if (!hold || ['ACTIVE', 'CAPTURED'].indexOf(hold.status) < 0 || hold.amount !== item.quotePoints || hold.studentId !== item.studentId || hold.purposeType !== 'PRINT_REQUEST' || hold.purposeId !== item.id) throw srError_('reconciliation', 'The print request point reservation does not reconcile.');
     var model = requirePrintModel_(book, item.modelId);
     if (model.contentHash !== item.modelHash) throw srError_('model_changed', 'The fulfilled print must match the approved model version.');
     var student = requireStudentRecord_(book, item.studentId);
@@ -925,6 +951,8 @@ function redactSchoolRewardsStudent(request) {
   if (request.confirm !== true) throw srError_('confirm_required', 'Redaction is permanent. Confirm it explicitly before it can run.');
   return locked_(function() {
     var book = book_(), student = requireStudentRecord_(book, studentId);
+    assertNoPendingCoreOperation_(book, '');
+    assertMailRecipientMutationAllowed_(book, studentId, '');
     var held = sheetRowsFor_(book, 'PointHolds', 'StudentId', studentId)
       .filter(function(row) { return String(row.Status) === 'ACTIVE'; });
     if (held.length) throw srError_('points_reserved', 'This student has points reserved for an open request. Cancel or complete it before redacting.');
@@ -1049,6 +1077,7 @@ function startSchoolRewardsAcademicYear(request) {
   if (request.confirm !== true) throw srError_('confirm_required', 'Closing the year changes every balance. Confirm it explicitly before it can run.');
   return locked_(function() {
     var book = book_(), config = configMap_(book), closing = String(config.academicYear || '');
+    assertNoPendingCoreOperation_(book, '');
     if (nextYear === closing) throw srError_('bad_config', 'The new academic year must be different from the one being closed.');
     var openWindows = windows_(book).filter(function(item) { return item.status === 'OPEN'; });
     if (openWindows.length) throw srError_('store_closed', 'Close the shopping window before closing the year, so no checkout is in progress.');
@@ -2228,11 +2257,11 @@ function normalizePrintRecipe_(value) {
 function normalizeNumberArray_(value, length, min, max, label) { var raw = Array.isArray(value) ? value : [], out = []; for (var i = 0; i < length; i++) out.push(boundedNumber_(raw[i] == null ? 0 : raw[i], min, max, label)); return out; }
 function printColor_(value) { var color = text_(value, 20, '#64748b'); if (!/^#[0-9a-f]{6}$/i.test(color)) throw srError_('bad_model', 'Recipe colors must be six-digit hex values.'); return color.toLowerCase(); }
 function printModelReadyForQuote_(model) { return !!model.printableFileId || (model.sourceFormat === 'RECIPE' && !!model.originalFileId); }
-function printFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_FOLDER_ID'); if (id) return DriveApp.getFolderById(id); var parent = DriveApp.getFolderById(props.getProperty('SR_FOLDER_ID')), folder = parent.createFolder('Print Models'); setPrivate_(folder); props.setProperty('SR_PRINT_FOLDER_ID', folder.getId()); return folder; }
+function printFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_FOLDER_ID'); if (id) return assertPrivateStorage_(DriveApp.getFolderById(id)); var parent = assertPrivateStorage_(DriveApp.getFolderById(props.getProperty('SR_FOLDER_ID'))), folder = parent.createFolder('Print Models'); setPrivate_(folder); props.setProperty('SR_PRINT_FOLDER_ID', folder.getId()); return folder; }
 function storePrintRecipe_(modelId, recipeJson) { var file = printFolder_().createFile(modelId + '.json', recipeJson, 'application/json'); setPrivate_(file); return file.getId(); }
 function loadPrintRecipe_(model) { if (!model.originalFileId) throw srError_('asset_missing', 'The private recipe asset is unavailable.'); try { return JSON.parse(DriveApp.getFileById(model.originalFileId).getBlob().getDataAsString('UTF-8')); } catch (_) { throw srError_('asset_invalid', 'The private recipe asset could not be read.'); } }
 
-function printAssetFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_ASSET_FOLDER_ID'); if (id) return DriveApp.getFolderById(id); var folder = printFolder_().createFolder('Imported Assets - Private Review'); setPrivate_(folder); props.setProperty('SR_PRINT_ASSET_FOLDER_ID', folder.getId()); return folder; }
+function printAssetFolder_() { var props = PropertiesService.getScriptProperties(), id = props.getProperty('SR_PRINT_ASSET_FOLDER_ID'); if (id) return assertPrivateStorage_(DriveApp.getFolderById(id)); var folder = printFolder_().createFolder('Imported Assets - Private Review'); setPrivate_(folder); props.setProperty('SR_PRINT_ASSET_FOLDER_ID', folder.getId()); return folder; }
 function printAssets_(book) { return rows_(sheet_(book, 'PrintAssets'), 15).map(function(row) { return { id: String(row[0] || ''), modelId: String(row[1] || ''), ownerStudentId: String(row[2] || ''), fileName: String(row[3] || ''), sourceFormat: String(row[4] || ''), mimeType: String(row[5] || ''), contentHash: String(row[6] || ''), byteSize: number_(row[7]), driveFileId: String(row[8] || ''), status: String(row[9] || ''), reviewReason: String(row[10] || ''), uploadedAt: cell_(row[11]), reviewedAt: cell_(row[12]), reviewedByHash: String(row[13] || ''), updatedAt: cell_(row[14]) }; }); }
 function assertPrintAssetCapacity_(book, studentId, incomingBytes, at) {
   var count = 0, totalBytes = 0, uploadsToday = 0, day = String(at || '').slice(0, 10);
@@ -2277,7 +2306,9 @@ function validatePrintAssetMagic_(format, bytes) {
     return;
   }
   var binary = bytes.length >= 84 && 84 + uint32Le_(bytes, 80) * 50 === bytes.length;
-  var ascii = startsWithAscii_(bytes, 'solid') && containsAscii_(bytes, 'facet') && containsAscii_(bytes, 'vertex') && endsWithAsciiIgnoringWhitespace_(bytes, 'endsolid');
+  // ASCII STL permits an optional solid name after the final endsolid token.
+  var asciiText = binary ? '' : Utilities.newBlob(bytes).getDataAsString().trim().toLowerCase();
+  var ascii = /^solid(?:\s|$)/.test(asciiText) && /\bfacet\b/.test(asciiText) && /\bvertex\b/.test(asciiText) && /(?:^|\n)\s*endsolid(?:[ \t]+[^\r\n]*)?$/.test(asciiText);
   if (!binary && !ascii) throw srError_('bad_asset', 'The file is not a recognized binary or ASCII STL container.');
 }
 
@@ -2295,8 +2326,20 @@ function printRequestById_(book, requestId) { var list = printRequests_(book); f
 function requirePrintRequest_(book, requestId) { var item = printRequestById_(book, requestId); if (!item) throw srError_('not_found', 'Print request was not found.'); return item; }
 function printRequestByOrderId_(book, orderId) { var list = printRequests_(book); for (var i = 0; i < list.length; i++) if (list[i].orderId === orderId || (list[i].id === orderId && ['FULFILLING', 'FULFILLED', 'REFUNDING', 'REFUNDED'].indexOf(list[i].status) >= 0)) return list[i]; return null; }
 function upsertPrintRequestRow_(book, item) { if (SR_PRINT_REQUEST_STATES.indexOf(item.status) < 0) throw srError_('bad_state', 'Print request state is invalid.'); upsert_(sheet_(book, 'PrintRequests'), 32, item.id, safeRow_([item.id, item.studentId, item.modelId, item.modelHash, item.windowId, item.status, item.requestedMaterialId, item.approvedMaterialId, item.printerProfileId, item.quantity, item.quotePoints, item.quoteExpiresAt, item.estimatedGrams, item.estimatedMinutes, item.preflightDecision, item.preflightSummary, item.holdId, item.orderId, item.revisionNumber, item.studentNote, item.staffReason, item.createdAt, item.submittedAt, item.reviewedAt, item.confirmedAt, item.queuedAt, item.printingAt, item.readyAt, item.fulfilledAt, item.closedAt, item.updatedAt, item.previousRequestId || ''])); }
-function printRequestDto_(item) { return { id: item.id, studentId: item.studentId, modelId: item.modelId, modelHash: item.modelHash, windowId: item.windowId, status: item.status, requestedMaterialId: item.requestedMaterialId, approvedMaterialId: item.approvedMaterialId, printerProfileId: item.printerProfileId, quantity: item.quantity, quotePoints: item.quotePoints, quoteExpiresAt: item.quoteExpiresAt, estimatedGrams: item.estimatedGrams, estimatedMinutes: item.estimatedMinutes, preflightDecision: item.preflightDecision, preflightSummary: item.preflightSummary, holdId: item.holdId, orderId: item.orderId, revisionNumber: item.revisionNumber, previousRequestId: item.previousRequestId || '', studentNote: item.studentNote, staffReason: item.staffReason, submittedAt: item.submittedAt, reviewedAt: item.reviewedAt, confirmedAt: item.confirmedAt, queuedAt: item.queuedAt, printingAt: item.printingAt, readyAt: item.readyAt, fulfilledAt: item.fulfilledAt, closedAt: item.closedAt, updatedAt: item.updatedAt }; }
+function printRequestDto_(item) { return { id: item.id, quoteToken: printQuoteToken_(item), studentId: item.studentId, modelId: item.modelId, modelHash: item.modelHash, windowId: item.windowId, status: item.status, requestedMaterialId: item.requestedMaterialId, approvedMaterialId: item.approvedMaterialId, printerProfileId: item.printerProfileId, quantity: item.quantity, quotePoints: item.quotePoints, quoteExpiresAt: item.quoteExpiresAt, estimatedGrams: item.estimatedGrams, estimatedMinutes: item.estimatedMinutes, preflightDecision: item.preflightDecision, preflightSummary: item.preflightSummary, holdId: item.holdId, orderId: item.orderId, revisionNumber: item.revisionNumber, previousRequestId: item.previousRequestId || '', studentNote: item.studentNote, staffReason: item.staffReason, submittedAt: item.submittedAt, reviewedAt: item.reviewedAt, confirmedAt: item.confirmedAt, queuedAt: item.queuedAt, printingAt: item.printingAt, readyAt: item.readyAt, fulfilledAt: item.fulfilledAt, closedAt: item.closedAt, updatedAt: item.updatedAt }; }
 
+// A quote fingerprint binds the student's confirmation to the displayed terms.
+ // It is a freshness check, not an authorization credential; identity is checked separately.
+function printQuoteToken_(item) {
+  return 'q1_' + hash_(stableJson_({
+    id: item.id, studentId: item.studentId, modelId: item.modelId, modelHash: item.modelHash,
+    windowId: item.windowId, quantity: item.quantity, quotePoints: item.quotePoints,
+    quoteExpiresAt: item.quoteExpiresAt, approvedMaterialId: item.approvedMaterialId,
+    printerProfileId: item.printerProfileId, estimatedGrams: item.estimatedGrams,
+    estimatedMinutes: item.estimatedMinutes, preflightDecision: item.preflightDecision,
+    preflightSummary: item.preflightSummary, staffReason: item.staffReason, reviewedAt: item.reviewedAt
+  }));
+}
 function pointHolds_(book) { return rows_(sheet_(book, 'PointHolds'), 14).map(function(row) { return { id: String(row[0] || ''), studentId: String(row[1] || ''), purposeType: String(row[2] || ''), purposeId: String(row[3] || ''), amount: number_(row[4]), status: String(row[5] || ''), expiresAt: cell_(row[6]), idempotencyKey: String(row[7] || ''), captureLedgerId: String(row[8] || ''), createdAt: cell_(row[9]), updatedAt: cell_(row[10]), capturedAt: cell_(row[11]), releasedAt: cell_(row[12]), releaseReason: String(row[13] || '') }; }); }
 function pointHoldById_(book, holdId) { var list = pointHolds_(book); for (var i = 0; i < list.length; i++) if (list[i].id === holdId) return list[i]; return null; }
 function pointHoldForPurpose_(book, type, purposeId) { var list = pointHolds_(book); for (var i = list.length - 1; i >= 0; i--) if (list[i].purposeType === type && list[i].purposeId === purposeId) return list[i]; return null; }
@@ -4239,7 +4282,17 @@ function iso_(value) { if (!value) return ''; var date = new Date(String(value))
 function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\//i.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
 function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[=+\-@]/.test(value) ? "'" + value : value; }); }
-function setPrivate_(item) { try { item.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); } catch (_) {} try { item.setShareableByEditors(false); } catch (_) {} }
+function assertPrivateStorage_(item) {
+  try {
+    if (!item || item.getSharingAccess() !== DriveApp.Access.PRIVATE || item.isShareableByEditors() || item.getEditors().length || item.getViewers().length) throw new Error('Storage sharing mismatch');
+  } catch (_) { throw srError_('storage_not_private', 'Private school storage could not be verified. Ask the deployment owner to review Drive sharing before trying again.'); }
+  return item;
+}
+function setPrivate_(item) {
+  try { item.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE); item.setShareableByEditors(false); }
+  catch (_) { throw srError_('storage_not_private', 'Private school storage could not be secured. Ask the deployment owner to review Drive sharing before trying again.'); }
+  return assertPrivateStorage_(item);
+}
 function cell_(value) { if (value == null) return ''; if (Object.prototype.toString.call(value) === '[object Date]') return value.toISOString(); return String(value); }
 function hash_(value) { var bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(value), Utilities.Charset.UTF_8); return Utilities.base64EncodeWebSafe(bytes).replace(/=+$/, ''); }
 function html_(value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }

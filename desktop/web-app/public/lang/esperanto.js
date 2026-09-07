@@ -43,9 +43,9 @@
     "dashboard_title": "Panelo / Iloj",
     "dashboard_text": "La Ilo-Naviga Breto kaj Instruista Panela alir-punkto.\n### Ilo-Naviga Breto\n• **Ilo-Ikonoj**: Unu-klaka salto al ajna generilo (Kvizo, Glosaro, Aventuro, ktp).\n• **Stat-Punktoj**: Verda = aktiva enhavo, Oranĝa = procezante, Griza = malplena.\n• **Logika Fluo**: Iloj orditaj de maldekstre-al-dekstre de Enigo → Generi → Eksporti.\n### Instruista Panela Butono\nKlaku la Panel-ikonon por malfermi la **Instruistan Pritaksan Panelon** - dediĉita panelo por spuri studentan progreson:\n• **Alŝuti Studentajn JSON-ojn**: Studentoj eksportas sian laboron kiel JSON-dosierojn; alŝutu ilin ĉi tie por amasa analizo.\n• **Studenta Listo**: Vidu ĉiujn alŝutitajn studentojn kun kromnomo, dato, kviz-progreso kaj Aventur-nivelo.\n• **Individua Trarigardo**: Klaku ajnan studenton por vidi ilian plenan historion•kvizojn, aventurojn, respondojn.\n• **Marki kiel Pritaksitan**: Markobutono por spuri kiujn studentojn vi trarigardis.\n• **Klasa Komprenoj Langeto**: Analiz-grafikaĵoj montrantaj oftajn miskomprenojn kaj tut-klasan rendimenton.\n• **Eksporti al CSV**: Elŝutu klas-datumojn por not-libra importo.\n### Rilataj Kapliniaj Agoj\n• **Salti al Leciono**: Rapid-reveno al via plej lastatempa leciona plano.\n• **Vid-Baskulo**: Ŝanĝu inter Instruistaj kaj Studentaj vidoj.\n### Profesia Konsilo\nLasu studentojn eksporti siajn JSON-konservojn ĉe la fino de klaso, poste amase alŝutu ilin ĉi tie por efika nokta pritaksado!",
     "actions_title": "Ag-Breto",
-    "actions_text": "Uzu la regilojn en la kaplinio por agordi la interfacan lingvon, administri realtempajn seancojn, traduki rimedojn kaj malfermi la eksportajn ilojn.\n### Kontrolu antaŭ liverado\n• Kontrolu tradukitan enhavon pri senco kaj precizeco.\n• Malfermu Document Builder por revizii la elektitajn rimedojn kaj la disponeblajn elŝutformatojn. Antaŭrigardu la rezulton antaŭ ol kunhavigi ĝin kun lernantoj.\n• Komencu realtempan seancon por ricevi aliĝkodon, aŭ kreu subtenatan hejmtaskan kunhavigon por sendependa laboro.\n### Daŭrigu esplori\nLa menuoj de instruistaj kaj lernaj iloj malfermas pliajn agadojn por planado, taksado, kreado kaj interago. Gvidata Reĝimo helpas vin konstrui fokusitan lecionon antaŭ ol esplori tiujn eblojn.",
+    "actions_text": "Uzu la regilojn en la kaplinio por agordi la interfacan lingvon, administri realtempajn seancojn, traduki rimedojn kaj malfermi la eksportajn ilojn.\n### Kontrolu antaŭ liverado\n• Kontrolu tradukitan enhavon pri senco kaj precizeco.\n• Malfermu Dokumentkonstruilo por revizii la elektitajn rimedojn kaj la disponeblajn elŝutformatojn. Antaŭrigardu la rezulton antaŭ ol kunhavigi ĝin kun lernantoj.\n• Komencu realtempan seancon por ricevi aliĝkodon, aŭ kreu subtenatan hejmtaskan kunhavigon por sendependa laboro.\n### Daŭrigu esplori\nLa menuoj de instruistaj kaj lernaj iloj malfermas pliajn agadojn por planado, taksado, kreado kaj interago. Gvidata Reĝimo helpas vin konstrui fokusitan lecionon antaŭ ol esplori tiujn eblojn.",
     "history_title": "Sesi-Historio",
-    "history_text": "Historio enhavas la rimedojn en via nuna laborspaco. Malfermu konservitan eron por revizii ĝin aŭ por reveni al pli frua rezulto.\n### Konservu sekurkopion\n• Konservu sekurkopion de la projekto por daŭrigi sur alia aparato aŭ por reakiri vian laboron poste. Gvidata Reĝimo ankaŭ montras ĉu la progreso estis konservita sur ĉi tiu aparato.\n• Laborspaco povas enhavi materialojn el pluraj lecionoj. Kontrolu la elektitajn rimedojn antaŭ ol eksporti aŭ kunhavigi.\n### Pakaĵoj de gvidataj lecionoj\nMalfermu Document Builder el Gvidata Reĝimo por labori kun la elektitaj rimedoj de tiu leciono. La ĝenerala Builder povas uzi la pli vastan laborspacon, do kontrolu ĝian enhavon antaŭ liverado.",
+    "history_text": "Historio enhavas la rimedojn en via nuna laborspaco. Malfermu konservitan eron por revizii ĝin aŭ por reveni al pli frua rezulto.\n### Konservu sekurkopion\n• Konservu sekurkopion de la projekto por daŭrigi sur alia aparato aŭ por reakiri vian laboron poste. Gvidata Reĝimo ankaŭ montras ĉu la progreso estis konservita sur ĉi tiu aparato.\n• Laborspaco povas enhavi materialojn el pluraj lecionoj. Kontrolu la elektitajn rimedojn antaŭ ol eksporti aŭ kunhavigi.\n### Pakaĵoj de gvidataj lecionoj\nMalfermu Dokumentkonstruilo el Gvidata Reĝimo por labori kun la elektitaj rimedoj de tiu leciono. La ĝenerala Builder povas uzi la pli vastan laborspacon, do kontrolu ĝian enhavon antaŭ liverado.",
     "spotlight_title": "Reflektoro",
     "spotlight_message": "Salutu {name}!",
     "dbq_title": "Dokumento-Bazitaj Demandoj",
@@ -509,7 +509,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "Dokumentkonstruilo",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "Ŝalti etoson",
     "close_story_forge": "Fermi StoryForge",
     "story_creation_phases": "Rakontkreaj fazoj",
-    "doc_builder": "Document Builder",
+    "doc_builder": "Dokumentkonstruilo",
     "close_doc_builder": "Fermi dokumentkonstruilon",
     "font_size": "Tipargrandeco",
     "target_word_count": "Cela vortnombra celo",
@@ -5071,10 +5071,10 @@
     "locked": "Ŝlosita",
     "escaped": "Vi Eskapis!",
     "escaped_desc": "Vi solvis ĉiujn enigmojn kaj eskapis el la ĉambro!",
-    "time_up": "? La Tempo Finiĝis!",
+    "time_up": "⏰ La Tempo Finiĝis!",
     "reveal_hint": "Malkaŝi Konsileton",
-    "puzzles_remaining": "{{count}} enigmoj restantaj",
-    "time_remaining": "Tempo: {{time}}",
+    "puzzles_remaining": "{count} enigmoj restantaj",
+    "time_remaining": "Tempo: {time}",
     "progress": "Progreso",
     "start": "Komenci Eskapĉambron",
     "start_hint": "Ekfunkciigu la tempomezurilon por komenci inspekti objektojn",
@@ -5085,8 +5085,8 @@
     "room_complete": "Ĉambro Kompleta!",
     "loading_error": "Ne eblis ŝargi ĉambrajn datumojn",
     "no_puzzle": "Neniu enigmo trovita por ĉi tiu objekto",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Perfekta eskapo! +{{xp}} kromaj XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Perfekta eskapo! +{xp} kromaj XP",
     "puzzle_mcq": "Plurelekta",
     "puzzle_sequence": "Ordigu",
     "puzzle_cipher": "Malĉifru la Mesaĝon",
@@ -5144,7 +5144,7 @@
     "clue": "Indico",
     "clue_found": "Indico Malkovrita!",
     "clue_revealed": "Ĉi tiu indico povus helpi kun alia enigmo...",
-    "clues_collected": "Indicoj: {{count}}/{{total}}",
+    "clues_collected": "Indicoj: {count}/{total}",
     "use_clue": "Uzi Indicon",
     "final_door": "La Elirpordo",
     "final_door_ready": "La elirpordo nun estas malŝlosita!",
@@ -5170,12 +5170,12 @@
     "left": "restantaj",
     "wrong_attempts": "Malĝustaj provoj",
     "time_penalty": "-{seconds} sekundoj!",
-    "game_over_time": "? La tempo finiĝis! La tempo elĉerpiĝis.",
+    "game_over_time": "⏰ La tempo finiĝis! La tempo elĉerpiĝis.",
     "streak": "Sinsekvo",
     "streak_bonus": "Sinsekva premio! x{multiplier}",
     "streak_lost": "Sinsekvo perdita!",
     "one_minute_warning": "Unu minuto restas!",
-    "thirty_seconds_warning": "? Nur 30 sekundoj restas!",
+    "thirty_seconds_warning": "⏰ Nur 30 sekundoj restas!",
     "timer_paused": "Tempumilo paŭzigita",
     "timer_resume": "Daŭrigi",
     "settings_btn": "Ĉambraj agordoj",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "Komenci plurludantan eskapĉambron kun via klaso",
     "team_mode": "Teama defio",
     "team_race": "Konkuro por eskapi!",
-    "team_progress": "{{team}} progreso: {{solved}}/{{total}}",
+    "team_progress": "{team} progreso: {solved}/{total}",
     "waiting_host": "Atendante ke la instruisto komencu...",
-    "team_escaped": "Teamo {{team}} eskapis!",
+    "team_escaped": "Teamo {team} eskapis!",
     "all_teams_done": "Ĉiuj teamoj finis!",
     "your_team": "Via teamo",
     "team_red": "Ruĝa teamo",
@@ -5198,7 +5198,7 @@
     "team_green": "Verda teamo",
     "team_yellow": "Flava teamo",
     "team_all": "Ĉiuj lernantoj",
-    "teams_competing": "{{count}} teamoj konkurantaj",
+    "teams_competing": "{count} teamoj konkurantaj",
     "first_escape": "Unua por eskapi!",
     "end_game": "Fini ludon",
     "end_game_confirm": "Ĉu fini la eskapĉambron por ĉiuj lernantoj?",
@@ -5211,8 +5211,8 @@
     "resume_game": "Daŭrigi ludon",
     "game_paused_by_teacher": "Ludo paŭzigita de la instruisto",
     "celebration_title": "Gratulon!",
-    "you_escaped": "Via teamo eskapis en {{time}}!",
-    "other_team_escaped": "{{team}} eskapis!",
+    "you_escaped": "Via teamo eskapis en {time}!",
+    "other_team_escaped": "{team} eskapis!",
     "class_escaped": "Klasa venko!",
     "everyone_escaped": "Ĉiuj kunlaboris por eskapi!",
     "hurry_up": "Daŭrigu! Vi ankoraŭ povas eskapi!",
@@ -5240,7 +5240,7 @@
     "load_saved": "Ŝargi konservitan",
     "loaded_saved": "Konservita eskapĉambro ŝargita! Reviziu kaj lanĉu kiam preta.",
     "no_saved": "Neniu konservita eskapĉambro trovita",
-    "preview_confirmed": "? Eskapĉambro ŝlosita • preta por ludi!",
+    "preview_confirmed": "✅ Eskapĉambro ŝlosita • preta por ludi!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x sinsekva premio!)",
     "loaded_from_resource": "Ŝargita el rimedo."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Sendi al Spertula Laborbenko",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "Bonega laboro!",
       "partial": "Bona klopodo, daŭrigu!",
       "incorrect": "Ne tute ĝuste • provu denove!",
-      "error": "Ne eblis taksi • bonvolu provi denove.",
+      "error": "Ne eblis taksi — bonvolu provi denove.",
       "verdict_correct": "Ĝuste!",
       "verdict_partial": "Parte Ĝuste",
       "verdict_incorrect": "Ne Tute Ĝuste",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **Fina Nivelo**: {level}",
       "log_header": "Aventura Protokolo",
       "chapter_separator": "***",
-      "user_label": "? VI",
+      "user_label": "➤ VI",
       "print_button": "Presi Rakontlibron"
     },
     "answer_key_title": "Respondŝlosilo",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "Vi povas klaki iun ajn vorton en la teksto por vidi ĝian difinon!",
     "simplified_cloze": "Provu la reĝimon 'Cloze' por testi vortprovizajn kapablojn.",
     "simplified_quiz": "Ĉi tiu teksto aspektas bonege. Ĉu ni generu elirbileton por kontroli komprenon?",
-    "simplified_glossary": "Vortoj kiel '{term1}' kaj '{term2}' eble bezonas subtenon • glosaro povus helpi!",
+    "simplified_glossary": "Vortoj kiel '{term1}' kaj '{term2}' eble bezonas subtenon — glosaro povus helpi!",
     "simplified_glossary_fallback": "Kelkaj el ĉi tiuj terminoj estas malfacilaj. Glosaro helpus subteni ĉi tiun tekston.",
     "simplified_outline": "Vidaj lernantoj povus profiti el Grafika Organizilo de ĉi tiu enhavo.",
     "glossary_bingo": "Vi povas transformi ĉi tiujn terminojn en vortludojn kiel Bingo, Memora Kongruo, Krucvortenigmoj aŭ Vortserĉo!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "Ĉu vi volas certigi, ke ĉi tiu kvizo estas rigora? Faru Norman Aŭditon.",
     "adventure_sim": "Aventuroj permesas al lernantoj apliki tion, kion ili lernis, en sekura simulado.",
     "adventure_inventory": "Kontrolu la 'Inventaron' por vidi, kiuj eroj estis kolektitaj.",
-    "adventure_context": "Via aventuro pri {topic} pliriĉiĝas kun pli da rimedoj • provu aldoni {suggestion}!",
+    "adventure_context": "Via aventuro pri {topic} pliriĉiĝas kun pli da rimedoj — provu aldoni {suggestion}!",
     "adventure_context_fallback": "Ju pli da rimedoj vi generas, des pli riĉa fariĝas la aventura kunteksto.",
     "timeline_drag": "Trenu kaj demetu eventojn por reordigi la sekvencon.",
     "timeline_visualize": "Ĉi tio helpas lernantojn bildigi kaŭzo-efikajn rilatojn.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "Provu la Aventuran Reĝimon por amuza pluva-taga aktiveco.",
     "parent_read_along": "Uzu 'Kunlegi' por ekzerci legadon kune.",
     "fallback_lesson_plan": "Vi havas bonegajn rimedojn. Ĉu sintezi ilin en Lecionan Planon?",
-    "fallback_brainstorm": "Ĉu vi sentas vin blokita? Provu babili kun mi kaj ŝalti Aŭtomatan-Kompletigon por aktivigi Skemo-Reĝimon • mi helpos vin desegni vian tutan lecionon!",
-    "fallback_export": "Vi havas {count} rimedojn pri {topic} • eksportu ilin kiel unu PDF!",
+    "fallback_brainstorm": "Ĉu vi sentas vin blokita? Provu babili kun mi kaj ŝalti Aŭtomatan-Kompletigon por aktivigi Skemo-Reĝimon — mi helpos vin desegni vian tutan lecionon!",
+    "fallback_export": "Vi havas {count} rimedojn pri {topic} — eksportu ilin kiel unu PDF!",
     "fallback_export_fallback": "Vi povas eksporti ĉiujn ĉi tiujn rimedojn kiel unu PDF-pakaĵon.",
     "fallback_guide": "Elektu 'Montru al Mi' en la AI-Gvidilo se vi perdiĝas!",
     "intro_greeting": "Klaku min por alĝustigi miajn voĉ-agordojn.",
@@ -9234,7 +9234,7 @@
     "text_generated": "Via adaptita teksto pri {topic} pretas! Provu klaki vorton por vidi ĝian difinon, aŭ esploru ilojn kiel Glosaro aŭ Kvizo por profundigi komprenon.",
     "flashcards_created": "Flaŝkartoj kreitaj! Vi povas eksporti ilin al Quizlet, presi ilin aŭ provi la Memoran Ludon.",
     "quiz_generated": "Kvizo preta! Uzu Prezentan Reĝimon por la klaso, aŭ provu la Aŭtomatan Taksilon por malfermitaj respondoj.",
-    "glossary_generated": "Glosaro kompleta! Provu la vortludojn • Bingo, Memora Kongruo, Krucvortenigmoj, Vortserĉo, kaj pli!",
+    "glossary_generated": "Glosaro kompleta! Provu la vortludojn — Bingo, Memora Kongruo, Krucvortenigmoj, Vortserĉo, kaj pli!",
     "adventure_started": "Via aventuro komenciĝas! Tajpu vian agon sube, aŭ uzu la elekto-butonojn por decidi, kio okazas sekve.",
     "adventure_scene": "Kion vi faros? Ĉiu elekto formas vian rakonton!",
     "analysis_complete": "Analizo kompleta! Mi trovis iom da vortprovizo kaj ŝlosilaj konceptoj indaj esplori.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "Sekvenca Konstruilo",
     "type_timeline_desc": "Sekvenciga agado adaptita al la klasnivelo",
     "full_pack": "Plena Rimedpako • Elekti Ĉion",
-    "deselect_all": "? Malelekti Ĉion",
+    "deselect_all": "↩ Malelekti Ĉion",
     "estimate": "Takso",
     "api_calls": "API-vokoj",
     "start_batch": "Generi",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "Kreante vian personigitan version...",
     "bridge_projection": "Projekcia Reĝimo",
     "bridge_exit_projection": "Eliri Projekcion",
-    "bridge_offline_info": "Neniu viva seanco • antaŭvido nur sur ĉi tiu aparato",
+    "bridge_offline_info": "Neniu viva seanco — antaŭvido nur sur ĉi tiu aparato",
     "bridge_term_saved": "Konservis \"{term}\" al la glosaro",
     "bridge_term_save_failed": "Malsukcesis konservi terminon",
     "bridge_save_term": "Konservi al glosaro",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "Propra lingvo...",
     "bridge_f2f_custom_placeholder": "ekz. joruba, tigraja, daria...",
     "bridge_all_saved": "Ĉiuj terminoj konserviĝis en la glosaron!",
-    "bridge_terms_saved": "? Ĉiuj konservitaj",
+    "bridge_terms_saved": "✅ Ĉiuj konservitaj",
     "fullpack_group_target": "Cela grupo",
     "fullpack_group_current": "Aktualaj agordoj",
     "fullpack_group_all": "Ĉiuj grupoj",
@@ -12429,7 +12429,11 @@
       "trapezoid": "Trapezo",
       "simpson": "Simpson",
       "rectangles_n": "Ortanguloj (n)",
-      "coeff_a": "Koefic. a"
+      "coeff_a": "Koefic. a",
+      "sr_explanation_ready": "La klarigo pretas.",
+      "a11y_back_to_tools": "Reen al la iloj",
+      "a11y_snapshot": "Momentfoto",
+      "a11y_next": "Sekva"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Aŭdio ne subtenata en ĉi tiu retumilo",
@@ -12553,12 +12557,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Generi AI-klarigon je nivelo",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "Legnivelo:",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -14184,8 +14188,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Ĝuste! Ĝi\\",
-      "that": "? Tio\\",
+      "correct_it": "✅ Ĝuste! Ĝi\\",
+      "that": "❌ Tio\\",
       "linear": "Lineara",
       "quadratic": "Kvadrata",
       "cubic": "Kuba",
@@ -14459,7 +14463,8 @@
       "angle_u00b0": "Angulo (°)",
       "velocity_ms": "Rapideco (m/s)",
       "gravity_msu00b2": "Gravito (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "La klarigo pretas."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Hazarda: ",
@@ -14487,7 +14492,10 @@
       "codominant_desc": "Ambaŭ aleloj plene esprimiĝas. Heterozigotoj montras ambaŭ trajtojn samtempe.",
       "sexLinked_desc": "La trajto troviĝas sur la X-kromosomo. Tio modeligas X-ligitan RECESIVAN heredon (ekz. hemofilion kaj ruĝ-verdan kolorblindecon): viroj (XY) bezonas nur unu kopion por esprimi ĝin; virinoj (XX) bezonas du.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Reen al la STEM-iloj",
+      "a11y_snapshot": "Momentfoto",
+      "a11y_close_flashcard": "Fermi la karton"
     },
     "circuit": {
       "meter_status_ammeter_short": "Nesekura loko: mallongcirkvita vojo",
@@ -14779,8 +14787,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Ĝuste! ",
-      "it": "? Ĝi\\"
+      "correct": "✅ Ĝuste! ",
+      "it": "❌ Ĝi\\"
     },
     "inequality": {
       "badge_first_solve_label": "Unua Solvo",
@@ -14896,8 +14904,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Ĝuste!",
-      "answer": "? Respondo: ",
+      "correct": "✅ Ĝuste!",
+      "answer": "❌ Respondo: ",
       "hydrogen": "Hidrogeno",
       "helium": "Heliumo",
       "lithium": "Litio",
@@ -15039,7 +15047,7 @@
       "reddish_metal_used_since_the": "Ruĝeca metalo uzata ekde la Bronza Epoko",
       "bluishwhite_metal_that_prevents_rust": "Bluec-blanka metalo kiu malhelpas ruston",
       "best_conductor_of_electricity_among": "Plej bona konduktilo de elektro inter ĉiuj metaloj",
-      "dense_soft_shiny_precious_metal": "Densa, mola, brila altvalora metalo • neniam rustas",
+      "dense_soft_shiny_precious_metal": "Densa, mola, brila altvalora metalo — neniam rustas",
       "strong_as_steel_but_45": "Tiel forta kiel ŝtalo sed 45% pli malpeza",
       "shiny_metal_that_gives_rubies": "Brila metalo kiu donas al rubenoj ilian ruĝan koloron",
       "essential_for_steel_production_and": "Esenca por ŝtala produktado kaj osta sano",
@@ -16145,7 +16153,9 @@
       "our_sun_is_born": "Nia Suno naskiĝas",
       "present_day": "Nuntempo",
       "the_far_future": "La Fora Estonteco",
-      "universe": "Universo: "
+      "universe": "Universo: ",
+      "a11y_back_to_tools": "Reen al la iloj",
+      "a11y_simulation_speed": "Rapido de la simulado"
     },
     "rocks": {
       "igneous": "Magmodevena",
@@ -19070,7 +19080,10 @@
       "garage_desc": "Motoroj, rusto kaj reakcioj — kemia metiejo.",
       "classroom_desc": "Vera scienca klasĉambro kun kalikoj kaj eksperimentoj.",
       "outdoors_desc": "Eliru — naturo estas la plej granda laboratorio el ĉiuj.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Reen al la iloj",
+      "a11y_snapshot": "Momentfoto",
+      "a11y_next": "Sekva"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Konservita en historio!",
@@ -19623,7 +19636,7 @@
       "fractions": "Frakcioj",
       "unit_converter": "Unuokonvertilo",
       "life_earth_science": "Vivo- kaj Tersciencoj",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "Ĉela Simulilo",
       "galaxy_explorer": "Galaksia Esploranto",
       "universe_timelapse": "Universa Tempolapso",
       "rocks_minerals": "Rokoj kaj Mineraloj",
@@ -19857,7 +19870,40 @@
       "read_what_special_education_law_actually": "Legu kion la leĝo pri speciala edukado vere diras, per ĝiaj propraj vortoj. La vera teksto de IDEA Parto B kaj Sekcio 504, prenita el eCFR kaj datita, serĉebla, kun federaciaj kaj ŝtataj reguloj flank-al-flanke. Nenio estas parafrazita aŭ generita: se la oficiala teksto ne estas ŝargita, la ilo tion diras anstataŭ diveni.",
       "applied_k_12_behavior_practice_what": "Aplikata kondutopraktiko de infanĝardeno ĝis mezlernejo — kion lernejaj psikologoj kaj instruistoj vere faras per la scienco. La trinivela kadro PBIS, anstataŭaj kondutoj ligitaj al la funkcioj el FBA, fonaj eventoj (la malrapidaj ekigiloj kiujn plej multaj BIP maltrafas), la sepfaza eksplodociklo de Geoff Colvin, kaj la etiko de retenado kaj izolado, ankrita en Ĉapitro 33 de Majno. Frata ilo al BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Mara biologio kaj kondutscienco de polpoj, kalmaroj, sepioj kaj nauxtiloj. Ĉefaĵo: Hunter Sim — elektu specion, habitaton, predon kaj taktikon, ludu la kamuflan etludon, kaj tempigu la atakon. Malŝlosas kampnotajn biologiajn detalojn (mekaniko de kromatoforoj, 9 cerboj, blua sango, ĵeta propulso). Kampgvidilo de 10 specioj kun ciferoj pri inteligenteco, kamuflado kaj ĵetrapideco.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 kaj HS-PS2. Simulilo de trusa streĉo kun agordeblaj interspaco, alto, ŝarĝo kaj materialo, komparo de pontospecoj (trabo, truso, arko, pendo, kablotenata), materialdatumbazo, fortospecoj, veraj kazstudoj (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn, Golden Gate, Akashi kaj Millau), la inĝeniera dezajnociklo, kvizo laŭ AP-stilo, kaj presebla dezajnospecifo."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 kaj HS-PS2. Simulilo de trusa streĉo kun agordeblaj interspaco, alto, ŝarĝo kaj materialo, komparo de pontospecoj (trabo, truso, arko, pendo, kablotenata), materialdatumbazo, fortospecoj, veraj kazstudoj (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn, Golden Gate, Akashi kaj Millau), la inĝeniera dezajnociklo, kvizo laŭ AP-stilo, kaj presebla dezajnospecifo.",
+      "the_gutenberg_style_screw_press_as": "La ŝraŭbpreso laŭ Gutenberg kiel funkcianta simulado. Tiru la stangon, komposu viajn proprajn tiparojn, rigardu la premsignon. Plus la materialscienco (plumbo-stano-antimona alojo), la ekonomiko (la falego de la kosto po libro), la historio (Reformacio, scienca revolucio), la tipografio, kaj la homoj malantaŭ la preso (inkluzive de la presistinoj kiujn la historio forgesis). Konstruita por interfaka laboro en la mezlernejo.",
+      "three_js_stoop_simulator_deep_science": "Plonĝa simulilo en Three.js plus profunda scienco pri la ĉasmekaniko de rabobirdoj. Flugu kiel migra falko je 240 mph, kiel harpio kun ungegoj de 530 psi, aŭ kiel silenta korna gufo. 8 specioj kaj 12 sekcioj: ungega forto, vido (4-8× la homa, ultraviola ĉe turfalkoj), fluga fiziko, la silenta flugo de strigoj, kalkulilo de fina rapido, la resaniĝo post DDT kaj la daŭrantaj konservadaj krizoj, kaj kampa identigo laŭ silueto kaj ĝenerala aspekto.",
+      "practice_reading_and_completing_the_documents": "Ekzercu legi kaj plenigi la dokumentojn sur kiuj kuras la plenkreska vivo: laborpetoj, W-4 formularoj, lukontraktoj, medicinaj akceptformularoj, veturpermesoj, kaj la invito al via propra IEP kunveno. Ĉiu kampo malkodita en simpla lingvo, la kestoj kiuj povas kosti al vi markitaj, premsituacioj por kiam iu volas ke vi subskribu tuj, kaj pretaj frazoj por peti tempon. La tuta ekzercado uzas elpensitan personon, neniam viajn verajn informojn.",
+      "how_swimming_works_stroke_physics_survival": "Kiel naĝado funkcias (fiziko de la naĝmanieroj plus survivaj lertoj) kaj kion ĉiu naĝanto devus scii pri malvarma akvo, retrofluoj, glacio, savvestoj, kaj savado. Vidaj malkomponoj de la naĝmanieroj, la scienco de flosemo kaj propulso, kaj la survivaj lertoj (dorsflosado, ovbata piedmovo, la HELP pozicio, kunpremiĝo) kiuj vere savas vivojn. Fontoj: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Nur eduka: por vere lerni naĝi, trovu naĝinstruiston.",
+      "tax_paycheck_calculator_data_literacy_decision": "Imposta kaj salajra kalkulilo, datuma legoscio, decida matrico, kontraktolegilo, registroj kaj paperlaboro, transporta planado, laborpreteco, verkado de vivresumo, ordigo de portfoliaj pruvoj, intervjua ekzercado, komunikaj lertoj, tempoadministrado, sanasekuro, dentozorgo, ergonomio de korpozorgo, dormrutinoj, medikamentaj etikedoj, prepariĝo por rendevuoj, hejma sekureco, cifereca sekureco, trankvilo antaŭ manĝo, kaj aplikata scienco por la ĉiutaga vivo.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 kaj HS-LS4. La mikroba mondo: bakterioj (utilaj kaj patogenaj), virusoj (COVID, gripo, HIV, fagoj, morbilo), mikroskopio (lumo, fazkontrasto, fluoreska, elektrona, AFM), la evoluo de antibiotika rezisto, la mikrobiomo de homo, grundo kaj oceano, vakcinoj kaj imunsistemo, fermentado (fermentpasto, jogurto, kimĉio, saŭrkraŭto, kombuĉo, fromaĝo), kazstudoj (Snow, Fleming, MRSA, COVID kaj mRNA, FMT), kvizo, kaj presebla referenco pri laboratoria sekureco kaj mikroboj.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Dek kvin kampanjoj pri media prizorgado en dek unu regionoj. Kvin longaj plurperiodaj kampanjoj de Majno, plus dek transregionaj scenaroj tra ĉiuj kvin mekanikaj familioj: fajro (Yarralin en Aŭstralio, Karuk en norda Kalifornio), konservado (Yellowstone, Akagera en Ruando), publika sano (dengo en Mumbajo, ebolo de 2014 en Liberio), akvokolektejo (Klamath rivero, Murray-Darling baseno), kaj klimato (Marŝalaj Insuloj, delto de Bangladeŝo). La familiaj parigaj komprenoj malfermiĝas kiam vi finas la majnan kaj la transregionan el la sama mekanika familio.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 kaj MS-ESS3-3. Desegnu urbeton sur krado de 144 parceloj kontraŭ postuloj kiuj vere konfliktas. Tri urbetoj, ĉiu kun alia liganta limigo: Riverbend, kie la pluvakvo kaj la obligacio premas; Mesa Hollow, kie la akvotavolo estas fiksa kaj la bienoj trinkas ĝin; kaj Harborlight, kie la plano devas ankoraŭ funkcii en 2050. Forfluo laŭ la racia metodo, akvobilanco, marnivela toleremo, marŝdistanco sur la reto kaj kostigita vojreto, ĉiu malfermebla por montri sian formulon. La Assumption Lab reruligas unu planon sub du publikigitaj parametraroj, por ke lernantoj vidu kiuj konkludoj travivas ambaŭ. Mapo, redaktebla parcela tabelo kaj 3D-modelo de la sama plano. Diskutaj demandoj kaj dokumentita historio portas la demandojn kiujn la ilo rifuzas modeli. Neniu poentaro kaj neniu respondŝlosilo.",
+      "codap_data_science": "CODAP: datuma scienco",
+      "lumen_research_canvas": "Lumen: esplora kanvaso",
+      "evolab_evolution": "EvoLab: evoluo",
+      "dino_lab": "Dinosaŭra laboratorio",
+      "nutritionlab_nutrition_science": "NutritionLab: nutroscienco",
+      "birdlab_i_spy_ornithology": "BirdLab: serĉa ornitologio",
+      "openbim_companion": "OpenBIM: akompana gvidilo",
+      "applab_ai_app_generator": "AppLab: aplikaĵ-generilo per AI",
+      "access_lens": "Alirebleca lenso",
+      "sim_shelf": "Simulada breto",
+      "zoom_gallery": "Zoma galerio",
+      "sourcebook": "Fontlibro",
+      "wheel_fire_pottery_lab": "Rado kaj fajro: ceramika laboratorio",
+      "echo_navigator": "Eĥa navigilo",
+      "learning_lab_how_learning_works": "Learning Lab: kiel lernado funkcias",
+      "weldlab_welding_metal_joining": "WeldLab: veldado kaj metalkunigo",
+      "bikelab_physics_repair": "BikeLab: fiziko kaj riparo",
+      "fisherlab_boating_fishing_sim": "FisherLab: boat- kaj fiŝkapta simulilo",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: mitulfarma simulilo",
+      "throwlab_sports_physics": "ThrowLab: sporta fiziko",
+      "skatelab_skate_bmx_physics": "SkateLab: fiziko de skeit kaj BMX",
+      "playlab_strategy_on_the_field": "PlayLab: strategio sur la kampo",
+      "kepler_colony": "Kepler-kolonio",
+      "birdlab_life_list": "BirdLab: vivolisto",
+      "petslab_decoder": "PetsLab: konduta malĉifrilo"
     },
     "area": {
       "volume": "Volumeno..."
@@ -19897,7 +19943,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Reen al la iloj",
+      "a11y_snapshot": "Momentfoto",
+      "a11y_next": "Sekva",
+      "a11y_simulation_speed": "Rapido de la simulado",
+      "a11y_close_flashcard": "Fermi la karton"
     },
     "solar_sys": {
       "venus": "Venuso",
@@ -20719,7 +20770,8 @@
       "scaled_volume_changed": "🔵 Skaligita (volumeno ŝanĝita)",
       "skewed_shape_deformed": "🟠 Oblikvigita (formo deformita)",
       "degenerate_volume_0": "💀 Degenerinta (volumeno → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Progreso de la gvidilo"
     },
     "numberline": {
       "first_mark": "Unua Marko",
@@ -22862,7 +22914,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Jaro {value1} komenciĝas."
     },
     "optics": {
       "optics_lab": "Optika Laboratorio",
@@ -23208,7 +23261,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Loka analiza SQL-informpeto"
     },
     "geosandbox": {
       "loading_3d_engine": "Ŝargante 3D-motoron...",
@@ -23558,7 +23612,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Skulptaĵo forigita"
     },
     "algebraCAS": {
       "solve": "🔍 Solvi",
@@ -26154,7 +26209,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "La klarigo pretas."
     },
     "economicslab": {
       "six_figures": "Ses ciferoj",
@@ -28134,7 +28190,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Pripenso konservita."
     },
     "anatomy": {
       "system_explorer": "Sistema esploristo",
@@ -28716,7 +28773,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Remeti la 3D-kameraon"
     },
     "dna": {
       "back_to_tools": "Reen al Iloj",
@@ -30093,7 +30151,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Pripenso konservita."
     },
     "angles": {
       "back_to_tools": "Reen al iloj",
@@ -30907,7 +30966,8 @@
       "explain_how_each_parameter_shapes_a_si": "Klarigu kiel ĉiu parametro formas sinusan ondon.",
       "design_note_discrete_5_state_marker_no": "Desegna noto: diskreta 5-stata markilo; sen onda poentaro; sen malkaŝo — laŭ dezajno.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "La klarigo pretas."
     },
     "typingpractice": {
       "typing_practice_menu": "Menuo de Tajpekzercado",
@@ -31261,7 +31321,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Reen al la menuo"
     },
     "music": {
       "edm_lead": "EDM-Gvidvoĉo",
@@ -34670,7 +34731,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Elekti respondon: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Reen al la iloj",
@@ -35435,7 +35497,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "malŝaltita",
+      "sr_nothing_to_redo": "Nenio por refari.",
+      "sr_nothing_to_undo": "Nenio por malfari.",
+      "sr_dir_left": "maldekstre",
+      "sr_dir_right": "dekstre"
     },
     "arithmetic": {
       "selected": " elektita.",
@@ -39481,7 +39548,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR estas normigita al zenita radianto kaj limmagnitudo 6,5. Ĉi tiu proksimuma takso supozas klaran, senlunan ĉielon kaj populacian indicon 2,2. Bortle-klasoj indikas la limmagnitudon nur proksimume; ĉielo pli malhela ol la norma povas superi la ZHR. Pli malalta alteco de la radianto kaj pli hela ĉielo malaltigas la takson.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Reen al la STEM-iloj"
     },
     "autorepair": {
       "back_to_menu": "Reen al menuo",
@@ -40222,7 +40290,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Poentaro: {value1} el {value2}",
+      "a11y_open_2": "Malfermi {value1}",
+      "a11y_option": "Opcio {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Krusto",
@@ -40325,7 +40396,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "La klarigo pretas."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41071,7 +41143,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "La klarigo pretas.",
+      "a11y_investigation_progress": "Progreso de la esploro",
+      "a11y_flight_debrief": "Flugpritakso",
+      "a11y_tutorial_progress": "Progreso de la gvidilo"
     },
     "behaviorlab": {
       "chain_reaction": "Ĉenreago",
@@ -41242,7 +41318,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "La klarigo pretas.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43755,7 +43831,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Esplorita modulo: {value1}",
+      "a11y_score_out_of": "Poentaro: {value1} el {value2}",
+      "sr_selected": "Elektita: {value1}",
+      "sr_quiz_reset": "Kvizo remetita"
     },
     "brainatlas": {
       "group_systems": "Sistemoj",
@@ -48911,7 +48991,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Elekti respondon: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Kvizmajstro",
@@ -50055,7 +50136,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Elektita: {value1}"
     },
     "echotrainer": {
       "wall": "Muro",
@@ -51514,7 +51596,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Esplorita modulo: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Karbona kalkulilo",
@@ -52594,7 +52677,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Reen al la menuo",
+      "sr_getting_critique": "Akiras la kritikon...",
+      "sr_critique_ready": "La kritiko pretas."
     },
     "flightsim": {
       "game_controls": "🎮 LUDREGILOJ",
@@ -52801,7 +52887,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Kabina vido de la flugsimulilo. W/S klinangulo, A/D bankado, Shift/Ctrl gasstango, krampoj regas la klapojn, X radbremsoj, Q kvizo, F fortoj, Space paŭzo, I informo.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52813,7 +52899,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Libera flugo el Portland, ME",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -52859,7 +52945,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Ŝanhaja Turo",
       "learn": "Learn",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
@@ -58684,7 +58770,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Esplorita modulo: {value1}",
+      "sr_loaded": "{value1} ŝargita",
+      "sr_showing": "Montras {value1}",
+      "sr_opening": "Malfermas {value1}"
     },
     "platetectonics": {
       "pacific": "Pacifika",
@@ -58947,7 +59037,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63506,7 +63596,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "La klarigo pretas.",
+      "sr_off": "malŝaltita",
+      "sr_edge_left": "maldekstre",
+      "sr_edge_right": "dekstre",
+      "sr_correct": "Ĝuste.",
+      "sr_not_quite": "Ne tute."
     },
     "playlab": {
       "back": "← Reen",
@@ -63574,7 +63670,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "La trejnisto estas eksterrete.",
+      "sr_drill_stopped": "Ekzerco haltigita."
     },
     "printingpress": {
       "menu": "← Menuo",
@@ -65713,7 +65811,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Reen al la menuo",
+      "a11y_open": "Malfermi {value1}",
+      "sr_selected": "Elektita: {value1}",
+      "sr_loaded": "{value1} ŝargita",
+      "sr_opening": "Malfermas {value1}",
+      "sr_correct": "Ĝuste.",
+      "sr_not_quite": "Ne tute.",
+      "sr_year_begins": "Jaro {value1} komenciĝas.",
+      "sr_question_reset_try_again": "Demando remetita. Provu denove.",
+      "sr_not_quite_see_the_explanation": "Ne tute: rigardu la klarigon."
     },
     "raptorhunt": {
       "anatomy": "Anatomio",
@@ -67362,7 +67470,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Malfermi {value1}",
+      "a11y_flight_debrief": "Flugpritakso"
     },
     "renewables": {
       "menu": "← Menuo",
@@ -68062,7 +68172,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Reen al la menuo",
+      "sr_getting_critique": "Akiras la kritikon...",
+      "sr_critique_ready": "La kritiko pretas.",
+      "sr_quiz_reset": "Kvizo remetita"
     },
     "roadready": {
       "let_s_start": "Ni komencu →",
@@ -70929,7 +71043,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Reen al la STEM-iloj",
+      "a11y_local_analytical_sql_query": "Loka analiza SQL-informpeto"
     },
     "stewardship": {
       "back": "← Reen",
@@ -71506,7 +71622,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Reen al la menuo",
+      "sr_question_reset_try_again": "Demando remetita. Provu denove."
     },
     "throwlab": {
       "back": "← Reen",
@@ -71731,7 +71849,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Remeti la 3D-kameraon",
+      "sr_coach_is_offline": "La trejnisto estas eksterrete.",
+      "sr_drill_stopped": "Ekzerco haltigita."
     },
     "weldlab": {
       "menu": "← Menuo",
@@ -73293,7 +73414,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Esplorita modulo: {value1}",
+      "a11y_score_out_of": "Poentaro: {value1} el {value2}",
+      "sr_quiz_reset": "Kvizo remetita",
+      "sr_loaded": "{value1} ŝargita",
+      "sr_showing": "Montras {value1}",
+      "sr_not_quite_see_the_explanation": "Ne tute: rigardu la klarigon."
     },
     "worldbuilder": {
       "grade_level": "Klasnivelo",
@@ -74886,7 +75013,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Arbo de la vivo",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76741,7 +76868,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Opcio {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D-kameraaj vidoj"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76753,6 +76882,22 @@
       "finish": "Komprenite!",
       "replay": "Konsiletoj",
       "replay_aria": "Montru lernilon"
+    },
+    "pets": {
+      "sr_back_to_menu": "Reen al la menuo",
+      "sr_getting_critique": "Akiras la kritikon...",
+      "sr_critique_ready": "La kritiko pretas."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Reen al la STEM-iloj",
+      "a11y_3d_camera_views": "3D-kameraaj vidoj"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Progreso de la esploro"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Nenio por refari.",
+      "sr_nothing_to_undo": "Nenio por malfari."
     }
   },
   "glossary_health": {
@@ -77355,7 +77500,7 @@
       "person": "Persono\\",
       "phase_label": "Faza etikedo",
       "rationale_which_antecedent_does_this_address": "Pravigo (kiun antaŭecon ĉi tio traktas?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Pripensu vian aliron...\\n• Kio funkciis bone?\\n• Kion vi farus alimaniere?\\n• Kiujn strategiojn vi volas ekzerci sekve?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Pripensu vian aliron...\n• Kio funkciis bone?\n• Kion vi farus alimaniere?\n• Kiujn strategiojn vi volas ekzerci sekve?",
       "reinforcement_how_you": "⭐ Plifortigo (kiel vi\\",
       "replacement_behavior_functionally_equivalent": "✅ Anstataŭiga konduto (funkcie ekvivalenta)",
       "respond_as_the_counselor": "Respondu kiel la konsilisto...",
@@ -77363,7 +77508,7 @@
       "search_81_tools": "🔍  Serĉu 80+ ilojn…",
       "search_aba_terms": "🔍 Serĉu ABA-terminojn...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Serĉaj terminoj... (ekz. \"plifortigo\", \"FBA\", \"datumoj\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Sesio 1: 3\\nSesio 2: 7\\nSesio 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Sesio 1: 3\nSesio 2: 7\nSesio 3: 5\n...",
       "setting_eg_math_class_cafeteria": "Medio (ekz., Matematika klaso, Manĝejo)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Kunhavigu kion vi rimarkas hejme — fortojn, zorgojn, kulturan kuntekston, aŭ sugestojn por la lerneja teamo...",
       "step_description": "Priskribo de paŝo...",
@@ -78944,7 +79089,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Alto de la eltranĉo",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80609,7 +80754,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Bildo de la koncepto",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80645,10 +80790,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Provizi ĉiun koncepton",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Progreso de la provizado",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80662,7 +80807,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Eblaj nomoj",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80673,7 +80818,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Rememoro de konceptoj",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82231,7 +82376,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Fermi Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82240,7 +82385,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Filtri la taskojn",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82278,15 +82423,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Demando {n}",
+    "q_choices_aria": "Elektoj por demando {n}, po unu en linio",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Forigi demandon {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Skalaj paŝoj por demando {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Respondtipo por demando {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82296,10 +82441,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Elektebla ligilo por {title}",
+    "scale_high_aria": "Etikedo por la alta ekstremo",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Etikedo por la malalta ekstremo",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82319,7 +82464,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Resumo de la stato de la taskoj",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82335,9 +82480,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Ĝisdatiĝas aŭtomate",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Elektebla ligilo al la hejmtasko",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82346,7 +82491,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "QR-kodo de la hejmtasko",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84794,7 +84939,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Elekti evolunivelon por instigoj kaj taksiloj",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84802,7 +84947,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Ŝalti aŭ malŝalti la instruistan vidon",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84833,17 +84978,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Paŭzigi la registradon de la voĉnoto",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Daŭrigi la registradon de la voĉnoto",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Komenci registri voĉnoton",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Ĉesigi la registradon",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85229,22 +85374,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Kialo de la AlloHaven-rekono",
+    "recent_deliveries_aria": "Lastatempaj privataj AlloHaven-rekonoj",
+    "token_amount_aria": "Kvanto da AlloHaven-ĵetonoj",
+    "token_cap_aria": "Limo de AlloHaven-ĵetonoj po lernanto en seanco"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Esceptoj permesataj dum la celo tamen estas atingita",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Nedeviga progressignalo spurata de la aplikaĵo por ĉi tiu celo",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "La tuta teamo kune, aŭ ĉiu lernanto individue",
+    "name_aria": "Nomo de la klasa celo, konservata nur en ĉi tiu aparato",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Kiujn lernantojn ĉi tiu celo kovras",
+    "template_aria": "Komenca ŝablono por klasa celo",
+    "tokens_aria": "Ĵetonoj donataj por ĉiu lernanto kiam ĉi tiu celo estas atingita"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85262,7 +85407,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Administra ĵetono de Class Mailbox (nedeviga)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85292,17 +85437,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "mano levita",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Elektebla aliĝligilo al la realtempa poŝtkesto",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Realtempa seanco de Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85329,7 +85474,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "realtempa konekto",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85361,7 +85506,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL de la retaplikaĵo de Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

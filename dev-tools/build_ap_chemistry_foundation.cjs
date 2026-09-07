@@ -6,6 +6,35 @@
 
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_topics.cjs');
+const { AP_CHEMISTRY_UNIT_SECTIONS } = require('./ap_chemistry_lesson_sections.cjs');
+const { AP_CHEMISTRY_WORKSHOPS: SPECS, AP_CHEMISTRY_WORKSHOP_REVIEW_NOTE } = require('./ap_chemistry_workshops.cjs');
+
+// Which lesson section an item routes to, by its framework topic. Section 01 is
+// the original unit lesson; sections 02 and 03 are split out by topic.
+const sectionIndexByTopic = new Map();
+AP_CHEMISTRY_UNIT_SECTIONS.forEach((unitSpec) => {
+  unitSpec.section1Topics.forEach((topicId) => sectionIndexByTopic.set(topicId, 1));
+  unitSpec.sections.forEach((sectionSpec, index) => sectionSpec.topics.forEach((topicId) => sectionIndexByTopic.set(topicId, index + 2)));
+});
+function sectionIdForTopic(unit, topicId) {
+  const index = sectionIndexByTopic.get(topicId) || 1;
+  return `ap-chem-ch-${String(unit).padStart(2, '0')}-section-${String(index).padStart(2, '0')}`;
+}
+function sectionLabelForTopic(unit, topicId, fallbackLabel) {
+  const unitSpec = AP_CHEMISTRY_UNIT_SECTIONS[unit - 1];
+  const extra = unitSpec && unitSpec.sections.find((sectionSpec) => sectionSpec.topics.includes(topicId));
+  return extra ? extra.heading : fallbackLabel;
+}
+// Move the keyed choice to a target position, keeping every distractor in its
+// original relative order, so chapter checks do not all key at position A.
+function rotateChoices(choices, answerIndex, targetIndex) {
+  const keyed = choices[answerIndex];
+  const rest = choices.filter((_, index) => index !== answerIndex);
+  const next = rest.slice();
+  next.splice(targetIndex, 0, keyed);
+  return { choices: next, answerIndex: targetIndex };
+}
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_chemistry_foundation_pilot.json');
@@ -962,8 +991,8 @@ function buildItem(spec, index) {
     editorialChecks: { scenarioBased: true, singleBestAnswer: true, parallelPlausibleOptions: true, noKeywordGiveaway: true, completeOptionFeedback: true, ageAppropriate: true, medicalSafety: true },
     learningObjectiveId: objective.id,
     learningObjectiveLabel: objective.label,
-    learningSectionId: `ap-chem-ch-${String(spec.unit).padStart(2, '0')}-section-01`,
-    learningSectionLabel: objective.sectionLabel,
+    learningSectionId: sectionIdForTopic(spec.unit, objective.topicId),
+    learningSectionLabel: sectionLabelForTopic(spec.unit, objective.topicId, objective.sectionLabel),
     chapterIds: [`ap-chem-ch-${String(spec.unit).padStart(2, '0')}`],
     stimulus: spec.stimulus || undefined,
   };
@@ -977,8 +1006,8 @@ function buildObjectiveCatalog() {
       topicId: objective.topicId,
       domainId: units[objective.unit - 1].id,
       chapterId,
-      sectionId: `${chapterId}-section-01`,
-      sectionLabel: objective.sectionLabel,
+      sectionId: sectionIdForTopic(objective.unit, objective.topicId),
+      sectionLabel: sectionLabelForTopic(objective.unit, objective.topicId, objective.sectionLabel),
       label: objective.label,
       practiceIds: objective.practiceIds.slice(),
       nextStep: 'Review the linked unit lesson, write the governing relationship, then retry a targeted internal practice set.',
@@ -993,6 +1022,73 @@ function buildObjectiveCatalog() {
 
 function unitDetail(unitNumber) {
   return chapterDetails[unitNumber - 1];
+}
+
+function buildExtraSection(chapterId, unitNumber, sectionIndex, spec) {
+  const detail = spec.rich;
+  return {
+    id: `${chapterId}-section-${String(sectionIndex).padStart(2, '0')}`,
+    heading: spec.heading,
+    content: spec.content,
+    keyTerms: spec.keyTerms.slice(),
+    references: unitReferences(unitNumber),
+    reviewStatus: 'source-reviewed-editorial-pass',
+    reviewNote: 'Original AP Chemistry foundation lesson section split out by framework topic; independent subject-expert, laboratory, accessibility, rights, and production review remain pending.',
+    contentComplete: true,
+    contentBlocks: [
+      paragraph(spec.content),
+      labeledParagraph('Examples. ', 'Use these examples to connect a chemical representation to an observable or calculable consequence.'),
+      bulletList(detail.examples),
+      labeledParagraph('Nonexamples and boundaries. ', 'These distinctions prevent a nearby idea from being substituted for the requested chemical model.'),
+      bulletList(detail.nonExamples),
+      labeledParagraph('Common misconception. ', detail.misconception),
+      labeledParagraph('Worked data moment. ', 'State what the observation supports and identify one conclusion it cannot establish.'),
+      tableBlock(detail.dataHeaders, detail.dataRows),
+      labeledParagraph('Retrieval practice. ', 'Answer before returning to the selected-response items.'),
+      bulletList(detail.retrieval, true),
+      labeledParagraph('Transfer move. ', detail.transfer),
+    ],
+    examples: detail.examples.slice(),
+    nonExamples: detail.nonExamples.slice(),
+    commonMisconceptions: [detail.misconception],
+    workedDataExample: { headers: detail.dataHeaders.slice(), rows: detail.dataRows.map((row) => row.slice()) },
+    retrievalPrompts: detail.retrieval.slice(),
+    transferMove: detail.transfer,
+    contentEnhancementVersion: 'ap-chem-foundation-v1',
+  };
+}
+
+function buildWorkshops() {
+  return SPECS.map((spec) => {
+    const chapterId = `ap-chem-ch-${String(spec.unit).padStart(2, '0')}`;
+    return {
+      id: `ap-chem-workshop-${String(spec.unit).padStart(2, '0')}`,
+      taskType: spec.taskType,
+      title: spec.title,
+      prompt: spec.prompt,
+      stimulus: spec.stimulus,
+      taskParts: spec.taskParts.slice(),
+      planningFrame: spec.planningFrame.map((step) => ({ label: step.label, guidance: step.guidance })),
+      successCriteria: spec.successCriteria.slice(),
+      commonPitfalls: spec.commonPitfalls.slice(),
+      sampleOutline: spec.sampleOutline.slice(),
+      unitIds: [spec.unit],
+      chapterId,
+      topicIds: spec.topicIds.slice(),
+      references: unitReferences(spec.unit),
+      unscored: true,
+      automatedScoring: false,
+      scorePrediction: false,
+      officialItem: false,
+      syntheticStimulus: true,
+      expertReviewStatus: 'pending',
+      releaseEligible: false,
+      rights: { secureCollegeBoardContentUsed: false, copiedOrRephrasedOfficialPrompt: false, copiedOfficialRubric: false, originalStimulus: true, status: 'pending-independent-rights-review' },
+      accessibility: { textFirst: true, linearReadingOrder: true, promptPartsIndependentlyNavigable: true, visualDependence: false, handsFreeContentCompatible: true },
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewNote: AP_CHEMISTRY_WORKSHOP_REVIEW_NOTE,
+    };
+  });
 }
 
 function buildLibrary() {
@@ -1050,22 +1146,35 @@ function buildLibrary() {
       expertReviewStatus: 'pending',
       accessibilityReviewStatus: 'pending-independent-review',
       releaseEligible: false,
-      sectionCount: 1,
-      knowledgeCheckCount: 1,
+      sectionCount: 3,
+      knowledgeCheckCount: 3,
       referenceCount: 3,
-      sections: [section],
+      sections: [section].concat(AP_CHEMISTRY_UNIT_SECTIONS[index].sections.map((spec, extraIndex) => buildExtraSection(chapterId, unit.number, extraIndex + 2, spec))),
       knowledgeChecks: [{
         id: `${chapterId}-check-01`,
         chapterId,
+        sectionId: `${chapterId}-section-01`,
         type: 'single-choice',
         prompt: chapterChecks[index].prompt,
-        choices: chapterChecks[index].choices,
-        answerIndex: chapterChecks[index].answerIndex,
+        choices: rotateChoices(chapterChecks[index].choices, chapterChecks[index].answerIndex, index % 4).choices,
+        answerIndex: rotateChoices(chapterChecks[index].choices, chapterChecks[index].answerIndex, index % 4).answerIndex,
         rationale: chapterChecks[index].rationale,
         references: unitReferences(unit.number),
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original foundation retrieval check; AP Chemistry subject-expert and psychometric review remain pending.',
-      }],
+      }].concat(AP_CHEMISTRY_UNIT_SECTIONS[index].sections.map((spec, extraIndex) => ({
+        id: `${chapterId}-check-${String(extraIndex + 2).padStart(2, '0')}`,
+        chapterId,
+        sectionId: `${chapterId}-section-${String(extraIndex + 2).padStart(2, '0')}`,
+        type: 'single-choice',
+        prompt: spec.check.prompt,
+        choices: spec.check.choices.slice(),
+        answerIndex: spec.check.answerIndex,
+        rationale: spec.check.rationale,
+        references: unitReferences(unit.number),
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original section retrieval check; AP Chemistry subject-expert and psychometric review remain pending.',
+      }))),
       contentComplete: true,
       foundationPrototype: true,
     };
@@ -1087,6 +1196,9 @@ function buildLibrary() {
     releaseEligible: false,
     officialItem: false,
     blueprint: {
+      officialFrameworkTopicCount: AP_FRAMEWORK_TOPIC_IDS['ap-chemistry-foundation-pilot'].length,
+      officialFrameworkTopicIds: AP_FRAMEWORK_TOPIC_IDS['ap-chemistry-foundation-pilot'].slice(),
+      officialFrameworkTopicSource: frameworkSourceFor('ap-chemistry-foundation-pilot'),
       officialBlueprintUrl: CED_URL,
       officialCourseUrl: COURSE_URL,
       officialExamUrl: 'https://apcentral.collegeboard.org/courses/ap-chemistry/exam',
@@ -1110,14 +1222,14 @@ function buildLibrary() {
     flashcards,
     memoryAids,
     diagramPlacements: [],
-    constructedResponseWorkshops: [],
-    summary: { chapters: chapters.length, sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0), flashcards: flashcards.length, memoryAids: memoryAids.length, diagrams: 0, diagramPlacements: 0, constructedResponseWorkshops: 0, richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length, sourceReviewedChapters: chapters.length, sourceReviewedFlashcards: flashcards.length, sourceReviewedMemoryAids: memoryAids.length, releaseEligibleRecords: 0 },
+    constructedResponseWorkshops: buildWorkshops(),
+    summary: { chapters: chapters.length, sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), knowledgeChecks: chapters.reduce((sum, chapter) => sum + chapter.knowledgeChecks.length, 0), flashcards: flashcards.length, memoryAids: memoryAids.length, diagrams: 0, diagramPlacements: 0, constructedResponseWorkshops: SPECS.length, sourceReviewedConstructedResponseWorkshops: SPECS.length, richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length, sourceReviewedChapters: chapters.length, sourceReviewedFlashcards: flashcards.length, sourceReviewedMemoryAids: memoryAids.length, releaseEligibleRecords: 0 },
     accessibility: { contentForm: 'text-first, linear lessons and single-choice items', essentialVisualItems: 0, diagramsRequiredForComprehension: false, diagramFallbackMode: 'ordered-text-equivalent', independentReviewStatus: 'pending', productionScreenReaderValidationStatus: 'pending', productionVoiceValidationStatus: 'pending' },
     rightsPolicy: { secureCollegeBoardContentUsed: false, copiedOrRephrasedCollegeBoardQuestions: false, copiedCollegeBoardRubricText: false, sourceProseOrFiguresReproduced: false, diagramSpecificationsOriginal: true, authoringBasis: 'Independent original wording informed by public blueprint metadata and factual cross-checks.', publicSourceUse: 'Blueprint alignment and factual verification only; no source prose, figures, or assessment content reproduced.', openStaxUse: 'Factual cross-checking and links only; no textbook prose, figures, or assessment content reproduced.', status: 'pending-independent-rights-review' },
     releaseGates: { internalStructuralValidation: 'pending-build-qa', independentRightsReview: 'pending', independentAccessibilityReview: 'pending', apChemistrySubjectExpertReview: 'pending', productionValidation: 'pending', fieldTesting: 'not-started', psychometricCalibration: 'not-started', cedAndPolicyReverification: 'required-before-release', releaseEligible: false },
     expertReviewGate: { requiredRole: 'Independent educator or faculty reviewer with current AP Chemistry course, laboratory, and assessment expertise', status: 'pending', releaseBlocked: true },
     transitionNotice: 'Reverify the current AP Chemistry CED, clarifications, exam format, calculator/reference policies, laboratory boundaries, and public-use boundaries before any release.',
-    contentMigration: { schemaVersion: 1, contentVersion: 'ap-chemistry-foundation-v4', sections: chapters.length, completeSections: chapters.length, richLessonPrototypes: chapters.length, status: 'foundation-prototype', note: 'All nine unit lessons are navigable and include structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending.' },
+    contentMigration: { schemaVersion: 1, contentVersion: 'ap-chemistry-foundation-v4', sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), completeSections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0), richLessonPrototypes: chapters.length, status: 'foundation-prototype', note: 'All nine unit chapters now carry three navigable lesson sections split by framework topic, each with structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending.' },
   };
 }
 
@@ -1160,7 +1272,7 @@ function buildPack(library) {
       { id: 'ap-chemistry-course-page', title: 'AP Chemistry course and exam page', organization: 'College Board', url: COURSE_URL, credibility: 'Public course overview and official exam resources used for blueprint verification.', sourceType: 'official-course-page', reviewedAt: verifiedAt },
       { id: 'openstax-chemistry-2e', title: 'Chemistry 2e Open Textbook', organization: 'OpenStax, Rice University', url: OPENSTAX_URL, credibility: 'Open college-level chemistry reference used for factual cross-checking; no prose, figures, or assessment content are reproduced.', sourceType: 'open-textbook-reference', reviewedAt: verifiedAt },
     ],
-    capabilities: { currentEngineSchemaVersion: 1, itemSchemaVersion: 2, currentEngineCompatible: true, responseTypes: ['single-choice'], stimulusGroupsIncluded: false, constructedResponseIncluded: false, frqWorkshopsIncluded: false, handsFreeContentCompatible: true, limitations: ['This foundation pilot is not a complete AP Chemistry exam simulation and does not reproduce the official hybrid digital exam experience.', 'The seven official free-response questions are not scored; this pilot provides selected-response practice and a native study foundation only.', 'No official score, readiness, college-credit, laboratory-competency, or safety inference is supported.'] },
+    capabilities: { currentEngineSchemaVersion: 1, itemSchemaVersion: 2, currentEngineCompatible: true, responseTypes: ['single-choice'], stimulusGroupsIncluded: false, constructedResponseIncluded: true, frqWorkshopsIncluded: true, handsFreeContentCompatible: true, limitations: ['This foundation pilot is not a complete AP Chemistry exam simulation and does not reproduce the official hybrid digital exam experience.', 'The seven official free-response questions are not scored; this pilot provides selected-response practice and a native study foundation only.', 'No official score, readiness, college-credit, laboratory-competency, or safety inference is supported.'] },
     blueprint: library.blueprint,
     rightsPolicy: library.rightsPolicy,
     releaseGates: library.releaseGates,

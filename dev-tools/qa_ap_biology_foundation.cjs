@@ -276,16 +276,16 @@ for (let left = 0; left < prompts.length; left += 1) {
 requireCondition(nearDuplicatePairs.length === 0, 'prompt-originality', 'Exact or conservative high-similarity pilot prompts were detected.', { asset: 'pack' });
 
 requireCondition(
-  chapters.length === 8 && sections.length === 8 && checks.length === 8 &&
+  chapters.length === 8 && sections.length === 24 && checks.length === 24 &&
     Array.isArray(library.flashcards) && library.flashcards.length === 8 &&
     Array.isArray(library.memoryAids) && library.memoryAids.length === 8 &&
-    library.summary?.chapters === 8 && library.summary?.sections === 8 && library.summary?.knowledgeChecks === 8 &&
+    library.summary?.chapters === 8 && library.summary?.sections === 24 && library.summary?.knowledgeChecks === 24 &&
     library.summary?.richLessonPrototypes === 8,
   'library-inventory', 'The native AP Biology library inventory does not match its eight-unit structured-lesson declaration.', { asset: 'learning-library' }
 );
 requireCondition(
   chapters.every((chapter, index) => chapter.id === `ap-bio-ch-${String(index + 1).padStart(2, '0')}` &&
-    expectedUnits.includes(chapter.domainId) && chapter.sections?.length === 1 && chapter.knowledgeChecks?.length === 1 &&
+    expectedUnits.includes(chapter.domainId) && chapter.sections?.length === 3 && chapter.knowledgeChecks?.length === 3 &&
     chapter.contentComplete === true && chapter.releaseEligible === false && checkReferences(chapter.references, 'learning-library', 3) &&
     chapter.sections.every((section) => section.contentComplete === true && nativeBlocksAreValid(section.contentBlocks, Boolean(chapter.foundationPrototype)))),
   'library-content-structure', 'Every native chapter must be navigable, text-first, referenced, and structurally complete.', { asset: 'learning-library' }
@@ -335,6 +335,19 @@ for (const finding of findings) {
   const signal = checksBySignal.get(finding.check);
   if (signal) { signal.status = 'fail'; signal.findingCount += 1; }
 }
+
+// Written-response workshops: same depth the Government gate requires, in the
+// shape the Hub renders, and never a score or rubric claim.
+const workshopRecords = Array.isArray(library.constructedResponseWorkshops) ? library.constructedResponseWorkshops : [];
+requireCondition(workshopRecords.length === 8 && library.summary?.constructedResponseWorkshops === workshopRecords.length, 'workshop-inventory', 'The library must carry one written-response workshop per unit and declare the count.');
+workshopRecords.forEach((workshop) => {
+  const hasText = (value, min) => typeof value === 'string' && value.trim().length >= min;
+  requireCondition(hasText(workshop.title, 10) && hasText(workshop.prompt, 40) && hasText(workshop.stimulus, 80) && hasText(workshop.taskType, 5), 'workshop-content-depth', workshop.id + ' must carry a title, prompt, stimulus, and task type.', { recordId: workshop.id });
+  requireCondition(Array.isArray(workshop.taskParts) && workshop.taskParts.length === 3 && workshop.taskParts.every((part) => hasText(part, 20)) && Array.isArray(workshop.planningFrame) && workshop.planningFrame.length === 4 && workshop.planningFrame.every((step) => hasText(step?.label, 3) && hasText(step?.guidance, 20)), 'workshop-content-depth', workshop.id + ' must contain three task parts and four planning-frame steps.', { recordId: workshop.id });
+  requireCondition(Array.isArray(workshop.successCriteria) && workshop.successCriteria.length === 4 && workshop.successCriteria.every((criterion) => hasText(criterion, 20)) && Array.isArray(workshop.commonPitfalls) && workshop.commonPitfalls.length === 4 && workshop.commonPitfalls.every((pitfall) => hasText(pitfall, 20)) && Array.isArray(workshop.sampleOutline) && workshop.sampleOutline.length === 3 && workshop.sampleOutline.every((point) => hasText(point, 20)), 'workshop-content-depth', workshop.id + ' must contain self-check criteria, pitfalls, and a sample outline.', { recordId: workshop.id });
+  requireCondition(workshop.unscored === true && workshop.automatedScoring === false && workshop.scorePrediction === false && workshop.officialItem === false && workshop.releaseEligible === false, 'workshop-boundary', workshop.id + ' must remain unscored, unofficial, and release-blocked.', { recordId: workshop.id });
+});
+
 const automatedAssessment = findings.length === 0 ? 'pass' : 'fail';
 const generatedAt = /^\d{4}-\d{2}-\d{2}$/.test(String(pack.blueprint?.lastVerifiedAt || ''))
   ? `${pack.blueprint.lastVerifiedAt}T00:00:00.000Z` : '2026-08-20T00:00:00.000Z';

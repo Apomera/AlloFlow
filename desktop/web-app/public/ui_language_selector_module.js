@@ -18,7 +18,7 @@ var RefreshCw = _lazyIcon('RefreshCw');
 var FolderOpen = _lazyIcon('FolderOpen');
 var Download = _lazyIcon('Download');
 var ArrowRight = _lazyIcon('ArrowRight');
-const UiLanguageSelector = () => {
+const UiLanguageSelector = (props = {}) => {
   const { t, currentUiLanguage, setUiLanguage, isTranslating, progress, statusMessage, regenerateLanguage, exportLanguagePack, importLanguagePack } = useContext(LanguageContext);
   const [manualInput, setManualInput] = useState("");
   const languageCopy = (key, fallback) => {
@@ -97,6 +97,7 @@ const UiLanguageSelector = () => {
   ];
   const [deployedLanguages, setDeployedLanguages] = useState(FALLBACK_LANGUAGE_OPTIONS.filter((d) => d.value !== "English"));
   const fileInputRef = useRef(null);
+  const manualInputRef = useRef(null);
   useEffect(() => {
     let cancelled = false;
     const urls = [
@@ -144,7 +145,9 @@ const UiLanguageSelector = () => {
   };
   const handleChange = (e) => {
     const val = e.target.value;
-    if (val !== "Custom") {
+    if (val === "Custom") {
+      manualInputRef.current?.focus();
+    } else {
       setUiLanguage(val);
       setManualInput("");
     }
@@ -156,12 +159,11 @@ const UiLanguageSelector = () => {
     }
   };
   const handleRegenerate = () => {
-    const _setConfirm = typeof setConfirmDialog !== "undefined" ? setConfirmDialog : window && window.setConfirmDialog;
+    const _setConfirm = typeof props.setConfirmDialog === "function" ? props.setConfirmDialog : typeof window !== "undefined" ? window.setConfirmDialog : null;
+    const message = languageCopy("language_selector.confirm_regenerate", "Regenerate language pack?");
     if (typeof _setConfirm === "function") {
-      _setConfirm({ message: languageCopy("language_selector.confirm_regenerate", "Regenerate language pack?"), onConfirm: () => {
-        regenerateLanguage();
-      } });
-    } else {
+      _setConfirm({ message, onConfirm: () => regenerateLanguage() });
+    } else if (typeof window !== "undefined" && typeof window.confirm === "function" && window.confirm(message)) {
       regenerateLanguage();
     }
   };
@@ -188,6 +190,7 @@ const UiLanguageSelector = () => {
   ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleRegenerate,
       className: "p-1 text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors",
       title: languageCopy("language_selector.regenerate_tooltip", "Regenerate Translations"),
@@ -200,7 +203,11 @@ const UiLanguageSelector = () => {
     {
       type: "file",
       ref: fileInputRef,
-      onChange: (e) => importLanguagePack(e.target.files[0]),
+      onChange: (e) => {
+        const file = e.target.files && e.target.files[0];
+        e.target.value = "";
+        if (file) importLanguagePack(file);
+      },
       className: "hidden",
       accept: ".json",
       "aria-label": languageCopy("language_selector.upload_tooltip", "Import Language Pack"),
@@ -209,6 +216,7 @@ const UiLanguageSelector = () => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => fileInputRef.current.click(),
       "data-help-key": "source_upload_btn",
       className: "p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
@@ -219,6 +227,7 @@ const UiLanguageSelector = () => {
   ), currentUiLanguage !== "English" && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: exportLanguagePack,
       className: "p-1.5 text-indigo-600 hover:bg-indigo-50 rounded transition-colors",
       title: languageCopy("language_selector.download_tooltip", "Export Language Pack"),
@@ -230,6 +239,7 @@ const UiLanguageSelector = () => {
     "input",
     {
       type: "text",
+      ref: manualInputRef,
       value: manualInput,
       onChange: (e) => setManualInput(e.target.value),
       onKeyDown: (e) => e.key === "Enter" && handleManualSubmit(),
@@ -241,6 +251,7 @@ const UiLanguageSelector = () => {
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: handleManualSubmit,
       disabled: !manualInput.trim(),
       className: "p-1 bg-indigo-100 text-indigo-600 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed",

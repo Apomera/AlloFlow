@@ -247,7 +247,7 @@ describe('UDLGuideModal restored-plan mount', () => {
       InteractiveBlueprintCard: CardMarker,
     }));
     expect(cards(el)).toHaveLength(1);
-    expect(el.textContent).toContain('blueprint.restored_notice');
+    expect(el.textContent).toContain('Current lesson plan');
   });
 
   it('does NOT double-render when a blueprint message is already carrying it', () => {
@@ -390,9 +390,60 @@ describe('preview wiring guardrails', () => {
     });
 
   it.each(['view_misc_modals_source.jsx', 'view_misc_modals_module.js',
-           'desktop/web-app/public/view_misc_modals_module.js'])('%s wires both card mounts', (file) => {
+           'desktop/web-app/public/view_misc_modals_module.js'])('%s wires the single live card mount', (file) => {
     const src = rd(file);
-    expect((src.match(/onPreviewStep/g) || []).length).toBe(2);
+    expect((src.match(/onPreviewStep/g) || []).length).toBe(1);
     expect(src).toContain('bp-preview-overlay');
+  });
+});
+
+describe('persistent Allobot work controls', () => {
+  it('keeps Stop available after progress messages, including while processing', () => {
+    const props = makeProps({ isChatProcessing: true, udlMessages: [
+      { role: 'model', type: 'choices', operationKind: 'command-plan', operationId: 'p', operationStatus: 'running', text: 'Running', choices: [{ label: 'Stop after current step', value: '__allo_plan_stop' }] },
+      { role: 'model', text: 'Step 1/3 started...' },
+    ] });
+    const el = mount(props); const stop = el.querySelector('[data-testid="active-command-workflow"] button');
+    expect(stop.disabled).toBe(false);
+    act(() => stop.click());
+    expect(props.handleSendUDLMessage).toHaveBeenCalledWith('__allo_plan_stop');
+  });
+  it('renders one live lesson card with two historical Blueprint messages', () => {
+    const el = mount(makeProps({ activeBlueprint: { topic: 'Current topic' },
+      InteractiveBlueprintCard: ({ config }) => React.createElement('div', { 'data-testid': 'live-card' }, config.topic),
+      udlMessages: [{ role: 'model', type: 'blueprint', text: 'First plan', blueprintSummary: 'quiz' }, { role: 'model', type: 'blueprint', text: 'Second plan', blueprintSummary: 'glossary' }] }));
+    expect(el.querySelectorAll('[data-testid="live-card"]')).toHaveLength(1);
+    expect(Array.from(el.querySelectorAll('[data-testid="blueprint-history"]')).map(e => e.textContent)).toEqual(['First planquiz','Second planglossary']);
+  });
+  it('hides controls after the operation is closed', () => {
+    const el = mount(makeProps({ udlMessages: [
+      { role: 'model', type: 'choices', operationKind: 'command-plan', operationId: 'p', operationStatus: 'review', text: 'Draft', choices: [{ label: 'Run', value: '__allo_plan_run' }] },
+      { role: 'model', operationKind: 'command-plan', operationId: 'p', operationStatus: 'closed', text: 'Closed' },
+    ] }));
+    expect(el.querySelector('[data-testid="active-command-workflow"]')).toBeNull();
+    expect(chips(el)).toHaveLength(0);
+  });
+  it('submits labeled command parameter fields without running the command', () => {
+    const props = makeProps({ udlMessages: [{ role: 'model', type: 'choices', operationKind: 'command', operationId: 'r', operationStatus: 'review', text: 'Choose a step', choices: [],
+      commandReview: { requestId: 'r', params: { step: 2 }, fields: { step: { label: 'Step number', type: 'integer', min: 1, required: true } } } }] });
+    const el = mount(props); const field = el.querySelector('input[name="step"]');
+    expect(field.closest('label').textContent).toBe('Step number');
+    expect(field.type).toBe('number'); expect(field.required).toBe(true);
+    act(() => field.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+    expect(props.handleSendUDLMessage).toHaveBeenCalledWith({ action: 'command-params', requestId: 'r', params: { step: 2 } });
+  });
+  it('reorders a workflow through stable ids and disables boundary moves', () => {
+    const props = makeProps({ udlMessages: [{ role: 'model', type: 'choices', operationKind: 'command-plan', operationId: 'p', operationStatus: 'review', workflowId: 'w', workflowMode: 'edit', text: 'Edit', choices: [],
+      workflowSteps: [{ stepId: 'a', label: 'Quiz', fields: {} }, { stepId: 'b', label: 'Glossary', fields: {} }] }] });
+    const el = mount(props); const rows = el.querySelectorAll('[data-testid="workflow-step-editor"]');
+    expect(rows[0].querySelector('button').disabled).toBe(true);
+    act(() => rows[0].querySelectorAll('button')[1].click());
+    expect(props.handleSendUDLMessage).toHaveBeenCalledWith({ action: 'workflow-move', workflowId: 'w', stepId: 'a', toIndex: 1 });
+  });
+  it('allows a failed response to be retried independently of transcript recency', () => {
+    const props = makeProps({ udlMessages: [{ role: 'model', type: 'chat-error', text: 'Could not respond', retryText: 'Why a quiz?' }, { role: 'model', text: 'The plan is unchanged.' }] });
+    const el = mount(props); const button = el.querySelector('[role="alert"] button');
+    expect(button.disabled).toBe(false); act(() => button.click());
+    expect(props.handleSendUDLMessage).toHaveBeenCalledWith({ action: 'retry-chat', text: 'Why a quiz?' });
   });
 });

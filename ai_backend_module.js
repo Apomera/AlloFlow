@@ -2801,9 +2801,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             + ' with native ' + profile.baseLanguage + ' phonology: ' + text;
     }
 
-    _ttsCacheKey(text, voice, _speed, language) {
+    _ttsCacheKey(text, voice, _speed, language, route = this.backend) {
         const profile = this._normalizeTtsSpeechProfile(language);
-        return JSON.stringify([String(text || ''), String(voice || ''), profile.cacheIdentity, 'natural-rate-v1']);
+        return JSON.stringify([String(text || ''), String(voice || ''), profile.cacheIdentity, 'natural-rate-v1', route, this.models.tts, this.baseUrl]);
     }
 
     _cacheTtsUrl(cacheKey, audioUrl) {
@@ -2860,7 +2860,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     _createTtsRequestSignal(signal, timeoutMs) {
-        if (typeof AbortController === 'undefined') return { signal, timedOut: () => false, cleanup: () => { } };
+        if (typeof AbortController === 'undefined') return { signal, timedOut: () => false, cleanup: () => { }, wait: (promise) => Promise.resolve(promise) };
         const controller = new AbortController();
         let didTimeout = false;
         const onAbort = () => { try { controller.abort(); } catch (_) { } };
@@ -2873,6 +2873,15 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         return {
             signal: controller.signal,
             timedOut: () => didTimeout,
+            // Some fetch adapters ignore abort. Settle our waiter anyway so
+            // a hung body cannot occupy the speech queue or endpoint ladder.
+            wait: (promise) => new Promise((resolve, reject) => {
+                const rejectAborted = () => { cleanup(); const error = new Error('TTS request aborted'); error.name = 'AbortError'; reject(error); };
+                const cleanup = () => controller.signal.removeEventListener('abort', rejectAborted);
+                controller.signal.addEventListener('abort', rejectAborted, { once: true });
+                Promise.resolve(promise).then(value => { cleanup(); resolve(value); }, error => { cleanup(); reject(error); });
+                if (controller.signal.aborted) rejectAborted();
+            }),
             cleanup: () => {
                 clearTimeout(timer);
                 try { signal?.removeEventListener?.('abort', onAbort); } catch (_) { }
@@ -2896,14 +2905,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
     }
 
     async _geminiTTS(text, voice, speed, speechProfile, signal = null, forceRefresh = false) {
-        // Rate limit check
-        if (Date.now() < this._ttsRateLimitedUntil) {
-            this._warnLog('[AIProvider TTS] Skipping — rate-limit cooldown active');
-            return null;
-        }
-
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile, 'gemini');
         if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
@@ -2911,10 +2914,19 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return cachedUrl;
         }
 
+        // Rate limit check
+        if (Date.now() < this._ttsRateLimitedUntil) {
+            this._warnLog('[AIProvider TTS] Skipping — rate-limit cooldown active');
+            return null;
+        }
+
+        const synthesisModel = this.models.tts;
+        const synthesisBaseUrl = this.baseUrl;
+        const synthesisApiKey = this.apiKey;
         // Queue for serialization
         const task = this._ttsQueue.then(async () => {
-        const keyParam = this.apiKey ? `?key=${this.apiKey}` : '';
-            const url = `${this.baseUrl}/models/${this.models.tts}:generateContent${keyParam}`;
+        const keyParam = synthesisApiKey ? `?key=${synthesisApiKey}` : '';
+            const url = `${synthesisBaseUrl}/models/${synthesisModel}:generateContent${keyParam}`;
 
             const payload = {
                 contents: [{ parts: [{ text: this._cloudTtsPrompt(text, speechProfile) }] }],
@@ -2932,12 +2944,12 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                 this._throwIfTtsAborted(signal);
                 const request = this._createTtsRequestSignal(signal, 12000);
                 try {
-                    const response = await fetch(url, {
+                    const response = await request.wait(fetch(url, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(payload),
                         signal: request.signal,
-                    });
+                    }));
 
                     if (response.status === 429) {
                         request.cleanup();
@@ -2947,9 +2959,9 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                     }
                     if (!response.ok) throw new Error(`Gemini TTS returned ${response.status}`);
 
-                    const data = await response.json();
+                    const data = await request.wait(response.json());
                     request.cleanup();
-                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+                    const audioPart = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data && (!p.inlineData.mimeType || /^audio\//i.test(p.inlineData.mimeType)));
                     if (!audioPart) throw new Error('No audio in response');
 
                     const base64 = audioPart.inlineData.data;
@@ -2959,6 +2971,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
                         bytes[i] = binaryString.charCodeAt(i);
                     }
 
+                    if (!bytes.length || bytes.length % 2) throw new Error("Invalid Gemini PCM audio payload");
                     // PCM to WAV conversion
                     const wavBuffer = this._pcmToWav(bytes, 24000, 1);
                     const blob = new Blob([wavBuffer], { type: 'audio/wav' });
@@ -3007,7 +3020,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         ];
 
         // Cache check
-        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile);
+        const cacheKey = this._ttsCacheKey(text, voice, speed, speechProfile, 'local-endpoints');
         if (!forceRefresh && this._ttsCache.has(cacheKey)) {
             this._debugLog('⚡ TTS cache HIT:', text?.substring(0, 30));
             const cachedUrl = this._ttsCache.get(cacheKey);
@@ -3015,6 +3028,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             return cachedUrl;
         }
 
+        const synthesisModel = this.models.tts;
         for (const url of ttsEndpoints) {
             this._throwIfTtsAborted(signal);
             const cooldownUntil = this._ttsEndpointCooldown.get(url) || 0;
@@ -3022,23 +3036,28 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             const request = this._createTtsRequestSignal(signal, 5000);
             try {
                 const payload = {
-                    model: this.models.tts,
+                    model: synthesisModel,
                     input: text,
                     voice: voice?.toLowerCase() || 'alloy',
                     speed: 1,
                     response_format: 'wav',
                 };
 
-                const response = await fetch(url, {
+                // The bundled Edge server accepts a language hint; other
+                // OpenAI-compatible servers keep their established payload.
+                if (url === 'http://localhost:5500/v1/audio/speech') {
+                    payload.language = speechProfile.locale || speechProfile.baseLanguage;
+                }
+                const response = await request.wait(fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),
                     signal: request.signal,
-                });
+                }));
                 this._ttsEndpointCooldown.delete(url);
 
                 if (!response.ok) throw new Error(`TTS returned ${response.status}`);
-                const blob = await response.blob();
+                const blob = await request.wait(response.blob());
                 request.cleanup();
                 const audioUrl = URL.createObjectURL(blob);
                 this._cacheTtsUrl(cacheKey, audioUrl);

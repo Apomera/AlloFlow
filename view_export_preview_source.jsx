@@ -1,3 +1,9 @@
+// Read the host document, including when the target is in the preview iframe.
+// Check at interaction time so header changes apply without reopening the builder.
+function _builderPrefersReducedMotion() {
+  return !!document.querySelector('.reduce-motion') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+
 // view_export_preview_source.jsx — Export Preview & Customization Modal (Round 5 Tier A)
 //
 // Extracted from AlloFlowANTI.txt L31652-L32469 (817 lines, ~50 props).
@@ -3582,6 +3588,29 @@ function _builderH5PCompatibility(item) {
   return { type, unit: 'item', library: '', total: 0, valid: 0, omitted: 0, embeddedMedia: 0, omittedMedia: 0, ready: false };
 }
 
+function _builderEditorPageCss(enabled, pageSetup) {
+    if (!enabled) return [
+      'html { background: transparent !important; }',
+      'body { width:auto !important;max-width:none !important;min-height:0 !important;margin:0 !important;background-image:none !important;box-shadow:none !important; }',
+    ].join('\n');
+    const dimensions = _builderPageDimensions(pageSetup);
+    const stripeHeight = dimensions.height + 0.25;
+    return [
+      'html { background:#e2e8f0 !important; }',
+      'body {',
+      'width:' + dimensions.widthCss + ' !important;',
+      'max-width:calc(100% - 2rem) !important;',
+      'min-height:' + dimensions.heightCss + ' !important;',
+      'box-sizing:border-box !important;',
+      'margin:1rem auto 2rem !important;',
+      'background-color:#fff !important;',
+      'background-image: linear-gradient(to bottom,transparent calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) ' + dimensions.heightCss + ',transparent ' + dimensions.heightCss + ') !important;',
+      'background-size:100% ' + stripeHeight + 'in !important;',
+      'box-shadow:0 0 0 1px rgba(100,116,139,0.3),0 12px 28px rgba(15,23,42,0.15) !important;',
+      '}',
+    ].join('\n');
+}
+
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS, FONT_OPTIONS, STYLE_SEEDS, _ensureDiffLib,
@@ -3971,7 +4000,7 @@ function ExportPreviewView(props) {
     if (!showExportPreview || pendingImageFile) return undefined;
     const dialog = exportDialogRef.current;
     if (!dialog) return undefined;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"]), summary')).filter((el) => !el.matches(':disabled') && el.getClientRects().length > 0);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.key === 'Escape') { event.preventDefault(); setShowExportPreview(false); return; }
@@ -4145,28 +4174,7 @@ function ExportPreviewView(props) {
     applyPageSetup(pageSetup);
   }, [applyPageSetup, pageSetup, showExportPreview]);
 
-  const editorPageCss = React.useCallback((enabled) => {
-    if (!enabled) return [
-      'html { background: transparent !important; }',
-      'body { width:auto !important;max-width:none !important;min-height:0 !important;margin:0 !important;background-image:none !important;box-shadow:none !important; }',
-    ].join('\n');
-    const dimensions = _builderPageDimensions(pageSetup);
-    const stripeHeight = dimensions.height + 0.25;
-    return [
-      'html { background:#e2e8f0 !important; }',
-      'body {',
-      'width:' + dimensions.widthCss + ' !important;',
-      'max-width:calc(100% - 2rem) !important;',
-      'min-height:' + dimensions.heightCss + ' !important;',
-      'box-sizing:border-box !important;',
-      'margin:1rem auto 2rem !important;',
-      'background-color:#fff !important;',
-      'background-image: linear-gradient(to bottom,transparent calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) calc(' + dimensions.heightCss + ' - 1px),rgba(148,163,184,0.55) ' + dimensions.heightCss + ',transparent ' + dimensions.heightCss + ') !important;',
-      'background-size:100% ' + stripeHeight + 'in !important;',
-      'box-shadow:0 0 0 1px rgba(100,116,139,0.3),0 12px 28px rgba(15,23,42,0.15) !important;',
-      '}',
-    ].join('\n');
-  }, [pageSetup.size, pageSetup.orientation]);
+  const editorPageCss = React.useCallback((enabled) => _builderEditorPageCss(enabled, pageSetup), [pageSetup.size, pageSetup.orientation]);
   const applyEditorZoom = React.useCallback((zoom) => {
     const value = _builderClampEditorZoom(zoom);
     try {
@@ -4931,8 +4939,8 @@ function ExportPreviewView(props) {
     const zoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
     const pageAdvance = (_builderPageDimensions(pageSetup).heightPx + (iframe.__alloBuilderPageView === false ? 0 : 24)) * (zoom / 100);
     const top = Math.max(0, Number(pageIndex) || 0) * pageAdvance;
-    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    try { doc.defaultView?.scrollTo({ top, behavior: reducedMotion ? 'auto' : 'smooth' }); } catch (_) { try { doc.defaultView?.scrollTo(0, top); } catch (_) {} }
+    const reducedMotion = _builderPrefersReducedMotion();
+    try { doc.defaultView?.scrollTo({ top, behavior: reducedMotion ? 'instant' : 'smooth' }); } catch (_) { try { doc.defaultView?.scrollTo(0, top); } catch (_) {} }
     setPageMetrics((previous) => ({ ...previous, active: Math.max(0, Math.min(previous.count - 1, Number(pageIndex) || 0)) }));
     iframe.focus();
   }, [exportPreviewRef, pageSetup.size, pageSetup.orientation, pageSetup.margin]);
@@ -4949,8 +4957,8 @@ function ExportPreviewView(props) {
     let target = marker?.nextElementSibling || doc.body.firstElementChild;
     while (target && target.matches?.('[data-allo-page-element],script,style,[data-allo-page-break],[data-allo-section-break]')) target = target.nextElementSibling;
     const scrollTarget = marker || target || doc.body;
-    const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    try { scrollTarget.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'auto' : 'smooth' }); } catch (_) {}
+    const reducedMotion = _builderPrefersReducedMotion();
+    try { scrollTarget.scrollIntoView({ block: 'start', behavior: reducedMotion ? 'instant' : 'smooth' }); } catch (_) {}
     if (target) {
       try {
         const range = doc.createRange();
@@ -5721,7 +5729,7 @@ function ExportPreviewView(props) {
     const doc = exportPreviewRef.current?.contentDocument;
     const node = heading?.node;
     if (!doc || !node?.isConnected) return;
-    node.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+    node.scrollIntoView({ behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth', block: 'center' });
     const range = doc.createRange();
     range.selectNodeContents(node);
     range.collapse(false);
@@ -5770,7 +5778,7 @@ function ExportPreviewView(props) {
       selection?.removeAllRanges();
       selection?.addRange(range);
       editorSelectionRangeRef.current = range.cloneRange();
-      marker.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      marker.scrollIntoView({ behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth', block: 'center' });
       setActiveCommentId(commentId);
       openReviewComments(commentId);
       exportPreviewRef.current?.focus();
@@ -6421,7 +6429,7 @@ function ExportPreviewView(props) {
       return;
     }
     try {
-      node.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      node.scrollIntoView({ behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth', block: 'center' });
       const range = doc.createRange();
       if (node.childNodes.length) range.selectNodeContents(node);
       else range.selectNode(node);
@@ -6542,7 +6550,7 @@ function ExportPreviewView(props) {
       range.selectNodeContents(liveMarker);
       _builderSetTrackedSelection(doc, range);
       editorSelectionRangeRef.current = range.cloneRange();
-      liveMarker.scrollIntoView({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+      liveMarker.scrollIntoView({ behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth', block: 'center' });
       setActiveTrackedChangeId(changeId);
       openTrackedChanges(changeId);
       exportPreviewRef.current?.focus();
@@ -6809,8 +6817,8 @@ function ExportPreviewView(props) {
     range.setEnd(foundNode, foundAt + needle.length);
     selection.removeAllRanges();
     selection.addRange(range);
-    const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    foundNode.parentElement?.scrollIntoView({ behavior: prefersReducedMotion ? 'auto' : 'smooth', block: 'center' });
+    const prefersReducedMotion = _builderPrefersReducedMotion();
+    foundNode.parentElement?.scrollIntoView({ behavior: prefersReducedMotion ? 'instant' : 'smooth', block: 'center' });
     findCursorRef.current = { node: foundNode, offset: foundAt + needle.length };
     setFindMatchState((previous) => {
       const current = direction > 0 ? (previous.current >= totalMatches ? 1 : previous.current + 1) : (previous.current <= 1 ? totalMatches : previous.current - 1);
@@ -7028,7 +7036,7 @@ function ExportPreviewView(props) {
     if (!target) { setAdvancedReviewSelectedId(''); return; }
     target.setAttribute('data-allo-semantic-selected', '1');
     setAdvancedReviewSelectedId(nodeId);
-    try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) { target.scrollIntoView?.(); }
+    try { target.scrollIntoView({ block: 'center', behavior: _builderPrefersReducedMotion() ? 'instant' : 'smooth' }); } catch (_) { target.scrollIntoView?.(); }
   }, [advancedReviewTree, exportPreviewRef]);
 
   const publishAdvancedReviewMutation = React.useCallback((html, entry) => {
@@ -7432,7 +7440,7 @@ function ExportPreviewView(props) {
       return;
     }
     if (restored.tracked) setActiveTrackedChangeId(restored.marker?.getAttribute?.('data-allo-change-id') || '');
-    restored.marker?.scrollIntoView?.({ behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth', block: 'center' });
+    restored.marker?.scrollIntoView?.({ behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth', block: 'center' });
     commitTrackedChangeMutation(restored.tracked ? 'Saved block applied as a tracked structural change.' : 'Saved block restored from version history.');
     const refreshed = _builderCompareDocumentVersions(doc, snapshot.html);
     if (refreshed.ok) setVersionComparison({ ...refreshed, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
@@ -7494,12 +7502,10 @@ function ExportPreviewView(props) {
     document.addEventListener('alloflow-builder-save-snapshot', onSaveSnapshotRequest);
     return () => document.removeEventListener('alloflow-builder-save-snapshot', onSaveSnapshotRequest);
   }, [showExportPreview, saveVersionSnapshot]);
-  const discardLocalDraft = React.useCallback(() => {
-    try { window.localStorage.removeItem(draftStorageKey); } catch (_) {}
+  const dismissLocalDraft = React.useCallback(() => {
+    // Dismissing a reminder must not erase the recoverable draft or its versions.
     setDraftRecovery(null);
-    setVersionHistory([]);
-    setVersionComparison(null);
-  }, [draftStorageKey]);
+  }, []);
 
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error('The export did not produce a file.');
@@ -7519,11 +7525,23 @@ function ExportPreviewView(props) {
     return fileName;
   }, [getCleanBuilderDocument, onExportSuccess]);
 
+  // A synchronous shared lock covers both the primary action and format exports.
+  const beginAlternativeExport = React.useCallback((kind) => {
+    if (exportActionLockRef.current) return false;
+    exportActionLockRef.current = true;
+    setAltExportBusy(kind);
+    return true;
+  }, []);
+  const finishAlternativeExport = React.useCallback(() => {
+    exportActionLockRef.current = false;
+    if (mountedRef.current) setAltExportBusy('');
+  }, []);
+
   const runPackageExport = React.useCallback(async (kind) => {
     if (altExportBusy) return;
     const handler = kind === 'qti' ? handleExportQTI : (kind === 'h5p' ? handleExportH5P : handleExportIMS);
     if (typeof handler !== 'function') { addToast && addToast(`${kind.toUpperCase()} export is unavailable right now.`, 'error'); return; }
-    setAltExportBusy(kind);
+    if (!beginAlternativeExport(kind)) return;
     try {
       if (kind === 'qti' || kind === 'h5p') {
         const activities = kind === 'qti' ? qtiAssessments : h5pActivities;
@@ -7535,13 +7553,14 @@ function ExportPreviewView(props) {
       } else {
         const clean = getCleanBuilderDocument({ forExport: true });
         if (!clean) throw new Error('The editable preview is not ready.');
-        await handler({ liveHtml: clean.html, liveTitle: clean.title });
+        const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
+        if (succeeded === false) return;
       }
       try { if (typeof onExportSuccess === 'function') onExportSuccess({ kind: 'package', format: kind }); } catch (_) {}
     }
     catch (error) { addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error'); }
-    finally { if (mountedRef.current) setAltExportBusy(''); }
-  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
+    finally { finishAlternativeExport(); }
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
 
   const runOfficeExport = React.useCallback(async (format) => {
     if (altExportBusy) return;
@@ -7549,7 +7568,7 @@ function ExportPreviewView(props) {
     if (!doc) return;
     const preflight = runBuilderPreflight(format, false);
     if (preflight.errors) { addToast && addToast('Office export stopped: fix the blocking preflight issues first.', 'error'); return; }
-    setAltExportBusy(format);
+    if (!beginAlternativeExport(format)) return;
     try {
       let api = window.AlloModules?.AccessibleOfficeExport;
       if (!api || typeof api.build !== 'function') {
@@ -7569,8 +7588,8 @@ function ExportPreviewView(props) {
       addToast && addToast(result.message, 'success');
     } catch (error) {
       addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error');
-    } finally { if (mountedRef.current) setAltExportBusy(''); }
-  }, [altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
+    } finally { finishAlternativeExport(); }
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
 
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
@@ -8644,7 +8663,7 @@ function ExportPreviewView(props) {
                     const blocks = _leafBlocks();
                     const el = blocks && blocks[item.blockIndex];
                     if (!el) return null;
-                    try { el.scrollIntoView({ block: 'center', behavior: (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) ? 'auto' : 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
+                    try { el.scrollIntoView({ block: 'center', behavior: (_builderPrefersReducedMotion()) ? 'instant' : 'smooth' }); if (outline) { el.style.outline = '3px solid #f59e0b'; el.style.outlineOffset = '2px'; setTimeout(() => { try { el.style.outline = ''; el.style.outlineOffset = ''; } catch (_) {} }, 2200); } } catch (_) {}
                     return el;
                   };
                   const _apply = (item, replacement) => {
@@ -8945,7 +8964,7 @@ function ExportPreviewView(props) {
                                         {exportAuditResult && exportAuditResult.score >= 0 && <span className={`text-[11px] font-black px-2.5 py-1 rounded-full flex items-center gap-1 ${exportAuditResult.score >= 90 ? 'bg-green-100 text-green-700 ring-1 ring-green-300' : exportAuditResult.score >= 70 ? 'bg-amber-100 text-amber-700 ring-1 ring-amber-300' : 'bg-red-100 text-red-700 ring-1 ring-red-300'}`} title={exportAuditResult.summary || ''}>{"♿"} {exportAuditResult.score}/100</span>}
 <button onClick={updateExportPreview} className="text-xs font-bold text-slate-600 hover:text-indigo-600 flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100"><RefreshCw size={12} /> Regenerate</button>
                     <button data-help-key="doc_builder_export_action" onClick={runExportFromPreview}
-                      disabled={exportActionBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
+                      disabled={exportActionBusy || !!altExportBusy || (exportPreviewMode === 'slides' && !pptxLoaded)}
                       aria-busy={exportActionBusy}
                       aria-label={exportActionBusy ? 'Export in progress' : undefined}
                       className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -8953,7 +8972,7 @@ function ExportPreviewView(props) {
                     >{/* "Download PDF" was a lie: print and worksheet mode both
                           open the browser print window, they never download
                           anything. Say what the button does. */}
-                      <Download size={14} /> {(exportPreviewMode === 'worksheet' || exportPreviewMode === 'print')
+                      <Download size={14} /> {exportActionBusy ? 'Preparing export...' : (exportPreviewMode === 'worksheet' || exportPreviewMode === 'print')
                         ? (t('export_preview.action_print_pdf') || 'Print / Save as PDF')
                         : exportPreviewMode === 'html' ? (t('export_preview.action_download_html') || 'Download HTML')
                         : exportPreviewMode === 'slides' ? (pptxLoaded ? (t('export_preview.action_export_slides') || 'Export Slides') : 'Loading...')
@@ -8968,11 +8987,20 @@ function ExportPreviewView(props) {
                         🎨 {t('export_preview.edit_in_page_designer') || 'Edit in Page Designer'}</button>
                     )}
                     {/* Alternative format exports */}
-                    <details className="relative">
+                    <style>{`.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
+                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`}</style>
+                    <details className="relative" onKeyDownCapture={(event) => {
+                      if (event.key === 'Escape' && event.currentTarget.open) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.currentTarget.open = false;
+                        event.currentTarget.querySelector('summary')?.focus();
+                      }
+                    }}>
                       <summary className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none">
-                        ♿ Alt Formats <span className="text-[11px] text-slate-600">▾</span>
+                        ♿ More export formats <span className="text-[11px] text-slate-600">▾</span>
                       </summary>
-                      <div className="absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-72 space-y-1">
+                      <fieldset disabled={exportActionBusy || !!altExportBusy} aria-label="Additional export formats" aria-busy={!!altExportBusy} className="allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1">
                         <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Editable documents</div>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('docx')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50">{altExportBusy === 'docx' ? 'Building Word...' : 'Accessible Word (.docx)'}</button>
                         <button type="button" disabled={!!altExportBusy} onClick={() => runOfficeExport('odt')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50">{altExportBusy === 'odt' ? 'Building ODT...' : 'OpenDocument (.odt)'}</button>
@@ -9077,7 +9105,7 @@ function ExportPreviewView(props) {
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg">📝 Markdown (.md)</button>
                         <button disabled={!!altExportBusy} onClick={async () => {
                           if (altExportBusy) return;
-                          setAltExportBusy('notebooklm');
+                          if (!beginAlternativeExport('notebooklm')) return;
                           // Send to NotebookLM: build a NotebookLM-tuned Markdown source from the
                           // structured lesson `history` (front matter + one ## section per resource,
                           // quiz answer keys, glossary/outline/timeline), falling back to converting
@@ -9233,7 +9261,7 @@ function ExportPreviewView(props) {
                             downloadBuilderBlob(blob, { extension: 'md', suffix: '-notebooklm' });
                             addToast(copied ? 'Copied to clipboard + downloaded .md — paste or upload into NotebookLM as a source' : 'Downloaded .md — upload it into NotebookLM as a source', 'success');
                           } catch (e) { if (addToast) addToast('NotebookLM export failed', 'error'); }
-                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                          finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50">{altExportBusy === 'notebooklm' ? 'Building NotebookLM source...' : '📓 Send to NotebookLM (.md)'}</button>
                         <button disabled={!!altExportBusy} onClick={async () => {
                           const _preflight = runBuilderPreflight('epub', false);
@@ -9241,7 +9269,7 @@ function ExportPreviewView(props) {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc || !window.JSZip) { addToast('ePub library loading...', 'info'); return; }
                           if (altExportBusy) return;
-                          setAltExportBusy('epub'); try {
+                          if (!beginAlternativeExport('epub')) return; try {
                           // Export-format review #1/#5/#14 (2026-07-01): the old ePub shipped the RAW
                           // editor DOM (chrome + contenteditable), a hard-coded single-entry nav (no
                           // TOC — the thing low-vision readers navigate by), title always "AlloFlow
@@ -9372,13 +9400,13 @@ function ExportPreviewView(props) {
                             addToast('ePub downloaded', 'success');
                           }
                           } catch (error) { addToast && addToast('ePub export failed: ' + (error?.message || 'unknown error'), 'error'); }
-                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                          finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'epub' ? 'Building ePub...' : '📚 ePub (e-readers)'}</button>
                         <button disabled={!!altExportBusy} onClick={async () => {
                           const doc = exportPreviewRef.current?.contentDocument;
                           if (!doc) return;
                           if (altExportBusy) return;
-                          setAltExportBusy('brf'); try {
+                          if (!beginAlternativeExport('brf')) return; try {
                           // #14: strip editor chrome before flattening — button labels ("×", "+ Row")
                           // were being embossed into the braille output.
                           // #8 (structured sourcing): flatten per BLOCK (a braille line per logical
@@ -9505,11 +9533,14 @@ const _downloadBRF = (brf) => {
                             }
                           });
                           } catch (error) { addToast && addToast('Braille export failed: ' + (error?.message || 'unknown error'), 'error'); }
-                          finally { if (mountedRef.current) setAltExportBusy(''); }
+                          finally { finishAlternativeExport(); }
                         }} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50">{altExportBusy === 'brf' ? 'Building Braille...' : '⠿ Electronic Braille (.brf)'}</button>
-                      </div>
+                      </fieldset>
                     </details>
                   </div>
+                </div>
+                <div role="status" aria-live="polite" aria-atomic="true" className={exportActionBusy || altExportBusy ? 'border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900' : 'sr-only'}>
+                  {exportActionBusy ? 'Preparing your export. Keep the builder open until it finishes.' : altExportBusy ? 'Preparing ' + altExportBusy.toUpperCase() + ' export. Keep the builder open until it finishes.' : ''}
                 </div>
                 {preflightResult && (
                   <div className={`border-b px-3 py-2 text-xs ${preflightResult.errors ? 'bg-red-50 border-red-300 text-red-900' : preflightResult.warnings ? 'bg-amber-50 border-amber-300 text-amber-900' : 'bg-green-50 border-green-300 text-green-900'}`} role="status" aria-live="polite">
@@ -9528,7 +9559,7 @@ const _downloadBRF = (brf) => {
                     <span className="font-bold">Local draft available</span>
                     <span>Saved {draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : 'recently'} on this device.</span>
                     <button type="button" onClick={restoreLocalDraft} className="rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800">Restore draft</button>
-                    <button type="button" onClick={discardLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
+                    <button type="button" onClick={dismissLocalDraft} className="rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950">Dismiss</button>
                   </div>
                 )}
                 <div className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1" role="tablist" aria-label="Document Builder ribbon">
@@ -11284,7 +11315,7 @@ async function updateExportPreview(deps) {
       `;
       editStyle.setAttribute('data-allo-base-css', _baseEditCss);
       const _editorZoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
-      const _pageCss = editorPageCss(iframe.__alloBuilderPageView !== false);
+      const _pageCss = _builderEditorPageCss(iframe.__alloBuilderPageView !== false, iframe.__alloBuilderPageSetup);
       editStyle.setAttribute('data-allo-page-css', _pageCss);
       editStyle.textContent = `${_baseEditCss}\n${_pageCss}\n        body { zoom: ${_editorZoom}%; }`;
       doc.head.appendChild(editStyle);
@@ -11367,7 +11398,7 @@ async function updateExportPreview(deps) {
                 const selection = doc.getSelection();
                 selection.removeAllRanges();
                 selection.addRange(range);
-                target.scrollIntoView({ block: 'nearest' });
+                target.scrollIntoView({ block: 'nearest', behavior: _builderPrefersReducedMotion() ? 'instant' : 'auto' });
                 return;
               }
             }

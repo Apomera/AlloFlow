@@ -1295,6 +1295,8 @@ function aeNormalizeWorkspace(value) {
     componentTags: aeComponentTags(raw.componentTags),
     privacyChecked: aeBoolean(raw.privacyChecked, false),
     observer: aeString(raw.observer, 160, config.evaluatorName),
+    // Preserve server attribution when an unchanged published record accompanies another save.
+    createdByEmail: aeString(raw.createdByEmail, 320, ''),
     publishedAt: aeTimestamp(raw.publishedAt),
     teacherAcknowledgedAt: aeTimestamp(raw.teacherAcknowledgedAt),
     version: Math.min(1000, Math.max(1, Number.parseInt(raw.version, 10) || 1)),
@@ -3683,7 +3685,7 @@ function AeSpm({ workspace, selectedTeacher, setSelectedTeacherId, role, createS
     });
   };
   const canEditPlan = active && role === 'teacher' && !readOnlyPreview && !cycleFinalized && ['draft', 'returned'].includes(active.status);
-  return <div className="ae-page"><div className="ae-heading"><div><h2>{t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")}</h2><p>{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.current_act_13_terminology_is_lea_selected_measure_student_81f9h8", 'Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.') : t("educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b", 'Under Maine PEPG this record holds the Student Learning &amp; Growth measure; SPM/SLO remain familiar aliases.')}</p></div>{role === 'teacher' && selectedTeacher && !cycleFinalized && !records.some((record) => record.teacherId === selectedTeacher.id) && <button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview} title={readOnlyPreview ? t("educator_evaluation.preview_only_no_proposal_is_created_10gjfc9", 'Preview only; no proposal is created.') : undefined} onClick={() => { const id = createSpm(selectedTeacher.id); if (id) setOpenId(id); }}>{t("educator_evaluation.start_spm_proposal_9v6z62", "+ Start SPM proposal")}</button>}</div>
+  return <div className="ae-page"><div className="ae-heading"><div><h2>{t("educator_evaluation.spm_slo_18l13ic", "SPM / SLO")}</h2><p>{AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.current_act_13_terminology_is_lea_selected_measure_student_81f9h8", 'Current Act 13 terminology is LEA Selected Measure · Student Performance Measure (SPM); SLO remains a familiar local alias.') : t("educator_evaluation.under_maine_pepg_this_record_holds_the_student_learning_an_k0ry7b", 'Under Maine PEPG this record holds the Student Learning & Growth measure; SPM/SLO remain familiar aliases.')}</p></div>{role === 'teacher' && selectedTeacher && !cycleFinalized && !records.some((record) => record.teacherId === selectedTeacher.id) && <button type="button" className="ae-btn ae-btn-primary" disabled={readOnlyPreview} title={readOnlyPreview ? t("educator_evaluation.preview_only_no_proposal_is_created_10gjfc9", 'Preview only; no proposal is created.') : undefined} onClick={() => { const id = createSpm(selectedTeacher.id); if (id) setOpenId(id); }}>{t("educator_evaluation.start_spm_proposal_9v6z62", "+ Start SPM proposal")}</button>}</div>
     <AeFinalizedCycleNotice teacher={selectedTeacher}/>
     <AeOtherWorkflowDrafts recovery={recovery} kind="spm" year={workspace.academicYear || workspace.config.academicYear} role={role} teacherId={selectedTeacher?.id} activeId={savedActive?.id} records={records} onOpen={setOpenId}/>
     <AeWorkflowDraftNotice recovery={recovery} onRetry={() => recovery.retry(performPatch)} readOnly={cycleFinalized || readOnlyPreview || !savedActive || !!savedActive.finalizedAt || savedActive.status === 'locked'}/>
@@ -5195,7 +5197,12 @@ function EducatorEvaluationPanel(props) {
         normalized.cycleSnapshots = normalized.cycleSnapshots.filter((item) => item.teacherId === teacherId);
       }
       const route = aePlainObject(initialRoute) ? initialRoute : (typeof repository.getInitialRoute === 'function' ? repository.getInitialRoute() : null);
-      const requestedTeacherId = aeSafeId(route && route.teacherId, '');
+      const previousUser = remoteUserRef.current;
+      const sameActor = !!previousUser && previousUser.email === currentUser.email
+        && previousUser.role === currentUser.role && (previousUser.teacherId || '') === (currentUser.teacherId || '');
+      // Refresh is part of each two-person handoff. Keep the current selection
+      // only for the same verified identity and only while it remains authorized.
+      const requestedTeacherId = aeSafeId(sameActor ? selectedTeacherIdRef.current : (route && route.teacherId), '');
       const nextTeacherId = nextRole === 'teacher'
         ? aeSafeId(currentUser.teacherId, '')
         : (requestedTeacherId && normalized.teachers.some((teacher) => teacher.id === requestedTeacherId)
@@ -5204,7 +5211,7 @@ function EducatorEvaluationPanel(props) {
       const allowedViews = nextRole === 'teacher'
         ? ['overview', 'trends', 'walkthroughs', 'formal', 'spm', 'audit', 'about']
         : ['overview', 'trends', 'staff', 'walkthroughs', 'formal', 'spm', 'audit', 'about'];
-      const requestedView = aeString(route && route.view, 24, '').toLowerCase();
+      const requestedView = aeString(sameActor ? activeTabRef.current : (route && route.view), 24, '').toLowerCase();
       const revision = Number(payload.revision);
       remoteRevisionRef.current = Number.isInteger(revision) && revision >= 0 ? revision : 0;
       workspaceRef.current = normalized;
@@ -5213,7 +5220,7 @@ function EducatorEvaluationPanel(props) {
       setRole(nextRole);
       setSelectedTeacherId(nextTeacherId);
       setTab(allowedViews.includes(requestedView) ? requestedView : 'overview');
-      if (remoteUserRef.current && remoteUserRef.current.email !== currentUser.email) textDraftsRef.current.clear();
+      if (previousUser && !sameActor) textDraftsRef.current.clear();
       remoteUserRef.current = currentUser;
       setRemoteState({ status: 'saved', error: '', currentUser, deployment: aePlainObject(payload.deployment) ? payload.deployment : null, inFlight: false });
     } catch (error) {

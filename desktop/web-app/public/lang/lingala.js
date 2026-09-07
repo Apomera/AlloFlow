@@ -4909,10 +4909,10 @@
     "locked": "Ekangami",
     "escaped": "yo Escaped!",
     "escaped_desc": "yo solved nyonso puzzles na escaped room!",
-    "time_up": "? Ntango Esili!",
+    "time_up": "⏰ Ntango Esili!",
     "reveal_hint": "Reveal elembo",
-    "puzzles_remaining": "{{count}} ba puzzle etikali",
-    "time_remaining": "Ntango: {{time}}",
+    "puzzles_remaining": "{count} ba puzzle etikali",
+    "time_remaining": "Ntango: {time}",
     "progress": "bokoli",
     "start": "Bandá Escape Room",
     "start_hint": "Bandá timer na begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Silisá!",
     "loading_error": "Could te tiyá room bilembo",
     "no_puzzle": "Te puzzle found mpo na oyo object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Bokimi ya kitoko mpenza! +{{xp}} XP ya likabo",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Bokimi ya kitoko mpenza! +{xp} XP ya likabo",
     "puzzle_mcq": "Boponi Ebele",
     "puzzle_sequence": "Put na Order",
     "puzzle_cipher": "Decode sango",
@@ -4982,17 +4982,17 @@
     "clue": "Elembo",
     "clue_found": "Elembo Emonani!",
     "clue_revealed": "Oyo clue may lisalisi na another puzzle...",
-    "clues_collected": "Bilembo: {{count}}/{{total}}",
+    "clues_collected": "Bilembo: {count}/{total}",
     "use_clue": "Salelá Clue",
-    "final_door": "The Exit Door",
+    "final_door": "Ekuke ya kobima",
     "final_door_ready": "exit door ezali sik'oyo unlocked!",
     "final_door_locked": "silisa mingi puzzles na unlock",
     "final_door_title": "Final mpasi",
     "final_door_desc": "Salelá everything yo've learned na eyano oyo synthesis motuna.",
     "final_puzzle": "Using nini yo've learned, eyano oyo:",
     "final_answer_placeholder": "Type yo eyano here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "Pusaná pene na ekuke ya kobima",
+    "unlock_door": "Fungolá ekuke",
     "victory_perfect": "Perfect Escape! Te wrong eyano! +50 Bonus XP",
     "victory_normal": "yo've Escaped! Congratulations!",
     "hint": "elembo",
@@ -5008,12 +5008,12 @@
     "left": "etikali",
     "wrong_attempts": "Komeka ya Mabe",
     "time_penalty": "-{seconds} segondes!",
-    "game_over_time": "? Time's Up! yo ran out ya time.",
+    "game_over_time": "⏰ Time's Up! yo ran out ya time.",
     "streak": "Molongo",
     "streak_bonus": "Bonus ya Molongo! x{multiplier}",
     "streak_lost": "Molongo ebungi!",
     "one_minute_warning": "Munuti moko etikali!",
-    "thirty_seconds_warning": "? Only 30 segondes left!",
+    "thirty_seconds_warning": "⏰ Only 30 segondes left!",
     "timer_paused": "Saa Etelemi",
     "timer_resume": "Bandá lisusu",
     "settings_btn": "Room bobongisi",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Bandá multiplayer escape room na yo kelasi",
     "team_mode": "Team mpasi",
     "team_race": "Race na Escape!",
-    "team_progress": "{{team}} bokoli: {{solved}}/{{total}}",
+    "team_progress": "{team} bokoli: {solved}/{total}",
     "waiting_host": "Waiting mpo na molakisi na bandá...",
-    "team_escaped": "Ekipi {{team}} Ekimi!",
+    "team_escaped": "Ekipi {team} Ekimi!",
     "all_teams_done": "nyonso Teams Finished!",
     "your_team": "yo Team",
     "team_red": "Ekipi Motane",
@@ -5036,7 +5036,7 @@
     "team_green": "Ekipi Vert",
     "team_yellow": "Ekipi Saune",
     "team_all": "nyonso moyekoli",
-    "teams_competing": "{{count}} ekipis competing",
+    "teams_competing": "{count} ekipis competing",
     "first_escape": "ya liboso na Escape!",
     "end_game": "End lisano",
     "end_game_confirm": "End escape room mpo na nyonso moyekoli?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume lisano",
     "game_paused_by_teacher": "lisano paused by molakisi",
     "celebration_title": "Longonya!",
-    "you_escaped": "yo ekipi escaped na {{time}}!",
-    "other_team_escaped": "{{team}} ekimi!",
+    "you_escaped": "yo ekipi escaped na {time}!",
+    "other_team_escaped": "{team} ekimi!",
     "class_escaped": "kelasi Victory!",
     "everyone_escaped": "Everyone worked together na escape!",
     "hurry_up": "Keep going! yo can still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "Tiyá Bombad",
     "loaded_saved": "Bombad Escape Room loaded! Review na bandá tángo ready.",
     "no_saved": "Te ebombami Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready na saná!",
+    "preview_confirmed": "✅ Escape Room locked • ready na saná!",
     "xp_earned_streak": "+{xp} XP (bonus ya molongo {multiplier}x!)",
     "loaded_from_resource": "Loaded uta biloko."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Tinda na Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Mosala malamu mingi!",
       "partial": "malamu effort, keep going!",
       "incorrect": "te quite sembo • memá again!",
-      "error": "Could te evaluate • nabondeli yo memá again.",
+      "error": "Could te evaluate — nabondeli yo memá again.",
       "verdict_correct": "Ya solo!",
       "verdict_partial": "Ya Solo Mwa Moke",
       "verdict_incorrect": "te Quite Sembo",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **Final niveau**: {level}",
       "log_header": "Mobembo Log",
       "chapter_separator": "***",
-      "user_label": "? yo",
+      "user_label": "➤ yo",
       "print_button": "Bimisá buku ya lisapo"
     },
     "answer_key_title": "eyano Key",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "yo can finá any maloba na makomi na moná its ndimbola!",
     "simplified_cloze": "Memá 'Cloze' lolenge na momekano maloba mayele.",
     "simplified_quiz": "Oyo makomi looks monene. Should we sala Exit Ticket na check understanding?",
-    "simplified_glossary": "maloba like '{term1}' na '{term2}' might need lisalisi • mokanda ya maloba could lisalisi!",
+    "simplified_glossary": "maloba like '{term1}' na '{term2}' might need lisalisi — mokanda ya maloba could lisalisi!",
     "simplified_glossary_fallback": "Mosusu ya these liloba ezali tricky. mokanda ya maloba would lisalisi lisalisi oyo makomi.",
     "simplified_outline": "elilingi bayekoli might benefit uta Graphic Organizer ya oyo mateya.",
     "glossary_bingo": "yo can turn these liloba na maloba lisano like Bingo, Memory Match, Crosswords, to maloba Lukáká!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "Want na ensure oyo momekano ezali rigorous? Kimá mibeko Audit.",
     "adventure_sim": "Adventures allow moyekoli na apply nini they've learned na safe simulation.",
     "adventure_inventory": "Check 'Inventory' na moná nini eloko have been collected.",
-    "adventure_context": "yo mobembo na tina {topic} gets richer na mingi biloko • memá adding {suggestion}!",
+    "adventure_context": "yo mobembo na tina {topic} gets richer na mingi biloko — memá adding {suggestion}!",
     "adventure_context_fallback": "mingi biloko yo sala, richer mobembo conmakomi becomes.",
     "timeline_drag": "Benda na tika events na reorder sequence.",
     "timeline_visualize": "Oyo lisalisis moyekoli visualize cause-na-effect relationships.",
@@ -8869,8 +8869,8 @@
     "parent_adventure": "Memá Mobembo lolenge mpo na fun rainy-day activity.",
     "parent_read_along": "Salelá 'Tángá Along' na salela reading together.",
     "fallback_lesson_plan": "yo have monene biloko. Synthesize them na liteya Mwango?",
-    "fallback_brainstorm": "Feeling stuck? Memá chatting na me na bongolá Auto-Silisá na activate Blueprint lolenge • I'll lisalisi yo design yo entire liteya!",
-    "fallback_export": "yo have {count} biloko likoló {topic} • bimisá them as single PDF!",
+    "fallback_brainstorm": "Feeling stuck? Memá chatting na me na bongolá Auto-Silisá na activate Blueprint lolenge — I'll lisalisi yo design yo entire liteya!",
+    "fallback_export": "yo have {count} biloko likoló {topic} — bimisá them as single PDF!",
     "fallback_export_fallback": "yo can bimisá nyonso these biloko as single PDF packet.",
     "fallback_guide": "Poná 'Lakisá Me' na AI Guide soki yo get lost!",
     "intro_greeting": "Finá me na kobongisa my mongongo bobongisi.",
@@ -9019,7 +9019,7 @@
     "text_generated": "yo adapted makomi likoló {topic} ezali ready! Memá finaing maloba na moná its ndimbola, to luka biloko ya mosala like mokanda ya maloba to momekano na deepen understanding.",
     "flashcards_created": "flashcard esalemi! yo can bimisá them na Quizlet, bimisá them, to memá Memory lisano.",
     "quiz_generated": "momekano ready! Salelá Presentation lolenge mpo na kelasi, to memá Auto-Grader mpo na fungolá responses.",
-    "glossary_generated": "mokanda ya maloba silisá! Memá maloba lisano • Bingo, Memory Match, Crosswords, maloba Lukáká, na mingi!",
+    "glossary_generated": "mokanda ya maloba silisá! Memá maloba lisano — Bingo, Memory Match, Crosswords, maloba Lukáká, na mingi!",
     "adventure_started": "yo mobembo begins! Type yo action below, to salelá boponi bouton na decide nini happens oyo elandi.",
     "adventure_scene": "nini will yo do? Every boponi lolenge yo lisapo!",
     "analysis_complete": "Analysis silisá! I found mosusu maloba na key makanisi worth exploring.",
@@ -10156,7 +10156,7 @@
     "type_timeline": "Motonga ya Molongo",
     "type_timeline_desc": "Sequencing activity adapted na niveau ya kelasi",
     "full_pack": "Full biloko Pack • Poná nyonso",
-    "deselect_all": "? Deselect nyonso",
+    "deselect_all": "↩ Deselect nyonso",
     "estimate": "Lukola",
     "api_calls": "Bobengi API",
     "start_batch": "Sala",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating yo personalized version...",
     "bridge_projection": "Projection lolenge",
     "bridge_exit_projection": "Bomonisi ya Bobimi",
-    "bridge_offline_info": "Te na sembo tángo • pkotala lisusu likoló oyo device only",
+    "bridge_offline_info": "Te na sembo tángo — pkotala lisusu likoló oyo device only",
     "bridge_term_saved": "Bombad \"{term}\" na mokanda ya maloba",
     "bridge_term_save_failed": "Failed na bombá liloba",
     "bridge_save_term": "Bombá na mokanda ya maloba",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "Custom monoko...",
     "bridge_f2f_custom_placeholder": "ndakisa Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "nyonso liloba ebombami na mokanda ya maloba!",
-    "bridge_terms_saved": "? nyonso Bombad",
+    "bridge_terms_saved": "✅ nyonso Bombad",
     "fullpack_group_target": "Mokano Group",
     "fullpack_group_current": "Current bobongisi",
     "fullpack_group_all": "nyonso Groups",
@@ -12178,7 +12178,11 @@
       "trapezoid": "Trapezoide",
       "simpson": "Simpson",
       "rectangles_n": "rectangle (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "Ndimbola esili kobongisama.",
+      "a11y_back_to_tools": "Zonga na bisaleli",
+      "a11y_snapshot": "Elilingi ya mbala moko",
+      "a11y_next": "Oyo elandi"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ mongongo te supported na oyo browser",
@@ -12302,7 +12306,7 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Sala AI explanation na niveau",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
@@ -13933,8 +13937,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Ya Solo! It\\",
-      "that": "? Yango\\",
+      "correct_it": "✅ Ya Solo! It\\",
+      "that": "❌ Yango\\",
       "linear": "Sembo",
       "quadratic": "Karee",
       "cubic": "Kibe",
@@ -14208,7 +14212,8 @@
       "angle_u00b0": "Angle (°)",
       "velocity_ms": "Vitesse (m/s)",
       "gravity_msu00b2": "Gravité (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Ndimbola esili kobongisama."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14236,7 +14241,10 @@
       "codominant_desc": "Allele nyonso mibale emonisami mobimba. Heterozygote emonisaka bizaleli nyonso mibale na mbala moko.",
       "sexLinked_desc": "Ezali komemama na chromosome X. Oyo ezali ndakisa ya libula X-linked RECESSIVE (hemophilia, bozoba ya motane-na-vert): mibali (XY) basengaka kopi moko; basi (XX) basengaka mibale.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Zonga na bisaleli ya STEM",
+      "a11y_snapshot": "Elilingi ya mbala moko",
+      "a11y_close_flashcard": "Kanga karte"
     },
     "circuit": {
       "meter_status_ammeter_short": "Esika ya libateli te: nzela ya short-circuit",
@@ -14528,8 +14536,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? Ye\\"
+      "correct": "✅ Correct!",
+      "it": "❌ Ye\\"
     },
     "inequality": {
       "badge_first_solve_label": "Solisyo ya Liboso",
@@ -14645,8 +14653,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Malamu!",
-      "answer": "? eyano:",
+      "correct": "✅ Malamu!",
+      "answer": "❌ eyano:",
       "hydrogen": "Idrogɛnɛ",
       "helium": "Eliyumu",
       "lithium": "Litiyumu",
@@ -14788,7 +14796,7 @@
       "reddish_metal_used_since_the": "Reddish metal esalelami since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal yango prevents rust",
       "best_conductor_of_electricity_among": "Best conductor ya electricity among nyonso metals",
-      "dense_soft_shiny_precious_metal": "Ya kilo, ya petee, ya kongɛnga ebende ya motuya • etiaka rouille te",
+      "dense_soft_shiny_precious_metal": "Ya kilo, ya petee, ya kongɛnga ebende ya motuya — etiaka rouille te",
       "strong_as_steel_but_45": "Strong as steel kasi 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal yango gives rubies their red langi",
       "essential_for_steel_production_and": "Essential mpo na steel production na bone health",
@@ -15894,7 +15902,9 @@
       "our_sun_is_born": "Our Sun ezali Born",
       "present_day": "Mokolo ya Lelo",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Zonga na bisaleli",
+      "a11y_simulation_speed": "Mbangu ya komekola"
     },
     "rocks": {
       "igneous": "Ya móto",
@@ -18819,7 +18829,10 @@
       "garage_desc": "Moteur, rouille mpe ba réactions — atelier ya chimie.",
       "classroom_desc": "Classe ya science ya solo na ba béchers mpe ba expériences.",
       "outdoors_desc": "Bima libanda — nature ezali laboratoire oyo eleki monene.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Zonga na bisaleli",
+      "a11y_snapshot": "Elilingi ya mbala moko",
+      "a11y_next": "Oyo elandi"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Bombad na history!",
@@ -19606,7 +19619,40 @@
       "read_what_special_education_law_actually": "Tanga oyo mobeko ya mateya ya ntina mingi elobaka mpenza, na maloba na yango moko. Makomi ya solo ya IDEA Eteni B mpe Eteni 504, ekamatami na eCFR mpe ezali na mokolo, ekoki kolukama, na mibeko ya fédéral mpe ya leta pembeni na pembeni. Eloko moko te ekomami lisusu to esalemi: soki makomi ya bokonzi ezali te, esaleli elobaka bongo na esika ya kokanisa.",
       "applied_k_12_behavior_practice_what": "Mosala ya bizaleli oyo esalelami banda kelasi ya mike tii na kelasi ya likolo — oyo bapsychologue ya kelasi mpe balakisi basalaka mpenza na siansi oyo. Ebongiseli ya biteni misato ya PBIS, bizaleli ya bokitani oyo ekangami na misala ya FBA, makambo ya nsima (bapusi ya malembe oyo mingi ya ba BIP ekutanaka na yango te), zunga ya biteni sambo ya kopela ya Geoff Colvin, mpe etiki ya kokanga mpe ya kokabola oyo etongami likolo ya Mokapo 33 ya Maine. Esaleli ndeko ya BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Siansi ya bomoi ya mbu mpe siansi ya bizaleli ya poulpe, calmar, seiche mpe nautile. Likambo monene: Hunter Sim — pona lolenge, esika ya bomoi, nyama mpe mayele, sakana lisano ya moke ya komibomba, mpe pima ntango ya kobwaka nzoto. Efungolaka makambo ya siansi ya buku ya elanga (mosala ya chromatophores, mitó 9 ya bwanya, makila ya bule, botindiki na jet). Buku ya elanga ya balolenge 10 na mituya ya mayele, ya komibomba mpe ya mbangu ya jet.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 mpe HS-PS2. Esaleli ya komekola bopusi ya treillis na bolai, bosanda, kilo mpe biloko oyo ekoki kobongwana, bokokanisi ya balolenge ya gpont (poutre, treillis, arc, ya kotepa, ya basinga), ebombelo ya biloko, balolenge ya makasi, boyekoli ya makambo ya solo (Tacoma Narrows, Hyatt Regency, Tay, Silver, elongo na Brooklyn, Golden Gate, Akashi mpe Millau), zunga ya bosaleli ya génie, komekama ya lolenge ya AP, mpe makomi ya bosaleli oyo ekoki kobimisama na papie."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 mpe HS-PS2. Esaleli ya komekola bopusi ya treillis na bolai, bosanda, kilo mpe biloko oyo ekoki kobongwana, bokokanisi ya balolenge ya gpont (poutre, treillis, arc, ya kotepa, ya basinga), ebombelo ya biloko, balolenge ya makasi, boyekoli ya makambo ya solo (Tacoma Narrows, Hyatt Regency, Tay, Silver, elongo na Brooklyn, Golden Gate, Akashi mpe Millau), zunga ya bosaleli ya génie, komekama ya lolenge ya AP, mpe makomi ya bosaleli oyo ekoki kobimisama na papie.",
+      "the_gutenberg_style_screw_press_as": "Masini ya kobimisa mikanda ya vis ya lolenge ya Gutenberg lokola komekola oyo esalaka mpenza. Benda nzete, tia baletre na yo moko, mpe tala elembo oyo ekweyi. Elongo na siansi ya biloko (kosangisa plomb, étain mpe antimoine), nkita (bokwei ya motuya ya buku moko), lisolo (Bobongwani ya lingomba, mbongwana ya siansi), mayele ya baletre, mpe bato oyo bazalaki nsima ya masini (elongo na basi babimisi mikanda oyo lisolo ebosani). Etongami mpo na mosala oyo ekatisi biteni ya boyekoli na kelasi ya kati.",
+      "three_js_stoop_simulator_deep_science": "Esaleli ya komekola bokiti na Three.js elongo na siansi ya mozindo ya ndenge bandeke ya koboma bakangaka nyama. Pumbwa lokola faucon pèlerin na 240 mph, lokola aigle harpie oyo ezali na manzaka ya 530 psi, to lokola hibou ya maseke oyo ezali kosala makelele te. Balolenge 8 mpe biteni 12: makasi ya manzaka, komona (mbala 4-8 koleka moto, ultraviolet epai ya bakoko mikemike), fizike ya kopumbwa, kopumbwa ya kimya ya ba hibou, calculatrice ya mbangu ya suka, kozonga nsima ya DDT mpe makama ya libateli oyo ezali kokoba, mpe koyeba na esobe na nzela ya elilingi mpe ya lolenge ya nzoto.",
+      "practice_reading_and_completing_the_documents": "Meka kotanga mpe kokokisa mikanda oyo bomoi ya mikolo mikolo etambolaka na yango: makomi ya koluka mosala, ba formulaires W-4, mikanda ya kofutela ndako, ba formulaires ya kokota na lopitalo, ba permis ya kotambwisa motuka, mpe libyangi ya likita na yo moko ya IEP. Esika nyonso elimbolami na monoko ya polele, bakesi oyo ekoki kofutisa yo ezali na elembo, ezali na makambo ya bopusi mpo na ntango moto alingi ozala kosala signature sikoyo, mpe maloba oyo esili kobongisama mpo na kosenga ntango. Momekano nyonso esalemaka na moto ya lokuta, ata mokolo moko te na basango na yo ya solo.",
+      "how_swimming_works_stroke_physics_survival": "Ndenge kobɛta mai esalaka (fizike ya bandenge ya kobɛta mpe mayele ya kobika) mpe oyo moto nyonso oyo abɛtaka mai asengeli koyeba mpo na mai ya malili, mikeli oyo ezongaka, glace, bilamba ya kobikisa, mpe kobikisa. Bokaboli ya bililingi ya bandenge, siansi ya kotepa likolo ya mai mpe ya kotindika, mpe mayele ya kobika (kotepa na mokongo, kobɛta makolo lokola kobɛta maki, ndenge ya HELP, kosangana esika moko) oyo ebikisaka mpenza bomoi. Bisika: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Kaka mpo na mateya: mpo na koyekola mpenza kobɛta mai, luka molakisi ya kobɛta mai.",
+      "tax_paycheck_calculator_data_literacy_decision": "Calculatrice ya mpako mpe ya papier ya lifuti, koyeba kotanga ba données, matrice ya bokati, motángi ya mikanda ya boyokani, ba archives mpe misala ya papier, kobongisa mobembo, komibongisa mpo na mosala, kotonga CV, kobongisa bilembeteli ya portfolio, komeka ba entretiens, mayele ya bosololi, bokambi ya ntango, assurance ya bokolongono, kobatela mino, ergonomie ya kobatela nzoto, momesano ya mpongi, ba étiquettes ya bankisi, komibongisa mpo na rendez-vous, libateli na ndako, libateli ya numérique, kimya na miso ya bilei, mpe siansi oyo esalelami mpo na bomoi ya mokolo na mokolo.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 mpe HS-LS4. Mokili ya bamikrobe: bactéries (oyo ezali malamu mpe oyo ebimisaka maladi), virus (COVID, grippe, HIV, phages, rougeole), microscopie (pole, contraste ya phase, fluorescent, électron, AFM), bokoli ya bopikami na bankisi ya antibiotique, microbiome ya moto, ya mabele mpe ya mbu, ba vaccins mpe ebongiseli ya libateli ya nzoto, fermentation (farine ya ngayi, yaourt, kimchi, choux ya ngayi, kombucha, fromage), boyekoli ya makambo (Snow, Fleming, MRSA, COVID mpe mRNA, FMT), momekano, mpe mokanda ya kotala oyo ekoki kobimisama na papie mpo na libateli ya laboratware mpe bamikrobe.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Bakampanye zomi na mitano ya kobatela zamba na bituka zomi na moko. Bakampanye mitano ya milai ya Maine ya bantango mingi, elongo na makambo zomi oyo ekatisi bituka mpe ezipi mabota nyonso mitano ya mécanique: mɔ́tɔ (Yarralin na Australie, Karuk na nord ya Californie), libateli (Yellowstone, Akagera na Rwanda), bokolongono ya bato (dengue na Mumbai, ebola ya 2014 na Liberia), esika ya mai (Ebale Klamath, Etuka ya Murray-Darling), mpe klima (Bisanga ya Marshall, delta ya Bangladesh). Mayele ya kosangisa mabota efungwamaka ntango osilisi oyo ya Maine mpe oyo ekatisi bituka ya libota moko ya mécanique.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 mpe MS-ESS3-3. Salá mwa mboka likolo ya grille ya bateni 144 liboso ya masengami oyo etelemelaka mpenza. Mwa mboka misato, moko na moko na ndelo ekeseni oyo ekatisaka: Riverbend, esika mai ya mbula mpe niongo ekamataka; Mesa Hollow, esika mai ya se ya mabele ezali ndelo mpe bilanga ezali komela yango; mpe Harborlight, esika mwango esengeli kosala lisusu na 2050. Kotiola ya mai na méthode rationnelle, bokokani ya mai, ndelo ya bomati ya mbu, ntaka ya kotambola na réseau, mpe réseau ya nzela oyo motuya na yango etangami, moko na moko ekoki kofungwama mpo na kolakisa formule na yango. Assumption Lab ezongisaka mwango moko na milongo mibale ya baparamètres oyo ebimisami, mpo bayekoli bámona nini na basukisi ebikaka na nyonso mibale. Karte, tableau ya bateni oyo ekoki kobongisama, mpe modèle 3D ya mwango moko. Mituna ya lisolo mpe lisolo oyo ezali na mikanda ememaka mituna oyo esaleli eboyi kosala modèle na yango. Elembo ya note ezali te mpe fungola ya biyano ezali te.",
+      "codap_data_science": "CODAP: siansi ya ba données",
+      "lumen_research_canvas": "Lumen: etanda ya bolukiluki",
+      "evolab_evolution": "EvoLab: bokoli ya bomoi",
+      "dino_lab": "Laboratware ya ba dinosaure",
+      "nutritionlab_nutrition_science": "NutritionLab: siansi ya bilei",
+      "birdlab_i_spy_ornithology": "BirdLab: boyekoli ya bandeke na koluka",
+      "openbim_companion": "OpenBIM: motambwisi moninga",
+      "applab_ai_app_generator": "AppLab: mosali ya ba applications na AI",
+      "access_lens": "Talatala ya bokoti",
+      "sim_shelf": "Etanda ya bimekoli",
+      "zoom_gallery": "Ndako ya bililingi ya monene",
+      "sourcebook": "Buku ya bisika",
+      "wheel_fire_pottery_lab": "Roue mpe mɔ́tɔ: laboratware ya potri",
+      "echo_navigator": "Motambwisi ya echo",
+      "learning_lab_how_learning_works": "Learning Lab: ndenge boyekoli esalaka",
+      "weldlab_welding_metal_joining": "WeldLab: soude mpe kokangisa bibende",
+      "bikelab_physics_repair": "BikeLab: fizike mpe kobongisa",
+      "fisherlab_boating_fishing_sim": "FisherLab: komekola botamboli ya bwato mpe koluka mbisi",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: komekola elanga ya bankoko ya mai",
+      "throwlab_sports_physics": "ThrowLab: fizike ya masano",
+      "skatelab_skate_bmx_physics": "SkateLab: fizike ya skate mpe BMX",
+      "playlab_strategy_on_the_field": "PlayLab: mayele na terrain",
+      "kepler_colony": "KolonI ya Kepler",
+      "birdlab_life_list": "BirdLab: molongo ya bomoi mobimba",
+      "petslab_decoder": "PetsLab: molimboli ya bizaleli"
     },
     "area": {
       "volume": "volume..."
@@ -19646,7 +19692,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Zonga na bisaleli",
+      "a11y_snapshot": "Elilingi ya mbala moko",
+      "a11y_next": "Oyo elandi",
+      "a11y_simulation_speed": "Mbangu ya komekola",
+      "a11y_close_flashcard": "Kanga karte"
     },
     "solar_sys": {
       "venus": "Venusi",
@@ -20468,7 +20519,8 @@
       "scaled_volume_changed": "🔵 Emekami (bonene ebongwani)",
       "skewed_shape_deformed": "🟠 Egumbami (lolenge ebebi)",
       "degenerate_volume_0": "💀 Ebebi (bonene → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Bokei ya litambwisi"
     },
     "numberline": {
       "first_mark": "Elembo ya Liboso",
@@ -22611,7 +22663,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Mobu {value1} ebandi."
     },
     "optics": {
       "optics_lab": "Laboratware ya Optiki",
@@ -22957,7 +23010,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Motuna ya SQL ya botali ya esika"
     },
     "geosandbox": {
       "loading_3d_engine": "Ezali kotonga moteur 3D...",
@@ -23307,7 +23361,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Ekeko elongolami"
     },
     "algebraCAS": {
       "solve": "🔍 Silisa",
@@ -25903,7 +25958,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "Ndimbola esili kobongisama."
     },
     "economicslab": {
       "six_figures": "Mbongo ya mituya motoba",
@@ -27883,7 +27939,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Likanisi ebombami."
     },
     "anatomy": {
       "skeletal": "Mikuwa",
@@ -28465,7 +28522,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Bandela kamera ya 3D"
     },
     "dna": {
       "back_to_tools": "Zonga na Bisaleli",
@@ -29842,7 +29900,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Likanisi ebombami."
     },
     "angles": {
       "back_to_tools": "Zonga na Bisaleli",
@@ -30656,7 +30715,8 @@
       "explain_how_each_parameter_shapes_a_si": "Limbolá ndenge paramètre moko na moko esalaka lolenge ya vague sinus.",
       "design_note_discrete_5_state_marker_no": "Note ya conception: elembo discrète ya ba-états 5; ba-point ya vague te; komonisa te — na conception.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Ndimbola esili kobongisama."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu ya Momesano ya Kokoma",
@@ -31010,7 +31070,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Zonga na menu"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34419,7 +34480,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Pona eyano: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Zonga na bisaleli",
@@ -35184,7 +35246,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "ekufi",
+      "sr_nothing_to_redo": "Eloko ya kosala lisusu ezali te.",
+      "sr_nothing_to_undo": "Eloko ya kolongola ezali te.",
+      "sr_dir_left": "loboko ya mwasi",
+      "sr_dir_right": "loboko ya mobali"
     },
     "arithmetic": {
       "selected": " eponami.",
@@ -39230,7 +39297,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR is standardized to a zenith radiant and limiting magnitude 6.5. This approximate estimate assumes clear, moonless skies and population index 2.2. Bortle classes only roughly indicate limiting magnitude; darker-than-standard skies can exceed ZHR. Lower radiant altitude and brighter skies reduce the estimate.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Zonga na bisaleli ya STEM"
     },
     "autorepair": {
       "back_to_menu": "Zonga na menu",
@@ -39971,7 +40039,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Motango: {value1} na {value2}",
+      "a11y_open_2": "Fungola {value1}",
+      "a11y_option": "Boponi {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Mposo",
@@ -40074,7 +40145,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Ndimbola esili kobongisama."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40820,7 +40892,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Ndimbola esili kobongisama.",
+      "a11y_investigation_progress": "Bokei ya bolukiluki",
+      "a11y_flight_debrief": "Botali ya mpepo",
+      "a11y_tutorial_progress": "Bokei ya litambwisi"
     },
     "behaviorlab": {
       "chain_reaction": "Eyano ya monyɔlɔlɔ",
@@ -40988,7 +41064,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Ndimbola esili kobongisama.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43504,7 +43580,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Eteni oyo etalelami: {value1}",
+      "a11y_score_out_of": "Motango: {value1} na {value2}",
+      "sr_selected": "Eponami: {value1}",
+      "sr_quiz_reset": "Komekama ebandi lisusu"
     },
     "brainatlas": {
       "group_systems": "Milongo",
@@ -48660,7 +48740,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Pona eyano: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Mokonzi ya Quiz",
@@ -49804,7 +49885,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Eponami: {value1}"
     },
     "echotrainer": {
       "wall": "Efelo",
@@ -51263,7 +51345,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Eteni oyo etalelami: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Motángi ya Carbone",
@@ -52343,7 +52426,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Zonga na menu",
+      "sr_getting_critique": "Kozwa botali...",
+      "sr_critique_ready": "Botali esili kobongisama."
     },
     "flightsim": {
       "game_controls": "🎮 BAKONTROLE YA LISANO",
@@ -52544,7 +52630,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, brackets control flaps, X wheel brakes, Q quiz, F forces, Space pause, I info.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52556,7 +52642,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Free Flight from Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52603,7 +52689,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Shanghai Tower",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58433,7 +58519,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Eteni oyo etalelami: {value1}",
+      "sr_loaded": "{value1} ekotisami",
+      "sr_showing": "Kolakisa {value1}",
+      "sr_opening": "Kofungola {value1}"
     },
     "platetectonics": {
       "pacific": "Pacifique",
@@ -58630,7 +58720,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63255,7 +63345,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Ndimbola esili kobongisama.",
+      "sr_off": "ekufi",
+      "sr_edge_left": "loboko ya mwasi",
+      "sr_edge_right": "loboko ya mobali",
+      "sr_correct": "Malamu.",
+      "sr_not_quite": "Ezali mpenza te."
     },
     "printingpress": {
       "print": "🖨️ Bimisa",
@@ -65394,7 +65490,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Zonga na menu",
+      "a11y_open": "Fungola {value1}",
+      "sr_selected": "Eponami: {value1}",
+      "sr_loaded": "{value1} ekotisami",
+      "sr_opening": "Kofungola {value1}",
+      "sr_correct": "Malamu.",
+      "sr_not_quite": "Ezali mpenza te.",
+      "sr_year_begins": "Mobu {value1} ebandi.",
+      "sr_question_reset_try_again": "Motuna ebandi lisusu. Meka lisusu.",
+      "sr_not_quite_see_the_explanation": "Ezali mpenza te: tala ndimbola."
     },
     "raptorhunt": {
       "show_answer": "Lakisá eyano",
@@ -67043,7 +67149,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Fungola {value1}",
+      "a11y_flight_debrief": "Botali ya mpepo"
     },
     "renewables": {
       "climate_justice": "Bosémbo ya Klima",
@@ -67743,7 +67851,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Zonga na menu",
+      "sr_getting_critique": "Kozwa botali...",
+      "sr_critique_ready": "Botali esili kobongisama.",
+      "sr_quiz_reset": "Komekama ebandi lisusu"
     },
     "roadready": {
       "let_s_start": "Tobanda →",
@@ -70610,7 +70722,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Zonga na bisaleli ya STEM",
+      "a11y_local_analytical_sql_query": "Motuna ya SQL ya botali ya esika"
     },
     "stewardship": {
       "sector": "Eteni",
@@ -71187,7 +71301,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Zonga na menu",
+      "sr_question_reset_try_again": "Motuna ebandi lisusu. Meka lisusu."
     },
     "throwlab": {
       "scenarios": "Bikamwiseli",
@@ -71412,7 +71528,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Bandela kamera ya 3D",
+      "sr_coach_is_offline": "Molakisi azali na internet te.",
+      "sr_drill_stopped": "Momekano etelemi."
     },
     "weldlab": {
       "print": "🖨️ Bimisa",
@@ -72974,7 +73093,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Eteni oyo etalelami: {value1}",
+      "a11y_score_out_of": "Motango: {value1} na {value2}",
+      "sr_quiz_reset": "Komekama ebandi lisusu",
+      "sr_loaded": "{value1} ekotisami",
+      "sr_showing": "Kolakisa {value1}",
+      "sr_not_quite_see_the_explanation": "Ezali mpenza te: tala ndimbola."
     },
     "worldbuilder": {
       "grade_level": "Niveau ya kelasi",
@@ -74567,7 +74692,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Nzete ya bomoi",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76422,7 +76547,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Boponi {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Botali ya kamera ya 3D"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -76490,7 +76617,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Molakisi azali na internet te.",
+      "sr_drill_stopped": "Momekano etelemi."
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76501,6 +76630,22 @@
       "next": "oyo elandi",
       "finish": "Nasosoli!",
       "replay_aria": "Lakisa tutorial"
+    },
+    "pets": {
+      "sr_back_to_menu": "Zonga na menu",
+      "sr_getting_critique": "Kozwa botali...",
+      "sr_critique_ready": "Botali esili kobongisama."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Zonga na bisaleli ya STEM",
+      "a11y_3d_camera_views": "Botali ya kamera ya 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Bokei ya bolukiluki"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Eloko ya kosala lisusu ezali te.",
+      "sr_nothing_to_undo": "Eloko ya kolongola ezali te."
     }
   },
   "glossary_health": {
@@ -77103,7 +77248,7 @@
       "person": "Moto\\",
       "phase_label": "Nkombo etape",
       "rationale_which_antecedent_does_this_address": "Ntina (ezali kosimba antecedent nini?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect likoló yo approach...\\n• nini worked well?\\n• nini would yo do differently?\\n• nini stratégies do yo want na salela oyo elandi?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect likoló yo approach...\n• nini worked well?\n• nini would yo do differently?\n• nini stratégies do yo want na salela oyo elandi?",
       "reinforcement_how_you": "⭐ Reinforcement (how yo\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement ezalela (functionally equivalent)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77111,7 +77256,7 @@
       "search_81_tools": "🔍 Lukáká 80+ biloko ya mosala…",
       "search_aba_terms": "🔍 Lukáká ABA liloba...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Lukáká liloba... (e.g. \"reinforcement\", \"FBA\", \"bilembo\")",
-      "session_1_3nsession_2_7nsession_3_5n": "tángo 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "tángo 1: 3\nSession 2: 7\nSession 3: 5\n...",
       "setting_eg_math_class_cafeteria": "bobongisi (e.g., Mituya kelasi, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Kabolá nini yo notice at home — strengths, concerns, cultural context, to suggestions mpo na eteyelo ekipi...",
       "step_description": "litambe description...",
@@ -78582,7 +78727,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Bosanda ya notch",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",

@@ -8,6 +8,21 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { AP_FRAMEWORK_TOPIC_IDS, frameworkSourceFor } = require('./ap_framework_topics.cjs');
+const { AP_BIOLOGY_UNIT_SECTIONS } = require('./ap_biology_lesson_sections.cjs');
+const { AP_BIOLOGY_WORKSHOPS: SPECS, AP_BIOLOGY_WORKSHOP_REVIEW_NOTE } = require('./ap_biology_workshops.cjs');
+
+// Which lesson section an item routes to, by its framework topic. Section 01 is
+// the original unit lesson; sections 02 and 03 are split out by topic.
+const sectionIndexByTopic = new Map();
+AP_BIOLOGY_UNIT_SECTIONS.forEach((unitSpec) => {
+  unitSpec.section1Topics.forEach((topicId) => sectionIndexByTopic.set(topicId, 1));
+  unitSpec.sections.forEach((sectionSpec, index) => sectionSpec.topics.forEach((topicId) => sectionIndexByTopic.set(topicId, index + 2)));
+});
+function sectionIdForTopic(unit, topicId) {
+  const index = sectionIndexByTopic.get(topicId) || 1;
+  return `ap-bio-ch-${String(unit).padStart(2, '0')}-section-${String(index).padStart(2, '0')}`;
+}
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_biology_foundation_pilot.json');
@@ -992,8 +1007,8 @@ function buildItem(spec, index) {
     },
     learningObjectiveId: objective.id,
     learningObjectiveLabel: objective.label,
-    learningSectionId: `ap-bio-ch-${String(spec.unit).padStart(2, '0')}-section-01`,
-    learningSectionLabel: objective.sectionLabel,
+    learningSectionId: sectionIdForTopic(spec.unit, objective.topicId),
+    learningSectionLabel: sectionLabelForTopic(spec.unit, objective.topicId, objective.sectionLabel),
     chapterIds: [`ap-bio-ch-${String(spec.unit).padStart(2, '0')}`],
     stimulus: spec.stimulus || undefined,
   };
@@ -1011,6 +1026,16 @@ const chapterChecks = [
   { prompt: 'Why does energy generally decrease between adjacent trophic levels?', choices: ['Organisms use much of the captured energy for metabolism and release heat', 'Energy is created only by consumers and not by producers', 'Every trophic transfer destroys all matter in the ecosystem', 'Consumers convert all food energy into new plant tissue'], answerIndex: 0, rationale: 'Metabolism and heat loss mean only a fraction of energy becomes biomass available to the next level.' },
 ];
 
+// Move the keyed choice to a target position, keeping every distractor in its
+// original relative order, so chapter checks do not all key at position A.
+function rotateChoices(choices, answerIndex, targetIndex) {
+  const keyed = choices[answerIndex];
+  const rest = choices.filter((_, index) => index !== answerIndex);
+  const next = rest.slice();
+  next.splice(targetIndex, 0, keyed);
+  return { choices: next, answerIndex: targetIndex };
+}
+
 function buildObjectiveCatalog() {
   return [...objectiveByTopic.values()].map((objective) => {
     const chapterId = `ap-bio-ch-${String(objective.unit).padStart(2, '0')}`;
@@ -1019,8 +1044,8 @@ function buildObjectiveCatalog() {
       topicId: objective.topicId,
       domainId: units[objective.unit - 1].id,
       chapterId,
-      sectionId: `${chapterId}-section-01`,
-      sectionLabel: objective.sectionLabel,
+      sectionId: sectionIdForTopic(objective.unit, objective.topicId),
+      sectionLabel: sectionLabelForTopic(objective.unit, objective.topicId, objective.sectionLabel),
       label: objective.label,
       practiceIds: objective.practiceIds.slice(),
       nextStep: 'Review the linked unit lesson, explain the mechanism in your own words, then retry a targeted pilot set.',
@@ -1054,6 +1079,61 @@ function buildRichSection(section, detail) {
   section.retrievalPrompts = detail.retrieval.slice();
   section.transferMove = detail.transfer;
   section.contentEnhancementVersion = 'ap-bio-foundation-v2';
+}
+
+function sectionLabelForTopic(unit, topicId, fallbackLabel) {
+  const unitSpec = AP_BIOLOGY_UNIT_SECTIONS[unit - 1];
+  const extra = unitSpec && unitSpec.sections.find((sectionSpec) => sectionSpec.topics.includes(topicId));
+  return extra ? extra.heading : fallbackLabel;
+}
+
+function buildExtraSection(chapterId, unit, index, spec) {
+  const section = {
+    id: `${chapterId}-section-${String(index).padStart(2, '0')}`,
+    heading: spec.heading,
+    content: spec.content,
+    keyTerms: spec.keyTerms.slice(),
+    references: unitReferences(unit),
+    reviewStatus: 'source-reviewed-editorial-pass',
+    reviewNote: 'Original foundation lesson section split out by framework topic; AP Biology subject-expert, accessibility, rights, and production review remain pending.',
+    contentComplete: true,
+    contentEnhancementVersion: 'ap-bio-foundation-v2',
+  };
+  buildRichSection(section, spec.rich);
+  return section;
+}
+
+function buildWorkshops() {
+  return SPECS.map((spec) => {
+    const chapterId = `ap-bio-ch-${String(spec.unit).padStart(2, '0')}`;
+    return {
+      id: `ap-bio-workshop-${String(spec.unit).padStart(2, '0')}`,
+      taskType: spec.taskType,
+      title: spec.title,
+      prompt: spec.prompt,
+      stimulus: spec.stimulus,
+      taskParts: spec.taskParts.slice(),
+      planningFrame: spec.planningFrame.map((step) => ({ label: step.label, guidance: step.guidance })),
+      successCriteria: spec.successCriteria.slice(),
+      commonPitfalls: spec.commonPitfalls.slice(),
+      sampleOutline: spec.sampleOutline.slice(),
+      unitIds: [spec.unit],
+      chapterId,
+      topicIds: spec.topicIds.slice(),
+      references: unitReferences(spec.unit),
+      unscored: true,
+      automatedScoring: false,
+      scorePrediction: false,
+      officialItem: false,
+      syntheticStimulus: true,
+      expertReviewStatus: 'pending',
+      releaseEligible: false,
+      rights: { secureCollegeBoardContentUsed: false, copiedOrRephrasedOfficialPrompt: false, copiedOfficialRubric: false, originalStimulus: true, status: 'pending-independent-rights-review' },
+      accessibility: { textFirst: true, linearReadingOrder: true, promptPartsIndependentlyNavigable: true, visualDependence: false, handsFreeContentCompatible: true },
+      reviewStatus: 'source-reviewed-editorial-pass',
+      reviewNote: AP_BIOLOGY_WORKSHOP_REVIEW_NOTE,
+    };
+  });
 }
 
 function buildLibrary() {
@@ -1094,22 +1174,35 @@ function buildLibrary() {
       expertReviewStatus: 'pending',
       accessibilityReviewStatus: 'pending-independent-review',
       releaseEligible: false,
-      sectionCount: 1,
-      knowledgeCheckCount: 1,
+      sectionCount: 3,
+      knowledgeCheckCount: 3,
       referenceCount: 3,
-      sections: [section],
+      sections: [section].concat(AP_BIOLOGY_UNIT_SECTIONS[index].sections.map((spec, extraIndex) => buildExtraSection(chapterId, unit.number, extraIndex + 2, spec))),
       knowledgeChecks: [{
         id: `${chapterId}-check-01`,
         chapterId,
+        sectionId: `${chapterId}-section-01`,
         type: 'single-choice',
         prompt: chapterChecks[index].prompt,
-        choices: chapterChecks[index].choices,
-        answerIndex: chapterChecks[index].answerIndex,
+        choices: rotateChoices(chapterChecks[index].choices, chapterChecks[index].answerIndex, index % 4).choices,
+        answerIndex: rotateChoices(chapterChecks[index].choices, chapterChecks[index].answerIndex, index % 4).answerIndex,
         rationale: chapterChecks[index].rationale,
         references: unitReferences(unit.number),
         reviewStatus: 'source-reviewed-editorial-pass',
         reviewNote: 'Original foundation retrieval check; AP Biology subject-expert and psychometric review remain pending.',
-      }],
+      }].concat(AP_BIOLOGY_UNIT_SECTIONS[index].sections.map((spec, extraIndex) => ({
+        id: `${chapterId}-check-${String(extraIndex + 2).padStart(2, '0')}`,
+        chapterId,
+        sectionId: `${chapterId}-section-${String(extraIndex + 2).padStart(2, '0')}`,
+        type: 'single-choice',
+        prompt: spec.check.prompt,
+        choices: spec.check.choices.slice(),
+        answerIndex: spec.check.answerIndex,
+        rationale: spec.check.rationale,
+        references: unitReferences(unit.number),
+        reviewStatus: 'source-reviewed-editorial-pass',
+        reviewNote: 'Original section retrieval check; AP Biology subject-expert and psychometric review remain pending.',
+      }))),
       contentComplete: true,
       foundationPrototype: Boolean(content.rich),
     };
@@ -1179,7 +1272,7 @@ function buildLibrary() {
     diagramPlacements: [],
     flashcards,
     memoryAids,
-    constructedResponseWorkshops: [],
+    constructedResponseWorkshops: buildWorkshops(),
     summary: {
       chapters: chapters.length,
       sections: chapters.reduce((sum, chapter) => sum + chapter.sections.length, 0),
@@ -1188,7 +1281,8 @@ function buildLibrary() {
       memoryAids: memoryAids.length,
       diagrams: 0,
       diagramPlacements: 0,
-      constructedResponseWorkshops: 0,
+      constructedResponseWorkshops: SPECS.length,
+      sourceReviewedConstructedResponseWorkshops: SPECS.length,
       richLessonPrototypes: chapters.filter((chapter) => chapter.foundationPrototype).length,
       sourceReviewedChapters: chapters.length,
       sourceReviewedFlashcards: flashcards.length,
@@ -1235,11 +1329,11 @@ function buildLibrary() {
     contentMigration: {
       schemaVersion: 1,
       contentVersion: 'ap-biology-foundation-v10',
-      sections: 8,
-      completeSections: 8,
+      sections: 24,
+      completeSections: 24,
       richLessonPrototypes: 8,
       status: 'foundation-prototype',
-      note: 'All eight unit lessons are navigable and now include structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending.',
+      note: 'All eight unit chapters now carry three navigable lesson sections split by framework topic, each with structured examples, boundaries, misconception guidance, worked data, retrieval, and transfer; independent review remains pending.',
     },
   };
 }
@@ -1299,8 +1393,8 @@ function buildPack(library) {
       currentEngineCompatible: true,
       responseTypes: ['single-choice'],
       stimulusGroupsIncluded: false,
-      constructedResponseIncluded: false,
-      frqWorkshopsIncluded: false,
+      constructedResponseIncluded: true,
+      frqWorkshopsIncluded: true,
       handsFreeContentCompatible: true,
       limitations: [
         'This foundation pilot is not a complete AP Biology exam simulation and does not reproduce the official digital exam experience.',
@@ -1309,6 +1403,9 @@ function buildPack(library) {
       ],
     },
     blueprint: {
+      officialFrameworkTopicCount: AP_FRAMEWORK_TOPIC_IDS['ap-biology-foundation-pilot'].length,
+      officialFrameworkTopicIds: AP_FRAMEWORK_TOPIC_IDS['ap-biology-foundation-pilot'].slice(),
+      officialFrameworkTopicSource: frameworkSourceFor('ap-biology-foundation-pilot'),
       academicYearReference: '2025-26',
       cedEffectiveLabel: 'Fall 2025',
       cedFrameworkVersion: 'V.1',

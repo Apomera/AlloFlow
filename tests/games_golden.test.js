@@ -94,7 +94,7 @@ const GAMES = [
   { name: 'CrosswordGame', ssr: true, assert: ['clues'],
     props: { data: [{ term: 'photon', def: 'A quantum of light' }, { term: 'energy', def: 'Capacity to do work' }, { term: 'atom', def: 'Smallest unit of an element' }], onClose: () => {}, playSound: () => {}, onScoreUpdate: () => {}, onGameComplete: () => {} } },
 
-  { name: 'SyntaxScramble', ssr: false, assert: [],
+  { name: 'SyntaxScramble', ssr: true, assert: ['syntax-game-title'],
     props: { text: 'The cat sat on the warm mat. Dogs love to run fast outside.', onClose: () => {}, playSound: () => {}, onScoreUpdate: () => {}, onGameComplete: () => {} } },
 
   { name: 'WordScrambleGame', ssr: true, assert: ['games.scramble.title', 'games.scramble.loading'],

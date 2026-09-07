@@ -29,7 +29,10 @@ const {
 } = require(runnerServerPath);
 const baseSourceFiles = [
   'desktop/mcp/remediation_headless_driver.cjs',
+  'desktop/mcp/remediation_verification.cjs',
+  'desktop/mcp/remediation_narration_plan.cjs',
   'desktop/mcp/zip_writer.cjs',
+  'accessibility_evidence_module.js',
   'verification_policy_module.js',
   'doc_builder_renderer_module.js',
   'view_pdf_validator_module.js',

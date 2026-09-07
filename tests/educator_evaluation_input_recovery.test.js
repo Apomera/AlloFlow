@@ -259,7 +259,7 @@ it('shows a recoverable schedule error and proceeds after the evaluator corrects
   const teacher = { id: 't1', name: 'Educator', code: 'T1', active: true };
   const observation = { id: 'o1', teacherId: 't1', prework: {}, preworkSubmittedAt: '2026-09-01T10:00:00.000Z', preConferenceAt: '2026-09-02T10:00:00.000Z', observedLocal: 'corrupted date', componentTags: [], ratings: {}, rationales: {} };
   const workspace = { teachers: [teacher], observations: [observation], comments: [], config: { sampleMode: false } };
-  const updateObservation = vi.fn((id, changes) => { Object.assign(observation, changes); render(); });
+  const updateObservation = vi.fn((id, changes) => { Object.assign(observation, changes); render(); return true; });
   const render = () => root.render(React.createElement(api.AeFormalObservations, { workspace, selectedTeacher: teacher, role: 'evaluator', updateObservation, setSelectedTeacherId: vi.fn(), createObservation: vi.fn(), addComment: vi.fn() }));
   act(render);
   const start = () => act(() => Array.from(container.querySelectorAll('button')).find(button => button.textContent.trim() === 'Start observation').click());

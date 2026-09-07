@@ -45,12 +45,35 @@ VOICE_MAP = {
 
 PORT = 5500
 
-def generate_speech_sync(text, voice, speed):
+LANGUAGE_ALIASES = {
+    "english": "en", "spanish": "es", "french": "fr", "german": "de",
+    "portuguese": "pt", "italian": "it", "chinese": "zh", "japanese": "ja",
+    "korean": "ko", "arabic": "ar", "hindi": "hi", "russian": "ru",
+    "turkish": "tr", "vietnamese": "vi", "thai": "th", "polish": "pl",
+    "dutch": "nl", "swedish": "sv", "ukrainian": "uk", "indonesian": "id", "malay": "ms",
+}
+
+def resolve_edge_voice(voice, language=None):
+    """Preserve explicit Edge choices, otherwise use the content language."""
+    requested = str(voice or "alloy").strip().lower()
+    native_voices = {value.lower(): value for value in VOICE_MAP.values()}
+    if requested in native_voices:
+        return native_voices[requested]
+    if requested in VOICE_MAP and len(requested) == 2:
+        return VOICE_MAP[requested]
+    hint = str(language or "").strip().lower().replace("_", "-")
+    code = LANGUAGE_ALIASES.get(hint, hint.split("-")[0])
+    if code != "en" and code in VOICE_MAP:
+        return VOICE_MAP[code]
+    return VOICE_MAP.get(requested, VOICE_MAP["alloy"])
+
+
+def generate_speech_sync(text, voice, speed, language=None):
     """Generate speech using edge-tts (runs async internally)."""
     import edge_tts
     
     async def _generate():
-        edge_voice = VOICE_MAP.get(voice, VOICE_MAP.get("alloy"))
+        edge_voice = resolve_edge_voice(voice, language)
         rate = f"+{int((speed - 1) * 100)}%" if speed > 1 else f"{int((speed - 1) * 100)}%" if speed < 1 else "+0%"
         
         communicate = edge_tts.Communicate(text, edge_voice, rate=rate)
@@ -89,7 +112,7 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
                 self.wfile.write(b'{"error": "No input text"}')
                 return
             
-            audio_data = generate_speech_sync(text, voice, speed)
+            audio_data = generate_speech_sync(text, voice, speed, body.get("language"))
             
             if not audio_data:
                 self.send_response(500)

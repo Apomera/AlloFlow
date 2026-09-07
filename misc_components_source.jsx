@@ -730,6 +730,12 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     </div>
                 )}
                 <div className="flex-1 overflow-y-auto p-3 sm:p-6 space-y-3 sm:space-y-4 custom-scrollbar">
+                    {(() => {
+                        const words = [...new Set((preloadedWords || []).flatMap(w => w?._instructionalCoverage?.untaughtWords || []))];
+                        if (!words.length) return null;
+                        const label = t('word_sounds.coverage_review', { words: words.join(', ') }) || 'Check taught spellings: {words}';
+                        return <p role="note" className="rounded-lg bg-amber-50 border border-amber-300 p-3 text-sm text-amber-900">{label.replace(/\{\{?words\}?\}/g, words.join(', '))}</p>;
+                    })()}
                     {/* Pack completeness: what the student device will actually
                         have, per activity — portable audio, board answers,
                         decoding pictures. Rendered only when something is

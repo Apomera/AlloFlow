@@ -8534,6 +8534,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
   // ═══════════════════════════════════════════════════════════════
   // SECTION 3: TOOL REGISTRATION + RENDER
   // ═══════════════════════════════════════════════════════════════
+  var __alloALCtx = null;
+  // Module-scope translator: the render-scoped __alloT closes over ctx and is
+  // not in scope in the helpers below, so those calls would throw.
+  var __alloALT = function (k, fb) {
+    var v;
+    try { v = (__alloALCtx && typeof __alloALCtx.t === "function") ? __alloALCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
+
 
   window.StemLab.registerTool('assessmentLiteracy', {
     icon: '\uD83D\uDCCB',
@@ -8542,6 +8551,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
     color: 'indigo',
     category: 'Literacy',
     render: function(ctx) {
+      __alloALCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       // The intro block paints no ground, so it sits on the HOST surface -
       // white in light and dark, pure BLACK in the contrast theme, where the
@@ -9888,7 +9898,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (answered < total) { addToast({ message: 'Please answer all ' + total + ' items (' + answered + '/' + total + ' done).', type: 'warning' }); return; }
         var profile = scoreBig5(answers);
         upd({ big5Result: profile, sub: 'result' });
-        announceSR('Big Five profile calculated');
+        announceSR(__alloALT('stem.assessmentliteracy.sr_big_five_profile_calculated', 'Big Five profile calculated'));
       };
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
         backBtn('personality', null, 'Personality menu'),
@@ -10246,7 +10256,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (pAnswered < pTotal) { addToast({ message: 'Please complete all ' + pTotal + ' peer ratings (' + pAnswered + '/' + pTotal + ').', type: 'warning' }); return; }
         var profile = scoreBig5(pAns);
         upd({ peerResult: profile, sub: 'peerResult' });
-        announceSR('Peer profile calculated. Comparison ready.');
+        announceSR(__alloALT('stem.assessmentliteracy.sr_peer_profile_calculated_comparison_ready', 'Peer profile calculated. Comparison ready.'));
       };
 
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
@@ -10834,7 +10844,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         if (sAnswered < sTotal) { addToast({ message: 'Please rate all ' + sTotal + ' items.', type: 'warning' }); return; }
         var r = scoreSchwartz(sAns);
         upd({ schwartzResult: r, sub: 'valuesResult' });
-        announceSR('Values profile calculated');
+        announceSR(__alloT('stem.assessmentliteracy.sr_values_profile_calculated', 'Values profile calculated'));
       };
       return h('div', { className: 'max-w-3xl mx-auto p-4 md:p-6 space-y-3' },
         backBtn('career', null, 'Career menu'),
@@ -11116,7 +11126,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
 
         // RESULTS GRID
         filtered.length === 0 ? h('div', { className: 'p-6 rounded bg-slate-800/40 text-center text-sm text-slate-100', role: 'status' }, 'No careers match these filters. Loosen one to see more.') :
-        h('ul', { className: 'space-y-2', 'aria-label': 'Career results' },
+        h('ul', { className: 'space-y-2', 'aria-label': __alloT('stem.assessmentliteracy.a11y_career_results', 'Career results') },
           filtered.map(function(c) {
             var cl = CAREER_CLUSTERS[c.cluster] || { name: c.cluster, icon: '?', color: '#666' };
             var ed = EDUCATION_TIERS[c.education] || { label: c.education };
@@ -11462,7 +11472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             value: rootId,
             onChange: function(e) { upd({ networkRootId: e.target.value }); },
             className: 'p-1 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 max-w-full',
-            'aria-label': 'Network root career'
+            'aria-label': __alloT('stem.assessmentliteracy.a11y_network_root_career', 'Network root career')
           },
             Object.keys(CAREER_CLUSTERS).map(function(ckey) {
               var ccl = CAREER_CLUSTERS[ckey];
@@ -11817,7 +11827,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
             value: destId || '',
             onChange: function(e) { upd({ pathToId: e.target.value || null }); },
             className: 'p-2 rounded bg-slate-900/60 border border-slate-600 text-xs text-slate-100 w-full md:w-auto',
-            'aria-label': 'Destination career'
+            'aria-label': __alloT('stem.assessmentliteracy.a11y_destination_career', 'Destination career')
           },
             h('option', { value: '' }, '\u2014 Choose a career \u2014'),
             Object.keys(CAREER_CLUSTERS).map(function(ckey) {
@@ -12181,7 +12191,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ coachLoading: false, coachResponse: text });
-            announceSR('Coaching response ready');
+            announceSR(__alloT('stem.assessmentliteracy.sr_coaching_response_ready', 'Coaching response ready'));
           })
           .catch(function(e) {
             upd({ coachLoading: false, coachResponse: 'Error from AI: ' + (e && e.message ? e.message : 'unknown') });
@@ -16693,7 +16703,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
                 }
                 // Crossover point
                 var crossYr = roi.paybackYears != null ? roi.paybackYears + roi.yearsToCredential : null;
-                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + (H + 30), role: 'img', 'aria-label': 'Cumulative cost vs gain over 20 years' },
+                return h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + (H + 30), role: 'img', 'aria-label': __alloT('stem.assessmentliteracy.a11y_cumulative_cost_vs_gain_over_20_years', 'Cumulative cost vs gain over 20 years') },
                   // Cost line
                   h('path', { d: costPath, fill: 'none', stroke: '#ef4444', strokeWidth: 2 }),
                   // Gain line
@@ -17187,7 +17197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ practiceLoading: false, practiceItems: [text] });
-            announceSR('Practice items generated');
+            announceSR(__alloALT('stem.assessmentliteracy.sr_practice_items_generated', 'Practice items generated'));
           })
           .catch(function(e) {
             upd({ practiceLoading: false, practiceFeedback: 'Error: ' + (e && e.message ? e.message : 'unknown') });
@@ -17367,7 +17377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ interviewLoading: false, interviewQuestion: text });
-            announceSR('Interview question generated');
+            announceSR(__alloALT('stem.assessmentliteracy.sr_interview_question_generated', 'Interview question generated'));
           })
           .catch(function(e) {
             upd({ interviewLoading: false, interviewQuestion: 'Error: ' + (e && e.message ? e.message : 'unknown') });
@@ -17381,7 +17391,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ interviewCritiqueLoading: false, interviewCritique: text });
-            announceSR('Critique generated');
+            announceSR(__alloALT('stem.assessmentliteracy.sr_critique_generated', 'Critique generated'));
           })
           .catch(function(e) {
             upd({ interviewCritiqueLoading: false, interviewCritique: 'Error: ' + (e && e.message ? e.message : 'unknown') });
@@ -17614,7 +17624,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               type: 'range', min: 40, max: 160, step: 1, value: score,
               onChange: function(e) { upd({ semScore: parseInt(e.target.value, 10) }); },
               className: 'w-full',
-              'aria-label': 'Standard score',
+              'aria-label': __alloALT('stem.assessmentliteracy.a11y_standard_score', 'Standard score'),
               'aria-valuetext': score + ', ' + bandLabel(score)
             }),
             h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
@@ -17627,7 +17637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               type: 'range', min: 0.60, max: 0.99, step: 0.01, value: rel,
               onChange: function(e) { upd({ semReliability: parseFloat(e.target.value) }); },
               className: 'w-full',
-              'aria-label': 'Reliability coefficient',
+              'aria-label': __alloALT('stem.assessmentliteracy.a11y_reliability_coefficient', 'Reliability coefficient'),
               'aria-valuetext': 'reliability ' + rel.toFixed(2)
             }),
             h('div', { className: 'flex justify-between text-xs text-slate-300 mt-1' },
@@ -17758,7 +17768,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
               h('div', { className: 'text-xs font-bold text-sky-300 mb-1' }, 'Reliability vs SEM — drag the reliability slider to see your point move along this curve'),
               h('svg', {
                 width: '100%', height: H, viewBox: '0 0 ' + W + ' ' + H,
-                role: 'img', 'aria-label': 'Curve showing how the standard error of measurement grows as reliability drops below 1.0.',
+                role: 'img', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_curve_showing_how_the_standard_error_of_measure', 'Curve showing how the standard error of measurement grows as reliability drops below 1.0.'),
                 style: { background: 'var(--allo-stem-canvas, #0f172a)', borderRadius: 8 }
               },
                 // Axes
@@ -17908,7 +17918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
         ),
         // 14-button category grid
-        h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2', role: 'radiogroup', 'aria-label': 'Pick the IDEA eligibility category' },
+        h('div', { className: 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2', role: 'radiogroup', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_pick_the_idea_eligibility_category', 'Pick the IDEA eligibility category') },
           ELG_OPTIONS.map(function(opt) {
             var picked = elgAnswered && elgPick === opt.code;
             var isRight = elgAnswered && opt.code === v.correct;
@@ -18553,7 +18563,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ handoutLoading: false, handoutOutput: text });
-            announceSR('Parent handout generated');
+            announceSR(__alloALT('stem.assessmentliteracy.sr_parent_handout_generated', 'Parent handout generated'));
           })
           .catch(function(e) {
             upd({ handoutLoading: false, handoutOutput: 'Error: ' + (e && e.message ? e.message : 'unknown') });
@@ -18648,7 +18658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           }, hLoading ? 'Generating…' : '\u2728 Generate parent handout')
         ),
 
-        hOut && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'Draft parent handout' },
+        hOut && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-emerald-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_draft_parent_handout', 'Draft parent handout') },
           h('h3', { className: 'text-sm font-black text-emerald-300 mb-2' }, 'Draft handout'),
           h('pre', { className: 'text-sm text-slate-100 whitespace-pre-wrap font-sans leading-relaxed p-3 rounded bg-slate-800/60 border border-slate-600' }, hOut),
           h('div', { className: 'mt-3 space-y-2 no-print' },
@@ -19222,7 +19232,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           .then(function(resp) {
             var text = (typeof resp === 'string') ? resp : (resp && resp.text ? resp.text : String(resp));
             upd({ caseLoading: false, caseCritique: text });
-            announceSR('Case critique generated');
+            announceSR(__alloALT('stem.assessmentliteracy.sr_case_critique_generated', 'Case critique generated'));
           })
           .catch(function(e) {
             upd({ caseLoading: false, caseCritique: 'Error: ' + (e && e.message ? e.message : 'unknown') });
@@ -19279,7 +19289,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
           )
         ),
 
-        critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-sky-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': 'AI critique of evaluation plan' },
+        critique && h('section', { className: 'p-4 rounded-xl bg-slate-900/60 border border-sky-500/30', 'aria-live': 'polite', role: 'region', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_ai_critique_of_evaluation_plan', 'AI critique of evaluation plan') },
           h('h3', { className: 'text-sm font-black text-sky-300 mb-2' }, 'AI Critique'),
           h('pre', { className: 'text-xs text-slate-200 whitespace-pre-wrap font-sans leading-relaxed' }, critique),
           h('div', { className: 'mt-3 p-3 rounded bg-slate-800/60 border border-emerald-500/30' },
@@ -19910,7 +19920,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('assessmentLite
         h('p', { className: 'text-sm text-slate-100 leading-relaxed' }, v.scenario)
       ),
       // 3 verdict picker buttons
-      h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2', role: 'radiogroup', 'aria-label': 'Pick the verdict' },
+      h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-2', role: 'radiogroup', 'aria-label': __alloALT('stem.assessmentliteracy.a11y_pick_the_verdict', 'Pick the verdict') },
         VERDICTS.map(function(vi) {
           var picked = rsAns && rsPick === vi.id;
           var isRight = rsAns && vi.id === v.correct;

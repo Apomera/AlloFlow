@@ -74,7 +74,7 @@ describe('reconcileOcrPages pairs by absolute pageNum', () => {
 
 describe('anti-drift: absolute Vision pageNum + range-narrowed Tesseract at the call site', () => {
   it('Vision numbers pages absolutely and Tesseract is sliced to the range', () => {
-    expect(src).toContain('pagesOut.push({ pageNum: _rangeStart + startPage + q,');
+    expect(src).toContain('_resolveVisionOcrChunk(chunks[ci], startPage, pageCount,');
     expect(src).toContain('_tessPagesForRec = _tessPagesForRec.filter(p => p && typeof p.pageNum === \'number\' && p.pageNum >= _rs && p.pageNum <= _re)');
     expect(src).toContain('const rec = reconcileOcrPages(_tessPagesForRec, visionResult.pages || []);');
   });

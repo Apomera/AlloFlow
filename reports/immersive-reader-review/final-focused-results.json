@@ -1,0 +1,32 @@
+{
+  "passed": 66,
+  "failed": 0,
+  "total": 66,
+  "files": [
+    {
+      "file": "immersive_reader_dialog_a11y.test.js",
+      "passed": 4,
+      "failed": 0
+    },
+    {
+      "file": "immersive_reader_render.test.js",
+      "passed": 2,
+      "failed": 0
+    },
+    {
+      "file": "immersive_reader_review_runtime.test.js",
+      "passed": 23,
+      "failed": 0
+    },
+    {
+      "file": "immersive_reader_word_timing_source.test.js",
+      "passed": 6,
+      "failed": 0
+    },
+    {
+      "file": "karaoke_audio_store_resilience.test.js",
+      "passed": 31,
+      "failed": 0
+    }
+  ]
+}

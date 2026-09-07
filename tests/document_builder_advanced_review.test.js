@@ -34,7 +34,7 @@ describe('Document Builder Advanced Review integration', () => {
   it('routes ordinary Builder entry to the author workspace without changing its history source', () => {
     const ordinaryOpen = sourceBlock(
       host,
-      "const openExportPreview = (mode = 'print') => {",
+      "const openExportPreview = (",
       '// \u2500\u2500 Builder crop-chrome sweeper',
     );
 

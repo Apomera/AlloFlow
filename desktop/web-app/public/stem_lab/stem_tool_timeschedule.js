@@ -757,6 +757,46 @@
             ((feedback.schedule && feedback.schedule !== scheduleKey) || feedback.index !== sqIndex)) feedback = null;
         var solvedKey = scheduleKey + ':' + sq.id;
         var alreadySolved = !!normalizeScheduleSolvedMap(d.scheduleSolvedKeys)[solvedKey];
+        var focus = sq.id === 'event-duration' ? { start:timeline[1].start, end:timeline[1].end, rows:[1] }
+          : sq.id === 'between-events-gap' ? { start:timeline[1].end, end:timeline[2].start, rows:[1,2] }
+          : sq.id === 'event-start-24h' ? { start:timeline[3].start, end:timeline[3].start, rows:[3] }
+          : { start:timeline[0].start, end:timeline[timeline.length-1].end, rows:timeline.map(function(_,i){return i;}) };
+        var worked = d.scheduleWorkedKey === solvedKey || !!(feedback && feedback.ok);
+        var questionTime = function(value) { return scheduleTimeLabel(value, sq.type === 'time' && !worked ? false : use24); };
+        var requested = function(value, hidden) { return !worked && hidden ? t('stem.timeschedule.find_this_value','Work out this value') : value; };
+        function intervalModel() {
+          var elapsed = focus.end-focus.start, running=focus.start;
+          var parts = makeJumps(focus.start, elapsed, 1).map(function(jump){var from=running;running+=jump.amount;return{from:from,to:running,amount:jump.amount};});
+          var xAt=function(value){return 32+(elapsed ? (value-focus.start)/elapsed : 0)*296;};
+          return h('div', {'data-schedule-model':sq.id,className:'rounded-xl border border-slate-300 bg-white p-3 space-y-2'},
+            h('p',{className:'text-xs font-bold'},sq.type==='time'
+              ? t('stem.timeschedule.focus_start_time','Focus on the highlighted event’s starting time.')
+              : sq.id==='between-events-gap' ? t('stem.timeschedule.focus_gap','Measure the free interval from the end of one event to the start of the next.')
+              : t('stem.timeschedule.focus_interval','Use these two times to work out the interval.')),
+            sq.type==='time' ? h('p',{'data-focus-time':true,className:'text-xl font-black'},questionTime(focus.start))
+              : h('svg',{viewBox:'0 0 360 82',role:'img','aria-label':t('stem.timeschedule.interval_between','Interval from ')+questionTime(focus.start)+' → '+questionTime(focus.end),style:{display:'block',width:'100%',background:'#fff'}},
+                h('line',{x1:32,x2:328,y1:64,y2:64,stroke:'#334155',strokeWidth:3}),
+                [focus.start,focus.end].map(function(value,i){return h('g',{key:i},
+                  h('line',{x1:xAt(value),x2:xAt(value),y1:54,y2:74,stroke:'#334155',strokeWidth:3}));}),
+                worked ? parts.map(function(part,i){var x1=xAt(part.from),x2=xAt(part.to);return h('g',{key:i,'data-schedule-jump':part.amount,'data-jump-start':part.from,'data-jump-end':part.to},
+                  h('path',{d:'M '+x1+' 61 Q '+((x1+x2)/2)+' 12 '+x2+' 61',fill:'none',stroke:'#1d4ed8',strokeWidth:2}),
+                  h('text',{x:(x1+x2)/2,y:28,textAnchor:'middle',fill:'#1e40af',fontSize:12,fontWeight:'bold'},'+'+part.amount));})
+                  : h('text',{x:180,y:38,textAnchor:'middle',fill:'#334155',fontSize:18,fontWeight:'bold'},'?')),
+            sq.type!=='time'&&h('div',{'data-schedule-endpoints':true,className:'grid grid-cols-2 gap-3 text-sm'},
+              h('p',null,h('span',{className:'block text-xs'},t('stem.timeschedule.interval_from','From')),h('strong',null,questionTime(focus.start))),
+              h('p',{className:'text-right'},h('span',{className:'block text-xs'},t('stem.timeschedule.interval_to','To')),h('strong',null,questionTime(focus.end)))),
+            !worked && h('p',{className:'text-xs'},sq.type==='time'
+              ? t('stem.timeschedule.convert_start_prompt','Keep the minutes. Decide how the hour is written in 24-hour time.')
+              : t('stem.timeschedule.interval_predict','Plan your jumps before showing the worked interval.')),
+            worked && h('div',{'data-schedule-worked':true,role:'status','aria-live':'polite',className:'space-y-2'},
+              sq.type==='time' ? h('p',{className:'text-sm font-bold'},time12(focus.start)+' = '+time24(focus.start))
+                : h('div',null,
+                  h('ol',{className:'text-xs space-y-1'},parts.map(function(part,i){return h('li',{key:i},questionTime(part.from)+' → '+questionTime(part.to)+' : +'+part.amount+' '+t('stem.timeschedule.interval_min','min'));})),
+                  h('p',{'data-schedule-sum':elapsed,className:'text-sm font-bold mt-2'},parts.map(function(part){return part.amount;}).join(' + ')+' = '+elapsed+' '+t('stem.timeschedule.interval_minutes','minutes')))),
+            !(feedback&&feedback.ok)&&h('button',{type:'button','aria-expanded':worked,onClick:function(){upd({scheduleWorkedKey:worked?null:solvedKey});},className:'rounded-lg border border-slate-500 px-3 py-2 text-xs font-bold',style:{minHeight:44}},
+              worked?t('stem.timeschedule.hide_worked_interval','Hide worked interval'):t('stem.timeschedule.show_worked_interval','Show worked interval')));
+        }
+
         function check() {
           var result = checkAnswer(d.scheduleAnswer || '', sq.type, sq.answer, sq.answerFormat);
           if (!result.valid) {
@@ -789,7 +829,8 @@
           'aria-labelledby': 'ts-schedule-heading' },
           heading('ts-schedule-heading', t('stem.timeschedule.schedule_planner', "Schedule Planner"),
             t('stem.timeschedule.compare_event_lengths_free_time_gaps_a', "Compare event lengths, free-time gaps, and the span of an entire plan.")),
-          h('div', { className: "grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4" },
+          h('style',null,'.ts-schedule-workspace>aside{order:-1}.ts-schedule-scroll-note{display:block}@media(min-width:768px){.ts-schedule-scroll-note{display:none}}@media(min-width:1024px){.ts-schedule-workspace>aside{order:0}}'),
+          h('div', { className: "ts-schedule-workspace grid grid-cols-1 lg:grid-cols-[1.2fr_.8fr] gap-4" },
             h('div', { className: 'rounded-2xl border border-violet-200 bg-white overflow-hidden' },
               h('div', { className: 'bg-violet-700 text-white p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3' },
                 h('div', null, h('h4', { className: 'font-black' }, schedule.icon + ' ' + schedule.label),
@@ -799,7 +840,7 @@
                     (timeline[timeline.length - 1].end >= DAY ? t('stem.timeschedule.crosses_midnight', " (crosses midnight)") : ''))),
                 h('select', { value: scheduleKey, 'aria-label': t('stem.timeschedule.choose_a_schedule', "Choose a schedule"),
                   onChange: function (e) { upd({ scheduleKey: e.target.value,
-                    scheduleQuestionIndex: 0, scheduleAnswer: '', scheduleFeedback: null }); },
+                    scheduleQuestionIndex: 0, scheduleAnswer: '', scheduleFeedback: null, scheduleWorkedKey:null }); },
                   className: 'rounded-lg bg-white px-3 py-2 text-xs font-bold text-violet-950' },
                   Object.keys(SCHEDULES).map(function (key) {
                     return h('option', { key: key, value: key }, SCHEDULES[key].label);
@@ -809,6 +850,7 @@
                 role: 'region', tabIndex: 0,
                 'aria-label': schedule.label + t('stem.timeschedule.scrollable_event_schedule', " scrollable event schedule")
               },
+                h('p',{className:'ts-schedule-scroll-note text-xs p-3'},t('stem.timeschedule.scroll_schedule_columns','Scroll sideways to see event lengths and gaps.')),
                 h('table', { className: 'w-full text-sm border-collapse' },
                   h('caption', { className: 'sr-only' }, schedule.label + t('stem.timeschedule.event_schedule', " event schedule")),
                   h('thead', { className: 'bg-violet-50 text-violet-900' },
@@ -819,20 +861,21 @@
                   h('tbody', null, events.map(function (e, i) {
                     var item = timeline[i];
                     var gap = i < events.length - 1 ? timeline[i + 1].start - item.end : null;
-                    return h('tr', { key: e[0], className: 'border-t border-violet-100' },
+                    return h('tr', { key: e[0], 'data-schedule-focus':focus.rows.indexOf(i)>=0?'true':'false',className: 'border-t border-violet-100',style:focus.rows.indexOf(i)>=0?{borderLeft:'4px solid #7c3aed'}:{} },
                       h('th', { scope: 'row', className: 'text-left px-3 py-3 font-bold whitespace-nowrap' },
                         h('span', { className: 'inline-block w-3 h-3 rounded-full mr-2',
-                          style: { backgroundColor: e[3] }, 'aria-hidden': 'true' }), e[0]),
-                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, scheduleTimeLabel(item.start, use24)),
+                          style: { backgroundColor: e[3] }, 'aria-hidden': 'true' }), e[0],
+                        focus.rows.indexOf(i)>=0&&h('span',{className:'block text-xs font-normal'},t('stem.timeschedule.relevant_event','For this question'))),
+                      h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, sq.id==='event-start-24h'&&i===3&&!worked?questionTime(item.start):scheduleTimeLabel(item.start, use24)),
                       h('td', { className: 'px-3 py-3 font-mono whitespace-nowrap' }, scheduleTimeLabel(item.end, use24)),
-                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, durationText(item.duration)),
-                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, gap == null ? '—' : durationText(gap)));
+                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, requested(durationText(item.duration),sq.id==='event-duration'&&i===1)),
+                      h('td', { className: 'px-3 py-3 whitespace-nowrap' }, gap == null ? '—' : requested(durationText(gap),sq.id==='between-events-gap'&&i===1)));
                   })))),
               h('div', { className: 'grid grid-cols-3 gap-2 bg-slate-50 border-t p-3 text-center' },
                 [[span, t('stem.timeschedule.total_span', "Total span"), 'text-violet-700'], [busy, t('stem.timeschedule.scheduled', "Scheduled"), 'text-emerald-700'],
                   [span - busy, t('stem.timeschedule.free_time', "Free time"), 'text-amber-700']].map(function (x) {
                   return h('div', { key: x[1] },
-                    h('p', { className: 'text-base font-black ' + x[2] }, durationText(x[0])),
+                    h('p', { className: 'text-base font-black ' + x[2] }, requested(durationText(x[0]),sq.id==='full-schedule-span'&&x[0]===span)),
                     h('p', { className: 'text-[0.625rem] uppercase text-slate-500 font-bold' }, x[1]));
                 }))),
             h('aside', { className: 'rounded-2xl border border-amber-200 bg-gradient-to-b from-amber-50 to-white p-4 space-y-4' },
@@ -840,6 +883,7 @@
                 h('p', { className: 'text-[0.625rem] uppercase tracking-widest font-black text-amber-700' },
                   t('stem.timeschedule.schedule_reasoning_2', "Schedule reasoning ") + (sqIndex + 1) + '/' + sqs.length),
                 h('h4', { id: 'ts-schedule-prompt', className: 'text-base font-black text-slate-900 mt-1' }, sq.prompt)),
+              intervalModel(),
               h('label', { htmlFor: 'ts-schedule-answer', className: 'block text-xs font-bold text-slate-700' },
                 sq.type === 'time' ? (sq.answerFormat === '24' ? t('stem.timeschedule.your_time_24_hour', "Your time (24-hour)") :
                   sq.answerFormat === '12' ? t('stem.timeschedule.your_time_12_hour', "Your time (12-hour)") : t('stem.timeschedule.your_time', "Your time")) : t('stem.timeschedule.your_elapsed_time', "Your elapsed time"),
@@ -858,7 +902,7 @@
                   t('stem.timeschedule.check_answer', "Check answer")),
                 h('button', { type: 'button', onClick: function () {
                   upd({ scheduleQuestionIndex: (sqIndex + 1) % sqs.length,
-                    scheduleAnswer: '', scheduleFeedback: null });
+                    scheduleAnswer: '', scheduleFeedback: null, scheduleWorkedKey:null });
                 }, className: "rounded-lg border border-amber-300 bg-white px-4 py-2.5 text-sm font-black text-amber-800" },
                   t('stem.timeschedule.next', "Next"))),
               feedback && h('div', { id: 'ts-schedule-feedback', role: 'status', 'aria-live': 'polite', className: 'rounded-xl border p-3 text-sm font-bold ' +

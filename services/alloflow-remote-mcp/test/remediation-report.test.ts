@@ -124,14 +124,19 @@ describe("sanitizeRemediationReport", () => {
         afterScore: 96,
         estimatedMinimumScore: null,
         integrityCoverage: 100,
+        candidateRejectionCount: 0,
+        candidateRejections: [],
         aiVerificationIncomplete: false,
         autoContinueRoundsRun: 0,
         activeContentScanVerified: true,
         activeContentDetected: false,
-        distributionLevel: "ready",
-        verificationState: "complete",
+        distributionLevel: "review",
+        verificationState: "review-required",
+        htmlVerificationState: "complete",
+        reviewRequired: true,
+        deliveryStatus: "review-required",
         verificationHtmlBound: true,
-        taggedPdfDelivery: "verified",
+        taggedPdfDelivery: "review-required",
         taggedPdfExportMode: "original_layout",
         remainingAxeViolations: 0,
         remainingEqualAccessFailures: 0,
@@ -207,8 +212,10 @@ describe("sanitizeRemediationReport", () => {
         validator: "veraPDF",
         profile: "ua1",
         validatorVersion: "1.30.2",
-        failedRules: 2,
-        failedChecks: 3,
+        inputSha256: RESULT_SHA256, inputBytes: RESULT_SIZE,
+        validatedAt: "2026-09-07T00:00:00.000Z", validationDurationMs: 100,
+        failedRules: status === "compliant" ? 0 : 2,
+        failedChecks: status === "compliant" ? 0 : 3,
         passedRules: 104,
         passedChecks: 4459,
         rawValidatorOutput: PRIVACY_CANARY,
@@ -221,8 +228,10 @@ describe("sanitizeRemediationReport", () => {
         validator: "veraPDF",
         profile: "ua1",
         validatorVersion: "1.30.2",
-        failedRules: 2,
-        failedChecks: 3,
+        inputSha256: RESULT_SHA256, inputBytes: RESULT_SIZE,
+        validatedAt: "2026-09-07T00:00:00.000Z", validationDurationMs: 100,
+        failedRules: status === "compliant" ? 0 : 2,
+        failedChecks: status === "compliant" ? 0 : 3,
         passedRules: 104,
         passedChecks: 4459,
       });
@@ -346,7 +355,7 @@ describe("sanitizeRemediationReport", () => {
   it.each([
     ["activeContentScanVerified", false],
     ["activeContentDetected", true],
-    ["distributionLevel", "review"],
+    ["distributionLevel", "invented"],
     ["verificationState", "invented"],
     ["verificationHtmlBound", false],
     ["taggedPdfDelivery", "assumed"],
@@ -390,10 +399,11 @@ describe("sanitizeRemediationReport", () => {
     };
     const result = sanitizeRemediationReport(bounded, expected);
     expect(result.summary).toMatchObject({
-      distributionLevel: "caution",
-      verificationState: "complete-for-tested-scope",
+      distributionLevel: "review",
+      verificationState: "review-required",
+      htmlVerificationState: "complete-for-tested-scope",
       verificationHtmlBound: true,
-      taggedPdfDelivery: "verified",
+      taggedPdfDelivery: "review-required",
       taggedPdfExportMode: "original_layout",
       remainingAxeViolations: null,
       remainingEqualAccessFailures: 1_000_000,
@@ -442,7 +452,8 @@ describe("sanitizeRemediationReport", () => {
 
   it("keeps tagged-PDF delivery proof distinct from independent PDF/UA validation", () => {
     const result = sanitizeRemediationReport(legacyReport(), expected);
-    expect(result.summary.taggedPdfDelivery).toBe("verified");
+    expect(result.summary.taggedPdfDelivery).toBe("review-required");
+    expect(result.summary.htmlVerificationState).toBe("complete");
     expect(result.pdfUaValidation).toEqual({
       status: "not_run",
       reason: "disabled_for_institution_pilot",

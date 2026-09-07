@@ -317,7 +317,9 @@ function TimelineView(props) {
       position: idx + 1
     }) || `Move timeline item ${idx + 1} up`,
     className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
-  }, "?"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "↑")), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: () => handleTimelineMove(idx, idx + 1),
     disabled: idx === (Array.isArray(generatedContent?.data) ? generatedContent.data : generatedContent?.data?.items || []).length - 1,
@@ -325,7 +327,9 @@ function TimelineView(props) {
       position: idx + 1
     }) || `Move timeline item ${idx + 1} down`,
     className: "w-7 h-7 inline-flex items-center justify-center rounded bg-white border border-slate-400 text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 disabled:cursor-not-allowed"
-  }, "?")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "↓"))), /*#__PURE__*/React.createElement("div", {
     className: "flex-grow grid grid-cols-1 gap-3"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -374,7 +378,7 @@ function TimelineView(props) {
     disabled: isGeneratingTimelineImage[idx],
     "aria-busy": !!isGeneratingTimelineImage[idx],
     "aria-label": t('timeline.visuals.regen_button_aria') || 'Regenerate image for this item',
-    className: "absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 transition-opacity text-white disabled:opacity-80",
+    className: "absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 focus:opacity-100 transition-opacity text-white disabled:opacity-80",
     title: t('common.regenerate') || 'Regenerate'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,

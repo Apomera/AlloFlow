@@ -76,7 +76,9 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     if (document.getElementById('alloflow-ui-font-library-css')) return;
     const fontLoads = Object.create(null);
     window.__alloEnsureUIFont = function (fontId) {
-        const option = FONT_OPTIONS.find(f => f.id === fontId);
+        // Italic variants share the complete Andika stylesheet, even on first use.
+        const loadId = fontId === 'andika-italic' || fontId === 'andika-bold-italic' ? 'andika' : fontId;
+        const option = FONT_OPTIONS.find(f => f.id === loadId);
         if (!option || !option.googleFont || option.id === 'inter') return Promise.resolve(true);
         if (fontLoads[option.id]) return fontLoads[option.id];
         fontLoads[option.id] = new Promise(resolve => {
@@ -93,42 +95,42 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     const style = document.createElement('style');
     style.id = 'alloflow-ui-font-library-css';
     style.textContent = `
-    .font-opendyslexic, .font-opendyslexic * { font-family: 'OpenDyslexic', cursive, sans-serif !important; }
-    .font-verdana, .font-verdana * { font-family: Verdana, Geneva, sans-serif !important; }
-    .font-tahoma, .font-tahoma * { font-family: Tahoma, Verdana, sans-serif !important; }
-    .font-trebuchet, .font-trebuchet * { font-family: 'Trebuchet MS', 'Segoe UI', sans-serif !important; }
-    .font-georgia, .font-georgia * { font-family: Georgia, 'Times New Roman', serif !important; }
-    .font-palatino, .font-palatino * { font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif !important; }
-    .font-courier, .font-courier * { font-family: 'Courier New', Courier, monospace !important; }
-    .font-lexend, .font-lexend * { font-family: 'Lexend', sans-serif !important; }
-    .font-atkinson, .font-atkinson * { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
-    .font-andika, .font-andika * { font-family: 'Andika', sans-serif !important; }
-    .font-andika-italic, .font-andika-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; }
-    .font-andika-bold-italic, .font-andika-bold-italic * { font-family: 'Andika', sans-serif !important; font-style: italic !important; font-weight: 700 !important; }
-    .font-noto-sans, .font-noto-sans * { font-family: 'Noto Sans', sans-serif !important; }
-    .font-noto-serif, .font-noto-serif * { font-family: 'Noto Serif', serif !important; }
-    .font-inter, .font-inter * { font-family: 'Inter', sans-serif !important; }
-    .font-roboto, .font-roboto * { font-family: 'Roboto', sans-serif !important; }
-    .font-opensans, .font-opensans * { font-family: 'Open Sans', sans-serif !important; }
-    .font-lato, .font-lato * { font-family: 'Lato', sans-serif !important; }
-    .font-nunito, .font-nunito * { font-family: 'Nunito', sans-serif !important; }
-    .font-nunito-sans, .font-nunito-sans * { font-family: 'Nunito Sans', sans-serif !important; }
-    .font-fira-sans, .font-fira-sans * { font-family: 'Fira Sans', sans-serif !important; }
-    .font-ubuntu, .font-ubuntu * { font-family: 'Ubuntu', sans-serif !important; }
-    .font-sourcesans, .font-sourcesans * { font-family: 'Source Sans 3', sans-serif !important; }
-    .font-poppins, .font-poppins * { font-family: 'Poppins', sans-serif !important; }
-    .font-montserrat, .font-montserrat * { font-family: 'Montserrat', sans-serif !important; }
-    .font-raleway, .font-raleway * { font-family: 'Raleway', sans-serif !important; }
-    .font-quicksand, .font-quicksand * { font-family: 'Quicksand', sans-serif !important; }
-    .font-comic, .font-comic * { font-family: 'Comic Neue', cursive, sans-serif !important; }
-    .font-merriweather, .font-merriweather * { font-family: 'Merriweather', serif !important; }
-    .font-gentium, .font-gentium * { font-family: 'Gentium Book Plus', serif !important; }
-    .font-lora, .font-lora * { font-family: 'Lora', serif !important; }
-    .font-playfair, .font-playfair * { font-family: 'Playfair Display', serif !important; }
-    .font-source-serif, .font-source-serif * { font-family: 'Source Serif 4', serif !important; }
-    .font-roboto-slab, .font-roboto-slab * { font-family: 'Roboto Slab', serif !important; }
-    .font-ibm-plex-mono, .font-ibm-plex-mono * { font-family: 'IBM Plex Mono', monospace !important; }
-    .font-jetbrains-mono, .font-jetbrains-mono * { font-family: 'JetBrains Mono', monospace !important; }
+    .font-opendyslexic, .font-opendyslexic *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'OpenDyslexic', sans-serif !important; }
+    .font-verdana, .font-verdana *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: Verdana, Geneva, sans-serif !important; }
+    .font-tahoma, .font-tahoma *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: Tahoma, Verdana, sans-serif !important; }
+    .font-trebuchet, .font-trebuchet *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Trebuchet MS', 'Segoe UI', sans-serif !important; }
+    .font-georgia, .font-georgia *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: Georgia, 'Times New Roman', serif !important; }
+    .font-palatino, .font-palatino *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: Palatino, 'Palatino Linotype', 'Book Antiqua', Georgia, serif !important; }
+    .font-courier, .font-courier *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Courier New', Courier, monospace !important; }
+    .font-lexend, .font-lexend *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Lexend', sans-serif !important; }
+    .font-atkinson, .font-atkinson *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Atkinson Hyperlegible', sans-serif !important; }
+    .font-andika, .font-andika *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Andika', sans-serif !important; }
+    .font-andika-italic, .font-andika-italic *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Andika', sans-serif !important; font-style: italic !important; }
+    .font-andika-bold-italic, .font-andika-bold-italic *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Andika', sans-serif !important; font-style: italic !important; font-weight: 700 !important; }
+    .font-noto-sans, .font-noto-sans *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Noto Sans', sans-serif !important; }
+    .font-noto-serif, .font-noto-serif *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Noto Serif', serif !important; }
+    .font-inter, .font-inter *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Inter', sans-serif !important; }
+    .font-roboto, .font-roboto *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Roboto', sans-serif !important; }
+    .font-opensans, .font-opensans *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Open Sans', sans-serif !important; }
+    .font-lato, .font-lato *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Lato', sans-serif !important; }
+    .font-nunito, .font-nunito *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Nunito', sans-serif !important; }
+    .font-nunito-sans, .font-nunito-sans *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Nunito Sans', sans-serif !important; }
+    .font-fira-sans, .font-fira-sans *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Fira Sans', sans-serif !important; }
+    .font-ubuntu, .font-ubuntu *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Ubuntu', sans-serif !important; }
+    .font-sourcesans, .font-sourcesans *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Source Sans 3', sans-serif !important; }
+    .font-poppins, .font-poppins *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Poppins', sans-serif !important; }
+    .font-montserrat, .font-montserrat *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Montserrat', sans-serif !important; }
+    .font-raleway, .font-raleway *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Raleway', sans-serif !important; }
+    .font-quicksand, .font-quicksand *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Quicksand', sans-serif !important; }
+    .font-comic, .font-comic *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Comic Neue', cursive, sans-serif !important; }
+    .font-merriweather, .font-merriweather *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Merriweather', serif !important; }
+    .font-gentium, .font-gentium *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Gentium Book Plus', serif !important; }
+    .font-lora, .font-lora *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Lora', serif !important; }
+    .font-playfair, .font-playfair *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Playfair Display', serif !important; }
+    .font-source-serif, .font-source-serif *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Source Serif 4', serif !important; }
+    .font-roboto-slab, .font-roboto-slab *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'Roboto Slab', serif !important; }
+    .font-ibm-plex-mono, .font-ibm-plex-mono *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'IBM Plex Mono', monospace !important; }
+    .font-jetbrains-mono, .font-jetbrains-mono *:not(svg, svg *, math, math *, .katex, .katex *, .temml, .temml *, math-field, math-field *) { font-family: 'JetBrains Mono', monospace !important; }
     @media (max-width: 768px) {
       select, [role="listbox"], [role="menu"], [role="combobox"] {
         z-index: 50 !important;
@@ -427,12 +429,7 @@ if (typeof window !== 'undefined') { window.FONT_OPTIONS = FONT_OPTIONS; }
     // A persisted custom choice represents explicit user intent, so restore
     // that one family now. The default path never downloads the full catalog.
     try { window.__alloEnsureUIFont(localStorage.getItem('allo_selected_font') || 'default'); } catch (_) {}
-    const disabledEls = document.querySelectorAll('button[disabled], input[disabled], textarea[disabled]');
-    disabledEls.forEach(el => {
-        el.removeAttribute('disabled');
-        el.setAttribute('aria-disabled', 'true');
-        el.setAttribute('data-was-disabled', 'true');
-    });
+    // Font loading must never change whether an application control is enabled.
 })();
 
   // Register on AlloModules so callers + the host upgrade hook can find us.

@@ -24,6 +24,7 @@ function harness() {
   let nextTriggerId = 1;
   let triggerCreateFailures = 0;
   let triggerDeleteFailures = 0;
+  let privacyFailure = '';
   const properties = new Map();
   const books = new Map();
   const files = new Map();
@@ -72,9 +73,14 @@ function harness() {
     getId() { return this.id; }
     getBlob() { return new Blob(this.content, this.mimeType, this.name); }
     getName() { return this.name; }
+    getSize() { return this.content.length; }
     moveTo() { return this; }
-    setSharing() { return this; }
-    setShareableByEditors() { return this; }
+    setSharing(value) { if (privacyFailure === 'sharing') throw new Error('Injected sharing failure'); this.sharingAccess = value; return this; }
+    setShareableByEditors(value) { if (privacyFailure === 'editors') throw new Error('Injected editor sharing failure'); this.shareableByEditors = value; return this; }
+    getSharingAccess() { if (privacyFailure === 'verify') throw new Error('Injected sharing read failure'); return this.sharingAccess || 'PRIVATE'; }
+    isShareableByEditors() { return this.shareableByEditors === true; }
+    getEditors() { return this.editors || []; }
+    getViewers() { return this.viewers || []; }
   }
   class Folder extends File {
     createFolder(name) { const folder = new Folder(uuid('folder'), name); folders.set(folder.id, folder); return folder; }
@@ -166,6 +172,8 @@ function harness() {
     call, rows, maxColumns, simulateV3PrintRequests, simulateV4Inventory, mail, mailObservations,
     flushCount: () => flushCount,
     fileCount: () => files.size,
+    setPrivacyFailure: stage => { privacyFailure = stage; },
+    folderById: id => folders.get(id),
     fileByName: name => [...files.values()].find(file => file.name === name),
     duplicateFileByName: name => { const file = [...files.values()].find(item => item.name === name); return folders.get(file.parentId).createFile(file.name, file.content, file.mimeType); },
     printLimits: () => ({

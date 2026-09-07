@@ -49,6 +49,12 @@
     var showAssessmentBuilder = props.showAssessmentBuilder || false;
     var setShowAssessmentBuilder = props.setShowAssessmentBuilder || function () {};
     var assessmentBlocks = props.assessmentBlocks || [];
+    var assessmentRunRef = React.useRef(false);
+    var assessmentCacheRef = React.useRef(null);
+    var assessmentMountedRef = React.useRef(true);
+    var _assessmentBusy = React.useState(false), assessmentBusy = _assessmentBusy[0], setAssessmentBusy = _assessmentBusy[1];
+    var _assessmentResult = React.useState(null), assessmentResult = _assessmentResult[0], setAssessmentResult = _assessmentResult[1];
+    React.useEffect(function () { assessmentMountedRef.current = true; return function () { assessmentMountedRef.current = false; }; }, []);
     var setAssessmentBlocks = props.setAssessmentBlocks || function () {};
     var handleGenerateMath = props.handleGenerateMath;
     var setActiveView = props.setActiveView || function () {};
@@ -218,7 +224,7 @@
           value: block.quantity,
           onChange: e => {
             const nb = [...assessmentBlocks];
-            nb[idx].quantity = Math.max(1, parseInt(e.target.value) || 1);
+            nb[idx] = { ...nb[idx], quantity: Math.max(1, Math.min(30, parseInt(e.target.value) || 1)) };
             setAssessmentBlocks(nb);
           },
           className: "w-14 px-2 py-1.5 text-sm font-mono border border-slate-400 rounded-lg text-center",
@@ -254,9 +260,12 @@
             directive: ''
           }]),
           className: "w-full py-2.5 border-2 border-dashed border-slate-300 text-slate-400 font-bold text-sm rounded-xl hover:border-indigo-400 hover:text-indigo-500 transition-all"
-        }, "+ Add Block"), assessmentBlocks.length > 0 && /*#__PURE__*/React.createElement("div", {
+        }, "+ Add Block"), assessmentResult && React.createElement("div", { role: "status", className: "rounded-lg border border-amber-300 p-3 text-sm" }, assessmentResult.sections.map((section, index) => React.createElement("p", { key: section.id }, 'Section ' + (index + 1) + ': ' + (section.preparation?.ready || 0) + '/' + section.requested + ' ready' + (section.error ? ' — ' + section.error : section.status === 'partial' ? ' — review or retry needed' : ''))), assessmentResult.content.problems.length > 0 && React.createElement("button", { type: "button", disabled: assessmentBusy, className: "mt-2 rounded bg-indigo-700 px-3 py-2 text-white", onClick: () => {
+          if (typeof props.setGeneratedContent === 'function') props.setGeneratedContent({ id: assessmentResult.id, type: 'math', title: assessmentResult.content.title, data: assessmentResult.content });
+          setActiveView('math'); onClose();
+        } }, "Open prepared assessment")), assessmentBlocks.length > 0 && /*#__PURE__*/React.createElement("div", {
           className: "flex gap-3 pt-2"
-        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems",
+        }, /*#__PURE__*/React.createElement("button", { "aria-label": "Generate assessment problems", disabled: assessmentBusy, "aria-busy": assessmentBusy,
           onClick: () => {
             const fluencyBlocks = assessmentBlocks.filter(b => b.type === 'fluency');
             if (fluencyBlocks.length > 0 && assessmentBlocks.length === fluencyBlocks.length) {
@@ -302,91 +311,36 @@
             if (fluencyBlocks.length > 0) {
               addToast(t('stem.fluency.mixed_blocks_note') || ('Note: ' + fluencyBlocks.length + ' fluency block(s) are not part of the generated document. Run them from the Math panel’s Fluency Probes mode.'), 'warning');
             }
-            setMathInput('Building assessment: ' + nonFluencyBlocks.length + ' sections...');
-            setMathMode('Freeform Builder');
-            setActiveView('math');
-            onClose();
-            addToast('⏳ Generating assessment... ' + nonFluencyBlocks.length + ' sections', 'info');
-
-            // Chunked generation: one callGemini per block, merge results, push to history once
-            (async () => {
-              const allProblems = [];
-              let blockErrors = 0;
-              for (let bi = 0; bi < nonFluencyBlocks.length; bi++) {
-                const block = nonFluencyBlocks[bi];
-                const blockLabel = block.type.replace(/_/g, ' ');
-                addToast('🔄 Section ' + (bi + 1) + '/' + nonFluencyBlocks.length + ': ' + blockLabel + ' (' + block.quantity + ')...', 'info');
-                const blockPrompt = 'You are an Expert Math Curriculum Designer.\n' +
-                  'Generate EXACTLY ' + block.quantity + ' ' + blockLabel + ' math problems for grade ' + gradeLevel + '.\n' +
-                  (block.directive && block.directive !== 'general' ? 'Focus area: ' + block.directive + '.\n' : '') +
-                  'Subject: ' + (mathSubject || 'General Math') + '.\n\n' +
-                  'Return a JSON object: {"title":"<section title>","problems":[{"question":"...","expression":"...","answer":<number or string>,"steps":[{"explanation":"...","latex":"..."}],"realWorld":"1-2 sentence real-life connection naming a specific career or situation where this skill is used — NOT a word problem restatement"}]}\n' +
-                  'IMPORTANT: Return ONLY valid JSON. Every problem MUST have question, answer, and steps.';
-                try {
-                  const result = await callGemini(blockPrompt, true);
-                  if (!result) throw new Error('Empty response');
-                  let cleaned = result.replace(/```json\s*/gi, '').replace(/```\s*/g, '').trim();
-                  const startBrace = cleaned.indexOf('{');
-                  if (startBrace > 0) cleaned = cleaned.substring(startBrace);
-                  const endBrace = cleaned.lastIndexOf('}');
-                  if (endBrace > 0) cleaned = cleaned.substring(0, endBrace + 1);
-                  let parsed = null;
-                  if (typeof window !== 'undefined' && window.jsonrepair) {
-                    try { parsed = JSON.parse(window.jsonrepair(cleaned)); } catch (e) { /* fall through */ }
-                  }
-                  if (!parsed) parsed = JSON.parse(cleaned);
-                  const problems = Array.isArray(parsed.problems) ? parsed.problems : (parsed.question ? [parsed] : []);
-                  if (problems.length > 0) {
-                    problems.forEach(p => { p._blockType = blockLabel; });
-                    allProblems.push(...problems);
-                    console.log('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + '): ' + problems.length + ' problems parsed');
-                  } else {
-                    throw new Error('No problems in parsed response');
-                  }
-                } catch (e) {
-                  console.warn('[ASSESS] Block ' + (bi + 1) + ' (' + blockLabel + ') failed:', e.message);
-                  blockErrors++;
-                }
-                if (bi < nonFluencyBlocks.length - 1) {
-                  await new Promise(r => setTimeout(r, 500));
-                }
+            if (assessmentRunRef.current) return;
+            if (nonFluencyBlocks.reduce((sum, block) => sum + Number(block.quantity || 0), 0) > 200) { addToast('An assessment can contain up to 200 problems. Reduce the section quantities and try again.', 'warning'); return; }
+            const helpers = window.AlloModules && window.AlloModules.GenerationHelpers;
+            if (!helpers || typeof helpers.generateMathAssessment !== 'function') { addToast('Math preparation is still loading. Please try again.', 'warning'); return; }
+            assessmentRunRef.current = true;
+            setAssessmentBusy(true);
+            const signature = JSON.stringify([nonFluencyBlocks, gradeLevel, mathSubject, props.leveledTextLanguage, props.translationMode]);
+            const cached = assessmentCacheRef.current?.signature === signature ? assessmentCacheRef.current : null;
+            helpers.generateMathAssessment(nonFluencyBlocks, {
+              callGemini, grade: gradeLevel, subject: mathSubject, language: props.leveledTextLanguage,
+              translationMode: props.translationMode, uiLanguage: props.currentUiLanguage, resolveTranslationPolicy: props.resolveTranslationPolicy,
+              resourceId: cached?.result.id, previousSections: cached?.result.sections,
+              onProgress: ({ index, total }) => { if (assessmentMountedRef.current) announceToSR('Preparing section ' + (index + 1) + ' of ' + total); }
+            }).then(result => {
+              if (!assessmentMountedRef.current) return;
+              assessmentCacheRef.current = { signature, result };
+              setAssessmentResult(result);
+              if (result.content.problems.length) {
+                const item = { id: result.id, type: 'math', data: result.content, title: result.content.title, meta: (mathSubject || 'Math') + ' - Assessment', timestamp: new Date(), config: { grade: gradeLevel, language: props.leveledTextLanguage || 'English' } };
+                setHistory(previous => previous.some(entry => entry.id === item.id) ? previous.map(entry => entry.id === item.id ? item : entry) : [...previous, item]);
               }
-              if (allProblems.length === 0) {
-                addToast('Assessment generation failed — no problems could be generated. Try fewer sections.', 'error');
-              } else {
-                allProblems.forEach(p => {
-                  if (!Array.isArray(p.steps)) p.steps = [];
-                  p.steps = p.steps.map(s => typeof s === 'string' ? { explanation: s, latex: '' } : s);
-                });
-                const normalizedContent = {
-                  title: 'Assessment: ' + (mathSubject || 'General Math') + ' (Grade ' + gradeLevel + ')',
-                  problems: allProblems,
-                  graphData: null
-                };
-                const newItem = {
-                  id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-                  type: 'math',
-                  data: normalizedContent,
-                  meta: (mathSubject || 'General Math') + ' - Assessment',
-                  title: normalizedContent.title,
-                  timestamp: new Date(),
-                  config: {}
-                };
-                setHistory(prev => [...prev, newItem]);
-                // Trigger display by calling handleGenerateMath with a tiny prompt to show the last result
-                // The problems are already in history, so user can access them from Resources
-                if (blockErrors > 0) {
-                  addToast('Assessment partially generated — ' + allProblems.length + ' problems (' + blockErrors + ' section(s) failed). Check Resources.', 'warning');
-                } else {
-                  addToast('✅ Assessment complete! ' + allProblems.length + ' problems across ' + nonFluencyBlocks.length + ' sections. Check Resources panel.', 'success');
-                }
-              }
-            })();
+              const p = result.content.preparation;
+              addToast(p.requested + ' requested, ' + p.ready + ' ready, ' + p.reviewRequired + ' need review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.status === 'ready' ? 'success' : 'warning');
+            }).catch(error => { if (assessmentMountedRef.current) addToast('Assessment preparation failed. Please try again.', 'error'); })
+              .finally(() => { assessmentRunRef.current = false; if (assessmentMountedRef.current) setAssessmentBusy(false); });
           },
           className: "flex-1 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white font-bold rounded-xl text-sm hover:from-indigo-700 hover:to-blue-700 transition-all shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
         }, /*#__PURE__*/React.createElement(Sparkles, {
           size: 16
-        }), " Generate All (", assessmentBlocks.reduce((s, b) => s + b.quantity, 0), " problems)"), /*#__PURE__*/React.createElement("button", { "aria-label": "Save to Resources",
+        }), assessmentBusy ? " Preparing… (" : assessmentResult?.content.preparation.status === "partial" ? " Retry incomplete sections (" : " Generate All (", assessmentBlocks.reduce((s, b) => s + b.quantity, 0), " problems)"), /*#__PURE__*/React.createElement("button", { "aria-label": "Save to Resources",
           onClick: () => {
             const stemAssessment = {
               id: 'stem-' + Date.now(),
@@ -517,7 +471,7 @@
             if (typeof handleGenerateMath === 'function') {
               // switchView=true: handleGenerateMath clears stale content and
               // sets activeView('math') itself.
-              handleGenerateMath(mathInput, true, resolvedMode);
+              handleGenerateMath(stemLabCreateMode === 'solve' ? 'Solve 1 problem: ' + mathInput : mathInput, true, resolvedMode);
               // Close so the teacher sees the generation progress they just
               // started. The old "stay open" comment here dated from when this
               // button generated nothing, so closing WAS abrupt: it dumped you

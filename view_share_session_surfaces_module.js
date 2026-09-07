@@ -324,7 +324,7 @@ function ClassMailboxSetupView(props) {
     onClick: connectMailbox,
     disabled: mbBusy,
     className: "w-full flex items-center justify-center gap-2 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg p-2.5 transition-all disabled:opacity-60"
-  }, mbBusy ? 'Testing…' : 'Connect & self-test')), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 19 && /*#__PURE__*/React.createElement("div", {
+  }, mbBusy ? 'Testing…' : 'Connect & self-test')), mbConfig && Number(mbConfig.v) > 0 && Number(mbConfig.v) < 20 && /*#__PURE__*/React.createElement("div", {
     className: "mb-3 bg-amber-50 border-2 border-amber-200 rounded-xl p-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-amber-800 mb-2"

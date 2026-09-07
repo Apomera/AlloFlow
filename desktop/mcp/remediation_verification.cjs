@@ -1,4 +1,70 @@
 'use strict';
+const PDF_UA_UNAVAILABLE_REASONS = ['validator_not_available', 'validator_timeout', 'validator_error', 'attempt_finalization_reserve', 'validator_evidence_unbound'];
+const PDF_UA_NOT_RUN_REASONS = ['disabled_for_institution_pilot', 'independent_validator_not_packaged'];
+function invalidPdfEvidence() { throw new Error('Incomplete or contradictory PDF/UA validation evidence.'); }
+function pdfCount(value) {
+  if (!Number.isSafeInteger(value) || value < 0 || value > 1000000) invalidPdfEvidence();
+  return value;
+}
+function pdfCounts(value, compliant) {
+  const counts = Object.fromEntries(['failedRules', 'failedChecks', 'passedRules', 'passedChecks'].map(key => [key, pdfCount(value[key])]));
+  if (counts.failedRules + counts.passedRules === 0 || counts.failedChecks + counts.passedChecks === 0
+    || (counts.failedRules === 0) !== (counts.failedChecks === 0)
+    || compliant !== (counts.failedRules === 0 && counts.failedChecks === 0)) invalidPdfEvidence();
+  return counts;
+}
+// The CLI is invoked on exactly one immutable PDF with --flavour ua1. Missing
+// counts, extra jobs, and unsuccessful exits cannot constitute passing evidence.
+// veraPDF 1.30.2 exits 1 for a completed noncompliant report; retain that failure.
+function parsePdfUaCliReport(parsed, exitCode) {
+  const report = parsed && parsed.report;
+  const jobs = report && report.jobs;
+  const validations = Array.isArray(jobs) && jobs.length === 1 && jobs[0].validationResult;
+  const validation = Array.isArray(validations) && validations.length === 1 && validations[0];
+  if (!validation || typeof validation.compliant !== 'boolean' || !validation.details
+    || (exitCode !== 0 && !(exitCode === 1 && validation.compliant === false))
+    || (validation.jobEndStatus !== undefined && validation.jobEndStatus !== 'normal')
+    || (validation.profileName !== undefined && validation.profileName !== 'PDF/UA-1 validation profile')) invalidPdfEvidence();
+  const counts = pdfCounts(validation.details, validation.compliant);
+  const summaries = validation.details.ruleSummaries;
+  if (summaries !== undefined && !Array.isArray(summaries)) invalidPdfEvidence();
+  if (validation.compliant && (summaries || []).some(rule => rule && rule.ruleStatus === 'FAILED')) invalidPdfEvidence();
+  return { report, validation, counts };
+}
+// Shared by the remote producer and public sanitizer. Every executed result is
+// bound to emitted bytes; unavailable/not-run outcomes remain explicit.
+function normalizePdfUaValidation(value, artifact, options) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) invalidPdfEvidence();
+  if (value.status === 'not_run' && PDF_UA_NOT_RUN_REASONS.includes(value.reason)) return { status: value.status, reason: value.reason };
+  if (value.status === 'unavailable' && PDF_UA_UNAVAILABLE_REASONS.includes(value.reason)) return { status: value.status, reason: value.reason };
+  if (!['compliant', 'noncompliant'].includes(value.status) || value.validator !== 'veraPDF' || value.profile !== 'ua1') invalidPdfEvidence();
+  const counts = pdfCounts(value, value.status === 'compliant');
+  // Old public reports omitted all validator identity/time fields. Keep those
+  // reports readable, but never reconstruct a passing binding from the artifact.
+  if (options?.allowLegacyUnbound === true
+    && ['inputSha256', 'inputBytes', 'validatedAt', 'validationDurationMs'].every(key => value[key] === undefined)) {
+    return { status: 'unavailable', reason: 'validator_evidence_unbound' };
+  }
+  if (!artifact || !/^[a-f0-9]{64}$/i.test(value.inputSha256 || '')
+    || String(value.inputSha256).toLowerCase() !== String(artifact.sha256).toLowerCase()
+    || !Number.isSafeInteger(value.inputBytes) || value.inputBytes < 5 || value.inputBytes !== artifact.size
+    || (value.validatorVersion !== null && (typeof value.validatorVersion !== 'string' || value.validatorVersion.length > 32))
+    || typeof value.validatedAt !== 'string' || !Number.isFinite(Date.parse(value.validatedAt))
+    || !Number.isSafeInteger(value.validationDurationMs) || value.validationDurationMs < 0) invalidPdfEvidence();
+  return { status: value.status, validator: 'veraPDF', profile: 'ua1', validatorVersion: value.validatorVersion,
+    ...counts, inputSha256: value.inputSha256.toLowerCase(), inputBytes: value.inputBytes,
+    validatedAt: new Date(value.validatedAt).toISOString(), validationDurationMs: value.validationDurationMs };
+}
+function pdfDeliveryState(input) {
+  const pdfReview = input.hasPdf && input.pdfStatus !== 'passed';
+  const verificationState = pdfReview ? 'review-required' : input.verificationState;
+  const reviewRequired = !!pdfReview || !input.level || input.level === 'review'
+    || !['complete', 'complete-for-tested-scope'].includes(verificationState)
+    || (input.hasPdf && input.taggedPdfVerified !== true);
+  return { verificationState, reviewRequired, distributionLevel: reviewRequired ? 'review' : input.level,
+    taggedPdfDelivery: input.hasPdf && !pdfReview && input.taggedPdfVerified === true ? 'verified' : 'review-required',
+    deliveryStatus: reviewRequired ? 'review-required' : 'complete-for-tested-scope' };
+}
 // Independent PDF evidence must govern the final artifact status, never upgrade HTML evidence.
 function pdfUaEvidence(raw, options) {
   const o=options||{}, base={standard:'PDF/UA-1 (ISO 14289-1)',profile:'ua1',scope:'machine-verifiable PDF/UA checks'};
@@ -25,8 +91,10 @@ function applyPdfDeliveryEvidence(summary,evidence) {
     summary.verificationState='review-required';
     summary.taggedPdfDelivery={ok:false,code:evidence.status==='failed'?'validator-failed':evidence.error?'validator-error':'validator-unavailable'};
   }
-  summary.reviewRequired=needsReview||!summary.verdict||summary.verdict?.level==='review'||!['complete','complete-for-tested-scope'].includes(summary.verificationState);
-  summary.deliveryStatus=summary.reviewRequired?'review-required':'complete-for-tested-scope';
+  const delivery=pdfDeliveryState({hasPdf:Boolean(summary.files?.taggedPdf),pdfStatus:evidence.status,
+    verificationState:summary.verificationState,level:summary.verdict?.level,taggedPdfVerified:summary.taggedPdfDelivery?.ok===true});
+  summary.reviewRequired=delivery.reviewRequired;
+  summary.deliveryStatus=delivery.deliveryStatus;
   return summary;
 }
 // Self-contained so the browser uses exactly the same per-engine report contract.
@@ -43,4 +111,41 @@ function auditChecks(input) {
     axe:{status:state(axe,axeFailures,axeReview),findings:axeFailures,reviewFindings:axeReview},
     equalAccess:{status:state(ea,eaFailures,eaReview),findings:eaFailures,reviewFindings:eaReview}};
 }
-module.exports={pdfUaEvidence,applyPdfDeliveryEvidence,auditChecks};
+// Rejection telemetry never carries candidate/source text. The same contract is
+// used for checkpoint storage, browser publication, and public tool output.
+const CANDIDATE_REJECTION_SCHEMA = {
+  candidateRejectionCount: { type: 'integer', minimum: 0, maximum: 1000000 },
+  candidateRejections: { type: 'array', maxItems: 100, items: {
+    type: 'object', additionalProperties: false, required: ['chunkId', 'phase', 'reason'],
+    properties: {
+      pass: { type: 'integer', minimum: 1, maximum: 1000000 },
+      chunkId: { type: 'string', maxLength: 32, pattern: '^(?:all|[0-9]{1,8}(?:\\.[0-9]{1,8})?)$' },
+      phase: { type: 'string', enum: ['single', 'chunk', 'image-retry', 'half', 'half-assembly', 'assembly'] },
+      reason: { type: 'string', enum: ['empty-output', 'no-original', 'size-shrink', 'size-growth-unexpected',
+        'text-shrink', 'text-growth-unexpected', 'no-doc-markers', 'image-reference-changed',
+        'image-reference-uncheckable', 'table-cell-transposition', 'invalid-json-wrapper', 'content-not-preserved'] },
+    },
+  } },
+};
+// Serializable for browser execution when the same schema is passed explicitly.
+function normalizeCandidateRejectionEvidence(value, schema = CANDIDATE_REJECTION_SCHEMA) {
+  const input = value && typeof value === 'object' ? value : {};
+  const fields = schema.candidateRejections.items.properties;
+  const chunkIdPattern = new RegExp(fields.chunkId.pattern);
+  const records = [];
+  if (Array.isArray(input.candidateRejections)) {
+    for (const entry of input.candidateRejections.slice(0, schema.candidateRejections.maxItems)) {
+      if (!entry || typeof entry !== 'object' || Array.isArray(entry)
+        || typeof entry.chunkId !== 'string' || entry.chunkId.length > fields.chunkId.maxLength
+        || !chunkIdPattern.test(entry.chunkId) || !fields.phase.enum.includes(entry.phase)
+        || !fields.reason.enum.includes(entry.reason)) continue;
+      const record = { chunkId: entry.chunkId, phase: entry.phase, reason: entry.reason };
+      if (Number.isSafeInteger(entry.pass) && entry.pass >= fields.pass.minimum && entry.pass <= fields.pass.maximum) record.pass = entry.pass;
+      records.push(record);
+    }
+  }
+  const count = Number.isSafeInteger(input.candidateRejectionCount) && input.candidateRejectionCount >= 0
+    ? Math.min(schema.candidateRejectionCount.maximum, input.candidateRejectionCount) : 0;
+  return { candidateRejectionCount: Math.max(count, records.length), candidateRejections: records };
+}
+module.exports={pdfUaEvidence,applyPdfDeliveryEvidence,auditChecks,parsePdfUaCliReport,normalizePdfUaValidation,pdfDeliveryState,normalizeCandidateRejectionEvidence,CANDIDATE_REJECTION_SCHEMA};

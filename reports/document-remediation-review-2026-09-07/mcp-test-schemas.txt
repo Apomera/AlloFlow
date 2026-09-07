@@ -1,0 +1,68 @@
+### remediation_selftest
+Run the REAL remediation pipeline end-to-end in headless Chromium against a scripted local model and a generated one-page PDF, then report which stage worked. Needs NO Gemini key and spends NO quota (nothing leaves the machine; the scripted model is a loopback server), writes no files you keep. Takes roughly 20-60s. Use this when remediation_capabilities says ready but real runs fail, after installing or updating the connector, or to tell a broken install apart from an API-key/quota problem: a failure here names the stage (assets / browser / module-boot / ownership-gate / audit-contract) and is never about your key.
+
+{
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}
+
+### fix_contrast
+Apply AlloFlow's deterministic contrast repair to an accessible HTML file: darkens or lightens foreground colours that fail WCAG AA against their detected background, then sanitises remaining style for WCAG. Pure colour math — needs NO Gemini key and spends no quota. IMPORTANT: the returned axe numbers do NOT verify contrast. axe-core does not reliably detect contrast in this harness (measured: zero findings on text at ~1.6:1), so `styleFixes` (the count of corrections actually applied) is the evidence, and a human or a contrast checker should confirm.
+
+{
+  "type": "object",
+  "required": [
+    "file_path"
+  ],
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Absolute path to a local .html file"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Where to write the corrected HTML (default: <name>-contrast.html beside the input, never overwriting)"
+    }
+  },
+  "additionalProperties": false
+}
+
+### audit_two_engines
+Audit an accessible HTML file with axe-core AND IBM Equal Access, then report where they DISAGREE. Both run locally in the browser with no model and no API key. This matters because a single engine is a single opinion: on this project axe reported 100/0 on a document veraPDF then failed, and reported no contrast findings on text at roughly 1.6:1. Two engines that disagree give a short, concrete list a human can check. Use it before telling anyone a document is clean.
+
+{
+  "type": "object",
+  "required": [
+    "file_path"
+  ],
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Absolute path to a local .html file"
+    }
+  },
+  "additionalProperties": false
+}
+
+### check_document_structure
+Report the heading hierarchy of an accessible HTML document (counts per level and any SKIPPED levels, e.g. h2 followed by h4, which is a WCAG 1.3.1 failure) and produce a plain-text rendering. Deterministic, no API key. Plain text is itself a legitimate accessible format for readers who want no markup at all, and the heading check is the cheapest way to catch a structural mistake before tagging a PDF.
+
+{
+  "type": "object",
+  "required": [
+    "file_path"
+  ],
+  "properties": {
+    "file_path": {
+      "type": "string",
+      "description": "Absolute path to a local .html file"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Optional path to write the plain-text rendering"
+    }
+  },
+  "additionalProperties": false
+}
+

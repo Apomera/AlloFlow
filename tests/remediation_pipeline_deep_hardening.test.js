@@ -69,7 +69,9 @@ describe('remediation deep-dive hardening', () => {
     expect(pipe).toContain("out._plainLanguage = Object.assign({}, out._plainLanguage, { html: sanitize(out._plainLanguage.html) })");
     expect(pipe).toContain("cleanRange.result = Object.assign({}, cleanRange.result, { accessibleHtml: sanitize(cleanRange.result.accessibleHtml) })");
     expect(occurrences(view, '_viewSanitizeProjectImport(parsedProject, _docPipeline)')).toBe(2);
-    expect(host).toContain('const _sanitizedImport = _projectSanitizer(_savedProject);');
+    // Project files enter through the two sanitized view import paths above.
+    // Startup cache restore rehydrates the full saved result instead of reimporting a project.
+    expect(host).toContain('rehydrateVerificationHtmlBinding(parsed.pdfFixResult)');
     expect(host).toContain('const _safeRemediationHtml = _docPipeline.sanitizeRemediationHtml(pdfFixResult.accessibleHtml);');
     expect(preview).toContain("exportPreviewSource === 'remediation' ? 'allow-same-origin' : 'allow-same-origin allow-scripts allow-forms'");
   });

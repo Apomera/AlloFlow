@@ -111,8 +111,8 @@ describe('the commands actually reach the panel', () => {
     expect(probe).toContain("setExpandedTools(prev => prev.includes('math') ? prev : ['math', ...prev])");
     expect(probe).toContain("setActiveSidebarTab('create')");
     // The accordion really is driven by expandedTools, and the scroll target exists.
-    expect(anti).toContain("expandedTools.includes('math')");
-    expect(anti).toContain('id="tour-tool-math"');
+    expect(sidebar).toContain("expandedTools.includes('math')");
+    expect(sidebar).toContain('id="tour-tool-math"');
   });
 
   it('renders a module that is registered and loaded', () => {

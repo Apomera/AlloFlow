@@ -342,7 +342,7 @@ const createTTS = (deps) => {
             error => finish(reject, error)
         );
     });
-    const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal') => {
+    const fetchTTSBytes = (text, voiceName, speed = 1, language = 'English', signal = null, requestPriority = 'normal', requestedModel = GEMINI_MODELS?.tts) => {
         // Resolve against the LIVE catalog: TTS can initialize before VoiceConfig.
         const safeVoice = _resolveGeminiVoice(voiceName);
         const speechProfile = _normalizeTtsSpeechProfile(language);
@@ -388,7 +388,7 @@ const createTTS = (deps) => {
             };
             try {
                 const taskResult = await (async () => {
-            const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
+            const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${requestedModel}:generateContent`;
             const url = `${baseUrl}?key=${apiKey || ''}`;
             const decodeBase64 = (base64) => {
                  const binaryString = window.atob(base64);
@@ -455,6 +455,7 @@ const createTTS = (deps) => {
               throw err;
             }
             try {
+              const fetchStartedAt = Date.now();
               const response = await awaitTtsHardDeadline(fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -474,7 +475,10 @@ const createTTS = (deps) => {
                   console.warn(`[TTS] Transient error (${response.status}). Caller will retry...`);
                   throw new Error(`TTS Transient Error (${response.status})`);
                 }
-                const errorBody = await response.text().catch(() => '');
+                const errorBody = await awaitTtsHardDeadline(response.text(), Math.max(1, fetchTimeoutMs - (Date.now() - fetchStartedAt)), () => {
+                  watchdogFired = true;
+                  try { watchdogController?.abort(); } catch (_) {}
+              }, "TTS Transient Error (timeout reading response body)", signal);
                 if (response.status === 400 && !state.ttsTemperatureUnsupported && /temperature/i.test(errorBody)) {
                     state.ttsTemperatureUnsupported = true;
                     console.warn('[TTS] API rejected temperature param — disabled; caller retry will go without it.');
@@ -489,19 +493,23 @@ const createTTS = (deps) => {
                 console.error("[TTS] API Error:", response.status, response.statusText, errorBody.substring(0, 200));
                 throw new Error(`API Error: ${response.status} ${response.statusText}`);
               }
-              const data = await response.json();
+              const data = await awaitTtsHardDeadline(response.json(), Math.max(1, fetchTimeoutMs - (Date.now() - fetchStartedAt)), () => {
+                  watchdogFired = true;
+                  try { watchdogController?.abort(); } catch (_) {}
+              }, "TTS Transient Error (timeout reading response body)", signal);
               if (data.promptFeedback?.blockReason) throw new Error(`TTS Content Blocked: ${data.promptFeedback.blockReason}`);
               if (data.candidates?.[0]?.finishReason === 'OTHER') {
                   warnLog("Gemini Model Refusal (finishReason: OTHER). Caller retry budget will handle it.");
                   throw new Error("Gemini TTS model refused");
               }
-              const part = data.candidates?.[0]?.content?.parts?.[0];
+              const part = data.candidates?.[0]?.content?.parts?.find(p => p.inlineData?.data && (!p.inlineData.mimeType || /^audio\//i.test(p.inlineData.mimeType)));
               const base64Audio = part?.inlineData?.data;
               if (!base64Audio) {
                   console.error("[TTS] No audio data in response. Keys:", Object.keys(data), "candidates:", JSON.stringify(data.candidates?.[0]?.content?.parts?.map(p => Object.keys(p))).substring(0, 200));
                   throw new Error("No audio data received.");
               }
               const bytes = decodeBase64(base64Audio);
+              if (!bytes.length || bytes.length % 2) throw new Error("Invalid Gemini PCM audio payload");
               _noteGeminiSuccess();
               return { bytes, base64: base64Audio };
             } catch (err) {
@@ -785,6 +793,10 @@ let piperLoadPromise = null;
         }
     };
 
+    // These backends already use the local/OpenAI-compatible speech ladder
+    // in AIProvider. Keep reader and bot Auto routing consistent with it.
+    const _usesLocalTtsBackend = (config) => ['ollama', 'localai', 'lmstudio', 'alloflow-local', 'openai', 'claude', 'custom'].includes(config?.backend);
+
     const callTTS = async (text, voiceName, speed = 1, maxRetriesOrOpts = 2, languageArg) => {
         if (isGlobalMuted()) {
             _ttsTrace('calltts:muted', { chars: String(text || '').length });
@@ -795,6 +807,7 @@ let piperLoadPromise = null;
             _ttsTrace('calltts:empty-text', null);
             return null;
         }
+        const _geminiModel = GEMINI_MODELS?.tts;
         var _requestedVoice = String(voiceName || '');
         voiceName = _resolveRequestedVoice(voiceName);
         var maxRetries = typeof maxRetriesOrOpts === 'number' ? maxRetriesOrOpts
@@ -911,13 +924,13 @@ let piperLoadPromise = null;
             // Match the non-Canvas cache key exactly, including language. The
             // previous Canvas branch wrote a shorter key and never read it, so
             // a warmed sentence was synthesized again when playback asked.
-            const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1']);
+            const canvasCacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1', _geminiModel]);
             if (!_isKokoroVoice && !_forceRefresh && state.urlCache.has(canvasCacheKey)) {
                 debugLog('callTTS Canvas cache HIT:', text?.substring(0, 30));
                 _ttsTrace('calltts:cache-hit', { chars: String(text || '').length, voice: voiceName });
                 return _emitResolvedProfile(
                     state.urlCache.get(canvasCacheKey),
-                    _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: true })
+                    _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true })
                 );
             }
             if (_isKokoroVoice) {
@@ -957,7 +970,7 @@ let piperLoadPromise = null;
                 }
                 canvasLastErr = null;
                 const fetchCanvasTTSBytes = async () => {
-                    if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority);
+                    if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority, _geminiModel);
                     // A waiting learner must never be glued to someone else's
                     // possibly-wedged request (field trace 2026-07-20: a Canvas
                     // fetch hung 60s before its 401 and every playback retry
@@ -973,7 +986,7 @@ let piperLoadPromise = null;
                         if (entry && entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
                             _ttsTrace('calltts:inflight-stale-replaced', { chars: String(text || '').length, ageMs: entryAge });
                         }
-                        entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority), startedAt: Date.now() };
+                        entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority, _geminiModel), startedAt: Date.now() };
                         callTTSInFlight.set(canvasCacheKey, entry);
                     } else {
                         debugLog('callTTS Canvas in-flight JOIN:', text?.substring(0, 30));
@@ -998,7 +1011,7 @@ let piperLoadPromise = null;
                             if (!_forceRefresh && state.urlCache.has(canvasCacheKey)) {
                                 return _emitResolvedProfile(
                                     state.urlCache.get(canvasCacheKey),
-                                    _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: true, joined: true })
+                                    _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true, joined: true })
                                 );
                             }
                             const { bytes: pcmBytes } = ttsResult;
@@ -1009,7 +1022,7 @@ let piperLoadPromise = null;
                             console.log('[Canvas TTS] ✅ Gemini TTS succeeded!');
                             return _emitResolvedProfile(
                                 url,
-                                _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: false })
+                                _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: false })
                             );
                         }
                         throw new Error('fetchTTSBytes returned empty result');
@@ -1124,8 +1137,8 @@ let piperLoadPromise = null;
                             ? new AbortController()
                             : null;
                         const kokoroSpeakOptions = _signal
-                            ? { signal: kokoroController?.signal || _signal }
-                            : undefined;
+                            ? { signal: kokoroController?.signal || _signal, force: _forceRefresh }
+                            : (_forceRefresh ? { force: true } : undefined);
                         let kokoroTimedOut = false;
                         const relayKokoroAbort = () => { try { kokoroController?.abort(); } catch (_) {} };
                         if (_signal && kokoroController) {
@@ -1169,7 +1182,7 @@ let piperLoadPromise = null;
                 }
                 try {
                     if (PIPER_HANDLES_ENGLISH && window._piperTTS) {
-                        const url = await window._piperTTS.speak(localTtsText, 'en', speed, { signal: _signal });
+                        const url = await window._piperTTS.speak(localTtsText, 'en', speed, { signal: _signal, force: _forceRefresh });
                         if (url) {
                             _ttsTrace('calltts:piper-fallback-ok', null);
                             return _emitResolvedProfile(
@@ -1189,7 +1202,7 @@ let piperLoadPromise = null;
             } else {
                 try {
                     if (window._piperTTS && window._piperTTS.supportsLanguage(ttsLang)) {
-                        const url = await window._piperTTS.speak(localTtsText, ttsLang, speed, { signal: _signal });
+                        const url = await window._piperTTS.speak(localTtsText, ttsLang, speed, { signal: _signal, force: _forceRefresh });
                         if (url) {
                             _ttsTrace('calltts:piper-fallback-ok', { lang: ttsLang });
                             return _emitResolvedProfile(
@@ -1240,7 +1253,7 @@ let piperLoadPromise = null;
         // provider-managed TTS (Edge/off) are respected.
         var _cfgTtsEarly = getAiUserConfig();
         var _provTtsEarly = (_cfgTtsEarly && _cfgTtsEarly.ttsProvider) || 'auto';
-        var _provIsLocalAI = !!(_cfgTtsEarly && (_cfgTtsEarly.backend === 'ollama' || _cfgTtsEarly.backend === 'localai'));
+        var _provIsLocalAI = _usesLocalTtsBackend(_cfgTtsEarly);
         // 'local' does NOT block Kokoro (field-caught 2026-07-06, the last bug
         // of the batch): the "Local TTS" setting predates the in-browser
         // engine and pointed only at self-hosted Kokoro-FastAPI (:8880) /
@@ -1250,7 +1263,7 @@ let piperLoadPromise = null;
         // that cascade; the provider servers stay second for setups that run them.
         var _providerHandlesTts = _provTtsEarly === 'browser' || _provTtsEarly === 'off' || (_provTtsEarly === 'auto' && _provIsLocalAI);
         var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
-        var _localTtsChosen = _provTtsEarly === 'local' && typeof voiceName === 'string' && voiceName !== 'browser';
+        var _localTtsChosen = (_provTtsEarly === 'local' || (_provTtsEarly === 'auto' && _provIsLocalAI)) && typeof voiceName === 'string' && voiceName !== 'browser';
         var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
         if (_kokoroPreferred || _localTtsChosen || _kokoroKeyless) {
             if (!_isEnglish) {
@@ -1262,7 +1275,7 @@ let piperLoadPromise = null;
                     // Generic callTTS callers consume a single URL, so return a
                     // complete WAV instead of silently dropping later stream chunks.
                     // AlloBot keeps using callTTSDirect + chainPlay for true streaming.
-                    const kokoroUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal });
+                    const kokoroUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
                     if (kokoroUrl) {
                         _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
                         return _emitResolvedProfile(
@@ -1284,7 +1297,7 @@ let piperLoadPromise = null;
                 // the CURRENT utterance to the cloud or the browser voice —
                 // which is what a learner actually hears.
                 try {
-                    const wokenUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal });
+                    const wokenUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
                     if (wokenUrl) {
                         _routeNote('kokoro', 'engine woken from on-device model');
                         return _emitResolvedProfile(
@@ -1332,7 +1345,7 @@ let piperLoadPromise = null;
                 const piper = window._piperTTS || await ensurePiperTts();
                 const piperLanguage = languageToTTSCode(_language);
                 if (piper?.supportsLanguage?.(piperLanguage)) {
-                    const piperUrl = await piper.speak(cleanTextForLocalTTS(text), piperLanguage, speed, { signal: _signal });
+                    const piperUrl = await piper.speak(cleanTextForLocalTTS(text), piperLanguage, speed, { signal: _signal, force: _forceRefresh });
                     if (piperUrl) {
                         _routeNote('piper', 'local multilingual fallback: ' + piperLanguage);
                         return _emitResolvedProfile(
@@ -1353,7 +1366,7 @@ let piperLoadPromise = null;
         const _aiUserConfig = getAiUserConfig();
         const _ai = getAi();
         const _ttsOvr = _aiUserConfig?.ttsProvider || 'auto';
-        const _isLocalAI = (_aiUserConfig?.backend === 'ollama' || _aiUserConfig?.backend === 'localai');
+        const _isLocalAI = _usesLocalTtsBackend(_aiUserConfig);
         if (_ttsOvr === 'local' || _ttsOvr === 'browser' || _ttsOvr === 'off' || (_ttsOvr === 'auto' && _isLocalAI)) {
             try {
                 const result = await _ai.textToSpeech(text, { voice: voiceName, speed, language: _language, locale: _speechProfile.locale, dialect: _speechProfile.dialect, signal: _signal, force: _forceRefresh });
@@ -1382,9 +1395,54 @@ let piperLoadPromise = null;
             voiceName = _resolveGeminiVoice(voiceName);
             console.warn('[TTS] Kokoro voice unavailable for this call — using Gemini "' + voiceName + '"');
         }
-        if (Date.now() < state.rateLimitedUntil) {
-            console.warn("[TTS] Skipping — global rate-limit cooldown active for", Math.round((state.rateLimitedUntil - Date.now()) / 1000), "more seconds");
+        voiceName = _resolveGeminiVoice(voiceName);
+        const cacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1', _geminiModel]);
+        if (!_forceRefresh && state.urlCache.has(cacheKey)) {
+            debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
+            return _emitResolvedProfile(
+                state.urlCache.get(cacheKey),
+                _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true })
+            );
+        }
+        const localAfterGemini = async () => {
+            if (_isEnglish) {
+                try {
+                    if (!window._kokoroTTS?.ready) await ensureKokoroTts();
+                    if (window._kokoroTTS?.ready) {
+                        const localVoice = KOKORO_VOICE_PREFIX.test(voiceName) ? voiceName : 'af_heart';
+                        const url = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), localVoice, speed, { signal: _signal, force: _forceRefresh });
+                        if (url) return _emitResolvedProfile(url, _resolutionProfile('local', 'kokoro-browser', null, localVoice, 1, { fallbackFrom: 'gemini' }));
+                    }
+                } catch (error) { if (_isAbortError(error)) throw error; }
+            }
+        if (!_isEnglish) {
+            try {
+                const piperLast = window._piperTTS || await ensurePiperTts();
+                const piperLastLanguage = languageToTTSCode(_language);
+                if (piperLast?.supportsLanguage?.(piperLastLanguage)) {
+                    const piperLastUrl = await piperLast.speak(cleanTextForLocalTTS(text), piperLastLanguage, speed, { signal: _signal, force: _forceRefresh });
+                    if (piperLastUrl) {
+                        _routeNote('piper', 'cloud voice declined; local multilingual voice served ' + piperLastLanguage);
+                        return _emitResolvedProfile(
+                            piperLastUrl,
+                            _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice(piperLastLanguage), 1, {
+                                languageCode: piperLastLanguage,
+                                fallbackFrom: 'gemini'
+                            })
+                        );
+                    }
+                }
+            } catch (piperLastError) {
+                if (_isAbortError(piperLastError)) throw piperLastError;
+                // Piper reports its own failures to the console and returns
+                // null; a raw engine message must never reach a learner.
+                _routeNote('piper-failed', 'local multilingual voice could not serve this sentence');
+            }
+        }
             return null;
+        };
+        if (Date.now() < state.rateLimitedUntil) {
+            return localAfterGemini();
         }
         // Keyless install (desktop Built-in Engine, no cloud account): the
         // Gemini TTS leg can NEVER succeed — every attempt is a guaranteed
@@ -1398,24 +1456,15 @@ let piperLoadPromise = null;
             _routeNote('keyless-skip', 'no cloud key; caller falls back to the browser voice');
             return null;
         }
-        voiceName = _resolveGeminiVoice(voiceName);
-        const cacheKey = JSON.stringify([String(text || ''), voiceName, _speechProfile.cacheIdentity, 'natural-rate-v1']);
-        if (!_forceRefresh && state.urlCache.has(cacheKey)) {
-            debugLog("⚡ callTTS cache HIT:", text?.substring(0, 30));
-            return _emitResolvedProfile(
-                state.urlCache.get(cacheKey),
-                _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: true })
-            );
-        }
         const fetchSharedTTSBytes = async () => {
-            if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority);
+            if (_signal) return fetchTTSBytes(text, voiceName, speed, _speechProfile, _signal, _callOpts.priority, _geminiModel);
             // Same zombie-protection as the Canvas branch: interactive callers
             // never join, background callers never join a stale entry.
             const isInteractive = _callOpts.priority === 'interactive';
             let entry = callTTSInFlight.get(cacheKey);
             const entryAge = entry ? Date.now() - entry.startedAt : 0;
             if (!entry || isInteractive || _forceRefresh || entryAge > CALLTTS_JOIN_MAX_AGE_MS) {
-                entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority), startedAt: Date.now() };
+                entry = { promise: fetchTTSBytes(text, voiceName, speed, _speechProfile, null, _callOpts.priority, _geminiModel), startedAt: Date.now() };
                 callTTSInFlight.set(cacheKey, entry);
             } else {
                 debugLog('callTTS in-flight JOIN:', text?.substring(0, 30));
@@ -1435,7 +1484,7 @@ let piperLoadPromise = null;
                 if (!_forceRefresh && state.urlCache.has(cacheKey)) {
                     return _emitResolvedProfile(
                         state.urlCache.get(cacheKey),
-                        _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: true, joined: true })
+                        _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: true, joined: true })
                     );
                 }
                 const { bytes: pcmBytes } = ttsResult;
@@ -1445,7 +1494,7 @@ let piperLoadPromise = null;
                 _cacheSet(cacheKey, url);
                 return _emitResolvedProfile(
                     url,
-                    _resolutionProfile('gemini', 'gemini-tts', GEMINI_MODELS?.tts, voiceName, 1, { cacheHit: false })
+                    _resolutionProfile('gemini', 'gemini-tts', _geminiModel, voiceName, 1, { cacheHit: false })
                 );
             } catch (e) {
                 lastError = e;
@@ -1479,34 +1528,13 @@ let piperLoadPromise = null;
         // but it was only reachable from the Canvas branch and from keyless /
         // "Local TTS" installs. Reach it from the cloud path too, so the
         // checkbox goes back to meaning what it says.
-        if (!_isEnglish) {
-            try {
-                const piperLast = window._piperTTS || await ensurePiperTts();
-                const piperLastLanguage = languageToTTSCode(_language);
-                if (piperLast?.supportsLanguage?.(piperLastLanguage)) {
-                    const piperLastUrl = await piperLast.speak(cleanTextForLocalTTS(text), piperLastLanguage, speed, { signal: _signal });
-                    if (piperLastUrl) {
-                        _routeNote('piper', 'cloud voice declined; local multilingual voice served ' + piperLastLanguage);
-                        return _emitResolvedProfile(
-                            piperLastUrl,
-                            _resolutionProfile('local', 'piper-browser', null, _resolvedPiperVoice(piperLastLanguage), 1, {
-                                languageCode: piperLastLanguage,
-                                fallbackFrom: 'gemini'
-                            })
-                        );
-                    }
-                }
-            } catch (piperLastError) {
-                if (_isAbortError(piperLastError)) throw piperLastError;
-                // Piper reports its own failures to the console and returns
-                // null; a raw engine message must never reach a learner.
-                _routeNote('piper-failed', 'local multilingual voice could not serve this sentence');
-            }
-        }
+        const localUrl = await localAfterGemini();
+        if (localUrl) return localUrl;
         throw lastError;
     };
 
     const callTTSDirect = async (text, voiceName, speed = 1, maxRetries = 2) => {
+        const _directModel = GEMINI_MODELS?.tts;
         if (isGlobalMuted()) return null;
         if (text == null || !String(text).trim()) { console.warn('[TTS] Skipped: empty text'); return null; }
         var _directOpts = (maxRetries && typeof maxRetries === 'object') ? maxRetries : {};
@@ -1542,7 +1570,7 @@ let piperLoadPromise = null;
                 for (let botAttempt = 0; botAttempt < botCanvasMaxAttempts; botAttempt++) {
                     try {
                 const botCanvasGeminiVoice = _resolveGeminiVoice(voiceName);
-                        const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed, _directLanguage, _directSignal, 'interactive');
+                        const ttsResult = await fetchTTSBytes(text, botCanvasGeminiVoice, speed, _directLanguage, _directSignal, 'interactive', _directModel);
                         if (ttsResult) {
                             const { bytes: pcmBytes } = ttsResult;
                             const wavBuffer = pcmToWav(pcmBytes);
@@ -1619,12 +1647,12 @@ let piperLoadPromise = null;
         // (resolveVoice maps Gemini names) — same reroute as callTTS.
         var _botCfgTts = getAiUserConfig();
         var _botProvTts = (_botCfgTts && _botCfgTts.ttsProvider) || 'auto';
-        var _botProvLocalAI = !!(_botCfgTts && (_botCfgTts.backend === 'ollama' || _botCfgTts.backend === 'localai'));
+        var _botProvLocalAI = _usesLocalTtsBackend(_botCfgTts);
         // Same as callTTS: ttsProvider 'local' PREFERS the in-browser engine
         // (first cascade leg), never blocks it.
         var _botProviderHandles = _botProvTts === 'browser' || _botProvTts === 'off' || (_botProvTts === 'auto' && _botProvLocalAI);
         var _botKokoroEligible = (typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName))
-            || (_botProvTts === 'local' && typeof voiceName === 'string' && voiceName !== 'browser')
+            || ((_botProvTts === 'local' || (_botProvTts === 'auto' && _botProvLocalAI)) && typeof voiceName === 'string' && voiceName !== 'browser')
             || (!_isCanvasEnv && !_cloudKeyUsable() && !_botProviderHandles && typeof voiceName === 'string' && voiceName !== 'browser');
         if (_botKokoroEligible) {
             const botKokoroLang = languageToTTSCode(_directLanguage);
@@ -1658,7 +1686,7 @@ let piperLoadPromise = null;
         const _aiUserConfig = getAiUserConfig();
         const _ai = getAi();
         const _ttsOvrBot = _aiUserConfig?.ttsProvider || 'auto';
-        const _isLocalAIBot = (_aiUserConfig?.backend === 'ollama' || _aiUserConfig?.backend === 'localai');
+        const _isLocalAIBot = _usesLocalTtsBackend(_aiUserConfig);
         if (_ttsOvrBot === 'local' || _ttsOvrBot === 'browser' || _ttsOvrBot === 'off' || (_ttsOvrBot === 'auto' && _isLocalAIBot)) {
             try {
                 return await _ai.textToSpeech(text, { voice: voiceName, speed, language: _directLanguage, signal: _directSignal });
@@ -1688,7 +1716,7 @@ let piperLoadPromise = null;
         const safeVoice = _resolveGeminiVoice(voiceName);
         if (safeVoice !== voiceName) console.warn(`[TTS-Bot] Voice "${voiceName}" is not a valid Gemini voice. Falling back to "${safeVoice}".`);
         console.log("[TTS-Bot] 🎤 callTTSDirect called:", { text: text?.substring(0, 40), voice: safeVoice, speed });
-        const cacheKey = JSON.stringify([String(text || ''), safeVoice, _directLanguage, 'natural-rate-v1']);
+        const cacheKey = JSON.stringify([String(text || ''), safeVoice, _directLanguage, 'natural-rate-v1', _directModel]);
         if (state.urlCache.has(cacheKey)) {
             console.log("[TTS-Bot] ⚡ Cache HIT:", text?.substring(0, 30));
             return state.urlCache.get(cacheKey);
@@ -1704,7 +1732,7 @@ let piperLoadPromise = null;
                 }
                 const queuedTask = state.botQueue.then(async () => {
                     console.log("[TTS-Bot] 🔄 Queue slot acquired, making API call...");
-                    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.tts}:generateContent`;
+                    const baseUrl = `https://generativelanguage.googleapis.com/v1beta/models/${_directModel}:generateContent`;
                     const url = `${baseUrl}${apiKey ? `?key=${apiKey}` : ''}`;
                     const decodeBase64 = (base64) => {
                          const binaryString = window.atob(base64);

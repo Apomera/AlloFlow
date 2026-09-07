@@ -680,11 +680,12 @@ function checkpointTerminalAudit(value, countKey) {
 }
 
 function checkpointTerminalCapsule(value) {
-  const keys = ['checkpointCapsuleSchema', ...Driver.TERMINAL_CHECKPOINT_REMEDIATION_FIELDS, 'axeAudit', 'secondEngineAudit'];
+  const keys = ['checkpointCapsuleSchema', ...Driver.TERMINAL_CHECKPOINT_REMEDIATION_FIELDS, 'axeAudit', 'secondEngineAudit']
+    .filter(key => !['candidateRejectionCount', 'candidateRejections'].includes(key) || Object.hasOwn(value || {}, key));
   const binding = value && value.verificationHtmlBinding;
   const active = value && value.activeContent;
   const findingTypes = new Set(['open-action', 'javascript', 'launch', 'embedded-files', 'additional-actions', 'other-actions', 'multimedia']);
-  if (!hasExactKeys(value, keys) || value.checkpointCapsuleSchema !== 1
+  if (!hasExactKeys(value, keys) || value.checkpointCapsuleSchema !== Driver.TERMINAL_CHECKPOINT_CAPSULE_SCHEMA
       || typeof value.accessibleHtml !== 'string' || value.accessibleHtml.length === 0
       || !hasExactKeys(binding, ['version', 'algorithm', 'digest', 'utf8ByteLength'])
       || binding.version !== 1 || binding.algorithm !== 'SHA-256'
@@ -701,6 +702,8 @@ function checkpointTerminalCapsule(value) {
         && findingTypes.has(finding.type) && Number.isSafeInteger(finding.count) && finding.count > 0
         && typeof finding.label === 'string' && finding.label.length > 0)
       || typeof value.sourceKind !== 'string' || value.sourceKind.length === 0
+      || typeof value.sourceText !== 'string' || value.sourceText.length === 0
+      || !Driver.checkpointSourceCoverageExtraction(value._sourceCoverageExtraction)
       || typeof value.finalText !== 'string' || value.finalText.length === 0
       || !(value.groundTruthMethod === null || typeof value.groundTruthMethod === 'string')
       || !(value.groundTruthPages === null || Array.isArray(value.groundTruthPages))
@@ -710,7 +713,7 @@ function checkpointTerminalCapsule(value) {
       || typeof value._perLeafScannedOptOut !== 'boolean'
       || !checkpointTerminalAudit(value.axeAudit, 'totalViolations')
       || !checkpointTerminalAudit(value.secondEngineAudit, 'failViolations')) return null;
-  return value;
+  return { ...value, ...Verification.normalizeCandidateRejectionEvidence(value) };
 }
 
 function checkpointRemediationSnapshot(value) {
@@ -739,7 +742,8 @@ function checkpointRemediationSnapshot(value) {
     (value.stage === 'primary' && (value.nextRound !== 0 || value.roundsRun !== 0)) ||
     (value.stage === 'round' && (value.nextRound === 0 || value.nextRound !== value.roundsRun))
   ) return null;
-  return value;
+  return Object.hasOwn(value.remediation, 'checkpointCapsuleSchema')
+    ? { ...value, remediation: checkpointTerminalCapsule(value.remediation) } : value;
 }
 
 function validateCheckpointEnvelope(value, expected = {}) {
@@ -768,7 +772,7 @@ function validateCheckpointEnvelope(value, expected = {}) {
   else if (value.stage === 'primary' || value.stage === 'round') {
     snapshot = checkpointRemediationSnapshot(value.snapshot);
   }
-  return snapshot && snapshot.stage === value.stage ? value : null;
+  return snapshot && snapshot.stage === value.stage ? { ...value, snapshot } : null;
 }
 
 function readCheckpointCandidate(candidatePath, expected, pointer) {
@@ -889,6 +893,40 @@ function clearLocalCheckpoint(job, persist = false) {
 // Durable job acceptance and every checkpoint/file-boundary commit are fail-closed.
 let jobRecordsWritable = true; // flipped false the first time persistence fails, so capabilities can say so
 
+// Persist only fixed numerical telemetry fields. Pipeline snapshots also contain
+// runtime strings and extensible warning payloads; those do not belong in a
+// durable diagnostics record. Fixed field/row limits bound every saved capsule.
+function boundedJobDiagnostics(value) {
+  if (!isPlainObject(value) || !isPlainObject(value.snapshot)) return null;
+  const pick = (input, keys) => {
+    const out = {};
+    if (!isPlainObject(input)) return out;
+    for (const key of keys.split(' ')) {
+      const n = input[key];
+      if (typeof n === 'number' && Number.isFinite(n) && n >= 0 && n <= Number.MAX_SAFE_INTEGER) out[key] = n;
+    }
+    return out;
+  };
+  const rows = (input, keys) => Array.isArray(input)
+    ? input.slice(-128).map(row => pick(row, keys)).filter(row => Object.keys(row).length) : [];
+  const snapshot = value.snapshot;
+  const capturedAt = typeof value.capturedAt === 'string' && value.capturedAt.length <= 40
+    && Number.isFinite(Date.parse(value.capturedAt)) ? new Date(value.capturedAt).toISOString() : null;
+  return {
+    schema: 1,
+    capturedAt,
+    fileName: null,
+    snapshot: {
+      schemaVersion: 1,
+      run: pick(snapshot.run, 'runSequence apiCalls visionCalls totalApiMs retries transportRetries recoveredRetries terminalFailures authThrottles repeatOffenderSuppressions lastOpenStep durationMs pageCount base64KB'),
+      throttle: pick(snapshot.throttle, 'cooldownMsTotal retryAfterApplied lastRetryAfterMs stormBudgetMs'),
+      constants: pick(snapshot.constants, 'maxConcurrent configuredMax effectiveMax stormMin stormTrip transientTrip cooldownMs recoverHits probeRecover authRetries repeatOffenderLimit staggerMs textInitialMs textRetryMs visionInitialMs visionRetryMs innerFetchMaxRetries innerFetchTimeoutMs traceMax callLedgerMax'),
+      calls: rows(snapshot.calls, 'call passNumber queuedMs transportMs responseBytes authRungs attempts innerAttempts innerRetries repeatFailures breakerSuppressed'),
+      heartbeat: rows(snapshot.heartbeat, 'atMs gapMs'),
+    },
+  };
+}
+
 function persistJob(job, options = {}) {
   try {
     const record = {
@@ -896,6 +934,7 @@ function persistJob(job, options = {}) {
       createdAt: job.createdAt, startedAt: job.startedAt, finishedAt: job.finishedAt,
       logLines: job.logLines, progress: job.progress || null,
       result: job.result, error: job.error,
+      diagnostics: boundedJobDiagnostics(job.diagnostics),
       cancelRequested: job.cancelRequested === true,
       execution: job.execution || null,
       inputIdentitySha256: job.inputIdentitySha256 || null,
@@ -1126,6 +1165,7 @@ function restoreJobs() {
       fileRows: Array.isArray(rec.fileRows) ? rec.fileRows.filter(isPlainObject).slice(0, BATCH_LIMIT_AUDIT) : [],
       terminalIntent: null,
       durabilityWarning: rec.durabilityWarning || null,
+      diagnostics: boundedJobDiagnostics(rec.diagnostics),
       restoredFromStatus: resumable ? priorStatus : null,
       restored: true,
     };
@@ -1297,7 +1337,7 @@ function enqueueJob(job, runner) {
       // remediation_job_diagnostics can serve it after the fact (numbers/enums only).
       try {
         const _diag = driver && typeof driver.takeLastRunDiagnostics === 'function' ? driver.takeLastRunDiagnostics() : null;
-        if (_diag) job.diagnostics = _diag;
+        if (_diag) job.diagnostics = boundedJobDiagnostics(_diag);
       } catch (_) { /* diagnostics must never affect job completion */ }
       // A cancelled batch returns normally with a partial scoreboard — the status
       // must still say cancelled (the result stays fetchable, see job_result).
@@ -1414,6 +1454,9 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
     startedAt: new Date().toISOString(),
     updatedAt: Date.now(),
     modelCalls: 0,
+    // Request IDs are opaque to clients and unique across saved-run resumes.
+    // A delayed response from an earlier attempt must never match a new ask.
+    requestNonce: crypto.randomUUID(),
     requestSeq: 0,
     coalesced: 0,
     cacheHits: 0,
@@ -1472,7 +1515,7 @@ function startAgentRun(filePath, outDir, opts, workflow = {}) {
     }
     run.requestSeq += 1;
     const entry = {
-      requestId: 'mreq-' + run.requestSeq,
+      requestId: 'mreq-' + run.requestNonce + '-' + run.requestSeq,
       key,
       kind: req.kind,
       prompt: String(req.prompt || ''),
@@ -2662,6 +2705,7 @@ async function remediateOneFile(filePath, outDir, opts, onLog, durability = null
     integrityCoverage: out.integrityCoverage,
     integrityWarning: out.integrityWarning,
     fidelityNotes: out.fidelityNotes,
+    ...Verification.normalizeCandidateRejectionEvidence(out),
     verificationState: safeVerificationState(out.verificationState),
     verificationHtmlBound: safeEvidenceBoolean(out.verificationHtmlBound),
     remainingAxeViolations: boundedEvidenceCount(out.remainingAxeViolations),
@@ -3436,6 +3480,7 @@ const S_REMEDIATE = obj({
   aiVerificationIncomplete: { type: ['boolean', 'null'], description: 'True when the AI semantic audit degraded — the headline is then the deterministic score' },
   scoreSource: { type: ['string', 'null'] }, estimatedMinimumScore: { type: ['number', 'null'] },
   contentCoverage: {}, integrityCoverage: {}, integrityWarning: {}, fidelityNotes: {},
+  ...Verification.CANDIDATE_REJECTION_SCHEMA,
   verificationState: { type: ['string', 'null'], enum: ['complete', 'complete-for-tested-scope', 'partial', 'review-required', 'unavailable', null] },
   verificationHtmlBound: S_NULLABLE_BOOL,
   remainingAxeViolations: S_NULLABLE_NUM,

@@ -19,6 +19,11 @@ const GALAXY_PATHS = [
   'desktop/web-app/public/stem_lab/stem_tool_galaxy.js',
 ];
 
+const UI_STRING_PATHS = [
+  'ui_strings.js',
+  'desktop/web-app/public/ui_strings.js',
+];
+
 describe('galaxy texture upscaling', () => {
   it.each(GALAXY_PATHS)('%s does not recurse in upscaleGalaxyCanvas', (filePath) => {
     const source = readFileSync(filePath, 'utf8');
@@ -742,6 +747,108 @@ describe('galaxy visuals', () => {
     expect(charts.length).toBe(6);
     const styled = source.match(/dir: "ltr", className: "w-full", style: \{ direction: 'ltr'/g) || [];
     expect(styled.length).toBe(6);
+  });
+
+  it.each(UI_STRING_PATHS)('%s ships no value that holds the TEXT of an escape', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // A value written as "Sun (1 M\\u2609)" carries a literal backslash, so the screen
+    // shows the escape rather than the character it names. The tool's own English
+    // fallback was correct, which is why only ui_strings-driven English was damaged and
+    // no translation review could see it: the star canvas printed "Sun (1 M\\u2609)",
+    // a toast printed "\\uD83D\\uDCF8 Snapshot saved!".
+    const damaged = [];
+    const pattern = /"([A-Za-z0-9_.]+)"\s*:\s*"((?:[^"\\]|\\.)*)"/g;
+    let match;
+    while ((match = pattern.exec(source))) {
+      if (/\\\\u[0-9a-fA-F]{4}|\\\\n|\\\\t/.test(match[2])) {
+        damaged.push(match[1] + ' = ' + match[2].slice(0, 60));
+      }
+    }
+    expect(damaged, 'value(s) holding escape text: ' + damaged.join(' | ')).toHaveLength(0);
+  });
+
+  it.each(GALAXY_PATHS)('%s draws no canvas label the translation layer never sees', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Text painted into a canvas is invisible to axe, to the prose sweeps and to the
+    // i18n extractors: it is not DOM and it is not a JSX string. Four labels were
+    // therefore still hard-coded English long after the rest of the tool was localised.
+    const calls = source.match(/fillText\(([^,]+),/g) || [];
+    expect(calls.length).toBeGreaterThan(8);
+    const bare = calls.filter((call) => /fillText\(\s*['"]/.test(call));
+    expect(bare, 'canvas label(s) not routed through __alloT: ' + bare.join(' | ')).toHaveLength(0);
+  });
+
+  it.each(GALAXY_PATHS)('%s tells stellar structure by mass rather than always the Sun\'s', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // Below ~0.35 solar masses a star is convective throughout; above ~1.3 the
+    // convection zone is the CORE and the envelope is radiative. Drawing the solar
+    // case for every mass labelled a 20-solar-mass O star backwards.
+    expect(source).toContain('var FULLY_CONVECTIVE_LIMIT = 0.35;');
+    expect(source).toContain('var CONVECTIVE_CORE_LIMIT = 1.3;');
+    const block = source.slice(
+      source.indexOf('var radiativeName = __alloT('),
+      source.indexOf('// Each ring is drawn twice'),
+    );
+    expect(block.length).toBeGreaterThan(200);
+    // Fully convective branch first, then the solar order, then the inverted one.
+    expect(block).toMatch(/mass < FULLY_CONVECTIVE_LIMIT[\s\S]*canvas_zone_fully_convective/);
+    const solar = block.slice(block.indexOf('mass < CONVECTIVE_CORE_LIMIT'), block.indexOf('} else {'));
+    const massive = block.slice(block.indexOf('} else {'));
+    expect(solar.indexOf('radiativeName')).toBeLessThan(solar.indexOf('convectiveName'));
+    expect(massive.indexOf('convectiveName')).toBeLessThan(massive.indexOf('radiativeName'));
+  });
+
+  it.each(GALAXY_PATHS)('%s states one luminosity, derived once', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The size-comparison card used L = M^3.5 while the star canvas read the ZAMS
+    // table: 550 against 280 solar luminosities for the same 5-solar-mass star.
+    expect(source).not.toContain('Math.pow(lifecycleMass, 3.5)');
+    expect(source.match(/mainSequenceLuminosity\(/g).length).toBeGreaterThanOrEqual(4);
+    expect(source.match(/formatSolarLuminosity\(/g)).toHaveLength(3);
+    // A red dwarf's 0.0056 must not print as "0.0".
+    const start = source.indexOf('function formatSolarLuminosity(');
+    const body = source.slice(start, source.indexOf('\n  }', start) + 4);
+    // eslint-disable-next-line no-new-func
+    const format = new Function(body + ' return formatSolarLuminosity;')();
+    expect(format(0.0056)).toBe('0.0056');
+    expect(format(1)).toBe('1.0');
+    expect(format(45000)).toBe('45,000');
+  });
+
+  it.each(GALAXY_PATHS)('%s refuses any atlas link that is not the real Aladin origin', (filePath) => {
+    const source = readFileSync(filePath, 'utf8');
+    // The observation report is the one artefact that LEAVES the tool - written to a
+    // file and to the clipboard - and a saved state is untrusted input. An existing
+    // test only checks that normalizeRealSkyAladinUrl is CALLED; this one runs the
+    // shipped function, so weakening any single condition fails the build.
+    const start = source.indexOf('var normalizeRealSkyAladinUrl = function (value) {');
+    expect(start).toBeGreaterThan(-1);
+    const body = source.slice(start, source.indexOf('\n          };', start) + 13);
+    // eslint-disable-next-line no-new-func
+    const normalize = new Function('REAL_SKY_VIEW_URL_MAX_LENGTH', body + ' return normalizeRealSkyAladinUrl;')(4096);
+
+    const good = 'https://aladin.cds.unistra.fr/AladinLite/?target=M%2031&fov=4.2&survey=P%2FDSS2%2Fcolor';
+    expect(normalize(good)).toBe(good);
+
+    for (const hostile of [
+      'javascript:alert(1)',
+      'data:text/html,<script>alert(1)</script>',
+      'http://aladin.cds.unistra.fr/AladinLite/?target=x',          // not https
+      'https://aladin.cds.unistra.fr.evil.test/AladinLite/?target=x', // suffix host
+      'https://evil.test/AladinLite/?target=x',
+      'https://user:pw@aladin.cds.unistra.fr/AladinLite/?target=x',  // credentials
+      'https://aladin.cds.unistra.fr:8443/AladinLite/?target=x',     // port
+      'https://aladin.cds.unistra.fr/evil/?target=x',                // path
+      'https://aladin.cds.unistra.fr/AladinLite',                    // no trailing slash
+      '',
+      '   ',
+    ]) {
+      expect(normalize(hostile), JSON.stringify(hostile) + ' must be rejected').toBe('');
+    }
+    expect(normalize(null)).toBe('');
+    expect(normalize(123)).toBe('');
+    // Over-long input is rejected before parsing.
+    expect(normalize('https://aladin.cds.unistra.fr/AladinLite/?target=' + 'a'.repeat(5000))).toBe('');
   });
 
   it.each(GALAXY_PATHS)('%s keeps the black-hole canvas sized to its own box', (filePath) => {

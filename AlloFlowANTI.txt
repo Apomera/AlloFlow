@@ -1379,9 +1379,9 @@ function _buildAlloPackShareUrl(encodedPack, aiPolicy = 'off') {
 // Code.gs remains the one canonical source. The generated CDN module serves
 // Canvas and online sessions; the compact gzip fallback preserves first-use
 // offline/Desktop copying without keeping 2,590 lines of Apps Script inline.
-const ALLO_MB_SCRIPT_VERSION = 19;
-const ALLO_MB_SCRIPT_SHA256 = '492c308e1f640b7bfdbee649a8d5114a0c70971684ff21697bf03f26865cd77b';
-const ALLO_MB_SCRIPT_BYTES = 123625;
+const ALLO_MB_SCRIPT_VERSION = 20;
+const ALLO_MB_SCRIPT_SHA256 = '4a855c9691de5b45e24fddd096327033ec09305b53863f13706c1f421de95caf';
+const ALLO_MB_SCRIPT_BYTES = 125013;
 const ALLO_MB_SCRIPT_FALLBACK_GZIP = '';
 const _alloValidateMailboxScriptSource = async (candidate) => {
     if (!candidate || typeof candidate.source !== 'string') return '';
@@ -3847,6 +3847,24 @@ if (typeof window !== 'undefined' && window.speechSynthesis && !window.speechSyn
 if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     let _state = { isPlaying: false, status: 'idle', currentText: null, currentId: null, error: null };
     let _audio = null;
+    let _audioPreferenceOverrides = {};
+    const _speechVolume = (explicit) => {
+        const candidate = typeof explicit === 'number' && Number.isFinite(explicit) && explicit >= 0 && explicit <= 1
+            ? explicit : window.__alloVoiceVolume;
+        return typeof candidate === 'number' && Number.isFinite(candidate) ? Math.max(0, Math.min(1, candidate)) : 1;
+    };
+    const _speechRate = (explicit) => {
+        const candidate = typeof explicit === 'number' && Number.isFinite(explicit) && explicit > 0
+            ? explicit : window.__alloPlaybackRate;
+        return typeof candidate === 'number' && Number.isFinite(candidate) && candidate > 0 ? Math.max(0.1, Math.min(10, candidate)) : 1;
+    };
+    const _browserFallbackAllowed = () => {
+        try {
+            const config = JSON.parse(localStorage.getItem('alloflow_ai_config') || '{}');
+            const provider = String(config.ttsProvider || '').trim().toLowerCase();
+            return provider === 'browser' || (provider !== 'off' && config.browserTtsFallback !== false);
+        } catch (_) { return true; }
+    };
     let _attemptCleanup = null;
     let _sessionCounter = 0;
     let _abortController = null;
@@ -4059,8 +4077,8 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         _state = { isPlaying: false, status: 'error', currentText: _state.currentText, currentId: id, error: message };
         _emit();
     };
-    const _browserFallback = (text, id, rate, locale) => new Promise((resolve) => {
-        if (_state.currentId !== id || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
+    const _browserFallback = (text, id, rate, locale, volume) => new Promise((resolve) => {
+        if (!_browserFallbackAllowed() || _state.currentId !== id || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
             resolve(false);
             return;
         }
@@ -4090,7 +4108,8 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         };
         const release = () => { if (_attemptCleanup === cancelAttempt) _attemptCleanup = null; };
         _attemptCleanup = cancelAttempt;
-        utterance.rate = rate || 0.9;
+        utterance.rate = _speechRate(rate);
+        utterance.volume = _speechVolume(volume);
         utterance.pitch = 1;
         if (locale) {
             utterance.lang = locale;
@@ -4180,7 +4199,7 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
     const _invalidateUrl = (url) => {
         try { if (typeof window.__alloInvalidateTtsUrl === 'function') window.__alloInvalidateTtsUrl(url); } catch (e) {}
     };
-    const _playAudioUrl = (url, id, rate, text, locale) => new Promise((resolve) => {
+    const _playAudioUrl = (url, id, rate, text, locale, volume) => new Promise((resolve) => {
         if (_state.currentId !== id) { resolve(false); return; }
         const audio = new Audio(url);
         let settled = false;
@@ -4213,7 +4232,7 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
             _toast(message, 'error');
         };
         const fallbackAfterStart = () => {
-            _browserFallback(text, id, rate, locale).then((ok) => {
+            _browserFallback(text, id, rate, locale, volume).then((ok) => {
                 if (!ok) reportFailure();
             }).catch(reportFailure);
         };
@@ -4235,7 +4254,8 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
             error.name = 'TimeoutError';
             mediaFailure(error);
         }, 12000);
-        audio.playbackRate = rate;
+        audio.playbackRate = _speechRate(rate);
+        audio.volume = _speechVolume(volume);
         _audio = audio;
         audio.onended = () => {
             if (cancelled || terminal) return;
@@ -4276,8 +4296,9 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         _state = { isPlaying: true, status: 'generating', currentText: text, currentId: id, error: null };
         _emit();
         const voice = request.voice;
-        const rate = (typeof o.rate === 'number') ? o.rate
-                     : (typeof window.__alloPlaybackRate === 'number' ? window.__alloPlaybackRate : 0.95);
+        const rate = o.rate;
+        const volume = o.volume;
+        _audioPreferenceOverrides = { rate, volume };
         const language = request.language;
         const locale = request.locale;
         try {
@@ -4299,14 +4320,14 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
             }
             if (_state.currentId !== id) return null;
             if (url) {
-                const ok = await _playAudioUrl(url, id, rate, text, locale);
+                const ok = await _playAudioUrl(url, id, rate, text, locale, volume);
                 if (ok) return id;
             }
         } catch (e) {
             if (_state.currentId !== id || _isAbortError(e)) return null;
             console.warn('[AlloSpeechPlayer] TTS failed, trying browser speech:', e && e.message);
         }
-        if (_state.currentId === id && await _browserFallback(text, id, rate, locale)) return id;
+        if (_state.currentId === id && await _browserFallback(text, id, rate, locale, volume)) return id;
         if (_state.currentId === id) {
             const message = _localized('toasts.tts_failed', 'Read-aloud is not available in this browser.');
             _failIfCurrent(id, message);
@@ -4314,6 +4335,13 @@ if (typeof window !== 'undefined' && !window.AlloSpeechPlayer) {
         }
         return null;
     };
+    window.addEventListener('alloflow:audio-preferences-changed', () => {
+        if (!_audio) return;
+        try {
+            _audio.playbackRate = _speechRate(_audioPreferenceOverrides.rate);
+            _audio.volume = _speechVolume(_audioPreferenceOverrides.volume);
+        } catch (_) {}
+    });
     window.addEventListener('alloflow-mute-changed', (e) => {
         if (e.detail && e.detail.muted) { _stop(); _cancelAllPrefetches(); }
     });
@@ -10561,6 +10589,12 @@ const SETTINGS_INITIAL_STATE = {
   standardDeckLang: 'English Only',
   targetTranslationLang: 'Spanish',
 };
+// A component remount must restore the latest preference, not the script's startup snapshot.
+function initializeSettingsState(initialState) {
+  let savedTheme = null;
+  try { savedTheme = safeGetItem('allo_theme'); } catch (_) {}
+  return { ...initialState, theme: ['light', 'dark', 'contrast'].includes(savedTheme) ? savedTheme : 'light' };
+}
 function settingsReducer(state, action) {
   if (action.type === 'SETTINGS_SET') {
     const val = typeof action.value === 'function' ? action.value(state[action.field]) : action.value;
@@ -11414,10 +11448,12 @@ const AlloFlowContent = () => {
       }
   }, []);
   const [studentProjectSettings, setStudentProjectSettings] = useState(_alloCreateDefaultStudentProjectSettings);
-  const [settingsState, settingsDispatch] = useReducer(settingsReducer, SETTINGS_INITIAL_STATE);
+  const [settingsState, settingsDispatch] = useReducer(settingsReducer, SETTINGS_INITIAL_STATE, initializeSettingsState);
   const { isProjectSettingsOpen, theme, showTextSettings, showVoiceSettings, wordSearchLang, standardDeckLang, targetTranslationLang } = settingsState;
   const setIsProjectSettingsOpen = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'isProjectSettingsOpen', value: v });
-  const setTheme = (v) => { try { safeSetItem('allo_theme', v); } catch {} settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v }); };
+  const setTheme = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'theme', value: v });
+  // Persist the resolved reducer value, never a functional updater.
+  useEffect(() => { try { safeSetItem('allo_theme', theme); } catch {} }, [theme]);
   const setShowTextSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showTextSettings', value: v });
   const setShowVoiceSettings = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'showVoiceSettings', value: v });
   const setWordSearchLang = (v) => settingsDispatch({ type: 'SETTINGS_SET', field: 'wordSearchLang', value: v });
@@ -13095,6 +13131,39 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [isReadingLibraryOpen, _setIsReadingLibraryOpenRaw] = useState(false);
   // Deep-open slug for a lesson-pinned book (set by restore/sync, consumed by the module).
   const [pendingReadingBookSlug, setPendingReadingBookSlug] = useState(null);
+  const [pendingReadingLocation, setPendingReadingLocation] = useState(null);
+  const [readingStudySource, setReadingStudySource] = useState(null);
+  function openReadingStudy(selection) {
+    if (!selection || !selection.text) return;
+    stopPlayback();
+    setReadingStudySource({ ...selection, ownerScope: readingProfileScope, requestId: String(Date.now()) });
+    setIsReadingLibraryOpen(false);
+    setLabToolData(prev => ({ ...prev, lumen: { ...(prev.lumen || {}), mode: 'study' } }));
+    setStemLabTool('lumen'); setStemLabTab('explore'); setShowStemLab(true);
+  }
+  function returnToReadingPassage(citation) {
+    const anchor = citation && citation.anchor;
+    if (!anchor) return;
+    if (anchor.kind === 'library') {
+      setPendingReadingBookSlug(anchor.slug);
+      setPendingReadingLocation({ ...anchor, contentHash: citation.contentHash, language: citation.language, passage: citation.passage });
+      setShowStemLab(false); setIsReadingLibraryOpen(true);
+    } else if (anchor.kind === 'adapted') {
+      const item = history.find(item => String(item.id) === String(anchor.resourceId));
+      if (item) handleRestoreView(item, { suppressLiveFollow: true });
+      else if (String(generatedContent && generatedContent.id || sourceTopic || 'adapted') !== String(anchor.resourceId)) {
+        addToast('This reading is no longer in the resource list. Its saved passage is still available in Lumen.', 'info'); return;
+      }
+      setShowStemLab(false); setActiveView('simplified');
+      setTimeout(() => {
+        const normalize = text => String(text || '').replace(/\s+/g, ' ').trim();
+        const snippet = normalize(citation.passage).slice(0,80);
+        const match = Array.from(document.querySelectorAll('[data-simplified-reading-body] p, [data-simplified-reading-body] [data-sentence-idx]')).find(el => normalize(el.textContent).includes(snippet));
+        if (match) { match.setAttribute('tabindex', '-1'); match.focus(); match.scrollIntoView({ block: 'center' }); }
+        else addToast('Reading reopened. The passage may have changed; the original remains in your Lumen note.', 'info');
+      }, 300);
+    }
+  }
   const [pendingReadingSet, setPendingReadingSet] = useState(null);
   const [pendingLinguaSource, setPendingLinguaSource] = useState(null);
   const [readingLibraryIndexForBot, setReadingLibraryIndexForBot] = useState(null);
@@ -13763,7 +13832,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=eae303085');
     loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=eae303085');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=eae303085');
-    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=8405ef04');
+    loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=6c408035');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=5f7f65c4');
     loadModule('Export', 'https://alloflow-cdn.pages.dev/export_module.js?v=12d2835a');
     loadModule('MiscComponents', 'https://alloflow-cdn.pages.dev/misc_components_module.js?v=eae303085');
@@ -14074,7 +14143,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setTimeout(function () { awaitModuleScopeExtras(tries - 1); }, 100);
     })(50);
-    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=5c185b44');
+    loadModule('ImmersiveReaderModule', 'https://alloflow-cdn.pages.dev/immersive_reader_module.js?v=188e3e93');
     loadModule('PersonaUIModule', 'https://alloflow-cdn.pages.dev/persona_ui_module.js?v=eae303085');
     loadModule('PdfValidator', 'https://alloflow-cdn.pages.dev/view_pdf_validator_module.js');
     loadModule('ContentEngineModule', 'https://alloflow-cdn.pages.dev/content_engine_module.js?v=eae303085');
@@ -14143,12 +14212,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('GlossaryHelpersModule', 'https://alloflow-cdn.pages.dev/glossary_helpers_module.js?v=eae303085');
     loadModule('ViewRenderersModule', 'https://alloflow-cdn.pages.dev/view_renderers_module.js?v=eae303085');
     loadModule('AudioHelpersModule', 'https://alloflow-cdn.pages.dev/audio_helpers_module.js?v=eae303085');
-    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=398e7a6a');
+    loadModule('KaraokeAudioStoreModule', 'https://alloflow-cdn.pages.dev/karaoke_audio_store_module.js?v=5ebfbbb5');
     // Word-by-word karaoke timing (deterministic envelope + valley snapping).
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
     loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=e9c93913');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=a4338092');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=e99bcb50');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=3a046659');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
@@ -14175,7 +14244,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=eae303085');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=eae303085');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=eae303085');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=bf6237ae'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=60f86165'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=eae303085');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=eae303085');
@@ -16175,7 +16244,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [isChunkReaderActive]);
   useEffect(() => {
       // Reset typewriter on chunk change. Tick advance happens in the renderer's
-      // own RAF loop (see view_simplified_module.js typewriter logic) so the char
+      // own RAF loop (see view_simplified_module.js?v=60f86165 typewriter logic) so the char
       // count doesn't depend on prop drilling another timer through the chain.
       setChunkTypewriterCharIdx(0);
   }, [chunkReaderIdx, chunkReaderMood, isChunkReaderActive]);
@@ -16201,7 +16270,13 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }, tickMs);
       return () => clearInterval(id);
   }, [isChunkReaderActive, chunkReaderMood, chunkReaderIdx, chunkReaderSpeed]);
-  const handleCloseImmersiveReader = useCallback(() => setIsImmersiveReaderActive(false), []);
+  const handleCloseImmersiveReader = useCallback(() => {
+    setIsImmersiveReaderActive(false);
+    setIsFocusReaderActive(false);
+    setIsCrawlReaderActive(false);
+    setIsKaraokeOverlayActive(false);
+    setChunkReaderAutoPlay(false);
+  }, []);
   const handleCloseStudentWelcome = useCallback(() => setShowStudentWelcome(false), []);
   const handleCloseStudentEntry = useCallback(() => { setShowStudentEntry(false); setHasSelectedRole(false); }, []);
   const handleCloseWordScramble = useCallback(() => setIsWordScrambleGame(false), []);
@@ -16474,6 +16549,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }, [rosterKey]);
   const [profiles, setProfiles] = useState([]);
   const [selectedProfileId, setSelectedProfileId] = useState('');
+  const readingProfileScope = (isTeacherMode === false ? 'learner' : 'teacher') + '|' + (selectedProfileId ? 'profile:' + String(selectedProfileId) + '|' : '') + String(studentNickname || 'default');
   const [newProfileName, setNewProfileName] = useState('');
   const profileInputRef = useRef(null);
   const [units, setUnits] = useState([]);
@@ -17385,7 +17461,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   });
   const setColorOverlay = (v) => { try { safeSetItem('allo_color_overlay', v); } catch {} _setColorOverlay(v); };
   const [readingRuler, setReadingRuler] = useState(() => { try { return safeGetItem('allo_reading_ruler') === '1'; } catch (_) { return false; } });
-  const [rulerY, setRulerY] = useState(0);
+  // Reading Ruler state: the enabled preference survives reload; position starts usable.
+  const [rulerY, setRulerY] = useState(() => {
+      const height = typeof window !== 'undefined' ? Number(window.innerHeight) : 600;
+      return (Number.isFinite(height) && height > 0 ? height : 600) / 2;
+  });
+  const [rulerSuspended, setRulerSuspended] = useState(false);
   const [fontTheme, setFontTheme] = useState(() => { try { return safeGetItem('allo_font_theme') || 'Default'; } catch (_) { return 'Default'; } });
   // Persisted (was session-only — the one reading-support preference that
   // reset on every reload while readingTheme/colorOverlay survived).
@@ -17395,11 +17476,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     try { window.__alloEnsureUIFont?.(v); } catch (_) {}
     _setSelectedFont(v);
   };
-  const [focusMode, setFocusMode] = useState(false);
+  const [focusMode, setFocusMode] = useState(() => { try { return safeGetItem('allo_bionic_reading') === '1'; } catch (_) { return false; } });
+  useEffect(() => { safeSetItem('allo_bionic_reading', focusMode ? '1' : '0'); }, [focusMode]);
   const [isLineFocusMode, setIsLineFocusMode] = useState(false);
   const [focusedParagraphIndex, setFocusedParagraphIndex] = useState(null);
   const [baseFontSize, setBaseFontSize] = useState(() => { try { const v = parseFloat(safeGetItem('allo_base_font_size')); return Number.isFinite(v) && v >= 10 && v <= 48 ? v : 16; } catch (_) { return 16; } });
-  const [sliderFontSize, setSliderFontSize] = useState(16);
+  // One value drives the slider, keyboard/voice commands and rendered text.
+  const sliderFontSize = baseFontSize;
+  const setSliderFontSize = setBaseFontSize;
   const [lineHeight, setLineHeight] = useState(() => { try { const v = parseFloat(safeGetItem('allo_line_height')); return Number.isFinite(v) && v >= 1 && v <= 3 ? v : 1.6; } catch (_) { return 1.6; } });
 
   // ── Preference persistence (must stay BELOW every state it references) ──
@@ -17413,6 +17497,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // Do NOT add a second durable path here — two hydration paths would race.
   useEffect(() => { safeSetItem('allo_voice_speed', String(voiceSpeed)); }, [voiceSpeed]);
   useEffect(() => { safeSetItem('allo_voice_volume', String(voiceVolume)); }, [voiceVolume]);
+  useEffect(() => {
+      window.__alloPlaybackRate = voiceSpeed;
+      window.__alloVoiceVolume = voiceVolume;
+      window.dispatchEvent(new CustomEvent('alloflow:audio-preferences-changed', { detail: { rate: voiceSpeed, volume: voiceVolume } }));
+  }, [voiceSpeed, voiceVolume]);
   useEffect(() => { safeSetItem('allo_base_font_size', String(baseFontSize)); }, [baseFontSize]);
   useEffect(() => { safeSetItem('allo_line_height', String(lineHeight)); }, [lineHeight]);
   useEffect(() => { safeSetItem('allo_font_theme', String(fontTheme || 'Default')); }, [fontTheme]);
@@ -17428,7 +17517,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       else safeSetItem('allo_disable_animations', disableAnimations ? '1' : '0');
     } catch (_) {}
   }, [disableAnimations]);
-  const [letterSpacing, setLetterSpacing] = useState(0);
+  const [letterSpacing, setLetterSpacing] = useState(() => { try { const v = parseFloat(safeGetItem('allo_letter_spacing')); return Number.isFinite(v) && v >= 0 && v <= 0.2 ? v : 0; } catch (_) { return 0; } });
+  useEffect(() => { safeSetItem('allo_letter_spacing', String(letterSpacing)); }, [letterSpacing]);
   const [isCheckingLevel, setIsCheckingLevel] = useState(false);
   const [isCheckingAlignment, setIsCheckingAlignment] = useState(false);
   const [isSideBySide, setIsSideBySide] = useState(false);
@@ -18530,6 +18620,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => { conceptMasteryLocalRef.current = conceptMasteryLocal; }, [conceptMasteryLocal]);
   const quizResponseGateRef = useRef({ currentQuestionIndex: 0, questionCount: 0 });
   quizResponseGateRef.current = {
+      roundId: sessionData?.quizState?.roundId || '',
+      phase: sessionData?.quizState?.phase,
       currentQuestionIndex: Number(sessionData?.quizState?.currentQuestionIndex) || 0,
       questionCount: Math.max(0, Number(sessionData?.quizState?.questionCount)
           || generatedContent?.data?.questions?.length || 0),
@@ -18599,7 +18691,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               const pollId = payload.pollId;
               if (pollId === '__mastery__') return true;
               const gate = quizResponseGateRef.current || {};
-              if (typeof pollId === 'string' && pollId === 'boss:' + gate.currentQuestionIndex) return true;
+              if (typeof pollId === 'string' && pollId === 'boss:' + gate.currentQuestionIndex + (gate.roundId ? ':' + gate.roundId : '') && gate.phase === 'answering') return true;
               const questionIndex = Number.isInteger(pollId)
                   ? pollId
                   : typeof pollId === 'string' && /^\d{1,4}$/.test(pollId) ? Number(pollId) : -1;
@@ -18641,8 +18733,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // teacher's advance also resets quizState.responses in Firestore).
   useEffect(() => {
       const qIdx = sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex;
-      setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx)) ? null : prev);
-  }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex]);
+      const roundId = sessionData?.quizState?.roundId;
+      setLiveBossResponses(prev => (prev && prev.qIdx !== String(qIdx) + (roundId ? ':' + roundId : '')) ? null : prev);
+  }, [sessionData && sessionData.quizState && sessionData.quizState.currentQuestionIndex, sessionData?.quizState?.roundId]);
   // Merged teacher views: channel-received answers/mastery layered over the
   // any host-readable legacy fallback. New participant fallbacks are receipts
   // only and never enter dashboards, scoring, routing, or feedback.
@@ -18673,7 +18766,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       const qs = sessionData.quizState || {};
       // Boss answers received P2P overlay any host-readable legacy fallback
       // for the current question. Receipt-only submissions stay unscored.
-      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex))
+      const bossByUid = (liveBossResponses && liveBossResponses.qIdx === String(qs.currentQuestionIndex) + (qs.roundId ? ':' + qs.roundId : ''))
           ? { ...(qs.responses || {}), ...liveBossResponses.byUid }
           : (qs.responses || {});
       return { ...sessionData, quizState: { ...qs, allResponses: quizMergedAllResponses, responses: bossByUid } };
@@ -20909,7 +21002,14 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         problem[field] = value;
       }
       if (problem._verification && typeof problem._verification === 'object' && !Array.isArray(problem._verification)) {
-        problem._verification = { ...problem._verification, verified: false, edited: true };
+        // An edited question invalidates the model's old expression. Recheck
+        // the visible question and answer instead of retaining a stale key.
+        if (field === 'question' || field === 'answer') delete problem.expression;
+        const verify = window.AlloModules?.GenerationHelpers?.verifyGeneratedMathProblems;
+        const checked = typeof verify === 'function' ? verify([problem])[0] : null;
+        problem._verification = checked
+          ? { ...checked._verification, edited: true }
+          : { ...problem._verification, verified: false, edited: true };
       }
       updatedProblems[pIdx] = problem;
       return {
@@ -30387,16 +30487,119 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       initLocalData();
       return () => { cancelled = true; };
   }, [lzLoaded, isTeacherMode, showStudentEntry, activeSessionCode]);
+  // Reading Ruler input lifecycle: pointer, touch and keyboard focus share one position.
   useEffect(() => {
-    if (!readingRuler) return;
-    const handleMouseMove = (e) => {
-      setRulerY(e.clientY);
+    if (!readingRuler) { setRulerSuspended(false); return; }
+    let disposed = false;
+    let positionFrame = null;
+    let focusFrame = null;
+    let pendingY = null;
+    let suspendedRegion = null;
+    const viewportHeight = () => {
+      const height = Number(window.innerHeight);
+      return Number.isFinite(height) && height > 0 ? height : 600;
     };
-    window.addEventListener('mousemove', handleMouseMove);
+    const clampY = value => {
+      const height = viewportHeight();
+      const half = Math.min(50, height / 2);
+      return Math.min(height - half, Math.max(half, Number.isFinite(value) ? value : height / 2));
+    };
+    const requestFrame = typeof window.requestAnimationFrame === 'function'
+      ? callback => window.requestAnimationFrame(callback) : callback => window.setTimeout(callback, 16);
+    const cancelFrame = typeof window.cancelAnimationFrame === 'function'
+      ? frame => window.cancelAnimationFrame(frame) : frame => window.clearTimeout(frame);
+    const exemptSelector = 'header, [role="banner"], [role="toolbar"], [role="dialog"], [role="alertdialog"], #tour-header-settings, #tour-header-utils';
+    const isOpenRegion = region => region && region.isConnected
+      && !region.closest('[hidden], [aria-hidden="true"], dialog:not([open])');
+    const findExemptRegion = target => {
+      const region = target && typeof target.closest === 'function' ? target.closest(exemptSelector) : null;
+      return isOpenRegion(region) ? region : null;
+    };
+    const queuePosition = value => {
+      if (!Number.isFinite(value) || disposed) return;
+      pendingY = value;
+      if (positionFrame !== null) return;
+      positionFrame = requestFrame(() => {
+        positionFrame = null;
+        if (disposed) return;
+        const next = pendingY;
+        pendingY = null;
+        setRulerY(clampY(next));
+      });
+    };
+    const syncTarget = (target, clientY) => {
+      if (disposed) return;
+      // A focused modal remains fully visible even when the pointer is over its backdrop.
+      const activeModal = document.activeElement && typeof document.activeElement.closest === 'function'
+        ? document.activeElement.closest('[role="dialog"], [role="alertdialog"]') : null;
+      suspendedRegion = findExemptRegion(target) || (isOpenRegion(activeModal) ? activeModal : null);
+      setRulerSuspended(!!suspendedRegion);
+      if (suspendedRegion) {
+        if (positionFrame !== null) { cancelFrame(positionFrame); positionFrame = null; pendingY = null; }
+        if (pauseObserver && document.body) pauseObserver.observe(document.body, {
+          childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'aria-hidden', 'role', 'open']
+        });
+        return;
+      }
+      if (pauseObserver) pauseObserver.disconnect();
+      if (Number.isFinite(clientY)) { queuePosition(clientY); return; }
+      // Page containers do not represent a focused reading line.
+      if (target && target !== document.body && target !== document.documentElement
+          && typeof target.getBoundingClientRect === 'function') {
+        const rect = target.getBoundingClientRect();
+        if (Number.isFinite(rect.top) && Number.isFinite(rect.height) && rect.height > 0) queuePosition(rect.top + rect.height / 2);
+      }
+    };
+    const syncFocusedElement = () => {
+      if (focusFrame !== null || disposed) return;
+      focusFrame = requestFrame(() => {
+        focusFrame = null;
+        if (!disposed) syncTarget(document.activeElement);
+      });
+    };
+    // Observe only while paused. Removing/closing a focused panel can move focus to
+    // body without a focusin event; resume then instead of waiting for a mouse move.
+    const pauseObserver = typeof window.MutationObserver === 'function' ? new window.MutationObserver(() => {
+      if (suspendedRegion && (!suspendedRegion.isConnected || !suspendedRegion.matches(exemptSelector)
+          || suspendedRegion.closest('[hidden], [aria-hidden="true"], dialog:not([open])'))) syncFocusedElement();
+    }) : null;
+    const handlePointer = event => {
+      if (event.isPrimary === false) return;
+      syncTarget(event.target, event.clientY);
+    };
+    const handleTouch = event => {
+      if (event.touches && event.touches.length === 1) syncTarget(event.target, event.touches[0].clientY);
+    };
+    const handleFocus = event => syncTarget(event.target);
+    const handleResize = () => setRulerY(current => clampY(current));
+    const pointerSupported = typeof window.PointerEvent === 'function';
+    const moveEvent = pointerSupported ? 'pointermove' : 'mousemove';
+    const downEvent = pointerSupported ? 'pointerdown' : 'mousedown';
+    const passive = { passive: true };
+    setRulerY(current => clampY(current));
+    syncTarget(document.activeElement);
+    window.addEventListener(moveEvent, handlePointer, passive);
+    window.addEventListener(downEvent, handlePointer, passive);
+    window.addEventListener('touchstart', handleTouch, passive);
+    window.addEventListener('touchmove', handleTouch, passive);
+    window.addEventListener('focusin', handleFocus);
+    window.addEventListener('focusout', syncFocusedElement);
+    window.addEventListener('resize', handleResize);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      disposed = true;
+      window.removeEventListener(moveEvent, handlePointer);
+      window.removeEventListener(downEvent, handlePointer);
+      window.removeEventListener('touchstart', handleTouch);
+      window.removeEventListener('touchmove', handleTouch);
+      window.removeEventListener('focusin', handleFocus);
+      window.removeEventListener('focusout', syncFocusedElement);
+      window.removeEventListener('resize', handleResize);
+      if (positionFrame !== null) cancelFrame(positionFrame);
+      if (focusFrame !== null) cancelFrame(focusFrame);
+      if (pauseObserver) pauseObserver.disconnect();
     };
   }, [readingRuler]);
+  // End Reading Ruler input lifecycle.
   useEffect(() => {
       isDictationActiveRef.current = isDictationMode;
   }, [isDictationMode]);
@@ -34054,7 +34257,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   const handlePrintGame = () => {
       if (!gameData) return;
       const printContent = document.getElementById('printable-game-area').innerHTML;
-      let teacherGridHtml = '<div class="grid-container">';
+      let teacherGridHtml = '<div class="grid-container" dir="' + (gameData.isRtl ? 'rtl' : 'ltr') + '">';
       gameData.grid.forEach((row, r) => {
           teacherGridHtml += '<div class="grid-row">';
           row.forEach((char, c) => {
@@ -34811,6 +35014,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
   // plugin-module read-aloud (games_source SpeakButton et al) picks it up
   // without needing to receive it through a prop chain.
   window.__alloPlaybackRate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1.0;
+  window.__alloVoiceVolume = Number.isFinite(voiceVolume) ? Math.max(0, Math.min(1, voiceVolume)) : 1;
   window.__alloTextLanguage = leveledTextLanguage || currentUiLanguage || 'English';
   window.__alloT = t;
   // Tier 2 OnboardingHelpers reads this lazily on every speak() so it stays
@@ -35241,59 +35445,27 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     if (configuredProvider === 'off' || configuredProvider === 'browser') return null;
     const activeVoice = profile.voice || selectedVoice || window.__alloSelectedVoice || 'Kore';
     const activeLanguage = profile.language || leveledTextLanguage || currentUiLanguage || 'English';
-    const activeSpeed = Number(profile.synthesisRate || profile.speed || voiceSpeed) || 1;
-    // Direct Gemini PCM first (mp3-encodable for embedding) — but ONLY when
-    // that call can possibly succeed. With the session's key 401-latched, or
-    // a local Kokoro voice selected, this leg just hangs a full fetch budget
-    // and fails (2026-07-20: the Edit-Audio Generate button sat minutes on
-    // exactly this before callTTS even got a turn).
-    const _providerAllowsGemini = configuredProvider === 'auto' || configuredProvider === 'gemini';
-    const _geminiUsable = _providerAllowsGemini && !window.__ttsGeminiAuthFailed && !/^(af_|am_|bf_|bm_)/i.test(String(activeVoice || ''));
-    try {
-      if (_geminiUsable && !window.lamejs && typeof window.__alloEnsureLameJs === 'function') {
-        await window.__alloEnsureLameJs();
-      }
-      const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-      if (_geminiUsable && window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
-        const r = await fetchTTSBytes(sentence, activeVoice, activeSpeed, activeLanguage, signal, options.priority || 'interactive');
-        if (r && r.bytes) {
-          // 64 kbps mono is transparent for 24 kHz speech and halves the
-          // embedded-JSON weight vs the 128 kbps download default.
-          const mp3Blob = await _encodeKaraokeMp3(r.bytes, 24000, 64);
-          return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg', provider: 'gemini', engine: 'gemini', model: _aiConfig.models && _aiConfig.models.tts };
-        }
-      }
-    } catch (error) {
-      if ((signal && signal.aborted) || (error && error.name === 'AbortError')) throw makeAbortError();
-      warnLog('[Karaoke audio] Compact Gemini synthesis failed; trying the configured resolver:', error && error.message ? error.message : error);
-    }
+    const activeSpeed = Number(profile.speed || voiceSpeed) || 1;
+    // Saving and playback must use the same routing, language, cache, and
+    // cancellation rules. Compact encoding happens after the resolver chooses.
+    let resolvedProfile = {};
     try {
       const url = await callTTS(sentence, activeVoice, activeSpeed, {
         language: activeLanguage,
-        // Hand-pressed Generate / prepare-all: ride the interactive lane
-        // (short budget, never joins a wedged stranger's fetch) and keep
-        // the doomed-retry ceiling low.
         priority: options.priority || 'interactive',
         maxRetries: Number.isFinite(options.maxRetries) ? options.maxRetries : 1,
         reason: 'karaoke-store-synth',
+        force: options.force === true || options.operation === 'regenerate',
         signal,
+        onResolvedProfile: (value) => { resolvedProfile = value || {}; },
       });
       if (!url) return null;
-      const buffer = await _fetchKaraokeCaptureBuffer(url, { signal });
-      const bytes = new Uint8Array(buffer);
-      const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 &&
-        bytes[2] === 0x46 && bytes[3] === 0x46;
-      const blob = new Blob([buffer], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
-      let resolvedProvider = configuredProvider === 'local' ? 'local' : 'tts-resolver';
-      let resolvedEngine = null;
-      if (window._kokoroTTS && typeof window._kokoroTTS.ownsUrl === 'function' && window._kokoroTTS.ownsUrl(url)) {
-        resolvedProvider = 'local'; resolvedEngine = 'kokoro';
-      } else if (window._piperTTS && typeof window._piperTTS.ownsUrl === 'function' && window._piperTTS.ownsUrl(url)) {
-        resolvedProvider = 'local'; resolvedEngine = 'piper';
-      }
-      return { b64: await _blobToBase64(blob), mime: blob.type, provider: resolvedProvider, engine: resolvedEngine };
+      const encoded = await _encodeReadAloudBridgeAudio(url, { signal });
+      if (signal && signal.aborted) throw makeAbortError();
+      return Object.assign({}, encoded, { provenance: resolvedProfile });
     } catch (error) {
       if ((signal && signal.aborted) || (error && error.name === 'AbortError')) throw makeAbortError();
+      warnLog('[Karaoke audio] Synthesis or encoding failed:', error && error.message ? error.message : error);
       return null;
     }
   };
@@ -35337,7 +35509,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const st = _ensureKaraokeStore('reference');
     if (!st) return null;
     const resourceId = generatedContent && generatedContent.id;
-    const out = await _synthSentenceForStore(sentence);
+    const out = await _synthSentenceForStore(sentence, { force: true, operation: 'regenerate' });
     if (!out || !out.b64) return null;
     const url = st.put(sentence, out.b64, out.mime, 'ai-generated', _karaokeAudioMetadata(out.provider || 'tts-resolver'), { allowReplaceHuman: true });
     if (!url) {
@@ -35498,29 +35670,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
         // (a matching-voice take or a human recording keeps priority; a
         // stale-voice AI take is still replaced).
         if (st.has(sentence) && !_karaokeAiVoiceMismatch(st, sentence)) return false;
-        const bytes = new Uint8Array(buf);
-        const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46;
-        if (isWav && !window.lamejs && typeof window.__alloEnsureLameJs === 'function') {
-          await window.__alloEnsureLameJs();
-        }
-        const _ah = window.AlloModules && window.AlloModules.AudioHelpers;
-        let b64 = null;
-        let mime = null;
-        let provider = 'played-tts';
-        if (isWav && window.lamejs && _ah && (typeof _ah.pcmToMp3Async === 'function' || typeof _ah.pcmToMp3 === 'function')) {
-          try {
-            const pcm = new Uint8Array(buf, 44);
-            const mp3Blob = await _encodeKaraokeMp3(pcm, 24000, 64);
-            b64 = await _blobToBase64(mp3Blob);
-            mime = 'audio/mpeg';
-            provider = 'played-tts-mp3';
-          } catch (_) {}
-        }
-        if (!b64) {
-          const blob = new Blob([buf], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
-          b64 = await _blobToBase64(blob);
-          mime = blob.type;
-        }
+        const { b64, mime } = await _encodeReadAloudBridgeAudio(url, { buffer: buf });
+        const provider = mime === 'audio/mpeg' ? 'played-tts-mp3' : 'played-tts';
         const storedUrl = st.put(sentence, b64, mime, 'ai-played', _karaokeAudioMetadata(provider));
         if (!storedUrl) {
           const detail = _karaokePutFailureDetail(st);
@@ -35749,22 +35900,27 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       ? audio
       : (audio && (audio.url || audio.audioUrl || audio.objectUrl));
     if (!url) throw new Error('A playable read-aloud clip was not provided.');
-    const buffer = await _fetchKaraokeCaptureBuffer(url, { signal: encodeContext && encodeContext.signal });
+    const buffer = (encodeContext && encodeContext.buffer) || await _fetchKaraokeCaptureBuffer(url, { signal: encodeContext && encodeContext.signal });
     const bytes = new Uint8Array(buffer);
-    const isWav = bytes.length > 44 && bytes[0] === 0x52 && bytes[1] === 0x49 &&
-      bytes[2] === 0x46 && bytes[3] === 0x46;
-    if (isWav && !window.lamejs && typeof window.__alloEnsureLameJs === 'function') {
+    const inspectBytes = window.AlloModules && window.AlloModules.inspectReadAloudAudioBytes;
+    const container = typeof inspectBytes === 'function'
+      ? inspectBytes(bytes, audio && (audio.mime || audio.type))
+      : { mime: bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 ? 'audio/wav' : 'audio/mpeg' };
+    if (container.pcm && !window.lamejs && typeof window.__alloEnsureLameJs === 'function') {
       await window.__alloEnsureLameJs();
     }
     const audioHelpers = window.AlloModules && window.AlloModules.AudioHelpers;
-    if (isWav && window.lamejs && audioHelpers &&
+    if (container.pcm && window.lamejs && audioHelpers &&
         (typeof audioHelpers.pcmToMp3Async === 'function' || typeof audioHelpers.pcmToMp3 === 'function')) {
       try {
-        const mp3Blob = await _encodeKaraokeMp3(new Uint8Array(buffer, 44), 24000, 64);
+        const mp3Blob = await _encodeKaraokeMp3(container.pcm, container.sampleRate, 64);
         return { b64: await _blobToBase64(mp3Blob), mime: 'audio/mpeg' };
       } catch (_) {}
     }
-    const blob = new Blob([buffer], { type: isWav ? 'audio/wav' : 'audio/mpeg' });
+    const blob = new Blob([buffer], { type: container.mime });
+    // Complex WAV (stereo, float, extensible) needs a real decoder/downmix;
+    // retaining its original bytes is the safe fallback when none is available.
+    if (container.mime === 'audio/wav') return _normalizeRecordedAudioForStore(blob);
     return { b64: await _blobToBase64(blob), mime: blob.type };
   };
   const _getReadAloudBridge = () => {
@@ -35790,10 +35946,13 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
           voiceResolverVersion: 2,
         };
         const provider = String(_aiConfig.ttsProvider || 'auto').toLowerCase();
-        if (provider !== 'auto') profile.provider = provider;
+        profile.requestedProvider = provider === 'auto' ? 'auto:' + (_aiConfig.backend || 'gemini') : provider;
+        if ((provider === 'auto' || provider === 'gemini') && !/^(af_|am_|bf_|bm_)/i.test(profile.voice)) {
+          profile.requestedModel = String((_aiConfig.models && _aiConfig.models.tts) || GEMINI_MODELS.tts || '');
+        }
         return profile;
       },
-      synthesize: ({ text, profile, signal, reason, operation, priority, maxRetries }) => {
+      synthesize: async ({ text, profile, signal, reason, operation, priority, maxRetries, force }) => {
         if (operation === 'resolve') {
           const liveProfile = profile || {};
           const voice = liveProfile.voice || selectedVoice || window.__alloSelectedVoice || 'Kore';
@@ -35802,15 +35961,19 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
             : ((typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1);
           const language = liveProfile.language || leveledTextLanguage || currentUiLanguage || 'English';
           if (typeof callTTS !== 'function') return null;
-          return callTTS(text, voice, speed, {
+          let resolvedProfile = {};
+          const url = await callTTS(text, voice, speed, {
             language,
             signal,
             reason: reason || 'resolve',
+            force: force === true,
+            onResolvedProfile: (value) => { resolvedProfile = value || {}; },
             priority: priority || 'interactive',
             maxRetries: Number.isFinite(maxRetries) ? maxRetries : 1,
           }, language);
+          return url ? { url, provenance: resolvedProfile } : null;
         }
-        return _synthSentenceForStore(text, { profile, signal, reason, operation, priority, maxRetries });
+        return _synthSentenceForStore(text, { profile, signal, reason, operation, priority, maxRetries, force });
       },
       encode: _encodeReadAloudBridgeAudio,
       persist: ({ lane, payload, resourceId }) => {
@@ -36569,7 +36732,7 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
     const _htmlSaveIdentity = _liveSaveBinding
       ? ('sha256:' + _liveSaveBinding.digest)
       : ('local:' + _autosaveHtmlFingerprint(cur.accessibleHtml));
-    const hashKey = _htmlSaveIdentity + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur.verificationState || '') + ':' + String(!!cur.requiresManualReview) + ':' + String(cur.verificationReviewCount || 0) + ':' + String((cur.verificationReasons || []).join('|')) + ':' + String(cur.verificationCoverage && [cur.verificationCoverage.ai, cur.verificationCoverage.axe, cur.verificationCoverage.equalAccess].join('|') || '') + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '') + ':' + String(cur.reviewedFindings ? Object.keys(cur.reviewedFindings).length : 0) + ':' + String(Number(cur.humanEditsAdopted) || 0);
+    const hashKey = _htmlSaveIdentity + ':' + String(cur.afterScore || 0) + ':' + String(cur.autoFixPasses || 0) + ':' + String(cur.axeAudit && cur.axeAudit.totalViolations || 0) + ':' + String(cur.verificationState || '') + ':' + String(!!cur.requiresManualReview) + ':' + String(cur.verificationReviewCount || 0) + ':' + String((cur.verificationReasons || []).join('|')) + ':' + String(cur.verificationCoverage && [cur.verificationCoverage.ai, cur.verificationCoverage.axe, cur.verificationCoverage.equalAccess].join('|') || '') + ':' + String(cur._audioJobMeta ? cur._audioJobMeta.nextIdx : '') + ':' + String(cur.reviewedFindings ? Object.keys(cur.reviewedFindings).length : 0) + ':' + String(Number(cur.humanEditsAdopted) || 0) + ':' + String(Number(cur.candidateRejectionCount) || 0) + ':' + JSON.stringify((cur.candidateRejections || []).slice(0, 100));
     if (isAuto && lastAutoSaveHashRef.current === hashKey) return false;
     const project = {
       version: 1,
@@ -36612,6 +36775,8 @@ Return ONLY valid JSON (no markdown): {"term": "suggested term", "reason": "why 
       // attestations must survive the project file, or a restored session silently forgets
       // who did what and the report loses its honesty line.
       humanEditsAdopted: Number(cur.humanEditsAdopted) || 0,
+      candidateRejectionCount: Math.max(0, Number(cur.candidateRejectionCount) || 0),
+      candidateRejections: Array.isArray(cur.candidateRejections) ? cur.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
       reviewedFindings: (cur.reviewedFindings && typeof cur.reviewedFindings === 'object') ? cur.reviewedFindings : null,
       docStyle: cur.docStyle,
       pageCount: cur.pageCount,
@@ -45310,7 +45475,7 @@ ${_alloActivityContext(activity)}
       toggleLineFocus: () => setIsLineFocusMode(prev => !prev),
       toggleDictation: () => setIsDictationMode(prev => !prev),
       zenOn: handleSetIsZenModeToTrue, zenOff: handleSetIsZenModeToFalse,
-      fontBigger: () => { const v = Math.min(32, (sliderFontSize || 16) + 2); setSliderFontSize(v); return v; },
+      fontBigger: () => { const v = Math.min(48, (sliderFontSize || 16) + 2); setSliderFontSize(v); return v; },
       fontSmaller: () => { const v = Math.max(10, (sliderFontSize || 16) - 2); setSliderFontSize(v); return v; },
       resetFontSize,
       isStudentLinkMode, isIndependentMode, isParentMode,
@@ -45395,6 +45560,12 @@ ${_alloActivityContext(activity)}
         return plan.map((r, i) => ({ position: i + 1, tool: r && (r.tool || r.type), uiId: r && (r.uiId || r.stepId) })).filter(s => s.uiId);
       },
       runBlueprint: () => { setShowUDLGuide(true); return handleExecuteBlueprint(); },
+      stopBlueprintRun: handleStopBlueprintRun,
+      waitForCommandState: () => new Promise(resolve => setTimeout(() => {
+        // Commit queued React updates before the next command reads guards or handlers.
+        if (typeof ReactDOM.flushSync === 'function') ReactDOM.flushSync(() => {});
+        resolve();
+      }, 0)),
       planFullPack: () => { selectToolFromCatalog('package-deliver'); return handlePlanFullPack(); },
       fullPackPlanReady: fullPackRun?.status === 'ready',
       generateFullPack: () => {
@@ -45403,11 +45574,13 @@ ${_alloActivityContext(activity)}
       },
       rebuildBlueprintStep: (position) => {
         const plan = (activeBlueprint && Array.isArray(activeBlueprint.resourcePlan)) ? activeBlueprint.resourcePlan : [];
-        const idx = Math.max(1, Math.min(plan.length, Number(position) || 1)) - 1;
+        const requested = Number(position);
+        if (!Number.isInteger(requested) || requested < 1 || requested > plan.length) return null;
+        const idx = requested - 1;
         const row = plan[idx];
         if (!row) return null;
         setShowUDLGuide(true);
-        return handleRebuildBlueprintStep(row.uiId || row.stepId);
+        return handleRebuildBlueprintStep(row.uiId || row.stepId, { reportCompletion: true });
       },
       applyLessonTemplateByName: (name) => {
         const list = Array.isArray(lessonTemplates) ? lessonTemplates : [];
@@ -45540,7 +45713,7 @@ ${_alloActivityContext(activity)}
         // bot welcome — so the agent and the checkbox share one path.
         handleAutoFillToggle({ target: { checked: true } }, p || {});
       },
-      setFontSizeTo: (nv) => { const v = Math.max(10, Math.min(32, Number(nv) || 16)); setSliderFontSize(v); return v; },
+      setFontSizeTo: (nv) => { const v = Math.max(10, Math.min(48, Number(nv) || 16)); setSliderFontSize(v); return v; },
       prefillTranslateLang: (lang) => { try { window.dispatchEvent(new CustomEvent('alloflow:agent-set-translate-lang', { detail: { lang: String(lang || '') } })); } catch (_) {} },
       startPipelineTour: (which) => { try { startPipelineTour(which || 'results'); } catch (_) {} },
       // Live-class command coverage (2026-07-16): mirror the Live Session Center buttons.
@@ -46092,7 +46265,13 @@ ${_alloActivityContext(activity)}
   const handleSendUDLMessage = async (manualText = null) => {
     const _m = window.AlloModules && window.AlloModules.UdlChat;
     if (_m && typeof _m.planAndSendUdlMessage === 'function') return _m.planAndSendUdlMessage(manualText, {
-        _alloCmdCtx,
+        _alloCmdCtx: () => _alloCmdCtxRef.current || _alloCmdCtx(),
+        captureIntentSnapshot, restoreIntentSnapshot, inputText, setInputText, setIsChatProcessing,
+        answerUdlQuestion: (text) => _m.generateStandardChatResponse(text, {
+          udlMessages, history, inputText, isParentMode, isIndependentMode,
+          currentUiLanguage, gradeLevel, getGroupDifferentiationContext,
+          callGemini, setUdlMessages, warnLog, t,
+        }),
         _botCommandPlanningRef,
         _pendingBotCmdRef,
         _pendingBotPlanRef,
@@ -46664,10 +46843,10 @@ ${_alloActivityContext(activity)}
   // Deliberately NOT routed through prepareExecution: that gate is the
   // human-approval boundary for running a WHOLE plan. This regenerates one
   // already-approved row the teacher is looking at, on their explicit click.
-  const handleRebuildBlueprintStep = async (uiId) => {
+  const handleRebuildBlueprintStep = async (uiId, options = {}) => {
     const _m = window.AlloModules && window.AlloModules.PhaseOHandlers;
     if (_m && typeof _m.handleRebuildBlueprintStep === "function") {
-      return _m.handleRebuildBlueprintStep({ ..._alloPhaseOHandlersDeps(), activeBlueprint, blueprintExecutionResult }, uiId);
+      return _m.handleRebuildBlueprintStep({ ..._alloPhaseOHandlersDeps(), activeBlueprint, blueprintExecutionResult }, uiId, options);
     }
     throw new Error("[handleRebuildBlueprintStep] PhaseOHandlers module not loaded - reload the page");
   };
@@ -46793,7 +46972,7 @@ ${_alloActivityContext(activity)}
     if (!factory) { console.warn('[EscapeRoom] Module not loaded'); return null; }
     _escapeRoomEngineRef.current = factory({
       callGemini, addToast, t, handleScoreUpdate, setGlobalPoints, playSound,
-      getState: () => ({ escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId, generatedContent }),
+      getState: () => ({ escapeRoomState, escapeTimeLeft, isEscapeTimerRunning, inputText, activeSessionCode, sessionData, user, activeSessionAppId, generatedContent, leveledTextLanguage, selectedLanguages, completedActivities }),
       setState: { setEscapeRoomState, setEscapeTimeLeft, setIsEscapeTimerRunning },
       // Host wiring so saveEscapeRoomConfig can embed the escape room
       // into the active exit ticket / quiz resource. Going-forward
@@ -46855,22 +47034,10 @@ ${_alloActivityContext(activity)}
     }
   }, [generatedContent && generatedContent.id]);
   useEffect(() => {
-    if (!isEscapeTimerRunning || escapeTimeLeft <= 0) {
-      if (escapeTimeLeft === 0 && isEscapeTimerRunning) {
-        setIsEscapeTimerRunning(false);
-        addToast(t('escape_room.time_up'), 'error');
-        setEscapeRoomState(prev => ({ ...prev, isActive: false }));
-      }
-      return;
-    }
-    const interval = setInterval(() => {
-      setEscapeTimeLeft(prev => {
-        if (prev <= 1) { clearInterval(interval); return 0; }
-        return prev - 1;
-      });
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [isEscapeTimerRunning, escapeTimeLeft, t, addToast]);
+    const clock = window.AlloModules && window.AlloModules.startEscapeRoomClock;
+    if (clock) return clock({ isEscapeTimerRunning, escapeTimeLeft, escapeRoomState,
+      setEscapeTimeLeft, setIsEscapeTimerRunning, setEscapeRoomState, t, addToast });
+  }, [isEscapeTimerRunning, escapeTimeLeft, escapeRoomState.isActive, escapeRoomState.isEscaped, escapeRoomState.isGameOver, escapeRoomState.timerEnabled, t, addToast]);
   const handleGenerate = async (type, langOverride = null, keepLoading = false, textOverride = null, configOverride = {}, switchView = true, generationDepsOverride = null) => {
     const _m = window.AlloModules && window.AlloModules.GenDispatcher;
     if (type) setAlloGenerationType(type);
@@ -47741,6 +47908,7 @@ ${_alloActivityContext(activity)}
         isPlayingRef,
         playbackSessionRef,
         playbackRateRef,
+        getGroupTtsSpeed,
         flashcardIndex,
         flashcardLang,
         flashcardMode,
@@ -47914,6 +48082,11 @@ ${_alloActivityContext(activity)}
   const csLiveDocumentIdRef = useRef(csDocumentId);
   csLiveDocumentIdRef.current = csDocumentId;
   const csAsyncOwnerRef = useRef({ generation: 0, identity: '', controller: null });
+  // Every generated card costs a Gemini call and often an Imagen call. Cap
+  // generated cards per concept-sort document per session so a single activity
+  // cannot run away with the key's quota. Edits to existing cards are free.
+  const CS_GENERATED_ITEM_BUDGET = 20;
+  const csGeneratedItemBudgetRef = useRef({ documentId: '', used: 0 });
   const csBeginAsyncRun = useCallback(() => {
       const documentId = csLiveDocumentIdRef.current;
       if (!documentId) return null;
@@ -47934,6 +48107,14 @@ ${_alloActivityContext(activity)}
   }, [csDocumentId]);
   const handleGenerateConceptItem = useCallback(async (term, categories, targetCategoryId = null, runGuard = null) => {
       if (!term || !categories || categories.length === 0) return null;
+      const budget = csGeneratedItemBudgetRef.current;
+      const budgetDocumentId = csLiveDocumentIdRef.current || '';
+      if (budget.documentId !== budgetDocumentId) { budget.documentId = budgetDocumentId; budget.used = 0; }
+      if (budget.used >= CS_GENERATED_ITEM_BUDGET) {
+          addToast((t('concept_sort.actions.add_limit') || 'This activity has reached its limit of {limit} generated cards for this session. Edit existing cards, or reload to continue.').replace('{limit}', String(CS_GENERATED_ITEM_BUDGET)), 'error');
+          return null;
+      }
+      budget.used += 1;
       const stillCurrent = () => !runGuard || runGuard();
       try {
           let categoryId;
@@ -50739,7 +50920,7 @@ ${_alloActivityContext(activity)}
           </button>
         </div>
       )}
-      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
+      {!isZenMode && <HeaderBar APP_CONFIG={APP_CONFIG} toastHistoryCount={toastHistory.length} AnimatedNumber={AnimatedNumber} EDGE_TTS_VOICES={EDGE_TTS_VOICES} FONT_OPTIONS={FONT_OPTIONS} GEMINI_VOICES={GEMINI_VOICES} GlobalMuteButton={GlobalMuteButton} KOKORO_VOICES={KOKORO_VOICES} UiLanguageSelector={UiLanguageSelector} setConfirmDialog={setConfirmDialog} _isCanvasEnv={_isCanvasEnv} activeSessionCode={activeSessionCode} addToast={addToast} ai={ai} appId={appId} currentLevelXP={currentLevelXP} customExportCSS={customExportCSS} createHomeworkAssignmentLink={createHomeworkAssignmentLink} dismissHelpOnboarding={dismissHelpOnboarding} homeworkExpiryDays={homeworkExpiryDays} sharedAssignmentActivity={sharedAssignmentActivity} setSharedAssignmentActivity={setSharedAssignmentActivity} openRecentQrShares={() => setShowRecentQrShares(true)} recentQrShareCount={recentQrShares.length} setHomeworkExpiryDays={setHomeworkExpiryDays} focusNarrationEnabled={focusNarrationEnabled} generatedContent={generatedContent} globalLevel={globalLevel} globalProgress={globalProgress} globalXPNext={globalXPNext} handleCloudToggleClick={handleCloudToggleClick} handleExportIMS={handleExportIMS} handleExportQTI={handleExportQTI} handleRestoreView={handleRestoreView} handleSetActiveViewToDashboard={handleSetActiveViewToDashboard} handleSetIsJoinPopoverOpenToFalse={handleSetIsJoinPopoverOpenToFalse} handleSetIsTranslateModalOpenToTrue={handleSetIsTranslateModalOpenToTrue} handleSetShowExportMenuToFalse={handleSetShowExportMenuToFalse} handleSetShowHintsModalToTrue={handleSetShowHintsModalToTrue} handleSetShowInfoModalToTrue={handleSetShowInfoModalToTrue} handleSetShowSubmitModalToTrue={handleSetShowSubmitModalToTrue} handleSetShowTextSettingsToFalse={handleSetShowTextSettingsToFalse} handleSetShowVoiceSettingsToFalse={handleSetShowVoiceSettingsToFalse} handleSetShowXPModalToTrue={handleSetShowXPModalToTrue} handleToggleDisableAnimations={handleToggleDisableAnimations} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsBotVisible={handleToggleIsBotVisible} handleToggleIsHelpMode={handleToggleIsHelpMode} handleToggleIsJoinPopoverOpen={handleToggleIsJoinPopoverOpen} handleToggleShowExportMenu={handleToggleShowExportMenu} hasConnectedRef={hasConnectedRef} hintHistory={hintHistory} isBotVisible={isBotVisible} isCloudSyncEnabled={isCloudSyncEnabled} isExtracting={isExtracting} isGeneratingSource={isGeneratingSource} isHelpMode={isHelpMode} isJoinPopoverOpen={isJoinPopoverOpen} isProcessing={isProcessing} isStudentLinkMode={isStudentLinkMode} isZenMode={isZenMode} joinAppIdInput={joinAppIdInput} joinClassSession={joinClassSession} joinCodeInput={joinCodeInput} languageToTTSCode={languageToTTSCode} latestLessonPlan={latestLessonPlan} leveledTextLanguage={leveledTextLanguage} notebookEntryCount={notebookEntryCount} setShowNotebook={setShowNotebook} openExportPreview={openExportPreview} onReturnToStart={handleReturnToStart} pptxLoaded={pptxLoaded} resetFontSize={resetFontSize} safeRemoveItem={safeRemoveItem} selectedVoice={selectedVoice} sessionData={sessionData} sessionUnsubscribeRef={sessionUnsubscribeRef} setActiveSessionCode={setActiveSessionCode} setHistory={setHistory} setIsGateOpen={setIsGateOpen} setJoinAppIdInput={setJoinAppIdInput} setJoinCodeInput={setJoinCodeInput} setPendingRole={setPendingRole} setRunTour={setRunTour} setGuidedMode={setGuidedMode} setGuidedStep={setGuidedStep} setGuidedSelectedIds={setGuidedSelectedIds} guidedStep={guidedStep} guidedMode={guidedMode} guidedSelectedIds={guidedSelectedIds} guidedCompletedIds={guidedCompletedIds} resetGuidedProgress={resetGuidedProgress} setSelectedVoice={chooseVoice} setSessionData={setSessionData} setShowAIBackendModal={setShowAIBackendModal} setBridgeSendOpen={setBridgeSendOpen} setShowClassAnalytics={setShowClassAnalytics} setShowEducatorHub={setShowEducatorHub} setShowExportMenu={setShowExportMenu} setShowLearningHub={setShowLearningHub} setShowReadThisPage={setShowReadThisPage} setShowSessionModal={setShowSessionModal} setShowTextSettings={setShowTextSettings} setShowVoiceSettings={setShowVoiceSettings} setShowWizard={setShowWizard} setSliderFontSize={setSliderFontSize} setSpotlightMessage={setSpotlightMessage} setTourStep={setTourStep} setVoiceSpeed={setVoiceSpeed} setVoiceVolume={setVoiceVolume} showExportMenu={showExportMenu} showHelpOnboarding={showHelpOnboarding} showReadThisPage={showReadThisPage} showTextSettings={showTextSettings} showVoiceSettings={showVoiceSettings} sliderFontSize={sliderFontSize} screenerSession={screenerSession} startClassSession={() => setShowSessionStartOptions(true)} studentAiPolicyForShare={studentAiPolicyForShare} t={t} voiceSpeed={voiceSpeed} voiceVolume={voiceVolume} />}
       {/* Wrapper divs attach the focus-trap refs declared near line 6677. They
           don't affect layout (modals position fixed); they only give useFocusTrap
           a DOM scope to query for focusable elements + a place to capture and
@@ -50796,7 +50977,7 @@ ${_alloActivityContext(activity)}
             />
           </ErrorBoundary>
       )}
-      {!isTeacherMode && activeSessionCode && sessionData?.escapeRoomState?.isActive && (
+      {!isTeacherMode && activeSessionCode && (sessionData?.escapeRoomState?.isActive || sessionData?.escapeRoomState?.isGameOver) && (
           <ErrorBoundary fallbackMessage="Escape Room encountered an error. Waiting for sync...">
             <StudentEscapeRoomOverlay
                 sessionData={sessionData}
@@ -51267,22 +51448,28 @@ ${_alloActivityContext(activity)}
                 <Eye size={16} className="animate-pulse"/> {t('session.sync_banner')}
             </div>
           )}
-          {readingRuler && (
-            <>
-                <div
+          {/* Reading Ruler viewport bands stay passive and out of the accessibility tree. */}
+          {readingRuler && !rulerSuspended && (() => {
+            const rawHeight = typeof window !== 'undefined' ? Number(window.innerHeight) : 600;
+            const viewportHeight = Number.isFinite(rawHeight) && rawHeight > 0 ? rawHeight : 600;
+            const bandHeight = Math.min(100, viewportHeight);
+            const bandTop = Math.max(0, Math.min(viewportHeight - bandHeight, rulerY - bandHeight / 2));
+            return <>
+                <div aria-hidden="true" data-allo-reading-ruler="above"
                     className="fixed top-0 left-0 right-0 bg-black/70 pointer-events-none z-[10001] transition-none"
-                    style={{ height: Math.max(0, rulerY - 50) + 'px' }}
+                    style={{ height: bandTop + 'px' }}
                 />
-                <div
+                <div aria-hidden="true" data-allo-reading-ruler="below"
                     className="fixed left-0 right-0 bottom-0 bg-black/70 pointer-events-none z-[10001] transition-none"
-                    style={{ top: (rulerY + 50) + 'px' }}
+                    style={{ top: (bandTop + bandHeight) + 'px' }}
                 />
-                <div
+                <div aria-hidden="true" data-allo-reading-ruler="band"
                     className="fixed left-0 right-0 pointer-events-none z-[10001] border-t border-b border-yellow-400/30 bg-yellow-100/5"
-                    style={{ top: (rulerY - 50) + 'px', height: '100px' }}
+                    style={{ top: bandTop + 'px', height: bandHeight + 'px' }}
                 />
-            </>
-          )}
+            </>;
+          })()}
+          {/* End Reading Ruler viewport bands. */}
           {isPlaying && (playingContentId === 'simplified-main' || playingContentId === 'adventure-active' || (playingContentId && playingContentId.startsWith('persona-message-'))) && (
             <div className={`
                 left-1/2 transform -translate-x-1/2 animate-in slide-in-from-bottom-6 fade-in duration-300 w-full max-w-md flex justify-center pointer-events-none
@@ -52119,6 +52306,7 @@ ${_alloActivityContext(activity)}
                     setComplexityLevel, setSaveOriginalOnAdjust,
                     setReadingTheme, setGeneratedContent, setHistory,
                     chunkReaderSweepAudioRef, chunkReaderSweepRafRef, textEditorRef,
+                    onReadReflect: openReadingStudy,
                     handleCloseImmersiveReader, handleGeneratePOSData, handleCloseSpeedReader,
                     handleSpeak, handleWordClick, handlePhonicsClick,
                     handleFormatText, handleSimplifiedTextChange,
@@ -54765,6 +54953,7 @@ ${_alloActivityContext(activity)}
                   fracChallenge, fracFeedback, fracAnswer, handleGenerateMath,
                   labToolData, setLabToolData, gradeLevel, sourceTopic,
                   inputText, storageDB, ai, sourceProvenance,
+                  readingSource: readingStudySource?.ownerScope === readingProfileScope ? readingStudySource : null, onReturnToReading: returnToReadingPassage,
                   // W7: with no AI backend the STEM module gets nulls instead of
                   // functions that would fail — its getHint/aiChat layer already
                   // self-disables on a missing callGemini, and the header shows
@@ -54791,7 +54980,7 @@ ${_alloActivityContext(activity)}
                   stemLabCreateMode, setStemLabCreateMode,
                   showAssessmentBuilder, setShowAssessmentBuilder,
                   assessmentBlocks, setAssessmentBlocks,
-                  handleGenerateMath, setActiveView, setHistory, callGemini,
+                  handleGenerateMath, setActiveView, setHistory, callGemini, setGeneratedContent, leveledTextLanguage, translationMode, currentUiLanguage, resolveTranslationPolicy,
                   setExpandedTools, useMathSourceContext, hasSourceOrAnalysis,
                   gradeLevel,
                   // For the quick tool chips, which open the STEAM Lab Explore
@@ -55211,6 +55400,11 @@ ${_alloActivityContext(activity)}
                     setActiveView('input');
                 },
                 isTeacherMode,
+                key: readingProfileScope,
+                readingScope: readingProfileScope,
+                onReadReflect: openReadingStudy,
+                initialReadingLocation: pendingReadingLocation,
+                onReadingLocationConsumed: () => setPendingReadingLocation(null),
                 initialBookSlug: pendingReadingBookSlug,
                 initialReadingSet: pendingReadingSet,
                 onInitialReadingSetConsumed: () => setPendingReadingSet(null),

@@ -183,6 +183,20 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 33 (2026-09-06) — the wood moves with the wind
+
+The windsock, the castle banner, the camp standard, the keep pennant, the chaff and the clouds
+all read the crosswind. 170 trees stood in it dead still.
+
+- Each crown now leans downwind (capped at 0.34 rad, about 19°) and sways about the top of its
+  own trunk — not its centre, or the canopy slides off the tree it belongs to — phased per tree
+  from the hash, so a wood moves as many things rather than one.
+- Ambient life, on the same terms as the banner and the chaff: still when ambient motion is off
+  or the reader has asked for less of it, and stood upright once when it stops, so the last
+  frame is never left leaning.
+- Per frame it re-composes 170 instance matrices and nothing else: no geometry, no materials,
+  no rebuild. Trunks stay vertical, which is what a tree does.
+
 ### Wave 32 (2026-09-06) — one heap, no clipping
 
 - ★**Two bays, two heaps.** The Target Wall bay drew its own hashed heap while the Siege Field

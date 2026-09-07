@@ -4909,10 +4909,10 @@
     "locked": "An kulle",
     "escaped": "kai Escaped!",
     "escaped_desc": "kai solved duka wasan kwakwalwas da escaped room!",
-    "time_up": "? Lokaci ya ƙare!",
+    "time_up": "⏰ Lokaci ya ƙare!",
     "reveal_hint": "Reveal shawara",
-    "puzzles_remaining": "{{count}} wasan kwakwalwas remaining",
-    "time_remaining": "Lokaci: {{time}}",
+    "puzzles_remaining": "{count} wasan kwakwalwas remaining",
+    "time_remaining": "Lokaci: {time}",
     "progress": "ci gaba",
     "start": "Fara Escape Room",
     "start_hint": "Fara timer zuwa begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Kammala!",
     "loading_error": "Could ba ɗora room bayanai",
     "no_puzzle": "A'a wasan kwakwalwa found don wannan object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Tserewa cikakke! +{{xp}} ƙarin XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Tserewa cikakke! +{xp} ƙarin XP",
     "puzzle_mcq": "Zaɓi Mai Yawa",
     "puzzle_sequence": "Put Order",
     "puzzle_cipher": "Decode saƙo",
@@ -4982,17 +4982,17 @@
     "clue": "Alama",
     "clue_found": "An gano Alama!",
     "clue_revealed": "wannan clue may taimako tare da another wasan kwakwalwa...",
-    "clues_collected": "Alamomi: {{count}}/{{total}}",
+    "clues_collected": "Alamomi: {count}/{total}",
     "use_clue": "Yi amfani Clue",
-    "final_door": "The Exit Door",
+    "final_door": "Ƙofar fita",
     "final_door_ready": "exit door shi ne yanzu unlocked!",
     "final_door_locked": "warware ƙari wasan kwakwalwas zuwa unlock",
     "final_door_title": "Final ƙalubale",
     "final_door_desc": "Yi amfani everything kai've learned zuwa amsa wannan synthesis tambaya.",
     "final_puzzle": "Using menene kai've learned, amsa wannan:",
     "final_answer_placeholder": "Type naka amsa here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "Matso kusa da ƙofar fita",
+    "unlock_door": "Buɗe makullin ƙofar",
     "victory_perfect": "Perfect Escape! A'a wrong amsa! +50 Bonus XP",
     "victory_normal": "kai've Escaped! Congratulations!",
     "hint": "shawara",
@@ -5008,12 +5008,12 @@
     "left": "saura",
     "wrong_attempts": "Yunƙurin Kuskure",
     "time_penalty": "-{seconds} dakiku!",
-    "game_over_time": "? Time's Up! kai ran out na time.",
+    "game_over_time": "⏰ Time's Up! kai ran out na time.",
     "streak": "Jeri",
     "streak_bonus": "Ƙarin Jeri! x{multiplier}",
     "streak_lost": "An rasa jeri!",
     "one_minute_warning": "Minti ɗaya ya rage!",
-    "thirty_seconds_warning": "? Dakiku 30 ne kawai suka rage!",
+    "thirty_seconds_warning": "⏰ Dakiku 30 ne kawai suka rage!",
     "timer_paused": "An dakatar da Lokaci",
     "timer_resume": "Ci gaba",
     "settings_btn": "Room saiti",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Fara multiplayer ɗakin tserewa tare da naka aji",
     "team_mode": "Team ƙalubale",
     "team_race": "Race zuwa Escape!",
-    "team_progress": "{{team}} ci gaba: {{solved}}/{{total}}",
+    "team_progress": "{team} ci gaba: {solved}/{total}",
     "waiting_host": "Waiting don malami zuwa fara...",
-    "team_escaped": "Ƙungiyar {{team}} ta Tsere!",
+    "team_escaped": "Ƙungiyar {team} ta Tsere!",
     "all_teams_done": "duka Teams Finished!",
     "your_team": "naka Team",
     "team_red": "Ƙungiya Ja",
@@ -5036,7 +5036,7 @@
     "team_green": "Ƙungiya Kore",
     "team_yellow": "Ƙungiya Rawaya",
     "team_all": "duka ɗalibi",
-    "teams_competing": "{{count}} ƙungiyas competing",
+    "teams_competing": "{count} ƙungiyas competing",
     "first_escape": "na farko zuwa Escape!",
     "end_game": "End wasa",
     "end_game_confirm": "End ɗakin tserewa don duka ɗalibi?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume wasa",
     "game_paused_by_teacher": "wasa paused by malami",
     "celebration_title": "Taya murna!",
-    "you_escaped": "naka ƙungiya escaped {{time}}!",
-    "other_team_escaped": "{{team}} ta tsere!",
+    "you_escaped": "naka ƙungiya escaped {time}!",
+    "other_team_escaped": "{team} ta tsere!",
     "class_escaped": "aji Victory!",
     "everyone_escaped": "Everyone worked together zuwa escape!",
     "hurry_up": "Keep going! kai zai iya still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "Ɗora Adanad",
     "loaded_saved": "Adanad Escape Room loaded! Review da kaddamar lokacin ready.",
     "no_saved": "A'a ajiye Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready zuwa buga!",
+    "preview_confirmed": "✅ Escape Room locked • ready zuwa buga!",
     "xp_earned_streak": "+{xp} XP (ƙarin jeri {multiplier}x!)",
     "loaded_from_resource": "Loaded daga albarkatu."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Aika zuwa Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Aiki mai kyau ƙwarai!",
       "partial": "mai kyau effort, keep going!",
       "incorrect": "ba quite right • gwada again!",
-      "error": "Could ba evaluate • don Allah gwada again.",
+      "error": "Could ba evaluate — don Allah gwada again.",
       "verdict_correct": "Daidai!",
       "verdict_partial": "Daidai a Wani Bangare",
       "verdict_incorrect": "ba Quite Right",
@@ -7906,7 +7906,7 @@
       "meta_info": "{date} • **Final matakin**: {level}",
       "log_header": "Bincike Log",
       "chapter_separator": "***",
-      "user_label": "? kai",
+      "user_label": "➤ kai",
       "print_button": "Buga littafin labari"
     },
     "answer_key_title": "amsa Key",
@@ -8855,7 +8855,7 @@
     "simplified_def_fallback": "kai zai iya danna any kalma rubutu zuwa gani its ma'ana!",
     "simplified_cloze": "Gwada 'Cloze' yanayi zuwa jarrabawa ƙamus fasaha.",
     "simplified_quiz": "wannan rubutu looks great. Should we samar da Exit Ticket zuwa check understanding?",
-    "simplified_glossary": "kalma like '{term1}' da '{term2}' might need tallafi • ƙamus could taimako!",
+    "simplified_glossary": "kalma like '{term1}' da '{term2}' might need tallafi — ƙamus could taimako!",
     "simplified_glossary_fallback": "Some na these kalma su ne tricky. ƙamus would taimako tallafi wannan rubutu.",
     "simplified_outline": "gani learners might benefit daga Graphic Organizer na wannan abun ciki.",
     "glossary_bingo": "kai zai iya turn these kalma cikin kalma wasa like Bingo, Memory Match, Crosswords, ko kalma Bincika!",
@@ -8866,7 +8866,7 @@
     "quiz_rigor": "Want zuwa ensure wannan gwaji shi ne rigorous? Gudanar mizani Audit.",
     "adventure_sim": "Bincikes allow ɗalibi zuwa apply menene they've learned safe simulation.",
     "adventure_inventory": "Check 'Inventory' zuwa gani menene abu yana da been collected.",
-    "adventure_context": "naka bincike about {topic} gets richer tare da ƙari albarkatu • gwada adding {suggestion}!",
+    "adventure_context": "naka bincike about {topic} gets richer tare da ƙari albarkatu — gwada adding {suggestion}!",
     "adventure_context_fallback": "ƙari albarkatu kai samar da, richer bincike conrubutu becomes.",
     "timeline_drag": "Ja da saka events zuwa reorder sequence.",
     "timeline_visualize": "wannan taimakos ɗalibi visualize cause-da-effect relationships.",
@@ -8877,8 +8877,8 @@
     "parent_adventure": "Gwada Bincike yanayi don fun rainy-day activity.",
     "parent_read_along": "Yi amfani 'Karanta Along' zuwa horo reading together.",
     "fallback_lesson_plan": "kai yana da great albarkatu. Synthesize them cikin darasi Plan?",
-    "fallback_brainstorm": "Feeling stuck? Gwada chatting tare da me da canza Auto-Kammala zuwa activate Blueprint yanayi • I'll taimako kai design naka entire darasi!",
-    "fallback_export": "kai yana da {count} albarkatu kan {topic} • fitar them as single PDF!",
+    "fallback_brainstorm": "Feeling stuck? Gwada chatting tare da me da canza Auto-Kammala zuwa activate Blueprint yanayi — I'll taimako kai design naka entire darasi!",
+    "fallback_export": "kai yana da {count} albarkatu kan {topic} — fitar them as single PDF!",
     "fallback_export_fallback": "kai zai iya fitar duka these albarkatu as single PDF packet.",
     "fallback_guide": "Zaɓi 'Nuna Me' AI Guide idan kai get lost!",
     "intro_greeting": "Danna me zuwa adjust my murya saiti.",
@@ -9027,7 +9027,7 @@
     "text_generated": "naka adapted rubutu kan {topic} shi ne ready! Gwada dannaing kalma zuwa gani its ma'ana, ko bincika kayan aiki like ƙamus ko gwaji zuwa deepen understanding.",
     "flashcards_created": "katin koyo ƙirƙira! kai zai iya fitar them zuwa Quizlet, buga them, ko gwada Memory wasa.",
     "quiz_generated": "gwaji ready! Yi amfani Presentation yanayi don aji, ko gwada Auto-Grader don buɗe responses.",
-    "glossary_generated": "ƙamus kammala! Gwada kalma wasa • Bingo, Memory Match, Crosswords, kalma Bincika, da ƙari!",
+    "glossary_generated": "ƙamus kammala! Gwada kalma wasa — Bingo, Memory Match, Crosswords, kalma Bincika, da ƙari!",
     "adventure_started": "naka bincike begins! Type naka action below, ko yi amfani zaɓi maɓalli zuwa decide menene happens na gaba.",
     "adventure_scene": "menene za kai do? Every zaɓi siffa naka labari!",
     "analysis_complete": "Analysis kammala! I found some ƙamus da key concepts worth exploring.",
@@ -10164,7 +10164,7 @@
     "type_timeline": "Mai Gina Jeri",
     "type_timeline_desc": "Sequencing activity adapted zuwa matakin aji",
     "full_pack": "Full albarkatu Pack • Zaɓi duka",
-    "deselect_all": "? Deselect duka",
+    "deselect_all": "↩ Deselect duka",
     "estimate": "Kintata",
     "api_calls": "Kiran API",
     "start_batch": "Samar da",
@@ -10193,7 +10193,7 @@
     "bridge_generating": "Creating naka personalized sigogi...",
     "bridge_projection": "Projection yanayi",
     "bridge_exit_projection": "Hasashen Fita",
-    "bridge_offline_info": "A'a kai-tsaye zama • pbita kan wannan device only",
+    "bridge_offline_info": "A'a kai-tsaye zama — pbita kan wannan device only",
     "bridge_term_saved": "Adanad \"{term}\" zuwa ƙamus",
     "bridge_term_save_failed": "Failed zuwa ajiye kalma",
     "bridge_save_term": "Ajiye zuwa ƙamus",
@@ -10219,7 +10219,7 @@
     "bridge_f2f_custom_lang": "Custom harshe...",
     "bridge_f2f_custom_placeholder": "misali, Yarbanci, Tigrinya, Dari...",
     "bridge_all_saved": "duka kalma ajiye zuwa ƙamus!",
-    "bridge_terms_saved": "? duka Adanad",
+    "bridge_terms_saved": "✅ duka Adanad",
     "fullpack_group_target": "Ƙungiyar da Aka Nufa",
     "fullpack_group_current": "Current saiti",
     "fullpack_group_all": "duka Groups",
@@ -12186,7 +12186,11 @@
       "trapezoid": "Trapezoid",
       "simpson": "Simpson",
       "rectangles_n": "kusoshi huɗu (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "Bayanin ya shirya.",
+      "a11y_back_to_tools": "Koma zuwa kayan aiki",
+      "a11y_snapshot": "Hoton nan take",
+      "a11y_next": "Na gaba"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Wannan birawza ba ta tallafawa sauti",
@@ -12310,13 +12314,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Ƙirƙiri AI explanation a matakin",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
       "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level_group": "Matakin karatu",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13941,8 +13945,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Daidai! Yana",
-      "that": "? wancan\\",
+      "correct_it": "✅ Daidai! Yana",
+      "that": "❌ wancan\\",
       "linear": "Layi",
       "quadratic": "Quadratic",
       "cubic": "Cubic",
@@ -14204,7 +14208,7 @@
       "ai_not_available": "AI tutor ba ya samuwa.",
       "ai_could_not_reach": "Ba a iya kai ga AI tutor ba. Sake gwada ba da daɗewa ba.",
       "explain_at_my_level": "Bayyana a matakina",
-      "aria_reading_level": "Reading level",
+      "aria_reading_level": "Matakin karatu",
       "aria_reading_level_prefix": "Reading level: ",
       "selected_suffix": " (an zaɓa)",
       "aria_generate_ai_prefix": "Ƙirƙiri AI explanation a matakin ",
@@ -14216,7 +14220,8 @@
       "angle_u00b0": "Kusurwa (°)",
       "velocity_ms": "Gudun motsi (m/s)",
       "gravity_msu00b2": "Nauyin ƙasa (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Bayanin ya shirya."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14244,7 +14249,10 @@
       "codominant_desc": "Ana bayyana allele biyun gaba ɗaya. Heterozygote suna nuna halayen biyun a lokaci guda.",
       "sexLinked_desc": "Ana ɗauke da siffar a kan chromosome X. Wannan yana nuna gadon X-linked RECESSIVE (misali hemophilia da makanta ja-kore): maza (XY) suna buƙatar kwafi ɗaya kawai; mata (XX) suna buƙatar biyu.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Koma zuwa kayan aikin STEM",
+      "a11y_snapshot": "Hoton nan take",
+      "a11y_close_flashcard": "Rufe katin"
     },
     "circuit": {
       "meter_status_ammeter_short": "Wuri mara aminci: hanyar short-circuit",
@@ -14536,8 +14544,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? It\\"
+      "correct": "✅ Correct!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "Magani na Farko",
@@ -14653,8 +14661,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Daidai!",
-      "answer": "? amsa:",
+      "correct": "✅ Daidai!",
+      "answer": "❌ amsa:",
       "hydrogen": "Hydrogen",
       "helium": "Helium",
       "lithium": "Lithium",
@@ -14796,7 +14804,7 @@
       "reddish_metal_used_since_the": "Reddish metal yi amfani since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal wancan prevents rust",
       "best_conductor_of_electricity_among": "Best conductor na electricity among duka metals",
-      "dense_soft_shiny_precious_metal": "Karfe mai daraja, mai nauyi, mai laushi, mai walƙiya • baya tsatsa",
+      "dense_soft_shiny_precious_metal": "Karfe mai daraja, mai nauyi, mai laushi, mai walƙiya — baya tsatsa",
       "strong_as_steel_but_45": "Strong as steel amma 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal wancan gives rubies their red launi",
       "essential_for_steel_production_and": "Essential don steel production da bone health",
@@ -15902,7 +15910,9 @@
       "our_sun_is_born": "Our Sun shi ne Born",
       "present_day": "Yau",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Koma zuwa kayan aiki",
+      "a11y_simulation_speed": "Saurin kwaikwayo"
     },
     "rocks": {
       "igneous": "Igneous",
@@ -18827,7 +18837,10 @@
       "garage_desc": "Injina, tsatsa, da martani — taron bitar sinadarai.",
       "classroom_desc": "Ajin kimiyya na gaske mai ɗauke da beaker da gwaje-gwaje.",
       "outdoors_desc": "Fita waje — yanayi shi ne babban dakin gwaje-gwaje.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Koma zuwa kayan aiki",
+      "a11y_snapshot": "Hoton nan take",
+      "a11y_next": "Na gaba"
     },
     "converter": {
       "u2705_saved_to_history": "✅ An adana a tarihi!",
@@ -19387,7 +19400,7 @@
       "interactive_rock_cycle_mineral_properties": "mu'amala rock cycle, mineral properties & geology",
       "water_cycle": "Zagayen Ruwa",
       "rock_cycle": "Zagayen Dutse",
-      "decomposer": "Decomposer",
+      "decomposer": "Mai Ruɓarwa",
       "break_materials_into_elements": "Break materials cikin elements",
       "human_anatomy": "Tsarin Jikin Mutum",
       "brain_atlas": "Atlas na Ƙwaƙwalwa",
@@ -19614,7 +19627,40 @@
       "read_what_special_education_law_actually": "Ka karanta abin da dokar ilimi na musamman ke faɗa da gaske, da kalmominta. Ainihin rubutun IDEA Sashe na B da Sashi na 504, an ɗauko daga eCFR tare da kwanan wata, ana iya bincike, tare da dokokin tarayya da na jiha gefe da gefe. Babu abin da ake sake fasalta ko ƙirƙira: idan rubutun hukuma bai ɗauku ba, kayan aikin yana faɗin haka maimakon ya yi hasashe.",
       "applied_k_12_behavior_practice_what": "Aikin ɗabi'a na aiki daga makarantar sakandare zuwa firamare — abin da masana ilimin halin ɗan adam na makaranta da malamai ke yi da gaske da wannan kimiyya. Tsarin matakai uku na PBIS, ɗabi'un maye da aka haɗa da ayyukan FBA, abubuwan da suka gabata (abubuwan tayar da hankali a hankali da yawancin BIP ke rasa), zagayen matakai bakwai na fashewar ɗabi'a na Geoff Colvin, da ɗabi'ar riƙewa da keɓewa da ta dogara kan Babi na 33 na Maine. Kayan aiki 'yar'uwar BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Ilimin halittun teku da ilimin ɗabi'a na octopus, squid, cuttlefish da nautilus. Babban abu: Hunter Sim — zaɓi nau'i, muhalli, ganima da dabara, ka buga ƙaramin wasan ɓoyewa, ka auna lokacin kai hari. Yana buɗe bayanan ilimin halitta irin na littafin filin (yadda chromatophore ke aiki, kwakwalwa 9, jini shuɗi, tuƙi da fesawa). Jagorar filin na nau'i 10 tare da lambobin hankali, ɓoyewa da saurin fesawa.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 da HS-PS2. Na'urar kwaikwayon damuwar truss tare da tsawo, tsayi, nauyi da kayan da za a iya canzawa, kwatancin nau'ikan gada (katako, truss, baka, rataye, igiya), bayanan kayan aiki, nau'ikan ƙarfi, nazarin al'amura na gaske (Tacoma Narrows, Hyatt Regency, Tay, Silver, da kuma Brooklyn, Golden Gate, Akashi da Millau), zagayen ƙirar injiniya, jarabawa irin ta AP, da ƙayyadaddun ƙira masu bugawa."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 da HS-PS2. Na'urar kwaikwayon damuwar truss tare da tsawo, tsayi, nauyi da kayan da za a iya canzawa, kwatancin nau'ikan gada (katako, truss, baka, rataye, igiya), bayanan kayan aiki, nau'ikan ƙarfi, nazarin al'amura na gaske (Tacoma Narrows, Hyatt Regency, Tay, Silver, da kuma Brooklyn, Golden Gate, Akashi da Millau), zagayen ƙirar injiniya, jarabawa irin ta AP, da ƙayyadaddun ƙira masu bugawa.",
+      "the_gutenberg_style_screw_press_as": "Injin buga takarda mai sukurori irin na Gutenberg a matsayin kwaikwayo mai aiki da gaske. Ja sandar, jera haruffanka da kanka, ka ga alamar da aka buga. Bugu da ƙari kimiyyar kayan aiki (haɗin dalma, kwano da antimoni), tattalin arziki (faɗuwar kuɗin kowane littafi), tarihi (Gyaran addini, juyin juya halin kimiyya), fasahar haruffa, da mutanen da ke bayan injin (haɗe da matan da suka buga littattafai waɗanda tarihi ya manta). An gina shi don aikin haɗa fannoni a matakin sakandare na farko.",
+      "three_js_stoop_simulator_deep_science": "Na'urar kwaikwayon nutsawa da Three.js tare da kimiyya mai zurfi kan yadda tsuntsayen farauta ke kama abin farauta. Ka tashi kamar shaho peregrine a 240 mph, kamar gaggafa harpy mai farata 530 psi, ko kamar mujiya mai ƙaho da ba ta yin sauti. Nau'i 8 da sassa 12: ƙarfin farata, gani (sau 4-8 na mutum, hasken ultraviolet a cikin ƙananan shaho), kimiyyar tashi, tashin mujiya shiru, na'urar lissafin saurin ƙarshe, farfaɗowa bayan DDT da matsalolin kiyayewa da ke gudana, da gane su a fili ta hanyar siffa da kamanni gaba ɗaya.",
+      "practice_reading_and_completing_the_documents": "Ka yi atisayen karanta da cika takardun da rayuwar manya ke tafiya a kansu: neman aiki, fom ɗin W-4, yarjejeniyar haya, fom ɗin shiga asibiti, izinin tuƙi, da gayyatar taron IEP naka. An bayyana kowane wuri da harshe mai sauƙi, an yi wa akwatunan da za su iya cutar da kai alama, akwai yanayin matsi don lokacin da wani yake son ka sa hannu yanzu, da jimloli a shirye don neman ƙarin lokaci. Duk atisayen yana amfani da mutum na ƙage, ba taɓa bayananka na gaskiya ba.",
+      "how_swimming_works_stroke_physics_survival": "Yadda ninkaya ke aiki (kimiyyar salon ninkaya da ƙwarewar tsira) da abin da kowane mai ninkaya ya kamata ya sani game da ruwa mai sanyi, igiyar ruwa mai komawa, ƙanƙara, rigar ceto, da ceto. Rarrabuwar salon ninkaya cikin hoto, kimiyyar iyo da turawa, da ƙwarewar tsira (iyo a baya, harbin ƙwai, matsayin HELP, taruwa tare) da suke ceton rai da gaske. Majiyoyi: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Don ilimi kawai: don koyon ninkaya da gaske, nemi malamin ninkaya.",
+      "tax_paycheck_calculator_data_literacy_decision": "Na'urar lissafin haraji da takardar albashi, iya karanta bayanai, matrix na yanke shawara, mai karanta kwangila, bayanai da aikin takarda, tsara sufuri, shirye-shiryen aiki, gina CV, tsara shaidun fayil ɗin ayyuka, atisayen tambayoyin aiki, ƙwarewar sadarwa, sarrafa lokaci, inshorar lafiya, kula da haƙora, ergonomics na kula da jiki, tsarin barci, alamun magani, shirin ganawa da likita, tsaron gida, tsaron dijital, kwanciyar hankali game da abinci, da kimiyyar da aka yi amfani da ita a rayuwar yau da kullum.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 da HS-LS4. Duniyar ƙwayoyin cuta: ƙwayoyin cuta (masu amfani da masu haifar da cuta), ƙwayoyin virus (COVID, mura, HIV, phage, kyanda), na'urar hangen ƙwayoyi (haske, bambancin lokaci, fluorescent, lantarki, AFM), juyin halittar juriyar magungunan ƙwayoyin cuta, ƙwayoyin da ke jikin mutum, ƙasa da teku, alluran rigakafi da tsarin garkuwar jiki, tsatsawa (yisti mai tsami, yoghurt, kimchi, sauerkraut, kombucha, cuku), nazarin al'amura (Snow, Fleming, MRSA, COVID da mRNA, FMT), jarabawa, da tunanin da za a iya bugawa kan tsaron dakin gwaje-gwaje da ƙwayoyin cuta.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Kamfen goma sha biyar na kula da muhalli a yankuna goma sha ɗaya. Kamfen biyar masu tsawo na Maine da suka shafi lokuta da yawa, da kuma yanayi goma masu haye yankuna waɗanda suka rufe dukkan iyalai biyar na injiniyanci: wuta (Yarralin a Ostireliya, Karuk a arewacin California), kiyayewa (Yellowstone, Akagera a Rwanda), lafiyar jama'a (dengue a Mumbai, ebola na 2014 a Laberiya), kwarin ruwa (Kogin Klamath, Kwarin Murray-Darling), da yanayi (Tsibirin Marshall, delta na Bangladesh). Fahimtar haɗa iyali tana buɗewa idan ka gama kamfen ɗin Maine da wanda ke haye yankuna daga iyali ɗaya na injiniyanci.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 da MS-ESS3-3. Ka ƙera wani ƙaramin gari a kan gadon murabba'i 144 gaban buƙatun da gaske suke karo da juna. Garuruwa uku, kowanne da nasa ƙuntatawa mai yanke hukunci: Riverbend, inda ruwan sama da bashi ke matsawa; Mesa Hollow, inda ruwan ƙasa ya tsaya cak kuma gonaki ke shan sa; da Harborlight, inda tsarin dole ya ci gaba da aiki a 2050. Gudanar ruwa bisa hanyar hankali, ma'aunin ruwa, tanadin hawan matakin teku, nisan tafiya a kan hanyar sadarwa, da hanyar sadarwar titi mai farashi, kowanne yana buɗewa ya nuna dabararsa. Assumption Lab yana sake gudanar da tsari ɗaya da saitin ma'auni guda biyu da aka wallafa, don ɗalibai su ga waɗanne ƙarshe ne suka tsira daga duka biyun. Taswira, teburin filaye da za a iya gyarawa, da samfurin 3D na wannan tsarin. Tambayoyin tattaunawa da tarihi mai tushe suna ɗauke da tambayoyin da kayan aikin ya ƙi yin samfurinsu. Babu maki kuma babu maɓallin amsoshi.",
+      "codap_data_science": "CODAP: kimiyyar bayanai",
+      "lumen_research_canvas": "Lumen: fallon bincike",
+      "evolab_evolution": "EvoLab: juyin halitta",
+      "dino_lab": "Dakin gwaje-gwajen dinosaur",
+      "nutritionlab_nutrition_science": "NutritionLab: kimiyyar abinci mai gina jiki",
+      "birdlab_i_spy_ornithology": "BirdLab: ilimin tsuntsaye na nema da gani",
+      "openbim_companion": "OpenBIM: jagorar rakiya",
+      "applab_ai_app_generator": "AppLab: mai ƙera manhaja da AI",
+      "access_lens": "Ruwan tabarau na saukin isa",
+      "sim_shelf": "Kantar kwaikwayo",
+      "zoom_gallery": "Ɗakin ƙara girma",
+      "sourcebook": "Littafin majiyoyi",
+      "wheel_fire_pottery_lab": "Keke da wuta: dakin gwaje-gwajen tukwane",
+      "echo_navigator": "Jagoran amsa kuwwa",
+      "learning_lab_how_learning_works": "Learning Lab: yadda koyo ke aiki",
+      "weldlab_welding_metal_joining": "WeldLab: walda da haɗa ƙarfe",
+      "bikelab_physics_repair": "BikeLab: kimiyyar lissafi da gyara",
+      "fisherlab_boating_fishing_sim": "FisherLab: kwaikwayon tuƙin jirgi da kamun kifi",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: kwaikwayon gonar kifin bawo",
+      "throwlab_sports_physics": "ThrowLab: kimiyyar wasanni",
+      "skatelab_skate_bmx_physics": "SkateLab: kimiyyar skate da BMX",
+      "playlab_strategy_on_the_field": "PlayLab: dabara a filin wasa",
+      "kepler_colony": "Mazaunin Kepler",
+      "birdlab_life_list": "BirdLab: jerin rayuwa",
+      "petslab_decoder": "PetsLab: mai fassara hali"
     },
     "area": {
       "volume": "girma..."
@@ -19654,7 +19700,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Koma zuwa kayan aiki",
+      "a11y_snapshot": "Hoton nan take",
+      "a11y_next": "Na gaba",
+      "a11y_simulation_speed": "Saurin kwaikwayo",
+      "a11y_close_flashcard": "Rufe katin"
     },
     "solar_sys": {
       "venus": "Venus",
@@ -20476,7 +20527,8 @@
       "scaled_volume_changed": "🔵 An auna (girma ya canza)",
       "skewed_shape_deformed": "🟠 Karkata (siffar ta ɓaci)",
       "degenerate_volume_0": "💀 Ya lalace (girma → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Ci gaban jagora"
     },
     "numberline": {
       "first_mark": "Alama ta Farko",
@@ -22619,7 +22671,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Shekarar {value1} ta fara."
     },
     "optics": {
       "optics_lab": "Dakin Gwaje-gwajen Optics",
@@ -22965,7 +23018,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Tambayar SQL ta nazari ta cikin gida"
     },
     "geosandbox": {
       "loading_3d_engine": "Ana loda injin 3D...",
@@ -23315,7 +23369,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "An cire sassaken"
     },
     "algebraCAS": {
       "solve": "🔍 Warware",
@@ -25911,7 +25966,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "Bayanin ya shirya."
     },
     "economicslab": {
       "six_figures": "Kuɗin shiga na lambobi shida",
@@ -27891,7 +27947,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "An adana tunanin."
     },
     "anatomy": {
       "skeletal": "Ƙashi",
@@ -28473,7 +28530,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Sake saita kyamarar 3D"
     },
     "dna": {
       "back_to_tools": "Koma Kayan Aiki",
@@ -29850,7 +29908,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "An adana tunanin."
     },
     "angles": {
       "back_to_tools": "Koma zuwa kayan aiki",
@@ -30664,7 +30723,8 @@
       "explain_how_each_parameter_shapes_a_si": "Yi bayanin yadda kowane parameter ke siffanta sine wave.",
       "design_note_discrete_5_state_marker_no": "Bayanin ƙira: alamar discrete na jihohi 5; babu makin wave; babu bayyanawa — bisa ƙira.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Bayanin ya shirya."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu na Atisayen Bugawa",
@@ -31018,7 +31078,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Koma zuwa menu"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -32289,7 +32350,7 @@
       "sculpt_engine_failed": "Ba a iya loda sculpting engine ba.",
       "sculpt_failed": "Sculpting ya kasa — gwada bayani mai sauƙi.",
       "sr_sculpted": "An sanya sassaƙa",
-      "sr_art_cleared": "An cire sassaƙa",
+      "sr_art_cleared": "An cire sassaken",
       "assess_failed": "Coach bai iya amsawa ba — sake gwadawa.",
       "sr_assessed": "Ra'ayin coach yana shirye ƙarƙashin builder panel",
       "recall_needs_more": "Da farko ƙara aƙalla ideas 4 cikin rukuni 2",
@@ -34427,7 +34488,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Zaɓi amsa: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Koma zuwa kayan aiki",
@@ -35192,7 +35254,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "kashe",
+      "sr_nothing_to_redo": "Babu abin da za a sake yi.",
+      "sr_nothing_to_undo": "Babu abin da za a soke.",
+      "sr_dir_left": "hagu",
+      "sr_dir_right": "dama"
     },
     "arithmetic": {
       "selected": " an zaɓa.",
@@ -39238,7 +39305,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "An daidaita ZHR bisa radiant da ke tsakiyar sama da iyakar haske 6.5. Wannan kimantawa ta kusan-kusan tana ɗauka cewa sararin sama a sarari yake, babu wata, kuma population index 2.2. Ajin Bortle yana nuna iyakar haske kusan-kusan kawai; sararin da ya fi na ma'auni duhu zai iya wuce ZHR. Ƙarancin tsayin radiant da ƙarin haske a sararin sama suna rage kimantawa.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Koma zuwa kayan aikin STEM"
     },
     "autorepair": {
       "back_to_menu": "Koma menu",
@@ -39979,7 +40047,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Maki: {value1} daga {value2}",
+      "a11y_open_2": "Buɗe {value1}",
+      "a11y_option": "Zaɓi {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Ɓawo",
@@ -40082,7 +40153,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Bayanin ya shirya."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40828,7 +40900,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Bayanin ya shirya.",
+      "a11y_investigation_progress": "Ci gaban binciken",
+      "a11y_flight_debrief": "Nazarin tashin jirgi",
+      "a11y_tutorial_progress": "Ci gaban jagora"
     },
     "behaviorlab": {
       "chain_reaction": "Magana mai sarƙa",
@@ -41002,7 +41078,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Bayanin ya shirya.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43512,7 +43588,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Sashen da aka bincika: {value1}",
+      "a11y_score_out_of": "Maki: {value1} daga {value2}",
+      "sr_selected": "An zaɓa: {value1}",
+      "sr_quiz_reset": "An sake saita jarabawar"
     },
     "brainatlas": {
       "group_systems": "Tsaruka",
@@ -48668,7 +48748,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Zaɓi amsa: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Gwanin Jarrabawa",
@@ -49812,7 +49893,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "An zaɓa: {value1}"
     },
     "echotrainer": {
       "back_to_stem_lab": "Koma zuwa STEAM Lab",
@@ -51271,7 +51353,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Sashen da aka bincika: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Na'urar Lissafin Carbon",
@@ -52351,7 +52434,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Koma zuwa menu",
+      "sr_getting_critique": "Ana ɗaukar sharhi...",
+      "sr_critique_ready": "Sharhin ya shirya."
     },
     "flightsim": {
       "game_controls": "🎮 SARRAFA WASA",
@@ -52552,7 +52638,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Kallon ɗakin matuƙi na na'urar koyar da tashi. W/S sunkuyar hanci, A/D karkata, Shift/Ctrl na'urar hanzari, madauri suna sarrafa fikafikai, X birkin taya, Q tambayoyi, F ƙarfi, Space dakata, I bayani.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52564,7 +52650,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Jirgin 'Yanci daga Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52611,7 +52697,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Hasumiyar Shanghai",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58441,7 +58527,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Sashen da aka bincika: {value1}",
+      "sr_loaded": "An loda {value1}",
+      "sr_showing": "Ana nuna {value1}",
+      "sr_opening": "Ana buɗe {value1}"
     },
     "platetectonics": {
       "transform": "Sauyi",
@@ -58640,7 +58730,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63263,7 +63353,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Bayanin ya shirya.",
+      "sr_off": "kashe",
+      "sr_edge_left": "hagu",
+      "sr_edge_right": "dama",
+      "sr_correct": "Daidai.",
+      "sr_not_quite": "Ba daidai ba sosai."
     },
     "playlab": {
       "back_to_stem_lab": "Koma zuwa STEAM Lab",
@@ -63331,7 +63427,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Mai koyarwa ba ya kan layi.",
+      "sr_drill_stopped": "An dakatar da atisayen."
     },
     "printingpress": {
       "print": "🖨️ Buga",
@@ -65470,7 +65568,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Koma zuwa menu",
+      "a11y_open": "Buɗe {value1}",
+      "sr_selected": "An zaɓa: {value1}",
+      "sr_loaded": "An loda {value1}",
+      "sr_opening": "Ana buɗe {value1}",
+      "sr_correct": "Daidai.",
+      "sr_not_quite": "Ba daidai ba sosai.",
+      "sr_year_begins": "Shekarar {value1} ta fara.",
+      "sr_question_reset_try_again": "An sake saita tambayar. Sake gwadawa.",
+      "sr_not_quite_see_the_explanation": "Ba daidai ba sosai: duba bayanin."
     },
     "raptorhunt": {
       "show_answer": "Nuna amsa",
@@ -67119,7 +67227,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Buɗe {value1}",
+      "a11y_flight_debrief": "Nazarin tashin jirgi"
     },
     "renewables": {
       "wind": "Iska",
@@ -67819,7 +67929,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Koma zuwa menu",
+      "sr_getting_critique": "Ana ɗaukar sharhi...",
+      "sr_critique_ready": "Sharhin ya shirya.",
+      "sr_quiz_reset": "An sake saita jarabawar"
     },
     "roadready": {
       "let_s_start": "Bari mu fara →",
@@ -70686,7 +70800,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Koma zuwa kayan aikin STEM",
+      "a11y_local_analytical_sql_query": "Tambayar SQL ta nazari ta cikin gida"
     },
     "stewardship": {
       "sector": "Sashe",
@@ -71263,7 +71379,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Koma zuwa menu",
+      "sr_question_reset_try_again": "An sake saita tambayar. Sake gwadawa."
     },
     "throwlab": {
       "back_to_stem_lab": "Koma zuwa STEAM Lab",
@@ -71488,7 +71606,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Sake saita kyamarar 3D",
+      "sr_coach_is_offline": "Mai koyarwa ba ya kan layi.",
+      "sr_drill_stopped": "An dakatar da atisayen."
     },
     "weldlab": {
       "print": "🖨️ Buga",
@@ -73050,7 +73171,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Sashen da aka bincika: {value1}",
+      "a11y_score_out_of": "Maki: {value1} daga {value2}",
+      "sr_quiz_reset": "An sake saita jarabawar",
+      "sr_loaded": "An loda {value1}",
+      "sr_showing": "Ana nuna {value1}",
+      "sr_not_quite_see_the_explanation": "Ba daidai ba sosai: duba bayanin."
     },
     "worldbuilder": {
       "grade_level": "Matakin aji",
@@ -73956,7 +74083,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Matakin karatu",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74643,7 +74770,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Itacen rayuwa",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76498,7 +76625,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Zaɓi {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Kallon kyamarar 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76509,6 +76638,22 @@
       "next": "na gaba",
       "finish": "Na gane!",
       "replay_aria": "Nuna koyarwa"
+    },
+    "pets": {
+      "sr_back_to_menu": "Koma zuwa menu",
+      "sr_getting_critique": "Ana ɗaukar sharhi...",
+      "sr_critique_ready": "Sharhin ya shirya."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Koma zuwa kayan aikin STEM",
+      "a11y_3d_camera_views": "Kallon kyamarar 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Ci gaban binciken"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Babu abin da za a sake yi.",
+      "sr_nothing_to_undo": "Babu abin da za a soke."
     }
   },
   "glossary_health": {
@@ -77111,7 +77256,7 @@
       "person": "Mutum\\",
       "phase_label": "Suna mataki",
       "rationale_which_antecedent_does_this_address": "Dalili (wane antecedent wannan ke magancewa?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect kan naka approach...\\n• menene worked well?\\n• menene would kai do differently?\\n• menene dabaru do kai want zuwa horo na gaba?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect kan naka approach...\n• menene worked well?\n• menene would kai do differently?\n• menene dabaru do kai want zuwa horo na gaba?",
       "reinforcement_how_you": "⭐ Reinforcement (yaya kai\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement hali (functionally equivalent)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77119,7 +77264,7 @@
       "search_81_tools": "🔍 Bincika 80+ kayan aiki…",
       "search_aba_terms": "🔍 Bincika ABA kalma...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Bincika kalma... (e.g. \"reinforcement\", \"FBA\", \"bayanai\")",
-      "session_1_3nsession_2_7nsession_3_5n": "zama 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "zama 1: 3\nSession 2: 7\nSession 3: 5\n...",
       "setting_eg_math_class_cafeteria": "saiti (e.g., Math aji, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Raba menene kai notice at home — strengths, concerns, cultural context, ko suggestions don makaranta ƙungiya...",
       "step_description": "mataki description...",
@@ -78590,7 +78735,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Tsawon notch",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80782,7 +80927,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Hoton ra'ayi",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80818,10 +80963,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Yi wa kowane ra'ayi kayan ɗaki",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Ci gaban shirya kayan",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80835,7 +80980,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Sunayen da za su yiwu",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80846,7 +80991,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Tunawa da ra'ayi",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82403,7 +82548,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Rufe Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82412,7 +82557,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Tace ayyukan",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82450,15 +82595,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Tambaya {n}",
+    "q_choices_aria": "Zaɓuɓɓuka don tambaya {n}, ɗaya a kowane layi",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Cire tambaya {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Matakan sikelin don tambaya {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Nau'in amsa don tambaya {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82468,10 +82613,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Hanyar haɗi da za a iya zaɓa don {title}",
+    "scale_high_aria": "Lakabi don ƙarshen sama",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Lakabi don ƙarshen ƙasa",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82491,7 +82636,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Taƙaitaccen matsayin ayyukan",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82507,9 +82652,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Ana sabuntawa ta atomatik",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Hanyar haɗin aikin gida da za a iya zaɓa",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82518,7 +82663,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Lambar QR ta aikin gida",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84966,7 +85111,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Zaɓi matakin ci gaba don umarnai da ma'aunin tantancewa",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84974,7 +85119,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Kunna ko kashe kallon malami",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85005,17 +85150,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Dakatar da rikodin bayanin murya",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Ci gaba da rikodin bayanin murya",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Fara rikodin bayanin murya",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Tsayar da rikodin",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85401,22 +85546,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Dalilin yabo na AlloHaven",
+    "recent_deliveries_aria": "Yabon AlloHaven masu zaman kansu na kwanan nan",
+    "token_amount_aria": "Adadin alamun AlloHaven",
+    "token_cap_aria": "Iyakar alamun AlloHaven ga kowane ɗalibi a kowane zama"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Keɓancewar da aka yarda da ita yayin da ake cimma burin",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Alamar ci gaba ta zaɓi da manhajar ke bibiya don wannan burin",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Duk ƙungiyar tare, ko kowane ɗalibi daban",
+    "name_aria": "Sunan burin aji, ana ajiye shi a wannan na'urar kawai",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Waɗanne ɗalibai wannan burin ya shafa",
+    "template_aria": "Samfurin farawa na burin aji",
+    "tokens_aria": "Alamun da ake ba kowane ɗalibi lokacin da aka cimma wannan burin"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85434,7 +85579,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Alamar mai gudanarwa ta Class Mailbox (na zaɓi)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85464,17 +85609,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "an ɗaga hannu",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Hanyar shiga akwatin gidan waya kai tsaye da za a iya zaɓa",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Zaman kai tsaye na Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85501,7 +85646,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "haɗi na lokaci-lokaci",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85533,7 +85678,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL na manhajar yanar gizo ta Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

@@ -455,7 +455,13 @@ window.StemLab = window.StemLab || {
     var P = window.AlloModules && window.AlloModules.Prim3D;
     var clean = P && typeof P.normalizeRecipe === 'function' ? P.normalizeRecipe(pending.recipe) : null;
     if (!clean || !Array.isArray(clean.parts) || !clean.parts.length) return null;
-    return { id: String(pending.id || '').slice(0, 80), recipe: clean };
+    var context = pending.printContext || {};
+    var unit = Number(context.unitMm);
+    return { id: String(pending.id || '').slice(0, 80), recipe: clean, printContext: {
+      unitMm: isFinite(unit) && unit >= 0.01 && unit <= 1000 ? unit : 20,
+      aiUse: ['ASSISTED', 'MOSTLY_AI'].indexOf(context.aiUse) >= 0 ? context.aiUse : 'NONE',
+      aiDisclosure: String(context.aiDisclosure || '').replace(/[\u0000-\u001f\u007f]/g, ' ').slice(0, 500)
+    } };
   }
 });
 window.StemLab.registerTool('artStudio', {
@@ -624,6 +630,17 @@ const d = labToolData.artStudio || {};
           const _artistWorksState = React.useState({ profileId: '', status: 'idle', message: '', items: [] });
           const artistWorksState = _artistWorksState[0];
           const setArtistWorksState = _artistWorksState[1];
+          // In-flight descriptions belong to this mounted sculpture revision.
+          const sculptAiRef = React.useRef({ mounted: true, busy: false, version: 0, signature: '' });
+          const sculptSignature = JSON.stringify([d.sculptRecipe || null, d.tab || '']);
+          if (sculptAiRef.current.signature !== sculptSignature) {
+            sculptAiRef.current.signature = sculptSignature;
+            sculptAiRef.current.version += 1;
+          }
+          React.useEffect(function () {
+            sculptAiRef.current.mounted = true;
+            return function () { sculptAiRef.current.mounted = false; sculptAiRef.current.busy = false; sculptAiRef.current.version += 1; };
+          }, []);
           const artistWorksRequestRef = React.useRef(0);
           const artistDetailRef = React.useRef(null);
           const pendingArtistDetailFocusRef = React.useRef('');
@@ -647,7 +664,7 @@ const d = labToolData.artStudio || {};
             var pending = window.StemLab && window.StemLab.artStudioPure && window.StemLab.artStudioPure.readPendingSculpt ? window.StemLab.artStudioPure.readPendingSculpt() : null;
             if (!pending) return;
             delete window.__alloArtStudioPendingSculpt;
-            updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], tab: 'sculpt3d', studioStarted: true });
+            updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], sculptPrintContext: pending.printContext, tab: 'sculpt3d', studioStarted: true });
             if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(pending.recipe.parts.length === 1 ? __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_one', 'Sculpture returned from Print Lab with {value1} part. Undo restores what was here before.') : __alloT('stem.artstudio.sr_sculpture_returned_from_print_lab_many', 'Sculpture returned from Print Lab with {value1} parts. Undo restores what was here before.'), { value1: pending.recipe.parts.length }));
           }, []);
           const _artistCompareIdsState = React.useState(Array.isArray(d.artistCompareIds) ? d.artistCompareIds.slice(0, 3) : []);
@@ -7581,6 +7598,7 @@ const d = labToolData.artStudio || {};
               var setRecipe = function(r) {
                 var next = r ? P3D.normalizeRecipe(r) : null;
                 if (JSON.stringify(next) === JSON.stringify(recipe)) return;
+                sculptAiRef.current.version += 1;
                 updMany({
                   sculptRecipe: next,
                   sculptUndo: sculptUndo.concat([recipe]).slice(-20),
@@ -7979,22 +7997,50 @@ const d = labToolData.artStudio || {};
               };
               var SHAPE_ICONS = { box: '📦', sphere: '⚪', cylinder: '🛢', cone: '🔺', torus: '🍩', lathe: '🏺', extrude: '⭐' };
               var mini = "min-h-[40px] min-w-[40px] rounded-lg border border-slate-500 bg-white text-slate-700 text-sm font-bold hover:bg-pink-50";
+              // A switched-off control that looks exactly like a live one is a trap:
+              // the student clicks and nothing at all happens, not even an error.
+              // Grey the sculpt actions that switch off, the way Architecture Studio
+              // greys its export buttons. An inline style beats the hover class, which
+              // CSS still applies to a disabled button.
+              var miniStyle = function (isOff, extra) {
+                var style = extra ? Object.assign({}, extra) : {};
+                if (!isOff) return style;
+                style.background = "#f1f5f9";
+                style.color = "#64748b";
+                style.borderColor = "#cbd5e1";
+                style.cursor = "not-allowed";
+                return style;
+              };
               var doAiSculpt = function() {
-                // busy flag lives on window, NOT in toolData — a persisted busy
-                // flag from an interrupted request would disable the button forever.
-                if (typeof callGemini !== 'function' || window._artSculptBusy) return;
-                var subj = (d.sculptText || '').trim(); if (!subj) return;
-                window._artSculptBusy = true; upd('_sculptPing', (d._sculptPing || 0) + 1);
-                // drawnShapes: this studio renders lathe/extrude parts and has a
-                // profile pad for them, so the AI may use them here (other callers
-                // keep the five-primitive whitelist).
+                var runtime = sculptAiRef.current;
+                if (typeof callGemini !== 'function' || runtime.busy) return;
+                var subj = String(d.sculptText || '').trim().slice(0, 1000); if (!subj) return;
+                runtime.busy = true;
+                var version = runtime.version;
+                upd('_sculptPing', Date.now());
                 var prompt = recipe ? P3D.buildRefinePrompt(recipe, subj, { drawnShapes: true }) : P3D.buildRecipePrompt(subj, { drawnShapes: true });
-                callGemini(prompt, false, false, 0.85).then(function(resp) {
+                Promise.resolve().then(function () { return callGemini(prompt, false, false, 0.5); }).then(function(resp) {
+                  if (!runtime.mounted) return;
+                  if (runtime.version !== version) {
+                    if (typeof addToast === 'function') addToast('The sculpture changed while AI was working. Your edits were kept; describe the next change again.', 'info');
+                    return;
+                  }
                   var r = P3D.parseRecipe(typeof resp === 'string' ? resp : (resp && (resp.text || resp.output || resp.response)) || '');
-                  window._artSculptBusy = false;
-                  if (r) { if (!recipe) r.name = subj.slice(0, 80); upd('sculptSel', 0); setRecipe(r); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_updated', 'Sculpture updated')); }
-                  else { upd('_sculptPing', (d._sculptPing || 0) + 2); if (addToast) addToast('⚠️ ' + __alloT('stem.artstudio.sculpt_failed', 'Sculpting failed — try a simpler description.'), 'error'); }
-                }).catch(function() { window._artSculptBusy = false; upd('_sculptPing', (d._sculptPing || 0) + 2); });
+                  if (!r) throw new Error('No editable model returned');
+                  if (!recipe) r.name = subj.slice(0, 80);
+                  setRecipe(r);
+                  var context = d.sculptPrintContext || {};
+                  updMany({ sculptSel: 0, sculptPrintContext: Object.assign({}, context, {
+                    aiUse: context.aiUse === 'MOSTLY_AI' ? 'MOSTLY_AI' : 'ASSISTED',
+                    aiDisclosure: context.aiDisclosure || 'AI proposed editable shapes from my description; I reviewed and can revise the model.'
+                  }) });
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_updated', 'Sculpture updated'));
+                }).catch(function() {
+                  if (runtime.mounted && runtime.version === version && typeof addToast === 'function') addToast('Sculpting could not finish. Your model is unchanged; try a simpler description.', 'error');
+                }).then(function () {
+                  runtime.busy = false;
+                  if (runtime.mounted) upd('_sculptPing', Date.now());
+                });
               };
               var doExportPng = function() {
                 var cnv = _cnvBox.current; if (!cnv || !cnv._p3d) return;
@@ -8050,7 +8096,9 @@ const d = labToolData.artStudio || {};
                   recipe: normalized,
                   title: normalized.name || 'Art Studio sculpture',
                   description: 'Created in Art Studio sculpt mode from primitive shapes. Colours and finishes are appearance only; choose the physical scale and filament in Print Lab.',
-                  unitMm: 20
+                  unitMm: Number(d.sculptPrintContext && d.sculptPrintContext.unitMm) || 20,
+                  aiUse: d.sculptPrintContext && d.sculptPrintContext.aiUse || 'NONE',
+                  aiDisclosure: d.sculptPrintContext && d.sculptPrintContext.aiDisclosure || ''
                 };
                 if (ctx && typeof ctx.setStemLabTool === 'function') {
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_sculpture_handed_to_print_lab', 'Sculpture handed to Print Lab as an editable recipe. Opening Print Lab.'));
@@ -8147,7 +8195,7 @@ const d = labToolData.artStudio || {};
                     React.createElement('div', { className: 'flex gap-1 items-center', role: 'group', 'aria-label': __alloT('stem.artstudio.a11y_transform_axis_constraint', 'Transform axis constraint') },
                       React.createElement('span', { className: 'text-[0.6875rem] font-bold text-slate-600' }, 'Axis:'),
                       [{ id: 'free', label: 'Free', aria: 'Transform freely' }, { id: 'x', label: 'X', aria: 'Constrain transforms to X axis' }, { id: 'y', label: 'Y', aria: 'Constrain transforms to Y axis' }, { id: 'z', label: 'Z', aria: 'Constrain transforms to Z axis' }].map(function(option) {
-                        return React.createElement('button', { key: option.id, className: mini + ' px-2', 'aria-label': option.aria, 'aria-pressed': sculptTransformAxis === option.id, disabled: sculptMode === 'orbit' || !parts.length, onClick: function() { upd('sculptTransformAxis', option.id); } }, option.label);
+                        return React.createElement('button', { key: option.id, className: mini + ' px-2', 'aria-label': option.aria, 'aria-pressed': sculptTransformAxis === option.id, disabled: sculptMode === 'orbit' || !parts.length, style: miniStyle(sculptMode === 'orbit' || !parts.length), onClick: function() { upd('sculptTransformAxis', option.id); } }, option.label);
                       })
                     ),
                     React.createElement('div', { className: 'flex gap-1 items-center', role: 'group', 'aria-label': __alloT('stem.artstudio.a11y_position_snapping', 'Position snapping') },
@@ -8182,9 +8230,10 @@ const d = labToolData.artStudio || {};
                     onDrop: placeDroppedShape
                   }),
                   React.createElement("p", { id: "artstudio-sculpt-keyboard-help", className: "mt-2 text-[0.6875rem] text-slate-600" }, sculptMode === 'move' ? "Move parts: select and drag a form. Arrow keys move it; Page Up or Page Down changes depth. Choose Free or an X/Y/Z axis constraint and a Snap grid; hold Alt for fine unsnapped movement. Drop a shape button onto the canvas to place it." : sculptMode === 'rotate' ? "Rotate parts: select and drag a form. In Free mode, Arrow keys rotate X or Y and Page Up or Page Down rotates Z; choose an axis to lock every turn to it. Hold Alt for one-degree keyboard turns." : sculptMode === 'scale' ? "Morph parts: select and drag diagonally. Free scales the whole form; choose X, Y, or Z to stretch only that axis. Up, Right, or Page Up grows it; Down, Left, or Page Down shrinks it. Hold Alt for fine scaling." : "Orbit: drag or use Arrow keys to turn the view; Alt makes a fine adjustment; Home resets the view; Space or Enter toggles auto-rotation."),
-                  React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_3d_preview_actions', '3D preview actions') },
-                    React.createElement("button", { className: mini, "aria-label": __alloT('stem.artstudio.a11y_undo_sculpture_change', 'Undo sculpture change'), disabled: !sculptUndo.length, onClick: undoSculpt }, '\u21B6'),
-                    React.createElement("button", { className: mini, "aria-label": __alloT('stem.artstudio.a11y_redo_sculpture_change', 'Redo sculpture change'), disabled: !sculptRedo.length, onClick: redoSculpt }, '\u21B7'),
+                  React.createElement("div", { className: "flex flex-wrap gap-2 mt-2", role: "group", "aria-label": __alloT('stem.artstudio.a11y_3d_preview_actions', '3D preview actions'), "aria-describedby": "artstudio-sculpt-actions-help" },
+                    !recipe ? React.createElement("p", { id: "artstudio-sculpt-actions-help", className: "text-[0.6875rem] text-slate-600", style: { flex: "1 1 100%" } }, __alloT('stem.artstudio.sculpt_actions_need_a_part', 'Model and Print Lab need at least one part in this sculpture. Undo and Redo switch on once you have made a change. Add a shape below to begin.')) : null,
+                    React.createElement("button", { className: mini, style: miniStyle(!sculptUndo.length), "aria-label": __alloT('stem.artstudio.a11y_undo_sculpture_change', 'Undo sculpture change'), disabled: !sculptUndo.length, onClick: undoSculpt }, '\u21B6'),
+                    React.createElement("button", { className: mini, style: miniStyle(!sculptRedo.length), "aria-label": __alloT('stem.artstudio.a11y_redo_sculpture_change', 'Redo sculpture change'), disabled: !sculptRedo.length, onClick: redoSculpt }, '\u21B7'),
                     React.createElement("button", {
                       className: mini, style: { flex: "1 1 96px" },
                       "aria-label": sculptAuto ? "Pause 3D preview rotation" : "Resume 3D preview rotation",
@@ -8198,8 +8247,8 @@ const d = labToolData.artStudio || {};
                       }
                     }, sculptAuto ? '⏸ ' + __alloT('stem.artstudio.pause', 'Pause') : '▶ ' + __alloT('stem.artstudio.resume', 'Resume')),
                     React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_save_sculpture_picture_as_png', 'Save sculpture picture as PNG'), onClick: doExportPng }, '📷 ' + __alloT('stem.artstudio.sculpt_export', 'Save picture')),
-                    React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_export_sculpture_json_model', 'Export sculpture JSON model'), disabled: !recipe, onClick: doExportSculptJson }, '⬇ Model'),
-                    React.createElement("button", { className: mini, style: { flex: "1 1 96px" }, "aria-label": __alloT('stem.artstudio.a11y_continue_this_sculpture_in_print_lab', 'Continue this sculpture in Print Lab'), disabled: !recipe, onClick: sendSculptToPrintLab }, '🖨 ' + __alloT('stem.artstudio.sculpt_print_lab', 'Print Lab')),
+                    React.createElement("button", { className: mini, style: miniStyle(!recipe, { flex: "1 1 96px" }), "aria-label": __alloT('stem.artstudio.a11y_export_sculpture_json_model', 'Export sculpture JSON model'), disabled: !recipe, onClick: doExportSculptJson }, '⬇ Model'),
+                    React.createElement("button", { className: mini, style: miniStyle(!recipe, { flex: "1 1 96px" }), "aria-label": __alloT('stem.artstudio.a11y_continue_this_sculpture_in_print_lab', 'Continue this sculpture in Print Lab'), disabled: !recipe, onClick: sendSculptToPrintLab }, '🖨 ' + __alloT('stem.artstudio.sculpt_print_lab', 'Print Lab')),
                     React.createElement("label", { className: mini + " cursor-pointer text-center px-2 py-2 focus-within:ring-4 focus-within:ring-pink-600 focus-within:ring-offset-2", style: { flex: "1 1 96px" } }, '⬆ Load model',
                       React.createElement("input", { type: "file", accept: ".json,.sculpture.json,application/json", className: "sr-only", "aria-label": __alloT('stem.artstudio.a11y_import_sculpture_json_model', 'Import sculpture JSON model'), onChange: importSculptJson })
                     ),
@@ -8230,17 +8279,20 @@ const d = labToolData.artStudio || {};
                       React.createElement("button", { className: mini + " flex-1 px-2", "aria-label": selectedPart.hidden ? "Show selected part" : "Hide selected part", "aria-pressed": selectedPart.hidden, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { hidden: !selectedPart.hidden }); }); } }, selectedPart.hidden ? '\uD83D\uDC41 Show' : '\uD83D\uDE48 Hide'),
                       React.createElement("button", { className: mini + " flex-1 px-2", "aria-label": selectedPart.locked ? "Unlock selected part transforms" : "Lock selected part transforms", "aria-pressed": selectedPart.locked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { locked: !selectedPart.locked }); }); } }, selectedPart.locked ? '\uD83D\uDD13 Unlock' : '\uD83D\uDD12 Lock')
                     ),
+                    (selectedPartLocked || selectedPart.hidden) ? React.createElement("p", { id: "artstudio-part-state-help", className: "mb-1 text-[0.6875rem] text-slate-600" }, selectedPartLocked
+                      ? __alloT('stem.artstudio.part_locked_controls_off', 'This part is locked, so the move, size, spin and form controls stay off. Choose Unlock to use them again.')
+                      : __alloT('stem.artstudio.part_hidden_controls_off', 'This part is hidden, so the move controls stay off. Choose Show to use them again.')) : null,
                     (selectedPart.shape === 'lathe' || selectedPart.shape === 'extrude') ? renderProfilePad() : null,
                     React.createElement("div", { className: "mb-2 rounded-xl border border-violet-200 bg-violet-50 p-2" },
                       React.createElement("p", { className: "mb-1 text-[0.6875rem] font-black text-violet-800" }, 'Morph selected form'),
                       React.createElement("div", { className: "flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_morph_selected_form', 'Morph selected form') }, builtInMorphProfiles.map(function(profile) {
                         var profileActive = selectedMorphSignature === morphSignature(profile);
-                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_form_profile', 'Apply {value1} form profile'), { value1: profile.label }), "aria-pressed": profileActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
+                        return React.createElement("button", { key: profile.id, type: "button", className: "rounded px-2 py-1 text-[0.625rem] font-bold transition-all " + (profileActive ? 'bg-violet-600 text-white' : 'border border-violet-200 bg-white text-violet-700 hover:bg-violet-100'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_form_profile', 'Apply {value1} form profile'), { value1: profile.label }), "aria-pressed": profileActive, disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { applySelectedMorphProfile(profile); } }, profile.label);
                       })),
                       customMorphProfiles.length ? React.createElement("div", { className: "mt-1 flex flex-wrap gap-1", role: "group", "aria-label": __alloT('stem.artstudio.a11y_saved_custom_form_profiles', 'Saved custom form profiles') }, customMorphProfiles.map(function(profile, profileIndex) {
                         var customActive = selectedMorphSignature === morphSignature(profile);
                         return React.createElement("span", { key: profile.id || profileIndex, className: "inline-flex overflow-hidden rounded border border-fuchsia-200 bg-white" },
-                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_saved_form_profile', 'Apply saved {value1} form profile'), { value1: profile.label }), "aria-pressed": customActive, disabled: selectedPartLocked, onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
+                          React.createElement("button", { type: "button", className: "px-2 py-1 text-[0.625rem] font-bold " + (customActive ? 'bg-fuchsia-600 text-white' : 'text-fuchsia-700 hover:bg-fuchsia-50'), "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_apply_saved_form_profile', 'Apply saved {value1} form profile'), { value1: profile.label }), "aria-pressed": customActive, disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { applySelectedMorphProfile(profile); } }, profile.label),
                           React.createElement("button", { type: "button", className: "border-l border-fuchsia-200 px-1.5 text-[0.625rem] text-fuchsia-700 hover:bg-fuchsia-50", "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_delete_custom_form_profile', 'Delete custom form profile {value1}'), { value1: profile.label }), onClick: function() { var remaining = customMorphProfiles.filter(function(_, index) { return index !== profileIndex; }); upd('sculptFormProfiles', remaining); if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_deleted_form_profile', 'Deleted form profile {value1}.'), { value1: profile.label })); } }, '\u00D7')
                         );
                       })) : null,
@@ -8251,7 +8303,7 @@ const d = labToolData.artStudio || {};
                     ),
                     React.createElement("div", { className: "grid grid-cols-6 gap-1 mb-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_move', 'Move the selected part') },
                       [['◀', 0, -1, 'Left'], ['▶', 0, 1, 'Right'], ['⬆', 1, 1, 'Up'], ['⬇', 1, -1, 'Down'], ['↗', 2, 1, 'Closer'], ['↙', 2, -1, 'Farther']].map(function(cfg) {
-                        return React.createElement("button", { key: cfg[3], className: mini, title: cfg[3], "aria-label": cfg[3], disabled: selectedPartLocked || selectedPart.hidden, onClick: function() { partOp(function(P, r) {
+                        return React.createElement("button", { key: cfg[3], className: mini, title: cfg[3], "aria-label": cfg[3], disabled: selectedPartLocked || selectedPart.hidden, style: miniStyle(selectedPartLocked || selectedPart.hidden), onClick: function() { partOp(function(P, r) {
                           var moved = selectedPart.position.slice();
                           moved[cfg[1]] = snapSculptValue(moved[cfg[1]] + cfg[2] * (sculptSnap || 0.08), false);
                           return P.updatePart(r, sel, { position: moved });
@@ -8264,9 +8316,9 @@ const d = labToolData.artStudio || {};
                       })
                     ),
                     React.createElement("div", { className: "grid grid-cols-7 gap-1", role: "group", "aria-label": __alloT('stem.artstudio.sculpt_tools', 'Shape tools') },
-                      React.createElement("button", { className: mini, title: 'Bigger', "aria-label": __alloT('stem.artstudio.a11y_bigger', 'Bigger'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 1.25); }); } }, '➕'),
-                      React.createElement("button", { className: mini, title: 'Smaller', "aria-label": __alloT('stem.artstudio.a11y_smaller', 'Smaller'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 0.8); }); } }, '➖'),
-                      React.createElement("button", { className: mini, title: 'Spin', "aria-label": __alloT('stem.artstudio.a11y_spin', 'Spin'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
+                      React.createElement("button", { className: mini, title: 'Bigger', "aria-label": __alloT('stem.artstudio.a11y_bigger', 'Bigger'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 1.25); }); } }, '➕'),
+                      React.createElement("button", { className: mini, title: 'Smaller', "aria-label": __alloT('stem.artstudio.a11y_smaller', 'Smaller'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.scalePart(r, sel, 0.8); }); } }, '➖'),
+                      React.createElement("button", { className: mini, title: 'Spin', "aria-label": __alloT('stem.artstudio.a11y_spin', 'Spin'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.nudgePart(r, sel, 'rotation', 1, 30); }); } }, '🔄'),
                       React.createElement("button", { className: mini, title: 'Color', "aria-label": __alloT('stem.artstudio.a11y_change_color', 'Change color'), onClick: function() { partOp(function(P, r) { return P.recolorPart(r, sel); }); } }, '🎨'),
                       React.createElement("button", { className: mini, title: 'Duplicate', "aria-label": __alloT('stem.artstudio.a11y_duplicate', 'Duplicate'), onClick: function() { partOp(function(P, r) { return P.duplicatePart(r, sel); }); } }, '⧉'),
                       React.createElement("button", { className: mini, title: 'Mirror copy on ' + sculptMirrorAxis.toUpperCase() + ' axis', "aria-label": formatArtStudioLearningText(__alloT('stem.artstudio.a11y_mirror_copy_on_axis', 'Mirror copy on {value1} axis'), { value1: sculptMirrorAxis.toUpperCase() }), onClick: mirrorSelectedPart }, '↔'),
@@ -8310,7 +8362,7 @@ const d = labToolData.artStudio || {};
                         React.createElement("div", null,
                           React.createElement("div", { className: "flex items-center justify-between gap-2" },
                             React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, 'Stretch / morph'),
-                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": __alloT('stem.artstudio.a11y_reset_selected_part_stretch', 'Reset selected part stretch'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { stretch: [1, 1, 1] }); }); } }, 'Reset')
+                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": __alloT('stem.artstudio.a11y_reset_selected_part_stretch', 'Reset selected part stretch'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { stretch: [1, 1, 1] }); }); } }, 'Reset')
                           ),
                           ['X', 'Y', 'Z'].map(function(axisLabel, axis) {
                             return React.createElement("label", { key: axisLabel, className: "grid grid-cols-[18px_1fr_38px] items-center gap-1 text-[0.625rem] text-slate-600" }, axisLabel,
@@ -8322,7 +8374,7 @@ const d = labToolData.artStudio || {};
                         React.createElement("div", { className: "rounded-lg border border-violet-100 bg-white p-2" },
                           React.createElement("div", { className: "flex items-center justify-between gap-2" },
                             React.createElement("p", { className: "text-[0.6875rem] font-black text-slate-600" }, 'Shape deformation'),
-                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": __alloT('stem.artstudio.a11y_reset_selected_part_deformation', 'Reset selected part deformation'), disabled: selectedPartLocked, onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { deform: { taper: 0, twist: 0, bulge: 0 } }); }); } }, 'Reset')
+                            React.createElement("button", { type: "button", className: "rounded border border-slate-300 bg-white px-2 py-0.5 text-[0.625rem] font-bold text-slate-600 hover:bg-violet-50", "aria-label": __alloT('stem.artstudio.a11y_reset_selected_part_deformation', 'Reset selected part deformation'), disabled: selectedPartLocked, style: miniStyle(selectedPartLocked), onClick: function() { partOp(function(P, r) { return P.updatePart(r, sel, { deform: { taper: 0, twist: 0, bulge: 0 } }); }); } }, 'Reset')
                           ),
                           [{ field: 'taper', label: 'Taper', min: -0.85, max: 0.85, step: 0.05, unit: '' }, { field: 'twist', label: 'Twist', min: -180, max: 180, step: 5, unit: ' degrees' }, { field: 'bulge', label: 'Bulge', min: -0.75, max: 1.5, step: 0.05, unit: '' }].map(function(modifier) {
                             return React.createElement("label", { key: modifier.field, className: "grid grid-cols-[46px_1fr_42px] items-center gap-1 text-[0.625rem] text-slate-600" }, modifier.label,
@@ -8347,9 +8399,10 @@ const d = labToolData.artStudio || {};
                     ) : null
                   ) : null,
                   (typeof callGemini === 'function') ? React.createElement("div", { className: "flex gap-1" },
-                    React.createElement("input", { value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
-                    React.createElement("button", { className: mini, "aria-label": recipe ? "Refine sculpture with AI" : "Create sculpture with AI", onClick: doAiSculpt, disabled: !!window._artSculptBusy, "aria-busy": window._artSculptBusy ? 'true' : 'false' }, window._artSculptBusy ? '…' : '✨')
+                    React.createElement("input", { maxLength: 1000, "aria-describedby": "sculpt-description-help", value: d.sculptText || '', onChange: function(e) { upd('sculptText', e.target.value); }, placeholder: recipe ? __alloT('stem.artstudio.sculpt_refine_ph', 'Describe a change ("longer tail")…') : __alloT('stem.artstudio.sculpt_create_ph', 'Or describe something to sculpt…'), "aria-label": __alloT('stem.artstudio.sculpt_ai_label', 'Describe a sculpture or a change'), className: "flex-1 min-w-0 border border-slate-300 rounded-lg px-2 py-1.5 text-xs" }),
+                    React.createElement("button", { className: mini, "aria-label": recipe ? "Refine sculpture with AI" : "Create sculpture with AI", onClick: doAiSculpt, disabled: !!sculptAiRef.current.busy, "aria-busy": sculptAiRef.current.busy ? 'true' : 'false' }, sculptAiRef.current.busy ? '…' : '✨')
                   ) : null,
+                  React.createElement('p', { id: 'sculpt-description-help', className: 'text-xs leading-5 text-slate-600' }, 'Describe the shape, broad base, and parts, then edit the result with Move, Rotate, Scale, or Undo. You can use your device keyboard dictation in the description field. Review its text before creating. AI uses the configured provider; leave out names and personal details.'),
                   // gallery — named recipes persisted in toolData
                   React.createElement("div", null,
                     React.createElement("div", { className: "text-[0.6875rem] font-bold text-slate-500 mb-1" }, '🖼 ' + __alloT('stem.artstudio.sculpt_gallery', 'My gallery')),

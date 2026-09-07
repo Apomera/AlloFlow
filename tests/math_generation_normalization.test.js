@@ -174,15 +174,15 @@ describe('generated math artifact normalization', () => {
     const verified = verifyMath([guarded, revoked.proxy, valid]);
     expect(coercionCalls).toBe(0);
     expect(verified).toHaveLength(2);
-    expect(verified[0]._verification).toEqual({
-      verified: false, mismatch: false, computed: 4, autoCorrected: false
+    expect(verified[0]._verification).toMatchObject({
+      verified: false, mismatch: false, computed: 4, autoCorrected: false, reviewRequired: true, reason: 'invalid_answer'
     });
     expect(verified[0]).not.toHaveProperty('_originalAnswer');
     expect(verified[1]).toMatchObject({
       question: 'Valid verification.',
-      answer: '42',
+      answer: '41',
       _originalAnswer: '41',
-      _verification: { computed: 42, mismatch: true, autoCorrected: true }
+      _verification: { computed: 42, mismatch: true, autoCorrected: false, reviewRequired: true }
     });
   });
 
@@ -266,9 +266,9 @@ describe('generated math artifact normalization', () => {
       { expression: '1e3', answer: '1000' }
     ]);
     expect(verified[0]).toMatchObject({
-      answer: '14',
+      answer: '13',
       _originalAnswer: '13',
-      _verification: { computed: 14, mismatch: true, autoCorrected: true }
+      _verification: { computed: 14, mismatch: true, autoCorrected: false, reviewRequired: true }
     });
     expect(verified[0].steps[0]).toMatchObject({ _computedResult: 7, _verified: true });
     expect(verified.slice(1).map(problem => problem._verification)).toEqual([
@@ -355,7 +355,7 @@ describe('generated math artifact normalization', () => {
     const before = JSON.stringify(problem);
     const [result] = verifyMath([problem]);
     expect(JSON.stringify(problem)).toBe(before);
-    expect(result.answer).toBe('42');
+    expect(result.answer).toBe('41');
     expect(result.steps[0]).not.toBe(problem.steps[0]);
   });
 
@@ -536,4 +536,13 @@ describe('generated math artifact normalization', () => {
     expect(readFileSync('desktop/web-app/public/generation_helpers_module.js', 'utf8'))
       .toBe(readFileSync('generation_helpers_module.js', 'utf8'));
   });
+});
+
+it('uses the Topic quantity in the actual prompt and marks a short response partial', async () => {
+  const deps = mathGenerationDeps({ mathQuantity: 12, mathInput: 'addition within 20' });
+  await window.AlloModules.GenerationHelpers.handleGenerateMath(null, true, null, deps);
+  expect(deps.callGemini.mock.calls[0][0]).toContain('Create EXACTLY 12 problems');
+  const content = deps.setGeneratedContent.mock.calls.map(([value]) => value).find(value => value?.data?.preparation);
+  expect(content.data.preparation).toMatchObject({ requested: 12, accepted: 1, status: 'partial' });
+  expect(deps.addToast).toHaveBeenCalledWith(expect.stringContaining('11 missing'), 'warning');
 });

@@ -166,12 +166,12 @@ describe('AlloBot deterministic visual QA harness', () => {
     expect(visualQa.validateRuntimeAnimationContract(valid).map((animation) => animation.className))
       .toEqual(visualQa.RUNTIME_IDLE_ANIMATIONS.map((animation) => 'animate-allo-' + animation.name));
 
-    const withoutAmbientWave = {
+    const withoutExplicitWave = {
       ...valid,
       animationBindings: valid.animationBindings.filter((binding) => binding.selector !== '.animate-allo-wave'),
     };
-    expect(() => visualQa.validateRuntimeAnimationContract(withoutAmbientWave))
-      .toThrow(/animate-allo-wave \(ambient\)/);
+    expect(() => visualQa.validateRuntimeAnimationContract(withoutExplicitWave))
+      .toThrow(/animate-allo-wave \(imperative\)/);
 
     const legacySummonSelector = {
       ...valid,
@@ -186,7 +186,7 @@ describe('AlloBot deterministic visual QA harness', () => {
   it('fails when generated runtime producers outgrow the stylesheet contract', () => {
     const moduleSource = readFileSync(join(visualQa.ROOT, 'allobot_module.js'), 'utf8');
     expect(visualQa.validateRuntimeAnimationProducers(moduleSource)).toEqual([
-      'backflip', 'look-around', 'shrug', 'wave', 'wave-hello',
+      'look-around', 'wave-hello',
     ]);
     expect(() => visualQa.validateRuntimeAnimationProducers(
       moduleSource + '\nsetIdleAnimation("new-dance");',

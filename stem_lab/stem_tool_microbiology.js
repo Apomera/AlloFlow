@@ -604,15 +604,15 @@
       hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: microInk('#fbbf24') } }, dose + '/100')),
-          hh('input', { type: 'range', 'aria-label': 'Antibiotic exposure strength in the teaching model', 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_antibiotic_exposure_strength_in_the_teaching_mo', 'Antibiotic exposure strength in the teaching model'), 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: microInk('#22d3ee') } }, duration)),
-          hh('input', { type: 'range', 'aria-label': 'Number of exposure rounds in the teaching model', 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_number_of_exposure_rounds_in_the_teaching_model', 'Number of exposure rounds in the teaching model'), 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })
         ),
         hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },
           hh('div', { style: { marginBottom: 4 } }, 'Initial resistance: ', hh('strong', { style: { color: microInk('#ef4444') } }, initRes + '%')),
-          hh('input', { type: 'range', 'aria-label': 'Initial resistance', 'aria-valuetext': initRes + '% initially resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
+          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_initial_resistance', 'Initial resistance'), 'aria-valuetext': initRes + '% initially resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { setInitRes(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })
         )
       ),
       hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
@@ -731,7 +731,7 @@
         )
       ),
       hh('div', { style: { position: 'relative', background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 8, marginBottom: 10 } },
-        hh('svg', { viewBox: '0 0 400 300', preserveAspectRatio: 'xMidYMid meet', 'aria-label': '1854 Soho map showing cholera deaths clustered around Broad Street water pump', style: { width: '100%', maxHeight: 300, display: 'block' } },
+        hh('svg', { viewBox: '0 0 400 300', preserveAspectRatio: 'xMidYMid meet', 'aria-label': __alloMBT('stem.microbiology.a11y_1854_soho_map_showing_cholera_deaths_clustered', '1854 Soho map showing cholera deaths clustered around Broad Street water pump'), style: { width: '100%', maxHeight: 300, display: 'block' } },
           hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#1a1410', onClick: function() { setActiveTooltip(null); } }),
           hh('rect', { x: 0, y: 0, width: 400, height: 300, fill: '#3d2f1f', opacity: 0.4, onClick: function() { setActiveTooltip(null); } }),
           hh('g', { stroke: '#9ca3af', strokeWidth: 6, fill: 'none', opacity: 0.5 },
@@ -889,7 +889,7 @@
       ),
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
         hh('span', { style: { fontSize: 10, fontWeight: 700, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', whiteSpace: 'nowrap' } }, w.label),
-        hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-valuetext': (WEEKS[week] && WEEKS[week].label ? WEEKS[week].label : ('week ' + week)), 'aria-label': 'Outbreak week', onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
+        hh('input', { type: 'range', min: 0, max: WEEKS.length - 1, step: 1, value: week, 'aria-valuetext': (WEEKS[week] && WEEKS[week].label ? WEEKS[week].label : ('week ' + week)), 'aria-label': __alloMBT('stem.microbiology.a11y_outbreak_week', 'Outbreak week'), onChange: function(e) { setWeek(parseInt(e.target.value, 10)); }, style: { flex: 1, minWidth: 120, accentColor: '#a855f7' } }),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(220,38,38,0.18)', color: microInk('#fca5a5'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(220,38,38,0.40)' } }, w.deaths + ' deaths')
       ),
       hh('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 10, background: 'var(--allo-stem-deeper, rgba(2,6,23,0.5))', borderLeft: '3px solid #a855f7' } },
@@ -1045,7 +1045,7 @@
         ),
         hh('div', { style: { padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.12)', color: microInk('#6ee7b7'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, 'Slides seen: ' + seen.size + '/5')
       ),
-      hh('div', { role: 'group', 'aria-label': 'Organism slides', style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
+      hh('div', { role: 'group', 'aria-label': __alloMBT('stem.microbiology.a11y_organism_slides', 'Organism slides'), style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 12 } },
         ORGANISMS.map(function(o) {
           var active = o.id === organism;
           return hh('button', {
@@ -1082,7 +1082,7 @@
         hh('div', { style: { position: 'absolute', top: 10, right: 14, padding: '4px 10px', borderRadius: 999, background: 'rgba(16,185,129,0.20)', color: microInk('#6ee7b7'), fontSize: 10, fontWeight: 800, fontFamily: 'ui-monospace, Menlo, monospace', border: '1px solid rgba(16,185,129,0.40)' } }, mag + '×')
       ),
       hh('div', { style: { padding: '0 4px', marginBottom: 10 } },
-        hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-valuetext': mag + 'x magnification', 'aria-label': 'Magnification', onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
+        hh('input', { type: 'range', min: 10, max: 100000, step: 10, value: mag, 'aria-valuetext': mag + 'x magnification', 'aria-label': __alloMBT('stem.microbiology.a11y_magnification', 'Magnification'), onChange: function(e) { setMag(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#10b981' } }),
         hh('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 9, color: 'var(--allo-stem-text-soft, #64748b)', marginTop: 2, fontFamily: 'ui-monospace, Menlo, monospace' } },
           hh('span', null, '10× (eye)'), hh('span', null, '400× (light)'), hh('span', null, '2000× (oil)'), hh('span', null, '100,000× (EM)')
         )
@@ -1103,7 +1103,7 @@
           max: 100,
           step: 1,
           value: focusVal,
-          'aria-valuetext': focusVal + ' percent focus', 'aria-label': 'Fine Focus',
+          'aria-valuetext': focusVal + ' percent focus', 'aria-label': __alloMBT('stem.microbiology.a11y_fine_focus', 'Fine Focus'),
           onChange: function(e) { upd({ microscopeFocus: parseInt(e.target.value, 10) }); },
           style: { width: '100%', accentColor: '#10b981' }
         })
@@ -1148,6 +1148,15 @@
       log: []
     }
   };
+  var __alloMBCtx = null;
+  // Module-scope translator: the render-scoped __alloT closes over ctx and is
+  // not in scope in the helpers below, so those calls would throw.
+  var __alloMBT = function (k, fb) {
+    var v;
+    try { v = (__alloMBCtx && typeof __alloMBCtx.t === "function") ? __alloMBCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
+
 
   window.StemLab.registerTool('microbiology', {
     icon: '🦠',
@@ -1156,6 +1165,7 @@
     color: 'emerald',
     category: 'science',
     render: function(ctx) {
+      __alloMBCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;

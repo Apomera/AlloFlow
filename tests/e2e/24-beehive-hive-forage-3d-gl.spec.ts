@@ -264,10 +264,11 @@ test.describe('Beehive 3D forage map', () => {
   const QUEEN_RUN = {
     viewMode: 'queen',
     show3dQueen: true,
+    queen3dGamePieces: true,
     queen: { active: true, day: 6, hiveHealth: 88, territory: 62, paused: true }
   };
 
-  test('builds a live context and renders the contested meadow', async ({ page }, testInfo) => {
+  test('builds a live context and renders the shared meadow', async ({ page }, testInfo) => {
     await harness.mount(page, { beehive: QUEEN_RUN }, undefined, { expectCanvas: false });
     await page.waitForSelector('[data-beehive-3d-bay="queen"] canvas', { timeout: 30_000 });
     await page.waitForTimeout(1200);
@@ -331,7 +332,7 @@ test.describe('Beehive 3D forage map', () => {
     expect(Buffer.compare(calm, raided), 'raid pressure did not put raiders on the map').not.toBe(0);
   });
 
-  test('the frontline moves the meadow, not just a number', async ({ page }) => {
+  test('a changing RTS score does not partition the meadow', async ({ page }) => {
     await harness.mount(page, { beehive: QUEEN_RUN }, undefined, { expectCanvas: false });
     await page.waitForSelector('[data-beehive-3d-bay="queen"] canvas', { timeout: 30_000 });
     await page.waitForTimeout(1200);
@@ -344,6 +345,6 @@ test.describe('Beehive 3D forage map', () => {
     await page.waitForTimeout(1800);
     const after = await shotBay(page, '[data-beehive-3d-bay="queen"]');
 
-    expect(Buffer.compare(before, after), 'the forage frontline did not change the meadow').not.toBe(0);
+    expect(Buffer.compare(before, after), 'an abstract game score must not redraw flower ownership').toBe(0);
   });
 });

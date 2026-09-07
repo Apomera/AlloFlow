@@ -261,7 +261,8 @@ window.StemLab = window.StemLab || {
       // ── 2D Parser ──
       var parse2D = function(expr) {
         if (!expr) return null;
-        var m = expr.match(/y\s*([<>]=?|[\u2264\u2265])\s*(-?\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d+\.?\d*)?/);
+        expr=String(expr).trim().replace(/\u2212/g,'-');
+        var m = expr.match(/^y\s*([<>]=?|[\u2264\u2265])\s*(-?\d*\.?\d*)\s*\*?\s*x\s*([+-]\s*\d+\.?\d*)?$/);
         if (m) {
           var op = m[1].replace('\u2264', '<=').replace('\u2265', '>=');
           var slopeStr = m[2];
@@ -269,7 +270,7 @@ window.StemLab = window.StemLab || {
           var intercept = m[3] ? parseFloat(m[3].replace(/\s/g, '')) : 0;
           return { slope: slope, intercept: intercept, op: op };
         }
-        var m2 = expr.match(/y\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)\s*$/);
+        var m2 = expr.match(/^y\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)\s*$/);
         if (m2) {
           return { slope: 0, intercept: parseFloat(m2[2]), op: m2[1].replace('\u2264', '<=').replace('\u2265', '>=') };
         }
@@ -284,7 +285,8 @@ window.StemLab = window.StemLab || {
       // ── PARSER ──
       var parseIneq = function(expr) {
         if (!expr) return null;
-        var cm = expr.match(/(-?\d+\.?\d*)\s*([<>]=?|[\u2264\u2265])\s*([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)/);
+        expr=String(expr).trim().replace(/\u2212/g,'-');
+        var cm = expr.match(/^(-?\d+\.?\d*)\s*([<>]=?|[\u2264\u2265])\s*([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)$/);
         if (cm) {
           var op1 = cm[2].replace('\u2264', '<=').replace('\u2265', '>=');
           var op2 = cm[4].replace('\u2264', '<=').replace('\u2265', '>=');
@@ -305,7 +307,7 @@ window.StemLab = window.StemLab || {
           }
           return { compound: true, lo: loRaw, op1: op1, v: cm[3], op2: op2, hi: hiRaw };
         }
-        var absM = expr.match(/\|([a-z])\s*([+-])\s*(\d+\.?\d*)\|\s*([<>]=?|[\u2264\u2265])\s*(\d+\.?\d*)/);
+        var absM = expr.match(/^\|([a-z])\s*([+-])\s*(\d+\.?\d*)\|\s*([<>]=?|[\u2264\u2265])\s*(\d+\.?\d*)$/);
         if (absM) {
           var av = absM[1], sign = absM[2], offset = parseFloat(absM[3]), absOp = absM[4].replace('\u2264', '<=').replace('\u2265', '>='), bound = parseFloat(absM[5]);
           var center = sign === '-' ? offset : -offset;
@@ -317,7 +319,7 @@ window.StemLab = window.StemLab || {
             return { compound: false, v: av, op: leftOp, val: center - bound, absSource: expr, absRight: { v: av, op: rightOp, val: center + bound } };
           }
         }
-        var sm = expr.match(/([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)/);
+        var sm = expr.match(/^([a-z])\s*([<>]=?|[\u2264\u2265])\s*(-?\d+\.?\d*)$/);
         if (sm) {
           var opS = sm[2].replace('\u2264', '<=').replace('\u2265', '>=');
           return { compound: false, v: sm[1], op: opS, val: parseFloat(sm[3]) };
@@ -326,6 +328,7 @@ window.StemLab = window.StemLab || {
       };
 
       var ineq = parseIneq(d.expr);
+      if(ineq&&ineq.compound)ineq.empty=ineq.lo>ineq.hi||(ineq.lo===ineq.hi&&(!ineq.op1.includes('=')||!ineq.op2.includes('=')));
 
       // Check expression-based badges
       if (ineq) {
@@ -363,6 +366,8 @@ window.StemLab = window.StemLab || {
           }
         }
       }
+
+      if(ineq&&ineq.empty){intervalStr='∅';setBuilderStr='∅';}
 
       // ── TEST-A-VALUE ──
       var testVal = d.testVal != null ? d.testVal : '';
@@ -776,7 +781,7 @@ window.StemLab = window.StemLab || {
 
         // ── Input + presets ──
         h('div', { className: 'flex items-center gap-2 mb-3' },
-          h('input', {
+          h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
             type: 'text', value: d.expr || '',
             placeholder: graphMode === '2d' ? 'y > 2x + 1' : 'x > 3 or -2 < x \u2264 5',
             onChange: function(e) { upd('expr', e.target.value); },
@@ -785,6 +790,7 @@ window.StemLab = window.StemLab || {
             'aria-label': __alloT('stem.inequality.aria_expression_input', 'Inequality expression input')
           })
         ),
+        graphMode==='1d'&&(!ineq||(ineq&&ineq.empty))&&h('p',{'data-inequality-notice':true,role:'status',className:'text-sm rounded-lg p-3 mb-3',style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)',border:'1px solid var(--allo-stem-text-soft,#475569)'}},ineq?__alloT('stem.inequality.empty_solution','No real number meets both conditions. The solution set is empty (∅).'):__alloT('stem.inequality.supported_expression','Enter a complete supported form such as x > 3 or −2 < x ≤ 5. Use the step-by-step solver below for forms such as 2x + 1 > 5.')),
         h('div', { className: 'flex flex-wrap gap-1.5 mb-3' },
           PRESETS.map(function(ex) {
             return h('button', { key: ex.label,
@@ -814,7 +820,7 @@ window.StemLab = window.StemLab || {
                 h('rect', { x: pad, y: 25, width: sxVal - pad, height: 50, fill: 'url(#ineqGrad)', rx: 4 }));
             }
           })(),
-          ineq && ineq.compound && h('rect', { x: toSX(ineq.lo), y: 25, width: toSX(ineq.hi) - toSX(ineq.lo), height: 50, fill: 'rgba(217,70,239,0.12)', rx: 4 }),
+          ineq && ineq.compound && !ineq.empty && h('rect', { x: toSX(ineq.lo), y: 25, width: toSX(ineq.hi) - toSX(ineq.lo), height: 50, fill: 'rgba(217,70,239,0.12)', rx: 4 }),
           h('line', { x1: pad, y1: 50, x2: W - pad, y2: 50, stroke: '#94a3b8', strokeWidth: 2 }),
           (function() {
             var lblStep = Math.max(1, Math.ceil((range.max - range.min) / 20));
@@ -851,7 +857,7 @@ window.StemLab = window.StemLab || {
                   h('polygon', { points: (W - pad) + ',50 ' + (W - pad - 10) + ',43 ' + (W - pad - 10) + ',57', fill: '#d946ef' }));
               })());
           })(),
-          ineq && ineq.compound && h('g', null,
+          ineq && ineq.compound && !ineq.empty && h('g', null,
             h('line', { x1: toSX(ineq.lo), y1: 50, x2: toSX(ineq.hi), y2: 50, stroke: '#d946ef', strokeWidth: 3.5, style: { filter: 'drop-shadow(0 0 3px rgba(217,70,239,0.55))' } }),
             h('circle', { cx: toSX(ineq.lo), cy: 50, r: 6, fill: ineq.op1.includes('=') ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
             h('circle', { cx: toSX(ineq.hi), cy: 50, r: 6, fill: ineq.op2.includes('=') ? '#d946ef' : 'white', stroke: '#d946ef', strokeWidth: 2.5 }),
@@ -945,18 +951,19 @@ window.StemLab = window.StemLab || {
           function setIQ(patch) { upd('_ineqHunt', Object.assign({}, iq, patch)); }
           var lhs = iq.coef * iq.xVal;
           var state;
-          if (Math.abs(lhs - iq.bound) < 0.5) state = 'boundary';
+          if (lhs === iq.bound) state = 'boundary';
           else if (lhs < iq.bound) state = 'included';
           else state = 'excluded';
           var sm = {
             included: { label: '✅ ' + __alloT('stem.inequality.test_included', 'x INCLUDED in solution (coef·x < bound)'), color: '#059669', bg: '#ecfdf5', border: '#86efac' },
             excluded: { label: '❌ ' + __alloT('stem.inequality.test_excluded', 'x EXCLUDED (coef·x > bound)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-            boundary: { label: '⚖️ ' + __alloT('stem.inequality.test_boundary', 'AT boundary (coef·x ≈ bound)'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' }
+            boundary: { label: '⚖️ ' + __alloT('stem.inequality.strict_boundary_excluded', 'At the boundary: excluded because the inequality is strict (<).'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' }
           }[state];
           sm.color = { included: '#047857', excluded: '#b91c1c', boundary: '#92400e' }[state];
+          if(ctx.isContrast){sm.bg='var(--allo-stem-panel,#000)';sm.color='var(--allo-stem-text,#ffff00)';sm.border='currentColor';}
           return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-fuchsia-300 space-y-2' },
             h('h3', { className: 'text-sm font-black text-fuchsia-700' }, '🎚️ ' + __alloT('stem.inequality.test_discovery_title', 'Inequality test discovery')),
-            h('p', { className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.inequality.test_discovery_desc', 'Sliders for x, coefficient, bound. Test whether coef·x < bound. 3 discrete states. No score, no reveal.')),
+            h('p', { className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.inequality.test_discovery_reasoning', 'Change x, the coefficient, or the bound. Substitute the value, then decide whether the strict inequality is true.')),
             h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
               h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
               h('div', { className: 'text-[0.625rem] text-slate-700 font-mono mt-1' }, iq.coef + ' × ' + iq.xVal + ' = ' + lhs + '   ?  ' + iq.bound)
@@ -974,7 +981,7 @@ window.StemLab = window.StemLab || {
               h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ x: iq.xVal, c: iq.coef, b: iq.bound, st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, '📋 ' + __alloT('stem.inequality.log', 'Log')),
               h('button', { onClick: function() { setIQ({ xVal: 0, coef: 1, bound: 5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, '↺ ' + __alloT('stem.inequality.reset', 'Reset'))
             ),
-            h('textarea', { value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.inequality.hypothesis_placeholder', 'Hypothesis: When does a negative coefficient flip the inequality?'),
+            h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.inequality.hypothesis_placeholder', 'Hypothesis: When does a negative coefficient flip the inequality?'),
               'aria-label': __alloT('stem.inequality.hypothesis', 'Inequality relationship hypothesis'),
               className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
             !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, '🤔 ' + __alloT('stem.inequality.stuck_show_prompts', 'Stuck — show open prompts')),
@@ -985,10 +992,10 @@ window.StemLab = window.StemLab || {
             h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
               h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
               __alloT('stem.inequality.understand_explain', 'I understand — explain in own words')),
-            iq.understood && h('textarea', { value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.inequality.explain_placeholder', 'Explain inequality test logic.'),
+            iq.understood && h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.inequality.explain_placeholder', 'Explain inequality test logic.'),
               'aria-label': __alloT('stem.inequality.explanation', 'Explain inequality test logic'),
               className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.inequality.design_note_test', 'Design note: discrete 3-state test marker; no answer reveal — by design.'))
+            h('div', { className: 'text-[0.625rem] italic text-slate-500' }, __alloT('stem.inequality.strict_boundary_note', 'Equality does not satisfy <. A boundary point belongs only when the inequality includes equality.'))
           );
         })(),
 
@@ -1006,7 +1013,7 @@ window.StemLab = window.StemLab || {
         h('div', { className: 'mt-3 bg-sky-50 rounded-lg p-3 border border-sky-200' },
           h('p', { className: 'text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider mb-2' }, '\uD83E\uDDEA ' + __alloT('stem.inequality.test_a_value', 'Test a Value')),
           h('div', { className: 'flex items-center gap-2' },
-            h('input', {
+            h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
               type: 'number', step: 'any', value: testVal, placeholder: __alloT('stem.inequality.enter_a_number', 'Enter a number\u2026'),
               'aria-label': __alloT('stem.inequality.aria_test_a_value', 'Test a value against the inequality'),
               onChange: function(e) {
@@ -1142,7 +1149,7 @@ window.StemLab = window.StemLab || {
           h('p', { className: 'text-[0.6875rem] font-bold text-teal-800 uppercase tracking-wider mb-2' }, '\uD83E\uDDE0 ' + __alloT('stem.inequality.step_by_step_solver', 'Step-by-Step Solver')),
           h('p', { className: 'text-[0.6875rem] text-teal-800 italic mb-2' }, __alloT('stem.inequality.solver_hint_example', 'Enter an inequality like 3x - 7 \u2265 5 or -2x + 4 < 10')),
           h('div', { className: 'flex items-center gap-2 mb-2' },
-            h('input', {
+            h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},
               type: 'text', value: solverExpr, placeholder: '3x - 7 \u2265 5',
               onChange: function(e) { upd('solverExpr', e.target.value); },
               'aria-label': __alloT('stem.inequality.aria_solver_input', 'Step-by-step solver inequality input'),

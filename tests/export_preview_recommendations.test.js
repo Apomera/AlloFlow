@@ -1068,7 +1068,7 @@ describe('Document Builder export recommendations', () => {
       expect(source).toContain(label);
     }
     expect(source).toContain("const hasAssessmentContent =");
-    expect(host).toContain('getSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history');
+    expect(host.includes('getSkippedResources: getBuilderSkippedResources, handleExportH5P, handleExportIMS, handleExportQTI, history: getBuilderHistory()')).toBe(true);
   });
 
   it('exposes the tested Office builders through a narrow shared API', () => {

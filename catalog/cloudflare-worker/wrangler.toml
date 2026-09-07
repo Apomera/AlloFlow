@@ -90,6 +90,23 @@ id = "e2fa9793121b416080524e95e274ed26"
 binding = "SEARCH_RATE"
 id = "84bea9a6204f41828c92cf96fa408bad"
 
+# Per-IP rate-limit and duplicate-body counters for POST /submit (lesson submissions).
+# WITHOUT this binding /submit still works but is UNGUARDED: every accepted request is a
+# commit through the GitHub token, so an unattended script could push commits at Worker
+# speed. Bind it BEFORE opening the catalog form to the public. Counters expire on their
+# own (120s / 48h / 24h), so the namespace stays tiny.
+#   npx wrangler kv namespace create SUBMIT_RATE
+# then paste the printed id below and uncomment. (Left commented rather than given a
+# placeholder id: a bogus id silently drops the binding on deploy — see PLUGIN_SUBMISSIONS.)
+# Tunables, all optional [vars]: SUBMIT_RATE_PER_MINUTE (3), SUBMIT_RATE_PER_DAY (20),
+# SUBMIT_DEDUPE_TTL_SECONDS (86400).
+# Optional secret: `npx wrangler secret put TURNSTILE_SECRET` makes /submit REQUIRE a
+# Cloudflare Turnstile token in the payload (`turnstile_token`). Do not set it until the
+# in-app form renders the widget and that has been verified inside Gemini Canvas.
+# [[kv_namespaces]]
+# binding = "SUBMIT_RATE"
+# id = "paste-the-printed-id-here"
+
 # GET /search — web-search proxy for Gemini Canvas, which cannot use Google's
 # google_search grounding tool and has no backend of its own. The Serper.dev key
 # is a SECRET and never reaches the browser:

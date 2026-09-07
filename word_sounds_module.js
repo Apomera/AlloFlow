@@ -132,6 +132,475 @@
   function alloSaveFocus() { _alloFocusTrigger = document.activeElement; }
   function alloRestoreFocus() { if (_alloFocusTrigger && typeof _alloFocusTrigger.focus === 'function') { try { _alloFocusTrigger.focus(); } catch(e) { console.warn("[WordSounds] silent catch:", e); } _alloFocusTrigger = null; } }
 
+// BEGIN GENERATED WORD SOUNDS CORE
+// Canonical Word Sounds logic. Embedded by dev-tools/sync_word_sounds_core.cjs.
+// Edge sounds use the application's English phoneme-bank convention (including
+// r-controlled vowel units). null denotes an unresolved pronunciation variant.
+function createWordSoundsCore() {
+  const VERSION = 1;
+  const EDGES = {
+    "about": ["schwa","t"],
+    "action": ["a","n"],
+    "apple": ["a","l"],
+    "art": ["ar","t"],
+    "back": ["b","k"],
+    "bag": ["b","g"],
+    "ban": ["b","n"],
+    "bang": ["b","ng"],
+    "bar": ["b","ar"],
+    "bat": ["b","t"],
+    "bath": ["b","th"],
+    "be": ["b","ee"],
+    "bed": ["b","d"],
+    "bee": ["b","ee"],
+    "bib": ["b","b"],
+    "big": ["b","g"],
+    "bike": ["b","k"],
+    "bird": ["b","d"],
+    "bit": ["b","t"],
+    "boat": ["b","t"],
+    "book": ["b","k"],
+    "box": ["b","s"],
+    "brag": ["b","g"],
+    "brim": ["b","m"],
+    "bud": ["b","d"],
+    "burn": ["b","n"],
+    "bus": ["b","s"],
+    "bush": ["b","sh"],
+    "but": ["b","t"],
+    "cab": ["k","b"],
+    "cake": ["k","k"],
+    "cap": ["k","p"],
+    "car": ["k","ar"],
+    "cash": ["k","sh"],
+    "cat": ["k","t"],
+    "cedar": ["s","er"],
+    "cell": ["s","l"],
+    "cent": ["s","t"],
+    "center": ["s","er"],
+    "cereal": ["s","l"],
+    "chat": ["ch","t"],
+    "chef": ["sh","f"],
+    "chin": ["ch","n"],
+    "chip": ["ch","p"],
+    "chop": ["ch","p"],
+    "circle": ["s","l"],
+    "city": ["s","ee"],
+    "clip": ["k","p"],
+    "cob": ["k","b"],
+    "come": ["k","m"],
+    "cord": ["k","d"],
+    "corn": ["k","n"],
+    "crab": ["k","b"],
+    "crib": ["k","b"],
+    "cub": ["k","b"],
+    "cup": ["k","p"],
+    "curb": ["k","b"],
+    "cut": ["k","t"],
+    "cycle": ["s","l"],
+    "dam": ["d","m"],
+    "dark": ["d","k"],
+    "deck": ["d","k"],
+    "den": ["d","n"],
+    "did": ["d","d"],
+    "dim": ["d","m"],
+    "dip": ["d","p"],
+    "dirt": ["d","t"],
+    "dish": ["d","sh"],
+    "dog": ["d","g"],
+    "dogs": ["d","z"],
+    "done": ["d","n"],
+    "dot": ["d","t"],
+    "drag": ["d","g"],
+    "drip": ["d","p"],
+    "drop": ["d","p"],
+    "drum": ["d","m"],
+    "dub": ["d","b"],
+    "duck": ["d","k"],
+    "dug": ["d","g"],
+    "each": ["ee","ch"],
+    "eat": ["ee","t"],
+    "egg": ["e","g"],
+    "fan": ["f","n"],
+    "far": ["f","ar"],
+    "fat": ["f","t"],
+    "fern": ["f","n"],
+    "fib": ["f","b"],
+    "fig": ["f","g"],
+    "fin": ["f","n"],
+    "firm": ["f","m"],
+    "fish": ["f","sh"],
+    "fit": ["f","t"],
+    "fix": ["f","s"],
+    "flag": ["f","g"],
+    "flat": ["f","t"],
+    "flip": ["f","p"],
+    "fog": ["f","g"],
+    "food": ["f","d"],
+    "foot": ["f","t"],
+    "for": ["f","or"],
+    "fork": ["f","k"],
+    "form": ["f","m"],
+    "fox": ["f","s"],
+    "frog": ["f","g"],
+    "fun": ["f","n"],
+    "fur": ["f","er"],
+    "gab": ["g","b"],
+    "gap": ["g","p"],
+    "gas": ["g","s"],
+    "gem": ["j","m"],
+    "gentle": ["j","l"],
+    "germ": ["j","m"],
+    "get": ["g","t"],
+    "gets": ["g","s"],
+    "giant": ["j","t"],
+    "gift": ["g","t"],
+    "gifts": ["g","s"],
+    "gig": ["g","g"],
+    "giggle": ["g","l"],
+    "ginger": ["j","er"],
+    "giraffe": ["j","f"],
+    "girl": ["g","l"],
+    "girls": ["g","z"],
+    "gist": ["j","t"],
+    "give": ["g","v"],
+    "gives": ["g","z"],
+    "gnat": ["n","t"],
+    "gnaw": ["n","aw"],
+    "gnome": ["n","m"],
+    "go": ["g","oa"],
+    "gob": ["g","b"],
+    "gone": ["g","n"],
+    "got": ["g","t"],
+    "grab": ["g","b"],
+    "grin": ["g","n"],
+    "grip": ["g","p"],
+    "gum": ["g","m"],
+    "gush": ["g","sh"],
+    "gut": ["g","t"],
+    "gym": ["j","m"],
+    "hat": ["h","t"],
+    "have": ["h","v"],
+    "he": ["h","ee"],
+    "hen": ["h","n"],
+    "her": ["h","er"],
+    "him": ["h","m"],
+    "hit": ["h","t"],
+    "home": ["h","m"],
+    "honest": ["o","t"],
+    "honor": ["o","er"],
+    "hop": ["h","p"],
+    "hot": ["h","t"],
+    "hour": ["ow","er"],
+    "hub": ["h","b"],
+    "hug": ["h","g"],
+    "hum": ["h","m"],
+    "hung": ["h","ng"],
+    "hurt": ["h","t"],
+    "hut": ["h","t"],
+    "igloo": ["i","oo"],
+    "inch": ["i","ch"],
+    "jab": ["j","b"],
+    "jam": ["j","m"],
+    "jar": ["j","ar"],
+    "jet": ["j","t"],
+    "jig": ["j","g"],
+    "jog": ["j","g"],
+    "jot": ["j","t"],
+    "jug": ["j","g"],
+    "jut": ["j","t"],
+    "key": ["k","ee"],
+    "kick": ["k","k"],
+    "kid": ["k","d"],
+    "king": ["k","ng"],
+    "kit": ["k","t"],
+    "kite": ["k","t"],
+    "knee": ["n","ee"],
+    "knife": ["n","f"],
+    "knight": ["n","t"],
+    "knob": ["n","b"],
+    "knock": ["n","k"],
+    "knot": ["n","t"],
+    "know": ["n","oa"],
+    "leg": ["l","g"],
+    "let": ["l","t"],
+    "lid": ["l","d"],
+    "lip": ["l","p"],
+    "lit": ["l","t"],
+    "live": ["l","v"],
+    "lock": ["l","k"],
+    "log": ["l","g"],
+    "long": ["l","ng"],
+    "look": ["l","k"],
+    "lot": ["l","t"],
+    "luck": ["l","k"],
+    "lug": ["l","g"],
+    "lung": ["l","ng"],
+    "map": ["m","p"],
+    "mark": ["m","k"],
+    "mash": ["m","sh"],
+    "mat": ["m","t"],
+    "math": ["m","th"],
+    "me": ["m","ee"],
+    "men": ["m","n"],
+    "met": ["m","t"],
+    "mix": ["m","s"],
+    "mob": ["m","b"],
+    "mom": ["m","m"],
+    "moon": ["m","n"],
+    "mop": ["m","p"],
+    "much": ["m","ch"],
+    "mud": ["m","d"],
+    "mug": ["m","g"],
+    "nab": ["n","b"],
+    "nag": ["n","g"],
+    "nap": ["n","p"],
+    "nation": ["n","n"],
+    "neck": ["n","k"],
+    "net": ["n","t"],
+    "nip": ["n","p"],
+    "no": ["n","oa"],
+    "nod": ["n","d"],
+    "nose": ["n","z"],
+    "not": ["n","t"],
+    "nun": ["n","n"],
+    "nut": ["n","t"],
+    "octopus": ["o","s"],
+    "of": ["u","v"],
+    "one": ["w","n"],
+    "out": ["ow","t"],
+    "pan": ["p","n"],
+    "park": ["p","k"],
+    "pat": ["p","t"],
+    "path": ["p","th"],
+    "peg": ["p","g"],
+    "pen": ["p","n"],
+    "pet": ["p","t"],
+    "phone": ["f","n"],
+    "pick": ["p","k"],
+    "pig": ["p","g"],
+    "pin": ["p","n"],
+    "pit": ["p","t"],
+    "plan": ["p","n"],
+    "play": ["p","ay"],
+    "plug": ["p","g"],
+    "plum": ["p","m"],
+    "pod": ["p","d"],
+    "pop": ["p","p"],
+    "pot": ["p","t"],
+    "psalm": ["s","m"],
+    "psychology": ["s","ee"],
+    "pub": ["p","b"],
+    "pun": ["p","n"],
+    "pup": ["p","p"],
+    "put": ["p","t"],
+    "queen": ["k","n"],
+    "quick": ["k","k"],
+    "quilt": ["k","t"],
+    "rag": ["r","g"],
+    "rain": ["r","n"],
+    "ram": ["r","m"],
+    "ran": ["r","n"],
+    "rap": ["r","p"],
+    "rat": ["r","t"],
+    "red": ["r","d"],
+    "rib": ["r","b"],
+    "rich": ["r","ch"],
+    "rid": ["r","d"],
+    "rig": ["r","g"],
+    "rim": ["r","m"],
+    "ring": ["r","ng"],
+    "rip": ["r","p"],
+    "rob": ["r","b"],
+    "rock": ["r","k"],
+    "rod": ["r","d"],
+    "rot": ["r","t"],
+    "rub": ["r","b"],
+    "rug": ["r","g"],
+    "run": ["r","n"],
+    "rush": ["r","sh"],
+    "rut": ["r","t"],
+    "sat": ["s","t"],
+    "school": ["s","l"],
+    "sea": ["s","ee"],
+    "see": ["s","ee"],
+    "set": ["s","t"],
+    "she": ["sh","ee"],
+    "shed": ["sh","d"],
+    "shell": ["sh","l"],
+    "shin": ["sh","n"],
+    "ship": ["sh","p"],
+    "shop": ["sh","p"],
+    "shot": ["sh","t"],
+    "shut": ["sh","t"],
+    "sing": ["s","ng"],
+    "sip": ["s","p"],
+    "sir": ["s","er"],
+    "sit": ["s","t"],
+    "six": ["s","s"],
+    "skip": ["s","p"],
+    "slam": ["s","m"],
+    "slap": ["s","p"],
+    "slim": ["s","m"],
+    "slip": ["s","p"],
+    "slug": ["s","g"],
+    "snap": ["s","p"],
+    "snip": ["s","p"],
+    "snug": ["s","g"],
+    "so": ["s","oa"],
+    "sob": ["s","b"],
+    "sock": ["s","k"],
+    "sod": ["s","d"],
+    "some": ["s","m"],
+    "song": ["s","ng"],
+    "spin": ["s","n"],
+    "spot": ["s","t"],
+    "star": ["s","ar"],
+    "step": ["s","p"],
+    "stop": ["s","p"],
+    "stub": ["s","b"],
+    "stun": ["s","n"],
+    "sub": ["s","b"],
+    "such": ["s","ch"],
+    "sum": ["s","m"],
+    "sun": ["s","n"],
+    "surf": ["s","f"],
+    "swim": ["s","m"],
+    "tab": ["t","b"],
+    "tag": ["t","g"],
+    "tan": ["t","n"],
+    "tap": ["t","p"],
+    "ten": ["t","n"],
+    "that": ["dh","t"],
+    "them": ["dh","m"],
+    "then": ["dh","n"],
+    "thin": ["th","n"],
+    "this": ["dh","s"],
+    "tin": ["t","n"],
+    "tip": ["t","p"],
+    "top": ["t","p"],
+    "torn": ["t","n"],
+    "tot": ["t","t"],
+    "trap": ["t","p"],
+    "tree": ["t","ee"],
+    "trim": ["t","m"],
+    "trip": ["t","p"],
+    "trot": ["t","t"],
+    "tub": ["t","b"],
+    "tug": ["t","g"],
+    "turn": ["t","n"],
+    "umbrella": ["u","schwa"],
+    "van": ["v","n"],
+    "vat": ["v","t"],
+    "vet": ["v","t"],
+    "vim": ["v","m"],
+    "vow": ["v","ow"],
+    "wag": ["w","g"],
+    "wax": ["w","s"],
+    "we": ["w","ee"],
+    "web": ["w","b"],
+    "wed": ["w","d"],
+    "when": ["w","n"],
+    "whip": ["w","p"],
+    "whiz": ["w","z"],
+    "wig": ["w","g"],
+    "win": ["w","n"],
+    "wish": ["w","sh"],
+    "wit": ["w","t"],
+    "with": ["w",null],
+    "wok": ["w","k"],
+    "won": ["w","n"],
+    "wrap": ["r","p"],
+    "wren": ["r","n"],
+    "wrist": ["r","t"],
+    "write": ["r","t"],
+    "wrong": ["r","ng"],
+    "yak": ["y","k"],
+    "yam": ["y","m"],
+    "yap": ["y","p"],
+    "yes": ["y","s"],
+    "yet": ["y","t"],
+    "zap": ["z","p"],
+    "zen": ["z","n"],
+    "zip": ["z","p"],
+    "zoo": ["z","oo"]
+  };
+  const normalize = value => String(value || '').normalize('NFC').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  const aliases = {c:'k',ck:'k',q:'k',qu:'k',ph:'f',wh:'w',tch:'ch',dge:'j',ai:'ay',ea:'ee',ir:'er',ur:'er',au:'aw',oe:'oa',oi:'oy','ɡ':'g','ʃ':'sh','ʒ':'zh','θ':'th','ð':'dh','ŋ':'ng','dʒ':'j','ʤ':'j','tʃ':'ch','ʧ':'ch','æ':'a','ɛ':'e','ɪ':'i','ɒ':'o','ɑ':'o','ɑː':'o','ʌ':'u','ə':'schwa','iː':'ee','uː':'oo','ʊ':'oo_short','eɪ':'ay','aɪ':'ie','oʊ':'oa','əʊ':'oa','aʊ':'ow','ɔɪ':'oy','ɹ':'r','ɝ':'er','ɚ':'er'};
+  const soundKey = value => { const v=normalize(value); return aliases[v] || v; };
+  const edgeSound = (word, position, phonemes) => {
+    const w=normalize(word), last=position==='last';
+    if (Object.prototype.hasOwnProperty.call(EDGES,w)) return EDGES[w][last?1:0];
+    if (!Array.isArray(phonemes) || !phonemes.length) return null;
+    const item=phonemes[last?phonemes.length-1:0];
+    const raw=typeof item==='string'?item:(item && (item.ipa || item.phoneme || item.grapheme));
+    if (!raw) return null;
+    if (item && typeof item==='object' && item.ipa==='j') return 'y';
+    const key=soundKey(raw);
+    return last && (key==='x'||key==='ks') ? 's' : key;
+  };
+  const unique = values => [...new Set((values||[]).map(normalize).filter(Boolean))];
+  const shuffled = (values, seed) => { const out=[...values]; let s=seed||1; for(let i=out.length-1;i>0;i--){ s=(Math.imul(s,1664525)+1013904223)>>>0; const j=s%(i+1); [out[i],out[j]]=[out[j],out[i]];} return out; };
+  const validSoundBoard = (board, word, pool=[]) => {
+    if(!board || !['first','last'].includes(board.mode) || !board.targetChar) return false;
+    const yes=unique(board.options), no=unique(board.distractors);
+    if(!yes.length || !no.length || yes.length!==(board.options||[]).length || no.length!==(board.distractors||[]).length || yes.some(w=>no.includes(w)||w===normalize(word)) || no.includes(normalize(word))) return false;
+    if(board.teacherEdited) return true;
+    const data=new Map(pool.filter(p=>p && typeof p==='object').map(p=>[normalize(p.word||p.targetWord||p.term),p]));
+    const sound=w=>edgeSound(w,board.mode,(data.get(w)||{}).phonemes);
+    const target=soundKey(board.targetChar);
+    const actual=sound(normalize(word));
+    return (actual != null && soundKey(actual)===target) && yes.every(w=>sound(w)!=null && soundKey(sound(w))===target) && no.every(w=>sound(w)!=null && soundKey(sound(w))!==target);
+  };
+  const buildSoundSort = ({word,phonemes,mode,pool=[],matches=[],targetSound,teacherEdited=false,distractors=[]}) => {
+    word=normalize(word); mode=mode==='last'?'last':'first';
+    const seed=[...word].reduce((n,c)=>n+c.charCodeAt(0),0);
+    const data=new Map(pool.filter(p=>p && typeof p==='object').map(p=>[normalize(p.word||p.targetWord||p.term),p]));
+    const target=edgeSound(word,mode,phonemes) || (targetSound && soundKey(targetSound));
+    if(!target) return null;
+    if(teacherEdited){const board={version:VERSION,teacherEdited:true,mode,targetChar:soundKey(targetSound||target),difficulty:'medium',options:unique(matches),distractors:unique(distractors)};return validSoundBoard(board,word,pool)?board:null;}
+    const words=unique([...matches,...pool.map(p=>typeof p==='string'?p:(p.word||p.targetWord||p.term))]).filter(w=>w!==word);
+    const sound=w=>edgeSound(w,mode,(data.get(w)||{}).phonemes);
+    const yes=words.filter(w=>sound(w)!=null && soundKey(sound(w))===soundKey(target));
+    const no=words.filter(w=>sound(w)!=null && soundKey(sound(w))!==soundKey(target));
+    const limit=word.length<=3?3:5;
+    const short=values=>{const easy=values.filter(w=>w.length<=(word.length<=3?3:4));return word.length<=4 && easy.length>=2?easy:values;};
+    const board={version:VERSION,mode,targetChar:soundKey(target),difficulty:word.length<=3?'easy':word.length<=4?'medium':'hard',options:shuffled(short(yes),seed).slice(0,limit),distractors:shuffled(short(no),seed+1).slice(0,limit-1)};
+    return validSoundBoard(board,word,pool)?board:null;
+  };
+  const difficultyDecision = (history, activity, support={}) => {
+    const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
+    let band=0, block=[], reason='starting', changes=0;
+    const bands=['easy','medium','hard'];
+    for(const h of rows){
+      if(h.difficulty && h.difficulty!==bands[band]) continue;
+      block.push(h); block=block.slice(-10);
+      const distinct=new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size;
+      const n=block.length, accuracy=block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/n;
+      const min=band===0?6:8, words=band===0?4:6;
+      if(band<2 && n>=min && distinct>=words && accuracy>=0.85){band++;changes++;block=[];reason='advance';}
+      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;block=[];reason='step_back';}
+      else if(reason==='starting')reason='practice';
+    }
+    return {difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+  };
+  const textEvidence = ({activity,imageAvailable,answerRevealed=false}) => {
+    const connected=['read_sentence','read_passage'].includes(activity);
+    if(!connected)return {};
+    const wordMatching=!imageAvailable || answerRevealed;
+    return {taskKind:wordMatching?'word_matching':'picture_supported_cloze',cluesShown:wordMatching?['printed_answer']:['picture'],fallbackReason:!imageAvailable?'missing_target_image':answerRevealed?'answer_revealed':null,independentReading:false,answerExposed:wordMatching};
+  };
+  const profileCheck = (text, profile) => {
+    if(!profile || !Array.isArray(profile.taughtPatterns) || !profile.taughtPatterns.length)return {status:'not_configured',untaughtWords:[]};
+    const known=new Set(unique(profile.knownWords)); const patterns=unique(profile.taughtPatterns).filter(p=>/^[\p{L}\p{M}]+$/u.test(p)).sort((a,b)=>b.length-a.length);
+    const canRead=w=>{if(known.has(w))return true; const reached=new Set([0]); for(let i=0;i<w.length;i++){if(!reached.has(i))continue; for(const p of patterns)if(w.startsWith(p,i))reached.add(i+p.length);}return reached.has(w.length);};
+    const unknown=unique(String(text||'').normalize('NFC').match(/[\p{L}\p{M}]+/gu)||[]).filter(w=>!canRead(w));
+    return {status:unknown.length?'review':'within_taught_spellings',untaughtWords:unknown};
+  };
+  return {VERSION,soundKey,edgeSound,validSoundBoard,buildSoundSort,difficultyDecision,textEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+}
+const WS_CORE = createWordSoundsCore();
+// END GENERATED WORD SOUNDS CORE
     // word_sounds_module.js
     // Auto-extracted from AlloFlowANTI.txt
     // Word Sounds Studio module for AlloFlow - loaded from GitHub CDN
@@ -3402,8 +3871,10 @@
       const callGemini = runtimeAiAllowed ? providedCallGemini : null;
       const callTTS = runtimeAiAllowed ? providedCallTTS : null;
       const callImagen = runtimeAiAllowed ? providedCallImagen : null;
-      const runtimeSessionConfig =
-        sessionConfig && typeof sessionConfig === "object" ? sessionConfig : {};
+      const runtimeSessionConfig = React.useMemo(() => ({
+        preparedActivities: wsPreloadedWords?.[0]?._preparedActivities,
+        ...(sessionConfig && typeof sessionConfig === "object" ? sessionConfig : {}),
+      }), [sessionConfig, wsPreloadedWords]);
       const configuredImageVisibilityModeRaw =
         runtimeSessionConfig.imageVisibilityMode;
       const configuredImageVisibilityMode =
@@ -3489,181 +3960,20 @@
         });
       }, [wordSoundsHistory, historyLearnerId, wordSoundsLanguage]);
 
-      const estimateFirstPhoneme = (word) => {
-        if (!word) return "";
-        const w = word.toLowerCase();
-        const EXCEPTIONS = {
-          city: "s",
-          cent: "s",
-          cell: "s",
-          circle: "s",
-          cycle: "s",
-          cedar: "s",
-          cereal: "s",
-          center: "s",
-          gym: "j",
-          gem: "j",
-          giant: "j",
-          giraffe: "j",
-          gentle: "j",
-          germ: "j",
-          gist: "j",
-          ginger: "j",
-          knight: "n",
-          knee: "n",
-          knob: "n",
-          knock: "n",
-          knot: "n",
-          know: "n",
-          knife: "n",
-          wrap: "r",
-          wren: "r",
-          write: "r",
-          wrong: "r",
-          wrist: "r",
-          gnaw: "n",
-          gnat: "n",
-          gnome: "n",
-          psalm: "s",
-          psychology: "s",
-        };
-        if (EXCEPTIONS[w]) return EXCEPTIONS[w];
-        const digraphs = ["sh", "ch", "th", "wh", "ph", "ng", "ck"];
-        for (const dg of digraphs) {
-          if (w.startsWith(dg)) return dg;
-        }
-        if (w.startsWith("kn")) return "n";
-        if (w.startsWith("wr")) return "r";
-        if (w.startsWith("gn")) return "n";
-        if (w.startsWith("c") && w.length > 1 && "eiy".includes(w[1]))
-          return "s";
-        if (w.startsWith("g") && w.length > 1 && "eiy".includes(w[1]))
-          return "j";
-        // Vowel-first words: the first PHONEME can be a multi-letter unit —
-        // an r-controlled vowel ("art" → /ar/, not letter-a) or a vowel team
-        // ("eat" → /ea/, "out" → /ow/). Returning the bare first letter made
-        // corrective feedback speak the wrong sound for these words.
-        const rControlled = ["ar", "er", "ir", "or", "ur"];
-        for (const rc of rControlled) {
-          if (w.startsWith(rc)) return rc;
-        }
-        const vowelTeams = ["ai", "ay", "au", "aw", "ea", "ee", "ei", "ey", "ew", "ie", "igh", "oa", "oe", "oi", "oo", "ou", "ow", "oy", "ue"];
-        for (const vt of vowelTeams) {
-          if (w.startsWith(vt)) return vt;
-        }
-        return w.charAt(0);
-      };
-      const estimateLastPhoneme = (word) => {
-        if (!word) return "";
-        const w = word.toLowerCase();
-        const EXCEPTIONS = {
-          come: "m",
-          some: "m",
-          done: "n",
-          gone: "n",
-          give: "v",
-          live: "v",
-          have: "v",
-          nation: "n",
-          action: "n",
-        };
-        if (EXCEPTIONS[w]) return EXCEPTIONS[w];
-        const rControlled = ["ar", "er", "ir", "or", "ur"];
-        for (const rc of rControlled) {
-          if (w.endsWith(rc)) return rc;
-        }
-        const digraphs = ["sh", "ch", "th", "ng", "ck"];
-        for (const dg of digraphs) {
-          if (dg === "ck" && w.endsWith("ck")) return "k";
-          if (w.endsWith(dg)) return dg;
-        }
-        // Vowel-team endings are one PHONEME ("play" → /ay/, not letter-y;
-        // "tree" → /ee/) — mirror of the first-phoneme fix above.
-        const vowelTeams = ["igh", "ay", "ey", "ee", "ea", "oo", "ew", "ue", "ie", "oa", "ow", "oe", "oy", "oi", "aw", "au"];
-        for (const vt of vowelTeams) {
-          if (w.endsWith(vt)) return vt;
-        }
-        return w.slice(-1);
-      };
-      // Sound Sort: precomputed option set, primed during the eager preload so
-      // the activity opens instantly (parity with Blend/Rhyme) - no render flash.
+      const estimateFirstPhoneme = (word) => WS_CORE.edgeSound(word, "first") || "";
+      const estimateLastPhoneme = (word) => WS_CORE.edgeSound(word, "last") || "";
       const soundSortPreloadRef = React.useRef(null);
-      const computeSoundSortItem = (targetWordRaw, phonemesArr, aiSortData) => {
-        const targetWord = (targetWordRaw || '').toLowerCase();
-        if (!targetWord || targetWord.length < 2) return null;
-        const wordSeed = targetWord.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-        const mode = wordSeed % 2 === 0 ? 'first' : 'last';
-        // Teacher-edited boards are authoritative: no sound filtering, no
-        // pool merging, no difficulty slicing — the teacher may deliberately
-        // include words the estimators would reject ("city" starts with /s/).
-        // Empty strings are kept (they're live edit rows); the play view
-        // filters them out.
-        if (aiSortData && aiSortData.teacherEdited) {
-          const tMode = aiSortData.position === 'last' ? 'last' : 'first';
-          const tTarget = String(aiSortData.phoneme || '').replace(/^\/+|\/+$/g, '').toLowerCase().trim();
-          const tWordLen = targetWord.length;
-          const tHasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
-          return {
-            mode: tMode,
-            targetChar: tTarget,
-            difficulty: tWordLen <= 3 && !tHasBlend ? 'easy' : (tWordLen <= 4 || tHasBlend ? 'medium' : 'hard'),
-            options: (aiSortData.words || []).filter((w) => w != null && String(w).toLowerCase() !== targetWord).slice(0, 8),
-            distractors: (aiSortData.distractors || []).filter((w) => w != null && String(w).toLowerCase() !== targetWord).slice(0, 8),
-          };
-        }
-        let aiMatches = [];
-        let aiMode = mode;
-        if (aiSortData && aiSortData.words && aiSortData.words.length >= 2) {
-          aiMatches = aiSortData.words.map((w) => w.toLowerCase().trim()).filter((w) => w && w !== targetWord);
-          if (aiSortData.position === 'first' || aiSortData.position === 'last') aiMode = aiSortData.position;
-        }
-        // Derive the target sound AFTER the mode is settled (AI data may flip
-        // first/last), then normalize it: Gemini phonemes can arrive as "/b/"
-        // — the slashes break the phonemeFor() match filter (estimators return
-        // bare graphemes) and miss the phoneme audio bank keys.
-        let targetPhoneme = (aiSortData && aiSortData.phoneme)
-          ? aiSortData.phoneme
-          : (phonemesArr && phonemesArr.length > 0)
-            ? (aiMode === 'first' ? phonemesArr[0] : phonemesArr[phonemesArr.length - 1])
-            : (aiMode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord));
-        targetPhoneme = String(targetPhoneme || '').replace(/^\/+|\/+$/g, '').toLowerCase().trim();
-        const phonemeFor = (w) => aiMode === 'first' ? estimateFirstPhoneme(w.toLowerCase()) : estimateLastPhoneme(w.toLowerCase());
-        // Compare by SOUND class (phonemeKey), not spelling: the estimators
-        // return graphemes ("c" for "cap") while the AI target is a phoneme
-        // ("k" for "cat"), so exact-string comparison dropped phonetically
-        // correct matches AND recruited identical-sounding words (cap, cup)
-        // as scored-wrong distractors — punishing correct judgments.
-        const _soundEq = (a, b) => phonemeKey(a) === phonemeKey(b);
-        const pool = SOUND_MATCH_POOL || ['bat', 'cat', 'dog', 'sit'];
-        // Unwinnable-board guard: if the (AI-derived) target sound matches
-        // nothing in either word source, fall back to the estimator-derived
-        // target — the pool always has matches for estimator graphemes.
-        const _hasAny = (t) =>
-          aiMatches.some((w) => _soundEq(phonemeFor(w), t)) ||
-          pool.some((w) => { const wc = w.toLowerCase(); return wc !== targetWord && _soundEq(phonemeFor(wc), t); });
-        if (!_hasAny(targetPhoneme)) {
-          targetPhoneme = aiMode === 'first' ? estimateFirstPhoneme(targetWord) : estimateLastPhoneme(targetWord);
-        }
-        aiMatches = aiMatches.filter((w) => _soundEq(phonemeFor(w), targetPhoneme));
-        const poolMatches = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; return _soundEq(phonemeFor(wc), targetPhoneme); });
-        const matches = [...new Set([...aiMatches, ...poolMatches])];
-        const matchesLower = new Set(matches.map((w) => w.toLowerCase()));
-        const distractorsPool = pool.filter((w) => { const wc = w.toLowerCase(); if (wc === targetWord) return false; if (matchesLower.has(wc)) return false; return !_soundEq(phonemeFor(wc), targetPhoneme); });
-        const wordLen = targetWord.length;
-        const hasBlend = /^[bcdfghjklmnpqrstvwxyz]{2,}/i.test(targetWord);
-        const difficulty = wordLen <= 3 && !hasBlend ? 'easy' : (wordLen <= 4 || hasBlend ? 'medium' : 'hard');
-        const matchLimit = difficulty === 'easy' ? 3 : difficulty === 'medium' ? 4 : 5;
-        const distractorLimit = difficulty === 'easy' ? 2 : difficulty === 'medium' ? 4 : 5;
-        const seededRandom = (seed) => { let s = seed; return () => { s = Math.sin(s) * 10000; return s - Math.floor(s); }; };
-        const rng = seededRandom(wordSeed);
-        const shuffleSeeded = (arr) => [...arr].sort(() => rng() - 0.5);
-        const filterByDifficulty = (words) => { if (difficulty === 'easy') return words.filter((w) => w.length <= 3); if (difficulty === 'medium') return words.filter((w) => w.length <= 4); return words; };
-        let selectedMatches = shuffleSeeded(filterByDifficulty(matches)).slice(0, matchLimit);
-        if (selectedMatches.length < 2) selectedMatches = shuffleSeeded(matches).slice(0, matchLimit);
-        const selectedDistractors = shuffleSeeded(filterByDifficulty(distractorsPool)).slice(0, distractorLimit);
-        // Report aiMode (the mode the match filter actually used), not the raw
-        // seed mode — they differ when the AI sort data flips first/last.
-        return { mode: aiMode, targetChar: targetPhoneme, difficulty, options: selectedMatches, distractors: selectedDistractors };
+      const computeSoundSortItem = (targetWordRaw, phonemesArr, aiSortData, preparedBoard) => {
+        const word = String(targetWordRaw || "").trim().toLowerCase();
+        const pack = Array.isArray(preloadedWords) ? preloadedWords : [];
+        const pool = [...pack, ...WS_CORE.knownWords];
+        const prepared = preparedBoard || pack.find(p => String(p.word || p.targetWord || p.term || "").toLowerCase() === word)?.activityItems?.sound_sort;
+        if (WS_CORE.validSoundBoard(prepared, word, pool)) return prepared;
+        const seed = [...word].reduce((sum, c) => sum + c.charCodeAt(0), 0);
+        return WS_CORE.buildSoundSort({ word, phonemes: phonemesArr, pool,
+          mode: aiSortData?.position || (seed % 2 === 0 ? "first" : "last"),
+          matches: aiSortData?.words || [], distractors: aiSortData?.distractors || [],
+          targetSound: aiSortData?.phoneme, teacherEdited: !!aiSortData?.teacherEdited });
       };
       // Word Families: resolve the rime the SAME way for the instruction audio
       // and the on-screen game (AI rime first, then RIME_FAMILIES, then -at), and
@@ -4478,25 +4788,27 @@
           };
           const presentations = Math.max(1, Number(evidence.presentations) || 1);
           const practiceOnly = evidence.practiceOnly === true;
-          const firstTryCorrect = !!isCorrect && presentations === 1 && !practiceOnly;
+          const firstTryCorrect = !!isCorrect && presentations === 1 && !practiceOnly && !evidence.answerExposed;
           const aacAssisted = evidence.aacAssisted === true;
           return {
             ...prior,
             attempted: (prior.attempted || 0) + 1,
             correct: (prior.correct || 0) + (isCorrect ? 1 : 0),
             firstTryCorrect: (prior.firstTryCorrect || 0) + (firstTryCorrect ? 1 : 0),
-            retryCorrect: (prior.retryCorrect || 0) + (isCorrect && !firstTryCorrect ? 1 : 0),
+            retryCorrect: (prior.retryCorrect || 0) + (isCorrect && presentations > 1 && !practiceOnly ? 1 : 0),
             aacAssistedAttempts: (prior.aacAssistedAttempts || 0) + (aacAssisted ? 1 : 0),
             practiceOnlyAttempts: (prior.practiceOnlyAttempts || 0) + (practiceOnly ? 1 : 0),
             aacAssistedCorrect: (prior.aacAssistedCorrect || 0) + (isCorrect && aacAssisted ? 1 : 0),
-            independentCorrect: (prior.independentCorrect || 0) + (firstTryCorrect && !aacAssisted ? 1 : 0),
+            independentCorrect: (prior.independentCorrect || 0) + (firstTryCorrect && !aacAssisted && evidence.independentReading !== false ? 1 : 0),
+            distinctWords: [...new Set([...(prior.distinctWords || []), evidence.word].filter(Boolean))],
+            supportedMatchingAttempts: (prior.supportedMatchingAttempts || 0) + (evidence.answerExposed ? 1 : 0),
             // A retry demonstrates learning, but not an independent mastery
             // streak. AAC remains valid access evidence and is reported
             // separately rather than silently pooled as unassisted work.
             consecutiveStreak: firstTryCorrect
               ? (prior.consecutiveStreak || 0) + 1
               : 0,
-            independentConsecutiveStreak: firstTryCorrect && !aacAssisted
+            independentConsecutiveStreak: firstTryCorrect && !aacAssisted && evidence.independentReading !== false
               ? (prior.independentConsecutiveStreak || 0) + 1
               : 0,
             completed: !!prior.completed,
@@ -4519,7 +4831,8 @@
           const masteryThreshold = lessonPlanConfig.masteryThreshold || 3;
           return (
             stats.attempted >= minItems &&
-            stats.consecutiveStreak >= masteryThreshold
+            stats.consecutiveStreak >= masteryThreshold &&
+            (!stats.distinctWords || stats.distinctWords.length >= Math.min(3, minItems))
           );
         },
         [masteryStats],
@@ -6898,6 +7211,8 @@
       }, [wordSoundsLanguage]);
       const wsActivityAvailableForLang = React.useCallback(
         (activityId) => {
+          const prepared = runtimeSessionConfig.preparedActivities;
+          if (Array.isArray(prepared) && prepared.length && !prepared.includes(activityId)) return false;
           if (wsLangCaps.isEnglish) return true; // English: everything, unchanged
           switch (activityId) {
             // English-specific machinery — never half-run in another language:
@@ -6923,13 +7238,13 @@
               return true;
           }
         },
-        [wsLangCaps],
+        [wsLangCaps, runtimeSessionConfig.preparedActivities],
       );
       const ACTIVITIES = React.useMemo(() => {
         const tierFiltered = includeOrthographic
           ? ALL_ACTIVITIES
           : ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
-        if (wsLangCaps.isEnglish) return tierFiltered;
+        if (wsLangCaps.isEnglish && !runtimeSessionConfig.preparedActivities?.length) return tierFiltered;
         return tierFiltered.filter((a) => wsActivityAvailableForLang(a.id));
       }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang]);
       // Skill-cluster grouping for the activity picker (UX). Maps each activity
@@ -7558,40 +7873,13 @@
         if (complexity >= 4 || isLong) return "hard";
         return "medium";
       }, []);
+      const adaptiveDifficulty = React.useMemo(() => WS_CORE.difficultyDecision(
+        learnerScopedHistory.filter(wsIsGradedRow), wordSoundsActivity,
+        { aacAssisted: aacMode, mode: ["read_sentence", "read_passage"].includes(wordSoundsActivity) || showLetterHints ? "visual" : "sound_only" },
+      ), [learnerScopedHistory, wordSoundsActivity, aacMode, showLetterHints]);
       const getEffectiveDifficulty = React.useCallback(() => {
-        if (wordSoundsDifficulty !== "auto") return wordSoundsDifficulty;
-        // Only graded rows may drive difficulty. Letter Trace is coach-until-
-        // right, so its rows are always correct:true — left in the pooled
-        // fallback they push a struggling child straight to "hard".
-        const hist = learnerScopedHistory.filter(wsIsGradedRow);
-        // Adapt per-activity, not on a pooled window: a learner who is strong at
-        // blending but weak at segmentation shouldn't get one averaged difficulty
-        // that fits neither. Fall back to the pooled window until this activity
-        // has enough of its own signal (a fresh activity would otherwise adapt off
-        // 1-2 noisy items right after a switch).
-        const perActivity = hist
-          .filter((h) => h && h.activity === wordSoundsActivity)
-          .slice(-10);
-        const recentHistory =
-          perActivity.length >= 4 ? perActivity : hist.slice(-10);
-        if (recentHistory.length < 3) return "easy";
-        // Right on the second try is not the same as right first time. The row
-        // has carried `attempts` (1 = first presentation) since the grading
-        // tests landed, but nothing weighted it, so a child who needed a retry
-        // on every item still read as 100% and was adapted UP. A retry now
-        // counts half. Rows written before `attempts` existed default to 1 and
-        // are read as first-try, which is what they were recorded as.
-        const WS_RETRY_CREDIT = 0.5;
-        const weighted = recentHistory.reduce((sum, h) => {
-          if (!h || !h.correct) return sum;
-          return sum + ((h.attempts || 1) > 1 ? WS_RETRY_CREDIT : 1);
-        }, 0);
-        const accuracy = weighted / recentHistory.length;
-        const levelBoost = Math.min((wordSoundsLevel - 1) * 0.05, 0.15);
-        if (accuracy >= 0.85 - levelBoost) return "hard";
-        if (accuracy >= 0.6 - levelBoost) return "medium";
-        return "easy";
-      }, [wordSoundsDifficulty, learnerScopedHistory, wordSoundsActivity, wordSoundsLevel]);
+        return wordSoundsDifficulty !== "auto" ? wordSoundsDifficulty : adaptiveDifficulty.difficulty;
+      }, [wordSoundsDifficulty, adaptiveDifficulty]);
       const categorizedPool = React.useMemo(() => {
         return wordPool.map((entry) => ({
           ...entry,
@@ -12089,7 +12377,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               if (activityId === "sound_sort") {
                 soundSortPreloadRef.current = {
                   word: (targetWord || '').toLowerCase(),
-                  item: computeSoundSortItem(targetWord, preloadedWord.phonemes, preloadedWord.soundSortMatches),
+                  item: computeSoundSortItem(targetWord, preloadedWord.phonemes, preloadedWord.soundSortMatches, preloadedWord.activityItems?.sound_sort),
                 };
                 debugLog("📋 [Eager] Set sound sort options from preloaded:", targetWord);
               }
@@ -12520,7 +12808,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const _ssPre = soundSortPreloadRef.current;
               const _ssItem = (_ssPre && _ssPre.word === targetWord && _ssPre.item)
                 ? _ssPre.item
-                : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches);
+                : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches, wordSoundsPhonemes?.activityItems?.sound_sort);
               const wordSeed = targetWord
                 .split("")
                 .reduce((a, c) => a + c.charCodeAt(0), 0);
@@ -13269,6 +13557,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               presentations: attempts + 1,
               aacAssisted: aacMode,
               practiceOnly: WS_NON_GRADED_ACTIVITIES.has(wordSoundsActivity),
+              ...(opts?.taskEvidence || {}),
+              word: currentWordSoundsWord,
             };
             const _postActivityMastery = buildNextMasteryStat(
               masteryStats[wordSoundsActivity],
@@ -13288,11 +13578,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ...(historyResourceId != null ? { resourceId: String(historyResourceId) } : {}),
               ...(wordSoundsLanguage ? { language: String(wordSoundsLanguage) } : {}),
               ...(sessionConfigVersion != null ? { sessionConfigVersion } : {}),
+              ...(opts?.taskEvidence || {}),
               firstTry: attempts === 0,
               activity: wordSoundsActivity,
               word: currentWordSoundsWord,
               correct: isCorrect,
-              mode: showLetterHints ? "visual" : "sound_only",
+              mode: opts?.taskEvidence ? "visual" : showLetterHints ? "visual" : "sound_only",
               difficulty: getEffectiveDifficulty(),
               wordDifficulty: categorizeWordDifficulty(currentWordSoundsWord),
               phonemes: wordSoundsPhonemes?.phonemes || [],
@@ -13338,6 +13629,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 correct: isCorrect,
                 attempts: attempts + 1,
                 activity: wordSoundsActivity,
+                ...(opts?.taskEvidence || {}),
               });
             }
             const currentLessonConfig = lessonPlanConfig;
@@ -13412,7 +13704,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 } else {
                   setWordSoundsFeedback({
                     type: "success",
-                    message: `🎊 Lesson Complete! All activities mastered! 🌟`,
+                    message: ts("word_sounds.lesson_practice_complete") || "Lesson complete! You practiced every activity.",
                   });
                   setTimeout(() => {
                     if (isMountedRef.current) setShowSessionComplete(true);
@@ -13424,14 +13716,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             ) {
               const actStats = _postActivityMastery;
               const MIN_PRACTICE = 5;
-              const queueRemaining =
-                sessionQueueRef.current[wordSoundsActivity] || [];
-              const allWordsCompleted =
-                actStats.attempted > 0 && queueRemaining.length === 0;
               const readyToAdvance =
-                (actStats.attempted >= MIN_PRACTICE && newStreak >= 3) ||
-                allWordsCompleted;
-              if (showLetterHints && newStreak >= 3) {
+                (actStats.attempted >= MIN_PRACTICE && actStats.consecutiveStreak >= 3 && (actStats.distinctWords || []).length >= 3);
+              if (showLetterHints && readyToAdvance) {
                 setWordSoundsFeedback({
                   type: "success",
                   message:
@@ -16579,8 +16866,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const _ssPre = soundSortPreloadRef.current;
             const _ssItem = (_ssPre && _ssPre.word === targetWord && _ssPre.item)
               ? _ssPre.item
-              : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches);
-            if (!_ssItem) return null;
+              : computeSoundSortItem(targetWord, wordSoundsPhonemes && wordSoundsPhonemes.phonemes, wordSoundsPhonemes && wordSoundsPhonemes.soundSortMatches, wordSoundsPhonemes?.activityItems?.sound_sort);
+            if (!_ssItem) return React.createElement("div", { role: "status", className: "p-4 text-slate-700" }, ts("word_sounds.sound_sort_review_needed") || "This sound needs a reviewed word set. Choose another activity or return to setup.");
             // PIN the item on first compute: on the non-preloaded path the AI
             // sort data lands asynchronously mid-play — recomputing per-render
             // could flip first/last (remounting the board via key= and wiping
@@ -17113,7 +17400,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               rsChipTimerRef.current = setTimeout(() => {
                 if (isMountedRef.current) setRsChipFeedback(null);
               }, 900);
-              checkAnswer((w || ""), rsWord);
+              checkAnswer((w || ""), rsWord, { taskEvidence: WS_CORE.textEvidence({ activity: "read_sentence", imageAvailable: !!rsImg, answerRevealed: showWordText }) });
             };
             const rsChipClass = (w) =>
               rsChipFeedback && rsChipFeedback.word === w
@@ -17126,10 +17413,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const rsSolved = showWordText;
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_sentence_prompt") || "Read the sentence. Which word finishes it?"),
+              React.createElement("p", { className: "text-xs text-slate-600" }, rsImg ? ts("word_sounds.picture_cloze_practice") : ts("word_sounds.matching_practice")),
               rsImg
                 ? /*#__PURE__*/ React.createElement("img", {
                   src: rsImg,
-                  alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
+                  alt: ts("word_sounds.picture_clue_for", { word: rsWord }) || `Picture clue: ${rsWord}`,
                   className: "w-28 h-28 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
                 })
                 // No picture packed for this word: anchor with the printed
@@ -17208,7 +17496,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               rsChipTimerRef.current = setTimeout(() => {
                 if (isMountedRef.current) setRsChipFeedback(null);
               }, 900);
-              checkAnswer((w || ""), rpWord);
+              checkAnswer((w || ""), rpWord, { taskEvidence: WS_CORE.textEvidence({ activity: "read_passage", imageAvailable: !!rpImg, answerRevealed: showWordText }) });
             };
             const rpChipClass = (w) =>
               rsChipFeedback && rsChipFeedback.word === w
@@ -17232,10 +17520,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_passage_prompt") || "Read the story. Which word finishes it?"),
+              React.createElement("p", { className: "text-xs text-slate-600" }, rpImg ? ts("word_sounds.picture_cloze_practice") : ts("word_sounds.matching_practice")),
               rpImg
                 ? /*#__PURE__*/ React.createElement("img", {
                   src: rpImg,
-                  alt: ts("word_sounds.read_sentence_picture_hint") || "Picture hint",
+                  alt: ts("word_sounds.picture_clue_for", { word: rpWord }) || `Picture clue: ${rpWord}`,
                   className: "w-24 h-24 object-contain rounded-2xl border-2 border-slate-200 bg-white shadow-md",
                 })
                 // Same word-card fallback as Finish the Sentence: never an
@@ -19004,6 +19293,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ts: ts,
                 });
               })(),
+              isTeacherMode && wordSoundsDifficulty === "auto" && React.createElement("p", { className: "mb-3 text-sm text-slate-600" }, ts("word_sounds.adaptive_evidence", { count: adaptiveDifficulty.items, words: adaptiveDifficulty.distinctWords }) || `Current activity and support: ${adaptiveDifficulty.items} recent responses across ${adaptiveDifficulty.distinctWords} words. Difficulty moves one step after sustained practice.`),
               renderActivityContent(),
             ),
             wordSoundsFeedback &&

@@ -1,0 +1,194 @@
+[
+  {
+    "id": "sm-term-matter",
+    "file": "sm-term-matter.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A stone, a wooden block, a glass of water, and an inflated blue balloon rest on a table.",
+    "altHash": "img-bfb-0c2ab691"
+  },
+  {
+    "id": "sm-term-particle",
+    "file": "sm-term-particle.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Six small blue spheres are scattered across a white background as symbols for tiny pieces of a substance.",
+    "altHash": "img-353-8779ef35"
+  },
+  {
+    "id": "sm-term-solid",
+    "file": "sm-term-solid.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A rectangular wooden block rests on a table.",
+    "altHash": "img-a57-73989be0"
+  },
+  {
+    "id": "sm-term-liquid",
+    "file": "sm-term-liquid.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Clear water fills part of a wide transparent bowl.",
+    "altHash": "img-6lz-76676e99"
+  },
+  {
+    "id": "sm-term-gas",
+    "file": "sm-term-gas.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A tied, translucent balloon is inflated; the air inside is clear.",
+    "altHash": "img-4vf-ebb46b11"
+  },
+  {
+    "id": "sm-term-melt",
+    "file": "sm-term-melt.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "An arrow connects an ice cube on a saucer to a smaller piece of ice surrounded by a puddle.",
+    "altHash": "img-4wz-f3428b5a"
+  },
+  {
+    "id": "sm-term-freeze",
+    "file": "sm-term-freeze.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Two matching green trays show water in the left tray and ice cubes in the right tray.",
+    "altHash": "img-77b-f94d536f"
+  },
+  {
+    "id": "sm-term-evaporate",
+    "file": "sm-term-evaporate.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "Two views of the same sunlit pavement tile show a puddle shrinking over time; an arrow connects the larger puddle to the smaller one.",
+    "altHash": "img-a4v-804c5b91"
+  },
+  {
+    "id": "sm-term-condense",
+    "file": "sm-term-condense.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A cold metal lid sits above a bowl of water. Small liquid droplets cling to the underside of the lid.",
+    "altHash": "img-krn-a93f137e"
+  },
+  {
+    "id": "sm-term-energy",
+    "file": "sm-term-energy.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A beam of sunlight falls on a dark stone on a garden path.",
+    "altHash": "img-nqf-d7a030c2"
+  },
+  {
+    "id": "sm-term-volume",
+    "file": "sm-term-volume.webp",
+    "width": 480,
+    "height": 480,
+    "alt": "A wooden block occupies most of the space inside a transparent rectangular box.",
+    "altHash": "img-ap3-336ca519"
+  },
+  {
+    "id": "sm-img-solid-shape",
+    "file": "sm-img-solid-shape.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Wooden cubes keep their shape on a plate, in a bowl, and inside a glass.",
+    "altHash": "img-ed7-adcd7729"
+  },
+  {
+    "id": "sm-img-liquid-shape",
+    "file": "sm-img-liquid-shape.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Water forms a tall narrow shape in a glass and a low wide shape in a bowl.",
+    "altHash": "img-cgn-ef5317e7"
+  },
+  {
+    "id": "sm-img-trapped-air",
+    "file": "sm-img-trapped-air.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two capped syringes without needles show a plunger pulled back and a plunger pushed in, leaving less space for trapped air.",
+    "altHash": "img-8zv-cb3e3cf8"
+  },
+  {
+    "id": "sm-img-melting-jar",
+    "file": "sm-img-melting-jar.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two closed jars show ice pieces on the left and liquid water on the right.",
+    "altHash": "img-d2n-778dcc37"
+  },
+  {
+    "id": "sm-img-freezing-tray",
+    "file": "sm-img-freezing-tray.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Two matching blue trays show liquid water on the left and ice cubes on the right.",
+    "altHash": "img-pzz-9a0a4ba8"
+  },
+  {
+    "id": "sm-img-drying-puddle",
+    "file": "sm-img-drying-puddle.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Three views of the same pavement show a large puddle, a smaller puddle, and a tiny wet patch.",
+    "altHash": "img-11q7-fdfb54fb"
+  },
+  {
+    "id": "sm-img-cold-glass",
+    "file": "sm-img-cold-glass.webp",
+    "width": 840,
+    "height": 840,
+    "alt": "An ice-filled glass stands in a warm kitchen. Droplets coat its outside and a wet ring surrounds its base.",
+    "altHash": "img-1lfb-7ec461ff"
+  },
+  {
+    "id": "sm-img-vapor-gap",
+    "file": "sm-img-vapor-gap.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A kettle spout opens into a short clear gap. A white mist plume begins farther away from the spout.",
+    "altHash": "img-9in-5bfefd2b"
+  },
+  {
+    "id": "sm-img-solid-particles",
+    "file": "sm-img-solid-particles.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Sixteen blue spheres sit in an orderly square arrangement. Short curved strokes suggest vibration.",
+    "altHash": "img-gxf-f0a35916"
+  },
+  {
+    "id": "sm-img-liquid-particles",
+    "file": "sm-img-liquid-particles.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Blue spheres cluster irregularly near the bottom of a container; small arrows point between nearby spheres.",
+    "altHash": "img-jz7-338da068"
+  },
+  {
+    "id": "sm-img-gas-particles",
+    "file": "sm-img-gas-particles.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "Eight small blue spheres are spread throughout a transparent box, with arrows pointing in different directions.",
+    "altHash": "img-6tz-7a4a7e4c"
+  },
+  {
+    "id": "sm-img-closed-system",
+    "file": "sm-img-closed-system.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A clear food container with a closed lid holds a small ice cube and shallow water.",
+    "altHash": "img-do7-04ebd9fc"
+  },
+  {
+    "id": "sm-img-inflating-balloon",
+    "file": "sm-img-inflating-balloon.webp",
+    "width": 840,
+    "height": 560,
+    "alt": "A flat blue balloon lies beside an inflated blue balloon.",
+    "altHash": "img-bxr-0c2f2ef4"
+  }
+]

@@ -41,6 +41,7 @@ describe('Games systemic WCAG safeguards', () => {
       !line.includes("classList.remove('animate-shake')"),
     );
     expect(unguarded).toEqual([]);
-    expect(source).toContain("if (!useReducedMotion()) btn.classList.add('animate-shake')");
+    expect(source).not.toContain("document.getElementById('check-btn')");
+    expect(source).toContain('motion-safe:hover:-translate-y-1');
   });
 });

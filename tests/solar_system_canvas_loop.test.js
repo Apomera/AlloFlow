@@ -187,7 +187,8 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('var timelineJumpLabel = function(mark)');
       expect(source).toContain('timelineMilestones.map(function(mark, idx)');
       expect(source).toContain('setScrubPhase(mark.phase)');
-      expect(source).toContain('"aria-label": "Jump to " + mark.label.toLowerCase() + " for " + scrubBody.name');
+      expect(source).toContain("'stem.solarsystem.a11y_jump_to_for'");
+      expect(source).toContain('value1: mark.label.toLowerCase(), value2: scrubBody.name');
       expect(source).toContain('var timelineMarkIsActive = function(mark)');
       expect(source).toContain('timelineMarkIsActive(mark), function()');
       expect(source).toContain('btn("Reset view"');
@@ -556,8 +557,10 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('gasScienceZone.windSpeed');
       expect(source).toContain("scienceReadingEl.textContent = 'Elevation '");
       expect(source).toContain('var slopeDegrees = roverGroup');
-      expect(source).toContain("announceToSR('Entered ' + curOceanZone");
-      expect(source).toContain("announceToSR('Entered ' + curZoneName");
+      expect(source).toContain("announceToSR(__alloFill(__alloT('stem.solarsystem.sr_entered_pressure_temperature'");
+      expect(source).toContain('value1: curOceanZone, value2: oZone.pressure, value3: oZone.temp');
+      expect(source).toContain("'stem.solarsystem.sr_entered_pressure_temperature_wind_kilometers_per'");
+      expect(source).toContain('value1: curZoneName, value2: enteredGasZone.pressure, value3: enteredGasZone.temp, value4: enteredGasZone.windSpeed');
       expect(source).toContain("top:62px;right:48px");
       expect(source).toContain("width:min(204px,calc(100% - 64px))");
       expect(source).not.toContain("top:62px;right:8px;z-index:14");

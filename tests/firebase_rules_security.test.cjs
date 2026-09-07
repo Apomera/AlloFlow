@@ -149,6 +149,20 @@ const assetPath = (id) => "artifacts/" + appId + "/public/data/session_assets/" 
       },
     }));
     await assertFails(updateDoc(questRef, { "escapeRoomState.conceptQuest.phase": "complete" }));
+    const hostQuestRef = doc(hostDb, sessionPath("QUEST"));
+    await assertSucceeds(updateDoc(hostQuestRef, { "escapeRoomState.conceptQuest": { actionSchema: 1, turnKey: "2:room-2:abc", currentRoomId: "room-2", phase: "battle" } }));
+    const scopedAction = { abilityId: "analyze", roleId: "analyst", answerIndex: 0, submittedAt: Date.now(), turnKey: "2:room-2:abc" };
+    await assertSucceeds(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questActions.guest-user": scopedAction }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questActions.guest-user": { ...scopedAction, turnKey: "1:room-1:old" } }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questActions.stranger-user": scopedAction }));
+    await assertSucceeds(updateDoc(hostQuestRef, { "escapeRoomState.isPaused": true }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questActions.guest-user": { ...scopedAction, answerIndex: 1 } }));
+    await assertSucceeds(updateDoc(hostQuestRef, { "escapeRoomState.isPaused": false, "escapeRoomState.conceptQuest.phase": "explore", "escapeRoomState.conceptQuest.turnKey": "3:room-2:abc" }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questActions.guest-user": { ...scopedAction, submittedAt: scopedAction.submittedAt + 1 } }));
+    await assertSucceeds(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questVotes.guest-user": "room-3", "escapeRoomState.teamProgress.All.questVoteTurns.guest-user": "3:room-2:abc" }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questVotes.guest-user": "room-1", "escapeRoomState.teamProgress.All.questVoteTurns.guest-user": "2:room-2:abc" }));
+    await assertFails(updateDoc(questRef, { "escapeRoomState.teamProgress.All.questVoteTurns.stranger-user": "3:room-2:abc" }));
+
 
     const now = Date.now();
     const orphan = {

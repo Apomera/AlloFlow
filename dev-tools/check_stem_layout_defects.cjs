@@ -56,7 +56,7 @@
  * --viewport=WxH). Every sweep before this ran at 1280x1000, a teacher's laptop;
  * students are on Chromebooks and tablets, and a narrow column is where overlap
  * and clipping actually happen. Detector 4, `overflows-tool-column`, is the one
- * that speaks this axis: content past the right edge of the slot with NO
+ * that speaks this axis: content past EITHER edge of the slot with NO
  * scrollable ancestor (a wide table inside overflow-x:auto is the correct
  * pattern and is not reported). Fixture:
  *   node dev-tools/check_stem_layout_defects.cjs dev-tools/fixtures/overflow_column_fixture.js --narrow
@@ -186,6 +186,36 @@ const VIEWPORT = (function () {
   }
   return NARROW ? { width: 768, height: 1024 } : { width: 1280, height: 1000 };
 })();
+// ★★★ A RESPONSIVE DEFECT LIVES IN A BAND, NOT AT A WIDTH, 2026-09-06.
+// coding's header shoved six controls off the tool column, and it was invisible
+// at BOTH widths this gate habitually sweeps: below 960px a media query wrapped
+// the row correctly, and above ~1630px the row fits on one line. Only the middle
+// broke. Had the toolbar needed 1200px instead of 1630px, neither 768 nor 1280
+// would have caught it. skatelab is the same shape from the other direction —
+// its markers overlap at 768 and 1024 but not at 800, 900 or 1280, because a
+// sidebar reflow makes the timeline strip NARROWER at 1024 than at 768. Width
+// is not monotonic, so two samples prove nothing about the range between them.
+//
+// --widths=768,1024,1280 measures each mounted view at every width inside ONE
+// page build. Building the page (setContent + runtime + mount) is the expensive
+// part and is paid once; a resize plus a re-probe is cheap, so a three-width
+// band costs far less than three sweeps. Findings carry the widths they appear
+// at, and the report names the widths where the same view was CLEAN — that gap
+// is the band, and it is the whole point.
+//
+// ★CAVEAT: this RESIZES a page mounted at VIEWPORT.width. A component that reads
+// its width only at mount will not re-render, so a finding seen only at a
+// resized width should be confirmed with a dedicated --viewport=<W>x<H> run
+// before it is treated as real. The reverse (a defect that a resize hides) is
+// the reason --widths does not replace the routine per-width boards.
+const widthsArg = (args.find((a) => a.startsWith('--widths=')) || '').slice(9);
+const WIDTHS = widthsArg
+  ? Array.from(new Set(widthsArg.split(',').map((x) => parseInt(x.trim(), 10)).filter((n) => n >= 200 && n <= 4000))).sort((a, b) => a - b)
+  : [VIEWPORT.width];
+if (widthsArg && !WIDTHS.length) {
+  console.error('bad --widths (expected a comma list of pixel widths, e.g. 768,1024,1280)');
+  process.exit(2);
+}
 // One re-mount per control, so this is the runtime knob. 30 covers the Pets
 // Lab's 28 menu tiles; --all --deep is a long run by design.
 // ★★★ THE SWEEP PROBES FEWER VIEWS THAN A SINGLE-FILE RUN. 12 under --all vs 30
@@ -214,7 +244,7 @@ const statesArg = (args.find((a) => a.startsWith('--states=')) || '').slice(9);
 const stateArg = (args.find((a) => a.startsWith('--state=')) || '').slice(8);
 
 if (!ALL && !toolArg) {
-  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--narrow|--viewport=WxH] [--deep] [--json] [--gate] [--only=<substr> with --all] [--deep-cap=N|all] [--settle-cap=MS]');
+  console.error('usage: node dev-tools/check_stem_layout_defects.cjs <toolFile|--all> [--state=<json>] [--states=<json array>] [--dark] [--contrast [--no-host-css]] [--narrow|--viewport=WxH] [--widths=768,1024,1280] [--deep] [--json] [--gate] [--only=<substr> with --all] [--deep-cap=N|all] [--settle-cap=MS]');
   process.exit(2);
 }
 
@@ -276,6 +306,32 @@ async function settle(page) {
   // style read taken mid-flush can mix values across elements.
   await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   return gaveUp;
+}
+
+// Measure the CURRENTLY MOUNTED view at every width in the band. With a single
+// width (the default) this is byte-for-byte the old single probe: no resize, no
+// extra wait, no `w` field on the findings — so every calibrated baseline holds.
+async function probeWidths(page) {
+  const out = [];
+  const band = WIDTHS.length > 1;
+  for (const w of WIDTHS) {
+    if (band) {
+      await page.setViewportSize({ width: w, height: VIEWPORT.height });
+      // A resize reflows and may restart a transition; settle before reading,
+      // for the same reason the mount path does.
+      await page.waitForTimeout(160);
+      await settle(page);
+    }
+    const found = await page.evaluate(PROBE, CONTRAST);
+    found.forEach((f) => { if (band) f.w = w; out.push(f); });
+  }
+  if (band && WIDTHS[WIDTHS.length - 1] !== VIEWPORT.width) {
+    // Re-mounts happen at VIEWPORT.width; leaving the page at the last band
+    // width would silently move the goalposts for the next view.
+    await page.setViewportSize(VIEWPORT);
+    await page.waitForTimeout(120);
+  }
+  return out;
 }
 
 function extractHostThemeRules(theme) {
@@ -424,10 +480,39 @@ const PROBE = function (CONTRAST) {
   // A box asking for a real share of its parent that renders as a hairline is
   // either a percentage against an auto-height parent, or a bar with no data.
   // Both are worth a look; the measured numbers say which.
-  slot.querySelectorAll('*').forEach((el) => {
+  // ★★★ THE SPECIFIED HEIGHT LIVES IN THE CLASS LIST TOO, 2026-09-06. This
+  // detector read `el.style.height` — the INLINE style — and nothing else, so
+  // `h-full` (364 uses across the lab), `h-1/2` and `h-[28%]` were invisible to
+  // it for as long as it existed. Computed style is no help: it returns the
+  // USED px value, never the specified percentage. So the specified value is
+  // read from the inline style first and the Tailwind utility second.
+  function specifiedPct(el) {
     const inline = el.style && el.style.height;
-    if (!inline || !/%$/.test(inline)) return;
-    const pct = parseFloat(inline);
+    if (inline && /%$/.test(inline)) return { pct: parseFloat(inline), src: inline };
+    for (const c of el.classList) {
+      let m;
+      if (c === 'h-full') return { pct: 100, src: 'h-full' };
+      if ((m = /^h-(\d+)\/(\d+)$/.exec(c))) return { pct: 100 * Number(m[1]) / Number(m[2]), src: c };
+      if ((m = /^h-\[(\d+(?:\.\d+)?)%\]$/.exec(c))) return { pct: Number(m[1]), src: c };
+    }
+    return null;
+  }
+  // A parent whose own height is DEFINITE is doing what it was told. Inline
+  // px/rem/vh, or a Tailwind fixed-height utility (h-40, h-[320px], h-screen,
+  // h-px) — and h-full/fraction on the parent too, since that resolves against
+  // ITS parent and is the same question one level up, not this one.
+  function definiteHeight(el) {
+    if (el.style && el.style.height) return true;
+    for (const c of el.classList) {
+      if (/^h-(\d+(\.\d+)?|px|screen|full|svh|lvh|dvh|min|max|fit|\[[^\]]+\]|\d+\/\d+)$/.test(c)) return true;
+    }
+    return false;
+  }
+  slot.querySelectorAll('*').forEach((el) => {
+    const spec = specifiedPct(el);
+    if (!spec) return;
+    const inline = spec.src;
+    const pct = spec.pct;
     if (!(pct > 5)) return;
     const r = el.getBoundingClientRect();
     if (r.height > 3 || r.width < 6) return;
@@ -438,7 +523,14 @@ const PROBE = function (CONTRAST) {
     //    3px progress fills inside a 3px inline-height track are correct.
     //  - a parent that is itself ≤8px tall had no room to give, so the child
     //    being short says nothing.
-    if (parent.style && parent.style.height) return;
+    if (definiteHeight(parent)) return;
+    // ★ NO flex/grid-parent guard. A first cut skipped them on the theory that
+    // a flex parent stretches its child anyway — true only under the default
+    // `align-items: stretch`, and a bar chart is `flex items-end` with
+    // `height: 60%` bars, which is THE motivating case. The guard silenced
+    // three of the known-bad blob's seven findings (7 -> 4) and bought nothing:
+    // a genuinely stretched child is taller than 3px and already silent.
+    if (invisible(el)) return;
     const pr = parent.getBoundingClientRect();
     if (pr.height < 8) return;
     findings.push({
@@ -561,6 +653,16 @@ const PROBE = function (CONTRAST) {
     const r = el.getBoundingClientRect();
     const outside = r.bottom < sr.top || r.right < sr.left || r.top > sr.bottom || r.left > sr.right;
     if (!outside) return false;
+    // ★ PARKED BY DISTANCE, 2026-09-06. The first 640px board reported three
+    // skip links "9999px past the left edge" — the classic `left:-9999px`
+    // park, which the transform clause below never sees. A real spill lands a
+    // few hundred px out; nothing overflows by more than the column is wide
+    // while sitting ENTIRELY outside it. Both halves matter: a 1500px table in
+    // a 640px column spills 860px but starts inside, so it is still reported;
+    // the overflow fixture's "Pushed clean off" control is entirely outside
+    // but only ~40px away, so it is still reported too.
+    const gap = Math.max(sr.left - r.right, r.left - sr.right, sr.top - r.bottom, r.top - sr.bottom);
+    if (gap > sr.width) return true;
     for (let n = el; n && n !== slot.parentElement; n = n.parentElement) {
       const t = getComputedStyle(n).transform;
       if (t && t !== 'none') return true;
@@ -595,7 +697,51 @@ const PROBE = function (CONTRAST) {
     if (own.length < 2 || !/[\p{L}\p{N}]/u.test(own)) return;
     if (invisible(el)) return;
     const cs = getComputedStyle(el);
-    if (cs.overflow !== 'hidden' && cs.overflowX !== 'hidden' && cs.overflowY !== 'hidden') return;
+    // ★★★ CLIPPED BY AN ANCESTOR, 2026-09-06. This detector judged only an
+    // element whose OWN overflow:hidden cuts its OWN text, so the commonest
+    // Tailwind shape — a fixed-height `overflow-hidden` card cutting off the
+    // paragraph inside it — was never measured, and `overflows-tool-column`
+    // only sees spills past the SLOT edge, not an inner card edge. Walk up to
+    // the nearest clipping ancestor; a scrollable box on the way wins (the
+    // reader can reach the rest), a line-clamp announces the cut, and a
+    // ~zero-height clipper is a collapsed panel, not clipped prose.
+    if (cs.overflow !== 'hidden' && cs.overflowX !== 'hidden' && cs.overflowY !== 'hidden') {
+      let clipper = null;
+      for (let n = el.parentElement; n && n !== slot; n = n.parentElement) {
+        const ns = getComputedStyle(n);
+        if (/auto|scroll/.test(ns.overflowX + ns.overflowY)) return;
+        if (ns.overflowX === 'hidden' || ns.overflowY === 'hidden' || ns.overflowX === 'clip' || ns.overflowY === 'clip') { clipper = n; break; }
+      }
+      if (!clipper) return;
+      const ks = getComputedStyle(clipper);
+      if (ks.webkitLineClamp && ks.webkitLineClamp !== 'none') return;
+      if (clipper.clientWidth <= 2 || clipper.clientHeight <= 2) return;
+      const er = el.getBoundingClientRect();
+      if (er.width <= 2 || er.height <= 2) return;
+      const kr = clipper.getBoundingClientRect();
+      // ★ ONE DEFECT, ONE KIND. A box that also crosses the SLOT edge is
+      // `overflows-tool-column`'s (it says "CUT OFF by an ancestor" there);
+      // this branch owns clips at an INNER card edge only. Without the
+      // partition the overflow fixture's clipped table reported twice (4 -> 6).
+      const sr0 = slot.getBoundingClientRect();
+      if (er.right > sr0.right + 2 || er.left < sr0.left - 2) return;
+      // Padding box of the clipper: that is where painting stops.
+      const padL = kr.left + clipper.clientLeft, padT = kr.top + clipper.clientTop;
+      const padR = padL + clipper.clientWidth, padB = padT + clipper.clientHeight;
+      const cutX = (ks.overflowX === 'hidden' || ks.overflowX === 'clip') ? Math.max(er.right - padR, padL - er.left) : 0;
+      const cutY = (ks.overflowY === 'hidden' || ks.overflowY === 'clip') ? Math.max(er.bottom - padB, padT - er.top) : 0;
+      if (cutX <= 2 && cutY <= 2) return;
+      const axis = cutX > cutY ? 'horizontally by ' + Math.round(cutX) + 'px' : 'vertically by ' + Math.round(cutY) + 'px';
+      findings.push({
+        kind: 'clipped-text',
+        detail: 'text is cut off ' + axis + ' by an ANCESTOR with overflow:hidden and no scrollbar — ' +
+          'the box is ' + clipper.clientWidth + 'x' + clipper.clientHeight + ' and the text reaches ' +
+          Math.round(er.right - padL) + 'x' + Math.round(er.bottom - padT) + ' inside it',
+        el: label(el),
+        parent: label(clipper)
+      });
+      return;
+    }
     if (cs.textOverflow === 'ellipsis') return;
     if (cs.webkitLineClamp && cs.webkitLineClamp !== 'none') return;
     // sr-only / visually-hidden: a 1px clipped box is the whole point.
@@ -640,7 +786,17 @@ const PROBE = function (CONTRAST) {
       if (el.namespaceURI === 'http://www.w3.org/2000/svg') return;
       const r = el.getBoundingClientRect();
       if (r.width < 8 || r.height < 4) return;
-      const over = r.right - sr.right;
+      // ★★★ THE LEFT EDGE WAS NEVER MEASURED, 2026-09-06. This detector read
+      // `r.right - sr.right` and nothing else, so half of its own family was
+      // invisible to it for as long as it existed. A left spill is the WORSE
+      // half: a right spill at least produces a horizontal scrollbar, whereas in
+      // an LTR page there is nothing to the left of the origin to scroll to, so
+      // the content is simply gone. It also matters for the language packs — in
+      // an RTL locale the overflow direction flips, and a right-only detector
+      // reads clean on exactly the layouts most likely to break.
+      const overRight = r.right - sr.right;
+      const overLeft = sr.left - r.left;
+      const over = Math.max(overRight, overLeft);
       if (over <= 2) return;
       if (invisible(el)) return;
       // What happens to the part that sticks out? Three different answers.
@@ -702,17 +858,20 @@ const PROBE = function (CONTRAST) {
         if (worst.has(n)) { redundant = true; break; }
       }
       if (redundant) return;
-      worst.set(el, { over: over, clipped: clipped });
+      worst.set(el, { over: over, clipped: clipped, side: overRight >= overLeft ? 'right' : 'left' });
     });
     worst.forEach((info, el) => {
       findings.push({
         kind: 'overflows-tool-column',
-        detail: 'extends ' + info.over.toFixed(0) + 'px past the right edge of the tool column ' +
+        detail: 'extends ' + info.over.toFixed(0) + 'px past the ' + info.side + ' edge of the tool column ' +
           '(' + Math.round(sr.width) + 'px wide) and ' + (info.clipped
             ? 'is CUT OFF by an ancestor with overflow:hidden — the content past the edge ' +
               'cannot be reached by scrolling at all'
-            : 'is neither clipped nor scrollable — on a narrow screen this forces a ' +
-              'page-wide sideways scroll'),
+            : (info.side === 'left'
+              ? 'has nowhere to go — an LTR page cannot be scrolled to the left of its own ' +
+                'origin, so this content is unreachable rather than merely awkward'
+              : 'is neither clipped nor scrollable — on a narrow screen this forces a ' +
+                'page-wide sideways scroll')),
         el: label(el)
       });
     });
@@ -827,11 +986,28 @@ const PROBE = function (CONTRAST) {
     // that is only emoji is meaningless. 290 of the 488 findings in the first
     // dark sweep were badge-icon grids (dna 156, molecule 143) whose emoji are
     // perfectly visible.
-    if (!/[A-Za-z0-9]/.test(own)) return;
+    // ★ \p{L}\p{N}, not [A-Za-z0-9]: the ASCII test also exempted every Greek
+    // symbol a science lab paints with `color` (Δ, μ, Ω) and would go blind to
+    // Japanese or Arabic prose outright. Same hole, same fix as the overflow
+    // detector's decorative test.
+    if (!/[\p{L}\p{N}]/u.test(own)) return;
     const r = el.getBoundingClientRect();
     if (r.width < 8 || r.height < 6) return;
     if (invisible(el)) return;
     const cs = getComputedStyle(el);
+    // ★★★ OPACITY IS PART OF THE INK, 2026-09-06. This detector read `color`
+    // at full strength and never looked at `opacity`, so a slate-700 label
+    // under `opacity-30` scored ~10:1 while the painted pixel is ~2:1. That is
+    // a FALSE NEGATIVE in the one direction a contrast gate must not have:
+    // dimmed-but-not-disabled text is the standard idiom for "muted", and
+    // muted past 3:1 on white is simply unreadable. Fold the group alpha (the
+    // product of every ancestor's opacity up to the slot) into the ink before
+    // judging it. Disabled controls are still exempt below, as WCAG says.
+    let alpha = 1;
+    for (let n = el; n && n !== slot; n = n.parentElement) {
+      const o = parseFloat(getComputedStyle(n).opacity);
+      if (!Number.isNaN(o)) alpha *= o;
+    }
     // ★ Two "painted over imagery" tells, where a DOM walk cannot answer and
     // guessing produces confident nonsense. birdlab's hero heading is white on
     // a sky gradient painted by a SIBLING layer below an absolutely-positioned
@@ -868,12 +1044,21 @@ const PROBE = function (CONTRAST) {
     for (let n = el; n && n !== slot; n = n.parentElement) {
       if (n.disabled === true || n.getAttribute('aria-disabled') === 'true') return;
     }
-    const ink = parseRgb(cs.color);
-    if (!ink) return;
-    const inkL = relLum(ink);
+    const rawInk = parseRgb(cs.color);
+    if (!rawInk) return;
     const bg = paintedBg(el);
     if (!bg) return;
     const bgL = relLum(bg);
+    // Ink's own alpha and the group alpha both blend it into the ground it sits
+    // on. On the host surface the ground behind the group IS the ground behind
+    // the text, so one blend against `bg` is the painted pixel.
+    const a = Math.max(0, Math.min(1, rawInk.a * alpha));
+    const ink = a >= 0.999 ? rawInk : {
+      r: rawInk.r * a + bg.r * (1 - a),
+      g: rawInk.g * a + bg.g * (1 - a),
+      b: rawInk.b * a + bg.b * (1 - a), a: 1
+    };
+    const inkL = relLum(ink);
     // Only judge text that landed on the HOST's own surface — that is what
     // "the tool painted no ground" looks like. White card in light and dark;
     // pure black in contrast. Anything else means the tool DID paint, and
@@ -885,7 +1070,9 @@ const PROBE = function (CONTRAST) {
     if (ratio >= 3) return;
     findings.push({
       kind: CONTRAST ? 'dark-ink-on-contrast-surface' : 'light-ink-on-host-card',
-      detail: (CONTRAST ? 'dark ink (' : 'light ink (') + cs.color + ') on an unpainted chain resolving to ' +
+      detail: (CONTRAST ? 'dark ink (' : 'light ink (') + cs.color +
+        (a < 0.999 ? ' at opacity ' + a.toFixed(2) + ', painting as rgb(' + Math.round(ink.r) + ',' + Math.round(ink.g) + ',' + Math.round(ink.b) + ')' : '') +
+        ') on an unpainted chain resolving to ' +
         'rgb(' + Math.round(bg.r) + ',' + Math.round(bg.g) + ',' + Math.round(bg.b) + ') — ' + ratio.toFixed(2) + ':1',
       el: label(el)
     });
@@ -986,7 +1173,7 @@ const PROBE = function (CONTRAST) {
         // cyan-300 ink while the button still reported a stale slate-50 ground,
         // manufacturing a 1.39:1 finding on a card that is really slate-950.
         if (await settle(page)) settleGaveUp += 1;
-        const found = await page.evaluate(PROBE, CONTRAST);
+        const found = await probeWidths(page);
         found.forEach((f) => { f.file = file; f.tool = tid; f.state = JSON.stringify(state); findings.push(f); });
 
         // ── --deep: walk the tool's own tabs ─────────────────────────────
@@ -1049,7 +1236,7 @@ const PROBE = function (CONTRAST) {
             // landed. A settle time too short manufactures contrast findings.
             await page.waitForTimeout(700);
             if (await settle(page)) settleGaveUp += 1;
-            const deepFound = await page.evaluate(PROBE, CONTRAST);
+            const deepFound = await probeWidths(page);
             deepFound.forEach((f) => {
               f.file = file;
               f.tool = tid;
@@ -1098,11 +1285,20 @@ const PROBE = function (CONTRAST) {
         const key = f.kind + '\u0000' + f.el + '\u0000' + f.detail +
           '\u0000' + (f.vs || '') + '\u0000' + (f.line || '');
         const hit = byKey.get(key);
-        if (hit) { hit.seen++; continue; }
+        if (hit) {
+          hit.seen++;
+          // ★ Width is deliberately NOT in the key. One defect present at three
+          // widths is one defect, not three — but WHICH widths is the band, and
+          // losing it would make --widths a slower way to learn nothing.
+          if (f.w && hit.widths && hit.widths.indexOf(f.w) < 0) hit.widths.push(f.w);
+          continue;
+        }
         f.seen = 1;
+        if (f.w) f.widths = [f.w];
         byKey.set(key, f);
       }
       const distinct = Array.from(byKey.values());
+      distinct.forEach((f) => { if (f.widths) f.widths.sort((a, b) => a - b); });
       const entry = { file: file, tool: toolId, findings: distinct, raw: findings.length };
       if (coverage) entry.coverage = coverage;
       if (deepErrors.length) entry.deepErrors = deepErrors.slice(0, 5);
@@ -1113,7 +1309,7 @@ const PROBE = function (CONTRAST) {
   await browser.close();
 
   if (JSON_OUT) {
-    console.log(JSON.stringify({ checked: checked, viewport: VIEWPORT.width + 'x' + VIEWPORT.height, theme: CONTRAST ? 'contrast' : (DARK ? 'dark' : 'light'), report: report }, null, 2));
+    console.log(JSON.stringify({ checked: checked, viewport: VIEWPORT.width + 'x' + VIEWPORT.height, widths: WIDTHS, theme: CONTRAST ? 'contrast' : (DARK ? 'dark' : 'light'), report: report }, null, 2));
   } else {
     let total = 0;
     report.forEach((entry) => {
@@ -1123,6 +1319,12 @@ const PROBE = function (CONTRAST) {
         const where = f.line ? (' line ' + f.line) : (f.state && f.state !== '{}' ? ('  state ' + f.state) : '');
         console.log('  ' + f.kind + where);
         console.log('    ' + f.detail);
+        if (f.widths) {
+          const clean = WIDTHS.filter((w) => f.widths.indexOf(w) < 0);
+          console.log('    widths: ' + f.widths.join('px, ') + 'px' +
+            (clean.length ? '   (clean at ' + clean.join('px, ') + 'px — a BAND, so widths ' +
+              'between these are unmeasured)' : ''));
+        }
         if (f.el) console.log('    at: ' + f.el);
         if (f.parent) console.log('    vs: ' + f.parent);
         if (f.snippet) console.log('    ' + f.snippet);

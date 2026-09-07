@@ -368,7 +368,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   function normalizeMetadata(meta) {
     if (!meta || typeof meta !== 'object') return null;
     var out = {};
-    ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'createdAt'].forEach(function (key) {
+    ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'createdAt'].forEach(function (key) {
       if (meta[key] != null && String(meta[key]).trim()) out[key] = String(meta[key]).trim().slice(0, 160);
     });
     var speed = Number(meta.speed);
@@ -420,7 +420,7 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
   function normalizeSynthesisProfile(profile) {
     if (!profile || typeof profile !== 'object') return null;
     var out = {};
-    ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'directionFingerprint'].forEach(function (key) {
+    ['voice', 'language', 'provider', 'engine', 'engineVersion', 'model', 'modelVersion', 'requestedProvider', 'requestedModel', 'directionFingerprint'].forEach(function (key) {
       if (profile[key] != null && String(profile[key]).trim()) out[key] = String(profile[key]).trim().slice(0, 240);
     });
     var synthesisRate = Number(profile.synthesisRate != null ? profile.synthesisRate : profile.speed);
@@ -463,6 +463,16 @@ if (window.AlloModules && window.AlloModules.KaraokeAudioStoreModule) { console.
       if (wanted[provenanceKey] && (!stored[provenanceKey] ||
           String(stored[provenanceKey]).toLowerCase() !== String(wanted[provenanceKey]).toLowerCase())) return false;
     }
+    // The selected route/model and the engine that actually answered differ
+    // during fallback. Track both without treating a valid fallback as stale.
+    for (var requestKey of ['requestedProvider', 'requestedModel']) {
+      // Older vetted/offline clips predate request identity. Preserve their
+      // established voice/language checks instead of invalidating every save.
+      if (wanted[requestKey] && stored[requestKey] && wanted[requestKey] !== stored[requestKey]) return false;
+    }
+    if (!stored.requestedProvider && (wanted.requestedProvider === 'off' || wanted.requestedProvider === 'browser')) return false;
+    if (!stored.requestedModel && wanted.requestedModel && stored.provider === 'gemini' &&
+        stored.model && wanted.requestedModel !== stored.model) return false;
     if (wanted.synthesisRate != null && stored.synthesisRate != null &&
         Math.abs(Number(stored.synthesisRate) - Number(wanted.synthesisRate)) > 0.001) return false;
     if (wanted.language && stored.language &&

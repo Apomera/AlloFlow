@@ -7,14 +7,11 @@
 // is a FIXED bank of 3 forms (A/B/C) per grade, K-5 only. Weekly monitoring
 // needs 20 interchangeable forms per grade including grade 6.
 //
-// EQUIVALENCE BY CONSTRUCTION. For grades 1-5 the operation mix, problem
-// count, time limit and operand ranges are DERIVED from the existing bank's
-// own forms (per-operation problem counts averaged across A/B/C, operand
-// min/max observed per operation). Every generated form gets exactly the same
-// op histogram and samples operands from the same observed ranges, so forms
-// differ only in the particular number facts — which is the definition of an
-// alternate form. Grade 6 has no existing form to imitate; its mix is spec'd
-// below and marked for reviewer confirmation.
+// DESIGN MATCHING, NOT EMPIRICAL EQUATING. Every form shares its grade's
+// operation order, operand/answer digit lengths and regrouping profile.
+// These controls reduce construction differences; alternate-form reliability
+// and score equivalence still require review and student field data.
+// The shipped A/B/C bank is unchanged; this output remains unpublished.
 //
 // DETERMINISTIC. Seeded PRNG (mulberry32), fixed seed per grade+form. Re-runs
 // reproduce the bank byte-for-byte; no Math.random.
@@ -103,7 +100,7 @@ TEMPLATES['6'] = {
     add: { a: [125, 989], b: [114, 897] },
     sub: { a: [312, 987], b: [105, 689] },
     mul: { a: [12, 89], b: [3, 12] },
-    div: { a: [0, 0], b: [3, 12] }, // dividend built from divisor x quotient
+    div: { a: [36, 144], b: [3, 12] }, // provisional grade-6 dividend range
   },
 };
 
@@ -114,8 +111,10 @@ function genProblem(rng, op, ranges) {
   let a, b;
   if (op === 'div') {
     b = genInt(rng, Math.max(2, r.b[0]), r.b[1]);
-    const qHi = r.a[1] > 0 ? Math.max(2, Math.floor(r.a[1] / b)) : 12;
-    const q = genInt(rng, 2, qHi);
+    const qLo = Math.max(1, Math.ceil(r.a[0] / b));
+    const qHi = Math.floor(r.a[1] / b);
+    if (qLo > qHi) throw new Error("No quotient in declared dividend range");
+    const q = genInt(rng, qLo, qHi);
     a = b * q;
   } else if (op === 'sub') {
     a = genInt(rng, r.a[0], r.a[1]);
@@ -129,9 +128,21 @@ function genProblem(rng, op, ranges) {
   return p;
 }
 
+function itemProfile(p) {
+  let regroup = 0, carry = 0, a = p.a, b = p.b;
+  if (p.op === 'add' || p.op === 'sub') {
+    while (a > 0 || b > 0) {
+      const x = a % 10, y = b % 10;
+      carry = p.op === 'add' ? Number(x + y + carry >= 10) : Number(x - carry < y);
+      regroup += carry; a = Math.floor(a / 10); b = Math.floor(b / 10);
+    }
+  }
+  return [p.op, String(p.a).length, String(p.b).length, String(p.answer).length, regroup].join('|');
+}
 const FORMS_PER_GRADE = 20;
 const bank = {
   status: 'DRAFT — generated alternate forms for weekly progress monitoring. NOT wired into the app; clinical review pending (PM_BANK_FORM_SPEC.md). Grade 6 mix is spec-proposed, not derived.',
+  blueprintVersion: 2,
   generator: 'dev-tools/generate_pm_math_forms.cjs (deterministic; re-run reproduces byte-for-byte)',
   templates: TEMPLATES,
   PM_MATH_FORMS: {},
@@ -154,12 +165,25 @@ for (const grade of ['1', '2', '3', '4', '5', '6']) {
         problems.push(p);
       }
     }
-    // Deterministic shuffle so ops are interleaved, not blocked.
-    for (let i = problems.length - 1; i > 0; i--) {
+    // The first seeded form fixes a versioned slot profile for the grade.
+    // Subsequent forms match each slot, including regrouping and digit load.
+    if (fi > 0) {
+      problems.length = 0; seen.clear();
+      for (const anchor of forms.PM01.problems) {
+        let p, tries = 0;
+        do { p = genProblem(rng, anchor.op, t.ranges); tries++; }
+        while ((itemProfile(p) !== itemProfile(anchor) || seen.has(p.op + ':' + p.a + ':' + p.b)) && tries < 100000);
+        if (tries === 100000) throw new Error('Cannot fill blueprint slot ' + grade + '/' + id);
+        seen.add(p.op + ':' + p.a + ':' + p.b); problems.push(p);
+      }
+    }
+    // Only the anchor is shuffled; later forms keep its operation order.
+    for (let i = fi === 0 ? problems.length - 1 : 0; i > 0; i--) {
       const j = Math.floor(rng() * (i + 1));
       [problems[i], problems[j]] = [problems[j], problems[i]];
     }
-    forms[id] = { operation: t.operation, difficulty: t.difficulty, timeLimit: t.timeLimit, problems };
+    if (fi === 0) t.slotProfiles = problems.map(itemProfile);
+    forms[id] = { blueprintVersion: 2, operation: t.operation, difficulty: t.difficulty, timeLimit: t.timeLimit, problems };
   }
   bank.PM_MATH_FORMS[grade] = forms;
 }
@@ -172,7 +196,10 @@ for (const grade of Object.keys(bank.PM_MATH_FORMS)) {
   for (const [id, form] of Object.entries(bank.PM_MATH_FORMS[grade])) {
     const hist = {};
     const inForm = new Set();
+    if (JSON.stringify(form.problems.map(itemProfile)) !== JSON.stringify(t.slotProfiles)) problems.push(grade + '/' + id + ': blueprint mismatch');
     for (const p of form.problems) {
+      const r = t.ranges[p.op];
+      if (p.a < r.a[0] || p.a > r.a[1] || p.b < r.b[0] || p.b > r.b[1]) problems.push(grade + '/' + id + ': operand out of range');
       if (computeAnswer(p) !== p.answer) problems.push(`${grade}/${id}: wrong answer ${p.a}${p.symbol}${p.b}`);
       if (p.op === 'sub' && p.answer < 0) problems.push(`${grade}/${id}: negative answer`);
       if (p.op === 'div' && !Number.isInteger(p.answer)) problems.push(`${grade}/${id}: non-integer quotient`);

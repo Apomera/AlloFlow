@@ -69,6 +69,8 @@ const CHECKPOINT_TERMINAL_CAPSULE_KEYS = Object.freeze([
   'integrityCoverage',
   'integrityWarning',
   'fidelityNotes',
+  'candidateRejectionCount',
+  'candidateRejections',
   'needsExpertReview',
   'expertReviewReason',
   'activeContent',
@@ -79,6 +81,8 @@ const CHECKPOINT_TERMINAL_CAPSULE_KEYS = Object.freeze([
   'groundTruthPages',
   'sourceStructTree',
   'finalText',
+  'sourceText',
+  '_sourceCoverageExtraction',
   'ocrAccuracy',
   '_experimentEarlyGetPages',
   '_perLeafScannedOptOut',
@@ -581,10 +585,19 @@ function checkpointActiveContent(value) {
     value.any === (value.findings.length > 0);
 }
 
+function checkpointSourceCoverageExtraction(value) {
+  const pages = input => input === null || (Array.isArray(input)
+    && input.every(page => page === null || (Number.isSafeInteger(page) && page > 0)));
+  return hasExactKeys(value, ['pageErrors', 'lowConfidencePages'])
+    && pages(value.pageErrors) && pages(value.lowConfidencePages);
+}
+
 function checkpointTerminalCapsule(value) {
+  const keys = CHECKPOINT_TERMINAL_CAPSULE_KEYS.filter(key =>
+    !['candidateRejectionCount', 'candidateRejections'].includes(key) || Object.hasOwn(value || {}, key));
   if (
-    !hasExactKeys(value, CHECKPOINT_TERMINAL_CAPSULE_KEYS) ||
-    value.checkpointCapsuleSchema !== 1 ||
+    !hasExactKeys(value, keys) ||
+    value.checkpointCapsuleSchema !== 2 ||
     typeof value.accessibleHtml !== 'string' ||
     value.accessibleHtml.length === 0 ||
     !checkpointVerificationBinding(
@@ -601,6 +614,8 @@ function checkpointTerminalCapsule(value) {
       Array.isArray(value.groundTruthPages)) ||
     !(value.sourceStructTree === null ||
       isPlainObject(value.sourceStructTree)) ||
+    typeof value.sourceText !== 'string' || value.sourceText.length === 0 ||
+    !checkpointSourceCoverageExtraction(value._sourceCoverageExtraction) ||
     typeof value.finalText !== 'string' ||
     value.finalText.length === 0 ||
     !(value.ocrAccuracy === null ||
@@ -644,10 +659,11 @@ function checkpointTerminalCapsule(value) {
         value.secondEngineAudit.failViolations >= 0)
     )
   ) return null;
-  return value;
+  return { ...value, ...getVerificationPolicy().normalizeCandidateRejectionEvidence(value) };
 }
 
 function checkpointCompactRemediationSnapshot(value) {
+  const remediation = checkpointTerminalCapsule(value && value.remediation);
   if (
     !hasExactKeys(value, [
       'schema',
@@ -663,7 +679,7 @@ function checkpointCompactRemediationSnapshot(value) {
     value.schema !== CHECKPOINT_SCHEMA ||
     !['primary', 'round'].includes(value.stage) ||
     !checkpointAudit(value.audit) ||
-    !checkpointTerminalCapsule(value.remediation) ||
+    !remediation ||
     value.autoContinueDone !== true ||
     !integerInRange(value.nextRound, 0, 5) ||
     !integerInRange(value.roundsRun, 0, 5) ||
@@ -691,7 +707,7 @@ function checkpointCompactRemediationSnapshot(value) {
     (value.stage === 'round' &&
       (value.nextRound === 0 || value.nextRound !== value.roundsRun))
   ) return null;
-  return value;
+  return { ...value, remediation };
 }
 
 
@@ -736,7 +752,7 @@ function validateCheckpointEnvelope(value, expected = {}) {
       : checkpointRemediationSnapshot(value.snapshot);
   }
   if (!snapshot || snapshot.stage !== value.stage) return null;
-  return value;
+  return { ...value, snapshot };
 }
 function contentTypeOnly(value) {
   return String(value || '').split(';', 1)[0].trim().toLowerCase();
@@ -1525,51 +1541,27 @@ function remediationQuality(result) {
   };
 }
 
-function normalizePdfUaValidation(value) {
-  const fallback = {
-    status: 'not_run',
-    reason: 'independent_validator_not_packaged',
-  };
-  if (!value || typeof value !== 'object' || Array.isArray(value)) return fallback;
-  const count = (candidate) => (
-    Number.isSafeInteger(candidate) && candidate >= 0 && candidate <= 1_000_000
-      ? candidate
-      : 0
-  );
-  if (value.status === 'compliant' || value.status === 'noncompliant') {
-    if (value.validator !== 'veraPDF' || value.profile !== 'ua1') {
-      throw new RunnerError('driver_result_invalid', 500, false);
-    }
-    return {
-      status: value.status,
-      validator: 'veraPDF',
-      profile: 'ua1',
-      validatorVersion: typeof value.validatorVersion === 'string' && value.validatorVersion.length <= 32
-        ? value.validatorVersion
-        : null,
-      failedRules: count(value.failedRules),
-      failedChecks: count(value.failedChecks),
-      passedRules: count(value.passedRules),
-      passedChecks: count(value.passedChecks),
-    };
-  }
-  if (value.status === 'unavailable') {
-    const reason = ['validator_not_available', 'validator_timeout', 'validator_error', 'attempt_finalization_reserve'].includes(value.reason)
-      ? value.reason
-      : 'validator_error';
-    return { status: 'unavailable', reason };
-  }
-  if (
-    value.status === 'not_run' &&
-    ['disabled_for_institution_pilot', 'independent_validator_not_packaged'].includes(value.reason)
-  ) {
-    return { status: 'not_run', reason: value.reason };
-  }
-  throw new RunnerError('driver_result_invalid', 500, false);
+function getVerificationPolicy() {
+  // Source checkouts use the matching current policy. The container carries the
+  // identical module alongside its packaged driver.
+  const source = path.join(__dirname, '..', '..', '..', 'desktop', 'mcp', 'remediation_verification.cjs');
+  return require(fs.existsSync(source) ? source : path.join(path.dirname(resolveDriverPath()), 'remediation_verification.cjs'));
 }
 
+function normalizePdfUaValidation(value, artifact) {
+  const verification = getVerificationPolicy();
+  try { return verification.normalizePdfUaValidation(value, artifact); }
+  catch (_) { return { status: 'unavailable', reason: 'validator_error' }; }
+}
 function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUaValidation) {
   const roundsRun = autoContinueRoundsRun(spec, result);
+  const validation = normalizePdfUaValidation(pdfUaValidation, taggedMetadata);
+  const verification = getVerificationPolicy();
+  const delivery = verification.pdfDeliveryState({
+    hasPdf: true, pdfStatus: validation.status === 'compliant' ? 'passed' : validation.status,
+    verificationState: quality.verificationState, level: quality.distributionLevel,
+    taggedPdfVerified: quality.taggedPdfDelivery === 'verified',
+  });
   return {
     schema: RUN_SCHEMA,
     jobId: spec.jobId,
@@ -1584,9 +1576,12 @@ function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUa
       afterScore: safeOptionalNumber(result.afterScore),
       estimatedMinimumScore: safeOptionalNumber(result.estimatedMinimumScore),
       integrityCoverage: safeOptionalNumber(result.integrityCoverage),
+      ...getVerificationPolicy().normalizeCandidateRejectionEvidence(result),
       aiVerificationIncomplete: result.aiVerificationIncomplete === true,
       autoContinueRoundsRun: roundsRun,
       ...quality,
+      htmlVerificationState: quality.verificationState,
+      ...delivery,
     },
     artifact: {
       kind: 'tagged_pdf',
@@ -1594,7 +1589,7 @@ function buildReport(spec, inputMetadata, result, taggedMetadata, quality, pdfUa
       size: taggedMetadata.size,
       sha256: taggedMetadata.sha256,
     },
-    pdfUaValidation: normalizePdfUaValidation(pdfUaValidation),
+    pdfUaValidation: validation,
   };
 }
 

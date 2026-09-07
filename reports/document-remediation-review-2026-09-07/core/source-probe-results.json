@@ -1,0 +1,107 @@
+{
+  "source": "doc_pipeline_source.jsx",
+  "sourceSha256": "37fa6763c2c01368ddc070c1d26c62841e1275ace86ca4c2496608d4d21c21db",
+  "environment": "Actual source function extraction, jsdom DOMParser, mocked AI, production 16000-char chunk budget",
+  "results": [
+    {
+      "name": "short-document-score-swap",
+      "inputChars": 1301,
+      "calls": 1,
+      "outputChanged": false,
+      "textRatio": 1,
+      "drift": {
+        "checked": 1,
+        "moved": []
+      },
+      "logs": [
+        "[acceptFixedHtml] REJECTED: table cell values changed POSITIONS (transposition risk): \"95\" [1,1]->[2,1], \"102\" [2,1]->[1,1]. The original content ships for this pass.",
+        "[aiFixChunked:short-document-score-swap] single-chunk rejected — keeping original"
+      ]
+    },
+    {
+      "name": "multi-chunk-score-swap",
+      "inputChars": 39871,
+      "calls": 3,
+      "outputChanged": true,
+      "textRatio": 1,
+      "drift": {
+        "checked": 1,
+        "moved": [
+          {
+            "table": 0,
+            "value": "95",
+            "from": [
+              1,
+              1
+            ],
+            "to": [
+              2,
+              1
+            ]
+          },
+          {
+            "table": 0,
+            "value": "102",
+            "from": [
+              2,
+              1
+            ],
+            "to": [
+              1,
+              1
+            ]
+          }
+        ]
+      },
+      "logs": [
+        "[aiFixChunked:multi-chunk-score-swap] splitting 39871 chars into 3 chunks (parallel)",
+        "[aiFixChunked:multi-chunk-score-swap] reading-order WARN — content reordered/dropped vs source (token \"block\"; 4327->4327). Magnitude checks passed but ORDER not preserved; review before distributing."
+      ]
+    },
+    {
+      "name": "equal-count-image-identity-replacement",
+      "inputChars": 1396,
+      "calls": 1,
+      "outputChanged": true,
+      "textRatio": 1,
+      "drift": {
+        "checked": 0,
+        "moved": []
+      },
+      "logs": [],
+      "originalSecondImageMissing": true
+    },
+    {
+      "name": "restored-data-image-token-replacement",
+      "inputChars": 2626,
+      "calls": 1,
+      "outputChanged": true,
+      "textRatio": 1,
+      "drift": {
+        "checked": 0,
+        "moved": []
+      },
+      "logs": [
+        "[aiFixChunked:restored-data-image-token-replacement] stripped 1 base64 image data URLs before AI processing"
+      ],
+      "originalDataImageMissing": true
+    },
+    {
+      "name": "image-retry-bypasses-text-floor",
+      "inputChars": 132361,
+      "calls": 10,
+      "outputChanged": true,
+      "textRatio": 0.8833324454524007,
+      "drift": {
+        "checked": 0,
+        "moved": []
+      },
+      "logs": [
+        "[aiFixChunked:image-retry-bypasses-text-floor] splitting 132361 chars into 9 chunks (parallel)",
+        "[aiFixChunked:image-retry-bypasses-text-floor] chunk 1 dropped 1 image FINAL token(s) — retrying with explicit preservation instructions",
+        "[aiFixChunked:image-retry-bypasses-text-floor] chunk 1 retry recovered all 1 image token(s)",
+        "[aiFixChunked:image-retry-bypasses-text-floor] reading-order WARN — content reordered/dropped vs source (token \"original\"; 14400->12720). Magnitude checks passed but ORDER not preserved; review before distributing."
+      ]
+    }
+  ]
+}

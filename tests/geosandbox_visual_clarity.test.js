@@ -52,14 +52,14 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(immersive).not.toContain('color: #7d86ad');
   });
 
-  it('renders stretch and sculpt objects with high-contrast scene labels', () => {
+  it('offers opt-in high-contrast labels for stretch and sculpt objects', () => {
     const source = read(SOURCE_FILE);
 
     expect(source).toContain('function buildGeoLabelSprite');
     expect(source).toContain('function addSculptSceneLabel');
     expect(source).toContain('function sculptPartLabelText');
     expect(source).toContain('function sculptRecipeLabelText');
-    expect(source).toContain('var showSceneLabels = gd.showSceneLabels !== false');
+    expect(source).toContain('var showSceneLabels = gd.showSceneLabels === true');
     expect(source).toContain("t('stem.geosandbox.scene_labels', 'Scene labels')");
     expect(source).toContain("(mode === 'stretch' || mode === 'sculpt')");
     expect(source).toContain('addSculptSceneLabel(window.THREE, sg, sculptRecipe, selPart, unitDef.short)');
@@ -83,7 +83,7 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain('var facesPy = [[0, 3, 2, 1]');
 
     // The prism is the only solid that shipped without DoubleSide.
-    expect(source).toContain('opacity: 0.7, side: THREE.DoubleSide');
+    expect(source).toContain('opacity: solidSurfaces ? 1 : 0.7, side: THREE.DoubleSide');
 
     // Geometry is authored in world coords with the mesh at the origin, so every
     // transparent object shared one sort key and draw order fell back to creation
@@ -212,11 +212,14 @@ describe('Geometry Sandbox visual clarity', () => {
     expect(source).toContain("id: 'geo-save-name'");
     expect(source).toContain("key === '[' || key === ']'" );
     expect(source).toContain("key === 'Delete' || key === 'Backspace'");
-    expect(source).toContain('var next = (g.history || []).concat([snap]);');
+    // Snapshot compatibility, branching, and the 30-step bounds are exercised
+    // behaviorally in geosandbox_stretch_history.test.js; this checks UI wiring.
+    expect(source).toContain('geoRememberStretchConstruction(g, construction)');
+    expect(source).toContain('geoStepStretchHistory(g, true, construction)');
     expect((source.match(/role: 'img'/g) || []).length).toBeGreaterThanOrEqual(3);
     expect(source).toContain("@media (max-width: 760px)");
-    expect(source).toContain("id: 'geo-control-sidebar'");
-    expect(source).toContain("id: 'geo-viewport-shell'");
+    expect(source).toMatch(/id:\s*'geo-control-sidebar'/);
+    expect(source).toMatch(/id:\s*'geo-viewport-shell'/);
     expect(source).toContain("pc.kind === 'annularSector'");
     expect(source).toContain("mode === 'single' && h('button', { 'aria-label': t('stem.geosandbox.export_stl', 'Export current shape as STL')");
     expect(source).toContain("'aria-label': t('stem.geosandbox.ai_tutor', 'AI Tutor')");

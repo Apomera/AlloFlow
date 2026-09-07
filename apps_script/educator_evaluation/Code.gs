@@ -5249,11 +5249,18 @@ function mergeTeacherProfiles_(merged, incoming, actor, allowed) {
 function authorizeRecordUpdate_(old, next, actor, kind) {
   if (kind === 'walkthrough') return authorizeWalkthroughUpdate_(old, next, actor);
   if (kind === 'observation') {
+    // This field is always withheld from educator projections, including after
+    // finalization. Reconcile that redaction before the immutable comparison;
+    // educator submissions can never change the canonical private notes.
+    if (actor.role === 'teacher') next.preConferenceNotes = old.preConferenceNotes;
     if (old.finalizedAt && !same_(old, next)) throw eeError_('immutable', 'Finalized formal observations cannot be edited.');
     return actor.role === 'teacher' ? teacherObservationUpdate_(old, next) : evaluatorObservationUpdate_(old, next, actor);
   }
   if (kind === 'spm') {
-    if (old.status === 'locked' && !same_(old, next)) throw eeError_('immutable', 'Locked SPM records cannot be edited.');
+    if (old.status === 'locked') {
+      if (!same_(old, next)) throw eeError_('immutable', 'Locked SPM records cannot be edited.');
+      return clone_(old); // An unchanged locked record can accompany later cycle work.
+    }
     return actor.role === 'teacher' ? teacherSpmUpdate_(old, next) : evaluatorSpmUpdate_(old, next, actor);
   }
   throw eeError_('bad_workspace', 'Unknown record type.');
@@ -5403,8 +5410,11 @@ function evaluatorSpmUpdate_(old, next, actor) {
   if (old.status === 'submitted') { result.pendingReturnReason = next.pendingReturnReason; if (!old.firstOpenedAt && next.firstOpenedAt) result.firstOpenedAt = nowIso_(); }
   if (next.status === 'returned' && old.status === 'submitted') {
     if (!old.firstOpenedAt) throw eeError_('invalid_transition', 'Open the submitted SPM before recording a decision.');
-    if (!result.pendingReturnReason) throw eeError_('invalid_transition', 'Returning an SPM requires a reason.');
-    result.status = 'returned'; result.returnedAt = nowIso_(); result.returnReason = result.pendingReturnReason; result.pendingReturnReason = '';
+    // The UI moves the reviewed draft into returnReason when it submits the
+    // transition. Also accept the draft form used by repository clients.
+    var returnReason = next.returnReason || result.pendingReturnReason;
+    if (!returnReason) throw eeError_('invalid_transition', 'Returning an SPM requires a reason.');
+    result.status = 'returned'; result.returnedAt = nowIso_(); result.returnReason = returnReason; result.pendingReturnReason = '';
   } else if (next.status === 'approved' && old.status === 'submitted') {
     if (!old.firstOpenedAt) throw eeError_('invalid_transition', 'Open the submitted SPM before recording a decision.');
     result.status = 'approved'; result.approvedAt = nowIso_(); result.firstOpenedAt = old.firstOpenedAt; result.approvedBy = actor.displayName; result.pendingReturnReason = '';

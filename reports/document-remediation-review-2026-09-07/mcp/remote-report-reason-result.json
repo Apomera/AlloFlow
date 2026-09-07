@@ -1,0 +1,10 @@
+{
+  "demonstrated": "Current runner emits a valid reason rejected by the current gateway report sanitizer",
+  "baselineAccepted": true,
+  "runnerProduced": {
+    "status": "unavailable",
+    "reason": "attempt_finalization_reserve"
+  },
+  "gatewayError": "remediation_report_malformed",
+  "note": "Executes repository TypeScript after local transpilation and the actual runner normalization function, using the existing test fixture; no network, storage, or model calls."
+}

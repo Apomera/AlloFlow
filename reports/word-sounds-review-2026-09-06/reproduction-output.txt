@@ -1,0 +1,184 @@
+{
+  "first": [
+    {
+      "word": "get",
+      "sound": "j"
+    },
+    {
+      "word": "give",
+      "sound": "j"
+    },
+    {
+      "word": "girl",
+      "sound": "j"
+    },
+    {
+      "word": "gift",
+      "sound": "j"
+    },
+    {
+      "word": "goat",
+      "sound": "g"
+    },
+    {
+      "word": "of",
+      "sound": "o"
+    },
+    {
+      "word": "one",
+      "sound": "o"
+    },
+    {
+      "word": "hour",
+      "sound": "h"
+    }
+  ],
+  "last": [
+    {
+      "word": "cake",
+      "sound": "e"
+    },
+    {
+      "word": "bike",
+      "sound": "e"
+    },
+    {
+      "word": "home",
+      "sound": "e"
+    },
+    {
+      "word": "nose",
+      "sound": "e"
+    },
+    {
+      "word": "of",
+      "sound": "f"
+    },
+    {
+      "word": "dogs",
+      "sound": "s"
+    },
+    {
+      "word": "fox",
+      "sound": "x"
+    }
+  ],
+  "boards": [
+    {
+      "word": "get",
+      "board": {
+        "mode": "first",
+        "targetChar": "g",
+        "difficulty": "easy",
+        "options": [
+          "gob",
+          "gut",
+          "got"
+        ],
+        "distractors": [
+          "hop",
+          "set"
+        ]
+      }
+    },
+    {
+      "word": "cake",
+      "board": {
+        "mode": "last",
+        "targetChar": "k",
+        "difficulty": "medium",
+        "options": [
+          "mark",
+          "back",
+          "neck",
+          "deck"
+        ],
+        "distractors": [
+          "nut",
+          "bib",
+          "fit",
+          "hat"
+        ]
+      }
+    }
+  ],
+  "adaptation": {
+    "threeSuccesses": "hard",
+    "threeAacSuccesses": "hard",
+    "newActivityAfterThreeSuccesses": "hard",
+    "sameRepeatedWord": "hard"
+  }
+}
+{
+  "compiledCatBoard": {
+    "mode": "first",
+    "targetChar": "k",
+    "difficulty": "easy",
+    "options": [
+      "kit"
+    ],
+    "distractors": [
+      "cap",
+      "fan"
+    ]
+  },
+  "catEstimate": [
+    "c",
+    "a",
+    "t"
+  ],
+  "compiledSentence": {
+    "sentence": "I can see the cat.",
+    "before": "I can see the",
+    "after": ".",
+    "options": [
+      "cat",
+      "kit",
+      "cap",
+      "cup"
+    ]
+  },
+  "compiledStory": {
+    "story": "I can see the cat. Look at the cat! Here is the cat.",
+    "parts": [
+      {
+        "before": "I can see the",
+        "after": "."
+      },
+      {
+        "before": "Look at the",
+        "after": "!"
+      },
+      {
+        "before": "Here is the",
+        "after": "."
+      }
+    ],
+    "options": [
+      "cat",
+      "kit",
+      "cap",
+      "cup"
+    ]
+  },
+  "jetBoard": {
+    "mode": "first",
+    "targetChar": "j",
+    "difficulty": "easy",
+    "options": [
+      "jam",
+      "jug",
+      "jut"
+    ],
+    "distractors": [
+      "bud",
+      "vet"
+    ]
+  }
+}
+{"target":"jug","board":{"mode":"first","targetChar":"j","difficulty":"easy","options":["get","jog","gig"],"distractors":["pen","six"]},"wrongMatches":["get"]}
+{"target":"gym","board":{"mode":"first","targetChar":"j","difficulty":"medium","options":["get","give","jog","jet"],"distractors":["dub","math","pick","chat"]},"wrongMatches":["get","give"]}
+{"target":"giant","board":{"mode":"first","targetChar":"j","difficulty":"hard","options":["jut","jug","gift","jet","jam"],"distractors":["hub","brag","rip","zen","chat"]},"wrongMatches":["gift"]}
+{"target":"giraffe","board":{"mode":"first","targetChar":"j","difficulty":"hard","options":["jar","gift","gig","jet","jug"],"distractors":["slug","nap","nag","dub","let"]},"wrongMatches":["gift"]}
+{"target":"jelly","board":{"mode":"first","targetChar":"j","difficulty":"hard","options":["jam","get","give","jig","gift"],"distractors":["lug","fin","dug","rod","ban"]},"wrongMatches":["get","give","gift"]}
+{"target":"jacket","board":{"mode":"first","targetChar":"j","difficulty":"hard","options":["jar","get","jab","give","girl"],"distractors":["rug","duck","yak","hot","wok"]},"wrongMatches":["get","give","girl"]}

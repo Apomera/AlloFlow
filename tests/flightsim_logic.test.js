@@ -642,7 +642,11 @@ describe('AIRCRAFT + CHALLENGES', () => {
     for (const a of FS.AIRCRAFT) {
       expect(a.weight, a.id).toBeGreaterThan(0);
       expect(a.wingArea, a.id).toBeGreaterThan(0);
-      expect(a.maxSpeed, a.id).toBeGreaterThanOrEqual(50);
+      // The floor exists to catch a km/h or mph figure read as knots — the bug
+      // this table has had before. It only makes sense for aircraft that need
+      // airspeed to stay up: a quadcopter has no stall speed, and a Mavic 3
+      // genuinely tops out at 21 m/s (41 kts) in Sport mode.
+      expect(a.maxSpeed, a.id).toBeGreaterThanOrEqual(a.isDrone ? 20 : 50);
       expect(a.maxSpeed, a.id).toBeLessThanOrEqual(2000);
       expect(a.maxThrust, a.id).toBeGreaterThanOrEqual(0);
     }

@@ -706,6 +706,12 @@ describe('Contrast — colour coding and legibility split apart', () => {
       const text = src();
       const at = text.indexOf('var L = [["Graham Cracker');
       expect(at, 'activity table not found').toBeGreaterThan(-1);
+      // The merged-in activities kept their __alloT titles, so the literal no
+      // longer evaluates bare. Shim the translator to its fallback: these tests
+      // are about the SHAPE and coverage of the list, which must hold in any
+      // language.
+      // eslint-disable-next-line no-unused-vars
+      const __alloT = (k, fb) => fb;
       // eslint-disable-next-line no-eval
       return eval(text.slice(text.indexOf('[[', at), text.indexOf('];', at) + 1));
     };
@@ -1976,7 +1982,13 @@ describe('The plate encyclopedia cards do something', () => {
     //
     // These four are the known backlog. The gate is that the list does not GROW:
     // a new catalogue must be wired to something.
-    const KNOWN_ORPHANS = ['EARTHQUAKE_DB', 'GEOLOGISTS', 'GEO_LESSONS', 'BOUNDARIES'];
+    // GEO_LESSONS came off this list when its 28 unreachable activities were
+    // merged into the list the Activities tab actually renders, and GEOLOGISTS
+    // came off it the same way - its 19 unreachable scientists folded into the
+    // table the Biographies tab renders. BOUNDARIES came off it last, wired in
+    // as a detail section under the Edu panel's comparison table. The list is
+    // empty now, so ANY unreferenced catalogue fails this.
+    const KNOWN_ORPHANS = [];
     const names = [...text.matchAll(/\bvar ([A-Z][A-Z_0-9]{3,})\s*=\s*\[/g)].map((m) => m[1]);
     expect(names.length, 'no catalogue tables found - this scan has gone blind').toBeGreaterThan(10);
 
@@ -2014,4 +2026,228 @@ describe('The plate encyclopedia cards do something', () => {
     expect(tsu, 'the dead source field is back').not.toMatch(/source:/);
   });
 
+
+  it('renders every authored activity, not half of them', () => {
+    const text = src();
+    // GEO_LESSONS held 30 authored activities and was referenced exactly once,
+    // by its own definition, while the tab rendered a DIFFERENT inline list of
+    // 30 sharing only 2 titles. 28 activities a teacher wrote were unreachable.
+    expect(text, 'the orphan table is back').not.toContain('var GEO_LESSONS');
+    const rows = lessonRows(text);
+    expect(rows.length, 'activity count regressed: ' + rows.length).toBe(58);
+    // every row keeps the shape the card renders: title, grade, duration, text
+    rows.forEach((r, i) => {
+      expect(r.length, 'row ' + i + ' has the wrong shape').toBe(4);
+      expect(String(r[0]).trim().length, 'row ' + i + ' has no title').toBeGreaterThan(0);
+      expect(String(r[3]).trim().length, 'row ' + i + ' has no description').toBeGreaterThan(0);
+    });
+  });
+
+  it('keeps the merged-in activity titles translated', () => {
+    const text = src();
+    // Those 30 rows carried __alloT titles. Flattening them into the pair list
+    // as bare English would have quietly REMOVED translation coverage in the
+    // act of making them reachable.
+    const list = lessonLiteral(text);
+    expect((list.match(/\[__alloT\(/g) || []).length, 'merged titles lost their translator').toBe(28);
+    // Two of the thirty ("Pangaea Puzzle", "Earthquake Bingo"... ) were already
+    // on screen under the same title and were correctly NOT duplicated, so
+    // assert keys that belong to the 28 actually merged in.
+    ['convection_demo', 'cookie_tectonics', 'hotspot_trail_analysis'].forEach((k) =>
+      expect(list, 'missing key ' + k).toContain('stem.platetectonics.' + k));
+  });
+
+  it('carries the materials list a teacher needs to run the activity', () => {
+    const text = src();
+    // The card renders [3] and the search reads title + [3], so materials had
+    // to be folded into the description rather than dropped on the floor.
+    const list = lessonLiteral(text);
+    expect((list.match(/Materials: /g) || []).length, 'materials went missing').toBe(28);
+    expect(list).toContain('Eggshell + boiled egg');
+    // and each merged row must actually reach a student through the tool
+    const rows = lessonRows(text);
+    const withMaterials = rows.filter((r) => /Materials: /.test(r[3]));
+    expect(withMaterials.length).toBe(28);
+  });
+
+
+  it('renders what each boundary builds, not just the motion it makes', () => {
+    const text = src();
+    // BOUNDARIES was the last stranded catalogue. The Edu panel's comparison
+    // table names the three motions and stops; the authored process, landforms,
+    // real places and hazards reached nobody. They render under it now.
+    expect(text, 'the detail section is gone').toContain("'data-pt-boundary-detail': 'true'");
+    expect(text, 'the section stopped reading the table').toMatch(/BOUNDARIES\.map\(/);
+    ['process', 'features', 'examples', 'hazards'].forEach((f) =>
+      expect(text, 'the ' + f + ' field is not rendered').toContain('bd.' + f));
+    const table = text.slice(text.indexOf('var BOUNDARIES = ['), text.indexOf('var EARTHQUAKE_DB = ['));
+    expect((table.match(/\bid: \d+/g) || []).length, 'boundary count regressed').toBe(5);
+    // The comparison table above stays: it splits convergent into subduction
+    // and collision, which is the distinction students get wrong, and these
+    // five rows do not make that split.
+    expect(text, 'the comparison table was replaced rather than added to')
+      .toContain("['↳ Subduction','a KIND of convergent boundary'");
+  });
+
+  it('translates the boundary prose and leaves the place names alone', () => {
+    const text = src();
+    const table = text.slice(text.indexOf('var BOUNDARIES = ['), text.indexOf('var EARTHQUAKE_DB = ['));
+    // Three prose fields on five rows. `examples` is a list of proper nouns -
+    // Iceland, the Mariana Trench, the Andes - and stays as authored, the same
+    // call HOTSPOT_DB's volcano names get.
+    ['process', 'features', 'hazards'].forEach((f) => {
+      expect((table.match(new RegExp('\\b' + f + ': __alloT\\(', 'g')) || []).length,
+        f + ' is not translated on all five rows').toBe(5);
+      expect(table, f + ' still has a bare string').not.toMatch(new RegExp('\\b' + f + ': "'));
+    });
+    expect((table.match(/\bexamples: "/g) || []).length, 'place names got wrapped').toBe(5);
+    const st = strings()['stem']['platetectonics'];
+    const missing = [...table.matchAll(/stem\.platetectonics\.(bd_[a-z0-9_]+)/g)]
+      .map((m) => m[1]).filter((k) => st[k] === undefined);
+    expect(missing, 'unregistered boundary keys: ' + missing.join(', ')).toHaveLength(0);
+  });
+
+  it('renders every authored scientist, not the two thirds one list held', () => {
+    const text = src();
+    // GEOLOGISTS held 30 scientists and was referenced exactly once, by its own
+    // definition, while the Biographies tab rendered a DIFFERENT inline list of
+    // 30 sharing 11 names. Nineteen were unreachable - among them Vine,
+    // Matthews, Morley and Tuzo Wilson, the people behind the seafloor-spreading
+    // confirmation this whole tool exists to teach.
+    expect(text, 'the orphan table is back').not.toContain('var GEOLOGISTS');
+    const rows = bioRows(text);
+    expect(rows.length, 'scientist count regressed: ' + rows.length).toBe(49);
+    ['Frederick Vine', 'Drummond Matthews', 'Lawrence Morley', 'John Tuzo Wilson']
+      .forEach((n) => expect(bioTable(text), n + ' is unreachable again').toContain(n));
+    // and the side that was already on screen survived the merge
+    ['Nicolas Steno', 'Marie Tharp', 'Alfred Wegener']
+      .forEach((n) => expect(bioTable(text), n + ' was dropped by the merge').toContain(n));
+  });
+
+  it('counts the biography list from the list itself', () => {
+    const text = src();
+    // The intro said "30 scientists" over a list of 49. Two derivations of one
+    // number is a bug waiting for the next edit, so the sentence counts the
+    // table - which meant hoisting the table out of the tab's IIFE, because
+    // `B.length` in a sibling element threw "B is not defined" at render.
+    expect(text, 'the tab kept a private copy of the list').not.toMatch(/var B = \[\[/);
+    expect(text, 'the tab no longer reads the shared table').toContain('var B = GEOLOGIST_BIOS;');
+    expect(text, 'the count is hardcoded again')
+      .toContain(".replace('{n}', GEOLOGIST_BIOS.length)");
+    // ui_strings OVERRIDES the fallback, so a placeholder in the source proves
+    // nothing on its own: the shipped string said "30" and that is what the tab
+    // rendered, over 49 people.
+    const shipped = strings()['stem']['platetectonics']['30_scientists_who_shaped_our_understan'];
+    expect(shipped, 'the registered intro is gone').toBeTruthy();
+    expect(shipped, 'the shipped string hardcodes a count the tab will outgrow')
+      .toContain('{n} scientists');
+  });
+
+  it('translates every scientist row, not just the merged ones', () => {
+    const text = src();
+    // Only the 19 lifted rows carried __alloT; the 30 already on screen were
+    // plain English, so half a tab translated and half did not - one product,
+    // two answers, and no gate looks at a literal.
+    const table = bioTable(text);
+    const rows = bioRows(text);
+    expect((table.match(/\[__alloT\(/g) || []).length, 'a row lost its translator')
+      .toBe(rows.length);
+    expect((table.match(/\[\s*"/g) || []).length, 'a plain English row is back').toBe(0);
+    // Every key the table names must actually be registered, or it never
+    // translates for anyone in any language however well the call site is
+    // wrapped.
+    const st = strings()['stem']['platetectonics'];
+    const missing = [...table.matchAll(/stem\.platetectonics\.([a-z0-9_]+)/g)]
+      .map((m) => m[1]).filter((k) => st[k] === undefined);
+    expect(missing, 'unregistered biography keys: ' + missing.join(', ')).toHaveLength(0);
+  });
+
+  it('renders the recorded-earthquake catalogue instead of stranding it', () => {
+    const text = src();
+    // EARTHQUAKE_DB held 62 notable earthquakes and was referenced ONCE, by its
+    // own definition, while the tab showed only its ten deep case studies. The
+    // reference list a student scans for "was there a big one near me?" could
+    // not be opened at all.
+    expect(text).toContain("'data-pt-quake-catalog'");
+    expect(text).toMatch(/EARTHQUAKE_DB\.filter\(function\(e\)/);
+    // Kept as a SECOND section: folding 62 one-line rows into the ten stories
+    // would bury the evidence/legacy/lesson narrative the tab is built on.
+    expect(text).toContain('quake_catalog_heading');
+    expect(text).toMatch(/e\.legacy \?/);   // the case studies still render
+  });
+
+  it('lets one search box filter both sections, and says which it counted', () => {
+    const text = src();
+    const at = text.indexOf("'data-pt-quake-catalog'");
+    expect(at).toBeGreaterThan(-1);
+    const section = text.slice(text.lastIndexOf('quake_catalog_heading', at) - 400, at + 900);
+    // Both sections read the SAME search state, so a student does not have to
+    // discover that the page has two independent filters.
+    expect(section).toContain("d['_quakeStoriesSearch']");
+    // The count names its own denominator, so "0 of 62" cannot be misread as
+    // "nothing on this page matched" when a case study above is still showing.
+    expect(text).toContain('quake_catalog_count');
+    expect(text).toMatch(/\.replace\('\{n\}', hits\.length\)\.replace\('\{total\}', EARTHQUAKE_DB\.length\)/);
+    expect(text).toContain('the case studies above are searched separately');
+  });
+
+  it('translates every earthquake name, including the four that were bare', () => {
+    const text = src();
+    const at = text.indexOf('var EARTHQUAKE_DB = [');
+    let depth = 0;
+    let end = text.indexOf('[', at);
+    for (let k = end; k < text.length; k++) {
+      if (text[k] === '[') depth++;
+      else if (text[k] === ']') { depth--; if (depth === 0) { end = k; break; } }
+    }
+    const table = text.slice(at, end);
+    const rows = (table.match(/\bid:\s*\d+/g) || []).length;
+    const wrapped = (table.match(/name:\s*__alloT\(/g) || []).length;
+    expect(rows, 'catalogue lost rows').toBe(62);
+    // Four rows carried a bare-string name. That is why an earlier count read
+    // 58 of 62: a scan keyed on the wrapped form cannot see them, and neither
+    // can a translator.
+    expect(wrapped, 'an earthquake name is not translated').toBe(rows);
+    expect(table).not.toMatch(/name:\s*"/);
+  });
+
 });
+
+function lessonLiteral(text) {
+  const at = text.indexOf('var L = [["Graham Cracker');
+  if (at < 0) throw new Error('activity list not found');
+  return text.slice(at, text.indexOf('];', at));
+}
+function lessonRows(text) {
+  const at = text.indexOf('var L = [["Graham Cracker');
+  if (at < 0) throw new Error('activity list not found');
+  // eslint-disable-next-line no-unused-vars
+  const __alloT = (k, fb) => fb;
+  // eslint-disable-next-line no-eval
+  return eval(text.slice(text.indexOf('[[', at), text.indexOf('];', at) + 1));
+}
+
+function bioTable(text) {
+  const at = text.indexOf('var GEOLOGIST_BIOS = [');
+  if (at < 0) throw new Error('biography table not found');
+  const k = text.indexOf('[', at);
+  let depth = 0;
+  for (let j = k; j < text.length; j++) {
+    if (text[j] === '[') depth++;
+    else if (text[j] === ']') { depth--; if (depth === 0) return text.slice(k, j + 1); }
+  }
+  throw new Error('biography table is unterminated');
+}
+function bioRows(text) {
+  // eslint-disable-next-line no-unused-vars
+  const __alloT = (k, fb) => fb;
+  // eslint-disable-next-line no-eval
+  return eval(bioTable(text));
+}
+let stringsCache = null;
+function strings() {
+  if (stringsCache == null) {
+    stringsCache = JSON.parse(readFileSync(resolve(process.cwd(), 'ui_strings.js'), 'utf8'));
+  }
+  return stringsCache;
+}

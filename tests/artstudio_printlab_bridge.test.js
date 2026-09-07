@@ -96,7 +96,7 @@ describe('Art Studio to Print Lab bridge', () => {
     expect(printSrc).toContain("'Download editable sculpture recipe'");
     const artSrc = readFileSync(ART_PATHS[0], 'utf8');
     expect(artSrc).toContain('delete window.__alloArtStudioPendingSculpt;');
-    expect(artSrc).toContain("updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], tab: 'sculpt3d', studioStarted: true });");
+    expect(artSrc).toContain("updMany({ sculptRecipe: pending.recipe, sculptSel: 0, sculptUndo: d.sculptRecipe ? [d.sculptRecipe] : [], sculptRedo: [], sculptPrintContext: pending.printContext, tab: 'sculpt3d', studioStarted: true });");
   });
 
   it('validates a returning sculpture before Art Studio accepts it', () => {
@@ -111,7 +111,7 @@ describe('Art Studio to Print Lab bridge', () => {
     window.AlloModules.Prim3D = { normalizeRecipe: (r) => (r && Array.isArray(r.parts) && r.parts.length ? { version: 'p3d/1', name: String(r.name || ''), parts: r.parts.slice(0, 24) } : null) };
     try {
       const ok = pure.readPendingSculpt({ schema: 'alloflow-artstudio-sculpt/1', id: 'pl-1', recipe: recipe() });
-      expect(ok).toEqual({ id: 'pl-1', recipe: { version: 'p3d/1', name: 'Desk otter', parts: recipe().parts } });
+      expect(ok).toEqual({ id: 'pl-1', recipe: { version: 'p3d/1', name: 'Desk otter', parts: recipe().parts }, printContext: { unitMm: 20, aiUse: 'NONE', aiDisclosure: '' } });
       expect(pure.readPendingSculpt(null)).toBeNull();
       expect(pure.readPendingSculpt({ schema: 'other/1', recipe: recipe() })).toBeNull();
       expect(pure.readPendingSculpt({ schema: 'alloflow-artstudio-sculpt/1', recipe: null })).toBeNull();

@@ -16,7 +16,7 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
     expect(source).toContain("'aria-busy': ready ? 'false' : 'true'");
     expect(source).toContain("'aria-roledescription': 'Interactive 3D particle chamber'");
     expect(source).toContain("'aria-describedby': 'particle-chamber-help'");
-    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D ? Escape'");
+    expect(source).toContain("'aria-keyshortcuts': 'Space R T V E M G C L F H D ? Escape ArrowLeft ArrowRight ArrowUp ArrowDown Plus -'");
     expect(source).toContain("['D', 'Show or hide the chamber readouts dock']");
     expect(source).toContain('onKeyDown: onLabKey');
     expect(source).toContain('event.currentTarget.focus()');
@@ -264,6 +264,111 @@ describe('Particle Lab 3D interaction surface accessibility contract', () => {
       // Every body row is gated, so collapsing really removes them from the tree.
       expect((tool.match(/legendOpen && /g) || []).length).toBeGreaterThanOrEqual(4);
     });
+  });
+
+  it('orbits and zooms the camera from the keyboard (WCAG 2.1.1)', () => {
+    // OrbitControls r128 maps keys only to panning and only after listenToKeyEvents; the help text used to send keyboard
+    // users to three preset views. Arrows and plus/minus now drive the camera while the canvas itself has focus.
+    expect(source).toContain('function nudgeCamera(deltaTheta, deltaPhi, zoomFactor)');
+    expect(source).toContain("if (target === canvasRef.current) {");
+    for (const key of ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']) expect(source).toContain("event.key === '" + key + "'");
+    expect(source).toContain("event.key === '+' || event.key === '='");
+    expect(source).toContain("event.key === '-' || event.key === '_'");
+    // Zoom stays inside the same bounds the pointer obeys, and the pole is never crossed.
+    expect(source).toContain('rt.controls.minDistance, rt.controls.maxDistance');
+    expect(source).toContain('clamp(spherical.phi + deltaPhi, 0.08, Math.PI - 0.08)');
+    expect(source).toContain("['Arrows', 'Orbit the camera while the chamber has focus (Shift for bigger steps)']");
+    expect(source).toContain("['+ / -', 'Zoom the camera in or out while the chamber has focus']");
+    expect(source).toContain('Arrow keys orbit the camera and plus or minus zoom it while the chamber has focus.');
+    expect(source).not.toContain('camera-view buttons for keyboard alternatives to clicking particles and dragging the camera');
+  });
+
+  it('silences the Tailwind pulse and ping animations under prefers-reduced-motion', () => {
+    // The scene honours the preference (beacons, rings, trails all gate on reducedMotion) but the chrome's animate-pulse
+    // live dot and animate-ping telemetry dot kept moving forever: Tailwind's animate-* utilities never check it.
+    expect(source).toContain('@media (prefers-reduced-motion: reduce) { #particle-lab-root .animate-pulse, #particle-lab-root .animate-ping, #particle-lab-root .animate-in { animation: none !important; } }');
+    expect(source).toContain("running ? 'animate-pulse bg-emerald-300");
+    // The scene claimed to honour the preference too, but a pixel probe of the PAUSED chamber showed ~20% of the centre
+    // changing every half second: every sphere breathed, the starfield turned and the focus ring spun, all ungated.
+    expect(source).toContain('var pulse = reducedMotion ? 1 : 1 + Math.sin(now * 0.003 + i * 0.7) * 0.045;');
+    expect(source).toContain('if (!reducedMotion) { stars.rotation.y += elapsed * 0.018; stars.rotation.x = Math.sin(now * 0.00008) * 0.08; }');
+    expect(source).toContain('if (!reducedMotion) focusRing.rotation.z += elapsed * 1.5; }');
+    expect(source).toContain('animate-ping rounded-full bg-emerald-300');
+  });
+
+  it('compares the canvas size in device pixels so HiDPI screens do not reallocate every frame', () => {
+    expect(source).toContain('var ratio = Math.min(window.devicePixelRatio || 1, qualityProfile.pixelRatio);');
+    expect(source).toContain('if (renderer.getPixelRatio() !== ratio) renderer.setPixelRatio(ratio);');
+    expect(source).toContain('if (canvas.width !== Math.floor(w * ratio) || canvas.height !== Math.floor(hh * ratio)) { renderer.setSize(w, hh, false);');
+    expect(source).not.toContain('if (canvas.width !== w || canvas.height !== hh)');
+  });
+
+  it('debounces the four scene-rebuilding sliders behind a draft value', () => {
+    // count, boxSize, particleDiameter and massRatioB are scene-effect dependencies, so every input tick during a drag
+    // tore the WebGL scene down and rebuilt it (11 ticks = 11 rebuilds). The slider and its readout follow a draft
+    // immediately; the committing state change waits REBUILD_DEBOUNCE_MS after the last tick.
+    expect(source).toContain('var REBUILD_DEBOUNCE_MS = 180;');
+    expect(source).toContain('function scheduleRebuild(apply) { window.clearTimeout(rebuildTimerRef.current);');
+    expect(source).toContain('useEffect(function () { return function () { window.clearTimeout(rebuildTimerRef.current); }; }, []);');
+    for (const [setter, draft, sites] of [['setCount', 'countDraft', 2], ['setBoxSize', 'boxSizeDraft', 2], ['setParticleDiameter', 'particleDiameterDraft', 2], ['setMassRatioB', 'massRatioBDraft', 1]]) {
+      const setDraft = 'set' + draft[0].toUpperCase() + draft.slice(1);
+      expect(source.split(setDraft + '(value); scheduleRebuild(function () { ' + setter + '(value);').length - 1).toBe(sites);
+      expect(source.split('value: ' + draft + ',').length - 1).toBe(sites);
+      // No slider is still bound straight to the committed state.
+      expect(source).not.toContain('value: ' + draft.replace('Draft', '') + ',');
+    }
+    // Readouts and value text follow the draft too, or the number would lag the thumb by the debounce.
+    expect(source).toContain("h('output', { className: 'text-cyan-700' }, countDraft)");
+    expect(source).toContain("boxSizeDraft + ' u')");
+    expect(source).toContain("'aria-valuetext': particleDiameterDraft.toFixed(2) + ' model units'");
+    expect(source).toContain("'aria-valuetext': massRatioBDraft.toFixed(1) + ' times particle A mass'");
+  });
+
+  it('coalesces continuous-slider saves and stops publishing metrics while nothing moves', () => {
+    // One temperature drag was 87 host saves (a setToolData on the app root per input tick); the paused tool
+    // re-rendered its whole tree ~5 times a second forever because the 400 ms metrics publish never checked
+    // whether anything had moved (scratch/particle_probe_persist.mjs).
+    expect(source).toContain('var PERSIST_DEBOUNCE_MS = 250;');
+    expect(source).toContain('function persistLater(patch) { persistPendingRef.current = Object.assign(persistPendingRef.current || {}, patch);');
+    expect(source).toContain('useEffect(function () { return flushPersist; }, []);');
+    expect(source).toContain('var value = Number(next); setTemperature(value); persistLater({ temperature: value });');
+    for (const key of ['attraction', 'gravity', 'permeability']) {
+      expect(source.split('persistLater({ ' + key + ': value }').length - 1).toBe(2);
+      expect(source).not.toContain('persist({ ' + key + ': value }');
+    }
+    expect(source).toContain('stateFingerprint !== lastPublishedFingerprint');
+    expect(source).toContain('if (runRef.current || !fpsPublished) { setFps(');
+    expect(source).toContain("stateFingerprint += sensorEnergy['x+'] + sensorEnergy['x-']");
+    // The old ungated form: the publish condition directly followed by the timestamp write.
+    expect(source).not.toMatch(/> 400 && !replaySnapshotRef\.current\) \{\s*lastUiRef\.current = now;/);
+  });
+
+  it('lets one finger scroll the page over the chamber and reserves two fingers for the camera', () => {
+    // OrbitControls r128 calls preventDefault on every touchstart, so a phone user could not scroll past a chamber that
+    // fills over half the screen (0 px per swipe). The gate must be registered BEFORE the controls so it runs first.
+    const gate = source.indexOf("canvas.addEventListener('touchstart', onTouchGate, { passive: true })");
+    const controls = source.indexOf('var controls = new THREE.OrbitControls(camera, canvas);');
+    expect(gate).toBeGreaterThan(0);
+    expect(gate).toBeLessThan(controls);
+    expect(source).toContain('function onTouchGate(event) { controls.enabled = event.touches.length >= 2 || event.touches.length === 0; }');
+    expect(source).toContain('controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;');
+    expect(source).toContain("canvas.removeEventListener('touchstart', onTouchGate); canvas.removeEventListener('touchend', onTouchGate); canvas.removeEventListener('touchcancel', onTouchGate); controls.dispose();");
+    // The hint shows only for coarse pointers, is decorative for AT (the help text carries the words), and survives high contrast.
+    expect(source).toContain("h('div', { className: 'particle-touch-hint', 'aria-hidden': 'true' }, 'One finger scrolls the page \u00b7 two fingers orbit and zoom')");
+    expect(source).toContain('@media (pointer: coarse) { .particle-touch-hint { display: block; } }');
+    expect(source).toContain('.theme-contrast .particle-touch-hint { background: #000000; color: #ffff00; border-color: #ffff00; }');
+    expect(source).toContain('On a touch screen, one finger scrolls the page and two fingers orbit and zoom.');
+    expect(source).toContain('Touch option: tap a particle to trace it, scroll the page with one finger, and orbit or zoom with two.');
+  });
+
+  it('stops drawing the chamber while it is scrolled off screen, without stopping the experiment', () => {
+    // ~41 GPU draws a second while 3,000 px off screen on a 5,900 px phone page (scratch/particle_probe_offscreen.mjs).
+    expect(source).toContain("visibilityObserver = new IntersectionObserver(function (entries) { stageVisible = entries[entries.length - 1].isIntersecting; }, { threshold: 0 }); visibilityObserver.observe(canvas);");
+    expect(source).toContain('if (stageVisible) renderer.render(scene, camera);');
+    expect(source).not.toMatch(/^\s*renderer\.render\(scene, camera\);/m); // no ungated draw remains
+    expect(source).toContain('if (visibilityObserver) visibilityObserver.disconnect();');
+    // Physics must not be gated: the step loop stays keyed on running/step only.
+    expect(source).toContain('} else if (runRef.current || stepRef.current) {');
   });
 
   it('documents every chamber shortcut', () => {

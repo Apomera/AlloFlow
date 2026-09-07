@@ -1,0 +1,22 @@
+{
+  "testFiles": 23,
+  "testsPassed": 489,
+  "testsFailed": 0,
+  "browser": {
+    "checks": [
+      "desktop layout fits viewport",
+      "narrow layout fits viewport",
+      "Run disabled while details are unapplied",
+      "Parameter form sends structured step edit",
+      "Stop remains clickable after progress messages"
+    ],
+    "errors": []
+  },
+  "matchingRuntimeMirrors": [
+    "allo_commands_module.js",
+    "udl_chat_module.js",
+    "view_misc_modals_module.js",
+    "phase_o_misc_handlers_module.js"
+  ],
+  "providerCalls": "Mocked; no live provider calls in regression tests."
+}

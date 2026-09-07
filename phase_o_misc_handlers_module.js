@@ -1681,11 +1681,11 @@ const handleExecuteBlueprint = async (deps) => {
   const currentGenerationConfigSnapshot = deps && deps.generationConfigSnapshot
     && typeof deps.generationConfigSnapshot === 'object' ? deps.generationConfigSnapshot : {};
   try { if (window._DEBUG_PHASE_O) console.log("[PhaseO] handleExecuteBlueprint fired"); } catch(_) {}
-    if (!activeBlueprint) return;
+    if (!activeBlueprint) return { ok: false, status: 'unavailable', narration: t('blueprint.no_active_plan') || 'There is no active lesson plan.' };
     const finalResources = getBlueprintResourcePlan(activeBlueprint);
     if (finalResources.length === 0) {
         addToast("This blueprint does not include any resources yet.", "error");
-        return;
+        return { ok: false, status: 'blocked', narration: t('blueprint.empty_plan') || 'This blueprint does not include any resources yet.' };
     }
     const _plannedGenerationSummary = finalResources.reduce((summary, row) => {
         const variants = Array.isArray(row && row.generationVariants) && row.generationVariants.length
@@ -1711,7 +1711,7 @@ const handleExecuteBlueprint = async (deps) => {
     // a REJECTED second click had already overwritten the RUNNING plan's
     // generation config (grade, tone, counts, styles) before it returned. The
     // guard is only a guard if nothing irreversible happens above it.
-    if (_blueprintRunInFlight) { addToast(t('blueprint.already_running') || 'That plan is already generating.', 'info'); return; }
+    if (_blueprintRunInFlight) { const narration = t('blueprint.already_running') || 'That plan is already generating.'; addToast(narration, 'info'); return { ok: false, status: 'blocked', narration }; }
     if (!_isBlueprintGenerationMatrixReady()) {
         const blockedAt = new Date().toISOString();
         const blockedRunId = 'blueprint-matrix-waiting-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
@@ -1760,7 +1760,7 @@ const handleExecuteBlueprint = async (deps) => {
         if (typeof setUdlMessages === 'function') {
             setUdlMessages(prev => [...prev, { role: 'model', text: loadingMessage }]);
         }
-        return blockedRun;
+        return { ...blockedRun, ok: false, narration: loadingMessage };
     }
     _blueprintRunInFlight = true;
     if (activeBlueprint.globalSettings) {
@@ -1936,6 +1936,7 @@ const handleExecuteBlueprint = async (deps) => {
         };
     });
     setIsExecutingBlueprint(true);
+    let commandResult = { ok: false, status: 'failed' };
     const _blueprintStartedAt = Date.now();
     const _blueprintRunId = 'blueprint-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
     setBlueprintExecutionResult({ runId: _blueprintRunId, status: 'running', startedAt: new Date().toISOString(), settingsSnapshot: _blueprintSettingsSnapshot, settingsStale: _settingsDrift.length > 0, staleSettings: _settingsDrift, sourceSelection: _sourceSelection.metadata, generationSummary: Object.assign({}, _plannedGenerationSummary, { exact: true }), generationMatrixUnavailable: false, generationMatrixStatus: 'ready', generationMatrixGuarantees: { exactDedupe: true, exactFanOut: true, dispatchBlocked: false }, matrixUnavailableRows: [], instructionalContext: _blueprintInstructionalContext, rows: _runRows, done: false });
@@ -2053,6 +2054,7 @@ const handleExecuteBlueprint = async (deps) => {
             const _doneCount = Array.isArray(_landedItems) ? _landedItems.length : 0;
             const stopMsg = t('blueprint.run_stopped', { done: _doneCount, total: finalResources.length })
                 || `Stopped. ${_doneCount} of ${finalResources.length} resources were finished before the stop — the rest show Rebuild so you can run them individually or restart the plan.`;
+            commandResult = { ok: false, status: 'stopped', cancelled: true, narration: stopMsg, count: _doneCount };
             addToast(stopMsg, 'info');
             setUdlMessages(prev => [...prev, { role: 'model', text: stopMsg }]);
         } else if (Array.isArray(nulls) && nulls.length > 0) {
@@ -2081,10 +2083,12 @@ const handleExecuteBlueprint = async (deps) => {
                     + ' Distinct reasons: ' + (reasons.length ? reasons.join(' | ') : '(none captured)'));
             }
             setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: 'partial', finishedAt: new Date().toISOString() }) : prev);
+            commandResult = { ok: false, status: _landedItems.length ? 'partial' : 'failed', partial: _landedItems.length > 0, narration: warnMsg, count: _landedItems.length };
             addToast(warnMsg, "warning");
             setUdlMessages(prev => [...prev, { role: 'model', text: warnMsg }]);
         } else {
             setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { status: 'completed', finishedAt: new Date().toISOString() }) : prev);
+            commandResult = { ok: true, status: 'completed', count: _landedItems.length };
             addToast(t('blueprint.execution_complete'), "success");
             setUdlMessages(prev => [...prev, {
                 role: 'model',
@@ -2096,6 +2100,7 @@ const handleExecuteBlueprint = async (deps) => {
         if (e && e.code === 'BLUEPRINT_GENERATION_MATRIX_UNAVAILABLE') {
             const loadingMessage = t('blueprint.matrix_unavailable_retry')
                 || 'Generation planning is still loading. No additional resources were generated; choose Generate again to retry.';
+            commandResult = { ok: false, status: 'waiting', retryable: true, narration: loadingMessage };
             try { if (typeof warnLog === 'function') warnLog('[Blueprint] generation paused: Generation Matrix resolution unavailable; retry is safe.', e); } catch (_) {}
             try { if (typeof addToast === 'function') addToast(loadingMessage, 'warning'); } catch (_) {}
             if (typeof setUdlMessages === 'function') setUdlMessages(prev => [...prev, { role: 'model', text: loadingMessage }]);
@@ -2129,6 +2134,7 @@ const handleExecuteBlueprint = async (deps) => {
                 });
             });
         } else {
+        commandResult = { ok: false, status: 'failed', narration: t('blueprint.execution_error') || 'The lesson plan could not finish.' };
         warnLog("Unhandled error:", e);
         addToast(t('blueprint.execution_error'), "error");
         setUdlMessages(prev => [...prev, { role: 'model', text: t('blueprint.execution_error') }]);
@@ -2153,6 +2159,7 @@ const handleExecuteBlueprint = async (deps) => {
         setIsExecutingBlueprint(false);
         setBlueprintExecutionResult(prev => prev && prev.runId === _blueprintRunId ? Object.assign({}, prev, { done: true, status: prev.status || 'completed', finishedAt: prev.finishedAt || new Date().toISOString() }) : prev);
     }
+    return { ...commandResult, runId: _blueprintRunId };
 };
 
 window.AlloModules = window.AlloModules || {};
@@ -2167,7 +2174,7 @@ window.AlloModules = window.AlloModules || {};
 // The new resourceId is the staleness signal: audit coverage is tested by
 // resourceId, so a rebuilt row drops out of run.audit.resourceIds on its own
 // and its badge flips to "Not in audit". No invalidation bookkeeping.
-const handleRebuildBlueprintStep = async (deps, uiId) => {
+const handleRebuildBlueprintStep = async (deps, uiId, options = {}) => {
   const { activeBlueprint, blueprintExecutionResult, persistedLessonDNA, history,
           setBlueprintExecutionResult, handleGenerate, addToast, t, warnLog } = deps;
   if (!uiId) return null;
@@ -2367,6 +2374,12 @@ const handleRebuildBlueprintStep = async (deps, uiId) => {
             variantResults,
             instructionalText: rebuildInstructionalText,
             rebuilt: true });
+    if (options.reportCompletion) return {
+      ok: !!resultItem && !failedVariantCount,
+      status: resultItem ? (failedVariantCount ? 'partial' : 'completed') : 'failed',
+      partial: !!resultItem && failedVariantCount > 0,
+      successfulVariantCount, failedVariantCount,
+    };
     return resultItem || null;
   } catch (e) {
     if (e && e.code === 'BLUEPRINT_GENERATION_MATRIX_UNAVAILABLE') {

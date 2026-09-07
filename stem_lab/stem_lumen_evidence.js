@@ -161,6 +161,9 @@
       labels: normalizeSourceLabels(spec.labels),
       status: 'ready'
     };
+    if (spec.readingAnchor) normalized.readingAnchor = clone(spec.readingAnchor);
+    normalized.allowAI = spec.allowAI !== false;
+    if (spec.language) normalized.language = cleanLabel(spec.language, '').slice(0,80);
     var canonicalUrl = canonicalWebUrl(spec.canonicalUrl || (type === 'url' ? locator : ''));
     if (canonicalUrl) normalized.canonicalUrl = canonicalUrl;
     if (spec.fetchedAt) normalized.fetchedAt = nowIso(spec.fetchedAt);
@@ -336,6 +339,7 @@
   }
 
   function markDependentsStale(project, sourceId) {
+    project.artifacts.forEach(function (artifact) { if (!artifact.citations) artifact.citations = noteCitations(project, artifact); });
     project.claims.forEach(function (claim) {
       if ((claim.evidenceIds || []).some(function (id) {
         return project.evidenceNodes.some(function (node) { return node.id === id && node.sourceId === sourceId; });
@@ -355,7 +359,11 @@
     var existingIndex = project.sources.findIndex(function (s) { return s.id === source.id; });
     if (existingIndex >= 0) {
       var existing = project.sources[existingIndex];
-      if (existing.contentHash === source.contentHash) return project;
+      if (existing.contentHash === source.contentHash) {
+        existing.allowAI = existing.allowAI !== false && source.allowAI !== false;
+        if (!existing.readingAnchor && source.readingAnchor) existing.readingAnchor = source.readingAnchor;
+        return project;
+      }
       if (!sourceSpec || sourceSpec.active == null) source.active = existing.active !== false;
       if (!sourceSpec || sourceSpec.labels == null) source.labels = normalizeSourceLabels(existing.labels);
       markDependentsStale(project, source.id);
@@ -644,6 +652,7 @@
       type: 'grounded-note',
       title: cleanLabel(question, 'Study note'),
       body: validated.answer,
+      citations: validated.claims.flatMap(function (claim) { return claim.evidenceIds.map(function (id) { return citationSnapshot(project, id); }).filter(Boolean); }),
       claimIds: validated.claims.map(function (claim) { return claim.id; }),
       sourceIds: sourceIds,
       stale: false,
@@ -652,6 +661,116 @@
     if (!project.artifacts.some(function (existing) { return existing.id === artifact.id; })) project.artifacts.push(artifact);
     project.updatedAt = at;
     return project;
+  }
+
+
+  // The reader and Lumen share the same role/profile boundary. Legacy keys are
+  // intentionally not claimed by a different named learner automatically.
+  function readingScope(ctx) {
+    ctx = ctx || {};
+    return (ctx.isTeacherMode === false ? 'learner' : 'teacher') + '|' + (ctx.activeProfileId ? 'profile:' + String(ctx.activeProfileId) + '|' : '') + String(ctx.studentNickname || 'default');
+  }
+
+  function citationSnapshot(project, evidenceId) {
+    var node = project.evidenceNodes.find(function (item) { return item.id === evidenceId; });
+    if (!node) return null;
+    var source = project.sources.find(function (item) { return item.id === node.sourceId; });
+    if (!source) return null;
+    return { evidenceId: node.id, sourceId: source.id, sourceVersion: node.sourceVersion,
+      contentHash: source.contentHash, title: source.title, passage: node.content,
+      locatorLabel: node.locatorLabel, locator: clone(node.locator), language: source.language || '',
+      anchor: source.readingAnchor ? clone(source.readingAnchor) : null };
+  }
+
+  function noteCitations(project, artifact) {
+    if (Array.isArray(artifact.citations)) return clone(artifact.citations);
+    var ids = [];
+    (artifact.claimIds || []).forEach(function (id) {
+      var claim = project.claims.find(function (item) { return item.id === id; });
+      if (claim) (claim.evidenceIds || []).forEach(function (eid) { if (ids.indexOf(eid) < 0) ids.push(eid); });
+    });
+    return ids.map(function (id) { return citationSnapshot(project, id); }).filter(Boolean);
+  }
+
+  function saveReadingEntry(inputProject, spec, now) {
+    spec = spec || {};
+    var project = migrateProject(inputProject);
+    var citation = citationSnapshot(project, spec.evidenceId);
+    if (!citation) throw new Error('Choose an available passage first.');
+    var type = ['reflection', 'bookmark', 'vocabulary', 'practice'].indexOf(spec.type) >= 0 ? spec.type : 'reflection';
+    var id = spec.id || 'reading_' + hashString(type + '|' + citation.evidenceId + '|' + (type === 'vocabulary' ? spec.word : ''));
+    var existing = project.artifacts.find(function (a) { return a.id === id; });
+    if (existing && (existing.stale || (existing.citations && existing.citations[0] && existing.citations[0].contentHash !== citation.contentHash))) {
+      throw new Error('This passage changed. Start a new reflection on the current passage.');
+    }
+    var quote = cleanText(spec.quote).slice(0, MAX_PASSAGE_CHARS);
+    if (quote && citation.passage.indexOf(quote) < 0) throw new Error('Supporting evidence must be an exact excerpt from this passage.');
+    var artifact = Object.assign({}, existing || {}, {
+      id: id, type: type, title: cleanLabel(spec.title, citation.title + ' · ' + type).slice(0,240),
+      body: cleanText(spec.body).slice(0,8000), quote: quote,
+      understanding: ['clear', 'unsure', 'reread'].indexOf(spec.understanding) >= 0 ? spec.understanding : 'unsure',
+      question: cleanText(spec.question).slice(0,4000), word: cleanLabel(spec.word, '').slice(0,120),
+      practiceStage: ['listen', 'try', 'reread', 'reflect'].indexOf(spec.practiceStage) >= 0 ? spec.practiceStage : 'listen',
+      sourceIds: [citation.sourceId], claimIds: [], citations: [citation], stale: false,
+      createdAt: existing ? existing.createdAt : nowIso(now), updatedAt: nowIso(now)
+    });
+    var index = project.artifacts.findIndex(function (a) { return a.id === id; });
+    if (index >= 0) project.artifacts[index] = artifact; else project.artifacts.push(artifact);
+    project.updatedAt = artifact.updatedAt;
+    return project;
+  }
+
+  function editSavedNote(inputProject, id, values, now) {
+    var project = migrateProject(inputProject);
+    var artifact = project.artifacts.find(function (a) { return a.id === id; });
+    if (!artifact) throw new Error('This note is no longer available.');
+    artifact.citations = noteCitations(project, artifact);
+    artifact.title = cleanLabel(values.title, artifact.title).slice(0,240);
+    // Personal annotations remain distinct from the verified answer and quotes.
+    artifact.annotation = cleanText(values.annotation).slice(0,8000);
+    artifact.updatedAt = nowIso(now); project.updatedAt = artifact.updatedAt;
+    return project;
+  }
+
+  function readingSourceSpec(selection) {
+    var anchor = selection.anchor || {};
+    var key = [anchor.kind || 'reading', anchor.resourceId || anchor.slug || selection.title,
+      selection.language || '', anchor.section == null ? '' : anchor.section].join('|');
+    return { id: 'src_reading_' + hashString(key), stableKey: key, title: selection.title || 'Reading passage',
+      content: selection.text, type: 'reading', importMethod: 'reading-workspace', language: selection.language || '',
+      readingAnchor: anchor, allowAI: selection.allowAI !== false };
+  }
+
+  function connectReadingSource(inputProject, selection) {
+    if (!selection || !cleanText(selection.text)) return migrateProject(inputProject);
+    var project = upsertSource(inputProject, readingSourceSpec(selection));
+    (selection.entries || []).slice(0,200).forEach(function (entry) {
+      if (!entry.text || !entry.anchor) return; // Legacy words without locations stay in My words.
+      var spec = readingSourceSpec(entry);
+      var current = project.sources.find(function (s) { return s.id === spec.id; });
+      var changed = current && current.contentHash !== hashString(cleanText(spec.content));
+      if (changed) spec.id += '_snapshot_' + hashString(cleanText(spec.content));
+      project = upsertSource(project, spec);
+      var node = project.evidenceNodes.find(function (n) { return n.sourceId === spec.id && (!entry.word || n.content.indexOf(entry.word) >= 0); });
+      if (!node) return;
+      var id = 'connected_' + hashString(spec.id + '|' + entry.type + '|' + (entry.word || ''));
+      if (project.artifacts.some(function (a) { return a.id === id; })) return;
+      project = saveReadingEntry(project, { id: id, type: entry.type, evidenceId: node.id,
+        title: entry.word || entry.title, body: entry.definition || '', word: entry.word || '', understanding: 'clear' });
+      if (changed) project.artifacts.find(function (a) { return a.id === id; }).stale = true;
+    });
+    return project;
+  }
+
+  function importSavedProject(inputProject, raw) {
+    var project = migrateProject(inputProject), legacy = migrateProject(raw);
+    legacy.artifacts.forEach(function (a) {
+      a.citations = noteCitations(legacy, a);
+      a.id = 'legacy_' + hashString(legacy.id + '|' + a.id);
+      a.stale = a.stale || a.citations.some(function (c) { var current = project.sources.find(function (s) { return s.id === c.sourceId; }); return !current || current.contentHash !== c.contentHash; });
+      if (!project.artifacts.some(function (item) { return item.id === a.id; })) project.artifacts.push(a);
+    });
+    project.updatedAt = nowIso(); return project;
   }
 
   function migrateProject(raw) {
@@ -688,6 +807,8 @@
     return STORAGE_PREFIX + ':' + hashString(cleanLabel(scope, 'default'));
   }
 
+  var projectWriteQueues = Object.create(null);
+
   function createProjectStore(options) {
     options = options || {};
     var db = options.storageDB || null;
@@ -696,6 +817,7 @@
     return {
       key: key,
       load: async function () {
+        if (projectWriteQueues[key]) await projectWriteQueues[key].catch(function () {});
         var value = null;
         try { if (db && typeof db.get === 'function') value = await db.get(key); } catch (_) {}
         if (!value && local && typeof local.getItem === 'function') {
@@ -703,8 +825,9 @@
         }
         return value ? migrateProject(value) : null;
       },
-      save: async function (project) {
+      save: function (project) {
         var clean = migrateProject(project);
+        var persist = async function () {
         try {
           if (db && typeof db.set === 'function') {
             var landed = await db.set(key, clean);
@@ -719,6 +842,10 @@
           }
         } catch (_) {}
         return { ok: false, medium: null };
+        };
+        var pending = (projectWriteQueues[key] || Promise.resolve()).catch(function () {}).then(persist);
+        projectWriteQueues[key] = pending;
+        return pending;
       },
       clear: async function () {
         try { if (db && typeof db.del === 'function') await db.del(key); } catch (_) {}
@@ -767,6 +894,14 @@
     recordStudyEvent: recordStudyEvent,
     saveGroundedResult: saveGroundedResult,
     saveNote: saveNote,
+    importSavedProject: importSavedProject,
+    readingScope: readingScope,
+    readingSourceSpec: readingSourceSpec,
+    connectReadingSource: connectReadingSource,
+    citationSnapshot: citationSnapshot,
+    noteCitations: noteCitations,
+    saveReadingEntry: saveReadingEntry,
+    editSavedNote: editSavedNote,
     migrateProject: migrateProject,
     storageKey: storageKey,
     createProjectStore: createProjectStore

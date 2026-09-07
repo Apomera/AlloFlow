@@ -416,7 +416,7 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(source).toContain('tankPlants.map(function (plantId, plantIndex)');
     expect(source).toContain('onClick: function () { selectPlant(plantId); }');
     expect(source).toContain("'aria-pressed': selectedPlantId === plantId");
-    expect(source).toContain('tankPlants.length === 0 && (selectedTank ===');
+    // Actual empty/zero-biomass fallback rendering is covered in aquarium_scene_simulation_link.test.js.
 
     const profileStart = source.indexOf('var PLANT_PROFILES = {');
     const liveStateStart = source.indexOf('var selectedPlantLiveContribution =');
@@ -426,7 +426,9 @@ describe('Aquarium runtime and chemistry learning contract', () => {
     expect(liveStateStart).toBeGreaterThan(profileStart);
     expect(handlerStart).toBeGreaterThan(liveStateStart);
     expect(panelStart).toBeGreaterThan(handlerStart);
-    expect(tankPlantStart).toBeGreaterThan(panelStart);
+    // The live tank precedes the detailed field guide in the playable workspace.
+    expect(tankPlantStart).toBeGreaterThan(handlerStart);
+    expect(panelStart).toBeGreaterThan(tankPlantStart);
   });
 
   it('renders accessible simulation-aware plant diagrams', () => {
@@ -542,9 +544,10 @@ describe('Aquarium runtime and chemistry learning contract', () => {
 
     const derivationStart = source.indexOf('var ecosystemPlantTotals = {');
     const networkStart = source.indexOf('Living Ecosystem Exchange Network');
-    const plantPanelStart = source.indexOf('Plant Management Panel', networkStart);
+    const plantPanelStart = source.indexOf('Aquatic Plants (', derivationStart);
     expect(networkStart).toBeGreaterThan(derivationStart);
-    expect(plantPanelStart).toBeGreaterThan(networkStart);
+    expect(plantPanelStart).toBeGreaterThan(derivationStart);
+    expect(networkStart).toBeGreaterThan(plantPanelStart);
   });
 
   it('calculates organism vitality behavior and traces individuals through the network', () => {
@@ -835,8 +838,8 @@ expect(network.links.every((link) => typeof link.strength === 'number' && link.s
     expect(source).toContain('function createAquariumHabitatScene(canvas, initialOptions)');
     expect(source).toContain('function AquariumHabitat3DViewport(props)');
     expect(source).toContain("window.StemLab.ensureThree({ orbit: true, orbitRequired: false })");
-    expect(source).toContain("canvas.addEventListener('webglcontextlost', onContextLost, false)");
-    expect(source).toContain('The 3D view could not start. The synchronized habitat plan and controls remain fully available.');
+    expect(source).toMatch(/canvas\.addEventListener\(\s*'webglcontextlost'\s*,\s*onContextLost\s*,\s*false\s*\)/);
+    expect(source).toContain('The 3D view is unavailable. Use the accessible habitat plan and object controls.');
     expect(source).toContain('Accessible plan');
     expect(source).toContain('Editable aquarium habitat floor plan');
     expect(source).toContain('Habitat ecological overlay');
@@ -1241,5 +1244,112 @@ describe('Aquarium quiz bank wiring', () => {
     legacy.forEach(q => { inSlot[q.correct] = (inSlot[q.correct] || 0) + 1; });
     const worst = Math.max(...inSlot) / legacy.length;
     expect(worst, 'no single position should hold most correct answers').toBeLessThan(0.5);
+  });
+});
+
+describe('Aquarium observation loop and model integrity', () => {
+  it('preserves midnight and advances all 24 hours without skipping the night', () => {
+    let hour = 23, day = 0;
+    const visited = [];
+    for (let tick = 0; tick < 25; tick++) {
+      hour = ecosystemCore.readSimulationHour(hour) + 1;
+      if (hour >= 24) { hour = 0; day++; }
+      visited.push(hour);
+    }
+    expect(visited.slice(0, 9)).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+    expect(new Set(visited).size).toBe(24);
+    expect(day).toBe(2);
+    expect(ecosystemCore.readSimulationHour(undefined)).toBe(8);
+    expect(ecosystemCore.readSimulationHour(NaN)).toBe(8);
+    expect(source).toContain('var _simHour = AquariumEcosystemCore.readSimulationHour(aq.simHour)');
+  });
+
+  it('classifies oxygen, nitrate, carbon dioxide, pH and temperature risk consistently', () => {
+    const tank = { pH: 7, temp: 76 };
+    const status = (key, value) => ecosystemCore.classifyWaterParameter(key, value, tank);
+    expect(status('dissolvedO2', 2)).toBe('danger');
+    expect(status('dissolvedO2', 5)).toBe('warn');
+    expect(status('nitrate', 90)).toBe('danger');
+    expect(status('co2', 35)).toBe('danger');
+    expect(status('pH', 8)).toBe('danger');
+    expect(status('temp', 82)).toBe('danger');
+    expect(status('ammonia', 0.1)).toBe('ok');
+    expect(status('nitrite', 0.25)).toBe('warn');
+    expect(status('ammonia', NaN)).toBe('unknown');
+  });
+
+  it('builds answerable marine identification questions with habitat evidence and feedback', () => {
+    const start = source.indexOf('          var MARINE_SPECIES = [');
+    const end = source.indexOf('\n          ];', start);
+    const catalog = runInNewContext('(function(){' + source.slice(start, end + 13) + '; return MARINE_SPECIES; })()', {
+      __alloT: (key, fallback) => fallback
+    });
+    expect(catalog.length).toBeGreaterThan(10);
+    catalog.forEach(species => {
+      const question = ecosystemCore.createMarineQuestion(species, catalog, () => 0.37);
+      expect(question.question).toContain(species.habitat);
+      expect(question.question).toContain('Which organism');
+      expect(question.answer).toBe(species.name);
+      expect(question.options).toHaveLength(4);
+      expect(new Set(question.options).size).toBe(4);
+      expect(question.options.filter(option => option === question.answer)).toHaveLength(1);
+      expect(question.explanation).toContain(species.diet);
+    });
+  });
+
+  it('clears tank-specific lesson evidence when starting a new ecosystem', () => {
+    const initStart = source.indexOf('          var initTank = function (tankId)');
+    const initEnd = source.indexOf('          var addFish', initStart);
+    const init = source.slice(initStart, initEnd);
+    expect(init).toContain('observationBaseline: null, feedingLog: null');
+    expect(init).toContain('tutorialProgress: {}');
+    expect(init).toContain('tutorialEquipmentMaintained: false');
+  });
+});
+
+describe('Aquarium workspace hierarchy', () => {
+  it('keeps the tank and daily actions ahead of accessible optional investigations', async () => {
+    const { parse } = await import('acorn');
+    const ast = parse(source, { ecmaVersion: 2022 });
+    function find(node, predicate) {
+      if (!node || typeof node !== 'object') return null;
+      if (predicate(node)) return node;
+      for (const value of Object.values(node)) {
+        if (Array.isArray(value)) {
+          for (const child of value) { const result = find(child, predicate); if (result) return result; }
+        } else if (value && typeof value === 'object') {
+          const result = find(value, predicate); if (result) return result;
+        }
+      }
+      return null;
+    }
+    function prop(node, key, value) {
+      return node.type === 'CallExpression' && node.arguments[1]?.type === 'ObjectExpression'
+        && node.arguments[1].properties.some(p => (p.key?.name || p.key?.value) === key && p.value?.value === value);
+    }
+    const workspace = find(ast, node => prop(node, 'data-aquarium-active-workspace', 'true'));
+    expect(workspace).toBeTruthy();
+    const sections = workspace.arguments.slice(2);
+    const index = id => sections.findIndex(section => find(section, node => prop(node, 'id', id)));
+    const objectiveIndex = index('aquarium-next-step');
+    const tankIndex = index('aquarium-live-tank');
+    const careIndex = index('aquarium-care-actions');
+    const systemsIndex = index('aquarium-systems-investigation');
+    expect(objectiveIndex).toBe(0);
+    expect(tankIndex).toBeGreaterThan(objectiveIndex);
+    expect(careIndex).toBeGreaterThan(tankIndex);
+    expect(systemsIndex).toBeGreaterThan(careIndex);
+
+    for (const id of ['aquarium-systems-investigation', 'aquarium-life-support']) {
+      const disclosure = find(workspace, node => prop(node, 'id', id));
+      expect(disclosure.arguments[0].value).toBe('details');
+      expect(disclosure.arguments[2].arguments[0].value).toBe('summary');
+      expect(disclosure.arguments[1].properties.some(p => p.key.name === 'open')).toBe(false);
+    }
+    const systems = sections[systemsIndex];
+    for (const id of ['aquarium-exchange-network-title', 'aquarium-vitality-map-title', 'aquarium-exchange-history-title']) {
+      expect(find(systems, node => prop(node, 'id', id)), id).toBeTruthy();
+    }
+    expect(find(sections[careIndex], node => node.type === 'Literal' && node.value === 'Toggle aquarium simulation')).toBeTruthy();
   });
 });

@@ -1,0 +1,35 @@
+{
+  "errors": [],
+  "viewports": {
+    "desktop": {
+      "width": 717,
+      "height": 653,
+      "pageWidth": 492.21875,
+      "pageHeight": 637
+    },
+    "short-laptop": {
+      "width": 717,
+      "height": 484,
+      "pageWidth": 361.625,
+      "pageHeight": 468
+    },
+    "tablet": {
+      "width": 974,
+      "height": 539,
+      "pageWidth": 404.125,
+      "pageHeight": 523
+    },
+    "mobile": {
+      "width": 372,
+      "height": 540,
+      "pageWidth": 356,
+      "pageHeight": 460.703125
+    }
+  },
+  "snap": {
+    "foreground": "rgb(15, 23, 42)",
+    "background": "rgb(224, 231, 255)"
+  },
+  "keyboardPropertiesFocus": true,
+  "recoveredLatestEdits": true
+}

@@ -1,0 +1,662 @@
+{
+  "note": "Consolidated latest result per file across the broad run and isolated/final-build reruns; not a single Vitest invocation.",
+  "sourceReports": [
+    "focused-final-tests.json",
+    "integration-followup-tests.json",
+    "ocr-edge-tests.json",
+    "final-build-tests.json"
+  ],
+  "files": 107,
+  "assertions": 1375,
+  "passedAssertions": 1375,
+  "failedFiles": [],
+  "nonPassingAssertions": [],
+  "resolvedRunIssues": [
+    "A learner annotation confirmation test timed out in the parallel run; the complete file passed in isolation.",
+    "The broad worker report omitted ocr_page_edge_artifacts; all 12 assertions passed in its isolated run."
+  ],
+  "fileResults": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aifix_chunk_gates.test.js",
+      "status": "passed",
+      "assertions": 20,
+      "sourceReport": "final-build-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/auto_continue_canonical_verification.test.js",
+      "status": "passed",
+      "assertions": 18,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/batch_checkpoint_boundary_commit.test.js",
+      "status": "passed",
+      "assertions": 9,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/batch_report_status.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_acceptance.test.js",
+      "status": "passed",
+      "assertions": 22,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_aggregate_shrink.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_annotation_confirm_a11y.test.js",
+      "status": "passed",
+      "assertions": 2,
+      "sourceReport": "integration-followup-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_annotation_sidebar_a11y.test.js",
+      "status": "passed",
+      "assertions": 2,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_axe_mirrors.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_blank_worksheet_tables.test.js",
+      "status": "passed",
+      "assertions": 10,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_build_parity.test.js",
+      "status": "passed",
+      "assertions": 1,
+      "sourceReport": "final-build-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_cdn_resilience.test.js",
+      "status": "passed",
+      "assertions": 9,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_core_residuals_20260723.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_crop_dialog_a11y.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_deep_regression_fixes.test.js",
+      "status": "passed",
+      "assertions": 14,
+      "sourceReport": "integration-followup-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_dispatch.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_dual_clean_gate.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_export_a11y_gate.test.js",
+      "status": "passed",
+      "assertions": 29,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_export_dialogs_a11y.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_fabrication.test.js",
+      "status": "passed",
+      "assertions": 11,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_first_party_engines.test.js",
+      "status": "passed",
+      "assertions": 10,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_form_field_fidelity.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_headless.test.js",
+      "status": "passed",
+      "assertions": 16,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_loop_support.test.js",
+      "status": "passed",
+      "assertions": 23,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_marker_strip.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_note_popover_a11y.test.js",
+      "status": "passed",
+      "assertions": 2,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_ocr_drawcalls.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_ocr_lang.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_retry.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_rgb_clamp.test.js",
+      "status": "passed",
+      "assertions": 2,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_scoring.test.js",
+      "status": "passed",
+      "assertions": 15,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_source_link_reattach.test.js",
+      "status": "passed",
+      "assertions": 13,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_structured_visual.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_surgical_param_validation.test.js",
+      "status": "passed",
+      "assertions": 25,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_verification_state.test.js",
+      "status": "passed",
+      "assertions": 29,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/doc_pipeline_wcag.test.js",
+      "status": "passed",
+      "assertions": 68,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/individual_remediation_polish.test.js",
+      "status": "passed",
+      "assertions": 25,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/numeric_fidelity_surfacing.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_accuracy.test.js",
+      "status": "passed",
+      "assertions": 15,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_block_layout.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_column_reorder.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_coverage_net.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_echo_and_cell_markup.test.js",
+      "status": "passed",
+      "assertions": 26,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_evidence_cache.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_fidelity_cleanup.test.js",
+      "status": "passed",
+      "assertions": 26,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_fidelity_fixes.test.js",
+      "status": "passed",
+      "assertions": 11,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_page_edge_artifacts.test.js",
+      "status": "passed",
+      "assertions": 12,
+      "sourceReport": "ocr-edge-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_page_errors_surfaced.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_page_identity_behavior.test.js",
+      "status": "passed",
+      "assertions": 17,
+      "sourceReport": "final-build-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_page_skip_fix.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_reconcile_lowconf.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_reconcile_pagenum.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_reconcile_pseudopage.test.js",
+      "status": "passed",
+      "assertions": 3,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/ocr_searchable_layer_positioning.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/office_semantic_fidelity.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_confirmations_a11y.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_first_start_visibility.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_image_review_a11y.test.js",
+      "status": "passed",
+      "assertions": 1,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_lifecycle_diagnostics.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_media_instructions_a11y.test.js",
+      "status": "passed",
+      "assertions": 1,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_prompt_a11y.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_audit_stall_guard.test.js",
+      "status": "passed",
+      "assertions": 13,
+      "sourceReport": "integration-followup-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_remediation_cache_manager.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/pdf_remediation_reentry.test.js",
+      "status": "passed",
+      "assertions": 11,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/reading_order_fail_tier.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/reading_order_guard.test.js",
+      "status": "passed",
+      "assertions": 21,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/reading_order_lang.test.js",
+      "status": "passed",
+      "assertions": 27,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/reading_order_multicolumn.test.js",
+      "status": "passed",
+      "assertions": 12,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/reading_order_preview.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_audit_fix_handoff.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_autoloop_dependencies.test.js",
+      "status": "passed",
+      "assertions": 1,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_batch_memory_budget_20260723.test.js",
+      "status": "passed",
+      "assertions": 3,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_deepdive_fixes.test.js",
+      "status": "passed",
+      "assertions": 34,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_evidence_invariants_20260723.test.js",
+      "status": "passed",
+      "assertions": 19,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_foundations_render.test.js",
+      "status": "passed",
+      "assertions": 3,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_goal_score_consistency.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_handoff_2026_08_03.test.js",
+      "status": "passed",
+      "assertions": 24,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_host_key_transport_20260723.test.js",
+      "status": "passed",
+      "assertions": 2,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_human_in_the_loop_rebase.test.js",
+      "status": "passed",
+      "assertions": 33,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_image_core.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_intake_hardening.test.js",
+      "status": "passed",
+      "assertions": 23,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_interactive_mode.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_operation_ownership.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_payload_ledger.test.js",
+      "status": "passed",
+      "assertions": 12,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_pipeline_audit_fixes.test.js",
+      "status": "passed",
+      "assertions": 168,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_pipeline_deep_hardening.test.js",
+      "status": "passed",
+      "assertions": 18,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_progress_trace.test.js",
+      "status": "passed",
+      "assertions": 18,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_run_ownership_visibility.test.js",
+      "status": "passed",
+      "assertions": 17,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_run_reentry_guard.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_security_boundary_inventory.test.js",
+      "status": "passed",
+      "assertions": 5,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_storm_recovery.test.js",
+      "status": "passed",
+      "assertions": 19,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_upload_lifecycle.test.js",
+      "status": "passed",
+      "assertions": 16,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_verification_transport_20260723.test.js",
+      "status": "passed",
+      "assertions": 14,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_view_canonical_actions_20260723.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_view_lifecycle_regressions.test.js",
+      "status": "passed",
+      "assertions": 22,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_view_remaining_async.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_view_verification.test.js",
+      "status": "passed",
+      "assertions": 26,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/remediation_wcag22_upgrade.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "integration-followup-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/structural_fidelity_nets.test.js",
+      "status": "passed",
+      "assertions": 15,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_audio.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_docx_spec.test.js",
+      "status": "passed",
+      "assertions": 17,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_meta.test.js",
+      "status": "passed",
+      "assertions": 6,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_recon_gate.test.js",
+      "status": "passed",
+      "assertions": 4,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_resilience.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_slides_spec.test.js",
+      "status": "passed",
+      "assertions": 9,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_tagtree.test.js",
+      "status": "passed",
+      "assertions": 7,
+      "sourceReport": "focused-final-tests.json"
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/view_pdf_audit_timeouts.test.js",
+      "status": "passed",
+      "assertions": 8,
+      "sourceReport": "focused-final-tests.json"
+    }
+  ]
+}

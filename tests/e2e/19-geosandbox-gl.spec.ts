@@ -357,6 +357,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
   test('clicking a sculpt primitive selects it and reveals its formulas in the viewport', async ({ page }) => {
     await mount(page, {
       mode: 'sculpt',
+      showCanvasMeasures: true,
       sculptRecipe: { name: 'Math box', parts: [
         { shape: 'box', size: [1, 2, 3], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' },
         { shape: 'sphere', size: [0.7], position: [4, 1, 0], rotation: [0, 0, 0], color: '#f472b6' },
@@ -404,6 +405,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
 
     // A compact navigator names the selection, moves predictably between parts,
     // and offers an explicit camera focus without coupling camera motion to selection.
+    await page.getByRole('tablist', { name: 'Workspace panels' }).getByRole('tab', { name: 'Learn', exact: true }).click();
     const partNavigator = page.locator('[data-geo-sculpt-part-navigator="true"]');
     await expect(partNavigator).toContainText('Part 1 of 2 · Rectangular Prism');
     const sphereMathButton = page.getByRole('button', { name: /^2\. Sphere/ });
@@ -495,6 +497,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     await expect(sliceExplorer).toContainText('25%');
 
     // Hand-editing adds six directly pickable ±X/±Y/±Z handles around the part.
+    await page.getByRole('tablist', { name: 'Workspace panels' }).getByRole('tab', { name: 'Build', exact: true }).click();
     await page.getByRole('button', { name: /Edit by hand/ }).click();
     await page.waitForFunction(() => {
       let count = 0;
@@ -709,7 +712,7 @@ test.describe('Geometry Sandbox — real WebGL', () => {
     const seg = { id: 2, type: 'segment', position: [0, 0, 0], vector: [3, 0, 0] };
     const rect = { id: 3, type: 'rect', position: [0, 0, 0], u: [3, 0, 0], v: [0, 2, 0] };
     const solid = Object.assign({}, PRISM, { id: 4 });   // distinct id; the slice needs the PRISM selected
-    await mount(page, scene([point, seg, rect, solid], 4, { sliceOn: true, sliceT: 0.5 }));
+    await mount(page, scene([point, seg, rect, solid], 4, { sliceOn: true, sliceT: 0.5, showSceneLabels: true }));
 
     const groups = await page.evaluate(() => (window as any).__sceneGroups());
     expect(groups.objectCount).toBe(4);

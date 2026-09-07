@@ -2367,6 +2367,14 @@
     return Math.max(0.34, Math.min(base, available / Math.max(1, stFiniteNumber(c.w, 816))));
   }
 
+  function stCanvasViewportFitScale(canvas, viewport, mode) {
+    var width = Math.max(1, stFiniteNumber(viewport && viewport.w, 640) - 16);
+    var height = Math.max(1, stFiniteNumber(viewport && viewport.h, 480) - 16);
+    var widthScale = width / Math.max(1, stFiniteNumber(canvas && canvas.w, 816));
+    var heightScale = height / Math.max(1, stFiniteNumber(canvas && canvas.h, 1056));
+    return Math.max(0.01, Math.min(1.5, mode === 'width' ? widthScale : Math.min(widthScale, heightScale)));
+  }
+
   function stSelectionZoomScale(bounds, canvas, viewport, padding) {
     if (!bounds || !canvas) return null;
     var pad = Math.max(16, stFiniteNumber(padding, 48));
@@ -4418,7 +4426,7 @@
   function AlloStudio(props) {
     var h = React.createElement;
     var t = props.t || function () { return ''; };
-    var TT = function (k, fb) { try { var s = t(k); return s || fb; } catch (_) { return fb; } };
+    var TT = function (k, fb) { try { var s = t(k); return s && s !== k ? s : fb; } catch (_) { return fb; } };
     var addToast = props.addToast || function () {};
     var hasLinkedActivityWorksheet = !!(props.initialResource && typeof props.onSaveGeneratedArtifact === 'function');
     var _linkedSave = React.useState(hasLinkedActivityWorksheet ? 'linked' : 'unlinked');
@@ -4481,6 +4489,15 @@
     var _resourceSearch = React.useState(''); var resourceSearch = _resourceSearch[0], setResourceSearch = _resourceSearch[1];
     var _resourceKindFilter = React.useState('all'); var resourceKindFilter = _resourceKindFilter[0], setResourceKindFilter = _resourceKindFilter[1];
     var _recentTick = React.useState(0); var recentTick = _recentTick[0], setRecentTick = _recentTick[1];
+    var _fitMode = React.useState('page'); var fitMode = _fitMode[0], setFitMode = _fitMode[1];
+    var _canvasSize = React.useState(null); var canvasSize = _canvasSize[0], setCanvasSize = _canvasSize[1];
+    var _mobilePanel = React.useState('canvas'); var mobilePanel = _mobilePanel[0], setMobilePanel = _mobilePanel[1];
+    var _inspectorTab = React.useState('properties'); var inspectorTab = _inspectorTab[0], setInspectorTab = _inspectorTab[1];
+    var _reviewOverlays = React.useState(false); var reviewOverlays = _reviewOverlays[0], setReviewOverlays = _reviewOverlays[1];
+    var _saveState = React.useState('ready'); var saveState = _saveState[0], setSaveState = _saveState[1];
+    var headerMoreRef = React.useRef(null);
+    var inspectorRef = React.useRef(null);
+    var pendingInspectorRef = React.useRef(false);
     var _canvasZoom = React.useState(null); var canvasZoom = _canvasZoom[0], setCanvasZoom = _canvasZoom[1];
     var _navigatorMode = React.useState('reading'); var navigatorMode = _navigatorMode[0], setNavigatorMode = _navigatorMode[1];
     var _navigatorSearch = React.useState(''); var navigatorSearch = _navigatorSearch[0], setNavigatorSearch = _navigatorSearch[1];
@@ -4524,7 +4541,7 @@
     }, []);
     var trapTabWithin = function (root, ev) {
       if (ev.key !== 'Tab' || !root) return;
-      var nodes = root.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])');
+      var nodes = root.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], summary, [tabindex]:not([tabindex="-1"])');
       var list = Array.prototype.filter.call(nodes, function (n) { return n.offsetParent !== null || n === document.activeElement; });
       if (!list.length) { ev.preventDefault(); root.focus(); return; }
       var first = list[0], last = list[list.length - 1], active = document.activeElement;
@@ -4579,22 +4596,43 @@
     var _agentPreview = React.useState(null); var agentPreview = _agentPreview[0], setAgentPreview = _agentPreview[1];
     var _revokePreview = function (p) { if (p) { try { URL.revokeObjectURL(p.before); } catch (_) {} try { URL.revokeObjectURL(p.after); } catch (_) {} } };
     var clearAgentPreview = function () { setAgentPreview(function (prev) { _revokePreview(prev); return null; }); };
-    // Autosave: debounced snapshot of the working doc (full ledger) so a
-    // closed tab never loses a class period's work. The timer resets on every
-    // render (each op re-renders), so the write lands ~4s after activity stops.
-    var _autosaveNoteRef = React.useRef(false);
+    // Recovery follows document edits, not unrelated panel/selection renders.
+    var flushRecovery = React.useCallback(function (updateUi) {
+      var liveDoc = _docRef.current;
+      if (!liveDoc) return { ok: true };
+      var result = stWriteAutosave(liveDoc, Date.now());
+      if (updateUi !== false) setSaveState(result.ok ? 'saved' : 'error');
+      return result;
+    }, []);
+    var commitFocusedField = React.useCallback(function () {
+      var active = document.activeElement;
+      if (active && _shellRef.current && _shellRef.current.contains(active) && /^(INPUT|TEXTAREA)$/.test(active.tagName)) active.blur();
+    }, []);
+    var requestClose = function () {
+      commitFocusedField();
+      if (!flushRecovery().ok) {
+        addToast(TT('studio.recovery_close_failed', 'Your latest changes could not be saved on this device. Download a project copy before leaving.'), 'error');
+        return;
+      }
+      if (typeof props.onClose === 'function') props.onClose();
+    };
     React.useEffect(function () {
-      var timer = setTimeout(function () {
-        var liveDoc = _docRef.current;
-        if (!liveDoc || !liveDoc.ledger || !liveDoc.ledger.ops.length) return;
-        var res = stWriteAutosave(liveDoc, Date.now());
-        if (!res.ok && res.reason === 'too-large' && !_autosaveNoteRef.current) {
-          _autosaveNoteRef.current = true;
-          addToast(TT('studio.autosave_large', 'Autosave paused: this document is too large to snapshot. Save your file often.'), 'info');
-        }
-      }, 4000);
+      if (!_docRef.current) return undefined;
+      setSaveState('saving');
+      var timer = setTimeout(function () { flushRecovery(); }, 4000);
       return function () { clearTimeout(timer); };
-    });
+    }, [_tick[0], flushRecovery]);
+    React.useEffect(function () {
+      var flush = function () { commitFocusedField(); flushRecovery(false); };
+      var onVisibility = function () { if (document.visibilityState === 'hidden') flush(); };
+      window.addEventListener('pagehide', flush);
+      document.addEventListener('visibilitychange', onVisibility);
+      return function () {
+        window.removeEventListener('pagehide', flush);
+        document.removeEventListener('visibilitychange', onVisibility);
+        flushRecovery(false);
+      };
+    }, [flushRecovery, commitFocusedField]);
     // In-editor crop: cropId opens the modal, cropRect is the drag selection in
     // 0..1 fractions of the displayed image.
     var _cropId = React.useState(null); var cropId = _cropId[0], setCropId = _cropId[1];
@@ -4641,10 +4679,24 @@
     React.useEffect(function () {
       if (pageIndex !== activePageIndex) setPageIndex(activePageIndex);
     }, [pageIndex, activePageIndex]);
-    var fitScale = doc ? stCanvasFitScale(doc.canvas, layout, viewport) : layout.canvasScale;
+    React.useEffect(function () {
+      var node = canvasViewportRef.current;
+      if (!node || view !== 'edit') return undefined;
+      var measure = function () {
+        var w = node.clientWidth, h = node.clientHeight;
+        if (w > 0 && h > 0) setCanvasSize(function (prior) { return prior && prior.w === w && prior.h === h ? prior : { w: w, h: h }; });
+      };
+      measure();
+      var observer = typeof ResizeObserver === 'function' ? new ResizeObserver(measure) : null;
+      if (observer) observer.observe(node);
+      window.addEventListener('resize', measure);
+      return function () { if (observer) observer.disconnect(); window.removeEventListener('resize', measure); };
+    }, [view, layout.stacked, mobilePanel, exportOpen, preflightOpen, fullscreen]);
+    var fitScale = doc ? (canvasSize ? stCanvasViewportFitScale(doc.canvas, canvasSize, fitMode) : stCanvasFitScale(doc.canvas, layout, viewport)) : layout.canvasScale;
     var SCALE = canvasZoom === null ? fitScale : stAdjustCanvasZoom(canvasZoom, 'clamp', fitScale);
     var zoomLabel = Math.round(SCALE * 100) + '%';
     var changeCanvasZoom = function (action) {
+      if (action === 'fit' || action === 'fit-width') { setFitMode(action === 'fit-width' ? 'width' : 'page'); setCanvasZoom(null); return; }
       setCanvasZoom(function (z) { return stAdjustCanvasZoom(z, action, fitScale); });
       stAnnounce(TT('studio.a11y_zoom_changed', 'Canvas zoom changed'));
     };
@@ -4692,7 +4744,7 @@
       return stSetObjectPage(copy, activePageIndex, studioPageCount);
     };
     var clearSelection = function () { setSelectedId(null); setSelectedIds([]); };
-    var selectOnly = function (id) { setSelectedId(id || null); setSelectedIds(id ? [id] : []); };
+    var selectOnly = function (id, deferPanel) { var fromNavigator = !deferPanel && !_drag.current && document.activeElement && document.activeElement.closest('[data-st-object-browser]'); setSelectedId(id || null); setSelectedIds(id ? [id] : []); if (id) { setInspectorTab('properties'); if (layout.stacked) { if (deferPanel || _drag.current) pendingInspectorRef.current = true; else setMobilePanel('properties'); } if (inspectorRef.current) inspectorRef.current.scrollTop = 0; if (fromNavigator) setTimeout(function () { var panel = inspectorRef.current; var field = panel && Array.from(panel.querySelectorAll('textarea, input, select, button')).find(function (node) { return !node.disabled && node.getClientRects().length && !node.closest('[data-st-object-browser]') && node.tagName !== 'BUTTON'; }); if (field) field.focus(); }, 0); } };
     var toggleSelection = function (id) {
       if (!id) return;
       var list = Array.isArray(selectedIds) ? selectedIds.slice() : [];
@@ -5520,8 +5572,9 @@
         }
         var preserveGroup = mode === 'move' && selectionIds.length > 1 && selectionIds.indexOf(o.id) >= 0;
         if (preserveGroup) _skipFocusSelect.current = true;
-        if (!preserveGroup) selectOnly(o.id);
+        if (!preserveGroup) selectOnly(o.id, true);
         if (stIsLockedObject(o)) {
+          if (pendingInspectorRef.current) { pendingInspectorRef.current = false; setMobilePanel('properties'); }
           stAnnounce(TT('studio.a11y_locked_selected', 'Locked object selected'));
           return;
         }
@@ -5534,13 +5587,13 @@
           var target = doc.objects.filter(function (candidate) { return candidate && candidate.id === id; })[0];
           return target && target.frame ? { id: target.id, frame: stClone(target.frame) } : null;
         }).filter(Boolean);
-        _drag.current = { id: o.id, ids: dragIds, mode: mode, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame), frames0: dragFrames };
+        _drag.current = { id: o.id, ids: dragIds, mode: mode, scale: SCALE, startX: ev.clientX, startY: ev.clientY, frame0: stClone(o.frame), frames0: dragFrames };
         try { ev.currentTarget.setPointerCapture(ev.pointerId); } catch (_) {}
       };
     };
     var onCanvasPointerMove = function (ev) {
       var d = _drag.current; if (!d) return;
-      var dx = (ev.clientX - d.startX) / SCALE, dy = (ev.clientY - d.startY) / SCALE;
+      var dx = (ev.clientX - d.startX) / (d.scale || SCALE), dy = (ev.clientY - d.startY) / (d.scale || SCALE);
       if (d.mode === 'group-resize') {
         var resizePreview = stResizeFramesAsGroup(_docRef.current.objects, d.ids, dx, dy, _docRef.current.canvas, { minSize: 24, keepRatio: d.keepRatio });
         setSnapGuides([]);
@@ -5569,9 +5622,11 @@
       }
       setDragLive({ id: d.id, frame: live });
     };
+    var onCanvasPointerCancel = function () { _drag.current = null; pendingInspectorRef.current = false; setDragLive(null); setSnapGuides([]); };
     var onCanvasPointerUp = function () {
       var d = _drag.current; if (!d) return;
       _drag.current = null;
+      if (pendingInspectorRef.current) { pendingInspectorRef.current = false; setMobilePanel('properties'); }
       if (dragLive && dragLive.id === d.id) {
         if (d.mode === 'group-resize' && Array.isArray(dragLive.frames)) {
           var resizeOps = dragLive.frames.map(function (entry) {
@@ -5824,8 +5879,8 @@
       download(new Blob([JSON.stringify(stDurableDoc(doc), null, 1)], { type: 'application/json' }), safeName() + '.allostudio.json');
       var recent = stSaveRecentProject(doc);
       setRecentTick(function (n) { return n + 1; });
-      stClearAutosave(); // the work is saved — don't offer a stale "unsaved work" restore
-      addToast(TT('studio.saved', '💾 Saved. The file includes your full process history — it stays on this device.'), 'success');
+      flushRecovery(); // Retain recovery until the browser's download is safely in the user's hands.
+      addToast(TT('studio.project_download_started', 'Project download started. Keep this file to reopen and edit your design, including its process history.'), 'success');
       if (!recent.ok) addToast(TT('studio.recent_save_failed', 'Recent-project shelf could not update, but your file downloaded.'), 'info');
     };
     var saveLinkedArtifact = function () {
@@ -5948,10 +6003,10 @@
       headerSpacer: { marginLeft: layout.compact ? 0 : 'auto', flex: layout.compact ? '1 0 10px' : '0 0 auto' },
       titleInput: { background: C.hBtnBg, color: C.hBtnText, border: '1px solid ' + C.hBtnBorder, borderRadius: '8px', padding: '5px 10px', fontSize: '13px', fontWeight: 700, width: layout.titleWidth, maxWidth: '100%' },
       hBtn: { padding: layout.buttonPadding, minHeight: '32px', borderRadius: '8px', border: '1px solid ' + C.hBtnBorder, background: C.hBtnBg, color: C.hBtnText, fontSize: '12px', fontWeight: 700, cursor: 'pointer' },
-      body: { flex: 1, display: 'flex', flexDirection: layout.stacked ? 'column' : 'row', minHeight: 0, overflow: layout.stacked ? 'auto' : 'hidden' },
+      body: { flex: 1, display: 'flex', flexDirection: layout.stacked ? 'column' : 'row', minHeight: 0, overflow: 'hidden' },
       panel: Object.assign({ width: layout.panelWidth, padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }, layout.stacked ? { maxHeight: layout.panelMaxHeight, borderRight: 'none', borderBottom: '1px solid ' + C.border } : { borderRight: '1px solid ' + C.border }),
       rpanel: Object.assign({ width: layout.inspectorWidth, padding: '10px', overflowY: 'auto', background: C.panel, color: C.text, display: 'flex', flexDirection: 'column', gap: '8px', flexShrink: 0 }, layout.stacked ? { maxHeight: layout.inspectorMaxHeight, borderLeft: 'none', borderTop: '1px solid ' + C.border } : { borderLeft: '1px solid ' + C.border }),
-      canvasWrap: { flex: 1, minHeight: layout.stacked ? '260px' : 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start', gap: '8px', padding: layout.canvasPadding + 'px' },
+      canvasWrap: { flex: 1, order: layout.stacked ? 0 : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', alignItems: 'stretch', justifyContent: 'flex-start', gap: '8px', padding: layout.canvasPadding + 'px' },
       canvasToolbar: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', flexWrap: 'wrap', flexShrink: 0 },
       canvasViewport: { flex: 1, minHeight: 0, overflow: 'auto', display: 'flex', alignItems: 'flex-start', justifyContent: 'center' },
       canvasPage: { position: 'relative', background: (doc && doc.canvas && doc.canvas.background && doc.canvas.background.fill) || '#fff', boxShadow: '0 2px 14px rgba(15,23,42,0.25)', flexShrink: 0, overflow: 'hidden' },
@@ -5960,6 +6015,12 @@
       label: { fontSize: '10px', fontWeight: 800, textTransform: 'uppercase', color: C.muted, marginTop: '4px' },
       input: { width: '100%', boxSizing: 'border-box', padding: '5px 7px', border: '1px solid ' + C.border, borderRadius: '6px', fontSize: '12px', background: C.inputBg, color: C.inputText },
     };
+    if (layout.stacked) {
+      S.panel = Object.assign({}, S.panel, { display: mobilePanel === 'insert' ? 'flex' : 'none', order: 1, maxHeight: '34dvh', minHeight: 0 });
+      S.rpanel = Object.assign({}, S.rpanel, { display: mobilePanel === 'properties' || mobilePanel === 'objects' ? 'flex' : 'none', order: 1, maxHeight: '38dvh', minHeight: 0 });
+      S.titleInput = Object.assign({}, S.titleInput, { width: 'auto', flex: '1 1 120px', minWidth: 0 });
+      S.header = Object.assign({}, S.header, { flexShrink: 0 });
+    }
     // Fullscreen: edge-to-edge shell (no overlay padding, no rounded corners). The
     // template-picker card keeps its own compact size unless we're fullscreen.
     if (fullscreen) {
@@ -5970,7 +6031,7 @@
     var templateCategoryFor = stTemplateCategory;
     var templateFilters = [
       ['all', TT('studio.templates_all', 'All')],
-      ['favorites', TT('studio.templates_favorites', 'Saved')],
+      ['favorites', TT('studio.templates_favorites_label', 'Favorites')],
       ['poster', TT('studio.templates_posters', 'Flyers & posters')],
       ['worksheet', TT('studio.templates_worksheets', 'Worksheets')],
       ['organizer', TT('studio.templates_organizers', 'Organizers')],
@@ -6019,7 +6080,7 @@
       var templateFavorites = templateFavoritesTick >= 0 ? stReadTemplateFavorites() : [];
       var shownTemplates = stFilterTemplates(allTemplates, { category: templateFilter, query: templateSearch, useCase: templateUseCase, favorites: templateFavorites });
       return h('div', { className: 'st-root theme-' + themeName, style: S.overlay, role: 'dialog', 'aria-modal': true, 'aria-label': TT('studio.title', 'AlloStudio'),
-        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); if (typeof props.onClose === 'function') props.onClose(); } } },
+        onKeyDown: function (ev) { trapTab(ev); if (ev.key === 'Escape') { ev.preventDefault(); requestClose(); } } },
         h('div', { ref: _shellRef, style: fullscreen ? S.shell : Object.assign({}, S.shell, { width: layout.stacked ? layout.shellWidth : 'min(860px, 96vw)', height: 'auto', maxHeight: layout.stacked ? layout.shellHeight : '92vh' }) },
           h('div', { style: S.header },
             h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
@@ -6027,7 +6088,7 @@
             h('span', { style: { fontSize: '11px', color: C.soft } }, TT('studio.tagline', 'Flyers, worksheets & posters — accessible by construction')),
             h('button', { style: Object.assign({}, S.hBtn, { marginLeft: 'auto' }), onClick: function () { if (loadRef.current) loadRef.current.click(); } }, '📂 ' + TT('studio.open_file', 'Open .allostudio.json')),
             h('button', { style: S.hBtn, onClick: function () { if (pptxRef.current) pptxRef.current.click(); }, title: TT('studio.pptx_import_hint', 'Bring in a PowerPoint or exported lesson deck. Supported text, pictures, alt text, and layout import; proprietary activities, tables, charts, and SmartArt are reported or left for review.') }, '📽️ ' + TT('studio.import_pptx', 'Import lesson deck (.pptx)')),
-            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
+            h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: requestClose }, '✕')),
           (function () {
             var saved = stReadAutosave();
             if (!saved) return null;
@@ -6065,7 +6126,7 @@
           h('div', { style: { padding: '12px 18px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': TT('studio.template_filters', 'Template filters') },
             templateFilters.map(function (opt) {
               var active = templateFilter === opt[0];
-              return h('button', { key: opt[0], onClick: function () { setTemplateFilter(opt[0]); }, 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '6px 10px', textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null) }, opt[1]);
+              return h('button', { key: opt[0], onClick: function () { setTemplateFilter(opt[0]); }, 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '6px 10px', textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null) }, opt[1]);
             })),
           h('div', { style: { padding: '8px 18px 0', display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'minmax(220px, 1fr) 190px', gap: '8px', alignItems: 'end' } },
             h('input', { type: 'search', value: templateSearch, placeholder: TT('studio.template_search', 'Search templates'), 'aria-label': TT('studio.template_search', 'Search templates'), style: S.input,
@@ -6106,7 +6167,7 @@
                 setTemplateFavoritesTick(function (n) { return n + 1; });
                 stAnnounce((next.indexOf(tpl.key) >= 0 ? TT('studio.template_saved', 'Template saved') : TT('studio.template_unsaved', 'Template removed')) + ': ' + tpl.name);
               };
-              var favoriteButton = h('button', { type: 'button', onClick: toggleFavorite, 'aria-pressed': favorite, 'aria-label': (favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template')) + ': ' + tpl.name, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 8px', minHeight: '32px', whiteSpace: 'nowrap' }), title: favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template') }, favorite ? TT('studio.template_favorited', 'Saved') : TT('studio.template_favorite', 'Save'));
+              var favoriteButton = h('button', { type: 'button', onClick: toggleFavorite, 'aria-pressed': favorite, 'aria-label': (favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template')) + ': ' + tpl.name, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 8px', minHeight: '32px', whiteSpace: 'nowrap' }), title: favorite ? TT('studio.template_remove_favorite', 'Remove from saved templates') : TT('studio.template_add_favorite', 'Save this template') }, favorite ? TT('studio.template_favorited_label', 'Favorited') : TT('studio.template_favorite_label', 'Favorite'));
               var info = h('div', { style: { display: 'flex', gap: '10px', alignItems: 'flex-start' } },
                 h('span', { style: { fontSize: '26px', flex: '0 0 auto' }, 'aria-hidden': true }, tpl.emoji),
                 h('span', { style: { minWidth: 0 } },
@@ -6184,7 +6245,7 @@
                   ['import', TT('studio.actor_import', 'import'), allProcessGroups.filter(function (g) { return g.actor === 'import'; }).length]
                 ].map(function (item) {
                   var active = processActorFilter === item[0];
-                  return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 4px', minHeight: '26px', fontSize: '10px' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setProcessActorFilter(item[0]); } }, item[1] + ' ' + item[2]);
+                  return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 4px', minHeight: '26px', fontSize: '10px' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setProcessActorFilter(item[0]); } }, item[1] + ' ' + item[2]);
                 })),
               h('div', { style: S.label }, TT('studio.recent_steps', 'Steps (latest first)')),
               h('div', { style: { overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '3px' } },
@@ -6300,7 +6361,7 @@
         style: base,
         onPointerDown: onObjectPointerDown(o, 'move'),
         onPointerMove: onCanvasPointerMove,
-        onPointerUp: onCanvasPointerUp,
+        onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel,
         onKeyDown: onObjectKeyDown(o),
         onDoubleClick: o.type === 'text' ? function () { setEditingText({ id: o.id, value: (o.runs && o.runs[0] && o.runs[0].text) || '' }); } : undefined,
         onFocus: function () {
@@ -6309,7 +6370,7 @@
         },
       }, extra),
         inner,
-        readingIndex ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', left: '4px', top: '4px', minWidth: '20px', height: '20px', borderRadius: '999px', background: C.headerBg, color: C.headerText, border: '1px solid ' + C.hBtnBorder, fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(15,23,42,0.25)', zIndex: 55 } }, readingIndex) : null,
+        reviewOverlays && readingIndex ? hh('span', { 'data-st-reading-number': true, 'aria-hidden': true, style: { position: 'absolute', left: '4px', top: '4px', minWidth: '20px', height: '20px', borderRadius: '999px', background: C.headerBg, color: C.headerText, border: '1px solid ' + C.hBtnBorder, fontSize: '10px', fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', boxShadow: '0 1px 4px rgba(15,23,42,0.25)', zIndex: 55 } }, readingIndex) : null,
         locked ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', right: '4px', bottom: '4px', border: '1px solid ' + C.hBtnBorder, background: C.headerBg, color: C.headerText, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', pointerEvents: 'none', zIndex: 56 } }, TT('studio.locked', 'Locked')) : null,
         frameState && (frameState.key === 'kept-placeholder' || frameState.key === 'empty-placeholder') ? hh('span', { 'aria-hidden': true, style: { position: 'absolute', left: '4px', bottom: '4px', maxWidth: 'calc(100% - 8px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', border: '1px solid ' + (frameState.key === 'kept-placeholder' ? statusTone('success').border : statusTone('review').border), background: frameState.key === 'kept-placeholder' ? statusTone('success').bg : statusTone('review').bg, color: frameState.key === 'kept-placeholder' ? statusTone('success').fg : statusTone('review').fg, borderRadius: '999px', fontSize: '9px', fontWeight: 900, padding: '2px 6px', pointerEvents: 'none', zIndex: 56 } }, frameState.label) : null,
         issueSummary ? hh('button', {
@@ -6329,7 +6390,7 @@
             role: 'presentation',
             onPointerDown: onObjectPointerDown(o, 'resize'),
             onPointerMove: onCanvasPointerMove,
-            onPointerUp: onCanvasPointerUp,
+            onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel,
             style: { position: 'absolute', right: '-7px', bottom: '-7px', width: '14px', height: '14px', background: C.accent, border: '2px solid ' + C.panel, borderRadius: '4px', cursor: 'nwse-resize', zIndex: 55 },
           })
         ] : null,
@@ -6602,46 +6663,9 @@
         }
       };
       var selectedImageState = selected.type === 'image' ? stImageFrameState(selected) : null;
-      propPanel = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
+      propPanel = h('div',
+        { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: S.label }, TT('studio.selection', 'Selection') + ' - ' + selected.type),
-        h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center' } },
-          h('input', { type: 'checkbox', checked: selectedLocked, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { locked: !!e.target.checked } }, 'user'); } }),
-          selectedLocked ? TT('studio.locked', 'Locked') : TT('studio.unlocked', 'Unlocked')),
-        selectedLocked ? h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, TT('studio.locked_hint', 'Unlock this object before moving, resizing, duplicating, or deleting it.')) : null,
-        selectedNextActions.length ? h('div', { style: { padding: '7px', border: '1px solid ' + C.border, background: C.panelAlt, color: C.text, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.3 } },
-          h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '6px', alignItems: 'baseline', marginBottom: '5px' } },
-            h('strong', { style: { fontSize: '11px' } }, TT('studio.next_actions', 'Next actions')),
-            h('span', { style: { color: C.muted, fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' } }, selected.type)),
-          h('div', { role: 'group', 'aria-label': TT('studio.next_actions', 'Next actions'), style: { display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '4px' } },
-            selectedNextActions.slice(0, 4).map(function (action, idx) {
-              var actionTone = action.readyAction ? selectedIssueTone : statusTone('review');
-              return h('button', { key: action.id || idx, type: 'button', onClick: function () { runSelectedNextAction(action); }, title: action.message || action.label, style: { border: '1px solid ' + actionTone.border, background: action.readyAction ? actionTone.bg : C.panel, color: action.readyAction ? actionTone.fg : C.text, borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 900, padding: '4px 6px', lineHeight: 1.2, minHeight: '30px' } }, action.label);
-            }))) : null,
-        h('div', { style: { padding: '7px', border: '1px solid ' + selectedIssueTone.border, background: selectedIssueTone.bg, color: selectedIssueTone.fg, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.35 } },
-          selectedIssueSummary ? [
-            h('strong', { key: 'title', style: { display: 'block', fontSize: '11px' } }, selectedIssueSummary.label + ': ' + selectedIssueSummary.title),
-            h('span', { key: 'message' }, selectedIssueSummary.message),
-            selectedIssueSummary.count > 1 ? h('div', { key: 'count', style: { marginTop: '4px', fontWeight: 800 } }, selectedIssueSummary.count + ' items on this object') : null,
-            selectedA11yActions.length ? h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' } },
-              selectedA11yActions.slice(0, 3).map(function (action, idx) {
-                return h('button', { key: idx, type: 'button', onClick: function () { applyReadyAction(action); }, title: action.message, style: { border: '1px solid ' + selectedIssueTone.border, background: C.panel, color: C.text, borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 800, padding: '3px 6px', lineHeight: 1.2 } }, readyActionLabel(action));
-              })) : null
-          ] : h('strong', { style: { display: 'block', fontSize: '11px' } }, TT('studio.object_a11y_ok', 'No object-level accessibility items.'))),
-        h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } }, frameInput('x', 'X'), frameInput('y', 'Y'), frameInput('w', TT('studio.width', 'Width')), frameInput('h', TT('studio.height', 'Height'))),
-        h('div', { style: S.label }, 'Layout'),
-        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
-          layoutButton('Left', 'Align selected object left', function () { alignSelected('left'); }, selectedLocked),
-          layoutButton('Center', 'Center selected object horizontally', function () { alignSelected('hcenter'); }, selectedLocked),
-          layoutButton('Right', 'Align selected object right', function () { alignSelected('right'); }, selectedLocked),
-          layoutButton('Top', 'Align selected object top', function () { alignSelected('top'); }, selectedLocked),
-          layoutButton('Middle', 'Center selected object vertically', function () { alignSelected('vcenter'); }, selectedLocked),
-          layoutButton('Bottom', 'Align selected object bottom', function () { alignSelected('bottom'); }, selectedLocked)),
-        h('div', { style: { display: 'flex', gap: '4px' } },
-          h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: duplicateSelected }, 'Duplicate'),
-          h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { alignSelected('page-width'); } }, 'Page width')),
-        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_role', 'Role (sets the exported tag)'),
-          h('select', { value: selected.role, style: S.input, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { role: e.target.value } }, 'user'); } },
-            h('option', { value: 'heading1' }, 'Heading 1'), h('option', { value: 'heading2' }, 'Heading 2'), h('option', { value: 'heading3' }, 'Heading 3'), h('option', { value: 'body' }, TT('studio.body_text', 'Body text')))) : null,
         selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_content', 'Text'),
           h('textarea', { key: 'text-' + selected.id + '-' + selectedTextValue, defaultValue: selectedTextValue, rows: selected.role === 'body' ? 4 : 2, style: Object.assign({}, S.input, { resize: 'vertical' }), 'aria-label': TT('studio.text_content', 'Text'),
             onKeyDown: function (e) { e.stopPropagation(); },
@@ -6682,14 +6706,14 @@
             ['left', 'center', 'right'].map(function (al) {
               var curAlign = selectedTextStyle.align || 'left';
               var active = curAlign === al;
-              return h('button', { key: al, style: Object.assign({}, S.tool, { textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null),
+              return h('button', { key: al, style: Object.assign({}, S.tool, { textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null),
                 'aria-pressed': active, 'aria-label': TT('studio.align_text', 'Align text') + ' ' + al, title: TT('studio.align_text', 'Align text') + ' ' + al,
                 onClick: function () { var runs = textRunsFor(selected); runs[0].style = Object.assign({}, runs[0].style, { align: al }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } },
                 al === 'left' ? 'L' : al === 'center' ? 'C' : 'R');
             }),
             (function () {
               var bold = !!selectedTextStyle.bold;
-              return h('button', { key: 'bold', style: Object.assign({}, S.tool, { textAlign: 'center', fontWeight: 900 }, bold ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null),
+              return h('button', { key: 'bold', style: Object.assign({}, S.tool, { textAlign: 'center', fontWeight: 900 }, bold ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null),
                 'aria-pressed': bold, 'aria-label': TT('studio.bold', 'Bold'), title: TT('studio.bold', 'Bold'),
                 onClick: function () { var runs = textRunsFor(selected); runs[0].style = Object.assign({}, runs[0].style, { bold: !bold }); dispatch({ type: 'object.update', target: selected.id, patch: { runs: runs } }, 'user'); } }, 'B');
             })())) : null,
@@ -6722,16 +6746,42 @@
           h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px', marginTop: '4px' } },
             h('button', { style: S.tool, onClick: function () { if (fileRef.current) { fileRef.current.setAttribute('data-st-replace', selected.id); fileRef.current.click(); } } }, '🔁 ' + TT('studio.replace_image', 'Replace…')),
             selected.src ? h('button', { style: S.tool, onClick: function () { setCropRect(null); setCropId(selected.id); }, title: TT('studio.crop_hint', 'Trim the image — removed pixels are permanently deleted, including from your saved file') }, '✂ ' + TT('studio.crop', 'Crop…')) : null),
-          (canEditImage && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }, imgEditOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), 'aria-expanded': imgEditOpen, onClick: function () { setImgEditOpen(!imgEditOpen); } }, '✨ ' + TT('studio.ai_edit_image', 'Edit image with AI…')) : null,
+          (canEditImage && selected.src) ? h('button', { style: Object.assign({}, S.tool, { marginTop: '4px' }, imgEditOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), 'aria-expanded': imgEditOpen, onClick: function () { setImgEditOpen(!imgEditOpen); } }, '✨ ' + TT('studio.ai_edit_image', 'Edit image with AI…')) : null,
           (canEditImage && selected.src && imgEditOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '4px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, marginTop: '4px' } },
             h('textarea', { value: imgEditPrompt, rows: 2, placeholder: TT('studio.ai_edit_placeholder', 'e.g. brighten the colors and simplify the background'), 'aria-label': TT('studio.ai_edit_label', 'Describe how the image should change'), style: Object.assign({}, S.input, { resize: 'vertical' }), disabled: aiBusy === 'img-edit',
               onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setImgEditPrompt(e.target.value); } }),
             h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', border: '1px solid #1e3a8a', opacity: (aiBusy === 'img-edit' || !String(imgEditPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'img-edit' || !String(imgEditPrompt).trim(), onClick: runEditImage }, aiBusy === 'img-edit' ? '… ' + TT('studio.ai_editing', 'Editing…') : '✨ ' + TT('studio.ai_edit_apply', 'Edit image')),
             h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_edit_note', 'Whole-image edit, logged as AI. The original stays in your process history — use Crop to permanently remove content.'))) : null) : null,
+        selected.type === 'text' ? h('label', { style: { fontSize: '10px', color: C.muted } }, TT('studio.text_role', 'Role (sets the exported tag)'),
+          h('select', { value: selected.role, style: S.input, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { role: e.target.value } }, 'user'); } },
+            h('option', { value: 'heading1' }, 'Heading 1'), h('option', { value: 'heading2' }, 'Heading 2'), h('option', { value: 'heading3' }, 'Heading 3'), h('option', { value: 'body' }, TT('studio.body_text', 'Body text')))) : null,
+        h('label', { style: { fontSize: '11px', color: C.text, display: 'flex', gap: '6px', alignItems: 'center' } },
+          h('input', { type: 'checkbox', checked: selectedLocked, onChange: function (e) { dispatch({ type: 'object.update', target: selected.id, patch: { locked: !!e.target.checked } }, 'user'); } }),
+          selectedLocked ? TT('studio.locked', 'Locked') : TT('studio.unlocked', 'Unlocked')),
+        selectedLocked ? h('div', { style: { padding: '7px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt, color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, TT('studio.locked_hint', 'Unlock this object before moving, resizing, duplicating, or deleting it.')) : null,
+        h('div', { style: { padding: '7px', border: '1px solid ' + selectedIssueTone.border, background: selectedIssueTone.bg, color: selectedIssueTone.fg, borderRadius: '8px', fontSize: '10.5px', lineHeight: 1.35 } },
+          selectedIssueSummary ? [
+            h('strong', { key: 'title', style: { display: 'block', fontSize: '11px' } }, selectedIssueSummary.label + ': ' + selectedIssueSummary.title),
+            h('span', { key: 'message' }, selectedIssueSummary.message),
+            selectedIssueSummary.count > 1 ? h('div', { key: 'count', style: { marginTop: '4px', fontWeight: 800 } }, selectedIssueSummary.count + ' items on this object') : null,
+            selectedA11yActions.length ? h('div', { key: 'actions', style: { display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '6px' } },
+              selectedA11yActions.slice(0, 3).map(function (action, idx) {
+                return h('button', { key: idx, type: 'button', onClick: function () { applyReadyAction(action); }, title: action.message, style: { border: '1px solid ' + selectedIssueTone.border, background: C.panel, color: C.text, borderRadius: '6px', cursor: 'pointer', fontSize: '10px', fontWeight: 800, padding: '3px 6px', lineHeight: 1.2 } }, readyActionLabel(action));
+              })) : null
+          ] : h('strong', { style: { display: 'block', fontSize: '11px' } }, TT('studio.object_a11y_ok', 'No object-level accessibility items.'))),
         h('div', { style: { display: 'flex', gap: '4px', marginTop: '4px' } },
           h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: (selected.z || 1) + 1 }, 'user'); }, title: TT('studio.bring_forward', 'Bring forward (visual stacking only - reading order is the list)') }, TT('studio.forward', 'Forward')),
           h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { dispatch({ type: 'object.z', target: selected.id, z: Math.max(0, (selected.z || 1) - 1) }, 'user'); }, title: TT('studio.send_back', 'Send backward') }, TT('studio.backward', 'Back')),
-          h('button', { style: Object.assign({}, S.tool, { color: '#b91c1c', border: '1px solid #fca5a5' }, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: selectedLocked ? undefined : function () { dispatch({ type: 'object.remove', target: selected.id }, 'user'); clearSelection(); } }, TT('studio.delete', 'Delete'))));
+          h('button', { style: Object.assign({}, S.tool, { color: '#b91c1c', border: '1px solid #fca5a5' }, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: selectedLocked ? undefined : function () { dispatch({ type: 'object.remove', target: selected.id }, 'user'); clearSelection(); } }, TT('studio.delete', 'Delete'))),
+        h('details', { style: { borderTop: '1px solid ' + C.border, paddingTop: '8px' } }, h('summary', { style: { cursor: 'pointer', fontWeight: 800, padding: '6px 0' } }, TT('studio.layout_more', 'Layout and position')), h('div', { style: { display: 'grid', gap: '6px', paddingTop: '8px' } }, h('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } }, frameInput('x', 'X'), frameInput('y', 'Y'), frameInput('w', TT('studio.width', 'Width')), frameInput('h', TT('studio.height', 'Height'))), h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' } },
+          layoutButton('Left', 'Align selected object left', function () { alignSelected('left'); }, selectedLocked),
+          layoutButton('Center', 'Center selected object horizontally', function () { alignSelected('hcenter'); }, selectedLocked),
+          layoutButton('Right', 'Align selected object right', function () { alignSelected('right'); }, selectedLocked),
+          layoutButton('Top', 'Align selected object top', function () { alignSelected('top'); }, selectedLocked),
+          layoutButton('Middle', 'Center selected object vertically', function () { alignSelected('vcenter'); }, selectedLocked),
+          layoutButton('Bottom', 'Align selected object bottom', function () { alignSelected('bottom'); }, selectedLocked)), h('div', { style: { display: 'flex', gap: '4px' } },
+          h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: duplicateSelected }, 'Duplicate'),
+          h('button', { style: Object.assign({}, S.tool, selectedLocked ? { opacity: 0.45, cursor: 'default' } : null), disabled: selectedLocked, onClick: function () { alignSelected('page-width'); } }, 'Page width')))));
     }
 
     // Ctrl+Z / Ctrl+Y (and Ctrl+Shift+Z) — skipped while typing in a field so
@@ -6749,8 +6799,11 @@
         if (inField) return;
         if (shortcutsOpen) { ev.preventDefault(); setShortcutsOpen(false); return; }
         ev.preventDefault();
+        if (exportOpen) { setExportOpen(false); return; }
+        if (preflightOpen) { setPreflightOpen(false); return; }
+        if (layout.stacked && mobilePanel !== 'canvas') { setMobilePanel('canvas'); return; }
         if (selectedId || selectionIds.length) { clearSelection(); return; }
-        if (typeof props.onClose === 'function') props.onClose();
+        requestClose();
         return;
       }
       // '?' (Shift+/) toggles the shortcut reference — no modifier, so handle it
@@ -6899,28 +6952,19 @@
       shortcutsOverlay,
       h('div', { ref: _shellRef, style: S.shell },
         // header
-        h('div', { style: S.header },
-          h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
-          // Uncontrolled + commit-on-blur: one clean doc.retitle op instead of
-          // an op per keystroke polluting the process timeline.
+        h('div', { style: S.header }, h('span', { style: { fontSize: '18px' }, 'aria-hidden': true }, '🎨'),
           h('input', { key: 'title-' + ((doc && doc.createdAt) || 0) + '-' + doc.title, defaultValue: doc.title, 'aria-label': TT('studio.doc_title', 'Document title'), style: S.titleInput,
             onBlur: function (e) { if (e.target.value !== doc.title) dispatch({ type: 'doc.retitle', title: e.target.value }, 'user'); },
             onKeyDown: function (e) { if (e.key === 'Enter') e.target.blur(); } }),
           h('button', { style: Object.assign({}, S.hBtn, ops.length ? null : { opacity: 0.45, cursor: 'default' }), disabled: !ops.length, onClick: function () { if (stUndo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.undo', 'Undo') }, '↩ ' + TT('studio.undo', 'Undo')),
-          h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')),
-          h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))),
-          h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')),
-          h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal),
-          h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'),
-          h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'),
-          h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'),
+          h('details', { ref: headerMoreRef, style: { position: 'relative' }, onKeyDown: function (e) { if (e.key === 'Escape' && e.currentTarget.open) { e.preventDefault(); e.stopPropagation(); e.currentTarget.open = false; e.currentTarget.querySelector('summary').focus(); } } }, h('summary', { style: Object.assign({}, S.hBtn, { display: 'flex', alignItems: 'center', listStyle: 'none' }) }, TT('studio.more_actions', 'More')), h('div', { style: { position: layout.stacked ? 'fixed' : 'absolute', top: layout.stacked ? '110px' : '100%', left: layout.stacked ? '16px' : 0, right: layout.stacked ? '16px' : 'auto', width: layout.stacked ? 'auto' : '240px', maxHeight: '60dvh', overflowY: 'auto', padding: '10px', zIndex: 100, display: 'grid', gap: '6px', background: C.headerBg, border: '1px solid ' + C.hBtnBorder, borderRadius: '10px', boxShadow: '0 8px 24px rgba(0,0,0,.3)' }, onClick: function (e) { if (e.target.closest('button')) { headerMoreRef.current.open = false; } } }, h('button', { style: Object.assign({}, S.hBtn, (doc._redo && doc._redo.length) ? null : { opacity: 0.45, cursor: 'default' }), disabled: !(doc._redo && doc._redo.length), onClick: function () { if (stRedo(_docRef.current)) { bump(); } }, 'aria-label': TT('studio.redo', 'Redo') }, '↪ ' + TT('studio.redo', 'Redo')), h('button', { style: S.hBtn, onClick: function () { setView('process'); } }, '🎞️ ' + (student ? TT('studio.process_title_student', 'My process') : TT('studio.process_title_teacher', 'Process timeline'))), h('button', { style: Object.assign({}, S.hBtn, { background: student ? '#7c3aed' : '#1e293b' }), 'aria-pressed': student, title: TT('studio.role_toggle_hint', 'Student mode uses portfolio framing for the process view'), onClick: function () { var next = student ? 'teacher' : 'student'; if (next === 'student') { setAgentOpen(false); setAgentPlan(null); setAgentSelectedOps([]); setAgentFollowUp(''); setDesignFeedback(null); setImgEditOpen(false); } setRole(next); } }, student ? '🎓 ' + TT('studio.role_student', 'Student mode') : '🧑‍🏫 ' + TT('studio.role_teacher', 'Teacher mode')), h('button', { style: Object.assign({}, S.hBtn, preflight.counts.error ? { border: '1px solid #fca5a5' } : null), onClick: function () { setPreflightOpen(!preflightOpen); }, 'aria-expanded': preflightOpen }, 'A11y ' + preflightTotal), h('button', { style: Object.assign({}, S.hBtn, shortcutsOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setShortcutsOpen(!shortcutsOpen); }, 'aria-expanded': shortcutsOpen, 'aria-label': TT('studio.shortcuts', 'Keyboard shortcuts'), title: TT('studio.shortcuts_hint', 'Keyboard shortcuts (press ?)') }, '⌨'), h('button', { style: Object.assign({}, S.hBtn, commandOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setCommandOpen(true); setCommandQuery(''); setCommandIndex(0); setShortcutsOpen(false); }, 'aria-expanded': commandOpen, 'aria-label': TT('studio.quick_actions', 'Quick actions'), title: TT('studio.quick_actions_hint', 'Quick actions (' + modLabel + '+K)') }, modLabel + '+K'), h('button', { style: Object.assign({}, S.hBtn, fullscreen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setFullscreen(!fullscreen); }, 'aria-pressed': fullscreen, 'aria-label': fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen'), title: fullscreen ? TT('studio.fullscreen_exit', 'Exit fullscreen') : TT('studio.fullscreen_enter', 'Fullscreen') }, '⛶'), h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')), layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null)),
           h('span', { style: S.headerSpacer }),
           hasLinkedActivityWorksheet ? h('span', { role: 'status', style: { fontSize: '10px', color: linkedSaveState === 'conflict' ? '#b91c1c' : C.muted, whiteSpace: 'nowrap' }, title: 'This document is linked to an Activity worksheet.' }, linkedStatusLabel) : null,
-          hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
-          h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.save', 'Save')),
-          h('button', { style: S.hBtn, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.portfolio', 'Portfolio')),
+          hasLinkedActivityWorksheet ? h('button', { style: Object.assign({}, S.hBtn, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text, opacity: linkedSaveState === 'saving' || linkedSaveState === 'conflict' ? 0.55 : 1 }), disabled: linkedSaveState === 'saving' || linkedSaveState === 'conflict', onClick: saveLinkedArtifact, title: linkedSaveState === 'conflict' ? 'Reopen the worksheet to refresh its source revision' : 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity') : null,
+          h('span', { role: 'status', 'aria-live': 'polite', style: { color: saveState === 'error' ? '#fca5a5' : C.headerText, fontSize: '11px', flex: layout.stacked ? '1 1 100px' : '0 1 150px' } }, saveState === 'error' ? TT('studio.recovery_failed', 'Could not save on this device') : saveState === 'saved' ? TT('studio.recovery_saved', 'Saved on this device') : saveState === 'saving' ? TT('studio.recovery_saving', 'Saving changes...') : TT('studio.recovery_ready', 'Ready')),
+          !layout.stacked ? h('button', { style: S.hBtn, onClick: saveDoc }, '💾 ' + TT('studio.download_project', 'Download project')) : null,
           h('button', { style: Object.assign({}, S.hBtn, { background: '#2563eb', border: '1px solid #1e3a8a' }), onClick: function () { setExportOpen(!exportOpen); }, 'aria-expanded': exportOpen }, '📤 ' + TT('studio.export', 'Export')),
-          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: props.onClose }, '✕')),
+          h('button', { style: S.hBtn, 'aria-label': TT('studio.close', 'Close AlloStudio'), onClick: requestClose }, '✕')),
         preflightOpen ? h('div', { style: { padding: '10px 14px', background: C.panelAlt, color: C.text, borderBottom: '1px solid ' + C.border, display: 'flex', gap: '10px', alignItems: 'flex-start', flexWrap: 'wrap' } },
           h('div', { style: { fontSize: '12px', fontWeight: 800, color: C.text, minWidth: '170px' } }, ready ? ready.title : TT('studio.ready_to_share', 'Ready to share'),
             h('div', { style: { fontSize: '11px', fontWeight: 600, color: C.muted, marginTop: '2px' } }, preflight.counts.error + ' errors - ' + preflight.counts.warning + ' warnings - ' + preflight.counts.review + ' review'),
@@ -6976,7 +7020,7 @@
               ['review', TT('studio.a11y_review', 'Review'), preflight.counts.review]
             ].map(function (item) {
               var active = preflightIssueFilter === item[0];
-              return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 8px', minHeight: '24px', fontSize: '10px' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setPreflightIssueFilter(item[0]); setPreflightGuideIndex(0); } }, item[1] + ' ' + item[2]);
+              return h('button', { key: item[0], type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 8px', minHeight: '24px', fontSize: '10px' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setPreflightIssueFilter(item[0]); setPreflightGuideIndex(0); } }, item[1] + ' ' + item[2]);
             })) : null,
           preflight.issues.length ? h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(auto-fit, minmax(210px, 1fr))', gap: '6px', flex: '1 1 100%' } },
             visiblePreflightIssues.length ? visiblePreflightIssues.slice(0, 10).map(function (issue, idx) {
@@ -6995,8 +7039,19 @@
               h('span', null, TT('studio.issue_filter_empty', 'No issues in this filter.')),
               preflightIssueFilter !== 'all' ? h('button', { type: 'button', style: Object.assign({}, S.tool, { padding: '3px 7px', minHeight: '22px', fontSize: '10px' }), onClick: resetPreflightIssueFilter }, TT('studio.show_all_issues', 'Show all issues')) : null)) : null) : null,
         // export panel
-        exportOpen ? h('div', { style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
-          (function () {
+        exportOpen ? h('section', { 'aria-label': TT('studio.export_choices', 'Export choices'), style: { padding: '10px 14px', background: C.exportBg, color: C.text, borderBottom: '1px solid ' + C.exportBorder, display: 'flex', flexWrap: 'wrap', gap: '8px', maxHeight: '38dvh', overflowY: 'auto', flexShrink: 0 } }, h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_share_group', 'Share an accessible document')), h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')), h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML'))),
+          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_print_group', 'Print or share an image')), h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')), h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG')),
+          h('fieldset', { style: { border: '1px solid ' + C.exportBorder, borderRadius: '8px', margin: 0, padding: '8px', display: 'flex', flexWrap: 'wrap', gap: '6px', flex: '1 1 220px' } }, h('legend', { style: { fontSize: '12px', fontWeight: 800 } }, TT('studio.export_edit_group', 'Edit elsewhere')), h('button', { style: S.tool, onClick: exportPptx, title: TT('studio.pptx_hint', 'One slide per page at this document’s size. Alt text, reading order, and speaker-note headings ride along.') }, '📽️ ' + TT('studio.export_pptx', 'PowerPoint (.pptx)')), h('button', { style: S.tool, onClick: saveDoc }, TT('studio.download_project', 'Download project'))),
+          h('details', { style: { flex: '1 1 100%' } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700, padding: '6px 0' } }, TT('studio.export_advanced', 'Worksheet and teacher files')), h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px', paddingTop: '6px' } }, h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')), h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')), h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')), hasLinkedActivityWorksheet
+            ? h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity')
+            : null, h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'), h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.add_portfolio', 'Add to portfolio')))),
+          altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
+            '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
+            altFailures.map(function (m) {
+              return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid ' + errorTone.border, background: errorTone.bg, color: errorTone.fg, borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
+                onClick: function () { openIssueForObject(m.id, TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'), 'error'); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
+            })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.')),
+          h('details', { style: { flex: '1 1 100%' } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700, padding: '6px 0' } }, TT('studio.export_review_details', 'Format guidance and review details')), (function () {
             var rec = recommendedExport || stRecommendedExportAction(doc);
             var tone = exportToneFor(rec.status);
             return h('div', { style: { flex: '1 1 100%', border: '1px solid ' + tone.border, background: tone.bg, color: tone.fg, borderRadius: '8px', padding: '8px', display: 'flex', gap: '8px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' } },
@@ -7004,8 +7059,7 @@
                 h('strong', { style: { display: 'block', fontSize: '12px' } }, TT('studio.recommended_export', 'Recommended export') + ': ' + rec.label),
                 h('span', { style: { display: 'block', fontSize: '10.5px', lineHeight: 1.3, marginTop: '2px' } }, rec.message)),
               h('button', { type: 'button', style: Object.assign({}, S.tool, { flex: '0 0 auto', border: '1px solid ' + tone.border, background: C.panel, color: C.text, fontWeight: 900 }), onClick: runRecommendedExport }, rec.issueFilter ? TT('studio.open_recommended_step', 'Open recommended step') : TT('studio.export_recommended', 'Export recommended')));
-          })(),
-          h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(4, minmax(150px, 1fr))', gap: '6px', flex: '1 1 100%' } },
+          })(), h('div', { style: { display: 'grid', gridTemplateColumns: layout.compact ? '1fr' : 'repeat(4, minmax(150px, 1fr))', gap: '6px', flex: '1 1 100%' } },
             exportConfidence.cards.map(function (card) {
               var tone = exportToneFor(card.status);
               var label = card.status === 'blocked' ? TT('studio.export_blocked', 'Blocked') : card.status === 'review' ? TT('studio.export_review', 'Review') : TT('studio.export_ready', 'Ready');
@@ -7019,30 +7073,20 @@
                   h('span', { style: { fontSize: '9px', fontWeight: 900, textTransform: 'uppercase' } }, label)),
                 h('div', { style: { fontSize: '10px', lineHeight: 1.25, marginTop: '5px' } }, card.message),
                 issueFilter ? h('div', { style: { fontSize: '9.5px', fontWeight: 900, marginTop: '7px', textTransform: 'uppercase' } }, actionLabel) : null);
-            })),
-          h('button', { style: S.tool, onClick: exportTagged }, '📄 ' + TT('studio.export_tagged', 'Tagged PDF (accessible)')),
-          h('button', { style: S.tool, onClick: exportHtml }, '🌐 ' + TT('studio.export_html', 'Accessible HTML')),
-          h('button', { style: S.tool, onClick: exportPptx, title: TT('studio.pptx_hint', 'One slide per page at this document’s size. Alt text, reading order, and speaker-note headings ride along.') }, '📽️ ' + TT('studio.export_pptx', 'PowerPoint (.pptx)')),
-          h('button', { style: S.tool, onClick: exportPng }, '🖼️ PNG'),
-          h('button', { style: S.tool, onClick: exportPrint, title: TT('studio.print_hint', 'Pixel-faithful print or save-as-PDF of the page as it looks. The Tagged PDF stays the accessible version.') }, '🖨️ ' + TT('studio.export_print', 'Print / PDF (visual)')),
-          h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent }), onClick: exportWorksheetPdf, title: TT('studio.ws_pdf_hint', 'Rebuild as a linear worksheet — real questions + answer spaces — and export a tagged PDF') }, '📝 ' + TT('studio.export_worksheet_pdf', 'Worksheet → Tagged PDF')),
-          h('button', { style: S.tool, onClick: exportWorksheetHtml }, '📝 ' + TT('studio.export_worksheet_html', 'Worksheet → HTML')),
-          h('button', { style: S.tool, onClick: exportWorksheet }, TT('studio.export_worksheet_json', 'Worksheet JSON')),
-          hasLinkedActivityWorksheet
-            ? h('button', { style: Object.assign({}, S.tool, { border: '1px solid ' + C.accent, background: C.selectedBg }), onClick: saveLinkedArtifact, title: 'Save edits back to the originating Activity worksheet' }, '↩ Save to Activity')
-            : null,
-          h('button', { style: S.tool, onClick: exportProcess }, 'Process notes'),
-          h('button', { style: S.tool, onClick: saveToPortfolio, title: TT('studio.portfolio_hint', 'Save a compact, read-only product card to AlloHaven Portfolio') }, TT('studio.save_portfolio', 'Save to Portfolio')),
-          altFailures.length ? h('span', { style: { fontSize: '11px', color: errorTone.fg, background: errorTone.bg, border: '1px solid ' + errorTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } },
-            '♿ ' + altFailures.length + ' ' + TT('studio.alt_gate_msg', 'image(s) need alt text or a decorative mark:'),
-            altFailures.map(function (m) {
-              return h('button', { key: m.id, style: { marginLeft: '6px', border: '1px solid ' + errorTone.border, background: errorTone.bg, color: errorTone.fg, borderRadius: '6px', fontSize: '10px', cursor: 'pointer', padding: '2px 6px' },
-                onClick: function () { openIssueForObject(m.id, TT('studio.a11y_alt_jump', 'Selected image missing alt text — the alt text field is in the right panel.'), 'error'); } }, TT('studio.fix', 'Fix') + ' #' + (m.index + 1));
-            })) : h('span', { style: { fontSize: '11px', color: successTone.fg, background: successTone.bg, border: '1px solid ' + successTone.border, borderRadius: '8px', padding: '4px 6px', fontWeight: 700 } }, '♿ ' + TT('studio.alt_gate_ok', 'All images have alt text or are marked decorative — exports are unblocked.'))) : null,
+            })))) : null,
+        saveState === 'error' ? h('div', { role: 'alert', style: { padding: '10px', color: errorTone.fg, background: errorTone.bg, flexShrink: 0, display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
+          h('span', null, TT('studio.recovery_help', 'Device recovery is unavailable. Download a project copy before leaving.')),
+          h('button', { style: S.tool, onClick: function () { commitFocusedField(); flushRecovery(); } }, TT('studio.retry_save', 'Retry save')),
+          h('button', { style: S.tool, onClick: saveDoc }, TT('studio.download_project', 'Download project')),
+          h('button', { style: S.tool, onClick: function () { if (typeof props.onClose === 'function') props.onClose(); } }, TT('studio.close_without_copy', 'Close without a device copy'))) : null,
+        layout.stacked ? h('div', { role: 'group', 'aria-label': TT('studio.workspace_panels', 'Workspace panels'), style: { display: 'flex', gap: '6px', padding: '6px 10px', flexShrink: 0, background: C.panel, borderBottom: '1px solid ' + C.border } },
+          [['canvas', TT('studio.canvas', 'Canvas')], ['insert', TT('studio.insert', 'Insert')], ['properties', TT('studio.properties', 'Properties')], ['objects', TT('studio.objects', 'Objects')]].map(function (item) {
+            return h('button', { key: item[0], style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center', padding: '6px 4px' }, mobilePanel === item[0] ? { background: C.selectedBg, color: C.text, borderColor: C.accent } : null), 'aria-pressed': mobilePanel === item[0], onClick: function () { setMobilePanel(item[0]); if (item[0] === 'properties' || item[0] === 'objects') setInspectorTab(item[0]); } }, item[1]);
+          })) : null,
         // body
         h('div', { style: S.body },
           // left: insert tools
-          h('div', { style: S.panel },
+          h('div', { 'data-st-panel': 'insert', style: S.panel },
             h('div', { style: S.label }, TT('studio.insert', 'Insert')),
             h('button', { style: S.tool, onClick: function () { insertText('heading1'); } }, 'H1 ' + TT('studio.insert_heading', 'Heading')),
             h('button', { style: S.tool, onClick: function () { insertText('heading2'); } }, 'H2 ' + TT('studio.insert_subheading', 'Subheading')),
@@ -7056,7 +7100,7 @@
                 onKeyDown: function (e) { e.stopPropagation(); }, onChange: function (e) { setAiGenPrompt(e.target.value); } }),
               h('button', { style: Object.assign({}, S.tool, { background: '#2563eb', color: '#fff', border: '1px solid #1e3a8a', opacity: (aiBusy === 'generate' || !String(aiGenPrompt).trim()) ? 0.6 : 1 }), disabled: aiBusy === 'generate' || !String(aiGenPrompt).trim(), onClick: runGenerateImage }, aiBusy === 'generate' ? '… ' + TT('studio.ai_generating', 'Generating…') : '✨ ' + TT('studio.ai_generate', 'Generate')),
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.ai_gen_note', 'Logged as AI in your process. You still add alt text.'))) : null,
-            canAgentEdit ? h('button', { style: Object.assign({}, S.tool, agentOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), 'aria-expanded': agentOpen, onClick: function () { setAgentOpen(!agentOpen); } }, TT('studio.agent_edit', 'Ask AI to edit')) : null,
+            canAgentEdit ? h('button', { style: Object.assign({}, S.tool, agentOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), 'aria-expanded': agentOpen, onClick: function () { setAgentOpen(!agentOpen); } }, TT('studio.agent_edit', 'Ask AI to edit')) : null,
             (canAgentEdit && agentOpen) ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
               h('label', { style: { fontSize: '10px', color: C.muted, display: 'flex', flexDirection: 'column', gap: '2px' } }, TT('studio.agent_scope', 'Scope'),
                 h('select', { value: agentEffectiveScope, style: S.input, 'aria-label': TT('studio.agent_scope', 'Scope'),
@@ -7127,7 +7171,7 @@
                   h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', opacity: (aiBusy || !String(agentFollowUp).trim()) ? 0.6 : 1 }), disabled: !!aiBusy || !String(agentFollowUp).trim(), onClick: runAgentRefine, title: TT('studio.agent_refine_hint', 'Asks the AI again with your adjustment and the current proposal as context') }, aiBusy === 'agent' ? TT('studio.agent_thinking', 'Preparing…') : '↻ ' + TT('studio.agent_refine', 'Refine proposal')))) : null,
               lastAgentBatch ? h('button', { style: Object.assign({}, S.tool, { width: '100%' }), onClick: undoAgentBatch, title: TT('studio.agent_undo_batch_hint', 'Reverts every change from the last applied AI batch in one step') }, '↩ ' + TT('studio.agent_undo_batch', 'Undo AI changes') + ' (' + lastAgentBatch.count + ')') : null,
               h('p', { style: { fontSize: '9px', color: C.soft, margin: 0 } }, TT('studio.agent_note', 'Preview first. Applied changes are logged as AI.'))) : null,
-            h('button', { style: Object.assign({}, S.tool, resourceOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
+            h('button', { style: Object.assign({}, S.tool, resourceOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), 'aria-expanded': resourceOpen, onClick: function () { setResourceOpen(!resourceOpen); } },
               TT('studio.resource_shelf', 'Source shelf') + ' ' + resourceCues.length),
             resourceOpen ? h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px', padding: '6px', border: '1px solid ' + C.border, borderRadius: '8px', background: C.panelAlt } },
               h('input', { type: 'search', value: resourceSearch, placeholder: TT('studio.resource_search', 'Search source history'), 'aria-label': TT('studio.resource_search', 'Search source history'), style: S.input,
@@ -7136,7 +7180,7 @@
               resourceKindOptions.length > 1 ? h('div', { role: 'group', 'aria-label': TT('studio.resource_type_filter', 'Source type filter'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
                 resourceKindOptions.map(function (opt) {
                   var active = resourceKindFilter === opt.kind;
-                  return h('button', { key: opt.kind, type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 7px', minHeight: '26px', fontSize: '9.5px', textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setResourceKindFilter(opt.kind); }, title: TT('studio.resource_filter_to', 'Filter source shelf to') + ' ' + opt.label }, opt.label + ' ' + opt.count);
+                  return h('button', { key: opt.kind, type: 'button', 'aria-pressed': active, style: Object.assign({}, S.tool, { padding: '4px 7px', minHeight: '26px', fontSize: '9.5px', textAlign: 'center' }, active ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setResourceKindFilter(opt.kind); }, title: TT('studio.resource_filter_to', 'Filter source shelf to') + ' ' + opt.label }, opt.label + ' ' + opt.count);
                 })) : null,
               h('div', { role: 'status', 'aria-live': 'polite', style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '6px', color: C.soft, fontSize: '9.5px' } },
                 h('span', null, visibleResourceCues.length + ' ' + TT('studio.resource_matches', 'matching sources')),
@@ -7151,7 +7195,7 @@
                       h('span', { style: { flexShrink: 0, color: C.muted, fontSize: '9px', fontWeight: 800, textTransform: 'uppercase' } }, cue.kind || 'resource')),
                     cue.sourceTitle ? h('div', { style: { color: C.soft, fontSize: '9.5px', marginTop: '2px' } }, cue.sourceTitle) : null,
                     cue.text ? h('p', { style: { margin: '4px 0 6px', color: C.muted, fontSize: '10.5px', lineHeight: 1.35 } }, cue.text.slice(0, 150) + (cue.text.length > 150 ? '...' : '')) : null,
-                    recommended ? h('button', { type: 'button', style: Object.assign({}, S.tool, { width: '100%', margin: '2px 0 6px', border: '1px solid ' + C.accent, background: C.selectedBg, textAlign: 'left', padding: '6px 8px', minHeight: '44px' }), onClick: function () { insertResourceCue(cue, recommended.id); }, title: TT('studio.resource_recommended_hint', 'Add the best-fit editable layout for this source'), 'aria-label': TT('studio.resource_add_recommended', 'Add recommended') + ': ' + recommended.label + ' - ' + cue.label },
+                    recommended ? h('button', { type: 'button', style: Object.assign({}, S.tool, { width: '100%', margin: '2px 0 6px', border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text, textAlign: 'left', padding: '6px 8px', minHeight: '44px' }), onClick: function () { insertResourceCue(cue, recommended.id); }, title: TT('studio.resource_recommended_hint', 'Add the best-fit editable layout for this source'), 'aria-label': TT('studio.resource_add_recommended', 'Add recommended') + ': ' + recommended.label + ' - ' + cue.label },
                       h('span', { style: { display: 'block', fontSize: '10.5px', fontWeight: 900, color: C.text } }, TT('studio.resource_add_recommended', 'Add recommended') + ': ' + recommended.label),
                       h('span', { style: { display: 'block', marginTop: '2px', fontSize: '9px', color: C.muted, lineHeight: 1.25 } }, recommended.rationale + (recommended.preview ? ' - ' + recommended.preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items') : ''))) : null,
                     h('details', { style: { margin: '2px 0 6px', borderTop: '1px solid ' + C.border, paddingTop: '5px' } },
@@ -7166,7 +7210,7 @@
                       actionModel.modes.map(function (action) {
                         var preview = action.preview;
                         var modeRecommended = !!action.recommended;
-                        return h('button', { key: action.id, 'aria-label': TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ': ' + cue.label + (modeRecommended ? ' - ' + TT('studio.resource_recommended', 'Recommended') : ''), style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '40px', lineHeight: 1.15 }, modeRecommended ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { insertResourceCue(cue, action.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ' - ' + preview.summary },
+                        return h('button', { key: action.id, 'aria-label': TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ': ' + cue.label + (modeRecommended ? ' - ' + TT('studio.resource_recommended', 'Recommended') : ''), style: Object.assign({}, S.tool, { textAlign: 'center', padding: '5px 6px', fontSize: '10px', minHeight: '40px', lineHeight: 1.15 }, modeRecommended ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { insertResourceCue(cue, action.id); }, title: TT('studio.insert_resource_as', 'Insert resource as') + ' ' + action.label + ' - ' + preview.summary },
                           h('span', { style: { display: 'block' } }, action.label),
                           h('span', { style: { display: 'block', marginTop: '2px', color: C.muted, fontSize: '8.5px', fontWeight: 700 } }, modeRecommended ? TT('studio.resource_recommended', 'Recommended') : (preview.objectCount + ' ' + TT('studio.resource_preview_items', 'items'))));
                       })));
@@ -7209,14 +7253,16 @@
               h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('out'); }, 'aria-label': TT('studio.zoom_out', 'Zoom out') }, '-'),
               h('span', { role: 'status', 'aria-live': 'polite', style: { minWidth: '48px', textAlign: 'center', fontSize: '12px', fontWeight: 800, color: C.text } }, zoomLabel),
               h('button', { style: S.hBtn, onClick: function () { changeCanvasZoom('in'); }, 'aria-label': TT('studio.zoom_in', 'Zoom in') }, '+'),
-              h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit'); }, 'aria-pressed': canvasZoom === null }, TT('studio.zoom_fit', 'Fit')),
+              h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null && fitMode === 'page' ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit'); }, 'aria-pressed': canvasZoom === null && fitMode === 'page' }, TT('studio.zoom_fit_page', 'Fit page')),
+              h('button', { style: Object.assign({}, S.hBtn, canvasZoom === null && fitMode === 'width' ? { background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('fit-width'); }, 'aria-pressed': canvasZoom === null && fitMode === 'width' }, TT('studio.zoom_fit_width', 'Fit width')),
               h('button', { style: Object.assign({}, S.hBtn, canvasZoom === 1 ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { changeCanvasZoom('actual'); }, 'aria-pressed': canvasZoom === 1 }, '100%'),
               h('button', { style: Object.assign({}, S.hBtn, !selectionIds.length ? { opacity: 0.45, cursor: 'default' } : null), disabled: !selectionIds.length, onClick: zoomToSelection, title: TT('studio.zoom_selection', 'Zoom to selection'), 'aria-label': TT('studio.zoom_selection', 'Zoom to selection') }, TT('studio.zoom_selection_short', 'Selection')),
-              h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap'))),
-            h('div', { ref: canvasViewportRef, style: S.canvasViewport, onPointerDown: clearSelection },
+              h('button', { style: Object.assign({}, S.hBtn, snapEnabled ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setSnapEnabled(!snapEnabled); setSnapGuides([]); }, 'aria-pressed': snapEnabled, title: TT('studio.snap_guides_hint', 'Snap dragged objects to margins, centers, and nearby objects') }, TT('studio.snap_guides', 'Snap')),
+              h('button', { style: Object.assign({}, S.hBtn, reviewOverlays ? { background: C.selectedBg, color: C.text } : null), 'aria-pressed': reviewOverlays, onClick: function () { setReviewOverlays(!reviewOverlays); }, title: TT('studio.review_overlays_hint', 'Show or hide reading-order numbers without changing the document') }, TT('studio.review_overlays', 'Order numbers'))),
+            h('div', { 'data-st-canvas-viewport': true, ref: canvasViewportRef, style: S.canvasViewport, onPointerDown: clearSelection },
               h('div', { style: Object.assign({}, S.canvasPage, { width: doc.canvas.w * SCALE + 'px', height: doc.canvas.h * SCALE + 'px', background: (doc.canvas.background && doc.canvas.background.fill) || '#fff' }),
                 onPointerDown: function (e) { e.stopPropagation(); clearSelection(); },
-                onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp },
+                onPointerMove: onCanvasPointerMove, onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel },
                 liveSelectionBounds ? h('div', {
                   key: 'selection-bounds',
                   role: 'group',
@@ -7241,7 +7287,7 @@
                   title: TT('studio.resize_selection_hint', 'Resize selection; hold Shift to keep proportions'),
                   onPointerDown: onGroupResizePointerDown,
                   onPointerMove: onCanvasPointerMove,
-                  onPointerUp: onCanvasPointerUp,
+                  onPointerUp: onCanvasPointerUp, onPointerCancel: onCanvasPointerCancel,
                   onKeyDown: onGroupResizeKeyDown,
                   style: {
                     position: 'absolute',
@@ -7265,11 +7311,15 @@
                 }),
                 pageObjects.map(function (o) { return renderObject(o, SCALE, true, {}, h); })))),
           // right: reading order + properties
-          h('div', { style: S.rpanel },
+          h('div', { 'data-st-panel': 'inspector', ref: inspectorRef, style: S.rpanel },
+            h('div', { role: 'group', 'aria-label': TT('studio.inspector_tabs', 'Inspector view'), style: { display: 'flex', gap: '6px', flexShrink: 0 } },
+              [['properties', TT('studio.properties', 'Properties')], ['objects', TT('studio.objects', 'Objects')]].map(function (item) { return h('button', { key: item[0], style: Object.assign({}, S.tool, { flex: 1, textAlign: 'center' }, inspectorTab === item[0] ? { background: C.selectedBg, color: C.text, borderColor: C.accent } : null), 'aria-pressed': inspectorTab === item[0], onClick: function () { setInspectorTab(item[0]); if (layout.stacked) setMobilePanel(item[0]); } }, item[1]); })),
+            inspectorTab === 'properties' ? (propPanel || h('p', { style: { color: C.muted, fontSize: '12px' } }, TT('studio.select_for_properties', 'Select text, an image, or a shape on the page to edit it. Use Objects to find items in the design.'))) : null,
+            h('div', { 'data-st-object-browser': true, style: { display: inspectorTab === 'objects' ? 'flex' : 'none', flexDirection: 'column', gap: '8px', minHeight: 0 } },
             h('div', { style: S.label }, '🔊 ' + TT('studio.reading_order', 'Reading order (what screen readers follow)')),
             h('div', { role: 'group', 'aria-label': TT('studio.object_navigator', 'Object navigator'), style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4px' } },
-              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
-              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
+              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'reading' ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), 'aria-pressed': navigatorMode === 'reading', onClick: function () { setNavigatorMode('reading'); } }, TT('studio.reading_order_short', 'Reading order')),
+              h('button', { style: Object.assign({}, S.tool, { textAlign: 'center', padding: '6px 4px', fontSize: '10.5px' }, navigatorMode === 'layers' ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), 'aria-pressed': navigatorMode === 'layers', onClick: function () { setNavigatorMode('layers'); } }, TT('studio.layers', 'Layers'))),
             h('div', { style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorMode === 'layers' ? TT('studio.layers_hint', 'Visual stack only. Reading order stays in the other tab.') : TT('studio.reading_order_hint', 'This is what screen readers and tagged PDF follow.')),
             h('div', { role: 'group', 'aria-label': TT('studio.navigator_filter', 'Object filters'), style: { display: 'flex', gap: '4px', flexWrap: 'wrap' } },
               navigatorFilters.map(function (filter) {
@@ -7287,7 +7337,7 @@
                 onChange: function (e) { setFindQuery(e.target.value); setFindResultIndex(0); } }),
               h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px', minWidth: '28px' }), onClick: function () { stepFindResult(-1); }, title: TT('studio.find_previous', 'Previous text match'), 'aria-label': TT('studio.find_previous', 'Previous text match') }, '<'),
               h('button', { type: 'button', disabled: !findMatches.length, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px', minWidth: '28px' }), onClick: function () { stepFindResult(1); }, title: TT('studio.find_next', 'Next text match'), 'aria-label': TT('studio.find_next', 'Next text match') }, '>'),
-              h('button', { type: 'button', 'aria-expanded': replaceOpen, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }, replaceOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg } : null), onClick: function () { setReplaceOpen(!replaceOpen); }, title: TT('studio.replace_toggle', 'Show replace controls') }, TT('studio.replace', 'Replace'))),
+              h('button', { type: 'button', 'aria-expanded': replaceOpen, style: Object.assign({}, S.tool, { flex: '0 0 auto', padding: '5px 7px' }, replaceOpen ? { border: '1px solid ' + C.accent, background: C.selectedBg, color: C.text } : null), onClick: function () { setReplaceOpen(!replaceOpen); }, title: TT('studio.replace_toggle', 'Show replace controls') }, TT('studio.replace', 'Replace'))),
             findQuery ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } },
               findMatches.length ? findTotalMatches + ' ' + TT('studio.find_matches', findTotalMatches === 1 ? 'match' : 'matches') + ' in ' + findMatches.length + ' ' + TT('studio.find_text_blocks', findMatches.length === 1 ? 'text block' : 'text blocks') + ' - ' + (activeFindIndex + 1) + '/' + findMatches.length : TT('studio.find_no_matches', 'No text matches.')) : null,
             findMatches.length ? h('div', { role: 'listbox', 'aria-label': TT('studio.find_results', 'Text find results'), style: { display: 'grid', gap: '3px', maxHeight: '132px', overflow: 'auto', padding: '3px 0' } },
@@ -7310,7 +7360,7 @@
             (navigatorQuery || navigatorFilter !== 'all') ? h('div', { role: 'status', 'aria-live': 'polite', style: { fontSize: '10px', color: C.soft, lineHeight: 1.3 } }, navigatorObjects.length + ' / ' + pageObjects.length + ' ' + TT('studio.objects', 'Objects') + (navigatorFilter !== 'all' ? ' - ' + navigatorFilters.filter(function (f) { return f.key === navigatorFilter; }).map(function (f) { return f.label; })[0] : '')) : null,
             readingOrderAssistant,
             h('div', { style: S.readingList }, visibleNavigatorList.length ? visibleNavigatorList : h('p', { style: { margin: 0, padding: '4px', fontSize: '11px', color: C.soft } }, TT('studio.navigator_empty', 'No objects match this search.'))),
-            propPanel || h('p', { style: { fontSize: '11px', color: C.soft } }, TT('studio.no_selection', 'Select an object on the canvas (or in the list above) to edit its properties.')))),
+            h('p', { style: { fontSize: '11px', color: C.muted } }, TT('studio.object_properties_hint', 'Choose an object to open its properties.'))))),
         h('input', { ref: fileRef, type: 'file', accept: 'image/*', style: { display: 'none' },
           onChange: function (ev) {
             var replaceId = ev.target.getAttribute('data-st-replace');
@@ -7447,6 +7497,7 @@
   AlloStudio.stResizeFramesAsGroup = stResizeFramesAsGroup;
   AlloStudio.stStudioLayout = stStudioLayout;
   AlloStudio.stCanvasFitScale = stCanvasFitScale;
+  AlloStudio.stCanvasViewportFitScale = stCanvasViewportFitScale;
   AlloStudio.stSelectionZoomScale = stSelectionZoomScale;
   AlloStudio.stAdjustCanvasZoom = stAdjustCanvasZoom;
   AlloStudio.stShortcutList = stShortcutList;

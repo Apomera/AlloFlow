@@ -1529,6 +1529,313 @@ var TITRATION_REVIEWED_ENGLISH_KEYS = {
   'stem.titration.face_shields_provide_splash_protection': true
 };
 
+// Main experiment bench. The chemistry stays in the existing titration model;
+// this scene receives its readings and colors and never computes an endpoint.
+function titrationBenchLiquidProfile(fraction) {
+  var f = Math.max(0, Math.min(1, Number(fraction) || 0));
+  var base = 0.90, neck = 0.25, height = 1.65, slope = (neck - base) / height;
+  function volume(h) { return base * base * h + base * slope * h * h + slope * slope * h * h * h / 3; }
+  var lo = 0, hi = height, target = f * volume(height);
+  for (var i = 0; i < 40; i++) { var mid = (lo + hi) / 2; if (volume(mid) < target) lo = mid; else hi = mid; }
+  var fill = f === 0 ? 0 : f === 1 ? height : (lo + hi) / 2;
+  return { height: fill, radius: base + slope * fill, fraction: f };
+}
+
+function buildTitrationExperimentScene(THREE, S, m) {
+  function material(color, extra) { return new THREE.MeshPhongMaterial(Object.assign({ color: color, shininess: 65 }, extra || {})); }
+  var steel = material(0x71869b), dark = material(0x17293e), white = material(0xe5edf5);
+  var glass = material(0xa9dcf2, { transparent: true, opacity: m.contrast ? 0.30 : 0.17, side: THREE.DoubleSide, depthWrite: false });
+  function mesh(name, geometry, mat, x, y, z) {
+    var obj = new THREE.Mesh(geometry, mat); obj.name = name; obj.position.set(x || 0, y || 0, z || 0); S.model.add(obj); return obj;
+  }
+  function box(name, w, h, d, mat, x, y, z) { return mesh(name, new THREE.BoxGeometry(w,h,d),mat,x,y,z); }
+  function tube(name, rt, rb, h, mat, x, y, z, open) { return mesh(name,new THREE.CylinderGeometry(rt,rb,h,40,1,!!open),mat,x,y,z); }
+  function ring(name,r,mat,x,y,z) { var obj=mesh(name,new THREE.TorusGeometry(r,0.023,8,48),mat,x,y,z);obj.rotation.x=Math.PI/2;return obj; }
+  var fx = 0.42;
+  box('workbench',5.2,0.16,2.9,dark,0,-0.09,0);
+  box('bench-front-edge',5.2,0.035,0.035,steel,0,0,1.43);
+  box('stand-base',1.35,0.14,1.25,dark,-1.23,0.08,-0.18);
+  tube('support-rod',0.055,0.055,6.45,steel,-1.4,3.35,-0.3);
+  [4.3,5.8].forEach(function(y) {
+    box('burette-clamp',1.82,0.085,0.12,steel,-0.49,y,-0.12);
+    tube('clamp-collar',0.11,0.11,0.23,dark,-1.4,y,-0.3);
+    ring('burette-collar',0.20,steel,fx,y,0);
+  });
+  box('white-endpoint-tile',2.22,0.065,2.12,white,fx,0.07,0.08);
+  tube('flask-body',0.27,0.94,1.7,glass,fx,1.015,0,true);
+  tube('flask-neck',0.27,0.27,0.47,glass,fx,2.1,0,true);
+  ring('flask-rim',0.27,white,fx,2.335,0);
+  ring('flask-base',0.94,steel,fx,0.165,0);
+  var profile=titrationBenchLiquidProfile(m.fill);
+  // Match the source color, including its transparency. Three r128 setStyle ignores rgba alpha.
+  var rgba=/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/.exec(m.color || '');
+  var color=rgba ? 'rgb('+rgba[1]+','+rgba[2]+','+rgba[3]+')' : m.color || '#c8dcff';
+  var alpha=rgba && rgba[4] !== undefined ? Number(rgba[4]) : 0.80;
+  var solution=material(color,{transparent:true,opacity:Math.max(0.20,alpha),depthWrite:false,side:THREE.DoubleSide,shininess:100});
+  if(profile.height>0.0001) tube('flask-liquid',profile.radius,0.90,profile.height,solution,fx,0.18+profile.height/2,0);
+  var surface=tube('liquid-surface',profile.radius,profile.radius,0.014,material(color,{transparent:true,opacity:Math.max(0.35,alpha),depthWrite:false}),fx,0.18+profile.height,0);
+  surface.visible=profile.height>0.0001;
+  var surfaceRim=ring('liquid-surface-rim',profile.radius,material(0xd5f4ff,{transparent:true,opacity:0.45,depthWrite:false}),fx,0.18+profile.height,0);
+  surfaceRim.scale.set(1,1,0.42);surfaceRim.visible=profile.height>0.0001;
+  var stir=box('stir-bar',0.49,0.075,0.105,white,fx,0.23,0);
+  var bottom=3.12, length=3.12, top=bottom+length;
+  tube('burette-glass',0.155,0.155,length,glass,fx,bottom+length/2,0,true);
+  ring('burette-rim',0.155,white,fx,top,0);
+  var reading=Math.max(0,Math.min(50,Number(m.reading)||0));
+  var liquidHeight=length*(1-reading/50);
+  var titrant=material(m.redox ? 0x9333ea : 0x86d3ed,{transparent:true,opacity:m.redox?0.8:0.45,depthWrite:false});
+  var column=tube('burette-liquid',0.13,0.13,Math.max(0.001,liquidHeight),titrant,fx,bottom+liquidHeight/2,0);column.visible=liquidHeight>0;
+  var meniscus=ring('burette-meniscus',0.13,white,fx,bottom+liquidHeight,0);meniscus.visible=liquidHeight>0;
+  for(var mark=0;mark<=50;mark++) box('graduation-'+mark,mark%10===0?0.20:0.10,0.012,0.014,white,fx-0.04,top-mark/50*length,0.158);
+  tube('stopcock-body',0.16,0.16,0.16,white,fx,3.00,0);
+  var handle=box('stopcock-handle',0.62,0.075,0.09,material(0x22c8dc),fx,3.00,0.14);handle.rotation.z=m.animating?0:Math.PI/2;
+  tube('burette-tip',0.075,0.026,0.38,glass,fx,2.78,0);
+  var drop=mesh('titrant-drop',new THREE.SphereGeometry(0.052,16,12),titrant,fx,2.56,0);drop.scale.y=1.35;drop.visible=!!m.animating;
+  // Animation is a brief cue for an addition, not a fluid-dynamics model or a drop counter.
+  var started=null;
+  S.tick=function(now){ if(!m.animating)return; if(started===null)started=now;var elapsed=Math.max(0,now-started);var phase=Math.min(1,elapsed/650);drop.position.y=2.56-phase*(2.56-(0.18+profile.height));drop.visible=elapsed<650 && m.focus!=='burette';stir.rotation.y=Math.min(elapsed,700)*0.013; };
+  S.target=new THREE.Vector3(0,3.15,0);S.half=new THREE.Vector3(2.8,3.55,1.55);
+  // Close-ups frame the selected apparatus, not an arbitrary zoom of the whole bench.
+  // Hidden meshes remain owned by the shared viewer and are disposed with the scene.
+  var focus=m.focus==='flask'||m.focus==='burette'?m.focus:'apparatus';
+  if(focus!=='apparatus'){
+    S.model.children.forEach(function(obj){
+      var belongs=focus==='flask'
+        ? /^(flask-|liquid-|stir-bar|white-endpoint-tile|burette-tip|titrant-drop)/.test(obj.name)
+        : /^(burette-(?!clamp)|graduation-|stopcock-)/.test(obj.name);
+      obj.visible=obj.visible && belongs;
+    });
+    if(focus==='flask'){S.target.set(fx,1.50,0);S.half.set(1.18,1.65,1.18);}
+    else {S.target.set(fx,4.49,0);S.half.set(0.58,1.94,0.44);}
+  }
+  S.experiment={focus:focus,reading:reading,delivered:m.delivered,fillFraction:profile.fraction,liquidSurface:0.18+profile.height,meniscus:bottom+liquidHeight,color:m.color,animating:!!m.animating};
+}
+
+function titrationBenchTracePoints(points, volume, value) {
+  // Always end on the exact current reading, even between the curve's 0.2 mL samples.
+  var current=Math.max(0,Number(volume)||0);
+  var trace=(points||[]).filter(function(p){return p && isFinite(p.vol) && isFinite(p.y) && p.vol>=0 && p.vol<current;});
+  if(isFinite(value))trace.push({vol:current,y:Number(value)});
+  return trace;
+}
+
+function TitrationBenchTrace(props) {
+  var h=props.React.createElement,t=props.t,c=props.curve;
+  var left=39,top=30,width=207,height=150;
+  var x=function(v){return left+Math.max(0,Math.min(c.maxVolume,v))/c.maxVolume*width;};
+  var y=function(value){return top+height-(Math.max(c.min,Math.min(c.max,value))-c.min)/(c.max-c.min)*height;};
+  var trace=titrationBenchTracePoints(c.points,c.volume,c.value);
+  var path=trace.map(function(p,i){return (i?'L':'M')+x(p.vol).toFixed(2)+' '+y(p.y).toFixed(2);}).join(' ');
+  var eqVisible=c.equivalence>=0 && c.equivalence<=c.maxVolume;
+  return h('section',{className:'titr-immersive-trace','data-titration-bench-trace':true,'aria-label':t('stem.titration.bench_live_curve','Live curve')},
+    h('h4',null,t('stem.titration.bench_live_curve','Live curve')),
+    h('p',{className:'titr-trace-value'},c.readout),
+    h('svg',{viewBox:'0 0 260 225',role:'img','aria-label':c.description,style:{display:'block',width:'100%',height:'auto'}},
+      h('text',{x:left,y:15,fill:'#e2edf8',fontSize:12},c.label),
+      [c.min,(c.min+c.max)/2,c.max].map(function(value){return h('g',{key:value},
+        h('line',{x1:left,y1:y(value),x2:left+width,y2:y(value),stroke:'#536e83',strokeWidth:1}),
+        h('text',{x:left-7,y:y(value)+4,fill:'#cbd5e1',fontSize:11,textAnchor:'end'},c.tick(value))
+      );}),
+      h('line',{x1:left,y1:top,x2:left,y2:top+height,stroke:'#cbd5e1'}),
+      [0,c.maxVolume/2,c.maxVolume].map(function(v){return h('text',{key:v,x:x(v),y:top+height+18,fill:'#cbd5e1',fontSize:11,textAnchor:'middle'},v);}),
+      h('text',{x:left+width/2,y:220,fill:'#cbd5e1',fontSize:11,textAnchor:'middle'},t('stem.titration.bench_volume_axis','Titrant volume (mL)')),
+      eqVisible && h('line',{x1:x(c.equivalence),x2:x(c.equivalence),y1:top,y2:top+height,stroke:'#fbbf24',strokeWidth:1.5,strokeDasharray:'4 4'}),
+      h('path',{'data-titration-bench-trace-line':true,d:path,fill:'none',stroke:'#67e8f9',strokeWidth:3,strokeLinejoin:'round',strokeLinecap:'round'}),
+      h('circle',{'data-titration-bench-trace-current':true,cx:x(c.volume),cy:y(c.value),r:4.5,fill:'#67e8f9',stroke:'#071422',strokeWidth:2})
+    ),
+    h('p',null,t('stem.titration.bench_trace_note','Simulated response up to the current volume.')),
+    h('p',{className:'titr-trace-equivalence'},t('stem.titration.bench_equivalence_marker','Dashed line: equivalence volume'),h('strong',null,c.equivalence.toFixed(1)+' mL')),
+    h('p',null,t('stem.titration.bench_signal_note','Compare the curve with the solution color. Indicator endpoint and equivalence are different signals.'))
+  );
+}
+
+function titrationBenchDose(raw, remaining) {
+  if(raw == null || String(raw).trim()==='')return null;
+  var n=Number(raw),limit=Number(remaining);
+  if(!isFinite(n)||!isFinite(limit)||n<0.1||n>limit+1e-8||Math.abs(n*10-Math.round(n*10))>1e-7)return null;
+  return Math.round(n*10)/10;
+}
+function titrationBenchNotebook(raw) {
+  var ids={};
+  return (Array.isArray(raw)?raw:[]).filter(function(r){
+    if(!r||!Number.isSafeInteger(r.id)||r.id<1||r.id>1000000000||ids[r.id]||typeof r.preset!=='string'||typeof r.setup!=='string'||(r.axis!=='pH'&&r.axis!=='E')||typeof r.volume!=='number'||!isFinite(r.volume)||r.volume<0||r.volume>150||typeof r.value!=='number'||!isFinite(r.value))return false;
+    ids[r.id]=true;return true;
+  }).slice(0,40).map(function(r){return {id:r.id,preset:r.preset.slice(0,80),setup:r.setup.slice(0,240),axis:r.axis,volume:r.volume,value:r.value,observation:typeof r.observation==='string'?r.observation.slice(0,240):'',indicator:typeof r.indicator==='string'?r.indicator.slice(0,120):''};});
+}
+function titrationBenchCompare(a,b) {
+  if(!a||!b||a.id===b.id||a.preset!==b.preset||a.axis!==b.axis)return null;
+  return {volume:Number((b.volume-a.volume).toFixed(1)),response:Number((b.value-a.value).toFixed(a.axis==='E'?3:2)),axis:a.axis};
+}
+function TitrationBenchTools(props) {
+  var React=props.React,h=React.createElement,t=props.t,id=React.useId();
+  var doseState=React.useState('1'),dose=doseState[0],setDose=doseState[1];
+  var selections=React.useState({a:null,b:null}),selected=selections[0],setSelected=selections[1];
+  var feedbackState=React.useState(''),feedback=feedbackState[0],setFeedback=feedbackState[1];
+  var records=titrationBenchNotebook(props.records),amount=titrationBenchDose(dose,props.remaining);
+  var aId=selected.a !== null ? selected.a : (records[0]?String(records[0].id):'');
+  var bId=selected.b !== null ? selected.b : (records.length>1?String(records[records.length-1].id):'');
+  var a=records.find(function(r){return String(r.id)===aId;}),b=records.find(function(r){return String(r.id)===bId;});
+  var comparison=titrationBenchCompare(a,b);
+  function response(r){return (r.axis==='E'?'E ':'pH ')+r.value.toFixed(r.axis==='E'?3:2)+(r.axis==='E'?' V':'');}
+  function signed(n,digits){return (n>0?'+':'')+n.toFixed(digits);}
+  function record(){
+    if(records.length>=40)return;
+    var nextId=1;while(records.some(function(r){return r.id===nextId;}))nextId+=1;
+    props.onRecords(records.concat([Object.assign({},props.current,{id:nextId})]));
+    setFeedback(t('stem.titration.bench_reading_saved','Reading saved to the notebook.')+' #'+nextId);
+  }
+  function selection(which,label){return h('div',null,
+    h('label',{htmlFor:id+'-'+which},label),
+    h('select',{id:id+'-'+which,value:which==='a'?(a?String(a.id):''):(b?String(b.id):''),onChange:function(e){var next=Object.assign({},selected);next[which]=e.target.value;setSelected(next);}},
+      h('option',{value:''},t('stem.titration.bench_choose_reading','Choose a reading')),
+      records.map(function(r){return h('option',{key:r.id,value:String(r.id)},'#'+r.id+' · '+r.volume.toFixed(1)+' mL · '+response(r)+' · '+r.setup);})
+    )
+  );}
+  var css='.titr-bench-tools{padding:16px;border-top:1px solid #52657a;background:#0b1d2d}.titr-bench-tools h4{font-size:16px;font-weight:800;color:#e2edf8;margin:0 0 12px}.titr-bench-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-bench-tool-card{border:1px solid #52657a;border-radius:13px;padding:14px;min-width:0;background:#102538}.titr-bench-tool-card h5{font-size:14px;font-weight:800;margin:0 0 10px;color:#a5f3fc}.titr-bench-tools label{display:block;font-size:12px;font-weight:700;color:#e2edf8;margin:8px 0 5px}.titr-bench-tools input,.titr-bench-tools select{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;border:1px solid #8193a7;border-radius:8px;background:#071422;color:#ecf5fc;padding:8px;font-size:13px}.titr-bench-tools :is(input,select):focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-bench-tools .titr-immersive-switches{margin-top:12px}.titr-bench-tools p{margin:8px 0 0}.titr-bench-tools .titr-tool-error{color:#fecaca}.titr-notebook{margin-top:12px}.titr-notebook ol{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;max-height:330px;overflow:auto}.titr-notebook li{border:1px solid #52657a;border-radius:10px;padding:12px;min-width:0;background:#071422;overflow-wrap:anywhere}.titr-notebook li strong{color:#a5f3fc;font-size:13px}.titr-notebook-readout{font-size:16px!important;font-weight:800;color:#ecfeff!important}.titr-comparison-result{margin-top:12px;padding:10px;border-left:3px solid #67e8f9;background:#071422;border-radius:6px}.titr-comparison-result strong{color:#ecfeff}@media(max-width:600px){.titr-bench-tool-grid{grid-template-columns:minmax(0,1fr)}.titr-notebook ol{grid-template-columns:minmax(0,1fr)}}';
+  return h('section',{className:'titr-bench-tools','data-titration-bench-tools':true,'aria-label':t('stem.titration.bench_tools','Bench tools')},
+    h('style',null,css),h('h4',null,t('stem.titration.bench_tools','Bench tools')),
+    h('div',{className:'titr-bench-tool-grid'},
+      h('section',{className:'titr-bench-tool-card','aria-label':t('stem.titration.bench_dispenser','Custom-volume dispenser')},
+        h('h5',null,t('stem.titration.bench_dispenser','Custom-volume dispenser')),
+        h('label',{htmlFor:id+'-dose'},t('stem.titration.bench_dose_label','Addition volume (mL)')),
+        h('input',{id:id+'-dose',type:'number',min:0.1,max:Math.max(0.1,props.remaining),step:0.1,value:dose,'aria-invalid':dose!==''&&amount===null,'aria-describedby':id+'-dose-help',onChange:function(e){setDose(e.target.value);}}),
+        h('p',{id:id+'-dose-help'},t('stem.titration.bench_dose_help','Use 0.1 mL increments. Remaining simulation range:')+' '+props.remaining.toFixed(1)+' mL'),
+        amount===null && h('p',{className:'titr-tool-error'},t('stem.titration.bench_dose_invalid','Enter a positive volume within the remaining range, in 0.1 mL steps.')),
+        h('div',{className:'titr-immersive-switches'},h('button',{type:'button',className:'titr-immersive-button',disabled:amount===null,onClick:function(){if(amount!==null)props.onAdd(amount);}},t('stem.titration.bench_add_custom','Add custom volume')))
+      ),
+      h('section',{className:'titr-bench-tool-card','aria-label':t('stem.titration.bench_compare','Compare readings')},
+        h('h5',null,t('stem.titration.bench_compare','Compare readings')),
+        selection('a',t('stem.titration.bench_reading_a','Reading A')),selection('b',t('stem.titration.bench_reading_b','Reading B')),
+        comparison?h('div',{className:'titr-comparison-result','data-titration-comparison':true},
+          h('p',null,t('stem.titration.bench_difference','Difference (B − A)')),
+          h('p',null,h('strong',null,'Δ mL: '+signed(comparison.volume,1))),
+          h('p',null,h('strong',null,(comparison.axis==='E'?'Δ E: ':'Δ pH: ')+signed(comparison.response,comparison.axis==='E'?3:2)+(comparison.axis==='E'?' V':'')))
+        ):h('p',null,t('stem.titration.bench_compare_help','Save and choose two different readings from the same titration setup and signal type.'))
+      )
+    ),
+    h('section',{className:'titr-bench-tool-card titr-notebook','aria-label':t('stem.titration.bench_notebook','Reading notebook')},
+      h('h5',null,t('stem.titration.bench_notebook','Reading notebook')+' · '+records.length+'/40'),
+      h('p',{className:'titr-notebook-readout'},t('stem.titration.bench_record_preview','Current reading:')+' '+props.current.volume.toFixed(1)+' mL · '+response(props.current)),
+      h('p',null,props.current.setup),
+      h('p',null,t('stem.titration.bench_notebook_help','Save displayed simulation readings to compare later. Readings stay in the notebook when you change setups; up to 40 can be kept.')),
+      h('div',{className:'titr-immersive-switches'},
+        h('button',{type:'button',className:'titr-immersive-button',disabled:records.length>=40,onClick:record},t('stem.titration.bench_save_reading','Save reading')),
+        h('button',{type:'button',className:'titr-immersive-button',disabled:records.length===0,onClick:function(){props.onRecords([]);setSelected({a:null,b:null});setFeedback(t('stem.titration.bench_notebook_cleared','Notebook cleared.'));}},t('stem.titration.bench_clear_notebook','Clear notebook'))
+      ),
+      h('p',{role:'status'},feedback),
+      records.length>0 && h('ol',null,records.map(function(r){return h('li',{key:r.id},
+        h('strong',null,'#'+r.id+' · '+r.setup),
+        h('p',{className:'titr-notebook-readout'},r.volume.toFixed(1)+' mL · '+response(r)),
+        h('p',null,r.indicator),h('p',null,r.observation)
+      );}))
+    )
+  );
+}
+
+function TitrationExperimentBench(props) {
+  var React=props.React, h=React.createElement, t=props.t;
+  var host=React.useRef(null), viewer=React.useRef(null), drag=React.useRef(null);
+  var motionState=React.useState(function(){return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);}), systemReduced=motionState[0], setSystemReduced=motionState[1];
+  React.useEffect(function(){
+    if(!window.matchMedia)return;
+    var query=window.matchMedia('(prefers-reduced-motion: reduce)'), update=function(){setSystemReduced(query.matches);};
+    update();if(query.addEventListener)query.addEventListener('change',update);else if(query.addListener)query.addListener(update);
+    return function(){if(query.removeEventListener)query.removeEventListener('change',update);else if(query.removeListener)query.removeListener(update);};
+  },[]);
+  var statusState=React.useState('idle'), status=statusState[0], setStatus=statusState[1];
+  var monitorState=React.useState(function(){return !(window.matchMedia && window.matchMedia('(max-width:760px)').matches);}), monitorOpen=monitorState[0], setMonitorOpen=monitorState[1];
+  var focusState=React.useState('apparatus'), focus=focusState[0], setFocus=focusState[1];
+  var orbitState=React.useState({rotY:24,rotX:8,zoom:1}), orbit=orbitState[0], setOrbit=orbitState[1];
+  React.useEffect(function(){
+    if(props.view==='diagram')return;
+    if(!window.StemLab || !window.StemLab.makeOrbitViewer){setStatus('failed');return;}
+    var api=window.StemLab.makeOrbitViewer({
+      attr:'data-titration-experiment-gl',clearColor:0x071422,fov:38,fitSlack:1.04,
+      build:buildTitrationExperimentScene,
+      lights:function(THREE,scene){
+        scene.add(new THREE.HemisphereLight(0xe9f6ff,0x253347,0.75));
+        var key=new THREE.DirectionalLight(0xffffff,0.85);key.position.set(4,8,6);scene.add(key);
+        var rim=new THREE.DirectionalLight(0x8bddff,0.65);rim.position.set(-4,4,-3);scene.add(rim);
+      },
+      debug:function(S){return Object.assign({objects:S.model.children.length},S.experiment||{});}
+    });
+    viewer.current=api;api.onStatusChange(setStatus);api.attach(host.current);
+    host.current.__titrationViewer=api;
+    return function(){api.onStatusChange(null);api.dispose();viewer.current=null;};
+  },[props.view]);
+  React.useEffect(function(){props.onReady(props.view!=='diagram' && status==='ready');},[props.view,status,props.onReady]);
+  React.useEffect(function(){
+    if(!viewer.current)return;
+    var model=Object.assign({},props.model,{focus:focus,animating:props.model.animating && !systemReduced});
+    viewer.current.push(Object.assign({},model,orbit,{static:!model.animating,sig:JSON.stringify(model)}));
+  },[props.model,orbit,status,props.view,systemReduced,focus]);
+  function rotate(y,x){setOrbit(function(o){return {rotY:o.rotY+y,rotX:Math.max(-20,Math.min(65,o.rotX+x)),zoom:o.zoom};});}
+  function zoom(delta){setOrbit(function(o){return Object.assign({},o,{zoom:Math.max(0.6,Math.min(1.8,o.zoom+delta))});});}
+  function reset(){setOrbit({rotY:24,rotX:8,zoom:1});}
+  function inspect(part){setFocus(part);reset();}
+  var btn=function(label,action,pressed){return h('button',{type:'button',onClick:action,'aria-label':label,'aria-pressed':pressed,className:'titr-immersive-button'},label);};
+  var css='.titr-immersive{background:#0b1d2d;color:#e2edf8;border:1px solid #52657a;border-radius:18px;overflow:hidden}.titr-immersive-header,.titr-immersive-controls{padding:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}.titr-immersive h3{font-size:17px;font-weight:800;margin:0;color:#f1f5f9}.titr-immersive p{font-size:12px;line-height:1.6;margin:0;color:#cbd5e1}.titr-immersive .titr-immersive-button{min-height:44px;padding:8px 12px;border:1px solid #8193a7;background:#132d42;color:#ecf5fc;border-radius:9px;font-size:12px;font-weight:700}.titr-immersive .titr-immersive-button[aria-pressed=true]{background:#a5f3fc;color:#083344;border-color:#a5f3fc}.titr-immersive .titr-immersive-button:disabled{opacity:.5;cursor:not-allowed}.titr-immersive-button:focus-visible,.titr-immersive-stage:focus-visible{outline:3px solid #facc15;outline-offset:-3px}.titr-immersive-stage{height:clamp(390px,55vw,580px);position:relative;touch-action:pan-y;cursor:grab;background:#071422}.titr-immersive-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:1px;background:#52657a;border-top:1px solid #52657a}.titr-immersive-stat{padding:13px 16px;background:#102538;min-width:0}.titr-immersive-stat dt{font-size:11px;color:#cbd5e1;margin-bottom:4px}.titr-immersive-stat dd{font-size:22px;font-weight:800;color:#ecfeff;margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.titr-immersive-caption{padding:0 14px 14px}.titr-immersive-switches{display:flex;gap:8px;flex-wrap:wrap}.titr-immersive-workspace{display:grid;grid-template-columns:minmax(0,1fr)}.titr-immersive-workspace.with-trace{grid-template-columns:minmax(0,1fr) 260px}.titr-immersive-trace{padding:18px 12px;background:#102538;border-left:1px solid #52657a;min-width:0;display:flex;flex-direction:column;gap:13px;justify-content:center}.titr-immersive-trace h4{font-size:14px;font-weight:800;color:#a5f3fc;margin:0}.titr-immersive-trace .titr-trace-value{font-size:22px;font-weight:800;color:#ecfeff;font-variant-numeric:tabular-nums}.titr-trace-equivalence{padding:10px;border:1px dashed #fbbf24;border-radius:9px}.titr-trace-equivalence strong{display:block;color:#fde68a;font-size:15px;margin-top:4px}@media(max-width:760px){.titr-immersive-workspace.with-trace{grid-template-columns:minmax(0,1fr)}.titr-immersive-trace{border-left:0;border-top:1px solid #52657a;display:block}.titr-immersive-trace svg{max-width:340px;margin:8px auto}.titr-immersive-trace p{margin-top:8px}}.titr-immersive-inspector{padding:14px 16px;background:#102a3d;border-top:1px solid #52657a;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.titr-immersive-inspector strong{display:block;font-size:13px;color:#a5f3fc;margin-bottom:5px}.titr-immersive-inspector p{font-size:12px;line-height:1.6}.titr-immersive-focus{padding:10px 14px;border-top:1px solid #52657a;background:#102538}.titr-immersive-focus button{flex:1}.titr-immersive-focus button[aria-pressed=true]::before{content:"✓ ";}@media(max-width:480px){.titr-immersive-inspector{grid-template-columns:minmax(0,1fr);gap:10px}.titr-immersive-stat:last-child{grid-column:1/-1}}@media(forced-colors:active){.titr-immersive .titr-immersive-button[aria-pressed=true]{outline:2px solid Highlight}}';
+  return h('section',{className:'titr-immersive','data-titration-immersive':true,'aria-label':t('stem.titration.immersive_title','Interactive titration bench')},
+    h('style',null,css),
+    h('div',{className:'titr-immersive-header'},h('div',null,
+      h('h3',null,t('stem.titration.immersive_title','Interactive titration bench')),
+      h('p',null,props.setup)
+    ),h('div',{className:'titr-immersive-switches',role:'group','aria-label':t('stem.titration.apparatus_view','Apparatus view')},
+      btn(t('stem.titration.bench_3d','3D bench'),function(){props.onView('3d');},props.view!=='diagram'),
+      btn(t('stem.titration.bench_diagram','2D diagram'),function(){props.onView('diagram');},props.view==='diagram')
+    )),
+    props.view!=='diagram' && status==='ready' && h('div',{className:'titr-immersive-focus titr-immersive-switches',role:'group','aria-label':t('stem.titration.bench_inspect','Inspect the apparatus')},
+      btn(t('stem.titration.bench_full_apparatus','Full apparatus'),function(){inspect('apparatus');},focus==='apparatus'),
+      btn(t('stem.titration.bench_flask_closeup','Flask close-up'),function(){inspect('flask');},focus==='flask'),
+      btn(t('stem.titration.bench_burette_closeup','Burette close-up'),function(){inspect('burette');},focus==='burette'),
+      btn(t('stem.titration.bench_live_curve','Live curve'),function(){setMonitorOpen(!monitorOpen);},monitorOpen)
+    ),
+    props.view!=='diagram' && h('div',{className:'titr-immersive-workspace'+(monitorOpen && status==='ready'?' with-trace':''),style:status==='failed'?{display:'none'}:undefined},
+    h('div',{ref:host,className:'titr-immersive-stage',role:'img',tabIndex:0,'aria-label':(focus==='flask'?t('stem.titration.bench_flask_closeup','Flask close-up'):focus==='burette'?t('stem.titration.bench_burette_closeup','Burette close-up'):t('stem.titration.bench_full_apparatus','Full apparatus'))+'. '+props.description,
+      'aria-keyshortcuts':'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',
+      style:status==='failed'?{display:'none'}:undefined,
+      onKeyDown:function(e){var handled=true;if(e.key==='ArrowLeft')rotate(-10,0);else if(e.key==='ArrowRight')rotate(10,0);else if(e.key==='ArrowUp')rotate(0,8);else if(e.key==='ArrowDown')rotate(0,-8);else if(e.key==='+')zoom(0.1);else if(e.key==='-')zoom(-0.1);else if(e.key==='0')reset();else handled=false;if(handled)e.preventDefault();},
+      onPointerDown:function(e){if(e.pointerType==='touch'||e.button!==0)return;drag.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);},
+      onPointerMove:function(e){if(!drag.current)return;rotate((e.clientX-drag.current.x)*0.4,(e.clientY-drag.current.y)*0.25);drag.current={x:e.clientX,y:e.clientY};},
+      onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}
+    }),
+      monitorOpen && status==='ready' && h(TitrationBenchTrace,{React:React,t:t,curve:props.curve})
+    ),
+    props.view!=='diagram' && status!=='ready' && h('p',{role:'status',className:'titr-immersive-caption'},status==='failed'?t('stem.titration.bench_fallback','3D is unavailable. The diagram and experiment controls below still work.'):t('stem.titration.bench_loading','Loading the 3D bench. The diagram remains available below.')),
+    props.view!=='diagram' && status==='ready' && h(React.Fragment,null,
+      h('div',{className:'titr-immersive-controls',role:'group','aria-label':t('stem.titration.bench_add','Add titrant at the bench')},
+        h('p',null,t('stem.titration.titrant_volume','TITRANT VOLUME:')),
+        h('div',{className:'titr-immersive-switches'},[0.1,0.5,1,5].map(function(amount){return h('button',{key:amount,type:'button',className:'titr-immersive-button',disabled:!props.canAdd,onClick:function(){props.onAdd(amount);}},'+'+amount+' mL');}))
+      ),
+      h('div',{className:'titr-immersive-controls',role:'group','aria-label':t('stem.titration.bench_camera','Bench camera controls')},
+        h('div',{className:'titr-immersive-switches'},
+          btn(t('stem.titration.bench_front','Front'),function(){setOrbit({rotY:0,rotX:0,zoom:1});}),
+          btn(t('stem.titration.bench_side','Side'),function(){setOrbit({rotY:65,rotX:8,zoom:1});}),
+          btn(t('stem.titration.bench_orbit_left','Rotate left'),function(){rotate(-15,0);}),
+          btn(t('stem.titration.bench_orbit_right','Rotate right'),function(){rotate(15,0);}),
+          btn(t('stem.titration.bench_zoom_in','Zoom in'),function(){zoom(0.1);}),
+          btn(t('stem.titration.bench_zoom_out','Zoom out'),function(){zoom(-0.1);}),
+          btn(t('stem.titration.bench_reset','Reset view'),reset)
+        )
+      ),
+      h('dl',{className:'titr-immersive-stats'},props.readings.map(function(item){return h('div',{className:'titr-immersive-stat',key:item[0]},h('dt',null,item[0]),h('dd',null,item[1]));})),
+      h('div',{className:'titr-immersive-inspector'},
+        h('div',null,
+          h('strong',null,t('stem.titration.bench_observe','What to observe')),
+          h('p',null,focus==='flask'
+            ? t('stem.titration.bench_flask_guide','Watch the liquid surface rise and compare the solution color with the indicator status. The white tile helps the color stand out.')
+            : focus==='burette'
+              ? t('stem.titration.bench_burette_guide','Track the meniscus as you add titrant. The burette readout describes the current fill; cumulative titrant volume also includes previous fills.')
+              : t('stem.titration.bench_full_guide','Follow an addition from the burette tip into the flask. Use the close-ups to inspect each vessel, then compare the readings with the curve below.'))
+        ),
+        h('div',null,h('strong',null,t('stem.titration.bench_current_observation','Current observation')),h('p',null,props.observation))
+      ),
+      h('p',{className:'titr-immersive-caption'},t('stem.titration.bench_scale_note','Illustrative apparatus: dimensions, liquid heights, and drop animation are not a calibrated measurement scale. Use the numerical readings. Drag with a mouse or use the camera buttons; touch swipes scroll the page.'))
+    ),
+    h(TitrationBenchTools,{React:React,t:t,records:props.notebook,onRecords:props.onNotebook,current:props.currentReading,remaining:props.remaining,onAdd:props.onAdd})
+  );
+}
+
 window.StemLab.registerTool('titrationLab', {
   label: 'Titration Lab',
   icon: '\uD83E\uDDEA',
@@ -1543,6 +1850,7 @@ window.StemLab.registerTool('titrationLab', {
     var titrationInstanceKey = React.useId().replace(/[^A-Za-z0-9_-]/g, '') || 'instance';
     var scanGradientId = 'scanGrad-' + titrationInstanceKey;
     var flaskGradientId = 'flaskLiquid-' + titrationInstanceKey;
+    var experimentReadyState = React.useState(false), experimentReady = experimentReadyState[0], setExperimentReady = experimentReadyState[1];
     var aiRequestRef = React.useRef(0);
     React.useEffect(function () { return function () { aiRequestRef.current += 1; }; }, []);
     var __alloT = function (k, fb) {
@@ -1552,13 +1860,6 @@ window.StemLab.registerTool('titrationLab', {
       return (v == null) ? (fb != null ? fb : k) : v;
     };
     var labToolData = ctx.toolData;
-    var setLabToolData = function(fn) {
-      var prev = ctx.toolData;
-      var next = fn(prev);
-      if (next && next.titrationLab) {
-        ctx.updateMulti('titrationLab', next.titrationLab);
-      }
-    };
     var setStemLabTool = ctx.setStemLabTool;
     var awardStemXP = ctx.awardXP;
     var setToolSnapshots = ctx.setToolSnapshots;
@@ -1570,30 +1871,13 @@ window.StemLab.registerTool('titrationLab', {
 
 var d = (labToolData && labToolData.titrationLab) || {};
 
+// Send only changed fields: delayed callbacks must not replay an older lab snapshot.
 var upd = function (k, v) {
-
-  setLabToolData(function (p) {
-
-    var tl = Object.assign({}, (p && p.titrationLab) || {});
-
-    tl[k] = v;
-
-    return Object.assign({}, p, { titrationLab: tl });
-
-  });
-
+  var patch = {}; patch[k] = v;
+  ctx.updateMulti('titrationLab', patch);
 };
-
 var updMulti = function (obj) {
-
-  setLabToolData(function (p) {
-
-    var tl = Object.assign({}, (p && p.titrationLab) || {}, obj);
-
-    return Object.assign({}, p, { titrationLab: tl });
-
-  });
-
+  ctx.updateMulti('titrationLab', obj);
 };
 
 // Timers belong to a mounted lab instance, never to render or to window. SSR and
@@ -2457,6 +2741,10 @@ var FLASK_Y_FULL = 25, FLASK_Y_EMPTY = 72;
 var flaskFillFrac = Math.max(0, Math.min(1,
   (preset.volAcid + Math.min(curveMaxVol, Math.max(0, volumeAdded))) / (preset.volAcid + curveMaxVol)));
 var flaskSurfaceY = FLASK_Y_EMPTY - flaskFillFrac * (FLASK_Y_EMPTY - FLASK_Y_FULL);
+function addTitrantAmount(amt) {
+  if(volumeAdded >= curveMaxVol)return;
+  updMulti({volumeAdded:Math.min(curveMaxVol,Math.round((volumeAdded+amt)*10)/10),_prevVolume:volumeAdded,additionPulse:(Number(d.additionPulse)||0)+1,additionAnimating:!titrationReduceMotion});
+}
 // Half-widths of the INNER wall at the surface, interpolated down the cone, so the
 // liquid always meets the glass instead of floating inside it.
 var _flaskT = (flaskSurfaceY - FLASK_Y_FULL) / (FLASK_Y_EMPTY - FLASK_Y_FULL);
@@ -3789,14 +4077,7 @@ return React.createElement("div", {
         var dropIcon = amt <= 0.1 ? '💧' : amt <= 1 ? '💧💧' : '🌊';
         return React.createElement("button", { type: "button", "aria-label": "Add " + amt + " milliliters of titrant",
           key: amt,
-          onClick: function () {
-            updMulti({
-              volumeAdded: Math.min(curveMaxVol, Math.round((volumeAdded + amt) * 10) / 10),
-              _prevVolume: volumeAdded,
-              additionPulse: (Number(d.additionPulse) || 0) + 1,
-              additionAnimating: !titrationReduceMotion
-            });
-          },
+          onClick: function () { addTitrantAmount(amt); },
           className: "min-h-[44px] min-w-[44px] px-3 py-2 rounded-lg text-xs font-bold text-cyan-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 bg-cyan-900/30 hover:bg-cyan-800/50 border border-cyan-800/40 transition-all hover:scale-105 active:scale-[0.97]",
           title: amt <= 0.5 ? 'Drop-by-drop (precise)' : 'Stream (fast)'
         }, dropIcon + " +" + amt);
@@ -3813,6 +4094,25 @@ return React.createElement("div", {
 
 
 
+  labTab === 'titrate' && React.createElement(TitrationExperimentBench, {
+    React: React, t: __alloT, view: d.experimentView === 'diagram' ? 'diagram' : '3d',
+    onView: function(view) { setExperimentReady(false); upd('experimentView', view); }, onReady: setExperimentReady,
+    setup: preset.acidName + ' + ' + preset.baseName,
+    onAdd: addTitrantAmount, canAdd: volumeAdded < curveMaxVol,
+    remaining: Number((curveMaxVol-volumeAdded).toFixed(1)), notebook: d.benchNotebook,
+    onNotebook: function(records){upd('benchNotebook',records);},
+    currentReading: {preset:presetId,setup:preset.acidName+' + '+preset.baseName,axis:yAxis.mode,value:Number(yAxis.readout(currentY)),volume:Number(volumeAdded.toFixed(1)),observation:indicatorStatus,indicator:isPotentiometric?'KMnO₄':indicator.label},
+    curve: { points: curveData, volume: volumeAdded, value: currentY, maxVolume: curveMaxVol, equivalence: Veq, min: yAxis.min, max: yAxis.max, tick: yAxis.tick, label: yAxis.label, readout: yAxis.speech(currentY), description: volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus },
+    model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0 },
+    description: __alloT('stem.titration.burette_flask', 'BURETTE & FLASK') + '. ' + volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus,
+    readings: [
+      [__alloT('stem.titration.titrant_volume', 'TITRANT VOLUME:'), volumeAdded.toFixed(1) + ' mL'],
+      [__alloT('stem.titration.burette', 'Burette') + ' (50 mL)', physicalBuretteReading.toFixed(1) + ' mL'],
+      [isPotentiometric ? __alloT('stem.titration.cell_potential_caps', 'CELL POTENTIAL') : __alloT('stem.titration.current_ph', 'CURRENT pH'), yAxis.readout(currentY) + yAxis.unit]
+    ],
+    observation: indicatorStatus + (physicalRefills > 0 ? ' · ' + physicalRefills + ' × 50 mL' : '')
+  }),
+
   // ── Main Layout: Burette/Flask + SVG Chart ──
 
   labTab === 'titrate' && React.createElement("div", { className: "grid grid-cols-1 lg:grid-cols-3 gap-4" },
@@ -3821,7 +4121,7 @@ return React.createElement("div", {
 
     // ── Left: Burette & Flask Visual ──
 
-    React.createElement("div", {
+    (!experimentReady || d.experimentView === 'diagram') && React.createElement("div", {
 
       className: "rounded-2xl p-4 border flex flex-col items-center",
 
@@ -4037,7 +4337,7 @@ return React.createElement("div", {
 
     React.createElement("div", {
 
-      className: "lg:col-span-2 rounded-2xl p-4 border overflow-x-auto",
+      className: "rounded-2xl p-4 border overflow-x-auto " + (experimentReady && d.experimentView !== 'diagram' ? "lg:col-span-3" : "lg:col-span-2"),
       role: "region", "aria-label": "Scrollable titration curve plot", tabIndex: 0,
       style: Object.assign({}, glass, { background: 'rgba(3,25,40,0.85)', borderColor: 'rgba(100,116,139,0.3)' })
 

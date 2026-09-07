@@ -67,6 +67,23 @@ function DbqTimer(props) {
     "aria-label": props.t('a11y.dismiss_timer')
   }, props.t('ui_common.dismiss'))));
 }
+function dbqEscapePrintText(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[char]);
+}
+function dbqPrintSourceUrl(value) {
+  try {
+    const url = new URL(value);
+    return ['https:', 'http:'].includes(url.protocol) ? url.href : '';
+  } catch {
+    return '';
+  }
+}
 function DbqView(props) {
   var generatedContent = props.generatedContent;
   var studentResponses = props.studentResponses;
@@ -101,24 +118,24 @@ function DbqView(props) {
   const countAnswers = () => {
     let total = 0,
       answered = 0;
-    docs.forEach(doc => {
-      (doc.sourcingQuestions || []).forEach((_, qi) => {
-        total++;
-        if (r[`doc-${doc.id}-sourcing-${qi}`]) answered++;
-      });
-      (doc.analysisQuestions || []).forEach((_, qi) => {
-        total++;
-        if (r[`doc-${doc.id}-analysis-${qi}`]) answered++;
-      });
-      ['historical', 'audience', 'purpose', 'pointOfView'].forEach(k => {
-        total++;
-        if ((happNotes[doc.id] || {})[k]) answered++;
-      });
-    });
-    if (dbqData.synthesisPrompt) {
+    const countText = value => {
       total++;
-      if (essayText.trim()) answered++;
-    }
+      if (typeof value === 'string' && value.trim()) answered++;
+    };
+    docs.forEach(doc => {
+      (doc.sourcingQuestions || []).forEach((_, qi) => countText(r[`doc-${doc.id}-sourcing-${qi}`]));
+      (doc.analysisQuestions || []).forEach((_, qi) => countText(r[`doc-${doc.id}-analysis-${qi}`]));
+      ['historical', 'audience', 'purpose', 'pointOfView'].forEach(key => countText((happNotes[doc.id] || {})[key]));
+      const reliability = r[`_reliability_${doc.id}`] || {};
+      ['rating', 'bias', 'reasoning'].forEach(key => countText(reliability[key]));
+    });
+    if (claims.length) claims.forEach((_, ci) => countText(corrobNotes[ci]));else docs.forEach(doc => ['claim', 'agree', 'disagree'].forEach(key => countText(r[`corrob-${key}-${doc.id}`])));
+    if (dbqData.perspectives?.length >= 2) countText(r._perspectiveResponse);
+    if (dbqData.synthesisPrompt) countText(essayText);
+    rubric.forEach(row => {
+      total++;
+      if (['1', '2', '3', '4'].includes(String(selfScores[row.criteria]))) answered++;
+    });
     return {
       total,
       answered
@@ -127,7 +144,7 @@ function DbqView(props) {
   const progress = countAnswers();
   const tabBtnStyle = id => ({
     padding: '10px 16px',
-    fontSize: '13px',
+    fontSize: '0.8125rem',
     fontWeight: 700,
     cursor: 'pointer',
     color: dbqTab === id ? '#4338ca' : '#64748b',
@@ -151,7 +168,7 @@ function DbqView(props) {
     };
     return /*#__PURE__*/React.createElement("span", {
       style: {
-        fontSize: '10px',
+        fontSize: '0.625rem',
         fontWeight: 800,
         padding: '2px 8px',
         borderRadius: '999px',
@@ -181,7 +198,12 @@ function DbqView(props) {
   }, progress.answered, "/", progress.total), /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-amber-500 uppercase"
   }, t("ui_common.completed")), /*#__PURE__*/React.createElement("div", {
-    className: "w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden"
+    className: "w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden",
+    role: "progressbar",
+    "aria-label": t("ui_common.completed") || "Completed",
+    "aria-valuemin": 0,
+    "aria-valuemax": progress.total || 1,
+    "aria-valuenow": progress.answered
   }, /*#__PURE__*/React.createElement("div", {
     className: "h-full bg-amber-500 rounded-full transition-all duration-500",
     style: {
@@ -212,25 +234,25 @@ function DbqView(props) {
           label: 'Point of View',
           prompt: doc.happPrompts?.pointOfView || 'What perspective does the author have?'
         }];
-        const sourcingQs = (doc.sourcingQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px">${i + 1}. ${q}</p>${doc.sentenceStarters ? '<p style="font-size:10px;color:#a78bfa;margin:0 0 4px;font-style:italic">Try: "' + doc.sentenceStarters[i % doc.sentenceStarters.length] + '"</p>' : ''}<div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
-        const analysisQs = (doc.analysisQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#1d4ed8;margin:0 0 4px">${i + 1}. ${q}</p><div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
+        const sourcingQs = (doc.sourcingQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#6b21a8;margin:0 0 4px">${i + 1}. ${dbqEscapePrintText(q)}</p>${doc.sentenceStarters?.length ? '<p style="font-size:10px;color:#a78bfa;margin:0 0 4px;font-style:italic">Try: "' + dbqEscapePrintText(doc.sentenceStarters[i % doc.sentenceStarters.length]) + '"</p>' : ''}<div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
+        const analysisQs = (doc.analysisQuestions || []).map((q, i) => `<div style="margin:8px 0"><p style="font-size:12px;font-weight:600;color:#1d4ed8;margin:0 0 4px">${i + 1}. ${dbqEscapePrintText(q)}</p><div style="border-bottom:1px solid #e2e8f0;min-height:40px;margin-top:4px"></div></div>`).join('');
         return `<div style="page-break-inside:avoid;margin-bottom:24px;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden">
                                             <div style="background:#f8fafc;padding:12px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between">
-                                                <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${doc.title || 'Document ' + doc.id}</h3>
-                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${doc.documentType || 'source'}</span>
+                                                <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || 'Document ' + doc.id)}</h3>
+                                                <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType || 'source')}</span>
                                             </div>
-                                            ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + doc.source + '</p>' : ''}
-                                            ${doc.sourceUrl ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + doc.sourceUrl + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
+                                            ${doc.source ? '<p style="font-size:11px;color:#64748b;padding:8px 16px 0;margin:0;font-style:italic">Source: ' + dbqEscapePrintText(doc.source) + '</p>' : ''}
+                                            ${dbqPrintSourceUrl(doc.sourceUrl) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqPrintSourceUrl(doc.sourceUrl)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
           try {
             return new URL(doc.sourceUrl).hostname;
           } catch {
             return 'link';
           }
         })() + ')</a></p>' : ''}
-                                            <div style="padding:12px 16px;font-size:13px;line-height:1.7;color:#334155;border-left:4px solid #f59e0b;margin:8px 16px;background:#fffbeb;border-radius:0 8px 8px 0;padding:12px">${doc.excerpt || ''}</div>
+                                            <div style="padding:12px 16px;font-size:13px;line-height:1.7;color:#334155;border-left:4px solid #f59e0b;margin:8px 16px;background:#fffbeb;border-radius:0 8px 8px 0;padding:12px">${dbqEscapePrintText(doc.excerpt)}</div>
                                             <div style="padding:0 16px 12px">
                                                 <h4 style="font-size:12px;font-weight:800;color:#4338ca;margin:12px 0 8px">🔍 HAPP Source Analysis</h4>
-                                                <table style="width:100%;border-collapse:collapse"><tbody>${happFields.map(h => '<tr><td style="border:1px solid #e0e7ff;padding:6px 10px;font-size:11px;font-weight:700;color:#4338ca;width:25%;background:#eef2ff;vertical-align:top">' + h.label + '<br><span style="font-weight:400;font-size:10px;color:#818cf8;font-style:italic">' + h.prompt + '</span></td><td style="border:1px solid #e0e7ff;padding:6px 10px;min-height:36px"></td></tr>').join('')}</tbody></table>
+                                                <table style="width:100%;border-collapse:collapse"><tbody>${happFields.map(h => '<tr><td style="border:1px solid #e0e7ff;padding:6px 10px;font-size:11px;font-weight:700;color:#4338ca;width:25%;background:#eef2ff;vertical-align:top">' + dbqEscapePrintText(h.label) + '<br><span style="font-weight:400;font-size:10px;color:#818cf8;font-style:italic">' + dbqEscapePrintText(h.prompt) + '</span></td><td style="border:1px solid #e0e7ff;padding:6px 10px;min-height:36px"></td></tr>').join('')}</tbody></table>
                                                 ${sourcingQs ? '<h4 style="font-size:12px;font-weight:800;color:#6b21a8;margin:14px 0 6px">🔎 Sourcing Questions</h4>' + sourcingQs : ''}
                                                 ${analysisQs ? '<h4 style="font-size:12px;font-weight:800;color:#1d4ed8;margin:14px 0 6px">🧠 Analysis Questions</h4>' + analysisQs : ''}
                                             </div>
@@ -239,27 +261,27 @@ function DbqView(props) {
       const corrobSection = claims.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
                                         <h2 style="font-size:16px;font-weight:800;color:#065f46;border-left:4px solid #059669;padding-left:8px;margin:0 0 12px">🔗 Corroboration</h2>
                                         ${claims.map((c, i) => `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px;margin-bottom:12px">
-                                            <p style="font-size:13px;font-weight:700;color:#1e293b;margin:0 0 4px">Claim ${i + 1}: "${c.claim}"</p>
-                                            ${c.guideQuestion ? '<p style="font-size:11px;color:#059669;font-style:italic;margin:0 0 8px">' + c.guideQuestion + '</p>' : ''}
-                                            <p style="font-size:11px;margin:0 0 4px"><strong style="color:#16a34a">{t("ui_common.supporting_label")}</strong> ${(c.supportingDocs || []).map(id => 'Doc ' + id).join(', ') || 'None'} &nbsp; <strong style="color:#dc2626">{t("ui_common.challenging_label")}</strong> ${(c.challengingDocs || []).map(id => 'Doc ' + id).join(', ') || 'None'}</p>
+                                            <p style="font-size:13px;font-weight:700;color:#1e293b;margin:0 0 4px">Claim ${i + 1}: "${dbqEscapePrintText(c.claim)}"</p>
+                                            ${c.guideQuestion ? '<p style="font-size:11px;color:#059669;font-style:italic;margin:0 0 8px">' + dbqEscapePrintText(c.guideQuestion) + '</p>' : ''}
+                                            <p style="font-size:11px;margin:0 0 4px"><strong style="color:#16a34a">${dbqEscapePrintText(t("ui_common.supporting_label") || "Supporting:")}</strong> ${(c.supportingDocs || []).map(id => 'Doc ' + dbqEscapePrintText(id)).join(', ') || 'None'} &nbsp; <strong style="color:#dc2626">${dbqEscapePrintText(t("ui_common.challenging_label") || "Challenging:")}</strong> ${(c.challengingDocs || []).map(id => 'Doc ' + dbqEscapePrintText(id)).join(', ') || 'None'}</p>
                                             <div style="border-bottom:1px solid #d1d5db;min-height:48px;margin-top:8px"></div>
                                         </div>`).join('')}
                                     </div>` : '';
       const rubricSection = rubric.length > 0 ? `<div style="page-break-before:always;margin-top:24px">
                                         <h2 style="font-size:16px;font-weight:800;color:#9a3412;border-left:4px solid #ea580c;padding-left:8px;margin:0 0 12px">📊 Rubric</h2>
                                         <table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr>
-                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">{t("ui_common.criteria")}</th>
+                                            <th style="border:1px solid #fed7aa;padding:8px;background:#fff7ed;text-align:left;font-weight:700;color:#9a3412">${dbqEscapePrintText(t("ui_common.criteria") || "Criteria")}</th>
                                             <th style="border:1px solid #fed7aa;padding:8px;background:#fef2f2;text-align:center;color:#991b1b;width:20%">1 — Beginning</th>
                                             <th style="border:1px solid #fed7aa;padding:8px;background:#fefce8;text-align:center;color:#854d0e;width:20%">2 — Developing</th>
                                             <th style="border:1px solid #fed7aa;padding:8px;background:#f0fdf4;text-align:center;color:#166534;width:20%">3 — Proficient</th>
                                             <th style="border:1px solid #fed7aa;padding:8px;background:#eff6ff;text-align:center;color:#1e40af;width:20%">4 — Advanced</th>
-                                        </tr></thead><tbody>${rubric.map(row => '<tr><td style="border:1px solid #fed7aa;padding:8px;font-weight:700;color:#1e293b">' + row.criteria + '</td>' + ['1', '2', '3', '4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + (row[l] || '') + '</td>').join('') + '</tr>').join('')}</tbody></table>
+                                        </tr></thead><tbody>${rubric.map(row => '<tr><td style="border:1px solid #fed7aa;padding:8px;font-weight:700;color:#1e293b">' + dbqEscapePrintText(row.criteria) + '</td>' + ['1', '2', '3', '4'].map(l => '<td style="border:1px solid #fed7aa;padding:8px;font-size:10px;color:#475569">' + dbqEscapePrintText(row[l]) + '</td>').join('') + '</tr>').join('')}</tbody></table>
                                     </div>` : '';
       const essaySection = `<div style="page-break-before:always;margin-top:24px">
                                         <h2 style="font-size:16px;font-weight:800;color:#3730a3;border-left:4px solid #4f46e5;padding-left:8px;margin:0 0 12px">✏️ Synthesis Essay</h2>
                                         <div style="background:#eef2ff;border:2px solid #c7d2fe;border-radius:8px;padding:14px;margin-bottom:16px">
-                                            <p style="font-size:13px;color:#3730a3;line-height:1.6;margin:0">${dbqData.synthesisPrompt || ''}</p>
-                                            ${dbqData.thesisStarter ? '<p style="font-size:11px;color:#6366f1;margin:8px 0 0;font-style:italic">Thesis starter: ' + dbqData.thesisStarter + '</p>' : ''}
+                                            <p style="font-size:13px;color:#3730a3;line-height:1.6;margin:0">${dbqEscapePrintText(dbqData.synthesisPrompt)}</p>
+                                            ${dbqData.thesisStarter ? '<p style="font-size:11px;color:#6366f1;margin:8px 0 0;font-style:italic">Thesis starter: ' + dbqEscapePrintText(dbqData.thesisStarter) + '</p>' : ''}
                                         </div>
                                         <div style="border:1px solid #e2e8f0;border-radius:8px;min-height:200px;padding:12px">
                                             <div style="border-bottom:1px dotted #cbd5e1;min-height:28px;margin-bottom:4px"></div>
@@ -274,11 +296,11 @@ function DbqView(props) {
                                             <div style="border-bottom:1px dotted #cbd5e1;min-height:28px"></div>
                                         </div>
                                     </div>`;
-      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DBQ: ${dbqData.title || 'Document-Based Question'}</title>
+      const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>DBQ: ${dbqEscapePrintText(dbqData.title || 'Document-Based Question')}</title>
                                     <style>body{font-family:system-ui,-apple-system,sans-serif;max-width:800px;margin:0 auto;padding:1.5rem;color:#1e293b;line-height:1.5}h1{font-size:20px;color:#1e3a5f;border-bottom:3px solid #f59e0b;padding-bottom:6px;margin:0 0 8px}@media print{body{padding:0.4in;font-size:11px}h1{font-size:16px}}</style></head><body>
-                                    <h1>📜 ${dbqData.title || 'Document-Based Question'}</h1>
+                                    <h1>📜 ${dbqEscapePrintText(dbqData.title || 'Document-Based Question')}</h1>
                                     <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:12px"><span>Name: ________________________</span><span>Date: ____________</span><span>Period: ______</span></div>
-                                    ${dbqData.historicalContext ? '<div style="background:#fffbeb;border:2px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:16px"><p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 4px">{t("ui_common.historical_context")}</p><p style="font-size:13px;color:#78350f;line-height:1.6;margin:0">' + dbqData.historicalContext + '</p></div>' : ''}
+                                    ${dbqData.historicalContext ? '<div style="background:#fffbeb;border:2px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:16px"><p style="font-size:12px;font-weight:700;color:#92400e;margin:0 0 4px">' + dbqEscapePrintText(t("ui_common.historical_context") || "Historical Context") + '</p><p style="font-size:13px;color:#78350f;line-height:1.6;margin:0">' + dbqEscapePrintText(dbqData.historicalContext) + '</p></div>' : ''}
                                     <h2 style="font-size:16px;font-weight:800;color:#1e3a5f;border-left:4px solid #f59e0b;padding-left:8px;margin:16px 0 12px">📄 Documents</h2>
                                     ${docSections}
                                     ${corrobSection}
@@ -321,7 +343,7 @@ function DbqView(props) {
     style: {
       ...tabBtnStyle(id),
       whiteSpace: 'nowrap',
-      fontSize: '12px'
+      fontSize: '0.75rem'
     }
   }, label))), (() => {
     const docsDone = docs.filter(d => {
@@ -365,7 +387,7 @@ function DbqView(props) {
     return /*#__PURE__*/React.createElement("div", {
       className: "px-3 py-2 bg-slate-50 border-x border-slate-200",
       style: {
-        fontSize: '10px'
+        fontSize: '0.625rem'
       }
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1"
@@ -427,7 +449,7 @@ function DbqView(props) {
     className: "text-lg font-black text-slate-800"
   }, activeDoc.title || `Document ${activeDoc.id}`), docTypeBadge(activeDoc.documentType), activeDoc.perspective && /*#__PURE__*/React.createElement("span", {
     style: {
-      fontSize: '10px',
+      fontSize: '0.625rem',
       fontWeight: 800,
       padding: '2px 8px',
       borderRadius: '999px',
@@ -502,15 +524,15 @@ function DbqView(props) {
         };
         window.addEventListener('allo-speech-state', onState);
         player.speak(text, {
-          voice: selectedVoice || 'Kore',
-          rate: 0.9
+          voice: selectedVoice || 'Kore'
         });
       } else if (window.speechSynthesis) {
         // Cold-boot fallback: player module not yet loaded.
         setDbq(`_docSpeaking_${activeDoc.id}`, true);
         window.speechSynthesis.cancel();
         const u = new SpeechSynthesisUtterance(text);
-        u.rate = 0.9;
+        u.rate = window.__alloPlaybackRate || 1;
+        u.volume = Number.isFinite(window.__alloVoiceVolume) ? Math.max(0, Math.min(1, window.__alloVoiceVolume)) : 1;
         u.onend = () => setDbq(`_docSpeaking_${activeDoc.id}`, false);
         window.speechSynthesis.speak(u);
       }
@@ -674,7 +696,7 @@ function DbqView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-rose-700 mb-1"
   }, "🎯 Reliability Rating"), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-1"
+    className: "flex gap-1 flex-wrap"
   }, ['Very Reliable', 'Somewhat Reliable', 'Questionable', 'Unreliable'].map(rating => /*#__PURE__*/React.createElement("button", {
     key: rating,
     onClick: () => setDbq(`_reliability_${activeDoc.id}`, {
@@ -682,6 +704,7 @@ function DbqView(props) {
       rating
     }),
     className: `text-[11px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).rating === rating ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`,
+    "aria-pressed": (r[`_reliability_${activeDoc.id}`] || {}).rating === rating,
     "aria-label": `Rate as ${rating}`
   }, rating)))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-lg p-3 border border-rose-100"
@@ -696,6 +719,7 @@ function DbqView(props) {
       bias
     }),
     className: `text-[11px] px-2 py-1 rounded-full border transition-all ${(r[`_reliability_${activeDoc.id}`] || {}).bias === bias ? 'bg-rose-600 text-white border-rose-600 font-bold' : 'bg-white text-rose-600 border-rose-200 hover:bg-rose-50'}`,
+    "aria-pressed": (r[`_reliability_${activeDoc.id}`] || {}).bias === bias,
     "aria-label": `Bias: ${bias}`
   }, bias))))), /*#__PURE__*/React.createElement("textarea", {
     value: (r[`_reliability_${activeDoc.id}`] || {}).reasoning || '',

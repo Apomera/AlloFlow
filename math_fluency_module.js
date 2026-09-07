@@ -234,6 +234,8 @@
 
   // ── Problem Generator ──
   function generateProblems(operation, difficulty, count) {
+    count = Math.max(1, Math.min(200, Math.floor(Number(count) || 20)));
+    if (!['add', 'sub', 'mul', 'div', 'mixed'].includes(operation)) return [];
     var problems = [];
     var used = {};
     for (var attempt = 0; attempt < 1200 && problems.length < count; attempt++) {
@@ -272,6 +274,8 @@
         problems.push({ a: a, b: b, op: op, symbol: symbol, answer: answer, studentAnswer: null, correct: null });
       }
     }
+    var uniqueProblems = problems.slice();
+    while (problems.length < count && uniqueProblems.length) problems.push(Object.assign({}, uniqueProblems[problems.length % uniqueProblems.length]));
     return problems;
   }
 
@@ -305,7 +309,7 @@
   function getAdaptivePracticeLevel(stats) {
     stats = stats || {};
     if ((stats.coachedOrMissed || 0) >= 2) return 'support';
-    if ((stats.firstTryStreak || 0) >= 3) return 'stretch';
+    if ((stats.firstTryStreak || 0) >= 6 && (stats.distinctFacts || []).length >= 4) return 'stretch';
     return 'steady';
   }
 
@@ -356,7 +360,7 @@
       cleanProblems.push({
         a: a, b: b, op: problem.op, symbol: typeof problem.symbol === 'string' && problem.symbol.length <= 4 ? problem.symbol : _practiceSymbol(problem.op), answer: answer,
         studentAnswer: studentAnswer, correct: studentAnswer === null ? null : problem.correct === true,
-        firstTryCorrect: problem.firstTryCorrect === true, responseMs: responseMs === null ? null : Math.round(responseMs), attemptLog: attemptLog
+        firstTryCorrect: problem.firstTryCorrect === true, answerRevealed: problem.answerRevealed === true || attemptLog.length >= 3, responseMs: responseMs === null ? null : Math.round(responseMs), attemptLog: attemptLog
       });
     }
     var currentIndex = Number(value.currentIndex);
@@ -390,19 +394,22 @@
     };
   }
 
-  function loadAccuracyDraft() {
+  function loadAccuracyDraft(learnerId) {
+    if (!learnerId) return null;
     try {
       if (typeof localStorage === 'undefined') return null;
-      return sanitizeAccuracyDraft(JSON.parse(localStorage.getItem(MF_ACCURACY_DRAFT_KEY) || 'null'), new Date());
+      return sanitizeAccuracyDraft(JSON.parse(localStorage.getItem(fluencyStorageKey(learnerId, 'draft')) || 'null'), new Date());
     } catch (e) { return null; }
   }
 
-  function saveAccuracyDraft(value) {
-    try { if (typeof localStorage !== 'undefined') localStorage.setItem(MF_ACCURACY_DRAFT_KEY, JSON.stringify(value)); } catch (e) {}
+  function saveAccuracyDraft(value, learnerId) {
+    if (!learnerId) return;
+    try { if (typeof localStorage !== 'undefined') localStorage.setItem(fluencyStorageKey(learnerId, 'draft'), JSON.stringify(value)); } catch (e) {}
   }
 
-  function clearAccuracyDraft() {
-    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(MF_ACCURACY_DRAFT_KEY); } catch (e) {}
+  function clearAccuracyDraft(learnerId) {
+    if (!learnerId) return;
+    try { if (typeof localStorage !== 'undefined') localStorage.removeItem(fluencyStorageKey(learnerId, 'draft')); } catch (e) {}
   }
 
   function _practiceSymbol(op) {
@@ -484,7 +491,7 @@
   }
 
   function generatePracticeProblems(operation, practiceSet, grade, count) {
-    var requested = Math.max(1, Number(count) || 20);
+    var requested = Math.max(1, Math.min(200, Math.floor(Number(count) || 20)));
     if (practiceSet === 'basic') return generateProblems(operation, 'single', requested);
     if (practiceSet === 'extended') return generateProblems(operation, 'double', requested);
     if (practiceSet === 'mixed') return generateProblems(operation, 'mixed', requested);
@@ -563,7 +570,16 @@
     var when = timestamp || new Date().toISOString();
     summarizeFactResults(problems).forEach(function (summary) {
       var previous = next[summary.key] || {};
+      var independent = (problems || []).filter(function (p) {
+        return p && getFactKey(p) === summary.key && p.correct === true && !p.answerRevealed && !(p.attemptLog || []).length;
+      }).length;
+      var evidenceDays = Array.isArray(previous.evidenceDays) ? previous.evidenceDays.slice() : [];
+      var day = String(when).slice(0, 10);
+      if (independent && evidenceDays.indexOf(day) < 0) evidenceDays.push(day);
       next[summary.key] = {
+        independentCorrect: (previous.independentCorrect || 0) + independent,
+        evidenceDays: evidenceDays.sort().slice(-30),
+        answerReveals: (previous.answerReveals || 0) + (problems || []).filter(function (p) { return p && getFactKey(p) === summary.key && p.answerRevealed; }).length,
         key: summary.key,
         a: summary.problem.a, b: summary.problem.b, op: summary.problem.op,
         symbol: summary.problem.symbol, answer: summary.problem.answer,
@@ -671,7 +687,7 @@
   function buildFactMasteryDashboard(mastery) {
     var categoryOrder = ['secure', 'developing', 'slow', 'focus'];
     var categories = {
-      secure: { id: 'secure', label: 'Secure', facts: [] },
+      secure: { id: 'secure', label: 'Consistent across days', facts: [] },
       developing: { id: 'developing', label: 'Developing', facts: [] },
       slow: { id: 'slow', label: 'Accurate but Slow', facts: [] },
       focus: { id: 'focus', label: 'Needs Focus', facts: [] }
@@ -685,7 +701,7 @@
       var accuracy = (item.correct || 0) / attempts;
       var avgMs = item.timedAttempts ? (item.responseMsTotal || 0) / item.timedAttempts : null;
       var status = accuracy < 0.7 ? 'focus'
-        : attempts < 3 || accuracy < 0.9 ? 'developing'
+        : attempts < 3 || accuracy < 0.9 || (item.independentCorrect || 0) < 3 || (item.evidenceDays || []).length < 2 ? 'developing'
         : avgMs != null && avgMs > 6000 ? 'slow'
         : 'secure';
       var fact = {
@@ -1007,13 +1023,15 @@
     return result;
   }
 
-  function loadFactMastery() {
-    try { var raw = JSON.parse(localStorage.getItem(MF_FACT_MASTERY_KEY) || '{}'); return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}; }
+  function loadFactMastery(learnerId) {
+    if (!learnerId) return {};
+    try { var raw = JSON.parse(localStorage.getItem(fluencyStorageKey(learnerId, 'mastery')) || '{}'); return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {}; }
     catch (e) { return {}; }
   }
 
-  function saveFactMastery(value) {
-    try { localStorage.setItem(MF_FACT_MASTERY_KEY, JSON.stringify(value || {})); } catch (e) {}
+  function saveFactMastery(value, learnerId) {
+    if (!learnerId) return;
+    try { localStorage.setItem(fluencyStorageKey(learnerId, 'mastery'), JSON.stringify(value || {})); } catch (e) {}
   }
 
   function mergeFactMastery(localValue, storedValue) {
@@ -1065,8 +1083,42 @@
   function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
   function llPrompt(langName, list) { return ['Translate these user-interface labels for a classroom math-fluency practice app into natural, concise ' + langName + ' (buttons, tabs, headings — keep them short).', 'Keep any {tokens}, numbers, math symbols (+ - × ÷ =) and any emoji EXACTLY as written. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10)); }
 
+
+  function fluencyStorageKey(learnerId, kind) {
+    return learnerId ? 'allo_fluency_v2:' + encodeURIComponent(String(learnerId)) + ':' + kind : null;
+  }
+  function fluencyComparisonKey(config) {
+    return ['v2', config.learnerId || 'unattributed', config.grade || 'unknown', config.mode, config.form || '-', config.formHash || '-',
+      config.operation, config.difficulty, config.timeLimit, config.problemCount,
+      !!config.adaptivePractice, !!config.readAloud, !!config.touchKeypad, !!config.autoAdvance, !!config.calmDisplay].join('|');
+  }
+  function validateFluencyForm(bank) {
+    if (!bank || !Array.isArray(bank.problems) || !bank.problems.length || bank.problems.length > 200 || !Number.isFinite(Number(bank.timeLimit)) || Number(bank.timeLimit) <= 0) return { valid: false, reason: 'invalid_form' };
+    var seen = {}, symbols = { add: '+', sub: '−', mul: '×', div: '÷' };
+    for (var i = 0; i < bank.problems.length; i++) {
+      var p = bank.problems[i];
+      if (!p || !symbols[p.op] || !Number.isSafeInteger(p.a) || !Number.isSafeInteger(p.b) || !Number.isSafeInteger(p.answer) || p.a < 0 || p.b < 0) return { valid: false, reason: 'invalid_item' };
+      var answer = p.op === 'add' ? p.a + p.b : p.op === 'sub' ? p.a - p.b : p.op === 'mul' ? p.a * p.b : p.b ? p.a / p.b : NaN;
+      var key = p.op + ':' + p.a + ':' + p.b;
+      if (answer !== p.answer || answer < 0 || seen[key] || p.symbol !== symbols[p.op]) return { valid: false, reason: 'inconsistent_item' };
+      seen[key] = true;
+    }
+    var serialized = JSON.stringify([bank.timeLimit, bank.problems.map(function (p) { return [p.op, p.a, p.b, p.answer]; })]);
+    var hash = 2166136261;
+    for (var c = 0; c < serialized.length; c++) { hash ^= serialized.charCodeAt(c); hash = Math.imul(hash, 16777619); }
+    return { valid: true, hash: 'form-v1-' + (hash >>> 0).toString(16), itemCount: bank.problems.length };
+  }
+  function chooseAdaptiveFact(nextProblem, config, level) {
+    if (!nextProblem || level === 'steady') return nextProblem;
+    var pool = generatePracticeProblems(nextProblem.op, config.practiceSet || config.difficulty || 'recommended', config.grade, 40);
+    function complexity(p) { return String(p.a).length + String(p.b).length + String(p.answer).length + (p.a + p.b) / 1000; }
+    if (level === 'support') pool = pool.filter(function (p) { return complexity(p) <= complexity(nextProblem); });
+    pool.sort(function (a, b) { return (complexity(a) - complexity(b)) * (level === 'stretch' ? -1 : 1); });
+    return pool[0] || nextProblem;
+  }
+
   // ── React Component ──
-  function MathFluencyPanel(props) {
+  function MathFluencySession(props) {
     var React = window.React;
     var h = React.createElement;
     var useState = React.useState;
@@ -1076,6 +1128,11 @@
 
     // Props from parent
     var gradeLevel = props.gradeLevel || '3';
+    var learnerId = props.learnerId || null;
+    var masteryStorageKey = fluencyStorageKey(learnerId, 'mastery');
+    var historyStorageKey = fluencyStorageKey(learnerId, 'history');
+    var sessionMountedRef = useRef(true);
+    var _storageReady = useState(!props.storageDB || !learnerId), learnerStorageReady = _storageReady[0], setLearnerStorageReady = _storageReady[1];
     var t = props.t || function (k) { return k; };
     var addToast = props.addToast || function () { };
     var onProbeComplete = props.onProbeComplete || function () { };
@@ -1159,8 +1216,7 @@
       function consumePending() {
         var pending = null;
         try {
-          pending = window.__alloFluencyPendingConfig;
-          delete window.__alloFluencyPendingConfig;
+          pending = props.initialPendingConfig;
         } catch (_) { return; }
         if (!pending || typeof pending !== 'object') return;
         // A forgotten slot from an abandoned handoff must not configure a
@@ -1201,12 +1257,11 @@
       // The event covers the already-mounted case: if the teacher is ALREADY
       // in Fluency Probes mode when a producer hands off, no remount happens
       // and a mount-only consume would let the slot expire unused.
-      window.addEventListener('alloflow:fluency-pending-config', consumePending);
-      return function () { window.removeEventListener('alloflow:fluency-pending-config', consumePending); };
+
     }, []);
     var _q = useState(''), inputError = _q[0], setInputError = _q[1];
     var _r = useState(0), interruptionCount = _r[0], setInterruptionCount = _r[1];
-    var _s = useState(loadFactMastery()), factMastery = _s[0], setFactMastery = _s[1];
+    var _s = useState(loadFactMastery(learnerId)), factMastery = _s[0], setFactMastery = _s[1];
     var _t = useState(0), coachAttempts = _t[0], setCoachAttempts = _t[1];
     var _u = useState(false), showTeacherReport = _u[0], setShowTeacherReport = _u[1];
     var _v = useState(30), reportDays = _v[0], setReportDays = _v[1];
@@ -1216,7 +1271,7 @@
     var _endEarly = useState(false), confirmEndEarly = _endEarly[0], setConfirmEndEarly = _endEarly[1];
     var _clearHistory = useState(false), confirmClearHistory = _clearHistory[0], setConfirmClearHistory = _clearHistory[1];
     var _practicePause = useState(false), practicePaused = _practicePause[0], setPracticePaused = _practicePause[1];
-    var _accuracyDraft = useState(loadAccuracyDraft()), accuracyDraft = _accuracyDraft[0], setAccuracyDraft = _accuracyDraft[1];
+    var _accuracyDraft = useState(loadAccuracyDraft(learnerId)), accuracyDraft = _accuracyDraft[0], setAccuracyDraft = _accuracyDraft[1];
     var _supportPrefs = loadFluencySupportPrefs();
     var _reducedMotion = useState(!!_supportPrefs.reducedMotion), reducedMotion = _reducedMotion[0], setReducedMotionState = _reducedMotion[1];
     var _highContrast = useState(!!_supportPrefs.highContrast), highContrast = _highContrast[0], setHighContrastState = _highContrast[1];
@@ -1298,36 +1353,28 @@
     }
 
     function buildComparisonKey(config) {
-      return [config.grade || 'unknown', config.mode, config.form || '-', config.operation, config.difficulty, config.timeLimit].join('|');
+      return fluencyComparisonKey(config);
     }
 
-    // Load history from storage
     useEffect(function () {
-      if (!storageDB) return;
-      storageDB.get('allo_fluency_history').then(function (saved) {
-        if (saved && Array.isArray(saved)) setHistory(saved.slice(-100));
-      }).catch(function () { });
-    }, []);
-
-    // Load fact mastery from shared storage when available, while keeping a
-    // localStorage fallback for standalone and offline use.
+      var live = true;
+      if (!storageDB || !learnerId) { setLearnerStorageReady(true); return; }
+      Promise.all([storageDB.get(historyStorageKey), storageDB.get(masteryStorageKey)]).then(function (saved) {
+        if (!live) return;
+        if (Array.isArray(saved[0])) setHistory(saved[0].filter(function (row) { return row.learnerId === learnerId; }).slice(-100));
+        if (saved[1] && typeof saved[1] === 'object' && !Array.isArray(saved[1])) {
+          var merged = mergeFactMastery(factMasteryRef.current, saved[1]);
+          factMasteryRef.current = merged; setFactMastery(merged); saveFactMastery(merged, learnerId);
+        }
+      }).catch(function () {}).finally(function () { if (live) setLearnerStorageReady(true); });
+      return function () { live = false; };
+    }, [storageDB, learnerId]);
     useEffect(function () {
-      if (!storageDB) return;
-      storageDB.get(MF_FACT_MASTERY_KEY).then(function (saved) {
-        if (!saved || typeof saved !== 'object' || Array.isArray(saved)) return;
-        var merged = mergeFactMastery(factMasteryRef.current, saved);
-        factMasteryRef.current = merged;
-        setFactMastery(merged);
-        saveFactMastery(merged);
-      }).catch(function () {});
-    }, []);
-
-    // Save history to storage
-    useEffect(function () {
-      if (!storageDB || history.length === 0) return;
-      storageDB.set('allo_fluency_history', history.slice(-100)).catch(function () { });
-    }, [history]);
-
+      if (!storageDB || !learnerId || !learnerStorageReady || !history.length) return;
+      storageDB.set(historyStorageKey, history.slice(-100)).catch(function () {});
+    }, [history, storageDB, learnerId, learnerStorageReady]);
+    useEffect(function () { if (props.onActiveChange) props.onActiveChange(active); }, [active]);
+    function saveLearnerAccuracyDraft(value) { saveAccuracyDraft(value, learnerId); }
     // Accuracy Focus is the only resumable session type. A checkpoint is
     // written immediately after every problem-state change and every five
     // seconds, while timed practice and benchmarks never create drafts.
@@ -1342,7 +1389,7 @@
         if (manualPracticePauseRef.current !== null) effectiveNow = Math.min(effectiveNow, manualPracticePauseRef.current);
         if (visibilityPauseRef.current !== null) effectiveNow = Math.min(effectiveNow, visibilityPauseRef.current);
         var elapsedMs = Math.max(0, (runTimingRef.current.resumedMs || 0) + effectiveNow - runTimingRef.current.startedAt - runTimingRef.current.pausedMs);
-        saveAccuracyDraft({
+        saveLearnerAccuracyDraft({
           version: 1, savedAt: Date.now(), currentIndex: index, elapsedMs: elapsedMs,
           pauseStats: practicePauseStatsRef.current,
           config: config, problems: snapshot
@@ -1354,13 +1401,13 @@
     }, [active, problems, currentIndex, practicePaused]);
 
     var finishProbe = useCallback(function (reason) {
-      if (finishedRef.current) return;
+      if (finishedRef.current || !sessionMountedRef.current) return;
       finishedRef.current = true;
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
       cancelProblemSpeech();
       setConfirmEndEarly(false);
-      clearAccuracyDraft();
+      clearAccuracyDraft(learnerId);
       setAccuracyDraft(null);
       setActive(false);
 
@@ -1395,10 +1442,11 @@
       var finishReason = reason || 'early';
       var wasInterrupted = config.mode === 'benchmark' && interruptionStatsRef.current.count > 0;
       var completionStatus = finishReason === 'early' ? 'incomplete' : (wasInterrupted ? 'interrupted' : 'complete');
-      var validForComparison = completionStatus === 'complete' && !isUntimed;
+      var formExhausted = config.mode === 'benchmark' && finishReason === 'complete' && elapsedSeconds < config.timeLimit;
+      var validForComparison = completionStatus === 'complete' && !isUntimed && !formExhausted && !config.adaptivePractice && !config.readAloud;
       var elapsedMinutes = Math.max(1 / 60, elapsedSeconds / 60);
       var calculatedDcpm = Math.round(totalDigitsCorrect / elapsedMinutes);
-      var dcpm = validForComparison ? calculatedDcpm : null;
+      var dcpm = completionStatus === 'complete' && !isUntimed ? calculatedDcpm : null;
       var strategyCoach = !!config.strategyCoach;
       var firstTryCorrect = attempted.filter(function (problem) { return problem.correct && (!problem.attemptLog || problem.attemptLog.length === 0); });
       var accuracyCorrect = strategyCoach ? firstTryCorrect.length : correct.length;
@@ -1406,7 +1454,9 @@
       var reference = getBenchmark(config.grade, config.operation);
       var referenceResult = isUntimed && completionStatus === 'complete'
         ? { label: tt('math_fluency.accuracy_focus_practice', 'Accuracy Focus Practice'), color: '#6d28d9', emoji: '\uD83C\uDFAF', tier: 'accuracy-focus' }
-        : validForComparison
+        : completionStatus === 'complete' && !validForComparison
+          ? { label: formExhausted ? tt('math_fluency.form_exhausted', 'Form completed before the time limit — descriptive rate only') : tt('math_fluency.descriptive_practice', 'Descriptive practice rate'), tier: 'descriptive', color: '#475569', emoji: '📋' }
+          : validForComparison
           ? getBenchmarkLabel(dcpm, reference)
           : {
               label: completionStatus === 'interrupted' ? 'Interrupted run' : 'Incomplete run',
@@ -1419,13 +1469,16 @@
       var nextMastery = updateFactMastery(factMasteryRef.current, snapshot);
       factMasteryRef.current = nextMastery;
       setFactMastery(nextMastery);
-      saveFactMastery(nextMastery);
-      if (storageDB) storageDB.set(MF_FACT_MASTERY_KEY, nextMastery).catch(function () {});
+      saveFactMastery(nextMastery, learnerId);
+      if (storageDB && learnerId) storageDB.set(masteryStorageKey, nextMastery).catch(function () {});
       var comparisonKey = config.comparisonKey || buildComparisonKey(config);
 
       var result = {
         date: new Date().toISOString(),
         mode: config.mode,
+        learnerId: config.learnerId,
+        sessionId: config.sessionId,
+        formHash: config.formHash || null,
         form: config.form,
         grade: config.grade,
         // Present only on a handed-off standardized administration; the host
@@ -1448,6 +1501,9 @@
         finishReason: finishReason,
         completionStatus: completionStatus,
         validForComparison: validForComparison,
+        formExhausted: formExhausted,
+        scoringVersion: 2,
+        itemResults: snapshot,
         interruptionCount: interruptionStatsRef.current.count,
         interruptedSeconds: Math.round(interruptionStatsRef.current.seconds * 10) / 10,
         practicePauseCount: practicePauseStatsRef.current.count,
@@ -1486,9 +1542,10 @@
     }, [timeLimit, operation, difficulty, gradeLevel, onProbeComplete, handleScoreUpdate, storageDB]);
 
     var beginProbe = useCallback(function (nextProblems, config, resumeDraft) {
+      if (!learnerStorageReady || !sessionMountedRef.current) return;
       var restoredDraft = config && config.untimed ? sanitizeAccuracyDraft(resumeDraft, new Date()) : null;
       if (resumeDraft && !restoredDraft) {
-        clearAccuracyDraft();
+        clearAccuracyDraft(learnerId);
         setAccuracyDraft(null);
         addToast(tt('math_fluency.saved_session_unavailable', 'That saved Accuracy Focus session is no longer available.'), 'warning');
         return;
@@ -1501,7 +1558,7 @@
         addToast(tt('math_fluency.no_problems_generated', 'No problems could be generated for these settings.'), 'warning');
         return;
       }
-      config = Object.assign({}, config);
+      config = Object.assign({}, config, { learnerId: learnerId, autoAdvance: config.mode === 'benchmark' ? false : autoAdvance, sessionId: 'mf-' + Date.now() + '-' + Math.random().toString(36).slice(2) });
       if (config.mode === 'benchmark') config.readAloud = false;
       cancelProblemSpeech();
       config.comparisonKey = buildComparisonKey(config);
@@ -1523,7 +1580,7 @@
       interruptionStatsRef.current = { count: 0, seconds: 0 };
       warningPlayedRef.current = false;
       setInterruptionCount(0);
-      clearAccuracyDraft();
+      clearAccuracyDraft(learnerId);
       setAccuracyDraft(null);
       problemsRef.current = nextProblems;
       currentIndexRef.current = resumeIndex;
@@ -1559,24 +1616,25 @@
       }
 
       setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 100);
-    }, [finishProbe, soundEnabled, addToast, sessionGoal, history]);
+    }, [learnerStorageReady, finishProbe, soundEnabled, addToast, sessionGoal, history]);
 
     var startProbe = useCallback(function () {
       // A handed-off administration carries its own grade; otherwise follow the
       // app-wide grade level as before.
+      if (!learnerStorageReady) return;
       var normalizedGrade = probeGradeOverride || normalizeGrade(gradeLevel);
       var config;
       var nextProblems;
       if (probeMode === 'benchmark') {
         var gradeBanks = normalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[normalizedGrade] : null;
         var bank = gradeBanks ? gradeBanks[probeForm] : null;
-        if (!bank || !Array.isArray(bank.problems) || bank.problems.length === 0) {
+        if (!validateFluencyForm(bank).valid) {
           addToast(tt('math_fluency.fixed_form_unavailable', 'A fixed comparable form is unavailable for this grade. Choose Practice mode.'), 'warning');
           return;
         }
         nextProblems = bank.problems.map(function (prob) { return Object.assign({}, prob, { studentAnswer: null, correct: null, responseMs: null }); });
         config = {
-          mode: 'benchmark', form: probeForm, grade: normalizedGrade,
+          mode: 'benchmark', form: probeForm, formHash: validateFluencyForm(bank).hash, grade: normalizedGrade,
           // Carried into the result so a completed benchmark can be written to
           // this learner's probe history. Practice runs leave it null.
           student: probeStudent || null,
@@ -1595,12 +1653,12 @@
         };
       }
       beginProbe(nextProblems, config);
-    }, [timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, probeGradeOverride, probeStudent, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
+    }, [learnerStorageReady, timeLimit, operation, difficulty, problemCount, gradeLevel, probeMode, probeForm, probeGradeOverride, probeStudent, beginProbe, addToast, adaptivePractice, touchKeypad, reducedMotion, highContrast, readAloud, calmDisplay, speechAvailable]);
 
     var resumeSavedAccuracyFocus = useCallback(function () {
       var restored = sanitizeAccuracyDraft(accuracyDraft, new Date());
       if (!restored) {
-        clearAccuracyDraft();
+        clearAccuracyDraft(learnerId);
         setAccuracyDraft(null);
         addToast(tt('math_fluency.saved_session_unavailable', 'That saved Accuracy Focus session is no longer available.'), 'warning');
         return;
@@ -1610,7 +1668,7 @@
     }, [accuracyDraft, beginProbe, addToast]);
 
     var discardSavedAccuracyFocus = useCallback(function () {
-      clearAccuracyDraft();
+      clearAccuracyDraft(learnerId);
       setAccuracyDraft(null);
       addToast(tt('math_fluency.saved_session_discarded', 'Saved Accuracy Focus session discarded'), 'info');
     }, [addToast]);
@@ -1705,7 +1763,8 @@
     }, []);
 
     var submitAnswer = useCallback(function (skip) {
-      if (manualPracticePauseRef.current !== null) return;
+      if (finishedRef.current || !sessionMountedRef.current || manualPracticePauseRef.current !== null) return;
+      if (runConfigRef.current && !runConfigRef.current.untimed && nowMs() >= deadlineRef.current) { finishProbe('time'); return; }
       var isSkip = skip === true;
       var parsed = isSkip ? { valid: true, value: null } : parseStudentAnswer(studentInput);
       if (!parsed.valid) {
@@ -1730,7 +1789,7 @@
         var attemptLog = (problem.attemptLog || []).concat([{
           studentAnswer: parsed.value, correct: false, responseMs: Math.round(responseMs)
         }]);
-        updated[idx] = Object.assign({}, problem, { attemptLog: attemptLog });
+        updated[idx] = Object.assign({}, problem, { attemptLog: attemptLog, answerRevealed: attemptLog.length >= 3 });
         problemsRef.current = updated;
         setProblems(updated);
         setCoachAttempts(attemptLog.length);
@@ -1757,14 +1816,14 @@
         var adaptiveStats = adaptiveStatsRef.current;
         var firstTry = isCorrect && !isSkip && (!problem.attemptLog || problem.attemptLog.length === 0);
         adaptiveStats.firstTryStreak = firstTry ? adaptiveStats.firstTryStreak + 1 : 0;
+        adaptiveStats.distinctFacts = firstTry ? Array.from(new Set((adaptiveStats.distinctFacts || []).concat(getFactKey(problem)))) : [];
         adaptiveStats.coachedOrMissed = firstTry ? Math.max(0, adaptiveStats.coachedOrMissed - 1) : adaptiveStats.coachedOrMissed + 1;
         var nextAdaptiveLevel = getAdaptivePracticeLevel(adaptiveStats);
         if (nextAdaptiveLevel !== adaptiveLevel) {
           adaptiveStats.adjustments += 1;
           adaptiveStats.level = nextAdaptiveLevel;
           setAdaptiveLevel(nextAdaptiveLevel);
-          var adaptiveSet = nextAdaptiveLevel === 'stretch' ? 'extended' : nextAdaptiveLevel === 'support' ? 'recommended' : (configNow.practiceSet || configNow.difficulty);
-          var replacement = generatePracticeProblems(problem.op, adaptiveSet, configNow.grade, 1)[0];
+          var replacement = chooseAdaptiveFact(updated[idx + 1], configNow, nextAdaptiveLevel);
           if (replacement) updated[idx + 1] = replacement;
           _mfAnnounce(nextAdaptiveLevel === 'stretch' ? tt('math_fluency.adaptive_stretch', 'Adaptive practice: ready for a stretch fact.') : nextAdaptiveLevel === 'support' ? tt('math_fluency.adaptive_support', 'Adaptive practice: returning to a support fact.') : tt('math_fluency.adaptive_steady', 'Adaptive practice: steady level.'));
         }
@@ -1900,7 +1959,9 @@
     }, [active]);
 
     useEffect(function () {
+      sessionMountedRef.current = true;
       return function () {
+        sessionMountedRef.current = false; finishedRef.current = true;
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
         if (autoAdvanceTimerRef.current) { clearTimeout(autoAdvanceTimerRef.current); autoAdvanceTimerRef.current = null; }
         cancelProblemSpeech();
@@ -2470,7 +2531,7 @@
                 onClick: function () {
                   setHistory([]);
                   setConfirmClearHistory(false);
-                  if (storageDB) storageDB.set('allo_fluency_history', []).catch(function () {});
+                  if (storageDB && learnerId) storageDB.set(historyStorageKey, []).catch(function () {});
                   addToast(tt('math_fluency.probe_history_cleared', 'Probe history cleared'), 'info');
                 },
                 style: { flex: '1 1 120px', padding: '9px', borderRadius: '9px', border: '1px solid #b91c1c', background: '#b91c1c', color: '#fff', fontWeight: 850, cursor: 'pointer' }
@@ -2494,7 +2555,7 @@
     var setupNormalizedGrade = probeGradeOverride || normalizeGrade(gradeLevel);
     var setupGradeBanks = setupNormalizedGrade && window.MATH_PROBE_BANKS ? window.MATH_PROBE_BANKS[setupNormalizedGrade] : null;
     var setupBank = setupGradeBanks ? setupGradeBanks[probeForm] : null;
-    var setupBenchmarkReady = probeMode !== 'benchmark' || !!(setupBank && Array.isArray(setupBank.problems) && setupBank.problems.length);
+    var setupBenchmarkReady = probeMode !== 'benchmark' || validateFluencyForm(setupBank).valid;
     var setupSupportCount = (reducedMotion ? 1 : 0) + (highContrast ? 1 : 0) + (touchKeypad ? 1 : 0)
       + (calmDisplay ? 1 : 0) + (adaptivePractice && probeMode === 'practice' ? 1 : 0)
       + (readAloud && speechAvailable && probeMode === 'practice' ? 1 : 0);
@@ -2543,7 +2604,7 @@
         ),
         h('button', {
           'aria-label': probeMode === 'benchmark' ? tt('math_fluency.start_fixed_form', 'Start fixed form') : tt('math_fluency.start_practice', 'Start practice'),
-          'aria-describedby': 'mf-session-preview', disabled: !setupBenchmarkReady, onClick: startProbe,
+          'aria-describedby': 'mf-session-preview', disabled: !setupBenchmarkReady || !learnerStorageReady, onClick: startProbe,
           style: {
             width: '100%', padding: '10px', background: setupBenchmarkReady ? 'linear-gradient(to right, #f59e0b, #f97316)' : '#cbd5e1',
             color: setupBenchmarkReady ? '#fff' : '#475569', fontWeight: 800, borderRadius: '12px', fontSize: '14px',
@@ -2944,7 +3005,8 @@
                 }))
               : h('p', null, 'No focus facts yet. Complete practice to generate targets.')
           ),
-          report.mazeLifetime.gatesUnlocked ? h('div', { className: 'mf-teacher-report-maze', 'aria-label': 'Maze lifetime progress' },
+          report.mazeLifetime.gatesUnlocked ? h('div', { className: 'mf-teacher-report-maze', 'aria-label': 'Shared device maze totals' },
+            h('span', null, tt('math_fluency.shared_maze_totals', 'Shared device maze totals: ')),
             h('span', null, (report.mazeLifetime.gatesUnlocked || 0) + ' gates'),
             h('span', null, (report.mazeLifetime.mazesCompleted || 0) + ' mazes'),
             h('span', null, 'x' + (report.mazeLifetime.longestStreak || 0) + ' streak'),
@@ -6081,6 +6143,51 @@
   }
 
   // ── Register modules ──
+
+  // A keyed session owns all state and storage for exactly one learner.
+  function MathFluencyPanel(props) {
+    var React = window.React, h = React.createElement;
+    function readPending() {
+      var p = window.__alloFluencyPendingConfig;
+      if (!p || !Number.isFinite(Number(p.at)) || Math.abs(Date.now() - Number(p.at)) > 120000) return null;
+      return p;
+    }
+    var initial = readPending();
+    var previousPropId = React.useRef(props.learnerId || null);
+    var _who = React.useState(function () { return { name: initial && initial.student || props.learnerName || '', id: initial && initial.student ? 'name:' + initial.student.trim().toLowerCase() : props.learnerId || null, pending: initial, epoch: 0 }; });
+    var who = _who[0], setWho = _who[1];
+    var _name = React.useState(who.name), name = _name[0], setName = _name[1];
+    var _active = React.useState(false), active = _active[0], setActive = _active[1];
+    React.useEffect(function () {
+      delete window.__alloFluencyPendingConfig;
+      function receive() {
+        var p = readPending(); delete window.__alloFluencyPendingConfig;
+        if (!p) return;
+        var student = typeof p.student === 'string' ? p.student.trim() : '';
+        setWho(function (previous) { return { name: student || previous.name, id: student ? 'name:' + student.toLowerCase() : previous.id, pending: p, epoch: previous.epoch + 1 }; });
+        if (student) setName(student);
+        setActive(false);
+      }
+      window.addEventListener('alloflow:fluency-pending-config', receive);
+      return function () { window.removeEventListener('alloflow:fluency-pending-config', receive); };
+    }, []);
+    React.useEffect(function () {
+      var nextId = props.learnerId || null;
+      if (nextId === previousPropId.current) return;
+      previousPropId.current = nextId;
+      setWho(function (previous) { return { id: nextId, name: props.learnerName || '', pending: null, epoch: previous.epoch + 1 }; });
+      setActive(false);
+      setName(props.learnerName || '');
+    }, [props.learnerId, props.learnerName]);
+    return h('div', null,
+      h('div', { className: 'mb-3 rounded-lg border border-slate-300 p-3' },
+        h('label', { htmlFor: 'mf-learner-name' }, tt('math_fluency.learner_name', 'Learner name or unique classroom identifier')),
+        h('input', { id: 'mf-learner-name', value: name, disabled: active || !!props.learnerId, onChange: function (e) { setName(e.target.value); }, className: 'ml-2 min-h-11 border border-slate-400 rounded p-2' }),
+        !props.learnerId && h('button', { type: 'button', disabled: active, className: 'ml-2 min-h-11 rounded bg-indigo-700 text-white px-3', onClick: function () { var clean = name.trim(); setWho(function (previous) { return { id: clean ? 'name:' + clean.toLowerCase() : null, name: clean, pending: null, epoch: previous.epoch + 1 }; }); } }, tt('math_fluency.use_learner', 'Use learner')),
+        h('p', { role: 'status', className: 'mt-2 text-sm text-slate-600' }, who.id ? tt('math_fluency.learner_separate', 'Progress is kept separately for this learner: ') + who.name : tt('math_fluency.anonymous_session', 'Unnamed practice stays in this session. Choose a learner to save separate progress.'))),
+      h(MathFluencySession, Object.assign({}, props, { key: (who.id || 'session') + ':' + who.epoch, learnerId: who.id, learnerName: who.name, initialPendingConfig: who.pending, onActiveChange: setActive })));
+  }
+
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.MathFluency = MathFluencyPanel;
   window.AlloModules.FluencyMaze = FluencyMazePanel;
@@ -6091,6 +6198,7 @@
     getBenchmark: getBenchmark, getBenchmarkLabel: getBenchmarkLabel,
     analyzeErrors: analyzeErrors, getSeason: getSeason, BENCHMARKS: BENCHMARKS,
     normalizeGrade: normalizeGrade, generateProblems: generateProblems,
+    fluencyStorageKey: fluencyStorageKey, fluencyComparisonKey: fluencyComparisonKey, validateFluencyForm: validateFluencyForm, chooseAdaptiveFact: chooseAdaptiveFact,
     getRecommendedPracticeSet: getRecommendedPracticeSet, getPracticeSetOptions: getPracticeSetOptions,
     describePracticeSet: describePracticeSet, generatePracticeProblems: generatePracticeProblems,
     getFactKey: getFactKey, summarizeFactResults: summarizeFactResults, updateFactMastery: updateFactMastery,

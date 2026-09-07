@@ -1711,11 +1711,42 @@ async function runAutoFixLoop(maxRounds, deps) {
         _setStepIfOwned(t('pdf_audit.auto_continue_round', { round: round + 1, max: maxRounds, detail: _acDetail, score: cur.afterScore || 0, target: pdfTargetScore }) || ('Auto-continue round ' + (round + 1) + '/' + maxRounds + ': ' + _acDetail + ', score ' + (cur.afterScore || 0) + '/100 (target ' + pdfTargetScore + ')...'));
         let result;
         let _roundThrottleDeferred = false;
+        // Candidate rejection evidence describes attempts, including rounds whose HTML is
+        // kept or later reverted. Persist it before re-verification can stop the round.
+        const _roundSourceHtml = cur.accessibleHtml;
+        const _captureFixPassEvidence = (meta) => {
+          if (!_canPublish() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) return;
+          const live = pdfFixResultRef.current;
+          if (!live || live.accessibleHtml !== _roundSourceHtml) return;
+          const boundedCount = (value) => Number.isFinite(Number(value))
+            ? Math.min(Number.MAX_SAFE_INTEGER, Math.max(0, Math.floor(Number(value)))) : 0;
+          const incoming = (meta && Array.isArray(meta.candidateRejections) ? meta.candidateRejections : [])
+            .filter((entry) => entry && typeof entry === 'object').slice(0, 100);
+          const addedCount = Math.max(boundedCount(meta && meta.candidateRejectionCount), incoming.length);
+          if (!addedCount) return;
+          const prior = (Array.isArray(live.candidateRejections) ? live.candidateRejections : [])
+            .filter((entry) => entry && typeof entry === 'object').slice(0, 100);
+          const records = prior.concat(incoming.map((entry) => ({ ...entry, pass: round + 1 }))).slice(0, 100)
+            .map((entry) => ({
+              pass: boundedCount(entry.pass),
+              chunkId: String(entry.chunkId || '').slice(0, 80),
+              phase: String(entry.phase || '').slice(0, 40),
+              reason: String(entry.reason || '').slice(0, 120),
+            }));
+          cur = { ...live,
+            candidateRejectionCount: Math.min(Number.MAX_SAFE_INTEGER,
+              Math.max(boundedCount(live.candidateRejectionCount), prior.length) + addedCount),
+            candidateRejections: records,
+          };
+          // The host setter synchronously updates the ref and preserves same-HTML proof.
+          setPdfFixResult(cur);
+        };
         if (_vio > 0) {
           result = await autoFixAxeViolations(cur.accessibleHtml, cur.axeAudit, pdfAutoFixPasses, {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
             owner: _loopOwner, // M20: heartbeats carry this loop's identity
+            onPassEvidence: _captureFixPassEvidence,
             onThrottleDeferred: () => { _roundThrottleDeferred = true; },
           });
           if (!result || result.stale) { cur = pdfFixResultRef.current; break; }
@@ -1737,6 +1768,7 @@ async function runAutoFixLoop(maxRounds, deps) {
             signal: _abortCtrl.signal,
             shouldAbort: () => !_canContinue(),
             owner: _loopOwner,
+            onPassEvidence: _captureFixPassEvidence,
             onThrottleDeferred: () => { _roundThrottleDeferred = true; },
           });
           if (!_canContinue() || pdfHtmlRevisionRef.current !== _roundHtmlRevision) {

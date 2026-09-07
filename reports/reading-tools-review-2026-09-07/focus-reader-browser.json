@@ -1,0 +1,52 @@
+[
+  {
+    "label": "mobile",
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "touchNavigation": true,
+    "focusedArrowNavigation": true,
+    "manualNavigationPauses": true,
+    "nativeSliderIndependent": true,
+    "previousButton": {
+      "x": 110.859375,
+      "y": 780,
+      "width": 90.453125,
+      "height": 44
+    },
+    "nextButton": {
+      "x": 213.3125,
+      "y": 780,
+      "width": 65.828125,
+      "height": 44
+    },
+    "horizontalOverflow": 0,
+    "errors": []
+  },
+  {
+    "label": "desktop",
+    "viewport": {
+      "width": 1280,
+      "height": 850
+    },
+    "touchNavigation": true,
+    "focusedArrowNavigation": true,
+    "manualNavigationPauses": true,
+    "nativeSliderIndependent": true,
+    "previousButton": {
+      "x": 555.859375,
+      "y": 786,
+      "width": 90.453125,
+      "height": 44
+    },
+    "nextButton": {
+      "x": 658.3125,
+      "y": 786,
+      "width": 65.828125,
+      "height": 44
+    },
+    "horizontalOverflow": 0,
+    "errors": []
+  }
+]

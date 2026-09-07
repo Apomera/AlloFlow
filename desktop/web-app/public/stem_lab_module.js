@@ -2159,6 +2159,7 @@
         storageDB,
         ai,
         sourceProvenance,
+        readingSource, onReturnToReading,
         sourceLocator,
         sourceType,
         callGemini,
@@ -7668,6 +7669,7 @@
             inputText: typeof inputText === 'string' ? inputText : '',
             sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
+            readingSource: readingSource || null, onReturnToReading: onReturnToReading,
             sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
             sourceType: typeof sourceType === 'string' ? sourceType : '',
             // gradeLevel, studentNickname and isTeacherMode were ALSO defined

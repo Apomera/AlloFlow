@@ -10,6 +10,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 import { buildLigatureFixturePdf } from './helpers/ligature_fixture.js';
 import { buildStampedXObjectPdf } from './helpers/stamped_xobject_fixture.js';
+import { makeVisionExtraction } from './lib/ocr_source_runtime.js';
 
 const dp = readFileSync(resolve(process.cwd(), 'doc_pipeline_source.jsx'), 'utf8');
 
@@ -186,10 +187,15 @@ describe('C3 — lost pages are reported, and a hole is never banked as evidence
     expect(dp).not.toContain("sourceCharCount: 0, error: e && e.message, pageErrors: [] };");
   });
 
-  it('a failed Vision chunk records every page it was supposed to cover', () => {
-    expect(dp).toContain('const _failedChunkIdx = new Set();');
-    expect(dp).toContain("if (!chunk || !chunk.trim()) { _failedChunkIdx.add(i); return ''; }");
-    expect(dp).toContain('pages: pagesOut, pageErrors: _visionPageErrors };');
+  it.each(['', ' \n\t'])('a blank Vision chunk records every physical page it was supposed to cover (%j)', async blank => {
+    let calls = 0;
+    const extract = makeVisionExtraction(async () => { calls++; return blank; }, { pageCount: 2, range: [7, 8] });
+    const result = await extract();
+    expect(calls).toBe(1); // Empty output is a failed extraction, not an ambiguous boundary retry.
+    expect(result.fullText).toBe('');
+    expect(result.pages.map(page => [page.pageNum, page.text])).toEqual([[7, ''], [8, '']]);
+    expect(result.pageErrors.map(error => error.pageNum)).toEqual([7, 8]);
+    expect(result.pageErrors.every(error => error.engine === 'vision' && error.error.length > 0)).toBe(true);
   });
 
   it('a page recovered by the OTHER engine is not reported as lost', () => {

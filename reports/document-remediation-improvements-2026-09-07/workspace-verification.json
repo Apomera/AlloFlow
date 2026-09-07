@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-09-07T04:53:57.570Z",
+  "checks": [
+    {
+      "file": "doc_pipeline_module.js",
+      "mirrorMatches": true,
+      "syntax": "passed",
+      "sha256": "ddcfebe62d3b91a87dcf8170fe4e4551a60a16a2b69108e996bbff8c82696cbc"
+    },
+    {
+      "file": "view_pdf_audit_module.js",
+      "mirrorMatches": true,
+      "syntax": "passed",
+      "sha256": "be81b4e8197f785fe4f8b81e2c11fdf84acb83d6abb3b75b5c363ad82cfbbf68"
+    },
+    {
+      "file": "misc_handlers_module.js",
+      "mirrorMatches": true,
+      "syntax": "passed",
+      "sha256": "f0855e3d8f92ab53fb125abb766f907c62aa14ef1ec4dc80e77f6637c5220951"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "syntax": "passed",
+      "rejectionProjection": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "syntax": "passed",
+      "rejectionProjection": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "syntax": "passed",
+      "rejectionProjection": true
+    }
+  ]
+}

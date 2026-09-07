@@ -293,6 +293,7 @@ describe('StoryForge production readiness', () => {
     }];
     const readiness = FK.getStoryForgeProjectReadiness({
       storyTitle: 'Doorway',
+      reviewSignals: { completed: true },
       genre: 'mystery',
       layoutMode: 'comic',
       paragraphs,

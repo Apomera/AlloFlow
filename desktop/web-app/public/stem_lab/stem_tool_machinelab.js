@@ -3885,6 +3885,7 @@ window.StemLab = window.StemLab || {
       // Foliage throws the shadow; trunks are inside it and only cost a pass.
       foliage.castShadow = true; trunks.castShadow = false;
       var dummy = new THREE.Object3D();
+      var crowns = [], broadCrowns = [];
       var placed = 0, tries = 0;
       var leaf = new THREE.Color();
       while (placed < TREES && tries < TREES * 6) {
@@ -3900,6 +3901,10 @@ window.StemLab = window.StemLab || {
         dummy.rotation.set(0, hash01(tries, 43, 11) * 6.28, 0);
         dummy.updateMatrix();
         foliage.setMatrixAt(placed, dummy.matrix);
+        // What the sway needs to rebuild this crown: where it stands, how big
+        // it is, how tall its trunk is (the pivot it leans about), and its own
+        // phase, so a wood does not sway as one object.
+        crowns.push({ x: tx, y: ty, z: tz, s: sc, lift: 1.7 * sc + 0.6, spin: dummy.rotation.y, ax: 1, ay: 1, phase: hash01(tries, 53, 13) * 6.28 });
         leaf.setHex(0x2f6b2a).lerp(new THREE.Color(0x6f9a3a), hash01(tries, 47, 12));
         foliage.setColorAt(placed, leaf);
         dummy.position.set(tx, ty + 0.55 * sc, tz);
@@ -3928,6 +3933,8 @@ window.StemLab = window.StemLab || {
         dummy.rotation.set(0, 0, 0);
         dummy.updateMatrix();
         canopy.setMatrixAt(bPlaced, dummy.matrix);
+        broadCrowns.push({ x: bx, y: by, z: bz, s: bsc, lift: 2.2 * bsc + 0.9, spin: 0,
+                           ax: 0.9 + hash01(bTries, 83, 74) * 0.4, ay: 0.85, phase: hash01(bTries, 97, 76) * 6.28 });
         leaf.setHex(0x5f9a3a).lerp(new THREE.Color(0xa7c94a), hash01(bTries, 89, 75));
         canopy.setColorAt(bPlaced, leaf);
         dummy.position.set(bx, by + 1.1 * bsc, bz);
@@ -3943,6 +3950,9 @@ window.StemLab = window.StemLab || {
       foliage.instanceMatrix.needsUpdate = true; trunks.instanceMatrix.needsUpdate = true;
       if (foliage.instanceColor) foliage.instanceColor.needsUpdate = true;
       S.model.add(foliage); S.model.add(trunks);
+      // The wood, ready to move: two meshes and the crowns that belong to them.
+      S.wood = [{ mesh: foliage, crowns: crowns }, { mesh: canopy, crowns: broadCrowns }];
+      S.woodDummy = dummy;
       for (var ri = 0; ri < 14; ri++) {
         var rx = (hash01(ri, 53, 13) - 0.5) * 120;
         var rz = -standoff * hash01(ri, 59, 14) * 1.1 + 10;
@@ -5646,6 +5656,35 @@ window.StemLab = window.StemLab || {
         SCENE_AUDIO.quiet(S);
       }
       S.bedRunning = !!(data.sound && !red);
+      // The wood. A crown leans downwind and sways about the top of its own
+      // trunk, phased per tree so the wood moves as many things and not one.
+      // Ambient life, like the banner and the chaff: still when ambient motion
+      // is off or the reader asked for less of it, and rebuilt to upright once
+      // when it stops so the last frame is not left leaning.
+      if (S.wood) {
+        var swayOn = ambient;
+        if (swayOn || S.woodLeaning) {
+          var lean = swayOn ? Math.max(-0.34, Math.min(0.34, wind * 0.021)) : 0;
+          var gust = swayOn ? (0.035 + windAbs * 0.006) : 0;
+          var wd = S.woodDummy;
+          for (var wi2 = 0; wi2 < S.wood.length; wi2++) {
+            var band = S.wood[wi2], cr = band.crowns;
+            for (var ci5 = 0; ci5 < cr.length; ci5++) {
+              var cw2 = cr[ci5];
+              var tilt = lean + (swayOn ? Math.sin(tSec * 1.4 + cw2.phase) * gust : 0);
+              // Lean about the trunk top, not the crown's own centre, or the
+              // canopy slides sideways off the tree it belongs to.
+              wd.position.set(cw2.x + Math.sin(tilt) * cw2.lift * 0.5, cw2.y + Math.cos(tilt) * cw2.lift, cw2.z);
+              wd.rotation.set(0, cw2.spin, tilt);
+              wd.scale.set(cw2.s * cw2.ax, cw2.s * cw2.ay, cw2.s);
+              wd.updateMatrix();
+              band.mesh.setMatrixAt(ci5, wd.matrix);
+            }
+            band.mesh.instanceMatrix.needsUpdate = true;
+          }
+          S.woodLeaning = swayOn;
+        }
+      }
       if (S.sock) {
         // Points downwind; hangs in calm air, lifts to level by about 8 m/s.
         S.sock.rotation.y = wind < 0 ? Math.PI : 0;

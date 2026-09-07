@@ -1,0 +1,69 @@
+{
+  "checks": [
+    "A practice example loads a balanced reaction and verified example quantities.",
+    "Both conversion directions recalculate with the current formula and clear together.",
+    "Negative amounts show an associated error; small nonzero amounts remain nonzero.",
+    "Repeating setup for an unchanged reaction preserves entered amounts.",
+    "Keyboard setup works; reaction edits invalidate all old amounts and results. Ties and excess yield are explained.",
+    "Keyboard product selection preserves reactants, clears the previous measurement, and updates the yield and accessible calculation explanation.",
+    "Default, dark, and high-contrast layouts pass at three widths; forced-colors mode preserves reflow.",
+    "Calculator regions pass targeted axe checks and document reflow at 320, 360, and 1200 pixels."
+  ],
+  "errors": [],
+  "axe": [
+    {
+      "theme": "theme-default",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-default",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-default",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-dark",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-dark",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-dark",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-contrast",
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-contrast",
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "theme": "theme-contrast",
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

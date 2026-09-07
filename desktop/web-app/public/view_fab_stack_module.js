@@ -344,13 +344,14 @@ function FabStack(props) {
           "data-student-tool": "true",
           onClick: handleToggleFocusMode,
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${focusMode ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
-          title: t("a11y.toggle_focus"),
-          "aria-label": t("a11y.toggle_focus"),
+          title: t("settings.text.bionic") || "Bionic Reading Style",
+          "aria-label": t("settings.text.bionic") || "Bionic Reading Style",
           "aria-pressed": focusMode,
-          "data-help-key": "fab_focus"
+          "data-help-key": "fab_focus",
+          "aria-describedby": "student-tools-bionic-hint"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Eye, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("a11y.toggle_focus"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("settings.text.bionic") || "Bionic Reading Style"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-bionic-hint", className: "mt-1 block text-[11px] font-normal" }, t("settings.text.bionic_sub") || "Bolds the beginning of each word"))
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
@@ -372,13 +373,14 @@ function FabStack(props) {
             setFocusedParagraphIndex(null);
           },
           className: `alloflow-student-tool transition-colors shadow-sm motion-reduce:transition-none ${isLineFocusMode ? "bg-indigo-100 text-indigo-700 ring-2 ring-indigo-500" : "bg-white text-slate-700 hover:bg-slate-50"}`,
-          title: t("a11y.toggle_line_focus"),
-          "aria-label": t("a11y.toggle_line_focus"),
+          title: t("student_tools.paragraph_focus") || "Paragraph focus",
+          "aria-label": t("student_tools.paragraph_focus") || "Paragraph focus",
           "aria-pressed": isLineFocusMode,
-          "data-help-key": "fab_line_focus"
+          "data-help-key": "fab_line_focus",
+          "aria-describedby": "student-tools-paragraph-focus-hint"
         },
         /* @__PURE__ */ React.createElement("span", { className: "alloflow-student-tool-icon", "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(AlignJustify, { size: 18 })),
-        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, t("a11y.toggle_line_focus"))
+        /* @__PURE__ */ React.createElement("span", { className: "min-w-0 text-xs font-bold leading-tight" }, /* @__PURE__ */ React.createElement("span", { className: "block" }, t("student_tools.paragraph_focus") || "Paragraph focus"), /* @__PURE__ */ React.createElement("span", { id: "student-tools-paragraph-focus-hint", className: "mt-1 block text-[11px] font-normal" }, t("student_tools.paragraph_focus_hint") || "Keeps the active paragraph clear"))
       ))), showInputAndPractice && /* @__PURE__ */ React.createElement("section", { className: "alloflow-student-tools-section px-4 py-3", "aria-labelledby": "alloflow-student-tools-input-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "alloflow-student-tools-input-heading", className: "mb-2 text-[11px] font-black uppercase tracking-[0.16em] text-slate-500" }, t("student_tools.input_practice") || "Input & practice"), /* @__PURE__ */ React.createElement("div", { className: "alloflow-student-tools-grid" }, !isTeacherMode && !studentAiFeaturesHidden && studentProjectSettings.allowSocraticTutor && /* @__PURE__ */ React.createElement(
         "button",
         {

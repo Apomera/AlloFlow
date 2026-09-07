@@ -22,6 +22,8 @@
     "test:watch": "vitest",
     "build:evaluation-portal": "node _build_educator_evaluation_apps_script.js",
     "verify:evaluation-portal": "node _build_educator_evaluation_apps_script.js --check",
+    "demo:educator-evaluation": "node dev-tools/educator_evaluation_demo.mjs",
+    "verify:educator-evaluation": "node _build_educator_evaluation_apps_script.js --check && vitest run tests/educator_evaluation --maxWorkers=1 --pool=forks --testTimeout=60000",
     "capture:evaluation-manual": "node dev-tools/capture_educator_evaluation_manual.cjs",
     "test:ci:shard": "node dev-tools/run_unit_shard.cjs",
     "test:coverage": "vitest run --coverage",
@@ -198,6 +200,7 @@
     "triage:post-review-drift": "node dev-tools/track_post_review_source_drift.cjs",
     "verify:sel-a11y": "node dev-tools/check_sel_a11y.cjs",
     "verify:sel-wcag": "node dev-tools/check_sel_hub_wcag.cjs",
+    "demo:school-store": "node dev-tools/build_print_review_css.cjs && node dev-tools/school_rewards_admin_demo.mjs",
     "verify:school-rewards": "vitest run tests/school_rewards tests/admin_hub_rewards_card.test.js tests/allohaven_classroom_reward_bridge.test.js tests/print_lab_tool.test.js tests/geometry_world_printlab_bridge.test.js --maxWorkers=1 --testTimeout=60000"
   },
   "dependencies": {

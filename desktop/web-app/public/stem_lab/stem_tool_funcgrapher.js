@@ -227,16 +227,27 @@ window.StemLab = window.StemLab || {
 
           };
 
-          // Numerical derivative
+          // Analytic derivatives for the supported function families
 
-          const evalDeriv = x => (evalF(x + 0.001) - evalF(x - 0.001)) / 0.002;
+          const evalDeriv = x => {
+            if(!Number.isFinite(evalF(x)))return NaN;
+            if(d.type==='quadratic')return 2*d.a*x+d.b;
+            if(d.type==='cubic')return 3*d.a*x*x+d.b;
+            if(d.type==='trig')return d.a*d.b*Math.cos(d.b*x+d.c);
+            if(d.type==='exponential')return d.a*d.b*Math.exp(d.b*x);
+            if(d.type==='absolute')return x+d.b===0?(d.a===0?0:NaN):d.a*Math.sign(x+d.b);
+            if(d.type==='sqrt')return x+d.b>0?d.a/(2*Math.sqrt(x+d.b)):NaN;
+            if(d.type==='log')return d.a/(x+d.b);
+            if(d.type==='rational')return -d.a/((x+d.b)*(x+d.b));
+            return d.a;
+          };
 
           // Tangent line at trace point
           var traceCandidate = Number.isFinite(d.traceX) ? d.traceX : Math.max(xR.xMin, Math.min(xR.xMax, 0));
           var traceX = Math.max(xR.xMin, Math.min(xR.xMax, traceCandidate));
           var traceY = evalF(traceX);
           var traceSlope = evalDeriv(traceX);
-          var tangentInRange = traceY >= yR.yMin && traceY <= yR.yMax;
+          var tangentInRange = Number.isFinite(traceSlope) && traceY >= yR.yMin && traceY <= yR.yMax;
 
 
 
@@ -315,20 +326,25 @@ window.StemLab = window.StemLab || {
 
           // Numerical integral of f from 0 to xR.xMax (trapezoidal) — shown when Area is on
           var integral0ToMax = 0;
-          var integralDefined = true;
+          var integralDefined = xR.xMax >= 0;
+          var integralReason = xR.xMax < 0 ? __alloT('stem.funcgrapher.integral_nonnegative_endpoint','Choose a right endpoint at or above 0 for this overlay.') : '';
           if (d.showArea && xR.xMax > 0) {
             // A rational's asymptote inside [0, xMax] makes the integral improper and
             // divergent — no finite number is honest there.
-            if (d.type === 'rational' && (-d.b) >= 0 && (-d.b) <= xR.xMax) integralDefined = false;
+            if (d.type === 'rational' && (-d.b) >= 0 && (-d.b) <= xR.xMax) {integralDefined = false;integralReason=d.a===0?__alloT('stem.funcgrapher.integral_undefined_point','The expression is undefined at a point in this interval.'):__alloT('stem.funcgrapher.integral_pole','The integral diverges at the vertical asymptote.');}
+            if((d.type==='sqrt'&&d.b<0)||(d.type==='log'&&d.b<=0)){integralDefined=false;integralReason=__alloT('stem.funcgrapher.integral_domain_limit','The interval includes values outside the real domain or an endpoint requiring an improper-integral calculation.');}
             var iSteps = 200, iLo = 0, iHi = xR.xMax;
             var iH = (iHi - iLo) / iSteps;
             for (var ii = 0; ii < iSteps; ii++) {
               var xa = iLo + ii * iH, xb = xa + iH;
               var fa = evalF(xa), fb = evalF(xb);
-              // Skip trapezoids outside the domain (sqrt/log NaN) instead of poisoning the sum
-              if (isFinite(fa) && isFinite(fb)) integral0ToMax += (fa + fb) * iH / 2;
+              if (!Number.isFinite(fa) || !Number.isFinite(fb)) {
+                if (integralDefined) integralReason = __alloT('stem.funcgrapher.integral_numeric_range','A sampled value is outside the numerical range. Try a smaller interval or coefficients.');
+                integralDefined = false; break;
+              }
+              integral0ToMax += (fa + fb) * iH / 2;
             }
-            if (!isFinite(integral0ToMax)) integralDefined = false;
+            if (!Number.isFinite(integral0ToMax)) { integralDefined = false; integralReason = __alloT('stem.funcgrapher.integral_numeric_range','A sampled value is outside the numerical range. Try a smaller interval or coefficients.'); }
           }
 
 
@@ -626,8 +642,8 @@ window.StemLab = window.StemLab || {
 
               // Area under curve (positive x)
 
-              d.showArea && areaPts.length > 1 && React.createElement("polygon", {
-
+              d.showArea && integralDefined && areaPts.length > 1 && React.createElement("polygon", {
+                "data-function-area": true,
                 points: toSX(0) + ',' + toSY(0) + ' ' + areaPts.map(p => p.sx + ',' + p.sy).join(' ') + ' ' + areaPts[areaPts.length - 1].sx + ',' + toSY(0),
 
                 fill: isDark ? "rgba(129,140,248,0.16)" : "rgba(79,70,229,0.08)", stroke: "none"
@@ -775,7 +791,7 @@ window.StemLab = window.StemLab || {
 
               React.createElement("button", { onClick: () => { if (!d.showArea) upd('overlaysUsed', Object.assign({}, d.overlaysUsed, { area: true })); upd('showArea', !d.showArea); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showArea ? 'bg-indigo-600 text-white' : 'bg-indigo-50 text-indigo-600 border border-indigo-600') }, d.showArea ? "\u2705 Area" : "\u222B Area"),
 
-              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[0.6875rem] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx " + (integralDefined ? "\u2248 " + integral0ToMax.toFixed(2) : "diverges")),
+              d.showArea && React.createElement("span", { className: "px-2 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-[0.6875rem] font-mono font-bold border border-indigo-300" }, "\u222B\u2080^" + xR.xMax.toFixed(0) + " f(x)dx " + (integralDefined ? "\u2248 " + integral0ToMax.toFixed(2) : integralReason)),
 
               React.createElement("button", { onClick: () => upd('showTable', !d.showTable), className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.showTable ? 'bg-cyan-700 text-white' : 'bg-cyan-50 text-cyan-700 border border-cyan-600') }, d.showTable ? "\u2705 Table" : "\uD83D\uDCCB Table"),
 
@@ -789,10 +805,10 @@ window.StemLab = window.StemLab || {
 
             // ── Tangent Line Trace Slider ──
             React.createElement("div", { className: "bg-pink-50 rounded-lg p-2 border border-pink-200 mt-1" },
-              React.createElement("div", { className: "flex items-center gap-2" },
+              React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
                 React.createElement("span", { className: "text-xs font-bold text-pink-700" }, "\uD83D\uDCCC Trace: x = " + traceX.toFixed(1)),
                 React.createElement("input", { type: "range", min: xR.xMin, max: xR.xMax, step: 0.1, value: traceX, onChange: e => upd('traceX', parseFloat(e.target.value)), className: "flex-1 accent-pink-500", 'aria-label': __alloT('stem.funcgrapher.trace_x_position', 'Trace x position') }),
-                tangentInRange && React.createElement("span", { className: "text-[0.6875rem] font-mono text-pink-700" }, "f(" + traceX.toFixed(1) + ") = " + traceY.toFixed(2) + ", slope = " + traceSlope.toFixed(2))
+                React.createElement("span", { 'data-function-trace':true,role:'status',className: "text-xs font-mono text-pink-700",style:{overflowWrap:'anywhere'} }, !Number.isFinite(traceY)?__alloT('stem.funcgrapher.trace_undefined','The function is undefined at this x.'): 'f(' + traceX.toFixed(1) + ') = ' + traceY.toFixed(2) + (Number.isFinite(traceSlope)?', slope = '+traceSlope.toFixed(2):'; '+__alloT('stem.funcgrapher.trace_no_derivative','no finite derivative at this point.')))
               )
             ),
 
@@ -831,7 +847,7 @@ window.StemLab = window.StemLab || {
               React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" },
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-red-600" }, __alloT('stem.funcgrapher.roots_x_intercepts', "\uD83D\uDD34 Roots (x-intercepts): ")),
-                  __alloT('stem.funcgrapher.where_the_function_crosses_the_x_axis_', "Where the function crosses the x-axis. At these points, f(x) = 0. Solving for the roots is essential in algebra and calculus.")
+                  __alloT('stem.funcgrapher.root_meaning_refined', 'A root has f(x) = 0. The graph can cross or touch the x-axis there. Numerical searches can miss roots, so use algebra or the table to check.')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-green-700" }, __alloT('stem.funcgrapher.y_intercept', "\uD83D\uDFE2 Y-intercept: ")),
@@ -839,7 +855,7 @@ window.StemLab = window.StemLab || {
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-pink-700" }, __alloT('stem.funcgrapher.slope_tangent_line', "\uD83D\uDCCC Slope & Tangent Line: ")),
-                  __alloT('stem.funcgrapher.the_slope_tells_you_how_steep_the_func', "The slope tells you how steep the function is at any point. The tangent line touches the curve at exactly one point. Use the trace slider to explore!")
+                  __alloT('stem.funcgrapher.tangent_meaning_refined', 'A tangent describes the local slope where the derivative exists. It can cross the curve or meet it again. Corners and domain boundaries need special care.')
                 ),
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold text-amber-800" }, __alloT('stem.funcgrapher.derivative_f_x', "\uD83D\uDCC9 Derivative f\u2032(x): ")),
@@ -1574,61 +1590,111 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            // === H7b'' inquiry widget: wave parameter discovery ===
+            // Wave investigation: linked representations and visible comparison evidence.
             (function() {
-              var iq = d._waveHunt || { amp: 1, freq: 1, phase: 0, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+              var iq = d._waveHunt || {};
               function setIQ(patch) { upd('_waveHunt', Object.assign({}, iq, patch)); }
-              var ampS = iq.amp > 1.5 ? 'tall' : (iq.amp < 0.5 ? 'short' : 'med');
-              var freqS = iq.freq > 2 ? 'fast' : (iq.freq < 0.5 ? 'slow' : 'med');
-              var state;
-              if (ampS === 'tall' && freqS === 'fast') state = 'tallFast';
-              else if (ampS === 'tall') state = 'tall';
-              else if (freqS === 'fast') state = 'fast';
-              else if (ampS === 'short') state = 'short';
-              else state = 'normal';
-              var sm = {
-                tallFast: { label: __alloT('stem.funcgrapher.tall_fast_intense', '🌊 Tall + Fast (intense)'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5' },
-                tall:     { label: __alloT('stem.funcgrapher.tall_wave', '🗻 Tall wave'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d' },
-                fast:     { label: __alloT('stem.funcgrapher.fast_cycle', '⚡ Fast cycle'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd' },
-                short:    { label: __alloT('stem.funcgrapher.short_wave', '〰️ Short wave'), color: '#0891b2', bg: '#ecfeff', border: '#67e8f9' },
-                normal:   { label: __alloT('stem.funcgrapher.standard', '🟢 Standard'), color: '#059669', bg: '#ecfdf5', border: '#86efac' }
-              }[state];
-              sm.color = { tallFast: '#b91c1c', tall: '#92400e', fast: '#6d28d9', short: '#155e75', normal: '#047857' }[state];
-              return h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-violet-300 space-y-2' },
-                h('h3', { className: 'text-sm font-black text-violet-700' }, __alloT('stem.funcgrapher.wave_parameter_discovery', '🌊 Wave parameter discovery')),
-                h('p', { className: 'text-[0.6875rem] text-slate-700' }, __alloT('stem.funcgrapher.sliders_for_amplitude_frequency_phase_', 'Sliders for amplitude, frequency, phase. Discrete 5-state classification. No score, no reveal.')),
-                h('div', { className: 'p-2 rounded text-center', style: { background: sm.bg, border: '1px solid ' + sm.border } },
-                  h('div', { className: 'text-sm font-black', style: { color: sm.color } }, sm.label),
-                  h('div', { className: 'text-[0.625rem] text-slate-700 mt-1 font-mono' }, 'y = ' + iq.amp + ' sin(' + iq.freq + 'x + ' + iq.phase.toFixed(2) + ')')
-                ),
-                h('div', { className: 'grid grid-cols-3 gap-2' },
-                  [{ k: 'amp', l: 'amplitude', mn: -3, mx: 3, st: 0.1 },
-                   { k: 'freq', l: 'frequency', mn: 0.1, mx: 3, st: 0.1 },
-                   { k: 'phase', l: 'phase', mn: -3.14, mx: 3.14, st: 0.1 }].map(function(s) {
-                    return h('div', { key: s.k },
-                      h('label', { htmlFor: 'wa-' + s.k, className: 'block text-[0.625rem] font-bold text-slate-700' }, s.l + ': ', h('span', { className: 'font-mono text-violet-700' }, iq[s.k])),
-                      h('input', { id: 'wa-' + s.k, type: 'range', min: s.mn, max: s.mx, step: s.st, value: iq[s.k],
-                        onChange: function(e) { var p = {}; p[s.k] = parseFloat(e.target.value); setIQ(p); },
-                        className: 'w-full', 'aria-label': s.l }));
-                  })
-                ),
-                h('div', { className: 'flex gap-2 items-center flex-wrap' },
-                  h('button', { onClick: function() { setIQ({ log: (iq.log || []).concat([{ a: iq.amp, f: iq.freq, p: iq.phase.toFixed(2), st: state }]).slice(-8) }); }, className: 'px-2 py-0.5 rounded bg-slate-100 text-[0.625rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.funcgrapher.log', '📋 Log')),
-                  h('button', { onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); }, className: 'px-2 py-0.5 rounded bg-white text-[0.625rem] font-semibold text-slate-600 border border-slate-300' }, __alloT('stem.funcgrapher.reset_2', '↺ Reset'))
-                ),
-                h('textarea', { 'aria-label': __alloT('stem.funcgrapher.hypothesis_input', 'Function grapher hypothesis'), value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.hypothesis_how_does_phase_shift_affect', 'Hypothesis: How does phase shift affect the visible wave?'),
-                  className: 'w-full text-[0.6875rem] border border-slate-300 rounded p-1 font-mono leading-snug', rows: 2 }),
-                !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-0.5 rounded bg-amber-50 text-[0.625rem] font-bold text-amber-800 border border-amber-300' }, __alloT('stem.funcgrapher.stuck_show_open_prompts', '🤔 Stuck — show open prompts')),
-                iq.stuckRevealed && h('div', { className: 'p-2 rounded bg-amber-50 border border-amber-200 text-[0.625rem] text-slate-700' },
-                  h('ul', { className: 'list-disc pl-4 space-y-0.5' },
-                    h('li', null, __alloT('stem.funcgrapher.find_two_settings_that_produce_visuall', 'Find two settings that produce visually identical waves.')),
-                    h('li', null, __alloT('stem.funcgrapher.what_does_negative_amplitude_do', 'What does negative amplitude do?')))),
-                h('label', { className: 'flex items-center gap-1 text-[0.625rem] font-bold text-emerald-800 cursor-pointer' },
-                  h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-3 h-3' }),
-                  __alloT('stem.funcgrapher.i_understand_explain_in_own_words', 'I understand — explain in own words')),
-                iq.understood && h('textarea', { 'aria-label': __alloT('stem.funcgrapher.explanation_input', 'Function grapher explanation'), value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.explain_how_each_parameter_shapes_a_si', 'Explain how each parameter shapes a sine wave.'),
-                  className: 'w-full text-[0.6875rem] border border-emerald-300 rounded p-1 font-mono leading-snug mt-1', rows: 3 }),
-                h('div', { className: 'text-[0.625rem] leading-snug italic text-slate-500' }, __alloT('stem.funcgrapher.design_note_discrete_5_state_marker_no', 'Design note: discrete 5-state marker; no wave score; no reveal — by design.'))
+              function bounded(value, fallback, min, max) { return Number.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback; }
+              var current = { a: bounded(iq.amp, 1, -3, 3), f: bounded(iq.freq, 1, 0, 3), p: bounded(iq.phase, 0, -3.2, 3.2) };
+              function keyFor(record) { return [record.a, record.f, record.p].map(function(v) { return Number(v.toPrecision(12)); }).join('|'); }
+              function display(value) { return String(Number(value.toFixed(2))); }
+              function equation(record) { return 'y = ' + display(record.a) + ' sin(' + display(record.f) + 'x ' + (record.p < 0 ? '− ' : '+ ') + display(Math.abs(record.p)) + ')'; }
+              function valueAt(record, x) { return record.a * Math.sin(record.f * x + record.p); }
+              function constant(record) { return record.a === 0 || record.f === 0; }
+              var records = [], seen = {};
+              (Array.isArray(iq.log) ? iq.log : []).forEach(function(entry) {
+                if (!entry || (typeof entry.p !== 'number' && typeof entry.p !== 'string') || String(entry.p).trim() === '') return;
+                var record = { a: entry.a, f: entry.f, p: Number(entry.p) };
+                if (![record.a, record.f, record.p].every(Number.isFinite) || Math.abs(record.a) > 3 || record.f < 0 || record.f > 3 || Math.abs(record.p) > 3.2) return;
+                var key = keyFor(record);
+                if (!seen[key]) { seen[key] = true; records.push(record); }
+              });
+              records = records.slice(-8);
+              var currentKey = keyFor(current), savedIndex = records.findIndex(function(record) { return keyFor(record) === currentKey; });
+              var reference = records.find(function(record) { return keyFor(record) === iq.referenceKey; }) || records[0] || null;
+              var referenceKey = reference ? keyFor(reference) : '';
+              var referenceIndex = reference ? records.indexOf(reference) : -1;
+              var changed = reference ? ['a', 'f', 'p'].filter(function(key) { return Math.abs(current[key] - reference[key]) > 1e-10; }) : [];
+              var symbols = { a: 'a', f: 'b', p: 'φ' };
+              var isConstant = constant(current), period = isConstant ? null : 2 * Math.PI / current.f, shift = isConstant ? null : -current.p / current.f;
+              var focusOptions = [
+                { id: 'height', control: 'amp', label: __alloT('stem.funcgrapher.wave_focus_height', 'Height'), question: __alloT('stem.funcgrapher.wave_height_question', 'How does a change the height and orientation? Keep b and φ fixed.') },
+                { id: 'spacing', control: 'freq', label: __alloT('stem.funcgrapher.wave_focus_spacing', 'Spacing'), question: __alloT('stem.funcgrapher.wave_spacing_question', 'How does b change the distance between repeats? Keep a and φ fixed.') },
+                { id: 'shift', control: 'phase', label: __alloT('stem.funcgrapher.wave_focus_shift', 'Shift'), question: __alloT('stem.funcgrapher.wave_shift_question', 'Which direction does the wave move as φ increases? Keep a and b fixed.') }
+              ];
+              var focus = focusOptions.find(function(option) { return option.id === iq.focus; }) || focusOptions[0];
+              var panel = 'var(--allo-stem-panel,#fff)', ink = 'var(--allo-stem-text,#0f172a)', softInk = 'var(--allo-stem-text-soft,#475569)';
+              var curveInk = ctx.isContrast ? '#ffff00' : isDark ? '#a5b4fc' : '#4338ca';
+              var fieldStyle = { width: '100%', minWidth: 0, background: panel, color: ink, border: '1px solid ' + softInk, borderRadius: 6, padding: 8, fontSize: 13 };
+              var buttonStyle = { minHeight: 44, padding: '6px 12px', borderRadius: 7, border: '1px solid ' + softInk, background: panel, color: ink, fontSize: 13, cursor: 'pointer' };
+              var xLeft = -2 * Math.PI, xRight = 2 * Math.PI;
+              function sx(x) { return 32 + (x - xLeft) / (xRight - xLeft) * 392; }
+              function sy(y) { return 212 - (y + 3.5) / 7 * 192; }
+              function pathFor(record) {
+                var path = '';
+                for (var i = 0; i <= 320; i++) {
+                  var x = xLeft + (xRight - xLeft) * i / 320;
+                  path += (i ? ' L' : 'M') + sx(x).toFixed(2) + ',' + sy(valueAt(record, x)).toFixed(2);
+                }
+                return path;
+              }
+              function saveSetting() {
+                if (savedIndex >= 0) return;
+                var nextRecords = records.concat([current]).slice(-8);
+                var nextReference = nextRecords.some(function(record) { return keyFor(record) === referenceKey; }) ? referenceKey : keyFor(nextRecords[0]);
+                setIQ({ log: nextRecords, referenceKey: nextReference, showLog: true });
+              }
+              var savedLabel = __alloT('stem.funcgrapher.wave_saved_setting', 'Saved setting');
+              var comparison = !reference ? __alloT('stem.funcgrapher.wave_start_comparison', 'Save a starting setting, then move one slider to compare the curves.') : changed.length === 0 ? __alloT('stem.funcgrapher.wave_same_settings', 'The current parameters match the saved reference.') : changed.length === 1 ? __alloT('stem.funcgrapher.wave_one_change', 'One parameter changed: ') + symbols[changed[0]] + '. ' + __alloT('stem.funcgrapher.wave_held_fixed', 'Held fixed: ') + ['a', 'f', 'p'].filter(function(key) { return key !== changed[0]; }).map(function(key) { return symbols[key]; }).join(', ') + '.' : __alloT('stem.funcgrapher.wave_multiple_changes', 'Several parameters changed. Restore the reference and change one slider to isolate its effect.');
+              return h('section', { 'data-wave-investigation': true, 'aria-labelledby': 'wave-investigation-title', className: 'mt-3 p-3 rounded-xl space-y-3', style: { background: panel, color: ink, border: '1px solid ' + softInk } },
+                h('h3', { id: 'wave-investigation-title', className: 'text-base font-bold' }, __alloT('stem.funcgrapher.wave_investigation_title', 'Wave investigation')),
+                h('p', { className: 'text-sm' }, __alloT('stem.funcgrapher.wave_investigation_intro', 'Explore y = a sin(bx + φ). Save a setting and change one parameter; the dashed curve keeps your reference visible.')),
+                h('div', { role: 'group', 'aria-label': __alloT('stem.funcgrapher.wave_focus_label', 'Choose a wave investigation'), className: 'flex flex-wrap gap-2' },
+                  focusOptions.map(function(option) { return h('button', { key: option.id, type: 'button', 'aria-pressed': option.id === focus.id, onClick: function() { setIQ({ focus: option.id }); }, style: Object.assign({}, buttonStyle, { fontWeight: option.id === focus.id ? 800 : 400, borderWidth: option.id === focus.id ? 2 : 1 }) }, option.label); })),
+                h('p', { 'data-wave-question': focus.id, className: 'text-sm font-bold' }, focus.question),
+                h('div', { 'data-wave-model-controls': true, style: { display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'start' } },
+                h('figure', { style: { margin: 0, flex: '2 1 440px', minWidth: 0 } },
+                  h('div', { 'data-wave-equation': true, className: 'text-sm font-mono font-bold mb-2' }, equation(current)),
+                  h('svg', { viewBox: '0 0 440 240', role: 'img', 'aria-label': __alloT('stem.funcgrapher.wave_plot_description', 'Wave plot linked to a, b, and φ. Solid curve: ') + equation(current) + (reference && iq.showReference !== false ? '. ' + savedLabel + ' ' + (referenceIndex + 1) + ': ' + equation(reference) : ''), style: { width: '100%', display: 'block' } },
+                    h('rect', { x: 32, y: 20, width: 392, height: 192, fill: 'none', stroke: softInk, opacity: 0.45 }),
+                    [-3, 0, 3].map(function(y) { return h('g', { key: y }, h('line', { x1: 32, x2: 424, y1: sy(y), y2: sy(y), stroke: softInk, opacity: y === 0 ? 0.85 : 0.25 }), h('text', { x: 26, y: sy(y) + 5, textAnchor: 'end', fontSize: 16, fill: ink }, y)); }),
+                    [-Math.PI * 2, -Math.PI, 0, Math.PI, Math.PI * 2].map(function(x) { return h('line', { key: x, x1: sx(x), x2: sx(x), y1: 20, y2: 212, stroke: softInk, opacity: x === 0 ? 0.85 : 0.2 }); }),
+                    reference && iq.showReference !== false && h('path', { 'data-wave-reference': referenceKey, d: pathFor(reference), fill: 'none', stroke: softInk, strokeWidth: 3, strokeDasharray: '8 6' }),
+                    h('path', { 'data-wave-current': true, d: pathFor(current), fill: 'none', stroke: curveInk, strokeWidth: 3 }),
+                    h('circle', { cx: sx(0), cy: sy(valueAt(current, 0)), r: 4, fill: curveInk, stroke: panel, strokeWidth: 1.5 })),
+                  h('div', { 'aria-hidden': true, className: 'flex justify-between text-xs', style: { margin: '-8px 3.6% 6px 7.3%' } }, ['−2π', '−π', '0', 'π', '2π'].map(function(label) { return h('span', { key: label }, label); })),
+                  h('figcaption', { className: 'text-xs', style: { color: softInk } }, __alloT('stem.funcgrapher.wave_plot_window', 'Fixed window: x from −2π to 2π radians, y from −3.5 to 3.5.')),
+                  h('p', { 'data-wave-zero-value': valueAt(current, 0), className: 'text-sm mt-1' }, __alloT('stem.funcgrapher.wave_at_zero', 'At x = 0, y ≈ ') + valueAt(current, 0).toFixed(3))),
+                h('div', { className: 'grid grid-cols-1 gap-3', style: { flex: '1 1 240px', minWidth: 0 } },
+                  [{ k: 'amp', symbol: 'a', label: __alloT('stem.funcgrapher.wave_vertical_multiplier', 'Vertical multiplier a'), value: current.a, min: -3, max: 3 },
+                   { k: 'freq', symbol: 'b', label: __alloT('stem.funcgrapher.wave_inside_multiplier', 'Inside multiplier b'), value: current.f, min: 0, max: 3 },
+                   { k: 'phase', symbol: 'φ', label: __alloT('stem.funcgrapher.wave_phase_radians', 'Phase φ (radians)'), value: current.p, min: -3.2, max: 3.2 }].map(function(control) {
+                    return h('div', { key: control.k, style: { padding: 8, borderRadius: 7, border: (focus.control === control.k ? '2px solid ' : '1px solid ') + softInk } },
+                      h('label', { htmlFor: 'wa-' + control.k, className: 'block text-sm font-bold' }, control.label + ': ' + display(control.value)),
+                      h('input', { id: 'wa-' + control.k, type: 'range', min: control.min, max: control.max, step: 0.1, value: control.value, 'aria-label': control.label, onChange: function(e) { var patch = {}; patch[control.k] = Number(e.target.value); setIQ(patch); }, style: { width: '100%', minHeight: 28, accentColor: curveInk } })); }))),
+                h('div', { 'data-wave-measures': true, className: 'grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm' },
+                  h('p', null, __alloT('stem.funcgrapher.wave_amplitude_measure', 'Amplitude: '), h('strong', { 'data-wave-amplitude': isConstant ? 0 : Math.abs(current.a) }, display(isConstant ? 0 : Math.abs(current.a)))),
+                  h('p', null, __alloT('stem.funcgrapher.wave_period_measure', 'Period: '), h('strong', { 'data-wave-measure': 'period', 'data-wave-period': period }, period === null ? __alloT('stem.funcgrapher.wave_no_fundamental_period', 'No fundamental period') : '≈ ' + period.toFixed(2))),
+                  h('p', null, __alloT('stem.funcgrapher.wave_shift_measure', 'Horizontal shift: '), h('strong', { 'data-wave-measure': 'shift', 'data-wave-shift': shift }, shift === null ? __alloT('stem.funcgrapher.wave_shift_not_unique', 'Not unique') : '≈ ' + shift.toFixed(2)))),
+                h('p', { 'data-wave-meaning': true, className: 'text-sm' }, isConstant ? __alloT('stem.funcgrapher.wave_constant_meaning', 'This is a constant function: no oscillation, no fundamental period, and no unique horizontal shift.') : __alloT('stem.funcgrapher.wave_formula_meaning', 'Amplitude is |a|, period is 2π/b, and one horizontal shift is −φ/b. Negative a reflects the wave across y = 0. A negative shift moves it left.')),
+                !isConstant && period > xRight - xLeft && h('p', { className: 'text-xs' }, __alloT('stem.funcgrapher.wave_long_period', 'A full period extends beyond this window.')),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  h('button', { type: 'button', onClick: saveSetting, disabled: savedIndex >= 0, style: Object.assign({}, buttonStyle, { cursor: savedIndex >= 0 ? 'default' : 'pointer' }) }, savedIndex >= 0 ? __alloT('stem.funcgrapher.wave_already_saved', 'Already saved as setting ') + (savedIndex + 1) : __alloT('stem.funcgrapher.wave_save_setting', 'Save setting')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ amp: 1, freq: 1, phase: 0, log: [], referenceKey: '', showReference: true, showLog: true, hypothesis: '', understood: false, explanation: '', focus: 'height' }); }, style: buttonStyle }, __alloT('stem.funcgrapher.wave_reset_investigation', 'Reset investigation'))),
+                reference && h('div', { className: 'space-y-2' },
+                  h('label', { htmlFor: 'wave-reference-select', className: 'block text-sm font-bold' }, __alloT('stem.funcgrapher.wave_compare_with', 'Compare with')),
+                  h('select', { id: 'wave-reference-select', value: referenceKey, onChange: function(e) { setIQ({ referenceKey: e.target.value }); }, style: fieldStyle }, records.map(function(record, index) { return h('option', { key: keyFor(record), value: keyFor(record) }, savedLabel + ' ' + (index + 1) + ': a=' + display(record.a) + ', b=' + display(record.f) + ', φ=' + display(record.p)); })),
+                  h('label', { className: 'flex items-center gap-2 text-sm', style: { minHeight: 44 } }, h('input', { type: 'checkbox', checked: iq.showReference !== false, onChange: function(e) { setIQ({ showReference: e.target.checked }); }, style: { width: 24, height: 24, margin: 0, flexShrink: 0 } }), __alloT('stem.funcgrapher.wave_show_reference', 'Show saved reference (dashed)')),
+                  h('button', { type: 'button', onClick: function() { setIQ({ amp: reference.a, freq: reference.f, phase: reference.p }); }, style: buttonStyle }, __alloT('stem.funcgrapher.wave_restore_reference', 'Restore reference'))),
+                h('p', { 'data-wave-comparison': true, role: 'status', className: 'text-sm' }, comparison),
+                reference && h('div', null,
+                  h('button', { type: 'button', 'aria-expanded': iq.showLog !== false, 'aria-controls': 'wave-saved-settings', onClick: function() { setIQ({ showLog: iq.showLog === false }); }, style: buttonStyle }, __alloT('stem.funcgrapher.wave_saved_settings', 'Saved settings') + ' (' + records.length + '/8)'),
+                  h('ol', { id: 'wave-saved-settings', hidden: iq.showLog === false, className: 'grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2', style: { listStyle: 'none', padding: 0, display: iq.showLog === false ? 'none' : undefined } }, records.map(function(record, index) { return h('li', { key: keyFor(record), 'data-wave-record': keyFor(record), className: 'p-2 rounded text-sm', style: { border: '1px solid ' + softInk } }, h('strong', null, savedLabel + ' ' + (index + 1)), h('p', { className: 'font-mono' }, equation(record)), h('p', null, __alloT('stem.funcgrapher.wave_at_zero', 'At x = 0, y ≈ ') + valueAt(record, 0).toFixed(3))); })),
+                  h('p', { className: 'text-xs mt-1' }, __alloT('stem.funcgrapher.wave_record_limit', 'Keeps the latest eight distinct settings. Values shown are rounded.'))),
+                h('label', { htmlFor: 'wave-working-explanation', className: 'block text-sm font-bold' }, __alloT('stem.funcgrapher.wave_working_explanation', 'What do you notice?')),
+                h('textarea', { id: 'wave-working-explanation', value: typeof iq.hypothesis === 'string' ? iq.hypothesis : '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.wave_observation_placeholder', 'Compare two settings. Which parameter changed, and what stayed the same?'), style: fieldStyle, rows: 2 }),
+                h('label', { className: 'flex items-center gap-2 text-sm', style: { minHeight: 44 } }, h('input', { type: 'checkbox', checked: !!iq.understood, onChange: function(e) { setIQ({ understood: e.target.checked }); }, style: { width: 24, height: 24, margin: 0, flexShrink: 0 } }), __alloT('stem.funcgrapher.wave_explain_with_evidence', 'Explain using saved settings')),
+                iq.understood && h('textarea', { 'aria-label': __alloT('stem.funcgrapher.explanation_input', 'Function grapher explanation'), value: typeof iq.explanation === 'string' ? iq.explanation : '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: __alloT('stem.funcgrapher.wave_evidence_placeholder', 'Name two saved settings. Use the graph and measurements to explain the effect you observed.'), style: fieldStyle, rows: 3 })
               );
             })()
           )

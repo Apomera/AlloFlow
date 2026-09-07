@@ -417,11 +417,12 @@ describe('Blueprint execution honors exact reviewed variants', () => {
       if (config.grade === '5th Grade' && language === 'Spanish') throw new Error('recoverable parser error');
       return { id: `retry-${config.grade}-${language}`, type: 'quiz', data: {} };
     });
-    await PhaseO.handleRebuildBlueprintStep({
+    const completion = await PhaseO.handleRebuildBlueprintStep({
       activeBlueprint: plan, blueprintExecutionResult: run, persistedLessonDNA: null, history: [],
       setBlueprintExecutionResult: (next) => { run = typeof next === 'function' ? next(run) : next; },
       handleGenerate: generate, addToast: vi.fn(), t: () => undefined, warnLog: vi.fn(),
-    }, 'quiz-row');
+    }, 'quiz-row', { reportCompletion: true });
+    expect(completion).toMatchObject({ ok: false, status: 'partial', successfulVariantCount: 3, failedVariantCount: 1 });
     expect(generate).toHaveBeenCalledTimes(4);
     expect(run.rows['quiz-row'].status).toBe('partial');
     expect(run.rows['quiz-row'].variantResults).toHaveLength(4);
@@ -580,7 +581,7 @@ describe('Blueprint Generation Matrix load-failure gate', () => {
       });
 
       expect(generate).not.toHaveBeenCalled();
-      expect(blocked).toBe(run);
+      expect(blocked).toMatchObject({ ...run, ok: false, narration: expect.any(String) });
       expect(run).toMatchObject({
         status: 'waiting',
         done: true,

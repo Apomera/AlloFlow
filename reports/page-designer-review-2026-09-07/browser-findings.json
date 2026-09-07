@@ -1,0 +1,1324 @@
+{
+  "errors": [],
+  "desktop": {
+    "canvasViewport": {
+      "x": 264,
+      "y": 182,
+      "w": 717,
+      "h": 679,
+      "right": 981,
+      "bottom": 861
+    },
+    "canvasPage": {
+      "x": 369.546875,
+      "y": 182,
+      "w": 505.90625,
+      "h": 654.71875,
+      "right": 875.453125,
+      "bottom": 836.71875
+    },
+    "snap": {
+      "foreground": "rgb(226, 232, 240)",
+      "background": "rgb(224, 231, 255)",
+      "pressed": "true"
+    },
+    "header": {
+      "x": 31,
+      "y": 21,
+      "w": 1218,
+      "h": 65,
+      "right": 1249,
+      "bottom": 86
+    },
+    "clippedHeaderControls": [],
+    "buttons": [
+      "↩ Undo",
+      "↪ Redo",
+      "🎞️ Process timeline",
+      "🧑‍🏫 Teacher mode",
+      "A11y 2",
+      "⌨",
+      "Ctrl+K",
+      "⛶",
+      "💾 Save",
+      "Portfolio",
+      "📤 Export",
+      "✕",
+      "H1 Heading",
+      "H2 Subheading",
+      "¶ Text block",
+      "▭ Rectangle",
+      "◯ Ellipse",
+      "🖼️ Image…",
+      "Source shelf 0",
+      "Print clean",
+      "Calm focus",
+      "Clear color",
+      "High contrast",
+      "✓",
+      "Up",
+      "Down",
+      "Add",
+      "Duplicate",
+      "Remove",
+      "-",
+      "+",
+      "Fit",
+      "100%",
+      "Selection",
+      "Snap",
+      "Review",
+      "Reading order",
+      "Layers",
+      "All 5",
+      "Issues 1",
+      "Text 3",
+      "Images 1",
+      "Shapes 1",
+      "Locked 0",
+      "<",
+      ">",
+      "Replace",
+      "⬛ 1. Rectangle",
+      "↑",
+      "↓",
+      "H 2. Your Event Title",
+      "↑",
+      "↓",
+      "🖼️ 3. Empty image frame",
+      "Review",
+      "↑",
+      "↓",
+      "H 4. When & where",
+      "↑",
+      "↓",
+      "¶ 5. Date, time, location, and wh",
+      "↑",
+      "↓"
+    ],
+    "canvasCandidates": [
+      {
+        "name": "Page size",
+        "tag": "SELECT",
+        "x": 41,
+        "y": 593,
+        "w": 194,
+        "h": 28,
+        "right": 235,
+        "bottom": 621
+      },
+      {
+        "name": "Page and canvas controls",
+        "tag": "DIV",
+        "x": 264,
+        "y": 104,
+        "w": 717,
+        "h": 70,
+        "right": 981,
+        "bottom": 174
+      },
+      {
+        "name": "Page navigation",
+        "tag": "DIV",
+        "x": 264,
+        "y": 104,
+        "w": 324.90625,
+        "h": 70,
+        "right": 588.90625,
+        "bottom": 174
+      },
+      {
+        "name": "Move page earlier",
+        "tag": "BUTTON",
+        "x": 264,
+        "y": 104,
+        "w": 42,
+        "h": 32,
+        "right": 306,
+        "bottom": 136
+      },
+      {
+        "name": "Move page later",
+        "tag": "BUTTON",
+        "x": 312,
+        "y": 104,
+        "w": 58.671875,
+        "h": 32,
+        "right": 370.671875,
+        "bottom": 136
+      },
+      {
+        "name": "Select page",
+        "tag": "SELECT",
+        "x": 376.671875,
+        "y": 106,
+        "w": 92,
+        "h": 28,
+        "right": 468.671875,
+        "bottom": 134
+      },
+      {
+        "name": "Add a blank page",
+        "tag": "BUTTON",
+        "x": 522.671875,
+        "y": 104,
+        "w": 49.328125,
+        "h": 32,
+        "right": 572,
+        "bottom": 136
+      },
+      {
+        "name": "Duplicate this page",
+        "tag": "BUTTON",
+        "x": 264,
+        "y": 142,
+        "w": 80.015625,
+        "h": 32,
+        "right": 344.015625,
+        "bottom": 174
+      },
+      {
+        "name": "Remove this page and its objects",
+        "tag": "BUTTON",
+        "x": 350.015625,
+        "y": 142,
+        "w": 72.6875,
+        "h": 32,
+        "right": 422.703125,
+        "bottom": 174
+      },
+      {
+        "name": "Object navigator",
+        "tag": "DIV",
+        "x": 1010,
+        "y": 136,
+        "w": 229,
+        "h": 32,
+        "right": 1239,
+        "bottom": 168
+      },
+      {
+        "name": "Object filters",
+        "tag": "DIV",
+        "x": 1010,
+        "y": 197,
+        "w": 229,
+        "h": 56,
+        "right": 1239,
+        "bottom": 253
+      },
+      {
+        "name": "All, 5 Objects",
+        "tag": "BUTTON",
+        "x": 1010,
+        "y": 197,
+        "w": 35.125,
+        "h": 26,
+        "right": 1045.125,
+        "bottom": 223
+      },
+      {
+        "name": "Issues, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1049.125,
+        "y": 197,
+        "w": 53.484375,
+        "h": 26,
+        "right": 1102.609375,
+        "bottom": 223
+      },
+      {
+        "name": "Text, 3 Objects",
+        "tag": "BUTTON",
+        "x": 1106.609375,
+        "y": 197,
+        "w": 42.171875,
+        "h": 26,
+        "right": 1148.78125,
+        "bottom": 223
+      },
+      {
+        "name": "Images, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1152.78125,
+        "y": 197,
+        "w": 56.8125,
+        "h": 26,
+        "right": 1209.59375,
+        "bottom": 223
+      },
+      {
+        "name": "Shapes, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1010,
+        "y": 227,
+        "w": 57.921875,
+        "h": 26,
+        "right": 1067.921875,
+        "bottom": 253
+      },
+      {
+        "name": "Locked, 0 Objects",
+        "tag": "BUTTON",
+        "x": 1071.921875,
+        "y": 227,
+        "w": 57.359375,
+        "h": 26,
+        "right": 1129.28125,
+        "bottom": 253
+      },
+      {
+        "name": "Search objects",
+        "tag": "INPUT",
+        "x": 1010,
+        "y": 301,
+        "w": 229,
+        "h": 26,
+        "right": 1239,
+        "bottom": 327
+      }
+    ],
+    "smallText": [
+      {
+        "text": "Page sizePortrait (8.5×11)Landscape (11×8.5)SquareSlide deck (16:9)",
+        "size": "10px"
+      },
+      {
+        "text": "Custom",
+        "size": "10px"
+      },
+      {
+        "text": "Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. ",
+        "size": "10px"
+      },
+      {
+        "text": "Review",
+        "size": "9px"
+      },
+      {
+        "text": "Reading order",
+        "size": "10.5px"
+      },
+      {
+        "text": "Layers",
+        "size": "10.5px"
+      },
+      {
+        "text": "All 5",
+        "size": "10px"
+      },
+      {
+        "text": "Issues 1",
+        "size": "10px"
+      },
+      {
+        "text": "Text 3",
+        "size": "10px"
+      },
+      {
+        "text": "Images 1",
+        "size": "10px"
+      },
+      {
+        "text": "Shapes 1",
+        "size": "10px"
+      },
+      {
+        "text": "Locked 0",
+        "size": "10px"
+      }
+    ]
+  },
+  "short-laptop": {
+    "canvasViewport": {
+      "x": 264,
+      "y": 176.40625,
+      "w": 717,
+      "h": 510.1875,
+      "right": 981,
+      "bottom": 686.59375
+    },
+    "canvasPage": {
+      "x": 369.546875,
+      "y": 176.40625,
+      "w": 505.90625,
+      "h": 654.71875,
+      "right": 875.453125,
+      "bottom": 831.125
+    },
+    "snap": {
+      "foreground": "rgb(226, 232, 240)",
+      "background": "rgb(224, 231, 255)",
+      "pressed": "true"
+    },
+    "header": {
+      "x": 31,
+      "y": 15.40625,
+      "w": 1218,
+      "h": 65,
+      "right": 1249,
+      "bottom": 80.40625
+    },
+    "clippedHeaderControls": [],
+    "buttons": [
+      "↩ Undo",
+      "↪ Redo",
+      "🎞️ Process timeline",
+      "🧑‍🏫 Teacher mode",
+      "A11y 2",
+      "⌨",
+      "Ctrl+K",
+      "⛶",
+      "💾 Save",
+      "Portfolio",
+      "📤 Export",
+      "✕",
+      "H1 Heading",
+      "H2 Subheading",
+      "¶ Text block",
+      "▭ Rectangle",
+      "◯ Ellipse",
+      "🖼️ Image…",
+      "Source shelf 0",
+      "Print clean",
+      "Calm focus",
+      "Clear color",
+      "High contrast",
+      "✓",
+      "Up",
+      "Down",
+      "Add",
+      "Duplicate",
+      "Remove",
+      "-",
+      "+",
+      "Fit",
+      "100%",
+      "Selection",
+      "Snap",
+      "Review",
+      "Reading order",
+      "Layers",
+      "All 5",
+      "Issues 1",
+      "Text 3",
+      "Images 1",
+      "Shapes 1",
+      "Locked 0",
+      "<",
+      ">",
+      "Replace",
+      "⬛ 1. Rectangle",
+      "↑",
+      "↓",
+      "H 2. Your Event Title",
+      "↑",
+      "↓",
+      "🖼️ 3. Empty image frame",
+      "Review",
+      "↑",
+      "↓",
+      "H 4. When & where",
+      "↑",
+      "↓",
+      "¶ 5. Date, time, location, and wh",
+      "↑",
+      "↓"
+    ],
+    "canvasCandidates": [
+      {
+        "name": "Page size",
+        "tag": "SELECT",
+        "x": 41,
+        "y": 583.40625,
+        "w": 194,
+        "h": 28,
+        "right": 235,
+        "bottom": 611.40625
+      },
+      {
+        "name": "Page and canvas controls",
+        "tag": "DIV",
+        "x": 264,
+        "y": 98.40625,
+        "w": 717,
+        "h": 70,
+        "right": 981,
+        "bottom": 168.40625
+      },
+      {
+        "name": "Page navigation",
+        "tag": "DIV",
+        "x": 264,
+        "y": 98.40625,
+        "w": 324.90625,
+        "h": 70,
+        "right": 588.90625,
+        "bottom": 168.40625
+      },
+      {
+        "name": "Move page earlier",
+        "tag": "BUTTON",
+        "x": 264,
+        "y": 98.40625,
+        "w": 42,
+        "h": 32,
+        "right": 306,
+        "bottom": 130.40625
+      },
+      {
+        "name": "Move page later",
+        "tag": "BUTTON",
+        "x": 312,
+        "y": 98.40625,
+        "w": 58.671875,
+        "h": 32,
+        "right": 370.671875,
+        "bottom": 130.40625
+      },
+      {
+        "name": "Select page",
+        "tag": "SELECT",
+        "x": 376.671875,
+        "y": 100.40625,
+        "w": 92,
+        "h": 28,
+        "right": 468.671875,
+        "bottom": 128.40625
+      },
+      {
+        "name": "Add a blank page",
+        "tag": "BUTTON",
+        "x": 522.671875,
+        "y": 98.40625,
+        "w": 49.328125,
+        "h": 32,
+        "right": 572,
+        "bottom": 130.40625
+      },
+      {
+        "name": "Duplicate this page",
+        "tag": "BUTTON",
+        "x": 264,
+        "y": 136.40625,
+        "w": 80.015625,
+        "h": 32,
+        "right": 344.015625,
+        "bottom": 168.40625
+      },
+      {
+        "name": "Remove this page and its objects",
+        "tag": "BUTTON",
+        "x": 350.015625,
+        "y": 136.40625,
+        "w": 72.6875,
+        "h": 32,
+        "right": 422.703125,
+        "bottom": 168.40625
+      },
+      {
+        "name": "Object navigator",
+        "tag": "DIV",
+        "x": 1010,
+        "y": 130.40625,
+        "w": 229,
+        "h": 32,
+        "right": 1239,
+        "bottom": 162.40625
+      },
+      {
+        "name": "Object filters",
+        "tag": "DIV",
+        "x": 1010,
+        "y": 191.40625,
+        "w": 229,
+        "h": 56,
+        "right": 1239,
+        "bottom": 247.40625
+      },
+      {
+        "name": "All, 5 Objects",
+        "tag": "BUTTON",
+        "x": 1010,
+        "y": 191.40625,
+        "w": 35.125,
+        "h": 26,
+        "right": 1045.125,
+        "bottom": 217.40625
+      },
+      {
+        "name": "Issues, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1049.125,
+        "y": 191.40625,
+        "w": 53.484375,
+        "h": 26,
+        "right": 1102.609375,
+        "bottom": 217.40625
+      },
+      {
+        "name": "Text, 3 Objects",
+        "tag": "BUTTON",
+        "x": 1106.609375,
+        "y": 191.40625,
+        "w": 42.171875,
+        "h": 26,
+        "right": 1148.78125,
+        "bottom": 217.40625
+      },
+      {
+        "name": "Images, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1152.78125,
+        "y": 191.40625,
+        "w": 56.8125,
+        "h": 26,
+        "right": 1209.59375,
+        "bottom": 217.40625
+      },
+      {
+        "name": "Shapes, 1 Objects",
+        "tag": "BUTTON",
+        "x": 1010,
+        "y": 221.40625,
+        "w": 57.921875,
+        "h": 26,
+        "right": 1067.921875,
+        "bottom": 247.40625
+      },
+      {
+        "name": "Locked, 0 Objects",
+        "tag": "BUTTON",
+        "x": 1071.921875,
+        "y": 221.40625,
+        "w": 57.359375,
+        "h": 26,
+        "right": 1129.28125,
+        "bottom": 247.40625
+      },
+      {
+        "name": "Search objects",
+        "tag": "INPUT",
+        "x": 1010,
+        "y": 295.40625,
+        "w": 229,
+        "h": 26,
+        "right": 1239,
+        "bottom": 321.40625
+      }
+    ],
+    "smallText": [
+      {
+        "text": "Page sizePortrait (8.5×11)Landscape (11×8.5)SquareSlide deck (16:9)",
+        "size": "10px"
+      },
+      {
+        "text": "Custom",
+        "size": "10px"
+      },
+      {
+        "text": "Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. ",
+        "size": "10px"
+      },
+      {
+        "text": "Review",
+        "size": "9px"
+      },
+      {
+        "text": "Reading order",
+        "size": "10.5px"
+      },
+      {
+        "text": "Layers",
+        "size": "10.5px"
+      },
+      {
+        "text": "All 5",
+        "size": "10px"
+      },
+      {
+        "text": "Issues 1",
+        "size": "10px"
+      },
+      {
+        "text": "Text 3",
+        "size": "10px"
+      },
+      {
+        "text": "Images 1",
+        "size": "10px"
+      },
+      {
+        "text": "Shapes 1",
+        "size": "10px"
+      },
+      {
+        "text": "Locked 0",
+        "size": "10px"
+      }
+    ]
+  },
+  "tablet": {
+    "canvasViewport": {
+      "x": 25,
+      "y": 339.671875,
+      "w": 974,
+      "h": 196,
+      "right": 999,
+      "bottom": 535.671875
+    },
+    "canvasPage": {
+      "x": 299.84375,
+      "y": 339.671875,
+      "w": 424.3125,
+      "h": 549.109375,
+      "right": 724.15625,
+      "bottom": 888.78125
+    },
+    "snap": {
+      "foreground": "rgb(226, 232, 240)",
+      "background": "rgb(224, 231, 255)",
+      "pressed": "true"
+    },
+    "header": {
+      "x": 13,
+      "y": 16.359375,
+      "w": 998,
+      "h": 87,
+      "right": 1011,
+      "bottom": 103.359375
+    },
+    "clippedHeaderControls": [],
+    "buttons": [
+      "↩ Undo",
+      "↪ Redo",
+      "🎞️ Process timeline",
+      "🧑‍🏫 Teacher mode",
+      "A11y 2",
+      "⌨",
+      "Ctrl+K",
+      "⛶",
+      "💾 Save",
+      "Portfolio",
+      "📤 Export",
+      "✕",
+      "H1 Heading",
+      "H2 Subheading",
+      "¶ Text block",
+      "▭ Rectangle",
+      "◯ Ellipse",
+      "🖼️ Image…",
+      "Source shelf 0",
+      "Print clean",
+      "Calm focus",
+      "Clear color",
+      "High contrast",
+      "✓",
+      "Up",
+      "Down",
+      "Add",
+      "Duplicate",
+      "Remove",
+      "-",
+      "+",
+      "Fit",
+      "100%",
+      "Selection",
+      "Snap",
+      "Review",
+      "Reading order",
+      "Layers",
+      "All 5",
+      "Issues 1",
+      "Text 3",
+      "Images 1",
+      "Shapes 1",
+      "Locked 0",
+      "<",
+      ">",
+      "Replace",
+      "⬛ 1. Rectangle",
+      "↑",
+      "↓",
+      "H 2. Your Event Title",
+      "↑",
+      "↓",
+      "🖼️ 3. Empty image frame",
+      "Review",
+      "↑",
+      "↓",
+      "H 4. When & where",
+      "↑",
+      "↓",
+      "¶ 5. Date, time, location, and wh",
+      "↑",
+      "↓"
+    ],
+    "canvasCandidates": [
+      {
+        "name": "Page size",
+        "tag": "SELECT",
+        "x": 23,
+        "y": 606.359375,
+        "w": 978,
+        "h": 28,
+        "right": 1001,
+        "bottom": 634.359375
+      },
+      {
+        "name": "Page and canvas controls",
+        "tag": "DIV",
+        "x": 25,
+        "y": 299.671875,
+        "w": 974,
+        "h": 32,
+        "right": 999,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Page navigation",
+        "tag": "DIV",
+        "x": 25,
+        "y": 299.671875,
+        "w": 617.90625,
+        "h": 32,
+        "right": 642.90625,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Move page earlier",
+        "tag": "BUTTON",
+        "x": 25,
+        "y": 299.671875,
+        "w": 36,
+        "h": 32,
+        "right": 61,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Move page later",
+        "tag": "BUTTON",
+        "x": 67,
+        "y": 299.671875,
+        "w": 52.671875,
+        "h": 32,
+        "right": 119.671875,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Select page",
+        "tag": "SELECT",
+        "x": 125.671875,
+        "y": 301.671875,
+        "w": 92,
+        "h": 28,
+        "right": 217.671875,
+        "bottom": 329.671875
+      },
+      {
+        "name": "Add a blank page",
+        "tag": "BUTTON",
+        "x": 271.671875,
+        "y": 299.671875,
+        "w": 43.328125,
+        "h": 32,
+        "right": 315,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Duplicate this page",
+        "tag": "BUTTON",
+        "x": 321,
+        "y": 299.671875,
+        "w": 74.015625,
+        "h": 32,
+        "right": 395.015625,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Remove this page and its objects",
+        "tag": "BUTTON",
+        "x": 401.015625,
+        "y": 299.671875,
+        "w": 66.6875,
+        "h": 32,
+        "right": 467.703125,
+        "bottom": 331.671875
+      },
+      {
+        "name": "Object navigator",
+        "tag": "DIV",
+        "x": 23,
+        "y": 584.671875,
+        "w": 978,
+        "h": 32,
+        "right": 1001,
+        "bottom": 616.671875
+      },
+      {
+        "name": "Object filters",
+        "tag": "DIV",
+        "x": 23,
+        "y": 645.671875,
+        "w": 978,
+        "h": 26,
+        "right": 1001,
+        "bottom": 671.671875
+      },
+      {
+        "name": "All, 5 Objects",
+        "tag": "BUTTON",
+        "x": 23,
+        "y": 645.671875,
+        "w": 35.125,
+        "h": 26,
+        "right": 58.125,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Issues, 1 Objects",
+        "tag": "BUTTON",
+        "x": 62.125,
+        "y": 645.671875,
+        "w": 53.484375,
+        "h": 26,
+        "right": 115.609375,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Text, 3 Objects",
+        "tag": "BUTTON",
+        "x": 119.609375,
+        "y": 645.671875,
+        "w": 42.171875,
+        "h": 26,
+        "right": 161.78125,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Images, 1 Objects",
+        "tag": "BUTTON",
+        "x": 165.78125,
+        "y": 645.671875,
+        "w": 56.8125,
+        "h": 26,
+        "right": 222.59375,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Shapes, 1 Objects",
+        "tag": "BUTTON",
+        "x": 226.59375,
+        "y": 645.671875,
+        "w": 57.921875,
+        "h": 26,
+        "right": 284.515625,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Locked, 0 Objects",
+        "tag": "BUTTON",
+        "x": 288.515625,
+        "y": 645.671875,
+        "w": 57.359375,
+        "h": 26,
+        "right": 345.875,
+        "bottom": 671.671875
+      },
+      {
+        "name": "Search objects",
+        "tag": "INPUT",
+        "x": 23,
+        "y": 719.671875,
+        "w": 978,
+        "h": 26,
+        "right": 1001,
+        "bottom": 745.671875
+      }
+    ],
+    "smallText": [
+      {
+        "text": "Page sizePortrait (8.5×11)Landscape (11×8.5)SquareSlide deck (16:9)",
+        "size": "10px"
+      },
+      {
+        "text": "Custom",
+        "size": "10px"
+      },
+      {
+        "text": "Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. ",
+        "size": "10px"
+      },
+      {
+        "text": "Review",
+        "size": "9px"
+      },
+      {
+        "text": "Reading order",
+        "size": "10.5px"
+      },
+      {
+        "text": "Layers",
+        "size": "10.5px"
+      },
+      {
+        "text": "All 5",
+        "size": "10px"
+      },
+      {
+        "text": "Issues 1",
+        "size": "10px"
+      },
+      {
+        "text": "Text 3",
+        "size": "10px"
+      },
+      {
+        "text": "Images 1",
+        "size": "10px"
+      },
+      {
+        "text": "Shapes 1",
+        "size": "10px"
+      },
+      {
+        "text": "Locked 0",
+        "size": "10px"
+      }
+    ]
+  },
+  "mobile": {
+    "canvasViewport": {
+      "x": 9,
+      "y": 507.4375,
+      "w": 372,
+      "h": 128,
+      "right": 381,
+      "bottom": 635.4375
+    },
+    "canvasPage": {
+      "x": 23.640625,
+      "y": 507.4375,
+      "w": 342.71875,
+      "h": 443.515625,
+      "right": 366.359375,
+      "bottom": 950.953125
+    },
+    "snap": {
+      "foreground": "rgb(226, 232, 240)",
+      "background": "rgb(224, 231, 255)",
+      "pressed": "true"
+    },
+    "header": {
+      "x": 1,
+      "y": 1,
+      "w": 388,
+      "h": 163,
+      "right": 389,
+      "bottom": 164
+    },
+    "clippedHeaderControls": [],
+    "buttons": [
+      "↩ Undo",
+      "↪ Redo",
+      "🎞️ Process timeline",
+      "🧑‍🏫 Teacher mode",
+      "A11y 2",
+      "⌨",
+      "Ctrl+K",
+      "⛶",
+      "💾 Save",
+      "Portfolio",
+      "📤 Export",
+      "✕",
+      "H1 Heading",
+      "H2 Subheading",
+      "¶ Text block",
+      "▭ Rectangle",
+      "◯ Ellipse",
+      "🖼️ Image…",
+      "Source shelf 0",
+      "Print clean",
+      "Calm focus",
+      "Clear color",
+      "High contrast",
+      "✓",
+      "Up",
+      "Down",
+      "Add",
+      "Duplicate",
+      "Remove",
+      "-",
+      "+",
+      "Fit",
+      "100%",
+      "Selection",
+      "Snap",
+      "Review",
+      "Reading order",
+      "Layers",
+      "All 5",
+      "Issues 1",
+      "Text 3",
+      "Images 1",
+      "Shapes 1",
+      "Locked 0",
+      "<",
+      ">",
+      "Replace",
+      "⬛ 1. Rectangle",
+      "↑",
+      "↓",
+      "H 2. Your Event Title",
+      "↑",
+      "↓",
+      "🖼️ 3. Empty image frame",
+      "Review",
+      "↑",
+      "↓",
+      "H 4. When & where",
+      "↑",
+      "↓",
+      "¶ 5. Date, time, location, and wh",
+      "↑",
+      "↓"
+    ],
+    "canvasCandidates": [
+      {
+        "name": "Page size",
+        "tag": "SELECT",
+        "x": 11,
+        "y": 667,
+        "w": 368,
+        "h": 28,
+        "right": 379,
+        "bottom": 695
+      },
+      {
+        "name": "Page and canvas controls",
+        "tag": "DIV",
+        "x": 9,
+        "y": 391.4375,
+        "w": 372,
+        "h": 108,
+        "right": 381,
+        "bottom": 499.4375
+      },
+      {
+        "name": "Page navigation",
+        "tag": "DIV",
+        "x": 9,
+        "y": 391.4375,
+        "w": 281,
+        "h": 70,
+        "right": 290,
+        "bottom": 461.4375
+      },
+      {
+        "name": "Move page earlier",
+        "tag": "BUTTON",
+        "x": 9,
+        "y": 391.4375,
+        "w": 36,
+        "h": 32,
+        "right": 45,
+        "bottom": 423.4375
+      },
+      {
+        "name": "Move page later",
+        "tag": "BUTTON",
+        "x": 51,
+        "y": 391.4375,
+        "w": 52.671875,
+        "h": 32,
+        "right": 103.671875,
+        "bottom": 423.4375
+      },
+      {
+        "name": "Select page",
+        "tag": "SELECT",
+        "x": 109.671875,
+        "y": 393.4375,
+        "w": 92,
+        "h": 28,
+        "right": 201.671875,
+        "bottom": 421.4375
+      },
+      {
+        "name": "Add a blank page",
+        "tag": "BUTTON",
+        "x": 9,
+        "y": 429.4375,
+        "w": 43.328125,
+        "h": 32,
+        "right": 52.328125,
+        "bottom": 461.4375
+      },
+      {
+        "name": "Duplicate this page",
+        "tag": "BUTTON",
+        "x": 58.328125,
+        "y": 429.4375,
+        "w": 74.015625,
+        "h": 32,
+        "right": 132.34375,
+        "bottom": 461.4375
+      },
+      {
+        "name": "Remove this page and its objects",
+        "tag": "BUTTON",
+        "x": 138.34375,
+        "y": 429.4375,
+        "w": 66.6875,
+        "h": 32,
+        "right": 205.03125,
+        "bottom": 461.4375
+      },
+      {
+        "name": "Object navigator",
+        "tag": "DIV",
+        "x": 11,
+        "y": 680.4375,
+        "w": 368,
+        "h": 32,
+        "right": 379,
+        "bottom": 712.4375
+      },
+      {
+        "name": "Object filters",
+        "tag": "DIV",
+        "x": 11,
+        "y": 741.4375,
+        "w": 368,
+        "h": 26,
+        "right": 379,
+        "bottom": 767.4375
+      },
+      {
+        "name": "All, 5 Objects",
+        "tag": "BUTTON",
+        "x": 11,
+        "y": 741.4375,
+        "w": 35.125,
+        "h": 26,
+        "right": 46.125,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Issues, 1 Objects",
+        "tag": "BUTTON",
+        "x": 50.125,
+        "y": 741.4375,
+        "w": 53.484375,
+        "h": 26,
+        "right": 103.609375,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Text, 3 Objects",
+        "tag": "BUTTON",
+        "x": 107.609375,
+        "y": 741.4375,
+        "w": 42.171875,
+        "h": 26,
+        "right": 149.78125,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Images, 1 Objects",
+        "tag": "BUTTON",
+        "x": 153.78125,
+        "y": 741.4375,
+        "w": 56.8125,
+        "h": 26,
+        "right": 210.59375,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Shapes, 1 Objects",
+        "tag": "BUTTON",
+        "x": 214.59375,
+        "y": 741.4375,
+        "w": 57.921875,
+        "h": 26,
+        "right": 272.515625,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Locked, 0 Objects",
+        "tag": "BUTTON",
+        "x": 276.515625,
+        "y": 741.4375,
+        "w": 57.359375,
+        "h": 26,
+        "right": 333.875,
+        "bottom": 767.4375
+      },
+      {
+        "name": "Search objects",
+        "tag": "INPUT",
+        "x": 11,
+        "y": 815.4375,
+        "w": 368,
+        "h": 26,
+        "right": 379,
+        "bottom": 841.4375
+      }
+    ],
+    "smallText": [
+      {
+        "text": "Page sizePortrait (8.5×11)Landscape (11×8.5)SquareSlide deck (16:9)",
+        "size": "10px"
+      },
+      {
+        "text": "Custom",
+        "size": "10px"
+      },
+      {
+        "text": "Tip: Shift/Ctrl-click selects a group; drag any selected object to move it together. ",
+        "size": "10px"
+      },
+      {
+        "text": "Review",
+        "size": "9px"
+      },
+      {
+        "text": "Reading order",
+        "size": "10.5px"
+      },
+      {
+        "text": "Layers",
+        "size": "10.5px"
+      },
+      {
+        "text": "All 5",
+        "size": "10px"
+      },
+      {
+        "text": "Issues 1",
+        "size": "10px"
+      },
+      {
+        "text": "Text 3",
+        "size": "10px"
+      },
+      {
+        "text": "Images 1",
+        "size": "10px"
+      },
+      {
+        "text": "Shapes 1",
+        "size": "10px"
+      },
+      {
+        "text": "Locked 0",
+        "size": "10px"
+      }
+    ]
+  },
+  "immediateClose": {
+    "before": "Event flyer",
+    "savedTitle": "Event flyer",
+    "toasts": []
+  }
+}

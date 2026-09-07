@@ -4912,10 +4912,10 @@
     "locked": "Đã khóa",
     "escaped": "Bạn đã thoát!",
     "escaped_desc": "Bạn đã giải tất cả các câu đố và thoát khỏi phòng!",
-    "time_up": "? Hết giờ!",
+    "time_up": "⏰ Hết giờ!",
     "reveal_hint": "Tiết lộ gợi ý",
-    "puzzles_remaining": "Còn {{count}} câu đố",
-    "time_remaining": "Thời gian: {{time}}",
+    "puzzles_remaining": "Còn {count} câu đố",
+    "time_remaining": "Thời gian: {time}",
     "progress": "Tiến độ",
     "start": "Bắt đầu Phòng Giải đố",
     "start_hint": "Bắt đầu đồng hồ để kiểm tra các vật thể",
@@ -4926,8 +4926,8 @@
     "room_complete": "Hoàn thành phòng!",
     "loading_error": "Không thể tải dữ liệu phòng",
     "no_puzzle": "Không tìm thấy câu đố cho vật thể này",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Thoát hoàn hảo! +{{xp}} XP thưởng",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Thoát hoàn hảo! +{xp} XP thưởng",
     "puzzle_mcq": "Trắc nghiệm",
     "puzzle_sequence": "Sắp xếp thứ tự",
     "puzzle_cipher": "Giải mã thông điệp",
@@ -4985,7 +4985,7 @@
     "clue": "Manh mối",
     "clue_found": "Đã khám phá manh mối!",
     "clue_revealed": "Manh mối này có thể giúp với một câu đố khác...",
-    "clues_collected": "Manh mối: {{count}}/{{total}}",
+    "clues_collected": "Manh mối: {count}/{total}",
     "use_clue": "Sử dụng Manh mối",
     "final_door": "Cánh cửa Thoát",
     "final_door_ready": "Cánh cửa thoát hiện đã mở khóa!",
@@ -5011,12 +5011,12 @@
     "left": "còn lại",
     "wrong_attempts": "Lần thử sai",
     "time_penalty": "-{seconds} giây!",
-    "game_over_time": "? Hết giờ! Bạn đã hết thời gian.",
+    "game_over_time": "⏰ Hết giờ! Bạn đã hết thời gian.",
     "streak": "Chuỗi",
     "streak_bonus": "Thưởng chuỗi! x{multiplier}",
     "streak_lost": "Mất chuỗi!",
     "one_minute_warning": "Còn lại một phút!",
-    "thirty_seconds_warning": "? Chỉ còn 30 giây!",
+    "thirty_seconds_warning": "⏰ Chỉ còn 30 giây!",
     "timer_paused": "Đồng hồ tạm dừng",
     "timer_resume": "Tiếp tục",
     "settings_btn": "Cài đặt Phòng",
@@ -5029,9 +5029,9 @@
     "launch_live_tooltip": "Bắt đầu phòng giải đố nhiều người với lớp của bạn",
     "team_mode": "Thử thách Đội",
     "team_race": "Đua thoát ra!",
-    "team_progress": "Tiến độ {{team}}: {{solved}}/{{total}}",
+    "team_progress": "Tiến độ {team}: {solved}/{total}",
     "waiting_host": "Đang chờ giáo viên bắt đầu...",
-    "team_escaped": "Đội {{team}} đã thoát!",
+    "team_escaped": "Đội {team} đã thoát!",
     "all_teams_done": "Tất cả các đội đã hoàn thành!",
     "your_team": "Đội của bạn",
     "team_red": "Đội Đỏ",
@@ -5039,7 +5039,7 @@
     "team_green": "Đội Xanh lá",
     "team_yellow": "Đội Vàng",
     "team_all": "Tất cả học sinh",
-    "teams_competing": "{{count}} đội đang cạnh tranh",
+    "teams_competing": "{count} đội đang cạnh tranh",
     "first_escape": "Người đầu tiên thoát!",
     "end_game": "Kết thúc trò chơi",
     "end_game_confirm": "Kết thúc phòng giải đố cho tất cả học sinh?",
@@ -5052,8 +5052,8 @@
     "resume_game": "Tiếp tục Trò chơi",
     "game_paused_by_teacher": "Trò chơi bị giáo viên tạm dừng",
     "celebration_title": "Xin chúc mừng!",
-    "you_escaped": "Đội của bạn đã thoát trong {{time}}!",
-    "other_team_escaped": "Đội {{team}} đã thoát!",
+    "you_escaped": "Đội của bạn đã thoát trong {time}!",
+    "other_team_escaped": "Đội {team} đã thoát!",
     "class_escaped": "Chiến thắng của Lớp!",
     "everyone_escaped": "Mọi người đã làm việc cùng nhau để thoát ra!",
     "hurry_up": "Tiếp tục! Bạn vẫn có thể thoát!",
@@ -5081,7 +5081,7 @@
     "load_saved": "Tải bản đã lưu",
     "loaded_saved": "Đã tải Phòng giải đố đã lưu! Xem lại và khởi chạy khi sẵn sàng.",
     "no_saved": "Không tìm thấy Phòng giải đố đã lưu",
-    "preview_confirmed": "? Phòng giải đố đã khóa • sẵn sàng để chơi!",
+    "preview_confirmed": "✅ Phòng giải đố đã khóa • sẵn sàng để chơi!",
     "xp_earned_streak": "+{xp} XP (Thưởng chuỗi {multiplier}x!)",
     "loaded_from_resource": "Đã tải từ tài nguyên."
   },
@@ -7018,7 +7018,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Gửi đến Bàn làm việc Chuyên gia",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7589,7 +7589,7 @@
       "correct": "Bài làm xuất sắc!",
       "partial": "Cố gắng tốt, tiếp tục!",
       "incorrect": "Chưa hoàn toàn đúng • thử lại!",
-      "error": "Không thể đánh giá • vui lòng thử lại.",
+      "error": "Không thể đánh giá — vui lòng thử lại.",
       "verdict_correct": "Đúng!",
       "verdict_partial": "Đúng một phần",
       "verdict_incorrect": "Chưa hoàn toàn đúng",
@@ -7901,7 +7901,7 @@
       "meta_info": "{date} • **Cấp cuối cùng**: {level}",
       "log_header": "Nhật ký Phiêu lưu",
       "chapter_separator": "***",
-      "user_label": "? BẠN",
+      "user_label": "➤ BẠN",
       "print_button": "In Sách truyện"
     },
     "answer_key_title": "Đáp án",
@@ -8850,7 +8850,7 @@
     "simplified_def_fallback": "Bạn có thể nhấp vào bất kỳ từ nào trong văn bản để xem định nghĩa!",
     "simplified_cloze": "Hãy thử chế độ 'Cloze' để kiểm tra kỹ năng từ vựng.",
     "simplified_quiz": "Văn bản này trông tuyệt vời. Chúng ta có nên tạo Phiếu Thoát Lớp để kiểm tra hiểu biết không?",
-    "simplified_glossary": "Các từ như '{term1}' và '{term2}' có thể cần hỗ trợ • một Từ vựng có thể giúp!",
+    "simplified_glossary": "Các từ như '{term1}' và '{term2}' có thể cần hỗ trợ — một Từ vựng có thể giúp!",
     "simplified_glossary_fallback": "Một số thuật ngữ này khá khó. Một Từ vựng sẽ giúp hỗ trợ văn bản này.",
     "simplified_outline": "Người học trực quan có thể hưởng lợi từ một Trình Tổ chức Đồ họa của nội dung này.",
     "glossary_bingo": "Bạn có thể biến các thuật ngữ này thành trò chơi từ như Loto, Ghép Trí nhớ, Ô chữ hoặc Tìm Từ!",
@@ -8861,7 +8861,7 @@
     "quiz_rigor": "Muốn đảm bảo bài kiểm tra này nghiêm túc? Chạy Kiểm toán Tiêu chuẩn.",
     "adventure_sim": "Phiêu lưu cho phép học sinh áp dụng những gì đã học trong một mô phỏng an toàn.",
     "adventure_inventory": "Kiểm tra 'Kho đồ' để xem những vật phẩm nào đã được thu thập.",
-    "adventure_context": "Cuộc phiêu lưu của bạn về {topic} trở nên phong phú hơn với nhiều tài nguyên hơn • hãy thử thêm một {suggestion}!",
+    "adventure_context": "Cuộc phiêu lưu của bạn về {topic} trở nên phong phú hơn với nhiều tài nguyên hơn — hãy thử thêm một {suggestion}!",
     "adventure_context_fallback": "Bạn càng tạo nhiều tài nguyên, ngữ cảnh phiêu lưu càng trở nên phong phú.",
     "timeline_drag": "Kéo và thả các sự kiện để sắp xếp lại trình tự.",
     "timeline_visualize": "Điều này giúp học sinh hình dung các mối quan hệ nguyên nhân-kết quả.",
@@ -8872,8 +8872,8 @@
     "parent_adventure": "Hãy thử Chế độ Phiêu lưu cho một hoạt động ngày mưa vui nhộn.",
     "parent_read_along": "Sử dụng 'Đọc Theo' để luyện đọc cùng nhau.",
     "fallback_lesson_plan": "Bạn có những tài nguyên tuyệt vời. Tổng hợp chúng thành một Giáo án?",
-    "fallback_brainstorm": "Cảm thấy bí? Hãy thử trò chuyện với tôi và bật Tự động Hoàn thành để kích hoạt Chế độ Kế hoạch • tôi sẽ giúp bạn thiết kế toàn bộ bài học!",
-    "fallback_export": "Bạn có {count} tài nguyên về {topic} • xuất chúng dưới dạng một PDF!",
+    "fallback_brainstorm": "Cảm thấy bí? Hãy thử trò chuyện với tôi và bật Tự động Hoàn thành để kích hoạt Chế độ Kế hoạch — tôi sẽ giúp bạn thiết kế toàn bộ bài học!",
+    "fallback_export": "Bạn có {count} tài nguyên về {topic} — xuất chúng dưới dạng một PDF!",
     "fallback_export_fallback": "Bạn có thể xuất tất cả các tài nguyên này dưới dạng một gói PDF duy nhất.",
     "fallback_guide": "Chọn 'Cho tôi xem' trong Hướng dẫn AI nếu bạn bị lạc!",
     "intro_greeting": "Nhấp vào tôi để điều chỉnh cài đặt giọng nói của tôi.",
@@ -9022,7 +9022,7 @@
     "text_generated": "Văn bản đã điều chỉnh về {topic} của bạn đã sẵn sàng! Hãy thử nhấp vào một từ để xem định nghĩa, hoặc khám phá các công cụ như Từ vựng hoặc Bài kiểm tra để hiểu sâu hơn.",
     "flashcards_created": "Đã tạo thẻ học! Bạn có thể xuất sang Quizlet, in chúng, hoặc thử Trò chơi Trí nhớ.",
     "quiz_generated": "Bài kiểm tra sẵn sàng! Sử dụng Chế độ Trình bày cho lớp, hoặc thử Trình Chấm điểm Tự động cho các câu trả lời mở.",
-    "glossary_generated": "Hoàn thành từ vựng! Hãy thử các trò chơi từ • Loto, Ghép Trí nhớ, Ô chữ, Tìm Từ và nhiều hơn nữa!",
+    "glossary_generated": "Hoàn thành từ vựng! Hãy thử các trò chơi từ — Loto, Ghép Trí nhớ, Ô chữ, Tìm Từ và nhiều hơn nữa!",
     "adventure_started": "Cuộc phiêu lưu của bạn bắt đầu! Gõ hành động của bạn bên dưới, hoặc sử dụng các nút lựa chọn để quyết định điều gì xảy ra tiếp theo.",
     "adventure_scene": "Bạn sẽ làm gì? Mọi lựa chọn đều định hình câu chuyện của bạn!",
     "analysis_complete": "Hoàn thành phân tích! Tôi đã tìm thấy một số từ vựng và khái niệm chính đáng để khám phá.",
@@ -9300,7 +9300,7 @@
     "type_timeline": "Trình tạo Trình tự",
     "type_timeline_desc": "Hoạt động sắp xếp điều chỉnh theo cấp lớp",
     "full_pack": "Trọn bộ tài nguyên • Chọn tất cả",
-    "deselect_all": "? Bỏ chọn tất cả",
+    "deselect_all": "↩ Bỏ chọn tất cả",
     "estimate": "Ước tính",
     "api_calls": "Số lần gọi API",
     "start_batch": "Tạo",
@@ -9329,7 +9329,7 @@
     "bridge_generating": "Đang tạo phiên bản cá nhân hóa của bạn...",
     "bridge_projection": "Chế độ Chiếu",
     "bridge_exit_projection": "Thoát Chế độ Chiếu",
-    "bridge_offline_info": "Không có phiên trực tiếp • chỉ xem trước trên thiết bị này",
+    "bridge_offline_info": "Không có phiên trực tiếp — chỉ xem trước trên thiết bị này",
     "bridge_term_saved": "Đã lưu \"{term}\" vào từ vựng",
     "bridge_term_save_failed": "Lưu thuật ngữ thất bại",
     "bridge_save_term": "Lưu vào từ vựng",
@@ -9355,7 +9355,7 @@
     "bridge_f2f_custom_lang": "Ngôn ngữ tùy chỉnh...",
     "bridge_f2f_custom_placeholder": "ví dụ: Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "Đã lưu tất cả các thuật ngữ vào từ vựng!",
-    "bridge_terms_saved": "? Đã lưu tất cả",
+    "bridge_terms_saved": "✅ Đã lưu tất cả",
     "fullpack_group_target": "Nhóm mục tiêu",
     "fullpack_group_current": "Cài đặt hiện tại",
     "fullpack_group_all": "Tất cả các nhóm",
@@ -12325,7 +12325,7 @@
       "person": "Người\\",
       "phase_label": "Nhãn giai đoạn",
       "rationale_which_antecedent_does_this_address": "Lý do (điều này giải quyết tiền đề nào?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Suy ngẫm về cách tiếp cận của bạn...\\n• Điều gì hiệu quả?\\n• Bạn sẽ làm gì khác đi?\\n• Bạn muốn luyện tập chiến lược nào tiếp theo?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Suy ngẫm về cách tiếp cận của bạn...\n• Điều gì hiệu quả?\n• Bạn sẽ làm gì khác đi?\n• Bạn muốn luyện tập chiến lược nào tiếp theo?",
       "reinforcement_how_you": "⭐ Củng cố (cách bạn\\",
       "replacement_behavior_functionally_equivalent": "✅ Hành vi thay thế (tương đương về chức năng)",
       "respond_as_the_counselor": "Phản hồi với vai trò nhà tư vấn...",
@@ -12333,7 +12333,7 @@
       "search_81_tools": "🔍  Tìm 80+ công cụ…",
       "search_aba_terms": "🔍 Tìm thuật ngữ ABA...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Tìm thuật ngữ... (ví dụ: \"củng cố\", \"FBA\", \"dữ liệu\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Phiên 1: 3\\nPhiên 2: 7\\nPhiên 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Phiên 1: 3\nPhiên 2: 7\nPhiên 3: 5\n...",
       "setting_eg_math_class_cafeteria": "Bối cảnh (ví dụ: Lớp Toán, Căng tin)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Chia sẻ điều bạn nhận thấy ở nhà: điểm mạnh, mối quan tâm, ngữ cảnh văn hóa hoặc đề xuất cho nhóm nhà trường...",
       "step_description": "Mô tả bước...",
@@ -12761,7 +12761,11 @@
       "trapezoid": "Hình thang",
       "simpson": "Simpson",
       "rectangles_n": "Hình chữ nhật (n)",
-      "coeff_a": "Hệ số a"
+      "coeff_a": "Hệ số a",
+      "sr_explanation_ready": "Đã có lời giải thích.",
+      "a11y_back_to_tools": "Quay lại các công cụ",
+      "a11y_snapshot": "Ảnh chụp",
+      "a11y_next": "Tiếp theo"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Âm thanh không được hỗ trợ trong trình duyệt này",
@@ -12885,7 +12889,7 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Tạo giải thích AI ở trình độ",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
@@ -14516,8 +14520,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Đúng! Nó\\",
-      "that": "? Đó\\",
+      "correct_it": "✅ Đúng! Nó\\",
+      "that": "❌ Đó\\",
       "linear": "Tuyến tính",
       "quadratic": "Bậc hai",
       "cubic": "Bậc ba",
@@ -14791,7 +14795,8 @@
       "angle_u00b0": "Góc (°)",
       "velocity_ms": "Vận tốc (m/s)",
       "gravity_msu00b2": "Trọng lực (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Đã có lời giải thích."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Ngẫu nhiên: ",
@@ -14819,7 +14824,10 @@
       "codominant_desc": "Cả hai alen đều được biểu hiện đầy đủ. Dị hợp tử cho thấy cả hai tính trạng cùng lúc.",
       "sexLinked_desc": "Tính trạng nằm trên nhiễm sắc thể X. Đây là mô hình di truyền RECESSIVE liên kết X (ví dụ bệnh máu khó đông, mù màu đỏ-xanh): nam (XY) chỉ cần một bản sao; nữ (XX) cần hai bản sao.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Quay lại các công cụ STEM",
+      "a11y_snapshot": "Ảnh chụp",
+      "a11y_close_flashcard": "Đóng thẻ"
     },
     "circuit": {
       "meter_status_ammeter_short": "Vị trí không an toàn: đường ngắn mạch",
@@ -15111,8 +15119,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Đúng! ",
-      "it": "? Nó\\"
+      "correct": "✅ Đúng! ",
+      "it": "❌ Nó\\"
     },
     "inequality": {
       "badge_first_solve_label": "Lời Giải Đầu Tiên",
@@ -15228,8 +15236,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Đúng!",
-      "answer": "? Đáp án: ",
+      "correct": "✅ Đúng!",
+      "answer": "❌ Đáp án: ",
       "hydrogen": "Hydro",
       "helium": "Heli",
       "lithium": "Liti",
@@ -15371,7 +15379,7 @@
       "reddish_metal_used_since_the": "Kim loại đỏ được sử dụng từ thời kỳ đồ Đồng",
       "bluishwhite_metal_that_prevents_rust": "Kim loại trắng-xanh ngăn gỉ",
       "best_conductor_of_electricity_among": "Chất dẫn điện tốt nhất trong tất cả các kim loại",
-      "dense_soft_shiny_precious_metal": "Kim loại quý đậm đặc, mềm, bóng • không bao giờ gỉ",
+      "dense_soft_shiny_precious_metal": "Kim loại quý đậm đặc, mềm, bóng — không bao giờ gỉ",
       "strong_as_steel_but_45": "Bền như thép nhưng nhẹ hơn 45%",
       "shiny_metal_that_gives_rubies": "Kim loại bóng cho hồng ngọc màu đỏ",
       "essential_for_steel_production_and": "Thiết yếu cho sản xuất thép và sức khỏe xương",
@@ -16477,7 +16485,9 @@
       "our_sun_is_born": "Mặt trời của Chúng ta Ra đời",
       "present_day": "Hiện tại",
       "the_far_future": "Tương lai Xa xôi",
-      "universe": "Vũ trụ: "
+      "universe": "Vũ trụ: ",
+      "a11y_back_to_tools": "Quay lại các công cụ",
+      "a11y_simulation_speed": "Tốc độ mô phỏng"
     },
     "rocks": {
       "igneous": "Đá Mácma",
@@ -19402,7 +19412,10 @@
       "garage_desc": "Động cơ, rỉ sét và phản ứng — một xưởng hóa học.",
       "classroom_desc": "Một lớp khoa học thực sự với cốc thủy tinh và thí nghiệm.",
       "outdoors_desc": "Bước ra ngoài — thiên nhiên là phòng thí nghiệm lớn nhất.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Quay lại các công cụ",
+      "a11y_snapshot": "Ảnh chụp",
+      "a11y_next": "Tiếp theo"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Đã lưu vào lịch sử!",
@@ -20189,7 +20202,40 @@
       "read_what_special_education_law_actually": "Đọc xem luật giáo dục đặc biệt thực sự nói gì, bằng chính lời của nó. Văn bản thật của Phần B luật IDEA và Mục 504, lấy từ eCFR và có đóng dấu ngày, tra cứu được, quy định liên bang và tiểu bang đặt cạnh nhau. Không có gì được diễn giải lại hay sinh ra: nếu văn bản chính thức chưa tải, công cụ nói thẳng như vậy thay vì đoán.",
       "applied_k_12_behavior_practice_what": "Thực hành hành vi ứng dụng từ mẫu giáo đến lớp 12 — chuyên viên tâm lý học đường và giáo viên thực sự làm gì với khoa học này. Khung ba tầng PBIS, hành vi thay thế gắn với các chức năng trong FBA, sự kiện bối cảnh (những tác nhân chậm mà phần lớn BIP bỏ sót), chu kỳ bảy giai đoạn của hành vi bùng nổ theo Geoff Colvin, và đạo đức về cưỡng chế và cách ly dựa trên Chương 33 của Maine. Công cụ chị em với BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Sinh học biển và khoa học hành vi của bạch tuộc, mực ống, mực nang và ốc anh vũ. Nổi bật: Hunter Sim — chọn loài, môi trường sống, con mồi và chiến thuật, chơi trò ngụy trang, canh thời điểm ra đòn. Mở khóa những mẩu sinh học kiểu sổ tay thực địa (cơ chế tế bào sắc tố, 9 bộ não, máu xanh, đẩy bằng phản lực). Sổ tay thực địa 10 loài kèm chỉ số trí thông minh, ngụy trang và tốc độ phản lực.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 và HS-PS2. Trình mô phỏng ứng suất giàn với khẩu độ, chiều cao, tải trọng và vật liệu điều chỉnh được, so sánh các kiểu cầu (dầm, giàn, vòm, treo, dây văng), cơ sở dữ liệu vật liệu, các loại lực, nghiên cứu trường hợp thực (Tacoma Narrows, Hyatt Regency, Tay, Silver, cùng Brooklyn, Golden Gate, Akashi và Millau), chu trình thiết kế kỹ thuật, đề kiểu AP, và bản đặc tả thiết kế in được."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 và HS-PS2. Trình mô phỏng ứng suất giàn với khẩu độ, chiều cao, tải trọng và vật liệu điều chỉnh được, so sánh các kiểu cầu (dầm, giàn, vòm, treo, dây văng), cơ sở dữ liệu vật liệu, các loại lực, nghiên cứu trường hợp thực (Tacoma Narrows, Hyatt Regency, Tay, Silver, cùng Brooklyn, Golden Gate, Akashi và Millau), chu trình thiết kế kỹ thuật, đề kiểu AP, và bản đặc tả thiết kế in được.",
+      "the_gutenberg_style_screw_press_as": "Máy in vít kiểu Gutenberg dựng thành một mô phỏng chạy được. Kéo cần, tự sắp chữ của bạn, xem vết in. Kèm theo là khoa học vật liệu (hợp kim chì-thiếc-antimon), kinh tế (chi phí mỗi cuốn sách sụp đổ), lịch sử (Cải cách, cách mạng khoa học), nghệ thuật chữ, và những con người đằng sau máy in (kể cả các nữ thợ in mà lịch sử đã quên). Dựng cho công việc liên môn ở cấp trung học cơ sở.",
+      "three_js_stoop_simulator_deep_science": "Trình mô phỏng cú bổ nhào bằng Three.js cùng khoa học chuyên sâu về cơ học săn mồi của chim săn. Bay như một con cắt lớn ở 240 mph, như một con đại bàng harpy với vuốt 530 psi, hoặc như một con cú sừng lớn im lặng. 8 loài và 12 phần: lực vuốt, thị giác (gấp 4-8 lần người, cắt lưng hung thấy cả tử ngoại), vật lý bay, cú bay không tiếng, máy tính vận tốc tới hạn, sự hồi phục sau DDT và các khủng hoảng bảo tồn còn tiếp diễn, cùng cách nhận dạng ngoài thực địa bằng bóng dáng và thần thái.",
+      "practice_reading_and_completing_the_documents": "Tập đọc và điền những giấy tờ mà đời sống người lớn xoay quanh: đơn xin việc, mẫu W-4, hợp đồng thuê nhà, phiếu tiếp nhận y tế, giấy phép tập lái, và thư mời họp IEP của chính bạn. Mọi ô đều được giải nghĩa bằng lời lẽ đời thường, những ô có thể khiến bạn trả giá được đánh dấu, có các tình huống bị ép ký ngay và những câu nói sẵn để xin thêm thời gian. Mọi bài tập đều dùng một nhân vật hư cấu, không bao giờ dùng thông tin thật của bạn.",
+      "how_swimming_works_stroke_physics_survival": "Bơi lội hoạt động ra sao (vật lý của các kiểu bơi cùng kỹ năng sinh tồn) và điều mọi người biết bơi nên nắm về nước lạnh, dòng rút xa bờ, băng, áo phao và cứu hộ. Phân tích hình ảnh từng kiểu bơi, khoa học về lực nổi và lực đẩy, cùng những kỹ năng sinh tồn thật sự cứu mạng (nổi ngửa, đạp nước kiểu đánh trứng, tư thế HELP, túm tụm lại). Nguồn: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Chỉ dùng để học: muốn thật sự biết bơi, hãy tìm một huấn luyện viên bơi.",
+      "tax_paycheck_calculator_data_literacy_decision": "Máy tính thuế và phiếu lương, năng lực đọc dữ liệu, ma trận quyết định, trình đọc hợp đồng, hồ sơ và giấy tờ, kế hoạch đi lại, sẵn sàng đi làm, dựng hồ sơ xin việc, sắp xếp bằng chứng cho hồ sơ năng lực, luyện phỏng vấn, kỹ năng giao tiếp, quản lý thời gian, bảo hiểm y tế, chăm sóc răng, công thái học trong chăm sóc cơ thể, nếp ngủ, nhãn thuốc, chuẩn bị đi khám, an toàn trong nhà, an toàn số, sự thoải mái với thức ăn, và khoa học ứng dụng cho đời sống hằng ngày.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 và HS-LS4. Thế giới vi sinh: vi khuẩn (có lợi và gây bệnh), virus (COVID, cúm, HIV, thực khuẩn thể, sởi), hiển vi (quang học, tương phản pha, huỳnh quang, điện tử, AFM), sự tiến hóa của kháng kháng sinh, hệ vi sinh của người, của đất và của đại dương, vaccine và hệ miễn dịch, lên men (bột chua, sữa chua, kimchi, dưa cải muối, kombucha, phô mai), nghiên cứu trường hợp (Snow, Fleming, MRSA, COVID và mRNA, FMT), câu hỏi ôn tập, cùng bản tra cứu in được về an toàn phòng thí nghiệm và vi sinh vật.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Mười lăm chiến dịch chăm sóc môi trường trải trên mười một vùng. Năm chiến dịch dài nhiều giai đoạn ở Maine, cộng thêm mười kịch bản liên vùng chạm tới cả năm họ cơ chế: lửa (Yarralin ở Úc, Karuk ở bắc California), bảo tồn (Yellowstone, Akagera ở Rwanda), y tế công cộng (sốt xuất huyết ở Mumbai, Ebola năm 2014 ở Liberia), lưu vực (sông Klamath, lưu vực Murray-Darling), và khí hậu (quần đảo Marshall, châu thổ Bangladesh). Các nhận định ghép cặp theo họ mở ra khi bạn hoàn thành cả chiến dịch Maine lẫn kịch bản liên vùng thuộc cùng một họ cơ chế.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 và MS-ESS3-3. Thiết kế một thị trấn trên lưới 144 thửa đất, đối mặt với những yêu cầu thật sự xung đột nhau. Ba thị trấn, mỗi nơi một ràng buộc quyết định khác nhau: Riverbend, nơi nước mưa và trái phiếu bóp nghẹt; Mesa Hollow, nơi tầng chứa nước là cố định và các nông trại đang uống cạn nó; và Harborlight, nơi bản quy hoạch vẫn phải đứng vững vào năm 2050. Dòng chảy theo phương pháp hợp lý, cân bằng nước, dự phòng nước biển dâng, cự ly đi bộ trên mạng lưới và một mạng đường có tính giá — mỗi thứ đều mở ra được để xem công thức của nó. Assumption Lab chạy lại cùng một phương án với hai bộ tham số đã công bố, để học sinh thấy kết luận nào sống sót qua cả hai. Bản đồ, bảng thửa đất chỉnh sửa được và mô hình 3D của chính phương án đó. Câu hỏi thảo luận và phần lịch sử có dẫn nguồn gánh những câu hỏi mà công cụ từ chối mô hình hóa. Không chấm điểm và không có đáp án.",
+      "codap_data_science": "CODAP: khoa học dữ liệu",
+      "lumen_research_canvas": "Lumen: khung nghiên cứu",
+      "evolab_evolution": "EvoLab: tiến hóa",
+      "dino_lab": "Phòng thí nghiệm khủng long",
+      "nutritionlab_nutrition_science": "NutritionLab: khoa học dinh dưỡng",
+      "birdlab_i_spy_ornithology": "BirdLab: điểu học tìm và nhận",
+      "openbim_companion": "OpenBIM: sổ tay đồng hành",
+      "applab_ai_app_generator": "AppLab: bộ tạo ứng dụng bằng AI",
+      "access_lens": "Kính tiếp cận",
+      "sim_shelf": "Kệ mô phỏng",
+      "zoom_gallery": "Phòng tranh phóng to",
+      "sourcebook": "Sách nguồn",
+      "wheel_fire_pottery_lab": "Bàn xoay và lửa: xưởng gốm",
+      "echo_navigator": "Bộ dẫn đường bằng tiếng vọng",
+      "learning_lab_how_learning_works": "Learning Lab: học diễn ra thế nào",
+      "weldlab_welding_metal_joining": "WeldLab: hàn và nối kim loại",
+      "bikelab_physics_repair": "BikeLab: vật lý và sửa chữa",
+      "fisherlab_boating_fishing_sim": "FisherLab: mô phỏng đi biển và câu cá",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: mô phỏng trại nuôi vẹm",
+      "throwlab_sports_physics": "ThrowLab: vật lý thể thao",
+      "skatelab_skate_bmx_physics": "SkateLab: vật lý ván trượt và BMX",
+      "playlab_strategy_on_the_field": "PlayLab: chiến thuật trên sân",
+      "kepler_colony": "Thuộc địa Kepler",
+      "birdlab_life_list": "BirdLab: danh mục cả đời",
+      "petslab_decoder": "PetsLab: bộ giải mã"
     },
     "area": {
       "volume": "Thể tích..."
@@ -20229,7 +20275,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Quay lại các công cụ",
+      "a11y_snapshot": "Ảnh chụp",
+      "a11y_next": "Tiếp theo",
+      "a11y_simulation_speed": "Tốc độ mô phỏng",
+      "a11y_close_flashcard": "Đóng thẻ"
     },
     "solar_sys": {
       "venus": "Sao Kim",
@@ -21051,7 +21102,8 @@
       "scaled_volume_changed": "🔵 Đã chia tỷ lệ (thể tích thay đổi)",
       "skewed_shape_deformed": "🟠 Xiên (hình bị biến dạng)",
       "degenerate_volume_0": "💀 Suy biến (thể tích → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Tiến trình hướng dẫn"
     },
     "numberline": {
       "first_mark": "Dấu Đầu Tiên",
@@ -23194,7 +23246,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Năm {value1} bắt đầu."
     },
     "optics": {
       "optics_lab": "Phòng thí nghiệm Quang học",
@@ -23540,7 +23593,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Truy vấn SQL phân tích cục bộ"
     },
     "geosandbox": {
       "loading_3d_engine": "Đang tải công cụ 3D...",
@@ -23890,7 +23944,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Đã xóa tác phẩm điêu khắc"
     },
     "algebraCAS": {
       "solve": "🔍 Giải",
@@ -26506,7 +26561,8 @@
       "ml_over": " mL trên ",
       "trials_suffix": " lần",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " giây còn lại"
+      "sr_seconds_remaining": " giây còn lại",
+      "sr_explanation_ready": "Đã có lời giải thích."
     },
     "economicslab": {
       "six_figures": "Thu nhập sáu chữ số",
@@ -28486,7 +28542,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Đã lưu phần suy ngẫm."
     },
     "anatomy": {
       "system_explorer": "Nhà thám hiểm hệ cơ quan",
@@ -29068,7 +29125,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Đặt lại máy quay 3D"
     },
     "dna": {
       "back_to_tools": "Quay lại công cụ",
@@ -30445,7 +30503,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Đã lưu phần suy ngẫm."
     },
     "angles": {
       "back_to_tools": "Quay lại công cụ",
@@ -31259,7 +31318,8 @@
       "explain_how_each_parameter_shapes_a_si": "Giải thích cách mỗi tham số định hình một sóng sin.",
       "design_note_discrete_5_state_marker_no": "Ghi chú thiết kế: dấu rời rạc 5 trạng thái; không có điểm sóng; không tiết lộ — theo thiết kế.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Đã có lời giải thích."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu Luyện gõ phím",
@@ -31613,7 +31673,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Quay lại trình đơn"
     },
     "music": {
       "edm_lead": "Lead EDM",
@@ -34164,7 +34225,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Chọn đáp án: {value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -35787,7 +35849,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "tắt",
+      "sr_nothing_to_redo": "Không có gì để làm lại.",
+      "sr_nothing_to_undo": "Không có gì để hoàn tác.",
+      "sr_dir_left": "trái",
+      "sr_dir_right": "phải"
     },
     "arithmetic": {
       "selected": " đã được chọn.",
@@ -39833,7 +39900,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR được chuẩn hóa theo tâm điểm ở thiên đỉnh và cấp sao giới hạn 6,5. Ước tính gần đúng này giả định bầu trời quang, không trăng và chỉ số quần thể 2,2. Các cấp Bortle chỉ cho biết cấp sao giới hạn một cách sơ bộ; bầu trời tối hơn tiêu chuẩn có thể vượt ZHR. Độ cao tâm điểm thấp hơn và bầu trời sáng hơn làm giảm ước tính.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Quay lại các công cụ STEM"
     },
     "autorepair": {
       "back_to_menu": "Về menu",
@@ -40574,7 +40642,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Điểm: {value1} trên {value2}",
+      "a11y_open_2": "Mở {value1}",
+      "a11y_option": "Lựa chọn {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Vỏ",
@@ -40677,7 +40748,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Đã có lời giải thích."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41423,7 +41495,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Đã có lời giải thích.",
+      "a11y_investigation_progress": "Tiến trình điều tra",
+      "a11y_flight_debrief": "Tổng kết chuyến bay",
+      "a11y_tutorial_progress": "Tiến trình hướng dẫn"
     },
     "behaviorlab": {
       "chain_reaction": "Phản ứng dây chuyền",
@@ -41597,7 +41673,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Đã có lời giải thích.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -44107,7 +44183,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Mô-đun đã khám phá: {value1}",
+      "a11y_score_out_of": "Điểm: {value1} trên {value2}",
+      "sr_selected": "Đã chọn: {value1}",
+      "sr_quiz_reset": "Đã đặt lại bài trắc nghiệm"
     },
     "brainatlas": {
       "group_systems": "Hệ",
@@ -49263,7 +49343,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Chọn đáp án: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Bậc thầy đố vui",
@@ -50407,7 +50488,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Đã chọn: {value1}"
     },
     "echotrainer": {
       "wall": "Tường",
@@ -51866,7 +51948,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Mô-đun đã khám phá: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Máy tính carbon",
@@ -52946,7 +53029,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Quay lại trình đơn",
+      "sr_getting_critique": "Đang lấy nhận xét...",
+      "sr_critique_ready": "Đã có nhận xét."
     },
     "flightsim": {
       "game_controls": "🎮 ĐIỀU KHIỂN TRÒ CHƠI",
@@ -53151,7 +53237,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Chế độ xem buồng lái của trình mô phỏng bay. W/S chúc ngóc, A/D nghiêng cánh, Shift/Ctrl cần ga, dấu ngoặc vuông điều khiển cánh tà, X phanh bánh, Q câu đố, F lực, Space tạm dừng, I thông tin.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -53163,7 +53249,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Chuyến bay tự do từ Portland, ME",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -53209,7 +53295,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Tháp Thượng Hải",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -59036,7 +59122,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Mô-đun đã khám phá: {value1}",
+      "sr_loaded": "Đã tải {value1}",
+      "sr_showing": "Đang hiển thị {value1}",
+      "sr_opening": "Đang mở {value1}"
     },
     "platetectonics": {
       "pacific": "Thái Bình Dương",
@@ -59295,7 +59385,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63858,7 +63948,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Đã có lời giải thích.",
+      "sr_off": "tắt",
+      "sr_edge_left": "trái",
+      "sr_edge_right": "phải",
+      "sr_correct": "Đúng.",
+      "sr_not_quite": "Chưa đúng lắm."
     },
     "playlab": {
       "back": "← Quay lại",
@@ -63926,7 +64022,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Người hướng dẫn đang ngoại tuyến.",
+      "sr_drill_stopped": "Đã dừng bài luyện."
     },
     "printingpress": {
       "print": "🖨️ In",
@@ -66065,7 +66163,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Quay lại trình đơn",
+      "a11y_open": "Mở {value1}",
+      "sr_selected": "Đã chọn: {value1}",
+      "sr_loaded": "Đã tải {value1}",
+      "sr_opening": "Đang mở {value1}",
+      "sr_correct": "Đúng.",
+      "sr_not_quite": "Chưa đúng lắm.",
+      "sr_year_begins": "Năm {value1} bắt đầu.",
+      "sr_question_reset_try_again": "Đã đặt lại câu hỏi. Thử lại nhé.",
+      "sr_not_quite_see_the_explanation": "Chưa đúng lắm: hãy xem lời giải thích."
     },
     "raptorhunt": {
       "anatomy": "Giải phẫu",
@@ -67714,7 +67822,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Mở {value1}",
+      "a11y_flight_debrief": "Tổng kết chuyến bay"
     },
     "renewables": {
       "wind": "Gió",
@@ -68414,7 +68524,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Quay lại trình đơn",
+      "sr_getting_critique": "Đang lấy nhận xét...",
+      "sr_critique_ready": "Đã có nhận xét.",
+      "sr_quiz_reset": "Đã đặt lại bài trắc nghiệm"
     },
     "roadready": {
       "let_s_start": "Bắt đầu nào →",
@@ -71281,7 +71395,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Quay lại các công cụ STEM",
+      "a11y_local_analytical_sql_query": "Truy vấn SQL phân tích cục bộ"
     },
     "stewardship": {
       "back": "← Quay lại",
@@ -71858,7 +71974,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Quay lại trình đơn",
+      "sr_question_reset_try_again": "Đã đặt lại câu hỏi. Thử lại nhé."
     },
     "throwlab": {
       "back": "← Quay lại",
@@ -72083,7 +72201,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Đặt lại máy quay 3D",
+      "sr_coach_is_offline": "Người hướng dẫn đang ngoại tuyến.",
+      "sr_drill_stopped": "Đã dừng bài luyện."
     },
     "weldlab": {
       "print": "🖨️ In",
@@ -73645,7 +73766,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Mô-đun đã khám phá: {value1}",
+      "a11y_score_out_of": "Điểm: {value1} trên {value2}",
+      "sr_quiz_reset": "Đã đặt lại bài trắc nghiệm",
+      "sr_loaded": "Đã tải {value1}",
+      "sr_showing": "Đang hiển thị {value1}",
+      "sr_not_quite_see_the_explanation": "Chưa đúng lắm: hãy xem lời giải thích."
     },
     "worldbuilder": {
       "grade_level": "Trình độ lớp",
@@ -75238,7 +75365,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Cây sự sống",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -77093,7 +77220,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Lựa chọn {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Các góc máy quay 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -77105,6 +77234,22 @@
       "finish": "Hiểu rồi!",
       "replay": "Mẹo",
       "replay_aria": "Hiện hướng dẫn"
+    },
+    "pets": {
+      "sr_back_to_menu": "Quay lại trình đơn",
+      "sr_getting_critique": "Đang lấy nhận xét...",
+      "sr_critique_ready": "Đã có nhận xét."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Quay lại các công cụ STEM",
+      "a11y_3d_camera_views": "Các góc máy quay 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Tiến trình điều tra"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Không có gì để làm lại.",
+      "sr_nothing_to_undo": "Không có gì để hoàn tác."
     }
   },
   "glossary_health": {
@@ -77654,7 +77799,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Chiều cao khấc",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80500,7 +80645,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Hình minh họa khái niệm",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80534,10 +80679,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Bài trí mọi khái niệm",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Tiến độ bài trí",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80549,7 +80694,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Các tên có thể",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80560,7 +80705,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Gợi nhớ khái niệm",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82117,7 +82262,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Đóng Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82126,7 +82271,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Lọc bài tập",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82164,15 +82309,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Câu hỏi {n}",
+    "q_choices_aria": "Lựa chọn cho câu hỏi {n}, mỗi dòng một mục",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Xóa câu hỏi {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Các bậc thang đo cho câu hỏi {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Loại câu trả lời cho câu hỏi {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82182,10 +82327,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Liên kết có thể chọn cho {title}",
+    "scale_high_aria": "Nhãn cho đầu cao",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Nhãn cho đầu thấp",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82205,7 +82350,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Tóm tắt trạng thái bài tập",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82221,9 +82366,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Tự động cập nhật",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Liên kết bài tập về nhà có thể chọn",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82232,7 +82377,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Mã QR của bài tập về nhà",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84680,7 +84825,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Chọn mức phát triển cho câu gợi ý và bảng tiêu chí",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84688,7 +84833,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Bật hoặc tắt chế độ xem của giáo viên",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84719,17 +84864,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Tạm dừng ghi ghi chú bằng giọng nói",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Tiếp tục ghi ghi chú bằng giọng nói",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Bắt đầu ghi ghi chú bằng giọng nói",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Dừng ghi",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85115,22 +85260,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Lý do ghi nhận AlloHaven",
+    "recent_deliveries_aria": "Các ghi nhận AlloHaven riêng tư gần đây",
+    "token_amount_aria": "Số lượng token AlloHaven",
+    "token_cap_aria": "Giới hạn token AlloHaven mỗi học sinh mỗi phiên"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Các ngoại lệ được phép mà vẫn đạt mục tiêu",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Tín hiệu tiến độ tùy chọn do ứng dụng theo dõi cho mục tiêu này",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Cả nhóm cùng nhau, hoặc từng học sinh riêng lẻ",
+    "name_aria": "Tên mục tiêu lớp, chỉ lưu trên thiết bị này",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Mục tiêu này áp dụng cho những học sinh nào",
+    "template_aria": "Mẫu khởi đầu cho mục tiêu lớp",
+    "tokens_aria": "Số token trao cho mỗi học sinh khi đạt mục tiêu này"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85148,7 +85293,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Token quản trị của Class Mailbox (tùy chọn)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85178,17 +85323,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "đã giơ tay",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Liên kết tham gia hộp thư trực tiếp, có thể chọn",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Phiên trực tiếp của Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85215,7 +85360,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "kết nối thời gian thực",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85247,7 +85392,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL ứng dụng web của Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

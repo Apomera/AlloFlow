@@ -67984,6 +67984,11 @@
     "practiceFormsIncluded": true
   },
   "blueprint": {
+    "topicIdScheme": "internal-pack-numbering",
+    "officialFrameworkTopicCountReference": 43,
+    "topicIdSchemeNote": "Item topicIds use an internal numbering that does not correspond to the public AP Physics 1 framework topic numbers. Verified 2026-09-06 against the AP Physics 1: Algebra-Based Course and Exam Description, Effective Fall 2024: the pack’s 2.6 Circular Motion is framework 2.9, its 3.4 Power is framework 3.5, its 2.4 Gravitational Force is framework 2.6, and it carries a topic 4.5 where framework Unit 4 ends at 4.4. A draft label-based crosswalk in dev-tools/ap_physics_1_topic_crosswalk.cjs maps the pack’s 39 topics onto 37 of the 43 framework topics and leaves six with no mapped pack topic: 2.8 Spring Forces, 3.4 Conservation of Energy, 5.2 Connecting Linear and Rotational Motion, 5.6 Newton’s Second Law in Rotational Form, 6.2 Torque and Work, and 6.6 Motion of Orbiting Satellites. That crosswalk is a draft pending AP Physics subject-expert review, so no official framework topic universe is declared and framework coverage for this pack remains unmeasured.",
+    "topicCrosswalkModule": "dev-tools/ap_physics_1_topic_crosswalk.cjs",
+    "topicCrosswalkStatus": "draft-pending-subject-expert-review",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
     "officialExamUrl": "https://apcentral.collegeboard.org/courses/ap-physics-1/exam",

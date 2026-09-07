@@ -849,7 +849,7 @@
     "subtitle": "خپله د زده کړې لاره وټاکئ",
     "full_title": "بشپړ پلیټفارم",
     "full_desc": "د AlloFlow ټولو ځانګړتیاوو ته بشپړ لاسرسی: لوستونه، STEAM Lab او وسیلې",
-    "guided_title": "اوضع ماوجَّه",
+    "guided_title": "لارښود حالت",
     "guided_desc": "د درس جوړولو او د زده کوونکو فعالیتونو لپاره ګام په ګام لارښوونه",
     "stem_title": "STEAM Lab",
     "stem_desc": "له 100 څخه زیات تعاملي ساینسي، ریاضي، او انجینري سمیولیشن",
@@ -2020,7 +2020,7 @@
     "last_time": "Last time"
   },
   "guided": {
-    "indicator_title": "د نهرښوونې حالت",
+    "indicator_title": "لارښود حالت",
     "step_of": "ګام {current} له {total}",
     "back": "← شاته",
     "skip": "راتلونکی ګام →",
@@ -5141,7 +5141,7 @@
       "correct": "عمل ممتاز!",
       "partial": "جهد جید، دوام ورکړئ!",
       "incorrect": "لیس سمًا هاو شوامًا • حااول مجددًا!",
-      "error": "ارزونه ونشوه • مهرباني وکړئ بیا هڅه وکړئ.",
+      "error": "ارزونه ونشوه — مهرباني وکړئ بیا هڅه وکړئ.",
       "verdict_correct": "سم!",
       "verdict_partial": "سم جزئیًا",
       "verdict_incorrect": "لیس سمًا هاو شوامًا",
@@ -5931,7 +5931,7 @@
     "simplified_def_fallback": "تاسو کولی شئ په متن کې هره کلمه کلیک کړئ ترڅو د هغې تعریف وګورئ!",
     "simplified_cloze": "جرّب اوضع 'ملء فراغات' نهختبار مهارات کلمات.",
     "simplified_quiz": "دا متن ډېر ښه ښکاري. ایا د پوهې د کتلو لپاره د وتلو ټکټ جوړ کړو؟",
-    "simplified_glossary": "کلمات مثل '{term1}' او '{term2}' قد اړتیا لری پورې دعم • قد مرسته کوی قاموس!",
+    "simplified_glossary": "کلمات مثل '{term1}' او '{term2}' قد اړتیا لری پورې دعم — قد مرسته کوی قاموس!",
     "simplified_glossary_fallback": "ځینې له دې اصطلاحاتو ستونزمن دي. د قاموس به د دې متن په ملاتړ کې مرسته وکړي.",
     "simplified_outline": "قد یستزهد سیکھنے اوانهاون بصریاون څخه څخهظِّم بصری لدا محتاوى.",
     "glossary_bingo": "تاسو کولی شئ دا اصطلاحات د کلماتو لوبو ته بدل کړئ لکه Bingo، د حافظې میچ، متقاطع کلمې، یا د کلمو لټون!",
@@ -5942,7 +5942,7 @@
     "quiz_rigor": "آیا غواړې ضمان أن دا انهختبار صارم؟ شغِّل تدقیق سرهیارات.",
     "adventure_sim": "Adventure Mode زده کوونکو ته اجازه ورکوي چې هغه څه چې زده کړي په خوندي محاکاتو کې پلي کړي.",
     "adventure_inventory": "د راټولو شویو توکو لیدلو لپاره 'انبار' وګورئ.",
-    "adventure_context": "تصبح مغامرتک عن {topic} أغنى بمزید څخه اوسائل • جرّب اضافه کول {suggestion}!",
+    "adventure_context": "تصبح مغامرتک عن {topic} أغنى بمزید څخه اوسائل — جرّب اضافه کول {suggestion}!",
     "adventure_context_fallback": "هرما أنشأت مزید څخه اوسائل، أصبح شرایط مهم أغنى.",
     "timeline_drag": "اسحب اوأفلت أحداث لبیا ترتیب تسلسل.",
     "timeline_visualize": "مرسته کوی اوہ ساحه په تصاوُّر علاقات ټولب اوپایله.",
@@ -5953,8 +5953,8 @@
     "parent_adventure": "جرّب اوضع مهم لفعالیت ممتع زه یاوم ممطر.",
     "parent_read_along": "یوځای د لوستلو تمرین لپاره 'Read Along' وکاروئ.",
     "fallback_lesson_plan": "تاسو غوره سرچینې لرئ. ایا یې د درس پلان کې یوځای کړو؟",
-    "fallback_brainstorm": "بند احساس کوئ؟ له ما سره خبرې اترې هڅه وکړئ او Auto-Complete فعال کړئ ترڅو Blueprint Mode فعال کړي • زه به ستاسو د ټول درس په ډیزاین کې مرسته وکړم!",
-    "fallback_export": "لدیک {count} اوسائل عن {topic} • صدِّرها کفایل PDF اواحد!",
+    "fallback_brainstorm": "بند احساس کوئ؟ له ما سره خبرې اترې هڅه وکړئ او Auto-Complete فعال کړئ ترڅو Blueprint Mode فعال کړي — زه به ستاسو د ټول درس په ډیزاین کې مرسته وکړم!",
+    "fallback_export": "لدیک {count} اوسائل عن {topic} — صدِّرها کفایل PDF اواحد!",
     "fallback_export_fallback": "تاسو کولی شئ دا ټولې سرچینې د یوې واحدې PDF کڅوړې په توګه صادر کړئ.",
     "fallback_guide": "څخهتخب کړئ 'أرنی' زه دلیل هوښیارتیا مصنوعی که ضللت نهره!",
     "intro_greeting": "کلیک وکړئ علی لسمونه تنظیمات آاوازی.",
@@ -6130,7 +6130,7 @@
     "text_generated": "ستاسو د {topic} په اړه تطبیق شوی متن چمتو دی! د هغې د تعریف لیدلو لپاره په کلمه باندې کلیک کول هڅه وکړئ، یا د پوهې د ژورولو لپاره د قاموس یا ازموینې په څېر وسیلې وپلټئ.",
     "flashcards_created": "د زده کړې کارتونه جوړ شول! تاسو کولی شئ یې Quizlet ته صادر کړئ، چاپ یې کړئ، یا د حافظې لوبه هڅه وکړئ.",
     "quiz_generated": "ازموینه چمتو ده! د ټولګي لپاره د وړاندې کولو حالت وکاروئ، یا د خلاصو ځوابونو لپاره Auto-Grader هڅه وکړئ.",
-    "glossary_generated": "قاموس بشپړ شو! د کلماتو لوبې هڅه وکړئ • Bingo، د حافظې میچ، متقاطع کلمې، د کلمو لټون، او نور!",
+    "glossary_generated": "قاموس بشپړ شو! د کلماتو لوبې هڅه وکړئ — Bingo، د حافظې میچ، متقاطع کلمې، د کلمو لټون، او نور!",
     "adventure_started": "تبدأ مغامرتک! اکتب إجراءک أدناه، یا استخدم أزرار انهختیار لتقریر ما یحدث وروسته اوہ.",
     "adventure_scene": "ماذا ستفعل؟ هر غوراوی یشکِّل قصتک!",
     "analysis_complete": "تحلیل بشپړ شو! ما ځینې لغتونه او کلیدي مفاهیم وموندل چې د کتنې وړ دي.",
@@ -7657,7 +7657,7 @@
     "bridge_generating": "ستاسو شخصي بڼه جوړېږي...",
     "bridge_projection": "اوضع وښیئ",
     "bridge_exit_projection": "خراوج څخه وښیئ",
-    "bridge_offline_info": "هیڅ ژوندۍ ناسته نشته • یوازې پر دې وسیله مخکتنه",
+    "bridge_offline_info": "هیڅ ژوندۍ ناسته نشته — یوازې پر دې وسیله مخکتنه",
     "bridge_term_saved": "هاو شو محفاوظ کړئ \"{term}\" زه قاموس",
     "bridge_term_save_failed": "ناکام محفاوظ کړئ اصطلاح",
     "bridge_save_term": "محفاوظ کړئ زه قاموس",
@@ -8623,7 +8623,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "د کارپوهانو ورک بنچ ته واستوئ",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -9700,8 +9700,8 @@
     "escaped_desc": "تا ټولې معماوې حل کړې او له کوټې څخه دې وتښتیدې!",
     "time_up": "⏰ انتهى وقت!",
     "reveal_hint": "کشف انهشاره",
-    "puzzles_remaining": "{{count}} معماوې پاتې دي",
-    "time_remaining": "وقت: {{time}}",
+    "puzzles_remaining": "{count} معماوې پاتې دي",
+    "time_remaining": "وقت: {time}",
     "progress": "پهمختګ",
     "start": "Escape Room پیل کړئ",
     "start_hint": "شراوع کړئ مؤقت لتبدأ فحص کائنات",
@@ -9712,8 +9712,8 @@
     "room_complete": "کوټه بشپړه شوه!",
     "loading_error": "د کوټې ډاټا نه شو لوډ کیدای",
     "no_puzzle": "نه یاوجد لغز لدا کائن",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "بشپړه تیښته! +{{xp}} بونس XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "بشپړه تیښته! +{xp} بونس XP",
     "puzzle_mcq": "غوراوی څخه متعدد",
     "puzzle_sequence": "ضع بالترتیب",
     "puzzle_cipher": "فک پیغام",
@@ -9771,7 +9771,7 @@
     "clue": "دلیل",
     "clue_found": "هاو شو اکتشاف دلیل!",
     "clue_revealed": "قد مرسته کوی دا دلیل زه لغز بل...",
-    "clues_collected": "نښې: {{count}}/{{total}}",
+    "clues_collected": "نښې: {count}/{total}",
     "use_clue": "استخدم دلیل",
     "final_door": "باب مخرج",
     "final_door_ready": "هاو شو کھاولیں باب مخرج اوس!",
@@ -9802,7 +9802,7 @@
     "streak_bonus": "د پرله پسې بونس! x{multiplier}",
     "streak_lost": "پرله پسې دې له لاسه ورکړل!",
     "one_minute_warning": "یوه دقیقه پاتې ده!",
-    "thirty_seconds_warning": "? یوازې 30 ثانیې پاتې دي!",
+    "thirty_seconds_warning": "⏰ یوازې 30 ثانیې پاتې دي!",
     "timer_paused": "مؤقت متاوقف",
     "timer_resume": "استئناف",
     "settings_btn": "د خونې تنظیمات",
@@ -9815,9 +9815,9 @@
     "launch_live_tooltip": "د خپل ټولګي سره د څو لوبغاړو Escape Room پیل کړئ",
     "team_mode": "تحدی فِرَق",
     "team_race": "تسابق للهراوب!",
-    "team_progress": "{{team}} پهمختګ: {{solved}}/{{total}}",
+    "team_progress": "{team} پهمختګ: {solved}/{total}",
     "waiting_host": "زه انتظار شراوع ښوونکی...",
-    "team_escaped": "{{team}} هربت!",
+    "team_escaped": "{team} هربت!",
     "all_teams_done": "هر فِرَق انتهت!",
     "your_team": "فریقک",
     "team_red": "فریق أحمر",
@@ -9825,7 +9825,7 @@
     "team_green": "فریق أخضر",
     "team_yellow": "فریق أټولګیر",
     "team_all": "ټول ساحه",
-    "teams_competing": "{{count}} ډلې سیالۍ کوي",
+    "teams_competing": "{count} ډلې سیالۍ کوي",
     "first_escape": "یال څخه یهرب!",
     "end_game": "لوبه پای ته ورسوئ",
     "end_game_confirm": "د ټولو زده کوونکو لپاره Escape Room پای ته ورسوم؟",
@@ -9838,8 +9838,8 @@
     "resume_game": "لوبه بیا پیل کړئ",
     "game_paused_by_teacher": "لوبه د ښوونکي لخوا ودرول شوه",
     "celebration_title": "تهانینا!",
-    "you_escaped": "هرب فریقک زه {{time}}!",
-    "other_team_escaped": "{{team}} هربت!",
+    "you_escaped": "هرب فریقک زه {time}!",
+    "other_team_escaped": "{team} هربت!",
     "class_escaped": "متنر ټولګی!",
     "everyone_escaped": "عمل ټول سرهًا للهراوب!",
     "hurry_up": "دوام ورکړئ! نه یزال بإمکانک هراوب!",
@@ -9867,7 +9867,7 @@
     "load_saved": "نهوڈ کړئ محفاوظ",
     "loaded_saved": "خوندي شوی Escape Room پورته شو! وګورئ او د چمتووالي په وخت کې یې پیل کړئ.",
     "no_saved": "هېڅ خوندي شوی Escape Room ونه موندل شو",
-    "preview_confirmed": "✓ Escape Room بند شو • د لوبې لپاره چمتو دی!",
+    "preview_confirmed": "✓ Escape Room بند شو — د لوبې لپاره چمتو دی!",
     "xp_earned_streak": "+{xp} XP (د {multiplier}x لړۍ بونس!)",
     "loaded_from_resource": "هاو شو نهوڈ کړئ څخه اوسیلہ."
   },
@@ -12305,7 +12305,11 @@
       "trapezoid": "شبه څخهحرف",
       "simpson": "سیمبساون",
       "rectangles_n": "مستطینهت (n)",
-      "coeff_a": "سرهامل a"
+      "coeff_a": "سرهامل a",
+      "sr_explanation_ready": "تشریح چمتو ده.",
+      "a11y_back_to_tools": "وسیلو ته بېرته",
+      "a11y_snapshot": "شېبه‌یي انځور",
+      "a11y_next": "راتلونکی"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ دا براوزر غږ نه ملاتړ کوي",
@@ -12429,13 +12433,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "د مصنوعي ځيرکتيا تشریح په دې کچه جوړ کړه",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "د لوستلو کچه:",
+      "aria_reading_level_group": "د لوستلو کچه",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14335,7 +14339,8 @@
       "angle_u00b0": "زاویه (°)",
       "velocity_ms": "سرعت (m/s)",
       "gravity_msu00b2": "جاذبه (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "تشریح چمتو ده."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 عشاوائی: ",
@@ -14363,7 +14368,10 @@
       "codominant_desc": "دواړه الیلونه په بشپړ ډول څرګندېږي. هیتروزایګوټ دواړه ځانګړنې په یوه وخت کې ښيي.",
       "sexLinked_desc": "دا ځانګړنه پر X کروموزوم ده. دا د X-linked RECESSIVE میراث ښيي (لکه هیموفیلیا او سور-شنه رنګ ړوندوالی): نارینه (XY) د څرګندولو لپاره یوازې یوې کاپي ته اړتیا لري؛ ښځې (XX) دوو ته اړتیا لري.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "د STEM وسیلو ته بېرته",
+      "a11y_snapshot": "شېبه‌یي انځور",
+      "a11y_close_flashcard": "کارت بندول"
     },
     "circuit": {
       "meter_status_ammeter_short": "ناخوندي ځای‌پرځای‌کول: د لنډ‌شي لاره",
@@ -16021,7 +16029,9 @@
       "our_sun_is_born": "زموږ لمر زیږېږي",
       "present_day": "یاوم حاضر",
       "the_far_future": "مستڅخه مخکې بعید",
-      "universe": "کاون: "
+      "universe": "کاون: ",
+      "a11y_back_to_tools": "وسیلو ته بېرته",
+      "a11y_simulation_speed": "د سیمولیشن چټکتیا"
     },
     "rocks": {
       "igneous": "ناری",
@@ -18946,7 +18956,10 @@
       "garage_desc": "انجنونه، زنګ او تعاملات — د کیمیا کارځای.",
       "classroom_desc": "د بیکرونو او تجربو لرونکی ریښتینی ساینس ټولګی.",
       "outdoors_desc": "بهر ووځئ — طبیعت تر ټولو لوی لابراتوار دی.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "وسیلو ته بېرته",
+      "a11y_snapshot": "شېبه‌یي انځور",
+      "a11y_next": "راتلونکی"
     },
     "converter": {
       "u2705_saved_to_history": "✅ په تاریخچه کې خوندي شو!",
@@ -19733,7 +19746,40 @@
       "read_what_special_education_law_actually": "ولولئ چې د ځانګړي زده‌کړې قانون واقعاً څه وايي، په خپلو کلمو کې. د IDEA د B برخې او د 504 مادې ریښتینی متن، له eCFR راوړل شوی او نېټه‌لرونکی، د لټون وړ، له فدرالي او ایالتي قواعدو سره څنګ په څنګ. هیڅ شی بیا‌لیکل کېږي یا تولیدېږي نه: که رسمي متن نه وي پورته شوی، وسیله همدا وايي، نه دا چې اټکل وکړي.",
       "applied_k_12_behavior_practice_what": "د کوچنیانو له ښوونځي څخه تر لېسې پورې د چلند تطبیقي کار: دا چې د ښوونځي رواني‌پوهان او ښوونکي واقعاً له دې علم سره څه کوي. درې‌پوړیز PBIS چوکاټ، بدیل چلندونه چې د FBA له دندو سره سمون خوري، د شالید پېښې (هغه ورو راپارونکي چې ډېری BIP پلانونه یې له پامه غورځوي)، د جیف کالوین اوه‌پړاویزه د چاودنې دوره، او د بندولو او بېلولو اخلاق چې د مین پر ۳۳ فصل ولاړ دی. د BehaviorLab خور وسیله.",
       "marine_biology_behavioral_science_of_octopuses": "د بحري ژوند پوهنه او د اتوپښې، مرکب کب، سیپیا او ناتیلوس د چلند علم. په سر کې: Hunter Sim — ډول، استوګنځی، ښکار او تاکتیک وټاکئ، د پټېدنې کوچنۍ لوبه وکړئ، او د بریدنې شېبه ونیسئ. د ډګر د کتابچې بیولوژیکي خبرې پرانیزي (د کروماتوفورونو میخانیک، ۹ مغزونه، شین وینه، جټ حرکت). د ۱۰ ډوله ډګري لارښود له هوښیارتیا، پټېدنې او د جټ چټکتیا شمېرو سره.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1، HS-ETS1 او HS-PS2. د خرپا د فشار سیمولیټر چې واټن، لوړوالی، بار او مواد یې د تنظیم وړ دي، د پلونو د ډولونو پرتله (تیري، خرپایي، قوسي، ځوړند، کیبلي)، د موادو ډیټابیس، د قوې ډولونه، ریښتیني قضیې (Tacoma Narrows، Hyatt Regency، Tay، Silver، او همدارنګه Brooklyn، Golden Gate، Akashi او Millau)، د انجینرۍ د ډیزاین دوره، د AP په سبک ازموینه، او د چاپ وړ د ډیزاین مشخصات."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1، HS-ETS1 او HS-PS2. د خرپا د فشار سیمولیټر چې واټن، لوړوالی، بار او مواد یې د تنظیم وړ دي، د پلونو د ډولونو پرتله (تیري، خرپایي، قوسي، ځوړند، کیبلي)، د موادو ډیټابیس، د قوې ډولونه، ریښتیني قضیې (Tacoma Narrows، Hyatt Regency، Tay، Silver، او همدارنګه Brooklyn، Golden Gate، Akashi او Millau)، د انجینرۍ د ډیزاین دوره، د AP په سبک ازموینه، او د چاپ وړ د ډیزاین مشخصات.",
+      "the_gutenberg_style_screw_press_as": "د ګوتنبرګ په سبک پېچ‌دار چاپ ماشین لکه یو کارکوونکی سیمولیشن. لیور راکش کړئ، خپل توري ترتیب کړئ، او نښه وګورئ. سربېره پر دې د موادو علم (د سرپو، قلعي او انتیموان لړم)، اقتصاد (د هر کتاب لګښت راښکته کېدل)، تاریخ (دیني اصلاحات، علمي انقلاب)، توري‌نګاري، او هغه خلک چې د چاپ ماشین شاته وو (په ګډون هغو ښځینه چاپګرو چې تاریخ هېر کړې). د منځنیو ټولګیو د بین‌الرشتوي کار لپاره جوړ شوی.",
+      "three_js_stoop_simulator_deep_science": "په Three.js کې د ښکته الوتنې سیمولیټر او د ښکاري مرغانو د ښکار د میخانیک ژور علم. لکه شاهین په 240 mph الوتنه وکړئ، یا لکه هارپي چې چنګالونه یې 530 psi دي، یا لکه یو خاموش ښکرور بوم. ۸ ډوله او ۱۲ برخې د چنګال قوت، لید (له انسان ۴ تر ۸ ځله ډېر، په بادخوړونکو کې بنفش‌ماوراء)، د الوتنې فزیک، د بومانو بې‌غږه الوتنه، د حدي چټکتیا محاسبه، له DDT وروسته رغېدنه او روانې ساتنې بحرانونه، او په ډګر کې د سیوري او عمومي بڼې له مخې پېژندنه.",
+      "practice_reading_and_completing_the_documents": "تمرین وکړئ چې هغه اسناد ولولئ او ډک کړئ چې د لویانو ژوند پرې څرخي: د کار غوښتنلیکونه، د W-4 فورمې، د کرایې تړونونه، د روغتیايي داخلې فورمې، د موټر چلولو جوازونه، او ستاسو د خپلې IEP غونډې بلنه. هر ځای په ساده ژبه تشریح شوی، هغه کوټې چې تاسو ته ګران بايي شي په نښه شوي، د فشار سناریوګانې د هغه وخت لپاره چې څوک غواړي همدا اوس لاسلیک کړئ، او چمتو جملې چې وخت وغواړئ. ټول تمرین د یو خیالي کس په واسطه ترسره کېږي، هېڅکله ستاسو په ریښتیني معلوماتو نه.",
+      "how_swimming_works_stroke_physics_survival": "لامبو څنګه کار کوي (د لامبو فزیک او د ژغورنې مهارتونه) او هغه څه چې هر لامبووهونکی باید د یخې اوبو، بېرته‌ستنېدونکو څپو، یخ، د ژغورنې جاکټونو او ژغورنې په اړه پوه شي. د لامبو بصري ماتونه، د لامبو او وړاندې‌تګ علم، او هغه د ژغورنې مهارتونه (پر شا لامبو، د هګۍ‌وهلو ټکونه، HELP، ډله‌ییز راټولېدل) چې واقعاً ژوند ژغوري. سرچینې: CDC، USCG، AAP، NAA، NOAA، USA Swimming. یوازې زده‌کړیز: د لامبو د ریښتیني زده‌کړې لپاره د لامبو ښوونکی ولټوئ.",
+      "tax_paycheck_calculator_data_literacy_decision": "د مالیې او معاش د پاڼې محاسبه، د معلوماتو سواد، د پرېکړې ماتریکس، د تړون لوستونکی، اسناد او کاغذي چارې، د تګ‌راتګ پلان‌جوړونه، د کار چمتووالی، د بیوګرافي جوړول، د کارنامې د شواهدو تنظیم، د مرکې تمرین، د اړیکو مهارتونه، د وخت مدیریت، روغتیايي بیمه، د غاښونو پاملرنه، د بدن د پاملرنې ارګونومي، د خوب عادتونه، د درملو لېبلونه، د ملاقات چمتووالی، په کور کې خوندیتوب، ډیجیټل خوندیتوب، له خوړو سره ډاډ، او د ورځني ژوند لپاره تطبیقي علم.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1، HS-LS1، HS-LS3 او HS-LS4. د مایکروبونو نړۍ: باکتریاوې (ګټورې او ناروغي‌راوړونکې)، ویروسونه (COVID، انفلونزا، HIV، فاژونه، شري)، مایکروسکوپي (رڼا، د فاز توپیر، فلورسنټ، الکترون، AFM)، د انټي‌بیوتیک مقاومت تکامل، د انسان، خاورې او سمندر مایکروبیوم، واکسینونه او د معافیت سیستم، تخمیر (ترش خمیر، مستې، کیمچي، ترش کرم، کامبوچا، پنیر)، د قضیو مطالعې (Snow، Fleming، MRSA، COVID او mRNA، FMT)، ازموینه، او د چاپ وړ د لابراتوار خوندیتوب او مایکروبونو لارښود.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "په یوولسو سیمو کې پنځلس د چاپېریال د پاملرنې کمپاینونه. د مین پنځه اوږده څوپړاویزه کمپاینونه، سربېره پر لسو بین‌سیمه‌ییزو سناریوګانو چې پنځه واړه د میخانیک کورنۍ پوښي: اور (په آسټرالیا کې Yarralin، په شمالي کالیفورنیا کې Karuk)، ساتنه (Yellowstone، په روانډا کې Akagera)، عامه روغتیا (په ممبۍ کې ډنګي، په لایبیریا کې د ۲۰۱۴ ایبولا)، د اوبو حوضې (د Klamath سیند، د Murray-Darling حوضه)، او اقلیم (د مارشال ټاپوګان، د بنګله‌دیش ډېلټا). د کورنۍ د جوړه‌کولو لیدونه هغه وخت پرانیستل کېږي چې د مین کمپاین او له همدې د میخانیک کورنۍ بین‌سیمه‌ییز سناریو بشپړ کړئ.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1، HS-ETS1-3 او MS-ESS3-3. د ۱۴۴ ټوټو په جال کې یو ښارګوټی د هغو غوښتنو په وړاندې ډیزاین کړئ چې واقعاً یو له بل سره ټکر لري. درې ښارګوټي، هر یو د بل ډول تړونکي بند سره: Riverbend، چېرې چې د باران اوبه او پور فشار راوړي؛ Mesa Hollow، چېرې چې د اوبو طبقه ثابته ده او فارمونه یې څښي؛ او Harborlight، چېرې چې پلان باید په ۲۰۵۰ کې هم کار وکړي. د منطقي میتود له مخې بهیدنه، د اوبو انډول، د سمندر د کچې لوړېدو حاشیه، په شبکه کې د پیاده تګ واټن او د لګښت‌لرونکې سړکونو شبکه، هر یو پرانیستل کېږي چې خپله فورمول وښيي. Assumption Lab همدا یو پلان په دوو خپاره‌شوو پارامتر ټولګو بیا چلوي، څو زده‌کوونکي وګوري کومې پایلې له دواړو ژوندۍ راوځي. نقشه، د ټوټو د سمولو وړ جدول او د همدې پلان درې‌بُعدي موډل. د بحث پوښتنې او مستند تاریخ هغه پوښتنې لېږدوي چې وسیله یې د موډل کولو څخه ډډه کوي. نه نمره او نه د ځوابونو کیلي.",
+      "codap_data_science": "CODAP: د معلوماتو علم",
+      "lumen_research_canvas": "Lumen: د څېړنې تخته",
+      "evolab_evolution": "EvoLab: تکامل",
+      "dino_lab": "د ډاینوسورانو لابراتوار",
+      "nutritionlab_nutrition_science": "NutritionLab: د تغذیې علم",
+      "birdlab_i_spy_ornithology": "BirdLab: د لټون مرغه‌پوهنه",
+      "openbim_companion": "OpenBIM: ملګری لارښود",
+      "applab_ai_app_generator": "AppLab: په مصنوعي ځیرکتیا د اپ جوړوونکی",
+      "access_lens": "د لاسرسي شیشه",
+      "sim_shelf": "د سیمولیشنونو الماري",
+      "zoom_gallery": "د لویولو ګالري",
+      "sourcebook": "د سرچینو کتاب",
+      "wheel_fire_pottery_lab": "څرخ او اور: د کلالۍ لابراتوار",
+      "echo_navigator": "د بازغږ لارښود",
+      "learning_lab_how_learning_works": "Learning Lab: زده‌کړه څنګه کار کوي",
+      "weldlab_welding_metal_joining": "WeldLab: ویلډنګ او د فلزاتو نښلول",
+      "bikelab_physics_repair": "BikeLab: فزیک او ترمیم",
+      "fisherlab_boating_fishing_sim": "FisherLab: د بېړۍ چلولو او کب نیولو سیمولیټر",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: د سیپیو فارم سیمولیټر",
+      "throwlab_sports_physics": "ThrowLab: د لوبو فزیک",
+      "skatelab_skate_bmx_physics": "SkateLab: د سکیټ او BMX فزیک",
+      "playlab_strategy_on_the_field": "PlayLab: په ډګر کې ستراتیژي",
+      "kepler_colony": "د کپلر مستعمره",
+      "birdlab_life_list": "BirdLab: د ژوند لړ",
+      "petslab_decoder": "PetsLab: رمز پرانیستونکی"
     },
     "area": {
       "volume": "حجم..."
@@ -19773,7 +19819,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "وسیلو ته بېرته",
+      "a11y_snapshot": "شېبه‌یي انځور",
+      "a11y_next": "راتلونکی",
+      "a11y_simulation_speed": "د سیمولیشن چټکتیا",
+      "a11y_close_flashcard": "کارت بندول"
     },
     "solar_sys": {
       "venus": "زهره",
@@ -20595,7 +20646,8 @@
       "scaled_volume_changed": "🔵 اندازه شوی (حجم بدل شو)",
       "skewed_shape_deformed": "🟠 کوږ (شکل بدرنګ شو)",
       "degenerate_volume_0": "💀 زیانمن (حجم → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "د لارښود پرمختګ"
     },
     "numberline": {
       "first_mark": "لومړۍ نښه",
@@ -22738,7 +22790,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "د {value1} کال پیل کېږي."
     },
     "optics": {
       "optics_lab": "د بصرياتو لابراتوار",
@@ -23084,7 +23137,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "سیمه‌ییزه تحلیلي SQL پوښتنه"
     },
     "geosandbox": {
       "loading_3d_engine": "د 3D انجن بارول کیږي...",
@@ -23434,7 +23488,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "مجسمه لرې شوه"
     },
     "algebraCAS": {
       "solve": "🔍 حل کړئ",
@@ -26030,7 +26085,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "تشریح چمتو ده."
     },
     "economicslab": {
       "six_figures": "شپږ رقمه",
@@ -28010,7 +28066,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "انديښنه خوندي شوه."
     },
     "anatomy": {
       "system_explorer": "د سیسټمونو کاشف",
@@ -28592,7 +28649,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "د 3D کمرې بیا تنظیم"
     },
     "dna": {
       "back_to_tools": "بیرته وسایلو ته",
@@ -29969,7 +30027,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "انديښنه خوندي شوه."
     },
     "angles": {
       "back_to_tools": "بېرته وسایلو ته",
@@ -30783,7 +30842,8 @@
       "explain_how_each_parameter_shapes_a_si": "تشريح کړه چې هر پيرامتر څنګه سينوسي څپه بڼه ورکوي.",
       "design_note_discrete_5_state_marker_no": "د ډيزاين يادښت: جلا 5 حالته نښه؛ د څپې نمره نشته؛ افشا نشته — د ډيزاين له مخې.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "تشریح چمتو ده."
     },
     "typingpractice": {
       "typing_practice_menu": "د ټايپ تمرين مېنو",
@@ -31137,7 +31197,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "فهرست ته بېرته"
     },
     "music": {
       "edm_lead": "EDM لیډ",
@@ -33688,7 +33749,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "ځواب وټاکئ: {value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -35311,7 +35373,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "مړ",
+      "sr_nothing_to_redo": "د بیا کولو لپاره څه نشته.",
+      "sr_nothing_to_undo": "د شاتګ لپاره څه نشته.",
+      "sr_dir_left": "کیڼ",
+      "sr_dir_right": "ښي"
     },
     "arithmetic": {
       "selected": " وټاکل شو.",
@@ -39357,7 +39424,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR د سر د نقطې راډیانټ او 6.5 حدي قدر ته معیاري شوی دی. دا نږدې اټکل صاف، بې سپوږمۍ اسمان او 2.2 نفوس شاخص فرض کوي. د بورټل درجې حدي قدر یوازې په نږدې توګه ښیي؛ له معیار څخه تیاره اسمان کولی شي له ZHR څخه واوړي. د راډیانټ ټیټ لوړوالی او روښانه اسمان اټکل کموي.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "د STEM وسیلو ته بېرته"
     },
     "autorepair": {
       "back_to_menu": "بيرته مېنو ته",
@@ -40098,7 +40166,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ټکي: له {value2} څخه {value1}",
+      "a11y_open_2": "{value1} پرانیستل",
+      "a11y_option": "انتخاب {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "پوسته",
@@ -40201,7 +40272,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "تشریح چمتو ده."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40947,7 +41019,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "تشریح چمتو ده.",
+      "a11y_investigation_progress": "د څېړنې پرمختګ",
+      "a11y_flight_debrief": "د الوتنې بیاکتنه",
+      "a11y_tutorial_progress": "د لارښود پرمختګ"
     },
     "behaviorlab": {
       "chain_reaction": "زنځیري غبرګون",
@@ -41118,7 +41194,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "تشریح چمتو ده.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43631,7 +43707,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "سپړل شوی ماژول: {value1}",
+      "a11y_score_out_of": "ټکي: له {value2} څخه {value1}",
+      "sr_selected": "ټاکل شوی: {value1}",
+      "sr_quiz_reset": "ازموینه بیا تنظیم شوه"
     },
     "brainatlas": {
       "group_systems": "سیسټمونه",
@@ -48787,7 +48867,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "ځواب وټاکئ: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "د کویز ماسټر",
@@ -49931,7 +50012,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "ټاکل شوی: {value1}"
     },
     "echotrainer": {
       "wall": "دیوال",
@@ -51390,7 +51472,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "سپړل شوی ماژول: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "د کاربن محاسبه‌ماشین",
@@ -52470,7 +52553,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "فهرست ته بېرته",
+      "sr_getting_critique": "د نیوکې په اخیستو کې...",
+      "sr_critique_ready": "نیوکه چمتو ده."
     },
     "flightsim": {
       "game_controls": "🎮 د لوبې کنټرولونه",
@@ -52674,7 +52760,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "په الوتنې سیمولیټر کې د پیلوټ کابین لید. W/S پورته او ښکته، A/D څنګ ته کوږوالی، Shift/Ctrl د ځواک لیور، قوسونه فلپونه کنټرولوي، X د پایو بریک، Q ازموینه، F ځواکونه، Space ودرول، I معلومات.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52686,7 +52772,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "له Portland, ME څخه ازاده الوتنه",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52733,7 +52819,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "د شانګهای برج",
       "learn": "Learn",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
@@ -58560,7 +58646,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "سپړل شوی ماژول: {value1}",
+      "sr_loaded": "{value1} پورته شو",
+      "sr_showing": "{value1} ښودل کېږي",
+      "sr_opening": "{value1} پرانیستل کېږي"
     },
     "platetectonics": {
       "pacific": "آرام",
@@ -58818,7 +58908,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63382,7 +63472,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "تشریح چمتو ده.",
+      "sr_off": "مړ",
+      "sr_edge_left": "کیڼ",
+      "sr_edge_right": "ښي",
+      "sr_correct": "سم.",
+      "sr_not_quite": "دقیقاً نه."
     },
     "printingpress": {
       "menu": "← مېنو",
@@ -65521,7 +65617,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "فهرست ته بېرته",
+      "a11y_open": "{value1} پرانیستل",
+      "sr_selected": "ټاکل شوی: {value1}",
+      "sr_loaded": "{value1} پورته شو",
+      "sr_opening": "{value1} پرانیستل کېږي",
+      "sr_correct": "سم.",
+      "sr_not_quite": "دقیقاً نه.",
+      "sr_year_begins": "د {value1} کال پیل کېږي.",
+      "sr_question_reset_try_again": "پوښتنه بیا تنظیم شوه. بیا هڅه وکړه.",
+      "sr_not_quite_see_the_explanation": "دقیقاً نه: تشریح وګورئ."
     },
     "raptorhunt": {
       "show_answer": "إظهار جاواب",
@@ -67170,7 +67276,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} پرانیستل",
+      "a11y_flight_debrief": "د الوتنې بیاکتنه"
     },
     "renewables": {
       "menu": "← مېنو",
@@ -67870,7 +67978,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "فهرست ته بېرته",
+      "sr_getting_critique": "د نیوکې په اخیستو کې...",
+      "sr_critique_ready": "نیوکه چمتو ده.",
+      "sr_quiz_reset": "ازموینه بیا تنظیم شوه"
     },
     "roadready": {
       "let_s_start": "راځه چې پیل وکړو →",
@@ -70737,7 +70849,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "د STEM وسیلو ته بېرته",
+      "a11y_local_analytical_sql_query": "سیمه‌ییزه تحلیلي SQL پوښتنه"
     },
     "stewardship": {
       "sector": "سکتور",
@@ -71314,7 +71428,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "فهرست ته بېرته",
+      "sr_question_reset_try_again": "پوښتنه بیا تنظیم شوه. بیا هڅه وکړه."
     },
     "throwlab": {
       "scenarios": "سناریوګانې",
@@ -71539,7 +71655,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "د 3D کمرې بیا تنظیم",
+      "sr_coach_is_offline": "روزونکی آفلاین دی.",
+      "sr_drill_stopped": "تمرین ودرېد."
     },
     "weldlab": {
       "menu": "← مېنو",
@@ -73101,7 +73220,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "سپړل شوی ماژول: {value1}",
+      "a11y_score_out_of": "ټکي: له {value2} څخه {value1}",
+      "sr_quiz_reset": "ازموینه بیا تنظیم شوه",
+      "sr_loaded": "{value1} پورته شو",
+      "sr_showing": "{value1} ښودل کېږي",
+      "sr_not_quite_see_the_explanation": "دقیقاً نه: تشریح وګورئ."
     },
     "worldbuilder": {
       "grade_level": "د ټولګي کچه",
@@ -74007,7 +74132,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "د لوستلو کچه",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74694,7 +74819,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "د ژوند ونه",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76549,7 +76674,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "انتخاب {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "د 3D کمرې لیدونه"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -76617,7 +76744,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "روزونکی آفلاین دی.",
+      "sr_drill_stopped": "تمرین ودرېد."
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76629,6 +76758,22 @@
       "finish": "پوه شوم!",
       "replay": "لارښوونې",
       "replay_aria": "ښوونه وښیه"
+    },
+    "pets": {
+      "sr_back_to_menu": "فهرست ته بېرته",
+      "sr_getting_critique": "د نیوکې په اخیستو کې...",
+      "sr_critique_ready": "نیوکه چمتو ده."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "د STEM وسیلو ته بېرته",
+      "a11y_3d_camera_views": "د 3D کمرې لیدونه"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "د څېړنې پرمختګ"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "د بیا کولو لپاره څه نشته.",
+      "sr_nothing_to_undo": "د شاتګ لپاره څه نشته."
     }
   },
   "resource_builder": {
@@ -76966,7 +77111,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "د پرې کولو لوړوالی",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80689,7 +80834,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "د مفهوم انځور",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80725,10 +80870,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "هر مفهوم سنبال کړئ",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "د سنبالولو پرمختګ",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80742,7 +80887,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "ممکنه نومونه",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80753,7 +80898,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "د مفهوم رایادول",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82311,7 +82456,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect بند کړئ",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82320,7 +82465,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "دندې فلټر کړئ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82358,15 +82503,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "پوښتنه {n}",
+    "q_choices_aria": "د پوښتنې {n} انتخابونه، په هره کرښه کې یو",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "پوښتنه {n} لرې کړئ",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "د پوښتنې {n} لپاره د معیار پوړونه",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "د پوښتنې {n} لپاره د ځواب ډول",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82376,10 +82521,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "د {title} لپاره د ټاکلو وړ لینک",
+    "scale_high_aria": "د پورته پای لپاره نښه",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "د ښکته پای لپاره نښه",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82399,7 +82544,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "د دندو د وضعیت لنډیز",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82415,9 +82560,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "په اتوماتيک ډول تازه کیږي",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "د کورنۍ دندې د ټاکلو وړ لینک",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82426,7 +82571,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "د کورنۍ دندې QR کوډ",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84874,7 +85019,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "د لارښوونو او د ارزونې معیارونو لپاره د ودې کچه وټاکئ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84882,7 +85027,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "د ښوونکي لید فعال یا ناچل کړئ",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84913,17 +85058,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "د غږیز یادښت ثبتول ودروئ",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "د غږیز یادښت ثبتولو ته دوام ورکړئ",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "د غږیز یادښت ثبتول پیل کړئ",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "ثبتول بند کړئ",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85309,22 +85454,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "د AlloHaven د قدردانۍ لامل",
+    "recent_deliveries_aria": "وروستۍ خصوصي AlloHaven قدردانۍ",
+    "token_amount_aria": "د AlloHaven د ټوکن اندازه",
+    "token_cap_aria": "د هر زده کوونکي لپاره په هره ناسته کې د AlloHaven د ټوکن حد"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "هغه استثناوې چې اجازه لري او موخه بیا هم پوره کیږي",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "اختیاري د پرمختګ نښه چې اپلیکیشن یې د دې موخې لپاره څاري",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "ټوله ډله یوځای، یا هر زده کوونکی په جلا توګه",
+    "name_aria": "د ټولګي د موخې نوم، یوازې پر همدې وسیله ساتل کیږي",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "دا موخه کوم زده کوونکي رانغاړي",
+    "template_aria": "د ټولګي د موخې د پیل کينډۍ",
+    "tokens_aria": "هغه ټوکنونه چې د دې موخې په ترلاسه کولو سره هر زده کوونکي ته ورکول کیږي"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85342,7 +85487,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "د Class Mailbox د مدیریت ټوکن (اختیاري)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85372,17 +85517,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "لاس پورته شوی",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "د صندوق سره د ژوندي یوځای کیدو لینک، د ټاکلو وړ",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "د Class Mailbox ژوندۍ ناسته",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85409,7 +85554,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "ریښتینی وخت اړیکه",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85441,7 +85586,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "د Class Mailbox د ویب اپلیکیشن پته",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

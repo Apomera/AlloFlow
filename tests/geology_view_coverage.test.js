@@ -111,6 +111,19 @@ describe('Geology Explorer — every scene x mode renders', () => {
     });
   });
 
+  // Accessible names are built from translator TEMPLATES ('Move {label} earlier') whose
+  // values are substituted at call time. A typo in a var name, or a var that goes missing,
+  // leaves the raw placeholder in the name a screen reader reads out — and nothing else
+  // fails. This is the only thing watching for that.
+  it('substitutes every placeholder in an accessible name', () => {
+    everyView((container, where) => {
+      const raw = [...container.querySelectorAll('[aria-label]')]
+        .map((e) => e.getAttribute('aria-label'))
+        .filter((v) => /\{[a-z_0-9]+\}/i.test(v));
+      expect(raw, `${where} renders unsubstituted placeholders: ${raw.join(' | ')}`).toEqual([]);
+    });
+  });
+
   it('keeps the live region present in every view', () => {
     everyView((container, where) => {
       expect(container.querySelector('[aria-live]'), `${where} has no live region`).toBeTruthy();

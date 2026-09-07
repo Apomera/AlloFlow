@@ -85,7 +85,7 @@ describe('Code.gs protocol (real source, mocked Google services)', () => {
     it('runs the full live-session lifecycle with separated teacher and participant capabilities', () => {
         const { call } = makeGsSandbox();
         const K = 'k_secret_k_secret_20';
-        expect(call({ a: 'hello' }).v).toBe(19);
+        expect(call({ a: 'hello' }).v).toBe(20);
         const claim = call({ a: 'claim' });
         expect(claim.ok).toBe(true);
         expect(claim.admin.length).toBeGreaterThanOrEqual(32);
@@ -879,11 +879,12 @@ describe('teacher-only resource gating', () => {
         // Analyze Source Material is a normal shareable resource. Teachers can
         // present it through Firebase, Mailbox, QR/pack, and student history.
         // Other private planning artifacts remain type-gated.
+        const teacherSource = fs.readFileSync(path.join(ROOT, 'teacher_source.jsx'), 'utf8');
         const teacherOnlyBlock = anti.slice(anti.indexOf('const TEACHER_ONLY_TYPES'), anti.indexOf('];', anti.indexOf('const TEACHER_ONLY_TYPES')));
         expect(teacherOnlyBlock).not.toContain("'analysis'");
         expect(teacherOnlyBlock).toContain("'lesson-plan'");
-        expect(anti).toContain("!['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type)");
-        expect(anti).not.toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
+        expect(teacherSource).toContain("!['udl-advice', 'brainstorm', 'alignment-report'].includes(item.type)");
+        expect(teacherSource).not.toContain("!['udl-advice', 'brainstorm', 'alignment-report', 'analysis'].includes(item.type)");
     });
 });
 

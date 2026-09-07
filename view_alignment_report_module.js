@@ -2157,7 +2157,7 @@ function ExecutiveSummary(p) {
         var el = document.getElementById('audit-' + r.dimensionKey);
         if (el) {
           ev.preventDefault();
-          var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          var reduceMotion = !!document.querySelector('.reduce-motion') || !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
           el.scrollIntoView({
             behavior: reduceMotion ? 'auto' : 'smooth',
             block: 'start'

@@ -1,0 +1,26 @@
+{
+  "releaseTests": 530,
+  "releaseFailed": 0,
+  "integrationTests": 97,
+  "integrationFailed": 0,
+  "integrationOverlapWithRelease": 38,
+  "browser": {
+    "ok": true,
+    "awardBalance": 80,
+    "reservedPoints": 15,
+    "storeBalance": 70,
+    "storeAvailable": 55,
+    "stock": 4,
+    "fulfilledBalance": 55,
+    "refundedBalance": 70,
+    "exactAssetDownload": true,
+    "crossOriginRejected": true,
+    "mobile": {
+      "page": 390,
+      "viewport": 390
+    },
+    "pageErrors": []
+  },
+  "demoUrl": "http://127.0.0.1:8767",
+  "liveSchoolDeploymentChanged": false
+}

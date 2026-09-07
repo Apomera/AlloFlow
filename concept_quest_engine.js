@@ -17,6 +17,7 @@
   'use strict';
 
   var VERSION = 2;
+  var logSequence = 0;
   var LOCALIZED_LABELS = {
     ability_analyze_name: 'Analyze',
     ability_analyze_description: 'Use evidence to deal 3 damage.',
@@ -114,7 +115,11 @@
     pacing_invalid: 'Choose a valid pacing adjustment.',
     pacing_no_encounter: 'There is no encounter to adjust.',
     log_pacing: 'GM pacing adjustment: {kind} {amount}.',
-    unlabeled_concept: 'Unlabeled concept'
+    unlabeled_concept: 'Unlabeled concept',
+    source_questions_required: 'Concept Quest needs at least one multiple-choice question with a valid answer key.',
+    challenge_key_required: 'Give this challenge at least two choices and select its correct answer.',
+    item_no_effect: 'Save this item for when its effect can help the party.',
+    inventory_full: 'The shared inventory is full. Use an item before adding another.'
   };
 
   function interpolate(text, params) {
@@ -156,6 +161,84 @@
     return text.slice(0, maxLength || 500);
   }
 
+  function questionAnswerIndex(question) {
+    if (!question || typeof question !== 'object') return -1;
+    var type = String(question.itemType || question.type || 'mcq').toLowerCase().replace(/_/g, '-');
+    if (['mcq', 'multiple-choice', 'multiple-choice-question', 'single-select'].indexOf(type) < 0) return -1;
+    var options = question.options || question.choices;
+    if (!Array.isArray(options) || options.length < 2 || options.length > 6) return -1;
+    var text = function(value) { return String(value && typeof value === 'object' ? value.text || value.label || '' : value == null ? '' : value).normalize('NFC').trim().toLowerCase(); };
+    if (options.some(function(value) { return !text(value); })) return -1;
+    if (Number.isInteger(question.correctIndex)) return question.correctIndex >= 0 && question.correctIndex < options.length ? question.correctIndex : -1;
+    var answer = question.correctAnswer;
+    if (Number.isInteger(answer)) return answer >= 0 && answer < options.length ? answer : -1;
+    if (typeof answer === 'string') {
+      var matched = options.findIndex(function(option) { return text(option) === text(answer); });
+      if (matched >= 0) return matched;
+      if (/^[A-F]$/i.test(answer.trim())) { var letter = answer.trim().toUpperCase().charCodeAt(0) - 65; return letter < options.length ? letter : -1; }
+      if (/^[0-5]$/.test(answer.trim())) { var number = Number(answer.trim()); return number < options.length ? number : -1; }
+    }
+    return -1;
+  }
+
+  function getTurnKey(quest) {
+    var room = getRoom(quest, quest && quest.currentRoomId);
+    var challenge = room && room.challenge || {};
+    var value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]);
+    var hash = 2166136261;
+    for (var i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
+    return (quest && quest.sessionId ? quest.sessionId + ':' : '') + String(quest && quest.turn || 0) + ':' + String(quest && quest.currentRoomId || '') + ':' + (hash >>> 0).toString(36);
+  }
+
+  function currentActions(quest, actions) {
+    if (!quest) return {};
+    var room = getRoom(quest, quest && quest.currentRoomId);
+    var options = room && room.challenge && room.challenge.options || [];
+    var key = getTurnKey(quest);
+    var filtered = {};
+    Object.keys(actions || {}).slice(0, 250).forEach(function(uid) {
+      var action = actions[uid];
+      if (!action || typeof action !== 'object' || Array.isArray(action)) return;
+      if (quest.actionSchema === 1 && action.turnKey !== key) return;
+      if (action.turnKey != null && action.turnKey !== key) return;
+      if (!Number.isInteger(action.answerIndex) || action.answerIndex < 0 || action.answerIndex >= options.length) return;
+      if (!ABILITIES.some(function(ability) { return ability.id === action.abilityId; })) return;
+      if (uid === '__proto__' || uid === 'constructor' || uid === 'prototype') return;
+      filtered[uid] = action;
+    });
+    return filtered;
+  }
+
+  function currentVotes(quest, votes, turns) {
+    if (!quest) return {};
+    var room = getRoom(quest, quest && quest.currentRoomId);
+    var filtered = {};
+    Object.keys(votes || {}).slice(0, 250).forEach(function(uid) {
+      if (uid === '__proto__' || uid === 'constructor' || uid === 'prototype') return;
+      if (quest.actionSchema === 1 && (!turns || turns[uid] !== getTurnKey(quest))) return;
+      var target = getRoom(quest, votes[uid]);
+      if (!room || !target || (room.neighbors || []).indexOf(target.id) < 0) return;
+      if (target.kind === 'boss' && (quest.sigils || []).length < requiredSigils(quest)) return;
+      filtered[uid] = target.id;
+    });
+    return filtered;
+  }
+
+  function requiredSigils(quest) {
+    var available = new Set((quest && quest.rooms || []).filter(function(room) { return room.kind !== 'start' && room.kind !== 'treasure' && room.kind !== 'boss'; }).map(function(room) { return room.concept; }));
+    return Math.max(1, Math.min(Number(quest && quest.sigilsRequired) || 3, available.size || 1));
+  }
+
+  function recoveredPhase(quest, party) {
+    if (party.hp <= 0) return 'defeat';
+    if (quest.phase !== 'defeat') return quest.phase;
+    var room = getRoom(quest, quest.currentRoomId);
+    return room && room.enemy && room.enemy.hp > 0 ? 'battle' : 'explore';
+  }
+
+  function sealQuest(quest) { return Object.assign({}, quest, { turnKey: getTurnKey(quest) }); }
+  function sealResult(result) { return result.error ? result : Object.assign({}, result, { quest: sealQuest(result.quest) }); }
+
   function normalizeQuestion(question, index, strings) {
     question = question || {};
     var options = Array.isArray(question.options) ? question.options :
@@ -167,17 +250,11 @@
     if (options.length < 2) {
       options = [textFromStrings(strings, 'option_evidence'), textFromStrings(strings, 'option_clue')];
     }
-    var correctIndex = Number.isInteger(question.correctIndex) ? question.correctIndex :
-      (Number.isInteger(question.correctAnswer) ? question.correctAnswer : 0);
-    if (typeof question.correctAnswer === 'string') {
-      var answerIndex = options.findIndex(function(option) {
-        return option.toLowerCase() === question.correctAnswer.trim().toLowerCase();
-      });
-      if (answerIndex >= 0) correctIndex = answerIndex;
-    }
-    correctIndex = clamp(correctIndex, 0, options.length - 1);
+    var correctIndex = questionAnswerIndex(question);
+    if (correctIndex < 0) throw new Error(textFromStrings(strings, 'challenge_key_required'));
     return {
       id: 'challenge-' + (index + 1),
+      concept: conceptLabel(question, index, strings),
       prompt: cleanText(question.question || question.prompt || question.text, textFromStrings(strings, 'question_default'), 500),
       options: options,
       correctIndex: correctIndex,
@@ -197,8 +274,9 @@
   function createSession(options) {
     options = options || {};
     var strings = createLocalizedStrings(options.translate);
-    var sourceQuestions = Array.isArray(options.questions) ? options.questions.filter(Boolean) : [];
-    if (!sourceQuestions.length) sourceQuestions = [{}];
+    var suppliedQuestions = Array.isArray(options.questions) ? options.questions.filter(Boolean) : [];
+    var sourceQuestions = suppliedQuestions.filter(function(question) { return questionAnswerIndex(question) >= 0; });
+    if (!sourceQuestions.length) throw new Error(textFromStrings(strings, 'source_questions_required'));
     var title = cleanText(options.title, textFromStrings(strings, 'session_default_title'), 100);
     var rooms = ROOM_LAYOUT.map(function(position, index) {
       var source = sourceQuestions[index % sourceQuestions.length];
@@ -242,6 +320,9 @@
     });
     return {
       version: VERSION,
+      actionSchema: 1,
+      sessionId: 'quest-' + Date.now().toString(36) + '-' + (++logSequence).toString(36),
+      excludedQuestions: suppliedQuestions.length - sourceQuestions.length,
       title: title,
       objective: cleanText(options.objective, textFromStrings(strings, 'objective_default'), 240),
       localizedStrings: strings,
@@ -253,7 +334,7 @@
       party: { hp: 14, maxHp: 14, shield: 0, xp: 0 },
       inventory: [],
       sigils: [],
-      sigilsRequired: 3,
+      sigilsRequired: Math.min(3, new Set(rooms.filter(function(room) { return room.enemy && room.kind !== 'boss'; }).map(function(room) { return room.concept; })).size),
       activeEvent: null,
       gmUndo: null,
       gmHistory: [],
@@ -276,7 +357,7 @@
       var roomId = votes[uid];
       if (allowedRoomIds.indexOf(roomId) >= 0) counts[roomId] = (counts[roomId] || 0) + 1;
     });
-    return allowedRoomIds.slice().sort(function(a, b) {
+    return allowedRoomIds.filter(function(id) { return counts[id] > 0; }).sort(function(a, b) {
       return (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b);
     })[0] || null;
   }
@@ -288,9 +369,10 @@
     if ((current.neighbors || []).indexOf(destinationId) < 0) return questError(quest, 'travel_connected');
     var destination = getRoom(quest, destinationId);
     if (!destination) return questError(quest, 'travel_unavailable');
-    if (destination.kind === 'boss' && (quest.sigils || []).length < (quest.sigilsRequired || 3)) {
-      return questError(quest, 'travel_gate_locked', { count: (quest.sigilsRequired || 3) - (quest.sigils || []).length });
+    if (destination.kind === 'boss' && (quest.sigils || []).length < requiredSigils(quest)) {
+      return questError(quest, 'travel_gate_locked', { count: requiredSigils(quest) - (quest.sigils || []).length });
     }
+    if (destination.reward && (quest.inventory || []).length >= 12 && !(quest.inventory || []).some(function(item) { return item.id === destination.reward.id; })) return questError(quest, 'inventory_full');
     var visited = (quest.visited || []).indexOf(destinationId) >= 0 ? (quest.visited || []).slice() : (quest.visited || []).concat([destinationId]);
     var rooms = quest.rooms.map(function(room) {
       if (room.id !== destinationId || !room.reward) return room;
@@ -301,20 +383,23 @@
     var nextPhase = destination.enemy && destination.enemy.hp > 0 ? 'battle' : 'explore';
     return { quest: Object.assign({}, quest, {
       currentRoomId: destinationId,
+      gmUndo: null,
+      gmHistory: [],
       rooms: rooms,
       visited: visited,
       inventory: inventory.slice(0, 12),
       phase: nextPhase,
       activeEvent: null,
       turn: quest.turn + 1,
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now(), turn: quest.turn + 1, text: destination.reward ? questText(quest, 'log_travel_found', { room: destination.name, item: destination.reward.name }) : questText(quest, 'log_travel', { room: destination.name }) }]).slice(-30)
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn + 1, text: destination.reward ? questText(quest, 'log_travel_found', { room: destination.name, item: destination.reward.name }) : questText(quest, 'log_travel', { room: destination.name }) }]).slice(-30)
     }) };
   }
 
   function resolveBattle(quest, actions, roles) {
     var room = getRoom(quest, quest.currentRoomId);
-    if (!room || !room.enemy || quest.phase !== 'battle') return questError(quest, 'encounter_none');
+    if (!room || !room.enemy || room.enemy.hp <= 0 || quest.party.hp <= 0 || quest.phase !== 'battle') return questError(quest, 'encounter_none');
     var challenge = room.challenge || {};
+    actions = currentActions(quest, actions);
     var damage = 0;
     var heal = 0;
     var shield = 0;
@@ -328,7 +413,7 @@
     Object.keys(actions || {}).sort().forEach(function(uid) {
       var action = actions[uid] || {};
       var ability = ABILITIES.find(function(entry) { return entry.id === action.abilityId; }) || ABILITIES[0];
-      var isCorrect = Number(action.answerIndex) === Number(challenge.correctIndex);
+      var isCorrect = action.answerIndex === challenge.correctIndex;
       total += 1;
       if (isCorrect) {
         correct += 1;
@@ -336,7 +421,8 @@
         heal += ability.heal || 0;
         shield += ability.shield || 0;
         correctAbilityIds.push(ability.id);
-        var role = ROLES.find(function(entry) { return entry.id === (roles && roles[uid]); });
+        var committedRole = typeof action.roleId === 'string' ? action.roleId : roles && roles[uid];
+        var role = ROLES.find(function(entry) { return entry.id === committedRole; });
         if (role && role.abilityId === ability.id) { damage += 1; synergyCount += 1; }
       } else {
         damage += ability.missDamage || 0;
@@ -347,10 +433,10 @@
       var action = actions[uid] || {};
       var targetUid = cleanText(action.supportTargetUid, '', 128);
       if (!targetUid || targetUid === uid || !actions[targetUid]) return;
-      var helperCorrect = Number(action.answerIndex) === Number(challenge.correctIndex);
+      var helperCorrect = action.answerIndex === challenge.correctIndex;
       if (!helperCorrect) return;
       var supportId = action.supportId;
-      if (supportId === 'clarify' && Number(actions[targetUid].answerIndex) !== Number(challenge.correctIndex)) {
+      if (supportId === 'clarify' && actions[targetUid].answerIndex !== challenge.correctIndex) {
         damage += 1;
         assistedCount += 1;
       } else if (supportId === 'guard') {
@@ -418,11 +504,15 @@
     return { quest: Object.assign({}, quest, {
       rooms: rooms,
       phase: phase,
+      gmUndo: null,
+      gmHistory: [],
       turn: quest.turn + 1,
       party: Object.assign({}, quest.party, { hp: partyHp, shield: remainingShield, xp: (quest.party.xp || 0) + correct * 5 }),
       sigils: sigils,
       lastRound: {
         turn: quest.turn,
+        prompt: challenge.prompt,
+        correctAnswer: challenge.options[challenge.correctIndex],
         correct: correct,
         total: total,
         damage: damage,
@@ -434,19 +524,21 @@
         explanation: cleanText(challenge.explanation, questText(quest, 'explanation_discuss'), 500)
       },
       roundHistory: (quest.roundHistory || []).concat([{
-        turn: quest.turn, roomId: room.id, concept: room.concept, correct: correct, total: total,
+        turn: quest.turn, roomId: room.id, concept: challenge.concept || room.concept, correct: correct, total: total,
         accuracy: total ? Math.round((correct / total) * 100) : 0, damage: damage,
         incoming: Math.max(0, incoming - absorbed), combo: combo, synergyCount: synergyCount,
         assistedCount: assistedCount, roomKind: room.kind, encounterRule: encounterRule,
         enemyDefeated: enemyDefeated
       }]).slice(-24),
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now(), turn: quest.turn + 1, text: text + (enemyDefeated && room.kind !== 'boss' ? ' ' + questText(quest, 'round_sigil_log') : '') }]).slice(-30)
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn + 1, text: text + (enemyDefeated && room.kind !== 'boss' ? ' ' + questText(quest, 'round_sigil_log') : '') }]).slice(-30)
     }), summary: { correct: correct, total: total, damage: damage, incoming: Math.max(0, incoming - absorbed), enemyDefeated: enemyDefeated, combo: combo, synergyCount: synergyCount, assistedCount: assistedCount, encounterRule: encounterRule } };
   }
 
   function gmSnapshot(quest) {
     return {
       rooms: quest.rooms,
+      currentRoomId: quest.currentRoomId,
+      roundCount: (quest.roundHistory || []).length,
       party: quest.party,
       inventory: quest.inventory,
       phase: quest.phase,
@@ -465,6 +557,7 @@
     var inventory = quest.inventory.slice();
     var item = inventory.splice(index, 1)[0];
     var effect = item.effect || {};
+    if ((effect.type === 'heal' && quest.party.hp >= quest.party.maxHp) || (effect.type === 'shield' && quest.party.shield >= 8) || (effect.type === 'clue' && quest.phase !== 'battle')) return questError(quest, 'item_no_effect');
     var party = Object.assign({}, quest.party);
     var activeEvent = { type: 'item', title: questText(quest, 'item_used_title', { item: item.name }), description: item.description, publishedAt: Date.now() };
     if (effect.type === 'heal') party.hp = clamp(party.hp + clamp(effect.amount, 1, 3), 0, party.maxHp);
@@ -473,15 +566,16 @@
       var room = getRoom(quest, quest.currentRoomId);
       activeEvent.description = (room && room.challenge && room.challenge.explanation) || questText(quest, 'clue_evidence');
     }
-    var phase = quest.phase === 'defeat' && party.hp > 0 ? 'explore' : quest.phase;
+    var phase = recoveredPhase(quest, party);
     return { quest: Object.assign({}, quest, {
       inventory: inventory,
       party: party,
       phase: phase,
+      turn: quest.turn + (phase !== quest.phase ? 1 : 0),
       gmUndo: gmSnapshot(quest),
       gmHistory: gmHistoryWithCurrent(quest),
       activeEvent: activeEvent,
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now(), turn: quest.turn, text: questText(quest, 'log_item_used', { item: item.name }) }]).slice(-30)
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_item_used', { item: item.name }) }]).slice(-30)
     }), item: item };
   }
 
@@ -505,7 +599,7 @@
         effect: { type: effectTypes.indexOf(effect.type) >= 0 ? effect.type : 'shield', amount: clamp(effect.amount, 1, 3) }
       };
     }
-    if (type === 'challenge') draft.challenge = normalizeQuestion(input.challenge || input, 99, strings);
+    if (type === 'challenge') draft.challenge = normalizeQuestion(Object.assign({}, input.challenge || input, { type: 'mcq', itemType: 'mcq' }), 99, strings);
     if (type === 'enemy') {
       draft.enemy = {
         id: 'gm-enemy-' + Date.now(),
@@ -515,7 +609,8 @@
         maxHp: clamp(input.enemy && (input.enemy.maxHp || input.enemy.hp), 4, 16),
         attack: clamp(input.enemy && input.enemy.attack, 1, 3)
       };
-      draft.challenge = normalizeQuestion(input.challenge || input, 99, strings);
+      draft.enemy.maxHp = Math.max(draft.enemy.hp, draft.enemy.maxHp);
+      draft.challenge = normalizeQuestion(Object.assign({}, input.challenge || input, { type: 'mcq', itemType: 'mcq' }), 99, strings);
     }
     return draft;
   }
@@ -527,44 +622,45 @@
     var rooms = quest.rooms.slice();
     var phase = quest.phase;
     if (draft.type === 'item') {
+      if (inventory.length >= 12) throw new Error(questText(quest, 'inventory_full'));
       inventory.push(draft.item);
       inventory = inventory.slice(-12);
-      if (draft.item.effect.type === 'heal') party.hp = clamp(party.hp + draft.item.effect.amount, 0, party.maxHp);
-      if (draft.item.effect.type === 'shield') party.shield = clamp((party.shield || 0) + draft.item.effect.amount, 0, 8);
-      if (quest.phase === 'defeat' && party.hp > 0) phase = 'explore';
+      // Publishing awards the item. Its effect applies once, when the party uses it.
     } else if (draft.type === 'challenge') {
       rooms = rooms.map(function(room) {
         if (room.id !== quest.currentRoomId) return room;
         var gate = room.enemy && room.enemy.hp > 0 ? room.enemy : {
           id: 'gm-challenge-' + Date.now(), name: questText(quest, 'challenge_gate'), emoji: '\uD83E\uDDE9', hp: 4, maxHp: 4, attack: 1
         };
-        return Object.assign({}, room, { challenge: draft.challenge, enemy: gate });
+        return Object.assign({}, room, { challenge: draft.challenge, challenges: [draft.challenge], challengeIndex: 0, enemy: gate });
       });
       phase = 'battle';
     } else if (draft.type === 'enemy') {
-      rooms = rooms.map(function(room) { return room.id === quest.currentRoomId ? Object.assign({}, room, { enemy: draft.enemy, challenge: draft.challenge }) : room; });
+      rooms = rooms.map(function(room) { return room.id === quest.currentRoomId ? Object.assign({}, room, { enemy: draft.enemy, challenge: draft.challenge, challenges: [draft.challenge], challengeIndex: 0 }) : room; });
       phase = 'battle';
     }
     return Object.assign({}, quest, {
       rooms: rooms,
       party: party,
       inventory: inventory,
-      phase: phase,
+      phase: party.hp <= 0 ? 'defeat' : phase,
+      turn: quest.turn + (draft.type === 'challenge' || draft.type === 'enemy' ? 1 : 0),
       gmUndo: gmSnapshot(quest),
       gmHistory: gmHistoryWithCurrent(quest),
       activeEvent: { type: draft.type, title: draft.title, description: draft.description, publishedAt: Date.now() },
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now(), turn: quest.turn, text: questText(quest, 'log_gm', { title: draft.title, description: draft.description }) }]).slice(-30)
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_gm', { title: draft.title, description: draft.description }) }]).slice(-30)
     });
   }
 
   function undoLastGmChange(quest) {
     var history = quest && Array.isArray(quest.gmHistory) ? quest.gmHistory.slice() : [];
     var snapshot = history.length ? history.pop() : (quest && quest.gmUndo);
-    if (!snapshot) return questError(quest, 'gm_undo_unavailable');
+    if (!snapshot || snapshot.currentRoomId !== quest.currentRoomId || snapshot.roundCount !== (quest.roundHistory || []).length) return questError(quest, 'gm_undo_unavailable');
     var restoredLog = (quest.log || []).slice(0, Math.max(0, snapshot.logLength || 0));
-    restoredLog.push({ id: 'log-' + Date.now(), turn: quest.turn, text: questText(quest, 'log_gm_undo') });
+    restoredLog.push({ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_gm_undo') });
     return { quest: Object.assign({}, quest, {
       rooms: snapshot.rooms,
+      turn: quest.turn + 1,
       party: snapshot.party,
       inventory: snapshot.inventory,
       phase: snapshot.phase,
@@ -585,21 +681,22 @@
     if (kind === 'shield') party.shield = clamp((party.shield || 0) + amount, 0, 8);
     if (kind === 'enemy') {
       var currentRoom = getRoom(quest, quest.currentRoomId);
-      if (!currentRoom || !currentRoom.enemy) return questError(quest, 'pacing_no_encounter');
-      var nextEnemyHp = clamp(currentRoom.enemy.hp + amount, 0, currentRoom.enemy.maxHp);
+      if (!currentRoom || !currentRoom.enemy || currentRoom.enemy.hp <= 0 || quest.phase !== 'battle') return questError(quest, 'pacing_no_encounter');
+      var nextEnemyHp = clamp(currentRoom.enemy.hp + amount, 1, currentRoom.enemy.maxHp);
       rooms = rooms.map(function(room) {
         return room.id === currentRoom.id ? Object.assign({}, room, { enemy: Object.assign({}, room.enemy, { hp: nextEnemyHp }) }) : room;
       });
-      if (nextEnemyHp === 0 && quest.phase === 'battle') phase = currentRoom.kind === 'boss' ? 'complete' : 'explore';
     }
+    phase = recoveredPhase(quest, party);
     var signedAmount = amount > 0 ? '+' + amount : String(amount);
     return { quest: Object.assign({}, quest, {
       party: party,
       rooms: rooms,
       phase: phase,
+      turn: quest.turn + (phase !== quest.phase ? 1 : 0),
       gmUndo: gmSnapshot(quest),
       gmHistory: gmHistoryWithCurrent(quest),
-      log: (quest.log || []).concat([{ id: 'log-' + Date.now(), turn: quest.turn, text: questText(quest, 'log_pacing', { kind: kind, amount: signedAmount }) }]).slice(-30)
+      log: (quest.log || []).concat([{ id: 'log-' + Date.now() + '-' + (++logSequence), turn: quest.turn, text: questText(quest, 'log_pacing', { kind: kind, amount: signedAmount }) }]).slice(-30)
     }) };
   }
 
@@ -611,7 +708,7 @@
     var rounds = quest && Array.isArray(quest.roundHistory) ? quest.roundHistory : [];
     var totalAnswers = rounds.reduce(function(sum, round) { return sum + (round.total || 0); }, 0);
     var correctAnswers = rounds.reduce(function(sum, round) { return sum + (round.correct || 0); }, 0);
-    var conceptTotals = {};
+    var conceptTotals = Object.create(null);
     rounds.forEach(function(round) {
       var concept = cleanText(round.concept, questText(quest, 'unlabeled_concept'), 72);
       conceptTotals[concept] = conceptTotals[concept] || { concept: concept, correct: 0, total: 0, rounds: 0 };
@@ -644,16 +741,21 @@
     ABILITIES: ABILITIES,
     ROLES: ROLES,
     SUPPORTS: SUPPORTS,
-    createSession: createSession,
+    createSession: function(options) { return sealQuest(createSession(options)); },
+    getTurnKey: getTurnKey,
+    currentActions: currentActions,
+    currentVotes: currentVotes,
+    requiredSigils: requiredSigils,
+    questionAnswerIndex: questionAnswerIndex,
     getRoom: getRoom,
     tallyVotes: tallyVotes,
-    resolveTravel: resolveTravel,
-    resolveBattle: resolveBattle,
-    useItem: useItem,
+    resolveTravel: function() { return sealResult(resolveTravel.apply(null, arguments)); },
+    resolveBattle: function() { return sealResult(resolveBattle.apply(null, arguments)); },
+    useItem: function() { return sealResult(useItem.apply(null, arguments)); },
     normalizeGmDraft: normalizeGmDraft,
-    publishGmDraft: publishGmDraft,
-    undoLastGmChange: undoLastGmChange,
-    adjustEncounter: adjustEncounter,
+    publishGmDraft: function(quest, draft) { return sealQuest(publishGmDraft(quest, draft)); },
+    undoLastGmChange: function() { return sealResult(undoLastGmChange.apply(null, arguments)); },
+    adjustEncounter: function() { return sealResult(adjustEncounter.apply(null, arguments)); },
     dismissEvent: dismissEvent,
     createDebrief: createDebrief
   };

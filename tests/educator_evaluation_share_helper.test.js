@@ -64,8 +64,24 @@ function makeDrive(options = {}) {
   const state = {
     folders: {}, files: [], permissions: [], createdPermissions: [], removed: [],
     properties: {},
+    privacy: {},
   };
   let nextId = 0;
+  const ownerEmail = 'principal@district.org';
+  const iterator = (values) => { let index = 0; return { hasNext: () => index < values.length, next: () => values[index++] }; };
+  function custody(item, id, parentId) {
+    const privacy = state.privacy[id] = { owner: ownerEmail, parentId, shared: 'PRIVATE', reshare: true, trashed: false };
+    Object.assign(item, {
+      getOwner: () => ({ getEmail: () => privacy.owner }),
+      getParents: () => iterator([{ getId: () => privacy.parentId }]),
+      isTrashed: () => privacy.trashed,
+      getSharingAccess: () => privacy.shared,
+      isShareableByEditors: () => privacy.reshare,
+      setSharing: (access) => { if (!options.stickyPrivacy) privacy.shared = access; return item; },
+      setShareableByEditors: (value) => { if (!options.stickyPrivacy) privacy.reshare = value; return item; },
+    });
+    return item;
+  }
   function makeFolder(name, pathLabel) {
     if (state.folders[pathLabel]) return state.folders[pathLabel];
     const folder = {
@@ -85,23 +101,28 @@ function makeDrive(options = {}) {
         const file = {
           getId: () => id, getName: () => fileName, getUrl: () => 'https://drive/file/' + id,
           getDescription: () => record.description,
+          setContent: (value) => { record.content = value; return file; },
           setDescription: (value) => {
             if (options.descriptionFailure) throw new Error('description write rejected');
             record.description = value;
           },
-          setTrashed: (value) => { record.trashed = value; },
+          setTrashed: (value) => { if (!options.stickyTrash) { record.trashed = value; state.privacy[id].trashed = value; } },
         };
+        custody(file, id, folder.getId());
+        if (options.fileExtraPermission) state.permissions.push({ id: 'unexpected-file', fileId: id, type: 'anyone', role: 'reader' });
         record.file = file; state.files.push(record); folder.files.push(file); return file;
       },
       getFiles() { let index = 0; return { hasNext: () => index < folder.files.length, next: () => folder.files[index++] }; },
       getFolders() { const kids = Object.values(folder.children); let index = 0; return { hasNext: () => index < kids.length, next: () => kids[index++] }; },
     };
+    custody(folder, folder.getId(), 'folder-' + pathLabel.slice(0, pathLabel.lastIndexOf('/')));
     state.folders[pathLabel] = folder; return folder;
   }
   const root = makeFolder('root', 'root');
   const sandbox = {
     state,
     DriveApp: {
+      Access: { PRIVATE: 'PRIVATE' }, Permission: { NONE: 'NONE' },
       getRootFolder: () => root,
       getFileById: (id) => {
         const record = state.files.find((entry) => entry.id === id);
@@ -130,6 +151,7 @@ function makeDrive(options = {}) {
         if (options.rejectCreate) throw new Error('edition rejected permission');
         const permission = { id: 'perm-' + (++nextId), fileId, ...body };
         state.permissions.push(permission); state.createdPermissions.push(permission);
+        if (options.extraGrantOnCreate) state.permissions.push({ id: 'unexpected-grant', fileId, type: 'group', emailAddress: 'staff@district.org', role: 'reader' });
         return { id: permission.id, emailAddress: body.emailAddress, role: body.role, expirationTime: body.expirationTime };
       },
       list(fileId, params = {}) {
@@ -137,10 +159,10 @@ function makeDrive(options = {}) {
         if (options.readbackRole && permissions.length) permissions[0].role = options.readbackRole;
         if (options.readbackExpiration !== undefined && permissions.length) permissions[0].expirationTime = options.readbackExpiration;
         if (options.paginate && permissions.length > 1 && !params.pageToken) {
-          return { permissions: [permissions[0]], nextPageToken: 'page-2' };
+          return { permissions: [{ id: 'owner', type: 'user', emailAddress: ownerEmail, role: 'owner' }, permissions[0]], nextPageToken: 'page-2' };
         }
         if (options.paginate && params.pageToken === 'page-2') return { permissions: permissions.slice(1) };
-        return { permissions };
+        return { permissions: [{ id: 'owner', type: 'user', emailAddress: ownerEmail, role: 'owner' }, ...permissions] };
       },
       remove(fileId, permissionId) {
         state.removed.push({ fileId, permissionId });
@@ -159,6 +181,102 @@ const basePacket = {
 };
 
 describe('evaluation share helper', () => {
+
+  it('refuses an existing folder shared with a group before creating another packet', () => {
+    const gs = makeDrive(); gs.shareEvaluationPacket(basePacket);
+    const folder = gs.state.folders['root/AlloFlow Evaluations/2026-27'];
+    gs.state.permissions.push({ id: 'broad', fileId: folder.getId(), type: 'group', emailAddress: 'staff@district.org', role: 'reader' });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/private|unexpected|owner-only/i);
+    expect(gs.state.files).toHaveLength(1);
+    expect(gs.state.createdPermissions).toHaveLength(1);
+  });
+
+  it.each(['owner', 'parentId', 'shared', 'trashed'])(
+    'refuses reused folder custody drift: %s', (field) => {
+      const gs = makeDrive(); gs.shareEvaluationPacket(basePacket);
+      const folder = gs.state.folders['root/AlloFlow Evaluations/2026-27/T-01'];
+      gs.state.privacy[folder.getId()][field] = field === 'trashed' ? true : 'unexpected';
+      expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/folder|owner|private|parent|custody/i);
+      expect(gs.state.files).toHaveLength(1);
+    });
+
+  it('does not write evaluation content when a newly created file has unexpected access', () => {
+    const gs = makeDrive({ fileExtraPermission: true });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/private|unexpected|owner-only/i);
+    expect(gs.state.files).toHaveLength(1);
+    expect(gs.state.files[0].content).toBe('');
+    expect(gs.state.createdPermissions).toHaveLength(0);
+  });
+
+  it('does not report verified sharing when a second principal appears during the grant', () => {
+    const gs = makeDrive({ extraGrantOnCreate: true });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/unexpected|private|access/i);
+    expect(gs.state.files[0].trashed).toBe(true);
+    expect(gs.state.permissions).toHaveLength(0);
+  });
+
+  it('requires manual recovery if failed-share trashing is not confirmed', () => {
+    const gs = makeDrive({ rejectCreate: true, stickyTrash: true });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/Manual recovery.*not confirmed in trash/);
+    expect(gs.state.files[0].trashed).toBe(false);
+  });
+
+  it('blocks ambiguous duplicate folder names before filing content', () => {
+    const gs = makeDrive(); gs.shareEvaluationPacket(basePacket);
+    const parent = gs.state.folders['root/AlloFlow Evaluations'];
+    const child = gs.state.folders['root/AlloFlow Evaluations/2026-27'];
+    parent.getFoldersByName = () => { let index = 0; return { hasNext: () => index < 2, next: () => { index++; return child; } }; };
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/multiple|ambiguous|duplicate/i);
+    expect(gs.state.files).toHaveLength(1);
+  });
+
+  it('blocks file sharing when editor resharing cannot be disabled', () => {
+    const gs = makeDrive({ stickyPrivacy: true });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/resharing/);
+    expect(gs.state.files).toHaveLength(0);
+  });
+
+  it('reports unsafe setup storage with sharing locked', () => {
+    const gs = makeDrive(); gs.verifyShareHelper();
+    const folder = gs.state.folders['root/AlloFlow Evaluations'];
+    gs.state.privacy[folder.getId()].shared = 'ANYONE';
+    expect(gs.verifyShareHelper()).toMatchObject({ ready: false, storagePrivacyReady: false });
+    expect(gs.verifyShareHelper().note).toMatch(/private.*Sharing stays locked/);
+  });
+
+  it('rejects the deployment owner as the educator recipient before changing Drive', () => {
+    const gs = makeDrive();
+    expect(() => gs.shareEvaluationPacket({ ...basePacket, educatorEmail: 'principal@district.org' })).toThrow(/differ from the deployment owner/);
+    expect(gs.state.files).toHaveLength(0);
+  });
+
+  it('detects broader access in a previously verified file and cannot claim verified revocation', () => {
+    const gs = makeDrive(); const shared = gs.shareEvaluationPacket(basePacket);
+    gs.state.permissions.push({ id: 'broad', fileId: shared.fileId, type: 'group', emailAddress: 'staff@district.org', role: 'reader' });
+    const listed = gs.listSharedEvaluations('2026-27').educators[0].packets[0];
+    expect(listed.liveStatus).toBe('active_changed');
+    expect(listed.accessCheckError).toMatch(/Unexpected access/);
+    expect(() => gs.revokeEvaluationAccess({ fileId: shared.fileId, educatorEmail: basePacket.educatorEmail })).toThrow(/Unexpected access/);
+  });
+
+  it('does not report no access when editable metadata points to a different recipient', () => {
+    const gs = makeDrive(); gs.shareEvaluationPacket(basePacket);
+    gs.state.files[0].description = gs.state.files[0].description.replaceAll(basePacket.educatorEmail, 'someone.else@district.org');
+    const listed = gs.listSharedEvaluations('2026-27').educators[0].packets[0];
+    expect(listed.currentlyShared).toBe(false);
+    expect(listed.liveStatus).toBe('active_changed');
+    expect(listed.accessCheckError).toMatch(/Unexpected access/);
+  });
+
+  it('fails closed on unavailable or repeated permission pages', () => {
+    const gs = makeDrive();
+    gs.Drive.Permissions.list = () => ({});
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/inspection was unavailable/);
+    gs.Drive.Permissions.list = () => ({ permissions: [], nextPageToken: 'same' });
+    expect(() => gs.shareEvaluationPacket(basePacket)).toThrow(/repeated permission page/);
+    expect(gs.state.files).toHaveLength(0);
+  });
+
   it('validates the packet and proves the exact reviewed permission by re-reading Drive', () => {
     const gs = makeDrive();
     const result = gs.shareEvaluationPacket(basePacket);

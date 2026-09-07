@@ -385,3 +385,14 @@ describe('workspace import normalization', () => {
     expect(normalized.audit.map((item) => item.id)).toEqual(['audit-safe']);
   });
 });
+
+
+it('preserves server walkthrough attribution across browser normalization', () => {
+  const workspace = E.aeNormalizeWorkspace({
+    config: {}, teachers: [{ id: 't1', code: 'T1', name: 'Fictional educator' }],
+    walkthroughs: [{ id: 'w1', teacherId: 't1', createdByEmail: 'principal@district.example', publishedAt: '2026-08-13T17:15:30.000Z' }],
+    observations: [], spms: [], comments: [], audit: [], cycleSnapshots: [],
+  });
+  expect(workspace.walkthroughs[0].createdByEmail).toBe('principal@district.example');
+  expect(E.aeNormalizeWorkspace(workspace).walkthroughs[0].createdByEmail).toBe('principal@district.example');
+});

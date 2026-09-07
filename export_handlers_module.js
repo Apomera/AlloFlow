@@ -1448,14 +1448,20 @@
     const iframeDoc = iframe && iframe.contentDocument;
     const iframeHasRealContent = (function() {
       if (!iframeDoc || !iframeDoc.body) return false;
-      const bodyText = iframeDoc.body.textContent || '';
-      const sectionCount = iframeDoc.querySelectorAll('.section, .slide, main, article').length;
-      const hasSubstantialText = bodyText.trim().length > 200;
-      console.log('[Export] iframe content check: ' + bodyText.trim().length + ' chars, ' + sectionCount + ' sections');
-      return hasSubstantialText || sectionCount > 0;
+      if (iframeDoc.body.getAttribute('data-allo-preview-error') === '1') return false;
+      const content = iframeDoc.body.cloneNode(true);
+      content.querySelectorAll('script,style,.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]').forEach(node => node.remove());
+      return !!((content.textContent || '').trim() || content.querySelector('img,svg,canvas,video,audio,math,table,form,input,textarea,select'));
     })();
+    // The live preview is authoritative, including when the user deleted everything.
+    // Never silently replace a short, empty, or failed preview with older history.
+    if (iframeDoc && iframeDoc.body && !iframeHasRealContent) {
+      _alloExportNotice(iframeDoc.body.getAttribute('data-allo-preview-error') === '1'
+        ? 'The preview contains a render error. Regenerate it before exporting.'
+        : 'The document has no exportable content. Add content before exporting.', 'error', addToast);
+      return false;
+    }
     if (iframeDoc && iframeDoc.documentElement && iframeHasRealContent) {
-      iframeDoc.designMode = 'off';
       // Serialize a CLONE with builder/inspector chrome stripped — A11y
       // Inspector badges, inspector + editor CSS, contenteditable attrs and
       // the edit-loss dirty flag previously shipped INSIDE student-facing
@@ -1496,7 +1502,6 @@
         catch (_kaErr) { console.warn('[Export] karaoke failed', _kaErr); }
       }
       htmlContent = '<!DOCTYPE html>\n<html' + _exClone.outerHTML.substring(5);
-      try { iframeDoc.designMode = 'on'; } catch (_) {}
       console.log('[Export] ✅ Using edited iframe content, chrome stripped (' + htmlContent.length + ' chars)');
     } else {
       console.warn('[Export] ⚠️ Iframe empty or missing — falling back to generateFullPackHTML(history)');

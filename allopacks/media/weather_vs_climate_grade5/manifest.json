@@ -1,0 +1,299 @@
+{
+  "version": 1,
+  "sourcePack": "allopacks/weather_vs_climate_grade5.allopack.json",
+  "provider": "built-in image generation",
+  "eventualTargetImages": 24,
+  "policy": "Text-free pixels. Native editable labels and captions. Alt text reviewed against final artwork. Assets only; pack not integrated or published.",
+  "assets": [
+    {
+      "id": "wx-term-temperature",
+      "term": "Temperature",
+      "termIndex": 2,
+      "file": "wx-term-temperature.png",
+      "source": "exec-2413d3b4-9dea-4f08-bde7-dc8e215d99b5.png",
+      "status": "visual-review-passed",
+      "alt": "Two matching thermometers have a low red liquid column against a cool blue background and a high red column against a warm yellow background.",
+      "prompt": "Create one polished educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely text-free artwork: no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and accessible descriptions. Clean editorial classroom illustration with uncluttered composition, natural colors and clear visual evidence. Square format. Two identical simple glass liquid thermometers side by side, with matching vertical tubes and round bulbs. On the left a cool blue-tinted background and a LOW red liquid column, on the right a warm golden background and a HIGH red liquid column. The liquid begins in each bulb and rises continuously into the tube. Thin unnumbered tick marks allowed, but no digits or text of any kind. Same thermometer dimensions and same scale spacing; only liquid height differs. Clear isolated objects with ample margins."
+    },
+    {
+      "id": "wx-term-precipitation",
+      "term": "Precipitation",
+      "termIndex": 3,
+      "file": "wx-term-precipitation.png",
+      "source": "exec-e34592fa-be34-4482-8c0c-2b959bc66371.png",
+      "status": "visual-review-passed",
+      "alt": "Side-by-side scenes show rain falling onto green grass and snowflakes falling onto snow-covered grass beneath gray clouds.",
+      "prompt": "Create one polished educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely text-free artwork: no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and accessible descriptions. Clean editorial classroom illustration with uncluttered composition, natural colors and clear visual evidence. Square format. A clean two-panel comparison: liquid raindrops falling from a gray cloud onto green grass on the left, snowflakes falling from a gray cloud onto snow-covered grass on the right. Falling precipitation clearly travels from clouds toward ground, with no arrows necessary. Snowflakes are small, recognizable sixfold ice crystals. No fog or upward drops. The scene distinguishes liquid rain from frozen snow without text."
+    },
+    {
+      "id": "wx-term-weather",
+      "term": "Weather",
+      "termIndex": 0,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. Three equal panels show the exact same small park, same lone tree, bench and path, under different short-term weather: left sunshine, center rain and puddles, right strong wind bending grass and blowing a few leaves. Keep the park layout, tree species and foliage season consistent; only weather changes. No snow, calendar or clock. Show physical weather, not floating symbols.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-96749bb1-1062-4b19-bd8d-029728c7d838.png",
+      "file": "wx-term-weather.png",
+      "status": "visual-review-passed",
+      "alt": "Three views of the same tree, bench, and park path show sunshine, rainfall with puddles, and wind bending branches and blowing leaves.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-term-climate",
+      "term": "Climate",
+      "termIndex": 1,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. A representative arid landscape: broad dry desert basin with sparse low drought-adapted shrubs and a few cacti, exposed sandy and rocky soil, distant dry mountains and clear sky. No rain, lush forest, person or thermometer. Emphasize enduring landscape characteristics associated with a dry regional climate. This is a representative landscape, not a measurement or evidence of climate change. Warm natural colors with clear landforms.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-5e3dd085-6eed-4fc7-ae89-ba9c2f664216.png",
+      "file": "wx-term-climate.png",
+      "status": "visual-review-passed",
+      "alt": "A dry desert basin stretches between rocky mountains, with sparse shrubs, cacti, and exposed sandy soil under a mostly clear sky.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-term-average",
+      "term": "Average",
+      "termIndex": 4,
+      "prompt": "Create a square text-free educational illustration of finding an average by equal redistribution. Six IDENTICAL straight-sided transparent rectangular water tanks arranged in a perfectly aligned 2 by 3 grid. All six tanks EXACTLY the same height and width. Front-on orthographic view, no perspective, no ellipses, no tapered vessels. Top row: tank one exactly 25 percent full of blue water, tank two exactly 50 percent, tank three exactly 75 percent. Bottom row: every tank exactly 50 percent full. Horizontal water surfaces. Tank outlines and blue liquid only, extremely clean crisp editorial scientific illustration on white. One small downward arrow centered between rows. No other objects. No text, letters, numerals, measurement ticks or symbols. The two rows must clearly conserve total water volume. Make bottom row tanks precisely as tall as top row tanks; allow generous white margins.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-df8efe92-7cb1-4e46-9040-1c83e32b5371.png",
+      "file": "wx-term-average.png",
+      "status": "visual-review-passed",
+      "alt": "Six matching tanks appear in two rows. The top row has low, medium, and high water levels; a downward arrow leads to three equal middle levels below.",
+      "altSource": "vision",
+      "revision": 2,
+      "rejectedVariants": [
+        {
+          "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. Educational still life comparing two rows of three identical clear cylindrical straight-sided beakers, all the same size, no markings or handles. Top row liquid levels exactly one-quarter full, one-half full, three-quarters full. Bottom row the same three beakers each exactly one-half full. Blue liquid, pale white background, wide clear gaps. One small plain downward arrow between rows suggests redistributing the same total liquid equally. No water being poured and no spills. The total amount is conserved. Precise flat front view makes relative water heights easy to compare. No digits, mathematical symbols, labels or text.",
+          "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-f60894d5-d329-4033-99ba-7d2b7bb6c429.png",
+          "reason": "Container sizes changed between rows; replaced."
+        }
+      ]
+    },
+    {
+      "id": "wx-term-pattern",
+      "term": "Pattern",
+      "termIndex": 5,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. Two rows of four small views of the same deciduous tree in the same park across two repeating yearly seasonal sequences. In each row from left to right: spring light green new leaves with small blossoms, summer full dark green leaves, autumn orange leaves with a few fallen leaves, winter bare branches with light snow. Same trunk shape and landscape throughout, same order repeated exactly in both rows. No arrows, seasonal labels, sun or moon symbols, calendar or numbers. Clear recurring visual sequence, consistent scale.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-3bdff638-78b0-48ff-a1ff-20b49326c78a.png",
+      "file": "wx-term-pattern.png",
+      "status": "visual-review-passed",
+      "alt": "Two rows repeat the same seasonal sequence around a park tree: blossoms and new leaves, full green foliage, orange autumn leaves, and bare branches with snow.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-term-forecast",
+      "term": "Forecast",
+      "termIndex": 6,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. An adult meteorologist at a desk looks thoughtfully between a window showing approaching dark clouds and a laptop screen showing only a simple unlabeled blue-green weather map with a white cloud and raindrop symbol. A closed umbrella rests beside the desk. The screen must have no text, numerals, interface letters or logos. Friendly realistic editorial illustration. This shows using observations to anticipate near-future weather, without claiming certainty or showing a severe storm emergency.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-007f487c-7ca6-4393-9d26-cfbf58f60674.png",
+      "file": "wx-term-forecast.png",
+      "status": "visual-review-passed",
+      "alt": "A person watches dark clouds through a window. A nearby laptop shows a rain-cloud symbol on a map, and an umbrella rests on the desk.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-term-region",
+      "term": "Region",
+      "termIndex": 7,
+      "prompt": "Create a square educational landscape illustration, edge-to-edge natural scenery only. A coherent green river valley seen from a high viewpoint, bounded by mountain ridges, with forest patches and grassy fields along one continuous river flowing downhill. Natural painterly realism, clear landforms, suitable for a grade 5 geography glossary entry about a region. No buildings necessary. Every corner must show ordinary terrain or sky. Absolutely no decorative symbols, star shapes, sparkles, watermarks, signatures, logos, text, letters or numbers anywhere, especially no white icon in a corner. Do not add map graphics, overlays or callouts.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-dd9a51ab-94bf-4252-916b-1e387bfd8e82.png",
+      "file": "wx-term-region.png",
+      "status": "visual-review-passed",
+      "alt": "A river winds through a broad green valley with forests and grassy slopes, bounded by mountain ridges.",
+      "altSource": "vision",
+      "revision": 2,
+      "rejectedVariants": [
+        {
+          "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. A wide aerial oblique view of one coherent green river valley bounded on both sides by connected mountain ridges. The valley contains patches of forest, grassy fields and a small lake connected to its river. Surrounding higher slopes are clearly distinct terrain. No political boundaries, maps, text, numbered landmarks, floating icons or arrows. Show a connected geographic area with shared surroundings, realistic river flowing downhill through the valley.",
+          "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-8e96c4e9-b0a4-499c-8754-6321bc40406a.png",
+          "reason": "Unwanted white corner symbol; replaced."
+        }
+      ]
+    },
+    {
+      "id": "wx-term-trend",
+      "term": "Trend",
+      "termIndex": 8,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. A single strip of five clearly separated views of the exact same young tree against the same simple grassy setting over an extended growing period. From left to right the tree gradually increases in trunk height, trunk thickness and leafy crown size, always green and healthy. Same lighting and season, no weather symbols, no calendar, no text or numbers. Consistent ground line and camera scale so gradual directional change is visually obvious. This is an everyday growth trend analogy, not a climate data graph.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-31557166-7981-479c-b067-3ff2c1b5b0b1.png",
+      "file": "wx-term-trend.png",
+      "status": "visual-review-passed",
+      "alt": "Five successive views show a tree increasing in height, trunk thickness, and leafy crown size above a consistent grassy ground line.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-term-atmosphere",
+      "term": "Atmosphere",
+      "termIndex": 9,
+      "prompt": "Create one square educational illustration for AlloFlow's Weather vs. Climate pack for grades 5–6. Absolutely no words, letters, numbers, labels, captions, logos or watermarks. The app supplies editable labels and descriptions. Clean editorial classroom illustration, uncluttered composition, natural colors. Earth seen from space with blue oceans and green-brown land, surrounded by a delicate thin translucent blue atmospheric glow hugging its curved edge. A few white cloud bands lie close to Earth's surface. Dark navy space beyond. Emphasize air as a thin surrounding layer, not a thick solid shell or ring. No cutaway, orbit lines, arrows, inset, moon or spacecraft. Educational illustration; atmospheric edge subtly highlighted, not a scale measurement.",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-d58f5a04-8c06-4f13-b9e7-238b7b2666c8.png",
+      "file": "wx-term-atmosphere.png",
+      "status": "visual-review-passed",
+      "alt": "Earth is shown against dark space, with white cloud bands over land and oceans and a thin blue glow along its curved edge.",
+      "altSource": "vision",
+      "revision": 1,
+      "rejectedVariants": []
+    },
+    {
+      "id": "wx-img-mood-personality",
+      "title": "Weather changes quickly",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Three views of the same small house and garden during one season: sunny morning, overcast sky, then rainfall wetting the same path. Same building and tree layout each time. No time labels or clocks.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-0f9c8ab1-d645-4727-b657-65d71a9df6f9.png",
+      "file": "wx-img-mood-personality.png",
+      "alt": "Three views of the same house and garden show sunshine, an overcast sky, and falling rain with a wet path.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-observation-series",
+      "title": "Repeated observations",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Three equal wide panels show the same simple outdoor weather station in the same meadow under sunny, rainy, and overcast skies. Same instrument shelter and grassy landscape. Instruments should not show any digits or text. This is repeated observation, not a claim that three observations establish climate.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-7664b5d9-60f5-420f-b583-205dce60ca5e.png",
+      "file": "wx-img-observation-series.png",
+      "alt": "The same weather station appears under sunny, rainy, and overcast skies, with its instruments in consistent positions.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-desert-rain",
+      "title": "Rain in a dry region",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A broad arid rocky desert with sparse cacti and shrubs during a brief rain shower. Dark raincloud above, falling rain and small fresh puddles; distant dry mountains remain. No lush vegetation appearing suddenly.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-f089b257-35f6-46d4-a516-1fb1ee0c08fb.png",
+      "file": "wx-img-desert-rain.png",
+      "alt": "Rain falls over a rocky desert with sparse shrubs and cacti. Fresh puddles collect on the ground beneath dark clouds.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-same-weather",
+      "title": "Same day, different regions",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Two equal scenes side by side under similarly clear sunny skies: a dry cactus landscape on the left and a lush temperate forest landscape on the right. No thermometer readings. Compare environments while showing the same broad weather condition.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-7b59448b-04ff-42b9-a4bf-49300df859bb.png",
+      "file": "wx-img-same-weather.png",
+      "alt": "Two sunny scenes contrast a dry cactus landscape with a green forest and flowing river.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-heat-wave",
+      "title": "A hot day",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A family resting together in deep tree shade on a bright summer afternoon, drinking from plain reusable water bottles, hats resting nearby. Comfortable safe ordinary scene, no distress, no thermometer or medical imagery. No branded clothes or writing.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-75380fb1-3abb-490e-94c1-8f2eddfdd2b8.png",
+      "file": "wx-img-heat-wave.png",
+      "alt": "A family sits in tree shade drinking from reusable water bottles, with hats beside them and a sunny field beyond.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-cold-day",
+      "title": "A cold day",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A child in a winter coat and hat walking with an adult beside a frost-covered grassy field, visible small breath mist and bare trees. A clear cool morning, ordinary safe scene. No dramatic blizzard, text, logos or temperature readings.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-f2a3d3b4-6c4f-4507-ac34-830a5402fe93.png",
+      "file": "wx-img-cold-day.png",
+      "alt": "An adult and child in winter coats walk beside a frost-covered field and bare trees. A small breath cloud is visible.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-climate-regions",
+      "title": "Contrasting landscapes",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Side-by-side panoramic representative landscapes: sparse vegetation in an arid rocky basin versus a lush humid tropical forest beside a river. Natural non-cartoon vegetation, no specific country map or flags. This is representative landscape imagery, not a record of measured climate.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-140ada80-201e-4a20-b323-93284c00fafb.png",
+      "file": "wx-img-climate-regions.png",
+      "alt": "Side-by-side landscapes contrast a dry, sparsely vegetated basin with a dense green forest bordering a river.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-valley-shade",
+      "title": "Sun and shade",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A single mountain valley with one grassy slope brightly lit by sunlight and the opposite slope in cool mountain shadow. Both slopes visible in the same continuous landscape, river at bottom, plausible sun direction. No temperature colors or measurements; show only visible sunlight and shade.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-991ce555-40ff-41d7-905c-1957953e9491.png",
+      "file": "wx-img-valley-shade.png",
+      "alt": "A mountain valley has a brightly sunlit grassy slope on the left and a shaded rocky slope on the right, with a river below.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-city-farm",
+      "title": "Urban and rural surfaces",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Two equal scenes in the same sunny season: a small city block with asphalt and rooftops on the left, fields with trees and grassy soil on the right. No people necessary, no signs or building letters. No red heat overlays or numerical temperature claims.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-5a772d92-a711-4741-ad6e-2b1d51fad89c.png",
+      "file": "wx-img-city-farm.png",
+      "alt": "Two sunny scenes show city rooftops and paved streets on the left, and grassy fields and trees on the right.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-tree-rings",
+      "title": "Natural records: tree rings",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. Close-up educational naturalistic illustration of a clean tree-trunk cross section, with many irregular concentric growth rings surrounding an off-center pith and rough bark at outer edge. A plain magnifying glass enlarges a few rings. No cut marks, text or hands. Ring widths vary naturally; no numbered rings.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-04543412-b188-40e7-90a5-f21636353f08.png",
+      "file": "wx-img-tree-rings.png",
+      "alt": "A tree-trunk cross-section shows rings of varying widths around a central point. A magnifying glass enlarges several rings.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-ice-core",
+      "title": "Natural records: ice",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A scientist in warm unbranded field clothing and gloves carefully examining a long cylindrical ice core lying horizontally in a plain open support tray at a snowy research site. Subtle visible internal layering and tiny bubbles, no writing or markings on tray or clothing. No claim that each visible layer is exactly a year.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-ff707a6f-277d-49a2-bbf3-0ca69bd55a3e.png",
+      "file": "wx-img-ice-core.png",
+      "alt": "A gloved scientist examines a horizontal cylindrical ice core with visible layers and tiny bubbles at a snowy field station.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-weather-station",
+      "title": "Measuring conditions",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. An outdoor weather station in an open grassy field: a small white louvered instrument shelter raised on four legs, a nearby pole with a recognizable three-cup anemometer, and a plain cylindrical rain collector with open top. No readable instrument scales, compass letters, text or logos. Uncluttered correct equipment.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b1d54454-f3ac-491a-b269-5f8eb05e8d5f.png",
+      "file": "wx-img-weather-station.png",
+      "alt": "A white louvered instrument shelter, a pole-mounted cup anemometer, and an open cylindrical rain collector stand in a grassy field.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-forecast-observations",
+      "title": "Using observations",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. An adult looking out at approaching gray clouds while preparing a plain rain jacket and closed umbrella near a window. On the table a tablet shows only a simple cloud-and-raindrop pictogram with no interface text, numbers or map claims. Safe everyday planning.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-a4fe2235-1157-4eec-883f-5030030e06ff.png",
+      "file": "wx-img-forecast-observations.png",
+      "alt": "A person holding an umbrella and rain jacket looks toward gray clouds. A tablet on the table displays a cloud-and-rain symbol.",
+      "altSource": "vision"
+    },
+    {
+      "id": "wx-img-many-records",
+      "title": "Looking across many records",
+      "kind": "panel",
+      "prompt": "Generate one landscape 3:2 educational image for an AlloFlow Weather vs. Climate lesson for grades 5–6. Text-free artwork only: absolutely no words, letters, digits, captions, labels, logos, signatures, decorative corner symbols or watermarks. All captions and labels will be supplied separately in the app. Clear editorial illustration with naturalistic materials, coherent lighting, uncluttered layout and sufficient margins. A scientist at a desk comparing a neat row of plain clear ice-core sample cylinders with a tree cross-section and an outdoor weather-station photograph pinned on a board. No papers with fabricated writing, no graphs, no text on any object. Naturalistic educational illustration about combining different kinds of environmental observations.",
+      "status": "visual-review-passed",
+      "source": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-8e23c8c2-b5d6-486c-8381-573ea8464992.png",
+      "file": "wx-img-many-records.png",
+      "alt": "A scientist looks at a row of cylindrical samples beside a tree cross-section and a photograph of a weather station.",
+      "altSource": "vision"
+    }
+  ]
+}

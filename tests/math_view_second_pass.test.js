@@ -1126,3 +1126,27 @@ describe('MathView second-pass source contracts', () => {
     expect(source).toContain('handleMathEdit(mathEditInput, mathResourceId)');
   });
 });
+
+describe('MathView generated-answer review boundary', () => {
+  const flagged = artifact({ problems: [{ id: 'p', question: '4 × 5', expression: '4+5', answer: '20', steps: [], _verification: { reviewRequired: true, verified: false } }] });
+  it('keeps review conflicts out of student check and self-grade controls', () => {
+    const { MathView } = loadMathView({ fromSource: true });
+    for (const mathSelfGradeMode of [false, true]) {
+      const tree = MathView({ generatedContent: flagged, isTeacherMode: false, mathSelfGradeMode, mathStudentAnswers: { p: '20' }, submitMathSelfGrade: vi.fn(), handleCheckMathWork: vi.fn() });
+      expect(nodeText(tree)).toContain('needs teacher review');
+      expect(findNodes(tree, n => n.type === 'input' && /answer/i.test(n.props?.id || ''))).toHaveLength(0);
+      expect(findNodes(tree, n => n.type === 'button' && /Check My Work/.test(nodeText(n)))).toHaveLength(0);
+      const submit = findNode(tree, n => n.type === 'button' && /Submit Assessment/.test(nodeText(n)));
+      if (submit) expect(submit.props.disabled).toBe(true);
+    }
+  });
+  it('retains teacher editing so a flagged question and answer can be corrected', () => {
+    const { MathView } = loadMathView({ fromSource: true });
+    const tree = MathView({ generatedContent: flagged, isTeacherMode: true, showMathAnswers: true, isMathEditing: () => true, toggleMathEdit: vi.fn(), handleMathProblemEdit: vi.fn() });
+    expect(findNode(tree, n => n.type === 'button' && n.props['aria-label'] === 'Save edits')).toBeTruthy();
+    expect(findNodes(tree, n => n.type === 'textarea')).toHaveLength(1);
+    const answer = findNode(tree, n => n.type === 'input' && n.props.value === '20');
+    expect(answer).toBeTruthy();
+    expect(answer.props.disabled).toBe(false);
+  });
+});

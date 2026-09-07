@@ -140,7 +140,7 @@ describe('AlloBot generation animation signatures', () => {
     expect(botSource).toContain('new IntersectionObserver');
     expect(botSource).toContain('const generationMotionPaused = isDocumentHidden || isGenerationOffscreen;');
     expect(botSource).toContain('allobot-generation-paused');
-    expect(botSource).toContain('else if (generationMotionPaused) { _svg.pauseAnimations(); }');
+    expect(botSource).toContain('else if (generationMotionPaused) svg.pauseAnimations();');
     expect(botModule).toContain('new IntersectionObserver');
   });
 

@@ -194,10 +194,16 @@ ${moduleRegistration}
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+function writeGameArtifact(destination, content) {
+  const temporary = destination + '.build-tmp';
+  fs.writeFileSync(temporary, content, 'utf-8');
+  fs.renameSync(temporary, destination);
+}
+writeGameArtifact(OUTPUT, outputCode);
+writeGameArtifact(path.join(ROOT, 'desktop/web-app/src/games_source.jsx'), source);
 try {
   if (!fs.existsSync(path.dirname(DEPLOY_OUT))) fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
-  fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+  writeGameArtifact(DEPLOY_OUT, outputCode);
 } catch (e) {
   console.warn('Sync failed:', e.message);
 }

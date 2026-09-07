@@ -35,9 +35,9 @@ describe('finalized-cycle client closure', () => {
     expect(walkthroughs).toContain("!record.publishedAt && role === 'evaluator' && !aeCycleFinalized(teacher)");
     expect(walkthroughs).toContain('disabled={readOnlyPreview || aeCycleFinalized(teacher)}');
     expect(formals).toContain('disabled={!selectedTeacher || cycleFinalized || records.some');
-    expect(formals).toContain('<fieldset disabled={cycleFinalized}');
+    expect(formals).toContain('<fieldset disabled={cycleFinalized || recovery.changed}');
     expect(spm).toContain("role === 'teacher' && selectedTeacher && !cycleFinalized");
-    expect(spm).toContain('<fieldset disabled={cycleFinalized}');
+    expect(spm).toContain('<fieldset disabled={cycleFinalized || recovery.changed}');
     [walkthroughs, formals, spm].forEach((body) => {
       expect(body).toContain('<AeFinalizedCycleNotice teacher={selectedTeacher}/>');
     });

@@ -1,0 +1,332 @@
+{
+  "slug": "forces_motion_grade3",
+  "reviewed": "2026-09-07",
+  "provider": "Built-in image generation",
+  "textPolicy": "No text in artwork; native editable labels and captions.",
+  "assets": [
+    {
+      "id": "fm-term-force",
+      "kind": "glossary",
+      "term": "Force",
+      "termIndex": 0,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. Two small side-by-side scenes: a hand presses against the left face of a wooden box, and another hand holds a taut cord attached to a small wagon. No arrows.",
+      "file": "fm-term-force.png",
+      "alt": "A hand presses against a wooden box above; below, another hand holds the handle of a red wagon.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-c1ed0b6e-37a2-4adf-aae0-d711cd064158.png"
+    },
+    {
+      "id": "fm-term-push",
+      "kind": "glossary",
+      "term": "Push",
+      "termIndex": 1,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A child's hand at left presses its palm against the left side of a wooden block resting on a tabletop; a plain arrow above the block points right, away from the hand.",
+      "file": "fm-term-push.png",
+      "alt": "A hand touches the left side of a wooden block; a blue arrow above points right, away from the hand.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-56c56543-b90f-4d92-9352-8ca532dd4ffb.png"
+    },
+    {
+      "id": "fm-term-pull",
+      "kind": "glossary",
+      "term": "Pull",
+      "termIndex": 2,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A hand at upper left holds a taut cord connected to a small wooden wagon at lower right. A plain arrow above the wagon points diagonally toward the hand. The cord visibly connects both.",
+      "file": "fm-term-pull.png",
+      "alt": "A taut rope connects a hand at upper left to a wagon at lower right. An arrow points from the wagon toward the hand.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-aed310f8-39dd-46aa-8516-68eb14291a01.png"
+    },
+    {
+      "id": "fm-term-friction",
+      "kind": "glossary",
+      "term": "Friction",
+      "termIndex": 3,
+      "prompt": "A square still-life educational illustration: one plain small wooden rectangular block sits on a thick cream carpet. Close low side view clearly shows the block touching the carpet fibers. Pale background, friendly watercolor style. Only the block and carpet. NO arrows of any kind, NO motion lines, no text, no letters, no numbers, no labels, no logos or watermark. Static contact between surfaces is the visual focus.",
+      "file": "fm-term-friction.png",
+      "alt": "A wooden block rests on thick cream carpet, with carpet fibers visible against its lower edge.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-448329ca-e650-461a-b7f4-8c0008257e8b.png"
+    },
+    {
+      "id": "fm-term-gravity",
+      "kind": "glossary",
+      "term": "Gravity",
+      "termIndex": 4,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. An orange ball suspended in mid-fall above a level floor, one straight plain blue arrow pointing vertically downward beside the ball. Nothing supports the ball.",
+      "file": "fm-term-gravity.png",
+      "alt": "An orange ball hangs above a level floor. A blue arrow beside it points straight down.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-539b1aca-9ecd-4ab2-95a1-c03e7568ec44.png"
+    },
+    {
+      "id": "fm-term-motion",
+      "kind": "glossary",
+      "term": "Motion",
+      "termIndex": 5,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A blue ball at right with three progressively paler earlier positions arranged horizontally behind it to the left on the same floor. Identical ball sizes, evenly spaced, no arrows.",
+      "file": "fm-term-motion.png",
+      "alt": "Four positions of a blue ball run from left to right; the earlier positions are paler than the final one.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-cd20a705-fcad-4c8e-9e04-22ce7a0ea675.png"
+    },
+    {
+      "id": "fm-term-balanced",
+      "kind": "glossary",
+      "term": "Balanced",
+      "termIndex": 6,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A closed blank blue book lies on a table. Alongside it, two vertical straight blue arrows of EXACTLY equal length and width point in opposite directions, one upward and one downward. Both arrows are fully visible. This is a simple model of two forces acting on the book.",
+      "file": "fm-term-balanced.png",
+      "alt": "A blue book rests on a table beside two matching vertical arrows, one pointing up and one pointing down.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-acd186b8-c299-4def-b25c-2597502dce24.png"
+    },
+    {
+      "id": "fm-term-unbalanced",
+      "kind": "glossary",
+      "term": "Unbalanced",
+      "termIndex": 7,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A wooden toy cart on a level surface. A long horizontal blue arrow immediately above it points right and a clearly shorter orange arrow immediately below it points left. These arrows model unequal horizontal forces on the same cart. No other arrows.",
+      "file": "fm-term-unbalanced.png",
+      "alt": "A wooden wagon sits beneath a long blue arrow pointing right and a shorter orange arrow pointing left.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-750f6e7f-b55e-4200-970e-cd9a8f293712.png"
+    },
+    {
+      "id": "fm-term-pattern",
+      "kind": "glossary",
+      "term": "Pattern",
+      "termIndex": 8,
+      "prompt": "Square educational illustration divided into exactly three horizontal strips. Each strip contains ONLY the same small empty wooden ramp on the left and ONE blue ball resting on the floor to the right. The three balls are at approximately the same distance beyond their ramp. Same scale and viewpoint in each strip. Ramps are EMPTY: no ball on any ramp. No hands, no people, no movement trails, no arrows. Friendly watercolor classroom style, pale background. Absolutely no text, digits, labels, watermarks or logos. This models similar stopping positions across three separate trials.",
+      "file": "fm-term-pattern.png",
+      "alt": "Three separate horizontal scenes each show an empty ramp and one blue ball resting at a similar distance beyond it.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-2a6e36c7-a6b0-4e74-922d-2bb3e107c4c8.png"
+    },
+    {
+      "id": "fm-term-predict",
+      "kind": "glossary",
+      "term": "Predict",
+      "termIndex": 9,
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Square composition. A child crouches beside a low toy ramp, pointing at a blank circular paper marker on the floor beyond the ramp. A blue ball is still held at the TOP of the ramp by the child's other hand. The marked spot is empty. No writing or arrows.",
+      "file": "fm-term-predict.png",
+      "alt": "A child holds a ball at the top of a ramp and points toward an empty circular marker on the floor beyond it.",
+      "status": "visual-review-passed",
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-16e6e819-b5a0-4106-ab94-ff9163b7cb2f.png"
+    },
+    {
+      "id": "fm-img-push-pull",
+      "kind": "panel",
+      "title": "Two ways to apply a force",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Two distinct side-by-side scenes. Left: a child at left pushes a small cardboard box toward the right with palms touching the box. Right: a child at right pulls a small wagon toward themselves using its taut handle. No arrows. Simple classroom floor, full limbs visible.",
+      "file": "fm-img-push-pull.png",
+      "alt": "At left, a child presses a box forward. At right, another child holds a wagon handle and draws it toward themselves.",
+      "status": "visual-review-passed",
+      "caption": "A hand can push a box or pull a wagon through its handle. A push or pull is a force even if other forces prevent motion.",
+      "labels": [
+        {
+          "text": "Push",
+          "position": "top-left",
+          "anchorX": 29,
+          "anchorY": 55
+        },
+        {
+          "text": "Pull",
+          "position": "top-right",
+          "anchorX": 72,
+          "anchorY": 48
+        }
+      ],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b0a8cead-db83-4fd8-a98a-7884d9ddd79c.png"
+    },
+    {
+      "id": "fm-img-friction-floors",
+      "kind": "panel",
+      "title": "Comparing surfaces",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Side-by-side close views of the same wooden block on smooth tile at left and textured carpet at right. Same block size and perspective, no people, arrows, endpoint predictions or measuring numbers.",
+      "file": "fm-img-friction-floors.png",
+      "alt": "Matching blocks sit on smooth tile at left and textured carpet at right. A blue arrow beside each block points right.",
+      "status": "visual-review-passed",
+      "caption": "The blocks show two surfaces to compare. The blue arrows indicate a possible sliding direction, not friction. Friction would oppose that sliding. Test rather than assuming which surface has greater friction.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-1b773b5d-5479-4889-846b-1b7af0d08b84.png"
+    },
+    {
+      "id": "fm-img-gravity-chair",
+      "kind": "panel",
+      "title": "A chair supports you",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A child sits still upright in a sturdy chair on a level classroom floor, feet resting on the floor, seat clearly supporting their body. Side view, uncluttered pale background. No arrows, no floating chair.",
+      "file": "fm-img-gravity-chair.png",
+      "alt": "A child sits upright on a chair with their feet resting on the floor.",
+      "status": "visual-review-passed",
+      "caption": "Gravity pulls the child downward. The chair and floor provide support. For a child remaining still, the overall upward and downward forces balance.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-b4eacf40-d5d8-4f52-bd17-b3f80359baf2.png"
+    },
+    {
+      "id": "fm-img-tug-balanced",
+      "kind": "panel",
+      "title": "Equal opposite pulls",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Simple classroom model: a short straight rope held taut by one hand at each end, a small red ribbon at its center. Above the rope are two separated horizontal blue arrows of EXACTLY equal length and width, one pointing left and the other right. Full hands visible. No people or other arrows.",
+      "file": "fm-img-tug-balanced.png",
+      "alt": "Two hands hold a taut rope with a central red ribbon. Matching blue arrows above point left and right.",
+      "status": "visual-review-passed",
+      "caption": "The matching arrows model equal opposite horizontal pulls on the rope. If it starts still, it stays still while these pulls balance. The centered ribbon alone does not measure force.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-0860d493-b4c9-4668-a9d3-ed84c3482d4f.png"
+    },
+    {
+      "id": "fm-img-tug-unbalanced",
+      "kind": "panel",
+      "title": "Unequal horizontal pulls",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A small wooden cart centered on a flat floor has a taut cord extending from each side. Above the LEFT cord a short orange arrow points left. Above the RIGHT cord a much longer blue arrow points right. No motion trails; this is a force model, not a speed measurement. No people.",
+      "file": "fm-img-tug-unbalanced.png",
+      "alt": "Cords extend from both sides of a wooden cart. A short orange arrow points left; a longer blue arrow points right.",
+      "status": "visual-review-passed",
+      "caption": "The longer right arrow models the larger pull. If these are the only horizontal forces, the cart's motion changes toward the right. A cart moving left could first slow down.",
+      "labels": [
+        {
+          "text": "Smaller pull",
+          "position": "top-left",
+          "anchorX": 14,
+          "anchorY": 46
+        },
+        {
+          "text": "Larger pull",
+          "position": "top-right",
+          "anchorX": 82,
+          "anchorY": 45
+        }
+      ],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-c28ebf52-0109-4849-863d-4a36d5792c33.png"
+    },
+    {
+      "id": "fm-img-bike",
+      "kind": "panel",
+      "title": "Pedaling and changing speed",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A helmeted child rides a bicycle along a straight, level park path. Side view with visible pedals, both hands safely on handlebars, normal bike wheels, simple background. No arrows, exaggerated speed lines or writing.",
+      "file": "fm-img-bike.png",
+      "alt": "A helmeted child pedals a blue bicycle along a level park path.",
+      "status": "visual-review-passed",
+      "caption": "Pedaling does not always mean speeding up. A rider moving at constant speed in a straight line has balanced forces overall. An unbalanced force changes speed or direction.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-ab1423d7-93a6-491a-bbad-1b0f44c0cb9f.png"
+    },
+    {
+      "id": "fm-img-shoe-grip",
+      "kind": "panel",
+      "title": "Friction can help you move",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Close side view of a sneaker pressing against a dry textured pavement during a walking step, with sole tread visible and the heel slightly lifted. Lower leg included, no arrows or sliding streaks.",
+      "file": "fm-img-shoe-grip.png",
+      "alt": "A blue sneaker touches textured pavement at the heel, with its toe lifted.",
+      "status": "visual-review-passed",
+      "caption": "Friction helps shoes grip the ground instead of sliding. It can help a person walk; it does not only slow objects down.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-e9c3bde9-6ccc-4c48-9ba7-86263333650f.png"
+    },
+    {
+      "id": "fm-img-sliding-block",
+      "kind": "panel",
+      "title": "Forces on one object",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A rectangular wooden block rests on a horizontal tabletop. A long straight blue arrow directly above points right; a shorter straight orange arrow directly below points left. Leave generous pale space around both arrows. No person, no additional arrows. Simplified horizontal-force model.",
+      "file": "fm-img-sliding-block.png",
+      "alt": "A wooden block sits between a long blue arrow pointing right above it and a shorter orange arrow pointing left below.",
+      "status": "visual-review-passed",
+      "caption": "This simplified model shows horizontal forces on a block sliding right: a larger push right and smaller friction left. The overall force is rightward. Vertical forces are omitted from this model.",
+      "labels": [
+        {
+          "text": "Push",
+          "position": "top-left",
+          "anchorX": 50,
+          "anchorY": 23
+        },
+        {
+          "text": "Friction",
+          "position": "center-left",
+          "anchorX": 48,
+          "anchorY": 77
+        }
+      ],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-31e008dc-a037-4b3c-a85e-29837ea88ede.png"
+    },
+    {
+      "id": "fm-img-ramp-heights",
+      "kind": "panel",
+      "title": "Changing ramp height",
+      "prompt": "Landscape 3:2 friendly watercolor classroom illustration on a pale background. Two separate empty straight wooden ramps side by side in a clear side view. Each board is exactly the same length. In the left setup the far LEFT END of the board rests directly on ONE thin plain book and the right end touches the floor, making a very shallow slope. In the right setup the far LEFT END rests directly on THREE stacked thick plain books and the right end touches the floor, making a visibly steeper slope. Books are directly under the upper endpoints, not the middle of the boards. Two simple supported boards, no balls, no pegs, no people. No arrows, no motion marks. Absolutely no text, letters, numbers, labels, logos or watermarks.",
+      "file": "fm-img-ramp-heights.png",
+      "status": "visual-review-passed",
+      "caption": "Change ramp height while keeping the ball, ramp, release place, and floor consistent. Measure several trials before predicting how the height will affect rolling distance.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-d97f110d-040d-4dac-b9e4-ba6d3e2faa31.png",
+      "alt": "Two empty wooden ramps rest on books. The shallow ramp at left has one book beneath its raised end; the steeper ramp at right has a taller support with three books."
+    },
+    {
+      "id": "fm-img-three-rolls",
+      "kind": "panel",
+      "title": "Looking for a repeatable result",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Top-down classroom illustration of a low ramp on the left and three separate blue flat circular paper markers clustered near one another on the floor to the right beyond the ramp. A child's hand places the third marker. No balls, no arrows, no writing. These are markers of three stopping positions.",
+      "file": "fm-img-three-rolls.png",
+      "alt": "A hand places one of three blue circular markers clustered on the floor beyond an empty ramp.",
+      "status": "visual-review-passed",
+      "caption": "Each marker represents a stopping position from a separate trial. Nearby marks illustrate similar results, not identical results or a guarantee about the next roll.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-eb752f3a-5134-4999-9b26-f5d1e9056598.png"
+    },
+    {
+      "id": "fm-img-turning-ball",
+      "kind": "panel",
+      "title": "Changing direction",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Top-down view of a blue ball on a smooth pale floor, with one dashed gently curving path trailing behind it and ending at the ball. One small tangent arrow follows the curve near the ball. No sharp corners, no people or other arrows. This path shows motion direction, not a force diagram.",
+      "file": "fm-img-turning-ball.png",
+      "alt": "A dashed curved path ends near a blue ball, with a small arrow following the curve toward the ball.",
+      "status": "visual-review-passed",
+      "caption": "The dashed path and arrow describe the ball's motion, not a force. Turning means its direction is changing, so its forces are unbalanced even if its speed stays constant.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-5b5badfe-a2a0-4bf4-8a69-7dc38501d24b.png"
+    },
+    {
+      "id": "fm-img-wall",
+      "kind": "panel",
+      "title": "A push without visible motion",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. Side view of a child's hand pressing its flat palm against a sturdy brick wall. Part of forearm visible, anatomically correct hand and wrist, pale simple setting. No arrows or cracks or damage.",
+      "file": "fm-img-wall.png",
+      "alt": "A hand presses its palm flat against a brick wall.",
+      "status": "visual-review-passed",
+      "caption": "The hand pushes on the wall; the wall pushes back on the hand. These two forces act on different objects. Other forces supporting the wall balance the push on the wall.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-e8a9f27c-5699-4296-9917-260f56e24815.png"
+    },
+    {
+      "id": "fm-img-magnet-gap",
+      "kind": "panel",
+      "title": "A pull across a gap",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A red and blue unlettered bar magnet lies on a pale tabletop with a steel paperclip a short clear gap from one end. A single small arrow above the paperclip points toward the magnet. No N or S letters, no writing, no sparks.",
+      "file": "fm-img-magnet-gap.png",
+      "alt": "A steel paperclip lies across a small gap from a red-and-blue bar magnet. An arrow above the clip points toward the magnet.",
+      "status": "visual-review-passed",
+      "caption": "A magnet can attract a steel paperclip across a gap. The arrow indicates a magnetic pull, an example of a force that does not require contact.",
+      "labels": [],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-884eb45a-cd4a-4802-a6f0-7bbbec5afd8d.png"
+    },
+    {
+      "id": "fm-img-fair-test",
+      "kind": "panel",
+      "title": "Release from the same place",
+      "prompt": "Use case: educational illustration. AlloFlow Grade 3 Forces and Motion. Friendly clean painterly classroom illustration, natural colors, simple pale background, one clear idea. Absolutely no text, letters, digits, labels, captions, logos, watermarks or decorative symbols. Only requested plain arrows. Physically plausible objects and anatomy. Native app supplies all words. Landscape 3:2 composition. A child crouches beside a low stable wooden ramp propped securely on one blank book. One hand holds a blue ball gently at the top without pushing; the other hand rests away from the track. Empty level floor beyond ramp, generous clear space. No text, rulers, arrows or endpoint result markers.",
+      "file": "fm-img-fair-test.png",
+      "alt": "A child gently holds a blue ball near the top of a low ramp supported by one book, with clear floor beyond the ramp.",
+      "status": "visual-review-passed",
+      "caption": "Release the same ball from the same place without adding a push. Keep other conditions alike, repeat the test, and measure from the ramp bottom to where the ball stops.",
+      "labels": [
+        {
+          "text": "Release here",
+          "position": "top-right",
+          "anchorX": 31,
+          "anchorY": 61
+        }
+      ],
+      "sourcePath": "C:\\Users\\cabba\\.codex\\generated_images\\01a06e02-e93c-7460-80f1-531f5f777e60\\exec-dbfeec64-ebfe-4266-aac3-06ab00e48bff.png"
+    }
+  ]
+}

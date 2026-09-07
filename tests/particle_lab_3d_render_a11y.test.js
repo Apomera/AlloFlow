@@ -69,7 +69,7 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
       expect(readyCanvas.hasAttribute('aria-hidden')).toBe(false);
       expect(readyCanvas.getAttribute('aria-roledescription')).toBe('Interactive 3D particle chamber');
       expect(readyCanvas.getAttribute('aria-describedby')).toBe('particle-chamber-help');
-      expect(readyHost.querySelector('#particle-chamber-help')?.textContent).toContain('keyboard alternatives');
+      expect(readyHost.querySelector('#particle-chamber-help')?.textContent).toContain('Arrow keys orbit the camera');
       expect(readyCanvas.parentElement.getAttribute('role')).toBeNull();
       expect(readyCanvas.className).toContain('focus-visible:outline-cyan-200');
     } finally {
@@ -473,4 +473,33 @@ describe('Particle Lab 3D rendered WCAG interaction states', () => {
   it('renders no persistent seven, eight, or nine pixel utility text', () => {
     expect(host.innerHTML).not.toMatch(/text-\[(?:7|8|9)px\]/);
   });
+
+  it('lets a slider drag settle before committing the scene-rebuilding value', async () => {
+    // Every input tick on these sliders used to change a scene-effect dependency, so a drag was a rebuild per tick.
+    const slider = host.querySelector('input[aria-label="Container edge length and volume"]');
+    await act(async () => { setValue(slider, '9'); setValue(slider, '13'); setValue(slider, '16'); await settle(); });
+    // The thumb and its readout follow at once...
+    expect(slider.value).toBe('16');
+    expect(Array.from(host.querySelectorAll('output')).some((node) => node.textContent === '16 u')).toBe(true);
+    // ...but nothing has been committed or persisted yet.
+    expect(persisted().boxSize).toBeUndefined();
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 260)); });
+    expect(persisted().boxSize).toBe(16);
+    // An external change (a preset) still drives the draft, so the thumb never shows a stale value.
+    const gas = Array.from(host.querySelectorAll('button[aria-pressed]')).find((button) => /Solid/.test(button.textContent));
+    await act(async () => { gas.click(); await new Promise((resolve) => setTimeout(resolve, 260)); });
+    expect(slider.value).toBe(String(persisted().boxSize));
+  });
+
+
+  it('saves a continuous slider once after the drag settles, while the tool state follows every tick', async () => {
+    const slider = host.querySelector('input[type="range"][aria-label="Interparticle attraction strength"]');
+    expect(slider).not.toBeNull();
+    await act(async () => { setValue(slider, '0.3'); setValue(slider, '0.9'); setValue(slider, '1.2'); await settle(); });
+    expect(slider.value).toBe('1.2');            // local state moved on every tick
+    expect(persisted().attraction).toBeUndefined(); // the host has not been asked to save yet
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 320)); });
+    expect(persisted().attraction).toBe(1.2);     // one save, carrying only the final value
+  });
+
 });

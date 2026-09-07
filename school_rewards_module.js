@@ -309,7 +309,7 @@ function srReadClassroomRoster() {
     if (!parsed || typeof parsed !== "object") return null;
     const groups = parsed.groups && typeof parsed.groups === "object" && !Array.isArray(parsed.groups) ? parsed.groups : {};
     const students = parsed.students && typeof parsed.students === "object" && !Array.isArray(parsed.students) ? parsed.students : {};
-    const byGroup = {};
+    const byGroup = /* @__PURE__ */ Object.create(null);
     Object.keys(students).forEach((codename) => {
       const value = students[codename];
       const groupId = typeof value === "string" ? value : value && typeof value === "object" ? String(value.groupId || "") : "";
@@ -324,7 +324,8 @@ function srReadClassroomRoster() {
   }
 }
 function srCsvCell(value) {
-  const text = String(value == null ? "" : value);
+  const raw = String(value == null ? "" : value);
+  const text = /^[\t\r\n]|^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
   return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
 }
 function srRosterTemplateCsv(roster, groupIds) {

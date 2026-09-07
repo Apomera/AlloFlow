@@ -887,7 +887,17 @@
     "your_role_cannot_perform_this_action_xnaxbg": "Tu rol no puede realizar esta acción.",
     "your_role_cannot_resubmit_print_lab_requests_p7gcwi": "Tu rol no puede reenviar solicitudes del Laboratorio de impresión 3D.",
     "your_role_cannot_submit_print_lab_requests_1oj21n7": "Tu rol no puede enviar solicitudes al Laboratorio de impresión 3D.",
-    "your_role_cannot_upload_print_lab_assets_1nkp49v": "Tu rol no puede subir archivos al Laboratorio de impresión 3D."
+    "your_role_cannot_upload_print_lab_assets_1nkp49v": "Tu rol no puede subir archivos al Laboratorio de impresión 3D.",
+    "downloaded_the_exact_uploaded_model_inspect_its_scale_and__hzvcsd": "Se descargó el modelo exacto que se subió. Revisa su escala y la vista previa del programa de laminado antes de verificarlo.",
+    "preparing_the_private_model_for_review_1hqwbwj": "Preparando el modelo privado para su revisión…",
+    "private_school_storage_could_not_be_secured_ask_the_deploy_1m4dz7u": "No se pudo proteger el almacenamiento privado de la escuela. Pide al responsable de la implementación que revise los permisos de Drive antes de volver a intentarlo.",
+    "private_school_storage_could_not_be_verified_ask_the_deplo_14mdivv": "No se pudo verificar el almacenamiento privado de la escuela. Pide al responsable de la implementación que revise los permisos de Drive antes de volver a intentarlo.",
+    "refresh_the_portal_and_review_the_current_quote_before_con_18cjhy1": "Actualiza el portal y revisa la cotización actual antes de confirmarla.",
+    "the_stored_model_asset_no_longer_matches_its_sha_256_hash__82bl7w": "El archivo del modelo almacenado ya no coincide con su hash SHA-256. Sube el archivo original como una nueva versión del modelo.",
+    "the_stored_model_asset_size_no_longer_matches_the_uploaded_gi2m8f": "El tamaño del archivo del modelo almacenado ya no coincide con la versión que se subió.",
+    "this_quote_has_changed_refresh_the_portal_and_review_the_n_fs759i": "Esta cotización ha cambiado. Actualiza el portal y revisa la nueva cotización antes de confirmarla.",
+    "download_model_for_review_zckbch": "Descargar modelo para revisión",
+    "download_the_exact_model_for_local_inspection_then_verify__72sv59": "Descarga el modelo exacto para revisarlo localmente y luego verifica su hash, escala y vista previa del programa de laminado. Solo el personal autorizado puede descargarlo; los estudiantes nunca reciben enlaces de Drive."
   },
   "patterns": {
     "1_available_16n661b": "{1} disponibles",

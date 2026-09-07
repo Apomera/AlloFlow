@@ -2029,14 +2029,25 @@ const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessio
   const [supportId, setSupportId] = useState("clarify");
   const [supportTargetUid, setSupportTargetUid] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [questSyncError, setQuestSyncError] = useState("");
+  const questWriteRef = useRef("");
+  const [localAction, setLocalAction] = useState(null);
+  const encounterFocusRef = useRef(null);
+  const pauseFocusRef = useRef(null);
+  const currentScopeRef = useRef("");
+  const turnKey = engine?.getTurnKey?.(quest) || quest?.turnKey || String(quest?.turn || 0);
+  const actionScope = activeSessionCode + ":" + turnKey;
+  currentScopeRef.current = actionScope;
   const userTeam = escapeState?.teams?.[user?.uid];
   const progress = escapeState?.teamProgress?.All || {};
   const currentRoom = engine?.getRoom?.(quest, quest?.currentRoomId);
   const rooms = quest?.rooms || [];
-  const myVote = progress.questVotes?.[user?.uid];
-  const myAction = progress.questActions?.[user?.uid];
+  const validVotes = engine?.currentVotes?.(quest, progress.questVotes, progress.questVoteTurns) || {};
+  const myVote = validVotes[user?.uid];
+  const validActions = engine?.currentActions?.(quest, progress.questActions) || {};
+  const myAction = validActions[user?.uid] || (localAction?.scope === actionScope ? localAction.value : null);
   const myRole = progress.questRoles?.[user?.uid];
-  const peerRoster = Object.values(sessionData?.roster || {}).filter((entry) => entry?.uid && entry.uid !== user?.uid);
+  const peerRoster = Object.entries(sessionData?.roster || {}).filter(([uid, entry]) => entry && uid !== user?.uid).map(([uid, entry]) => ({ ...entry, uid }));
   useEffect(() => {
     if (!escapeState?.isActive || !user?.uid || !activeSessionCode || userTeam === "All") return;
     const assign = async () => {
@@ -2051,22 +2062,50 @@ const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessio
   }, [escapeState?.isActive, user?.uid, activeSessionCode, targetAppId, userTeam]);
   useEffect(() => {
     setAnswerIndex(null);
-  }, [quest?.turn, quest?.currentRoomId]);
+    setLocalAction(null);
+    setQuestSyncError("");
+    setIsSubmitting(false);
+    questWriteRef.current = "";
+  }, [actionScope]);
+  useEffect(() => {
+    if (!myAction) return;
+    setAnswerIndex(myAction.answerIndex);
+    setAbilityId(myAction.abilityId);
+    setSupportId(myAction.supportId || "clarify");
+    setSupportTargetUid(myAction.supportTargetUid || "");
+  }, [myAction?.turnKey, myAction?.submittedAt, myAction?.answerIndex]);
+  useEffect(() => {
+    if (escapeState?.isPaused) pauseFocusRef.current?.focus();
+    else encounterFocusRef.current?.focus();
+  }, [actionScope, quest?.phase, escapeState?.isPaused]);
   useEffect(() => {
     if (supportTargetUid && !peerRoster.some((entry) => entry.uid === supportTargetUid)) setSupportTargetUid("");
   }, [supportTargetUid, sessionData?.roster]);
-  if (!quest || !engine) return null;
+  if (!quest || !engine || escapeState?.isActive === false) return null;
   const writeChoice = async (field, value) => {
-    if (!user?.uid || !activeSessionCode || escapeState.isPaused) return;
+    if (!user?.uid || !activeSessionCode || !escapeState.isActive || escapeState.isPaused || questWriteRef.current || !["explore", "battle"].includes(quest.phase)) return;
+    if (field === "questActions" && (myAction || quest.phase !== "battle")) return;
+    if (field === "questVotes" && quest.phase !== "explore") return;
+    if (field === "questRoles" && myAction) return;
+    const requestScope = actionScope;
+    questWriteRef.current = requestScope;
+    setQuestSyncError("");
     setIsSubmitting(true);
     try {
       const sessionRef = doc(db, "artifacts", targetAppId, "public", "data", "sessions", activeSessionCode);
-      await updateDoc(sessionRef, { [`escapeRoomState.teamProgress.All.${field}.${user.uid}`]: value });
+      const updates = { [`escapeRoomState.teamProgress.All.${field}.${user.uid}`]: value };
+      if (field === "questVotes" && quest.actionSchema === 1) updates[`escapeRoomState.teamProgress.All.questVoteTurns.${user.uid}`] = turnKey;
+      await updateDoc(sessionRef, updates);
+      if (currentScopeRef.current === requestScope && field === "questActions") setLocalAction({ scope: requestScope, value });
       playSound?.("click");
     } catch (error) {
       warnLog("Concept Quest action failed:", error);
+      if (currentScopeRef.current === requestScope) setQuestSyncError(tr("choice_sync_failed", "Your choice could not be saved. Try again when the connection returns."));
     } finally {
-      setIsSubmitting(false);
+      if (questWriteRef.current === requestScope) {
+        questWriteRef.current = "";
+        setIsSubmitting(false);
+      }
     }
   };
   const currentEnemy = currentRoom?.enemy;
@@ -2074,21 +2113,87 @@ const StudentConceptQuestOverlay = React.memo(({ sessionData, user, activeSessio
   const partyHpPercent = Math.round(quest.party.hp / quest.party.maxHp * 100);
   const enemyHpPercent = currentEnemy ? Math.round(currentEnemy.hp / currentEnemy.maxHp * 100) : 0;
   const debrief = engine.createDebrief?.(quest);
-  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] overflow-auto bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-white", role: "region", "aria-labelledby": "concept-quest-title" }, /* @__PURE__ */ React.createElement("header", { className: "sticky top-0 z-20 border-b border-indigo-400/30 bg-slate-950/95 p-3 backdrop-blur" }, /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "concept-quest-title", className: "text-xl font-black" }, "\u{1F5FA}\uFE0F ", quest.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, tr("turn_room", "Turn {turn} \xB7 {room}", { turn: quest.turn, room: currentRoom?.name || "" }))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-3 text-sm font-bold", "aria-label": tr("party_health_aria", "Party health {current} of {maximum}", { current: quest.party.hp, maximum: quest.party.maxHp }) }, /* @__PURE__ */ React.createElement("span", null, "\u2764\uFE0F ", quest.party.hp, "/", quest.party.maxHp), /* @__PURE__ */ React.createElement("span", null, "\u{1F6E1}\uFE0F ", quest.party.shield || 0), /* @__PURE__ */ React.createElement("span", null, "\u2728 ", quest.party.xp || 0, " XP"), /* @__PURE__ */ React.createElement("span", null, "\u{1F537} ", (quest.sigils || []).length, "/", quest.sigilsRequired || 3))), /* @__PURE__ */ React.createElement("div", { className: "mx-auto mt-2 h-2 max-w-6xl overflow-hidden rounded-full bg-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-emerald-500 transition-all motion-reduce:transition-none", style: { width: `${partyHpPercent}%` } }))), /* @__PURE__ */ React.createElement("main", { className: "mx-auto grid max-w-6xl gap-5 p-4 lg:grid-cols-[1.25fr_.75fr]" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-indigo-400/30 bg-slate-900/80 p-4", "aria-labelledby": "quest-map-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "quest-map-heading", className: "mb-3 text-lg font-black" }, tr("cooperative_map", "Cooperative map")), /* @__PURE__ */ React.createElement("div", { className: "relative min-h-[360px] rounded-xl border border-slate-700 bg-slate-950/70", "aria-label": tr("map_aria", "Eight-room game map") }, rooms.map((room) => {
+  const neededSigils = engine.requiredSigils(quest);
+  return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] overflow-auto bg-gradient-to-br from-slate-950 via-indigo-950 to-purple-950 text-white", role: "region", "aria-labelledby": "concept-quest-title" }, questSyncError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "m-3 rounded-lg bg-red-950 p-3 text-red-100" }, questSyncError), escapeState.isPaused && /* @__PURE__ */ React.createElement("div", { ref: pauseFocusRef, tabIndex: -1, role: "status", className: "sticky top-0 z-30 border-b border-amber-300 bg-amber-100 p-3 text-center font-bold text-amber-900" }, tr("paused_notice", "Quest paused. Your choices are saved while the teacher prepares the next step.")), /* @__PURE__ */ React.createElement("header", { className: "sticky top-0 z-20 border-b border-indigo-400/30 bg-slate-950/95 p-3 backdrop-blur" }, /* @__PURE__ */ React.createElement("div", { className: "mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { id: "concept-quest-title", className: "text-xl font-black" }, "\u{1F5FA}\uFE0F ", quest.title), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-indigo-200" }, tr("turn_room", "Turn {turn} \xB7 {room}", { turn: quest.turn, room: currentRoom?.name || "" }))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-3 text-sm font-bold", "aria-label": tr("party_health_aria", "Party health {current} of {maximum}", { current: quest.party.hp, maximum: quest.party.maxHp }) }, /* @__PURE__ */ React.createElement("span", null, "\u2764\uFE0F ", quest.party.hp, "/", quest.party.maxHp), /* @__PURE__ */ React.createElement("span", null, "\u{1F6E1}\uFE0F ", quest.party.shield || 0), /* @__PURE__ */ React.createElement("span", null, "\u2728 ", quest.party.xp || 0, " XP"), /* @__PURE__ */ React.createElement("span", null, "\u{1F537} ", (quest.sigils || []).length, "/", neededSigils))), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": tr("party_hp", "Party HP"), "aria-valuemin": 0, "aria-valuemax": quest.party.maxHp, "aria-valuenow": quest.party.hp, className: "mx-auto mt-2 h-2 max-w-6xl overflow-hidden rounded-full bg-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-emerald-500 transition-all motion-reduce:transition-none", style: { width: `${partyHpPercent}%` } }))), /* @__PURE__ */ React.createElement("main", { className: "mx-auto grid max-w-6xl gap-5 p-4 lg:grid-cols-[1.25fr_.75fr]" }, /* @__PURE__ */ React.createElement("section", { className: "rounded-2xl border border-indigo-400/30 bg-slate-900/80 p-4", "aria-labelledby": "quest-map-heading" }, /* @__PURE__ */ React.createElement("h3", { id: "quest-map-heading", className: "mb-3 text-lg font-black" }, tr("cooperative_map", "Cooperative map")), /* @__PURE__ */ React.createElement("div", { className: "relative grid grid-cols-2 gap-2 rounded-xl border border-slate-700 bg-slate-950/70 p-2 sm:block sm:h-[360px] sm:p-0", "aria-label": tr("map_aria", "Eight-room game map") }, /* @__PURE__ */ React.createElement("svg", { "aria-hidden": "true", className: "pointer-events-none absolute inset-0 hidden h-full w-full sm:block", viewBox: "0 0 100 100", preserveAspectRatio: "none" }, rooms.flatMap((room) => (room.neighbors || []).filter((id) => id > room.id).map((id) => {
+    const other = rooms.find((entry) => entry.id === id);
+    return other ? /* @__PURE__ */ React.createElement("line", { key: room.id + id, x1: room.x, y1: room.y, x2: other.x, y2: other.y, stroke: "#64748b", strokeWidth: "0.5" }) : null;
+  }))), rooms.map((room) => {
     const isCurrent = room.id === quest.currentRoomId;
     const isVisited = (quest.visited || []).includes(room.id);
     const isAdjacent = (currentRoom?.neighbors || []).includes(room.id);
-    const isLocked = room.kind === "boss" && (quest.sigils || []).length < (quest.sigilsRequired || 3);
+    const isLocked = room.kind === "boss" && (quest.sigils || []).length < neededSigils;
     const lockedSuffix = isLocked ? tr("room_locked_suffix", ", locked until more concept sigils are earned") : "";
     const currentSuffix = isCurrent ? tr("room_current_suffix", ", current room") : "";
-    return /* @__PURE__ */ React.createElement("button", { key: room.id, type: "button", disabled: !isAdjacent || isLocked || quest.phase !== "explore" || escapeState.isPaused || isSubmitting, onClick: () => writeChoice("questVotes", room.id), style: { left: `${room.x}%`, top: `${room.y}%`, transform: "translate(-50%, -50%)" }, className: `absolute min-h-14 w-24 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? "border-yellow-300 bg-yellow-500 text-slate-950" : isAdjacent && !isLocked ? "border-cyan-300 bg-indigo-800 hover:bg-indigo-700" : isVisited ? "border-emerald-500 bg-slate-800" : "border-slate-600 bg-slate-900 text-slate-300"} disabled:cursor-default`, "aria-current": isCurrent ? "location" : void 0, "aria-label": tr("room_aria", "{name}, {kind}{locked}{current}", { name: room.name, kind: tr(`room_kind_${room.kind}`, room.kind), locked: lockedSuffix, current: currentSuffix }) }, /* @__PURE__ */ React.createElement("span", { className: "block text-xl", "aria-hidden": "true" }, isLocked ? "\u{1F512}" : room.emoji), room.name);
-  })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl bg-indigo-950/60 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, currentRoom?.emoji, " ", currentRoom?.name), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-100" }, tr("concept_label", "Concept: {concept}", { concept: currentRoom?.concept || "" })), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-sm font-bold" }, tr("choose_role", "Choose a party role")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, (quest.roles || engine.ROLES || []).map((role) => /* @__PURE__ */ React.createElement("button", { key: role.id, type: "button", onClick: () => writeChoice("questRoles", role.id), "aria-pressed": myRole === role.id, className: `min-h-14 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${myRole === role.id ? "border-emerald-300 bg-emerald-900" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("strong", null, role.emoji, " ", gameLabel(role, "role")), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-slate-300" }, gameLabel(role, "role", "description")))))), quest.phase === "explore" && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-sm" }, tr("vote_instruction", "Vote for a connected room. Earn {count} concept sigils to unlock the Mastery Gate.", { count: quest.sigilsRequired || 3 })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, adjacent.map((room) => {
-    const locked = room.kind === "boss" && (quest.sigils || []).length < (quest.sigilsRequired || 3);
+    return /* @__PURE__ */ React.createElement("button", { key: room.id, type: "button", disabled: !isAdjacent || isLocked || quest.phase !== "explore" || escapeState.isPaused || isSubmitting, onClick: () => writeChoice("questVotes", room.id), style: { left: `clamp(3.5rem, ${room.x}%, calc(100% - 3.5rem))`, top: `${room.y}%` }, className: `min-h-20 min-w-0 break-words sm:absolute sm:min-h-14 sm:w-24 sm:-translate-x-1/2 sm:-translate-y-1/2 rounded-xl border-2 p-1 text-center text-[11px] font-bold focus:outline-none focus:ring-4 focus:ring-yellow-300 ${isCurrent ? "border-yellow-300 bg-yellow-500 text-slate-900" : isAdjacent && !isLocked ? "border-cyan-300 bg-indigo-800 hover:bg-indigo-700" : isVisited ? "border-emerald-500 bg-slate-800" : "border-slate-600 bg-slate-900 text-slate-300"} disabled:cursor-default`, "aria-pressed": myVote === room.id, "aria-current": isCurrent ? "location" : void 0, "aria-label": tr("room_aria", "{name}, {kind}{locked}{current}", { name: room.name, kind: tr(`room_kind_${room.kind}`, room.kind), locked: lockedSuffix, current: currentSuffix }) }, /* @__PURE__ */ React.createElement("span", { className: "block text-xl", "aria-hidden": "true" }, isLocked ? "\u{1F512}" : room.emoji), room.name);
+  })), /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-xl bg-indigo-950/60 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, currentRoom?.emoji, " ", currentRoom?.name), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-100" }, tr("concept_label", "Concept: {concept}", { concept: currentRoom?.concept || "" })), /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-sm font-bold" }, tr("choose_role", "Choose a party role")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, (quest.roles || engine.ROLES || []).map((role) => /* @__PURE__ */ React.createElement("button", { key: role.id, type: "button", disabled: !!myAction || isSubmitting || escapeState.isPaused || !["explore", "battle"].includes(quest.phase), onClick: () => {
+    setAbilityId(role.abilityId);
+    writeChoice("questRoles", role.id);
+  }, "aria-pressed": myRole === role.id, className: `min-h-14 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${myRole === role.id ? "border-emerald-300 bg-emerald-900" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("strong", null, role.emoji, " ", gameLabel(role, "role")), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-slate-300" }, gameLabel(role, "role", "description")))))), quest.phase === "explore" && /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, /* @__PURE__ */ React.createElement("p", { className: "mb-2 text-sm" }, tr("vote_instruction", "Vote for a connected room. Earn {count} concept sigils to unlock the Mastery Gate.", { count: neededSigils })), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, adjacent.map((room) => {
+    const locked = room.kind === "boss" && (quest.sigils || []).length < neededSigils;
     return /* @__PURE__ */ React.createElement("button", { key: room.id, type: "button", disabled: isSubmitting || escapeState.isPaused || locked, onClick: () => writeChoice("questVotes", room.id), className: `min-h-11 rounded-lg px-3 py-2 text-sm font-bold focus:ring-4 focus:ring-yellow-300 disabled:opacity-50 ${myVote === room.id ? "bg-yellow-400 text-slate-950" : "bg-indigo-700 hover:bg-indigo-600"}` }, locked ? "\u{1F512}" : room.emoji, " ", room.name);
-  })), myVote && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm text-yellow-200" }, tr("vote_recorded", "Your vote is recorded."))))), /* @__PURE__ */ React.createElement("section", { className: "space-y-4", "aria-label": tr("current_encounter_aria", "Current encounter") }, quest.activeEvent && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-amber-300 bg-amber-950/70 p-4", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase text-amber-300" }, tr("teacher_event", "Teacher GM event")), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black" }, quest.activeEvent.title), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm" }, quest.activeEvent.description)), quest.lastRound && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-cyan-400/40 bg-cyan-950/60 p-4", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, tr("round_recap", "Round recap: {correct}/{total} checks succeeded", { correct: quest.lastRound.correct, total: quest.lastRound.total })), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm" }, tr("damage_recap", "The party dealt {damage} damage and took {incoming}.", { damage: quest.lastRound.damage, incoming: quest.lastRound.incoming })), quest.lastRound.combo && /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-bold text-yellow-200" }, "\u26A1 ", tr("combo_full", "Concept Combo! Three different abilities worked together.")), quest.lastRound.synergyCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-emerald-200" }, tr("role_synergies_activated", "{count} role synergies activated.", { count: quest.lastRound.synergyCount })), quest.lastRound.assistedCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-sky-200" }, "\u{1F91D} ", tr("peer_assists_activated", "{count} peer assists activated.", { count: quest.lastRound.assistedCount })), quest.lastRound.encounterRule && /* @__PURE__ */ React.createElement("p", { className: "mt-1 rounded-lg bg-slate-900/60 p-2 text-sm text-cyan-100" }, quest.lastRound.encounterRule), /* @__PURE__ */ React.createElement("details", { className: "mt-2 text-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold" }, tr("review_concept", "Review the concept")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-cyan-100" }, quest.lastRound.explanation))), quest.phase === "battle" && currentEnemy && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-fuchsia-400/40 bg-slate-900 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-6xl", "aria-hidden": "true" }, currentEnemy.emoji), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black" }, currentEnemy.name), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-fuchsia-200" }, tr("misconception_about", "A misconception about {concept}", { concept: currentRoom.concept })), currentRoom.kind === "puzzle" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-cyan-200" }, tr("reasoning_lock_student", "Reasoning Lock: reach two-thirds class consensus for bonus damage.")), currentRoom.kind === "boss" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-yellow-200" }, tr("mastery_barrier_student", "Mastery Barrier: reach 60% class accuracy to break through."))), /* @__PURE__ */ React.createElement("div", { className: "my-3 h-3 overflow-hidden rounded-full bg-slate-700", "aria-label": tr("enemy_health_aria", "Enemy health {current} of {maximum}", { current: currentEnemy.hp, maximum: currentEnemy.maxHp }) }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-fuchsia-500", style: { width: `${enemyHpPercent}%` } })), /* @__PURE__ */ React.createElement("fieldset", { disabled: !!myAction || isSubmitting || escapeState.isPaused, className: "space-y-3" }, /* @__PURE__ */ React.createElement("legend", { className: "font-bold" }, currentRoom.challenge.prompt), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, (quest.abilities || []).map((ability) => /* @__PURE__ */ React.createElement("button", { type: "button", key: ability.id, onClick: () => setAbilityId(ability.id), "aria-pressed": abilityId === ability.id, className: `min-h-16 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${abilityId === ability.id ? "border-cyan-300 bg-cyan-900" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, ability.emoji, " ", gameLabel(ability, "ability")), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-slate-300" }, gameLabel(ability, "ability", "description"))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, currentRoom.challenge.options.map((option, index) => /* @__PURE__ */ React.createElement("label", { key: index, className: `flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm ${answerIndex === index ? "border-yellow-300 bg-yellow-950" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "concept-quest-answer", checked: answerIndex === index, onChange: () => setAnswerIndex(index) }), option))), peerRoster.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-sky-500/40 bg-sky-950/50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-sky-100" }, tr("support_teammate", "Support a teammate")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-200" }, tr("support_optional", "Optional: a correct response can help one classmate this turn.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-1" }, (quest.supports || engine.SUPPORTS || []).map((support) => /* @__PURE__ */ React.createElement("button", { key: support.id, type: "button", onClick: () => setSupportId(support.id), "aria-pressed": supportId === support.id, className: `min-h-11 rounded-lg border p-1 text-xs font-bold ${supportId === support.id ? "border-sky-300 bg-sky-800" : "border-slate-600 bg-slate-800"}` }, support.emoji, " ", gameLabel(support, "support")))), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs font-bold text-sky-100" }, tr("teammate", "Teammate"), /* @__PURE__ */ React.createElement("select", { value: supportTargetUid, onChange: (event) => setSupportTargetUid(event.target.value), className: "mt-1 min-h-11 w-full rounded-lg border border-sky-400 bg-slate-900 p-2 text-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("no_assist", "No assist this turn")), peerRoster.map((peer) => /* @__PURE__ */ React.createElement("option", { key: peer.uid, value: peer.uid }, peer.name || tr("classmate", "Classmate")))))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => answerIndex != null && writeChoice("questActions", { abilityId, roleId: myRole || "", answerIndex, submittedAt: Date.now(), ...supportTargetUid ? { supportId, supportTargetUid } : {} }), disabled: answerIndex == null, className: "min-h-12 w-full rounded-xl bg-emerald-600 px-4 py-2 font-black hover:bg-emerald-500 disabled:opacity-50" }, tr("commit_turn", "Commit turn"))), myAction && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-3 rounded-lg bg-emerald-950 p-2 text-center text-sm text-emerald-200" }, tr("committed_notice", "Turn committed. Discuss your reasoning while the co-GM resolves the round."))), quest.phase === "complete" && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-yellow-300 bg-emerald-950 p-6 text-center", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-6xl" }, "\u{1F3C6}"), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black" }, tr("gate_cleared", "Mastery Gate cleared!")), /* @__PURE__ */ React.createElement("p", null, tr("class_won", "The class won by combining its ideas.")), debrief && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.accuracy, "%"), tr("accuracy", "Accuracy")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.combos), tr("combos", "Combos")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.roleSynergies), tr("role_synergies", "Role synergies")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.peerAssists), tr("peer_assists", "Peer assists")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.puzzlesSolved), tr("puzzles", "Puzzles")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.rounds), tr("rounds", "Rounds"))), debrief.strongestConcept && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm text-emerald-100" }, tr("strongest_concept", "Strongest concept: {concept} ({accuracy}%)", { concept: debrief.strongestConcept.concept, accuracy: debrief.strongestConcept.accuracy })))), quest.phase === "defeat" && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-rose-400 bg-rose-950 p-6 text-center", role: "alert" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black" }, tr("regroup_title", "The party needs a regroup")), /* @__PURE__ */ React.createElement("p", null, tr("regroup_body", "The teacher can introduce help, an item, or a new challenge\u2014this is not an individual loss."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-700 bg-slate-900 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-black" }, tr("shared_inventory", "Shared inventory")), quest.inventory.length ? /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-2 text-sm" }, quest.inventory.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: `${item.id}-${index}`, className: "rounded-lg bg-slate-800 p-2" }, item.emoji, " ", /* @__PURE__ */ React.createElement("strong", null, item.name), " \u2014 ", item.description))) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-300" }, tr("inventory_empty", "Items awarded or generated by the teacher appear here."))))));
+  })), myVote && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm text-yellow-200" }, tr("vote_recorded", "Your vote is recorded."))))), /* @__PURE__ */ React.createElement("section", { className: `space-y-4 lg:col-start-2 lg:row-start-1 ${quest.phase === "battle" ? "order-first lg:order-none" : ""}`, "aria-label": tr("current_encounter_aria", "Current encounter") }, /* @__PURE__ */ React.createElement("h3", { ref: encounterFocusRef, tabIndex: -1, className: "text-lg font-black focus:outline-none focus:ring-2 focus:ring-yellow-300" }, tr("phase_" + quest.phase, quest.phase === "battle" ? "Choose your action" : quest.phase === "explore" ? "Choose a path together" : quest.phase === "defeat" ? "Regroup with your teacher" : "Quest complete")), isSubmitting && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-sm text-cyan-200" }, tr("saving_choice", "Saving your choice\u2026")), quest.activeEvent && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-amber-300 bg-amber-950/70 p-4", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase text-amber-300" }, tr("teacher_event", "Teacher GM event")), /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-black" }, quest.activeEvent.title), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm" }, quest.activeEvent.description)), quest.lastRound && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-cyan-400/40 bg-cyan-950/60 p-4", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, tr("round_recap", "Round recap: {correct}/{total} checks succeeded", { correct: quest.lastRound.correct, total: quest.lastRound.total })), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm" }, tr("damage_recap", "The party dealt {damage} damage and took {incoming}.", { damage: quest.lastRound.damage, incoming: quest.lastRound.incoming })), quest.lastRound.combo && /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-bold text-yellow-200" }, "\u26A1 ", tr("combo_full", "Concept Combo! Three different abilities worked together.")), quest.lastRound.synergyCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-emerald-200" }, tr("role_synergies_activated", "{count} role synergies activated.", { count: quest.lastRound.synergyCount })), quest.lastRound.assistedCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-sky-200" }, "\u{1F91D} ", tr("peer_assists_activated", "{count} peer assists activated.", { count: quest.lastRound.assistedCount })), quest.lastRound.encounterRule && /* @__PURE__ */ React.createElement("p", { className: "mt-1 rounded-lg bg-slate-900/60 p-2 text-sm text-cyan-100" }, quest.lastRound.encounterRule), /* @__PURE__ */ React.createElement("details", { className: "mt-2 text-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold" }, tr("review_concept", "Review the concept")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-bold text-cyan-100" }, quest.lastRound.prompt), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-cyan-100" }, quest.lastRound.explanation))), quest.phase === "battle" && currentEnemy && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-fuchsia-400/40 bg-slate-900 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-6xl", "aria-hidden": "true" }, currentEnemy.emoji), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black" }, currentEnemy.name), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-fuchsia-200" }, tr("misconception_about", "A misconception about {concept}", { concept: currentRoom.concept })), currentRoom.kind === "puzzle" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-cyan-200" }, tr("reasoning_lock_student", "Reasoning Lock: reach two-thirds class consensus for bonus damage.")), currentRoom.kind === "boss" && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-yellow-200" }, tr("mastery_barrier_student", "Mastery Barrier: reach 60% class accuracy to break through."))), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-valuemin": 0, "aria-valuemax": currentEnemy.maxHp, "aria-valuenow": currentEnemy.hp, className: "my-3 h-3 overflow-hidden rounded-full bg-slate-700", "aria-label": tr("enemy_health_aria", "Enemy health {current} of {maximum}", { current: currentEnemy.hp, maximum: currentEnemy.maxHp }) }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-fuchsia-500", style: { width: `${enemyHpPercent}%` } })), /* @__PURE__ */ React.createElement("fieldset", { disabled: !!myAction || isSubmitting || escapeState.isPaused, className: "space-y-3" }, /* @__PURE__ */ React.createElement("legend", { className: "font-bold" }, currentRoom.challenge.prompt), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, (quest.abilities || []).map((ability) => /* @__PURE__ */ React.createElement("button", { type: "button", key: ability.id, onClick: () => setAbilityId(ability.id), "aria-pressed": abilityId === ability.id, className: `min-h-16 rounded-lg border p-2 text-left text-xs focus:ring-4 focus:ring-yellow-300 ${abilityId === ability.id ? "border-cyan-300 bg-cyan-900" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("span", { className: "font-black" }, ability.emoji, " ", gameLabel(ability, "ability")), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-slate-300" }, gameLabel(ability, "ability", "description"))))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, currentRoom.challenge.options.map((option, index) => /* @__PURE__ */ React.createElement("label", { key: index, className: `flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border p-2 text-sm ${answerIndex === index ? "border-yellow-300 bg-yellow-950" : "border-slate-600 bg-slate-800"}` }, /* @__PURE__ */ React.createElement("input", { type: "radio", name: "concept-quest-answer", checked: answerIndex === index, onChange: () => setAnswerIndex(index) }), option))), peerRoster.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "rounded-xl border border-sky-500/40 bg-sky-950/50 p-3" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold text-sky-100" }, tr("support_teammate", "Support a teammate")), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-sky-200" }, tr("support_optional", "Optional: a correct response can help one classmate this turn.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid grid-cols-3 gap-1" }, (quest.supports || engine.SUPPORTS || []).map((support) => /* @__PURE__ */ React.createElement("button", { key: support.id, type: "button", onClick: () => setSupportId(support.id), "aria-pressed": supportId === support.id, className: `min-h-11 rounded-lg border p-1 text-xs font-bold ${supportId === support.id ? "border-sky-300 bg-sky-800" : "border-slate-600 bg-slate-800"}` }, support.emoji, " ", gameLabel(support, "support")))), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs font-bold text-sky-100" }, tr("teammate", "Teammate"), /* @__PURE__ */ React.createElement("select", { value: supportTargetUid, onChange: (event) => setSupportTargetUid(event.target.value), className: "mt-1 min-h-11 w-full rounded-lg border border-sky-400 bg-slate-900 p-2 text-white" }, /* @__PURE__ */ React.createElement("option", { value: "" }, tr("no_assist", "No assist this turn")), peerRoster.map((peer) => /* @__PURE__ */ React.createElement("option", { key: peer.uid, value: peer.uid }, peer.name || tr("classmate", "Classmate")))))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => answerIndex != null && writeChoice("questActions", { abilityId, roleId: myRole || "", answerIndex, submittedAt: Date.now(), ...quest.actionSchema === 1 ? { turnKey } : {}, ...supportTargetUid ? { supportId, supportTargetUid } : {} }), disabled: answerIndex == null, className: "min-h-12 w-full rounded-xl bg-emerald-600 px-4 py-2 font-black hover:bg-emerald-500 disabled:opacity-50" }, tr("commit_turn", "Commit turn"))), myAction && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-3 rounded-lg bg-emerald-950 p-2 text-center text-sm text-emerald-200" }, tr("committed_notice", "Turn committed. Discuss your reasoning while the co-GM resolves the round."))), quest.phase === "complete" && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-yellow-300 bg-emerald-950 p-6 text-center", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-6xl" }, "\u{1F3C6}"), /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black" }, tr("gate_cleared", "Mastery Gate cleared!")), /* @__PURE__ */ React.createElement("p", null, tr("class_won", "The class won by combining its ideas.")), debrief && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.accuracy, "%"), tr("accuracy", "Accuracy")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.combos), tr("combos", "Combos")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.roleSynergies), tr("role_synergies", "Role synergies")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.peerAssists), tr("peer_assists", "Peer assists")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.puzzlesSolved), tr("puzzles", "Puzzles")), /* @__PURE__ */ React.createElement("span", { className: "rounded-lg bg-emerald-900 p-2" }, /* @__PURE__ */ React.createElement("strong", { className: "block text-xl" }, debrief.rounds), tr("rounds", "Rounds"))), debrief.strongestConcept && /* @__PURE__ */ React.createElement("p", { className: "mt-3 text-sm text-emerald-100" }, tr("strongest_concept", "Strongest concept: {concept} ({accuracy}%)", { concept: debrief.strongestConcept.concept, accuracy: debrief.strongestConcept.accuracy })))), quest.phase === "defeat" && /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border-2 border-rose-400 bg-rose-950 p-6 text-center", role: "alert" }, /* @__PURE__ */ React.createElement("h3", { className: "text-2xl font-black" }, tr("regroup_title", "The party needs a regroup")), /* @__PURE__ */ React.createElement("p", null, tr("regroup_body", "The teacher can introduce help, an item, or a new challenge\u2014this is not an individual loss."))), /* @__PURE__ */ React.createElement("div", { className: "rounded-2xl border border-slate-700 bg-slate-900 p-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-black" }, tr("shared_inventory", "Shared inventory")), quest.inventory.length ? /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-2 text-sm" }, quest.inventory.map((item, index) => /* @__PURE__ */ React.createElement("li", { key: `${item.id}-${index}`, className: "rounded-lg bg-slate-800 p-2" }, item.emoji, " ", /* @__PURE__ */ React.createElement("strong", null, item.name), " \u2014 ", item.description))) : /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm text-slate-300" }, tr("inventory_empty", "Items awarded or generated by the teacher appear here."))))));
 });
+function alloLiveEscapeProgress(raw = {}, puzzles = []) {
+  const solvedPuzzles = [.../* @__PURE__ */ new Set([...raw.solvedPuzzles || [], ...Object.values(raw.solved || {}).filter((id) => puzzles.some((p) => p.id === id))])];
+  if (raw.progressVersion !== 2) return { ...raw, solvedPuzzles };
+  const maxLives = Number.isFinite(raw.maxLives) ? raw.maxLives : 3;
+  const wrongAttempts = Object.keys(raw.misses || {}).length;
+  const lives = maxLives >= 99 ? maxLives : Math.max(0, maxLives - wrongAttempts);
+  return {
+    ...raw,
+    solvedPuzzles,
+    maxLives,
+    lives,
+    wrongAttempts,
+    streak: Object.values(raw.solvedAt || {}).filter((at) => at > Math.max(0, ...Object.values(raw.misses || {}).filter(Number.isFinite), ...Object.values(raw.hintedAt || {}).filter(Number.isFinite))).length,
+    hintsRemaining: Math.max(0, (raw.maxHints ?? 3) - Object.values(raw.revealedHints || {}).filter(Boolean).length),
+    isGameOver: maxLives < 99 && lives <= 0,
+    isEscaped: puzzles.length > 0 && puzzles.every((p) => solvedPuzzles.includes(p.id))
+  };
+}
+function alloLiveEscapeSeconds(state, now = Date.now()) {
+  if (state?.isGameOver) return 0;
+  if (!state?.isPaused && Number.isFinite(state?.endsAt)) return Math.max(0, Math.ceil((state.endsAt - now) / 1e3));
+  return Math.max(0, Number(state?.timeRemaining) || 0);
+}
+function useLiveEscapeSeconds(state) {
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    setNow(Date.now());
+    if (!state?.isActive || state.isPaused || state.isGameOver || !Number.isFinite(state.endsAt)) return;
+    const timer = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(timer);
+  }, [state?.isActive, state?.isPaused, state?.isGameOver, state?.endsAt]);
+  return alloLiveEscapeSeconds(state, now);
+}
+function alloLiveEscapeAnswer(puzzle, answer, type) {
+  const normalize = (value) => String(value ?? "").normalize("NFC").trim().replace(/\s+/g, " ").toLocaleLowerCase();
+  if (type === "mcq") return Number.isInteger(answer) && answer === puzzle.correctIndex;
+  if (type === "sequence") return Array.isArray(answer) && JSON.stringify(answer) === JSON.stringify(puzzle.correctOrder);
+  if (type === "matching") return Array.isArray(answer) && answer.length === puzzle.pairs?.length && new Set(answer.map((pair) => pair.left)).size === answer.length && new Set(answer.map((pair) => pair.right)).size === answer.length && answer.every((pair) => puzzle.pairs.some((expected) => expected.left === pair.left && expected.right === pair.right));
+  return !!normalize(answer) && [puzzle.answer, ...puzzle.acceptedAnswers || []].some((value) => value != null && normalize(value) === normalize(answer));
+}
+function alloLiveSequenceIndices(puzzle) {
+  const items = puzzle?.items || [];
+  const shuffled = puzzle?.shuffledItems || [];
+  if (shuffled.length === items.length && shuffled.every(Number.isInteger) && new Set(shuffled).size === items.length && shuffled.every((i) => i >= 0 && i < items.length)) return shuffled.slice();
+  const unused = items.map((_, i) => i);
+  const indices = shuffled.map((item) => {
+    const at = unused.findIndex((i) => items[i] === item);
+    return at < 0 ? -1 : unused.splice(at, 1)[0];
+  });
+  return indices.length === items.length && !indices.includes(-1) ? indices : items.map((_, i) => i);
+}
+function alloLiveFieldKey(value) {
+  return encodeURIComponent(String(value)).replace(/\./g, "%2E");
+}
 const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeSessionCode, targetAppId, t, playSound, setIsEscapeTimerRunning }) => {
-  const escapeState = sessionData?.escapeRoomState;
+  const escapeState = sessionData?.escapeRoomState || {};
+  const timeRemaining = useLiveEscapeSeconds(escapeState);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [syncError, setSyncError] = useState("");
+  const submissionRef = useRef(false);
+  const draftsRef = useRef({});
   const [selectedPuzzle, setSelectedPuzzle] = useState(null);
   const [userInput, setUserInput] = useState("");
   const [sequenceOrder, setSequenceOrder] = useState([]);
@@ -2108,11 +2213,24 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
     puzzleDialogRef.current?.querySelector('[data-initial-focus="true"]')?.focus();
   }, [selectedPuzzle]);
   const closePuzzleDialog = () => {
+    const puzzle = (escapeState.puzzles || []).find((p) => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle);
+    if (puzzle) draftsRef.current[puzzle.id] = { input: userInput, sequence: sequenceOrder, pairs: matchingPairs, selected: matchingSelected };
     setSelectedPuzzle(null);
-    window.setTimeout(() => puzzleTriggerRef.current?.focus(), 0);
+    window.setTimeout(() => {
+      if (!puzzleTriggerRef.current?.disabled) puzzleTriggerRef.current?.focus();
+      else escapeMainRef.current?.focus();
+    }, 0);
   };
   const openPuzzleDialog = (event, objectId) => {
     puzzleTriggerRef.current = event.currentTarget;
+    const puzzle = (escapeState.puzzles || []).find((p) => p.linkedObjectId === objectId || p.id === objectId);
+    if (!puzzle || escapeState.isPaused || submissionRef.current) return;
+    const draft = draftsRef.current[puzzle.id] || {};
+    setUserInput(draft.input || "");
+    setSequenceOrder(draft.sequence || alloLiveSequenceIndices(puzzle));
+    setMatchingPairs(draft.pairs || []);
+    setMatchingSelected(draft.selected || null);
+    setSyncError("");
     setSelectedPuzzle(objectId);
   };
   const formatTime = (seconds) => {
@@ -2120,11 +2238,10 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
     const s2 = seconds % 60;
     return `${m.toString().padStart(2, "0")}:${s2.toString().padStart(2, "0")}`;
   };
-  if (!escapeState?.isActive && !escapeState?.isGameOver || !escapeState?.room) return null;
   const isCoopMode = escapeState.isCoopMode || false;
   const isPaused = escapeState.isPaused || false;
   const userTeam = escapeState.teams?.[user?.uid];
-  const teamProgress = escapeState.teamProgress?.[userTeam] || { solvedPuzzles: [] };
+  const teamProgress = alloLiveEscapeProgress(escapeState.teamProgress?.[userTeam], escapeState.puzzles || []);
   const solvedPuzzlesSet = new Set(teamProgress.solvedPuzzles || []);
   const teamMaxLives = Number.isFinite(teamProgress.maxLives) ? teamProgress.maxLives : 3;
   const teamLives = Number.isFinite(teamProgress.lives) ? teamProgress.lives : teamMaxLives;
@@ -2136,8 +2253,8 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
   const allTeams = Object.keys(escapeState.teamProgress || {});
   const puzzles = escapeState.puzzles || [];
   const objects = escapeState.objects || [];
-  const timeRemaining = escapeState.timeRemaining || 0;
   const teamEscaped = teamProgress.isEscaped;
+  const roomTimedOut = !isPaused && timeRemaining <= 0 && Number.isFinite(escapeState.endsAt);
   const teamColors = {
     Red: { bg: "bg-red-500", text: "text-red-500", border: "border-red-500", light: "bg-red-100" },
     Blue: { bg: "bg-blue-500", text: "text-blue-500", border: "border-blue-500", light: "bg-blue-100" },
@@ -2147,15 +2264,18 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
   };
   const myTeamColors = teamColors[userTeam] || teamColors.Blue;
   useEffect(() => {
-    const completedState = escapeState.isGameOver || teamGameOver || teamEscaped;
+    const completedState = escapeState.isGameOver || roomTimedOut || teamGameOver || teamEscaped;
     if (!userTeam || completedState) escapeStateScreenRef.current?.focus();
     else if (isPaused) pauseDialogRef.current?.focus();
-    else if (wasPausedRef.current) escapeMainRef.current?.focus();
+    else if (wasPausedRef.current) {
+      if (puzzleDialogRef.current) puzzleDialogRef.current.querySelector('[data-initial-focus="true"]')?.focus();
+      else escapeMainRef.current?.focus();
+    }
     wasPausedRef.current = isPaused;
-  }, [userTeam, escapeState.isGameOver, teamGameOver, teamEscaped, isPaused]);
+  }, [userTeam, escapeState.isGameOver, roomTimedOut, teamGameOver, teamEscaped, isPaused]);
   useEffect(() => {
     const escapedTeams = allTeams.filter(
-      (team) => escapeState.teamProgress?.[team]?.isEscaped && team !== userTeam
+      (team) => alloLiveEscapeProgress(escapeState.teamProgress?.[team], puzzles).isEscaped && team !== userTeam
     );
     const newEscapes = escapedTeams.filter((t2) => !lastEscapedTeams.includes(t2));
     if (newEscapes.length > 0 && !teamEscaped) {
@@ -2192,85 +2312,101 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       joinTeam();
     }
   }, [escapeState?.isActive, user, activeSessionCode, userTeam, targetAppId, isCoopMode]);
+  useEffect(() => {
+    draftsRef.current = {};
+    setSelectedPuzzle(null);
+    setUserInput("");
+    setSequenceOrder([]);
+    setMatchingPairs([]);
+    setMatchingSelected(null);
+    setSyncError("");
+  }, [activeSessionCode, escapeState.startedAt, userTeam]);
   const handleSubmitAnswer = async (puzzleId, answer, answerType) => {
-    if (!userTeam || !activeSessionCode) return;
+    if (!userTeam || !activeSessionCode || submissionRef.current || isPaused || !escapeState.isActive || escapeState.isGameOver || teamGameOver || teamEscaped || timeRemaining <= 0) return;
     const puzzle = puzzles.find((p) => p.id === puzzleId);
-    if (!puzzle || solvedPuzzlesSet.has(puzzleId)) return;
-    let isCorrect = false;
-    if (answerType === "mcq") {
-      isCorrect = answer === puzzle.correctIndex;
-    } else if (answerType === "sequence") {
-      isCorrect = JSON.stringify(answer) === JSON.stringify(puzzle.correctOrder);
-    } else if (answerType === "cipher" || answerType === "scramble" || answerType === "fillin") {
-      const normalizedUser = answer.toLowerCase().trim();
-      const normalizedAnswer = puzzle.answer.toLowerCase().trim();
-      isCorrect = normalizedUser === normalizedAnswer;
-    } else if (answerType === "matching") {
-      isCorrect = answer.length >= puzzle.pairs.length;
-    }
-    if (isCorrect) {
-      playSound?.("correct");
-      try {
-        const effectiveAppId = targetAppId || appId;
-        const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
-        const newSolvedPuzzles = [...teamProgress.solvedPuzzles || [], puzzleId];
-        const allSolved = newSolvedPuzzles.length >= puzzles.length;
-        const newStreak = teamStreak + 1;
-        await updateDoc(sessionRef, {
-          [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newSolvedPuzzles,
-          [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: allSolved,
-          [`escapeRoomState.teamProgress.${userTeam}.streak`]: newStreak
-        });
-        if (allSolved) {
-          setIsEscapeTimerRunning(false);
+    if (!puzzle || solvedPuzzlesSet.has(puzzleId) || typeof answer === "string" && !answer.trim()) return;
+    const isCorrect = alloLiveEscapeAnswer(puzzle, answer, answerType);
+    submissionRef.current = true;
+    setIsSubmitting(true);
+    setSyncError("");
+    try {
+      if (isCorrect) {
+        playSound?.("correct");
+        try {
+          const effectiveAppId = targetAppId || appId;
+          const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
+          const newSolvedPuzzles = [...teamProgress.solvedPuzzles || [], puzzleId];
+          const allSolved = newSolvedPuzzles.length >= puzzles.length;
+          const newStreak = teamStreak + 1;
+          await updateDoc(sessionRef, teamProgress.progressVersion === 2 ? {
+            [`escapeRoomState.teamProgress.${userTeam}.solved.${alloLiveFieldKey(puzzleId)}`]: puzzleId,
+            [`escapeRoomState.teamProgress.${userTeam}.solvedAt.${alloLiveFieldKey(puzzleId)}`]: Date.now()
+          } : {
+            [`escapeRoomState.teamProgress.${userTeam}.solvedPuzzles`]: newSolvedPuzzles,
+            [`escapeRoomState.teamProgress.${userTeam}.isEscaped`]: allSolved,
+            [`escapeRoomState.teamProgress.${userTeam}.streak`]: newStreak
+          });
+          if (allSolved) {
+            setIsEscapeTimerRunning?.(false);
+          }
+          closePuzzleDialog();
+          setUserInput("");
+          setSequenceOrder([]);
+          setMatchingPairs([]);
+        } catch (e) {
+          throw e;
         }
-        closePuzzleDialog();
-        setUserInput("");
-        setSequenceOrder([]);
-        setMatchingPairs([]);
-      } catch (e) {
-        warnLog("Failed to sync puzzle completion:", e);
+      } else {
+        playSound?.("incorrect");
+        try {
+          const effectiveAppId = targetAppId || appId;
+          const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
+          const newLives = teamMaxLives < 99 ? Math.max(0, teamLives - 1) : teamLives;
+          const isGameOver = newLives <= 0 && teamMaxLives < 99;
+          const missId = alloLiveFieldKey(user?.uid || "student") + "_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8);
+          await updateDoc(sessionRef, teamProgress.progressVersion === 2 ? {
+            [`escapeRoomState.teamProgress.${userTeam}.misses.${missId}`]: Date.now()
+          } : {
+            [`escapeRoomState.teamProgress.${userTeam}.lives`]: newLives,
+            [`escapeRoomState.teamProgress.${userTeam}.maxLives`]: teamMaxLives,
+            [`escapeRoomState.teamProgress.${userTeam}.streak`]: 0,
+            [`escapeRoomState.teamProgress.${userTeam}.wrongAttempts`]: teamWrongAttempts + 1,
+            [`escapeRoomState.teamProgress.${userTeam}.isGameOver`]: isGameOver
+          });
+        } catch (e) {
+          throw e;
+        }
       }
-    } else {
-      playSound?.("incorrect");
-      try {
-        const effectiveAppId = targetAppId || appId;
-        const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
-        const newLives = teamMaxLives < 99 ? Math.max(0, teamLives - 1) : teamLives;
-        const isGameOver = newLives <= 0 && teamMaxLives < 99;
-        await updateDoc(sessionRef, {
-          [`escapeRoomState.teamProgress.${userTeam}.lives`]: newLives,
-          [`escapeRoomState.teamProgress.${userTeam}.maxLives`]: teamMaxLives,
-          [`escapeRoomState.teamProgress.${userTeam}.streak`]: 0,
-          [`escapeRoomState.teamProgress.${userTeam}.wrongAttempts`]: teamWrongAttempts + 1,
-          [`escapeRoomState.teamProgress.${userTeam}.isGameOver`]: isGameOver
-        });
-      } catch (e) {
-        warnLog("Failed to sync life loss:", e);
-      }
+    } catch (error) {
+      warnLog("Live escape room submission failed:", error);
+      setSyncError("Your answer could not be saved. Your work is still here; try submitting again.");
+    } finally {
+      submissionRef.current = false;
+      setIsSubmitting(false);
     }
   };
+  if (!escapeState.isActive && !escapeState.isGameOver || !escapeState.room) return null;
   if (!userTeam) {
     return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-live": "polite", "aria-busy": "true", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-purple-900 via-slate-900 to-indigo-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white" }, /* @__PURE__ */ React.createElement(RefreshCw, { className: "w-12 h-12 animate-spin motion-reduce:animate-none mx-auto mb-4 text-purple-700", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("p", { className: "text-xl font-bold" }, t("escape_room.waiting_host"))));
   }
-  if (escapeState.isGameOver || teamGameOver) {
-    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "alert", "aria-labelledby": "escape-room-game-over-title", "aria-describedby": "escape-room-game-over-description", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse motion-reduce:animate-none" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-game-over-title", className: "text-5xl font-black mb-4 text-red-600" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-game-over-description", className: "text-2xl text-slate-300 mb-6" }, t("escape_room.life_lost")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", teamWrongAttempts))));
+  if ((escapeState.isGameOver || roomTimedOut || teamGameOver) && !teamEscaped) {
+    return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "alert", "aria-labelledby": "escape-room-game-over-title", "aria-describedby": "escape-room-game-over-description", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-red-900 via-slate-900 to-gray-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-pulse motion-reduce:animate-none" }, "\u{1F480}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-game-over-title", className: "text-5xl font-black mb-4 text-red-600" }, t("escape_room.game_over")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-game-over-description", className: "text-2xl text-slate-300 mb-6" }, t((escapeState.isGameOver || roomTimedOut) && !teamGameOver ? "escape_room.time_up" : "escape_room.life_lost")), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200 mb-6" }, t("escape_room.waiting_host")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-4 justify-center text-lg" }, /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.puzzles_remaining"), ": ", puzzles.length - solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "px-4 py-2 bg-slate-800 rounded-lg" }, t("escape_room.wrong_attempts"), ": ", teamWrongAttempts))));
   }
   if (teamEscaped) {
     const isFirstToEscape = allTeams.filter(
-      (team) => escapeState.teamProgress?.[team]?.isEscaped
+      (team) => alloLiveEscapeProgress(escapeState.teamProgress?.[team], puzzles).isEscaped
     ).length === 1;
     return /* @__PURE__ */ React.createElement("div", { ref: escapeStateScreenRef, tabIndex: -1, role: "status", "aria-labelledby": "escape-room-escaped-title", "aria-describedby": "escape-room-escaped-description", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-green-900 via-emerald-900 to-teal-900 flex items-center justify-center focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement(ConfettiEffect, { isActive: showConfetti }), /* @__PURE__ */ React.createElement("div", { className: "text-center text-white animate-in motion-reduce:animate-none zoom-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "text-9xl mb-6 animate-bounce motion-reduce:animate-none" }, isFirstToEscape ? "\u{1F3C6}" : "\u{1F389}"), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-escaped-title", className: "text-5xl font-black mb-4" }, isCoopMode ? t("escape_room.class_escaped") : isFirstToEscape ? t("escape_room.first_escape") : t("escape_room.escaped")), /* @__PURE__ */ React.createElement("p", { id: "escape-room-escaped-description", className: "text-2xl text-green-200" }, isCoopMode ? t("escape_room.everyone_escaped") : t("escape_room.team_escaped", { team: userTeam })), !isCoopMode && /* @__PURE__ */ React.createElement("div", { className: `mt-6 inline-flex items-center gap-2 px-6 py-3 rounded-full ${myTeamColors.bg} text-white font-bold text-xl` }, t("escape_room.your_team"), ": ", userTeam)));
   }
   const currentPuzzle = selectedPuzzle ? puzzles.find((p) => p.linkedObjectId === selectedPuzzle || p.id === selectedPuzzle) : null;
-  return /* @__PURE__ */ React.createElement("div", { ref: escapeMainRef, tabIndex: -1, role: "region", "aria-labelledby": "escape-room-active-title", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-400", size: 24 }), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-active-title", className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-300" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "/", puzzles.length)), teamMaxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: teamMaxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: `text-sm ${i < teamLives ? "text-red-500" : "text-slate-600"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, teamHintsRemaining)), teamStreak >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse motion-reduce:animate-none", "data-help-key": "escape_room_streak" }, "\u{1F525} x", teamStreak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse motion-reduce:animate-none" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "fixed right-4 top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-300 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
-    const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
+  return /* @__PURE__ */ React.createElement("div", { ref: escapeMainRef, tabIndex: -1, role: "region", "aria-labelledby": "escape-room-active-title", className: "fixed top-0 right-0 bottom-0 left-0 z-[9999] bg-gradient-to-br from-slate-900 via-purple-900 to-indigo-900 overflow-auto focus:outline-none focus:ring-4 focus:ring-inset focus:ring-white" }, /* @__PURE__ */ React.createElement("div", { className: "sticky top-0 z-50 bg-slate-900/90 backdrop-blur-sm border-b border-purple-500/30 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "max-w-6xl mx-auto flex items-center justify-between flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-400", size: 24 }), /* @__PURE__ */ React.createElement("h2", { id: "escape-room-active-title", className: "text-white font-bold text-lg" }, escapeState.room?.theme || t("escape_room.title"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center flex-wrap gap-3" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-2 px-3 py-1.5 rounded-full ${myTeamColors.bg} text-white font-bold text-sm`, "data-help-key": "escape_room_team" }, /* @__PURE__ */ React.createElement(Users, { size: 14 }), t(`escape_room.team_${userTeam.toLowerCase()}`, { defaultValue: `${userTeam} Team` })), /* @__PURE__ */ React.createElement("div", { className: "text-white font-mono", "data-help-key": "escape_room_progress" }, /* @__PURE__ */ React.createElement("span", { className: "text-purple-300" }, solvedPuzzlesSet.size), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, "/", puzzles.length)), teamMaxLives < 99 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", role: "img", "aria-label": `${t("escape_room.lives")}: ${teamLives}/${teamMaxLives}`, title: t("escape_room.lives"), "data-help-key": "escape_room_lives" }, Array.from({ length: teamMaxLives }).map((_, i) => /* @__PURE__ */ React.createElement("span", { key: i, "aria-hidden": "true", className: `text-sm ${i < teamLives ? "text-red-500" : "opacity-30 grayscale"}` }, "\u2764\uFE0F"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-slate-700/50", title: t("escape_room.hints_used") }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "text-yellow-400" }), /* @__PURE__ */ React.createElement("span", { className: "text-white text-xs font-bold" }, teamHintsRemaining)), teamStreak >= 3 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 px-2 py-1 rounded-full bg-orange-500/20 text-orange-400 font-bold text-xs animate-pulse motion-reduce:animate-none", "data-help-key": "escape_room_streak" }, "\u{1F525} x", teamStreak), /* @__PURE__ */ React.createElement("div", { className: `px-3 py-1.5 rounded-full font-mono font-bold ${timeRemaining < 60 ? "bg-red-500 text-white animate-pulse motion-reduce:animate-none" : "bg-slate-700 text-white"}`, "data-help-key": "escape_room_timer" }, /* @__PURE__ */ React.createElement(Clock, { size: 14, className: "inline mr-1" }), formatTime(timeRemaining))))), /* @__PURE__ */ React.createElement("div", { className: "relative mx-4 mt-4 lg:fixed lg:right-4 lg:top-24 bg-slate-800/80 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30 z-40", "data-help-key": "escape_room_leaderboard" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-300 uppercase mb-3" }, t("escape_room.live_progress")), allTeams.map((team) => {
+    const progress = alloLiveEscapeProgress(escapeState.teamProgress?.[team], puzzles);
     const solved = (progress.solvedPuzzles || []).length;
     const percent = puzzles.length > 0 ? Math.round(solved / puzzles.length * 100) : 0;
     const colors = teamColors[team] || teamColors.Blue;
     const escaped = progress.isEscaped;
     return /* @__PURE__ */ React.createElement("div", { key: team, className: `mb-2 ${team === userTeam ? "ring-2 ring-white/50 rounded-lg p-1" : ""}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs mb-1" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-slate-400" }, solved, "/", puzzles.length)), /* @__PURE__ */ React.createElement("div", { className: "w-32 h-2 bg-slate-700 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all motion-reduce:transition-none duration-300`, style: { width: `${percent}%` } })), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-xs text-green-700" }, "\u{1F3C6} ", t("escape_room.escaped")));
-  })), /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-6 mt-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-center text-purple-700 mb-6 italic" }, escapeState.room?.description), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" }, objects.map((obj, idx) => {
+  })), /* @__PURE__ */ React.createElement("div", { className: "max-w-4xl mx-auto p-4 sm:p-6 mt-4 lg:pr-40" }, /* @__PURE__ */ React.createElement("p", { className: "text-center text-purple-200 mb-6 italic" }, escapeState.room?.description), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4" }, objects.map((obj, idx) => {
     const puzzle = puzzles.find((p) => p.linkedObjectId === obj.id) || puzzles[idx];
     const isSolved = puzzle && solvedPuzzlesSet.has(puzzle.id);
     return /* @__PURE__ */ React.createElement(
@@ -2290,7 +2426,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       /* @__PURE__ */ React.createElement("span", { className: "text-white text-sm font-bold text-center" }, obj.name),
       isSolved && /* @__PURE__ */ React.createElement(CheckCircle, { className: "text-green-400", size: 20 })
     );
-  }))), currentPuzzle && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
+  }))), currentPuzzle && !isPaused && !solvedPuzzlesSet.has(currentPuzzle.id) && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[10000] bg-black/80 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: puzzleDialogRef,
@@ -2323,16 +2459,23 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
     },
     /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-4" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "text-xs px-2 py-0.5 bg-purple-600 text-white rounded-full uppercase font-bold" }, currentPuzzle.type || "mcq")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-initial-focus": "true", onClick: closePuzzleDialog, "data-help-key": "escape_room_close_btn", className: "min-w-11 min-h-11 inline-flex items-center justify-center text-slate-300 hover:text-white focus:outline-none focus:ring-2 focus:ring-white rounded-full", "aria-label": t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))),
     /* @__PURE__ */ React.createElement("h2", { id: "escape-room-puzzle-question", className: "text-xl text-white font-bold mb-4" }, currentPuzzle.question),
-    currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, teamRevealedHints[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
+    syncError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-3 rounded-lg bg-red-950 p-3 text-red-100" }, syncError),
+    /* @__PURE__ */ React.createElement("fieldset", { disabled: isSubmitting || isPaused, "aria-busy": isSubmitting, className: "min-w-0" }, /* @__PURE__ */ React.createElement("legend", { className: "sr-only" }, t("escape_room.submit_answer")), isSubmitting && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-purple-200 mb-3" }, t("common.saving", { defaultValue: "Saving\u2026" })), currentPuzzle.hint && /* @__PURE__ */ React.createElement("div", { className: "mb-4" }, teamRevealedHints[alloLiveFieldKey(currentPuzzle.id)] || teamRevealedHints[currentPuzzle.id] ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-yellow-500/20 border border-yellow-500/40 rounded-lg text-yellow-200 text-sm animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 14, className: "inline mr-2 text-yellow-400" }), currentPuzzle.hint) : /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
         onClick: async () => {
-          if (teamHintsRemaining <= 0) return;
+          if (teamHintsRemaining <= 0 || submissionRef.current || isPaused || teamRevealedHints[alloLiveFieldKey(currentPuzzle.id)]) return;
+          submissionRef.current = true;
+          setIsSubmitting(true);
+          setSyncError("");
           try {
             const effectiveAppId = targetAppId || appId;
             const sessionRef = doc(db, "artifacts", effectiveAppId, "public", "data", "sessions", activeSessionCode);
-            await updateDoc(sessionRef, {
+            await updateDoc(sessionRef, teamProgress.progressVersion === 2 ? {
+              [`escapeRoomState.teamProgress.${userTeam}.revealedHints.${alloLiveFieldKey(currentPuzzle.id)}`]: true,
+              [`escapeRoomState.teamProgress.${userTeam}.hintedAt.${alloLiveFieldKey(currentPuzzle.id)}`]: Date.now()
+            } : {
               [`escapeRoomState.teamProgress.${userTeam}.hintsRemaining`]: teamHintsRemaining - 1,
               [`escapeRoomState.teamProgress.${userTeam}.revealedHints.${currentPuzzle.id}`]: true,
               [`escapeRoomState.teamProgress.${userTeam}.streak`]: 0
@@ -2340,6 +2483,10 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
             playSound?.("notification");
           } catch (e) {
             warnLog("Failed to use hint:", e);
+            setSyncError("The hint could not be saved. Try again.");
+          } finally {
+            submissionRef.current = false;
+            setIsSubmitting(false);
           }
         },
         disabled: teamHintsRemaining <= 0,
@@ -2353,8 +2500,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       " ",
       t("escape_room.left"),
       ")"
-    )),
-    (!currentPuzzle.type || currentPuzzle.type === "mcq") && currentPuzzle.options && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, currentPuzzle.options.map((opt, idx) => /* @__PURE__ */ React.createElement(
+    )), (!currentPuzzle.type || currentPuzzle.type === "mcq") && currentPuzzle.options && /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, currentPuzzle.options.map((opt, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2365,8 +2511,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       },
       /* @__PURE__ */ React.createElement("span", { className: "inline-block w-8 font-bold text-purple-400" }, String.fromCharCode(65 + idx), "."),
       opt
-    ))),
-    currentPuzzle.type === "cipher" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
+    ))), (currentPuzzle.type === "cipher" || currentPuzzle.type === "riddle") && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.encodedText && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg font-mono text-purple-300 text-center" }, currentPuzzle.encodedText), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.escape_room_enter_answer"),
@@ -2381,13 +2526,13 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       "button",
       {
         type: "button",
+        disabled: !userInput.trim(),
         onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "cipher"),
         "data-help-key": "escape_room_cipher_submit",
         className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.submit_answer")
-    )),
-    currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace("___", userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
+    )), currentPuzzle.type === "fillin" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, currentPuzzle.sentence && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-4 rounded-lg text-white text-center text-lg" }, currentPuzzle.sentence.replace(/_+/g, userInput ? `[${userInput}]` : "______")), currentPuzzle.wordbank && currentPuzzle.wordbank.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "space-y-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-400 text-center uppercase font-bold" }, t("escape_room.select_word") || "Select the correct word:"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, currentPuzzle.wordbank.map((word, idx) => /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2417,14 +2562,13 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
         className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none disabled:opacity-50"
       },
       t("escape_room.submit_answer")
-    )),
-    currentPuzzle.type === "scramble" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, (currentPuzzle.displayLetters || currentPuzzle.scrambledWord?.split("")).map((letter, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "w-10 h-10 flex items-center justify-center bg-purple-700 text-white font-bold rounded-lg text-xl" }, letter))), /* @__PURE__ */ React.createElement(
+    )), currentPuzzle.type === "scramble" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2 justify-center" }, (currentPuzzle.displayLetters || Array.from(currentPuzzle.scrambledWord || "")).map((letter, idx) => /* @__PURE__ */ React.createElement("span", { key: idx, className: "w-10 h-10 flex items-center justify-center bg-purple-700 text-white font-bold rounded-lg text-xl" }, letter))), /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.escape_room_unscramble_placeholder"),
         type: "text",
         value: userInput,
-        onChange: (e) => setUserInput(e.target.value.toUpperCase()),
+        onChange: (e) => setUserInput(e.target.value),
         placeholder: t("escape_room.unscramble_placeholder"),
         "data-help-key": "escape_room_scramble_input",
         className: "w-full p-4 bg-slate-700 text-white rounded-xl border-2 border-slate-600 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 text-center font-mono text-xl uppercase"
@@ -2433,13 +2577,13 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       "button",
       {
         type: "button",
+        disabled: !userInput.trim(),
         onClick: () => handleSubmitAnswer(currentPuzzle.id, userInput, "scramble"),
         "data-help-key": "escape_room_scramble_submit",
         className: "w-full p-4 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.check_word")
-    )),
-    currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${item}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
+    )), currentPuzzle.type === "sequence" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_sequence_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-300 italic mb-2" }, t("escape_room.sequence_instructions")), /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "list", "aria-label": t("escape_room.sequence_list") || "Sequence items to order" }, sequenceOrder.length === 0 ? (currentPuzzle.shuffledItems || currentPuzzle.items || []).map((item, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, item))) : sequenceOrder.map((itemIndex, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", "aria-label": `${t("escape_room.position") || "Position"} ${idx + 1}: ${currentPuzzle.items[itemIndex]}`, className: "flex items-center gap-2 p-3 bg-slate-700 rounded-lg text-white" }, /* @__PURE__ */ React.createElement("span", { className: "w-8 h-8 flex items-center justify-center bg-purple-600 rounded-full font-bold", "aria-hidden": "true" }, idx + 1), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, currentPuzzle.items[itemIndex]), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", role: "group", "aria-label": t("escape_room.reorder_buttons") || "Reorder buttons" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2451,7 +2595,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
           }
         },
         disabled: idx === 0,
-        "aria-label": `${t("escape_room.move_up") || "Move up"}: ${item}`,
+        "aria-label": `${t("escape_room.move_up") || "Move up"}: ${currentPuzzle.items[itemIndex]}`,
         title: t("escape_room.move_up") || "Move up",
         className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
       },
@@ -2468,7 +2612,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
           }
         },
         disabled: idx === sequenceOrder.length - 1,
-        "aria-label": `${t("escape_room.move_down") || "Move down"}: ${item}`,
+        "aria-label": `${t("escape_room.move_down") || "Move down"}: ${currentPuzzle.items[itemIndex]}`,
         title: t("escape_room.move_down") || "Move down",
         className: "w-8 h-8 bg-slate-600 hover:bg-slate-500 text-white rounded disabled:opacity-30 focus:ring-2 focus:ring-purple-400 focus:outline-none"
       },
@@ -2477,7 +2621,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
       "button",
       {
         type: "button",
-        onClick: () => setSequenceOrder(currentPuzzle.shuffledItems || currentPuzzle.items || []),
+        onClick: () => setSequenceOrder(alloLiveSequenceIndices(currentPuzzle)),
         className: "w-full p-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.start_ordering") || "Start Ordering"
@@ -2487,14 +2631,13 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
         type: "button",
         onClick: () => {
           const originalItems = currentPuzzle.items || [];
-          const orderIndices = sequenceOrder.map((item) => originalItems.indexOf(item));
+          const orderIndices = sequenceOrder;
           handleSubmitAnswer(currentPuzzle.id, orderIndices, "sequence");
         },
         className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.check_sequence")
-    )),
-    currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-700 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
+    )), currentPuzzle.type === "matching" && /* @__PURE__ */ React.createElement("div", { className: "space-y-4", "data-help-key": "escape_room_matching_container" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-purple-200 italic mb-2" }, t("escape_room.matching_instructions")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4", role: "group", "aria-label": t("escape_room.matching_columns") || "Matching columns" }, /* @__PURE__ */ React.createElement("div", { className: "space-y-2", role: "group", "aria-label": t("escape_room.left_column") || "Left column options" }, (currentPuzzle.leftColumn || currentPuzzle.pairs?.map((p) => p.left) || []).map((item, idx) => {
       const isMatched = matchingPairs.some((p) => p.left === item);
       const isSelected = matchingSelected?.side === "left" && matchingSelected?.item === item;
       return /* @__PURE__ */ React.createElement(
@@ -2540,7 +2683,10 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
         },
         item
       );
-    }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-green-400" }, "\u2713 ", pair.left, " \u2194 ", pair.right)))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
+    }))), matchingPairs.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 p-3 rounded-lg", role: "list", "aria-label": t("escape_room.matched_pairs") || "Matched pairs" }, /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mb-2", "aria-hidden": "true" }, t("escape_room.matched_pairs")), /* @__PURE__ */ React.createElement("div", { className: "space-y-1" }, matchingPairs.map((pair, idx) => /* @__PURE__ */ React.createElement("div", { key: idx, role: "listitem", className: "text-sm text-slate-100 flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("span", null, pair.left, " \u2194 ", pair.right), /* @__PURE__ */ React.createElement("button", { type: "button", className: "min-h-11 px-3 rounded bg-slate-700", "aria-label": `${t("common.remove", { defaultValue: "Remove" })}: ${pair.left} \u2194 ${pair.right}`, onClick: () => {
+      setMatchingPairs((prev) => prev.filter((_, i) => i !== idx));
+      setMatchingSelected(null);
+    } }, "\xD7"))))), matchingPairs.length >= (currentPuzzle.pairs?.length || 4) && /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -2548,8 +2694,7 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
         className: "w-full p-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none"
       },
       t("escape_room.submit_answer")
-    )),
-    currentPuzzle.hint && /* @__PURE__ */ React.createElement("p", { className: "mt-4 text-purple-400 text-sm italic" }, "\u{1F4A1} ", currentPuzzle.hint)
+    )))
   )), isPaused && /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -2571,8 +2716,34 @@ const ClassicStudentEscapeRoomOverlay = React.memo(({ sessionData, user, activeS
   ), teamEscapeToast && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: "fixed bottom-6 left-1/2 -translate-x-1/2 z-[10002] animate-in motion-reduce:animate-none slide-in-from-bottom duration-300" }, /* @__PURE__ */ React.createElement("div", { className: `flex items-center gap-3 px-6 py-4 rounded-2xl shadow-2xl border-2 ${teamColors[teamEscapeToast]?.border || "border-purple-500"} bg-slate-900` }, /* @__PURE__ */ React.createElement("span", { className: "text-3xl" }, "\u{1F6AA}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-white font-bold" }, t("escape_room.team_escaped", { team: teamEscapeToast })), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 text-sm" }, t("escape_room.hurry_up"))))));
 });
 const StudentEscapeRoomOverlay = React.memo((props) => props.sessionData?.escapeRoomState?.mode === "concept-quest" ? /* @__PURE__ */ React.createElement(StudentConceptQuestOverlay, { ...props }) : /* @__PURE__ */ React.createElement(ClassicStudentEscapeRoomOverlay, { ...props }));
-const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast: addToast2 }) => {
-  const escapeState = sessionData?.escapeRoomState;
+const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessionCode, appId: appId2, t, addToast }) => {
+  const escapeState = sessionData?.escapeRoomState || {};
+  const timeRemaining = useLiveEscapeSeconds(escapeState);
+  const [controlBusy, setControlBusy] = useState(false);
+  const [controlError, setControlError] = useState("");
+  const controlRef = useRef(false);
+  const warningsRef = useRef(/* @__PURE__ */ new Set());
+  useEffect(() => {
+    warningsRef.current.clear();
+  }, [activeSessionCode, escapeState.startedAt]);
+  const writeControl = async (patch) => {
+    if (controlRef.current) return false;
+    controlRef.current = true;
+    setControlBusy(true);
+    setControlError("");
+    try {
+      const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
+      await updateDoc(sessionRef, patch);
+      return true;
+    } catch (error) {
+      warnLog("Live escape room control failed:", error);
+      setControlError("The session could not be updated. Check the connection and try again.");
+      return false;
+    } finally {
+      controlRef.current = false;
+      setControlBusy(false);
+    }
+  };
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const endGameDialogRef = useRef(null);
   const endGameTriggerRef = useRef(null);
@@ -2589,36 +2760,44 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
     setShowEndConfirm(true);
   };
   useEffect(() => {
-    if (!escapeState?.isActive || !activeSessionCode || !appId2) return;
-    if (escapeState.isPaused) return;
-    if (escapeState.timeRemaining <= 0) return;
-    const timer = setInterval(async () => {
-      const newTime = (escapeState.timeRemaining || 0) - 1;
-      if (newTime === 60) {
-        addToast2?.(t("escape_room.one_minute_warning"), "warning");
-      } else if (newTime === 30) {
-        addToast2?.(t("escape_room.thirty_seconds_warning"), "error");
-      }
-      try {
-        const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-        if (newTime <= 0) {
-          await updateDoc(sessionRef, {
-            "escapeRoomState.timeRemaining": 0,
-            "escapeRoomState.isActive": false,
-            "escapeRoomState.isGameOver": true
-          });
-          addToast2?.(t("escape_room.time_up"), "error");
-          clearInterval(timer);
-        } else {
-          await updateDoc(sessionRef, { "escapeRoomState.timeRemaining": newTime });
+    if (!escapeState.isActive || escapeState.isPaused || escapeState.isGameOver || !activeSessionCode || !appId2) return;
+    const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
+    if (!Number.isFinite(escapeState.endsAt)) {
+      updateDoc(sessionRef, { "escapeRoomState.endsAt": Date.now() + Math.max(0, escapeState.timeRemaining || 0) * 1e3 }).catch((error) => {
+        warnLog("Live escape clock failed:", error);
+        setControlError("The timer could not start. Check the connection and use Resume to retry.");
+      });
+      return;
+    }
+    let stopped = false, writing = false;
+    const tick = async () => {
+      const seconds = alloLiveEscapeSeconds(escapeState);
+      [60, 30].forEach((threshold) => {
+        if (seconds > 0 && seconds <= threshold && !warningsRef.current.has(threshold)) {
+          warningsRef.current.add(threshold);
+          addToast?.(t(threshold === 60 ? "escape_room.one_minute_warning" : "escape_room.thirty_seconds_warning"), "warning");
         }
-      } catch (e) {
-        warnLog("Failed to sync timer:", e);
+      });
+      if (seconds > 0 || stopped || writing) return;
+      writing = true;
+      try {
+        await updateDoc(sessionRef, { "escapeRoomState.timeRemaining": 0, "escapeRoomState.isGameOver": true, "escapeRoomState.gameOverReason": "time" });
+        stopped = true;
+        addToast?.(t("escape_room.time_up"), "error");
+      } catch (error) {
+        warnLog("Live escape expiry failed:", error);
+        setControlError("Time has ended. Reconnecting to save the result\u2026");
+      } finally {
+        writing = false;
       }
-    }, 1e3);
-    return () => clearInterval(timer);
-  }, [escapeState?.isActive, escapeState?.isPaused, escapeState?.timeRemaining, activeSessionCode, appId2]);
-  if (!escapeState?.isActive) return null;
+    };
+    tick();
+    const timer = setInterval(tick, 1e3);
+    return () => {
+      stopped = true;
+      clearInterval(timer);
+    };
+  }, [escapeState.isActive, escapeState.isPaused, escapeState.isGameOver, escapeState.endsAt, activeSessionCode, appId2]);
   const isCoopMode = escapeState.isCoopMode || false;
   const isPaused = escapeState.isPaused || false;
   const teamColors = {
@@ -2631,36 +2810,34 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
   const allTeams = Object.keys(escapeState.teamProgress || {});
   const puzzles = escapeState.puzzles || [];
   const totalPuzzles = puzzles.length;
-  const escapedTeams = useMemo(() => allTeams.filter((t2) => escapeState.teamProgress?.[t2]?.isEscaped), [allTeams, escapeState]);
+  const escapedTeams = allTeams.filter((team) => alloLiveEscapeProgress(escapeState.teamProgress?.[team], puzzles).isEscaped);
   const studentsAssigned = Object.keys(escapeState.teams || {}).length;
   const handlePauseToggle = async () => {
-    try {
-      const sessionRef = doc(db, "apps", appId2, "liveSessions", activeSessionCode);
-      await updateDoc(sessionRef, { "escapeRoomState.isPaused": !isPaused });
-    } catch (e) {
-      warnLog("Unhandled error in handlePauseToggle:", e);
-    }
+    if (escapeState.isGameOver) return;
+    const remaining = alloLiveEscapeSeconds(escapeState);
+    await writeControl({
+      "escapeRoomState.isPaused": !isPaused,
+      "escapeRoomState.timeRemaining": remaining,
+      "escapeRoomState.endsAt": isPaused ? Date.now() + remaining * 1e3 : null
+    });
   };
   const handleEndGame = async () => {
-    try {
-      const sessionRef = doc(db, "apps", appId2, "liveSessions", activeSessionCode);
-      await updateDoc(sessionRef, { "escapeRoomState.isActive": false });
-      setShowEndConfirm(false);
-    } catch (e) {
-      warnLog("Unhandled error in handleEndGame:", e);
-    }
+    if (await writeControl({ "escapeRoomState.isActive": false, "escapeRoomState.isGameOver": false, "escapeRoomState.isPaused": false, "escapeRoomState.endsAt": null })) setShowEndConfirm(false);
   };
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60);
     const s2 = seconds % 60;
     return `${m}:${s2.toString().padStart(2, "0")}`;
   };
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 border-2 border-purple-200 shadow-lg mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-600", size: 20 }), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-900" }, escapeState.room?.theme || t("escape_room.title")), isCoopMode && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("escape_room.coop_mode")), isPaused && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none" }, "\u23F8\uFE0F ", t("escape_room.game_paused"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold" }, studentsAssigned, " ", t("escape_room.teams_competing", { count: allTeams.length })), /* @__PURE__ */ React.createElement("span", { className: `px-3 py-1 rounded-full font-mono font-bold text-sm ${escapeState.timeRemaining < 60 ? "bg-red-500 text-white" : "bg-slate-700 text-white"}` }, /* @__PURE__ */ React.createElement(Clock, { size: 12, className: "inline mr-1" }), formatTime(escapeState.timeRemaining || 0)), /* @__PURE__ */ React.createElement(
+  if (!escapeState.isActive && !escapeState.isGameOver) return null;
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-4 border-2 border-purple-200 shadow-lg mb-4" }, controlError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "mb-3 rounded-lg bg-red-100 p-3 text-red-900" }, controlError), escapeState.isGameOver && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 font-bold text-red-800" }, t("escape_room.time_up"), " \xB7 ", t("escape_room.end_game")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-3 mb-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(DoorOpen, { className: "text-purple-600", size: 20 }), /* @__PURE__ */ React.createElement("h3", { className: "font-bold text-purple-900" }, escapeState.room?.theme || t("escape_room.title")), isCoopMode && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-200 text-purple-700 px-2 py-0.5 rounded-full font-bold" }, t("escape_room.coop_mode")), isPaused && /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-yellow-200 text-yellow-700 px-2 py-0.5 rounded-full font-bold animate-pulse motion-reduce:animate-none" }, "\u23F8\uFE0F ", t("escape_room.game_paused"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-bold" }, studentsAssigned, " ", t("escape_room.teams_competing", { count: allTeams.length })), /* @__PURE__ */ React.createElement("span", { className: `px-3 py-1 rounded-full font-mono font-bold text-sm ${timeRemaining < 60 ? "bg-red-500 text-white" : "bg-slate-700 text-white"}` }, /* @__PURE__ */ React.createElement(Clock, { size: 12, className: "inline mr-1" }), formatTime(timeRemaining)), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: handlePauseToggle,
-      className: `px-4 py-2 rounded-full font-bold text-sm transition-colors motion-reduce:transition-none whitespace-nowrap ${isPaused ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-500 hover:bg-yellow-600 text-white"}`
+      disabled: controlBusy || escapeState.isGameOver,
+      "aria-pressed": isPaused,
+      className: `px-4 py-2 rounded-full font-bold text-sm transition-colors motion-reduce:transition-none whitespace-nowrap ${isPaused ? "bg-green-700 hover:bg-green-800 text-white" : "bg-yellow-300 hover:bg-yellow-400 text-slate-950"}`
     },
     isPaused ? "\u25B6\uFE0F " + t("escape_room.resume") : "\u23F8\uFE0F " + t("escape_room.pause")
   ), /* @__PURE__ */ React.createElement(
@@ -2668,18 +2845,19 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
     {
       type: "button",
       onClick: requestEndGame,
+      disabled: controlBusy,
       className: "px-4 py-2 rounded-full font-bold text-sm bg-red-500 hover:bg-red-600 text-white transition-colors motion-reduce:transition-none whitespace-nowrap"
     },
     t("escape_room.end_game")
   ))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-4 gap-3" }, allTeams.map((team) => {
-    const progress = escapeState.teamProgress?.[team] || { solvedPuzzles: [] };
+    const progress = alloLiveEscapeProgress(escapeState.teamProgress?.[team], puzzles);
     const solved = (progress.solvedPuzzles || []).length;
     const percent = totalPuzzles > 0 ? Math.round(solved / totalPuzzles * 100) : 0;
     const colors = teamColors[team] || teamColors.Blue;
     const escaped = progress.isEscaped;
     const memberCount = Object.values(escapeState.teams || {}).filter((t2) => t2 === team).length;
-    return /* @__PURE__ */ React.createElement("div", { key: team, className: `p-3 rounded-xl border-2 ${escaped ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, memberCount, " \u{1F464}")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all motion-reduce:transition-none duration-500`, style: { width: `${percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", totalPuzzles), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-green-600 font-bold" }, "\u{1F3C6} ", t("escape_room.escaped"))));
-  })), escapedTeams.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-800 font-bold" }, "\u{1F389} ", escapedTeams.length === 1 ? t("escape_room.first_escape") + ": " + escapedTeams[0] : t("escape_room.all_teams_done"))), showEndConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
+    return /* @__PURE__ */ React.createElement("div", { key: team, className: `p-3 rounded-xl border-2 ${escaped ? "border-green-400 bg-green-50" : "border-slate-200 bg-white"}` }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("span", { className: `font-bold ${colors.text}` }, team), /* @__PURE__ */ React.createElement("span", { className: "text-xs text-slate-600" }, memberCount, " \u{1F464}")), /* @__PURE__ */ React.createElement("div", { className: "w-full h-3 bg-slate-200 rounded-full overflow-hidden mb-2" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${colors.bg} transition-all motion-reduce:transition-none duration-500`, style: { width: `${percent}%` } })), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between text-xs" }, /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, solved, "/", totalPuzzles), progress.isGameOver && /* @__PURE__ */ React.createElement("span", { className: "text-red-800 font-bold" }, t("escape_room.game_over")), escaped && /* @__PURE__ */ React.createElement("span", { className: "text-green-600 font-bold" }, "\u{1F3C6} ", t("escape_room.escaped"))));
+  })), escapedTeams.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 p-3 bg-green-100 rounded-xl border border-green-300 text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-green-800 font-bold" }, "\u{1F389} ", escapedTeams.length === 1 ? t("escape_room.first_escape") + ": " + escapedTeams[0] : escapedTeams.length === allTeams.filter((team) => Object.values(escapeState.teams || {}).includes(team)).length ? t("escape_room.all_teams_done") : escapedTeams.join(", "))), showEndConfirm && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[9999] bg-black/50 flex items-center justify-center p-4", role: "presentation" }, /* @__PURE__ */ React.createElement(
     "div",
     {
       ref: endGameDialogRef,
@@ -2713,7 +2891,7 @@ const ClassicEscapeRoomTeacherControls = React.memo(({ sessionData, activeSessio
     },
     /* @__PURE__ */ React.createElement("h4", { id: "escape-room-end-game-title", className: "text-lg font-bold text-red-600 mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(X, { className: "text-red-500", size: 20, "aria-hidden": "true" }), t("escape_room.end_game")),
     /* @__PURE__ */ React.createElement("p", { id: "escape-room-end-game-description", className: "text-slate-600 mb-4" }, t("escape_room.end_game_confirm")),
-    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeEndGameDialog, className: "flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndGame, className: "flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("escape_room.end_game")))
+    /* @__PURE__ */ React.createElement("div", { className: "flex gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-safe-default": "true", onClick: closeEndGameDialog, className: "flex-1 min-h-11 px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-indigo-500" }, t("cancel")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndGame, disabled: controlBusy, className: "flex-1 min-h-11 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2" }, t("escape_room.end_game")))
   )));
 });
 const ConceptQuestTeacherControlsLoader = React.memo((props) => {
@@ -2752,13 +2930,40 @@ const EscapeRoomTeacherControls = React.memo((props) => {
   }
   return /* @__PURE__ */ React.createElement(ClassicEscapeRoomTeacherControls, { ...props });
 });
-const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [], callGemini }) => {
+const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, activeSessionCode, appId: appId2, onGenerateImage, onRefineImage, onCreateGroup, onAssignStudent, onSetGroupResource, isPushingResource = {}, onSetGroupLanguage, onSetGroupProfile, onDeleteGroup, onUpdateQuestionRoutingRules, history = [], callGemini, addToast }) => {
   const { t } = useContext(LanguageContext);
   const { quizState, roster } = sessionData;
   const { currentQuestionIndex, phase, responses, responseReceipts, mode, bossStats, teamScores, scoringPolicy } = quizState;
-  const question = generatedContent?.data.questions[currentQuestionIndex];
+  const question = generatedContent?.data?.questions?.[currentQuestionIndex];
+  const [quizBusy, setQuizBusy] = useState(false);
+  const [quizError, setQuizError] = useState("");
+  const quizWriteRef = useRef(false);
+  const completedWriteRef = useRef("");
+  useEffect(() => {
+    completedWriteRef.current = "";
+    setQuizError("");
+  }, [activeSessionCode, quizState.activityId, quizState.roundId, currentQuestionIndex, phase]);
+  const writeQuiz = async (sessionRef, patch) => {
+    const key = patch["quizState.phase"] && patch["quizState.phase"] !== "idle" ? [quizState.roundId, currentQuestionIndex, phase, patch["quizState.phase"], patch["quizState.currentQuestionIndex"], patch["quizState.mode"]].join(":") : JSON.stringify(patch);
+    if (quizWriteRef.current || completedWriteRef.current === key) return false;
+    quizWriteRef.current = true;
+    setQuizBusy(true);
+    setQuizError("");
+    try {
+      await updateDoc(sessionRef, patch);
+      completedWriteRef.current = key;
+      return true;
+    } catch (error) {
+      warnLog("Live quiz control failed:", error);
+      setQuizError("The live quiz could not be updated. Check the connection and try again.");
+      return false;
+    } finally {
+      quizWriteRef.current = false;
+      setQuizBusy(false);
+    }
+  };
   const [showLocalStats, setShowLocalStats] = useState(false);
-  const [bossDifficulty, setBossDifficulty] = useState("normal");
+  const [bossDifficulty, setBossDifficulty] = useState(bossStats?.difficulty || "normal");
   const [bossGmPrompt, setBossGmPrompt] = useState("");
   const [bossGmDraft, setBossGmDraft] = useState(null);
   const [bossGmBusy, setBossGmBusy] = useState(false);
@@ -2888,7 +3093,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const scoredAnsweredCount = scoredResponseUids.length;
   const answeredCount = answeredUidSet.size;
   const unscoredReceiptCount = validReceiptUids.filter((uid) => !Object.prototype.hasOwnProperty.call(responses || {}, uid)).length;
-  const percentage = totalStudents > 0 ? Math.round(answeredCount / totalStudents * 100) : 0;
+  const percentage = totalStudents > 0 ? Math.min(100, Math.round(answeredCount / totalStudents * 100)) : 0;
   const quizLiveAggregators = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.QuizLiveAggregators : null;
   const rawLiveScoringPolicy = scoringPolicy || generatedContent?.data?.scoringPolicy || {};
   const liveScoringPolicy = quizLiveAggregators && typeof quizLiveAggregators.normalizeLiveScoringPolicy === "function" ? quizLiveAggregators.normalizeLiveScoringPolicy(rawLiveScoringPolicy) : {
@@ -3025,9 +3230,10 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handleStartQuestion = async () => {
+    if (quizBusy || quizWriteRef.current || phase === "answering" || !question || ["boss-defeated", "class-defeated", "closed"].includes(phase)) return;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     try {
-      await updateDoc(sessionRef, { "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 });
+      await writeQuiz(sessionRef, { "quizState.roundId": Date.now().toString(36) + Math.random().toString(36).slice(2, 8), "quizState.phase": "answering", "quizState.responses": {}, "quizState.responseReceipts": {}, "quizState.currentQuestionIndex": currentQuestionIndex, "quizState.bossStats.lastDamage": 0 });
     } catch (e) {
       warnLog("Firestore sync failed:", e);
     }
@@ -3090,6 +3296,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handleRevealResults = async () => {
+    if (phase !== "answering" || quizWriteRef.current) return;
     try {
       const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
       let updatePayload = {
@@ -3217,7 +3424,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         });
       }
       try {
-        await updateDoc(sessionRef, updatePayload);
+        await writeQuiz(sessionRef, updatePayload);
       } catch (e) {
         warnLog("Firestore sync failed:", e);
       }
@@ -3226,11 +3433,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handleNextQuestion = async () => {
+    if (phase === "answering" || quizWriteRef.current) return;
     try {
       const nextIdx = currentQuestionIndex + 1;
       if (nextIdx >= generatedContent?.data.questions.length) return;
       const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-      await updateDoc(sessionRef, {
+      await writeQuiz(sessionRef, {
         "quizState.currentQuestionIndex": nextIdx,
         "quizState.phase": "idle",
         "quizState.responses": {},
@@ -3242,11 +3450,12 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     }
   };
   const handlePrevQuestion = async () => {
+    if (phase === "answering" || quizWriteRef.current) return;
     try {
       const prevIdx = currentQuestionIndex - 1;
       if (prevIdx < 0) return;
       const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-      await updateDoc(sessionRef, {
+      await writeQuiz(sessionRef, {
         "quizState.currentQuestionIndex": prevIdx,
         "quizState.phase": "idle",
         "quizState.responses": {},
@@ -3268,28 +3477,21 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     return /* @__PURE__ */ React.createElement("div", { className: "mt-5 w-full max-w-sm mx-auto text-left bg-black/30 rounded-xl p-3 max-h-44 overflow-y-auto" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-widest text-white/70 mb-2" }, t("quiz.boss.debrief_title") || "Battle debrief \u2014 accuracy by question"), log.map((e, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-2 mb-1", title: qText(e.questionIndex) }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white/80 w-7 shrink-0" }, "Q", (e.questionIndex ?? i) + 1), /* @__PURE__ */ React.createElement("div", { className: "flex-1 h-2.5 bg-white/15 rounded-full overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: `h-full ${e.accuracy >= 70 ? "bg-emerald-400" : e.accuracy >= 40 ? "bg-amber-400" : "bg-rose-500"}`, style: { width: `${Math.max(4, e.accuracy)}%` } })), /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold text-white w-9 text-right shrink-0" }, e.accuracy, "%"), log.length > 1 && e === worst && /* @__PURE__ */ React.createElement("span", { className: "text-[9px] font-black text-rose-200 bg-rose-900/60 border border-rose-400/40 rounded px-1 py-0.5 shrink-0", title: t("quiz.boss.debrief_reteach_title") || "Lowest accuracy \u2014 a reteach candidate" }, t("quiz.boss.debrief_reteach") || "reteach?"))));
   };
   const handleEndQuiz = async () => {
-    try {
-      const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-      await updateDoc(sessionRef, {
-        "quizState.isActive": false,
-        "quizState.phase": "closed",
-        "quizState.endedAt": Date.now()
-      });
-      addToast(t("quiz.session_ended_success") || "Session ended successfully.", "success");
-    } catch (err) {
-      warnLog("Quiz end Firestore failed (Canvas sandbox):", err.message);
-      addToast("Could not end the live quiz. Please try again.", "error");
+    const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
+    if (await writeQuiz(sessionRef, { "quizState.isActive": false, "quizState.phase": "closed", "quizState.endedAt": Date.now() })) {
+      addToast?.(t("quiz.session_ended_success") || "Session ended successfully.", "success");
     }
   };
-  const handleModeChange = async (e) => {
+  const handleModeChange = async (e, nextDifficulty = bossDifficulty) => {
+    if (phase === "answering" || answeredCount > 0 || quizWriteRef.current) return;
     const newMode = e.target.value;
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
-    const updates = { "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} };
+    const updates = { "quizState.phase": "idle", "quizState.mode": newMode, "quizState.responses": {}, "quizState.responseReceipts": {} };
     if (newMode === "boss-battle") {
       const qCount = generatedContent?.data.questions.length;
       const sCount = Math.max(1, totalStudents);
       const baseHP = qCount * sCount * 10;
-      const hpMultiplier = bossDifficulty === "easy" ? 0.5 : bossDifficulty === "hard" ? 1.5 : 1;
+      const hpMultiplier = nextDifficulty === "easy" ? 0.5 : nextDifficulty === "hard" ? 1.5 : 1;
       const maxHP = Math.round(baseHP * hpMultiplier);
       const existingImage = bossStats?.image || null;
       updates["quizState.bossStats"] = {
@@ -3302,7 +3504,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
         lastClassDamage: 0,
         image: existingImage,
         isGenerating: false,
-        difficulty: bossDifficulty,
+        difficulty: nextDifficulty,
         battleLog: [],
         masteryStreak: 0,
         lastComboBonus: 0,
@@ -3314,7 +3516,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       }
     }
     try {
-      await updateDoc(sessionRef, updates);
+      await writeQuiz(sessionRef, updates);
     } catch (e2) {
       warnLog("Firestore sync failed:", e2);
     }
@@ -3328,7 +3530,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     };
     const sessionRef = doc(db, "artifacts", appId2, "public", "data", "sessions", activeSessionCode);
     try {
-      await updateDoc(sessionRef, {
+      await writeQuiz(sessionRef, {
         "quizState.scoringPolicy": nextPolicy,
         "quizState.responses": {},
         "quizState.responseReceipts": {}
@@ -3351,11 +3553,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
   const handleDeleteGroup = onDeleteGroup;
   const availableResources = generatedContent?.data.resources || [];
   const activeGroups = useMemo(() => Object.entries(groups).filter(([_, g2]) => g2 !== null), [groups]);
-  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in motion-reduce:animate-none slide-in-from-top-4 duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-700" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl shadow-xl border border-slate-400 overflow-hidden mb-6 animate-in motion-reduce:animate-none slide-in-from-top-4 duration-500", "aria-busy": quizBusy }, quizError && /* @__PURE__ */ React.createElement("p", { role: "alert", className: "m-3 rounded-lg bg-red-100 p-3 font-bold text-red-900" }, quizError), quizBusy && /* @__PURE__ */ React.createElement("p", { role: "status", className: "px-4 py-2 text-indigo-900" }, "Updating the live quiz\u2026"), /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-900 text-white p-4 flex justify-between items-center flex-wrap gap-4" }, /* @__PURE__ */ React.createElement("h3", { className: "font-bold flex items-center gap-2" }, /* @__PURE__ */ React.createElement(MonitorPlay, { size: 20, className: "text-teal-700" }), " ", t("quiz.live_control_center")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
       value: mode || "live-pulse",
+      disabled: quizBusy || phase === "answering" || answeredCount > 0,
+      title: "Choose a mode before starting an unanswered round.",
       "data-help-key": "quiz_mode_select",
       onChange: handleModeChange,
       className: "bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer"
@@ -3370,7 +3574,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       "data-help-key": "quiz_live_scoring_policy_select",
       value: liveScoringPolicy.confidence ? "confidence" : "accuracy",
       onChange: handleScoringPolicyChange,
-      disabled: phase === "answering" || answeredCount > 0,
+      disabled: quizBusy || phase === "answering" || answeredCount > 0,
       className: "bg-indigo-800 text-white text-xs font-bold px-3 py-1.5 rounded-lg border border-indigo-600 focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60",
       title: phase === "answering" || answeredCount > 0 ? "Choose a response policy before students answer." : "Choose what students report with each answer."
     },
@@ -3381,10 +3585,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     {
       "aria-label": t("common.selection"),
       value: bossDifficulty,
-      onChange: (e) => setBossDifficulty(e.target.value),
-      disabled: phase !== "lobby",
-      className: `text-xs font-bold px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${bossDifficulty === "easy" ? "bg-emerald-600 border-emerald-500 text-white" : bossDifficulty === "hard" ? "bg-red-600 border-red-500 text-white" : "bg-amber-500 border-amber-400 text-white"} ${phase !== "lobby" ? "opacity-60 cursor-not-allowed" : ""}`,
-      title: phase !== "lobby" ? t("quiz.boss.difficulty_locked") : t("quiz.boss.select_difficulty")
+      onChange: (e) => {
+        setBossDifficulty(e.target.value);
+        handleModeChange({ target: { value: "boss-battle" } }, e.target.value);
+      },
+      disabled: !["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0,
+      className: `text-xs font-bold px-3 py-1.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-teal-400 cursor-pointer ${bossDifficulty === "easy" ? "bg-emerald-600 border-emerald-500 text-white" : bossDifficulty === "hard" ? "bg-red-600 border-red-500 text-white" : "bg-amber-500 border-amber-400 text-white"} ${!["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0 ? "opacity-60 cursor-not-allowed" : ""}`,
+      title: !["lobby", "idle"].includes(phase) || answeredCount > 0 || (bossStats?.battleLog || []).length > 0 ? t("quiz.boss.difficulty_locked") : t("quiz.boss.select_difficulty")
     },
     /* @__PURE__ */ React.createElement("option", { value: "easy" }, "\u{1F331} ", t("quiz.boss.difficulty_easy")),
     /* @__PURE__ */ React.createElement("option", { value: "normal" }, "\u2694\uFE0F ", t("quiz.boss.difficulty_normal")),
@@ -3393,7 +3600,8 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     "button",
     {
       type: "button",
-      "aria-label": t("common.start_game"),
+      "aria-label": showLocalStats ? t("quiz.show_game") : t("quiz.show_stats"),
+      "aria-pressed": showLocalStats,
       onClick: () => setShowLocalStats((prev) => !prev),
       "data-help-key": "quiz_local_stats_btn",
       className: `text-xs font-bold px-3 py-1.5 rounded-lg transition-colors motion-reduce:transition-none flex items-center gap-2 border ${showLocalStats ? "bg-yellow-400 text-indigo-900 border-yellow-500" : "bg-indigo-800 text-indigo-200 border-indigo-600 hover:bg-indigo-700"}`,
@@ -3405,7 +3613,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     current: answeredCount,
     total: totalStudents,
     percent: percentage
-  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndQuiz, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-900", "data-live-scoring-policy-note": "true" }, liveScoringPolicy.confidence ? "Accuracy scoring plus a confidence check. Confidence never changes points; it is diagnostic only." : "Accuracy uses correctness and configured partial credit only. Response speed never changes points.", liveQuestionSummary.unscored && /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-black text-purple-800" }, "This prompt remains distribution-only.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+  })), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleEndQuiz, disabled: quizBusy, className: "text-xs bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-full font-bold transition-colors motion-reduce:transition-none focus:outline-none focus:ring-2 focus:ring-white" }, t("quiz.end_quiz")))), /* @__PURE__ */ React.createElement("div", { className: "w-full h-1.5 bg-slate-100 relative" }, /* @__PURE__ */ React.createElement("div", { className: "bg-teal-500 h-full transition-all motion-reduce:transition-none duration-500 ease-out", style: { width: `${percentage}%` } })), /* @__PURE__ */ React.createElement("div", { className: "border-b border-indigo-100 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-900", "data-live-scoring-policy-note": "true" }, liveScoringPolicy.confidence ? "Accuracy scoring plus a confidence check. Confidence never changes points; it is diagnostic only." : "Accuracy uses correctness and configured partial credit only. Response speed never changes points.", liveQuestionSummary.unscored && /* @__PURE__ */ React.createElement("span", { className: "ml-1 font-black text-purple-800" }, "This prompt remains distribution-only.")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-b border-slate-200 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-slate-600 uppercase mb-2" }, t("groups.title")), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
     "input",
     {
       "aria-label": t("common.new_group_name"),
@@ -3696,12 +3904,13 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       className: `text-xs font-bold px-2 py-1 rounded border border-dashed ${groupEntriesForRouting.length === 0 || _gradableIdxs.length < 2 ? "border-slate-300 text-slate-400 cursor-not-allowed" : "border-sky-500 text-sky-800 hover:bg-sky-100"}`
     },
     "+ \u{1F9ED} Misconception rule"
-  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" ? /* @__PURE__ */ React.createElement(
+  )))), /* @__PURE__ */ React.createElement("div", { className: "space-y-3 mt-auto" }, phase === "answering" && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-700" }, "Reveal results before moving to another question. Responses stay available until then."), phase === "answering" ? /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
-      "aria-label": t("common.toggle_visibility"),
+      "aria-label": t("quiz.reveal_results"),
       onClick: handleRevealResults,
+      disabled: quizBusy,
       "data-help-key": "quiz_reveal_btn",
       className: "w-full py-4 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-indigo-900 font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
     },
@@ -3712,8 +3921,9 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
     "button",
     {
       type: "button",
-      "aria-label": t("common.play"),
+      "aria-label": phase === "revealed" ? t("quiz.restart_question") : t("quiz.start_question"),
       onClick: handleStartQuestion,
+      disabled: quizBusy || !question || ["boss-defeated", "class-defeated", "closed"].includes(phase),
       "data-help-key": "quiz_start_question_btn",
       className: "w-full py-4 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-black text-xl shadow-lg transition-transform motion-reduce:transition-none active:scale-95 flex items-center justify-center gap-2"
     },
@@ -3726,7 +3936,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       type: "button",
       onClick: handlePrevQuestion,
       "data-help-key": "quiz_prev_question_btn",
-      disabled: currentQuestionIndex === 0,
+      disabled: quizBusy || phase === "answering" || currentQuestionIndex === 0,
       className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     /* @__PURE__ */ React.createElement(ArrowDown, { className: "rotate-90", size: 16 }),
@@ -3738,7 +3948,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       type: "button",
       onClick: handleNextQuestion,
       "data-help-key": "quiz_next_question_btn",
-      disabled: currentQuestionIndex >= generatedContent?.data.questions.length - 1,
+      disabled: quizBusy || phase === "answering" || currentQuestionIndex >= generatedContent?.data?.questions?.length - 1,
       className: "flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold disabled:opacity-50 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2"
     },
     t("common.next"),
@@ -3751,7 +3961,7 @@ const TeacherLiveQuizControls = React.memo(({ sessionData, generatedContent, act
       src: bossStats.image,
       alt: "Boss",
       className: "w-48 h-48 object-contain pixelated drop-shadow-xl",
-      style: STYLE_IMAGE_PIXELATED
+      style: { imageRendering: "pixelated" }
     }
   ) : /* @__PURE__ */ React.createElement("div", { className: "w-32 h-32 bg-red-100 rounded-full border-4 border-red-500 flex items-center justify-center text-6xl shadow-xl relative z-10" }, bossStats.isGenerating ? /* @__PURE__ */ React.createElement(RefreshCw, { className: "animate-spin motion-reduce:animate-none text-red-500" }) : "\u{1F47E}"), phase === "revealed" && bossStats.lastDamage > 0 && /* @__PURE__ */ React.createElement("div", { className: `absolute top-0 right-[-20px] font-black z-20 stroke-white drop-shadow-md animate-[bounce_0.5s_infinite] motion-reduce:animate-none ${bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "text-yellow-500 text-6xl" : "text-red-600 text-4xl"}` }, bossStats.lastDamage >= (bossStats.maxHP || 1e3) * 0.15 ? "\u{1F4A5} " : "", "-", bossStats.lastDamage)), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-800 uppercase tracking-widest mb-2" }, bossStats.name || t("quiz.boss.default_name")), /* @__PURE__ */ React.createElement("div", { className: "mb-2 flex flex-wrap items-center justify-center gap-2 text-xs font-bold" }, /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-red-100 px-2 py-1 text-red-800" }, t("concept_quest.boss_phase", { phase: bossPhaseLabel })), /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-yellow-100 px-2 py-1 text-yellow-900" }, t("concept_quest.boss_mastery_streak", { count: bossStats.masteryStreak || 0 })), bossStats.lastComboBonus > 0 && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-purple-100 px-2 py-1 text-purple-800" }, "\u26A1 ", t("concept_quest.boss_combo_bonus", { bonus: bossStats.lastComboBonus }))), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex flex-wrap justify-center gap-2", "aria-label": t("concept_quest.boss_pacing_aria") }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("rally"), className: "min-h-11 rounded-lg bg-emerald-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_rally_class_hp")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("soften"), className: "min-h-11 rounded-lg bg-indigo-700 px-3 text-xs font-bold text-white" }, t("concept_quest.boss_expose_weakness")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => handleBossPacingAdjustment("intensify"), className: "min-h-11 rounded-lg border border-red-300 bg-white px-3 text-xs font-bold text-red-800" }, t("concept_quest.boss_intensify_monster"))), /* @__PURE__ */ React.createElement("details", { className: "mb-3 w-full max-w-sm rounded-xl border border-purple-200 bg-purple-50 p-3 text-left" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-black text-purple-900" }, "\u{1F3B2} ", t("concept_quest.boss_event_workshop")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-purple-700" }, t("concept_quest.ai_draft_notice")), /* @__PURE__ */ React.createElement("textarea", { value: bossGmPrompt, onChange: (event) => setBossGmPrompt(event.target.value), rows: 2, placeholder: t("concept_quest.boss_event_placeholder"), className: "mt-2 w-full rounded-lg border border-purple-300 p-2 text-sm" }), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: createBossGmDraft, className: "min-h-11 flex-1 rounded-lg border border-purple-300 bg-white text-xs font-bold text-purple-800" }, t("concept_quest.manual_draft")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: bossGmBusy, onClick: generateBossGmDraft, className: "min-h-11 flex-1 rounded-lg bg-purple-700 text-xs font-bold text-white disabled:opacity-50" }, bossGmBusy ? t("concept_quest.boss_drafting") : t("concept_quest.ai_draft"))), bossGmDraft && /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded-lg border border-amber-300 bg-amber-50 p-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-700" }, t("concept_quest.draft_title_label"), /* @__PURE__ */ React.createElement("input", { value: bossGmDraft.title, onChange: (event) => setBossGmDraft({ ...bossGmDraft, title: event.target.value }), className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("label", { className: "mt-2 block text-xs font-bold text-slate-700" }, t("concept_quest.description"), /* @__PURE__ */ React.createElement("textarea", { value: bossGmDraft.description, onChange: (event) => setBossGmDraft({ ...bossGmDraft, description: event.target.value }), rows: 2, className: "mt-1 w-full rounded border border-amber-300 p-2" })), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-amber-900" }, t("concept_quest.boss_effect"), " ", /* @__PURE__ */ React.createElement("strong", null, t(`concept_quest.boss_effect_${bossGmDraft.effect}`)), " \xB7 ", t("concept_quest.boss_strength", { amount: bossGmDraft.amount })), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setBossGmDraft(null), className: "min-h-11 flex-1 rounded-lg bg-slate-200 text-xs font-bold" }, t("concept_quest.discard")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: publishBossGmDraft, className: "min-h-11 flex-1 rounded-lg bg-emerald-700 text-xs font-bold text-white" }, t("concept_quest.boss_publish_event"))))), /* @__PURE__ */ React.createElement("div", { className: `w-full max-w-sm bg-slate-300 h-8 rounded-full border-4 relative overflow-hidden shadow-inner mb-2 ${bossStats.currentHP > 0 && bossStats.currentHP / bossStats.maxHP < 0.25 ? "border-red-500 animate-pulse motion-reduce:animate-none" : "border-slate-400"}` }, /* @__PURE__ */ React.createElement(
     "div",
@@ -4402,7 +4612,7 @@ const TeacherCommentThread = React.memo(({ studentId, resourceId, comments, onAd
     t("common.cancel") || "Cancel"
   ))));
 });
-const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: addToast2, t }) => {
+const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast, t }) => {
   const [insights, setInsights] = React.useState(null);
   const [insightsLoading, setInsightsLoading] = React.useState(false);
   const qualitySignals = React.useMemo(() => _computeAllQualitySignals(dashboardData), [dashboardData]);
@@ -4461,11 +4671,11 @@ const ClassNotebookSection = React.memo(({ dashboardData, callGemini, addToast: 
   }, [dashboardData]);
   const handleGenerateClassInsights = React.useCallback(async () => {
     if (typeof callGemini !== "function") {
-      addToast2(t("dashboard.class_notebook.no_ai") || "AI is not available right now.", "warning");
+      addToast(t("dashboard.class_notebook.no_ai") || "AI is not available right now.", "warning");
       return;
     }
     if (agg.studentsWithNotebook < 2) {
-      addToast2(t("dashboard.class_notebook.need_more_students") || "Need at least 2 students with notebook entries to surface class patterns.", "info");
+      addToast(t("dashboard.class_notebook.need_more_students") || "Need at least 2 students with notebook entries to surface class patterns.", "info");
       return;
     }
     setInsightsLoading(true);
@@ -4537,11 +4747,11 @@ Return ONLY JSON:
       setInsights(parsed);
     } catch (e) {
       console.warn("[ClassNotebookInsights] failed", e);
-      addToast2(t("dashboard.class_notebook.error") || "Could not generate class insights right now. Try again in a moment.", "error");
+      addToast(t("dashboard.class_notebook.error") || "Could not generate class insights right now. Try again in a moment.", "error");
     } finally {
       setInsightsLoading(false);
     }
-  }, [callGemini, dashboardData, agg, addToast2, t]);
+  }, [callGemini, dashboardData, agg, addToast, t]);
   if (agg.totalEntries === 0) return null;
   return /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400", "data-help-key": "dashboard_class_notebook_section" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between mb-4" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-violet-700 uppercase tracking-wider flex items-center gap-2" }, "\u{1F4D3} ", t("dashboard.class_notebook.title") || "Class Notebook Activity"), /* @__PURE__ */ React.createElement(
     "button",
@@ -4804,7 +5014,7 @@ const LearnerProgressView = React.memo(({
     " Share Progress with Teacher"
   )));
 });
-const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast: addToast2, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
+const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboardData, addToast, setSelectedStudentId, setDashboardView, dashboardView, selectedStudentId, generateResourceHTML, onOpenBehaviorLens, callGemini }) => {
   const { t } = useContext(LanguageContext);
   const modalRef = useRef(null);
   useFocusTrap(modalRef, true, onClose);
@@ -4837,7 +5047,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       next.set(key, [...list, { id: "c-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6), text: trimmed, timestamp: (/* @__PURE__ */ new Date()).toISOString() }]);
       return next;
     });
-    if (addToast2) addToast2(t("dashboard.comments.saved") || "Comment saved.", "success");
+    if (addToast) addToast(t("dashboard.comments.saved") || "Comment saved.", "success");
   };
   const deleteComment = (studentId, resourceId, commentId) => {
     setTeacherComments((prev) => {
@@ -4885,7 +5095,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         next.delete(id);
       } else {
         next.add(id);
-        if (addToast2) addToast2(t("dashboard.toasts.marked_graded"), "success");
+        if (addToast) addToast(t("dashboard.toasts.marked_graded"), "success");
       }
       return next;
     });
@@ -4903,7 +5113,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
   const handleBulkMarkGraded = () => {
     const students = getCurrentFilteredStudents();
     if (students.length === 0) {
-      if (addToast2) addToast2(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
+      if (addToast) addToast(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
       return;
     }
     const ids = students.map((s2) => s2.id);
@@ -4916,14 +5126,14 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           added++;
         }
       });
-      if (addToast2) addToast2(t("dashboard.bulk.marked_graded", { count: added }) || `Marked ${added} student${added === 1 ? "" : "s"} graded.`, "success");
+      if (addToast) addToast(t("dashboard.bulk.marked_graded", { count: added }) || `Marked ${added} student${added === 1 ? "" : "s"} graded.`, "success");
       return next;
     });
   };
   const handleBulkUnmarkGraded = () => {
     const students = getCurrentFilteredStudents();
     if (students.length === 0) {
-      if (addToast2) addToast2(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
+      if (addToast) addToast(t("dashboard.bulk.no_students_in_filter") || "No students in the current filter.", "info");
       return;
     }
     const ids = new Set(students.map((s2) => s2.id));
@@ -4936,21 +5146,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
           removed++;
         }
       });
-      if (addToast2) addToast2(t("dashboard.bulk.unmarked_graded", { count: removed }) || `Cleared graded flag on ${removed} student${removed === 1 ? "" : "s"}.`, "info");
+      if (addToast) addToast(t("dashboard.bulk.unmarked_graded", { count: removed }) || `Cleared graded flag on ${removed} student${removed === 1 ? "" : "s"}.`, "info");
       return next;
     });
   };
   const handleBulkExportNotebooksPDF = async () => {
     const students = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && (h.type === "note-taking" || h.type === "anchor-chart")));
     if (students.length === 0) {
-      if (addToast2) addToast2(t("dashboard.bulk.no_notebook_students") || "No students in the current filter have notebook entries.", "info");
+      if (addToast) addToast(t("dashboard.bulk.no_notebook_students") || "No students in the current filter have notebook entries.", "info");
       return;
     }
     if (!window.jspdf) {
-      if (addToast2) addToast2(t("dashboard.bulk.pdf_unavailable") || "PDF library not loaded.", "error");
+      if (addToast) addToast(t("dashboard.bulk.pdf_unavailable") || "PDF library not loaded.", "error");
       return;
     }
-    if (addToast2) addToast2(t("dashboard.bulk.generating_notebooks_pdf", { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
+    if (addToast) addToast(t("dashboard.bulk.generating_notebooks_pdf", { count: students.length }) || `Generating notebook PDF for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
     const { jsPDF } = window.jspdf;
     const doc2 = new jsPDF();
     const escapeHtml = (s2) => String(s2 || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -5008,7 +5218,7 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
       await doc2.html(container, {
         callback: (d) => {
           d.save(`class_notebooks_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`);
-          if (addToast2) addToast2(t("dashboard.bulk.notebooks_pdf_saved") || "Class notebooks PDF saved.", "success");
+          if (addToast) addToast(t("dashboard.bulk.notebooks_pdf_saved") || "Class notebooks PDF saved.", "success");
         },
         x: 8,
         y: 8,
@@ -5016,21 +5226,21 @@ const TeacherDashboard = React.memo(({ onClose, dashboardData = [], setDashboard
         windowWidth: 800
       });
     } catch (err) {
-      if (addToast2) addToast2("PDF error: " + err.message, "error");
+      if (addToast) addToast("PDF error: " + err.message, "error");
     }
     document.body.removeChild(container);
   };
   const handleBulkGenerateFeedback = async () => {
     const students = getCurrentFilteredStudents().filter((s2) => (s2.history || []).some((h) => h && h.type === "note-taking"));
     if (students.length === 0) {
-      if (addToast2) addToast2(t("dashboard.bulk.no_notebook_students") || "No students with note-taking entries in the current filter.", "info");
+      if (addToast) addToast(t("dashboard.bulk.no_notebook_students") || "No students with note-taking entries in the current filter.", "info");
       return;
     }
     if (typeof callGemini !== "function") {
-      if (addToast2) addToast2(t("dashboard.bulk.no_ai") || "AI is not available.", "warning");
+      if (addToast) addToast(t("dashboard.bulk.no_ai") || "AI is not available.", "warning");
       return;
     }
-    if (addToast2) addToast2(t("dashboard.bulk.generating_feedback", { count: students.length }) || `Generating feedback messages for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
+    if (addToast) addToast(t("dashboard.bulk.generating_feedback", { count: students.length }) || `Generating feedback messages for ${students.length} student${students.length === 1 ? "" : "s"}...`, "info");
     const results = [];
     for (const student of students) {
       const notes = (student.history || []).filter((h) => h && h.type === "note-taking").slice(0, 3);
@@ -5055,7 +5265,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       }
     }
     if (!window.jspdf) {
-      if (addToast2) addToast2("PDF library not loaded.", "error");
+      if (addToast) addToast("PDF library not loaded.", "error");
       return;
     }
     const { jsPDF } = window.jspdf;
@@ -5083,7 +5293,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       await doc2.html(container, {
         callback: (d) => {
           d.save(`class_feedback_${(/* @__PURE__ */ new Date()).toISOString().split("T")[0]}.pdf`);
-          if (addToast2) addToast2(t("dashboard.bulk.feedback_pdf_saved") || "Feedback PDF saved.", "success");
+          if (addToast) addToast(t("dashboard.bulk.feedback_pdf_saved") || "Feedback PDF saved.", "success");
         },
         x: 8,
         y: 8,
@@ -5091,7 +5301,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         windowWidth: 800
       });
     } catch (err) {
-      if (addToast2) addToast2("PDF error: " + err.message, "error");
+      if (addToast) addToast("PDF error: " + err.message, "error");
     }
     document.body.removeChild(container);
   };
@@ -5167,10 +5377,10 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     setDashboardData([]);
     setGradedIds(/* @__PURE__ */ new Set());
     closeClearConfirm();
-    if (addToast2) addToast2(t("dashboard.toasts.dashboard_cleared"), "info");
+    if (addToast) addToast(t("dashboard.toasts.dashboard_cleared"), "info");
   };
   const handleExportResearchPDF = async () => {
-    addToast2("Generating research report...", "info");
+    addToast("Generating research report...", "info");
     const { jsPDF } = window.jspdf;
     const doc2 = new jsPDF();
     const date = (/* @__PURE__ */ new Date()).toLocaleDateString();
@@ -5380,7 +5590,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       await doc2.html(container, {
         callback: (doc3) => {
           doc3.save("alloflow_research_report_" + (/* @__PURE__ */ new Date()).toISOString().split("T")[0] + ".pdf");
-          addToast2("Research report saved!", "success");
+          addToast("Research report saved!", "success");
         },
         x: 10,
         y: 10,
@@ -5388,12 +5598,12 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         windowWidth: 800
       });
     } catch (err) {
-      addToast2("PDF error: " + err.message, "error");
+      addToast("PDF error: " + err.message, "error");
     }
     document.body.removeChild(container);
   };
   const handleExportAnalyticsPDF = async () => {
-    addToast2(t("dashboard.toasts.generating_report"), "info");
+    addToast(t("dashboard.toasts.generating_report"), "info");
     const { jsPDF } = window.jspdf;
     const doc2 = new jsPDF();
     const date = (/* @__PURE__ */ new Date()).toLocaleDateString();
@@ -5459,7 +5669,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         callback: function(pdf) {
           pdf.save("Class_Analytics_Report.pdf");
           document.body.removeChild(container);
-          addToast2(t("dashboard.toasts.report_downloaded"), "success");
+          addToast(t("dashboard.toasts.report_downloaded"), "success");
         },
         x: 10,
         y: 10,
@@ -5468,7 +5678,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
       });
     } catch (e) {
       warnLog("PDF Export Error", e);
-      addToast2(t("toasts.export_failed"), "error");
+      addToast(t("toasts.export_failed"), "error");
       if (document.body.contains(container)) document.body.removeChild(container);
     }
   };
@@ -5508,9 +5718,9 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
     const validSubmissions = results.filter((item) => item !== null);
     if (validSubmissions.length > 0 && setDashboardData) {
       setDashboardData((prev) => [...prev, ...validSubmissions]);
-      if (addToast2) addToast2(t("dashboard.toasts.submissions_loaded", { count: validSubmissions.length }), "success");
+      if (addToast) addToast(t("dashboard.toasts.submissions_loaded", { count: validSubmissions.length }), "success");
     } else if (files.length > 0) {
-      if (addToast2) addToast2(t("dashboard.toasts.no_files"), "error");
+      if (addToast) addToast(t("dashboard.toasts.no_files"), "error");
     }
     e.target.value = "";
   };
@@ -5927,7 +6137,7 @@ Return ONLY the feedback text (no JSON, no headers, just the paragraph).
         label: `${Math.round(analytics.quizCompletionRate)}%`,
         color: "blue"
       }
-    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(CrossToolMisconceptionsSection, { dashboardData, t }), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast: addToast2, t }), (() => {
+    ), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.students_participating"))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400 flex flex-col justify-center" }, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-slate-600 uppercase tracking-wider mb-2" }, t("dashboard.insights.avg_adv_level")), /* @__PURE__ */ React.createElement("div", { className: "text-5xl font-black text-purple-600 text-center mb-2" }, analytics.avgAdventureLevel.toFixed(1)), /* @__PURE__ */ React.createElement("div", { className: "w-full bg-slate-100 rounded-full h-2 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "bg-purple-500 h-full", style: { width: `${Math.min(100, analytics.avgAdventureLevel / 10 * 100)}%` } })), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-slate-600 mt-2 text-center" }, t("dashboard.insights.adv_level_desc")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-6 rounded-2xl shadow-sm border border-slate-400" }, /* @__PURE__ */ React.createElement("h3", { className: "text-lg font-bold text-slate-800 mb-4 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(AlertCircle, { size: 20, className: "text-red-500" }), " ", t("dashboard.insights.misconceptions_title")), misconceptionChartData.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "flex flex-col md:flex-row gap-8 items-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement(SimpleBarChart, { data: misconceptionChartData, color: "red" })), /* @__PURE__ */ React.createElement("div", { className: "flex-1 w-full" }, /* @__PURE__ */ React.createElement("ul", { className: "space-y-3" }, analytics.misconceptions.map((m, i) => /* @__PURE__ */ React.createElement("li", { key: i, className: "text-sm bg-red-50 p-3 rounded-lg border border-red-100" }, /* @__PURE__ */ React.createElement("div", { className: "font-bold text-red-800 mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Question ", i + 1), /* @__PURE__ */ React.createElement("span", { className: "bg-white px-2 rounded text-red-600 border border-red-200" }, m.count, " ", t("dashboard.insights.misses"))), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 italic line-clamp-2" }, '"', m.question, '"')))))) : /* @__PURE__ */ React.createElement("div", { className: "text-center py-10 text-slate-600 italic" }, t("dashboard.insights.no_misconceptions"))), /* @__PURE__ */ React.createElement(CrossToolMisconceptionsSection, { dashboardData, t }), /* @__PURE__ */ React.createElement(ClassNotebookSection, { dashboardData, callGemini, addToast, t }), (() => {
       const allProbes = dashboardData.flatMap(
         (s2) => s2.probeHistory ? Object.values(s2.probeHistory).flat() : []
       );
@@ -6224,6 +6434,7 @@ window.AlloModules.buildRosterSessionEvidenceCsv = buildRosterSessionEvidenceCsv
 window.AlloModules.SimpleBarChart = SimpleBarChart;
 window.AlloModules.SimpleDonutChart = SimpleDonutChart;
 window.AlloModules.ConfettiEffect = ConfettiEffect;
+window.AlloModules.LiveEscapeRoomInternals = { progress: alloLiveEscapeProgress, seconds: alloLiveEscapeSeconds, answer: alloLiveEscapeAnswer, sequence: alloLiveSequenceIndices };
 window.AlloModules.StudentEscapeRoomOverlay = StudentEscapeRoomOverlay;
 window.AlloModules.EscapeRoomTeacherControls = EscapeRoomTeacherControls;
 window.AlloModules.TeacherLiveQuizControls = TeacherLiveQuizControls;

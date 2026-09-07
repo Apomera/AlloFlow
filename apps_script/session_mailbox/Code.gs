@@ -24,7 +24,7 @@
  * Apps Script cannot answer). GET on the /exec URL shows a human status line.
  */
 
-var VERSION = 19;
+var VERSION = 20;
 var SESSION_TTL_SEC = 6 * 60 * 60;      // live session marker + counters
 var MESSAGE_TTL_SEC = 45 * 60;          // live messages
 var UPLOAD_TTL_SEC = 30 * 60;           // pack upload parts awaiting finalize
@@ -764,8 +764,9 @@ function validQuizTeam(value) {
 function validConceptQuestAction(value, uid) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   var keys = Object.keys(value);
-  var allowed = { abilityId: 1, roleId: 1, answerIndex: 1, submittedAt: 1, supportId: 1, supportTargetUid: 1 };
+  var allowed = { abilityId: 1, roleId: 1, answerIndex: 1, submittedAt: 1, supportId: 1, supportTargetUid: 1, turnKey: 1 };
   for (var i = 0; i < keys.length; i++) if (!allowed[keys[i]]) return false;
+  if (value.turnKey != null && (typeof value.turnKey !== 'string' || value.turnKey.length > 160)) return false;
   if (['analyze', 'explain', 'connect', 'question'].indexOf(value.abilityId) === -1) return false;
   if (value.roleId != null && value.roleId !== '' && ['analyst', 'explainer', 'connector', 'investigator'].indexOf(value.roleId) === -1) return false;
   var hasSupport = value.supportId != null || value.supportTargetUid != null;
@@ -794,11 +795,16 @@ function participantCanPatchSession(updates, uid, sessionData) {
     'escapeRoomState.teams.' + uid,
     'escapeRoomState.teamProgress'
   ];
+  var questState = sessionData && sessionData.escapeRoomState || {};
+  var currentQuest = questState.conceptQuest || {};
+  var turnScoped = questState.mode === 'concept-quest' && currentQuest.actionSchema === 1;
+  var questVoteTurnLeaf = 'escapeRoomState.teamProgress.All.questVoteTurns.' + uid;
   var questVoteLeaf = 'escapeRoomState.teamProgress.All.questVotes.' + uid;
   var questActionLeaf = 'escapeRoomState.teamProgress.All.questActions.' + uid;
   var questRoleLeaf = 'escapeRoomState.teamProgress.All.questRoles.' + uid;
   var questCollectionRoots = [
     'escapeRoomState.teamProgress.All.questVotes',
+    'escapeRoomState.teamProgress.All.questVoteTurns',
     'escapeRoomState.teamProgress.All.questActions',
     'escapeRoomState.teamProgress.All.questRoles'
   ];
@@ -812,13 +818,19 @@ function participantCanPatchSession(updates, uid, sessionData) {
     if (isQuestCollectionPatch) {
       if (key === questVoteLeaf) {
         if (typeof updates[key] !== 'string' || !/^room-[1-8]$/.test(updates[key])) return false;
+        if (turnScoped && (questState.isActive !== true || questState.isPaused === true || currentQuest.phase !== 'explore' || updates[questVoteTurnLeaf] !== currentQuest.turnKey)) return false;
+      } else if (key === questVoteTurnLeaf) {
+        if (questState.isActive !== true || questState.isPaused === true || currentQuest.phase !== 'explore' || typeof updates[key] !== 'string' || updates[key] !== currentQuest.turnKey) return false;
       } else if (key === questActionLeaf) {
         if (!validConceptQuestAction(updates[key], uid)) return false;
+        if (turnScoped && (questState.isActive !== true || questState.isPaused === true || currentQuest.phase !== 'battle' || updates[key].turnKey !== currentQuest.turnKey)) return false;
       } else if (key === questRoleLeaf) {
         if (['analyst', 'explainer', 'connector', 'investigator'].indexOf(updates[key]) === -1) return false;
       } else return false;
       continue;
     }
+    // New quests accept only participant-owned leaves, never parent progress maps.
+    if (turnScoped && pathStarts(key, 'escapeRoomState.teamProgress')) return false;
     if (pathStarts(key, escapeTeamLeaf)) {
       if (key !== escapeTeamLeaf) return false;
       var isConceptQuest = sessionData && sessionData.escapeRoomState
@@ -1653,8 +1665,8 @@ function normalizeSurveyItems(value) {
       if (options.length < 2) return null;
       item.options = options;
     } else if (kind === 'numeric') {
-      var numMin = Number(raw.min);
-      var numMax = Number(raw.max);
+      var numMin = raw.min == null || String(raw.min).trim() === '' ? NaN : Number(raw.min);
+      var numMax = raw.max == null || String(raw.max).trim() === '' ? NaN : Number(raw.max);
       item.min = isFinite(numMin) ? numMin : null;
       item.max = isFinite(numMax) ? numMax : null;
       if (item.min !== null && item.max !== null && item.min >= item.max) return null;

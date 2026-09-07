@@ -1,0 +1,113 @@
+{
+  "focusedTests": {
+    "passed": 168,
+    "failed": 0,
+    "files": [
+      {
+        "name": "allobot_accessory_integrity.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_disable_and_mic_feedback.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_generation_animation.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_idle_sleep_and_hide.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_keyboard_movement_a11y.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_motion_a11y.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_runtime_behavior.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_student_tips.test.js",
+        "status": "passed"
+      },
+      {
+        "name": "allobot_visual_qa_harness.test.js",
+        "status": "passed"
+      }
+    ]
+  },
+  "motion": {
+    "accessories": [
+      {
+        "accessory": "behavior-watch",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      },
+      {
+        "accessory": "bard-cap",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "centered accessory"
+      },
+      {
+        "accessory": "test-prep-kit",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      },
+      {
+        "accessory": "source-inbox",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      },
+      {
+        "accessory": "progress-orbit",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      },
+      {
+        "accessory": "maze-scroll",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      },
+      {
+        "accessory": "resource-folder",
+        "atRest": "running",
+        "duringWork": "paused",
+        "entrance": "running"
+      }
+    ],
+    "resume": "running",
+    "keyboardGreeting": true,
+    "keyboardControls": true,
+    "listeningDuringWork": "running",
+    "generationDuringWork": "running",
+    "offscreen": {
+      "avatarPaused": true,
+      "controlIconPaused": false
+    },
+    "onscreenResumed": true,
+    "reducedMotion": {
+      "svgPaused": true,
+      "svgTime": 0,
+      "runningAnimations": 0
+    }
+  },
+  "coreCaptures": 30,
+  "additionalAccessoryCaptures": 7,
+  "moduleSha256": "5c5e3b873e3625850364664eeb333ac0b8b65d28123ea84fecd2b1851c61a712",
+  "visualBaseline": {
+    "scenarios": 30,
+    "renderedTwice": true,
+    "contractChecksPassed": 9
+  }
+}

@@ -447,6 +447,8 @@ window.StemLab = window.StemLab || {
           const d = labToolData.molecule || {};
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, molecule: { ...prev.molecule, [key]: val } }));
           const calmDiagrams = d.calmDiagrams !== false;
+          const moleculeDisplayStyle = d.moleculeDisplayStyle === 'spheres' ? 'spheres' : 'ball-stick';
+          const showAtomLabels = d.showAtomLabels !== false;
           const [threeLoaded, setThreeLoaded] = useState(false);
           const webglCanvasRef = useRef(null);
           const threeSceneRef = useRef(null);
@@ -609,7 +611,7 @@ window.StemLab = window.StemLab || {
             } else {
               disposeThree();
             }
-          }, [mode, threeLoaded, d.atoms, d.bonds]);
+          }, [mode, threeLoaded, d.atoms, d.bonds, d.formula, moleculeDisplayStyle, showAtomLabels]);
 
           useEffect(function() {
             return function() {
@@ -640,6 +642,27 @@ window.StemLab = window.StemLab || {
           // Resize only when the canvas's layout box changes. Repeatedly calling
           // renderer.setSize() from the render loop can cause backing-store churn
           // on high-DPI displays and present as a subtle diagram shimmer.
+          const fitMoleculeCamera = function() {
+            var THREE = window.THREE, resources = threeResourcesRef.current;
+            var camera = threeCameraRef.current, controls = threeControlsRef.current;
+            if (!THREE || !resources || !resources.atomGroup.children.length || !camera || !controls) return;
+            var bounds = new THREE.Box3().setFromObject(resources.atomGroup);
+            var sphere = bounds.getBoundingSphere(new THREE.Sphere());
+            var radius = Math.max(0.5, sphere.radius);
+            var verticalFov = camera.fov * Math.PI / 180;
+            var horizontalFov = 2 * Math.atan(Math.tan(verticalFov / 2) * camera.aspect);
+            var distance = radius / Math.sin(Math.min(verticalFov, horizontalFov) / 2) * 1.15;
+            var direction = camera.position.clone().sub(controls.target).normalize();
+            if (!direction.lengthSq()) direction.set(0, 0, 1);
+            controls.target.copy(sphere.center);
+            controls.maxDistance = Math.max(50, distance * 3);
+            controls.minDistance = Math.max(0.5, radius * 0.35);
+            camera.position.copy(sphere.center).addScaledVector(direction, distance);
+            camera.far = Math.max(1000, distance + radius * 4);
+            camera.updateProjectionMatrix();
+            controls.update();
+          };
+
           const syncThreeCanvasSize = function(canvas) {
             var renderer = threeRendererRef.current;
             var camera = threeCameraRef.current;
@@ -653,6 +676,7 @@ window.StemLab = window.StemLab || {
             camera.updateProjectionMatrix();
             renderer._alloLogicalWidth = W;
             renderer._alloLogicalHeight = H;
+            fitMoleculeCamera();
           };
 
           const initThree = function(canvas) {
@@ -708,7 +732,7 @@ window.StemLab = window.StemLab || {
                   } catch(e){ try{ renderer._alloComposer=null; }catch(_){} }
                 });
               })();
-              camera.position.set(0, 0, 15);
+              camera.position.set(8, 6, 12);
               threeCameraRef.current = camera;
 
               if (typeof ResizeObserver === 'function') {
@@ -729,7 +753,7 @@ window.StemLab = window.StemLab || {
               dirLight.position.set(5, 10, 7);
               scene.add(dirLight);
               
-              var fillLight = new THREE.DirectionalLight(0x90b0ff, 0.45);
+              var fillLight = new THREE.DirectionalLight(0xe8f1ff, 0.45);
               fillLight.position.set(-5, -5, -2);
               scene.add(fillLight);
 
@@ -850,8 +874,9 @@ window.StemLab = window.StemLab || {
               if (child.geometry) child.geometry.dispose();
               if (child.material) {
                 if (Array.isArray(child.material)) {
-                  child.material.forEach(function(m) { m.dispose(); });
+                  child.material.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); });
                 } else {
+                  if (child.material.map) child.material.map.dispose();
                   child.material.dispose();
                 }
               }
@@ -897,13 +922,9 @@ window.StemLab = window.StemLab || {
             };
 
             var getColor = function(a) {
-              if (a.color) {
-                if (a.color.indexOf('var(') === 0) {
-                  return 0x94a3b8;
-                }
-                return new THREE.Color(a.color);
-              }
-              return 0x94a3b8;
+              // Preset CSS colors are sRGB; r128 materials use linear color values.
+              var value = a.color && a.color.indexOf('var(') !== 0 ? a.color : '#94a3b8';
+              return new THREE.Color(value).convertSRGBToLinear();
             };
 
             var teachingModel = getMoleculeTeachingModel(d.formula);
@@ -948,7 +969,7 @@ window.StemLab = window.StemLab || {
             // Render Atom Spheres and Labels
             atoms.forEach(function(a, i) {
               var pos = positions[i];
-              var r = getRadius(a.el);
+              var r = getRadius(a.el) * (moleculeDisplayStyle === 'spheres' ? 1.65 : 0.72);
               var color = getColor(a);
 
               var sphereGeo = new THREE.SphereGeometry(r, 32, 32);
@@ -957,33 +978,37 @@ window.StemLab = window.StemLab || {
                 color: atomColor,
                 emissive: atomColor,
                 emissiveIntensity: 0.06,
-                roughness: 0.15,
-                metalness: 0.1
+                roughness: 0.3,
+                metalness: 0.03
               });
               var sphereMesh = new THREE.Mesh(sphereGeo, atomMat);
               sphereMesh.position.copy(pos);
               atomGroup.add(sphereMesh);
 
-              var sprite = createTextSprite(a.el);
-              sprite.position.copy(pos);
-              atomGroup.add(sprite);
+              if (showAtomLabels) {
+                var sprite = createTextSprite(a.el);
+                sprite.position.copy(pos);
+                atomGroup.add(sprite);
+              }
             });
 
             // Render Covalent Bonds (Supports single, double, and triple parallel rods)
+            var bondColors;
             var renderBond = function(mid, len, quat, radius) {
-              var cylinderGeo = new THREE.CylinderGeometry(radius, radius, len, 12);
-              var bondMat = new THREE.MeshStandardMaterial({
-                color: 0x94a3b8,
-                roughness: 0.35,
-                metalness: 0.2
+              // Color each half by its attached atom while retaining bond order.
+              var quarter = new THREE.Vector3(0, len / 4, 0).applyQuaternion(quat);
+              [-1, 1].forEach(function(sign, half) {
+                var cylinderGeo = new THREE.CylinderGeometry(radius, radius, len / 2, 16);
+                var bondMat = new THREE.MeshStandardMaterial({ color: bondColors[half], roughness: 0.42, metalness: 0.03 });
+                var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
+                cylinderMesh.position.copy(mid).addScaledVector(quarter, sign);
+                cylinderMesh.quaternion.copy(quat);
+                atomGroup.add(cylinderMesh);
               });
-              var cylinderMesh = new THREE.Mesh(cylinderGeo, bondMat);
-              cylinderMesh.position.copy(mid);
-              cylinderMesh.quaternion.copy(quat);
-              atomGroup.add(cylinderMesh);
             };
 
-            bonds.forEach(function(b) {
+            if (moleculeDisplayStyle === 'ball-stick') bonds.forEach(function(b) {
+              bondColors = [getColor(atoms[b[0]] || {}), getColor(atoms[b[1]] || {})];
               var posA = positions[b[0]];
               var posB = positions[b[1]];
               if (!posA || !posB) return;
@@ -1024,6 +1049,12 @@ window.StemLab = window.StemLab || {
                 }
               }
             });
+            var signature = JSON.stringify([d.formula, atoms, bonds, moleculeDisplayStyle]);
+            if (resources.modelSignature !== signature) {
+              fitMoleculeCamera();
+              if (threeControlsRef.current && threeControlsRef.current.saveState) threeControlsRef.current.saveState();
+              resources.modelSignature = signature;
+            }
           };
 
           const disposeThree = function() {
@@ -1051,8 +1082,9 @@ window.StemLab = window.StemLab || {
                   if (obj.geometry) obj.geometry.dispose();
                   if (obj.material) {
                     if (Array.isArray(obj.material)) {
-                      obj.material.forEach(function(m) { m.dispose(); });
+                      obj.material.forEach(function(m) { if (m.map) m.map.dispose(); m.dispose(); });
                     } else {
+                      if (obj.material.map) obj.material.map.dispose();
                       obj.material.dispose();
                     }
                   }
@@ -1866,7 +1898,9 @@ window.StemLab = window.StemLab || {
               return;
             }
             const target = controls.target || { x: 0, y: 0, z: 0 };
-            if (action === 'reset') {
+            if (action === 'fit') {
+              fitMoleculeCamera();
+            } else if (action === 'reset') {
               if (camera.up && camera.up.set) camera.up.set(0, 1, 0);
               controls.reset();
               controls.update();
@@ -1900,9 +1934,11 @@ window.StemLab = window.StemLab || {
               camera.position.set(target.x + position[0], target.y + position[1], target.z + position[2]);
               if (camera.lookAt) camera.lookAt(target.x, target.y, target.z);
               controls.update();
+              fitMoleculeCamera();
             }
             if (typeof announceToSR === 'function') {
               const labels = {
+                fit: 'Molecule fitted to the viewport.',
                 front: 'Front molecule view.',
                 side: 'Side molecule view.',
                 top: 'Top molecule view.',
@@ -2181,7 +2217,7 @@ window.StemLab = window.StemLab || {
 
             { name: __alloT('stem.molecule.h_o_water', 'H₂O (Water)'), atoms: [{ el: 'O', x: 200, y: 120, color: '#ef4444' }, { el: 'H', x: 140, y: 190, color: '#60a5fa' }, { el: 'H', x: 260, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2]], formula: 'H₂O' },
 
-            { name: __alloT('stem.molecule.co_carbon_dioxide', 'CO₂ (Carbon Dioxide)'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1], [0, 2]], formula: 'CO₂' },
+            { name: __alloT('stem.molecule.co_carbon_dioxide', 'CO₂ (Carbon Dioxide)'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'O', x: 120, y: 150, color: '#ef4444' }, { el: 'O', x: 280, y: 150, color: '#ef4444' }], bonds: [[0, 1, 2], [0, 2, 2]], formula: 'CO₂' },
 
             { name: __alloT('stem.molecule.ch_methane', 'CH₄ (Methane)'), atoms: [{ el: 'C', x: 200, y: 150, color: '#1e293b' }, { el: 'H', x: 200, y: 80, color: '#60a5fa' }, { el: 'H', x: 270, y: 180, color: '#60a5fa' }, { el: 'H', x: 130, y: 180, color: '#60a5fa' }, { el: 'H', x: 200, y: 220, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [0, 3], [0, 4]], formula: 'CH₄' },
 
@@ -2189,9 +2225,9 @@ window.StemLab = window.StemLab || {
 
             { name: __alloT('stem.molecule.nh_ammonia', 'NH₃ (Ammonia)'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'H', x: 140, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 200, y: 210, color: 'var(--allo-stem-text-soft, #94a3b8)' }, { el: 'H', x: 260, y: 185, color: 'var(--allo-stem-text-soft, #94a3b8)' }], bonds: [[0, 1], [0, 2], [0, 3]], formula: 'NH₃' },
 
-            { name: __alloT('stem.molecule.o_oxygen_gas', 'O₂ (Oxygen Gas)'), atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1]], formula: 'O₂' },
+            { name: __alloT('stem.molecule.o_oxygen_gas', 'O₂ (Oxygen Gas)'), atoms: [{ el: 'O', x: 160, y: 150, color: '#ef4444' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1, 2]], formula: 'O₂' },
 
-            { name: __alloT('stem.molecule.n_nitrogen_gas', 'N₂ (Nitrogen Gas)'), atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1]], formula: 'N₂' },
+            { name: __alloT('stem.molecule.n_nitrogen_gas', 'N₂ (Nitrogen Gas)'), atoms: [{ el: 'N', x: 155, y: 150, color: '#3b82f6' }, { el: 'N', x: 245, y: 150, color: '#3b82f6' }], bonds: [[0, 1, 3]], formula: 'N₂' },
 
             { name: __alloT('stem.molecule.h_o_hydrogen_peroxide', 'H₂O₂ (Hydrogen Peroxide)'), atoms: [{ el: 'O', x: 160, y: 130, color: '#ef4444' }, { el: 'O', x: 240, y: 130, color: '#ef4444' }, { el: 'H', x: 110, y: 190, color: '#60a5fa' }, { el: 'H', x: 290, y: 190, color: '#60a5fa' }], bonds: [[0, 1], [0, 2], [1, 3]], formula: 'H₂O₂' },
 
@@ -2211,7 +2247,7 @@ window.StemLab = window.StemLab || {
 
             { name: __alloT('stem.molecule.o_ozone', 'O₃ (Ozone)'), atoms: [{ el: 'O', x: 130, y: 150, color: '#ef4444' }, { el: 'O', x: 200, y: 110, color: '#ef4444' }, { el: 'O', x: 270, y: 150, color: '#ef4444' }], bonds: [[0,1],[1,2]], formula: 'O₃' },
 
-            { name: __alloT('stem.molecule.co_carbon_monoxide', 'CO (Carbon Monoxide)'), atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0,1]], formula: 'CO' },
+            { name: __alloT('stem.molecule.co_carbon_monoxide', 'CO (Carbon Monoxide)'), atoms: [{ el: 'C', x: 160, y: 150, color: '#1e293b' }, { el: 'O', x: 240, y: 150, color: '#ef4444' }], bonds: [[0, 1, 3]], formula: 'CO' },
 
             { name: __alloT('stem.molecule.no_nitrogen_dioxide', 'NO₂ (Nitrogen Dioxide)'), atoms: [{ el: 'N', x: 200, y: 110, color: '#3b82f6' }, { el: 'O', x: 140, y: 180, color: '#ef4444' }, { el: 'O', x: 260, y: 180, color: '#ef4444' }], bonds: [[0,1],[0,2]], formula: 'NO₂' },
 
@@ -2522,7 +2558,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
             // ── Topic-accent hero band per mode ──
             (function() {
               var MODE_META = {
-                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.molecule.viewer_ball_and_stick_space_filling', 'Viewer - ball-and-stick + space-filling'),         hint: __alloT('stem.molecule.each_atom_s_color_follows_cpk_carbon_b', 'Each atom\u2019s color follows CPK (carbon black, oxygen red, nitrogen blue, hydrogen white). Bond lengths are not arbitrary - covalent radii from quantum chemistry tables, ~70-150 picometers.') },
+                viewer:    { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83D\uDD2C', title: __alloT('stem.molecule.viewer_3d_models', 'Viewer - 3D molecular models'),         hint: __alloT('stem.molecule.viewer_model_scale', 'Element colors and labels identify atoms. Sizes and bond lengths are illustrative, not measured to scale. Use the Shape & Polarity Lens to interpret supported molecular geometries.') },
                 creator:   { accent: '#9333ea', soft: 'rgba(147,51,234,0.10)', icon: '\u2697',         title: __alloT('stem.molecule.compound_creator_valence_bonding_rules', 'Compound Creator - valence + bonding rules'),     hint: __alloT('stem.molecule.octet_rule_most_atoms_want_8_valence_e', 'Octet rule: most atoms want 8 valence electrons. C bonds 4 ways, N 3, O 2, H 1. Lewis dot structures (1916) still drive 90% of intro chemistry intuition.') },
                 build:     { accent: '#d97706', soft: 'rgba(217,119,6,0.10)',  icon: '\uD83E\uDDF1', title: __alloT('stem.molecule.build_drag_atoms_draw_bonds', 'Build - drag atoms, draw bonds'),                  hint: __alloT('stem.molecule.single_double_triple_bonds_1_2_3_share', 'Single, double, triple bonds = 1, 2, 3 shared electron pairs. Triple bonds are shorter and stronger (N\u2261N at 110pm vs N-N at 145pm). Geometry follows VSEPR: pairs repel.') },
                 table:     { accent: '#2563eb', soft: 'rgba(37,99,235,0.10)',  icon: '\uD83D\uDDC2', title: __alloT('stem.molecule.periodic_table_mendeleev_s_1869_grid', 'Periodic Table - Mendeleev\u2019s 1869 grid'),     hint: __alloT('stem.molecule.periods_rows_electron_shells_groups_co', 'Periods (rows) = electron shells; groups (columns) = valence electrons. Mendeleev predicted gallium and germanium\u2019s properties before discovery - the table predicted reality.') },
@@ -2551,17 +2587,35 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
 
             // ── Viewer Mode ──
 
-            mode === 'viewer' && React.createElement("div", null,
+            mode === 'viewer' && React.createElement("div", { className: "mol-studio", 'data-molecule-studio': true, style: { '--mol-accent': isContrast ? '#ffff00' : isDark ? '#5eead4' : '#0f766e', '--mol-accent-ink': isDark ? '#042f2e' : '#ffffff' } },
+              React.createElement('style', null, "\n.mol-studio{--mol-ink:var(--allo-stem-text,#0f172a);--mol-muted:var(--allo-stem-text-soft,#475569);--mol-panel:var(--allo-stem-panel,#f8fafc);--mol-canvas:var(--allo-stem-canvas,#fff);--mol-line:var(--allo-stem-border,#cbd5e1);color:var(--mol-ink)}\n.mol-studio .mol-library{border:1px solid var(--mol-line);border-radius:16px;padding:12px;margin-bottom:14px;background:var(--mol-panel)}\n.mol-studio .mol-section-heading{display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:0 0 10px}\n.mol-studio .mol-section-heading h4{font-size:14px;font-weight:800;margin:0;color:var(--mol-ink)}\n.mol-studio .mol-section-heading p{font-size:12px;margin:0;color:var(--mol-muted)}\n.mol-studio .mol-preset-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:8px;max-height:218px;overflow-y:auto;padding:3px;scrollbar-gutter:stable;overscroll-behavior:contain}\n.mol-studio .mol-preset{position:relative;display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-width:0;min-height:68px;padding:10px 28px 10px 12px;border:1px solid var(--mol-line);border-radius:11px;background:var(--mol-canvas);color:var(--mol-ink);text-align:start;white-space:normal;overflow-wrap:anywhere}\n.mol-studio .mol-preset strong{font-size:19px;line-height:1.15;letter-spacing:-.02em}\n.mol-studio .mol-preset span{font-size:11px;line-height:1.35;color:var(--mol-muted)}\n.mol-studio .mol-preset[aria-pressed=true]{border:2px solid var(--mol-accent,#0f766e);padding:9px 27px 9px 11px;box-shadow:inset 4px 0 0 var(--mol-accent,#0f766e)}\n.mol-studio .mol-preset[aria-pressed=true]::after{content:'✓';position:absolute;right:9px;top:10px;color:var(--mol-accent,#0f766e);font-weight:900}\n.mol-studio button:focus-visible{outline:3px solid var(--mol-accent,#0f766e);outline-offset:2px}\n.mol-studio .mol-toolbar{background:var(--mol-panel);border:1px solid var(--mol-line);border-radius:14px;padding:10px;gap:8px}\n.mol-studio .mol-toolbar span{color:var(--mol-ink)}\n.mol-studio .mol-toolbar button{background:var(--mol-canvas);color:var(--mol-ink);border-color:var(--mol-line);min-height:44px}\n.mol-studio .mol-toolbar button[aria-pressed=true],.mol-studio [data-molecule-camera-control=fit]{background:var(--mol-accent,#0f766e);color:var(--mol-accent-ink,#fff);border-color:var(--mol-accent,#0f766e)}\n.mol-studio .mol-model-note{color:var(--mol-muted);font-size:12px;line-height:1.6;padding:0 4px}\n.mol-studio .mol-composition{margin-top:14px;border:1px solid var(--mol-line);border-radius:14px;background:var(--mol-panel);padding:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}\n.mol-studio .mol-formula{font-size:24px;font-weight:850;line-height:1.2;color:var(--mol-ink)}\n.mol-studio .mol-caption{font-size:12px;color:var(--mol-muted);margin:0 0 4px}\n.mol-studio .mol-atom-key{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0}\n.mol-studio .mol-atom-key li{display:flex;align-items:center;gap:7px;background:var(--mol-canvas);border:1px solid var(--mol-line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--mol-ink)}\n.mol-studio .mol-atom-dot{width:14px;height:14px;flex-shrink:0;border-radius:50%;border:1px solid var(--mol-muted);box-shadow:inset 0 2px 3px #ffffff50}\n.mol-studio .mol-lens{border:1px solid var(--mol-line);border-top:3px solid var(--mol-accent,#0f766e);border-radius:16px!important;background:var(--mol-panel);padding:16px;margin-top:16px}\n.mol-studio .mol-lens h4,.mol-studio .mol-lens dd{color:var(--mol-ink)}\n.mol-studio .mol-lens p,.mol-studio .mol-lens dt{color:var(--mol-muted)}\n.mol-studio .mol-lens dl>div,.mol-studio .mol-lens h4+span{border-color:var(--mol-line);background:var(--mol-canvas);border-radius:10px!important;padding:10px;color:var(--mol-ink)}\n@media(max-width:400px){.mol-studio .mol-preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.mol-studio .mol-library{padding:8px}.mol-studio .mol-preset{min-height:72px}.mol-studio .mol-lens{padding:12px}}\n@media(forced-colors:active){.mol-studio{--mol-accent:Highlight;--mol-accent-ink:HighlightText}.mol-studio .mol-preset[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px}.mol-studio .mol-atom-dot{forced-color-adjust:none}}\n"),
 
-              React.createElement("div", { className: "flex gap-1 mb-3 flex-wrap" }, viewerPresets.map(p => React.createElement("button", { "aria-label": "View molecule: " + p.name, key: p.name, onClick: () => updMulti({ atoms: p.atoms.map(a => ({ ...a })), bonds: [...p.bonds], formula: p.formula }), className: "px-2 py-1 rounded-lg text-xs font-bold " + (d.formula === p.formula ? 'bg-slate-700 text-white' : 'transition-colors bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-[0.97]') }, p.name))),
+              React.createElement('section', { className: 'mol-library', 'aria-labelledby': 'molecule-library-title' },
+                React.createElement('div', { className: 'mol-section-heading' },
+                  React.createElement('h4', { id: 'molecule-library-title' }, __alloT('stem.molecule.choose_model', 'Choose a model')),
+                  React.createElement('p', null, __alloT('stem.molecule.library_scroll', 'Scroll for more models'))
+                ),
+                React.createElement('div', { className: 'mol-preset-grid', role: 'group', 'aria-label': 'Molecule presets' }, viewerPresets.map(p => React.createElement('button', {
+                  type: 'button', 'aria-label': 'View molecule: ' + p.name, key: p.name,
+                  onClick: () => updMulti({ atoms: p.atoms.map(a => ({ ...a })), bonds: [...p.bonds], formula: p.formula }),
+                  'aria-pressed': d.formula === p.formula, className: 'mol-preset'
+                }, React.createElement('strong', null, p.formula), React.createElement('span', null, p.name.startsWith(p.formula) ? p.name.slice(p.formula.length).trim().replace(/^[(（]|[)）]$/g, '') : p.name))))
+              ),
 
               threeLoaded
                 ? React.createElement(React.Fragment, null,
-                  React.createElement("div", { className: "relative w-full rounded-xl overflow-hidden border", style: { height: "320px", background: "radial-gradient(circle at 50% 42%, rgba(30,64,175,0.34), rgba(15,23,42,0.72) 38%, #020617 78%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
+                  React.createElement('div', { role: 'group', 'aria-label': 'Molecule display options', className: 'mol-toolbar flex flex-wrap items-center gap-2 mb-3' },
+                    React.createElement('span', { className: 'text-xs font-bold text-slate-800 mr-1' }, __alloT('stem.molecule.model_style', 'Model style')),
+                    [ { id: 'ball-stick', label: __alloT('stem.molecule.ball_stick', 'Ball & stick') }, { id: 'spheres', label: __alloT('stem.molecule.sphere_model', 'Sphere model') } ].map(function(option) {
+                      return React.createElement('button', { key: option.id, type: 'button', 'aria-pressed': moleculeDisplayStyle === option.id, onClick: function() { upd('moleculeDisplayStyle', option.id); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-bold' }, option.label);
+                    }),
+                    React.createElement('button', { type: 'button', 'aria-pressed': showAtomLabels, onClick: function() { upd('showAtomLabels', !showAtomLabels); }, className: 'min-h-11 rounded-lg border px-3 py-2 text-xs font-bold' }, __alloT('stem.molecule.atom_labels', 'Atom labels'))
+                  ),
+                  React.createElement("div", { 'data-molecule-viewport': true, className: "relative w-full rounded-xl overflow-hidden border", style: { height: "clamp(340px, 48vw, 440px)", background: "radial-gradient(ellipse at 50% 42%, #162b46 0%, #0d1b2e 48%, #040b18 100%)", borderColor: "rgba(30,41,59,0.95)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05), inset 0 -42px 80px rgba(2,6,23,0.72), 0 18px 38px rgba(15,23,42,0.22)" } },
                     React.createElement("canvas", {
                       ref: webglCanvasRef,
                       role: "img",
-                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options.",
+                      "aria-label": "3D molecular model of " + (d.formula || "the selected molecule") + ". Camera controls follow with front, side, top, zoom, and reset options. " + (moleculeDisplayStyle === "spheres" ? "Sphere model. " : "Ball-and-stick model. ") + (showAtomLabels ? "Atom labels shown." : "Atom labels hidden."),
                       className: "w-full h-full",
                       style: { display: 'block', background: 'transparent' }
                     }),
@@ -2570,7 +2624,7 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       style: { position: "absolute", inset: 0, pointerEvents: "none", background: "radial-gradient(circle at 50% 46%, transparent 34%, rgba(2,6,23,0.5) 100%), linear-gradient(rgba(148,163,184,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(148,163,184,0.05) 1px, transparent 1px)", backgroundSize: "100% 100%, 28px 28px, 28px 28px", mixBlendMode: "screen", opacity: 0.68 }
                     }),
                     React.createElement("div", {
-                      style: { position: "absolute", top: 12, left: 12, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
+                      style: { position: "absolute", top: 12, left: 12, right: 12, pointerEvents: "none", width: "fit-content", maxWidth: "calc(100% - 24px)", display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", padding: "6px 9px", borderRadius: 10, background: "rgba(2,6,23,0.68)", color: "#dbeafe", border: "1px solid rgba(147,197,253,0.22)", boxShadow: "0 10px 24px rgba(2,6,23,0.35)", backdropFilter: "blur(10px)", fontSize: 11, fontWeight: 800, letterSpacing: 0 }
                     },
                       React.createElement("span", { style: { color: "#67e8f9" } }, "3D molecular model"),
                       React.createElement("span", { style: { color: "#94a3b8", fontWeight: 700 } }, d.formula || "No formula")
@@ -2583,14 +2637,16 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       title: __alloT('vr.enter_title', 'Enter VR (needs a headset)')
                     }, '🥽 ' + __alloT('vr.enter', 'VR'))
                   ),
+                  React.createElement('p', { className: 'mol-model-note mt-2', role: 'status' }, moleculeDisplayStyle === 'spheres' ? __alloT('stem.molecule.sphere_model_note', 'Sphere model enlarges atoms and hides bond rods to compare the outline. This is an illustration, not a measured van der Waals surface.') : __alloT('stem.molecule.ball_stick_note', 'Ball & stick shows connectivity. Each bond is colored by its attached atoms; parallel rods indicate double or triple bonds.')),
                   React.createElement('div', {
                     role: 'group',
                     'aria-label': __alloT('stem.molecule.camera_controls', '3D molecule camera controls. Single-click alternatives to dragging the model.'),
-                    className: 'mt-2 mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-slate-300 bg-slate-50 p-2'
+                    className: 'mol-toolbar mt-2 mb-3 flex flex-wrap items-center gap-2'
                   },
                     React.createElement('span', { className: 'px-1 text-xs font-black text-slate-800' },
                       __alloT('stem.molecule.camera', 'Camera')),
                     [
+                      { id: 'fit', label: __alloT('stem.molecule.fit_model', 'Fit model'), text: __alloT('stem.molecule.fit_model', 'Fit model') },
                       { id: 'front', label: __alloT('stem.molecule.front_view', 'Front view'), text: __alloT('stem.molecule.front', 'Front') },
                       { id: 'side', label: __alloT('stem.molecule.side_view', 'Side view'), text: __alloT('stem.molecule.side', 'Side') },
                       { id: 'top', label: __alloT('stem.molecule.top_view', 'Top view'), text: __alloT('stem.molecule.top', 'Top') },
@@ -2604,12 +2660,22 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                       'aria-label': control.label,
                       title: control.label,
                       onClick: () => setMoleculeCameraView(control.id),
-                      className: 'min-h-11 min-w-11 rounded-lg border border-slate-400 bg-white px-3 py-2 text-xs font-bold text-slate-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 active:scale-[0.97]'
+                      className: 'min-h-11 min-w-11 rounded-lg border px-3 py-2 text-xs font-bold'
                     }, control.text))
                   )
                 )
                 : React.createElement("svg", { viewBox: "0 0 " + W + " " + H, role: "img", "aria-label": "2D molecule structure with " + (d.atoms || []).length + " atom" + ((d.atoms || []).length === 1 ? "" : "s") + ". Drag an atom to reposition it; use the controls to add atoms and bonds.", className: "w-full bg-gradient-to-b from-slate-50 to-white rounded-xl border border-stone-200", style: { height: "320px", maxHeight: "320px", display: "block" }, onMouseMove: e => { if (d.dragging !== null && d.dragging !== undefined) { const svg = e.currentTarget; const rect = svg.getBoundingClientRect(); const nx = (e.clientX - rect.left) / rect.width * W; const ny = (e.clientY - rect.top) / rect.height * H; const na = d.atoms.map((a, i) => i === d.dragging ? { ...a, x: Math.round(nx), y: Math.round(ny) } : a); upd("atoms", na); } }, onMouseUp: () => upd("dragging", null), onMouseLeave: () => upd("dragging", null) },
-                    (d.bonds || []).map((b, i) => d.atoms[b[0]] && d.atoms[b[1]] ? React.createElement("line", { key: 'b' + i, x1: d.atoms[b[0]].x, y1: d.atoms[b[0]].y, x2: d.atoms[b[1]].x, y2: d.atoms[b[1]].y, stroke: "#94a3b8", strokeWidth: 4, strokeLinecap: "round" }) : null),
+                    (d.bonds || []).map((b, i) => {
+                      const a = d.atoms[b[0]], z = d.atoms[b[1]];
+                      if (!a || !z) return null;
+                      const order = b[2] === 2 || b[2] === 3 ? b[2] : 1;
+                      const length = Math.hypot(z.x - a.x, z.y - a.y) || 1;
+                      const offsets = order === 3 ? [-6, 0, 6] : order === 2 ? [-4, 4] : [0];
+                      return React.createElement('g', { key: 'b' + i, 'data-molecule-bond-order': order }, offsets.map((offset, lineIndex) => {
+                        const dx = -(z.y - a.y) / length * offset, dy = (z.x - a.x) / length * offset;
+                        return React.createElement('line', { key: lineIndex, x1: a.x + dx, y1: a.y + dy, x2: z.x + dx, y2: z.y + dy, stroke: '#94a3b8', strokeWidth: order === 1 ? 4 : 2.5, strokeLinecap: 'round' });
+                      }));
+                    }),
                     (d.atoms || []).map((a, i) => React.createElement("g", { key: i },
                       // A11y: role + tabIndex + aria-label + onKeyDown so keyboard /
                       // switch users (and Chromebook GPU-blacklist users on the
@@ -2640,22 +2706,34 @@ return React.createElement("div", { className: "max-w-5xl mx-auto animate-in fad
                     ))
                   ),
 
-              React.createElement("div", { className: "mt-2 text-center rounded-lg py-1", style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
-                // These panels paint var(--allo-stem-panel), which is #000000 in
-                // the contrast theme — so slate-600 on them measured 2.77:1 in
-                // the one theme built for maximum separation. Fall back to the
-                // theme's own ink token there.
-                React.createElement("span", { className: "text-sm font-bold text-slate-600", style: isContrast ? { color: 'var(--allo-stem-text)' } : undefined }, "Formula: "),
-                React.createElement("span", { className: "text-lg font-bold text-slate-800 tracking-tight" }, d.formula || '-'),
-                d.formula && d.atoms && React.createElement("span", { className: "ml-2 text-xs text-slate-600" },
-                  calcMolarMass((() => { const c = {}; (d.atoms || []).forEach(a => { c[a.el] = (c[a.el] || 0) + 1; }); return c; })()) + " g/mol"
-                )
-              ),
+              (() => {
+                const counts = {};
+                (d.atoms || []).forEach(atom => { if (!counts[atom.el]) counts[atom.el] = { count: 0, color: atom.color }; counts[atom.el].count++; });
+                return React.createElement('section', { className: 'mol-composition', 'aria-label': __alloT('stem.molecule.displayed_model', 'Displayed model') },
+                  React.createElement('div', null,
+                    React.createElement('p', { className: 'mol-caption' }, __alloT('stem.molecule.formula', 'Formula')),
+                    React.createElement('div', { className: 'mol-formula' }, d.formula || '—')
+                  ),
+                  React.createElement('div', null,
+                    React.createElement('p', { className: 'mol-caption' }, __alloT('stem.molecule.atoms_shown', 'Atoms shown · color key')),
+                    React.createElement('ul', { className: 'mol-atom-key' }, Object.entries(counts).map(([symbol, entry]) => {
+                      const color = threeLoaded && (!entry.color || entry.color.indexOf('var(') === 0) ? '#94a3b8' : entry.color || '#94a3b8';
+                      return React.createElement('li', { key: symbol },
+                        React.createElement('span', { className: 'mol-atom-dot', 'aria-hidden': true, style: { background: color } }),
+                        React.createElement('span', null, (getEl(symbol)?.name || symbol) + ' (' + symbol + ') × ' + entry.count)
+                      );
+                    }))
+                  ),
+                  d.formula && (d.atoms || []).length > 0 && React.createElement('p', { className: 'mol-caption' },
+                    __alloT('stem.molecule.displayed_atom_mass', 'Mass from displayed atoms:') + ' ' + calcMolarMass(Object.fromEntries(Object.entries(counts).map(([symbol, entry]) => [symbol, entry.count]))) + ' g/mol'
+                  )
+                );
+              })(),
 
               (() => {
                 const teaching = getMoleculeTeachingModel(d.formula);
                 return teaching && React.createElement("section", {
-                  className: "mt-3 border border-cyan-200 bg-cyan-50 p-3 text-left",
+                  className: "mol-lens mt-3 text-left",
                   style: { borderRadius: 8 },
                   "aria-labelledby": "molecule-shape-polarity-title"
                 },

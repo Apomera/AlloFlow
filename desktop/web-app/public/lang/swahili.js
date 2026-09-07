@@ -4909,10 +4909,10 @@
     "locked": "Imefungwa",
     "escaped": "wewe Escaped!",
     "escaped_desc": "wewe solved yote fumbos na escaped room!",
-    "time_up": "? Wakati's Up!",
+    "time_up": "⏰ Wakati's Up!",
     "reveal_hint": "Reveal kidokezo",
-    "puzzles_remaining": "{{count}} fumbos remaining",
-    "time_remaining": "Wakati: {{time}}",
+    "puzzles_remaining": "{count} fumbos remaining",
+    "time_remaining": "Wakati: {time}",
     "progress": "maendeleo",
     "start": "Anza Escape Room",
     "start_hint": "Anza timer kwa begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Kamilisha!",
     "loading_error": "Could sio pakia room data",
     "no_puzzle": "No fumbo found kwa hii object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Kamili escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Kamili escape! +{xp} bonus XP",
     "puzzle_mcq": "Nyingi Choice",
     "puzzle_sequence": "Put katika Order",
     "puzzle_cipher": "Decode ujumbe",
@@ -4982,7 +4982,7 @@
     "clue": "Kidokezo",
     "clue_found": "Dokezo Limegunduliwa!",
     "clue_revealed": "Hii clue inaweza msaada na another fumbo...",
-    "clues_collected": "Madokezo: {{count}}/{{total}}",
+    "clues_collected": "Madokezo: {count}/{total}",
     "use_clue": "Tumia Clue",
     "final_door": "Mlango wa Kutoka",
     "final_door_ready": "exit door ni sasa unlocked!",
@@ -4991,8 +4991,8 @@
     "final_door_desc": "Tumia everything wewe've learned kwa majibu hii synthesis maswali.",
     "final_puzzle": "Kwa kutumia nini wewe've learned, majibu hii:",
     "final_answer_placeholder": "Aina yako majibu here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "Karibia mlango wa kutokea",
+    "unlock_door": "Fungua kufuli la mlango",
     "victory_perfect": "Kamili Escape! No wrong majibu! +50 Bonus XP",
     "victory_normal": "wewe've Escaped! Congratulations!",
     "hint": "kidokezo",
@@ -5008,12 +5008,12 @@
     "left": "zimebaki",
     "wrong_attempts": "Majaribio Yasiyo Sahihi",
     "time_penalty": "-{seconds} sekunde!",
-    "game_over_time": "? Wakati's Up! wewe ran out ya wakati.",
+    "game_over_time": "⏰ Wakati's Up! wewe ran out ya wakati.",
     "streak": "Mfululizo",
     "streak_bonus": "Bonasi ya Mfululizo! x{multiplier}",
     "streak_lost": "Mfululizo umepotea!",
     "one_minute_warning": "Dakika moja imebaki!",
-    "thirty_seconds_warning": "? Tu 30 sekunde left!",
+    "thirty_seconds_warning": "⏰ Tu 30 sekunde left!",
     "timer_paused": "Kipima Muda Kimesimamishwa",
     "timer_resume": "Endelea",
     "settings_btn": "Room mipangilio",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Anza multiplayer chumba cha kukimbia na yako darasa",
     "team_mode": "Timu changamoto",
     "team_race": "Race kwa Escape!",
-    "team_progress": "{{team}} maendeleo: {{solved}}/{{total}}",
+    "team_progress": "{team} maendeleo: {solved}/{total}",
     "waiting_host": "Waiting kwa mwalimu kwa anza...",
-    "team_escaped": "{{team}} Timu Escaped!",
+    "team_escaped": "{team} Timu Escaped!",
     "all_teams_done": "yote Timus Finished!",
     "your_team": "yako Timu",
     "team_red": "Red Timu",
@@ -5036,7 +5036,7 @@
     "team_green": "Green Timu",
     "team_yellow": "Yellow Timu",
     "team_all": "yote mwanafunzi",
-    "teams_competing": "{{count}} timus competing",
+    "teams_competing": "{count} timus competing",
     "first_escape": "ya kwanza kwa Escape!",
     "end_game": "End mchezo",
     "end_game_confirm": "End chumba cha kukimbia kwa yote mwanafunzi?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Endelea mchezo",
     "game_paused_by_teacher": "mchezo paused by mwalimu",
     "celebration_title": "Hongera!",
-    "you_escaped": "yako timu escaped katika {{time}}!",
-    "other_team_escaped": "{{team}} wametoroka!",
+    "you_escaped": "yako timu escaped katika {time}!",
+    "other_team_escaped": "{team} wametoroka!",
     "class_escaped": "darasa Victory!",
     "everyone_escaped": "Everyone worked together kwa escape!",
     "hurry_up": "Keep going! wewe inaweza still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "Pakia Hifadhid",
     "loaded_saved": "Hifadhid Escape Room loaded! Kagua na zindua wakati ready.",
     "no_saved": "No imehifadhiwa Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready kwa cheza!",
+    "preview_confirmed": "✅ Escape Room locked • ready kwa cheza!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x bonasi ya mfululizo!)",
     "loaded_from_resource": "Loaded kutoka rasilimali."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Tuma kwa Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent kazi!",
       "partial": "nzuri effort, keep going!",
       "incorrect": "sio quite sahihi • jaribu again!",
-      "error": "Could sio evaluate • tafadhali jaribu again.",
+      "error": "Could sio evaluate — tafadhali jaribu again.",
       "verdict_correct": "Sahihi!",
       "verdict_partial": "Partially Sahihi",
       "verdict_incorrect": "sio Quite Sahihi",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **Final kiwango**: {level}",
       "log_header": "Safari Log",
       "chapter_separator": "***",
-      "user_label": "? wewe",
+      "user_label": "➤ wewe",
       "print_button": "Chapisha kitabu cha hadithi"
     },
     "answer_key_title": "majibu Ufunguo",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "wewe inaweza bofya yoyote maneno katika maandishi kwa ona its fasili!",
     "simplified_cloze": "Jaribu 'Cloze' hali kwa mtihani msamiati ujuzi.",
     "simplified_quiz": "Hii maandishi looks kubwa. Should we tengeneza Exit Ticket kwa angalia understanding?",
-    "simplified_glossary": "maneno like '{term1}' na '{term2}' might haja msaada • kamusi could msaada!",
+    "simplified_glossary": "maneno like '{term1}' na '{term2}' might haja msaada — kamusi could msaada!",
     "simplified_glossary_fallback": "Baadhi ya these istilahi ni tricky. kamusi would msaada msaada hii maandishi.",
     "simplified_outline": "kuona wanafunzi might benefit kutoka Graphic Organizer ya hii maudhui.",
     "glossary_bingo": "wewe inaweza turn these istilahi ndani maneno mchezo like Bingo, Memory Linganisha, pangu za maneno, au utafutaji wa maneno!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "Taka kwa ensure hii jaribio ni rigorous? Endesha kiwango Audit.",
     "adventure_sim": "Adventures ruhusu mwanafunzi kwa apply nini wao've learned katika safe simulation.",
     "adventure_inventory": "Angalia 'hesabu' kwa ona nini kipengele ina been collected.",
-    "adventure_context": "yako safari kuhusu {topic} gets richer na zaidi rasilimali • jaribu adding {suggestion}!",
+    "adventure_context": "yako safari kuhusu {topic} gets richer na zaidi rasilimali — jaribu adding {suggestion}!",
     "adventure_context_fallback": "zaidi rasilimali wewe tengeneza, richer safari muktadha becomes.",
     "timeline_drag": "Buruta na dondosha matukio kwa reorder sequence.",
     "timeline_visualize": "Hii inasaidia mwanafunzi taswira cause-na-effect relationships.",
@@ -8869,8 +8869,8 @@
     "parent_adventure": "Jaribu Safari hali kwa fun rainy-day shughuli.",
     "parent_read_along": "Tumia 'Soma Along' kwa fanya mazoezi kusoma together.",
     "fallback_lesson_plan": "wewe ina kubwa rasilimali. Synthesize them ndani somo Mpango?",
-    "fallback_brainstorm": "Feeling stuck? Jaribu chatting na me na geuza Otomatiki-Kamilisha kwa activate Blueprint hali • I'll msaada wewe design yako entire somo!",
-    "fallback_export": "wewe ina {count} rasilimali juu ya {topic} • hamisha nje them as single PDF!",
+    "fallback_brainstorm": "Feeling stuck? Jaribu chatting na me na geuza Otomatiki-Kamilisha kwa activate Blueprint hali — I'll msaada wewe design yako entire somo!",
+    "fallback_export": "wewe ina {count} rasilimali juu ya {topic} — hamisha nje them as single PDF!",
     "fallback_export_fallback": "wewe inaweza hamisha nje yote these rasilimali as single PDF packet.",
     "fallback_guide": "Chagua 'Onyesha Me' katika AI Guide kama wewe get lost!",
     "intro_greeting": "Bofya me kwa rekebisha my sauti mipangilio.",
@@ -9019,7 +9019,7 @@
     "text_generated": "yako adapted maandishi juu ya {topic} ni ready! Jaribu bofyaing maneno kwa ona its fasili, au chunguza zana like kamusi au jaribio kwa deepen understanding.",
     "flashcards_created": "kadi za kumbukumbu imeundwa! wewe inaweza hamisha nje them kwa Quizlet, chapisha them, au jaribu Memory mchezo.",
     "quiz_generated": "jaribio ready! Tumia Presentation hali kwa darasa, au jaribu Otomatiki-Grader kwa fungua responses.",
-    "glossary_generated": "kamusi kamilisha! Jaribu maneno mchezo • Bingo, Memory Linganisha, pangu za maneno, utafutaji wa maneno, na zaidi!",
+    "glossary_generated": "kamusi kamilisha! Jaribu maneno mchezo — Bingo, Memory Linganisha, pangu za maneno, utafutaji wa maneno, na zaidi!",
     "adventure_started": "yako safari begins! Aina yako action below, au tumia chaguo kitufe kwa decide nini happens inayofuata.",
     "adventure_scene": "nini ita wewe do? Every chaguo umbo yako hadithi!",
     "analysis_complete": "Uchambuzi kamilisha! I found baadhi msamiati na ufunguo dhana worth exploring.",
@@ -10156,7 +10156,7 @@
     "type_timeline": "Mjenzi wa Mfuatano",
     "type_timeline_desc": "Sequencing shughuli adapted kwa kiwango cha darasa",
     "full_pack": "Kamili rasilimali Pack • Chagua yote",
-    "deselect_all": "? Deselect yote",
+    "deselect_all": "↩ Deselect yote",
     "estimate": "Kadiria",
     "api_calls": "Miito ya API",
     "start_batch": "Tengeneza",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating yako personalized toleo...",
     "bridge_projection": "Projection hali",
     "bridge_exit_projection": "Toka kwa Makadirio",
-    "bridge_offline_info": "No moja kwa moja kipindi • preview juu ya hii device tu",
+    "bridge_offline_info": "No moja kwa moja kipindi — preview juu ya hii device tu",
     "bridge_term_saved": "Hifadhid \"{term}\" kwa kamusi",
     "bridge_term_save_failed": "Failed kwa hifadhi istilahi",
     "bridge_save_term": "Hifadhi kwa kamusi",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "Custom lugha...",
     "bridge_f2f_custom_placeholder": "mfano Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "yote istilahi imehifadhiwa kwa kamusi!",
-    "bridge_terms_saved": "? yote Hifadhid",
+    "bridge_terms_saved": "✅ yote Hifadhid",
     "fullpack_group_target": "Lengo Kikundi",
     "fullpack_group_current": "Sasa mipangilio",
     "fullpack_group_all": "yote Kikundis",
@@ -12182,7 +12182,11 @@
       "trapezoid": "Trapezi",
       "simpson": "Simpson",
       "rectangles_n": "mstatili (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "Maelezo yako tayari.",
+      "a11y_back_to_tools": "Rudi kwenye zana",
+      "a11y_snapshot": "Picha ya papo hapo",
+      "a11y_next": "Ifuatayo"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Kivinjari hiki hakitumii sauti",
@@ -12306,13 +12310,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Tengeneza maelezo ya AI katika kiwango",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
       "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level_group": "Kiwango cha kusoma",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13937,8 +13941,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Sahihi! It\\",
-      "that": "? Hiyo\\",
+      "correct_it": "✅ Sahihi! It\\",
+      "that": "❌ Hiyo\\",
       "linear": "Mstari",
       "quadratic": "Quadratiki",
       "cubic": "Kubiki",
@@ -14212,7 +14216,8 @@
       "angle_u00b0": "Pembe (°)",
       "velocity_ms": "Kasi (m/s)",
       "gravity_msu00b2": "Mvuto (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Maelezo yako tayari."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14240,7 +14245,10 @@
       "codominant_desc": "Alele zote mbili huonyeshwa kikamilifu. Heterozigoti huonyesha sifa zote mbili kwa wakati mmoja.",
       "sexLinked_desc": "Sifa iko kwenye kromosomu X. Hii inaonyesha urithi wa X-linked RECESSIVE (kama hemofilia na upofu wa rangi nyekundu-kijani): wanaume (XY) huhitaji nakala moja tu; wanawake (XX) huhitaji mbili.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Rudi kwenye zana za STEM",
+      "a11y_snapshot": "Picha ya papo hapo",
+      "a11y_close_flashcard": "Funga kadi"
     },
     "circuit": {
       "meter_status_ammeter_short": "Nafasi isiyo salama: njia ya mzunguko-mfupi",
@@ -14532,8 +14540,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Sahihi!",
-      "it": "? It\\"
+      "correct": "✅ Sahihi!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "Suluhisho la Kwanza",
@@ -14649,8 +14657,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Sahihi!",
-      "answer": "? majibu:",
+      "correct": "✅ Sahihi!",
+      "answer": "❌ majibu:",
       "hydrogen": "Hidrojeni",
       "helium": "Heli",
       "lithium": "Lithiamu",
@@ -14792,7 +14800,7 @@
       "reddish_metal_used_since_the": "Reddish metal imetumika since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal hiyo prevents rust",
       "best_conductor_of_electricity_among": "Bora conductor ya electricity among yote metals",
-      "dense_soft_shiny_precious_metal": "Madini ya thamani, mzito, laini, na ung'arao • haitu kutu kamwe",
+      "dense_soft_shiny_precious_metal": "Madini ya thamani, mzito, laini, na ung'arao — haitu kutu kamwe",
       "strong_as_steel_but_45": "Strong as steel lakini 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal hiyo gives rubies wao red rangi",
       "essential_for_steel_production_and": "Essential kwa steel production na bone health",
@@ -15898,7 +15906,9 @@
       "our_sun_is_born": "Our Sun ni Born",
       "present_day": "Siku ya Leo",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Rudi kwenye zana",
+      "a11y_simulation_speed": "Kasi ya uigaji"
     },
     "rocks": {
       "igneous": "Mwamba moto",
@@ -18823,7 +18833,10 @@
       "garage_desc": "Injini, kutu na miitikio — warsha ya kemia.",
       "classroom_desc": "Darasa halisi la sayansi lenye beaker na majaribio.",
       "outdoors_desc": "Toka nje — asili ndiyo maabara kubwa kuliko zote.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Rudi kwenye zana",
+      "a11y_snapshot": "Picha ya papo hapo",
+      "a11y_next": "Ifuatayo"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Imehifadhiwa kwa historia!",
@@ -19610,7 +19623,40 @@
       "read_what_special_education_law_actually": "Soma kile ambacho sheria ya elimu maalum inasema hasa, kwa maneno yake yenyewe. Maandishi halisi ya IDEA Sehemu B na Kifungu 504, yaliyochukuliwa kutoka eCFR na yenye tarehe, yanayotafutika, yakiwa na kanuni za shirikisho na za jimbo pamoja. Hakuna kinachofafanuliwa upya wala kutungwa: ikiwa maandishi rasmi hayajapakiwa, kifaa husema hivyo badala ya kubahatisha.",
       "applied_k_12_behavior_practice_what": "Utendaji wa tabia uliotumika kutoka chekechea hadi sekondari — kile ambacho wanasaikolojia wa shule na waelimishaji hufanya kweli na sayansi hii. Muundo wa ngazi tatu wa PBIS, tabia mbadala zilizounganishwa na kazi za FBA, matukio ya mazingira (vichocheo vya polepole ambavyo BIP nyingi hukosa), mzunguko wa hatua saba wa mlipuko wa Geoff Colvin, na maadili ya kuzuia na kutenga yanayoegemea Sura ya 33 ya Maine. Kifaa dada cha BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Biolojia ya bahari na sayansi ya tabia ya pweza, ngisi, ngisi wa mifupa na nautilus. Kivutio kikuu: Hunter Sim — chagua spishi, makazi, mawindo na mbinu, cheza mchezo mdogo wa kujificha, na kadiria wakati wa kushambulia. Hufungua vipande vya biolojia vya daftari la shambani (utaratibu wa kromatofori, akili 9, damu ya buluu, msukumo wa jeti). Mwongozo wa shambani wa spishi 10 wenye takwimu za akili, kujificha na kasi ya msukumo.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 na HS-PS2. Kiigaji cha mkazo wa trasi chenye urefu, kimo, mzigo na malighafi vinavyoweza kurekebishwa, ulinganisho wa aina za daraja (boriti, trasi, tao, mning'inio, kebo), hifadhidata ya malighafi, aina za nguvu, uchunguzi wa matukio halisi (Tacoma Narrows, Hyatt Regency, Tay, Silver, pamoja na Brooklyn, Golden Gate, Akashi na Millau), mzunguko wa usanifu wa uhandisi, jaribio la mtindo wa AP, na vipimo vya usanifu vinavyoweza kuchapishwa."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 na HS-PS2. Kiigaji cha mkazo wa trasi chenye urefu, kimo, mzigo na malighafi vinavyoweza kurekebishwa, ulinganisho wa aina za daraja (boriti, trasi, tao, mning'inio, kebo), hifadhidata ya malighafi, aina za nguvu, uchunguzi wa matukio halisi (Tacoma Narrows, Hyatt Regency, Tay, Silver, pamoja na Brooklyn, Golden Gate, Akashi na Millau), mzunguko wa usanifu wa uhandisi, jaribio la mtindo wa AP, na vipimo vya usanifu vinavyoweza kuchapishwa.",
+      "the_gutenberg_style_screw_press_as": "Mashine ya uchapishaji ya skrubu ya mtindo wa Gutenberg kama uigaji unaofanya kazi. Vuta pau, panga herufi zako mwenyewe, tazama alama iliyobonyezwa. Pamoja na sayansi ya vitu (mchanganyiko wa risasi, bati na antimoni), uchumi (kuporomoka kwa gharama ya kila kitabu), historia (Matengenezo ya Kanisa, mapinduzi ya kisayansi), sanaa ya herufi, na watu waliokuwa nyuma ya mashine (pamoja na wanawake wachapishaji ambao historia iliwasahau). Imejengwa kwa kazi inayovuka masomo katika shule ya kati.",
+      "three_js_stoop_simulator_deep_science": "Kiigaji cha kushuka kwa kasi kwa Three.js pamoja na sayansi ya kina ya mikanika ya kuwinda kwa ndege wawindaji. Ruka kama kipanga peregrine kwa 240 mph, kama tai harpy mwenye kucha za 530 psi, au kama bundi mwenye pembe asiye na sauti. Spishi 8 na sehemu 12: nguvu ya kucha, kuona (mara 4-8 ya binadamu, urujuanimno kwa vipanga), fizikia ya kuruka, kuruka kimya kwa bundi, kikokotoo cha kasi ya mwisho, kupona baada ya DDT na majanga ya uhifadhi yanayoendelea, na utambuzi shambani kwa kivuli na muonekano wa jumla.",
+      "practice_reading_and_completing_the_documents": "Jizoeze kusoma na kujaza nyaraka ambazo maisha ya utu uzima hutegemea: maombi ya kazi, fomu za W-4, mikataba ya kupanga, fomu za kupokelewa hospitalini, vibali vya kuendesha, na mwaliko wa mkutano wako mwenyewe wa IEP. Kila sehemu imefafanuliwa kwa lugha rahisi, visanduku vinavyoweza kukugharimu vimewekewa alama, kuna hali za shinikizo kwa wakati ambapo mtu anataka utie saini sasa hivi, na sentensi tayari za kuomba muda. Mazoezi yote hutumia mtu wa kubuni, kamwe si taarifa zako halisi.",
+      "how_swimming_works_stroke_physics_survival": "Jinsi kuogelea kunavyofanya kazi (fizikia ya mipigo pamoja na ujuzi wa kunusurika) na kile kila mwogeleaji anapaswa kujua kuhusu maji baridi, mikondo ya kurudi, barafu, jaketi za kuokoa, na uokoaji. Uchambuzi wa picha wa kila mpigo, sayansi ya kuelea na kusukumwa, na ujuzi wa kunusurika (kuelea kwa mgongo, kupiga miguu kama kupiga yai, mkao wa HELP, kukusanyika pamoja) unaookoa maisha kweli. Vyanzo: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Kwa elimu tu: ili kweli ujifunze kuogelea, tafuta mwalimu wa kuogelea.",
+      "tax_paycheck_calculator_data_literacy_decision": "Kikokotoo cha kodi na hati ya malipo, ujuzi wa kusoma data, matriki ya maamuzi, kisomaji cha mikataba, kumbukumbu na karatasi, kupanga usafiri, utayari wa kazi, kuandaa wasifu, kupanga ushahidi wa jalada, mazoezi ya usaili, ujuzi wa mawasiliano, usimamizi wa muda, bima ya afya, utunzaji wa meno, ergonomia ya utunzaji wa mwili, mazoea ya usingizi, lebo za dawa, kujiandaa kwa miadi, usalama nyumbani, usalama wa kidijitali, utulivu kuhusu chakula, na sayansi tumizi kwa maisha ya kila siku.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 na HS-LS4. Ulimwengu wa vijidudu: bakteria (wenye manufaa na wanaosababisha magonjwa), virusi (COVID, homa ya mafua, HIV, faji, surua), hadubini (mwanga, utofautishaji wa awamu, umeme-mwanga, elektroni, AFM), mageuko ya usugu wa viuavijasumu, mikrobiomu ya binadamu, udongo na bahari, chanjo na mfumo wa kinga, uchachushaji (unga wa siki, mtindi, kimchi, sauerkraut, kombucha, jibini), tafiti za matukio (Snow, Fleming, MRSA, COVID na mRNA, FMT), jaribio, na marejeleo yanayochapishika kuhusu usalama wa maabara na vijidudu.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Kampeni kumi na tano za utunzaji wa mazingira katika mikoa kumi na moja. Kampeni tano ndefu za Maine za vipindi vingi, pamoja na hali kumi zinazovuka mikoa na kugusa familia zote tano za mekaniki: moto (Yarralin nchini Australia, Karuk kaskazini mwa California), uhifadhi (Yellowstone, Akagera nchini Rwanda), afya ya umma (dengue Mumbai, ebola ya 2014 Liberia), bonde la maji (Mto Klamath, Bonde la Murray-Darling), na hali ya hewa (Visiwa vya Marshall, delta ya Bangladesh). Ufahamu wa kuoanisha familia hufunguka unapomaliza kampeni ya Maine na ile inayovuka mikoa ya familia ile ile ya mekaniki.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 na MS-ESS3-3. Buni mji mdogo kwenye gridi ya viwanja 144 dhidi ya mahitaji yanayogongana kikweli. Miji mitatu, kila mmoja na kizuizi tofauti cha maamuzi: Riverbend, ambapo maji ya mvua na dhamana yanabana; Mesa Hollow, ambapo chemichemi ya chini ya ardhi imewekwa na mashamba yanaikunywa; na Harborlight, ambapo mpango lazima ufanye kazi hata mwaka 2050. Mtiririko kwa njia ya kimantiki, mizani ya maji, posho ya kupanda kwa kina cha bahari, umbali wa kutembea kwenye mtandao, na mtandao wa barabara wenye gharama, kila kimoja kinafunguka kuonyesha fomula yake. Assumption Lab huendesha upya mpango uleule kwa seti mbili za vigezo zilizochapishwa, ili wanafunzi waone hitimisho lipi linanusurika kwa zote mbili. Ramani, jedwali la viwanja linaloweza kuhaririwa, na modeli ya 3D ya mpango uleule. Maswali ya mjadala na historia yenye nyaraka hubeba maswali ambayo zana hii inakataa kuyaiga. Hakuna alama wala jibu la mwalimu.",
+      "codap_data_science": "CODAP: sayansi ya data",
+      "lumen_research_canvas": "Lumen: turubai ya utafiti",
+      "evolab_evolution": "EvoLab: mageuko",
+      "dino_lab": "Maabara ya dinosaria",
+      "nutritionlab_nutrition_science": "NutritionLab: sayansi ya lishe",
+      "birdlab_i_spy_ornithology": "BirdLab: elimu ya ndege ya kutafuta",
+      "openbim_companion": "OpenBIM: mwongozo mwenza",
+      "applab_ai_app_generator": "AppLab: kitengeneza programu kwa AI",
+      "access_lens": "Lenzi ya ufikivu",
+      "sim_shelf": "Rafu ya uigaji",
+      "zoom_gallery": "Ghala la kukuza",
+      "sourcebook": "Kitabu cha vyanzo",
+      "wheel_fire_pottery_lab": "Gurudumu na moto: maabara ya ufinyanzi",
+      "echo_navigator": "Kiongozi cha mwangwi",
+      "learning_lab_how_learning_works": "Learning Lab: kujifunza kunavyofanya kazi",
+      "weldlab_welding_metal_joining": "WeldLab: kulehemu na kuunganisha metali",
+      "bikelab_physics_repair": "BikeLab: fizikia na matengenezo",
+      "fisherlab_boating_fishing_sim": "FisherLab: kiigaji cha usafiri wa maji na uvuvi",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: kiigaji cha shamba la kome",
+      "throwlab_sports_physics": "ThrowLab: fizikia ya michezo",
+      "skatelab_skate_bmx_physics": "SkateLab: fizikia ya sketi na BMX",
+      "playlab_strategy_on_the_field": "PlayLab: mkakati uwanjani",
+      "kepler_colony": "Koloni ya Kepler",
+      "birdlab_life_list": "BirdLab: orodha ya maisha",
+      "petslab_decoder": "PetsLab: kisomaji tabia"
     },
     "area": {
       "volume": "ujazo..."
@@ -19650,7 +19696,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Rudi kwenye zana",
+      "a11y_snapshot": "Picha ya papo hapo",
+      "a11y_next": "Ifuatayo",
+      "a11y_simulation_speed": "Kasi ya uigaji",
+      "a11y_close_flashcard": "Funga kadi"
     },
     "solar_sys": {
       "venus": "Zuhura",
@@ -20472,7 +20523,8 @@
       "scaled_volume_changed": "🔵 Imepimwa (ujazo umebadilika)",
       "skewed_shape_deformed": "🟠 Imeinama (umbo limepotoshwa)",
       "degenerate_volume_0": "💀 Imedhoofika (ujazo → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Maendeleo ya mwongozo"
     },
     "numberline": {
       "first_mark": "Alama ya Kwanza",
@@ -22615,7 +22667,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Mwaka {value1} unaanza."
     },
     "optics": {
       "optics_lab": "Maabara ya Optiki",
@@ -22961,7 +23014,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Hoja ya SQL ya uchambuzi ya ndani"
     },
     "geosandbox": {
       "loading_3d_engine": "Inapakia injini ya 3D...",
@@ -23311,7 +23365,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Sanamu imeondolewa"
     },
     "algebraCAS": {
       "solve": "🔍 Tatua",
@@ -25927,7 +25982,8 @@
       "ml_over": " mL kwa ",
       "trials_suffix": " vipimo",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " sekunde zimebaki"
+      "sr_seconds_remaining": " sekunde zimebaki",
+      "sr_explanation_ready": "Maelezo yako tayari."
     },
     "economicslab": {
       "six_figures": "Mapato ya tarakimu sita",
@@ -27907,7 +27963,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Tafakari imehifadhiwa."
     },
     "anatomy": {
       "skeletal": "Mifupa",
@@ -28489,7 +28546,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Weka upya kamera ya 3D"
     },
     "dna": {
       "back_to_tools": "Rudi kwa Zana",
@@ -29866,7 +29924,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Tafakari imehifadhiwa."
     },
     "angles": {
       "back_to_tools": "Rudi kwenye zana",
@@ -30680,7 +30739,8 @@
       "explain_how_each_parameter_shapes_a_si": "Eleza jinsi kila kigezo kinavyounda wimbi la sine.",
       "design_note_discrete_5_state_marker_no": "Dokezo la muundo: kialama tenganifu cha hali 5; hakuna alama za wimbi; hakuna ufunuo — kwa muundo.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Maelezo yako tayari."
     },
     "typingpractice": {
       "typing_practice_menu": "Menyu ya Mazoezi ya Kuandika",
@@ -31034,7 +31094,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Rudi kwenye menyu"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34443,7 +34504,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Chagua jibu: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Rudi kwenye zana",
@@ -35208,7 +35270,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "imezimwa",
+      "sr_nothing_to_redo": "Hakuna cha kurudia.",
+      "sr_nothing_to_undo": "Hakuna cha kutendua.",
+      "sr_dir_left": "kushoto",
+      "sr_dir_right": "kulia"
     },
     "arithmetic": {
       "selected": " imechaguliwa.",
@@ -39254,7 +39321,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR imesawazishwa kwa radiant iliyo juu kabisa angani na kikomo cha mwangaza 6.5. Kadirio hili la takribani linadhania anga safi, lisilo na mwezi, na population index 2.2. Madaraja ya Bortle yanaonyesha kikomo cha mwangaza kwa kukadiria tu; anga lenye giza zaidi kuliko kawaida linaweza kuzidi ZHR. Kimo cha chini cha radiant na anga angavu zaidi hupunguza kadirio.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Rudi kwenye zana za STEM"
     },
     "autorepair": {
       "back_to_menu": "Rudi kwenye menyu",
@@ -39995,7 +40063,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Alama: {value1} kati ya {value2}",
+      "a11y_open_2": "Fungua {value1}",
+      "a11y_option": "Chaguo {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Ganda",
@@ -40098,7 +40169,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Maelezo yako tayari."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40844,7 +40916,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Maelezo yako tayari.",
+      "a11y_investigation_progress": "Maendeleo ya uchunguzi",
+      "a11y_flight_debrief": "Mapitio ya safari ya ndege",
+      "a11y_tutorial_progress": "Maendeleo ya mwongozo"
     },
     "behaviorlab": {
       "chain_reaction": "Mwitikio wa mnyororo",
@@ -41018,7 +41094,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Maelezo yako tayari.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43528,7 +43604,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Moduli iliyochunguzwa: {value1}",
+      "a11y_score_out_of": "Alama: {value1} kati ya {value2}",
+      "sr_selected": "Iliyochaguliwa: {value1}",
+      "sr_quiz_reset": "Jaribio limewekwa upya"
     },
     "brainatlas": {
       "group_systems": "Mifumo",
@@ -48684,7 +48764,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Chagua jibu: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Bingwa wa Jaribio",
@@ -49828,7 +49909,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Iliyochaguliwa: {value1}"
     },
     "echotrainer": {
       "wall": "Ukuta",
@@ -51287,7 +51369,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Moduli iliyochunguzwa: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Kikokotoo cha Kaboni",
@@ -52367,7 +52450,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Rudi kwenye menyu",
+      "sr_getting_critique": "Inaleta uhakiki...",
+      "sr_critique_ready": "Uhakiki uko tayari."
     },
     "flightsim": {
       "game_controls": "🎮 VIDHIBITI VYA MCHEZO",
@@ -52573,7 +52659,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Mwonekano wa chumba cha rubani katika kiigizo cha safari ya ndege. W/S kuinua na kushusha pua, A/D kuegemea, Shift/Ctrl lifti ya kasi, mabano hudhibiti mabawa madogo, X breki za magurudumu, Q jaribio, F nguvu, Space sitisha, I taarifa.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52585,7 +52671,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Ndege Huru kutoka Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52632,7 +52718,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Mnara wa Shanghai",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58457,7 +58543,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Moduli iliyochunguzwa: {value1}",
+      "sr_loaded": "{value1} imepakiwa",
+      "sr_showing": "Inaonyesha {value1}",
+      "sr_opening": "Inafungua {value1}"
     },
     "platetectonics": {
       "pacific": "Pasifiki",
@@ -58710,7 +58800,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63279,7 +63369,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Maelezo yako tayari.",
+      "sr_off": "imezimwa",
+      "sr_edge_left": "kushoto",
+      "sr_edge_right": "kulia",
+      "sr_correct": "Sahihi.",
+      "sr_not_quite": "Si sawa kabisa."
     },
     "playlab": {
       "save": "Hifadhi",
@@ -63347,7 +63443,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Mkufunzi hayuko mtandaoni.",
+      "sr_drill_stopped": "Zoezi limesimamishwa."
     },
     "printingpress": {
       "menu": "← Menyu",
@@ -65486,7 +65584,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Rudi kwenye menyu",
+      "a11y_open": "Fungua {value1}",
+      "sr_selected": "Iliyochaguliwa: {value1}",
+      "sr_loaded": "{value1} imepakiwa",
+      "sr_opening": "Inafungua {value1}",
+      "sr_correct": "Sahihi.",
+      "sr_not_quite": "Si sawa kabisa.",
+      "sr_year_begins": "Mwaka {value1} unaanza.",
+      "sr_question_reset_try_again": "Swali limewekwa upya. Jaribu tena.",
+      "sr_not_quite_see_the_explanation": "Si sawa kabisa: tazama maelezo."
     },
     "raptorhunt": {
       "show_answer": "Onyesha majibu",
@@ -67135,7 +67243,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Fungua {value1}",
+      "a11y_flight_debrief": "Mapitio ya safari ya ndege"
     },
     "renewables": {
       "menu": "← Menyu",
@@ -67835,7 +67945,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Rudi kwenye menyu",
+      "sr_getting_critique": "Inaleta uhakiki...",
+      "sr_critique_ready": "Uhakiki uko tayari.",
+      "sr_quiz_reset": "Jaribio limewekwa upya"
     },
     "roadready": {
       "let_s_start": "Hebu tuanze →",
@@ -70702,7 +70816,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Rudi kwenye zana za STEM",
+      "a11y_local_analytical_sql_query": "Hoja ya SQL ya uchambuzi ya ndani"
     },
     "stewardship": {
       "sector": "Sekta",
@@ -71279,7 +71395,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Rudi kwenye menyu",
+      "sr_question_reset_try_again": "Swali limewekwa upya. Jaribu tena."
     },
     "throwlab": {
       "scenarios": "Matukio",
@@ -71504,7 +71622,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Weka upya kamera ya 3D",
+      "sr_coach_is_offline": "Mkufunzi hayuko mtandaoni.",
+      "sr_drill_stopped": "Zoezi limesimamishwa."
     },
     "weldlab": {
       "menu": "← Menyu",
@@ -73066,7 +73187,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Moduli iliyochunguzwa: {value1}",
+      "a11y_score_out_of": "Alama: {value1} kati ya {value2}",
+      "sr_quiz_reset": "Jaribio limewekwa upya",
+      "sr_loaded": "{value1} imepakiwa",
+      "sr_showing": "Inaonyesha {value1}",
+      "sr_not_quite_see_the_explanation": "Si sawa kabisa: tazama maelezo."
     },
     "worldbuilder": {
       "grade_level": "Kiwango cha darasa",
@@ -73972,7 +74099,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Kiwango cha kusoma",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74659,7 +74786,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Mti wa uhai",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76514,7 +76641,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Chaguo {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Mionekano ya kamera ya 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76526,6 +76655,22 @@
       "finish": "Nimeelewa!",
       "replay": "Vidokezo",
       "replay_aria": "Onyesha mafunzo"
+    },
+    "pets": {
+      "sr_back_to_menu": "Rudi kwenye menyu",
+      "sr_getting_critique": "Inaleta uhakiki...",
+      "sr_critique_ready": "Uhakiki uko tayari."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Rudi kwenye zana za STEM",
+      "a11y_3d_camera_views": "Mionekano ya kamera ya 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Maendeleo ya uchunguzi"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Hakuna cha kurudia.",
+      "sr_nothing_to_undo": "Hakuna cha kutendua."
     }
   },
   "glossary_health": {
@@ -77128,7 +77273,7 @@
       "person": "Mtu\\",
       "phase_label": "Lebo ya awamu",
       "rationale_which_antecedent_does_this_address": "Sababu (ni kichocheo kipi hii inashughulikia?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect juu ya yako approach...\\n• nini worked well?\\n• nini would wewe do differently?\\n• nini mikakati do wewe taka kwa fanya mazoezi inayofuata?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect juu ya yako approach...\n• nini worked well?\n• nini would wewe do differently?\n• nini mikakati do wewe taka kwa fanya mazoezi inayofuata?",
       "reinforcement_how_you": "⭐ Reinforcement (jinsi wewe\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement tabia (functionally sawa na)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77136,7 +77281,7 @@
       "search_81_tools": "🔍 Tafuta 80+ zana…",
       "search_aba_terms": "🔍 Tafuta ABA istilahi...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Tafuta istilahi... (e.g. \"reinforcement\", \"FBA\", \"data\")",
-      "session_1_3nsession_2_7nsession_3_5n": "kipindi 1: 3\\nKipindi 2: 7\\nKipindi 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "kipindi 1: 3\nKipindi 2: 7\nKipindi 3: 5\n...",
       "setting_eg_math_class_cafeteria": "mpangilio (e.g., Hesabu darasa, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Shiriki nini wewe notice at home — strengths, concerns, cultural muktadha, au suggestions kwa school timu...",
       "step_description": "hatua description...",
@@ -78607,7 +78752,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Kimo cha mkato",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80801,7 +80946,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Picha ya dhana",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80835,10 +80980,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Weka samani katika kila dhana",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Maendeleo ya kuweka samani",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80851,7 +80996,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Majina yanayowezekana",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80862,7 +81007,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Kukumbuka dhana",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82420,7 +82565,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Funga Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82429,7 +82574,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Chuja kazi",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82467,15 +82612,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Swali {n}",
+    "q_choices_aria": "Chaguo za swali {n}, moja kwa kila mstari",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Ondoa swali {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Hatua za mizani kwa swali {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Aina ya jibu kwa swali {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82485,10 +82630,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Kiungo kinachoweza kuteuliwa cha {title}",
+    "scale_high_aria": "Lebo ya ncha ya juu",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Lebo ya ncha ya chini",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82508,7 +82653,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Muhtasari wa hali ya kazi",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82524,9 +82669,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Husasishwa kiotomatiki",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Kiungo cha kazi ya nyumbani kinachoweza kuteuliwa",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82535,7 +82680,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Msimbo wa QR wa kazi ya nyumbani",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84983,7 +85128,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Chagua kiwango cha ukuaji kwa vidokezo na vigezo",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84991,7 +85136,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Washa au zima mwonekano wa mwalimu",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85022,17 +85167,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Sitisha kurekodi dokezo la sauti",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Endelea kurekodi dokezo la sauti",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Anza kurekodi dokezo la sauti",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Komesha kurekodi",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85418,22 +85563,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Sababu ya utambuzi wa AlloHaven",
+    "recent_deliveries_aria": "Utambuzi wa faragha wa AlloHaven wa hivi karibuni",
+    "token_amount_aria": "Idadi ya tokeni za AlloHaven",
+    "token_cap_aria": "Kikomo cha tokeni za AlloHaven kwa kila mwanafunzi kwa kila kipindi"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Vighairi vinavyoruhusiwa huku lengo likiendelea kufikiwa",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Ishara ya maendeleo ya hiari inayofuatiliwa na programu kwa lengo hili",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Timu nzima pamoja, au kila mwanafunzi mmoja mmoja",
+    "name_aria": "Jina la lengo la darasa, huhifadhiwa kwenye kifaa hiki pekee",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Wanafunzi gani lengo hili linawahusu",
+    "template_aria": "Kiolezo cha kuanzia cha lengo la darasa",
+    "tokens_aria": "Alama zinazotolewa kwa kila mwanafunzi lengo hili linapofikiwa"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85451,7 +85596,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Tokeni ya msimamizi ya Class Mailbox (si lazima)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85481,17 +85626,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "mkono umeinuliwa",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Kiungo cha kujiunga na sanduku moja kwa moja kinachoweza kuteuliwa",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Kipindi cha moja kwa moja cha Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85518,7 +85663,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "muunganisho wa wakati halisi",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85550,7 +85695,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL ya programu ya wavuti ya Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

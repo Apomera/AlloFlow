@@ -42,7 +42,14 @@ const TARGETS = [
   ['quiz', '[data-pt-quiz-results] .text-xs', 'finish-quiz', 1100],
   ['quiz', '[data-pt-quiz-results] li', 'finish-quiz', 1100],
   ['quiz', '[data-pt-quiz-restart]', 'finish-quiz', 1100],
-  ['sim', '[data-pt-sim-readout]', null, 1100]
+  ['sim', '[data-pt-sim-readout]', null, 1100],
+  // The boundary detail cards live behind a disclosure, so a resting sweep
+  // never paints them. Grade the leaves: the name, the one-line description,
+  // the field label and the field text.
+  ['quiz', '[data-pt-boundary-detail] li > div:nth-child(1)', 'open-edu', 1100],
+  ['quiz', '[data-pt-boundary-detail] li > div:nth-child(2)', 'open-edu', 1100],
+  ['quiz', '[data-pt-boundary-detail] li > div:nth-child(3) span', 'open-edu', 1100],
+  ['quiz', '[data-pt-boundary-detail] li > div:nth-child(3)', 'open-edu', 1100]
 ];
 
 function lum(c) {
@@ -92,6 +99,15 @@ function ratio(a, b) { const l1 = lum(a), l2 = lum(b); const hi = Math.max(l1, l
         }
         await pg.waitForTimeout(300);
       }
+      if (reach === 'open-edu') {
+        // The wrapper div carries the same text as the button inside it, and
+        // clicking the wrapper opens nothing. Take the button.
+        await pg.evaluate(() => {
+          const el = [...document.querySelectorAll('button')].find((x) => /Earth's Layers/.test(x.textContent || ''));
+          el && el.click();
+        });
+        await pg.waitForTimeout(500);
+      }
       if (reach === 'search-miss-plate') {
         await pg.fill('input[placeholder^="Search plates"]', 'zzqx');
         await pg.waitForTimeout(400);
@@ -111,7 +127,15 @@ function ratio(a, b) { const l1 = lum(a), l2 = lum(b); const hi = Math.max(l1, l
         return { x: r.x, y: r.y, w: r.width, h: r.height, ink: [m[0], m[1], m[2]], text: (e.textContent || '').trim().slice(0, 40), size: parseFloat(cs.fontSize), weight: cs.fontWeight };
       }, sel);
       if (info.w < 2 || info.h < 2) { rows.push({ dark, sel, err: 'zero box' }); continue; }
-      const shot = await pg.screenshot({ clip: { x: Math.max(0, info.x), y: Math.max(0, info.y), width: Math.min(info.w, 900), height: Math.min(info.h, 300) } });
+      // A clip below the fold is "empty or outside the resulting image", which
+      // THROWS and takes the whole run with it - every earlier measurement lost
+      // to one unreachable target. Clamp to the viewport and report the miss.
+      const vp = pg.viewportSize();
+      const cy = Math.max(0, info.y);
+      const ch = Math.min(info.h, 300, vp.height - cy);
+      const cw = Math.min(info.w, 900, vp.width - Math.max(0, info.x));
+      if (ch < 2 || cw < 2) { rows.push({ dark, sel, err: 'below the fold at ' + vw + 'px' }); continue; }
+      const shot = await pg.screenshot({ clip: { x: Math.max(0, info.x), y: cy, width: cw, height: ch } });
       const b64 = shot.toString('base64');
       const bg = await pg.evaluate(async ([data, ink]) => {
         const img = new Image();

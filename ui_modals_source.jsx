@@ -636,7 +636,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const receiptQuestionIndex = Number.isInteger(currentQuestionIndex)
       ? Math.min(9999, Math.max(0, currentQuestionIndex))
       : 0;
-  const responseAttemptKey = presentationActivityId + ':' + receiptQuestionIndex + ':' + String(user?.uid || '');
+  const responseAttemptKey = presentationActivityId + ':' + receiptQuestionIndex + ':' + String(quizState.roundId || 'legacy') + ':' + String(user?.uid || '');
   const teamColor = user ? teams?.[user.uid] : null;
   const studentGroupId = sessionData?.roster?.[user?.uid]?.groupId;
   const studentGroup = studentGroupId ? sessionData.groups?.[studentGroupId] : null;
@@ -647,6 +647,10 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
   const [submittedResponse, setSubmittedResponse] = useState(null);
   const [selectedConfidence, setSelectedConfidence] = useState(null);
   const [submitError, setSubmitError] = useState('');
+  const [deliveryStatus, setDeliveryStatus] = useState('');
+  const sendingRef = useRef('');
+  const latestAttemptRef = useRef(responseAttemptKey);
+  latestAttemptRef.current = responseAttemptKey;
   const [isLocallyDismissed, setIsLocallyDismissed] = useState(false);
   const localAnswerKeyRef = useRef('');
   const quizRef = useRef(null);
@@ -664,6 +668,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
           setSubmittedResponse(savedResponse);
           setSelectedConfidence(['knew', 'guessed', 'no-idea'].includes(savedResponse?.confidence) ? savedResponse.confidence : null);
       } else if (localAnswerKeyRef.current !== responseAttemptKey) {
+          setDeliveryStatus('');
           setHasAnswered(false);
           setSelectedOptionIndex(null);
           setSubmittedResponse(null);
@@ -707,12 +712,12 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
       let sentViaP2P = false;
       if (typeof p2pSend === 'function') {
           try {
-              sentViaP2P = Boolean(p2pSend('boss:' + currentQuestionIndex, responseValue));
+              sentViaP2P = Boolean(p2pSend('boss:' + currentQuestionIndex + (quizState.roundId ? ':' + quizState.roundId : ''), responseValue));
           } catch (p2pError) {
               warnLog("P2P quiz response failed; recording receipt:", p2pError);
           }
       }
-      if (sentViaP2P) return;
+      if (sentViaP2P) return 'peer';
       const effectiveAppId = targetAppId || appId;
       const sessionRef = doc(db, 'artifacts', effectiveAppId, 'public', 'data', 'sessions', activeSessionCode);
       await updateDoc(sessionRef, {
@@ -723,41 +728,63 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
               flow: 'presentation'
           }
       });
+      return 'receipt';
   };
   const submitQuizResponse = async (responseValue, selectedMarker = responseValue) => {
-      if (hasAnswered || !user || !activeSessionCode) return;
+      if (hasAnswered || sendingRef.current === responseAttemptKey || !isQuizOpen || phase !== 'answering' || !user || !activeSessionCode) return;
+      sendingRef.current = responseAttemptKey;
+      setDeliveryStatus('sending');
       setSubmitError('');
       localAnswerKeyRef.current = responseAttemptKey;
       setHasAnswered(true);
       setSelectedOptionIndex(Number.isInteger(selectedMarker) && selectedMarker >= 0 && selectedMarker < liveOptions.length ? selectedMarker : null);
       setSubmittedResponse(responseValue);
       try {
-          await transmitQuizResponse(responseValue);
+          const delivery = await transmitQuizResponse(responseValue);
+          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
       } catch (e) {
           warnLog("Error submitting quiz response:", e);
+          if (latestAttemptRef.current !== responseAttemptKey) return;
+          setDeliveryStatus('');
           localAnswerKeyRef.current = '';
           setHasAnswered(false);
           setSelectedOptionIndex(null);
           setSubmittedResponse(null);
           setSelectedConfidence(null);
           setSubmitError(t('errors.quiz_submit_failed') || 'Your answer could not be submitted. Please try again.');
-      }
+      } finally { if (sendingRef.current === responseAttemptKey) sendingRef.current = ''; }
+  };
+  const retryQuizResponse = async () => {
+      if (deliveryStatus !== 'receipt' || submittedResponse == null || phase !== 'answering' || !isQuizOpen || sendingRef.current === responseAttemptKey) return;
+      sendingRef.current = responseAttemptKey; setDeliveryStatus('sending'); setSubmitError('');
+      try {
+          const delivery = await transmitQuizResponse(submittedResponse);
+          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
+      } catch (error) {
+          if (latestAttemptRef.current !== responseAttemptKey) return;
+          setDeliveryStatus('receipt'); setSubmitError('Your answer could not be sent. Your participation is still recorded; try again when connected.');
+      } finally { if (sendingRef.current === responseAttemptKey) sendingRef.current = ''; }
   };
   const submitQuizConfidence = async (confidence) => {
-      if (!confidenceEnabled || !hasAnswered || submittedResponse == null || !user || !activeSessionCode || phase !== 'answering') return;
+      if (sendingRef.current === responseAttemptKey || !isQuizOpen || !confidenceEnabled || !hasAnswered || submittedResponse == null || !user || !activeSessionCode || phase !== 'answering') return;
       const nextResponse = attachLiveQuizConfidence(submittedResponse, currentQuestion, receiptQuestionIndex, confidence);
       if (!nextResponse) return;
       const previousConfidence = selectedConfidence;
+      const previousResponse = submittedResponse;
+      sendingRef.current = responseAttemptKey;
       setSubmitError('');
       setSelectedConfidence(confidence);
       setSubmittedResponse(nextResponse);
       try {
-          await transmitQuizResponse(nextResponse);
+          const delivery = await transmitQuizResponse(nextResponse);
+          if (latestAttemptRef.current === responseAttemptKey) setDeliveryStatus(delivery);
       } catch (e) {
           warnLog("Error updating quiz confidence:", e);
+          if (latestAttemptRef.current !== responseAttemptKey) return;
+          setSubmittedResponse(previousResponse);
           setSelectedConfidence(previousConfidence);
           setSubmitError(t('errors.quiz_submit_failed') || 'Your confidence update could not be sent. Please try again.');
-      }
+      } finally { if (sendingRef.current === responseAttemptKey) sendingRef.current = ''; }
   };
   const getModeStyles = () => {
       switch(mode) {
@@ -864,7 +891,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                                 src={bossStats.image}
                                 alt={t('quiz.boss.alt_text')}
                                 className="w-32 h-32 md:w-48 md:h-48 object-contain pixelated drop-shadow-2xl"
-                                style={STYLE_IMAGE_PIXELATED}
+                                style={{ imageRendering: 'pixelated' }}
                              />
                          ) : (
                              <div className="w-24 h-24 md:w-32 md:h-32 bg-red-900/50 rounded-full border-4 border-red-500/50 flex items-center justify-center text-4xl shadow-xl backdrop-blur-sm">
@@ -1117,6 +1144,8 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                     <p className="mt-2 text-[11px] text-cyan-100">This helps your teacher spot secure knowledge and misconceptions. It never changes correctness or points.</p>
                 </fieldset>
             )}
+            {deliveryStatus === 'receipt' && phase === 'answering' && <button type="button" onClick={retryQuizResponse} className="mt-4 min-h-11 rounded-xl border border-cyan-200 bg-cyan-900 px-4 py-2 font-bold text-white">Retry sending answer</button>}
+            {['idle', 'lobby'].includes(phase) && <p role="status" className="mt-6 rounded-xl bg-white/10 p-4 font-bold text-white">Waiting for your teacher to start this question.</p>}
             <div className="mt-8 min-h-16 flex items-center justify-center w-full mb-8">
                 {phase === 'answering' && (
                     hasAnswered ? (
@@ -1125,7 +1154,7 @@ const StudentQuizOverlay = React.memo(({ sessionData, generatedContent, user, ac
                               <span aria-hidden="true" className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75 motion-reduce:animate-none"></span>
                               <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
                             </span>
-                           {t('quiz.status.answer_sent')}
+                           {deliveryStatus === 'sending' ? 'Sending your response…' : deliveryStatus === 'receipt' ? 'Participation recorded. Your answer has not reached the teacher for scoring.' : t('quiz.status.answer_sent')}
                         </div>
                     ) : (
                         <div className="text-white/50 font-mono text-xs uppercase tracking-widest animate-pulse motion-reduce:animate-none">

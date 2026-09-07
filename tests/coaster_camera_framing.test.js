@@ -31,6 +31,22 @@ describe('Coaster perspective camera framing', () => {
     expect(fit({ min: { x: 0, y: 0, z: 0 }, max: { x: 0, y: 0, z: 0 } }, 0, 0.42, 1)).toBe(15);
     expect(Number.isFinite(fit({ min: { x: -100, y: 0, z: -100 }, max: { x: 100, y: 0, z: 100 } }, 0, 1.55, 0.5))).toBe(true);
   });
+  it.each([0.46, 1, 1.8])('allows close train inspection without clipping at aspect %j', aspect => {
+    const box = { min: { x: -1.3, y: -0.6, z: -1.57 }, max: { x: 1.3, y: 2.3, z: 1.95 } };
+    const theta = -0.85, phi = 0.28, radius = fit(box, theta, phi, aspect, 0.72, 5);
+    expect(radius).toBeLessThan(15);
+    const camera = new THREE.PerspectiveCamera(55, aspect, 0.1, 100);
+    const center = new THREE.Vector3().addVectors(box.min, box.max).multiplyScalar(0.5);
+    camera.position.set(center.x + radius * Math.cos(phi) * Math.sin(theta), center.y + radius * Math.sin(phi), center.z + radius * Math.cos(phi) * Math.cos(theta));
+    camera.lookAt(center); camera.updateMatrixWorld();
+    for(const x of [box.min.x, box.max.x]) for(const y of [box.min.y, box.max.y]) for(const z of [box.min.z, box.max.z]){
+      const projected = new THREE.Vector3(x,y,z).project(camera);
+      expect(Math.abs(projected.x)).toBeLessThanOrEqual(0.860001);
+      expect(Math.abs(projected.y)).toBeLessThanOrEqual(0.720001);
+      expect(projected.z).toBeGreaterThan(-1);
+      expect(projected.z).toBeLessThan(1);
+    }
+  });
   it.each([0, -1, NaN, Infinity])('uses a finite fallback for unavailable aspect %j', aspect => {
     expect(fit(bounds, 0, 0.4, aspect)).toBe(175);
   });

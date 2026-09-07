@@ -19,10 +19,13 @@ describe('Geometry Sandbox mode scene isolation', () => {
     expect(tool).toContain("['sculptGroup', 'sculpt']");
     expect(tool).toContain('if (root && entry[1] !== nextMode) root.visible = false;');
 
-    // All five UI/keyboard transition paths must route through the guard. The
+    // All six UI/keyboard transition paths (including the lesson entry) must route through the guard. The
     // only direct persisted write left is inside setGeoMode itself.
-    expect(tool.match(/setGeoMode\(/g)).toHaveLength(6);
-    expect(tool.match(/upd\('mode'/g)).toHaveLength(1);
+    expect(tool.match(/setGeoMode\(/g)).toHaveLength(7);
+    expect(tool.match(/upd\('mode'/g) || []).toHaveLength(0);
+    const transition = tool.slice(tool.indexOf('function setGeoMode(nextMode)'), tool.indexOf('var construction = gd.construction'));
+    expect(transition.indexOf('prepareGeoModeTransition(nextMode)')).toBeLessThan(transition.indexOf('setLabToolData('));
+    expect(transition).toContain('mode:nextMode');
   });
 
   it('routes sculpt raycasts to selected-part math in the viewport', () => {

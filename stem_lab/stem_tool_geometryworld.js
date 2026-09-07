@@ -240,7 +240,23 @@
       sunIntensity: p.sunIntensity, ambientIntensity: p.ambientIntensity,
       cloudOpacity: p.cloudOpacity
     };
-    engine._envTransition = 0; // 0 to 1 over ~1.5 seconds
+    // Snapshot where the fade starts, so each frame can set the eased position
+    // exactly. The old update moved every value 10% of the remaining distance
+    // per frame and stopped when its 1.4 s timer ran out, so a preset never
+    // arrived: 'night' measured pinkish-grey, and at a low frame rate the sky
+    // barely left 'day'.
+    var scene = engine.scene, bg = scene && scene.background, fog = scene && scene.fog, ambient = null;
+    if (scene) scene.children.forEach(function(c) { if (c.isAmbientLight) ambient = c; });
+    engine._envStart = {
+      sky: bg && bg.isColor ? [bg.r, bg.g, bg.b] : p.sky.slice(),
+      fog: fog ? [fog.color.r, fog.color.g, fog.color.b] : p.fog.slice(),
+      fogNear: fog ? fog.near : p.fogNear, fogFar: fog ? fog.far : p.fogFar,
+      sunIntensity: engine.sun ? engine.sun.intensity : p.sunIntensity,
+      ambientIntensity: ambient ? ambient.intensity : p.ambientIntensity,
+      cloudOpacity: engine._cloudPlane ? engine._cloudPlane.material.opacity : p.cloudOpacity
+    };
+    engine._envTransition = 0; // 0 to 1 over ~1.4 seconds
+    engine._envDone = false;
     engine._currentEnv = presetKey;
     // Stars: create on night/sunset, remove on day/sunrise
     var isNightime = presetKey === 'night' || presetKey === 'sunset';
@@ -259,38 +275,39 @@
   }
   // Called in animate() to smoothly interpolate environment
   function updateEnvTransition(engine, dt) {
-    if (!engine._envTarget || engine._envTransition >= 1) return;
-    engine._envTransition = Math.min(1, engine._envTransition + dt * 0.7); // ~1.4 seconds
-    var t = engine._envTransition;
-    var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease-in-out
-    var tgt = engine._envTarget;
-    var bg = engine.scene.background;
-    bg.r += (tgt.sky[0] - bg.r) * ease * 0.1;
-    bg.g += (tgt.sky[1] - bg.g) * ease * 0.1;
-    bg.b += (tgt.sky[2] - bg.b) * ease * 0.1;
-    var fc = engine.scene.fog.color;
-    fc.r += (tgt.fog[0] - fc.r) * ease * 0.1;
-    fc.g += (tgt.fog[1] - fc.g) * ease * 0.1;
-    fc.b += (tgt.fog[2] - fc.b) * ease * 0.1;
-    engine.scene.fog.near += (tgt.fogNear - engine.scene.fog.near) * ease * 0.1;
-    engine.scene.fog.far += (tgt.fogFar - engine.scene.fog.far) * ease * 0.1;
-    if (engine.sun) engine.sun.intensity += (tgt.sunIntensity - engine.sun.intensity) * ease * 0.1;
-    engine.scene.children.forEach(function(c) {
-      if (c.isAmbientLight) c.intensity += (tgt.ambientIntensity - c.intensity) * ease * 0.1;
-    });
-    if (engine._cloudPlane) engine._cloudPlane.material.opacity += (tgt.cloudOpacity - engine._cloudPlane.material.opacity) * ease * 0.1;
-    // Manual stars fade + rotate
+    // Stars fade and drift on their own clock, outside the preset fade: they used
+    // to sit inside it, so a fade-out froze the moment the 1.4 s timer expired.
     if (engine._manualStars) {
       var stTarget = engine._manualStarsTarget || 0;
-      engine._manualStars.material.opacity += (stTarget - engine._manualStars.material.opacity) * 0.03;
-      engine._manualStars.rotation.y += dt * 0.015;
-      // Remove when fully faded
+      var starStep = 1 - Math.pow(0.001, dt);   // frame-rate independent approach
+      engine._manualStars.material.opacity += (stTarget - engine._manualStars.material.opacity) * Math.min(1, starStep);
+      if (engine._ambientMotionEnabled !== false) engine._manualStars.rotation.y += dt * 0.015;
       if (stTarget === 0 && engine._manualStars.material.opacity < 0.01) {
         engine.scene.remove(engine._manualStars);
         engine._manualStars.geometry.dispose(); engine._manualStars.material.dispose();
         engine._manualStars = null;
       }
     }
+    if (!engine._envTarget || engine._envDone) return;
+    var start = engine._envStart, tgt = engine._envTarget;
+    // Battery saver and reduced motion get the preset at once rather than a
+    // 1.4 s colour animation.
+    engine._envTransition = engine._ambientMotionEnabled === false ? 1 : Math.min(1, engine._envTransition + dt * 0.7);
+    var t = engine._envTransition;
+    var ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; // ease-in-out
+    function mix(a, b) { return a + (b - a) * ease; }
+    if (start) {
+      engine.scene.background.setRGB(mix(start.sky[0], tgt.sky[0]), mix(start.sky[1], tgt.sky[1]), mix(start.sky[2], tgt.sky[2]));
+      engine.scene.fog.color.setRGB(mix(start.fog[0], tgt.fog[0]), mix(start.fog[1], tgt.fog[1]), mix(start.fog[2], tgt.fog[2]));
+      engine.scene.fog.near = mix(start.fogNear, tgt.fogNear);
+      engine.scene.fog.far = mix(start.fogFar, tgt.fogFar);
+      if (engine.sun) engine.sun.intensity = mix(start.sunIntensity, tgt.sunIntensity);
+      engine.scene.children.forEach(function(c) {
+        if (c.isAmbientLight) c.intensity = mix(start.ambientIntensity, tgt.ambientIntensity);
+      });
+      if (engine._cloudPlane) engine._cloudPlane.material.opacity = mix(start.cloudOpacity, tgt.cloudOpacity);
+    }
+    if (t >= 1) engine._envDone = true;
   }
 
   // ── Block Types ──
@@ -348,7 +365,7 @@
           1,0,0,  1,0,1,  1,1,1,
           1,0,0,  1,1,1,  1,1,0
         ]);
-        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setAttribute('position', new THREE.BufferAttribute(windOutward(verts), 3));
         // Centre in X/Z. These vertices are authored 0..1, unlike the BoxGeometry the
         // cube and halfB use (already origin-centred) — so sharing the placement
         // position of (x+0.5, y, z+0.5) put the shape in [x+0.5, x+1.5]: half a block
@@ -380,7 +397,7 @@
           1,0,0,  0.5,0.5,1,  0.5,0.5,0,
           1,0,0,  1,0,1,  0.5,0.5,1
         ]);
-        geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        geo.setAttribute('position', new THREE.BufferAttribute(windOutward(verts), 3));
         geo.translate(-0.5, 0, -0.5); // same off-grid fix as halfA
         geo.computeVertexNormals();
         return geo;
@@ -409,6 +426,26 @@
       (e[1] * x + e[5] * y + e[9] * z + e[13]) * iw,
       (e[2] * x + e[6] * y + e[10] * z + e[14]) * iw
     ];
+  }
+
+  // The diagonal half and the quarter wedge are the two shapes authored by hand
+  // above, and both were wound clockwise seen from outside, so every face normal
+  // pointed INTO the solid. On screen the renderer culled the near faces and lit
+  // the far ones, so a wedge read as a dark hollow; in the STL the signed volume
+  // came out negative (a 12-block build summed to 8.25 units instead of 9.75),
+  // which a slicer reports as flipped normals and Print Lab's preflight flags as
+  // winding inconsistencies. Swapping the second and third vertex of each
+  // triangle reverses the winding without retyping a coordinate. Pure and
+  // module-scope so the STL test can prove the shapes are outward-wound.
+  function windOutward(verts) {
+    for (var i = 0; i + 8 < verts.length; i += 9) {
+      for (var k = 0; k < 3; k++) {
+        var swap = verts[i + 3 + k];
+        verts[i + 3 + k] = verts[i + 6 + k];
+        verts[i + 6 + k] = swap;
+      }
+    }
+    return verts;
   }
 
   function triangleNormal(a, b, c) {
@@ -3277,6 +3314,53 @@
         rim.position.set(-15, 20, -15);
         engine.scene.add(rim);
 
+        // ── Sky dome ──
+        // The background was one flat colour, so the horizon had no haze band and
+        // the world read as a paper cut-out against a card. The dome blends from
+        // the fog colour at the horizon up to the background colour overhead, and
+        // reads both from the scene every frame (see the animate loop), so the five
+        // time-of-day presets and their 1.4 s cross-fade drive it with no second
+        // palette to keep in step. One sphere, no per-frame cost worth measuring;
+        // it rides with the camera so the player can never reach its edge.
+        (function initSkyDome() {
+          var skyGeo = new THREE.SphereGeometry(180, 24, 12);
+          var skyMat = new THREE.ShaderMaterial({
+            uniforms: {
+              topColor: { value: new THREE.Color(0x4FA8FA) },
+              bottomColor: { value: new THREE.Color(0x8CC9FA) },
+              offset: { value: 14.0 },
+              exponent: { value: 0.55 }
+            },
+            vertexShader: [
+              'varying vec3 vWorldPosition;',
+              'void main() {',
+              '  vec4 worldPosition = modelMatrix * vec4(position, 1.0);',
+              '  vWorldPosition = worldPosition.xyz - modelMatrix[3].xyz;',
+              '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+              '}'
+            ].join('\n'),
+            fragmentShader: [
+              'uniform vec3 topColor;',
+              'uniform vec3 bottomColor;',
+              'uniform float offset;',
+              'uniform float exponent;',
+              'varying vec3 vWorldPosition;',
+              'void main() {',
+              '  float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;',
+              '  float t = pow(max(h, 0.0), exponent);',
+              '  gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);',
+              '}'
+            ].join('\n'),
+            side: THREE.BackSide,
+            depthWrite: false
+          });
+          var skyDome = new THREE.Mesh(skyGeo, skyMat);
+          skyDome.renderOrder = -1;
+          skyDome.frustumCulled = false;
+          engine.scene.add(skyDome);
+          engine._skyDome = skyDome;
+        })();
+
         // ── Sky atmosphere: sun disc + drifting clouds ──
         (function initSky() {
           // Sun disc — bright sprite in the sky
@@ -3583,6 +3667,11 @@
           var rot = rotation || 0; // 0-3 = 0°, 90°, 180°, 270°
           var geo = createShapeGeometry(shapeId);
           var mat = getBlockMaterial(type);
+          // Lesson ground only: alternate cells by a hair so the floor reads as unit
+          // squares a student can count for V = L x W x H, without a line grid. The
+          // material is this block's own clone, and a student's grass block keeps
+          // the palette colour.
+          if (engine._measurementLayer === 'ground' && mat.color && ((x + z) & 1)) mat.color.multiplyScalar(0.92);
           var mesh = new THREE.Mesh(geo, mat);
           // Position: cubes center at +0.5, half-slabs sit on the ground
           if (shapeId === 'halfB') {
@@ -3703,9 +3792,18 @@
           engine.blocks = {};
           engine._blocksDirty = true; // invalidate cache
           engine.npcs.forEach(function(n) {
-            engine.scene.remove(n.body); engine.scene.remove(n.head); engine.scene.remove(n.label);
-            if (n.prompt) engine.scene.remove(n.prompt);
-            if (n._ring) engine.scene.remove(n._ring);
+            // Every object an NPC owns. The question mark and the speech bubble were
+            // missing here, so switching lessons left a '?' and an invisible bubble
+            // hanging over every old character's spot, in the sandbox included.
+            // Each sprite also owns a CanvasTexture; dispose it or the GPU copy
+            // outlives the character on every lesson change.
+            [n.body, n.head, n.label, n.prompt, n.qMark, n._speechBubble, n._ring].forEach(function(obj) {
+              if (!obj) return;
+              engine.scene.remove(obj);
+              if (obj.material && obj.material.map && obj.material.map.dispose) obj.material.map.dispose();
+              if (obj.material && obj.material.dispose) obj.material.dispose();
+              if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+            });
           });
           engine.npcs = [];
         };
@@ -5988,6 +6086,17 @@
             engine._cloudPlane.position.x = engine.camera.position.x;
             engine._cloudPlane.position.z = engine.camera.position.z;
           }
+          // The sky dome rides with the camera and takes its two colours from the
+          // scene, so the time-of-day cross-fade in updateEnvTransition drives it.
+          if (engine._skyDome && engine.camera) {
+            engine._skyDome.position.copy(engine.camera.position);
+            var skyUniforms = engine._skyDome.material.uniforms;
+            // Zenith is a deeper shade of the background rather than the background
+            // itself: loadLesson resets background and fog to one colour, so on a
+            // fresh load the two would match and the dome would be flat again.
+            if (engine.scene.background && engine.scene.background.isColor) skyUniforms.topColor.value.copy(engine.scene.background).multiplyScalar(0.78);
+            if (engine.scene.fog) skyUniforms.bottomColor.value.copy(engine.scene.fog.color);
+          }
           // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
           // "run off" into a strange corner when the player explores a large world.
           if (engine._sunSprite && engine.camera) {
@@ -6077,7 +6186,12 @@
           var key = x + ',' + y + ',' + z;
           var had = !!engine.blocks[key];
           origPlace.apply(engine, arguments);
-          if (!had && engine.blocks[key]) {
+          // Ground and lesson structures arrive through this same function, and a
+          // 25 x 25 floor alone is 625 events. 'Master Builder' (100 blocks) unlocked
+          // the moment any lesson loaded, and the MTSS report and research CSV
+          // counted scenery as student work. Only the student's own placement is
+          // an event; loadLesson raises _placingLessonBlocks around its fills.
+          if (!had && engine.blocks[key] && !engine._placingLessonBlocks) {
             engine.logEvent('block_place', { x: x, y: y, z: z, type: type, shape: shape || 'cube', rotation: rotation || 0 });
           }
         };
@@ -6493,6 +6607,7 @@
           if (engine._particles) engine._particles.forEach(function(p) { engine.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
           // Dispose ghost mesh + highlight mesh
           if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
+          if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows
@@ -7715,7 +7830,24 @@
               // Build STL binary — each block face = 2 triangles, only render exposed faces
               var faces = [];
               var shapedCount = 0;
-              blockKeys.forEach(function(key) {
+              // One surface rule for both exports. The builder's unionSurface drops a
+              // face wherever two neighbours present the same polygon on their shared
+              // boundary, which is what keeps a slab or wedge on a cube watertight for
+              // Print Lab's preflight; the cube-only rule below stays as the fallback
+              // for a host that loads this file without the builder.
+              var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+              if (builderPure && typeof builderPure.unionSurface === 'function') {
+                var selectedKeys = {};
+                var perBlock = blockKeys.map(function(key) {
+                  var m = eng.blocks[key];
+                  try { m.updateMatrixWorld(true); } catch (e) {}
+                  if ((m.userData.shape || 'cube') !== 'cube') shapedCount++;
+                  selectedKeys[key] = true;
+                  return { position: m.userData.gridPos, triangles: stlTrianglesFromMesh(m) };
+                });
+                faces = builderPure.unionSurface(perBlock, selectedKeys);
+              }
+              if (!faces.length) blockKeys.forEach(function(key) {
                 var m = eng.blocks[key];
                 var p = m.userData.gridPos;
                 var x = p.x, y = p.y, z = p.z;

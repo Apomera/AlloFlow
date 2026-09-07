@@ -130,6 +130,17 @@
       "studySessionPlans",
       "spacedReviewPlans"
     ],
+    "lessonDepth": {
+      "chapterCount": 8,
+      "sectionCount": 24,
+      "sectionsPerChapter": 3
+    },
+    "crossReferences": {
+      "checked": 640,
+      "unresolvedCount": 0,
+      "unresolved": {},
+      "examples": []
+    },
     "gaps": [],
     "assessment": "structurally-complete",
     "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."

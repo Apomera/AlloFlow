@@ -102,7 +102,8 @@ describe('language menu (2026-09-02)', () => {
 describe('prize goal', () => {
   it('lets a student mark one prize and shows the gap on the dashboard, in that browser only', () => {
     expect(PORTAL).toContain('id="prize-goal"');
-    expect(SCRIPT).toContain("localStorage.getItem('alloflow_school_rewards_goal')");
+    expect(SCRIPT).toContain("localStorage.getItem(key)");
+    expect(SCRIPT).toContain("alloflow_school_rewards_goal_v2:");
     expect(SCRIPT).toContain('data-goal=');
     expect(SCRIPT).toContain("more point'+(gap===1?'':'s')+' to go");
     // Never sent to the ledger: no RPC carries the goal.

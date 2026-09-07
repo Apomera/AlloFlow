@@ -153,12 +153,9 @@ describe('AlloBot accessory integrity', () => {
     // The happy arcs were a second cheek treatment lying across the blush.
     expect(SRC).not.toContain('happy-cheeks');
 
-    // The tear starts below the blush and stops above the visor's lower bevel,
-    // which runs M 24 63 Q 50 66.5 76 63 and so sits at y 63.61 where x is 29.
-    const tear = SRC.match(/data-allobot-face-cue="sad-tear"[\s\S]*?d="M29 ([\d.]+)[\s\S]*?A([\d.]+) [\d.]+ 0 0 0 [\d.]+ ([\d.]+)/);
-    expect(tear, 'sad tear not found').toBeTruthy();
-    expect(Number(tear[1]), 'tear starts inside the blush').toBeGreaterThan(blushBottom);
-    expect(Number(tear[3]) + Number(tear[2]), 'tear spills past the visor bevel').toBeLessThanOrEqual(63.61);
+    // Concern is conveyed by the brows and a shallow frown, without a tear
+    // competing with the blush in the tiny cheek area.
+    expect(SRC).not.toContain('sad-tear');
 
     // The thought dots rise clear of the blush instead of dribbling through it.
     const dots = [...SRC.matchAll(/<circle cx="(7[\d.]*)" cy="([\d.]+)" r="([\d.]+)" \/>/g)];
@@ -512,7 +509,7 @@ describe('AlloBot accessory integrity', () => {
       // Happy is carried by the shared blush, which brightens to 0.62 for it;
       // the old happy-cheeks arcs were a second mark lying across that blush.
       expect(source).toContain('soft-cheeks');
-      expect(source).toContain('sad-tear');
+      expect(source).not.toContain('sad-tear');
       expect(source).toContain('thinking-dots');
     }
     for (const layer of ['frame', 'screen', 'reflection', 'lower-bevel', 'bezel']) {
@@ -653,8 +650,8 @@ describe('AlloBot accessory integrity', () => {
       expect(source).toContain('cheekOpacity');
       expect(source).toContain('isHovered');
     }
-    expect(SRC).toContain('if (motionDisabled || coarsePointer)');
-    expect(SRC).toContain("const ALLOBOT_AMBIENT_GAZE_SCALE = 0.8;");
+    expect(SRC).toContain('if (motionDisabled || coarsePointer || generationMotionPaused || quietPresence)');
+    expect(SRC).toContain("const ALLOBOT_AMBIENT_GAZE_SCALE = 0.4;");
     expect(SRC).toContain('const maxFeatureRadius = 2.2;');
     expect(SRC).toContain('const maxVisorRadius = 0.35;');
     expect(SRC).toContain("const eyeDetailsVisible = blinkScale >= 0.5;");

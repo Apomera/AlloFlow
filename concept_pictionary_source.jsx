@@ -467,6 +467,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;     // { prompt, criterion, participantUids } while the host gallery remains open
     this.sketchFeedbackByUid = new Map();
     this.sketchAttemptsByUid = new Map();
+    this.sketchStatusesByUid = new Map();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -522,7 +523,7 @@ class PictionaryHost {
     const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
-      if (!e.candidate) return;
+      if (!e.candidate || this._stopped || this.peers.get(uid) !== peerRecord) return;
       peerRecord.sentIce.push(e.candidate.toJSON());
       fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {});
     };
@@ -530,6 +531,7 @@ class PictionaryHost {
       const dc = e.channel;
       peerRecord.dc = dc;
       dc.onopen = () => {
+        if (this._stopped || this.peers.get(uid) !== peerRecord) return;
         this.onGuestConnected(uid, codename);
         // If a round is active, also send the round-start (with concept only if drawer).
         // Includes startedAt + durationMs so late-joiners can sync their countdown.
@@ -544,6 +546,8 @@ class PictionaryHost {
             status: this.activeRound.status,
             mode: normalizePictionaryActivityMode(this.activeRound.mode),
             isDrawer,
+            sketchStatus: this.sketchStatusesByUid.get(uid) || 'editing',
+            sketchAttempt: Number(this.sketchAttemptsByUid.get(uid)) || 1,
             concept: isDrawer ? this.activeRound.concept : null,
             criterion: this.activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE ? this.activeRound.criterion : null,
             drawerUids: Array.from(this.activeRound.drawerUids),
@@ -584,42 +588,49 @@ class PictionaryHost {
       };
       dc.onmessage = (msg) => {
         try {
+          if (this._stopped || this.peers.get(uid) !== peerRecord) return;
           const parsed = JSON.parse(msg.data);
           if (!parsed || !parsed.type) return;
           if (parsed.type === 'stroke' && parsed.payload) {
             this._onIncomingStroke(uid, codename, parsed.payload);
           } else if (parsed.type === 'strokeUndo' && parsed.payload && parsed.payload.strokeId) {
-            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
+            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId, parsed.payload.roundId);
           } else if (parsed.type === 'sketchStatus' && parsed.payload) {
             this._onIncomingSketchStatus(uid, codename, parsed.payload);
           } else if (parsed.type === 'sketchVote' && parsed.payload) {
             this._onIncomingSketchVote(uid, parsed.payload);
           } else if (parsed.type === 'guess' && parsed.payload) {
+            if (parsed.payload.roundId && parsed.payload.roundId !== this.activeRound?.roundId) return;
             if (!this.activeRound || this.activeRound.isPaused || this.activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE) return;
             this.onGuess(uid, codename, parsed.payload);
           }
         } catch (_) {}
       };
-      dc.onclose = () => this._cleanupPeer(uid);
+      dc.onclose = () => this._cleanupPeer(uid, peerRecord);
     };
     pc.onconnectionstatechange = () => {
+      if (this.peers.get(uid) !== peerRecord) return;
       if (pc.connectionState === 'connected') {
-        setTimeout(() => fb.deleteDoc(signalingRef).catch(() => {}), 750);
+        setTimeout(() => { if (!this._stopped && this.peers.get(uid) === peerRecord) fb.deleteDoc(signalingRef).catch(() => {}); }, 750);
       } else if (pc.connectionState === 'failed' || pc.connectionState === 'closed' || pc.connectionState === 'disconnected') {
-        this._cleanupPeer(uid);
+        this._cleanupPeer(uid, peerRecord);
       }
     };
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(offerData.offer));
+      if (this._stopped || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (_) {} return; }
       const answer = await pc.createAnswer();
+      if (this._stopped || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (_) {} return; }
       await pc.setLocalDescription(answer);
+      if (this._stopped || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (_) {} return; }
       await fb.setDoc(signalingRef, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
     } catch (err) {
       console.warn('[Pictionary host] accept peer failed:', err && err.message);
-      this._cleanupPeer(uid);
+      this._cleanupPeer(uid, peerRecord);
     }
   }
   _onIncomingStroke(senderUid, senderCodename, stroke) {
+    if (!stroke || (stroke.roundId && stroke.roundId !== this.activeRound?.roundId)) return;
     // Reject strokes from peers not currently assigned as drawers
     if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     // Sanitize untrusted peer payloads before buffering or forwarding. This
@@ -646,13 +657,15 @@ class PictionaryHost {
     this.onStroke(senderUid, senderCodename, augmented);
   }
   _onIncomingSketchStatus(senderUid, senderCodename, payload) {
-    if (!this.activeRound || this.activeRound.mode !== SKETCH_RESPONSE_ACTIVITY_MODE || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!payload || (payload.roundId && payload.roundId !== this.activeRound?.roundId)) return;
+    if (!this.activeRound || this.activeRound.isPaused || this.activeRound.mode !== SKETCH_RESPONSE_ACTIVITY_MODE || !this.activeRound.drawerUids.has(senderUid)) return;
     const status = payload && payload.status;
     if (status !== 'submitted' && status !== 'editing') return;
     const attempt = Number(payload.attempt) >= 2 ? 2 : 1;
     const priorAttempt = Number(this.sketchAttemptsByUid.get(senderUid)) || 1;
     const effectiveAttempt = Math.max(priorAttempt, attempt);
     this.sketchAttemptsByUid.set(senderUid, effectiveAttempt);
+    this.sketchStatusesByUid.set(senderUid, status);
     if (effectiveAttempt >= 2 && this.sketchFeedbackByUid.has(senderUid)) {
       const priorFeedback = this.sketchFeedbackByUid.get(senderUid);
       this.sketchFeedbackByUid.set(senderUid, { ...priorFeedback, attempt: 2, allowRevision: false });
@@ -673,7 +686,8 @@ class PictionaryHost {
     this.sketchVotesByUid = upsertSketchVote(this.sketchVotesByUid, vote);
     this.onSketchVote(senderUid, { roundId: this.sketchVoteRound.roundId, candidateId: vote.candidateId, votedAt: vote.votedAt });
   }
-  _onIncomingStrokeUndo(senderUid, strokeId) {
+  _onIncomingStrokeUndo(senderUid, strokeId, roundId) {
+    if (roundId && roundId !== this.activeRound?.roundId) return;
     if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     // Only let a drawer undo their own strokes — silently no-op for everyone else.
     const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
@@ -716,6 +730,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -913,6 +928,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -923,9 +939,10 @@ class PictionaryHost {
       }
     });
   }
-  _cleanupPeer(uid) {
+  _cleanupPeer(uid, expectedPeer) {
     const peer = this.peers.get(uid);
-    if (!peer) return;
+    if (!peer || (expectedPeer && peer !== expectedPeer)) return;
+    this.peers.delete(uid);
     try { if (peer.pc) peer.pc.close(); } catch (_) {}
     // Deliberately do NOT delete the signaling doc here. A reconnecting guest
     // overwrites that same doc with a fresh offer; deleting it from a
@@ -933,7 +950,6 @@ class PictionaryHost {
     // the host could answer it. Signaling docs are already deleted on
     // successful connect (~750ms post-connect, both sides) and by the guest's
     // own leave().
-    this.peers.delete(uid);
     this.onGuestLeft(uid);
   }
   stop() {
@@ -958,6 +974,7 @@ class PictionaryHost {
     this.strokeHistory = [];
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -1006,23 +1023,27 @@ class PictionaryGuest {
     this.signalingRef = _signalingDocRef(this.sessionCode, this.userUid);
     this.pc = new RTCPeerConnection(_getRtcConfig());
     this.dc = this.pc.createDataChannel('pictionary', { ordered: true });
+    const pc = this.pc, dc = this.dc, signalingRef = this.signalingRef;
     this.pc.onicecandidate = (e) => {
+      if (this.pc !== pc || this.dc !== dc) return;
       if (!e.candidate) return;
       this.sentIce.push(e.candidate.toJSON());
       fb.setDoc(this.signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {});
     };
     this.dc.onopen = () => {
+      if (this.pc !== pc || this.dc !== dc) return;
       this._connected = true;
       if (this._timeoutHandle) { clearTimeout(this._timeoutHandle); this._timeoutHandle = null; }
       this.onConnected();
     };
-    this.dc.onclose = () => { if (this._connected) this.onDisconnected(); };
+    this.dc.onclose = () => { if (this.pc !== pc || this.dc !== dc) return; const connected = this._connected; this._connected = false; if (connected) this.onDisconnected(); };
     this.dc.onmessage = (msg) => {
+      if (this.pc !== pc || this.dc !== dc) return;
       try {
         const parsed = JSON.parse(msg.data);
         if (!parsed || !parsed.type) return;
-        if (parsed.type === 'roundStart') this.onRoundStart(parsed.payload);
-        else if (parsed.type === 'roundResolved') this.onRoundResolved(parsed.payload);
+        if (parsed.type === 'roundStart') { this.roundId = parsed.payload?.roundId || null; this.onRoundStart(parsed.payload); }
+        else if (parsed.type === 'roundResolved') { this.roundId = null; this.onRoundResolved(parsed.payload); }
         else if (parsed.type === 'roundSync') this.onRoundSync(parsed.payload || {});
         else if (parsed.type === 'roundTiming') this.onRoundTiming(parsed.payload || {});
         else if (parsed.type === 'hostClosed') this.onHostClosed(parsed.payload || {});
@@ -1037,26 +1058,32 @@ class PictionaryGuest {
       } catch (_) {}
     };
     this.pc.onconnectionstatechange = () => {
+      if (this.pc !== pc || this.dc !== dc) return;
       if (this.pc.connectionState === 'connected') {
-        setTimeout(() => fb.deleteDoc(this.signalingRef).catch(() => {}), 750);
+        setTimeout(() => { if (this.pc === pc) fb.deleteDoc(signalingRef).catch(() => {}); }, 750);
       } else if (this.pc.connectionState === 'failed') {
         this.onFailed();
       }
     };
     try {
       const offer = await this.pc.createOffer();
-      await this.pc.setLocalDescription(offer);
+      if (this.pc !== pc) return;
+      await pc.setLocalDescription(offer);
+      if (this.pc !== pc) return;
       await fb.setDoc(this.signalingRef, {
         offer: { type: offer.type, sdp: offer.sdp },
         codename: this.codename,
         createdAt: Date.now(),
       });
     } catch (err) {
+      if (this.pc !== pc) return;
       console.warn('[Pictionary guest] setup failed:', err && err.message);
       this.onFailed();
       return;
     }
-    this.signalingUnsub = fb.onSnapshot(this.signalingRef, (snap) => {
+    if (this.pc !== pc) return;
+    this.signalingUnsub = fb.onSnapshot(signalingRef, (snap) => {
+      if (this.pc !== pc) return;
       const data = (snap && snap.data && snap.data()) || null;
       if (!data) return;
       if (data.answer && this.pc.signalingState === 'have-local-offer') {
@@ -1069,7 +1096,7 @@ class PictionaryGuest {
       }
     }, () => {});
     this._timeoutHandle = setTimeout(() => {
-      if (!this._connected) {
+      if (this.pc === pc && !this._connected) {
         console.warn('[Pictionary guest] connection timeout');
         this.onFailed();
       }
@@ -1077,17 +1104,17 @@ class PictionaryGuest {
   }
   sendStroke(stroke) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
-    try { this.dc.send(JSON.stringify({ type: 'stroke', payload: stroke })); return true; } catch (_) { return false; }
+    try { this.dc.send(JSON.stringify({ type: 'stroke', payload: { ...stroke, ...(this.roundId ? { roundId: this.roundId } : {}) } })); return true; } catch (_) { return false; }
   }
   sendStrokeUndo(strokeId) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
-    try { this.dc.send(JSON.stringify({ type: 'strokeUndo', payload: { strokeId } })); return true; } catch (_) { return false; }
+    try { this.dc.send(JSON.stringify({ type: 'strokeUndo', payload: { strokeId, ...(this.roundId ? { roundId: this.roundId } : {}) } })); return true; } catch (_) { return false; }
   }
   sendSketchStatus(status, attempt = 1) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
     if (status !== 'submitted' && status !== 'editing') return false;
     try {
-      this.dc.send(JSON.stringify({ type: 'sketchStatus', payload: { status, attempt: Number(attempt) >= 2 ? 2 : 1, timestamp: Date.now() } }));
+      this.dc.send(JSON.stringify({ type: 'sketchStatus', payload: { status, ...(this.roundId ? { roundId: this.roundId } : {}), attempt: Number(attempt) >= 2 ? 2 : 1, timestamp: Date.now() } }));
       return true;
     } catch (_) { return false; }
   }
@@ -1100,7 +1127,7 @@ class PictionaryGuest {
   }
   sendGuess(text) {
     if (!this.dc || this.dc.readyState !== 'open') return false;
-    const payload = { text: String(text || '').slice(0, 200), timestamp: Date.now(), codename: this.codename };
+    const payload = { ...(this.roundId ? { roundId: this.roundId } : {}), text: String(text || '').slice(0, 200), timestamp: Date.now(), codename: this.codename };
     try { this.dc.send(JSON.stringify({ type: 'guess', payload })); return true; } catch (_) { return false; }
   }
   leave() {
@@ -1110,9 +1137,8 @@ class PictionaryGuest {
       const fb = _getFb();
       if (fb) fb.deleteDoc(this.signalingRef).catch(() => {});
     }
-    try { if (this.pc) this.pc.close(); } catch (_) {}
-    this.pc = null;
-    this.dc = null;
+    const pc = this.pc; this.pc = null; this.dc = null; this._connected = false;
+    try { if (pc) pc.close(); } catch (_) {}
   }
 }
 
@@ -2819,7 +2845,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
       onConnected: () => { retryCountRef.current = 0; setConnState('connected'); },
       onDisconnected: () => { setConnState('reconnecting'); scheduleRejoin(); },
       onFailed: () => {
-        setConnState((prev) => (prev === 'connected' ? prev : 'failed'));
+        setConnState('failed');
         scheduleRejoin();
       },
       onRoundSync: (payload) => {
@@ -2861,10 +2887,10 @@ const PictionaryGuestOverlay = React.memo((props) => {
         setActiveRound(round ? { ...round, clockOffsetMs } : round);
         setStrokes([]);
         setMyStrokeIds([]);
-        setResolved(null);
-        setSketchSubmitted(false);
+        setResolved(null); setGuessText(''); setGuessNotice(null); lastGuessAtRef.current = 0;
+        setSketchSubmitted(round?.sketchStatus === 'submitted');
         setSharedSketch(null);
-        setSketchAttempt(1);
+        setSketchAttempt(Number(round?.sketchAttempt) >= 2 ? 2 : 1);
         setSketchFeedback(null);
         setSketchVoteRound(null);
         setSketchVoteResults(null);
@@ -2887,7 +2913,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
       },
       onRoundResolved: (r) => { setResolved(r); setActiveRound(null); },
       onStroke: (stroke) => setStrokes((prev) => prev.concat([stroke])),
-      onStrokeHistory: (history) => setStrokes(history || []),
+      onStrokeHistory: (history) => { setStrokes(history || []); setMyStrokeIds((history || []).filter(stroke => stroke.uid === userUid).map(stroke => stroke.strokeId)); },
       onCanvasClear: () => { setStrokes([]); setMyStrokeIds([]); setSketchSubmitted(false); },
       onStrokeUndo: (strokeId) => setStrokes((prev) => prev.filter((s) => s.strokeId !== strokeId)),
       onSketchReveal: (payload) => setSharedSketch(payload && Array.isArray(payload.strokes) ? payload : null),
@@ -2932,33 +2958,36 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const isDrawer = !!(activeRound && activeRound.isDrawer);
   const isSketchResponse = !!((activeRound && activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE) || (resolved && resolved.mode === SKETCH_RESPONSE_ACTIVITY_MODE));
   const handleStrokeBatch = (stroke) => {
+    if (connState !== 'connected' || activeRound?.isPaused || !guestRef.current?.sendStroke(stroke)) return;
     setStrokes((prev) => prev.concat([{ ...stroke, uid: userUid }]));
     setMyStrokeIds((prev) => prev.concat([stroke.strokeId]));
     if (isSketchResponse && sketchSubmitted) {
       setSketchSubmitted(false);
       if (guestRef.current) guestRef.current.sendSketchStatus('editing', sketchAttempt);
     }
-    if (guestRef.current) guestRef.current.sendStroke(stroke);
   };
   const handleUndo = () => {
-    if (myStrokeIds.length === 0) return;
+    if (myStrokeIds.length === 0 || connState !== 'connected' || activeRound?.isPaused) return;
     const lastId = myStrokeIds[myStrokeIds.length - 1];
+    if (!guestRef.current?.sendStrokeUndo(lastId)) return;
     setMyStrokeIds((prev) => prev.slice(0, -1));
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
     // Broadcast so every peer (other drawers, guessers, host) drops the stroke
     // from their canvas too. Host validates that the originator owns the stroke
     // before re-broadcasting, so undo only ever affects the sender's own work.
-    if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
   const handleSketchSubmit = () => {
+    if (connState !== 'connected' || activeRound?.isPaused) return;
     if (!isSketchResponse || strokes.length === 0 || !guestRef.current) return;
     if (guestRef.current.sendSketchStatus('submitted', sketchAttempt)) setSketchSubmitted(true);
   };
   const handleSketchEdit = () => {
+    if (connState !== 'connected' || activeRound?.isPaused) return;
     if (!isSketchResponse || !guestRef.current || sketchAttempt >= 2) return;
     if (guestRef.current.sendSketchStatus('editing', sketchAttempt)) setSketchSubmitted(false);
   };
   const handleSketchRevision = () => {
+    if (connState !== 'connected' || activeRound?.isPaused) return;
     if (!isSketchResponse || !guestRef.current || !sketchFeedback || !sketchFeedback.allowRevision || sketchAttempt >= 2) return;
     if (guestRef.current.sendSketchStatus('editing', 2)) {
       setSketchAttempt(2);
@@ -2975,6 +3004,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const lastGuessAtRef = React.useRef(0);
   const [guessNotice, setGuessNotice] = React.useState(null);
   const handleSubmitGuess = () => {
+    if (connState !== 'connected' || activeRound?.isPaused) return;
     const t = guessText.trim();
     if (!t || !guestRef.current) return;
     const now = Date.now();
@@ -3057,6 +3087,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
             onSelect={(candidateId) => { setSketchVoteSelection(candidateId); setSketchVoteSubmitted(false); }}
             onSubmit={handleSketchVoteSubmit}
           />
+          {activeRound && connState !== 'connected' && <p role="status" className="mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-bold text-amber-900">Reconnecting. Drawing and submitting will resume when the connection is ready.</p>}
           {activeRound && activeRound.isPaused ? (
             <div role="status" className="bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900">Round paused by the teacher. Drawing and guessing will resume with the timer.</div>
           ) : null}
@@ -3089,20 +3120,20 @@ const PictionaryGuestOverlay = React.memo((props) => {
               <div className="text-[10px] font-black uppercase tracking-wider text-amber-800">Teacher feedback</div>
               <p className="m-0 mt-1 whitespace-pre-wrap">{sketchFeedback.text}</p>
               {sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? (
-                <button type="button" onClick={handleSketchRevision} className="mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900">Revise with feedback</button>
+                <button type="button" onClick={handleSketchRevision} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900">Revise with feedback</button>
               ) : null}
             </div>
           ) : null}
           <PictionaryCanvas
             strokes={strokes}
-            drawingEnabled={!!(activeRound && isDrawer && activeRound.status === 'drawing' && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted))}
+            drawingEnabled={!!(connState === 'connected' && activeRound && isDrawer && activeRound.status === 'drawing' && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted))}
             ariaLabel={isSketchResponse ? 'Your private sketch response canvas' : 'Pictionary drawing canvas'}
             color={color}
             mode={mode}
             onStrokeBatch={handleStrokeBatch}
             fullscreenMode={isGuestFullscreen}
           />
-          {activeRound && isDrawer && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? (
+          {activeRound && isDrawer && connState === 'connected' && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? (
             <DrawerToolbox
               color={color}
               setColor={setColor}
@@ -3116,10 +3147,10 @@ const PictionaryGuestOverlay = React.memo((props) => {
               {sketchSubmitted ? (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900">
                   <strong>{sketchAttempt > 1 ? 'Revision submitted.' : 'Drawing submitted.'}</strong> It remains private until the teacher approves and reveals it.
-                  {!sketchFeedback && sketchAttempt < 2 ? <button type="button" onClick={handleSketchEdit} className="block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800">Edit drawing</button> : null}
+                  {!sketchFeedback && sketchAttempt < 2 ? <button type="button" onClick={handleSketchEdit} disabled={connState !== 'connected' || !!activeRound?.isPaused} className="block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800">Edit drawing</button> : null}
                 </div>
               ) : (
-                <button type="button" onClick={handleSketchSubmit} disabled={strokes.length === 0} className="w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40">Submit drawing</button>
+                <button type="button" onClick={handleSketchSubmit} disabled={strokes.length === 0 || connState !== 'connected'} className="w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40">Submit drawing</button>
               )}
             </div>
           ) : null}
@@ -3129,7 +3160,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
                 type="text"
                 value={guessText}
                 onChange={(e) => setGuessText(e.target.value)}
-                disabled={!!activeRound.isPaused}
+                disabled={!!activeRound.isPaused || connState !== 'connected'}
                 onKeyDown={(e) => { if (e.key === 'Enter') handleSubmitGuess(); }}
                 placeholder={(typeof window !== 'undefined' && window.__alloT && window.__alloT("placeholders.type_guess")) || "Type your guess…"}
                 className="flex-1 text-sm border border-slate-300 rounded-lg p-2 outline-none focus:ring-2 focus:ring-amber-300"
@@ -3137,7 +3168,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
               />
               <button type="button"
                 onClick={handleSubmitGuess}
-                disabled={!guessText.trim() || !!activeRound.isPaused}
+                disabled={!guessText.trim() || !!activeRound.isPaused || connState !== 'connected'}
                 className="px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
               >Send</button>
             </div>

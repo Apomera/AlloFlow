@@ -110,7 +110,7 @@ test('Word Sounds recovers from a browser playback block without restarting the 
   await page.evaluate(() => { (window as any).__wordSoundsPlaybackAllowed = true; });
   await retry.click();
   await expect(retry).toBeHidden();
-  await expect(page.getByRole('button', { name: 'common.play_word' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'word_sounds.play_word' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.getElementById('root')?.contains(document.activeElement))).toBe(true);
   await expect.poll(() => page.evaluate(() => (window as any).__wordSoundsStatuses.at(-1))).toMatchObject({
     status: 'ready', failed: 0, deliveryAt: 5150,

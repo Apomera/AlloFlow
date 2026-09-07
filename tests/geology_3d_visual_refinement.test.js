@@ -730,7 +730,9 @@ describe('Geology Explorer 3D visual refinement', () => {
     expect(briefSnippet).not.toContain("role: 'status'");
     expect(briefSnippet).not.toContain("'aria-live'");
     expect(briefSnippet).not.toContain("'aria-atomic'");
-    expect(source).toContain("'Bore Brief ' + cleanReport.boreBrief.metCount + ' of 3 complete. '");
+    // Spoken through the translator now; the English is the fallback and still reads
+    // "Bore Brief N of 3 complete." — what this test pins is that the count is announced.
+    expect(source).toContain("tf('stem.geology.sr.bore_brief_complete', 'Bore Brief {met} of 3 complete. ', { met: cleanReport.boreBrief.metCount })");
     expect(source).toContain('motion-reduce:transition-none');
   });
 

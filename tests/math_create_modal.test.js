@@ -34,7 +34,7 @@ describe('the module', () => {
   it('kept the Create surface: modes, styles, fluency door, assessment builder', () => {
     for (const marker of ["id: 'topic'", "id: 'content'", "id: 'solve'",
       "t('stem.fluency.probe_button_aria')", 'Build Assessment', // emoji is \u-escaped in the transplant
-      'handleGenerateMath(mathInput, true, resolvedMode);']) {
+      "handleGenerateMath(stemLabCreateMode === 'solve' ? 'Solve 1 problem: ' + mathInput : mathInput, true, resolvedMode);"]) {
       expect(modal, marker).toContain(marker);
     }
   });
@@ -73,7 +73,7 @@ describe('the host wiring', () => {
     // STEM Lab bag (the pointer) and the MathPanel bag (the primary door).
     const stemBag = anti.slice(anti.indexOf('React.createElement(StemLab, {'), anti.indexOf('React.createElement(StemLab, {') + 8000);
     expect(stemBag).toContain('openMathCreate,');
-    const mathBag = anti.slice(anti.indexOf('t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives'), anti.indexOf('t, useMathSourceContext, autoAttachManipulatives, setAutoAttachManipulatives') + 300);
+    const mathBag = readFileSync('view_sidebar_panels_source.jsx', 'utf8');
     expect(mathBag).toContain('openMathCreate');
   });
 

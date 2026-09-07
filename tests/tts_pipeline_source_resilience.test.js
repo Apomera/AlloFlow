@@ -146,7 +146,7 @@ describe('provider-level multilingual TTS resilience', () => {
       ok: true,
       status: 200,
       json: async () => ({
-        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from('pcm').toString('base64') } }] } }],
+        candidates: [{ content: { parts: [{ inlineData: { data: Buffer.from([0, 1, 2, 3]).toString('base64') } }] } }],
       }),
     };
   }
@@ -180,8 +180,8 @@ describe('provider-level multilingual TTS resilience', () => {
     const firstPrompt = JSON.parse(fetchMock.mock.calls[0][1].body).contents[0].parts[0].text;
     expect(firstPrompt).toContain('French text using locale fr-CA and the Canada / Quebec dialect or regional variety');
     expect(Array.from(state.urlCache.keys())).toEqual(expect.arrayContaining([
-      JSON.stringify(['Bonjour tout le monde.', 'Kore', 'french\u241ffr-ca\u241fcanada / quebec', 'natural-rate-v1']),
-      JSON.stringify(['Bonjour tout le monde.', 'Kore', 'french\u241ffr-fr\u241ffrance', 'natural-rate-v1']),
+      JSON.stringify(['Bonjour tout le monde.', 'Kore', 'french\u241ffr-ca\u241fcanada / quebec', 'natural-rate-v1', 'fixture-tts']),
+      JSON.stringify(['Bonjour tout le monde.', 'Kore', 'french\u241ffr-fr\u241ffrance', 'natural-rate-v1', 'fixture-tts']),
     ]));
 
     const piperLanguage = vi.fn(() => 'fr');
@@ -381,7 +381,7 @@ describe('provider-level multilingual TTS resilience', () => {
     expect(cloudPrompt).toContain('locale fr-CA');
     expect(cloudPrompt).toContain('Canada / Quebec dialect or regional variety');
     expect(Array.from(gemini._ttsCache.keys())).toEqual([
-      JSON.stringify(['Bonjour.', 'Kore', 'french\u241ffr-ca\u241fcanada / quebec', 'natural-rate-v1']),
+      JSON.stringify(['Bonjour.', 'Kore', 'french\u241ffr-ca\u241fcanada / quebec', 'natural-rate-v1', 'gemini', 'fixture-tts', 'https://fixture.invalid']),
     ]);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(geminiFirst);
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(openaiFirst);

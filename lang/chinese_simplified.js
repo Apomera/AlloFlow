@@ -5131,7 +5131,7 @@
       "correct": "出色的工作！",
       "partial": "努力不错,继续加油！",
       "incorrect": "不太对 • 再试一次！",
-      "error": "无法评估 • 请重试。",
+      "error": "无法评估 — 请重试。",
       "verdict_correct": "正确！",
       "verdict_partial": "部分正确",
       "verdict_incorrect": "不太对",
@@ -7026,7 +7026,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "发送到专家工作台",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7358,7 +7358,7 @@
     "type_timeline": "顺序构建器",
     "type_timeline_desc": "适配年级水平的顺序活动",
     "full_pack": "完整资源包 · 全选",
-    "deselect_all": "? 取消全选",
+    "deselect_all": "↩ 取消全选",
     "estimate": "估算",
     "api_calls": "API 调用",
     "start_batch": "生成",
@@ -7413,7 +7413,7 @@
     "bridge_f2f_custom_lang": "自定义语言……",
     "bridge_f2f_custom_placeholder": "例如：约鲁巴语、提格里尼亚语、达里语……",
     "bridge_all_saved": "所有术语已保存到词汇表！",
-    "bridge_terms_saved": "? 全部已保存",
+    "bridge_terms_saved": "✅ 全部已保存",
     "fullpack_group_target": "目标小组",
     "fullpack_group_current": "当前设置",
     "fullpack_group_all": "所有小组",
@@ -7617,7 +7617,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "凹口的高",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -11266,7 +11266,7 @@
       "meta_info": "{date} • **最终等级**:{level}",
       "log_header": "冒险日志",
       "chapter_separator": "***",
-      "user_label": "? 你",
+      "user_label": "➤ 你",
       "print_button": "打印故事书"
     },
     "answer_key_title": "答案密钥",
@@ -11851,10 +11851,10 @@
     "locked": "已锁定",
     "escaped": "你逃脱了！",
     "escaped_desc": "你解开了所有谜题并逃出了房间！",
-    "time_up": "? 时间到！",
+    "time_up": "⏰ 时间到！",
     "reveal_hint": "显示提示",
-    "puzzles_remaining": "剩余 {{count}} 个谜题",
-    "time_remaining": "时间：{{time}}",
+    "puzzles_remaining": "剩余 {count} 个谜题",
+    "time_remaining": "时间：{time}",
     "progress": "进度",
     "start": "开始密室逃脱",
     "start_hint": "启动计时器以开始检查物体",
@@ -11865,8 +11865,8 @@
     "room_complete": "房间完成！",
     "loading_error": "无法加载房间数据",
     "no_puzzle": "未找到此物体的谜题",
-    "xp_earned": "+{{xp}} 经验",
-    "bonus_xp": "完美逃脱！+{{xp}} 奖励经验",
+    "xp_earned": "+{xp} 经验",
+    "bonus_xp": "完美逃脱！+{xp} 奖励经验",
     "puzzle_mcq": "多项选择",
     "puzzle_sequence": "排序",
     "puzzle_cipher": "解码消息",
@@ -11924,7 +11924,7 @@
     "clue": "线索",
     "clue_found": "发现线索！",
     "clue_revealed": "这个线索可能有助于另一个谜题……",
-    "clues_collected": "线索：{{count}}/{{total}}",
+    "clues_collected": "线索：{count}/{total}",
     "use_clue": "使用线索",
     "final_door": "出口门",
     "final_door_ready": "出口门现已解锁！",
@@ -11950,12 +11950,12 @@
     "left": "剩余",
     "wrong_attempts": "错误尝试",
     "time_penalty": "-{seconds} 秒！",
-    "game_over_time": "? 时间到！你的时间用完了。",
+    "game_over_time": "⏰ 时间到！你的时间用完了。",
     "streak": "连续",
     "streak_bonus": "连续奖励！x{multiplier}",
     "streak_lost": "连续中断！",
     "one_minute_warning": "剩余一分钟！",
-    "thirty_seconds_warning": "? 只剩 30 秒！",
+    "thirty_seconds_warning": "⏰ 只剩 30 秒！",
     "timer_paused": "计时器暂停",
     "timer_resume": "恢复",
     "settings_btn": "房间设置",
@@ -11968,9 +11968,9 @@
     "launch_live_tooltip": "与你的班级开始多人密室逃脱",
     "team_mode": "团队挑战",
     "team_race": "竞速逃脱！",
-    "team_progress": "{{team}} 进度：{{solved}}/{{total}}",
+    "team_progress": "{team} 进度：{solved}/{total}",
     "waiting_host": "等待老师开始……",
-    "team_escaped": "{{team}} 队伍逃脱了！",
+    "team_escaped": "{team} 队伍逃脱了！",
     "all_teams_done": "所有队伍完成！",
     "your_team": "你的队伍",
     "team_red": "红队",
@@ -11978,7 +11978,7 @@
     "team_green": "绿队",
     "team_yellow": "黄队",
     "team_all": "所有学生",
-    "teams_competing": "{{count}} 个队伍在竞争",
+    "teams_competing": "{count} 个队伍在竞争",
     "first_escape": "第一个逃脱！",
     "end_game": "结束游戏",
     "end_game_confirm": "为所有学生结束密室逃脱？",
@@ -11991,8 +11991,8 @@
     "resume_game": "恢复游戏",
     "game_paused_by_teacher": "游戏已被老师暂停",
     "celebration_title": "恭喜！",
-    "you_escaped": "你的队伍在 {{time}} 内逃脱了！",
-    "other_team_escaped": "{{team}} 逃脱了！",
+    "you_escaped": "你的队伍在 {time} 内逃脱了！",
+    "other_team_escaped": "{team} 逃脱了！",
     "class_escaped": "班级胜利！",
     "everyone_escaped": "每个人都齐心协力逃脱了！",
     "hurry_up": "继续！你仍然可以逃脱！",
@@ -12020,7 +12020,7 @@
     "load_saved": "加载已保存",
     "loaded_saved": "已加载保存的密室逃脱！准备好时审阅并启动。",
     "no_saved": "未找到已保存的密室逃脱",
-    "preview_confirmed": "? 密室逃脱已锁定 · 准备玩！",
+    "preview_confirmed": "✅ 密室逃脱已锁定 · 准备玩！",
     "xp_earned_streak": "+{xp} 经验({multiplier}x 连续奖励！)",
     "loaded_from_resource": "从资源加载。"
   },
@@ -12699,7 +12699,11 @@
       "trapezoid": "梯形",
       "simpson": "辛普森",
       "rectangles_n": "矩形(n)",
-      "coeff_a": "系数 a"
+      "coeff_a": "系数 a",
+      "sr_explanation_ready": "解释已就绪。",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一个"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ 此浏览器不支持音频",
@@ -12823,13 +12827,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "生成 AI 解释，水平为",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
       "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level_group": "阅读水平",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14454,8 +14458,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? 正确！它是",
-      "that": "? 那",
+      "correct_it": "✅ 正确！它是",
+      "that": "❌ 那",
       "linear": "线性",
       "quadratic": "二次",
       "cubic": "三次",
@@ -14729,7 +14733,8 @@
       "angle_u00b0": "角度 (°)",
       "velocity_ms": "速度 (m/s)",
       "gravity_msu00b2": "重力 (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "解释已就绪。"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 随机：",
@@ -14757,7 +14762,10 @@
       "codominant_desc": "两个等位基因都会充分表达。杂合子会同时呈现两种性状。",
       "sexLinked_desc": "该性状由 X 染色体携带。这表示 X 连锁隐性遗传（例如血友病、红绿色盲）：男性（XY）只需一份拷贝即可表达；女性（XX）需要两份。",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_snapshot": "快照",
+      "a11y_close_flashcard": "关闭卡片"
     },
     "circuit": {
       "meter_status_ammeter_short": "不安全的放置：短路路径",
@@ -15049,8 +15057,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? 正确！",
-      "it": "? 它"
+      "correct": "✅ 正确！",
+      "it": "❌ 它"
     },
     "inequality": {
       "badge_first_solve_label": "首次解答",
@@ -15166,8 +15174,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? 正确！",
-      "answer": "? 答案：",
+      "correct": "✅ 正确！",
+      "answer": "❌ 答案：",
       "hydrogen": "氢",
       "helium": "氦",
       "lithium": "锂",
@@ -15460,7 +15468,7 @@
       "accessible_summary_heading": "Current simulation state",
       "accessible_summary_help": "Every camera and layer action has a keyboard-accessible button. Focus the canvas for arrow-key orbiting, plus and minus zoom, bracket-key star selection, Escape to clear, and R to reset.",
       "accessible_summary_title": "Text alternative for the 3-D scene",
-      "aria_back_to_tools": "Back to tools",
+      "aria_back_to_tools": "返回工具",
       "aria_bh_lifecycle": "Possible stages in a black hole's history",
       "aria_blackhole_canvas": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.",
       "aria_camera_controls": "Galaxy camera controls",
@@ -16415,7 +16423,9 @@
       "our_sun_is_born": "我们的太阳诞生",
       "present_day": "今日",
       "the_far_future": "遥远的未来",
-      "universe": "宇宙："
+      "universe": "宇宙：",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_simulation_speed": "模拟速度"
     },
     "rocks": {
       "igneous": "火成岩",
@@ -19340,7 +19350,10 @@
       "garage_desc": "发动机、生锈和反应 — 一个化学工作室。",
       "classroom_desc": "一个真正的科学教室，里面有烧杯和实验。",
       "outdoors_desc": "走到户外 — 大自然是最大的实验室。",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一个"
     },
     "converter": {
       "u2705_saved_to_history": "✅ 已保存到历史记录！",
@@ -20127,7 +20140,40 @@
       "read_what_special_education_law_actually": "读一读特殊教育法究竟怎么说，用它自己的原话。IDEA B 部分与第 504 条的真实条文，取自 eCFR 并带取用日期，可检索，联邦与州的规定并排呈现。没有任何转述或生成：若官方条文未加载，工具会直说，而不是猜。",
       "applied_k_12_behavior_practice_what": "从幼儿园到高中的应用行为实践——学校心理工作者和教师真正拿这门科学做些什么。PBIS 三层框架、与 FBA 功能相对应的替代行为、背景事件（多数 BIP 忽略的慢触发因素）、Geoff Colvin 的七阶段发作周期，以及以缅因州第 33 章为依据的约束与隔离伦理。BehaviorLab 的姊妹工具。",
       "marine_biology_behavioral_science_of_octopuses": "章鱼、乌贼、墨鱼和鹦鹉螺的海洋生物学与行为科学。重头戏：Hunter Sim——挑物种、挑栖地、挑猎物、挑战术，玩伪装小游戏，掐准出击时机。解锁野外笔记式的生物学冷知识（色素细胞的机制、9 个脑、蓝色血液、喷射推进）。10 个物种的野外图鉴，附智力、伪装与喷射速度数据。",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1 与 HS-PS2。桁架应力模拟器，跨度、高度、荷载与材料均可调；桥型对比（梁桥、桁架桥、拱桥、悬索桥、斜拉桥）；材料数据库；受力类型；真实案例（Tacoma Narrows、Hyatt Regency、Tay、Silver，以及 Brooklyn、Golden Gate、Akashi 与 Millau）；工程设计循环；AP 风格测验；可打印的设计说明书。"
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1 与 HS-PS2。桁架应力模拟器，跨度、高度、荷载与材料均可调；桥型对比（梁桥、桁架桥、拱桥、悬索桥、斜拉桥）；材料数据库；受力类型；真实案例（Tacoma Narrows、Hyatt Regency、Tay、Silver，以及 Brooklyn、Golden Gate、Akashi 与 Millau）；工程设计循环；AP 风格测验；可打印的设计说明书。",
+      "the_gutenberg_style_screw_press_as": "古腾堡式螺旋压印机，做成一台真的能转起来的模拟。拉动手柄，自己排版，看看压出的印痕。此外还有材料科学（铅锡锑合金）、经济学（每本书成本的崩塌）、历史（宗教改革、科学革命）、字体排印，以及压印机背后的人（包括被历史遗忘的女性印工）。为初中的跨学科学习而建。",
+      "three_js_stoop_simulator_deep_science": "Three.js 俯冲模拟器，外加猛禽捕猎力学的深度科学。以 240 mph 的速度当一只游隼，当一只爪力 530 psi 的角雕，或者当一只无声的美洲雕鸮。8 个物种、12 个章节：爪力、视力（人类的 4-8 倍，红隼可见紫外）、飞行物理、猫头鹰的静音飞行、终端速度计算器、DDT 之后的种群恢复与仍在进行的保护危机，以及靠剪影和整体气质在野外辨识。",
+      "practice_reading_and_completing_the_documents": "练习读懂并填写成年生活赖以运转的那些文件：求职申请、W-4 表、租约、就诊登记表、驾驶学习许可，以及你自己的 IEP 会议邀请函。每一栏都用平实语言拆解，会让你付出代价的方框都标了出来，还有别人催你「现在就签」时的压力情景，以及开口要时间的现成说法。所有练习都用一个虚构的人，绝不会用你的真实信息。",
+      "how_swimming_works_stroke_physics_survival": "游泳是怎么回事（泳姿物理加上求生技能），以及每个游泳的人都该知道的冷水、离岸流、冰面、救生衣和救援知识。泳姿的图解拆分、浮力与推进的科学，以及那些真正能救命的求生技能（仰漂、踩水、HELP 抱膝姿势、抱团）。资料来源：CDC、USCG、AAP、NAA、NOAA、USA Swimming。仅供教学：要真正学会游泳，请找一位游泳教练。",
+      "tax_paycheck_calculator_data_literacy_decision": "税务与工资单计算器、数据素养、决策矩阵、合同阅读器、档案与文书、出行规划、就业准备、简历撰写、作品集证据的整理、面试练习、沟通技巧、时间管理、医疗保险、口腔护理、身体照护的人体工学、睡眠作息、药品标签、就诊准备、居家安全、数字安全、与食物相处的从容，以及用于日常生活的应用科学。",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1、HS-LS1、HS-LS3 与 HS-LS4。微生物世界：细菌（有益的与致病的）、病毒（COVID、流感、HIV、噬菌体、麻疹）、显微技术（光学、相差、荧光、电子、AFM）、抗生素耐药性的演化、人体与土壤与海洋的微生物组、疫苗与免疫系统、发酵（酸面团、酸奶、泡菜、酸菜、康普茶、奶酪）、案例研究（Snow、Fleming、MRSA、COVID 与 mRNA、FMT）、测验，以及可打印的实验室安全与微生物速查表。",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "十一个地区、十五场环境守护行动。缅因州的五场跨越多个时期的长线行动，另有十个跨地区情景，覆盖全部五个机制族：火（澳大利亚的 Yarralin、北加州的 Karuk）、保育（Yellowstone、卢旺达的 Akagera）、公共卫生（孟买登革热、利比里亚 2014 年埃博拉）、流域（Klamath 河、Murray-Darling 流域）、气候（马绍尔群岛、孟加拉三角洲）。当你在同一机制族里同时完成缅因州行动与跨地区情景时，族内配对洞察就会解锁。",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1、HS-ETS1-3 与 MS-ESS3-3。在 144 个地块的网格上设计一座小镇，面对的是真正互相冲突的要求。三座小镇，各有不同的约束条件：Riverbend，雨水与债券两头紧；Mesa Hollow，含水层是定量，而农场正在把它喝干；以及 Harborlight，规划到 2050 年还得站得住。理性法径流、水量平衡、海平面上升余量、路网步行距离，以及一套计价的道路网络，每一项都能展开看它的公式。Assumption Lab 会用两套已发表的参数把同一份规划再跑一遍，让学生看清哪些结论在两套参数下都站得住。地图、可编辑的地块表格，以及同一份规划的三维模型。讨论提示与有据可查的历史承载着这个工具拒绝建模的那些问题。不打分，也没有标准答案。",
+      "codap_data_science": "CODAP：数据科学",
+      "lumen_research_canvas": "Lumen：研究画布",
+      "evolab_evolution": "EvoLab：演化",
+      "dino_lab": "恐龙实验室",
+      "nutritionlab_nutrition_science": "NutritionLab：营养科学",
+      "birdlab_i_spy_ornithology": "BirdLab：找一找鸟类学",
+      "openbim_companion": "OpenBIM：随行指南",
+      "applab_ai_app_generator": "AppLab：AI 应用生成器",
+      "access_lens": "无障碍透镜",
+      "sim_shelf": "仿真书架",
+      "zoom_gallery": "放大画廊",
+      "sourcebook": "资料源书",
+      "wheel_fire_pottery_lab": "轮与火：陶艺实验室",
+      "echo_navigator": "回声导航",
+      "learning_lab_how_learning_works": "Learning Lab：学习是怎么发生的",
+      "weldlab_welding_metal_joining": "WeldLab：焊接与金属连接",
+      "bikelab_physics_repair": "BikeLab：物理与维修",
+      "fisherlab_boating_fishing_sim": "FisherLab：航行与钓鱼模拟",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab：贻贝养殖模拟",
+      "throwlab_sports_physics": "ThrowLab：运动物理",
+      "skatelab_skate_bmx_physics": "SkateLab：滑板与 BMX 物理",
+      "playlab_strategy_on_the_field": "PlayLab：场上策略",
+      "kepler_colony": "开普勒殖民地",
+      "birdlab_life_list": "BirdLab：终身鸟种名录",
+      "petslab_decoder": "PetsLab：行为解读器"
     },
     "area": {
       "volume": "体积……"
@@ -20167,7 +20213,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一个",
+      "a11y_simulation_speed": "模拟速度",
+      "a11y_close_flashcard": "关闭卡片"
     },
     "solar_sys": {
       "venus": "金星",
@@ -20989,7 +21040,8 @@
       "scaled_volume_changed": "🔵 已缩放（体积已改变）",
       "skewed_shape_deformed": "🟠 倾斜（形状已变形）",
       "degenerate_volume_0": "💀 退化（体积 → 0）",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "教程进度"
     },
     "numberline": {
       "first_mark": "首个标记",
@@ -23132,7 +23184,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} 年开始。"
     },
     "optics": {
       "optics_lab": "光学实验室",
@@ -23478,7 +23531,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "本地分析型 SQL 查询"
     },
     "geosandbox": {
       "loading_3d_engine": "正在加载3D引擎...",
@@ -23828,7 +23882,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "已移除雕塑"
     },
     "algebraCAS": {
       "solve": "🔍 求解",
@@ -26444,7 +26499,8 @@
       "bench_punchline_c": " mm，约为同样一毫升在 250 mL 烧杯中所能达到高度的 ",
       "bench_punchline_d": "× 。在烧杯里它只形成 ",
       "bench_punchline_e": " mm 的薄膜，你根本看不见，更别说读数了。这正是要用滴定管滴定、而不是在烧杯里滴定的全部原因。",
-      "explain_label": "你的解释"
+      "explain_label": "你的解释",
+      "sr_explanation_ready": "解释已就绪。"
     },
     "economicslab": {
       "six_figures": "六位数收入",
@@ -28424,7 +28480,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "反思已保存。"
     },
     "anatomy": {
       "system_explorer": "系统探索者",
@@ -29006,7 +29063,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "重置 3D 相机"
     },
     "dna": {
       "back_to_tools": "返回工具",
@@ -30383,7 +30441,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "反思已保存。"
     },
     "angles": {
       "back_to_tools": "返回工具",
@@ -31197,7 +31256,8 @@
       "explain_how_each_parameter_shapes_a_si": "讲解每个参数如何塑造正弦波。",
       "design_note_discrete_5_state_marker_no": "设计说明：离散的 5 状态标记；无波形评分；无揭示——出于设计。",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "解释已就绪。"
     },
     "typingpractice": {
       "typing_practice_menu": "打字练习菜单",
@@ -31551,7 +31611,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "返回菜单"
     },
     "music": {
       "edm_lead": "EDM 主音",
@@ -34102,7 +34163,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "选择答案：{value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34866,7 +34928,7 @@
       "sculpt_engine_failed": "无法加载雕刻引擎。",
       "sculpt_failed": "雕刻失败——试试更简单的描述。",
       "sr_sculpted": "雕塑已放置",
-      "sr_art_cleared": "雕塑已移除",
+      "sr_art_cleared": "已移除雕塑",
       "assess_failed": "教练无法回应——请重试。",
       "sr_assessed": "教练反馈已在构建面板下方就绪",
       "recall_needs_more": "请先在2个分组中添加至少4个想法",
@@ -35725,7 +35787,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "关闭",
+      "sr_nothing_to_redo": "没有可重做的内容。",
+      "sr_nothing_to_undo": "没有可撤销的内容。",
+      "sr_dir_left": "左",
+      "sr_dir_right": "右"
     },
     "arithmetic": {
       "selected": " 已选择。",
@@ -39771,7 +39838,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR 以天顶辐射点和极限星等 6.5 为标准。此粗略估计假设晴朗无月的天空和数量指数 2.2。波特尔等级只能大致指示极限星等；比标准更暗的天空可能超过 ZHR。辐射点高度较低和天空较亮都会降低该估计值。",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "返回 STEM 工具"
     },
     "autorepair": {
       "back_to_menu": "返回菜单",
@@ -40512,7 +40580,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "得分：{value2} 分中的 {value1} 分",
+      "a11y_open_2": "打开{value1}",
+      "a11y_option": "选项 {value1}：{value2}{value3}"
     },
     "bakingscience": {
       "crust": "地壳",
@@ -40615,7 +40686,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "解释已就绪。"
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41361,7 +41433,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "解释已就绪。",
+      "a11y_investigation_progress": "探究进度",
+      "a11y_flight_debrief": "飞行讲评",
+      "a11y_tutorial_progress": "教程进度"
     },
     "behaviorlab": {
       "chain_reaction": "连锁反应",
@@ -41538,7 +41614,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "解释已就绪。",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -44045,7 +44121,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "已探索模块：{value1}",
+      "a11y_score_out_of": "得分：{value2} 分中的 {value1} 分",
+      "sr_selected": "已选择：{value1}",
+      "sr_quiz_reset": "测验已重置"
     },
     "brainatlas": {
       "group_systems": "系统",
@@ -49201,7 +49281,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "选择答案：{value1}"
     },
     "cyberdefense": {
       "quiz_master": "答题达人",
@@ -50345,7 +50426,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "已选择：{value1}"
     },
     "echotrainer": {
       "wall": "墙",
@@ -51804,7 +51886,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "已探索模块：{value1}"
     },
     "fireecology": {
       "carbon_calculator": "碳计算器",
@@ -52884,7 +52967,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "返回菜单",
+      "sr_getting_critique": "正在获取点评……",
+      "sr_critique_ready": "点评已就绪。"
     },
     "flightsim": {
       "game_controls": "🎮 游戏控制",
@@ -53094,7 +53180,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "飞行模拟器驾驶舱视图。W/S 俯仰，A/D 横滚，Shift/Ctrl 油门，方括号控制襟翼，X 机轮刹车，Q 测验，F 受力，Space 暂停，I 信息。",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -53106,7 +53192,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "从缅因州波特兰出发的自由飞行",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -53153,7 +53239,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "上海中心大厦",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58974,7 +59060,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "已探索模块：{value1}",
+      "sr_loaded": "已加载{value1}",
+      "sr_showing": "正在显示{value1}",
+      "sr_opening": "正在打开{value1}"
     },
     "platetectonics": {
       "pacific": "太平洋",
@@ -59240,7 +59330,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63796,7 +63886,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "解释已就绪。",
+      "sr_off": "关闭",
+      "sr_edge_left": "左",
+      "sr_edge_right": "右",
+      "sr_correct": "正确。",
+      "sr_not_quite": "不太对。"
     },
     "playlab": {
       "back": "← 返回",
@@ -63864,7 +63960,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "辅导员已离线。",
+      "sr_drill_stopped": "练习已停止。"
     },
     "printingpress": {
       "menu": "← 菜单",
@@ -66003,7 +66101,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "返回菜单",
+      "a11y_open": "打开{value1}",
+      "sr_selected": "已选择：{value1}",
+      "sr_loaded": "已加载{value1}",
+      "sr_opening": "正在打开{value1}",
+      "sr_correct": "正确。",
+      "sr_not_quite": "不太对。",
+      "sr_year_begins": "{value1} 年开始。",
+      "sr_question_reset_try_again": "题目已重置。再试一次。",
+      "sr_not_quite_see_the_explanation": "不太对：看看解释。"
     },
     "raptorhunt": {
       "show_answer": "显示答案",
@@ -67652,7 +67760,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "打开{value1}",
+      "a11y_flight_debrief": "飞行讲评"
     },
     "renewables": {
       "menu": "← 菜单",
@@ -68352,7 +68462,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "返回菜单",
+      "sr_getting_critique": "正在获取点评……",
+      "sr_critique_ready": "点评已就绪。",
+      "sr_quiz_reset": "测验已重置"
     },
     "roadready": {
       "let_s_start": "开始吧 →",
@@ -71219,7 +71333,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_local_analytical_sql_query": "本地分析型 SQL 查询"
     },
     "stewardship": {
       "back": "← 返回",
@@ -71796,7 +71912,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "返回菜单",
+      "sr_question_reset_try_again": "题目已重置。再试一次。"
     },
     "throwlab": {
       "back": "← 返回",
@@ -72021,7 +72139,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "重置 3D 相机",
+      "sr_coach_is_offline": "辅导员已离线。",
+      "sr_drill_stopped": "练习已停止。"
     },
     "weldlab": {
       "menu": "← 菜单",
@@ -73583,7 +73704,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "已探索模块：{value1}",
+      "a11y_score_out_of": "得分：{value2} 分中的 {value1} 分",
+      "sr_quiz_reset": "测验已重置",
+      "sr_loaded": "已加载{value1}",
+      "sr_showing": "正在显示{value1}",
+      "sr_not_quite_see_the_explanation": "不太对：看看解释。"
     },
     "worldbuilder": {
       "grade_level": "年级水平",
@@ -74489,7 +74616,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "阅读水平",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -75176,7 +75303,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "生命之树",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -77031,7 +77158,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "选项 {value1}：{value2}{value3}",
+      "a11y_3d_camera_views": "3D 相机视角"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -77043,6 +77172,22 @@
       "finish": "明白了！",
       "replay": "提示",
       "replay_aria": "显示教程"
+    },
+    "pets": {
+      "sr_back_to_menu": "返回菜单",
+      "sr_getting_critique": "正在获取点评……",
+      "sr_critique_ready": "点评已就绪。"
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_3d_camera_views": "3D 相机视角"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "探究进度"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "没有可重做的内容。",
+      "sr_nothing_to_undo": "没有可撤销的内容。"
     }
   },
   "behavior_lens": {
@@ -77585,7 +77730,7 @@
       "person": "人物",
       "phase_label": "阶段标签",
       "rationale_which_antecedent_does_this_address": "理由(这针对哪个前因？)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "反思你的方法……\\n• 什么有效？\\n• 你会做什么不同？\\n• 你想接下来练习什么策略？",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "反思你的方法……\n• 什么有效？\n• 你会做什么不同？\n• 你想接下来练习什么策略？",
       "reinforcement_how_you": "⭐ 强化(你如何)",
       "replacement_behavior_functionally_equivalent": "✅ 替代行为(功能等效)",
       "respond_as_the_counselor": "以咨询师身份回应……",
@@ -77593,7 +77738,7 @@
       "search_81_tools": "🔍 搜索 80+ 工具……",
       "search_aba_terms": "🔍 搜索 ABA 术语……",
       "search_terms_eg_reinforcement_fba_data": "🔍 搜索术语……(例如「强化」、「FBA」、「数据」)",
-      "session_1_3nsession_2_7nsession_3_5n": "会话 1:3\\n会话 2:7\\n会话 3:5\\n……",
+      "session_1_3nsession_2_7nsession_3_5n": "会话 1:3\n会话 2:7\n会话 3:5\n……",
       "setting_eg_math_class_cafeteria": "环境(例如：数学课、食堂)",
       "share_what_you_notice_at_home_strengths_concerns_c": "分享你在家里注意到的 — 优势、担忧、文化情境或对学校团队的建议……",
       "step_description": "步骤描述……",
@@ -80509,7 +80654,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "概念图像",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80543,10 +80688,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "为每个概念布置陈设",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "布置进度",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80558,7 +80703,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "可能的名称",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80569,7 +80714,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "概念回忆",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82126,7 +82271,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "关闭 Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82135,7 +82280,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "筛选作业",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82173,15 +82318,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "第 {n} 题",
+    "q_choices_aria": "第 {n} 题的选项，每行一个",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "移除第 {n} 题",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "第 {n} 题的量表级数",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "第 {n} 题的作答类型",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82191,10 +82336,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} 的可选取链接",
+    "scale_high_aria": "高端的标签",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "低端的标签",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82214,7 +82359,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "作业状态摘要",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82230,9 +82375,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "自动更新",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "可选取的家庭作业链接",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82241,7 +82386,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "家庭作业二维码",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84689,7 +84834,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "为提示语和评量表选择发展水平",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84697,7 +84842,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "开启或关闭教师视图",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84728,17 +84873,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "暂停语音备注录制",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "继续语音备注录制",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "开始录制语音备注",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "停止录制",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85124,22 +85269,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven 表扬理由",
+    "recent_deliveries_aria": "最近的私下 AlloHaven 表扬",
+    "token_amount_aria": "AlloHaven 代币数量",
+    "token_cap_aria": "每位学生每节课的 AlloHaven 代币上限"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "在仍达成目标的前提下允许的例外",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "应用为此目标追踪的可选进度信号",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "全组一起，或每位学生各自进行",
+    "name_aria": "班级目标名称，仅保存在本设备上",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "此目标涵盖哪些学生",
+    "template_aria": "班级目标的起始模板",
+    "tokens_aria": "达成此目标时每位学生获得的代币"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85157,7 +85302,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox 管理员令牌（可选）",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85187,17 +85332,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "已举手",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "可选取的实时信箱加入链接",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox 的实时课堂",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85224,7 +85369,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "实时连接",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85256,7 +85401,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox 网页应用的 URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

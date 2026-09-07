@@ -439,20 +439,75 @@ const handleDownloadAudio = async (rawText, filename, contentId, deps) => {
 
 const handleCardAudioSequence = async (e, deps) => {
   const { generatedContent, selectedVoice, setIsPlaying, setPlayingContentId, audioRef, isPlayingRef, playbackSessionRef, playbackRateRef, flashcardIndex, flashcardLang, flashcardMode, standardDeckLang, addBlobUrl, callTTS, stopPlayback, t, warnLog } = deps;
-  try { if (window._DEBUG_AUDIO_HELPERS) console.log("[AudioHelpers] handleCardAudioSequence fired"); } catch(_) {}
-      e.stopPropagation();
-      const item = generatedContent?.data[flashcardIndex];
-      if (!item) return;
-      stopPlayback();
-      isPlayingRef.current = true;
-      const sessionId = Date.now();
-      playbackSessionRef.current = sessionId;
-      setPlayingContentId('flashcard-sequence');
-      setIsPlaying(true);
-      const labelTerm = t('flashcards.front_label_term');
-      const labelDef = t('flashcards.back_label_def');
-      const labelEng = t('languages.english');
-      try {
+  if (e && typeof e.stopPropagation === 'function') e.stopPropagation();
+  const item = generatedContent?.data[flashcardIndex];
+  const isMuted = () => {
+    try { return typeof window.__alloIsGlobalMuted === 'function' ? window.__alloIsGlobalMuted() : localStorage.getItem('alloflow-global-muted') === 'true'; }
+    catch (_) { return false; }
+  };
+  if (!item || isMuted()) return;
+  stopPlayback();
+  const sessionId = (Number(playbackSessionRef.current) || 0) + 1;
+  playbackSessionRef.current = sessionId;
+  isPlayingRef.current = true;
+  setPlayingContentId('flashcard-sequence');
+  setIsPlaying(true);
+  const controller = new AbortController();
+  let ownedAudio = null;
+  let timer = null;
+  let resolveDelay = null;
+  let finished = false;
+  const isCurrent = () => !finished && playbackSessionRef.current === sessionId && !isMuted();
+  const preferences = () => {
+    const groupRate = typeof deps.getGroupTtsSpeed === 'function' ? deps.getGroupTtsSpeed() : null;
+    const rate = Number(groupRate ?? window.__alloPlaybackRate ?? playbackRateRef.current);
+    const volume = Number(window.__alloVoiceVolume ?? 1);
+    return {
+      rate: Number.isFinite(rate) && rate > 0 ? Math.max(0.1, Math.min(10, rate)) : 1,
+      volume: Number.isFinite(volume) ? Math.max(0, Math.min(1, volume)) : 1
+    };
+  };
+  const applyPreferences = () => {
+    if (!ownedAudio) return;
+    const pref = preferences();
+    ownedAudio.playbackRate = pref.rate;
+    ownedAudio.volume = pref.volume;
+  };
+  const finish = () => {
+    if (finished) return;
+    finished = true;
+    controller.abort();
+    if (timer) clearTimeout(timer);
+    timer = null;
+    if (resolveDelay) { resolveDelay(); resolveDelay = null; }
+    window.removeEventListener('alloflow-mute-changed', onMute);
+    window.removeEventListener('alloflow:playback-stopped', finish);
+    window.removeEventListener('alloflow:audio-preferences-changed', applyPreferences);
+    if (ownedAudio) {
+      ownedAudio.onended = null;
+      ownedAudio.onerror = null;
+      try { ownedAudio.pause(); } catch (_) {}
+      if (audioRef.current === ownedAudio) audioRef.current = null;
+      ownedAudio = null;
+    }
+    if (playbackSessionRef.current !== sessionId) return;
+    playbackSessionRef.current = sessionId + 1;
+    isPlayingRef.current = false;
+    setIsPlaying(false);
+    setPlayingContentId(null);
+  };
+  const onMute = event => { if (event?.detail?.muted) finish(); };
+  const delay = ms => new Promise(resolve => {
+    resolveDelay = resolve;
+    timer = setTimeout(() => { timer = null; resolveDelay = null; resolve(); }, ms);
+  });
+  window.addEventListener('alloflow-mute-changed', onMute);
+  window.addEventListener('alloflow:playback-stopped', finish);
+  window.addEventListener('alloflow:audio-preferences-changed', applyPreferences);
+  const labelTerm = t('flashcards.front_label_term');
+  const labelDef = t('flashcards.back_label_def');
+  const labelEng = t('languages.english');
+  try {
           let sequence = [];
           if (flashcardMode === 'standard') {
               sequence = [item.term];
@@ -488,64 +543,52 @@ const handleCardAudioSequence = async (e, deps) => {
                   `${flashcardLang} ${labelDef}: ${transDef}`
               ].filter(Boolean);
           }
-          const playNext = async (idx) => {
-              if (playbackSessionRef.current !== sessionId || idx >= sequence.length) {
-                  setIsPlaying(false);
-                  setPlayingContentId(null);
-                  return;
-              }
-              try {
-                  const audioUrl = await callTTS(sequence[idx], selectedVoice);
-                  addBlobUrl(audioUrl);
-                  if (playbackSessionRef.current !== sessionId) return;
-                  const audio = new Audio(audioUrl);
-                  audio.playbackRate = playbackRateRef.current;
-                  audioRef.current = audio;
-                  audio.onended = () => {
-                      setTimeout(() => playNext(idx + 1), 500);
-                  };
-                  const playPromise = audio.play();
-                  if (playPromise !== undefined) {
-                      playPromise.catch(error => {
-                          if (error.name !== 'AbortError') {
-                              warnLog("Card audio error:", error);
-                          }
-                      });
-                  }
-              } catch (err) {
-                  warnLog("Card Audio Error (Gemini), retrying once...", err);
-                  try {
-                      await new Promise(r => setTimeout(r, 1500));
-                      if (playbackSessionRef.current !== sessionId) return;
-                      const retryUrl = await callTTS(sequence[idx], selectedVoice);
-                      if (retryUrl) {
-                          addBlobUrl(retryUrl);
-                          const retryAudio = new Audio(retryUrl);
-                          retryAudio.playbackRate = playbackRateRef.current;
-                          audioRef.current = retryAudio;
-                          retryAudio.onended = () => {
-                              setTimeout(() => playNext(idx + 1), 500);
-                          };
-                          retryAudio.play().catch(e => {
-                              warnLog("Retry audio play failed", e);
-                              setTimeout(() => playNext(idx + 1), 500);
-                          });
-                          return;
-                      }
-                  } catch (retryErr) {
-                      warnLog("Gemini TTS retry also failed", retryErr);
-                  }
-                  warnLog("⚠️ Skipping flashcard audio for:", sequence[idx]?.substring(0, 30), "(no browser TTS fallback)");
-                  setTimeout(() => playNext(idx + 1), 500);
-              }
-          };
-          playNext(0);
-      } catch (err) {
-          warnLog("Unhandled error:", err);
-          setIsPlaying(false);
-          isPlayingRef.current = false;
-          setPlayingContentId(null);
+    const playNext = async idx => {
+      if (!isCurrent() || idx >= sequence.length) { finish(); return; }
+      let url = null;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        try {
+          url = await callTTS(sequence[idx], window.__alloSelectedVoice || selectedVoice, 1, { signal: controller.signal });
+        } catch (error) {
+          if (!isCurrent()) { finish(); return; }
+          warnLog('Card audio generation failed:', error);
+        }
+        if (!isCurrent()) { finish(); return; }
+        if (url) break;
+        if (attempt === 0) await delay(1500);
+        if (!isCurrent()) { finish(); return; }
       }
+      const advance = () => {
+        if (!isCurrent()) { finish(); return; }
+        timer = setTimeout(() => { timer = null; playNext(idx + 1); }, 500);
+      };
+      if (!url) { advance(); return; }
+      addBlobUrl(url);
+      const audio = new Audio(url);
+      ownedAudio = audio;
+      audioRef.current = audio;
+      applyPreferences();
+      let terminal = false;
+      const nextOnce = () => {
+        if (terminal) return;
+        terminal = true;
+        audio.onended = null;
+        audio.onerror = null;
+        advance();
+      };
+      audio.onended = nextOnce;
+      audio.onerror = nextOnce;
+      try { await Promise.resolve(audio.play()); }
+      catch (error) {
+        if (isCurrent()) warnLog('Card audio playback failed:', error);
+        finish();
+      }
+    };
+    await playNext(0);
+  } catch (error) {
+    if (isCurrent()) warnLog('Unhandled card audio error:', error);
+    finish();
+  }
 };
 
 const pcmToWav = (pcmData, sampleRate = 24000) => {

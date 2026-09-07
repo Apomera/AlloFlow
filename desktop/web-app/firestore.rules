@@ -181,6 +181,8 @@ service cloud.firestore {
           let nextAll = nextEscape.get('teamProgress', {}).get('All', {});
           let changedAll = oldAll.diff(nextAll).affectedKeys();
           let nextAction = nextAll.get('questActions', {}).get(request.auth.uid, {});
+          let oldQuest = oldEscape.get('conceptQuest', {});
+          let turnScoped = oldQuest.get('actionSchema', 0) == 1;
           return oldEscape
               .diff(request.resource.data.get('escapeRoomState', {}))
               .affectedKeys().hasOnly(['teamProgress', 'teams'])
@@ -188,18 +190,29 @@ service cloud.firestore {
               oldEscape.get('mode', '') != 'concept-quest'
               || !('teamProgress' in changedEscape)
               || (
-                changedAll.hasOnly(['questVotes', 'questActions', 'questRoles'])
+                changedAll.hasOnly(['questVotes', 'questVoteTurns', 'questActions', 'questRoles'])
                 && (!('questVotes' in changedAll)
                   || (oldAll.get('questVotes', {}).diff(nextAll.get('questVotes', {})).affectedKeys().hasOnly([request.auth.uid])
                     && nextAll.get('questVotes', {}).get(request.auth.uid, '') is string
-                    && nextAll.get('questVotes', {}).get(request.auth.uid, '').matches('^room-[1-8]$')))
+                    && nextAll.get('questVotes', {}).get(request.auth.uid, '').matches('^room-[1-8]$')
+                    && (!turnScoped || (oldEscape.get('isActive', false) == true
+                      && oldEscape.get('isPaused', false) == false
+                      && oldQuest.get('phase', '') == 'explore'
+                      && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') == oldQuest.get('turnKey', '!')))))
+                && (!('questVoteTurns' in changedAll)
+                  || (oldAll.get('questVoteTurns', {}).diff(nextAll.get('questVoteTurns', {})).affectedKeys().hasOnly([request.auth.uid])
+                    && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') is string
+                    && oldEscape.get('isActive', false) == true
+                    && oldEscape.get('isPaused', false) == false
+                    && oldQuest.get('phase', '') == 'explore'
+                    && nextAll.get('questVoteTurns', {}).get(request.auth.uid, '') == oldQuest.get('turnKey', '!')))
                 && (!('questRoles' in changedAll)
                   || (oldAll.get('questRoles', {}).diff(nextAll.get('questRoles', {})).affectedKeys().hasOnly([request.auth.uid])
                     && nextAll.get('questRoles', {}).get(request.auth.uid, '') in ['analyst', 'explainer', 'connector', 'investigator']))
                 && (!('questActions' in changedAll)
                   || (oldAll.get('questActions', {}).diff(nextAll.get('questActions', {})).affectedKeys().hasOnly([request.auth.uid])
                     && nextAction is map
-                    && nextAction.keys().hasOnly(['abilityId', 'roleId', 'answerIndex', 'submittedAt', 'supportId', 'supportTargetUid'])
+                    && nextAction.keys().hasOnly(['abilityId', 'roleId', 'answerIndex', 'submittedAt', 'supportId', 'supportTargetUid', 'turnKey'])
                     && nextAction.get('abilityId', '') in ['analyze', 'explain', 'connect', 'question']
                     && nextAction.get('roleId', '') in ['', 'analyst', 'explainer', 'connector', 'investigator']
                     && nextAction.get('supportId', '') in ['', 'clarify', 'guard', 'encourage']
@@ -212,7 +225,13 @@ service cloud.firestore {
                     && nextAction.get('answerIndex', -1) >= 0
                     && nextAction.get('answerIndex', -1) <= 5
                     && nextAction.get('submittedAt', 0) is number
-                    && nextAction.get('submittedAt', 0) > 0))
+                    && nextAction.get('submittedAt', 0) > 0
+                    && nextAction.get('turnKey', '') is string
+                    && nextAction.get('turnKey', '').size() <= 160
+                    && (!turnScoped || (oldEscape.get('isActive', false) == true
+                      && oldEscape.get('isPaused', false) == false
+                      && oldQuest.get('phase', '') == 'battle'
+                      && nextAction.get('turnKey', '') == oldQuest.get('turnKey', '!')))))
               )
             )
             && (

@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
 
 const require = createRequire(import.meta.url);
-const source = readFileSync('story_forge_source.jsx', 'utf8');
+const source = readFileSync('story_forge_source.jsx', 'utf8').replace(/\r\n/g, '\n');
 const built = readFileSync('story_forge_module.js', 'utf8');
 const deployed = readFileSync('desktop/web-app/public/story_forge_module.js', 'utf8');
 

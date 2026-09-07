@@ -5,7 +5,7 @@
  * Usage: node _build_anchor_charts_module.js
  *
  * Mirrors _build_note_taking_templates_module.js. Compiles JSX → React.createElement
- * via esbuild, wraps in IIFE with a11y CSS + hand-drawn-font CDN link + React
+ * via esbuild, wraps in IIFE with scoped a11y CSS + React
  * aliases, writes anchor_charts_module.js + syncs to desktop/web-app/public/.
  *
  * Per architectural directive: Anchor Charts lives as a standalone CDN module,
@@ -75,18 +75,8 @@ const outputCode = `/**
   if (!document.getElementById("anchor-charts-module-a11y")) {
     var _s = document.createElement("style");
     _s.id = "anchor-charts-module-a11y";
-    _s.textContent = "@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } textarea, input { border: none !important; background: white !important; } }";
+    _s.textContent = "@media (prefers-reduced-motion: reduce) { .ac-root *, .ac-root *::before, .ac-root *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } } @media print { .ac-no-print { display: none !important; } .ac-root textarea, .ac-root input { border: none !important; background: white !important; } }";
     document.head.appendChild(_s);
-  }
-  // Lazy-load the hand-drawn display fonts (Patrick Hand + Permanent Marker)
-  // from Google Fonts. Only injected once; safe if the user is offline (the
-  // CSS @font-face falls back to the system "cursive" stack defined inline).
-  if (!document.getElementById("anchor-charts-fonts")) {
-    var _fl = document.createElement("link");
-    _fl.id = "anchor-charts-fonts";
-    _fl.rel = "stylesheet";
-    _fl.href = "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Permanent+Marker&family=Caveat:wght@400;700&display=swap";
-    document.head.appendChild(_fl);
   }
   (function() {
     if (document.getElementById('allo-live-anchor-charts')) return;

@@ -4909,10 +4909,10 @@
     "locked": "Akpọchiri",
     "escaped": "gị Escaped!",
     "escaped_desc": "gị solved niile puzzles na escaped room!",
-    "time_up": "? Oge agwụla!",
+    "time_up": "⏰ Oge agwụla!",
     "reveal_hint": "Reveal ihe ngosi",
-    "puzzles_remaining": "{{count}} puzzles fọdụrụ",
-    "time_remaining": "Oge: {{time}}",
+    "puzzles_remaining": "{count} puzzles fọdụrụ",
+    "time_remaining": "Oge: {time}",
     "progress": "ọganihu",
     "start": "Bido Escape Room",
     "start_hint": "Bido timer na begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Mechaa!",
     "loading_error": "Could anaghị bulite room data",
     "no_puzzle": "Mba puzzle found maka nke otu object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Mgbapụ zuru oke! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Mgbapụ zuru oke! +{xp} bonus XP",
     "puzzle_mcq": "Nhọrọ Dị Iche Iche",
     "puzzle_sequence": "Put na Order",
     "puzzle_cipher": "Decode ozi",
@@ -4982,17 +4982,17 @@
     "clue": "Akaebe",
     "clue_found": "Achọpụtara akara!",
     "clue_revealed": "nke otu clue may enyemaka na another puzzle...",
-    "clues_collected": "Akara: {{count}}/{{total}}",
+    "clues_collected": "Akara: {count}/{total}",
     "use_clue": "Jiri Clue",
-    "final_door": "The Exit Door",
+    "final_door": "Ọnụ ụzọ ọpụpụ",
     "final_door_ready": "exit door bụ ugbu a unlocked!",
     "final_door_locked": "dozie karịa puzzles na unlock",
     "final_door_title": "Final ihe ịma aka",
     "final_door_desc": "Jiri everything gị've learned na azịza nke otu synthesis ajụjụ.",
     "final_puzzle": "Using gịnị gị've learned, azịza nke otu:",
     "final_answer_placeholder": "Type gị azịza here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "Bịaruo ọnụ ụzọ ọpụpụ nso",
+    "unlock_door": "Meghee mkpọchi ọnụ ụzọ",
     "victory_perfect": "Perfect Escape! Mba wrong azịza! +50 Bonus XP",
     "victory_normal": "gị've Escaped! Congratulations!",
     "hint": "ihe ngosi",
@@ -5008,12 +5008,12 @@
     "left": "fọdụrụ",
     "wrong_attempts": "Mgbalị na-ezighị ezi",
     "time_penalty": "-{seconds} sekọnd!",
-    "game_over_time": "? Time's Up! gị ran out nke time.",
+    "game_over_time": "⏰ Time's Up! gị ran out nke time.",
     "streak": "Ụzọ",
     "streak_bonus": "Bonus n'ọsọ! x{multiplier}",
     "streak_lost": "Ọsọ funahụrụ!",
     "one_minute_warning": "Otu nkeji fọdụrụ!",
-    "thirty_seconds_warning": "? Naanị sekọnd 30 fọdụrụ!",
+    "thirty_seconds_warning": "⏰ Naanị sekọnd 30 fọdụrụ!",
     "timer_paused": "Akwụsịla ihe ngụ oge",
     "timer_resume": "Maliteghachi",
     "settings_btn": "Room ntọala",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Bido multiplayer ụlọ mgbapụ na gị klas",
     "team_mode": "Team ihe ịma aka",
     "team_race": "Race na Escape!",
-    "team_progress": "{{team}} ọganihu: {{solved}}/{{total}}",
+    "team_progress": "{team} ọganihu: {solved}/{total}",
     "waiting_host": "Waiting maka onye nkụzi na bido...",
-    "team_escaped": "Otu {{team}} gbapụrụ!",
+    "team_escaped": "Otu {team} gbapụrụ!",
     "all_teams_done": "niile Teams Finished!",
     "your_team": "gị Team",
     "team_red": "Ndị Ọbara",
@@ -5036,7 +5036,7 @@
     "team_green": "Ndị Akwụkwọ Ndụ",
     "team_yellow": "Ndị Odo",
     "team_all": "niile nwa akwụkwọ",
-    "teams_competing": "{{count}} ndị otus competing",
+    "teams_competing": "{count} ndị otus competing",
     "first_escape": "mbụ na Escape!",
     "end_game": "End egwuregwu",
     "end_game_confirm": "End ụlọ mgbapụ maka niile nwa akwụkwọ?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume egwuregwu",
     "game_paused_by_teacher": "egwuregwu paused by onye nkụzi",
     "celebration_title": "Ekele dịrị gị!",
-    "you_escaped": "gị ndị otu escaped na {{time}}!",
-    "other_team_escaped": "{{team}} gbapụrụ!",
+    "you_escaped": "gị ndị otu escaped na {time}!",
+    "other_team_escaped": "{team} gbapụrụ!",
     "class_escaped": "klas Victory!",
     "everyone_escaped": "Everyone worked together na escape!",
     "hurry_up": "Keep going! gị nwere ike still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "Bulite Chekwaad",
     "loaded_saved": "Chekwaad Escape Room loaded! Review na wepụta mgbe ready.",
     "no_saved": "Mba echekwala Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready na kpọọ!",
+    "preview_confirmed": "✅ Escape Room locked • ready na kpọọ!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x bonus n'ọsọ!)",
     "loaded_from_resource": "Loaded site na ihe enyemaka."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Zipu na Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Ọrụ magburu onwe ya!",
       "partial": "mma effort, keep going!",
       "incorrect": "anaghị quite right • gbalịa again!",
-      "error": "Could anaghị evaluate • biko gbalịa again.",
+      "error": "Could anaghị evaluate — biko gbalịa again.",
       "verdict_correct": "Ziri Ezi!",
       "verdict_partial": "Ziri Ezi N'akụkụ",
       "verdict_incorrect": "anaghị Quite Right",
@@ -7906,7 +7906,7 @@
       "meta_info": "{date} • **Final ọkwa**: {level}",
       "log_header": "Njem nlere Log",
       "chapter_separator": "***",
-      "user_label": "? gị",
+      "user_label": "➤ gị",
       "print_button": "Bipụta akwụkwọ akụkọ"
     },
     "answer_key_title": "azịza Key",
@@ -8855,7 +8855,7 @@
     "simplified_def_fallback": "gị nwere ike pịa any okwu na ederede na hụ its nkọwa!",
     "simplified_cloze": "Gbalịa 'Cloze' ọnọdụ na ule okwu nkà.",
     "simplified_quiz": "nke otu ederede looks great. Should we mepụta otu Exit Ticket na check understanding?",
-    "simplified_glossary": "okwu like '{term1}' na '{term2}' might need nkwado • otu akwụkwọ ọkọwa could enyemaka!",
+    "simplified_glossary": "okwu like '{term1}' na '{term2}' might need nkwado — otu akwụkwọ ọkọwa could enyemaka!",
     "simplified_glossary_fallback": "Some nke these okwu bụ tricky. otu akwụkwọ ọkọwa would enyemaka nkwado nke otu ederede.",
     "simplified_outline": "ihu learners might benefit site na otu Graphic Organizer nke nke otu ọdịnaya.",
     "glossary_bingo": "gị nwere ike turn these okwu na okwu egwuregwu like Bingo, Memory Match, Crosswords, maọbụ okwu Chọọ!",
@@ -8866,7 +8866,7 @@
     "quiz_rigor": "Want na ensure nke otu ajụjụ ọnụ bụ rigorous? Gbaa ọsọ otu ọkwa Audit.",
     "adventure_sim": "Njem nleres allow nwa akwụkwọ na apply gịnị they've learned na otu safe simulation.",
     "adventure_inventory": "Check 'Inventory' na hụ gịnị ihe nwere been collected.",
-    "adventure_context": "gị njem nlere about {topic} gets richer na karịa ihe enyemaka • gbalịa adding otu {suggestion}!",
+    "adventure_context": "gị njem nlere about {topic} gets richer na karịa ihe enyemaka — gbalịa adding otu {suggestion}!",
     "adventure_context_fallback": "karịa ihe enyemaka gị mepụta, richer njem nlere conederede becomes.",
     "timeline_drag": "Dọrọ na tụpụ events na reorder sequence.",
     "timeline_visualize": "nke otu enyemakas nwa akwụkwọ visualize cause-na-effect relationships.",
@@ -8877,8 +8877,8 @@
     "parent_adventure": "Gbalịa Njem nlere ọnọdụ maka otu fun rainy-day activity.",
     "parent_read_along": "Jiri 'Gụọ Along' na omume reading together.",
     "fallback_lesson_plan": "gị nwere great ihe enyemaka. Synthesize them na otu nkuzi Plan?",
-    "fallback_brainstorm": "Feeling stuck? Gbalịa chatting na me na gbanwee Auto-Mechaa na activate Blueprint ọnọdụ • I'll enyemaka gị design gị entire nkuzi!",
-    "fallback_export": "gị nwere {count} ihe enyemaka na {topic} • bupụ them as otu single PDF!",
+    "fallback_brainstorm": "Feeling stuck? Gbalịa chatting na me na gbanwee Auto-Mechaa na activate Blueprint ọnọdụ — I'll enyemaka gị design gị entire nkuzi!",
+    "fallback_export": "gị nwere {count} ihe enyemaka na {topic} — bupụ them as otu single PDF!",
     "fallback_export_fallback": "gị nwere ike bupụ niile these ihe enyemaka as otu single PDF packet.",
     "fallback_guide": "Họrọ 'Gosi Me' na AI Guide ọ bụrụ na gị get lost!",
     "intro_greeting": "Pịa me na adjust my olu ntọala.",
@@ -9027,7 +9027,7 @@
     "text_generated": "gị adapted ederede na {topic} bụ ready! Gbalịa pịaing otu okwu na hụ its nkọwa, maọbụ nyochaa ngwa like akwụkwọ ọkọwa maọbụ ajụjụ ọnụ na deepen understanding.",
     "flashcards_created": "kaadị ncheta kere! gị nwere ike bupụ them na Quizlet, bipụta them, maọbụ gbalịa Memory egwuregwu.",
     "quiz_generated": "ajụjụ ọnụ ready! Jiri Presentation ọnọdụ maka klas, maọbụ gbalịa Auto-Grader maka mepee responses.",
-    "glossary_generated": "akwụkwọ ọkọwa mechaa! Gbalịa okwu egwuregwu • Bingo, Memory Match, Crosswords, okwu Chọọ, na karịa!",
+    "glossary_generated": "akwụkwọ ọkọwa mechaa! Gbalịa okwu egwuregwu — Bingo, Memory Match, Crosswords, okwu Chọọ, na karịa!",
     "adventure_started": "gị njem nlere begins! Type gị action below, maọbụ jiri nhọrọ bọtịnụ na decide gịnị happens na-esote.",
     "adventure_scene": "gịnị ga- gị do? Every nhọrọ ọdịdị gị akụkọ!",
     "analysis_complete": "Analysis mechaa! I found some okwu na key concepts worth exploring.",
@@ -10164,7 +10164,7 @@
     "type_timeline": "Onye Na-ewu Usoro",
     "type_timeline_desc": "Sequencing activity adapted na ọkwa klas",
     "full_pack": "Full ihe enyemaka Pack • Họrọ niile",
-    "deselect_all": "? Deselect niile",
+    "deselect_all": "↩ Deselect niile",
     "estimate": "Tụọ Aro",
     "api_calls": "Oku API",
     "start_batch": "Mepụta",
@@ -10193,7 +10193,7 @@
     "bridge_generating": "Creating gị personalized ụdị...",
     "bridge_projection": "Projection ọnọdụ",
     "bridge_exit_projection": "Atụmatụ Mpụ",
-    "bridge_offline_info": "Mba na-ekwu okwu nnọkọ • pnyocha na nke otu device only",
+    "bridge_offline_info": "Mba na-ekwu okwu nnọkọ — pnyocha na nke otu device only",
     "bridge_term_saved": "Chekwaad \"{term}\" na akwụkwọ ọkọwa",
     "bridge_term_save_failed": "Failed na chekwaa okwu",
     "bridge_save_term": "Chekwaa na akwụkwọ ọkọwa",
@@ -10219,7 +10219,7 @@
     "bridge_f2f_custom_lang": "Custom asụsụ...",
     "bridge_f2f_custom_placeholder": "dịka Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "niile okwu echekwala na akwụkwọ ọkọwa!",
-    "bridge_terms_saved": "? niile Chekwaad",
+    "bridge_terms_saved": "✅ niile Chekwaad",
     "fullpack_group_target": "Òtù E Lekwasịrị Anya",
     "fullpack_group_current": "Current ntọala",
     "fullpack_group_all": "niile Groups",
@@ -12186,7 +12186,11 @@
       "trapezoid": "Trapezọd",
       "simpson": "Simpson",
       "rectangles_n": "akụkụ otuọ ogologo (n)",
-      "coeff_a": "Coeff otu"
+      "coeff_a": "Coeff otu",
+      "sr_explanation_ready": "Nkọwa adịla njikere.",
+      "a11y_back_to_tools": "Laghachi na ngwá ọrụ",
+      "a11y_snapshot": "Foto ozugbo",
+      "a11y_next": "Osote"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Ihe nchọgharị a anaghị akwado olu",
@@ -12310,13 +12314,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Mepụta AI explanation na larịị",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
       "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level_group": "Ọkwa ọgụgụ",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13941,8 +13945,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Ọ ziri ezi! Ọ\\",
-      "that": "? nke ahụ\\",
+      "correct_it": "✅ Ọ ziri ezi! Ọ\\",
+      "that": "❌ nke ahụ\\",
       "linear": "Ahịrị",
       "quadratic": "Kwadratik",
       "cubic": "Kubik",
@@ -14204,7 +14208,7 @@
       "ai_not_available": "AI tutor adịghị.",
       "ai_could_not_reach": "Enweghị ike iru AI tutor. Nwaa ọzọ n'oge na-adịghị anya.",
       "explain_at_my_level": "Kọwaa na larịị m",
-      "aria_reading_level": "Reading level",
+      "aria_reading_level": "Ọkwa ọgụgụ",
       "aria_reading_level_prefix": "Reading level: ",
       "selected_suffix": " (ahọpụtara)",
       "aria_generate_ai_prefix": "Mepụta AI explanation na larịị ",
@@ -14216,7 +14220,8 @@
       "angle_u00b0": "Akụkụ (°)",
       "velocity_ms": "Ọsọ (m/s)",
       "gravity_msu00b2": "Ike ndọda (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Nkọwa adịla njikere."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14244,7 +14249,10 @@
       "codominant_desc": "A na-egosipụta allele abụọ ahụ nke ọma. Heterozygote na-egosi àgwà abụọ ahụ n’otu oge.",
       "sexLinked_desc": "A na-ebu àgwà ahụ na chromosome X. Nke a na-egosipụta X-linked RECESSIVE inheritance (dịka hemophilia na ìsì agba uhie-akwụkwọ ndụ): ụmụ nwoke (XY) chọrọ otu oyiri; ụmụ nwanyị (XX) chọrọ abụọ.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Laghachi na ngwá ọrụ STEM",
+      "a11y_snapshot": "Foto ozugbo",
+      "a11y_close_flashcard": "Mechie kaadị"
     },
     "circuit": {
       "meter_status_ammeter_short": "Ọnọdụ na-adịghị mma: ụzọ short-circuit",
@@ -14536,8 +14544,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? Ọ\\"
+      "correct": "✅ Correct!",
+      "it": "❌ Ọ\\"
     },
     "inequality": {
       "badge_first_solve_label": "Ngwọta Mbụ",
@@ -14653,8 +14661,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Ziri Ezi!",
-      "answer": "? azịza:",
+      "correct": "✅ Ziri Ezi!",
+      "answer": "❌ azịza:",
       "hydrogen": "Haịdrojeen",
       "helium": "Hịlịọm",
       "lithium": "Lịtịọm",
@@ -14796,7 +14804,7 @@
       "reddish_metal_used_since_the": "Reddish metal ejiri since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal nke ahụ prevents rust",
       "best_conductor_of_electricity_among": "Best conductor nke electricity among niile metals",
-      "dense_soft_shiny_precious_metal": "Igwe oké ọnụ ahịa siri ike, dị nro, na-egbuke egbuke • adịghị ekpu nchara",
+      "dense_soft_shiny_precious_metal": "Igwe oké ọnụ ahịa siri ike, dị nro, na-egbuke egbuke — adịghị ekpu nchara",
       "strong_as_steel_but_45": "Strong as steel mana 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal nke ahụ gives rubies their red agwa",
       "essential_for_steel_production_and": "Essential maka steel production na bone health",
@@ -15902,7 +15910,9 @@
       "our_sun_is_born": "Our Sun bụ Born",
       "present_day": "Ụbọchi Ugbu A",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Laghachi na ngwá ọrụ",
+      "a11y_simulation_speed": "Ọsọ nnwale"
     },
     "rocks": {
       "igneous": "Ignịọs",
@@ -18827,7 +18837,10 @@
       "garage_desc": "Igwe, nchara, na mmeghachi omume — ụlọ ọrụ kemistri.",
       "classroom_desc": "Ụlọ akwụkwọ sayensị n’ezie nwere beaker na nnwale.",
       "outdoors_desc": "Pụọ n’èzí — okike bụ ụlọ nyocha kachasị ukwuu.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Laghachi na ngwá ọrụ",
+      "a11y_snapshot": "Foto ozugbo",
+      "a11y_next": "Osote"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Echekwara na akụkọ ihe mere eme!",
@@ -19614,7 +19627,40 @@
       "read_what_special_education_law_actually": "Gụọ ihe iwu agụmakwụkwọ pụrụ iche na-ekwu n'ezie, n'okwu nke ya. Ederede ezigbo nke IDEA Akụkụ B na Nkebi 504, e wetara site na eCFR ma tinye ụbọchị, nke a pụrụ ịchọ, yana iwu gọọmentị etiti na nke steeti n'akụkụ ibe ha. Ọ dịghị ihe a na-edeghachi ma ọ bụ mepụta: ọ bụrụ na ederede gọọmentị adịghị, ngwá ọrụ ahụ na-ekwu otu ahụ kama ịkọ nkọ.",
       "applied_k_12_behavior_practice_what": "Omume àgwà a na-etinye n'ọrụ site na klas ọdụ ruo sekọndrị — ihe ndị ọkachamara mmụọ ụlọ akwụkwọ na ndị nkuzi na-eji sayensị a eme n'ezie. Usoro ọkwa atọ nke PBIS, àgwà nnọchi ejikọtara na ọrụ sitere na FBA, ihe omume ndabere (ihe kpalitere nwayọọ nke ọtụtụ BIP na-ahapụ), okirikiri usoro asaa nke mgbawa àgwà nke Geoff Colvin, na ụkpụrụ omume nke njide na ikewapụ dabere na Isi 33 nke Maine. Ngwá nwanne nke BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Bayoloji oke osimiri na sayensị àgwà nke octopus, squid, cuttlefish na nautilus. Isi ihe: Hunter Sim — họrọ ụdị, ebe obibi, anụ oriri na atụmatụ, gwuo egwuregwu nzuzo nta, ma tụọ oge mwakpo. Ọ na-emeghe ihe ọmụma bayoloji ụdị akwụkwọ ubi (usoro chromatophore, ụbụrụ 9, ọbara na-acha anụnụ anụnụ, mkpali jet). Ntuziaka ubi nke ụdị 10 nwere ọnụọgụ ọgụgụ isi, nzuzo na ọsọ jet.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 na HS-PS2. Ihe nnọchianya nrụgide truss nwere ogologo, ịdị elu, ibu na ihe a pụrụ ịgbanwe, ntụnyere ụdị àkwà mmiri (beam, truss, arch, nkwụghari, eriri), nchekwa data ihe eji arụ ọrụ, ụdị ike, ọmụmụ ihe mberede n'ezie (Tacoma Narrows, Hyatt Regency, Tay, Silver, tinyere Brooklyn, Golden Gate, Akashi na Millau), okirikiri imepụta injinia, ule ụdị AP, na nkọwa imewe a pụrụ ibipụta."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 na HS-PS2. Ihe nnọchianya nrụgide truss nwere ogologo, ịdị elu, ibu na ihe a pụrụ ịgbanwe, ntụnyere ụdị àkwà mmiri (beam, truss, arch, nkwụghari, eriri), nchekwa data ihe eji arụ ọrụ, ụdị ike, ọmụmụ ihe mberede n'ezie (Tacoma Narrows, Hyatt Regency, Tay, Silver, tinyere Brooklyn, Golden Gate, Akashi na Millau), okirikiri imepụta injinia, ule ụdị AP, na nkọwa imewe a pụrụ ibipụta.",
+      "the_gutenberg_style_screw_press_as": "Ígwè mbipụta screw ụdị Gutenberg dị ka ihe nnọchianya na-arụ ọrụ n'ezie. Dọta mkpanaka ahụ, hazie mkpụrụedemede nke gị, ma lee akara e biri. Tinyere sayensị ihe (ngwakọta lead-tin-antimony), akụnụba (ọdịda ọnụahịa akwụkwọ ọ bụla), akụkọ ihe mere eme (Mgbanwe Okpukpe, mgbanwe sayensị), nka mkpụrụedemede, na ndị nọ n'azụ ígwè mbipụta (gụnyere ụmụ nwaanyị na-ebi akwụkwọ ndị akụkọ ihe mere eme chefuru). E wuru ya maka ọrụ na-agafe agụmakwụkwọ na klas etiti.",
+      "three_js_stoop_simulator_deep_science": "Ihe nnọchianya nkwụda site na Three.js na sayensị miri emi banyere usoro ịchụ nta nke nnụnụ na-adọgbu. Fee dị ka egbe peregrine na 240 mph, dị ka ugo harpy nwere mbọ 530 psi, ma ọ bụ dị ka ikwighịkwighị nwere mpi nke na-adịghị eme mkpọtụ. Ụdị 8 na akụkụ 12: ike mbọ, ọhụụ (okpukpu 4-8 nke mmadụ, ultraviolet na obere egbe), physics nke ofufe, ofufe jụụ nke ikwighịkwighị, ihe mgbako ọsọ ikpeazụ, mgbake mgbe DDT gasịrị na nsogbu nchekwa ka na-aga n'ihu, na ịmata n'ọhịa site na onyinyo na ụdị ọdịdị.",
+      "practice_reading_and_completing_the_documents": "Mụọ ka ị ga-esi gụọ ma dejupụta akwụkwọ ndị ndụ ndị okenye na-adabere na ha: akwụkwọ arịrịọ ọrụ, ụdị W-4, nkwekọrịta mgbazinye ụlọ, akwụkwọ nnabata ụlọ ọgwụ, ikike ịnya ụgbọala, na akwụkwọ ịkpọ òkù nzukọ IEP nke gị. E kọwara ubi ọ bụla n'asụsụ dị mfe, e jiri akara mara igbe ndị nwere ike ịfụ gị ụgwọ, e nwere ọnọdụ nrụgide maka mgbe mmadụ chọrọ ka ị bịanye aka ugbu a, na ahịrịokwu ndị dị njikere iji rịọ oge. Ọzụzụ niile na-eji onye e chepụtara echepụta, ọ dịghị mgbe ọ na-eji ozi gị n'ezie.",
+      "how_swimming_works_stroke_physics_survival": "Otu igwu mmiri si arụ ọrụ (physics nke mgbanwe aka na nkà ndụ) na ihe onye ọ bụla na-egwu mmiri kwesịrị ịma banyere mmiri oyi, mmiri na-alaghachi azụ, ice, uwe nchekwa ndụ, na nnapụta. Nkewa nlele nke mgbanwe aka ọ bụla, sayensị nke iku elu na ịkwaga n'ihu, na nkà ndụ (iku n'azụ, ịgba ụkwụ akwa, ọnọdụ HELP, ịkpakọba ọnụ) nke na-azọpụta ndụ n'ezie. Isi mmalite: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Naanị maka mmụta: iji mụta igwu mmiri n'ezie, chọta onye nkuzi igwu mmiri.",
+      "tax_paycheck_calculator_data_literacy_decision": "Ihe mgbako ụtụ na akwụkwọ ụgwọ ọnwa, ịgụ data, matriks mkpebi, ọgụgụ nkwekọrịta, ndekọ na ọrụ akwụkwọ, nhazi njem, njikere ọrụ, iwu resume, nhazi ihe akaebe portfolio, ọzụzụ ajụjụ ọnụ, nkà nkwurịta okwu, njikwa oge, mkpuchi ahụike, nlekọta ezé, ergonomics nke nlekọta ahụ, omume ụra, akara ọgwụ, nkwadebe nzukọ dọkịta, nchekwa ụlọ, nchekwa dijitalụ, udo obi banyere nri, na sayensị etinyere n'ọrụ maka ndụ kwa ụbọchị.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 na HS-LS4. Ụwa nke nje: nje bacteria (ndị bara uru na ndị na-akpata ọrịa), nje virus (COVID, ifufe, HIV, phage, ọrịa mbaba), microscopy (ìhè, ọdịiche usoro, fluorescent, electron, AFM), evolushọn nke nguzogide ọgwụ nje, microbiome nke mmadụ, ala na oke osimiri, ọgwụ mgbochi na usoro nchebe ahụ, gbaa ụka (ntụ ọka gbara ụka, yogọt, kimchi, sauerkraut, kombucha, chiiz), ọmụmụ ihe mberede (Snow, Fleming, MRSA, COVID na mRNA, FMT), ule, na akwụkwọ ntụaka a pụrụ ibipụta banyere nchekwa ụlọ nyocha na nje.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Mgbasa ozi iri na ise banyere ilekọta gburugburu ebe obibi na mpaghara iri na otu. Mgbasa ozi Maine ise ndị toro ogologo ma gafere ọtụtụ oge, tinyere ọnọdụ iri na-agafe mpaghara nke kpuchiri ezinụlọ mechanic ise niile: ọkụ (Yarralin na Australia, Karuk na ugwu California), nchekwa (Yellowstone, Akagera na Rwanda), ahụike ọha (dengue na Mumbai, ebola nke 2014 na Liberia), ndagwurugwu mmiri (Osimiri Klamath, Ndagwurugwu Murray-Darling), na ihu igwe (Agwaetiti Marshall, delta Bangladesh). Nghọta nke ijikọ ezinụlọ na-emeghe mgbe ị gwụchara nke Maine na nke na-agafe mpaghara sitere n'otu ezinụlọ mechanic ahụ.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 na MS-ESS3-3. Mepụta obodo nta n'elu grid nke ala 144 na-eche ihe achọrọ ndị na-emegiderịta onwe ha n'ezie. Obodo nta atọ, nke ọ bụla nwere mmachi dị iche na-ekpebi ihe: Riverbend, ebe mmiri mmiri ozuzo na ụgwọ na-akpagbu; Mesa Hollow, ebe mmiri ala kwụ ọtọ ma ugbo na-aṅụ ya; na Harborlight, ebe atụmatụ ahụ ga-arụ ọrụ ọbụna na 2050. Mmiri na-asọ site n'usoro ezi uche, nguzozi mmiri, ohere maka mmụba ọkwa oke osimiri, ogologo ije n'ime netwọk, na netwọk okporo ụzọ nwere ọnụahịa, nke ọ bụla nwere ike imeghe igosi usoro ya. Assumption Lab na-agba otu atụmatụ ọzọ site na ụzọ paramita abụọ e bipụtara, ka ụmụ akwụkwọ hụ nkwubi okwu ndị na-adị ndụ n'ime ha abụọ. Maapụ, tebụl ala a pụrụ idezi, na ihe nlereanya 3D nke otu atụmatụ ahụ. Ajụjụ mkparịta ụka na akụkọ ihe mere eme nwere akwụkwọ na-ebu ajụjụ ndị ngwá ọrụ jụrụ ime ihe nlereanya. Ọ dịghị akara ọ dịghịkwa igodo azịza.",
+      "codap_data_science": "CODAP: sayensị data",
+      "lumen_research_canvas": "Lumen: akwụkwọ nyocha",
+      "evolab_evolution": "EvoLab: evolushọn",
+      "dino_lab": "Ụlọ nyocha dinosaur",
+      "nutritionlab_nutrition_science": "NutritionLab: sayensị nri",
+      "birdlab_i_spy_ornithology": "BirdLab: ọmụmụ nnụnụ nke ịchọ na ịhụ",
+      "openbim_companion": "OpenBIM: onye ndụmọdụ",
+      "applab_ai_app_generator": "AppLab: onye na-emepụta ngwa site na AI",
+      "access_lens": "Enyo nnweta",
+      "sim_shelf": "Shelf nnwale",
+      "zoom_gallery": "Ebe ngosi mbuli",
+      "sourcebook": "Akwụkwọ isi mmalite",
+      "wheel_fire_pottery_lab": "Wiil na ọkụ: ụlọ nyocha ite aja",
+      "echo_navigator": "Onye nduzi mkpughe olu",
+      "learning_lab_how_learning_works": "Learning Lab: otu mmụta si arụ ọrụ",
+      "weldlab_welding_metal_joining": "WeldLab: ịgbado na ijikọ ọla",
+      "bikelab_physics_repair": "BikeLab: physics na nrụzi",
+      "fisherlab_boating_fishing_sim": "FisherLab: nnwale ịnya ụgbọ mmiri na ịkụ azụ",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: nnwale ugbo nkume mmiri",
+      "throwlab_sports_physics": "ThrowLab: physics egwuregwu",
+      "skatelab_skate_bmx_physics": "SkateLab: physics skate na BMX",
+      "playlab_strategy_on_the_field": "PlayLab: atụmatụ n'ọma egwuregwu",
+      "kepler_colony": "Ógbè Kepler",
+      "birdlab_life_list": "BirdLab: ndepụta ndụ",
+      "petslab_decoder": "PetsLab: ihe na-akọwa àgwà"
     },
     "area": {
       "volume": "ọtụtụ..."
@@ -19654,7 +19700,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Laghachi na ngwá ọrụ",
+      "a11y_snapshot": "Foto ozugbo",
+      "a11y_next": "Osote",
+      "a11y_simulation_speed": "Ọsọ nnwale",
+      "a11y_close_flashcard": "Mechie kaadị"
     },
     "solar_sys": {
       "venus": "Vinọs",
@@ -20476,7 +20527,8 @@
       "scaled_volume_changed": "🔵 Akọwara (olu gbanwere)",
       "skewed_shape_deformed": "🟠 Gbagọrọ agbagọ (ọdịdị gbagọrọ)",
       "degenerate_volume_0": "💀 Mebiri emebi (olu → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Ọganihu ntuziaka"
     },
     "numberline": {
       "first_mark": "Akara Mbụ",
@@ -22619,7 +22671,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Afọ {value1} na-amalite."
     },
     "optics": {
       "optics_lab": "Ụlọ Nyocha Optics",
@@ -22965,7 +23018,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Ajụjụ SQL nyocha nke mpaghara"
     },
     "geosandbox": {
       "loading_3d_engine": "Na-ebu engine 3D...",
@@ -23315,7 +23369,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Ewepụrụ ihe ọkpụkpụ"
     },
     "algebraCAS": {
       "solve": "🔍 Dozie",
@@ -25911,7 +25966,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "Nkọwa adịla njikere."
     },
     "economicslab": {
       "six_figures": "Ego mbata nke ọnụọgụ isii",
@@ -27891,7 +27947,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Echiche echekwara."
     },
     "anatomy": {
       "skeletal": "Ọkpụkpụ",
@@ -28473,7 +28530,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Tinyeghachi igwefoto 3D"
     },
     "dna": {
       "back_to_tools": "Laghachi na Ngwaọrụ",
@@ -29850,7 +29908,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Echiche echekwara."
     },
     "angles": {
       "back_to_tools": "Laghachi na ngwaọrụ",
@@ -30664,7 +30723,8 @@
       "explain_how_each_parameter_shapes_a_si": "Kọwaa otú parameter ọ bụla si etụ sine wave.",
       "design_note_discrete_5_state_marker_no": "Ndetu imewe: akara discrete nke ọnọdụ 5; enweghị akara wave; enweghị ngosipụta — site n'imewe.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Nkọwa adịla njikere."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu Omume Ịpị Ederede",
@@ -31018,7 +31078,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Laghachi na menu"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34427,7 +34488,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Họrọ azịza: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Laghachi na ngwá ọrụ",
@@ -35192,7 +35254,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "gbanyụrụ",
+      "sr_nothing_to_redo": "Ọ dịghị ihe a ga-emeghachi.",
+      "sr_nothing_to_undo": "Ọ dịghị ihe a ga-agbanwe azụ.",
+      "sr_dir_left": "aka ekpe",
+      "sr_dir_right": "aka nri"
     },
     "arithmetic": {
       "selected": " ahọrọla.",
@@ -39238,7 +39305,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "A haziri ZHR maka radiant nke dị n'elu enu na oke ìhè 6.5. Atụmatụ nkezi a na-eche na mbara igwe dị ọcha, na-enweghị ọnwa, na population index 2.2. Klaasị Bortle na-egosi oke ìhè naanị n'ụzọ dị mkpirikpi; mbara igwe gbara ọchịchịrị karịa ọkọlọtọ nwere ike ịgafe ZHR. Ịdị elu dị ala nke radiant na mbara igwe na-enwu karị na-ebelata atụmatụ ahụ.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Laghachi na ngwá ọrụ STEM"
     },
     "autorepair": {
       "back_to_menu": "Laghachi na menu",
@@ -39979,7 +40047,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Akara: {value1} n'ime {value2}",
+      "a11y_open_2": "Mepee {value1}",
+      "a11y_option": "Nhọrọ {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Akpụkpọ",
@@ -40082,7 +40153,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Nkọwa adịla njikere."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40828,7 +40900,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Nkọwa adịla njikere.",
+      "a11y_investigation_progress": "Ọganihu nnyocha",
+      "a11y_flight_debrief": "Nyochaa ofufe",
+      "a11y_tutorial_progress": "Ọganihu ntuziaka"
     },
     "behaviorlab": {
       "chain_reaction": "Mmeghachi yiri agbụ",
@@ -40998,7 +41074,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Nkọwa adịla njikere.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43512,7 +43588,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Modul enyochara: {value1}",
+      "a11y_score_out_of": "Akara: {value1} n'ime {value2}",
+      "sr_selected": "Ahọpụtara: {value1}",
+      "sr_quiz_reset": "Etinyeghachiri ule"
     },
     "brainatlas": {
       "group_systems": "Usoro",
@@ -48668,7 +48748,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Họrọ azịza: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Ọkachamara Nnwale",
@@ -49812,7 +49893,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Ahọpụtara: {value1}"
     },
     "echotrainer": {
       "back_to_stem_lab": "Laghachi na STEAM Lab",
@@ -51271,7 +51353,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Modul enyochara: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Ngwa Ọtụtụ Carbon",
@@ -52351,7 +52434,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Laghachi na menu",
+      "sr_getting_critique": "Na-eweta nkatọ...",
+      "sr_critique_ready": "Nkatọ adịla njikere."
     },
     "flightsim": {
       "game_controls": "🎮 NJIKWA EGWUREGWU",
@@ -52553,7 +52639,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Nlele ọnụụlọ ọkwọ ụgbọelu nke ihe nnwale ofufe. W/S mbulite isi, A/D ntụgharị akụkụ, Shift/Ctrl mgbatị ike, akara aka na-achịkwa nku ndị nta, X breeki wịịlụ, Q ajụjụ ọnụ, F ike, Space kwụsịtụ, I ozi.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52565,7 +52651,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Ụgbọ Elu Nnwere Onwe site na Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52612,7 +52698,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Ụlọ Elu Shanghai",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58441,7 +58527,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Modul enyochara: {value1}",
+      "sr_loaded": "Ebudatara {value1}",
+      "sr_showing": "Na-egosi {value1}",
+      "sr_opening": "Na-emeghe {value1}"
     },
     "platetectonics": {
       "transform": "Gbanwee",
@@ -58691,7 +58781,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63263,7 +63353,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Nkọwa adịla njikere.",
+      "sr_off": "gbanyụrụ",
+      "sr_edge_left": "aka ekpe",
+      "sr_edge_right": "aka nri",
+      "sr_correct": "Ziri ezi.",
+      "sr_not_quite": "Ọ bụghị kpọmkwem."
     },
     "playlab": {
       "back_to_stem_lab": "Laghachi na STEAM Lab",
@@ -63331,7 +63427,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Onye nkuzi anọghị n'ịntanetị.",
+      "sr_drill_stopped": "Akwụsịrị mmega."
     },
     "printingpress": {
       "print": "🖨️ Bipụta",
@@ -65470,7 +65568,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Laghachi na menu",
+      "a11y_open": "Mepee {value1}",
+      "sr_selected": "Ahọpụtara: {value1}",
+      "sr_loaded": "Ebudatara {value1}",
+      "sr_opening": "Na-emeghe {value1}",
+      "sr_correct": "Ziri ezi.",
+      "sr_not_quite": "Ọ bụghị kpọmkwem.",
+      "sr_year_begins": "Afọ {value1} na-amalite.",
+      "sr_question_reset_try_again": "Etinyeghachiri ajụjụ. Nwaa ọzọ.",
+      "sr_not_quite_see_the_explanation": "Ọ bụghị kpọmkwem: lee nkọwa ahụ."
     },
     "raptorhunt": {
       "show_answer": "Gosi azịza",
@@ -67119,7 +67227,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Mepee {value1}",
+      "a11y_flight_debrief": "Nyochaa ofufe"
     },
     "renewables": {
       "climate_justice": "Ikpe Ziri Ezi Ihu Igwe",
@@ -67819,7 +67929,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Laghachi na menu",
+      "sr_getting_critique": "Na-eweta nkatọ...",
+      "sr_critique_ready": "Nkatọ adịla njikere.",
+      "sr_quiz_reset": "Etinyeghachiri ule"
     },
     "roadready": {
       "let_s_start": "Ka anyị malite →",
@@ -70686,7 +70800,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Laghachi na ngwá ọrụ STEM",
+      "a11y_local_analytical_sql_query": "Ajụjụ SQL nyocha nke mpaghara"
     },
     "stewardship": {
       "sector": "Mpaghara",
@@ -71263,7 +71379,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Laghachi na menu",
+      "sr_question_reset_try_again": "Etinyeghachiri ajụjụ. Nwaa ọzọ."
     },
     "throwlab": {
       "back_to_stem_lab": "Laghachi na STEAM Lab",
@@ -71488,7 +71606,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Tinyeghachi igwefoto 3D",
+      "sr_coach_is_offline": "Onye nkuzi anọghị n'ịntanetị.",
+      "sr_drill_stopped": "Akwụsịrị mmega."
     },
     "weldlab": {
       "print": "🖨️ Bipụta",
@@ -73050,7 +73171,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Modul enyochara: {value1}",
+      "a11y_score_out_of": "Akara: {value1} n'ime {value2}",
+      "sr_quiz_reset": "Etinyeghachiri ule",
+      "sr_loaded": "Ebudatara {value1}",
+      "sr_showing": "Na-egosi {value1}",
+      "sr_not_quite_see_the_explanation": "Ọ bụghị kpọmkwem: lee nkọwa ahụ."
     },
     "worldbuilder": {
       "grade_level": "Larịrị klas",
@@ -73956,7 +74083,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Ọkwa ọgụgụ",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74643,7 +74770,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Osisi ndụ",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76498,7 +76625,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Nhọrọ {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Nlele igwefoto 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76509,6 +76638,22 @@
       "next": "na-esote",
       "finish": "Aghọtara m!",
       "replay_aria": "Gosi nkuzi"
+    },
+    "pets": {
+      "sr_back_to_menu": "Laghachi na menu",
+      "sr_getting_critique": "Na-eweta nkatọ...",
+      "sr_critique_ready": "Nkatọ adịla njikere."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Laghachi na ngwá ọrụ STEM",
+      "a11y_3d_camera_views": "Nlele igwefoto 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Ọganihu nnyocha"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Ọ dịghị ihe a ga-emeghachi.",
+      "sr_nothing_to_undo": "Ọ dịghị ihe a ga-agbanwe azụ."
     }
   },
   "glossary_health": {
@@ -77111,7 +77256,7 @@
       "person": "Onye\\",
       "phase_label": "Akara Ọkwa",
       "rationale_which_antecedent_does_this_address": "Ihe kpatara ya (kedu antecedent nke a na-edozi?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect na gị approach...\\n• gịnị worked well?\\n• gịnị would gị do differently?\\n• gịnị atụmatụ do gị want na omume na-esote?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflect na gị approach...\n• gịnị worked well?\n• gịnị would gị do differently?\n• gịnị atụmatụ do gị want na omume na-esote?",
       "reinforcement_how_you": "⭐ Reinforcement (kedu gị\\",
       "replacement_behavior_functionally_equivalent": "✅ Replacement omume (functionally equivalent)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77119,7 +77264,7 @@
       "search_81_tools": "🔍 Chọọ 80+ ngwa…",
       "search_aba_terms": "🔍 Chọọ ABA okwu...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Chọọ okwu... (e.g. \"reinforcement\", \"FBA\", \"data\")",
-      "session_1_3nsession_2_7nsession_3_5n": "nnọkọ 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "nnọkọ 1: 3\nSession 2: 7\nSession 3: 5\n...",
       "setting_eg_math_class_cafeteria": "ntọala (e.g., Math klas, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Kesaa gịnị gị notice at home — strengths, concerns, cultural context, maọbụ suggestions maka ụlọ akwụkwọ ndị otu...",
       "step_description": "nzọụkwụ description...",
@@ -78590,7 +78735,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Ịdị elu notch",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80782,7 +80927,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Onyonyo echiche",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80818,10 +80963,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Chọọ echiche ọ bụla mma",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Ọganihu nke ịchọ mma",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80834,7 +80979,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Aha ndị ga-ekwe omume",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80845,7 +80990,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Ncheta echiche",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82403,7 +82548,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Mechie Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82412,7 +82557,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Nyochaa ọrụ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82450,15 +82595,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Ajụjụ {n}",
+    "q_choices_aria": "Nhọrọ maka ajụjụ {n}, otu n'ahịrị ọ bụla",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Wepụ ajụjụ {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Nzọụkwụ ọ̀tụ̀tụ̀ maka ajụjụ {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Ụdị azịza maka ajụjụ {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82468,10 +82613,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Njikọ enwere ike ịhọrọ maka {title}",
+    "scale_high_aria": "Akara maka nsọtụ dị elu",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Akara maka nsọtụ dị ala",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82491,7 +82636,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Nchịkọta ọnọdụ nke ọrụ",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82507,9 +82652,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Na-emelite onwe ya",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Njikọ ọrụ ụlọ enwere ike ịhọrọ",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82518,7 +82663,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Koodu QR nke ọrụ ụlọ",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84966,7 +85111,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Họrọ ọkwa mmepe maka ntuziaka na usoro nleba anya",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84974,7 +85119,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Gbanwee nlele onye nkuzi",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85005,17 +85150,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Kwụsịtụ ndekọ ndetu olu",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Malitegharịa ndekọ ndetu olu",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Malite ịdekọ ndetu olu",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Kwụsị ndekọ",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85401,22 +85546,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Ihe kpatara nghọta AlloHaven",
+    "recent_deliveries_aria": "Nghọta AlloHaven nzuzo ndị na-adịbeghị anya",
+    "token_amount_aria": "Ọnụọgụ tokin AlloHaven",
+    "token_cap_aria": "Oke tokin AlloHaven maka nwa akwụkwọ ọ bụla n'otu nnọkọ"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Mgbanwe a kwadoro ebe a ka na-erute ebumnuche ahụ",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Akara ọganihu nhọrọ ngwa ahụ na-eso maka ebumnuche a",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Otu ahụ niile ọnụ, maọbụ nwa akwụkwọ ọ bụla n'otu n'otu",
+    "name_aria": "Aha ebumnuche klas, echekwara naanị na ngwaọrụ a",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Ụmụ akwụkwọ ndị ebumnuche a na-ekpuchi",
+    "template_aria": "Ihe atụ mmalite maka ebumnuche klas",
+    "tokens_aria": "Tokin e nyere kwa nwa akwụkwọ mgbe erutere ebumnuche a"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85434,7 +85579,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Tokin nchịkwa Class Mailbox (nhọrọ)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85464,17 +85609,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "eweliri aka",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Njikọ nsonye ndụ na igbe ozi, enwere ike ịhọrọ",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Nnọkọ ndụ nke Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85501,7 +85646,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "njikọ ozugbo",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85533,7 +85678,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL nke ngwa weebụ Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

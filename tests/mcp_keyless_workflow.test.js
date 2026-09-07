@@ -8,11 +8,12 @@ import {join,resolve} from 'node:path';
 vi.setConfig({testTimeout:60000});
 const children=[];
 afterEach(()=>{for(const c of children)c.kill();children.length=0;});
-function client(dir, fakeNarration=false, coverageReview=false, pdfOutcome=null) {
+function client(dir, fakeNarration=false, coverageReview=false, pdfOutcome=null, diagnostics=null) {
  const server=resolve('desktop/mcp/alloflow-remediation-mcp-stdio.cjs');const driver=resolve('desktop/mcp/remediation_headless_driver.cjs');
- const bootstrap=`const D=require(${JSON.stringify(driver)}); D.createDriver=()=>({remediate:async o=>{const [a,b]=await Promise.all([o.modelBridge({kind:'text',prompt:'Reply alpha'}),o.modelBridge({kind:'text',prompt:'Reply beta'})]);if(a!=='alpha'||b!=='beta')throw Error('incorrect reply');return {taggedPdfB64:${pdfOutcome ? JSON.stringify(Buffer.from('%PDF-1.7 fixture').toString('base64')) : 'null'},verificationState:'complete',taggedPdfDelivery:{ok:true,code:'verified'},contentCoverage:${coverageReview ? '{status:"review_required",reviewRequired:true,missingTokens:1}' : 'null'},runId:'fixture-'+require('crypto').randomUUID(),accessibleHtml:'<!doctype html><html lang="en"><title>Test</title><body><h1>Test</h1><p>Verified fixture</p></body></html>',afterScore:95,beforeScore:60,verdict:{level:'ready',review:[],cautions:[]},stats:{fixPasses:o.fixPasses,autoContinue:o.autoContinue,validateUa:o.validateUa}};},validatePdfUaCli:async o=>{if(${JSON.stringify(pdfOutcome)}==='error')throw Error('Fixture Java unavailable');const bytes=require('fs').readFileSync(o.filePath);return {status:${JSON.stringify(pdfOutcome)}==='pass'?'compliant':'noncompliant',failedChecks:${JSON.stringify(pdfOutcome)}==='pass'?0:2,failedRules:${JSON.stringify(pdfOutcome)}==='pass'?0:1,failedRuleSummaries:[],profile:'ua1',validatorVersion:'fixture',inputSha256:require('crypto').createHash('sha256').update(bytes).digest('hex'),inputBytes:bytes.length};},cancelActiveRun:async()=>true,close:async()=>{}});${fakeNarration ? `const N=require(${JSON.stringify(resolve('desktop/mcp/remediation_narration.cjs'))});N.narrate=async o=>{if(o.filePath.includes('broken.html'))throw Error('unsupported fixture');return {status:'completed',totalSections:1,completedSections:1,files:{}};};` : ''}require(${JSON.stringify(server)});`;
- const env={...process.env,ALLOFLOW_MCP_NO_KEY_FILES:'1',ALLOFLOW_MCP_STATE_DIR:join(dir,'state')};delete env.GEMINI_API_KEY;
- const child=spawn(process.execPath,['-e',bootstrap],{env,stdio:['pipe','pipe','pipe']});children.push(child);
+ const bootstrap=`const D=require(${JSON.stringify(driver)}); D.createDriver=()=>({remediate:async o=>{const [a,b]=o.modelBridge?await Promise.all([o.modelBridge({kind:'text',prompt:'Reply alpha'}),o.modelBridge({kind:'text',prompt:'Reply beta'})]):['alpha','beta'];if(a!=='alpha'||b!=='beta')throw Error('incorrect reply');return {taggedPdfB64:${pdfOutcome ? JSON.stringify(Buffer.from('%PDF-1.7 fixture').toString('base64')) : 'null'},verificationState:'complete',taggedPdfDelivery:{ok:true,code:'verified'},contentCoverage:${coverageReview ? '{status:"review_required",reviewRequired:true,missingTokens:1}' : 'null'},runId:'fixture-'+require('crypto').randomUUID(),accessibleHtml:'<!doctype html><html lang="en"><title>Test</title><body><h1>Test</h1><p>Verified fixture</p></body></html>',candidateRejectionCount:125,candidateRejections:Array.from({length:125},()=>({pass:2,chunkId:'1.0',phase:'half',reason:'table-cell-transposition',candidateHtml:'PRIVATE-CANDIDATE-TEXT'})),afterScore:95,beforeScore:60,verdict:{level:'ready',review:[],cautions:[]},stats:{fixPasses:o.fixPasses,autoContinue:o.autoContinue,validateUa:o.validateUa}};},validatePdfUaCli:async o=>{if(${JSON.stringify(pdfOutcome)}==='error')throw Error('Fixture Java unavailable');const bytes=require('fs').readFileSync(o.filePath);return {status:${JSON.stringify(pdfOutcome)}==='pass'?'compliant':'noncompliant',failedChecks:${JSON.stringify(pdfOutcome)}==='pass'?0:2,failedRules:${JSON.stringify(pdfOutcome)}==='pass'?0:1,failedRuleSummaries:[],profile:'ua1',validatorVersion:'fixture',inputSha256:require('crypto').createHash('sha256').update(bytes).digest('hex'),inputBytes:bytes.length};},takeLastRunDiagnostics:()=>(${JSON.stringify(diagnostics)}),cancelActiveRun:async()=>true,close:async()=>{}});${fakeNarration ? `const N=require(${JSON.stringify(resolve('desktop/mcp/remediation_narration.cjs'))});N.narrate=async o=>{if(o.filePath.includes('broken.html'))throw Error('unsupported fixture');return {status:'completed',totalSections:1,completedSections:1,files:{}};};` : ''}require(${JSON.stringify(server)});`;
+ const env={...process.env,ALLOFLOW_MCP_NO_KEY_FILES:'1',ALLOFLOW_MCP_STATE_DIR:join(dir,'state')};delete env.GEMINI_API_KEY;if(diagnostics){env.GEMINI_API_KEY='synthetic-diagnostics-fixture';env.ALLOFLOW_MCP_GEMINI_BASE='http://127.0.0.1:9';}
+ const bootstrapPath=join(dir,'fixture-mcp.cjs');writeFileSync(bootstrapPath,bootstrap);
+ const child=spawn(process.execPath,[bootstrapPath],{env,stdio:['pipe','pipe','pipe']});children.push(child);
  let seq=0,buffer='',errors='';const pending=new Map();child.stderr.on('data',d=>errors+=d);child.stdout.on('data',d=>{buffer+=d;let n;while((n=buffer.indexOf('\n'))>=0){const line=buffer.slice(0,n);buffer=buffer.slice(n+1);if(!line.trim())continue;const m=JSON.parse(line);pending.get(m.id)?.(m);pending.delete(m.id);}});
  const rpc=(method,params)=>new Promise((res,rej)=>{const id=++seq;const timer=setTimeout(()=>rej(Error('RPC timed out '+errors)),20000);pending.set(id,m=>{clearTimeout(timer);res(m);});child.stdin.write(JSON.stringify({jsonrpc:'2.0',id,method,params})+'\n');});
  const call=async(name,args)=>{const m=await rpc('tools/call',{name,arguments:args});if(m.error)throw Error(m.error.message);if(m.result.isError)throw Error(JSON.stringify(m.result.content));return m.result.structuredContent;};
@@ -32,11 +33,27 @@ it('batches keyless files, validates replies atomically, applies thorough effort
  v=await c.call('remediation_agent_requests',{run_id:start.runId,wait_seconds:0});expect(v.pendingRequests.length).toBe(2);
  const result=await finish(c,start.runId);expect(result.status).toBe('completed');expect(result.result.completed).toBe(2);expect(result.result.failed).toBe(0);
  expect(result.result.files[0].result.stats).toMatchObject({fixPasses:3,autoContinue:true,validateUa:true});
+ const evidence=result.result.files[0].result;
+ expect(evidence.candidateRejectionCount).toBe(125);
+ expect(evidence.candidateRejections).toHaveLength(100);
+ expect(evidence.candidateRejections[0]).toEqual({pass:2,chunkId:'1.0',phase:'half',reason:'table-cell-transposition'});
+ const report=JSON.parse(readFileSync(evidence.files.report,'utf8'));
+ expect(report.candidateRejections).toEqual(evidence.candidateRejections);
+ expect(JSON.stringify(report)).not.toContain('PRIVATE-CANDIDATE-TEXT');
+ const catalog=await c.rpc('tools/list',{});
+ const output=catalog.result.tools.find(tool=>tool.name==='pdf_remediate').outputSchema.properties;
+ expect(output.candidateRejectionCount).toMatchObject({type:'integer',minimum:0,maximum:1000000});
+ expect(output.candidateRejections).toMatchObject({type:'array',maxItems:100,items:{additionalProperties:false,required:['chunkId','phase','reason']}});
+ expect(output.candidateRejections.items.properties.reason.enum).toContain('table-cell-transposition');
  await new Promise(res=>{c.child.once('exit',res);c.child.kill();});c=client(dir);await c.init();
  const saved=await c.call('remediation_agent_requests',{run_id:start.runId,wait_seconds:0});expect(saved.status).toBe('completed');
+ expect(saved.result.files[0].result.candidateRejectionCount).toBe(evidence.candidateRejectionCount);
+ expect(saved.result.files[0].result.candidateRejections).toEqual(evidence.candidateRejections);
  const listed=await c.call('remediation_agent_runs',{});expect(listed.runs.some(r=>r.runId===start.runId&&r.status==='completed')).toBe(true);
  const voices=await c.call('document_narration_voices',{language:'es-MX'});expect(voices.voices).toHaveLength(1);expect(voices.voices[0].voiceId).toBe('es_MX-ald-medium');
  await c.call('remediation_agent_resume',{run_id:start.runId});const resumed=await finish(c,start.runId);expect(resumed.status).toBe('completed');expect(resumed.result.modelCallsAnswered).toBe(0);expect(resumed.result.files.every(r=>r.result.reused)).toBe(true);
+ expect(resumed.result.files[0].result.candidateRejectionCount).toBe(evidence.candidateRejectionCount);
+ expect(resumed.result.files[0].result.candidateRejections).toEqual(evidence.candidateRejections);
 });
 it('recovers an interrupted run after restart and regenerates a modified source',async()=>{
  const dir=mkdtempSync(join(tmpdir(),'alloflow-interrupted-'));const file=join(dir,'input.txt');writeFileSync(file,'First source');let c=client(dir);await c.init();
@@ -68,4 +85,87 @@ it.each(['pass','fail','error','not-run'])('binds final PDF delivery to independ
  expect(result.files.taggedPdf.endsWith(outcome==='pass'?'-tagged.pdf':'-tagged-review-required.pdf')).toBe(true);expect(readFileSync(result.files.taggedPdf,'utf8')).toBe('%PDF-1.7 fixture');
  expect(readFileSync(result.files.accessibleHtml,'utf8')).toContain('Verified fixture');
  const report=JSON.parse(readFileSync(result.files.report,'utf8'));expect(report.pdfUa).toEqual(result.pdfUa);expect(report.reviewRequired).toBe(result.reviewRequired);
+});
+
+
+it.each(['cancel', 'restart'])('rejects replies from the previous attempt after %s and resume', async interruption => {
+ const dir = mkdtempSync(join(tmpdir(), 'alloflow-stale-reply-'));
+ const file = join(dir, 'input.txt');
+ writeFileSync(file, 'Source before interruption');
+ let c = client(dir);
+ await c.init();
+ const started = await c.call('pdf_remediate_agent_start', { file_path: file, tagged_pdf: false });
+ const previous = await c.call('remediation_agent_requests', { run_id: started.runId, wait_seconds: 1 });
+ expect(previous.pendingRequests).toHaveLength(2);
+ const staleId = previous.pendingRequests[0].requestId;
+ if (interruption === 'cancel') {
+  await c.call('remediation_agent_cancel', { run_id: started.runId });
+  let stopped;
+  for (let i = 0; i < 20; i++) {
+   stopped = await c.call('remediation_agent_requests', { run_id: started.runId, wait_seconds: 1 });
+   if (stopped.status !== 'running') break;
+  }
+  expect(stopped.status).toBe('cancelled');
+ } else {
+  await new Promise(resolveExit => { c.child.once('exit', resolveExit); c.child.kill(); });
+  c = client(dir);
+  await c.init();
+ }
+ writeFileSync(file, 'Source after interruption');
+ const resumed = await c.call('remediation_agent_resume', { run_id: started.runId });
+ expect(resumed.runId).toBe(started.runId);
+ const current = await c.call('remediation_agent_requests', { run_id: started.runId, wait_seconds: 1 });
+ expect(current.pendingRequests).toHaveLength(2);
+ expect(current.pendingRequests.map(request => request.requestId)).not.toContain(staleId);
+ await expect(c.call('remediation_agent_respond', { run_id: started.runId, request_id: staleId, text: 'stale answer' })).rejects.toThrow(/No pending request/);
+ await expect(c.call('remediation_agent_respond_batch', {
+  run_id: started.runId,
+  responses: [{ request_id: current.pendingRequests[0].requestId, text: 'alpha' }, { request_id: staleId, text: 'stale answer' }],
+ })).rejects.toThrow(/unknown pending request/);
+ const afterRejection = await c.call('remediation_agent_requests', { run_id: started.runId, wait_seconds: 0 });
+ expect(afterRejection.pendingRequests).toHaveLength(2);
+ expect((await finish(c, started.runId)).status).toBe('completed');
+});
+
+it('persists bounded numerical job diagnostics and restores them after restart', async () => {
+ const dir = mkdtempSync(join(tmpdir(), 'alloflow-persisted-diagnostics-'));
+ const file = join(dir, 'input.txt');
+ writeFileSync(file, 'Synthetic diagnostics fixture');
+ const canary = 'DOCUMENT-AND-CREDENTIAL-CANARY';
+ const diagnostics = {
+  capturedAt: '2026-09-07T00:00:00.000Z', fileName: canary,
+  snapshot: {
+   run: { apiCalls: 12, retries: 2, totalApiMs: 1500, pageCount: 3, sourceText: canary, durationMs: -1, visionCalls: '7', [canary]: 99 },
+   constants: { maxConcurrent: 3, model: canary },
+   throttle: { cooldownMsTotal: 42, summary: { prompt: canary } },
+   calls: Array.from({ length: 150 }, (_, call) => ({ call, transportMs: call * 10, response: canary, operation: canary })),
+   heartbeat: Array.from({ length: 150 }, (_, atMs) => ({ atMs, gapMs: 1000, runId: canary })),
+   environment: { model: canary }, warnings: [canary],
+  },
+ };
+ let c = client(dir, false, false, null, diagnostics);
+ await c.init();
+ const started = await c.call('pdf_remediate_start', { file_path: file, output_dir: join(dir, 'out'), tagged_pdf: false });
+ let status;
+ for (let i = 0; i < 100; i++) {
+  status = await c.call('remediation_job_status', { job_id: started.jobId });
+  if (status.status !== 'queued' && status.status !== 'running') break;
+  await new Promise(resolveWait => setTimeout(resolveWait, 20));
+ }
+ expect(status.status).toBe('completed');
+ const before = await c.call('remediation_job_diagnostics', { job_id: started.jobId });
+ expect(before.ok).toBe(true);
+ expect(before.diagnostics.run).toEqual({ apiCalls: 12, retries: 2, totalApiMs: 1500, pageCount: 3 });
+ expect(before.diagnostics.calls).toHaveLength(128);
+ expect(before.diagnostics.calls[0].call).toBe(22);
+ expect(before.diagnostics.heartbeat).toHaveLength(128);
+ expect(JSON.stringify(before)).not.toContain(canary);
+ const persisted = JSON.parse(readFileSync(join(dir, 'state', started.jobId + '.json'), 'utf8'));
+ expect(persisted.diagnostics.snapshot).toEqual(before.diagnostics);
+ expect(JSON.stringify(persisted.diagnostics).length).toBeLessThan(64 * 1024);
+ await new Promise(resolveExit => { c.child.once('exit', resolveExit); c.child.kill(); });
+ c = client(dir, false, false, null, diagnostics);
+ await c.init();
+ const after = await c.call('remediation_job_diagnostics', { job_id: started.jobId });
+ expect(after).toEqual(before);
 });

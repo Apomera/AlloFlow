@@ -71,7 +71,8 @@ async function tapNumber(host, n) {
 const rows = (n, extra) =>
   Array.from({ length: n }, (_, i) => ({
     timestamp: 1000 + i,
-    word: 'seedword',
+    word: ['dog', 'sun', 'map', 'bed', 'cup', 'hat'][i % 6],
+    difficulty: 'easy',
     correct: true,
     attempts: 1,
     activity: 'counting',
@@ -115,10 +116,10 @@ afterEach(() => {
 describe('adaptive difficulty: which rows are allowed to drive it', () => {
   // CONTROL. Without this the two tests below could pass for the wrong reason
   // — a seed that never reaches getEffectiveDifficulty at all would also
-  // produce "easy". Ten genuine first-try successes must reach "hard".
+  // produce "easy". Sustained distinct-word practice advances one band.
   it('ten first-try successes adapt the child upward', async () => {
     const row = await answerAndReadRow(rows(10));
-    expect(row.difficulty, 'a child who is right first time should be moved up').toBe('hard');
+    expect(row.difficulty, 'distinct-word success advances one band, not two').toBe('medium');
   });
 
   it('a block of Letter Trace practice does not adapt the child upward', async () => {
@@ -146,15 +147,13 @@ describe('adaptive difficulty: which rows are allowed to drive it', () => {
     expect(row.difficulty, 'a retry is not a first-try success').toBe('easy');
   });
 
-  it('a mixed record lands between the two extremes', async () => {
-    // Seven first-try + three retries = (7 + 1.5) / 10 = 85%. That is the
-    // "hard" boundary, so a single further retry should drop it to medium —
-    // pinning that the weighting is graded, not a cliff.
-    const atBoundary = await answerAndReadRow([...rows(7), ...rows(3, { attempts: 2 })]);
-    expect(atBoundary.difficulty).toBe('hard');
-    const justBelow = await answerAndReadRow([...rows(6), ...rows(4, { attempts: 2 })]);
-    expect(justBelow.difficulty, '80% weighted should be medium, not hard').toBe('medium');
+  it('retries affect promotion without a one-answer difficulty cliff', async () => {
+    const mixed = await answerAndReadRow([...rows(4), ...rows(2, { attempts: 2 }), ...rows(4)]);
+    expect(mixed.difficulty).toBe('medium');
+    const repeatedRetries = await answerAndReadRow(rows(10).map((row, i) => ({ ...row, attempts: i % 2 ? 2 : 1 })));
+    expect(repeatedRetries.difficulty).toBe('easy');
   });
+
 });
 
 describe('history rows carry their own provenance', () => {

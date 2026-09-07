@@ -30,6 +30,12 @@ function panel(geo) {
 const withScene = (objects, selection, extra) =>
   panel(Object.assign({ construction: { objects, selection } }, extra || {}));
 
+function panelDom(html) {
+  const root = document.createElement('div');
+  root.innerHTML = html;
+  return root;
+}
+
 beforeEach(() => resetStemLab());
 
 describe('the panel renders at all', () => {
@@ -49,17 +55,29 @@ describe('the panel renders at all', () => {
 });
 
 describe('the next move is always named', () => {
-  it('says to start with a point when the scene is empty', () => {
-    const html = withScene([], null);
-    expect(html).toContain('Start with a point');
-    // "Select an object first" is advice you cannot act on with nothing to select.
-    expect(html).not.toContain('Select an object first');
+  it('offers an enabled first-point action when the scene is empty', () => {
+    const root = panelDom(withScene([], null));
+    const firstPoint = Array.from(root.querySelectorAll('button')).find(button => button.textContent === 'Place first point');
+    expect(firstPoint).toBeTruthy();
+    expect(firstPoint.disabled).toBe(false);
+    expect(root.querySelector('[aria-label="Build from selection"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Scene objects"]')).toBeNull();
   });
 
-  it('asks for a selection once objects exist', () => {
-    const html = withScene([POINT], null);
-    expect(html).toContain('Select an object first');
-    expect(html).not.toContain('Start with a point');
+  it('offers selectable scene objects when nothing is selected', () => {
+    const root = panelDom(withScene([POINT, SEG_X], null));
+    const list = root.querySelector('[aria-label="Scene objects"]');
+    expect(list).toBeTruthy();
+    const objects = Array.from(list.querySelectorAll('button'));
+    expect(objects).toHaveLength(2);
+    expect(objects[0].textContent).toContain('Point');
+    expect(objects[1].textContent).toContain('Line');
+    objects.forEach(button => {
+      expect(button.disabled).toBe(false);
+      expect(button.getAttribute('aria-pressed')).toBe('false');
+    });
+    expect(root.querySelector('[aria-label="Build from selection"]')).toBeNull();
+    expect(root.querySelector('#geo-selected-dimensions')).toBeNull();
   });
 
   it('names the dimension each stretch produces', () => {
@@ -68,14 +86,42 @@ describe('the next move is always named', () => {
     expect(withScene([POINT, SEG_X, RECT], 3)).toContain('prism (3D)');
   });
 
-  it('stops at 3D rather than offering a move that cannot happen', () => {
-    const html = withScene([PRISM], 4);
-    expect(html).toContain('Already a solid (3D)');
+  it('offers a solid inspector without inapplicable building controls', () => {
+    const root = panelDom(withScene([PRISM], 4));
+    const inspector = root.querySelector('#geo-selected-dimensions');
+    expect(inspector).toBeTruthy();
+    expect(inspector.querySelector('#geo-stretch-size-fields')).toBeTruthy();
+    const nameLabel = Array.from(inspector.querySelectorAll('label')).find(label => label.textContent === 'Object name');
+    expect(nameLabel).toBeTruthy();
+    expect(nameLabel.querySelector('input[type="text"]').disabled).toBe(false);
+    const duplicate = Array.from(inspector.querySelectorAll('button')).find(button => button.textContent === 'Duplicate object');
+    expect(duplicate).toBeTruthy();
+    expect(duplicate.disabled).toBe(false);
+    expect(root.querySelector('[aria-label="Selected geometry dimension"] [aria-current="step"]').textContent).toContain('3D');
+    expect(root.querySelector('[aria-label="Build from selection"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Stretch axis"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Stretch length"]')).toBeNull();
+    expect(root.querySelector('[aria-label="Build action"]')).toBeNull();
   });
 
-  it('explains what taper and revolve need instead of just greying out', () => {
-    ['taper', 'revolve'].forEach((buildVerb) => {
-      expect(withScene([POINT], 1, { buildVerb })).toContain('needs a rectangle');
+  it('shows the valid Stretch action for points and lines with an incompatible saved verb', () => {
+    ['taper', 'revolve'].forEach(buildVerb => {
+      [POINT, SEG_X].forEach(object => {
+        const root = panelDom(withScene([object], object.id, { buildVerb }));
+        const operation = root.querySelector('[aria-label="Build from selection"]');
+        expect(operation).toBeTruthy();
+        const action = operation.querySelector('button[aria-label^="Stretch "]');
+        expect(action).toBeTruthy();
+        expect(action.disabled).toBe(false);
+        expect(action.getAttribute('aria-label')).toBe(object.type === 'point'
+          ? 'Stretch point → segment (1D)' : 'Stretch segment → rectangle (2D)');
+        expect(operation.querySelector('[aria-label="Stretch axis"]')).toBeTruthy();
+        expect(operation.querySelector('[aria-label="Stretch length"]')).toBeTruthy();
+        expect(operation.querySelector('[aria-label="Build action"]')).toBeNull();
+        expect(operation.querySelector('[aria-label="Taper top size"]')).toBeNull();
+        expect(operation.querySelector('[aria-label="Revolution sweep angle in degrees"]')).toBeNull();
+        expect(operation.querySelector('[aria-label="Profile to spin"]')).toBeNull();
+      });
     });
   });
 });
@@ -163,7 +209,19 @@ describe('the unified Sculpt workspace', () => {
       sculptRecipe: { name: 'tower', parts: [{ shape: 'box', size: [1, 2, 1], position: [0, 1, 0], rotation: [0, 0, 0], color: '#60a5fa' }] },
     });
     expect(html).toContain('Sculpt studio');
-    expect(html).toContain('Build directly from primitive shapes');
+    const root = panelDom(html);
+    const tabs = Array.from(root.querySelectorAll('[aria-label="Sculpt editor views"] [role="tab"]'));
+    expect(tabs.map(tab => tab.textContent)).toEqual(['Parts', 'Edit', 'Project']);
+    expect(tabs[0].getAttribute('aria-selected')).toBe('true');
+    tabs.forEach(tab => expect(root.querySelector('#' + tab.getAttribute('aria-controls'))).toBeTruthy());
+    const parts = root.querySelector('#geo-sculpt-panel-parts');
+    expect(parts.hidden).toBe(false);
+    expect(parts.textContent).toContain('Add a primitive, choose a part, then open Edit to shape it.');
+    ['box', 'sphere', 'cylinder', 'cone', 'torus'].forEach(shape => {
+      const add = parts.querySelector('[aria-label="Add ' + shape + '"]');
+      expect(add).toBeTruthy();
+      expect(add.disabled).toBe(false);
+    });
     expect(html).toContain('manual sculpting below still works');
     expect(html).not.toContain('>🧊 AI Sculpt<');
   });

@@ -238,10 +238,12 @@ test('runs a PDF once, uploads raw artifacts, and returns cached small metadata'
   assert.equal(report.pdfUaValidation.status, 'not_run');
   assert.equal(report.pdfUaValidation.reason, 'independent_validator_not_packaged');
   assert.equal(report.summary.autoContinueRoundsRun, 0);
-  assert.equal(report.summary.distributionLevel, 'ready');
-  assert.equal(report.summary.verificationState, 'complete');
+  assert.equal(report.summary.distributionLevel, 'review');
+  assert.equal(report.summary.verificationState, 'review-required');
+  assert.equal(report.summary.htmlVerificationState, 'complete');
+  assert.equal(report.summary.reviewRequired, true);
   assert.equal(report.summary.verificationHtmlBound, true);
-  assert.equal(report.summary.taggedPdfDelivery, 'verified');
+  assert.equal(report.summary.taggedPdfDelivery, 'review-required');
   assert.equal(report.summary.taggedPdfExportMode, 'original_layout');
   assert.equal(report.summary.activeContentScanVerified, true);
   assert.equal(report.summary.activeContentDetected, false);
@@ -452,6 +454,8 @@ test('publishes bounded veraPDF evidence when the driver exposes the CLI', async
         validator: 'veraPDF',
         profile: 'ua1',
         validatorVersion: '1.30.2',
+        inputSha256: crypto.createHash('sha256').update(OUTPUT_PDF).digest('hex'),
+        inputBytes: OUTPUT_PDF.length, validatedAt: '2026-09-07T00:00:00.000Z', validationDurationMs: 100,
         failedRules: 2,
         failedChecks: 3,
         passedRules: 104,
@@ -477,11 +481,16 @@ test('publishes bounded veraPDF evidence when the driver exposes the CLI', async
     validator: 'veraPDF',
     profile: 'ua1',
     validatorVersion: '1.30.2',
+    inputSha256: crypto.createHash('sha256').update(OUTPUT_PDF).digest('hex'),
+    inputBytes: OUTPUT_PDF.length, validatedAt: '2026-09-07T00:00:00.000Z', validationDurationMs: 100,
     failedRules: 2,
     failedChecks: 3,
     passedRules: 104,
     passedChecks: 4459,
   });
+  assert.equal(report.summary.distributionLevel, 'review');
+  assert.equal(report.summary.taggedPdfDelivery, 'review-required');
+  assert.equal(report.summary.verificationState, 'review-required');
 });
 test('same job id with different immutable request is rejected', async (t) => {
   const runner = await startTestRunner(t);

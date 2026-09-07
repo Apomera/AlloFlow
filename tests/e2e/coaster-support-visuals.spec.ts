@@ -1,0 +1,51 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_coasterlab.js', toolId: 'coasterLab', width: 1440, height: 960,
+  probes: "document.head.insertAdjacentHTML('beforeend', '<style>#wrap{width:100%;height:100vh}.clab-root{width:100%;height:100vh!important}</style>');" });
+test.beforeAll(async () => { await harness.start(); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { await harness.destroy(page); });
+test('support dressing stays grounded and stable through themes, rebuilds and FX Lite', async ({ page }, testInfo) => {
+  test.setTimeout(240000);
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
+  await page.addInitScript(() => localStorage.setItem('coaster_lab_onboarding_v1', 'complete'));
+  await page.setViewportSize({ width: 1440, height: 960 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await harness.mount(page, {}, "document.querySelector('[aria-label=\"Coaster Lab 3-D designer\"]')._lab");
+  const state = () => page.evaluate(() => (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.supportPresentation());
+  const analysis = () => page.evaluate(() => JSON.stringify((document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.analysis()));
+  const baseline = await analysis();
+  const original = await state();
+  expect(original.batches).toHaveLength(8);
+  const count = (name: string) => original.batches.find((batch: any) => batch.name === 'coaster-support-' + name).count;
+  expect(count('columns')).toBeGreaterThan(0); expect(count('braces')).toBeGreaterThan(0);
+  expect(count('pads')).toBe(count('columns') + count('braces'));
+  expect(count('plates')).toBe(count('pads')); expect(count('anchors')).toBe(count('pads') * 4);
+  await page.locator('#clab-btnSceneFocus').click();
+  for(const theme of ['daylight', 'dusk', 'neon', 'blueprint']){
+    await page.locator('#clab-visualTheme').selectOption(theme);
+    await expect.poll(state).toMatchObject({ shaderErrors: 0 });
+    expect((await state()).batches.every((batch: any) => batch.finite)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('supports-' + theme + '.png') });
+  }
+  expect(await analysis()).toBe(baseline);
+  await page.locator('#clab-visualTheme').selectOption('daylight');
+  await page.locator('#clab-btnSideView').click();
+  await page.screenshot({ path: testInfo.outputPath('supports-side.png') });
+  await page.locator('#clab-btnFx').click();
+  const lite = await state();
+  expect(lite.batches.filter((batch: any) => batch.detail).every((batch: any) => !batch.visible)).toBe(true);
+  expect(lite.batches.filter((batch: any) => !batch.detail).every((batch: any) => batch.visible)).toBe(true);
+  await page.evaluate(() => { const lab = (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab; lab.importDesign(lab.exportDesign()); });
+  const rebuilt = await state();
+  expect(rebuilt.batches.map((batch: any) => batch.count)).toEqual(original.batches.map((batch: any) => batch.count));
+  expect(rebuilt.batches.filter((batch: any) => batch.detail).every((batch: any) => !batch.visible && batch.finite)).toBe(true);
+  await page.locator('#clab-btnFx').click();
+  expect((await state()).batches.every((batch: any) => batch.visible && batch.finite)).toBe(true);
+  await page.locator('#clab-btnFitCoaster').click();
+  const canvas = page.locator('#clab-gl'); await canvas.hover(); await page.mouse.wheel(0, -350);
+  await expect.poll(() => page.evaluate(() => (document.querySelector('[aria-label="Coaster Lab 3-D designer"]') as any)._lab.cameraFraming().autoFit)).toBe(false);
+  await page.screenshot({ path: testInfo.outputPath('supports-close.png') });
+  expect(await analysis()).toBe(baseline);
+  expect(errors).toEqual([]);
+});

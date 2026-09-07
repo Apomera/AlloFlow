@@ -43,9 +43,9 @@
     "dashboard_title": "Dashboard / Tools",
     "dashboard_text": "De toolnavigatiebalk en het toegangspunt tot het leerkrachtdashboard.\n### Toolnavigatiebalk\n• **Toolpictogrammen**: Spring met één klik naar elke generator (Quiz, Woordenlijst, Avontuur, enz.).\n• **Statusstippen**: Groen = actieve inhoud, Oranje = aan het verwerken, Grijs = leeg.\n• **Logische flow**: Tools van links naar rechts geordend van Invoer → Genereren → Exporteren.\n### Leerkrachtdashboardknop\nKlik op het Dashboard-pictogram om het **Leerkracht-beoordelingsdashboard** te openen — een speciaal paneel voor het volgen van leerlingvoortgang:\n• **Leerling-JSON's uploaden**: Leerlingen exporteren hun werk als JSON-bestanden; upload ze hier voor batchanalyse.\n• **Leerlinglijst**: Bekijk alle geüploade leerlingen met bijnaam, datum, quizvoortgang en Avontuur-niveau.\n• **Individuele beoordeling**: Klik op een leerling om diens volledige geschiedenis te zien — quizzen, avonturen, antwoorden.\n• **Markeren als beoordeeld**: Aankruisvakje om bij te houden welke leerlingen je hebt nagekeken.\n• **Klasinzichten-tabblad**: Analysegrafieken die veelvoorkomende misvattingen en klasbrede prestaties tonen.\n• **Exporteren naar CSV**: Download klasgegevens voor import in het cijferregister.\n### Gerelateerde header-acties\n• **Spring naar les**: Snel terug naar je meest recente lesplan.\n• **Weergaveschakelaar**: Wissel tussen leerkracht- en leerlingweergave.\n### Pro-tip\nLaat leerlingen hun JSON-opslagen aan het einde van de les exporteren en upload ze hier in batch voor efficiënt nakijken 's avonds!",
     "actions_title": "Actiebalk",
-    "actions_text": "Gebruik de knoppen in de kopbalk om de interfacetaal in te stellen, live sessies te beheren, bronnen te vertalen en de exporttools te openen.\n### Controleer vóór levering\n• Controleer vertaalde inhoud op betekenis en juistheid.\n• Open Document Builder om de geselecteerde bronnen en de beschikbare downloadformaten te bekijken. Bekijk het resultaat in een voorbeeld voordat je het met leerlingen deelt.\n• Start een live sessie om een deelnamecode te krijgen, of maak een ondersteunde huiswerkdeling voor zelfstandig werk.\n### Blijf verkennen\nDe menu's met docent- en leerhulpmiddelen openen extra activiteiten voor planning, toetsing, creativiteit en interactie. Begeleide Modus helpt je eerst een gerichte les op te bouwen voordat je die opties verkent.",
+    "actions_text": "Gebruik de knoppen in de kopbalk om de interfacetaal in te stellen, live sessies te beheren, bronnen te vertalen en de exporttools te openen.\n### Controleer vóór levering\n• Controleer vertaalde inhoud op betekenis en juistheid.\n• Open Documentbouwer om de geselecteerde bronnen en de beschikbare downloadformaten te bekijken. Bekijk het resultaat in een voorbeeld voordat je het met leerlingen deelt.\n• Start een live sessie om een deelnamecode te krijgen, of maak een ondersteunde huiswerkdeling voor zelfstandig werk.\n### Blijf verkennen\nDe menu's met docent- en leerhulpmiddelen openen extra activiteiten voor planning, toetsing, creativiteit en interactie. Begeleide Modus helpt je eerst een gerichte les op te bouwen voordat je die opties verkent.",
     "history_title": "Sessiegeschiedenis",
-    "history_text": "Geschiedenis bevat de bronnen in je huidige werkruimte. Open een opgeslagen item om het te bekijken of om terug te gaan naar een eerder resultaat.\n### Maak een back-up\n• Sla een projectback-up op om op een ander apparaat verder te gaan of je werk later terug te halen. Begeleide Modus laat ook zien of de voortgang op dit apparaat is opgeslagen.\n• Een werkruimte kan materiaal uit meerdere lessen bevatten. Controleer de geselecteerde bronnen voordat je exporteert of deelt.\n### Pakketten voor begeleide lessen\nOpen Document Builder vanuit Begeleide Modus om met de geselecteerde bronnen van die les te werken. De algemene Builder kan de bredere werkruimte gebruiken, dus controleer de inhoud ervan vóór levering.",
+    "history_text": "Geschiedenis bevat de bronnen in je huidige werkruimte. Open een opgeslagen item om het te bekijken of om terug te gaan naar een eerder resultaat.\n### Maak een back-up\n• Sla een projectback-up op om op een ander apparaat verder te gaan of je werk later terug te halen. Begeleide Modus laat ook zien of de voortgang op dit apparaat is opgeslagen.\n• Een werkruimte kan materiaal uit meerdere lessen bevatten. Controleer de geselecteerde bronnen voordat je exporteert of deelt.\n### Pakketten voor begeleide lessen\nOpen Documentbouwer vanuit Begeleide Modus om met de geselecteerde bronnen van die les te werken. De algemene Builder kan de bredere werkruimte gebruiken, dus controleer de inhoud ervan vóór levering.",
     "spotlight_title": "Spotlight",
     "spotlight_message": "Zeg hallo tegen {name}!",
     "dbq_title": "Documentgebaseerde Vragen",
@@ -511,7 +511,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "Documentbouwer",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "Thema wisselen",
     "close_story_forge": "StoryForge sluiten",
     "story_creation_phases": "Fasen van verhaalcreatie",
-    "doc_builder": "Document Builder",
+    "doc_builder": "Documentbouwer",
     "close_doc_builder": "Document Builder sluiten",
     "font_size": "Lettergrootte",
     "target_word_count": "Doel voor aantal woorden",
@@ -5071,10 +5071,10 @@
     "locked": "Vergrendeld",
     "escaped": "Je bent ontsnapt!",
     "escaped_desc": "Je hebt alle puzzels opgelost en bent uit de kamer ontsnapt!",
-    "time_up": "? De tijd is om!",
+    "time_up": "⏰ De tijd is om!",
     "reveal_hint": "Hint tonen",
-    "puzzles_remaining": "{{count}} puzzels over",
-    "time_remaining": "Tijd: {{time}}",
+    "puzzles_remaining": "{count} puzzels over",
+    "time_remaining": "Tijd: {time}",
     "progress": "Voortgang",
     "start": "Escape room starten",
     "start_hint": "Start de timer om objecten te gaan bekijken",
@@ -5085,8 +5085,8 @@
     "room_complete": "Kamer voltooid!",
     "loading_error": "Kamergegevens konden niet worden geladen",
     "no_puzzle": "Geen puzzel gevonden voor dit object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Perfecte ontsnapping! +{{xp}} bonus-XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Perfecte ontsnapping! +{xp} bonus-XP",
     "puzzle_mcq": "Meerkeuze",
     "puzzle_sequence": "Op volgorde zetten",
     "puzzle_cipher": "Het bericht decoderen",
@@ -5144,7 +5144,7 @@
     "clue": "Aanwijzing",
     "clue_found": "Aanwijzing ontdekt!",
     "clue_revealed": "Deze aanwijzing kan helpen bij een andere puzzel...",
-    "clues_collected": "Aanwijzingen: {{count}}/{{total}}",
+    "clues_collected": "Aanwijzingen: {count}/{total}",
     "use_clue": "Aanwijzing gebruiken",
     "final_door": "De uitgangsdeur",
     "final_door_ready": "De uitgangsdeur is nu ontgrendeld!",
@@ -5170,12 +5170,12 @@
     "left": "over",
     "wrong_attempts": "Foute pogingen",
     "time_penalty": "-{seconds} seconden!",
-    "game_over_time": "? Tijd is om! Je tijd is op.",
+    "game_over_time": "⏰ Tijd is om! Je tijd is op.",
     "streak": "Reeks",
     "streak_bonus": "Reeksbonus! x{multiplier}",
     "streak_lost": "Reeks verloren!",
     "one_minute_warning": "Nog één minuut over!",
-    "thirty_seconds_warning": "? Nog maar 30 seconden!",
+    "thirty_seconds_warning": "⏰ Nog maar 30 seconden!",
     "timer_paused": "Timer gepauzeerd",
     "timer_resume": "Hervatten",
     "settings_btn": "Kamerinstellingen",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "Start een multiplayer escape room met je klas",
     "team_mode": "Teamuitdaging",
     "team_race": "Race om te ontsnappen!",
-    "team_progress": "{{team}} voortgang: {{solved}}/{{total}}",
+    "team_progress": "{team} voortgang: {solved}/{total}",
     "waiting_host": "Wachten tot de leerkracht start...",
-    "team_escaped": "Team {{team}} is ontsnapt!",
+    "team_escaped": "Team {team} is ontsnapt!",
     "all_teams_done": "Alle teams klaar!",
     "your_team": "Jouw team",
     "team_red": "Rood team",
@@ -5198,7 +5198,7 @@
     "team_green": "Groen team",
     "team_yellow": "Geel team",
     "team_all": "Alle leerlingen",
-    "teams_competing": "{{count}} teams strijden mee",
+    "teams_competing": "{count} teams strijden mee",
     "first_escape": "Eerste die ontsnapt!",
     "end_game": "Spel beëindigen",
     "end_game_confirm": "De escape room voor alle leerlingen beëindigen?",
@@ -5211,8 +5211,8 @@
     "resume_game": "Spel hervatten",
     "game_paused_by_teacher": "Spel gepauzeerd door de leerkracht",
     "celebration_title": "Gefeliciteerd!",
-    "you_escaped": "Je team is ontsnapt in {{time}}!",
-    "other_team_escaped": "{{team}} is ontsnapt!",
+    "you_escaped": "Je team is ontsnapt in {time}!",
+    "other_team_escaped": "{team} is ontsnapt!",
     "class_escaped": "Overwinning voor de klas!",
     "everyone_escaped": "Iedereen heeft samengewerkt om te ontsnappen!",
     "hurry_up": "Ga zo door! Je kunt nog steeds ontsnappen!",
@@ -5240,7 +5240,7 @@
     "load_saved": "Opgeslagen laden",
     "loaded_saved": "Opgeslagen escape room geladen! Bekijk en start wanneer je klaar bent.",
     "no_saved": "Geen opgeslagen escape room gevonden",
-    "preview_confirmed": "? Escape room vergrendeld • klaar om te spelen!",
+    "preview_confirmed": "✅ Escape room vergrendeld • klaar om te spelen!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x reeksbonus!)",
     "loaded_from_resource": "Geladen vanuit bron."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Naar Expert Workbench sturen",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "Uitstekend werk!",
       "partial": "Goed bezig, ga zo door!",
       "incorrect": "Niet helemaal goed • probeer het opnieuw!",
-      "error": "Kon niet beoordelen • probeer het opnieuw.",
+      "error": "Kon niet beoordelen — probeer het opnieuw.",
       "verdict_correct": "Juist!",
       "verdict_partial": "Gedeeltelijk correct",
       "verdict_incorrect": "Niet helemaal goed",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **Eindniveau**: {level}",
       "log_header": "Avontuurlogboek",
       "chapter_separator": "***",
-      "user_label": "? JIJ",
+      "user_label": "➤ JIJ",
       "print_button": "Verhalenboek afdrukken"
     },
     "answer_key_title": "Antwoordsleutel",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "Je kunt op elk woord in de tekst klikken om de definitie te zien!",
     "simplified_cloze": "Probeer de 'Cloze'-modus om je woordenschat te oefenen.",
     "simplified_quiz": "Deze tekst ziet er prima uit. Zullen we een Exit Ticket genereren om begrip te controleren?",
-    "simplified_glossary": "Woorden zoals '{term1}' en '{term2}' hebben mogelijk ondersteuning nodig • een woordenlijst kan helpen!",
+    "simplified_glossary": "Woorden zoals '{term1}' en '{term2}' hebben mogelijk ondersteuning nodig — een woordenlijst kan helpen!",
     "simplified_glossary_fallback": "Sommige van deze termen zijn lastig. Een woordenlijst zou helpen om deze tekst te ondersteunen.",
     "simplified_outline": "Visuele leerlingen kunnen baat hebben bij een Visual Organizer van deze inhoud.",
     "glossary_bingo": "Je kunt deze termen omzetten in woordspelletjes zoals Bingo, Memorie, Kruiswoordraadsels of Woordzoekers!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "Wil je zeker weten dat deze quiz pittig genoeg is? Voer een Standaardaudit uit.",
     "adventure_sim": "Avonturen laten leerlingen het geleerde toepassen in een veilige simulatie.",
     "adventure_inventory": "Bekijk de 'Inventaris' om te zien welke items zijn verzameld.",
-    "adventure_context": "Je avontuur over {topic} wordt rijker met meer bronnen • probeer een {suggestion} toe te voegen!",
+    "adventure_context": "Je avontuur over {topic} wordt rijker met meer bronnen — probeer een {suggestion} toe te voegen!",
     "adventure_context_fallback": "Hoe meer bronnen je genereert, hoe rijker de avontuurscontext wordt.",
     "timeline_drag": "Sleep gebeurtenissen om de volgorde te wijzigen.",
     "timeline_visualize": "Dit helpt leerlingen om oorzaak-gevolgrelaties te visualiseren.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "Probeer de Avonturenmodus voor een leuke activiteit op een regenachtige dag.",
     "parent_read_along": "Gebruik 'Meelezen' om samen het lezen te oefenen.",
     "fallback_lesson_plan": "Je hebt geweldige bronnen. Combineer ze tot een lesplan?",
-    "fallback_brainstorm": "Loop je vast? Probeer met me te chatten en schakel Auto-aanvullen in om de Blueprint-modus te activeren • ik help je je hele les te ontwerpen!",
-    "fallback_export": "Je hebt {count} bronnen over {topic} • exporteer ze als één PDF!",
+    "fallback_brainstorm": "Loop je vast? Probeer met me te chatten en schakel Auto-aanvullen in om de Blueprint-modus te activeren — ik help je je hele les te ontwerpen!",
+    "fallback_export": "Je hebt {count} bronnen over {topic} — exporteer ze als één PDF!",
     "fallback_export_fallback": "Je kunt al deze bronnen exporteren als één PDF-pakket.",
     "fallback_guide": "Kies 'Laat me zien' in de AI-gids als je het overzicht kwijtraakt!",
     "intro_greeting": "Klik op mij om mijn steminstellingen aan te passen.",
@@ -9234,7 +9234,7 @@
     "text_generated": "Je aangepaste tekst over {topic} is klaar! Klik op een woord om de definitie te zien, of verken tools zoals Woordenlijst of Quiz om het begrip te verdiepen.",
     "flashcards_created": "Flashcards aangemaakt! Je kunt ze exporteren naar Quizlet, ze afdrukken of het Memoriespel proberen.",
     "quiz_generated": "Quiz klaar! Gebruik de Presentatiemodus voor de klas, of probeer de Auto-Grader voor open antwoorden.",
-    "glossary_generated": "Woordenlijst compleet! Probeer de woordspelletjes • Bingo, Memorie, Kruiswoordraadsels, Woordzoekers en meer!",
+    "glossary_generated": "Woordenlijst compleet! Probeer de woordspelletjes — Bingo, Memorie, Kruiswoordraadsels, Woordzoekers en meer!",
     "adventure_started": "Je avontuur begint! Typ hieronder je actie, of gebruik de keuzeknoppen om te bepalen wat er daarna gebeurt.",
     "adventure_scene": "Wat ga je doen? Elke keuze bepaalt je verhaal!",
     "analysis_complete": "Analyse voltooid! Ik heb wat woordenschat en kernbegrippen gevonden die het ontdekken waard zijn.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "Volgordebouwer",
     "type_timeline_desc": "Volgorde-activiteit aangepast aan leerjaar",
     "full_pack": "Volledig bronnenpakket • Alles selecteren",
-    "deselect_all": "? Alles deselecteren",
+    "deselect_all": "↩ Alles deselecteren",
     "estimate": "Schatting",
     "api_calls": "API-aanroepen",
     "start_batch": "Genereren",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "Je gepersonaliseerde versie wordt gemaakt...",
     "bridge_projection": "Projectiemodus",
     "bridge_exit_projection": "Projectie afsluiten",
-    "bridge_offline_info": "Geen live sessie • alleen voorbeeld op dit apparaat",
+    "bridge_offline_info": "Geen live sessie — alleen voorbeeld op dit apparaat",
     "bridge_term_saved": "\"{term}\" opgeslagen in woordenlijst",
     "bridge_term_save_failed": "Term opslaan mislukt",
     "bridge_save_term": "Opslaan in woordenlijst",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "Aangepaste taal...",
     "bridge_f2f_custom_placeholder": "bijv. Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "Alle termen opgeslagen in woordenlijst!",
-    "bridge_terms_saved": "? Alles opgeslagen",
+    "bridge_terms_saved": "✅ Alles opgeslagen",
     "fullpack_group_target": "Doelgroep",
     "fullpack_group_current": "Huidige instellingen",
     "fullpack_group_all": "Alle groepen",
@@ -12426,7 +12426,11 @@
       "trapezoid": "Trapezium",
       "simpson": "Simpson",
       "rectangles_n": "Rechthoeken (n)",
-      "coeff_a": "Coëff. a"
+      "coeff_a": "Coëff. a",
+      "sr_explanation_ready": "Uitleg klaar.",
+      "a11y_back_to_tools": "Terug naar de hulpmiddelen",
+      "a11y_snapshot": "Momentopname",
+      "a11y_next": "Volgende"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Audio wordt niet ondersteund in deze browser",
@@ -12550,13 +12554,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI-uitleg genereren op niveau",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "Leesniveau:",
+      "aria_reading_level_group": "Leesniveau",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14181,8 +14185,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Juist! Het\\",
-      "that": "? Dat\\",
+      "correct_it": "✅ Juist! Het\\",
+      "that": "❌ Dat\\",
       "linear": "Lineair",
       "quadratic": "Kwadratisch",
       "cubic": "Derdegraads",
@@ -14456,7 +14460,8 @@
       "angle_u00b0": "Hoek (°)",
       "velocity_ms": "Snelheid (m/s)",
       "gravity_msu00b2": "Zwaartekracht (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Uitleg klaar."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Willekeurig: ",
@@ -14484,7 +14489,10 @@
       "codominant_desc": "Beide allelen worden volledig tot uitdrukking gebracht. Heterozygoten vertonen beide eigenschappen tegelijk.",
       "sexLinked_desc": "De eigenschap ligt op het X-chromosoom. Dit modelleert X-gebonden RECESSIEVE overerving (bijv. hemofilie en rood-groene kleurenblindheid): mannen (XY) hebben maar één kopie nodig voor expressie; vrouwen (XX) hebben er twee nodig.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Terug naar de STEM-hulpmiddelen",
+      "a11y_snapshot": "Momentopname",
+      "a11y_close_flashcard": "Kaart sluiten"
     },
     "circuit": {
       "meter_status_ammeter_short": "Onveilige plaatsing: kortsluitpad",
@@ -14776,8 +14784,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Juist! ",
-      "it": "? Het\\"
+      "correct": "✅ Juist! ",
+      "it": "❌ Het\\"
     },
     "inequality": {
       "badge_first_solve_label": "Eerste Oplossing",
@@ -14893,8 +14901,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Juist!",
-      "answer": "? Antwoord: ",
+      "correct": "✅ Juist!",
+      "answer": "❌ Antwoord: ",
       "hydrogen": "Waterstof",
       "helium": "Helium",
       "lithium": "Lithium",
@@ -15036,7 +15044,7 @@
       "reddish_metal_used_since_the": "Roodachtig metaal dat sinds de bronstijd wordt gebruikt",
       "bluishwhite_metal_that_prevents_rust": "Blauwwit metaal dat roest voorkomt",
       "best_conductor_of_electricity_among": "Beste geleider van elektriciteit van alle metalen",
-      "dense_soft_shiny_precious_metal": "Dicht, zacht, glanzend edelmetaal • roest nooit",
+      "dense_soft_shiny_precious_metal": "Dicht, zacht, glanzend edelmetaal — roest nooit",
       "strong_as_steel_but_45": "Net zo sterk als staal maar 45% lichter",
       "shiny_metal_that_gives_rubies": "Glanzend metaal dat robijnen hun rode kleur geeft",
       "essential_for_steel_production_and": "Essentieel voor staalproductie en botgezondheid",
@@ -16142,7 +16150,9 @@
       "our_sun_is_born": "Onze zon wordt geboren",
       "present_day": "Heden",
       "the_far_future": "De verre toekomst",
-      "universe": "Universum: "
+      "universe": "Universum: ",
+      "a11y_back_to_tools": "Terug naar de hulpmiddelen",
+      "a11y_simulation_speed": "Snelheid van de simulatie"
     },
     "rocks": {
       "igneous": "Stollingsgesteente",
@@ -19067,7 +19077,10 @@
       "garage_desc": "Motoren, roest en reacties — een chemiewerkplaats.",
       "classroom_desc": "Een echt wetenschapslokaal met bekers en experimenten.",
       "outdoors_desc": "Ga naar buiten — de natuur is het grootste laboratorium van allemaal.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Terug naar de hulpmiddelen",
+      "a11y_snapshot": "Momentopname",
+      "a11y_next": "Volgende"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Opgeslagen in geschiedenis!",
@@ -19620,7 +19633,7 @@
       "fractions": "Breuken",
       "unit_converter": "Eenhedenomrekenaar",
       "life_earth_science": "Biologie & aardwetenschappen",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "Celsimulator",
       "galaxy_explorer": "Sterrenstelselverkenner",
       "universe_timelapse": "Tijdsverloop van het heelal",
       "rocks_minerals": "Gesteenten & mineralen",
@@ -19630,7 +19643,7 @@
       "decomposer": "Ontleder",
       "break_materials_into_elements": "Materialen ontleden in elementen",
       "human_anatomy": "Menselijke anatomie",
-      "brain_atlas": "Brain Atlas",
+      "brain_atlas": "Hersenatlas",
       "molecule_builder": "Moleculebouwer",
       "physics_chemistry": "Natuurkunde & scheikunde",
       "wave_simulator": "Golfsimulator",
@@ -19854,7 +19867,40 @@
       "read_what_special_education_law_actually": "Lees wat het recht op speciaal onderwijs werkelijk zegt, in zijn eigen woorden. De echte tekst van IDEA Deel B en Sectie 504, opgehaald uit eCFR en van een datum voorzien, doorzoekbaar, met federale en statelijke regels naast elkaar. Niets wordt geparafraseerd of gegenereerd: als de officiële tekst niet geladen is, zegt het hulpmiddel dat in plaats van te gokken.",
       "applied_k_12_behavior_practice_what": "Toegepaste gedragspraktijk van basisschool tot middelbare school: wat schoolpsychologen en leraren werkelijk met de wetenschap doen. Het driestappenkader PBIS, vervangend gedrag gekoppeld aan de functies uit de FBA, achtergrondgebeurtenissen (de trage aanleidingen die de meeste BIP missen), de zevenfasige escalatiecyclus van Geoff Colvin, en de ethiek van fixatie en afzondering, verankerd in hoofdstuk 33 van Maine. Zustertool van BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Mariene biologie en gedragswetenschap van octopussen, inktvissen, zeekatten en nautilussen. Blikvanger: Hunter Sim, kies soort, leefgebied, prooi en tactiek, speel het camouflagespel en bepaal het moment van de aanval. Ontgrendelt veldboekweetjes (werking van chromatoforen, 9 hersenen, blauw bloed, straalaandrijving). Veldgids met 10 soorten en cijfers voor intelligentie, camouflage en straalsnelheid.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 en HS-PS2. Spanningssimulator voor vakwerk met instelbare overspanning, hoogte, belasting en materiaal, vergelijking van brugtypen (ligger, vakwerk, boog, hang, tuibrug), materialendatabase, soorten krachten, echte casussen (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn, Golden Gate, Akashi en Millau), de ontwerpcyclus, een quiz in AP-stijl en afdrukbare ontwerpbladen."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 en HS-PS2. Spanningssimulator voor vakwerk met instelbare overspanning, hoogte, belasting en materiaal, vergelijking van brugtypen (ligger, vakwerk, boog, hang, tuibrug), materialendatabase, soorten krachten, echte casussen (Tacoma Narrows, Hyatt Regency, Tay, Silver, plus Brooklyn, Golden Gate, Akashi en Millau), de ontwerpcyclus, een quiz in AP-stijl en afdrukbare ontwerpbladen.",
+      "the_gutenberg_style_screw_press_as": "De schroefpers naar het model van Gutenberg als werkende simulatie. Trek aan de hendel, zet je eigen letters, bekijk de afdruk. Plus de materiaalkunde (lood-tin-antimoonlegering), de economie (het instorten van de kosten per boek), de geschiedenis (Reformatie, wetenschappelijke revolutie), de typografie en de mensen achter de pers (met de drukkersvrouwen die de geschiedenis vergat). Gebouwd voor vakoverstijgend werk in de onderbouw.",
+      "three_js_stoop_simulator_deep_science": "Duikvluchtsimulator in Three.js en de diepe wetenschap achter de jachtmechanica van roofvogels. Vlieg als slechtvalk op 240 mph, als harpij met klauwen van 530 psi, of als geruisloze Amerikaanse oehoe. 8 soorten en 12 hoofdstukken over klauwkracht, zicht (4-8× dat van de mens, ultraviolet bij torenvalken), vluchtfysica, de geruisloze vlucht van uilen, een rekenmachine voor de eindsnelheid, het herstel na DDT en de nog lopende natuurbeschermingscrises, en veldherkenning op silhouet en totaalindruk.",
+      "practice_reading_and_completing_the_documents": "Oefen met het lezen en invullen van de papieren waarop het volwassen leven draait: sollicitaties, W-4-formulieren, huurcontracten, medische intakeformulieren, rijbewijsaanvragen, en de uitnodiging voor je eigen IEP-overleg. Elk veld in gewone taal uitgelegd, de vakjes gemarkeerd die je duur kunnen komen te staan, drukscenario's voor als iemand wil dat je nu tekent, en zinnen om om bedenktijd te vragen. Alle oefeningen gebruiken een verzonnen persoon, nooit je echte gegevens.",
+      "how_swimming_works_stroke_physics_survival": "Hoe zwemmen werkt (fysica van de slagen plus overlevingsvaardigheden) en wat elke zwemmer zou moeten weten over koud water, muistromen, ijs, reddingsvesten en redding. Visuele ontleding van de slagen, de wetenschap van drijfvermogen en voortstuwing, en de overlevingsvaardigheden (rugdrijven, watertrappen, HELP, samendrommen) die echt levens redden. Bronnen: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Uitsluitend educatief: voor echt leren zwemmen zoek je een zweminstructeur.",
+      "tax_paycheck_calculator_data_literacy_decision": "Belasting- en loonstrookrekenmachine, datageletterdheid, beslismatrix, contractlezer, dossiers en papierwerk, vervoersplanning, arbeidsvoorbereiding, cv opbouwen, het ordenen van portfoliobewijs, sollicitatiegesprekken oefenen, communicatievaardigheden, timemanagement, zorgverzekering, gebitsverzorging, ergonomie van lichaamsverzorging, slaaproutines, bijsluiters, afspraken voorbereiden, veiligheid thuis, digitale veiligheid, vertrouwen rond eten, en toegepaste wetenschap voor het dagelijks leven.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 en HS-LS4. De microbiële wereld: bacteriën (nuttige en ziekmakende), virussen (COVID, griep, HIV, fagen, mazelen), microscopie (licht, fasecontrast, fluorescentie, elektronen, AFM), de evolutie van antibioticaresistentie, het microbioom van mens, bodem en oceaan, vaccins en afweersysteem, fermentatie (zuurdesem, yoghurt, kimchi, zuurkool, kombucha, kaas), casussen (Snow, Fleming, MRSA, COVID en mRNA, FMT), quiz, en een afdrukbaar naslagblad over labveiligheid en microben.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Vijftien campagnes rond zorg voor de leefomgeving in elf regio's. Vijf lange Maine-campagnes over meerdere perioden, plus tien scenario's over regio's heen die alle vijf de mechanicafamilies bestrijken: vuur (Yarralin in Australië, Karuk in Noord-Californië), natuurbehoud (Yellowstone, Akagera in Rwanda), volksgezondheid (dengue in Mumbai, ebola van 2014 in Liberia), stroomgebieden (Klamath River, Murray-Darling-bekken) en klimaat (Marshalleilanden, delta van Bangladesh). De inzichten uit familiekoppeling komen vrij zodra je de Maine-campagne en het regio-overstijgende scenario van dezelfde mechanicafamilie afrondt.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 en MS-ESS3-3. Ontwerp een dorp op een raster van 144 percelen tegen eisen die elkaar echt tegenspreken. Drie dorpen, elk met een andere bepalende randvoorwaarde: Riverbend, waar het hemelwater en de lening knellen; Mesa Hollow, waar de watervoerende laag vastligt en de boerderijen hem opdrinken; en Harborlight, waar het plan in 2050 nog steeds moet kloppen. Afvoer volgens de rationele methode, waterbalans, marge voor zeespiegelstijging, loopafstand over het netwerk en een wegennet met kostenraming, elk open te klappen om de formule te tonen. Het Assumption Lab rekent hetzelfde plan opnieuw door met twee gepubliceerde parametersets, zodat leerlingen zien welke conclusies beide overleven. Kaart, bewerkbare percelentabel en een 3D-model van hetzelfde plan. Discussievragen en gedocumenteerde geschiedenis dragen de vragen die het hulpmiddel weigert te modelleren. Geen score en geen antwoordblad.",
+      "codap_data_science": "CODAP: datawetenschap",
+      "lumen_research_canvas": "Lumen: onderzoekscanvas",
+      "evolab_evolution": "EvoLab: evolutie",
+      "dino_lab": "Dinosauruslab",
+      "nutritionlab_nutrition_science": "NutritionLab: voedingswetenschap",
+      "birdlab_i_spy_ornithology": "BirdLab: zoekplaat-vogelkunde",
+      "openbim_companion": "OpenBIM: begeleider",
+      "applab_ai_app_generator": "AppLab: app-generator met AI",
+      "access_lens": "Toegankelijkheidslens",
+      "sim_shelf": "Simulatieplank",
+      "zoom_gallery": "Zoomgalerij",
+      "sourcebook": "Bronnenboek",
+      "wheel_fire_pottery_lab": "Draaischijf en vuur: pottenbakkerslab",
+      "echo_navigator": "Echonavigator",
+      "learning_lab_how_learning_works": "Learning Lab: hoe leren werkt",
+      "weldlab_welding_metal_joining": "WeldLab: lassen en metaalverbinding",
+      "bikelab_physics_repair": "BikeLab: fysica en reparatie",
+      "fisherlab_boating_fishing_sim": "FisherLab: vaar- en vissimulator",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: mosselkweeksimulator",
+      "throwlab_sports_physics": "ThrowLab: sportfysica",
+      "skatelab_skate_bmx_physics": "SkateLab: fysica van skaten en BMX",
+      "playlab_strategy_on_the_field": "PlayLab: strategie op het veld",
+      "kepler_colony": "Kepler-kolonie",
+      "birdlab_life_list": "BirdLab: levenslijst",
+      "petslab_decoder": "PetsLab: ontcijferaar"
     },
     "area": {
       "volume": "Volume..."
@@ -19894,7 +19940,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Terug naar de hulpmiddelen",
+      "a11y_snapshot": "Momentopname",
+      "a11y_next": "Volgende",
+      "a11y_simulation_speed": "Snelheid van de simulatie",
+      "a11y_close_flashcard": "Kaart sluiten"
     },
     "solar_sys": {
       "venus": "Venus",
@@ -20716,7 +20767,8 @@
       "scaled_volume_changed": "🔵 Geschaald (volume veranderd)",
       "skewed_shape_deformed": "🟠 Scheef (vorm vervormd)",
       "degenerate_volume_0": "💀 Gedegenereerd (volume → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Voortgang van de uitleg"
     },
     "numberline": {
       "first_mark": "Eerste Markering",
@@ -22859,7 +22911,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Jaar {value1} begint."
     },
     "optics": {
       "optics_lab": "Optica-lab",
@@ -23205,7 +23258,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Lokale analytische SQL-query"
     },
     "geosandbox": {
       "loading_3d_engine": "3D-engine laden...",
@@ -23555,7 +23609,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Sculptuur verwijderd"
     },
     "algebraCAS": {
       "solve": "🔍 Oplossen",
@@ -26171,7 +26226,8 @@
       "ml_over": " mL over ",
       "trials_suffix": " bepalingen",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " seconden resterend"
+      "sr_seconds_remaining": " seconden resterend",
+      "sr_explanation_ready": "Uitleg klaar."
     },
     "economicslab": {
       "six_figures": "Zes cijfers",
@@ -28151,7 +28207,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Reflectie opgeslagen."
     },
     "anatomy": {
       "system_explorer": "Systeemverkenner",
@@ -28733,7 +28790,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D-camera opnieuw instellen"
     },
     "dna": {
       "back_to_tools": "Terug naar hulpmiddelen",
@@ -30110,7 +30168,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Reflectie opgeslagen."
     },
     "angles": {
       "back_to_tools": "Terug naar hulpmiddelen",
@@ -30924,7 +30983,8 @@
       "explain_how_each_parameter_shapes_a_si": "Leg uit hoe elke parameter een sinusgolf vormt.",
       "design_note_discrete_5_state_marker_no": "Ontwerpnotitie: discrete markering met 5 toestanden; geen golfscore; geen onthulling — met opzet.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Uitleg klaar."
     },
     "typingpractice": {
       "typing_practice_menu": "Menu Typoefening",
@@ -31278,7 +31338,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Terug naar het menu"
     },
     "music": {
       "edm_lead": "EDM-lead",
@@ -34687,7 +34748,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Antwoord kiezen: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Terug naar de tools",
@@ -35452,7 +35514,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "uit",
+      "sr_nothing_to_redo": "Niets om opnieuw te doen.",
+      "sr_nothing_to_undo": "Niets om ongedaan te maken.",
+      "sr_dir_left": "links",
+      "sr_dir_right": "rechts"
     },
     "arithmetic": {
       "selected": " geselecteerd.",
@@ -39498,7 +39565,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "De ZHR is gestandaardiseerd naar een radiant in het zenit en grensmagnitude 6,5. Deze ruwe schatting gaat uit van een heldere, maanloze hemel en populatie-index 2,2. Bortle-klassen geven de grensmagnitude slechts bij benadering aan; een donkerder dan standaard hemel kan de ZHR overtreffen. Een lagere hoogte van de radiant en een helderdere hemel verlagen de schatting.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Terug naar de STEM-hulpmiddelen"
     },
     "autorepair": {
       "back_to_menu": "Terug naar menu",
@@ -40239,7 +40307,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Score: {value1} van {value2}",
+      "a11y_open_2": "{value1} openen",
+      "a11y_option": "Optie {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Korst",
@@ -40342,7 +40413,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Uitleg klaar."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41088,7 +41160,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Uitleg klaar.",
+      "a11y_investigation_progress": "Voortgang van het onderzoek",
+      "a11y_flight_debrief": "Vluchtbespreking",
+      "a11y_tutorial_progress": "Voortgang van de uitleg"
     },
     "behaviorlab": {
       "chain_reaction": "Kettingreactie",
@@ -41263,7 +41339,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Uitleg klaar.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43772,7 +43848,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Module verkend: {value1}",
+      "a11y_score_out_of": "Score: {value1} van {value2}",
+      "sr_selected": "Geselecteerd: {value1}",
+      "sr_quiz_reset": "Quiz opnieuw ingesteld"
     },
     "brainatlas": {
       "group_systems": "Systemen",
@@ -48928,7 +49008,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Antwoord kiezen: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Quizmeester",
@@ -50072,7 +50153,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Geselecteerd: {value1}"
     },
     "echotrainer": {
       "wall": "Muur",
@@ -51531,7 +51613,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Module verkend: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "CO₂-rekenmachine",
@@ -52611,7 +52694,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Terug naar het menu",
+      "sr_getting_critique": "Kritiek wordt opgehaald...",
+      "sr_critique_ready": "Kritiek klaar."
     },
     "flightsim": {
       "game_controls": "🎮 SPELBESTURING",
@@ -52814,7 +52900,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Cockpitweergave van de vluchtsimulator. W/S stampen, A/D rollen, Shift/Ctrl gashendel, haakjes bedienen de flaps, X wielremmen, Q quiz, F krachten, Space pauze, I info.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52826,7 +52912,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Vrije vlucht vanaf Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52873,7 +52959,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Shanghai Tower",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58701,7 +58787,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Module verkend: {value1}",
+      "sr_loaded": "{value1} geladen",
+      "sr_showing": "{value1} wordt getoond",
+      "sr_opening": "{value1} wordt geopend"
     },
     "platetectonics": {
       "pacific": "Pacifisch",
@@ -58945,7 +59035,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63523,7 +63613,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Uitleg klaar.",
+      "sr_off": "uit",
+      "sr_edge_left": "links",
+      "sr_edge_right": "rechts",
+      "sr_correct": "Juist.",
+      "sr_not_quite": "Niet helemaal."
     },
     "playlab": {
       "back": "← Terug",
@@ -63591,7 +63687,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "De coach is offline.",
+      "sr_drill_stopped": "Oefening gestopt."
     },
     "printingpress": {
       "print": "🖨️ Afdrukken",
@@ -65730,7 +65828,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Terug naar het menu",
+      "a11y_open": "{value1} openen",
+      "sr_selected": "Geselecteerd: {value1}",
+      "sr_loaded": "{value1} geladen",
+      "sr_opening": "{value1} wordt geopend",
+      "sr_correct": "Juist.",
+      "sr_not_quite": "Niet helemaal.",
+      "sr_year_begins": "Jaar {value1} begint.",
+      "sr_question_reset_try_again": "Vraag opnieuw ingesteld. Probeer het nog eens.",
+      "sr_not_quite_see_the_explanation": "Niet helemaal: bekijk de uitleg."
     },
     "raptorhunt": {
       "anatomy": "Anatomie",
@@ -67379,7 +67487,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} openen",
+      "a11y_flight_debrief": "Vluchtbespreking"
     },
     "renewables": {
       "climate_justice": "Klimaatrechtvaardigheid",
@@ -68079,7 +68189,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Terug naar het menu",
+      "sr_getting_critique": "Kritiek wordt opgehaald...",
+      "sr_critique_ready": "Kritiek klaar.",
+      "sr_quiz_reset": "Quiz opnieuw ingesteld"
     },
     "roadready": {
       "let_s_start": "Laten we beginnen →",
@@ -70946,7 +71060,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Terug naar de STEM-hulpmiddelen",
+      "a11y_local_analytical_sql_query": "Lokale analytische SQL-query"
     },
     "stewardship": {
       "back": "← Terug",
@@ -71523,7 +71639,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Terug naar het menu",
+      "sr_question_reset_try_again": "Vraag opnieuw ingesteld. Probeer het nog eens."
     },
     "throwlab": {
       "back": "← Terug",
@@ -71748,7 +71866,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D-camera opnieuw instellen",
+      "sr_coach_is_offline": "De coach is offline.",
+      "sr_drill_stopped": "Oefening gestopt."
     },
     "weldlab": {
       "print": "🖨️ Afdrukken",
@@ -73310,7 +73431,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Module verkend: {value1}",
+      "a11y_score_out_of": "Score: {value1} van {value2}",
+      "sr_quiz_reset": "Quiz opnieuw ingesteld",
+      "sr_loaded": "{value1} geladen",
+      "sr_showing": "{value1} wordt getoond",
+      "sr_not_quite_see_the_explanation": "Niet helemaal: bekijk de uitleg."
     },
     "worldbuilder": {
       "grade_level": "Niveau",
@@ -74216,7 +74343,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Leesniveau",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74903,7 +75030,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Boom van het leven",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76758,7 +76885,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Optie {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D-camerastandpunten"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76769,6 +76898,22 @@
       "next": "Volgende",
       "finish": "Begrepen!",
       "replay_aria": "Tutorial tonen"
+    },
+    "pets": {
+      "sr_back_to_menu": "Terug naar het menu",
+      "sr_getting_critique": "Kritiek wordt opgehaald...",
+      "sr_critique_ready": "Kritiek klaar."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Terug naar de STEM-hulpmiddelen",
+      "a11y_3d_camera_views": "3D-camerastandpunten"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Voortgang van het onderzoek"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Niets om opnieuw te doen.",
+      "sr_nothing_to_undo": "Niets om ongedaan te maken."
     }
   },
   "glossary_health": {
@@ -77371,7 +77516,7 @@
       "person": "Persoon\\",
       "phase_label": "Faselabel",
       "rationale_which_antecedent_does_this_address": "Onderbouwing (welke antecedent pakt dit aan?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflecteer op je aanpak...\\n• Wat ging goed?\\n• Wat zou je anders doen?\\n• Welke strategieën wil je hierna oefenen?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflecteer op je aanpak...\n• Wat ging goed?\n• Wat zou je anders doen?\n• Welke strategieën wil je hierna oefenen?",
       "reinforcement_how_you": "⭐ Bekrachtiging (hoe je\\",
       "replacement_behavior_functionally_equivalent": "✅ Vervangend gedrag (functioneel equivalent)",
       "respond_as_the_counselor": "Reageer als de begeleider...",
@@ -77379,7 +77524,7 @@
       "search_81_tools": "🔍  Doorzoek 80+ tools…",
       "search_aba_terms": "🔍 Zoek ABA-termen...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Zoektermen... (bijv. \"bekrachtiging\", \"FBA\", \"data\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Sessie 1: 3\\nSessie 2: 7\\nSessie 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Sessie 1: 3\nSessie 2: 7\nSessie 3: 5\n...",
       "setting_eg_math_class_cafeteria": "Setting (bijv. Rekenles, Kantine)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Deel wat je thuis opmerkt — sterke punten, zorgen, culturele context of suggesties voor het schoolteam...",
       "step_description": "Stapbeschrijving...",
@@ -78960,7 +79105,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Hoogte van de uitsparing",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80627,7 +80772,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Conceptafbeelding",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80661,10 +80806,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Elk concept inrichten",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Voortgang van het inrichten",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80677,7 +80822,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Mogelijke namen",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80689,7 +80834,7 @@
     "recall_mode_label": "How to answer",
     "recall_mode_typed": "Type",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Concept ophalen uit het geheugen",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82247,7 +82392,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect sluiten",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82256,7 +82401,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Opdrachten filteren",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82294,15 +82439,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Vraag {n}",
+    "q_choices_aria": "Keuzes voor vraag {n}, één per regel",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Vraag {n} verwijderen",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Schaalstappen voor vraag {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Antwoordtype voor vraag {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82312,10 +82457,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Selecteerbare link voor {title}",
+    "scale_high_aria": "Label voor de bovenkant van de schaal",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Label voor de onderkant van de schaal",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82335,7 +82480,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Samenvatting van de opdrachtstatus",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82351,9 +82496,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Wordt automatisch bijgewerkt",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Selecteerbare huiswerklink",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82362,7 +82507,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "QR-code van de huiswerkopdracht",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84810,7 +84955,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Ontwikkelingsniveau kiezen voor prompts en rubrieken",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84818,7 +84963,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Docentweergave in- of uitschakelen",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84849,17 +84994,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Opname van spraaknotitie pauzeren",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Opname van spraaknotitie hervatten",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Beginnen met het opnemen van een spraaknotitie",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Opname stoppen",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85245,22 +85390,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Reden voor de AlloHaven-erkenning",
+    "recent_deliveries_aria": "Recente privé AlloHaven-erkenningen",
+    "token_amount_aria": "Aantal AlloHaven-tokens",
+    "token_cap_aria": "AlloHaven-tokenlimiet per leerling per sessie"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Uitzonderingen die zijn toegestaan terwijl het doel toch wordt gehaald",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Optioneel voortgangssignaal dat de app bijhoudt voor dit doel",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Het hele team samen, of elke leerling apart",
+    "name_aria": "Naam van het klasdoel, alleen op dit apparaat bewaard",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Welke leerlingen dit doel omvat",
+    "template_aria": "Startsjabloon voor klasdoel",
+    "tokens_aria": "Tokens per leerling wanneer dit doel wordt gehaald"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85278,7 +85423,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Beheerderstoken van Class Mailbox (optioneel)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85308,17 +85453,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "hand opgestoken",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Selecteerbare deelnamelink voor de live mailbox",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Live sessie van Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85345,7 +85490,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "realtimeverbinding",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85377,7 +85522,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL van de webapp van Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

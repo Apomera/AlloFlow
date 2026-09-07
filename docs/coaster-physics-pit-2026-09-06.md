@@ -1,0 +1,11 @@
+# Physics pit stops
+
+Added three formative concept checks to Missions, with a direct entry from Build: energy during an ideal descent, acceleration in tighter versus wider turns, and the meaning of near-zero seat g.
+
+Each stop includes a track sketch, a scenario with explicit assumptions, three predictions, an optional clue, optional written reasoning, and feedback tailored to the selected prediction. Learners can revise their choice and check again. Feedback receives keyboard focus and clears when a prediction changes. Exploration progress counts explanations checked, including predictions that differed from the model; it does not award correctness points or change the classroom rubric.
+
+Take this to Build carries a concrete investigation plan into the editor without modifying the track or run settings. Plans identify a baseline, one deliberate change, controlled settings, and measurements to compare. The turn investigation explicitly checks speed as a possible confound and warns that geometry edits can shift distance markers. The airtime investigation asks learners to inspect force tradeoffs as well as airtime.
+
+Predictions, optional reasoning (up to 600 characters per idea), the selected idea, and the carried experiment persist locally on the device. These responses are separate from exported guided notebooks and teacher reports. Invalid saved data is normalized; unavailable storage shows a visible message while the activity remains usable. Written responses are escaped when rendered.
+
+Validation: 246 focused unit tests passed, including response recovery, progress semantics, existing coaster contracts, and dialog accessibility. Both Chromium browser tests passed, covering prediction revision, saved writing, escaped input, all three exploration steps, the Build handoff without design mutation, persistence across remount, keyboard focus, phone overflow, and unavailable storage. The 390 x 844 phone feedback screenshot was visually reviewed: text and both next-step controls remain readable and within the panel. Artifacts are in scratch/coaster-physics-pit; the unit and browser logs are scratch/coaster-physics-pit-unit.log and scratch/coaster-physics-pit-browser.log. Main and desktop JavaScript copies have matching SHA-256 hashes.

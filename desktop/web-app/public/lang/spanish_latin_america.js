@@ -7714,7 +7714,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Ilustración del concepto",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -7734,17 +7734,17 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Amueblar cada concepto",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Progreso del amueblado",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
     "furnish_storage_note": "About {mb} MB of pictures would be saved with this resource ({n} images). Browser storage usually gives out near 5 MB, and each image costs a credit. Sculptures are about 1 KB each and cost none.",
     "furnish_tooltip": "Teacher: generate a sculpture or illustration for every concept at once, the way the Memory Palace furnishes its loci",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Nombres posibles",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -7754,7 +7754,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Evocación del concepto",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -8067,7 +8067,7 @@
     "bridge_generating": "Creando tu versión personalizada...",
     "bridge_projection": "Modo Proyección",
     "bridge_exit_projection": "Salir de la Proyección",
-    "bridge_offline_info": "No hay sesión en vivo • vista previa solo en este dispositivo",
+    "bridge_offline_info": "No hay sesión en vivo — vista previa solo en este dispositivo",
     "bridge_term_saved": "Se guardó \"{term}\" en el glosario",
     "bridge_term_save_failed": "No se pudo guardar el término",
     "bridge_save_term": "Guardar en el glosario",
@@ -8720,8 +8720,8 @@
     "escaped_desc": "¡Resolviste todos los acertijos y escapaste del cuarto!",
     "time_up": "⏰ ¡Se acabó el tiempo!",
     "reveal_hint": "Revelar Pista",
-    "puzzles_remaining": "{{count}} acertijos restantes",
-    "time_remaining": "Tiempo: {{time}}",
+    "puzzles_remaining": "{count} acertijos restantes",
+    "time_remaining": "Tiempo: {time}",
     "progress": "Progreso",
     "start": "Iniciar Cuarto de Escape",
     "start_hint": "Inicia el cronómetro para comenzar a inspeccionar los objetos",
@@ -8732,8 +8732,8 @@
     "room_complete": "¡Cuarto Completo!",
     "loading_error": "No se pudieron cargar los datos del cuarto",
     "no_puzzle": "No se encontró un acertijo para este objeto",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "¡Escape perfecto! +{{xp}} XP de bonus",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "¡Escape perfecto! +{xp} XP de bonus",
     "puzzle_mcq": "Opción Múltiple",
     "puzzle_sequence": "Pon en Orden",
     "puzzle_cipher": "Decodifica el Mensaje",
@@ -8791,7 +8791,7 @@
     "clue": "Pista",
     "clue_found": "¡Pista Descubierta!",
     "clue_revealed": "Esta pista puede ayudar con otro acertijo...",
-    "clues_collected": "Pistas: {{count}}/{{total}}",
+    "clues_collected": "Pistas: {count}/{total}",
     "use_clue": "Usar Pista",
     "final_door": "La Puerta de Salida",
     "final_door_ready": "¡La puerta de salida ya está desbloqueada!",
@@ -8835,9 +8835,9 @@
     "launch_live_tooltip": "Inicia el cuarto de escape multijugador con tu clase",
     "team_mode": "Desafío por Equipos",
     "team_race": "¡Carrera para Escapar!",
-    "team_progress": "Progreso de {{team}}: {{solved}}/{{total}}",
+    "team_progress": "Progreso de {team}: {solved}/{total}",
     "waiting_host": "Esperando a que el docente comience...",
-    "team_escaped": "¡El equipo {{team}} escapó!",
+    "team_escaped": "¡El equipo {team} escapó!",
     "all_teams_done": "¡Todos los equipos terminaron!",
     "your_team": "Tu Equipo",
     "team_red": "Equipo Rojo",
@@ -8845,7 +8845,7 @@
     "team_green": "Equipo Verde",
     "team_yellow": "Equipo Amarillo",
     "team_all": "Todos los Estudiantes",
-    "teams_competing": "{{count}} equipos compitiendo",
+    "teams_competing": "{count} equipos compitiendo",
     "first_escape": "¡El primero en escapar!",
     "end_game": "Finalizar Juego",
     "end_game_confirm": "¿Finalizar el cuarto de escape para todos los estudiantes?",
@@ -8858,8 +8858,8 @@
     "resume_game": "Reanudar Juego",
     "game_paused_by_teacher": "Juego pausado por el docente",
     "celebration_title": "¡Felicitaciones!",
-    "you_escaped": "¡Tu equipo escapó en {{time}}!",
-    "other_team_escaped": "¡{{team}} escapó!",
+    "you_escaped": "¡Tu equipo escapó en {time}!",
+    "other_team_escaped": "¡{team} escapó!",
     "class_escaped": "¡Victoria de la Clase!",
     "everyone_escaped": "¡Todos trabajaron juntos para escapar!",
     "hurry_up": "¡Sigue adelante! ¡Todavía puedes escapar!",
@@ -9773,7 +9773,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Enviar a la Mesa de Trabajo Experta",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -9802,7 +9802,7 @@
       "anchor_missing": "No confident match in the remediated document (the surrounding text was rewritten). The word stays safely in the Content Recovery appendix.",
       "aria": "Content recovery word review",
       "close": "Close",
-      "close_aria": "Close review",
+      "close_aria": "Cerrar la revisión",
       "done": "Review complete:",
       "heading": "Word",
       "insert": "Insert at match",
@@ -10766,7 +10766,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Altura del entrante",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -12741,7 +12741,7 @@
       "person": "Persona",
       "phase_label": "Etiqueta de la fase",
       "rationale_which_antecedent_does_this_address": "Justificación (¿qué antecedente aborda esto?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflexiona sobre tu enfoque...\\n• ¿Qué funcionó bien?\\n• ¿Qué harías diferente?\\n• ¿Qué estrategias quieres practicar a continuación?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Reflexiona sobre tu enfoque...\n• ¿Qué funcionó bien?\n• ¿Qué harías diferente?\n• ¿Qué estrategias quieres practicar a continuación?",
       "reinforcement_how_you": "⭐ Reforzamiento (cómo",
       "replacement_behavior_functionally_equivalent": "✅ Conducta de reemplazo (funcionalmente equivalente)",
       "respond_as_the_counselor": "Responde como el consejero...",
@@ -12749,7 +12749,7 @@
       "search_81_tools": "🔍  Buscar entre más de 80 herramientas…",
       "search_aba_terms": "🔍 Buscar términos ABA...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Buscar términos... (p. ej., \"reforzamiento\", \"FBA\", \"datos\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Sesión 1: 3\\nSesión 2: 7\\nSesión 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Sesión 1: 3\nSesión 2: 7\nSesión 3: 5\n...",
       "setting_eg_math_class_cafeteria": "Contexto (p. ej., clase de matemáticas, cafetería)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Comparte lo que notas en casa — fortalezas, preocupaciones, contexto cultural o sugerencias para el equipo escolar...",
       "step_description": "Descripción del paso...",
@@ -14662,7 +14662,11 @@
       "trapezoid": "Trapecio",
       "simpson": "Simpson",
       "rectangles_n": "Rectángulos (n)",
-      "coeff_a": "Coef a"
+      "coeff_a": "Coef a",
+      "sr_explanation_ready": "Explicación lista.",
+      "a11y_back_to_tools": "Volver a las herramientas",
+      "a11y_snapshot": "Instantánea",
+      "a11y_next": "Siguiente"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Audio no compatible con este navegador",
@@ -14786,13 +14790,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Generar explicación de IA en nivel",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "Nivel de lectura:",
+      "aria_reading_level_group": "Nivel de lectura",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14800,14 +14804,14 @@
       "aria_second_amplitude": "Second wave amplitude",
       "aria_second_frequency": "Second wave frequency",
       "aria_second_phase": "Second wave phase",
-      "aria_select_answer": "Select answer: ",
+      "aria_select_answer": "Seleccionar respuesta:",
       "aria_selected": " (selected)",
       "aria_show_second": "Show second wave",
       "aria_slit_separation": "Slit separation",
       "aria_source_speed": "Source speed as fraction of wave speed",
       "aria_standing_string": "Standing wave on a string",
       "aria_step_frame": "Step the animation forward one frame",
-      "aria_switch_to": "Switch to ",
+      "aria_switch_to": "Cambiar a",
       "aria_tension_newtons": "Tension in newtons",
       "aria_toggle_sound": "Toggle Sound",
       "aria_topics_suffix": " topics",
@@ -16692,7 +16696,8 @@
       "angle_u00b0": "Ángulo (°)",
       "velocity_ms": "Velocidad (m/s)",
       "gravity_msu00b2": "Gravedad (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Explicación lista."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aleatorio: ",
@@ -16720,7 +16725,10 @@
       "codominant_desc": "Ambos alelos se expresan por completo. Los heterocigotos muestran ambos rasgos al mismo tiempo.",
       "sexLinked_desc": "El rasgo está en el cromosoma X. Esto representa una herencia RECESIVA ligada al X (por ejemplo, hemofilia y daltonismo rojo-verde): los hombres (XY) necesitan una sola copia; las mujeres (XX) necesitan dos.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Volver a las herramientas STEM",
+      "a11y_snapshot": "Instantánea",
+      "a11y_close_flashcard": "Cerrar la ficha"
     },
     "circuit": {
       "meter_status_ammeter_short": "Colocación insegura: ruta de cortocircuito",
@@ -17272,7 +17280,7 @@
       "reddish_metal_used_since_the": "Metal rojizo usado desde la Edad del Bronce",
       "bluishwhite_metal_that_prevents_rust": "Metal azul blanquecino que previene la oxidación",
       "best_conductor_of_electricity_among": "Mejor conductor de electricidad entre todos los metales",
-      "dense_soft_shiny_precious_metal": "Metal precioso denso, blando y brillante • nunca se oxida",
+      "dense_soft_shiny_precious_metal": "Metal precioso denso, blando y brillante — nunca se oxida",
       "strong_as_steel_but_45": "Tan fuerte como el acero pero un 45% más ligero",
       "shiny_metal_that_gives_rubies": "Metal brillante que da a los rubíes su color rojo",
       "essential_for_steel_production_and": "Esencial para la producción de acero y la salud ósea",
@@ -18378,7 +18386,9 @@
       "our_sun_is_born": "Nace nuestro Sol",
       "present_day": "Día actual",
       "the_far_future": "El futuro lejano",
-      "universe": "Universo: "
+      "universe": "Universo: ",
+      "a11y_back_to_tools": "Volver a las herramientas",
+      "a11y_simulation_speed": "Velocidad de la simulación"
     },
     "rocks": {
       "igneous": "Ígnea",
@@ -22042,7 +22052,10 @@
       "garage_desc": "Motores, óxido y reacciones: un taller de química.",
       "classroom_desc": "Un aula de ciencias real con vasos de precipitados y experimentos.",
       "outdoors_desc": "Sal afuera: la naturaleza es el laboratorio más grande de todos.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Volver a las herramientas",
+      "a11y_snapshot": "Instantánea",
+      "a11y_next": "Siguiente"
     },
     "converter": {
       "u2705_saved_to_history": "✅ ¡Guardado en el historial!",
@@ -22829,7 +22842,40 @@
       "read_what_special_education_law_actually": "Lee lo que la ley de educación especial dice de verdad, con sus propias palabras. El texto real de la Parte B de IDEA y de la Sección 504, obtenido de eCFR y con fecha, con búsqueda y con las normas federales y estatales una al lado de la otra. Nada se parafrasea ni se genera: si el texto oficial no está cargado, la herramienta lo dice en lugar de adivinar.",
       "applied_k_12_behavior_practice_what": "Práctica aplicada de conducta de preescolar a preparatoria: lo que psicólogos escolares y docentes hacen de verdad con la ciencia. Marco de tres niveles PBIS, conductas alternativas asociadas a las funciones del FBA, sucesos contextuales (los desencadenantes lentos que la mayoría de los BIP pasa por alto), el ciclo de siete fases de conducta disruptiva de Geoff Colvin y la ética de sujeción y aislamiento anclada en el Capítulo 33 de Maine. Herramienta hermana de BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Biología marina y ciencia del comportamiento de pulpos, calamares, sepias y nautilos. Lo principal: Hunter Sim, elige especie, hábitat, presa y táctica, juega al minijuego de camuflaje y calcula el momento del ataque. Desbloquea curiosidades biológicas de cuaderno de campo (mecánica de los cromatóforos, 9 cerebros, sangre azul, propulsión a chorro). Guía de campo de 10 especies con datos de inteligencia, camuflaje y velocidad de propulsión.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 y HS-PS2. Simulador de esfuerzos en armaduras con claro, altura, carga y material ajustables, comparación de tipos de puente (viga, armadura, arco, colgante, atirantado), base de datos de materiales, tipos de fuerza, casos reales (Tacoma Narrows, Hyatt Regency, Tay, Silver, además de Brooklyn, Golden Gate, Akashi y Millau), ciclo de diseño en ingeniería, examen tipo AP y fichas de diseño imprimibles."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 y HS-PS2. Simulador de esfuerzos en armaduras con claro, altura, carga y material ajustables, comparación de tipos de puente (viga, armadura, arco, colgante, atirantado), base de datos de materiales, tipos de fuerza, casos reales (Tacoma Narrows, Hyatt Regency, Tay, Silver, además de Brooklyn, Golden Gate, Akashi y Millau), ciclo de diseño en ingeniería, examen tipo AP y fichas de diseño imprimibles.",
+      "the_gutenberg_style_screw_press_as": "La prensa de tornillo al estilo de Gutenberg como simulación funcional. Tira de la barra, compón tu propio tipo y observa la impresión. Además, la ciencia de materiales (aleación de plomo, estaño y antimonio), la economía (el desplome del costo por libro), la historia (Reforma, revolución científica), la tipografía y las personas que había detrás de la prensa (incluidas las impresoras que la historia olvidó). Pensado para trabajo interdisciplinario de secundaria.",
+      "three_js_stoop_simulator_deep_science": "Simulador de picada en Three.js y ciencia a fondo de la mecánica de caza de las rapaces. Vuela como un halcón peregrino a 240 mph, como una harpía con garras de 530 psi o como un búho cornudo silencioso. 8 especies y 12 secciones sobre fuerza de las garras, visión (4-8× la humana, ultravioleta en los cernícalos), física del vuelo, vuelo silencioso de los búhos, calculadora de velocidad límite, recuperación tras el DDT y crisis de conservación en curso, e identificación de campo por silueta y porte.",
+      "practice_reading_and_completing_the_documents": "Practica leer y llenar los documentos sobre los que funciona la vida adulta: solicitudes de empleo, formularios W-4, contratos de arrendamiento, admisiones médicas, permisos de conducir y la convocatoria de tu propia reunión de IEP. Cada casilla explicada en lenguaje claro, señaladas las que te pueden costar caro, escenarios de presión para cuando alguien quiere que firmes ya, y frases para pedir tiempo. Toda la práctica usa una persona inventada, nunca tus datos reales.",
+      "how_swimming_works_stroke_physics_survival": "Cómo funciona la natación (física de los estilos y destrezas de supervivencia) y lo que todo nadador debería saber sobre el agua fría, las corrientes de retorno, el hielo, los chalecos salvavidas y el rescate. Desgloses visuales de los estilos, la ciencia de la flotabilidad y la propulsión, y las destrezas de supervivencia (flotación de espaldas, batido de huevo, HELP, apiñamiento) que de verdad salvan vidas. Fuentes: CDC, USCG, AAP, NAA, NOAA y USA Swimming. Solo con fines educativos: para aprender a nadar de verdad, busca a un instructor de natación.",
+      "tax_paycheck_calculator_data_literacy_decision": "Calculadora de impuestos y recibo de pago, alfabetización de datos, matriz de decisión, lector de contratos, expedientes y papeleo, planificación del transporte, preparación laboral, elaboración del currículum, organización de las pruebas del portafolio, práctica de entrevistas, habilidades de comunicación, manejo del tiempo, seguro médico, salud dental, ergonomía del cuidado del cuerpo, rutinas de sueño, etiquetas de medicamentos, preparación de citas, seguridad en el hogar, seguridad digital, confianza con la comida y ciencia aplicada a la vida diaria.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 y HS-LS4. El mundo microbiano: bacterias (benéficas y patógenas), virus (COVID, gripe, HIV, fagos, sarampión), microscopía (óptica, de contraste de fases, de fluorescencia, electrónica y AFM), evolución de la resistencia a los antibióticos, el microbioma humano, del suelo y del océano, vacunas y sistema inmunitario, fermentación (masa madre, yogur, kimchi, chucrut, kombucha, queso), casos de estudio (Snow, Fleming, MRSA, COVID y mRNA, FMT), cuestionario y referencia imprimible de seguridad en el laboratorio y de microbios.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "Quince campañas de cuidado ambiental en once regiones. Cinco campañas de Maine largas y de varios periodos, más diez escenarios interregionales que recorren las cinco familias de mecánicas: fuego (Yarralin en Australia, Karuk en el norte de California), conservación (Yellowstone, Akagera en Ruanda), salud pública (dengue en Bombay, ébola de 2014 en Liberia), cuencas (río Klamath, cuenca Murray-Darling) y clima (Islas Marshall, delta de Bangladés). Las claves de emparejamiento por familia se desbloquean cuando completas la de Maine y la interregional de la misma familia de mecánicas.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 y MS-ESS3-3. Diseña un pueblo sobre una cuadrícula de 144 parcelas frente a requisitos que se contradicen de verdad. Tres pueblos, cada uno con una restricción determinante distinta: Riverbend, donde aprietan las aguas pluviales y la deuda; Mesa Hollow, donde el acuífero es fijo y las granjas se lo están bebiendo; y Harborlight, donde el plan tiene que seguir funcionando en 2050. Escorrentía por el método racional, balance hídrico, margen por subida del nivel del mar, distancia a pie por la red y una red vial con costos, cada una abrible para mostrar su fórmula. El Assumption Lab vuelve a ejecutar un mismo plan con dos conjuntos de parámetros publicados, para que el alumnado vea qué conclusiones sobreviven a ambos. Mapa, tabla de parcelas editable y un modelo 3D del mismo plan. Las preguntas para debatir y la historia documentada recogen lo que la herramienta se niega a modelar. Sin puntaje y sin solucionario.",
+      "codap_data_science": "CODAP: ciencia de datos",
+      "lumen_research_canvas": "Lumen: lienzo de investigación",
+      "evolab_evolution": "EvoLab: evolución",
+      "dino_lab": "Laboratorio de dinosaurios",
+      "nutritionlab_nutrition_science": "NutritionLab: ciencia de la nutrición",
+      "birdlab_i_spy_ornithology": "BirdLab: ornitología a la busca",
+      "openbim_companion": "OpenBIM: guía de acompañamiento",
+      "applab_ai_app_generator": "AppLab: generador de apps con IA",
+      "access_lens": "Lente de accesibilidad",
+      "sim_shelf": "Estante de simulaciones",
+      "zoom_gallery": "Galería de acercamiento",
+      "sourcebook": "Libro de fuentes",
+      "wheel_fire_pottery_lab": "Torno y fuego: laboratorio de alfarería",
+      "echo_navigator": "Navegador de eco",
+      "learning_lab_how_learning_works": "Learning Lab: cómo se aprende",
+      "weldlab_welding_metal_joining": "WeldLab: soldadura y unión de metales",
+      "bikelab_physics_repair": "BikeLab: física y reparación",
+      "fisherlab_boating_fishing_sim": "FisherLab: simulador de navegación y pesca",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: simulador de criadero de mejillones",
+      "throwlab_sports_physics": "ThrowLab: física del deporte",
+      "skatelab_skate_bmx_physics": "SkateLab: física de la patineta y el BMX",
+      "playlab_strategy_on_the_field": "PlayLab: estrategia en la cancha",
+      "kepler_colony": "Colonia Kepler",
+      "birdlab_life_list": "BirdLab: lista de vida",
+      "petslab_decoder": "PetsLab: descifrador"
     },
     "area": {
       "volume": "Volumen..."
@@ -22869,7 +22915,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Volver a las herramientas",
+      "a11y_snapshot": "Instantánea",
+      "a11y_next": "Siguiente",
+      "a11y_simulation_speed": "Velocidad de la simulación",
+      "a11y_close_flashcard": "Cerrar la ficha"
     },
     "solar_sys": {
       "venus": "Venus",
@@ -23942,7 +23993,8 @@
       "scaled_volume_changed": "🔵 Escalado (volumen cambiado)",
       "skewed_shape_deformed": "🟠 Sesgado (forma deformada)",
       "degenerate_volume_0": "💀 Degenerado (volumen → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Progreso del tutorial"
     },
     "numberline": {
       "first_mark": "Primera Marca",
@@ -26085,7 +26137,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Comienza el año {value1}."
     },
     "optics": {
       "optics_lab": "Laboratorio de Óptica",
@@ -26431,7 +26484,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Consulta SQL analítica local"
     },
     "geosandbox": {
       "loading_3d_engine": "Cargando motor 3D...",
@@ -26781,7 +26835,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Escultura eliminada"
     },
     "algebraCAS": {
       "solve": "🔍 Resolver",
@@ -29397,7 +29452,8 @@
       "ml_over": " mL sobre ",
       "trials_suffix": " ensayos",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " segundos restantes"
+      "sr_seconds_remaining": " segundos restantes",
+      "sr_explanation_ready": "Explicación lista."
     },
     "economicslab": {
       "six_figures": "Seis cifras",
@@ -31377,7 +31433,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Reflexión guardada."
     },
     "anatomy": {
       "system_explorer": "Explorador de sistemas",
@@ -32013,7 +32070,8 @@
       "function_label": "FUNCIÓN",
       "hear_name_title": "Escuchar la pronunciación",
       "hear_name_prefix": "Escuchar el nombre: ",
-      "hear_it": "Escuchar"
+      "hear_it": "Escuchar",
+      "a11y_reset_3d_camera": "Restablecer la cámara 3D"
     },
     "dna": {
       "back_to_tools": "Volver a las herramientas",
@@ -33390,7 +33448,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Reflexión guardada."
     },
     "angles": {
       "back_to_tools": "Volver a herramientas",
@@ -34204,7 +34263,8 @@
       "explain_how_each_parameter_shapes_a_si": "Explica cómo cada parámetro da forma a una onda senoidal.",
       "design_note_discrete_5_state_marker_no": "Nota de diseño: marcador discreto de 5 estados; sin puntaje de onda; sin revelar, por diseño.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Explicación lista."
     },
     "typingpractice": {
       "typing_practice_menu": "Menú de Práctica de mecanografía",
@@ -34558,7 +34618,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Volver al menú"
     },
     "music": {
       "edm_lead": "Lead EDM",
@@ -37861,7 +37922,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Seleccionar respuesta: {value1}"
     },
     "freeforms": {
       "sr_undone": "Deshecho",
@@ -38732,7 +38794,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "apagado",
+      "sr_nothing_to_redo": "No hay nada que rehacer.",
+      "sr_nothing_to_undo": "No hay nada que deshacer.",
+      "sr_dir_left": "izquierda",
+      "sr_dir_right": "derecha"
     },
     "arithmetic": {
       "selected": " seleccionada.",
@@ -42778,7 +42845,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "El ZHR está normalizado a un radiante en el cenit y magnitud límite 6,5. Esta estimación aproximada supone un cielo despejado y sin luna y un índice de población de 2,2. Las clases de Bortle solo indican la magnitud límite de forma aproximada; un cielo más oscuro que el estándar puede superar el ZHR. Una altura menor del radiante y un cielo más brillante reducen la estimación.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Volver a las herramientas STEM"
     },
     "autorepair": {
       "back_to_menu": "Volver al menú",
@@ -43519,7 +43587,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Puntaje: {value1} de {value2}",
+      "a11y_open_2": "Abrir {value1}",
+      "a11y_option": "Opción {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Corteza",
@@ -43622,7 +43693,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Explicación lista."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -44368,7 +44440,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Explicación lista.",
+      "a11y_investigation_progress": "Progreso de la investigación",
+      "a11y_flight_debrief": "Resumen del vuelo",
+      "a11y_tutorial_progress": "Progreso del tutorial"
     },
     "behaviorlab": {
       "chain_reaction": "Reacción en cadena",
@@ -44539,7 +44615,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Explicación lista.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -47052,7 +47128,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Módulo explorado: {value1}",
+      "a11y_score_out_of": "Puntaje: {value1} de {value2}",
+      "sr_selected": "Seleccionado: {value1}",
+      "sr_quiz_reset": "Cuestionario reiniciado"
     },
     "brainatlas": {
       "group_systems": "Sistemas",
@@ -52208,7 +52288,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Seleccionar respuesta: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Maestro del cuestionario",
@@ -53352,7 +53433,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Seleccionado: {value1}"
     },
     "echotrainer": {
       "wall": "Muro",
@@ -54811,7 +54893,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Módulo explorado: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Calculadora de carbono",
@@ -55891,7 +55974,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Volver al menú",
+      "sr_getting_critique": "Obteniendo la crítica...",
+      "sr_critique_ready": "Crítica lista."
     },
     "flightsim": {
       "game_controls": "🎮 CONTROLES DEL JUEGO",
@@ -56098,7 +56184,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Vista de cabina del simulador de vuelo. W/S cabeceo, A/D alabeo, Shift/Ctrl acelerador, los corchetes controlan los flaps, X frenos de rueda, Q cuestionario, F fuerzas, Space pausa, I información.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -56110,7 +56196,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Vuelo libre desde Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -56157,7 +56243,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Torre de Shanghái",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -61981,7 +62067,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Módulo explorado: {value1}",
+      "sr_loaded": "{value1} cargado",
+      "sr_showing": "Mostrando {value1}",
+      "sr_opening": "Abriendo {value1}"
     },
     "platetectonics": {
       "pacific": "Pacífico",
@@ -62246,7 +62336,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -66803,7 +66893,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Explicación lista.",
+      "sr_off": "apagado",
+      "sr_edge_left": "izquierda",
+      "sr_edge_right": "derecha",
+      "sr_correct": "Correcto.",
+      "sr_not_quite": "No exactamente."
     },
     "playlab": {
       "back": "← Atrás",
@@ -66871,7 +66967,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "El asistente está desconectado.",
+      "sr_drill_stopped": "Ejercicio detenido."
     },
     "printingpress": {
       "menu": "← Menú",
@@ -69010,7 +69108,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Volver al menú",
+      "a11y_open": "Abrir {value1}",
+      "sr_selected": "Seleccionado: {value1}",
+      "sr_loaded": "{value1} cargado",
+      "sr_opening": "Abriendo {value1}",
+      "sr_correct": "Correcto.",
+      "sr_not_quite": "No exactamente.",
+      "sr_year_begins": "Comienza el año {value1}.",
+      "sr_question_reset_try_again": "Pregunta reiniciada. Inténtalo de nuevo.",
+      "sr_not_quite_see_the_explanation": "No exactamente: mira la explicación."
     },
     "raptorhunt": {
       "anatomy": "Anatomía",
@@ -70659,7 +70767,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Abrir {value1}",
+      "a11y_flight_debrief": "Resumen del vuelo"
     },
     "renewables": {
       "menu": "← Menú",
@@ -71359,7 +71469,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Volver al menú",
+      "sr_getting_critique": "Obteniendo la crítica...",
+      "sr_critique_ready": "Crítica lista.",
+      "sr_quiz_reset": "Cuestionario reiniciado"
     },
     "roadready": {
       "let_s_start": "Empecemos →",
@@ -74226,7 +74340,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Volver a las herramientas STEM",
+      "a11y_local_analytical_sql_query": "Consulta SQL analítica local"
     },
     "stewardship": {
       "back": "← Atrás",
@@ -74803,7 +74919,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Volver al menú",
+      "sr_question_reset_try_again": "Pregunta reiniciada. Inténtalo de nuevo."
     },
     "throwlab": {
       "back": "← Atrás",
@@ -75028,7 +75146,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Restablecer la cámara 3D",
+      "sr_coach_is_offline": "El asistente está desconectado.",
+      "sr_drill_stopped": "Ejercicio detenido."
     },
     "weldlab": {
       "menu": "← Menú",
@@ -76590,7 +76711,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Módulo explorado: {value1}",
+      "a11y_score_out_of": "Puntaje: {value1} de {value2}",
+      "sr_quiz_reset": "Cuestionario reiniciado",
+      "sr_loaded": "{value1} cargado",
+      "sr_showing": "Mostrando {value1}",
+      "sr_not_quite_see_the_explanation": "No exactamente: mira la explicación."
     },
     "worldbuilder": {
       "grade_level": "Nivel de grado",
@@ -77496,7 +77623,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Nivel de lectura",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -78183,7 +78310,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Árbol de la vida",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -80038,7 +80165,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Opción {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Vistas de cámara 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -80050,6 +80179,22 @@
       "finish": "¡Entendido!",
       "replay": "Consejos",
       "replay_aria": "Mostrar tutorial"
+    },
+    "pets": {
+      "sr_back_to_menu": "Volver al menú",
+      "sr_getting_critique": "Obteniendo la crítica...",
+      "sr_critique_ready": "Crítica lista."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Volver a las herramientas STEM",
+      "a11y_3d_camera_views": "Vistas de cámara 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Progreso de la investigación"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "No hay nada que rehacer.",
+      "sr_nothing_to_undo": "No hay nada que deshacer."
     }
   },
   "_version": "2026-03-29T1774812000",
@@ -83213,7 +83358,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Cerrar Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -83222,7 +83367,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Filtrar las tareas",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -83260,15 +83405,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Pregunta {n}",
+    "q_choices_aria": "Opciones para la pregunta {n}, una por línea",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Quitar la pregunta {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Pasos de la escala para la pregunta {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Tipo de respuesta para la pregunta {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -83278,10 +83423,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Enlace seleccionable para {title}",
+    "scale_high_aria": "Etiqueta para el extremo alto",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Etiqueta para el extremo bajo",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -83301,7 +83446,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Resumen del estado de las tareas",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -83317,9 +83462,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Se actualiza automáticamente",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Enlace de la tarea seleccionable",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -83328,7 +83473,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "Código QR de la tarea",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -85776,7 +85921,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Elegir el nivel de desarrollo para las consignas y las rúbricas",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -85784,7 +85929,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Activar o desactivar la vista del docente",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85815,17 +85960,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Pausar la grabación de la nota de voz",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Reanudar la grabación de la nota de voz",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Empezar a grabar una nota de voz",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Detener la grabación",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -86211,22 +86356,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Motivo del reconocimiento AlloHaven",
+    "recent_deliveries_aria": "Reconocimientos AlloHaven privados recientes",
+    "token_amount_aria": "Cantidad de fichas AlloHaven",
+    "token_cap_aria": "Límite de fichas AlloHaven por estudiante y sesión"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Excepciones permitidas sin dejar de cumplir el objetivo",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Señal de progreso opcional que la aplicación registra para este objetivo",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Todo el equipo junto, o cada estudiante por separado",
+    "name_aria": "Nombre del objetivo de clase, guardado solo en este dispositivo",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "A qué estudiantes abarca este objetivo",
+    "template_aria": "Plantilla inicial del objetivo de clase",
+    "tokens_aria": "Fichas otorgadas por estudiante cuando se alcanza este objetivo"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -86244,7 +86389,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Token de administración de Class Mailbox (opcional)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -86274,17 +86419,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "mano levantada",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Enlace de acceso en vivo al buzón, seleccionable",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Sesión en vivo de Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -86311,7 +86456,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "conexión en tiempo real",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -86343,7 +86488,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL de la aplicación web de Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

@@ -316,17 +316,17 @@ describe('AlloBot runtime motion behavior', () => {
       return { x: Number(x), y: Number(y) };
     };
 
-    // Ambient: not hovered, the pointer far to the right → a partial (0.8×) glance.
+    // Ambient: not hovered, the pointer far to the right → a partial (0.4×) glance.
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
     await dispatch(window, new MouseEvent('mousemove', { clientX: 50, clientY: 50 }));
     expect(parse().x).toBeCloseTo(0);
     expect(parse().y).toBeCloseTo(0);
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(2.2 * 0.8);
+    expect(parse().x).toBeCloseTo(2.2 * 0.4);
     expect(Math.abs(parse().y)).toBeLessThan(1e-10);
     // Ambient sensitivity is wider (320px), so a nearby pointer barely moves the eyes.
     await dispatch(window, new MouseEvent('mousemove', { clientX: 130, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(2.2 * 0.8 * (80 / 320));
+    expect(parse().x).toBeCloseTo(2.2 * 0.4 * (80 / 320));
 
     const addSpy = vi.spyOn(window, 'addEventListener');
     const removeSpy = vi.spyOn(window, 'removeEventListener');
@@ -347,11 +347,162 @@ describe('AlloBot runtime motion behavior', () => {
     expect(gaze().getAttribute('data-allobot-soft-gaze')).toBe('resting');
     expect(removeSpy).toHaveBeenCalledWith('mousemove', gazeRegistration[1]);
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(2.2 * 0.8);
+    expect(parse().x).toBeCloseTo(2.2 * 0.4);
 
     // Still ambient after leaving: a far-left pointer gives the mirrored partial glance.
     await dispatch(window, new MouseEvent('mousemove', { clientX: -1000, clientY: 50 }));
-    expect(parse().x).toBeCloseTo(-2.2 * 0.8);
+    expect(parse().x).toBeCloseTo(-2.2 * 0.4);
+  });
+
+  it('settles an ambient glance, pauses decoration during typing and nested scrolling, then resumes', async () => {
+    const bot = await mountBot({ isIdleDisabled: true });
+    const surface = bot.container.querySelector('[data-allobot-control-surface]');
+    const gaze = () => bot.container.querySelector('[data-allobot-soft-gaze]').style.transform;
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 1000 }));
+    expect(gaze()).not.toBe('translate(0px, 0px)');
+    await advance(1600);
+    expect(gaze()).toBe('translate(0px, 0px)');
+
+    const editor = document.createElement('textarea');
+    document.body.appendChild(editor);
+    await dispatch(editor, new Event('input', { bubbles: true }));
+    expect(surface.dataset.allobotPresence).toBe('quiet');
+    await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 1000 }));
+    expect(gaze()).toBe('translate(0px, 0px)');
+    await advance(2500);
+    await dispatch(editor, new Event('scroll')); // Does not bubble: reading panes still count.
+    await advance(2500);
+    expect(surface.dataset.allobotPresence).toBe('quiet');
+    await advance(500);
+    expect(surface.dataset.allobotPresence).toBe('resting');
+    // Operating the bot's own controls must not put it into quiet mode.
+    await dispatch(surface, new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }));
+    expect(surface.dataset.allobotPresence).toBe('resting');
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('greets direct hover briefly and observes a cooldown instead of broadcasting idle alerts', async () => {
+    const bot = await mountBot({ isIdleDisabled: true });
+    const surface = bot.container.querySelector('[data-allobot-control-surface]');
+    const perk = () => bot.container.querySelector('.animate-antenna-tri-bounce');
+    await advance(10000);
+    expect(perk()).toBeNull();
+    expect(bot.container.querySelector('[data-allobot-antenna-layer="signal-waves"]')).toBeNull();
+    await dispatch(surface, pointerEvent('pointerover'));
+    expect(perk()).not.toBeNull();
+    await advance(900);
+    expect(perk()).toBeNull();
+    await dispatch(surface, pointerEvent('pointerout'));
+    await dispatch(surface, pointerEvent('pointerover'));
+    expect(perk()).toBeNull();
+    await dispatch(surface, pointerEvent('pointerout'));
+    await advance(12000);
+    await dispatch(surface, pointerEvent('pointerover'));
+    expect(perk()).not.toBeNull();
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('greets keyboard focus once across its controls without inventing pointer gaze', async () => {
+    const bot = await mountBot({ isIdleDisabled: true, onMicClick: vi.fn() });
+    const surface = bot.container.querySelector('[data-allobot-control-surface]');
+    const perk = () => bot.container.querySelector('.animate-antenna-tri-bounce');
+    await React.act(async () => surface.focus());
+    expect(surface.dataset.allobotPresence).toBe('engaged');
+    expect(perk()).not.toBeNull();
+    expect(bot.container.querySelector('[data-allobot-soft-gaze]').dataset.allobotSoftGaze).toBe('resting');
+    await advance(900);
+    const control = bot.container.querySelector('.allobot-satellite-control');
+    await React.act(async () => control.focus());
+    expect(surface.dataset.allobotPresence).toBe('engaged');
+    expect(perk()).toBeNull();
+    const editor = document.createElement('textarea');
+    document.body.appendChild(editor);
+    await React.act(async () => editor.focus());
+    expect(surface.dataset.allobotPresence).toBe('resting');
+    await advance(0); // Flush native focus/selection events before auditing component timers.
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([
+    ['generation', { mood: 'thinking', generationType: 'quiz' }],
+    ['listening', { isListening: true }],
+    ['system audio', { isSystemAudioActive: true }],
+  ])('does not interrupt a long %s session with the fallback idle tip', async (_name, busyProps) => {
+    const languageValue = { t: key => key.startsWith('tips.') ? 'Idle suggestion' : key };
+    const bot = await mountBot({ ...busyProps, disableAnimations: true }, { languageValue });
+    await advance(310000);
+    expect(bot.container.textContent).not.toContain('Idle suggestion');
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('still offers its fallback tip when the workspace is actually idle', async () => {
+    const languageValue = { t: key => key.startsWith('tips.') ? 'Idle suggestion' : key };
+    vi.mocked(Math.random).mockReturnValue(0.5);
+    const bot = await mountBot({ disableAnimations: true }, { languageValue });
+    await advance(310000);
+    expect(bot.container.textContent).toContain('Idle suggestion');
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it('pauses the avatar SVG rather than a control icon when offscreen or motion is disabled', async () => {
+    let notifyVisibility;
+    const originalObserver = window.IntersectionObserver;
+    window.IntersectionObserver = class {
+      constructor(callback) { notifyVisibility = callback; }
+      observe() {}
+      disconnect() {}
+    };
+    const prototype = window.SVGSVGElement.prototype;
+    const names = ['pauseAnimations', 'unpauseAnimations', 'setCurrentTime'];
+    const descriptors = names.map(name => Object.getOwnPropertyDescriptor(prototype, name));
+    const spies = names.map(name => { const spy = vi.fn(); Object.defineProperty(prototype, name, { configurable: true, value: spy }); return spy; });
+    try {
+      const bot = await mountBot({ isIdleDisabled: true, onMicClick: vi.fn(), mood: 'thinking' });
+      const svg = bot.container.querySelector('svg[data-allobot-detail]');
+      const icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      bot.container.querySelector('.allobot-satellite-control').appendChild(icon);
+      expect(bot.container.querySelector('[data-allobot-control-surface] svg')).toBe(icon);
+      await React.act(async () => notifyVisibility([{ isIntersecting: false, intersectionRatio: 0 }]));
+      expect(spies[0].mock.contexts.at(-1)).toBe(svg);
+      await React.act(async () => notifyVisibility([{ isIntersecting: true, intersectionRatio: 1 }]));
+      expect(spies[1].mock.contexts.at(-1)).toBe(svg);
+      await bot.rerender({ disableAnimations: true, onMicClick: vi.fn(), mood: 'thinking' });
+      expect(spies[0].mock.contexts.at(-1)).toBe(svg);
+      expect(spies[2]).toHaveBeenLastCalledWith(0);
+      expect(spies[2].mock.contexts.at(-1)).toBe(svg);
+      await bot.unmount();
+      await advance(1); // Settle native zero-delay DOM work before the timer audit.
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      window.IntersectionObserver = originalObserver;
+      names.forEach((name, index) => {
+        if (descriptors[index]) Object.defineProperty(prototype, name, descriptors[index]);
+        else delete prototype[name];
+      });
+    }
+  });
+
+  it('defers ambient gestures during work and uses only a small glance after inactivity', async () => {
+    // A high roll also keeps the optional idle tip from obscuring the gesture.
+    vi.mocked(Math.random).mockReturnValue(0.5);
+    const bot = await mountBot();
+    const animationLayer = bot.container.querySelector('[data-allobot-control-surface]').firstElementChild;
+    await advance(80000);
+    await dispatch(document.body, new KeyboardEvent('keydown', { key: 'a', bubbles: true }));
+    await advance(10000);
+    expect(animationLayer.className).toContain('animate-allo-float');
+    await advance(90000);
+    expect(animationLayer.className).toContain('animate-allo-look-around');
+    expect(animationLayer.className).not.toMatch(/backflip|wave|shrug/);
+    await advance(2000);
+    expect(animationLayer.className).toContain('animate-allo-float');
+    await bot.unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
 
   it.each([
@@ -447,9 +598,9 @@ describe('AlloBot runtime motion behavior', () => {
 
     await dispatch(window, new MouseEvent('mousemove', { clientX: 1000, clientY: 1000 }));
     const [, x, y] = gaze().style.transform.match(/^translate\(([-+\de.]+)px, ([-+\de.]+)px\)$/) || [];
-    const ambient = 2.2 * 0.8 * Math.SQRT1_2;
+    const ambient = 2.2 * 0.4 * Math.SQRT1_2;
     expect(Number(x)).toBeCloseTo(-0.85 + ambient);
-    // The prop glance plus the ambient glance runs into the vertical clamp.
+    // The prop and ambient glance still obey the vertical clamp.
     expect(Number(y)).toBeCloseTo(Math.min(1.15, 0.2 + ambient));
   });
 

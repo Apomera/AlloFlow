@@ -1,7 +1,7 @@
 // Math Fluency (math_fluency_module.js) runtime UI-localization: renders cleanly,
 // and its DISPLAY chrome auto-translates into the student's UI language via the
 // app's global window.callGemini, keyed by currentUiLanguage, cached per-device.
-import { describe, it, expect, beforeAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterEach, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { loadAlloModule } from './setup.js';
@@ -23,6 +23,7 @@ beforeAll(() => {
 afterEach(() => {
   if (root) { act(() => root.unmount()); root = null; }
   if (host) { host.remove(); host = null; }
+  vi.restoreAllMocks();
   localStorage.clear();
   delete window.__alloTextLanguage;
   delete window.callGemini;
@@ -35,7 +36,7 @@ async function mount(extraProps = {}) {
   host = document.createElement('div'); document.body.appendChild(host);
   root = ReactDOMClient.createRoot(host);
   await act(async () => {
-    root.render(React.createElement(MathFluency, Object.assign({ gradeLevel: '3rd Grade', t: (k) => k, addToast: () => {}, onProbeComplete: () => {}, handleScoreUpdate: () => {} }, extraProps)));
+    root.render(React.createElement(MathFluency, Object.assign({ learnerId: 'test-learner', learnerName: 'Test learner', gradeLevel: '3rd Grade', t: (k) => k, addToast: () => {}, onProbeComplete: () => {}, handleScoreUpdate: () => {} }, extraProps)));
   });
 }
 
@@ -172,7 +173,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
   });
 
   it('keeps the launch action ahead of collapsed personalized analytics', async () => {
-    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+    localStorage.setItem('allo_fluency_v2:test-learner:mastery', JSON.stringify({
       'add|2|3': { key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 4, correct: 3, responseMsTotal: 5000, timedAttempts: 4, lastSeen: new Date().toISOString() },
     }));
     await mount();
@@ -189,6 +190,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
   });
 
   it('speaks practice facts on request and keeps Calm Display free of live performance pressure', async () => {
+    vi.spyOn(performance, 'now').mockReturnValue(1000);
     const spoken = [];
     let cancelCount = 0;
     Object.defineProperty(window, 'SpeechSynthesisUtterance', { configurable: true, value: function SpeechSynthesisUtterance(text) { this.text = text; } });
@@ -228,6 +230,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
   });
 
   it('normalizes ordinal grade labels and administers the selected fixed form with locked metadata', async () => {
+    vi.spyOn(performance, 'now').mockReturnValue(1000);
     const completed = [];
     window.MATH_PROBE_BANKS = { '3': {
       A: { operation: 'add', difficulty: 'within20', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] },
@@ -368,7 +371,7 @@ describe('Math Fluency personalized practice workflow', () => {
     expect(completed).toHaveLength(1);
     expect(completed[0].data.focusFacts).toHaveLength(1);
     expect(completed[0].data.factInsights[0]).toMatchObject({ attempts: 1, correct: 0, accuracy: 0 });
-    const storedMastery = JSON.parse(localStorage.getItem('allo_fluency_fact_mastery_v1'));
+    const storedMastery = JSON.parse(localStorage.getItem('allo_fluency_v2:test-learner:mastery'));
     const storedRows = Object.values(storedMastery);
     expect(storedRows).toHaveLength(1);
     expect(storedRows[0]).toMatchObject({ attempts: 1, correct: 0, timedAttempts: 1 });
@@ -384,7 +387,7 @@ describe('Math Fluency personalized practice workflow', () => {
 
 describe('Math Fluency Accuracy Focus mode', () => {
   it('completes an untimed focus run without speed scoring or a countdown', async () => {
-    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+    localStorage.setItem('allo_fluency_v2:test-learner:mastery', JSON.stringify({
       'add|2|3': {
         key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5,
         attempts: 1, correct: 0, responseMsTotal: 3000, timedAttempts: 1,
@@ -456,12 +459,12 @@ describe('Math Fluency Accuracy Focus mode', () => {
     expect(metricCards.map((card) => card.getAttribute('data-metric'))).toEqual(['speed', 'accuracy', 'correct', 'digits']);
     expect(new Set(metricCards.map((card) => card.style.background)).size).toBe(4);
     expect(host.querySelector('.mf-results-metrics')).toBeTruthy();
-    expect(localStorage.getItem('allo_fluency_accuracy_draft_v1')).toBeNull();
+    expect(localStorage.getItem('allo_fluency_v2:test-learner:draft')).toBeNull();
   });
 
   it('restores a validated Accuracy Focus draft and clears it after completion', async () => {
     const completed = [];
-    localStorage.setItem('allo_fluency_accuracy_draft_v1', JSON.stringify({
+    localStorage.setItem('allo_fluency_v2:test-learner:draft', JSON.stringify({
       version: 1, savedAt: Date.now(), currentIndex: 1, elapsedMs: 1200,
       pauseStats: { count: 1, seconds: 2 },
       config: { mode: 'practice', form: null, grade: '3', operation: 'add', difficulty: 'focus', practiceSet: 'focus', timeLimit: 0, untimed: true, strategyCoach: true, problemCount: 2, goal: { id: 'accuracy-90', metric: 'accuracy', target: 90, available: true, label: '90% accuracy' } },
@@ -485,14 +488,14 @@ describe('Math Fluency Accuracy Focus mode', () => {
 
     expect(completed).toHaveLength(1);
     expect(completed[0].data).toMatchObject({ resumedFromDraft: true, totalAttempted: 2, totalCorrect: 2, practicePauseCount: 1 });
-    expect(localStorage.getItem('allo_fluency_accuracy_draft_v1')).toBeNull();
+    expect(localStorage.getItem('allo_fluency_v2:test-learner:draft')).toBeNull();
     expect(host.querySelector('.mf-recovery-result').textContent).toContain('Recovered session completed');
   });
 });
 
 describe('Math Fluency Strategy Coach and mastery map', () => {
   it('launches a mastery group and keeps coached retries on the same fact through answer reveal', async () => {
-    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+    localStorage.setItem('allo_fluency_v2:test-learner:mastery', JSON.stringify({
       'add|2|3': {
         key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5,
         attempts: 1, correct: 0, responseMsTotal: 3000, timedAttempts: 1,
@@ -533,7 +536,7 @@ describe('Math Fluency Strategy Coach and mastery map', () => {
       firstTryCorrect: 0, accuracy: 0, totalPracticeAttempts: 4,
     });
     expect(completed[0].data.factInsights[0]).toMatchObject({ attempts: 4, correct: 1, accuracy: 25 });
-    const stored = JSON.parse(localStorage.getItem('allo_fluency_fact_mastery_v1'))['add|2|3'];
+    const stored = JSON.parse(localStorage.getItem('allo_fluency_v2:test-learner:mastery'))['add|2|3'];
     expect(stored).toMatchObject({ attempts: 5, correct: 1 });
   });
 });
@@ -542,7 +545,7 @@ describe('Math Fluency Strategy Coach and mastery map', () => {
 describe('Math Fluency Smart Review and Teacher Report Center', () => {
   it('shows due review work and filters teacher-facing session evidence', async () => {
     const now = Date.now();
-    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({
+    localStorage.setItem('allo_fluency_v2:test-learner:mastery', JSON.stringify({
       'add|2|3': { key: 'add|2|3', a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 4, correct: 1, responseMsTotal: 5000, timedAttempts: 4, lastSeen: new Date(now).toISOString() },
       'sub|9|4': { key: 'sub|9|4', a: 9, b: 4, op: 'sub', symbol: '-', answer: 5, attempts: 2, correct: 2, responseMsTotal: 3000, timedAttempts: 2, lastSeen: new Date(now - 2 * 86400000).toISOString() },
       'mul|3|4': { key: 'mul|3|4', a: 3, b: 4, op: 'mul', symbol: 'x', answer: 12, attempts: 4, correct: 4, responseMsTotal: 12000, timedAttempts: 4, lastSeen: new Date(now - 10 * 86400000).toISOString() },
@@ -554,7 +557,7 @@ describe('Math Fluency Smart Review and Teacher Report Center', () => {
       { date: new Date(now - 3 * 86400000).toISOString(), mode: 'benchmark', untimed: false, operation: 'mul', accuracy: 70, dcpm: 22, totalCorrect: 7, totalAttempted: 10, completionStatus: 'complete', validForComparison: true },
     ];
     const storageDB = {
-      get: async (key) => key === 'allo_fluency_history' ? history : null,
+      get: async (key) => key === 'allo_fluency_v2:test-learner:history' ? history.map(row => ({ ...row, learnerId: 'test-learner' })) : null,
       set: async () => {},
     };
     await mount({ storageDB });
@@ -592,4 +595,61 @@ describe('Math Fluency Smart Review and Teacher Report Center', () => {
     expect(filteredSessions.textContent).toContain('Accuracy Focus');
     expect(filteredSessions.textContent).not.toContain('Timed Practice');
   });
+});
+
+describe('Math Fluency learner and form safeguards', () => {
+  it('excludes early form exhaustion from comparisons and retains item evidence', async () => {
+    window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
+    const completed = [];
+    await mount({ onProbeComplete: entry => completed.push(entry) });
+    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await click(host.querySelector('button[aria-label="Start fixed form"]'));
+    await change(document.querySelector('input[aria-label="Your answer"]'), '2');
+    await click(document.querySelector('button[type="submit"]'));
+    await act(async () => { await new Promise(r => setTimeout(r, 80)); });
+    expect(completed).toHaveLength(1);
+    expect(completed[0].data).toMatchObject({ learnerId: 'test-learner', formExhausted: true, validForComparison: false, totalCorrect: 1, scoringVersion: 2 });
+    expect(completed[0].data.itemResults[0]).toMatchObject({ studentAnswer: 2, correct: true });
+    expect(completed[0].data.formHash).toMatch(/^form-v1-/);
+  });
+  it('waits for learner storage and ignores a late load after switching learners', async () => {
+    const releaseA = [];
+    const writes = [];
+    const storageDB = { get: key => key.includes(':a:') ? new Promise(r => { releaseA.push(r); }) : Promise.resolve(null), set: async (key, value) => writes.push([key, value]) };
+    await mount({ learnerId: 'a', learnerName: 'A', storageDB });
+    expect(host.querySelector('button[aria-label="Start practice"]').disabled).toBe(true);
+    await act(async () => root.render(React.createElement(MathFluency, { learnerId: 'b', learnerName: 'B', gradeLevel: '3', storageDB })));
+    await act(async () => { releaseA.forEach(release => release({ 'add|1|1': { a: 1, b: 1, op: 'add', answer: 2, attempts: 3, correct: 3 } })); await Promise.resolve(); });
+    expect(host.textContent).toContain('B');
+    expect(host.querySelector('details.mf-mastery-map')).toBeNull();
+    expect(host.querySelector('button[aria-label="Start practice"]').disabled).toBe(false);
+    await click(host.querySelector('button[aria-label="Start practice"]'));
+    expect(document.querySelector('input[aria-label="Your answer"]')).toBeTruthy();
+    expect(writes.every(([key]) => !key.includes(':a:'))).toBe(true);
+  });
+  it('keeps unattributed legacy mastery out of a new learner session', async () => {
+    localStorage.setItem('allo_fluency_fact_mastery_v1', JSON.stringify({ 'add|1|1': { a: 1, b: 1, op: 'add', answer: 2, attempts: 3, correct: 3 } }));
+    await mount({ learnerId: null, learnerName: '' });
+    expect(host.querySelector('details.mf-mastery-map')).toBeNull();
+    expect(host.textContent).toContain('Unnamed practice stays in this session');
+    await change(host.querySelector('#mf-learner-name'), 'New learner');
+    await click([...host.querySelectorAll('button')].find(b => b.textContent === 'Use learner'));
+    expect(host.querySelector('details.mf-mastery-map')).toBeNull();
+    expect(host.textContent).toContain('Progress is kept separately for this learner: New learner');
+  });
+});
+
+it('rejects an answer submitted after the fixed-form deadline', async () => {
+  let now = 1000;
+  vi.spyOn(performance, 'now').mockImplementation(() => now);
+  const completed = [];
+  window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
+  await mount({ onProbeComplete: entry => completed.push(entry) });
+  await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+  await click(host.querySelector('button[aria-label="Start fixed form"]'));
+  now = 61001;
+  await change(document.querySelector('input[aria-label="Your answer"]'), '2');
+  await click(document.querySelector('button[type="submit"]'));
+  expect(completed).toHaveLength(1);
+  expect(completed[0].data).toMatchObject({ finishReason: 'time', totalAttempted: 0, totalCorrect: 0 });
 });

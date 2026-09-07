@@ -473,7 +473,7 @@ const gradeMathSelfAssessment = (problems, answers) => {
   let results = [];
   try {
     results = source.flatMap((problem, sourceIndex) => {
-      if (!_isMathRecord(problem)) return [];
+      if (!_isMathRecord(problem) || _readMathValue(_readMathValue(problem, '_verification'), 'reviewRequired')) return [];
       const problemId = _safeMathText(
         _readMathValue(problem, '__viewKey')
           ?? _readMathValue(problem, 'id')

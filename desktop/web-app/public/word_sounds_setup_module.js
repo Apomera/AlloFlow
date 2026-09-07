@@ -94,6 +94,507 @@
   // WORD SOUNDS SETUP COMPONENTS (JSX pre-transformed by esbuild)
   // ═══════════════════════════════════════════════════════════════
 
+function createWordSoundsCore() {
+  const VERSION = 1;
+  const EDGES = {
+    "about": ["schwa", "t"],
+    "action": ["a", "n"],
+    "apple": ["a", "l"],
+    "art": ["ar", "t"],
+    "back": ["b", "k"],
+    "bag": ["b", "g"],
+    "ban": ["b", "n"],
+    "bang": ["b", "ng"],
+    "bar": ["b", "ar"],
+    "bat": ["b", "t"],
+    "bath": ["b", "th"],
+    "be": ["b", "ee"],
+    "bed": ["b", "d"],
+    "bee": ["b", "ee"],
+    "bib": ["b", "b"],
+    "big": ["b", "g"],
+    "bike": ["b", "k"],
+    "bird": ["b", "d"],
+    "bit": ["b", "t"],
+    "boat": ["b", "t"],
+    "book": ["b", "k"],
+    "box": ["b", "s"],
+    "brag": ["b", "g"],
+    "brim": ["b", "m"],
+    "bud": ["b", "d"],
+    "burn": ["b", "n"],
+    "bus": ["b", "s"],
+    "bush": ["b", "sh"],
+    "but": ["b", "t"],
+    "cab": ["k", "b"],
+    "cake": ["k", "k"],
+    "cap": ["k", "p"],
+    "car": ["k", "ar"],
+    "cash": ["k", "sh"],
+    "cat": ["k", "t"],
+    "cedar": ["s", "er"],
+    "cell": ["s", "l"],
+    "cent": ["s", "t"],
+    "center": ["s", "er"],
+    "cereal": ["s", "l"],
+    "chat": ["ch", "t"],
+    "chef": ["sh", "f"],
+    "chin": ["ch", "n"],
+    "chip": ["ch", "p"],
+    "chop": ["ch", "p"],
+    "circle": ["s", "l"],
+    "city": ["s", "ee"],
+    "clip": ["k", "p"],
+    "cob": ["k", "b"],
+    "come": ["k", "m"],
+    "cord": ["k", "d"],
+    "corn": ["k", "n"],
+    "crab": ["k", "b"],
+    "crib": ["k", "b"],
+    "cub": ["k", "b"],
+    "cup": ["k", "p"],
+    "curb": ["k", "b"],
+    "cut": ["k", "t"],
+    "cycle": ["s", "l"],
+    "dam": ["d", "m"],
+    "dark": ["d", "k"],
+    "deck": ["d", "k"],
+    "den": ["d", "n"],
+    "did": ["d", "d"],
+    "dim": ["d", "m"],
+    "dip": ["d", "p"],
+    "dirt": ["d", "t"],
+    "dish": ["d", "sh"],
+    "dog": ["d", "g"],
+    "dogs": ["d", "z"],
+    "done": ["d", "n"],
+    "dot": ["d", "t"],
+    "drag": ["d", "g"],
+    "drip": ["d", "p"],
+    "drop": ["d", "p"],
+    "drum": ["d", "m"],
+    "dub": ["d", "b"],
+    "duck": ["d", "k"],
+    "dug": ["d", "g"],
+    "each": ["ee", "ch"],
+    "eat": ["ee", "t"],
+    "egg": ["e", "g"],
+    "fan": ["f", "n"],
+    "far": ["f", "ar"],
+    "fat": ["f", "t"],
+    "fern": ["f", "n"],
+    "fib": ["f", "b"],
+    "fig": ["f", "g"],
+    "fin": ["f", "n"],
+    "firm": ["f", "m"],
+    "fish": ["f", "sh"],
+    "fit": ["f", "t"],
+    "fix": ["f", "s"],
+    "flag": ["f", "g"],
+    "flat": ["f", "t"],
+    "flip": ["f", "p"],
+    "fog": ["f", "g"],
+    "food": ["f", "d"],
+    "foot": ["f", "t"],
+    "for": ["f", "or"],
+    "fork": ["f", "k"],
+    "form": ["f", "m"],
+    "fox": ["f", "s"],
+    "frog": ["f", "g"],
+    "fun": ["f", "n"],
+    "fur": ["f", "er"],
+    "gab": ["g", "b"],
+    "gap": ["g", "p"],
+    "gas": ["g", "s"],
+    "gem": ["j", "m"],
+    "gentle": ["j", "l"],
+    "germ": ["j", "m"],
+    "get": ["g", "t"],
+    "gets": ["g", "s"],
+    "giant": ["j", "t"],
+    "gift": ["g", "t"],
+    "gifts": ["g", "s"],
+    "gig": ["g", "g"],
+    "giggle": ["g", "l"],
+    "ginger": ["j", "er"],
+    "giraffe": ["j", "f"],
+    "girl": ["g", "l"],
+    "girls": ["g", "z"],
+    "gist": ["j", "t"],
+    "give": ["g", "v"],
+    "gives": ["g", "z"],
+    "gnat": ["n", "t"],
+    "gnaw": ["n", "aw"],
+    "gnome": ["n", "m"],
+    "go": ["g", "oa"],
+    "gob": ["g", "b"],
+    "gone": ["g", "n"],
+    "got": ["g", "t"],
+    "grab": ["g", "b"],
+    "grin": ["g", "n"],
+    "grip": ["g", "p"],
+    "gum": ["g", "m"],
+    "gush": ["g", "sh"],
+    "gut": ["g", "t"],
+    "gym": ["j", "m"],
+    "hat": ["h", "t"],
+    "have": ["h", "v"],
+    "he": ["h", "ee"],
+    "hen": ["h", "n"],
+    "her": ["h", "er"],
+    "him": ["h", "m"],
+    "hit": ["h", "t"],
+    "home": ["h", "m"],
+    "honest": ["o", "t"],
+    "honor": ["o", "er"],
+    "hop": ["h", "p"],
+    "hot": ["h", "t"],
+    "hour": ["ow", "er"],
+    "hub": ["h", "b"],
+    "hug": ["h", "g"],
+    "hum": ["h", "m"],
+    "hung": ["h", "ng"],
+    "hurt": ["h", "t"],
+    "hut": ["h", "t"],
+    "igloo": ["i", "oo"],
+    "inch": ["i", "ch"],
+    "jab": ["j", "b"],
+    "jam": ["j", "m"],
+    "jar": ["j", "ar"],
+    "jet": ["j", "t"],
+    "jig": ["j", "g"],
+    "jog": ["j", "g"],
+    "jot": ["j", "t"],
+    "jug": ["j", "g"],
+    "jut": ["j", "t"],
+    "key": ["k", "ee"],
+    "kick": ["k", "k"],
+    "kid": ["k", "d"],
+    "king": ["k", "ng"],
+    "kit": ["k", "t"],
+    "kite": ["k", "t"],
+    "knee": ["n", "ee"],
+    "knife": ["n", "f"],
+    "knight": ["n", "t"],
+    "knob": ["n", "b"],
+    "knock": ["n", "k"],
+    "knot": ["n", "t"],
+    "know": ["n", "oa"],
+    "leg": ["l", "g"],
+    "let": ["l", "t"],
+    "lid": ["l", "d"],
+    "lip": ["l", "p"],
+    "lit": ["l", "t"],
+    "live": ["l", "v"],
+    "lock": ["l", "k"],
+    "log": ["l", "g"],
+    "long": ["l", "ng"],
+    "look": ["l", "k"],
+    "lot": ["l", "t"],
+    "luck": ["l", "k"],
+    "lug": ["l", "g"],
+    "lung": ["l", "ng"],
+    "map": ["m", "p"],
+    "mark": ["m", "k"],
+    "mash": ["m", "sh"],
+    "mat": ["m", "t"],
+    "math": ["m", "th"],
+    "me": ["m", "ee"],
+    "men": ["m", "n"],
+    "met": ["m", "t"],
+    "mix": ["m", "s"],
+    "mob": ["m", "b"],
+    "mom": ["m", "m"],
+    "moon": ["m", "n"],
+    "mop": ["m", "p"],
+    "much": ["m", "ch"],
+    "mud": ["m", "d"],
+    "mug": ["m", "g"],
+    "nab": ["n", "b"],
+    "nag": ["n", "g"],
+    "nap": ["n", "p"],
+    "nation": ["n", "n"],
+    "neck": ["n", "k"],
+    "net": ["n", "t"],
+    "nip": ["n", "p"],
+    "no": ["n", "oa"],
+    "nod": ["n", "d"],
+    "nose": ["n", "z"],
+    "not": ["n", "t"],
+    "nun": ["n", "n"],
+    "nut": ["n", "t"],
+    "octopus": ["o", "s"],
+    "of": ["u", "v"],
+    "one": ["w", "n"],
+    "out": ["ow", "t"],
+    "pan": ["p", "n"],
+    "park": ["p", "k"],
+    "pat": ["p", "t"],
+    "path": ["p", "th"],
+    "peg": ["p", "g"],
+    "pen": ["p", "n"],
+    "pet": ["p", "t"],
+    "phone": ["f", "n"],
+    "pick": ["p", "k"],
+    "pig": ["p", "g"],
+    "pin": ["p", "n"],
+    "pit": ["p", "t"],
+    "plan": ["p", "n"],
+    "play": ["p", "ay"],
+    "plug": ["p", "g"],
+    "plum": ["p", "m"],
+    "pod": ["p", "d"],
+    "pop": ["p", "p"],
+    "pot": ["p", "t"],
+    "psalm": ["s", "m"],
+    "psychology": ["s", "ee"],
+    "pub": ["p", "b"],
+    "pun": ["p", "n"],
+    "pup": ["p", "p"],
+    "put": ["p", "t"],
+    "queen": ["k", "n"],
+    "quick": ["k", "k"],
+    "quilt": ["k", "t"],
+    "rag": ["r", "g"],
+    "rain": ["r", "n"],
+    "ram": ["r", "m"],
+    "ran": ["r", "n"],
+    "rap": ["r", "p"],
+    "rat": ["r", "t"],
+    "red": ["r", "d"],
+    "rib": ["r", "b"],
+    "rich": ["r", "ch"],
+    "rid": ["r", "d"],
+    "rig": ["r", "g"],
+    "rim": ["r", "m"],
+    "ring": ["r", "ng"],
+    "rip": ["r", "p"],
+    "rob": ["r", "b"],
+    "rock": ["r", "k"],
+    "rod": ["r", "d"],
+    "rot": ["r", "t"],
+    "rub": ["r", "b"],
+    "rug": ["r", "g"],
+    "run": ["r", "n"],
+    "rush": ["r", "sh"],
+    "rut": ["r", "t"],
+    "sat": ["s", "t"],
+    "school": ["s", "l"],
+    "sea": ["s", "ee"],
+    "see": ["s", "ee"],
+    "set": ["s", "t"],
+    "she": ["sh", "ee"],
+    "shed": ["sh", "d"],
+    "shell": ["sh", "l"],
+    "shin": ["sh", "n"],
+    "ship": ["sh", "p"],
+    "shop": ["sh", "p"],
+    "shot": ["sh", "t"],
+    "shut": ["sh", "t"],
+    "sing": ["s", "ng"],
+    "sip": ["s", "p"],
+    "sir": ["s", "er"],
+    "sit": ["s", "t"],
+    "six": ["s", "s"],
+    "skip": ["s", "p"],
+    "slam": ["s", "m"],
+    "slap": ["s", "p"],
+    "slim": ["s", "m"],
+    "slip": ["s", "p"],
+    "slug": ["s", "g"],
+    "snap": ["s", "p"],
+    "snip": ["s", "p"],
+    "snug": ["s", "g"],
+    "so": ["s", "oa"],
+    "sob": ["s", "b"],
+    "sock": ["s", "k"],
+    "sod": ["s", "d"],
+    "some": ["s", "m"],
+    "song": ["s", "ng"],
+    "spin": ["s", "n"],
+    "spot": ["s", "t"],
+    "star": ["s", "ar"],
+    "step": ["s", "p"],
+    "stop": ["s", "p"],
+    "stub": ["s", "b"],
+    "stun": ["s", "n"],
+    "sub": ["s", "b"],
+    "such": ["s", "ch"],
+    "sum": ["s", "m"],
+    "sun": ["s", "n"],
+    "surf": ["s", "f"],
+    "swim": ["s", "m"],
+    "tab": ["t", "b"],
+    "tag": ["t", "g"],
+    "tan": ["t", "n"],
+    "tap": ["t", "p"],
+    "ten": ["t", "n"],
+    "that": ["dh", "t"],
+    "them": ["dh", "m"],
+    "then": ["dh", "n"],
+    "thin": ["th", "n"],
+    "this": ["dh", "s"],
+    "tin": ["t", "n"],
+    "tip": ["t", "p"],
+    "top": ["t", "p"],
+    "torn": ["t", "n"],
+    "tot": ["t", "t"],
+    "trap": ["t", "p"],
+    "tree": ["t", "ee"],
+    "trim": ["t", "m"],
+    "trip": ["t", "p"],
+    "trot": ["t", "t"],
+    "tub": ["t", "b"],
+    "tug": ["t", "g"],
+    "turn": ["t", "n"],
+    "umbrella": ["u", "schwa"],
+    "van": ["v", "n"],
+    "vat": ["v", "t"],
+    "vet": ["v", "t"],
+    "vim": ["v", "m"],
+    "vow": ["v", "ow"],
+    "wag": ["w", "g"],
+    "wax": ["w", "s"],
+    "we": ["w", "ee"],
+    "web": ["w", "b"],
+    "wed": ["w", "d"],
+    "when": ["w", "n"],
+    "whip": ["w", "p"],
+    "whiz": ["w", "z"],
+    "wig": ["w", "g"],
+    "win": ["w", "n"],
+    "wish": ["w", "sh"],
+    "wit": ["w", "t"],
+    "with": ["w", null],
+    "wok": ["w", "k"],
+    "won": ["w", "n"],
+    "wrap": ["r", "p"],
+    "wren": ["r", "n"],
+    "wrist": ["r", "t"],
+    "write": ["r", "t"],
+    "wrong": ["r", "ng"],
+    "yak": ["y", "k"],
+    "yam": ["y", "m"],
+    "yap": ["y", "p"],
+    "yes": ["y", "s"],
+    "yet": ["y", "t"],
+    "zap": ["z", "p"],
+    "zen": ["z", "n"],
+    "zip": ["z", "p"],
+    "zoo": ["z", "oo"]
+  };
+  const normalize = (value) => String(value || "").normalize("NFC").trim().toLowerCase().replace(/^\/+|\/+$/g, "");
+  const aliases = { c: "k", ck: "k", q: "k", qu: "k", ph: "f", wh: "w", tch: "ch", dge: "j", ai: "ay", ea: "ee", ir: "er", ur: "er", au: "aw", oe: "oa", oi: "oy", "\u0261": "g", "\u0283": "sh", "\u0292": "zh", "\u03B8": "th", "\xF0": "dh", "\u014B": "ng", "d\u0292": "j", "\u02A4": "j", "t\u0283": "ch", "\u02A7": "ch", "\xE6": "a", "\u025B": "e", "\u026A": "i", "\u0252": "o", "\u0251": "o", "\u0251\u02D0": "o", "\u028C": "u", "\u0259": "schwa", "i\u02D0": "ee", "u\u02D0": "oo", "\u028A": "oo_short", "e\u026A": "ay", "a\u026A": "ie", "o\u028A": "oa", "\u0259\u028A": "oa", "a\u028A": "ow", "\u0254\u026A": "oy", "\u0279": "r", "\u025D": "er", "\u025A": "er" };
+  const soundKey = (value) => {
+    const v = normalize(value);
+    return aliases[v] || v;
+  };
+  const edgeSound = (word, position, phonemes) => {
+    const w = normalize(word), last = position === "last";
+    if (Object.prototype.hasOwnProperty.call(EDGES, w)) return EDGES[w][last ? 1 : 0];
+    if (!Array.isArray(phonemes) || !phonemes.length) return null;
+    const item = phonemes[last ? phonemes.length - 1 : 0];
+    const raw = typeof item === "string" ? item : item && (item.ipa || item.phoneme || item.grapheme);
+    if (!raw) return null;
+    if (item && typeof item === "object" && item.ipa === "j") return "y";
+    const key = soundKey(raw);
+    return last && (key === "x" || key === "ks") ? "s" : key;
+  };
+  const unique = (values) => [...new Set((values || []).map(normalize).filter(Boolean))];
+  const shuffled = (values, seed) => {
+    const out = [...values];
+    let s = seed || 1;
+    for (let i = out.length - 1; i > 0; i--) {
+      s = Math.imul(s, 1664525) + 1013904223 >>> 0;
+      const j = s % (i + 1);
+      [out[i], out[j]] = [out[j], out[i]];
+    }
+    return out;
+  };
+  const validSoundBoard = (board, word, pool = []) => {
+    if (!board || !["first", "last"].includes(board.mode) || !board.targetChar) return false;
+    const yes = unique(board.options), no = unique(board.distractors);
+    if (!yes.length || !no.length || yes.length !== (board.options || []).length || no.length !== (board.distractors || []).length || yes.some((w) => no.includes(w) || w === normalize(word)) || no.includes(normalize(word))) return false;
+    if (board.teacherEdited) return true;
+    const data = new Map(pool.filter((p) => p && typeof p === "object").map((p) => [normalize(p.word || p.targetWord || p.term), p]));
+    const sound = (w) => edgeSound(w, board.mode, (data.get(w) || {}).phonemes);
+    const target = soundKey(board.targetChar);
+    const actual = sound(normalize(word));
+    return actual != null && soundKey(actual) === target && yes.every((w) => sound(w) != null && soundKey(sound(w)) === target) && no.every((w) => sound(w) != null && soundKey(sound(w)) !== target);
+  };
+  const buildSoundSort = ({ word, phonemes, mode, pool = [], matches = [], targetSound, teacherEdited = false, distractors = [] }) => {
+    word = normalize(word);
+    mode = mode === "last" ? "last" : "first";
+    const seed = [...word].reduce((n, c) => n + c.charCodeAt(0), 0);
+    const data = new Map(pool.filter((p) => p && typeof p === "object").map((p) => [normalize(p.word || p.targetWord || p.term), p]));
+    const target = edgeSound(word, mode, phonemes) || targetSound && soundKey(targetSound);
+    if (!target) return null;
+    if (teacherEdited) {
+      const board2 = { version: VERSION, teacherEdited: true, mode, targetChar: soundKey(targetSound || target), difficulty: "medium", options: unique(matches), distractors: unique(distractors) };
+      return validSoundBoard(board2, word, pool) ? board2 : null;
+    }
+    const words = unique([...matches, ...pool.map((p) => typeof p === "string" ? p : p.word || p.targetWord || p.term)]).filter((w) => w !== word);
+    const sound = (w) => edgeSound(w, mode, (data.get(w) || {}).phonemes);
+    const yes = words.filter((w) => sound(w) != null && soundKey(sound(w)) === soundKey(target));
+    const no = words.filter((w) => sound(w) != null && soundKey(sound(w)) !== soundKey(target));
+    const limit = word.length <= 3 ? 3 : 5;
+    const short = (values) => {
+      const easy = values.filter((w) => w.length <= (word.length <= 3 ? 3 : 4));
+      return word.length <= 4 && easy.length >= 2 ? easy : values;
+    };
+    const board = { version: VERSION, mode, targetChar: soundKey(target), difficulty: word.length <= 3 ? "easy" : word.length <= 4 ? "medium" : "hard", options: shuffled(short(yes), seed).slice(0, limit), distractors: shuffled(short(no), seed + 1).slice(0, limit - 1) };
+    return validSoundBoard(board, word, pool) ? board : null;
+  };
+  const difficultyDecision = (history, activity, support = {}) => {
+    const rows = (history || []).filter((h) => h && h.activity === activity && !h.practiceOnly && h.activity !== "letter_tracing" && h.taskKind !== "word_matching" && !!h.aacAssisted === !!support.aacAssisted && (h.mode || "sound_only") === (support.mode || "sound_only"));
+    let band = 0, block = [], reason = "starting", changes = 0;
+    const bands = ["easy", "medium", "hard"];
+    for (const h of rows) {
+      if (h.difficulty && h.difficulty !== bands[band]) continue;
+      block.push(h);
+      block = block.slice(-10);
+      const distinct = new Set(block.map((r) => normalize(r.word)).filter(Boolean)).size;
+      const n = block.length, accuracy = block.reduce((s, r) => s + (r.correct ? (r.attempts || 1) > 1 ? 0.5 : 1 : 0), 0) / n;
+      const min = band === 0 ? 6 : 8, words = band === 0 ? 4 : 6;
+      if (band < 2 && n >= min && distinct >= words && accuracy >= 0.85) {
+        band++;
+        changes++;
+        block = [];
+        reason = "advance";
+      } else if (band > 0 && n >= 6 && distinct >= 4 && accuracy < 0.45) {
+        band--;
+        changes++;
+        block = [];
+        reason = "step_back";
+      } else if (reason === "starting") reason = "practice";
+    }
+    return { difficulty: bands[band], reason, items: block.length, distinctWords: new Set(block.map((r) => normalize(r.word)).filter(Boolean)).size, changes };
+  };
+  const textEvidence = ({ activity, imageAvailable, answerRevealed = false }) => {
+    const connected = ["read_sentence", "read_passage"].includes(activity);
+    if (!connected) return {};
+    const wordMatching = !imageAvailable || answerRevealed;
+    return { taskKind: wordMatching ? "word_matching" : "picture_supported_cloze", cluesShown: wordMatching ? ["printed_answer"] : ["picture"], fallbackReason: !imageAvailable ? "missing_target_image" : answerRevealed ? "answer_revealed" : null, independentReading: false, answerExposed: wordMatching };
+  };
+  const profileCheck = (text, profile) => {
+    if (!profile || !Array.isArray(profile.taughtPatterns) || !profile.taughtPatterns.length) return { status: "not_configured", untaughtWords: [] };
+    const known = new Set(unique(profile.knownWords));
+    const patterns = unique(profile.taughtPatterns).filter((p) => /^[\p{L}\p{M}]+$/u.test(p)).sort((a, b) => b.length - a.length);
+    const canRead = (w) => {
+      if (known.has(w)) return true;
+      const reached = /* @__PURE__ */ new Set([0]);
+      for (let i = 0; i < w.length; i++) {
+        if (!reached.has(i)) continue;
+        for (const p of patterns) if (w.startsWith(p, i)) reached.add(i + p.length);
+      }
+      return reached.has(w.length);
+    };
+    const unknown = unique(String(text || "").normalize("NFC").match(/[\p{L}\p{M}]+/gu) || []).filter((w) => !canRead(w));
+    return { status: unknown.length ? "review" : "within_taught_spellings", untaughtWords: unknown };
+  };
+  return { VERSION, soundKey, edgeSound, validSoundBoard, buildSoundSort, difficultyDecision, textEvidence, profileCheck, knownWords: Object.keys(EDGES) };
+}
+const WS_CORE = createWordSoundsCore();
 const WORD_FAMILY_PRESETS = new Proxy({}, {
   get: (_, prop) => (window.WORD_FAMILY_PRESETS || {})[prop],
   ownKeys: () => Object.keys(window.WORD_FAMILY_PRESETS || {}),
@@ -1211,6 +1712,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   const [probeStudent, setProbeStudent] = React.useState("");
   const probeStudentTrimmed = String(probeStudent || "").trim();
   const [includeLessonPlan, setIncludeLessonPlan] = React.useState(false);
+  const [prepareScope, setPrepareScope] = React.useState("all");
+  React.useEffect(() => {
+    if (!includeLessonPlan) setPrepareScope("all");
+  }, [includeLessonPlan]);
+  const [taughtPatternsText, setTaughtPatternsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(", "));
+  const [knownWordsText, setKnownWordsText] = React.useState(() => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(", "));
+  const instructionalProfile = React.useMemo(() => ({
+    taughtPatterns: taughtPatternsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
+    knownWords: knownWordsText.toLowerCase().split(/[\s,]+/).filter(Boolean)
+  }), [taughtPatternsText, knownWordsText]);
   const [lessonPlan, setLessonPlan] = React.useState({
     isolation: { enabled: false, count: 5 },
     blending: { enabled: false, count: 5 },
@@ -1569,16 +2080,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       if (packIsEnglish) return (v.match(/[aeiou][a-z]*$/) || [""])[0];
       return v.slice(-2);
     };
-    const SILENT_ONSETS = { kn: "n", gn: "n", wr: "r" };
-    const firstSound = (raw) => {
-      const first = estimatePackPhonemes(raw)[0] || "";
-      return SILENT_ONSETS[first] || first;
-    };
-    const lastSound = (raw) => {
-      const clusters = estimatePackPhonemes(raw);
-      const last = clusters[clusters.length - 1] || "";
-      return last === "ck" ? "k" : last;
-    };
+    const firstSound = (raw) => WS_CORE.edgeSound(raw, "first", items.find((it) => normalizePackKey(it.word || it.targetWord || it.term) === normalizePackKey(raw))?.phonemes);
+    const lastSound = (raw) => WS_CORE.edgeSound(raw, "last", items.find((it) => normalizePackKey(it.word || it.targetWord || it.term) === normalizePackKey(raw))?.phonemes);
     items.forEach((item) => {
       const word = normalizePackKey(item.targetWord || item.word || item.term);
       const phonemes = (item.phonemes || []).map(flatPackPhoneme).filter(Boolean);
@@ -1635,11 +2138,17 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       const correctLetter = word[hiddenIndex] || "";
       const letterDistractorPool = packIsEnglish ? "abcdefghijklmnopqrstuvwxyz".split("") : shuffleForPack(allPackLetters);
       const letterOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctLetter, ...letterDistractorPool.filter((value) => value !== correctLetter)])].slice(0, 4));
-      const mode = seed % 2 === 0 ? "first" : "last";
-      const targetChar = (mode === "first" ? phonemes[0] : phonemes[phonemes.length - 1]) || (mode === "first" ? firstSound(word) : lastSound(word));
-      const soundFor = mode === "first" ? firstSound : lastSound;
-      const sortMatches = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) === targetChar)).slice(0, word.length <= 3 ? 3 : 5);
-      const sortDistractors = shuffleForPack(wordPool.filter((value) => value !== word && soundFor(value) !== targetChar)).slice(0, word.length <= 3 ? 2 : 4);
+      const mode = item.soundSortMatches?.position || (seed % 2 === 0 ? "first" : "last");
+      const soundBoard = packIsEnglish ? WS_CORE.buildSoundSort({
+        word,
+        phonemes: item.phonemes,
+        mode,
+        pool: [...items, ...WS_CORE.knownWords],
+        matches: item.soundSortMatches?.words || [],
+        teacherEdited: !!item.soundSortMatches?.teacherEdited,
+        targetSound: item.soundSortMatches?.phoneme,
+        distractors: item.soundSortMatches?.distractors || []
+      }) : null;
       const rime = String(item.familyEnding || "").replace(/^-/, "") || (packIsEnglish ? (word.match(/[aeiou][a-z]*$/) || ["at"])[0] : packRimeOf(word));
       const familySource = [...new Set((item.familyMembers || []).map(normalizePackKey).filter((value) => value && value !== word))];
       const familyOptions = shuffleForPack(familySource.length ? familySource : wordPool.filter((value) => value !== word && value.endsWith(rime))).slice(0, word.length <= 3 ? 3 : 5);
@@ -1731,7 +2240,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         spelling_bee: { answer: word },
         word_scramble: { letters, answer: word },
         missing_letter: { hiddenIndex, correctLetter, options: letterOptions },
-        sound_sort: { mode, targetChar, difficulty: word.length <= 3 ? "easy" : word.length <= 4 ? "medium" : "hard", options: sortMatches, distractors: sortDistractors },
+        ...soundBoard ? { sound_sort: soundBoard } : {},
         letter_tracing: { letter: word[0] || "" },
         word_families: { rime, options: familyOptions, distractors: familyDistractors },
         decoding: { choices: decodingChoices },
@@ -1740,10 +2249,20 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         ...sentenceMatch ? { sentence_match: sentenceMatch } : {}
       };
     });
+    items.forEach((item) => {
+      const text = [item.word || item.targetWord, item.activityItems?.read_sentence?.sentence, item.activityItems?.read_passage?.story].filter(Boolean).join(" ");
+      item._instructionalProfile = instructionalProfile;
+      item._instructionalCoverage = WS_CORE.profileCheck(text, instructionalProfile);
+    });
     return items;
   };
   const handleStart = async () => {
     const wordsToProcess = previewList.filter((_, i) => selectedIndices.has(i));
+    const preparedActivities = sessionType === "assessment" ? [probeActivitySel] : prepareScope === "lesson" && includeLessonPlan ? lessonPlanOrder.filter((id) => lessonPlan[id]?.enabled) : null;
+    if (preparedActivities && !preparedActivities.length) {
+      setLessonPlanReorderStatus(tf("word_sounds.choose_lesson_activity", "Choose at least one lesson activity before preparing."));
+      return;
+    }
     if (wordsToProcess.length === 0 || startRunRef.current) return;
     const generationEpoch = ++generationEpochRef.current;
     const isGenerationActive = () => generationEpochRef.current === generationEpoch;
@@ -1991,6 +2510,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
         });
       }
       compileActivityItems(processed);
+      if (preparedActivities) processed.forEach((item) => {
+        item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(([id]) => preparedActivities.includes(id)));
+        item._preparedActivities = preparedActivities;
+        item._instructionalCoverage = WS_CORE.profileCheck([item.word || item.targetWord, item.activityItems?.read_sentence?.sentence, item.activityItems?.read_passage?.story].filter(Boolean).join(" "), instructionalProfile);
+      });
       const decodingAssets = {};
       const aacAssets = {};
       processed.forEach((item) => {
@@ -2157,16 +2681,16 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           tasks.add("Read the sentence. Match the pictures to it.");
           [...boards.sentence_match.sequence || [], ...boards.sentence_match.extras || []].forEach((value) => value && tasks.add(String(value)));
         }
-        tasks.add("Which word did you hear?");
-        tasks.add("Which word rhymes with");
-        tasks.add("Find words that start with the sound");
-        tasks.add("Find words that end with the sound");
+        if (boards.blending) tasks.add("Which word did you hear?");
+        if (boards.rhyming) tasks.add("Which word rhymes with");
+        if (boards.sound_sort) tasks.add("Find words that start with the sound");
+        if (boards.sound_sort) tasks.add("Find words that end with the sound");
         tasks.add("as in");
-        tasks.add("Listen to the syllables and blend them together");
-        tasks.add("How many syllables do you hear? Clap for each one");
+        if (boards.syllable_blending) tasks.add("Listen to the syllables and blend them together");
+        if (boards.syllable_counting) tasks.add("How many syllables do you hear? Clap for each one");
         if (boards.word_families?.rime) tasks.add(`Find all words in the ${boards.word_families.rime} family`);
         const ordinalNames = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"];
-        (item.phonemes || []).forEach((_, index) => {
+        (boards.isolation ? item.phonemes || [] : []).forEach((_, index) => {
           const ordinal = ordinalNames[index] || `${index + 1}th`;
           tasks.add(`What is the ${ordinal} sound in ${word}?`);
           tasks.add(`What is the ${index + 1}${index === 0 ? "st" : index === 1 ? "nd" : index === 2 ? "rd" : "th"} sound?`);
@@ -2280,6 +2804,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       } : { isProbe: false };
       const sessionConfig = {
         schema: "alloflow-word-sounds-session/v1",
+        ...preparedActivities ? { preparedActivities } : {},
+        instructionalProfile,
         version: 1,
         sessionGoal: isAssessment ? processed.length : Math.max(1, Number(wordSoundsSessionGoal) || 30),
         orthoSessionGoal: isAssessment || useLessonPlan ? 0 : Math.max(0, Number(orthoSessionGoal) || 0),
@@ -2330,7 +2856,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
   return /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in" }, /* @__PURE__ */ React.createElement("div", { ref: setupDialogRef, role: "dialog", "aria-modal": "true", "aria-label": tf("word_sounds.setup_dialog_label", "Word Sounds setup"), tabIndex: -1, className: "bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-5xl max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-400 focus:outline-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-violet-600 to-indigo-600 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white/20 p-3 rounded-2xl backdrop-blur-md" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 32, className: "text-yellow-300 animate-pulse motion-reduce:animate-none" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-3xl font-black tracking-tight" }, isProbeMode ? `\u{1F4CA} ${(probeActivity || "").charAt(0).toUpperCase() + (probeActivity || "").slice(1)} Probe` : tf("word_sounds.title", "Word Sounds Studio")), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-100 font-medium opacity-90" }, tf("word_sounds.subtitle", "Design your phonics lesson"), " \u2022 ", gradeLevel || "K-2"))), /* @__PURE__ */ React.createElement("div", { className: "flex gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "ws_gen_minimize", onClick: () => {
     setIsMinimized(true);
     if (onMinimize) onMinimize();
-  }, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24 })), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": tf("word_sounds.close_setup", "Close Word Sounds setup"), "data-help-key": "ws_gen_close", onClick: handleGeneratorClose, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, preloadedWords.length, " words ready"), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(
+  }, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.minimize") }, /* @__PURE__ */ React.createElement(Minimize, { size: 24 })), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": tf("word_sounds.close_setup", "Close Word Sounds setup"), "data-help-key": "ws_gen_close", onClick: handleGeneratorClose, className: "bg-white/10 hover:bg-white/20 p-2 rounded-full transition-colors", title: t("common.close") }, /* @__PURE__ */ React.createElement(X, { size: 24 })))), preloadedWords && preloadedWords.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-emerald-50 to-teal-50 border-b border-emerald-200 px-6 py-3 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-100 rounded-full p-1.5" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16, className: "text-emerald-600" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-emerald-800" }, tf("word_sounds.words_prepared_count", "{count} words prepared", { count: preloadedWords.length })), /* @__PURE__ */ React.createElement("span", { className: "text-emerald-600 text-sm ml-2" }, preloadedWords.slice(0, 5).map((w) => w.targetWord || w.word || w).join(", "), preloadedWords.length > 5 && `, +${preloadedWords.length - 5} more`))), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -2705,7 +3231,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(GripVertical, { size: 14, className: "text-slate-600 cursor-grab active:cursor-grabbing", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement(
         "input",
         {
-          "aria-label": t("common.toggle_enabled"),
+          "aria-labelledby": `ws-activity-label-${activity.id}`,
           type: "checkbox",
           checked: lessonPlan[activity.id]?.enabled,
           onChange: (e) => setLessonPlan((prev) => ({
@@ -2714,11 +3240,11 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           })),
           className: "accent-indigo-600 w-4 h-4"
         }
-      ), /* @__PURE__ */ React.createElement("span", { className: "text-sm font-semibold text-slate-700" }, activity.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" }, lessonPlan[activity.id].count, "x"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
+      ), /* @__PURE__ */ React.createElement("span", { id: `ws-activity-label-${activity.id}`, className: "text-sm font-semibold text-slate-700" }, activity.label)), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": `Reorder ${activity.label}` }, lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded" }, lessonPlan[activity.id].count, "x"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "up"), disabled: activityIndex === 0, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} up` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2191")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => moveLessonPlanActivity(activity.id, activity.label, "down"), disabled: activityIndex === lessonPlanOrder.length - 1, className: "min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2", "aria-label": `Move ${activity.label} down` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2193")))),
       lessonPlan[activity.id].enabled && /* @__PURE__ */ React.createElement(
         "input",
         {
-          "aria-label": t("common.adjust_lesson_plan"),
+          "aria-label": tf("word_sounds.activity_item_count", "{activity}: item count", { activity: activity.label }),
           type: "range",
           min: "1",
           max: "20",
@@ -2763,7 +3289,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       className: "h-full bg-gradient-to-r from-teal-500 to-emerald-500 rounded-full transition-all duration-300",
       style: { width: `${prewarmTotal ? prewarmCount / prewarmTotal * 100 : 0}%` }
     }
-  )))), previewList.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pb-20" }, previewList.map((word, i) => {
+  )))), /* @__PURE__ */ React.createElement("details", { className: "bg-white border border-slate-300 rounded-xl p-4 mb-3" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-slate-700" }, tf("word_sounds.preparation_options", "Preparation and taught spellings")), /* @__PURE__ */ React.createElement("label", { className: "block mt-3 text-sm font-semibold", htmlFor: "ws-prepare-scope" }, tf("word_sounds.prepare_scope", "Activities to prepare")), /* @__PURE__ */ React.createElement("select", { id: "ws-prepare-scope", value: prepareScope, onChange: (e) => setPrepareScope(e.target.value), className: "w-full min-h-11 border border-slate-400 rounded-lg p-2" }, /* @__PURE__ */ React.createElement("option", { value: "all" }, tf("word_sounds.prepare_all", "All activities (allows switching)")), /* @__PURE__ */ React.createElement("option", { value: "lesson", disabled: !includeLessonPlan }, tf("word_sounds.prepare_lesson", "Selected lesson only (less audio to prepare)"))), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-2" }, tf("word_sounds.taught_spellings_help", "Optional spelling coverage check. Enter taught letters and adjacent letter groups, separated by commas; list known whole words separately. Review sound values and irregular spellings with the learner.")), /* @__PURE__ */ React.createElement("label", { className: "block mt-3 text-sm font-semibold", htmlFor: "ws-taught-patterns" }, tf("word_sounds.taught_patterns", "Taught letters and letter groups")), /* @__PURE__ */ React.createElement("input", { id: "ws-taught-patterns", value: taughtPatternsText, onChange: (e) => setTaughtPatternsText(e.target.value), placeholder: "s, a, t, p, i, n, sh, ck", className: "w-full min-h-11 border border-slate-400 rounded-lg p-2" }), /* @__PURE__ */ React.createElement("label", { className: "block mt-3 text-sm font-semibold", htmlFor: "ws-known-words" }, tf("word_sounds.known_words", "Known whole words")), /* @__PURE__ */ React.createElement("input", { id: "ws-known-words", value: knownWordsText, onChange: (e) => setKnownWordsText(e.target.value), className: "w-full min-h-11 border border-slate-400 rounded-lg p-2" }), instructionalProfile.taughtPatterns.length > 0 && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-2 text-sm text-amber-900" }, tf("word_sounds.pattern_review_words", "Words to review against taught spellings: {words}", { words: previewList.filter((w) => WS_CORE.profileCheck(w, instructionalProfile).status === "review").join(", ") || tf("word_sounds.none", "None") }))), previewList.length > 0 ? /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4 pb-20" }, previewList.map((word, i) => {
     const isSelected = selectedIndices.has(i);
     return /* @__PURE__ */ React.createElement(
       "button",

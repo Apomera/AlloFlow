@@ -1,0 +1,156 @@
+{
+  "generatedAt": "2026-09-07T03:08:44.801Z",
+  "observations": [
+    {
+      "id": "undo-snapshot",
+      "captureCalls": 0,
+      "undoSnapshot": null,
+      "undoOffered": true,
+      "lastMessage": "There’s nothing from a plan to undo right now."
+    },
+    {
+      "id": "undo-settings",
+      "restoreCalls": 0,
+      "lastMessage": "↩ Restored your content and settings to the moment before the plan ran."
+    },
+    {
+      "id": "unavailable-confirm",
+      "lastMessage": "✅ Done."
+    },
+    {
+      "id": "failed-confirm",
+      "lastMessage": "✅ Provider failed."
+    },
+    {
+      "id": "pending-confirm",
+      "lastMessage": "✅ Working..."
+    },
+    {
+      "id": "choice-router-bypass",
+      "routerCalls": 0,
+      "chatCalls": [
+        "open educator hub"
+      ],
+      "pendingPlan": null
+    },
+    {
+      "id": "save-name-routing",
+      "input": "cancel",
+      "attemptedSaveNames": [
+        "cancel"
+      ],
+      "pending": true
+    },
+    {
+      "id": "save-name-routing",
+      "input": "__allo_plan_show",
+      "attemptedSaveNames": [
+        "__allo_plan_show"
+      ],
+      "pending": true
+    },
+    {
+      "id": "long-request",
+      "result": null
+    },
+    {
+      "id": "blueprint-command-await",
+      "returnedBeforeGenerationFinished": true,
+      "result": {
+        "handled": true,
+        "narration": "Generating the plan now — you can watch each step on the card.",
+        "commandId": "run_lesson_blueprint",
+        "via": "confirm",
+        "suppressVoiceReply": false
+      }
+    },
+    {
+      "id": "parameter-contract",
+      "command": "rebuild_lesson_step",
+      "supplied": {
+        "step": 3
+      },
+      "allowed": [],
+      "invoked": [],
+      "result": {
+        "handled": true,
+        "narration": "Which step? 1. quiz",
+        "commandId": "rebuild_lesson_step",
+        "via": "confirm",
+        "suppressVoiceReply": false
+      }
+    },
+    {
+      "id": "parameter-contract",
+      "command": "apply_lesson_template",
+      "supplied": {
+        "name": "Vocabulary-first"
+      },
+      "allowed": [],
+      "invoked": [],
+      "result": {
+        "handled": true,
+        "narration": "Which template? Vocabulary-first",
+        "commandId": "apply_lesson_template",
+        "via": "confirm",
+        "suppressVoiceReply": false
+      }
+    },
+    {
+      "id": "blueprint-question",
+      "question": "Why did you choose a glossary?",
+      "answered": 1,
+      "revised": 0,
+      "lastMessage": "chat_guide.blueprint.still_pending"
+    },
+    {
+      "id": "blueprint-question",
+      "question": "Why include a glossary?",
+      "answered": 0,
+      "revised": 1,
+      "lastMessage": "chat_guide.blueprint.updated"
+    },
+    {
+      "id": "blueprint-question",
+      "question": "Would you change anything about this plan?",
+      "answered": 0,
+      "revised": 1,
+      "lastMessage": "chat_guide.blueprint.updated"
+    },
+    {
+      "id": "registry-param-scan",
+      "commandsInspected": 191,
+      "handlersReadingParamsWithoutContract": [
+        {
+          "id": "rebuild_lesson_step",
+          "reads": [
+            "step",
+            "position",
+            "index",
+            "number"
+          ]
+        },
+        {
+          "id": "apply_lesson_template",
+          "reads": [
+            "name",
+            "template",
+            "topic"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "chat-provider-failure",
+      "warnings": 1,
+      "visibleMessages": []
+    },
+    {
+      "id": "render-context-simulation",
+      "note": "Simulates the render-scoped getter supplied by the host; does not mount the full React app.",
+      "newestContextHasSource": true,
+      "quizCalls": 0,
+      "lastMessage": "⚠️ Step 2 (generate_quiz) isn’t available right now — it may need something an earlier step didn’t produce. The finished steps are kept. You can resume the exact remaining sequence without re-entering it."
+    }
+  ]
+}

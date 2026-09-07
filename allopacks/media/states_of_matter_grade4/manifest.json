@@ -1,0 +1,301 @@
+{
+  "slug": "states_of_matter_grade4",
+  "assets": [
+    {
+      "id": "sm-term-matter",
+      "kind": "glossary",
+      "term": "Matter",
+      "termIndex": 0,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A stone, a wood block, a clear glass of water and a tied inflated balloon arranged separately on a tabletop. Represent different kinds of matter without floating symbols.",
+      "alt": "A stone, a wooden block, a glass of water, and an inflated blue balloon rest on a table.",
+      "file": "sm-term-matter.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-particle",
+      "kind": "glossary",
+      "term": "Particle",
+      "termIndex": 1,
+      "prompt": "Create a square, text-free elementary science particle-model illustration. A plain white background with six identical small blue spheres, separated widely and scattered loosely. These spheres symbolize tiny particles of matter. No magnification inset, no nested spheres, no atom orbits, no lettering, numbers, labels, logos, captions or watermarks. Clean simple educational style with subtle soft shadows.",
+      "alt": "Six small blue spheres are scattered across a white background as symbols for tiny pieces of a substance.",
+      "file": "sm-term-particle.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-solid",
+      "kind": "glossary",
+      "term": "Solid",
+      "termIndex": 2,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A single wooden rectangular block with crisp edges resting on a table. Emphasize its fixed shape, realistic wood texture and clear silhouette.",
+      "alt": "A rectangular wooden block rests on a table.",
+      "file": "sm-term-solid.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-liquid",
+      "kind": "glossary",
+      "term": "Liquid",
+      "termIndex": 3,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Clear water halfway filling a wide shallow transparent bowl. Smooth horizontal water surface, realistic vessel walls and unobstructed view of the water.",
+      "alt": "Clear water fills part of a wide transparent bowl.",
+      "file": "sm-term-liquid.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-gas",
+      "kind": "glossary",
+      "term": "Gas",
+      "termIndex": 4,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. One plain translucent inflated tied balloon, gently rounded, resting on a tabletop. Clear air inside, no smoke, fog, bubbles or colored dots. Air is invisible and the balloon shows the space it occupies.",
+      "alt": "A tied, translucent balloon is inflated; the air inside is clear.",
+      "file": "sm-term-gas.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-melt",
+      "kind": "glossary",
+      "term": "Melt",
+      "termIndex": 5,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Two views of one ice cube on an identical shallow saucer: left mostly solid cube, right small remaining ice in a puddle. Plain rightward arrow between stages, same viewpoint.",
+      "alt": "An arrow connects an ice cube on a saucer to a smaller piece of ice surrounded by a puddle.",
+      "file": "sm-term-melt.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-freeze",
+      "kind": "glossary",
+      "term": "Freeze",
+      "termIndex": 6,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Two views of an identical small silicone ice tray, left containing liquid water in its wells, right with solid ice cubes occupying those wells. No frost cloud, freezer labels or writing.",
+      "alt": "Two matching green trays show water in the left tray and ice cubes in the right tray.",
+      "file": "sm-term-freeze.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-evaporate",
+      "kind": "glossary",
+      "term": "Evaporate",
+      "termIndex": 7,
+      "prompt": "Create one square text-free glossary illustration of EVAPORATION for a water-cycle classroom pack. Simple high-quality editorial illustration on a white background. Two small side-by-side views of the SAME pavement tile under warm sunlight: left a shallow blue puddle, right the same puddle visibly smaller, with the same fixed tile edges as a size reference. One clean subtle arrow points left to right to indicate time passing. No clouds rising from the puddle, no liquid droplets flying upward: water vapor is invisible. Bright blue water and golden sun, limited uncluttered palette, clear at thumbnail size. No labels, numbers, letters, or decorative text.",
+      "alt": "Two views of the same sunlit pavement tile show a puddle shrinking over time; an arrow connects the larger puddle to the smaller one.",
+      "file": "sm-term-evaporate.webp",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "reusedFrom": [
+        "water_cycle_grade6",
+        "wc-term-evaporation"
+      ],
+      "provenance": "Reused reviewed artwork from water_cycle_grade6/wc-term-evaporation"
+    },
+    {
+      "id": "sm-term-condense",
+      "kind": "glossary",
+      "term": "Condense",
+      "termIndex": 8,
+      "prompt": "Create one square text-free glossary illustration of CONDENSATION for a water-cycle classroom pack. White background, clean painterly editorial educational style. Close view of a cool metal lid held ABOVE, separate from a bowl of warm water; tiny liquid droplets collect on the UNDERSIDE of the cool lid. Bowl water surface is visibly below the lid. Avoid steam clouds or water spilling. Focus on distinct small droplets on a cool surface, warm golden and cool blue accents, simple composition readable at thumbnail size. No people, words, letters, labels, or logos.",
+      "alt": "A cold metal lid sits above a bowl of water. Small liquid droplets cling to the underside of the lid.",
+      "file": "sm-term-condense.webp",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "reusedFrom": [
+        "water_cycle_grade6",
+        "wc-term-condensation"
+      ],
+      "provenance": "Reused reviewed artwork from water_cycle_grade6/wc-term-condensation"
+    },
+    {
+      "id": "sm-term-energy",
+      "kind": "glossary",
+      "term": "Energy",
+      "termIndex": 9,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. Warm sunlight reaching a dark stone on a garden path. A pale yellow sunbeam indicates incoming light without arrows or text. No glowing hot stone, flames or imaginary visible heat gas.",
+      "alt": "A beam of sunlight falls on a dark stone on a garden path.",
+      "file": "sm-term-energy.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-term-volume",
+      "kind": "glossary",
+      "term": "Volume",
+      "termIndex": 10,
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Square format. A solid rectangular wooden block fitting snugly inside a transparent rectangular open box. The box outlines the three-dimensional space occupied by the block. No rulers, unit markings or numbers.",
+      "alt": "A wooden block occupies most of the space inside a transparent rectangular box.",
+      "file": "sm-term-volume.png",
+      "status": "visual-review-passed",
+      "altSource": "vision"
+    },
+    {
+      "id": "sm-img-solid-shape",
+      "kind": "panel",
+      "title": "A solid keeps its shape",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Three identical small wooden cubes shown separately on a plate, inside a bowl, and inside a wide clear glass. Each cube retains the same shape and size.",
+      "alt": "Wooden cubes keep their shape on a plate, in a bowl, and inside a glass.",
+      "file": "sm-img-solid-shape.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "A solid keeps its shape when moved between containers. These cubes are representative examples."
+    },
+    {
+      "id": "sm-img-liquid-shape",
+      "kind": "panel",
+      "title": "Liquid takes a container's shape",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A tall narrow glass and a wide shallow bowl each containing clear blue-tinted water with horizontal surfaces. Distinct container shapes, no pouring, measurement marks or numeric claim of equal amounts.",
+      "alt": "Water forms a tall narrow shape in a glass and a low wide shape in a bowl.",
+      "file": "sm-img-liquid-shape.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "A liquid flows and takes the shape of the part of its container that it occupies. These pictures do not measure equal volumes."
+    },
+    {
+      "id": "sm-img-trapped-air",
+      "kind": "panel",
+      "title": "Air occupies space",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two views of a large plastic classroom syringe WITHOUT needle, with its tip visibly capped. Left plunger pulled back, right pushed farther inward, showing less enclosed air space. Clear empty air, no fog or droplets, no clinical setting.",
+      "alt": "Two capped syringes without needles show a plunger pulled back and a plunger pushed in, leaving less space for trapped air.",
+      "file": "sm-img-trapped-air.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Air occupies space. Pushing a capped syringe's plunger compresses the trapped air into a smaller volume."
+    },
+    {
+      "id": "sm-img-melting-jar",
+      "kind": "panel",
+      "title": "Matter stays in a closed container",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two identical wide sealed transparent jars with matching lids. Left contains several ice pieces; right contains melted liquid water. Same viewpoint and sealed vessel. No scales or fabricated readings, no loss or spills.",
+      "alt": "Two closed jars show ice pieces on the left and liquid water on the right.",
+      "file": "sm-img-melting-jar.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Melting changes solid water into liquid water. In a closed container, total mass stays the same. The drawings are not volume measurements."
+    },
+    {
+      "id": "sm-img-freezing-tray",
+      "kind": "panel",
+      "title": "Liquid becomes solid",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A close-up pair of matching ice trays on a tabletop. Left shows level liquid in wells, right shows frozen water cubes. The paired views are a before-after model, no pouring or hands.",
+      "alt": "Two matching blue trays show liquid water on the left and ice cubes on the right.",
+      "file": "sm-img-freezing-tray.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Cooling liquid water can make it freeze. During freezing, energy leaves the water."
+    },
+    {
+      "id": "sm-img-drying-puddle",
+      "kind": "panel",
+      "title": "Liquid spreads into the air",
+      "prompt": "Text-free educational illustration for AlloFlow, sixth-grade water cycle. No words, letters, numbers, captions, labels, boxes or watermark. Clean polished classroom editorial style, natural blue/green/gold palette. Wide three-panel sequence, without panel borders or headings. Exactly the same single square pavement tile viewed at the same angle three times under sunlight. First has a large shallow puddle, second a medium puddle, third a very small puddle. Maintain identical tile size and viewpoint. White margins. No visible vapor or steam, no evaporation arrows needed. No numbers or text.",
+      "alt": "Three views of the same pavement show a large puddle, a smaller puddle, and a tiny wet patch.",
+      "file": "sm-img-drying-puddle.webp",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "A puddle can shrink as water evaporates into invisible vapor. Its particles spread into the surrounding air.",
+      "reusedFrom": [
+        "water_cycle_grade6",
+        "wc-img-puddle-time"
+      ],
+      "provenance": "Reused reviewed artwork from water_cycle_grade6/wc-img-puddle-time"
+    },
+    {
+      "id": "sm-img-cold-glass",
+      "kind": "panel",
+      "title": "Droplets on a cold surface",
+      "prompt": "Scientific educational illustration for a sixth-grade water-cycle lesson. A transparent glass with ice cubes and cold drinking water on a warm wooden table. Show many realistic tiny condensation droplets clinging to the OUTSIDE of the glass and a small wet ring on the table. Water level and ice inside clearly distinguish interior water from exterior droplets. Comfortable uncluttered warm kitchen backdrop, polished painterly classroom illustration, square composition. No arrows, labels, words, logos, or watermark. This depicts condensation on a cold surface, not a leaking glass.",
+      "alt": "An ice-filled glass stands in a warm kitchen. Droplets coat its outside and a wet ring surrounds its base.",
+      "file": "sm-img-cold-glass.webp",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Water vapor in the surrounding air can condense on a cold glass. The droplets outside did not pass through the glass.",
+      "reusedFrom": [
+        "water_cycle_grade6",
+        "wc-img-glass-condensation"
+      ],
+      "provenance": "Reused reviewed artwork from water_cycle_grade6/wc-img-glass-condensation"
+    },
+    {
+      "id": "sm-img-vapor-gap",
+      "kind": "panel",
+      "title": "Invisible vapor and visible mist",
+      "prompt": "Landscape text-free educational illustration for an AlloFlow sixth-grade water-cycle pack. Absolutely no text, letters, numbers, labels, legends, title, caption boxes or watermark. Clear polished editorial classroom style with natural blue water and green land. Close-up side view of a shiny metal kettle spout pointing toward open space on right. There is a SHORT clearly visible empty gap immediately beyond the spout. Farther away a small white mist plume becomes visible, then fades. The clear gap represents invisible gas; the distant white mist is condensed tiny droplets. No text anywhere, no hands, no burner, no demonstration instructions. Uncluttered pale background so both clear gap and white mist are distinguishable.",
+      "alt": "A kettle spout opens into a short clear gap. A white mist plume begins farther away from the spout.",
+      "file": "sm-img-vapor-gap.webp",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Water vapor is invisible. The white mist farther from the spout consists of tiny liquid droplets. Observe this picture rather than approaching hot steam.",
+      "reusedFrom": [
+        "water_cycle_grade6",
+        "wc-img-kettle-gap"
+      ],
+      "provenance": "Reused reviewed artwork from water_cycle_grade6/wc-img-kettle-gap"
+    },
+    {
+      "id": "sm-img-solid-particles",
+      "kind": "panel",
+      "title": "A model of solid particles",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A conceptual particle model: identical blue spheres arranged close together in an orderly four by four array inside a simple square frame. Small subtle paired vibration strokes beside a few spheres, no directional flow arrows. White background. No bonds or claim that this models ice.",
+      "alt": "Sixteen blue spheres sit in an orderly square arrangement. Short curved strokes suggest vibration.",
+      "file": "sm-img-solid-particles.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "In this simplified solid model, particles vibrate around fixed positions. It is not a model of ice's open structure."
+    },
+    {
+      "id": "sm-img-liquid-particles",
+      "kind": "panel",
+      "title": "A model of liquid particles",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A conceptual particle model: identical blue spheres close together but irregularly arranged in the lower half of a wide outline container, with empty space above. No regular lattice. A few short unlabelled movement arrows point between nearby particles.",
+      "alt": "Blue spheres cluster irregularly near the bottom of a container; small arrows point between nearby spheres.",
+      "file": "sm-img-liquid-particles.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "In this simplified liquid model, particles remain close together but can move past one another."
+    },
+    {
+      "id": "sm-img-gas-particles",
+      "kind": "panel",
+      "title": "A model of gas particles",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A conceptual particle model: eight identical blue spheres spaced far apart throughout a large square outline container, including upper and lower regions. Several short arrows point in varied directions. Sphere size matches throughout; gas particles do not become bigger.",
+      "alt": "Eight small blue spheres are spread throughout a transparent box, with arrows pointing in different directions.",
+      "file": "sm-img-gas-particles.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "In this simplified gas model, particles move throughout the container. These three models use different scales and particle counts; they are not a before-and-after sequence."
+    },
+    {
+      "id": "sm-img-closed-system",
+      "kind": "panel",
+      "title": "Keeping track of all the matter",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. A tightly closed transparent food container holds a small amount of liquid water and an ice cube on a plain tabletop. No vapor cloud, measurement display or spill. Lid fully sealed and clearly visible; focus on container boundaries.",
+      "alt": "A clear food container with a closed lid holds a small ice cube and shallow water.",
+      "file": "sm-img-closed-system.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Keep the container closed and include all its contents when comparing mass before and after melting. A picture alone is not a measurement."
+    },
+    {
+      "id": "sm-img-inflating-balloon",
+      "kind": "panel",
+      "title": "Adding air",
+      "prompt": "Create a clean educational illustration for an AlloFlow elementary science AlloPack. Text-free pixels: absolutely no letters, words, digits, labels, captions, signatures, logos, watermarks, decorative corner stars or symbols. Natural colors, pale uncluttered background, clear shapes and physically plausible objects. App supplies editable labels and descriptions. Landscape 3:2 format. Two views on one tabletop: a plain deflated balloon on the left and the same-color tied inflated balloon on the right. No person, pump or extra balloons; air invisible, not smoke.",
+      "alt": "A flat blue balloon lies beside an inflated blue balloon.",
+      "file": "sm-img-inflating-balloon.png",
+      "status": "visual-review-passed",
+      "altSource": "vision",
+      "caption": "Adding air makes a balloon expand. The air inside is matter even though we cannot see it."
+    }
+  ],
+  "review": {
+    "date": "2026-09-07",
+    "reviewer": "AI visual and content review",
+    "educatorReview": "pending",
+    "textPolicy": "No text embedded in artwork; native editable labels and captions",
+    "rejectedRevision": "Initial particle glossary image replaced because its nested magnification model was misleading."
+  }
+}

@@ -791,7 +791,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       ),
 
       // Phase chip strip
-      h('div', { role: 'tablist', 'aria-label': 'Acting-out cycle phases', style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
+      h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_acting_out_cycle_phases', 'Acting-out cycle phases'), style: { display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 12 } },
         phases.map(function(p) {
           var active = p.phase === currentPhase;
           return h('button', {
@@ -858,7 +858,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         h('input', {
           type: 'range', 'aria-valuetext': 'phase ' + currentPhase + ' of 7', min: 1, max: 7, step: 1, value: currentPhase,
-          'aria-label': 'Cycle phase',
+          'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_cycle_phase', 'Cycle phase'),
           onChange: function(e) { setCurrentPhase(parseInt(e.target.value, 10)); setAutoPlay(false); },
           style: { flex: 1, minWidth: 160, accentColor: ph.color }
         }),
@@ -879,7 +879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
         }, autoPlay ? '⏸ Pause' : '▶ Play'),
         h('button', {
           onClick: function() { setCurrentPhase(1); setAutoPlay(false); },
-          'aria-label': 'Reset to Phase 1 Calm',
+          'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_reset_to_phase_1_calm', 'Reset to Phase 1 Calm'),
           style: {
             padding: '8px 12px', borderRadius: 8,
             background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)',
@@ -1179,7 +1179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       ),
 
       // Scenario picker
-      h('div', { role: 'tablist', 'aria-label': 'Scenario picker', style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
+      h('div', { role: 'tablist', 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_scenario_picker', 'Scenario picker'), style: { display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' } },
         scenarios.map(function(s) {
           var active = s.id === scenarioId;
           var done = completed.has(s.id);
@@ -1197,7 +1197,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           },
             h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, s.icon),
             s.title,
-            done ? h('span', { 'aria-label': 'completed', style: { marginLeft: 6, color: '#22c55e' } }, '✓') : null
+            done ? h('span', { 'aria-label': __alloSBTT('stem.schoolbehaviortoolkit.a11y_completed', 'completed'), style: { marginLeft: 6, color: '#22c55e' } }, '✓') : null
           );
         })
       ),
@@ -1337,6 +1337,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
     var dd = String(d.getDate()).padStart(2, '0');
     return d.getFullYear() + '-' + m + '-' + dd;
   }
+  var __alloSBTCtx = null;
+  // Module-scope translator: the render-scoped __alloT closes over ctx and is
+  // not in scope in the helpers below, so those calls would throw.
+  var __alloSBTT = function (k, fb) {
+    var v;
+    try { v = (__alloSBTCtx && typeof __alloSBTCtx.t === "function") ? __alloSBTCtx.t(k, fb) : null; } catch (e) { v = null; }
+    return (v == null) ? (fb != null ? fb : k) : v;
+  };
+
 
   window.StemLab.registerTool('schoolBehaviorToolkit', {
     icon: '🏫',
@@ -1348,6 +1357,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
       { id: 'open_pbis', label: 'Open the PBIS three-tier framework', icon: '🏫', check: function(d) { return !!(d && d.sbtViewedPbis); }, progress: function(d) { return (d && d.sbtViewedPbis) ? 'opened' : 'not yet'; } }
     ],
     render: function(ctx) {
+      __alloSBTCtx = ctx;
       var __alloT = function (k, fb) { var v; try { v = (typeof ctx.t === "function") ? ctx.t(k, fb) : null; } catch (e) { v = null; } return (v == null) ? (fb != null ? fb : k) : v; };
       var React = ctx.React;
       var h = React.createElement;

@@ -120,7 +120,7 @@ beforeEach(() => {
 
 describe('RoadReady SVG alternatives', () => {
   it('classifies every rendered SVG as meaningful or decorative', () => {
-    for (const spec of SVG_VIEWS) {
+    for (const spec of [...SVG_VIEWS, { view: 'menu', data: {} }]) {
       const container = renderView(spec);
       const svgs = Array.from(container.querySelectorAll('svg'));
       expect(svgs.length, `${spec.view} should render SVG content`).toBeGreaterThan(
@@ -166,7 +166,7 @@ describe('RoadReady SVG alternatives', () => {
     expect(braking.getAttribute('aria-label')).toContain('1500 kilograms');
   });
 
-  it('classifies all 37 source SVG declarations and preserves deploy parity', () => {
+  it('classifies all 38 source SVG declarations and preserves deploy parity', () => {
     const source = readFileSync(SOURCE, 'utf8');
     const lines = source.split(/\r?\n/);
     const declarationLines = [];
@@ -183,7 +183,7 @@ describe('RoadReady SVG alternatives', () => {
       ).toBe(true);
     }
 
-    expect(declarationLines).toHaveLength(37);
+    expect(declarationLines).toHaveLength(38);
     expect(readFileSync(DEPLOY, 'utf8')).toBe(source);
   });
 });

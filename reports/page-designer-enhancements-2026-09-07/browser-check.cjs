@@ -1,0 +1,42 @@
+const fs=require('fs'),path=require('path'),assert=require('assert');const {chromium}=require('playwright');
+const out=path.resolve('reports/page-designer-enhancements-2026-09-07');
+(async()=>{const browser=await chromium.launch({headless:true});try{
+const page=await browser.newPage({viewport:{width:1280,height:900}});page.setDefaultTimeout(10000);const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error(e.stack);});
+await page.route('http://designer.test/**',r=>r.fulfill({contentType:'text/html',body:'<!doctype html><html lang="en"><head><title>Page Designer verification</title><style>body{margin:0}*{box-sizing:border-box}</style></head><body><div id="root"></div></body></html>'}));
+await page.goto('http://designer.test/');for(const file of ['desktop/web-app/node_modules/react/umd/react.development.js','desktop/web-app/node_modules/react-dom/umd/react-dom.development.js','studio_module.js'])await page.addScriptTag({path:path.resolve(file)});
+await page.evaluate(()=>{window.toasts=[];window.stRoot=ReactDOM.createRoot(document.getElementById('root'));window.stRoot.render(React.createElement(AlloModules.AlloStudio,{t:k=>k,addToast:(...a)=>toasts.push(a),onClose:()=>stRoot.unmount()}));});
+await page.getByRole('button',{name:/^Use template:/}).first().click();await page.getByRole('textbox',{name:'Document title',exact:true}).waitFor();console.log('Designer mounted');
+const frame=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+const results={errors,viewports:{}};
+for(const [name,width,height] of [['desktop',1280,900],['short-laptop',1280,720],['tablet',1024,768],['mobile',390,844]]){
+await page.setViewportSize({width,height});await frame();
+if(width<1040)await page.getByRole('button',{name:'Canvas',exact:true}).click();
+await page.getByRole('button',{name:'Fit page',exact:true}).click();await frame();
+const dimensions=await page.locator('[data-st-canvas-viewport]').evaluate(el=>{const p=el.firstElementChild.getBoundingClientRect();return{width:el.clientWidth,height:el.clientHeight,pageWidth:p.width,pageHeight:p.height};});
+assert(dimensions.pageWidth<=dimensions.width&&dimensions.pageHeight<=dimensions.height,'Fit page must fit '+name);if(width===390)assert(dimensions.height>350,'Mobile canvas should be substantially taller');results.viewports[name]=dimensions;
+await page.screenshot({path:path.join(out,'editor-'+name+'.png')});
+}
+await page.getByRole('group',{name:/^text: Your Event Title/}).click();await frame();
+assert(await page.getByRole('textbox',{name:'Text',exact:true}).isVisible(),'Mobile selection must expose text controls');
+await page.screenshot({path:path.join(out,'mobile-properties.png')});
+await page.getByRole('button',{name:'Canvas',exact:true}).click();
+await page.setViewportSize({width:1280,height:900});await frame();
+await page.getByRole('group',{name:/^(Selected )?text: Your Event Title/}).click();await frame();
+const text=page.getByRole('textbox',{name:'Text',exact:true});const textBounds=await text.boundingBox();assert(textBounds.y+textBounds.height<900,'Text field must be visible without inspector scrolling');
+await text.fill('Edited heading survives recovery');await text.press('Tab');
+await page.screenshot({path:path.join(out,'desktop-properties.png')});
+assert(await page.locator('[data-st-reading-number]').count()===0);await page.getByRole('button',{name:'Order numbers',exact:true}).click();assert(await page.locator('[data-st-reading-number]').count()>0);await page.getByRole('button',{name:'Order numbers',exact:true}).click();
+const snap=await page.getByRole('button',{name:'Snap',exact:true}).evaluate(el=>({foreground:getComputedStyle(el).color,background:getComputedStyle(el).backgroundColor}));assert(snap.foreground==='rgb(15, 23, 42)');results.snap=snap;
+await page.getByRole('button',{name:/Export$/}).click();await frame();
+assert(await page.getByRole('group',{name:'Share an accessible document',exact:true}).isVisible());
+assert(await page.getByRole('group',{name:'Edit elsewhere',exact:true}).isVisible());
+await page.screenshot({path:path.join(out,'export-desktop.png')});
+await page.getByRole('button',{name:/Export$/}).press('Escape');assert(await page.getByRole('textbox',{name:'Document title',exact:true}).isVisible());assert(await page.getByRole('region',{name:'Export choices'}).count()===0);
+await page.locator('summary').filter({hasText:'More'}).click();await page.getByRole('button',{name:'Keyboard shortcuts',exact:true}).focus();await page.keyboard.press('Escape');assert(await page.locator('summary').filter({hasText:'More'}).evaluate(el=>document.activeElement===el&&!el.parentElement.open));
+await page.getByRole('button',{name:'Objects',exact:true}).click();
+const objectButton=page.locator('[data-st-object-browser]').getByRole('button',{name:/^Select text Edited heading/}).first();await objectButton.focus();await page.keyboard.press('Enter');await page.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='Text');results.keyboardPropertiesFocus=true;
+const title=page.getByRole('textbox',{name:'Document title',exact:true});await title.fill('Latest title saved immediately');
+await page.getByRole('button',{name:'Close AlloStudio',exact:true}).click();
+const saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('alloStudioAutosave_v1')));assert(saved.doc.title==='Latest title saved immediately');assert(saved.doc.objects.some(o=>o.runs?.some(r=>r.text==='Edited heading survives recovery')));results.recoveredLatestEdits=true;
+assert.deepStrictEqual(errors,[]);fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify(results,null,2));console.log(JSON.stringify(results,null,2));
+}finally{await browser.close();}})().catch(e=>{console.error(e);process.exitCode=1;});

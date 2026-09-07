@@ -43,9 +43,9 @@
     "dashboard_title": "ડેશબોર્ડ / સાધનો",
     "dashboard_text": "ટૂલ નેવિગેશન બાર અને શિક્ષક ડેશબોર્ડ ઍક્સેસ બિંદુ.\n### ટૂલ નેવિગેશન બાર\n• **ટૂલ આઇકન્સ**: કોઈપણ જનરેટર (ક્વિઝ, ગ્લોસરી, એડવેન્ચર, વગેરે) પર એક-ક્લિક કૂદકો.\n• **સ્ટેટસ ડોટ્સ**: લીલો = સક્રિય સામગ્રી, નારંગી = પ્રક્રિયા ચાલુ, ગ્રે = ખાલી.\n• **તાર્કિક પ્રવાહ**: સાધનો ઇનપુટ → જનરેટ → નિકાસ સુધી ડાબેથી-જમણે ક્રમમાં.\n### શિક્ષક ડેશબોર્ડ બટન\n**શિક્ષક ગ્રેડિંગ ડેશબોર્ડ** ખોલવા ડેશબોર્ડ આઇકન ક્લિક કરો - વિદ્યાર્થી પ્રગતિ ટ્રેક કરવા સમર્પિત પેનલ:\n• **વિદ્યાર્થી JSON અપલોડ કરો**: વિદ્યાર્થીઓ તેમનું કાર્ય JSON ફાઇલો તરીકે નિકાસ કરે છે; બેચ વિશ્લેષણ માટે અહીં તે અપલોડ કરો.\n• **વિદ્યાર્થી રોસ્ટર**: ઉપનામ, તારીખ, ક્વિઝ પ્રગતિ, અને એડવેન્ચર સ્તર સાથે બધા અપલોડ કરેલા વિદ્યાર્થીઓ જુઓ.\n• **વ્યક્તિગત સમીક્ષા**: કોઈપણ વિદ્યાર્થીનો સંપૂર્ણ ઇતિહાસ જોવા તેના પર ક્લિક કરો•ક્વિઝ, એડવેન્ચર્સ, પ્રતિસાદો.\n• **ગ્રેડેડ તરીકે ચિહ્નિત કરો**: તમે કયા વિદ્યાર્થીઓની સમીક્ષા કરી તે ટ્રેક કરવા ચેકબોક્સ.\n• **ક્લાસ ઇનસાઇટ્સ ટૅબ**: સામાન્ય ગેરસમજો અને વર્ગ-વ્યાપી પ્રદર્શન દર્શાવતા વિશ્લેષણ ચાર્ટ.\n• **CSV માં નિકાસ કરો**: ગ્રેડબુક આયાત માટે વર્ગ ડેટા ડાઉનલોડ કરો.\n### સંબંધિત હેડર ક્રિયાઓ\n• **પાઠ પર કૂદો**: તમારી સૌથી તાજેતરની પાઠ યોજના પર ઝડપી-પાછા.\n• **વ્યૂ ટૉગલ**: શિક્ષક અને વિદ્યાર્થી દૃશ્યો વચ્ચે સ્વિચ કરો.\n### પ્રો ટિપ\nવર્ગના અંતે વિદ્યાર્થીઓને તેમના JSON સેવ નિકાસ કરાવો, પછી કાર્યક્ષમ રાત્રિ ગ્રેડિંગ માટે અહીં તે બેચ-અપલોડ કરો!",
     "actions_title": "એક્શન બાર",
-    "actions_text": "ઇન્ટરફેસની ભાષા સેટ કરવા, લાઇવ સત્રો સંભાળવા, સંસાધનોનો અનુવાદ કરવા અને નિકાસ સાધનો ખોલવા હેડરનાં નિયંત્રણો વાપરો.\n### પહોંચાડતાં પહેલાં સમીક્ષા કરો\n• અનુવાદિત સામગ્રીનો અર્થ અને ચોકસાઈ તપાસો.\n• પસંદ કરેલાં સંસાધનો અને ઉપલબ્ધ ડાઉનલોડ ફોર્મેટ જોવા Document Builder ખોલો. વિદ્યાર્થીઓ સાથે વહેંચતાં પહેલાં પરિણામની પૂર્વઝલક જુઓ.\n• જોડાવાનો કોડ મેળવવા લાઇવ સત્ર શરૂ કરો, અથવા સ્વતંત્ર કામ માટે સમર્થિત ગૃહકાર્ય વહેંચણી બનાવો.\n### શોધખોળ ચાલુ રાખો\nશિક્ષક અને શીખવાનાં સાધનોનાં મેનૂ આયોજન, મૂલ્યાંકન, સર્જનાત્મક અને પરસ્પરક્રિયાત્મક વધુ પ્રવૃત્તિઓ ખોલે છે. ગાઇડેડ મોડ તમને એ વિકલ્પો શોધતાં પહેલાં કેન્દ્રિત પાઠ બનાવવામાં મદદ કરે છે.",
+    "actions_text": "ઇન્ટરફેસની ભાષા સેટ કરવા, લાઇવ સત્રો સંભાળવા, સંસાધનોનો અનુવાદ કરવા અને નિકાસ સાધનો ખોલવા હેડરનાં નિયંત્રણો વાપરો.\n### પહોંચાડતાં પહેલાં સમીક્ષા કરો\n• અનુવાદિત સામગ્રીનો અર્થ અને ચોકસાઈ તપાસો.\n• પસંદ કરેલાં સંસાધનો અને ઉપલબ્ધ ડાઉનલોડ ફોર્મેટ જોવા દસ્તાવેજ બનાવનાર ખોલો. વિદ્યાર્થીઓ સાથે વહેંચતાં પહેલાં પરિણામની પૂર્વઝલક જુઓ.\n• જોડાવાનો કોડ મેળવવા લાઇવ સત્ર શરૂ કરો, અથવા સ્વતંત્ર કામ માટે સમર્થિત ગૃહકાર્ય વહેંચણી બનાવો.\n### શોધખોળ ચાલુ રાખો\nશિક્ષક અને શીખવાનાં સાધનોનાં મેનૂ આયોજન, મૂલ્યાંકન, સર્જનાત્મક અને પરસ્પરક્રિયાત્મક વધુ પ્રવૃત્તિઓ ખોલે છે. ગાઇડેડ મોડ તમને એ વિકલ્પો શોધતાં પહેલાં કેન્દ્રિત પાઠ બનાવવામાં મદદ કરે છે.",
     "history_title": "સત્ર ઇતિહાસ",
-    "history_text": "ઇતિહાસ તમારા વર્તમાન કાર્યક્ષેત્રનાં સંસાધનો સાચવે છે. સાચવેલી કોઈ વસ્તુ ખોલીને તેને તપાસો અથવા અગાઉના પરિણામ પર પાછા જાઓ.\n### બૅકઅપ રાખો\n• બીજા ઉપકરણ પર ચાલુ રાખવા કે પછીથી તમારું કામ પાછું મેળવવા પ્રોજેક્ટનો બૅકઅપ સાચવો. ગાઇડેડ મોડ એ પણ બતાવે છે કે પ્રગતિ આ ઉપકરણ પર સાચવાઈ છે કે નહીં.\n• એક કાર્યક્ષેત્રમાં અનેક પાઠની સામગ્રી હોઈ શકે છે. નિકાસ કે વહેંચણી પહેલાં પસંદ કરેલાં સંસાધનો તપાસો.\n### માર્ગદર્શિત પાઠનાં પૅકેજ\nતે પાઠનાં પસંદ કરેલાં સંસાધનો સાથે કામ કરવા ગાઇડેડ મોડ માંથી Document Builder ખોલો. સામાન્ય Builder વધુ વ્યાપક કાર્યક્ષેત્ર વાપરી શકે છે, તેથી પહોંચાડતાં પહેલાં તેની સામગ્રી તપાસો.",
+    "history_text": "ઇતિહાસ તમારા વર્તમાન કાર્યક્ષેત્રનાં સંસાધનો સાચવે છે. સાચવેલી કોઈ વસ્તુ ખોલીને તેને તપાસો અથવા અગાઉના પરિણામ પર પાછા જાઓ.\n### બૅકઅપ રાખો\n• બીજા ઉપકરણ પર ચાલુ રાખવા કે પછીથી તમારું કામ પાછું મેળવવા પ્રોજેક્ટનો બૅકઅપ સાચવો. ગાઇડેડ મોડ એ પણ બતાવે છે કે પ્રગતિ આ ઉપકરણ પર સાચવાઈ છે કે નહીં.\n• એક કાર્યક્ષેત્રમાં અનેક પાઠની સામગ્રી હોઈ શકે છે. નિકાસ કે વહેંચણી પહેલાં પસંદ કરેલાં સંસાધનો તપાસો.\n### માર્ગદર્શિત પાઠનાં પૅકેજ\nતે પાઠનાં પસંદ કરેલાં સંસાધનો સાથે કામ કરવા ગાઇડેડ મોડ માંથી દસ્તાવેજ બનાવનાર ખોલો. સામાન્ય Builder વધુ વ્યાપક કાર્યક્ષેત્ર વાપરી શકે છે, તેથી પહોંચાડતાં પહેલાં તેની સામગ્રી તપાસો.",
     "spotlight_title": "સ્પૉટલાઇટ",
     "spotlight_message": "{name} ને નમસ્તે કહો!",
     "dbq_title": "દસ્તાવેજ-આધારિત પ્રશ્નો",
@@ -510,7 +510,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "દસ્તાવેજ બનાવનાર",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "થીમ બદલો",
     "close_story_forge": "StoryForge બંધ કરો",
     "story_creation_phases": "વાર્તા રચના તબક્કાઓ",
-    "doc_builder": "Document Builder",
+    "doc_builder": "દસ્તાવેજ બનાવનાર",
     "close_doc_builder": "ડોક્યુમેન્ટ બિલ્ડર બંધ કરો",
     "font_size": "ફોન્ટ કદ",
     "target_word_count": "લક્ષ્ય શબ્દ સંખ્યા ધ્યેય",
@@ -5071,10 +5071,10 @@
     "locked": "તાળું મારેલું",
     "escaped": "તમે છટકી ગયા!",
     "escaped_desc": "તમે બધા કોયડા ઉકેલ્યા અને રૂમમાંથી છટકી ગયા!",
-    "time_up": "? સમય પૂરો!",
+    "time_up": "⏰ સમય પૂરો!",
     "reveal_hint": "સંકેત બતાવો",
-    "puzzles_remaining": "{{count}} કોયડા બાકી",
-    "time_remaining": "સમય: {{time}}",
+    "puzzles_remaining": "{count} કોયડા બાકી",
+    "time_remaining": "સમય: {time}",
     "progress": "પ્રગતિ",
     "start": "એસ્કેપ રૂમ શરૂ કરો",
     "start_hint": "વસ્તુઓ તપાસવાનું શરૂ કરવા માટે ટાઈમર ચાલુ કરો",
@@ -5085,8 +5085,8 @@
     "room_complete": "રૂમ પૂર્ણ!",
     "loading_error": "રૂમનો ડેટા લોડ કરી શકાયો નહીં",
     "no_puzzle": "આ વસ્તુ માટે કોઈ કોયડો મળ્યો નહીં",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "સંપૂર્ણ એસ્કેપ! +{{xp}} બોનસ XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "સંપૂર્ણ એસ્કેપ! +{xp} બોનસ XP",
     "puzzle_mcq": "બહુવિકલ્પ પ્રશ્ન",
     "puzzle_sequence": "ક્રમમાં ગોઠવો",
     "puzzle_cipher": "સંદેશ ઉકેલો",
@@ -5144,7 +5144,7 @@
     "clue": "સંકેત",
     "clue_found": "સંકેત મળ્યો!",
     "clue_revealed": "આ સંકેત બીજા કોયડામાં મદદરૂપ થઈ શકે છે...",
-    "clues_collected": "સંકેતો: {{count}}/{{total}}",
+    "clues_collected": "સંકેતો: {count}/{total}",
     "use_clue": "સંકેત વાપરો",
     "final_door": "બહાર નીકળવાનો દરવાજો",
     "final_door_ready": "બહાર નીકળવાનો દરવાજો હવે ખુલ્લો છે!",
@@ -5170,12 +5170,12 @@
     "left": "બાકી",
     "wrong_attempts": "ખોટા પ્રયાસો",
     "time_penalty": "-{seconds} સેકન્ડ!",
-    "game_over_time": "? સમય પૂરો! તમારો સમય ખતમ થઈ ગયો.",
+    "game_over_time": "⏰ સમય પૂરો! તમારો સમય ખતમ થઈ ગયો.",
     "streak": "સતત શ્રેણી",
     "streak_bonus": "શ્રેણી બોનસ! x{multiplier}",
     "streak_lost": "શ્રેણી તૂટી ગઈ!",
     "one_minute_warning": "એક મિનિટ બાકી!",
-    "thirty_seconds_warning": "? ફક્ત 30 સેકન્ડ બાકી!",
+    "thirty_seconds_warning": "⏰ ફક્ત 30 સેકન્ડ બાકી!",
     "timer_paused": "ટાઈમર થોભાવ્યું",
     "timer_resume": "ફરી શરૂ કરો",
     "settings_btn": "રૂમ સેટિંગ્સ",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "તમારા વર્ગ સાથે મલ્ટિપ્લેયર એસ્કેપ રૂમ શરૂ કરો",
     "team_mode": "ટીમ પડકાર",
     "team_race": "છૂટવા માટેની દોડ!",
-    "team_progress": "{{team}} પ્રગતિ: {{solved}}/{{total}}",
+    "team_progress": "{team} પ્રગતિ: {solved}/{total}",
     "waiting_host": "શિક્ષક શરૂ કરે તેની રાહ જોવાઈ રહી છે...",
-    "team_escaped": "{{team}} ટીમ છૂટી ગઈ!",
+    "team_escaped": "{team} ટીમ છૂટી ગઈ!",
     "all_teams_done": "બધી ટીમો પૂર્ણ થઈ!",
     "your_team": "તમારી ટીમ",
     "team_red": "લાલ ટીમ",
@@ -5198,7 +5198,7 @@
     "team_green": "લીલી ટીમ",
     "team_yellow": "પીળી ટીમ",
     "team_all": "બધા વિદ્યાર્થીઓ",
-    "teams_competing": "{{count}} ટીમો સ્પર્ધા કરી રહી છે",
+    "teams_competing": "{count} ટીમો સ્પર્ધા કરી રહી છે",
     "first_escape": "છૂટવામાં પ્રથમ!",
     "end_game": "રમત સમાપ્ત કરો",
     "end_game_confirm": "બધા વિદ્યાર્થીઓ માટે એસ્કેપ રૂમ સમાપ્ત કરવો છે?",
@@ -5211,8 +5211,8 @@
     "resume_game": "રમત ફરી શરૂ કરો",
     "game_paused_by_teacher": "શિક્ષક દ્વારા રમત થોભાવાઈ",
     "celebration_title": "અભિનંદન!",
-    "you_escaped": "તમારી ટીમ {{time}} માં છૂટી ગઈ!",
-    "other_team_escaped": "{{team}} છૂટી ગઈ!",
+    "you_escaped": "તમારી ટીમ {time} માં છૂટી ગઈ!",
+    "other_team_escaped": "{team} છૂટી ગઈ!",
     "class_escaped": "વર્ગની જીત!",
     "everyone_escaped": "દરેકે સાથે મળીને છૂટવા માટે કામ કર્યું!",
     "hurry_up": "ચાલુ રાખો! તમે હજુ છૂટી શકો છો!",
@@ -5240,7 +5240,7 @@
     "load_saved": "સાચવેલ લોડ કરો",
     "loaded_saved": "સાચવેલ એસ્કેપ રૂમ લોડ થયો! સમીક્ષા કરો અને તૈયાર થાય ત્યારે શરૂ કરો.",
     "no_saved": "કોઈ સાચવેલ એસ્કેપ રૂમ મળ્યો નથી",
-    "preview_confirmed": "? એસ્કેપ રૂમ લૉક થયો • રમવા માટે તૈયાર!",
+    "preview_confirmed": "✅ એસ્કેપ રૂમ લૉક થયો • રમવા માટે તૈયાર!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x શ્રેણી બોનસ!)",
     "loaded_from_resource": "સંસાધનમાંથી લોડ થયું."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbench પર મોકલો",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "ઉત્તમ કાર્ય!",
       "partial": "સારો પ્રયાસ, ચાલુ રાખો!",
       "incorrect": "બરાબર નથી • ફરી પ્રયાસ કરો!",
-      "error": "મૂલ્યાંકન કરી શકાયું નહીં • કૃપા કરીને ફરી પ્રયાસ કરો.",
+      "error": "મૂલ્યાંકન કરી શકાયું નહીં — કૃપા કરીને ફરી પ્રયાસ કરો.",
       "verdict_correct": "સાચું!",
       "verdict_partial": "આંશિક રીતે સાચું",
       "verdict_incorrect": "બરાબર સાચું નથી",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **અંતિમ સ્તર**: {level}",
       "log_header": "સાહસ લોગ",
       "chapter_separator": "***",
-      "user_label": "? તમે",
+      "user_label": "➤ તમે",
       "print_button": "સ્ટોરીબુક છાપો"
     },
     "answer_key_title": "જવાબ કી",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "તેની વ્યાખ્યા જોવા માટે તમે ટેક્સ્ટમાં કોઈપણ શબ્દ પર ક્લિક કરી શકો છો!",
     "simplified_cloze": "શબ્દભંડોળ કૌશલ્ય ચકાસવા માટે 'Cloze' મોડ અજમાવો.",
     "simplified_quiz": "આ ટેક્સ્ટ સરસ લાગે છે. સમજ ચકાસવા માટે શું આપણે Exit Ticket જનરેટ કરીએ?",
-    "simplified_glossary": "'{term1}' અને '{term2}' જેવા શબ્દોને સહાયની જરૂર પડી શકે છે • એક Glossary મદદરૂપ થઈ શકે!",
+    "simplified_glossary": "'{term1}' અને '{term2}' જેવા શબ્દોને સહાયની જરૂર પડી શકે છે — એક Glossary મદદરૂપ થઈ શકે!",
     "simplified_glossary_fallback": "આમાંના કેટલાક શબ્દો અઘરા છે. એક Glossary આ ટેક્સ્ટને સહાય કરવામાં મદદરૂપ થશે.",
     "simplified_outline": "દૃશ્ય શીખનારાઓને આ સામગ્રીના Graphic Organizer થી ફાયદો થઈ શકે છે.",
     "glossary_bingo": "તમે આ શબ્દોને Bingo, Memory Match, Crosswords અથવા Word Search જેવી શબ્દ રમતોમાં ફેરવી શકો છો!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "આ ક્વિઝ કઠોર છે તેની ખાતરી કરવા માગો છો? Standard Audit ચલાવો.",
     "adventure_sim": "Adventures વિદ્યાર્થીઓને સુરક્ષિત સિમ્યુલેશનમાં તેઓએ જે શીખ્યું છે તે લાગુ કરવાની મંજૂરી આપે છે.",
     "adventure_inventory": "કયા આઇટમ્સ એકત્રિત કરવામાં આવ્યા છે તે જોવા 'Inventory' તપાસો.",
-    "adventure_context": "{topic} વિશેનું તમારું એડવેન્ચર વધુ સંસાધનો સાથે વધુ સમૃદ્ધ બને છે • એક {suggestion} ઉમેરવાનો પ્રયાસ કરો!",
+    "adventure_context": "{topic} વિશેનું તમારું એડવેન્ચર વધુ સંસાધનો સાથે વધુ સમૃદ્ધ બને છે — એક {suggestion} ઉમેરવાનો પ્રયાસ કરો!",
     "adventure_context_fallback": "તમે જેટલા વધુ સંસાધનો બનાવો છો, એડવેન્ચર સંદર્ભ એટલો વધુ સમૃદ્ધ બને છે.",
     "timeline_drag": "ક્રમ ફરી ગોઠવવા ઘટનાઓને ખેંચીને છોડો.",
     "timeline_visualize": "આ વિદ્યાર્થીઓને કારણ-અને-પરિણામ સંબંધોને દૃશ્યમાન કરવામાં મદદ કરે છે.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "વરસાદી દિવસની મજેદાર પ્રવૃત્તિ માટે Adventure Mode અજમાવો.",
     "parent_read_along": "સાથે વાંચવાનો અભ્યાસ કરવા 'Read Along' નો ઉપયોગ કરો.",
     "fallback_lesson_plan": "તમારી પાસે શ્રેષ્ઠ સંસાધનો છે. તેમને એક Lesson Plan માં સંકલિત કરીએ?",
-    "fallback_brainstorm": "અટકી ગયા હો એવું લાગે છે? મારી સાથે વાત કરવાનો પ્રયાસ કરો અને Blueprint Mode સક્રિય કરવા Auto-Complete ટૉગલ કરો • હું તમારો આખો પાઠ ડિઝાઇન કરવામાં મદદ કરીશ!",
-    "fallback_export": "તમારી પાસે {topic} પર {count} સંસાધનો છે • તેમને એક જ PDF તરીકે નિકાસ કરો!",
+    "fallback_brainstorm": "અટકી ગયા હો એવું લાગે છે? મારી સાથે વાત કરવાનો પ્રયાસ કરો અને Blueprint Mode સક્રિય કરવા Auto-Complete ટૉગલ કરો — હું તમારો આખો પાઠ ડિઝાઇન કરવામાં મદદ કરીશ!",
+    "fallback_export": "તમારી પાસે {topic} પર {count} સંસાધનો છે — તેમને એક જ PDF તરીકે નિકાસ કરો!",
     "fallback_export_fallback": "તમે આ બધા સંસાધનોને એક જ PDF પેકેટ તરીકે નિકાસ કરી શકો છો.",
     "fallback_guide": "જો તમે ખોવાઈ જાઓ તો AI Guide માં 'Show Me' પસંદ કરો!",
     "intro_greeting": "મારી અવાજ સેટિંગ્સ સમાયોજિત કરવા મારા પર ક્લિક કરો.",
@@ -9234,7 +9234,7 @@
     "text_generated": "{topic} પરનો તમારો અનુકૂલિત ટેક્સ્ટ તૈયાર છે! શબ્દની વ્યાખ્યા જોવા તેના પર ક્લિક કરવાનો પ્રયાસ કરો, અથવા સમજ ઊંડી કરવા Glossary અથવા Quiz જેવા સાધનો અન્વેષણ કરો.",
     "flashcards_created": "Flashcards બનાવ્યા! તમે તેમને Quizlet પર નિકાસ કરી શકો છો, છાપી શકો છો, અથવા Memory Game અજમાવી શકો છો.",
     "quiz_generated": "ક્વિઝ તૈયાર! વર્ગ માટે Presentation Mode નો ઉપયોગ કરો, અથવા ખુલ્લા જવાબો માટે Auto-Grader અજમાવો.",
-    "glossary_generated": "Glossary પૂર્ણ! શબ્દ રમતો અજમાવો • Bingo, Memory Match, Crosswords, Word Search અને વધુ!",
+    "glossary_generated": "Glossary પૂર્ણ! શબ્દ રમતો અજમાવો — Bingo, Memory Match, Crosswords, Word Search અને વધુ!",
     "adventure_started": "તમારું એડવેન્ચર શરૂ થાય છે! નીચે તમારી ક્રિયા ટાઇપ કરો, અથવા આગળ શું થાય તે નક્કી કરવા પસંદગી બટનોનો ઉપયોગ કરો.",
     "adventure_scene": "તમે શું કરશો? દરેક પસંદગી તમારી વાર્તાને આકાર આપે છે!",
     "analysis_complete": "વિશ્લેષણ પૂર્ણ! મને અન્વેષણ કરવા યોગ્ય કેટલાક શબ્દભંડોળ અને મુખ્ય ખ્યાલો મળ્યા.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "ક્રમ રચયિતા",
     "type_timeline_desc": "ધોરણ સ્તરને અનુકૂળ ક્રમ ગોઠવણી પ્રવૃત્તિ",
     "full_pack": "સંપૂર્ણ સંસાધન પેક • બધું પસંદ કરો",
-    "deselect_all": "? બધું નાપસંદ કરો",
+    "deselect_all": "↩ બધું નાપસંદ કરો",
     "estimate": "અંદાજ",
     "api_calls": "API કૉલ્સ",
     "start_batch": "જનરેટ કરો",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "તમારી વ્યક્તિગત આવૃત્તિ બનાવી રહ્યું છે...",
     "bridge_projection": "પ્રક્ષેપણ મોડ",
     "bridge_exit_projection": "પ્રક્ષેપણમાંથી બહાર નીકળો",
-    "bridge_offline_info": "કોઈ લાઇવ સત્ર નથી • ફક્ત આ ઉપકરણ પર પૂર્વાવલોકન",
+    "bridge_offline_info": "કોઈ લાઇવ સત્ર નથી — ફક્ત આ ઉપકરણ પર પૂર્વાવલોકન",
     "bridge_term_saved": "\"{term}\" શબ્દકોશમાં સાચવ્યો",
     "bridge_term_save_failed": "શબ્દ સાચવવામાં નિષ્ફળ",
     "bridge_save_term": "શબ્દકોશમાં સાચવો",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "કસ્ટમ ભાષા...",
     "bridge_f2f_custom_placeholder": "દા.ત. યોરૂબા, ટિગ્રિન્યા, દારી...",
     "bridge_all_saved": "બધા શબ્દો શબ્દાવલિમાં સાચવ્યા!",
-    "bridge_terms_saved": "? બધા સાચવ્યા",
+    "bridge_terms_saved": "✅ બધા સાચવ્યા",
     "fullpack_group_target": "લક્ષ્ય જૂથ",
     "fullpack_group_current": "વર્તમાન સેટિંગ્સ",
     "fullpack_group_all": "બધા જૂથો",
@@ -12429,7 +12429,11 @@
       "trapezoid": "સમલંબ ચતુષ્કોણ",
       "simpson": "સિમ્પસન",
       "rectangles_n": "લંબચોરસ (n)",
-      "coeff_a": "ગુણાંક a"
+      "coeff_a": "ગુણાંક a",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે.",
+      "a11y_back_to_tools": "સાધનો પર પાછા",
+      "a11y_snapshot": "સ્નેપશોટ",
+      "a11y_next": "આગળ"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ આ બ્રાઉઝરમાં ઑડિયો સમર્થિત નથી",
@@ -12553,12 +12557,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI સમજૂતી આ સ્તરે બનાવો",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "વાંચન સ્તર:",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -14184,8 +14188,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? સાચું! તે\\",
-      "that": "? તે\\",
+      "correct_it": "✅ સાચું! તે\\",
+      "that": "❌ તે\\",
       "linear": "રેખીય",
       "quadratic": "દ્વિઘાત",
       "cubic": "ઘન",
@@ -14459,7 +14463,8 @@
       "angle_u00b0": "કોણ (°)",
       "velocity_ms": "વેગ (m/s)",
       "gravity_msu00b2": "ગુરુત્વાકર્ષણ (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 અવ્યવસ્થિત: ",
@@ -14487,7 +14492,10 @@
       "codominant_desc": "બંને એલિલ સંપૂર્ણ રીતે વ્યક્ત થાય છે. હેટેરોઝાઇગોટ બંને લક્ષણો એકસાથે દર્શાવે છે.",
       "sexLinked_desc": "લક્ષણ X રંગસૂત્ર પર હોય છે. આ X-લિંક્ડ RECESSIVE વારસાને દર્શાવે છે (જેમ કે હિમોફિલિયા અને લાલ-લીલો રંગઅંધાપો): પુરુષો (XY) માટે એક નકલ પૂરતી છે; સ્ત્રીઓને (XX) બે નકલ જોઈએ.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM સાધનો પર પાછા",
+      "a11y_snapshot": "સ્નેપશોટ",
+      "a11y_close_flashcard": "ફ્લેશકાર્ડ બંધ કરો"
     },
     "circuit": {
       "meter_status_ammeter_short": "અસુરક્ષિત સ્થાન: શોર્ટ-સર્કિટ માર્ગ",
@@ -14779,8 +14787,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? સાચું! ",
-      "it": "? તે\\"
+      "correct": "✅ સાચું! ",
+      "it": "❌ તે\\"
     },
     "inequality": {
       "badge_first_solve_label": "પહેલો ઉકેલ",
@@ -14896,8 +14904,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? સાચું!",
-      "answer": "? જવાબ: ",
+      "correct": "✅ સાચું!",
+      "answer": "❌ જવાબ: ",
       "hydrogen": "હાઇડ્રોજન",
       "helium": "હિલિયમ",
       "lithium": "લિથિયમ",
@@ -15039,7 +15047,7 @@
       "reddish_metal_used_since_the": "કાંસ્ય યુગથી વપરાતી લાલાશ પડતી ધાતુ",
       "bluishwhite_metal_that_prevents_rust": "કાટ અટકાવતી ભૂરાશ પડતી સફેદ ધાતુ",
       "best_conductor_of_electricity_among": "બધી ધાતુઓમાં વીજળીનો શ્રેષ્ઠ વાહક",
-      "dense_soft_shiny_precious_metal": "ઘટ્ટ, નરમ, ચળકતી કિંમતી ધાતુ • ક્યારેય કાટ લાગતો નથી",
+      "dense_soft_shiny_precious_metal": "ઘટ્ટ, નરમ, ચળકતી કિંમતી ધાતુ — ક્યારેય કાટ લાગતો નથી",
       "strong_as_steel_but_45": "સ્ટીલ જેટલી મજબૂત પણ 45% હળવી",
       "shiny_metal_that_gives_rubies": "ચળકતી ધાતુ જે માણેકને તેમનો લાલ રંગ આપે છે",
       "essential_for_steel_production_and": "સ્ટીલ ઉત્પાદન અને હાડકાંના આરોગ્ય માટે આવશ્યક",
@@ -16145,7 +16153,9 @@
       "our_sun_is_born": "આપણા સૂર્યનો જન્મ થાય છે",
       "present_day": "વર્તમાન દિવસ",
       "the_far_future": "દૂરનું ભવિષ્ય",
-      "universe": "બ્રહ્માંડ: "
+      "universe": "બ્રહ્માંડ: ",
+      "a11y_back_to_tools": "સાધનો પર પાછા",
+      "a11y_simulation_speed": "સિમ્યુલેશનની ઝડપ"
     },
     "rocks": {
       "igneous": "આગ્નેય",
@@ -19070,7 +19080,10 @@
       "garage_desc": "એન્જિન, કાટ અને પ્રતિક્રિયાઓ — રસાયણશાસ્ત્રની વર્કશોપ.",
       "classroom_desc": "બીકર અને પ્રયોગો ધરાવતો સાચો વિજ્ઞાન વર્ગખંડ.",
       "outdoors_desc": "બહાર પગ મૂકો — પ્રકૃતિ સૌથી મોટી પ્રયોગશાળા છે.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "સાધનો પર પાછા",
+      "a11y_snapshot": "સ્નેપશોટ",
+      "a11y_next": "આગળ"
     },
     "converter": {
       "u2705_saved_to_history": "✅ ઇતિહાસમાં સાચવ્યું!",
@@ -19623,7 +19636,7 @@
       "fractions": "અપૂર્ણાંક",
       "unit_converter": "એકમ રૂપાંતરક",
       "life_earth_science": "જીવ અને પૃથ્વી વિજ્ઞાન",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "કોષ સિમ્યુલેટર",
       "galaxy_explorer": "ગેલેક્સી એક્સપ્લોરર",
       "universe_timelapse": "બ્રહ્માંડ ટાઇમ-લેપ્સ",
       "rocks_minerals": "ખડકો અને ખનિજો",
@@ -19633,7 +19646,7 @@
       "decomposer": "વિઘટક",
       "break_materials_into_elements": "દ્રવ્યોને તત્વોમાં તોડો",
       "human_anatomy": "માનવ શરીરરચના",
-      "brain_atlas": "Brain Atlas",
+      "brain_atlas": "મગજનો નકશો",
       "molecule_builder": "પરમાણુ બિલ્ડર",
       "physics_chemistry": "ભૌતિકશાસ્ત્ર અને રસાયણશાસ્ત્ર",
       "wave_simulator": "તરંગ સિમ્યુલેટર",
@@ -19857,7 +19870,40 @@
       "read_what_special_education_law_actually": "વાંચો કે વિશેષ શિક્ષણનો કાયદો ખરેખર શું કહે છે, તેના પોતાના શબ્દોમાં. IDEA ના ભાગ B અને કલમ 504 નું અસલી લખાણ, eCFR માંથી લવાયેલું અને તારીખ સાથે, શોધી શકાય તેવું, સંઘીય અને રાજ્યના નિયમો બાજુબાજુ. કશું ફરીથી લખાતું નથી કે ઘડાતું નથી: જો સત્તાવાર લખાણ લોડ ન થયું હોય તો સાધન અનુમાન કરવાને બદલે એ જ કહે છે.",
       "applied_k_12_behavior_practice_what": "બાળમંદિરથી બારમા સુધીની પ્રયોજિત વર્તન પ્રથા: શાળાના મનોવિજ્ઞાનીઓ અને શિક્ષકો આ વિજ્ઞાન સાથે ખરેખર શું કરે છે. ત્રિસ્તરીય PBIS માળખું, FBA ના કાર્યો સાથે જોડાયેલા વૈકલ્પિક વર્તનો, પરિવેશની ઘટનાઓ (એ ધીમા ઉદ્દીપકો જે મોટા ભાગના BIP ચૂકી જાય છે), જેફ કૉલ્વિનનું સાત તબક્કાનું ઉશ્કેરાટ ચક્ર, અને મેઇનના પ્રકરણ 33 પર આધારિત નિયંત્રણ અને એકાંતવાસની નૈતિકતા. BehaviorLab ની સહોદર.",
       "marine_biology_behavioral_science_of_octopuses": "ઓક્ટોપસ, સ્ક્વિડ, કટલફિશ અને નોટિલસનું દરિયાઈ જીવવિજ્ઞાન અને વર્તન વિજ્ઞાન. મુખ્ય આકર્ષણ: Hunter Sim — પ્રજાતિ, વસવાટ, શિકાર અને વ્યૂહ પસંદ કરો, છદ્માવરણની નાની રમત રમો, અને હુમલાનો સમય સાધો. ક્ષેત્ર-નોંધની જૈવિક વાતો ખોલે છે (ક્રોમેટોફોરની રચના, 9 મગજ, વાદળી લોહી, જેટ પ્રણોદન). 10 પ્રજાતિની ક્ષેત્ર માર્ગદર્શિકા, બુદ્ધિ, છદ્માવરણ અને જેટ ઝડપના આંકડા સાથે.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 અને HS-PS2. ટ્રસ પ્રતિબળ સિમ્યુલેટર જેમાં ગાળો, ઊંચાઈ, ભાર અને સામગ્રી બદલી શકાય, પુલના પ્રકારોની સરખામણી (બીમ, ટ્રસ, કમાન, ઝૂલતો, કેબલથી બાંધેલો), સામગ્રી ડેટાબેસ, બળના પ્રકારો, વાસ્તવિક કેસ અભ્યાસ (Tacoma Narrows, Hyatt Regency, Tay, Silver, ઉપરાંત Brooklyn, Golden Gate, Akashi અને Millau), ઇજનેરી ડિઝાઇન ચક્ર, AP શૈલીની કસોટી, અને છાપી શકાય તેવી ડિઝાઇન વિગતો."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 અને HS-PS2. ટ્રસ પ્રતિબળ સિમ્યુલેટર જેમાં ગાળો, ઊંચાઈ, ભાર અને સામગ્રી બદલી શકાય, પુલના પ્રકારોની સરખામણી (બીમ, ટ્રસ, કમાન, ઝૂલતો, કેબલથી બાંધેલો), સામગ્રી ડેટાબેસ, બળના પ્રકારો, વાસ્તવિક કેસ અભ્યાસ (Tacoma Narrows, Hyatt Regency, Tay, Silver, ઉપરાંત Brooklyn, Golden Gate, Akashi અને Millau), ઇજનેરી ડિઝાઇન ચક્ર, AP શૈલીની કસોટી, અને છાપી શકાય તેવી ડિઝાઇન વિગતો.",
+      "the_gutenberg_style_screw_press_as": "ગુટેનબર્ગ શૈલીનું સ્ક્રૂ પ્રેસ ચાલતા સિમ્યુલેશન તરીકે. દાંડો ખેંચો, તમારા પોતાના બીબાં ગોઠવો, છાપ જુઓ. સાથે પદાર્થ વિજ્ઞાન (સીસું-કલાઈ-સુરમાની મિશ્રધાતુ), અર્થશાસ્ત્ર (પ્રતિ પુસ્તક ખર્ચનું તૂટવું), ઇતિહાસ (ધર્મસુધારણા, વૈજ્ઞાનિક ક્રાંતિ), મુદ્રણકળા, અને પ્રેસ પાછળના લોકો (ઇતિહાસ જેમને ભૂલી ગયો તે મહિલા મુદ્રકો સહિત). માધ્યમિક શાળાના આંતરવિદ્યાશાખાકીય કામ માટે બનાવેલું.",
+      "three_js_stoop_simulator_deep_science": "Three.js માં ઝપટનું સિમ્યુલેટર અને શિકારી પક્ષીઓની શિકાર યાંત્રિકીનું ઊંડું વિજ્ઞાન. 240 mph ની ઝડપે બાજ બનીને ઊડો, 530 psi નખવાળી હાર્પી બનીને, કે એક શાંત શિંગડાવાળા ઘુવડ બનીને. 8 પ્રજાતિ અને 12 વિભાગ: નખનું બળ, દૃષ્ટિ (માણસ કરતાં 4-8× તીક્ષ્ણ, લગ્ગડમાં પારજાંબલી), ઉડ્ડયનની ભૌતિકી, ઘુવડોનું અવાજ વગરનું ઉડ્ડયન, અંતિમ વેગનું કૅલ્ક્યુલેટર, DDT પછીની પુનઃપ્રાપ્તિ અને ચાલુ સંરક્ષણ સંકટો, અને ક્ષેત્રમાં આકૃતિ તથા સમગ્ર દેખાવથી ઓળખ.",
+      "practice_reading_and_completing_the_documents": "પુખ્ત જીવન જે દસ્તાવેજો પર ચાલે છે તે વાંચવાનો અને ભરવાનો મહાવરો કરો: નોકરીની અરજીઓ, W-4 ફોર્મ, ભાડાકરાર, તબીબી દાખલાના ફોર્મ, વાહન પરવાના, અને તમારી પોતાની IEP બેઠકનું આમંત્રણ. દરેક ખાનું સાદી ભાષામાં ઉકેલેલું, જે ખાનાં તમને ભારે પડી શકે તે ચિહ્નિત, કોઈ અત્યારે જ સહી કરાવવા માગે ત્યારના દબાણનાં દૃશ્યો, અને સમય માગવા માટેનાં તૈયાર વાક્યો. બધો મહાવરો કાલ્પનિક વ્યક્તિ પર થાય છે, ક્યારેય તમારી ખરી માહિતી પર નહીં.",
+      "how_swimming_works_stroke_physics_survival": "તરવું કેવી રીતે કામ કરે છે (સ્ટ્રોકની ભૌતિકી અને ટકી રહેવાનાં કૌશલ્ય) અને દરેક તરવૈયાએ ઠંડા પાણી, પાછા ફરતા પ્રવાહ, બરફ, લાઇફ જૅકેટ અને બચાવ વિશે શું જાણવું જોઈએ. સ્ટ્રોકનું દૃશ્ય પૃથક્કરણ, તરતા રહેવા અને આગળ ધકેલાવાનું વિજ્ઞાન, અને એ ટકી રહેવાનાં કૌશલ્ય (પીઠભેર તરવું, ઈંડા જેવી લાત, HELP, ટોળામાં ભેગા થવું) જે ખરેખર જીવ બચાવે છે. સ્રોત: CDC, USCG, AAP, NAA, NOAA, USA Swimming. માત્ર શૈક્ષણિક: ખરેખર તરતાં શીખવા માટે તરણ પ્રશિક્ષક શોધો.",
+      "tax_paycheck_calculator_data_literacy_decision": "કર અને પગારપત્રક કૅલ્ક્યુલેટર, માહિતી સાક્ષરતા, નિર્ણય મેટ્રિક્સ, કરાર વાચક, રેકોર્ડ અને કાગળિયાં, અવરજવરનું આયોજન, નોકરીની તૈયારી, બાયોડેટા બનાવવો, પોર્ટફોલિયોના પુરાવાની ગોઠવણ, મુલાકાતનો મહાવરો, સંવાદ કૌશલ્ય, સમય વ્યવસ્થાપન, આરોગ્ય વીમો, દાંતની સંભાળ, શરીર સંભાળની અર્ગોનોમિક્સ, ઊંઘની દિનચર્યા, દવાનાં લેબલ, મુલાકાતની તૈયારી, ઘરની સલામતી, ડિજિટલ સલામતી, ખોરાક સાથે નિરાંત, અને રોજિંદા જીવન માટે પ્રયોજિત વિજ્ઞાન.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 અને HS-LS4. સૂક્ષ્મજીવ જગત: બૅક્ટેરિયા (લાભદાયી અને રોગકારક), વાઇરસ (COVID, ફ્લૂ, HIV, ફેજ, ઓરી), સૂક્ષ્મદર્શન (પ્રકાશ, ફેઝ કોન્ટ્રાસ્ટ, પ્રતિદીપ્ત, ઇલેક્ટ્રોન, AFM), પ્રતિજૈવિક પ્રતિકારનો વિકાસ, માનવ, જમીન અને મહાસાગરનો સૂક્ષ્મજીવસમૂહ, રસી અને પ્રતિરક્ષા તંત્ર, આથો (ખાટો લોટ, દહીં, કિમચી, સાવરક્રાઉટ, કોમ્બુચા, ચીઝ), કેસ અભ્યાસ (Snow, Fleming, MRSA, COVID અને mRNA, FMT), કસોટી, અને પ્રયોગશાળા સલામતી તથા સૂક્ષ્મજીવોની છાપી શકાય તેવી સંદર્ભ પત્રિકા.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "અગિયાર પ્રદેશોમાં પર્યાવરણની સંભાળનાં પંદર અભિયાન. મેઇનનાં પાંચ લાંબાં, અનેક તબક્કાનાં અભિયાન, ઉપરાંત દસ આંતરપ્રાદેશિક દૃશ્યો જે યાંત્રિકીના પાંચેય પરિવારોને આવરી લે છે: આગ (ઓસ્ટ્રેલિયામાં Yarralin, ઉત્તર કૅલિફોર્નિયામાં Karuk), સંરક્ષણ (Yellowstone, રવાન્ડામાં Akagera), જાહેર આરોગ્ય (મુંબઈમાં ડેન્ગ્યુ, લાઇબેરિયામાં 2014નો ઇબોલા), જળસ્રાવ (Klamath નદી, Murray-Darling થાળું), અને આબોહવા (માર્શલ ટાપુઓ, બાંગ્લાદેશનો ડેલ્ટા). પરિવાર-જોડનાં તારણો ત્યારે ખૂલે છે જ્યારે તમે મેઇનનું અને એ જ યાંત્રિકી પરિવારનું આંતરપ્રાદેશિક પૂરું કરો.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 અને MS-ESS3-3. 144 પ્લોટની જાળી પર એવી જરૂરિયાતો સામે એક નગર રચો જે ખરેખર એકબીજા સાથે ટકરાય છે. ત્રણ નગર, દરેકમાં જુદી બંધનકર્તા મર્યાદા: Riverbend, જ્યાં વરસાદી પાણી અને દેવું ભીંસ આપે છે; Mesa Hollow, જ્યાં ભૂગર્ભ જળસ્તર નિશ્ચિત છે અને ખેતરો તેને પી રહ્યાં છે; અને Harborlight, જ્યાં યોજનાએ 2050માં પણ ચાલવું પડશે. તાર્કિક પદ્ધતિથી વહેણ, જળ સંતુલન, દરિયાની સપાટી વધવાની છૂટ, નેટવર્ક પર ચાલવાનું અંતર, અને ખર્ચ સહિતનું માર્ગ નેટવર્ક — દરેક ખૂલીને પોતાનું સૂત્ર બતાવે છે. Assumption Lab એક જ યોજનાને બે પ્રકાશિત પ્રાચલ સમૂહો પર ફરી ચલાવે છે, જેથી વિદ્યાર્થીઓ જુએ કે કયાં તારણો બંનેમાં ટકે છે. નકશો, સંપાદનયોગ્ય પ્લોટ કોષ્ટક, અને એ જ યોજનાનું ત્રિપરિમાણી મોડેલ. ચર્ચાના પ્રશ્નો અને દસ્તાવેજી ઇતિહાસ એ સવાલો ઉઠાવે છે જેમનું મોડેલ બનાવવાની આ સાધન ના પાડે છે. કોઈ ગુણ નહીં અને કોઈ ઉત્તરકૂંચી નહીં.",
+      "codap_data_science": "CODAP: ડેટા વિજ્ઞાન",
+      "lumen_research_canvas": "Lumen: સંશોધન પટ",
+      "evolab_evolution": "EvoLab: ઉત્ક્રાંતિ",
+      "dino_lab": "ડાયનાસોર પ્રયોગશાળા",
+      "nutritionlab_nutrition_science": "NutritionLab: પોષણ વિજ્ઞાન",
+      "birdlab_i_spy_ornithology": "BirdLab: શોધો-ઓળખો પક્ષીવિદ્યા",
+      "openbim_companion": "OpenBIM: સાથી માર્ગદર્શિકા",
+      "applab_ai_app_generator": "AppLab: એઆઈથી એપ બનાવનાર",
+      "access_lens": "સુલભતા લેન્સ",
+      "sim_shelf": "સિમ્યુલેશન છાજલી",
+      "zoom_gallery": "ઝૂમ ગેલેરી",
+      "sourcebook": "સ્રોત પુસ્તિકા",
+      "wheel_fire_pottery_lab": "ચાકડો અને અગ્નિ: કુંભારકામ પ્રયોગશાળા",
+      "echo_navigator": "પડઘો દિશાદર્શક",
+      "learning_lab_how_learning_works": "Learning Lab: શીખવું કેવી રીતે કામ કરે છે",
+      "weldlab_welding_metal_joining": "WeldLab: વેલ્ડિંગ અને ધાતુ જોડાણ",
+      "bikelab_physics_repair": "BikeLab: ભૌતિકી અને સમારકામ",
+      "fisherlab_boating_fishing_sim": "FisherLab: નૌકાયન અને માછીમારી સિમ્યુલેટર",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: છીપ ફાર્મ સિમ્યુલેટર",
+      "throwlab_sports_physics": "ThrowLab: રમતની ભૌતિકી",
+      "skatelab_skate_bmx_physics": "SkateLab: સ્કેટ અને BMXની ભૌતિકી",
+      "playlab_strategy_on_the_field": "PlayLab: મેદાન પરની વ્યૂહરચના",
+      "kepler_colony": "કેપ્લર વસાહત",
+      "birdlab_life_list": "BirdLab: જીવન યાદી",
+      "petslab_decoder": "PetsLab: સંકેત ઉકેલનાર"
     },
     "area": {
       "volume": "વોલ્યુમ..."
@@ -19897,7 +19943,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "સાધનો પર પાછા",
+      "a11y_snapshot": "સ્નેપશોટ",
+      "a11y_next": "આગળ",
+      "a11y_simulation_speed": "સિમ્યુલેશનની ઝડપ",
+      "a11y_close_flashcard": "ફ્લેશકાર્ડ બંધ કરો"
     },
     "solar_sys": {
       "venus": "શુક્ર",
@@ -20719,7 +20770,8 @@
       "scaled_volume_changed": "🔵 માપિત (કદ બદલાયું)",
       "skewed_shape_deformed": "🟠 ત્રાંસું (આકાર વિકૃત)",
       "degenerate_volume_0": "💀 અપકર્ષિત (કદ → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "ટ્યુટોરિયલની પ્રગતિ"
     },
     "numberline": {
       "first_mark": "પહેલું નિશાન",
@@ -22862,7 +22914,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "વર્ષ {value1} શરૂ થાય છે."
     },
     "optics": {
       "optics_lab": "પ્રકાશશાસ્ત્ર પ્રયોગશાળા",
@@ -23208,7 +23261,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "સ્થાનિક વિશ્લેષણાત્મક SQL ક્વેરી"
     },
     "geosandbox": {
       "loading_3d_engine": "3D એન્જિન લોડ થઈ રહ્યું છે...",
@@ -23558,7 +23612,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "શિલ્પ દૂર કર્યું"
     },
     "algebraCAS": {
       "solve": "🔍 ઉકેલો",
@@ -26154,7 +26209,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે."
     },
     "economicslab": {
       "six_figures": "છ આંકડાની આવક",
@@ -28134,7 +28190,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ચિંતન સાચવ્યું."
     },
     "anatomy": {
       "system_explorer": "તંત્ર સંશોધક",
@@ -28716,7 +28773,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D કૅમેરા ફરી ગોઠવો"
     },
     "dna": {
       "back_to_tools": "સાધનો પર પાછા",
@@ -30093,7 +30151,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ચિંતન સાચવ્યું."
     },
     "angles": {
       "back_to_tools": "સાધનો પર પાછા જાઓ",
@@ -30907,7 +30966,8 @@
       "explain_how_each_parameter_shapes_a_si": "દરેક પ્રાચલ સાઇન તરંગને કેવી રીતે આકાર આપે છે તે સમજાવો.",
       "design_note_discrete_5_state_marker_no": "ડિઝાઇન નોંધ: વિવિક્ત 5-સ્થિતિ ચિહ્ન; કોઈ તરંગ ગુણ નહીં; કોઈ ઉજાગર નહીં — ડિઝાઇન મુજબ.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે."
     },
     "typingpractice": {
       "typing_practice_menu": "ટાઈપિંગ અભ્યાસ મેનુ",
@@ -31261,7 +31321,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "મેનૂ પર પાછા"
     },
     "music": {
       "edm_lead": "EDM લીડ",
@@ -34670,7 +34731,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "જવાબ પસંદ કરો: {value1}"
     },
     "artstudio": {
       "back_to_tools": "સાધનો પર પાછા",
@@ -35435,7 +35497,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "બંધ",
+      "sr_nothing_to_redo": "ફરી કરવા માટે કંઈ નથી.",
+      "sr_nothing_to_undo": "પાછું લેવા માટે કંઈ નથી.",
+      "sr_dir_left": "ડાબે",
+      "sr_dir_right": "જમણે"
     },
     "arithmetic": {
       "selected": " પસંદ થયું.",
@@ -39481,7 +39548,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ને ખગોળીય શિરોબિંદુ પરના રેડિયન્ટ અને 6.5 સીમાંત તેજમાન અનુસાર પ્રમાણિત કરાયું છે. આ અંદાજ સ્વચ્છ, ચંદ્રવિહીન આકાશ અને 2.2 વસ્તી સૂચકાંક ધારે છે. બોર્ટલ વર્ગો સીમાંત તેજમાન માત્ર આશરે દર્શાવે છે; ધોરણ કરતાં વધુ અંધારું આકાશ ZHR થી વધી શકે છે. રેડિયન્ટની ઓછી ઊંચાઈ અને વધુ તેજસ્વી આકાશ અંદાજ ઘટાડે છે.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM સાધનો પર પાછા"
     },
     "autorepair": {
       "back_to_menu": "મેનુ પર પાછા",
@@ -40222,7 +40290,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ગુણ: {value2}માંથી {value1}",
+      "a11y_open_2": "{value1} ખોલો",
+      "a11y_option": "વિકલ્પ {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "પોપડો",
@@ -40325,7 +40396,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41071,7 +41143,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે.",
+      "a11y_investigation_progress": "તપાસની પ્રગતિ",
+      "a11y_flight_debrief": "ઉડાનની સમીક્ષા",
+      "a11y_tutorial_progress": "ટ્યુટોરિયલની પ્રગતિ"
     },
     "behaviorlab": {
       "chain_reaction": "સાંકળ પ્રતિક્રિયા",
@@ -41240,7 +41316,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43755,7 +43831,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "શોધાયેલું મોડ્યુલ: {value1}",
+      "a11y_score_out_of": "ગુણ: {value2}માંથી {value1}",
+      "sr_selected": "પસંદ કરેલું: {value1}",
+      "sr_quiz_reset": "ક્વિઝ ફરી ગોઠવાઈ"
     },
     "brainatlas": {
       "group_systems": "તંત્રો",
@@ -48911,7 +48991,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "જવાબ પસંદ કરો: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "ક્વિઝ માસ્ટર",
@@ -50055,7 +50136,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "પસંદ કરેલું: {value1}"
     },
     "echotrainer": {
       "wall": "દીવાલ",
@@ -51514,7 +51596,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "શોધાયેલું મોડ્યુલ: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "કાર્બન કૅલ્ક્યુલેટર",
@@ -52594,7 +52677,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "મેનૂ પર પાછા",
+      "sr_getting_critique": "સમીક્ષા લવાઈ રહી છે...",
+      "sr_critique_ready": "સમીક્ષા તૈયાર છે."
     },
     "flightsim": {
       "game_controls": "🎮 ગેમ નિયંત્રણ",
@@ -52801,7 +52887,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "ફ્લાઇટ સિમ્યુલેટરનું કૉકપિટ દૃશ્ય. W/S પિચ, A/D બૅન્ક, Shift/Ctrl થ્રોટલ, કૌંસ ફ્લૅપ નિયંત્રિત કરે છે, X પૈડાંની બ્રેક, Q ક્વિઝ, F બળ, Space વિરામ, I માહિતી.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52813,7 +52899,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "પોર્ટલેન્ડ, ME થી મુક્ત ઉડાન",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52860,7 +52946,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "શાંઘાઈ ટાવર",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58684,7 +58770,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "શોધાયેલું મોડ્યુલ: {value1}",
+      "sr_loaded": "{value1} લોડ થયું",
+      "sr_showing": "{value1} બતાવાઈ રહ્યું છે",
+      "sr_opening": "{value1} ખૂલી રહ્યું છે"
     },
     "platetectonics": {
       "pacific": "પેસિફિક",
@@ -58943,7 +59033,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63506,7 +63596,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "સમજૂતી તૈયાર છે.",
+      "sr_off": "બંધ",
+      "sr_edge_left": "ડાબે",
+      "sr_edge_right": "જમણે",
+      "sr_correct": "સાચું.",
+      "sr_not_quite": "બરાબર નહીં."
     },
     "playlab": {
       "save": "સાચવો",
@@ -63574,7 +63670,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "કોચ ઑફલાઇન છે.",
+      "sr_drill_stopped": "અભ્યાસ અટકાવ્યો."
     },
     "printingpress": {
       "menu": "← મેનુ",
@@ -65713,7 +65811,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "મેનૂ પર પાછા",
+      "a11y_open": "{value1} ખોલો",
+      "sr_selected": "પસંદ કરેલું: {value1}",
+      "sr_loaded": "{value1} લોડ થયું",
+      "sr_opening": "{value1} ખૂલી રહ્યું છે",
+      "sr_correct": "સાચું.",
+      "sr_not_quite": "બરાબર નહીં.",
+      "sr_year_begins": "વર્ષ {value1} શરૂ થાય છે.",
+      "sr_question_reset_try_again": "પ્રશ્ન ફરી ગોઠવાયો. ફરી પ્રયાસ કરો.",
+      "sr_not_quite_see_the_explanation": "બરાબર નહીં: સમજૂતી જુઓ."
     },
     "raptorhunt": {
       "show_answer": "જવાબ બતાવો",
@@ -67362,7 +67470,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} ખોલો",
+      "a11y_flight_debrief": "ઉડાનની સમીક્ષા"
     },
     "renewables": {
       "menu": "← મેનુ",
@@ -68062,7 +68172,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "મેનૂ પર પાછા",
+      "sr_getting_critique": "સમીક્ષા લવાઈ રહી છે...",
+      "sr_critique_ready": "સમીક્ષા તૈયાર છે.",
+      "sr_quiz_reset": "ક્વિઝ ફરી ગોઠવાઈ"
     },
     "roadready": {
       "let_s_start": "ચાલો શરૂ કરીએ →",
@@ -70929,7 +71043,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM સાધનો પર પાછા",
+      "a11y_local_analytical_sql_query": "સ્થાનિક વિશ્લેષણાત્મક SQL ક્વેરી"
     },
     "stewardship": {
       "sector": "ક્ષેત્ર",
@@ -71506,7 +71622,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "મેનૂ પર પાછા",
+      "sr_question_reset_try_again": "પ્રશ્ન ફરી ગોઠવાયો. ફરી પ્રયાસ કરો."
     },
     "throwlab": {
       "scenarios": "દૃશ્યો",
@@ -71731,7 +71849,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D કૅમેરા ફરી ગોઠવો",
+      "sr_coach_is_offline": "કોચ ઑફલાઇન છે.",
+      "sr_drill_stopped": "અભ્યાસ અટકાવ્યો."
     },
     "weldlab": {
       "menu": "← મેનુ",
@@ -73293,7 +73414,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "શોધાયેલું મોડ્યુલ: {value1}",
+      "a11y_score_out_of": "ગુણ: {value2}માંથી {value1}",
+      "sr_quiz_reset": "ક્વિઝ ફરી ગોઠવાઈ",
+      "sr_loaded": "{value1} લોડ થયું",
+      "sr_showing": "{value1} બતાવાઈ રહ્યું છે",
+      "sr_not_quite_see_the_explanation": "બરાબર નહીં: સમજૂતી જુઓ."
     },
     "worldbuilder": {
       "grade_level": "ધોરણનું સ્તર",
@@ -74886,7 +75013,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "જીવનનું વૃક્ષ",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76741,7 +76868,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "વિકલ્પ {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D કૅમેરા દૃશ્યો"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76753,6 +76882,22 @@
       "finish": "સમજાઈ ગયું!",
       "replay": "ટિપ્સ",
       "replay_aria": "ટ્યુટોરિયલ બતાવો"
+    },
+    "pets": {
+      "sr_back_to_menu": "મેનૂ પર પાછા",
+      "sr_getting_critique": "સમીક્ષા લવાઈ રહી છે...",
+      "sr_critique_ready": "સમીક્ષા તૈયાર છે."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM સાધનો પર પાછા",
+      "a11y_3d_camera_views": "3D કૅમેરા દૃશ્યો"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "તપાસની પ્રગતિ"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "ફરી કરવા માટે કંઈ નથી.",
+      "sr_nothing_to_undo": "પાછું લેવા માટે કંઈ નથી."
     }
   },
   "glossary_health": {
@@ -77355,7 +77500,7 @@
       "person": "વ્યક્તિ\\",
       "phase_label": "તબક્કાનું લેબલ",
       "rationale_which_antecedent_does_this_address": "તર્ક (આ કયા પૂર્વગામીને સંબોધે છે?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "તમારા અભિગમ પર ચિંતન કરો...\\n• શું સારી રીતે કામ કર્યું?\\n• તમે શું અલગ રીતે કરશો?\\n• આગળ કઈ વ્યૂહરચનાઓનો અભ્યાસ કરવા માગો છો?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "તમારા અભિગમ પર ચિંતન કરો...\n• શું સારી રીતે કામ કર્યું?\n• તમે શું અલગ રીતે કરશો?\n• આગળ કઈ વ્યૂહરચનાઓનો અભ્યાસ કરવા માગો છો?",
       "reinforcement_how_you": "⭐ પ્રબળન (તમે કેવી રીતે\\",
       "replacement_behavior_functionally_equivalent": "✅ બદલી વર્તન (કાર્યાત્મક રીતે સમકક્ષ)",
       "respond_as_the_counselor": "સલાહકાર તરીકે પ્રતિસાદ આપો...",
@@ -77363,7 +77508,7 @@
       "search_81_tools": "🔍  80+ સાધનો શોધો…",
       "search_aba_terms": "🔍 ABA શબ્દો શોધો...",
       "search_terms_eg_reinforcement_fba_data": "🔍 શબ્દો શોધો... (દા.ત. \"પ્રબળન\", \"FBA\", \"ડેટા\")",
-      "session_1_3nsession_2_7nsession_3_5n": "સત્ર 1: 3\\nસત્ર 2: 7\\nસત્ર 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "સત્ર 1: 3\nસત્ર 2: 7\nસત્ર 3: 5\n...",
       "setting_eg_math_class_cafeteria": "સ્થાન (દા.ત., ગણિતનો વર્ગ, કેફેટેરિયા)",
       "share_what_you_notice_at_home_strengths_concerns_c": "ઘરે તમે જે નોંધો છો તે શેર કરો — શક્તિઓ, ચિંતાઓ, સાંસ્કૃતિક સંદર્ભ, અથવા શાળાની ટીમ માટે સૂચનો...",
       "step_description": "પગલાનું વર્ણન...",
@@ -78944,7 +79089,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "ખાંચની ઊંચાઈ",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80610,7 +80755,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "ખ્યાલનું ચિત્ર",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80646,10 +80791,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "દરેક ખ્યાલને સજાવો",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "સજાવટની પ્રગતિ",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80662,7 +80807,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "શક્ય નામો",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80673,7 +80818,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "ખ્યાલનું સ્મરણ",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82231,7 +82376,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect બંધ કરો",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82240,7 +82385,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "સોંપણીઓ ગાળો",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82278,15 +82423,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "પ્રશ્ન {n}",
+    "q_choices_aria": "પ્રશ્ન {n} માટે વિકલ્પો, પ્રતિ પંક્તિ એક",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "પ્રશ્ન {n} દૂર કરો",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "પ્રશ્ન {n} માટે સ્કેલનાં પગથિયાં",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "પ્રશ્ન {n} માટે જવાબનો પ્રકાર",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82296,10 +82441,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} માટે પસંદ કરી શકાય તેવી લિંક",
+    "scale_high_aria": "ઉપલા છેડા માટે લેબલ",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "નીચલા છેડા માટે લેબલ",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82319,7 +82464,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "સોંપણીઓની સ્થિતિનો સારાંશ",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82335,9 +82480,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "આપમેળે અપડેટ થાય છે",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "પસંદ કરી શકાય તેવી ઘરકામની લિંક",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82346,7 +82491,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "ઘરકામનો QR કોડ",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84794,7 +84939,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "સંકેતો અને મૂલ્યાંકન કોષ્ટકો માટે વિકાસ સ્તર પસંદ કરો",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84802,7 +84947,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "શિક્ષક દૃશ્ય ચાલુ કે બંધ કરો",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84833,17 +84978,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "અવાજ નોંધનું રેકોર્ડિંગ થોભાવો",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "અવાજ નોંધનું રેકોર્ડિંગ ફરી શરૂ કરો",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "અવાજ નોંધ રેકોર્ડ કરવાનું શરૂ કરો",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "રેકોર્ડિંગ બંધ કરો",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85229,22 +85374,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven પ્રશંસાનું કારણ",
+    "recent_deliveries_aria": "તાજેતરની ખાનગી AlloHaven પ્રશંસાઓ",
+    "token_amount_aria": "AlloHaven ટોકનની સંખ્યા",
+    "token_cap_aria": "પ્રતિ વિદ્યાર્થી પ્રતિ સત્ર AlloHaven ટોકનની મર્યાદા"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "લક્ષ્ય પૂરું થતું રહે તે સાથે માન્ય અપવાદો",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "આ લક્ષ્ય માટે એપ ટ્રૅક કરે તે વૈકલ્પિક પ્રગતિ સંકેત",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "આખી ટીમ સાથે મળીને, કે દરેક વિદ્યાર્થી અલગ અલગ",
+    "name_aria": "વર્ગના લક્ષ્યનું નામ, ફક્ત આ ઉપકરણ પર રાખવામાં આવે છે",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "આ લક્ષ્ય કયા વિદ્યાર્થીઓને આવરી લે છે",
+    "template_aria": "વર્ગના લક્ષ્યનું પ્રારંભિક ટેમ્પ્લેટ",
+    "tokens_aria": "આ લક્ષ્ય પૂરું થાય ત્યારે દરેક વિદ્યાર્થીને અપાતા ટોકન"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85262,7 +85407,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox એડમિન ટોકન (વૈકલ્પિક)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85292,17 +85437,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "હાથ ઊંચો કર્યો",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "પસંદ કરી શકાય તેવી લાઇવ મેઇલબૉક્સ જોડાવાની લિંક",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox નું લાઇવ સત્ર",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85329,7 +85474,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "રિયલ-ટાઇમ જોડાણ",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85361,7 +85506,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox વેબ ઍપનું URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

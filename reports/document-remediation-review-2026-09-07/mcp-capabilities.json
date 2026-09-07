@@ -1,0 +1,254 @@
+{
+  "geminiKeyPresent": false,
+  "geminiKeySource": "none",
+  "keyVerified": false,
+  "keyVerificationState": "not-checked",
+  "keyVerificationCheckedAt": null,
+  "keylessModeAvailable": true,
+  "transports": {
+    "stdio": true,
+    "http": {
+      "enabled": false,
+      "listening": false,
+      "endpoint": null,
+      "host": null,
+      "port": null
+    }
+  },
+  "keylessModeMeans": "These registered tools require no Gemini key, paid Worker, institution account, or AlloFlow service. Individual tools can still require local files, Java/Chromium, or an optional library download; inspect the tool description.",
+  "keylessToolNames": [
+    "remediation_capabilities",
+    "remediation_verify_key",
+    "remediation_selftest",
+    "generate_resource_pack",
+    "export_accessible_office",
+    "export_alt_format",
+    "fix_contrast",
+    "generate_conformance_report",
+    "redact_document",
+    "extract_document_text",
+    "detect_form_fields",
+    "apply_form_fields",
+    "audit_two_engines",
+    "check_document_structure",
+    "remediation_setup",
+    "pdf_validate_ua",
+    "remediation_job_status",
+    "remediation_job_result",
+    "remediation_job_diagnostics",
+    "remediation_job_cancel",
+    "pdf_remediate_agent_start",
+    "remediation_agent_requests",
+    "remediation_agent_respond",
+    "remediation_agent_cancel",
+    "document_narration_preflight",
+    "document_narration_voices",
+    "remediation_agent_runs",
+    "document_narrate_start",
+    "remediation_agent_resume",
+    "remediation_agent_respond_batch"
+  ],
+  "geminiOptionalToolNames": [
+    "audit_html"
+  ],
+  "agentBridge": {
+    "batchLimit": 60,
+    "resumable": true,
+    "activeClientRequired": true,
+    "defaultEffort": "standard"
+  },
+  "narration": {
+    "available": true,
+    "modes": [
+      "accessible",
+      "natural"
+    ],
+    "defaultMode": "accessible",
+    "languages": [
+      "ar",
+      "ca",
+      "cs",
+      "da",
+      "de",
+      "el",
+      "en",
+      "es",
+      "fi",
+      "fr",
+      "hu",
+      "is",
+      "it",
+      "ka",
+      "kk",
+      "ne",
+      "nl",
+      "no",
+      "pl",
+      "pt",
+      "ro",
+      "ru",
+      "sr",
+      "sv",
+      "sw",
+      "tr",
+      "uk",
+      "vi",
+      "zh"
+    ],
+    "accessibleLanguages": [
+      "en",
+      "es",
+      "fr",
+      "de",
+      "pt",
+      "it"
+    ],
+    "defaultVoice": "auto",
+    "providers": [
+      "auto",
+      "kokoro",
+      "piper"
+    ],
+    "voiceDiscoveryTool": "document_narration_voices",
+    "preflightTool": "document_narration_preflight",
+    "mixedLanguageBlocks": true,
+    "inlineLanguageSwitches": true,
+    "completedOutputReuse": true,
+    "incrementalClipReuse": true,
+    "contentCoverageChecks": true,
+    "epubVerification": {
+      "epubcheck": {
+        "installed": true,
+        "version": "5.3.0",
+        "javaAvailable": true
+      },
+      "ace": {
+        "installed": true,
+        "version": "1.4.6",
+        "nodeSupported": true
+      },
+      "scope": "Automated EPUB format and accessibility checks; human review remains necessary."
+    },
+    "modelSetup": "automatic on first use; public dependency downloads",
+    "completeSectionsRequired": true
+  },
+  "geminiRequiredToolNames": [
+    "describe_images",
+    "transcribe_media",
+    "translate_accessible_html",
+    "simplify_accessible_html",
+    "audit_html",
+    "pdf_audit",
+    "pdf_remediate",
+    "pdf_remediate_start",
+    "pdf_batch_audit_start",
+    "pdf_batch_remediate_start",
+    "pdf_remediate_from_scoreboard_start"
+  ],
+  "dataHandling": {
+    "offlineToolNames": [
+      "remediation_capabilities",
+      "remediation_selftest",
+      "generate_resource_pack",
+      "fix_contrast",
+      "generate_conformance_report",
+      "redact_document",
+      "extract_document_text",
+      "detect_form_fields",
+      "apply_form_fields",
+      "audit_two_engines",
+      "check_document_structure",
+      "pdf_validate_ua",
+      "remediation_job_status",
+      "remediation_job_result",
+      "remediation_job_diagnostics",
+      "remediation_job_cancel",
+      "remediation_agent_requests",
+      "remediation_agent_respond",
+      "remediation_agent_cancel",
+      "document_narration_preflight",
+      "document_narration_voices",
+      "remediation_agent_runs",
+      "remediation_agent_respond_batch"
+    ],
+    "publicDependencyDownloadToolNames": [
+      "remediation_setup",
+      "export_accessible_office",
+      "export_alt_format",
+      "document_narrate_start",
+      "pdf_remediate_agent_start",
+      "remediation_agent_resume"
+    ],
+    "credentialCheckToolNames": [
+      "remediation_verify_key"
+    ],
+    "geminiDocumentEgressToolNames": [
+      "describe_images",
+      "transcribe_media",
+      "translate_accessible_html",
+      "simplify_accessible_html",
+      "audit_html",
+      "pdf_audit",
+      "pdf_remediate",
+      "pdf_remediate_start",
+      "pdf_batch_audit_start",
+      "pdf_batch_remediate_start",
+      "pdf_remediate_from_scoreboard_start"
+    ],
+    "dependencyDownloadsSendDocumentContent": false,
+    "note": "Offline tools make no external network request. Dependency-download tools fetch Chromium or pinned public JavaScript libraries; AlloFlow does not intentionally include document content in those requests, though the provider can observe ordinary connection metadata such as IP address and timing. Credential-check tools contact the Gemini API with the configured key only, to test whether it works, and send no document content. Gemini tools send the document or derived content to Gemini under the user-provided key. Agent-bridge model calls use no server-side model API; optional Kokoro/Piper narration downloads public dependencies. These tools surface document-derived prompts to the MCP CLIENT as tool results, so that content reaches whatever model provider the client conversation runs on."
+  },
+  "onboarding": {
+    "state": "keyless-ready",
+    "nextTool": "remediation_selftest",
+    "actionRequired": false,
+    "message": "Full keyless remediation is ready: use pdf_remediate_agent_start and answer its requests with the client model. Pass dir_path for a folder, effort: thorough for bounded improvement and validation, and narration: accessible to include local Kokoro/Piper audio. Local tools also cover structure, extraction and exports. A Gemini key is OPTIONAL; full keyless AI remediation already uses your client model. To choose Gemini instead: (1) get a free key at https://aistudio.google.com/app/apikey (no credit card, about two minutes); (2) supply it EITHER by setting the GEMINI_API_KEY environment variable in your OS/shell, OR by writing GEMINI_API_KEY=<value> into a file OUTSIDE this repository and setting ALLOFLOW_MCP_ENV_PATH to that file path; (3) call remediation_verify_key to confirm it works. Do NOT paste the key into this conversation, and avoid putting it in an MCP client config \"env\" block — both leave the secret in text an assistant can read. Free-tier prompts may be used by the provider to improve their products and have daily caps, so prefer the no-key tools for student-identifiable documents."
+  },
+  "alloflowAccountRequired": false,
+  "paidWorkerRequired": false,
+  "institutionAccountRequired": false,
+  "playwrightAvailable": true,
+  "chromiumInstalled": true,
+  "pipelineModulesPresent": {
+    "accessibility_evidence_module.js": true,
+    "verification_policy_module.js": true,
+    "doc_builder_renderer_module.js": true,
+    "doc_pipeline_module.js": true,
+    "view_pdf_validator_module.js": true
+  },
+  "vendorAssets": {
+    "present": true,
+    "hashVerified": true,
+    "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\mcp\\vendor",
+    "files": 59
+  },
+  "runtimeBuild": {
+    "fingerprintSha256": "a8b47e6f58c88c0f053289eb07a5e2435044557f3f2ba7be94b74043f318c72e",
+    "current": true,
+    "checkedAt": "2026-09-07T03:47:27.084Z"
+  },
+  "model": "gemini-3-flash-preview",
+  "fallbackModel": "gemini-2.5-flash-lite",
+  "maxRunMinutes": 30,
+  "maxPdfMB": 200,
+  "singleFlight": true,
+  "busy": false,
+  "jobs": {
+    "stored": 0,
+    "unfinished": 0,
+    "interrupted": 0,
+    "stateDir": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\document-remediation-review-2026-09-07\\local-mcp-state",
+    "durable": true,
+    "retentionDays": 30
+  },
+  "allowedRoots": null,
+  "networkEgress": [
+    "generativelanguage.googleapis.com (document or derived content; Gemini tools only)",
+    "Playwright browser download service (remediation_setup only; no document)",
+    "unpkg.com, cdn.jsdelivr.net and cdnjs.cloudflare.com (public export/narration libraries and ONNX runtime; no document intentionally included)",
+    "huggingface.co and its CDN (Kokoro/Piper model/voice downloads; no document intentionally included)"
+  ],
+  "ready": false,
+  "fullAiPipelineReady": false,
+  "readyMeans": "True means the on-disk build still matches this process, required local components are present, and the current key passed remediation_verify_key here. It still does NOT prove a full remediation succeeds; call remediation_selftest for the keyless pipeline path."
+}

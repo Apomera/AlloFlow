@@ -1,0 +1,168 @@
+{
+  "source": "doc_pipeline_source.jsx",
+  "sourceSha256": "37fa6763c2c01368ddc070c1d26c62841e1275ace86ca4c2496608d4d21c21db",
+  "environment": "Actual source OCR reconciliation and quality helpers; synthetic per-engine text, no network",
+  "tests": [
+    {
+      "name": "equal-length-score-conflict",
+      "tesseract": [
+        {
+          "pageNum": 1,
+          "text": "Vocabulary 95. Block Design 102."
+        }
+      ],
+      "vision": [
+        {
+          "pageNum": 1,
+          "text": "Vocabulary 96. Block Design 103."
+        }
+      ],
+      "result": {
+        "pages": [
+          {
+            "pageNum": 1,
+            "text": "Vocabulary 95. Block Design 102.",
+            "source": "tesseract",
+            "words": null,
+            "pageW": null,
+            "pageH": null,
+            "viewportTransform": null
+          }
+        ],
+        "disagreements": [],
+        "lowConfidence": [],
+        "fullText": "Vocabulary 95. Block Design 102.",
+        "detectedFolios": [],
+        "strippedEdgeLines": [],
+        "dupeCollapses": [],
+        "columnReorders": []
+      },
+      "logs": []
+    },
+    {
+      "name": "two-page-vision-omits-second-page",
+      "tesseract": [
+        {
+          "pageNum": 1,
+          "text": "First page content."
+        },
+        {
+          "pageNum": 2,
+          "text": "Second page essential instruction: complete experiment B."
+        }
+      ],
+      "vision": [
+        {
+          "pageNum": 1,
+          "text": "First page content with heading and some additional details."
+        }
+      ],
+      "result": {
+        "pages": [
+          {
+            "pageNum": 1,
+            "text": "First page content with heading and some additional details.",
+            "source": "vision",
+            "words": null,
+            "pageW": null,
+            "pageH": null,
+            "viewportTransform": null
+          },
+          {
+            "pageNum": 2,
+            "text": "Second page essential instruction: complete experiment B.",
+            "source": "tesseract",
+            "words": null,
+            "pageW": null,
+            "pageH": null,
+            "viewportTransform": null
+          }
+        ],
+        "disagreements": [
+          {
+            "pageNum": 1,
+            "tesseractChars": 19,
+            "visionChars": 60,
+            "tesseractText": "First page content.",
+            "visionText": "First page content with heading and some additional details."
+          }
+        ],
+        "lowConfidence": [],
+        "fullText": "First page content with heading and some additional details.",
+        "detectedFolios": [],
+        "strippedEdgeLines": [],
+        "dupeCollapses": [],
+        "columnReorders": []
+      },
+      "logs": []
+    },
+    {
+      "name": "equal-character-fallback-with-uneven-pages",
+      "tesseract": [
+        {
+          "pageNum": 1,
+          "text": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. "
+        },
+        {
+          "pageNum": 2,
+          "text": "Second page final instruction: Submit worksheet."
+        }
+      ],
+      "vision": [
+        {
+          "pageNum": 1,
+          "text": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the"
+        },
+        {
+          "pageNum": 2,
+          "text": "instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. \nSecond page final instruction: Submit worksheet."
+        }
+      ],
+      "result": {
+        "pages": [
+          {
+            "pageNum": 1,
+            "text": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. ",
+            "source": "tesseract",
+            "words": null,
+            "pageW": null,
+            "pageH": null,
+            "viewportTransform": null
+          },
+          {
+            "pageNum": 2,
+            "text": "instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. \nSecond page final instruction: Submit worksheet.",
+            "source": "vision",
+            "words": null,
+            "pageW": null,
+            "pageH": null,
+            "viewportTransform": null
+          }
+        ],
+        "disagreements": [
+          {
+            "pageNum": 1,
+            "tesseractChars": 996,
+            "visionChars": 521,
+            "tesseractText": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. ",
+            "visionText": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the"
+          },
+          {
+            "pageNum": 2,
+            "tesseractChars": 48,
+            "visionChars": 523,
+            "tesseractText": "Second page final instruction: Submit worksheet.",
+            "visionText": "instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. \nSecond page final instruction: Submit worksheet."
+          }
+        ],
+        "lowConfidence": [],
+        "fullText": "First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. \n\ninstructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. First page contains the instructions to observe the sunlight and write the answer. \nSecond page final instruction: Submit worksheet.",
+        "detectedFolios": [],
+        "strippedEdgeLines": [],
+        "dupeCollapses": [],
+        "columnReorders": []
+      },
+      "logs": []
+    }
+  ]
+}

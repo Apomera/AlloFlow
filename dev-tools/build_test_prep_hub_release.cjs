@@ -589,6 +589,7 @@ ${prelude}${compiled}
     itemSkillIds: testPrepItemSkillIds,
     searchPack: testPrepSearchPack,
     studyPlanLayers: testPrepStudyPlanLayers,
+    normalizeWorkshop: testPrepNormalizeWorkshop,
     studyPlanRoutePointer: testPrepStudyPlanRoutePointer,
     studyPlanAgoLabel: testPrepStudyPlanAgoLabel,
     routeProgress: testPrepFoundationalDocumentRouteProgress,

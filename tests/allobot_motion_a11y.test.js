@@ -88,7 +88,7 @@ describe('AlloBot reduced-motion accessibility', () => {
     expect(source).toContain('rx={bodyPose.contactRx}');
     expect(source).toContain("className={`relative ${canBodyBreathe ? \"animate-bot-breathe\" : \"\"}");
     expect(source).not.toContain('!motionDisabled && !isFlightActive ? "animate-bot-breathe"');
-    expect(source).toContain('(isListening || isTalking) ? "animate-pulse motion-reduce:animate-none"');
+    expect(source).toContain('(isListening || isTalking) ? "animate-allobot-lamp-glow"');
   });
 
   it('deploys a stateful hover undercarriage with paired ground contacts', () => {

@@ -9092,7 +9092,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       positioning writes itself without overclaiming. */}
                   <details className="text-left mt-2 text-[11px] text-slate-500">
                     <summary className="cursor-pointer text-center hover:text-slate-700">ℹ️ {t('pdf_audit.title2.summary') || 'Why schools are required to do this (ADA Title II)'}</summary>
-                    <p className="mt-1.5 px-2">{t('pdf_audit.title2.body') || 'The US Department of Justice’s ADA Title II rule requires WCAG 2.2 AA digital accessibility from state and local government entities — including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence — every document you fix now is one fewer at the deadline. (Informational, not legal advice.)'}</p>
+                    <p className="mt-1.5 px-2">{t('pdf_audit.title2.body') || 'The US Department of Justice’s ADA Title II rule requires WCAG 2.1 AA digital accessibility from state and local government entities — including public schools, districts, and universities. In April 2026, DOJ extended the compliance deadlines to April 2027 (entities serving 50,000+) and April 2028 (smaller entities), citing in part that automated and AI remediation tools are not yet reliable enough at scale. That caution is why AlloFlow pairs AI with deterministic checks, verifies its own output, and never claims conformance without evidence — every document you fix now is one fewer at the deadline. (Informational, not legal advice.)'}</p>
                   </details>
                 </div>
 
@@ -9740,6 +9740,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                             autoFixPasses: project.autoFixPasses || 0,
                             // Collaboration provenance (2026-08-23): who-did-what survives the file.
                             humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                            candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
+                            candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
                             reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,
@@ -9911,7 +9913,7 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3 space-y-2" style={{ animation: 'fadeInUp 0.7s ease-out 5s both' }}>
                     <div className="text-[11px] font-black text-amber-800 uppercase tracking-wider flex items-center gap-1.5">⚖️ Why Digital Accessibility Matters</div>
                     <p className="text-[11px] text-slate-700 leading-relaxed">
-                      <strong className="text-amber-900">{t('pdf_audit.knowbility.ada_title') || 'The Americans with Disabilities Act (ADA) Title II'}</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>{t('pdf_audit.knowbility.wcag_label') || 'WCAG 2.2 Level AA'}</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>{t('pdf_audit.knowbility.deadline_range') || 'April 2026 to April 2027'}</strong> depending on population size.
+                      <strong className="text-amber-900">{t('pdf_audit.knowbility.ada_title') || 'The Americans with Disabilities Act (ADA) Title II'}</strong> requires state and local governments to make their digital services accessible to people with disabilities. In April 2024, the Department of Justice published <strong>final regulations</strong> mandating <strong>{t('pdf_audit.knowbility.wcag_label') || 'WCAG 2.1 Level AA'}</strong> compliance for all web content and mobile applications, with compliance deadlines ranging from <strong>{t('pdf_audit.knowbility.deadline_range') || 'April 2027 to April 2028'}</strong> depending on population size.
                     </p>
                     <p className="text-[11px] text-slate-600 leading-relaxed">
                       But compliance is just the baseline. Accessible documents benefit <strong>everyone</strong> — not just the 1 in 4 Americans living with a disability:
@@ -16003,6 +16005,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                   remainingIssues: project.remainingIssues != null ? project.remainingIssues : 0,
                                   autoFixPasses: project.autoFixPasses || 0,
                                   humanEditsAdopted: Number(project.humanEditsAdopted) || 0,
+                                  candidateRejectionCount: Math.max(0, Number(project.candidateRejectionCount) || 0),
+                                  candidateRejections: Array.isArray(project.candidateRejections) ? project.candidateRejections.slice(0, 100).filter(entry => entry && typeof entry === 'object').map(entry => ({ pass: Number(entry.pass) || 0, chunkId: String(entry.chunkId || '').slice(0, 80), phase: String(entry.phase || '').slice(0, 40), reason: String(entry.reason || '').slice(0, 120) })) : [],
                                   reviewedFindings: (project.reviewedFindings && typeof project.reviewedFindings === 'object') ? project.reviewedFindings : null,
                             _audioJobMeta: project._audioJobMeta || null,
                             _translation: project._translation || null,

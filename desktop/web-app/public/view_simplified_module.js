@@ -19,7 +19,8 @@
   if (!React) { console.error('[ViewSimplifiedModule] React not found on window'); return; }
   var Fragment = React.Fragment;
 
-  // Inject Chunk Read mood keyframes once. Reduced-motion media query disables
+  function _extends() { return _extends = Object.assign ? Object.assign.bind() : function (n) { for (var e = 1; e < arguments.length; e++) { var t = arguments[e]; for (var r in t) ({}).hasOwnProperty.call(t, r) && (n[r] = t[r]); } return n; }, _extends.apply(null, arguments); }
+// Inject Chunk Read mood keyframes once. Reduced-motion media query disables
 // the animations globally so users with that preference see static styling.
 (function () {
   if (typeof document === 'undefined') return;
@@ -926,6 +927,29 @@ function SimplifiedView(props) {
   var setLineHeight = props.setLineHeight;
   var setLetterSpacing = props.setLetterSpacing;
   var setFocusedParagraphIndex = props.setFocusedParagraphIndex;
+  // Line Focus follows keyboard focus as well as the pointer. Keep a
+  // focused response visible when the mouse leaves or moves between words.
+  var lineFocusParagraphProps = function (paragraphId) {
+    var clearFocus = function () {
+      setFocusedParagraphIndex(current => current === paragraphId ? null : current);
+    };
+    return {
+      'data-line-focus-paragraph': String(paragraphId),
+      tabIndex: isLineFocusMode ? 0 : undefined,
+      onFocus: function () {
+        setFocusedParagraphIndex(paragraphId);
+      },
+      onBlur: function (event) {
+        if (!event.currentTarget.contains(event.relatedTarget)) clearFocus();
+      },
+      onMouseEnter: function () {
+        setFocusedParagraphIndex(paragraphId);
+      },
+      onMouseLeave: function (event) {
+        if (!event.currentTarget.contains(event.currentTarget.ownerDocument.activeElement)) clearFocus();
+      }
+    };
+  };
   var setIsCustomReviseOpen = props.setIsCustomReviseOpen;
   var setCustomReviseInstruction = props.setCustomReviseInstruction;
   var setComplexityLevel = props.setComplexityLevel;
@@ -1018,6 +1042,19 @@ function SimplifiedView(props) {
   };
   var simplifiedContentParts = buildSimplifiedContentParts(generatedContent && generatedContent.data);
   var simplifiedDisplayBody = simplifiedContentParts.body;
+  function openReadingReflection() {
+    if (!props.onReadReflect) return;
+    props.onReadReflect({
+      text: simplifiedDisplayBody,
+      title: sourceTopic || 'Adapted reading',
+      language: leveledTextLanguage || '',
+      anchor: {
+        kind: 'adapted',
+        resourceId: String(generatedContent.id || sourceTopic || 'adapted'),
+        section: 'body'
+      }
+    });
+  }
   // The adapted document owns its citation registry. Falling back to the
   // source document is only safe when the adapted document has no reference
   // trailer at all; choosing whichever list is longer can pair adapted body
@@ -1158,6 +1195,24 @@ function SimplifiedView(props) {
   var editAudioRecordingStartedAtRef = React.useRef(0);
   var EDIT_AUDIO_MAX_RECORDING_MS = 120000;
   var immersiveDialogRef = React.useRef(null);
+  var [immersiveToolbarBottom, setImmersiveToolbarBottom] = React.useState(0);
+  React.useEffect(function () {
+    if (!isImmersiveReaderActive || !immersiveSettings?.lineFocus) return;
+    var toolbar = immersiveDialogRef.current?.querySelector("[data-immersive-toolbar]");
+    var update = function () {
+      var bottom = toolbar?.getBoundingClientRect().bottom || 0;
+      setImmersiveToolbarBottom(bottom);
+      setImmersiveRulerY(previous => Math.max(previous, bottom + immersiveSettings.textSize * 2.5));
+    };
+    update();
+    var observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(update) : null;
+    if (toolbar) observer?.observe(toolbar);
+    window.addEventListener("resize", update);
+    return function () {
+      observer?.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [isImmersiveReaderActive, immersiveSettings?.lineFocus, immersiveSettings?.textSize, setImmersiveRulerY]);
   var phonicsDialogRef = React.useRef(null);
   var phonicsCloseRef = React.useRef(null);
   var definitionDialogRef = React.useRef(null);
@@ -2288,7 +2343,15 @@ function SimplifiedView(props) {
     style: {
       backgroundColor: immersiveSettings.bgColor || '#fdfbf7'
     },
-    onMouseMove: e => setImmersiveRulerY(e.clientY)
+    onPointerMove: e => {
+      if (immersiveSettings.lineFocus && e.clientY > immersiveToolbarBottom) setImmersiveRulerY(e.clientY);
+    },
+    onFocusCapture: e => {
+      if (immersiveSettings.lineFocus && !e.target.closest("[data-immersive-toolbar]") && e.target.closest("[role=dialog]") === immersiveDialogRef.current) {
+        const rect = e.target.getBoundingClientRect();
+        setImmersiveRulerY(Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, rect.top + Math.min(rect.height / 2, immersiveSettings.textSize * 2.5)));
+      }
+    }
   }, /*#__PURE__*/React.createElement(ImmersiveToolbar, {
     settings: immersiveSettings,
     setSettings: setImmersiveSettings,
@@ -2356,9 +2419,10 @@ function SimplifiedView(props) {
   }), /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "Focus reader encountered an error. Please close and reopen."
   }, /*#__PURE__*/React.createElement(FocusReaderOverlay, {
+    language: leveledTextLanguage,
     isOpen: isFocusReaderActive,
     onClose: handleCloseSpeedReader,
-    text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
+    text: simplifiedDisplayBody.replace(/<[^>]*>/g, '')
   }), /*#__PURE__*/React.createElement(PerspectiveCrawlOverlay, {
     isOpen: isCrawlReaderActive,
     onClose: () => setIsCrawlReaderActive(false),
@@ -2373,22 +2437,34 @@ function SimplifiedView(props) {
     onCaptureChange: setSaveTtsAsPlayedEnabled,
     text: (generatedContent?.immersiveData?.filter(w => w.pos !== 'newline')?.map(w => w.text)?.join(' ') || "").replace(/<[^>]*>/g, '')
   })), immersiveSettings.lineFocus && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
-    className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out",
+    className: "fixed top-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[height] duration-75 ease-out motion-reduce:transition-none",
     style: {
-      height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5) + 'px'
+      top: immersiveToolbarBottom + 'px',
+      height: Math.max(0, immersiveRulerY - immersiveSettings.textSize * 2.5 - immersiveToolbarBottom) + 'px'
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out",
+    className: "fixed bottom-0 left-0 right-0 bg-black/80 pointer-events-none z-[210] transition-[top] duration-75 ease-out motion-reduce:transition-none",
     style: {
       top: immersiveRulerY + immersiveSettings.textSize * 2.5 + 'px'
     }
   }), /*#__PURE__*/React.createElement("div", {
-    className: "fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out",
+    className: "fixed left-0 right-0 border-b border-indigo-400/30 z-[210] pointer-events-none transition-[top] duration-75 ease-out motion-reduce:transition-none",
     style: {
       top: immersiveRulerY + 'px'
     }
   })), /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow overflow-y-auto p-8 md:p-16 custom-scrollbar relative z-10"
+    "data-immersive-passage": true,
+    tabIndex: 0,
+    role: "region",
+    "aria-label": "Reading passage. When Line Focus is on, use Up and Down arrows to move the reading window.",
+    onKeyDown: e => {
+      if (e.target === e.currentTarget && immersiveSettings.lineFocus && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
+        e.preventDefault();
+        const step = immersiveSettings.textSize * lineHeight;
+        setImmersiveRulerY(y => Math.max(immersiveToolbarBottom + immersiveSettings.textSize * 2.5, Math.min(window.innerHeight - immersiveSettings.textSize, y + (e.key === "ArrowDown" ? step : -step))));
+      }
+    },
+    className: "flex-grow overflow-y-auto p-5 md:p-16 custom-scrollbar relative z-10 focus-visible:outline focus-visible:outline-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: `max-w-4xl mx-auto transition-all duration-300`,
     style: {
@@ -2741,7 +2817,11 @@ function SimplifiedView(props) {
     size: 12
   }), " ", t('simplified.compare_mode')))), !isZenMode && /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-center gap-2"
-  }, /*#__PURE__*/React.createElement("button", {
+  }, props.onReadReflect && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: openReadingReflection,
+    className: "min-h-[44px] px-3 py-2 rounded-lg bg-teal-50 border border-teal-200 text-teal-900 text-sm font-bold"
+  }, t('reading_tools.reflect') || 'Read & reflect'), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('common.refresh'),
     "data-help-key": "simplified_immersive_reader",
@@ -3688,6 +3768,7 @@ function SimplifiedView(props) {
     size: 12,
     className: "animate-spin motion-reduce:animate-none"
   }), " ", simplifiedGeneratingMoreLabel)) : /*#__PURE__*/React.createElement("div", {
+    "data-simplified-reading-body": "true",
     className: `w-full min-h-[500px] text-lg font-medium leading-relaxed font-sans prose prose-p:my-2 max-w-none ${cursorStyles[interactionMode]} transition-all duration-500 ease-in-out ${isLineFocusMode ? 'bg-slate-950 text-slate-600 p-8 rounded-2xl shadow-inner prose-invert' : 'text-slate-800 prose-headings:text-orange-900 prose-strong:text-orange-900'} ${getContentDirection(generatedContent?.config?.language || leveledTextLanguage) === 'rtl' ? 'text-right' : 'text-left'}`,
     style: {
       maxWidth: 'min(72ch, 100%)',
@@ -3744,21 +3825,17 @@ function SimplifiedView(props) {
             // hover must set the same string — setting bare pIdx left
             // the hovered paragraph permanently dimmed/blurred in
             // line-focus mode.
-            return /*#__PURE__*/React.createElement("p", {
+            return /*#__PURE__*/React.createElement("p", _extends({
               key: pIdx,
               className: `mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-              onMouseUp: handleTextMouseUp,
-              onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
-              onMouseLeave: () => setFocusedParagraphIndex(null)
-            }, cleanText);
+              onMouseUp: handleTextMouseUp
+            }, lineFocusParagraphProps(paragraphId)), cleanText);
           }
           if (sentencesInPara.length === 0) return null;
-          return /*#__PURE__*/React.createElement("p", {
+          return /*#__PURE__*/React.createElement("p", _extends({
             key: pIdx,
-            className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-            onMouseEnter: () => setFocusedParagraphIndex(paragraphId),
-            onMouseLeave: () => setFocusedParagraphIndex(null)
-          }, interactionMode === 'add-glossary' ? (() => {
+            className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`
+          }, lineFocusParagraphProps(paragraphId)), interactionMode === 'add-glossary' ? (() => {
             const cleanPara = para.replace(/\[([^\]]+)\]\([^\)]+\)/g, '$1').replace(/https?:\/\/[^\s]+/g, '');
             const parts = highlightGlossaryTerms(cleanPara, latestGlossary, false);
             const partsArray = Array.isArray(parts) ? parts : [parts];
@@ -3886,21 +3963,17 @@ function SimplifiedView(props) {
           const isDimmed = isLineFocusMode && !shouldFocus;
           if (interactionMode === 'explain' || interactionMode === 'revise' || interactionMode === 'add-glossary') {
             const cleanText = para.replace(/\*\*|\*/g, '');
-            return /*#__PURE__*/React.createElement("p", {
+            return /*#__PURE__*/React.createElement("p", _extends({
               key: pIdx,
               className: `mb-4 leading-relaxed cursor-text selection:text-teal-900 transition-all duration-500 ${interactionMode === 'revise' ? 'selection:bg-purple-200' : 'selection:bg-teal-200'} ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 rounded-xl shadow-lg text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-              onMouseUp: handleTextMouseUp,
-              onMouseEnter: () => setFocusedParagraphIndex(pIdx),
-              onMouseLeave: () => setFocusedParagraphIndex(null)
-            }, cleanText);
+              onMouseUp: handleTextMouseUp
+            }, lineFocusParagraphProps(pIdx)), cleanText);
           }
           if (sentencesInPara.length === 0) return null;
-          return /*#__PURE__*/React.createElement("p", {
+          return /*#__PURE__*/React.createElement("p", _extends({
             key: pIdx,
-            className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`,
-            onMouseEnter: () => setFocusedParagraphIndex(pIdx),
-            onMouseLeave: () => setFocusedParagraphIndex(null)
-          }, interactionMode === 'cloze' ? sentencesInPara.map((sentence, sIdx) => {
+            className: `mb-4 leading-relaxed transition-all duration-500 ease-in-out rounded-xl ${isLineFocusMode ? shouldFocus ? 'opacity-100 scale-105 origin-left bg-slate-800 p-4 shadow-2xl text-white ring-1 ring-indigo-500/30 -mx-2' : 'opacity-20 blur-[1px]' : 'opacity-100'}`
+          }, lineFocusParagraphProps(pIdx)), interactionMode === 'cloze' ? sentencesInPara.map((sentence, sIdx) => {
             const currentGlobalIdx = startIdx + sIdx;
             const cleanText = sentence.trim().replace(/^#+\s*/, '');
             return /*#__PURE__*/React.createElement("span", {

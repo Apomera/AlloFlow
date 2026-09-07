@@ -181,7 +181,7 @@ describe('rebuild wiring guardrails', () => {
   it.each(['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx'])(
     '%s wraps and passes it to the modal', (file) => {
       const src = read(file);
-      expect(src).toContain('const handleRebuildBlueprintStep = async (uiId)');
+      expect(src).toContain('const handleRebuildBlueprintStep = async (uiId, options = {})');
       // Assert PRESENCE in the modal's prop list, not adjacency to a
       // neighbour — pinning "handleRebuildBlueprintStep, aiStandardQuery"
       // broke the moment the template props were inserted between them,
@@ -192,12 +192,10 @@ describe('rebuild wiring guardrails', () => {
 
   it.each(['view_misc_modals_source.jsx', 'view_misc_modals_module.js',
            'desktop/web-app/public/view_misc_modals_module.js'])(
-    '%s passes onRebuildStep to BOTH card mounts', (file) => {
+    '%s passes onRebuildStep to the single live card', (file) => {
       const src = read(file);
-      // The modal has TWO card mounts: the chat-message one and the Stage 4
-      // restored-plan one. A rebuild button that works in one and not the other
-      // is the kind of gap only a count catches.
-      expect((src.match(/onRebuildStep/g) || []).length).toBe(2);
+      // One live mount owns both newly created and restored plans.
+      expect((src.match(/onRebuildStep/g) || []).length).toBe(1);
       // …and it must actually receive the handler, not an undefined prop.
       expect(src).toContain('handleRebuildBlueprintStep');
     });

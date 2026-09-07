@@ -13,10 +13,14 @@ test.beforeAll(async()=>{server=createServer((req,res)=>{const url=new URL(req.u
 test.afterAll(async()=>{await new Promise<void>(r=>server.close(()=>r()));});
 const box=(size=[1,1,1])=>({shape:'box',size,position:[0,.5,0],rotation:[0,0,0],color:'#60a5fa'});
 async function mount(page:any,state:any){await page.goto(base+'/');await page.evaluate((s:any)=>(window as any).__mount(s),state);await page.waitForFunction(()=>!!(window as any)._geoScene);}
-async function select(page:any){await page.getByRole('button',{name:/Edit by hand/}).click();await page.getByRole('button',{name:'1 box',exact:true}).click();}
+async function panel(page:any,name:string){await page.getByRole('tablist',{name:'Workspace panels'}).getByRole('tab',{name,exact:true}).click();}
+async function sculptPanel(page:any,name:string){await panel(page,'Build');await page.getByRole('tablist',{name:'Sculpt editor views'}).getByRole('tab',{name,exact:true}).click();}
+async function select(page:any,index=0){await sculptPanel(page,'Edit');await page.locator('#geo-sculpt-panel-edit .geo-sculpt-part-chip').nth(index).click();}
+async function exact(page:any,label:string,value:string){const field=page.getByLabel(label,{exact:true});await field.fill(value);await field.press('Enter');}
+async function section(page:any,title:string){const summary=page.locator('#geo-sculpt-panel-edit summary').filter({hasText:title});const details=summary.locator('..');if(!await details.evaluate((el:any)=>el.open))await summary.click();return details;}
 async function state(page:any){return page.evaluate(()=>(window as any).__toolData.geoSandbox);}
-test('whole-object undo preserves earlier part edits and supports redo without AI',async({page})=>{await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box()]}});await select(page);await page.getByRole('button',{name:'Move x positive',exact:true}).click();const x=(await state(page)).sculptRecipe.parts[0].position[0];await page.getByRole('button',{name:'🔍+ Bigger',exact:true}).click();await page.getByRole('button',{name:'↶ Undo',exact:true}).click();expect((await state(page)).sculptRecipe.parts[0].position[0]).toBe(x);expect((await state(page)).sculptRecipe.scale).toBe(1);await page.getByRole('button',{name:'Redo',exact:true}).click();expect((await state(page)).sculptRecipe.scale).toBe(1.25);});
-test('a size-limited investigation does not display an imaginary growth ratio',async({page})=>{await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box([4,4,4])]}});await select(page);const panel=page.locator('[data-geo-sculpt-investigation]');await panel.getByRole('button',{name:'Start',exact:true}).click();await panel.getByRole('button',{name:'Volume',exact:true}).click();await page.getByRole('button',{name:'Scale selected part ×1.25',exact:true}).click();await expect(panel).not.toContainText('1.953');await expect(page.locator('.geo-status')).toContainText('cannot grow');expect((await state(page)).sculptRecipe.parts[0].size).toEqual([4,4,4]);});
+test('whole-object undo preserves earlier part edits and supports redo without AI',async({page})=>{await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box()]}});await select(page);await page.getByRole('button',{name:'Move x positive',exact:true}).click();const x=(await state(page)).sculptRecipe.parts[0].position[0];await sculptPanel(page,'Project');await page.getByRole('button',{name:'🔍+ Bigger',exact:true}).click();await page.getByRole('button',{name:'↶ Undo',exact:true}).click();expect((await state(page)).sculptRecipe.parts[0].position[0]).toBe(x);expect((await state(page)).sculptRecipe.scale).toBe(1);await page.getByRole('button',{name:'Redo',exact:true}).click();expect((await state(page)).sculptRecipe.scale).toBe(1.25);});
+test('a size-limited investigation does not display an imaginary growth ratio',async({page})=>{await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box([4,4,4])]}});await select(page);await panel(page,'Learn');const investigation=page.locator('[data-geo-sculpt-investigation]');await investigation.getByRole('button',{name:'Start',exact:true}).click();await investigation.getByRole('button',{name:'Volume',exact:true}).click();await page.getByRole('button',{name:'Scale selected part ×1.25',exact:true}).click();await expect(investigation).not.toContainText('1.953');await expect(page.locator('.geo-status')).toContainText('cannot grow');expect((await state(page)).sculptRecipe.parts[0].size).toEqual([4,4,4]);});
 test('challenge isolation returns to the unmodified sculpture',async({page})=>{const recipe={name:'Keep me',parts:[box()]};await mount(page,{mode:'sculpt',sculptRecipe:recipe});await page.getByRole('button',{name:'Challenge',exact:true}).click();expect((await state(page)).mode).toBe('single');await page.getByRole('button',{name:'Exit',exact:true}).click();expect((await state(page)).mode).toBe('sculpt');expect((await state(page)).sculptRecipe).toEqual(recipe);});
 test('identification questions conceal the answer across the workspace',async({page})=>{await mount(page,{mode:'single',challengeMode:true,challenge:{type:'identify',shapeId:'box',answer:'Rectangular Prism',shapeName:'Rectangular Prism',question:'What type of solid is this?',dimDesc:'W=3 H=3 D=3'}});await expect(page.locator('#allo-geo-sandbox')).not.toContainText('Rectangular Prism');await expect(page.locator('#geo-control-sidebar')).toHaveCount(0);});
 test('a transient WebGL failure can recover through Retry',async({page})=>{await page.goto(base+'/');await page.evaluate(()=>{const w=window as any;w.__oldRenderer=w.THREE.WebGLRenderer;w.THREE.WebGLRenderer=function(){throw Error('Transient test failure');};w.__mount({mode:'single'});});await page.getByRole('button',{name:'Retry',exact:true}).waitFor();await page.evaluate(()=>{const w=window as any;w.THREE.WebGLRenderer=w.__oldRenderer;});await page.getByRole('button',{name:'Retry',exact:true}).click();await page.waitForFunction(()=>!!(window as any)._geoScene);await expect(page.locator('#geo-sandbox-canvas')).toBeVisible();});
@@ -62,7 +66,7 @@ test('one drag is one undo transaction and the next edit remains separate', asyn
 });
 
 test('move steps use display units at any whole-sculpt scale', async ({page}) => {
-  await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box()],scale:2},sculptStep:0.25});
+  await mount(page,{mode:'sculpt',sculptRecipe:{parts:[box()],scale:2},sculptStep:0.25,showCanvasMeasures:true});
   await select(page);
   await page.getByRole('button',{name:'Move x positive',exact:true}).click();
   expect((await state(page)).sculptRecipe.parts[0].position[0]*5.2).toBeCloseTo(0.25,10);
@@ -78,7 +82,10 @@ test('undoing an asynchronous AI result restores hand edits made while it was pe
     w.__ctx.callGemini=()=>new Promise(resolve=>{w.__finishAI=resolve;});
     w.__ctx.update('geoSandbox','sculptStep',0.5);
   });
+  await sculptPanel(page,'Project');
+  await page.locator('#geo-sculpt-panel-project summary').filter({hasText:'AI-assisted creation'}).click();
   await page.getByRole('button',{name:'✨ Regenerate',exact:true}).click();
+  await select(page);
   await page.getByRole('button',{name:'Move x positive',exact:true}).click();
   const position=(await state(page)).sculptRecipe.parts[0].position[0];
   await page.evaluate(()=>(window as any).__finishAI(JSON.stringify({parts:[{shape:'sphere',size:[1],position:[0,1,0],color:'#60a5fa'}]})));
@@ -86,4 +93,129 @@ test('undoing an asynchronous AI result restores hand edits made while it was pe
   await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
   expect((await state(page)).sculptRecipe.parts[0].shape).toBe('box');
   expect((await state(page)).sculptRecipe.parts[0].position[0]).toBe(position);
+});
+
+
+test('Sculpt views expose intentional primitive choice and exact transforms in the renderer', async ({page}) => {
+  await mount(page,{mode:'sculpt',sculptRecipe:{parts:[{...box([2,3,2]),label:'Tower'}]}});
+  await expect(page.locator('#geo-sculpt-panel-parts')).toBeVisible();
+  await expect(page.locator('#geo-sculpt-panel-project')).toBeHidden();
+  await select(page);
+  await page.getByLabel('Primitive shape',{exact:true}).selectOption('cylinder');
+  await expect.poll(async()=>(await state(page)).sculptRecipe.parts[0].shape).toBe('cylinder');
+  expect((await state(page)).sculptRecipe.parts[0].size.slice(0,2)).toEqual([1,3]);
+  await exact(page,'Radius (u)','5.2');
+  await exact(page,'Rotation Z (°)','35');
+  const part=(await state(page)).sculptRecipe.parts[0];
+  expect(part.label).toBe('Tower');
+  expect(part.size[0]).toBeCloseTo(2,12);
+  expect(part.rotation[2]).toBe(35);
+  await page.waitForFunction(() => {
+    const root=(window as any)._geoScene?.sculptGroup;
+    const mesh=root?.children.find((o:any)=>o.isMesh&&o.userData.prim3dPartIndex===0);
+    return mesh?.geometry?.type==='CylinderGeometry'&&Math.abs(mesh.rotation.z-35*Math.PI/180)<1e-10;
+  });
+  await page.getByRole('button',{name:'Reset rotation',exact:true}).click();
+  expect((await state(page)).sculptRecipe.parts[0].rotation).toEqual([0,0,0]);
+  await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
+  expect((await state(page)).sculptRecipe.parts[0].rotation[2]).toBe(35);
+  await expect(page.locator('#geo-sculpt-panel-edit .geo-sculpt-part-chip')).toHaveCount(1);
+});
+
+test('material presets update unlocked group members and Undo restores their appearances', async ({page}) => {
+  const parts=[{...box(),group:'pair',label:'Left'},{...box(),group:'pair',label:'Right',position:[1,.5,0]},{...box(),group:'pair',label:'Locked',locked:true,position:[2,.5,0]}];
+  await mount(page,{mode:'sculpt',sculptRecipe:{parts}});
+  await select(page);
+  await section(page,'Color & material');
+  await page.getByLabel('Apply material to',{exact:true}).selectOption('group');
+  await page.getByRole('button',{name:'Apply material Steel',exact:true}).click();
+  const changed=(await state(page)).sculptRecipe.parts;
+  expect(changed.slice(0,2).every((p:any)=>p.color==='#91a4b6'&&p.finish==='metal')).toBe(true);
+  expect(changed[2].color).toBe('#60a5fa');
+  expect(changed[2].locked).toBe(true);
+  await expect(page.locator('.geo-status')).toContainText('unlocked parts');
+  await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
+  expect((await state(page)).sculptRecipe.parts.every((p:any)=>p.color==='#60a5fa')).toBe(true);
+  await page.getByRole('button',{name:'Redo',exact:true}).click();
+  expect((await state(page)).sculptRecipe.parts[1].finish).toBe('metal');
+});
+
+test('directed copies and local-plane mirrors preserve exact geometry through Undo and Redo', async ({page}) => {
+  const cone={shape:'cone',size:[.5,1,.4],position:[.5,1,.25],rotation:[20,-35,70],color:'#60a5fa',label:'Cone'};
+  await mount(page,{mode:'sculpt',sculptRecipe:{parts:[cone],scale:2,rotY:40}});
+  await select(page);
+  await section(page,'Arrange & copy');
+  await page.getByLabel('Local copy axis',{exact:true}).selectOption('z');
+  await page.getByLabel('Direction',{exact:true}).selectOption('-1');
+  await exact(page,'Copy spacing (u)','2.6');
+  await page.getByRole('button',{name:'Duplicate',exact:true}).click();
+  const beforeMirror=(await state(page)).sculptRecipe;
+  expect(beforeMirror.parts).toHaveLength(2);
+  expect(beforeMirror.parts[1].position[2]).toBeCloseTo(-.25,12);
+  await page.getByRole('button',{name:'Mirror across local Y plane',exact:true}).click();
+  const mirrored=(await state(page)).sculptRecipe;
+  expect(mirrored.parts).toHaveLength(3);
+  expect(mirrored.parts[2].position).toEqual([.5,-1,-.25]);
+  expect(mirrored.parts[2].rotation).toEqual([-20,-35,110]);
+  expect(mirrored.parts[2].size).toEqual(mirrored.parts[1].size);
+  expect(mirrored.rotY).toBe(40);
+  await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
+  expect((await state(page)).sculptRecipe).toEqual(beforeMirror);
+  await page.getByRole('button',{name:'Redo',exact:true}).click();
+  expect((await state(page)).sculptRecipe).toEqual(mirrored);
+});
+
+test('Project stores exact whole-sculpt controls and reveals its saved work and AI tools', async ({page}) => {
+  await mount(page,{mode:'sculpt',sculptRecipe:{name:'Study bridge',parts:[box()]}});
+  await sculptPanel(page,'Project');
+  await exact(page,'Whole sculpture scale','1.75');
+  await exact(page,'Whole sculpture rotation (°)','40');
+  await page.getByRole('button',{name:'Save this sculpt',exact:true}).click();
+  let saved=(await state(page)).savedSculpts['Study bridge'];
+  expect(saved.scale).toBe(1.75);
+  expect(saved.rotY).toBe(40);
+  expect(saved.parts[0].size).toEqual([1,1,1]);
+  await exact(page,'Whole sculpture scale','2.25');
+  await page.getByRole('button',{name:/Saved sculpts/}).click();
+  await page.getByRole('button',{name:'Study bridge',exact:true}).click();
+  expect((await state(page)).sculptRecipe.scale).toBe(1.75);
+  await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
+  expect((await state(page)).sculptRecipe.scale).toBe(2.25);
+  await expect(page.getByRole('button',{name:'Export sculpture',exact:true})).toBeVisible();
+  await page.evaluate(() => {
+    const w=window as any; w.__ctx.callGemini=async()=>'';w.__ctx.update('geoSandbox','sculptStep',0.25);
+  });
+  await page.locator('#geo-sculpt-panel-project summary').filter({hasText:'AI-assisted creation'}).click();
+  await expect(page.getByRole('button',{name:'✨ Regenerate',exact:true})).toBeVisible();
+});
+
+test('locked Sculpt parts keep their geometry while duplicate creates an editable copy', async ({page}) => {
+  await mount(page,{mode:'sculpt',sculptRecipe:{parts:[{...box(),label:'Anchor',locked:true}]}});
+  await select(page);
+  await expect(page.getByLabel('Primitive shape',{exact:true})).toBeDisabled();
+  await expect(page.getByLabel('Width (u)',{exact:true})).toBeDisabled();
+  await expect(page.getByRole('button',{name:'Move x positive',exact:true})).toBeDisabled();
+  await section(page,'Arrange & copy');
+  await page.getByRole('button',{name:'Duplicate',exact:true}).click();
+  const parts=(await state(page)).sculptRecipe.parts;
+  expect(parts).toHaveLength(2);
+  expect(parts[0].locked).toBe(true);
+  expect(parts[1].locked).toBe(false);
+  await expect(page.getByLabel('Width (u)',{exact:true})).toBeEnabled();
+  await page.getByRole('button',{name:'Move x positive',exact:true}).click();
+  expect((await state(page)).sculptRecipe.parts[0].position).toEqual([0,.5,0]);
+  expect((await state(page)).sculptRecipe.parts[1].position[0]).toBeGreaterThan(parts[1].position[0]);
+});
+
+
+test('starting a new sculpture is available from Project and Undo restores the original project',async({page})=>{
+  await mount(page,{mode:'sculpt',sculptRecipe:{name:'Original sculpture',parts:[{...box(),partId:'original-part',label:'Original box',group:'original-group'}],scale:2,rotY:35}});
+  const original=(await state(page)).sculptRecipe;
+  await page.getByRole('tablist',{name:'Sculpt editor views'}).getByRole('tab',{name:'Project',exact:true}).click();
+  await page.getByRole('button',{name:'New sculpture',exact:true}).click();
+  expect((await state(page)).sculptRecipe.name).toBe('my sculpt');
+  expect((await state(page)).sculptRecipe.parts).toHaveLength(1);
+  await expect(page.getByRole('tablist',{name:'Sculpt editor views'}).getByRole('tab',{name:'Parts',exact:true})).toHaveAttribute('aria-selected','true');
+  await page.getByRole('button',{name:'↶ Undo',exact:true}).click();
+  expect((await state(page)).sculptRecipe).toEqual(original);
 });

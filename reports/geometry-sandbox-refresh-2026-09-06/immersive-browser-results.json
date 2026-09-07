@@ -1,0 +1,62 @@
+{
+  "desktop": {
+    "before": {
+      "d": 3,
+      "L": 2.1,
+      "W": 1.6,
+      "H": 1.35,
+      "axis": 2,
+      "history": []
+    },
+    "saved": {
+      "v": 1,
+      "d": 3,
+      "L": 2.1,
+      "W": 1.6,
+      "H": 1.35,
+      "axis": 2,
+      "missionIndex": 0,
+      "showTarget": true,
+      "showBoundary": false,
+      "completedMask": 0,
+      "viewScaleIndex": 1,
+      "focusMode": "explore",
+      "precision": 2,
+      "stickMode": "geometry",
+      "quality": "auto",
+      "instructorMode": false,
+      "workspaceMode": "free",
+      "backdrop": "ocean",
+      "showGroundGrid": false,
+      "showMeasureCard": false
+    },
+    "reloaded": {
+      "d": 3,
+      "L": 2.1,
+      "W": 1.6,
+      "H": 1.35,
+      "axis": 2,
+      "history": []
+    },
+    "workspaceOnlyLaunch": true
+  },
+  "mobile": {
+    "freeBounds": {
+      "hud": {
+        "x": 8,
+        "y": 456.765625,
+        "width": 374,
+        "height": 379.234375,
+        "top": 456.765625,
+        "right": 382,
+        "bottom": 836,
+        "left": 8
+      },
+      "width": 390,
+      "height": 844,
+      "scrollWidth": 390
+    },
+    "collapsedHeight": 56
+  },
+  "pageErrors": []
+}

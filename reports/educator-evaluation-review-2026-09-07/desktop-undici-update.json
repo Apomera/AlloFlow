@@ -1,0 +1,41 @@
+{
+  "add": [],
+  "added": 0,
+  "audited": 1510,
+  "change": [
+    {
+      "from": {
+        "name": "undici",
+        "version": "6.19.7",
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\node_modules\\undici"
+      },
+      "to": {
+        "name": "undici",
+        "version": "6.28.1",
+        "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\node_modules\\undici"
+      }
+    }
+  ],
+  "changed": 1,
+  "funding": 327,
+  "remove": [],
+  "removed": 0,
+  "audit": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 9,
+      "moderate": 9,
+      "high": 14,
+      "critical": 0,
+      "total": 32
+    },
+    "dependencies": {
+      "prod": 1337,
+      "dev": 145,
+      "optional": 8,
+      "peer": 28,
+      "peerOptional": 0,
+      "total": 1509
+    }
+  }
+}

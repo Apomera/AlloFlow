@@ -409,3 +409,30 @@ Two truncations: `.allo-tree-tab-hint` was `white-space:nowrap;overflow:hidden;t
 ★ Verify the overrides actually applied (compare computed letterSpacing before/after) - the first run reported identical before/after counts because the style tag had not taken effect, which reads exactly like a pass.
 
 New file `tests/e2e/treelab-text-spacing.spec.ts` (7 views; also asserts nothing was clipped BEFORE the overrides). 253 units + 40 browser tests green. Local, uncommitted.
+
+## Thirty-third pass (September 6, 2026) - reflow measured, read-aloud extended
+
+REFLOW (WCAG 1.4.10) at 320px across all 7 views: pageOverflow 0, no clipped leaf text, nothing wider than the column except the compare chart (inside its own `overflow:auto` shell, which is allowed). One 17px-tall citation link in the grove notes = inline link, exempt from 2.5.8. NO CHANGE - recorded so it is not re-derived.
+
+READ-ALOUD extended to the knowledge check. `speechReady()` / `stopSpeech(stateKey)` / `speakText(text, stateKey)` now live beside `btn()` at component scope; `viewGrove`'s `stopSpeaking`/`speakReceipt` delegate to them (same `groveSpeaking` key, same rate rule). `viewQuiz` gains `quizSpeechText()` + `quizSpeechButton()` (state `quizSpeaking`), rendered under the question: reads the question and every option with its letter, plus the verdict and `q.why` once answered.
+
+★★★ A script that inserted the helpers "before the nearest preceding `return`" put them inside `quizFinale` instead of `viewQuiz`, where `q`/`qKey`/`answered` do not exist. `node --check` passed - nothing was syntactically wrong. Restored from the MIRROR and reapplied with every insertion anchored to a unique existing literal. Never locate an insertion point by proximity in this file.
+
+★ The read-aloud stub never fires `onend`, so the control stays in its "Stop reading" state; a test that clicks Read twice must stop first.
+
+2 tests appended to `treelab-read-aloud.spec.ts` (5 total). 253 units + 32 browser tests green. Local, uncommitted.
+
+## Thirty-fourth pass (September 6, 2026) - Grove Journey i18n routing
+
+`viewGrove` had 13 `__alloT` calls vs ~280 bare English strings. Now: module-scope `groveKey(text)` (slug of first 5 words + djb2 hash, exported on the engine), and inside viewGrove `gt(text)` = `__alloT('stem.treelab.grove.' + groveKey(text), text)`. `say()`, `priorityName()`, `priorityCopy()`, the `.name/.title/.copy/.label` render sites, `journalNames[id]`, `eventCopySimple` and 144 bare literals route through it. Species names use the existing `stem.treelab.species_<id>` keys.
+
+Three sentences were built AROUND a value (`'Read the year ' + last.year + ' evidence'`, the prediction verdict, the habitat label) so their key varied with the value; each is now fragments around the value.
+
+Gate: `tests/tree_lab_grove_i18n.test.js` mounts with `t: (k, fb) => '⟦' + fb + '⟧'` and walks text nodes + aria-label + title for unmarked words (units `kg C`/`°C` and codes `[A-Z]+-\d+` exempt). Key list: `docs/i18n/tree-life-lab-grove-keys.json` (296 keys) generated at RUNTIME by `tests/tree_lab_grove_keys.gen.test.js` with `GROVE_KEYS_WRITE=1`; the gate asserts every runtime key is listed with the same English.
+
+★★★ A source scanner for capitalised strings wrapped 10 SVG path `d:` strings as text (`gt('M65 84 Q68 ...')`) - the runtime list is the only honest one; the static list had 433 "keys".
+★★★ `\b(event)\.(title)` matched the tail of `r.event.title` -> `r.gt(event.title)` = TypeError at render. Anchor with a negative lookbehind for `.` / identifier chars.
+★★★ Shell heredoc turned `\b` in a JS regex into a literal BACKSPACE byte (0x08); unit exemptions silently never matched. Write test files with the Write tool.
+★ Insertion by "nearest preceding return" landed helpers in the wrong function last pass; every edit this pass is anchored to a unique existing literal.
+
+NEXT: pack top-up of the 296 keys x 62 packs via the lang-pack tooling (insert_pack_keys takes dotted sections + 4 copies - see memory). 261 units + 11 browser green. Local, uncommitted.

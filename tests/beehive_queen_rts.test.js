@@ -141,7 +141,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     const scout = dock.querySelector('[data-quick-command="scout_rival"]');
     expect(scout).toBeTruthy();
     expect(scout.disabled).toBe(false);
-    expect(scout.getAttribute('aria-label')).toContain('Effect: Reveal rival power; shift forage +2% immediately.');
+    expect(scout.getAttribute('aria-label')).toContain('Effect: Reveal rival power; add 2 points of RTS advantage.');
     expect(dock.querySelector('[data-command-preview="scout_rival"]').textContent).toContain('Reveal rival power');
     await act(async () => { scout.click(); await Promise.resolve(); });
     expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
@@ -153,7 +153,7 @@ describe('Beehive Queen mode - real-time RTS behavior', () => {
     expect(rivalIntelligence.textContent).toContain('Territorial opportunist');
     expect(latest.beehive.queen.lastImpact.kind).toBe('command');
     expect(latest.beehive.queen.lastImpact.title).toBe('Scout Rival');
-    expect(latest.beehive.queen.lastImpact.changes.map((change) => change.label)).toEqual(expect.arrayContaining(['Forage control', 'Rival intel', 'Scouts', 'Nectar']));
+    expect(latest.beehive.queen.lastImpact.changes.map((change) => change.label)).toEqual(expect.arrayContaining(['RTS advantage', 'Rival intel', 'Scouts', 'Nectar']));
     const impact = host.querySelector('[data-rts-impact-kind="command"]');
     expect(impact.textContent).toContain('Scouts report rival power');
     expect(impact.querySelector('[data-rts-impact-metric="rival-intel"]')).toBeTruthy();

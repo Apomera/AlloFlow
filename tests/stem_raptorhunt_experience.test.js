@@ -3243,7 +3243,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("skGrad.addColorStop(0, '#8fa0b5')");
     expect(init).toContain('skyTintColor.copy(skyFrameColor)');
     expect(init).not.toMatch(/if \(species\.biome === 'forest-night'\) \{[\s\S]{0,300}skGrad\.addColorStop/);
-    expect(init).toContain('scene.fog.color.copy(fogFrameColor)');
+    expect(init).toContain('atmosphereFogColor(scene.fog.color,daylight,twilight,visualCloudCover,renderer.toneMappingExposure)');
     expect(init).toContain('skyDome.material.color.copy(skyTintColor)');
     expect(init).toContain('skyFill.intensity =');
     expect(init).toContain('rimLight.intensity =');
@@ -3335,18 +3335,18 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     // The radius moved into horizonBaseRadius so the snow cap can be sized from the
     // same draw as the rock beneath it; the intent, a broad 46-70 m cone, is unchanged.
     expect(init).toContain('var horizonBaseRadius = 46 + Math.random() * 24;');
-    expect(init).toContain('new THREE.ConeGeometry(horizonBaseRadius, horizonPeak, 18, 5)');
-    expect(init).toContain('horizonGroup.position.x = raptor.x');
-    expect(init).toContain('horizonGroup.position.z = raptor.z');
+    expect(init).toContain('new THREE.PlaneGeometry(radius*2,radius*2,segments,segments)');
+    expect(init).toContain('horizonGroup.position.set(0, 0, 0)');
+    expect(init).not.toContain('horizonGroup.position.z = raptor.z');
   });
 
-  it('keeps both landmark layers grouped around the flying raptor', () => {
+  it('keeps distant landmark layers fixed in world space for natural parallax', () => {
     const init = functionBody(source(), 'initHuntSim');
     expect(init).toContain('var distantTerrainGroup = new THREE.Group()');
     expect(init).toMatch(/distantTerrainGroup\.add\(/);
     expect(init).toContain('scene.add(distantTerrainGroup)');
-    expect(init).toContain('distantTerrainGroup.position.x = raptor.x');
-    expect(init).toContain('distantTerrainGroup.position.z = raptor.z');
+    expect(init).toContain('distantTerrainGroup.position.set(0, 0, 0)');
+    expect(init).not.toContain('distantTerrainGroup.position.z = raptor.z');
     expect(init).not.toMatch(/scene\.add\(mt\)/);
     ['distantTerrainCount', 'distantTerrainOffsetX', 'distantTerrainOffsetZ', 'distantTerrainWorldY'].forEach((field) => {
       expect(init).toContain(field + ':');
@@ -3379,7 +3379,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('var cloudShade = 1 - visualCloudCover * 0.58');
     expect(init).toContain('scene.fog.far = 720 + highStoopFogBoost - visualCloudCover * 150');
     expect(init).toContain('renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12)');
-    expect(init).toContain('sun.intensity = daylight * 0.96 * cloudShade');
+    expect(init).toContain('sun.intensity = daylight * 1.42 * cloudShade');
     expect(init).toContain('starVisibility = Math.max(0, Math.min(1, 1 - daylight * 1.35)) * (1 - visualCloudCover * 0.90)');
     expect(init).toContain('var cloudList = []');
     expect(init).not.toMatch(/if\s*\(!isNight\)\s*\{\s*var cloudCanvas/);
@@ -3475,7 +3475,8 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain('var waterUpdateInterval = 1000 / qualityProfile.waterHz');
     expect(init).toContain('now - lastWaterUpdate >= waterUpdateInterval');
     expect(init).toContain('lastWaterUpdate = now');
-    expect(init).toContain('lake.geometry.computeVertexNormals()');
+    expect(init).not.toContain('lake.geometry.computeVertexNormals()');
+    expect(init).toContain('normal=normalize(mat3(viewMatrix)*rhLakeNormal');
     expect(init).toContain("action === 'environment' && value");
     expect(init).toContain('canvasEl._rhSnapshot = function()');
     expect(init).toContain('sunAltitude: (sunSprite.position.y - camera.position.y) / sunDistance');
@@ -3915,15 +3916,12 @@ describe('Raptor Hunt snow line and horizon peaks', () => {
     expect(text).toContain('mtWidth * mtSnowFraction * 1.02');
   });
 
-  it('skews a cap by its parent peak, not by its own height', () => {
-    // sculptMountainGeometry offsets vertices by ridgeLevel * height * 0.13. Applying
-    // that with each mesh's own height slid a 40 percent cap 7.7 m off a 100 m summit.
-    expect(text).toContain('function sculptMountainGeometry(geometry, seed, skewHeight) {');
-    expect(text).toContain('var ridgeSkew = skewHeight || ridgeHeight;');
-    expect(text).toContain('ridgeLevel * ridgeSkew * 0.13 * Math.sin(seed)');
-    expect(text).toContain('ridgeLevel * ridgeSkew * 0.08 * Math.cos(seed)');
-    const H = 100, f = 0.4, seed = 1.7;
-    expect(Math.abs((0.13 * H * Math.sin(seed)) - (0.13 * H * f * Math.sin(seed)))).toBeGreaterThan(7);
+  it('samples snow caps from the same parent ridge surface', () => {
+    expect(text).toContain('var height=skewHeight || localHeight;');
+    expect(text).toContain('var fraction=localHeight/height;');
+    expect(text).toContain("ridge.setAttribute('rhSnow',new THREE.BufferAttribute(snow,1))");
+    // The numerical geometry suite verifies world-space coincidence at every vertex.
+    expect(text).toContain('height*(1-fraction)*0.5');
   });
 
   it('paints both far peak rings from one palette', () => {

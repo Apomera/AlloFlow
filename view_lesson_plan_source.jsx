@@ -9,7 +9,7 @@ function LessonPlanView(props) {
   var isParentMode = props.isParentMode;
   var isEditingLessonPlan = props.isEditingLessonPlan;
   var history = props.history;
-  var isGeneratingExtensionGuide = props.isGeneratingExtensionGuide;
+  var isGeneratingExtensionGuide = props.isGeneratingExtensionGuide || {};
   var progressionData = props.progressionData;
   var isGeneratingProgression = props.isGeneratingProgression;
   var setActiveStation = props.setActiveStation;
@@ -33,15 +33,15 @@ function LessonPlanView(props) {
   return (
                     <div className="space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-2 pb-10">
                         <div className="bg-indigo-50 p-6 rounded-xl border border-indigo-100 shadow-sm">
-                             <div className="flex justify-between items-start mb-4">
+                             <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
                                  <div>
                                      <h2 className="text-2xl font-bold text-indigo-900 mb-1">{t('lesson_plan.header_title')}</h2>
                                      <div className="text-sm font-bold text-indigo-700">{t('lesson_plan.topic_label')}: {sourceTopic || "General"} | {t('lesson_plan.grade_label')}: {gradeLevel}</div>
                                  </div>
-                                 <div className="flex gap-2 no-print">
+                                 <div className="flex flex-wrap gap-2 no-print">
                                     {isTeacherMode && (
                                         <button
-                                            aria-label={t('common.check')}
+                                            aria-pressed={!!isEditingLessonPlan}
                                             onClick={handleToggleIsEditingLessonPlan}
                                             className={`flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-full transition-colors shadow-sm ${isEditingLessonPlan ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-600 hover:bg-indigo-100 border border-indigo-200'}`}
                                             title={t('lesson_plan.edit_plan')}
@@ -126,13 +126,13 @@ function LessonPlanView(props) {
                                             aria-label={t('lesson_plan.edit_essential_question') || 'Edit essential question'}
                                             value={generatedContent?.data.essentialQuestion}
                                             onChange={(e) => handleLessonPlanChange('essentialQuestion', e.target.value)}
-                                            className="w-full text-lg font-serif text-slate-800 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all"
+                                            className="w-full text-lg text-slate-800 bg-transparent border border-indigo-200 focus:border-indigo-500 focus:bg-indigo-50 focus:ring-2 focus:ring-indigo-200 rounded p-2 outline-none resize-y transition-all"
                                             rows={2}
                                          />
                                      ) : (
                                          <BilingualFieldRenderer
                                             text={generatedContent?.data.essentialQuestion}
-                                            className="text-lg font-serif text-slate-800 italic leading-relaxed"
+                                            className="text-lg text-slate-800 italic leading-relaxed"
                                          />
                                      )}
                                  </div>
@@ -292,7 +292,7 @@ function LessonPlanView(props) {
                                                                  </div>
                                                              ) : (
                                                                  <button
-                                                                     aria-label={t('common.refresh')}
+                                                                     aria-busy={!!isGeneratingExtensionGuide[idx]}
                                                                     onClick={() => handleGenerateExtensionGuide(idx)}
                                                                     disabled={isGeneratingExtensionGuide[idx]}
                                                                     className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-100 px-3 py-2 rounded-lg transition-colors border border-indigo-200 bg-white disabled:opacity-50 disabled:cursor-not-allowed"
@@ -345,10 +345,15 @@ function LessonPlanView(props) {
                                                 createdAt: new Date().toISOString(),
                                                 lessonTitle: generatedContent.data.essentialQuestion || sourceTopic || ''
                                             };
-                                            const existing = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
-                                            existing.push(station);
-                                            localStorage.setItem('alloflow_stem_stations', JSON.stringify(existing));
-                                            setActiveStation(station);
+                                            try {
+                                                const existing = JSON.parse(localStorage.getItem('alloflow_stem_stations') || '[]');
+                                                if (!Array.isArray(existing)) throw new Error('Station storage is not a list');
+                                                localStorage.setItem('alloflow_stem_stations', JSON.stringify(existing.concat(station)));
+                                            } catch (_) {
+                                                addToast && addToast('The STEAM station could not be saved on this device. Your saved stations have been kept. Try again after checking device storage.', 'error');
+                                                return;
+                                            }
+                                            setActiveStation && setActiveStation(station);
                                             addToast && addToast('✅ STEM Station created! Open STEAM Lab to see your curated tools.');
                                         }}
                                         className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all"
@@ -371,6 +376,7 @@ function LessonPlanView(props) {
                                                     )}
                                                 </div>
                                                 <button
+                                                    aria-label={`Open Tool: ${meta ? meta.name : tool.id}`}
                                                     onClick={() => {
                                                         const toolId = tool.id;
                                                         setStemLabTool && setStemLabTool(toolId);
@@ -398,7 +404,7 @@ function LessonPlanView(props) {
                                 {t('progression.title')}
                             </h4>
                             {!progressionData ? (
-                                <button aria-label={t('common.generate_content')}
+                                <button aria-busy={!!isGeneratingProgression}
                                     onClick={handleGenerateProgression}
                                     disabled={isGeneratingProgression}
                                     className="w-full py-6 rounded-2xl border-2 border-dashed border-indigo-600 hover:border-indigo-400 hover:bg-indigo-50 transition-all group flex flex-col items-center justify-center gap-2 text-indigo-600 hover:text-indigo-600"
@@ -447,7 +453,7 @@ function LessonPlanView(props) {
                                                     "{option.rationale}"
                                                 </p>
                                                 <button
-                                                    aria-label={t('common.generate')}
+                                                    aria-label={`${t('progression.build_btn')}: ${option.nextTopic || t('progression.recommended_header')}`}
                                                     onClick={() => handleActivateNextLesson(option)}
                                                     className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-lg transition-colors flex items-center justify-center gap-2 mt-auto active:scale-95 shadow-sm"
                                                 >

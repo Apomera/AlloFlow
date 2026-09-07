@@ -5482,7 +5482,7 @@
       "correct": "עבודה מצוינת!",
       "partial": "מאמץ טוב, המשך!",
       "incorrect": "לא בדיוק נכון • נסה שוב!",
-      "error": "לא ניתן להעריך • אנא נסה שוב.",
+      "error": "לא ניתן להעריך — אנא נסה שוב.",
       "verdict_correct": "נכון!",
       "verdict_partial": "נכון חלקית",
       "verdict_incorrect": "לא בדיוק נכון",
@@ -5941,7 +5941,7 @@
     "simplified_def_fallback": "אתה יכול ללחוץ על כל מילה בטקסט כדי לראות את הגדרתה!",
     "simplified_cloze": "נסה את מצב 'Cloze' כדי לבחון מיומנויות אוצר מילים.",
     "simplified_quiz": "הטקסט הזה נראה נהדר. האם ניצור כרטיס יציאה כדי לבדוק הבנה?",
-    "simplified_glossary": "מילים כמו '{term1}' ו-'{term2}' עשויות לדרוש תמיכה • מילון יוכל לעזור!",
+    "simplified_glossary": "מילים כמו '{term1}' ו-'{term2}' עשויות לדרוש תמיכה — מילון יוכל לעזור!",
     "simplified_glossary_fallback": "חלק מהמונחים הללו מורכבים. מילון יעזור לתמוך בטקסט הזה.",
     "simplified_outline": "לומדים חזותיים עשויים להפיק תועלת מארגונן גרפי של תוכן זה.",
     "glossary_bingo": "אתה יכול להפוך את המונחים האלה למשחקי מילים כמו בינגו, התאמת זיכרון, תשבצים או חיפוש מילים!",
@@ -5952,7 +5952,7 @@
     "quiz_rigor": "רוצה להבטיח שהחידון הזה קפדני? הרץ ביקורת תקן.",
     "adventure_sim": "הרפתקאות מאפשרות לתלמידים ליישם את מה שלמדו בסימולציה בטוחה.",
     "adventure_inventory": "בדוק את ה'מלאי' כדי לראות אילו פריטים נאספו.",
-    "adventure_context": "ההרפתקה שלך על {topic} מתעשרת עם משאבים נוספים • נסה להוסיף {suggestion}!",
+    "adventure_context": "ההרפתקה שלך על {topic} מתעשרת עם משאבים נוספים — נסה להוסיף {suggestion}!",
     "adventure_context_fallback": "ככל שתייצר יותר משאבים, הקשר ההרפתקה מתעשר.",
     "timeline_drag": "גרור והשלך אירועים כדי לסדר מחדש את הרצף.",
     "timeline_visualize": "זה עוזר לתלמידים לדמיין יחסי סיבה ותוצאה.",
@@ -5963,8 +5963,8 @@
     "parent_adventure": "נסה את מצב ההרפתקה לפעילות כיפית ליום גשום.",
     "parent_read_along": "השתמש ב'קרא יחד' כדי לתרגל קריאה ביחד.",
     "fallback_lesson_plan": "יש לך משאבים נהדרים. לסנתז אותם לתכנית שיעור?",
-    "fallback_brainstorm": "מרגיש תקוע? נסה לדבר איתי והחלף השלמה אוטומטית כדי להפעיל מצב שרטוט • אעזור לך לעצב את כל השיעור!",
-    "fallback_export": "יש לך {count} משאבים על {topic} • ייצא אותם כ-PDF יחיד!",
+    "fallback_brainstorm": "מרגיש תקוע? נסה לדבר איתי והחלף השלמה אוטומטית כדי להפעיל מצב שרטוט — אעזור לך לעצב את כל השיעור!",
+    "fallback_export": "יש לך {count} משאבים על {topic} — ייצא אותם כ-PDF יחיד!",
     "fallback_export_fallback": "אתה יכול לייצא את כל המשאבים האלה כחבילת PDF יחידה.",
     "fallback_guide": "בחר 'הראה לי' במדריך ה-AI אם תאבד את הדרך!",
     "intro_greeting": "לחץ עלי כדי להתאים את הגדרות הקול שלי.",
@@ -6140,7 +6140,7 @@
     "text_generated": "הטקסט המותאם שלך על {topic} מוכן! נסה ללחוץ על מילה כדי לראות את ההגדרה שלה, או חקור כלים כמו מילון או חידון כדי להעמיק הבנה.",
     "flashcards_created": "כרטיסי לימוד נוצרו! אתה יכול לייצא אותם ל-Quizlet, להדפיס אותם או לנסות את משחק הזיכרון.",
     "quiz_generated": "החידון מוכן! השתמש במצב מצגת לכיתה, או נסה את המציין האוטומטי לתגובות פתוחות.",
-    "glossary_generated": "המילון הושלם! נסה את משחקי המילים • בינגו, התאמת זיכרון, תשבצים, חיפוש מילים ועוד!",
+    "glossary_generated": "המילון הושלם! נסה את משחקי המילים — בינגו, התאמת זיכרון, תשבצים, חיפוש מילים ועוד!",
     "adventure_started": "ההרפתקה שלך מתחילה! הקלד את הפעולה שלך למטה, או השתמש בכפתורי הבחירה כדי להחליט מה קורה הלאה.",
     "adventure_scene": "מה תעשה? כל בחירה מעצבת את הסיפור שלך!",
     "analysis_complete": "הניתוח הושלם! מצאתי כמה מונחי אוצר מילים ומושגים מרכזיים ששווה לחקור.",
@@ -7667,7 +7667,7 @@
     "bridge_generating": "יוצר את הגרסה המותאמת אישית שלך...",
     "bridge_projection": "מצב הקרנה",
     "bridge_exit_projection": "צא מהקרנה",
-    "bridge_offline_info": "אין מפגש חי • תצוגה מקדימה במכשיר זה בלבד",
+    "bridge_offline_info": "אין מפגש חי — תצוגה מקדימה במכשיר זה בלבד",
     "bridge_term_saved": "נשמר \"{term}\" למילון",
     "bridge_term_save_failed": "שמירת המונח נכשלה",
     "bridge_save_term": "שמור למילון",
@@ -8320,8 +8320,8 @@
     "escaped_desc": "פתרת את כל החידות וברחת מהחדר!",
     "time_up": "⏰ הזמן תם!",
     "reveal_hint": "חשוף רמז",
-    "puzzles_remaining": "{{count}} חידות נותרו",
-    "time_remaining": "זמן: {{time}}",
+    "puzzles_remaining": "{count} חידות נותרו",
+    "time_remaining": "זמן: {time}",
     "progress": "התקדמות",
     "start": "התחל חדר בריחה",
     "start_hint": "התחל את הטיימר כדי להתחיל לבדוק אובייקטים",
@@ -8332,8 +8332,8 @@
     "room_complete": "החדר הושלם!",
     "loading_error": "לא ניתן לטעון נתוני חדר",
     "no_puzzle": "לא נמצאה חידה לאובייקט זה",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "בריחה מושלמת! +{{xp}} XP בונוס",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "בריחה מושלמת! +{xp} XP בונוס",
     "puzzle_mcq": "רב-ברירה",
     "puzzle_sequence": "סדר בסדר",
     "puzzle_cipher": "פענח את ההודעה",
@@ -8391,7 +8391,7 @@
     "clue": "רמז",
     "clue_found": "רמז התגלה!",
     "clue_revealed": "רמז זה עשוי לעזור עם חידה אחרת...",
-    "clues_collected": "רמזים: {{count}}/{{total}}",
+    "clues_collected": "רמזים: {count}/{total}",
     "use_clue": "השתמש ברמז",
     "final_door": "דלת היציאה",
     "final_door_ready": "דלת היציאה כעת פתוחה!",
@@ -8435,9 +8435,9 @@
     "launch_live_tooltip": "התחל חדר בריחה רב-משתתפים עם הכיתה שלך",
     "team_mode": "אתגר קבוצתי",
     "team_race": "מרוץ לבריחה!",
-    "team_progress": "התקדמות {{team}}: {{solved}}/{{total}}",
+    "team_progress": "התקדמות {team}: {solved}/{total}",
     "waiting_host": "ממתין למורה כדי להתחיל...",
-    "team_escaped": "קבוצת {{team}} ברחה!",
+    "team_escaped": "קבוצת {team} ברחה!",
     "all_teams_done": "כל הקבוצות סיימו!",
     "your_team": "הקבוצה שלך",
     "team_red": "קבוצה אדומה",
@@ -8445,7 +8445,7 @@
     "team_green": "קבוצה ירוקה",
     "team_yellow": "קבוצה צהובה",
     "team_all": "כל התלמידים",
-    "teams_competing": "{{count}} קבוצות מתחרות",
+    "teams_competing": "{count} קבוצות מתחרות",
     "first_escape": "ראשונים לברוח!",
     "end_game": "סיים משחק",
     "end_game_confirm": "לסיים את חדר הבריחה לכל התלמידים?",
@@ -8458,8 +8458,8 @@
     "resume_game": "המשך משחק",
     "game_paused_by_teacher": "המשחק הושהה על ידי המורה",
     "celebration_title": "מזל טוב!",
-    "you_escaped": "הקבוצה שלך ברחה ב-{{time}}!",
-    "other_team_escaped": "{{team}} ברחה!",
+    "you_escaped": "הקבוצה שלך ברחה ב-{time}!",
+    "other_team_escaped": "{team} ברחה!",
     "class_escaped": "ניצחון כיתתי!",
     "everyone_escaped": "כולם עבדו יחד כדי לברוח!",
     "hurry_up": "המשך! עדיין יכול לברוח!",
@@ -8487,7 +8487,7 @@
     "load_saved": "טען שמירה",
     "loaded_saved": "חדר בריחה שמור נטען! סקור והפעל כשתהיה מוכן.",
     "no_saved": "לא נמצא חדר בריחה שמור",
-    "preview_confirmed": "✓ חדר הבריחה ננעל • מוכן לשחק!",
+    "preview_confirmed": "✓ חדר הבריחה ננעל — מוכן לשחק!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x בונוס רצף!)",
     "loaded_from_resource": "נטען ממשאב."
   },
@@ -11724,7 +11724,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "גובה המגרעת",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -12329,7 +12329,7 @@
       "person": "אדם\\",
       "phase_label": "תווית שלב",
       "rationale_which_antecedent_does_this_address": "רציונל (לאיזה גורם מקדים זה מתייחס?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "הרהר על הגישה שלך...\\n• מה עבד היטב?\\n• מה היית עושה אחרת?\\n• אילו אסטרטגיות אתה רוצה לתרגל הבא?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "הרהר על הגישה שלך...\n• מה עבד היטב?\n• מה היית עושה אחרת?\n• אילו אסטרטגיות אתה רוצה לתרגל הבא?",
       "reinforcement_how_you": "⭐ חיזוק (איך אתה\\",
       "replacement_behavior_functionally_equivalent": "✅ התנהגות חלופית (שוות-ערך תפקודית)",
       "respond_as_the_counselor": "הגב/י כיועץ/ת...",
@@ -12337,7 +12337,7 @@
       "search_81_tools": "🔍 חפש 80+ כלים…",
       "search_aba_terms": "🔍 חפש ABA מונחים...",
       "search_terms_eg_reinforcement_fba_data": "🔍 חפש מונחים... (e.g. \"reinforcement\", \"FBA\", \"נתונים\")",
-      "session_1_3nsession_2_7nsession_3_5n": "מפגש 1: 3\\nמפגש 2: 7\\nמפגש 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "מפגש 1: 3\nמפגש 2: 7\nמפגש 3: 5\n...",
       "setting_eg_math_class_cafeteria": "סביבה (לדוגמה, שיעור מתמטיקה, חדר אוכל)",
       "share_what_you_notice_at_home_strengths_concerns_c": "שתף מה אתה מבחין בבית — חוזקות, חששות, הקשר תרבותי, או הצעות לצוות בית הספר...",
       "step_description": "שלבים description...",
@@ -14113,7 +14113,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "שלח אל שולחן העבודה של המומחה",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -14583,7 +14583,40 @@
       "read_what_special_education_law_actually": "קראו מה חוק החינוך המיוחד באמת אומר, במילותיו שלו. הטקסט האמיתי של חלק B ב-IDEA ושל סעיף 504, נשלף מ-eCFR ומתוארך, ניתן לחיפוש, עם כללים פדרליים ומדינתיים זה לצד זה. שום דבר לא מנוסח מחדש ולא נוצר: אם הטקסט הרשמי לא נטען, הכלי אומר זאת במקום לנחש.",
       "applied_k_12_behavior_practice_what": "עבודה יישומית עם התנהגות מגן ועד תיכון: מה פסיכולוגים חינוכיים ומורים באמת עושים עם המדע. מסגרת שלוש הרמות PBIS, התנהגויות חלופיות הממופות לתפקודים מן ה-FBA, אירועי רקע (המצתים האיטיים שרוב תוכניות BIP מפספסות), מחזור ההתפרצות בן שבעת השלבים של ג'וף קולווין, ואתיקה של ריסון והפרדה המעוגנת בפרק 33 של מיין. כלי אחות ל-BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "ביולוגיה ימית ומדע ההתנהגות של תמנונים, דיונונים, דיונוני ים ונאוטילוס. בכותרת: Hunter Sim — בחרו מין, בית גידול, טרף וטקטיקה, שחקו במשחקון ההסוואה ותזמנו את ההסתערות. פותח פכים ביולוגיים מפנקס השדה (מכניקת כרומטופורים, 9 מוחות, דם כחול, הנעת סילון). מדריך שדה של 10 מינים עם נתוני תבונה, הסוואה ומהירות סילון.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ו-HS-PS2. סימולטור מאמצים בסבכה עם מפתח, גובה, עומס וחומר מתכווננים, השוואת סוגי גשרים (קורה, סבכה, קשת, תלוי, מתוח כבלים), מסד נתוני חומרים, סוגי כוחות, מקרי בוחן אמיתיים (Tacoma Narrows, Hyatt Regency, Tay, Silver, ובנוסף Brooklyn, Golden Gate, Akashi ו-Millau), מחזור התכן ההנדסי, מבחן בסגנון AP ומפרטי תכן להדפסה."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ו-HS-PS2. סימולטור מאמצים בסבכה עם מפתח, גובה, עומס וחומר מתכווננים, השוואת סוגי גשרים (קורה, סבכה, קשת, תלוי, מתוח כבלים), מסד נתוני חומרים, סוגי כוחות, מקרי בוחן אמיתיים (Tacoma Narrows, Hyatt Regency, Tay, Silver, ובנוסף Brooklyn, Golden Gate, Akashi ו-Millau), מחזור התכן ההנדסי, מבחן בסגנון AP ומפרטי תכן להדפסה.",
+      "the_gutenberg_style_screw_press_as": "מכבש הבורג בסגנון גוטנברג כסימולציה עובדת. משכו את הידית, סדרו אותיות משלכם, וראו את ההטבעה. בנוסף מדע החומרים (סגסוגת עופרת-בדיל-אנטימון), הכלכלה (התמוטטות העלות לספר), ההיסטוריה (הרפורמציה, המהפכה המדעית), הטיפוגרפיה, והאנשים שמאחורי המכבש (ובהם המדפיסות שההיסטוריה שכחה). נבנה לעבודה בין-תחומית בחטיבת הביניים.",
+      "three_js_stoop_simulator_deep_science": "סימולטור צלילה ב-Three.js ומדע מעמיק של מכניקת הציד של דורסים. עופו כבז נודד במהירות 240 mph, כהרפיה עם טפרים של 530 psi, או כינשוף אמריקאי דומם. 8 מינים ו-12 פרקים על כוח הטפרים, ראייה (פי 4-8 מזו של אדם, על-סגול אצל בזים מצויים), פיזיקת התעופה, התעופה הדוממת של ינשופים, מחשבון מהירות סופית, ההתאוששות אחרי DDT ומשברי השימור הנמשכים, וזיהוי בשטח לפי צללית ומראה כללי.",
+      "practice_reading_and_completing_the_documents": "התאמנו בקריאה ובמילוי המסמכים שעליהם מתנהלים חיי הבגרות: בקשות עבודה, טפסי W-4, חוזי שכירות, טופסי קליטה רפואיים, רישיונות נהיגה, וההזמנה לישיבת ה-IEP שלכם. כל שדה מפוענח בשפה פשוטה, המשבצות שעלולות לעלות לכם ביוקר מסומנות, יש תרחישי לחץ למקרה שמישהו רוצה שתחתמו עכשיו, ומשפטים מוכנים לבקשת זמן. כל התרגול נעשה עם דמות בדויה, לעולם לא עם הפרטים האמיתיים שלכם.",
+      "how_swimming_works_stroke_physics_survival": "איך שחייה עובדת (פיזיקת החתירות ומיומנויות הישרדות) ומה שכל שחיין צריך לדעת על מים קרים, זרמי חתירה, קרח, אפודי הצלה והצלה. פירוק חזותי של סגנונות השחייה, מדע הציפה וההנעה, ומיומנויות ההישרדות (ציפה על הגב, בעיטת מטרפה, HELP, התכנסות בקבוצה) שבאמת מצילות חיים. מקורות: CDC, USCG, AAP, NAA, NOAA, USA Swimming. למטרות חינוכיות בלבד: כדי באמת ללמוד לשחות, מצאו מדריך שחייה.",
+      "tax_paycheck_calculator_data_literacy_decision": "מחשבון מס ותלוש שכר, אוריינות נתונים, מטריצת החלטה, קורא חוזים, רשומות וניירת, תכנון תחבורה, מוכנות לעבודה, בניית קורות חיים, ארגון הראיות בתיק העבודות, תרגול ראיונות, מיומנויות תקשורת, ניהול זמן, ביטוח בריאות, טיפול שיניים, ארגונומיה של טיפוח הגוף, שגרות שינה, עלוני תרופות, הכנה לפגישות, בטיחות בבית, בטיחות דיגיטלית, ביטחון סביב אוכל, ומדע יישומי לחיי היום-יום.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 ו-HS-LS4. עולם המיקרובים: חיידקים (מועילים ומחוללי מחלה), נגיפים (COVID, שפעת, HIV, פאג'ים, חצבת), מיקרוסקופיה (אור, ניגודיות פאזה, פלואורסצנטית, אלקטרונית, AFM), התפתחות העמידות לאנטיביוטיקה, המיקרוביום של האדם, של הקרקע ושל האוקיינוס, חיסונים ומערכת החיסון, תסיסה (מחמצת, יוגורט, קימצ'י, כרוב כבוש, קומבוצ'ה, גבינה), מקרי בוחן (Snow, Fleming, MRSA, COVID ו-mRNA, FMT), מבחן, ודף עזר להדפסה על בטיחות במעבדה ועל מיקרובים.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "חמש-עשרה מערכות של אחריות סביבתית באחד-עשר אזורים. חמש מערכות ארוכות ורב-תקופתיות ממיין, ועוד עשרה תרחישים בין-אזוריים החוצים את כל חמש משפחות המכניקה: אש (Yarralin באוסטרליה, Karuk בצפון קליפורניה), שימור (Yellowstone, Akagera ברואנדה), בריאות הציבור (דנגי במומבאי, אבולה של 2014 בליבריה), אגני ניקוז (נהר Klamath, אגן Murray-Darling) ואקלים (איי מרשל, דלתת בנגלדש). תובנות ההצמדה לפי משפחה נפתחות כשמסיימים את מערכת מיין ואת הבין-אזורית מאותה משפחת מכניקה.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 ו-MS-ESS3-3. תכננו עיירה על רשת של 144 מגרשים מול דרישות שבאמת סותרות זו את זו. שלוש עיירות, בכל אחת אילוץ מכריע אחר: Riverbend, שבה נגר עילי והאיגרת לוחצים; Mesa Hollow, שבה אקוויפר קבוע והחוות שותות אותו; ו-Harborlight, שבה התוכנית צריכה לעבוד גם ב-2050. נגר בשיטה הרציונלית, מאזן מים, מרווח לעליית פני הים, מרחק הליכה ברשת ורשת כבישים מתומחרת, כל אחד נפתח כדי להראות את הנוסחה שלו. ה-Assumption Lab מריץ מחדש תוכנית אחת עם שתי מערכות פרמטרים שפורסמו, כדי שהתלמידים יראו אילו מסקנות שורדות את שתיהן. מפה, טבלת מגרשים הניתנת לעריכה, ומודל תלת-ממדי של אותה תוכנית. שאלות לדיון והיסטוריה מתועדת נושאות את השאלות שהכלי מסרב למדל. בלי ציון ובלי מחוון תשובות.",
+      "codap_data_science": "CODAP: מדע הנתונים",
+      "lumen_research_canvas": "Lumen: קנבס מחקר",
+      "evolab_evolution": "EvoLab: אבולוציה",
+      "dino_lab": "מעבדת הדינוזאורים",
+      "nutritionlab_nutrition_science": "NutritionLab: מדע התזונה",
+      "birdlab_i_spy_ornithology": "BirdLab: תורת הציפורים בחיפוש",
+      "openbim_companion": "OpenBIM: מדריך נלווה",
+      "applab_ai_app_generator": "AppLab: מחולל אפליקציות בבינה מלאכותית",
+      "access_lens": "עדשת נגישות",
+      "sim_shelf": "מדף הסימולציות",
+      "zoom_gallery": "גלריית התקרבות",
+      "sourcebook": "ספר מקורות",
+      "wheel_fire_pottery_lab": "אובניים ואש: מעבדת קדרות",
+      "echo_navigator": "נווט הד",
+      "learning_lab_how_learning_works": "Learning Lab: איך הלמידה עובדת",
+      "weldlab_welding_metal_joining": "WeldLab: ריתוך וחיבור מתכות",
+      "bikelab_physics_repair": "BikeLab: פיזיקה ותיקון",
+      "fisherlab_boating_fishing_sim": "FisherLab: סימולטור שיט ודיג",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: סימולטור חוות מולים",
+      "throwlab_sports_physics": "ThrowLab: פיזיקה של הספורט",
+      "skatelab_skate_bmx_physics": "SkateLab: פיזיקה של סקייטבורד ו-BMX",
+      "playlab_strategy_on_the_field": "PlayLab: אסטרטגיה במגרש",
+      "kepler_colony": "מושבת קפלר",
+      "birdlab_life_list": "BirdLab: רשימת חיים",
+      "petslab_decoder": "PetsLab: מפענח"
     },
     "solver": {
       "total_stem_lab_xp_earned": "סה\"כ XP של STEAM Lab שנצבר בכל הפעילויות",
@@ -14850,7 +14883,11 @@
       "trapezoid": "טרפז",
       "simpson": "סימפסון",
       "rectangles_n": "מלבנים (n)",
-      "coeff_a": "מקדם a"
+      "coeff_a": "מקדם a",
+      "sr_explanation_ready": "ההסבר מוכן.",
+      "a11y_back_to_tools": "חזרה לכלים",
+      "a11y_snapshot": "תצלום מצב",
+      "a11y_next": "הבא"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ הדפדפן הזה אינו תומך בשמע",
@@ -14974,13 +15011,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "צור הסבר בינה מלאכותית ברמת",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "רמת קריאה:",
+      "aria_reading_level_group": "רמת קריאה",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -16605,8 +16642,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? נכון! זה\\",
-      "that": "? זה\\",
+      "correct_it": "✅ נכון! זה\\",
+      "that": "❌ זה\\",
       "linear": "לינארי",
       "quadratic": "ריבועי",
       "cubic": "קובי",
@@ -16880,7 +16917,8 @@
       "angle_u00b0": "זווית (°)",
       "velocity_ms": "מהירות (m/s)",
       "gravity_msu00b2": "כבידה (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "ההסבר מוכן."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -16908,7 +16946,10 @@
       "codominant_desc": "שני האללים מתבטאים במלואם. הטרוזיגוטים מציגים את שתי התכונות בו־זמנית.",
       "sexLinked_desc": "התכונה נמצאת על כרומוזום X. זה מדגים תורשה רצסיבית הקשורה ל‑X (למשל המופיליה ועיוורון צבעים אדום־ירוק): זכרים (XY) זקוקים לעותק אחד בלבד; נקבות (XX) זקוקות לשניים.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "חזרה לכלי STEM",
+      "a11y_snapshot": "תצלום מצב",
+      "a11y_close_flashcard": "סגירת הכרטיסייה"
     },
     "circuit": {
       "meter_status_ammeter_short": "מיקום לא בטוח: נתיב קצר",
@@ -17200,8 +17241,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? זה\\"
+      "correct": "✅ Correct!",
+      "it": "❌ זה\\"
     },
     "inequality": {
       "badge_first_solve_label": "פתרון ראשון",
@@ -17318,7 +17359,7 @@
     },
     "periodic": {
       "correct": "נכון! ?",
-      "answer": "? תשובות:",
+      "answer": "❌ תשובות:",
       "hydrogen": "מימן",
       "helium": "הליום",
       "lithium": "ליתיום",
@@ -17460,7 +17501,7 @@
       "reddish_metal_used_since_the": "Reddish metal השתמש since the Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal זה prevents rust",
       "best_conductor_of_electricity_among": "המוליך הטוב ביותר של חשמל מבין כל המתכות",
-      "dense_soft_shiny_precious_metal": "מתכת יקרה צפופה, רכה ומבריקה • לעולם לא חולדת",
+      "dense_soft_shiny_precious_metal": "מתכת יקרה צפופה, רכה ומבריקה — לעולם לא חולדת",
       "strong_as_steel_but_45": "חזק כמו פלדה אך קל ב-45%",
       "shiny_metal_that_gives_rubies": "Shiny metal זה gives rubies their red צבעים",
       "essential_for_steel_production_and": "חיוני לייצור פלדה ולבריאות העצם",
@@ -18566,7 +18607,9 @@
       "our_sun_is_born": "השמש שלנו נולדת",
       "present_day": "ימינו",
       "the_far_future": "העתיד הרחוק",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "חזרה לכלים",
+      "a11y_simulation_speed": "מהירות הסימולציה"
     },
     "rocks": {
       "igneous": "מאגמטי",
@@ -21491,7 +21534,10 @@
       "garage_desc": "מנועים, חלודה ותגובות — סדנת כימיה.",
       "classroom_desc": "כיתת מדעים אמיתית עם כוסות מדידה וניסויים.",
       "outdoors_desc": "צאו החוצה — הטבע הוא המעבדה הגדולה מכולן.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "חזרה לכלים",
+      "a11y_snapshot": "תצלום מצב",
+      "a11y_next": "הבא"
     },
     "converter": {
       "u2705_saved_to_history": "✅ נשמר בהיסטוריה!",
@@ -22048,7 +22094,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "חזרה לכלים",
+      "a11y_snapshot": "תצלום מצב",
+      "a11y_next": "הבא",
+      "a11y_simulation_speed": "מהירות הסימולציה",
+      "a11y_close_flashcard": "סגירת הכרטיסייה"
     },
     "solar_sys": {
       "venus": "נוגה",
@@ -22630,7 +22681,8 @@
       "scaled_volume_changed": "🔵 שונה קנה מידה (הנפח השתנה)",
       "skewed_shape_deformed": "🟠 מוטה (הצורה עוותה)",
       "degenerate_volume_0": "💀 מנוון (נפח → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "התקדמות ההדרכה"
     },
     "numberline": {
       "first_mark": "סימן ראשון",
@@ -24773,7 +24825,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "שנת {value1} מתחילה."
     },
     "optics": {
       "optics_lab": "מעבדת אופטיקה",
@@ -25119,7 +25172,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "שאילתת SQL אנליטית מקומית"
     },
     "geosandbox": {
       "loading_3d_engine": "טוען מנוע תלת-ממד...",
@@ -25469,7 +25523,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "הפסל הוסר"
     },
     "algebraCAS": {
       "solve": "🔍 פתור",
@@ -28085,7 +28140,8 @@
       "ml_over": " mL על פני ",
       "trials_suffix": " קביעות",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " שניות נותרו"
+      "sr_seconds_remaining": " שניות נותרו",
+      "sr_explanation_ready": "ההסבר מוכן."
     },
     "economicslab": {
       "six_figures": "שש ספרות",
@@ -30065,7 +30121,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ההרהור נשמר."
     },
     "anatomy": {
       "system_explorer": "חוקר מערכות",
@@ -30647,7 +30704,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "איפוס מצלמת התלת-ממד"
     },
     "dna": {
       "back_to_tools": "בחזרה לכלים",
@@ -32024,7 +32082,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ההרהור נשמר."
     },
     "angles": {
       "back_to_tools": "חזרה לכלים",
@@ -32838,7 +32897,8 @@
       "explain_how_each_parameter_shapes_a_si": "הסבר כיצד כל פרמטר מעצב גל סינוס.",
       "design_note_discrete_5_state_marker_no": "הערת עיצוב: סמן בדיד בן 5 מצבים; ללא ניקוד גל; ללא חשיפה — לפי העיצוב.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "ההסבר מוכן."
     },
     "typingpractice": {
       "typing_practice_menu": "תפריט תרגול הקלדה",
@@ -33192,7 +33252,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "חזרה לתפריט"
     },
     "music": {
       "edm_lead": "ליד EDM",
@@ -35743,7 +35804,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "בחירת תשובה: {value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -37366,7 +37428,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "כבוי",
+      "sr_nothing_to_redo": "אין מה לבצע שוב.",
+      "sr_nothing_to_undo": "אין מה לבטל.",
+      "sr_dir_left": "שמאלה",
+      "sr_dir_right": "ימינה"
     },
     "arithmetic": {
       "selected": " נבחרה.",
@@ -41412,7 +41479,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ה-ZHR מתוקנן לרדיאנט בזנית ולעוצמה גבולית 6.5. אומדן מקורב זה מניח שמיים בהירים ללא ירח ומדד אוכלוסייה 2.2. מחלקות בורטל מציינות את העוצמה הגבולית באופן גס בלבד; שמיים כהים מהתקן עשויים לעלות על ה-ZHR. גובה רדיאנט נמוך יותר ושמיים בהירים יותר מקטינים את האומדן.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "חזרה לכלי STEM"
     },
     "autorepair": {
       "back_to_menu": "חזרה לתפריט",
@@ -42153,7 +42221,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ניקוד: {value1} מתוך {value2}",
+      "a11y_open_2": "פתיחת {value1}",
+      "a11y_option": "אפשרות {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "קרום",
@@ -42256,7 +42327,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "ההסבר מוכן."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -43002,7 +43074,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "ההסבר מוכן.",
+      "a11y_investigation_progress": "התקדמות החקירה",
+      "a11y_flight_debrief": "תחקיר טיסה",
+      "a11y_tutorial_progress": "התקדמות ההדרכה"
     },
     "behaviorlab": {
       "chain_reaction": "תגובת שרשרת",
@@ -43174,7 +43250,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "ההסבר מוכן.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -45686,7 +45762,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "מודול שנחקר: {value1}",
+      "a11y_score_out_of": "ניקוד: {value1} מתוך {value2}",
+      "sr_selected": "נבחר: {value1}",
+      "sr_quiz_reset": "הבוחן אופס"
     },
     "brainatlas": {
       "group_systems": "מערכות",
@@ -50842,7 +50922,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "בחירת תשובה: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "אלוף החידונים",
@@ -51986,7 +52067,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "נבחר: {value1}"
     },
     "echotrainer": {
       "wall": "קיר",
@@ -53445,7 +53527,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "מודול שנחקר: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "מחשבון פחמן",
@@ -54525,7 +54608,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "חזרה לתפריט",
+      "sr_getting_critique": "מביא את הביקורת...",
+      "sr_critique_ready": "הביקורת מוכנה."
     },
     "flightsim": {
       "game_controls": "🎮 בקרות משחק",
@@ -54732,7 +54818,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "תצוגת תא הטייס בסימולטור הטיסה. W/S עילרוד, A/D גלגול, Shift/Ctrl מצערת, הסוגריים שולטים במדפים, X בלמי גלגלים, Q חידון, F כוחות, Space השהיה, I מידע.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -54744,7 +54830,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "טיסה חופשית מפורטלנד, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -54791,7 +54877,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "מגדל שנחאי",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -60615,7 +60701,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "מודול שנחקר: {value1}",
+      "sr_loaded": "{value1} נטען",
+      "sr_showing": "מוצג {value1}",
+      "sr_opening": "פותח את {value1}"
     },
     "platetectonics": {
       "pacific": "פסיפי",
@@ -60880,7 +60970,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -65437,7 +65527,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "ההסבר מוכן.",
+      "sr_off": "כבוי",
+      "sr_edge_left": "שמאלה",
+      "sr_edge_right": "ימינה",
+      "sr_correct": "נכון.",
+      "sr_not_quite": "לא בדיוק."
     },
     "printingpress": {
       "menu": "← תפריט",
@@ -67576,7 +67672,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "חזרה לתפריט",
+      "a11y_open": "פתיחת {value1}",
+      "sr_selected": "נבחר: {value1}",
+      "sr_loaded": "{value1} נטען",
+      "sr_opening": "פותח את {value1}",
+      "sr_correct": "נכון.",
+      "sr_not_quite": "לא בדיוק.",
+      "sr_year_begins": "שנת {value1} מתחילה.",
+      "sr_question_reset_try_again": "השאלה אופסה. נסו שוב.",
+      "sr_not_quite_see_the_explanation": "לא בדיוק: הביטו בהסבר."
     },
     "raptorhunt": {
       "anatomy": "אנטומיה",
@@ -69225,7 +69331,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "פתיחת {value1}",
+      "a11y_flight_debrief": "תחקיר טיסה"
     },
     "renewables": {
       "menu": "← תפריט",
@@ -69925,7 +70033,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "חזרה לתפריט",
+      "sr_getting_critique": "מביא את הביקורת...",
+      "sr_critique_ready": "הביקורת מוכנה.",
+      "sr_quiz_reset": "הבוחן אופס"
     },
     "roadready": {
       "let_s_start": "בוא נתחיל →",
@@ -72792,7 +72904,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "חזרה לכלי STEM",
+      "a11y_local_analytical_sql_query": "שאילתת SQL אנליטית מקומית"
     },
     "stewardship": {
       "sector": "מגזר",
@@ -73369,7 +73483,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "חזרה לתפריט",
+      "sr_question_reset_try_again": "השאלה אופסה. נסו שוב."
     },
     "throwlab": {
       "scenarios": "תרחישים",
@@ -73594,7 +73710,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "איפוס מצלמת התלת-ממד",
+      "sr_coach_is_offline": "המאמן לא מחובר.",
+      "sr_drill_stopped": "התרגול הופסק."
     },
     "weldlab": {
       "menu": "← תפריט",
@@ -75156,7 +75275,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "מודול שנחקר: {value1}",
+      "a11y_score_out_of": "ניקוד: {value1} מתוך {value2}",
+      "sr_quiz_reset": "הבוחן אופס",
+      "sr_loaded": "{value1} נטען",
+      "sr_showing": "מוצג {value1}",
+      "sr_not_quite_see_the_explanation": "לא בדיוק: הביטו בהסבר."
     },
     "worldbuilder": {
       "grade_level": "רמת כיתה",
@@ -76062,7 +76187,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "רמת קריאה",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -76749,7 +76874,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "עץ החיים",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -78604,7 +78729,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "אפשרות {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "תצוגות מצלמת תלת-ממד"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -78672,7 +78799,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "המאמן לא מחובר.",
+      "sr_drill_stopped": "התרגול הופסק."
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -78684,6 +78813,22 @@
       "finish": "הבנתי!",
       "replay": "טיפים",
       "replay_aria": "הצג מדריך"
+    },
+    "pets": {
+      "sr_back_to_menu": "חזרה לתפריט",
+      "sr_getting_critique": "מביא את הביקורת...",
+      "sr_critique_ready": "הביקורת מוכנה."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "חזרה לכלי STEM",
+      "a11y_3d_camera_views": "תצוגות מצלמת תלת-ממד"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "התקדמות החקירה"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "אין מה לבצע שוב.",
+      "sr_nothing_to_undo": "אין מה לבטל."
     }
   },
   "_version": "20260526224314T1779835394838",
@@ -80816,7 +80961,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "איור המושג",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80851,10 +80996,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "לרהט כל מושג",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "התקדמות הריהוט",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80866,7 +81011,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "שמות אפשריים",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80877,7 +81022,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "שליפת המושג מהזיכרון",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82435,7 +82580,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "סגירת Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82444,7 +82589,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "סינון המטלות",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82482,15 +82627,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "שאלה {n}",
+    "q_choices_aria": "אפשרויות לשאלה {n}, אחת בכל שורה",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "הסרת שאלה {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "שלבי הסולם לשאלה {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "סוג התשובה לשאלה {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82500,10 +82645,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "קישור הניתן לסימון עבור {title}",
+    "scale_high_aria": "תווית לקצה הגבוה",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "תווית לקצה הנמוך",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82523,7 +82668,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "סיכום מצב המטלות",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82539,9 +82684,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "מתעדכן אוטומטית",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "קישור לשיעורי בית הניתן לסימון",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82550,7 +82695,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "קוד QR של שיעורי הבית",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84998,7 +85143,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "בחרו רמת התפתחות עבור ההנחיות והמחוונים",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -85006,7 +85151,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "הפעלה או כיבוי של תצוגת המורה",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85037,17 +85182,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "השהיית ההקלטה של ההערה הקולית",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "המשך ההקלטה של ההערה הקולית",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "התחלת הקלטה של הערה קולית",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "עצירת ההקלטה",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85433,22 +85578,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "סיבת ההוקרה ב-AlloHaven",
+    "recent_deliveries_aria": "הוקרות AlloHaven פרטיות אחרונות",
+    "token_amount_aria": "כמות אסימוני AlloHaven",
+    "token_cap_aria": "תקרת אסימוני AlloHaven לכל תלמיד למפגש"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "חריגים המותרים תוך עמידה ביעד",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "אות התקדמות אופציונלי שהאפליקציה עוקבת אחריו עבור היעד הזה",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "כל הצוות יחד, או כל תלמיד בנפרד",
+    "name_aria": "שם יעד הכיתה, נשמר במכשיר הזה בלבד",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "אילו תלמידים היעד הזה כולל",
+    "template_aria": "תבנית פתיחה ליעד הכיתה",
+    "tokens_aria": "אסימונים שמוענקים לכל תלמיד כשהיעד הזה מושג"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85466,7 +85611,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "אסימון ניהול של Class Mailbox (אופציונלי)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85496,17 +85641,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "יד מורמת",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "קישור הצטרפות חי לתיבה הניתן לסימון",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "מפגש חי של Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85533,7 +85678,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "חיבור בזמן אמת",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85565,7 +85710,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "כתובת אפליקציית הרשת Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

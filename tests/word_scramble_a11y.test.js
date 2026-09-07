@@ -33,7 +33,7 @@ describe('Word Scramble accessibility', () => {
     const source = files[0][1];
     expect(source).toContain('min-w-11 min-h-11');
     expect(source).toContain('focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2');
-    expect(source).toContain("e.key === 'Enter' && handleCheck()");
+    expect(source).toContain("e.key === 'Enter' && !e.nativeEvent.isComposing");
   });
 
   it('hides decorative icons and honors reduced motion', () => {

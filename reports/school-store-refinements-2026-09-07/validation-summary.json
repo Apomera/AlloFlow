@@ -1,0 +1,170 @@
+{
+  "testFiles": 24,
+  "passed": 587,
+  "failed": [],
+  "fileErrors": [],
+  "files": {
+    "tests\\allohaven_classroom_reward_bridge.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 20
+    },
+    "tests\\artstudio_printlab_bridge.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 8
+    },
+    "tests\\artstudio_sculpt3d_custom_shapes.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 4
+    },
+    "tests\\artstudio_sculpt3d_keyboard_a11y.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 12
+    },
+    "tests\\artstudio_sculpt3d_transform_modes.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 3
+    },
+    "tests\\printable_model_module.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 23
+    },
+    "tests\\print_lab_tool.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 16
+    },
+    "tests\\school_rewards_integration_contract.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 41
+    },
+    "tests\\school_rewards_manual.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 10
+    },
+    "tests\\school_rewards_onboarding.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 12
+    },
+    "tests\\school_rewards_panel.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 32
+    },
+    "tests\\school_rewards_pathways.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 13
+    },
+    "tests\\school_rewards_plain_language.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 7
+    },
+    "tests\\school_rewards_portal_features.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 19
+    },
+    "tests\\school_rewards_portal_i18n.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 6
+    },
+    "tests\\school_rewards_portal_packs.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 25
+    },
+    "tests\\school_rewards_practice.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 10
+    },
+    "tests\\school_rewards_print_portal.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 139
+    },
+    "tests\\school_rewards_repository.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 132
+    },
+    "tests\\school_rewards_security_review.test.js": {
+      "source": "first-regression.json",
+      "status": "passed",
+      "count": 12
+    },
+    "tests\\school_store_design_refinements.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 5
+    },
+    "tests\\sculpt_description_recovery.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 4
+    },
+    "tests\\archstudio_printlab_bridge.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 6
+    },
+    "tests\\geometry_world_printlab_bridge.test.js": {
+      "source": "final-targeted.json",
+      "status": "passed",
+      "count": 28
+    }
+  },
+  "designBrowser": {
+    "ok": true,
+    "path": "description \u00e2\u2020\u2019 editable recipe \u00e2\u2020\u2019 Sculpt manual edit \u00e2\u2020\u2019 Print Lab preflight \u00e2\u2020\u2019 slicer comparison",
+    "provider": "explicitly fictional fixture",
+    "scaleMm": 8,
+    "aiUse": "ASSISTED",
+    "parts": 4,
+    "comparison": {
+      "gramsSaved": 6,
+      "percentSaved": 30,
+      "minutesAdded": 20
+    },
+    "widths": {
+      "page": 390,
+      "viewport": 390
+    },
+    "errors": [],
+    "external": []
+  },
+  "storeBrowser": {
+    "ok": true,
+    "awardBalance": 80,
+    "reservedPoints": 15,
+    "storeBalance": 70,
+    "storeAvailable": 55,
+    "stock": 4,
+    "fulfilledBalance": 55,
+    "refundedBalance": 70,
+    "exactAssetDownload": true,
+    "crossOriginRejected": true,
+    "mobile": {
+      "page": 390,
+      "viewport": 390
+    },
+    "pageErrors": []
+  },
+  "localDemo": {
+    "url": "http://127.0.0.1:8767/design",
+    "pid": 74464,
+    "provider": "fictional response; no external AI or printer",
+    "deployment": "local only"
+  }
+}

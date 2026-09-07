@@ -1,0 +1,23 @@
+{
+  "stem.platetectonics.bd_proc_magma_rises_new_crust_forms": "Magma rises + new crust forms",
+  "stem.platetectonics.bd_feat_mid_ocean_ridges_mid_atlantic_ridge": "Mid-ocean ridges (Mid-Atlantic Ridge); East African Rift",
+  "stem.platetectonics.bd_haza_shallow_earthquakes_ridge_volcanism": "Shallow earthquakes; ridge volcanism; new oceanic crust; rift valleys",
+  "stem.platetectonics.bd_proc_denser_plate_subducts_under_younger": "Denser plate subducts under younger",
+  "stem.platetectonics.bd_feat_volcanic_island_arcs_ocean_trenches": "Volcanic island arcs + ocean trenches",
+  "stem.platetectonics.bd_haza_deep_earthquakes_wadati_benioff_zone": "Deep earthquakes (Wadati-Benioff zone); explosive volcanism; deep trenches",
+  "stem.platetectonics.bd_proc_oceanic_subducts_under_continental": "Oceanic subducts under continental",
+  "stem.platetectonics.bd_feat_coastal_mountain_ranges_volcanic_arc": "Coastal mountain ranges + volcanic arcs + trenches",
+  "stem.platetectonics.bd_haza_mountain_building_andesite_volcanoes": "Mountain building, andesite volcanoes, megathrust earthquakes",
+  "stem.platetectonics.bd_proc_neither_subducts_crumple_thicken": "Neither subducts - crumple + thicken",
+  "stem.platetectonics.bd_feat_mountain_belts_plateaus": "Mountain belts + plateaus",
+  "stem.platetectonics.bd_haza_thickened_crust_intermediate_depth_ea": "Thickened crust, intermediate-depth earthquakes, no volcanism (mostly)",
+  "stem.platetectonics.bd_proc_no_crust_created_or_destroyed": "No crust created or destroyed",
+  "stem.platetectonics.bd_feat_strike_slip_faults": "Strike-slip faults",
+  "stem.platetectonics.bd_haza_shallow_strike_slip_earthquakes_no_vo": "Shallow strike-slip earthquakes; no volcanism; lateral displacement",
+  "stem.platetectonics.boundary_types_in_detail": "Boundary Types in Detail",
+  "stem.platetectonics.the_table_above_names_the_motions_the": "The table above names the motions. These five say what each one builds, where you can go and see it, and what it hands the people who live there.",
+  "stem.platetectonics.bd_l_how_it_works": "How it works",
+  "stem.platetectonics.bd_l_what_it_builds": "What it builds",
+  "stem.platetectonics.bd_l_where_to_see_it": "Where to see it",
+  "stem.platetectonics.bd_l_what_it_does_to_people": "What it does to people"
+}

@@ -1043,7 +1043,7 @@
     "toggle_theme": "Toggle theme",
     "close_story_forge": "Close StoryForge",
     "story_creation_phases": "Story creation phases",
-    "doc_builder": "Document Builder",
+    "doc_builder": "ຕົວສ້າງເອກະສານ",
     "close_doc_builder": "Close document builder",
     "font_size": "Font size",
     "target_word_count": "Target word count goal",
@@ -1160,7 +1160,7 @@
     "move_paragraph_up": "Move paragraph up",
     "move_paragraph_down": "Move paragraph down",
     "get_writing_suggestions": "Get writing suggestions",
-    "penmanship_feedback": "Penmanship feedback",
+    "penmanship_feedback": "ຄຳຕິຊົມກ່ຽວກັບລາຍມື",
     "dismiss_penmanship_feedback": "Dismiss penmanship feedback",
     "image_gen_prompt": "Image generation prompt",
     "undo_illustration": "Undo illustration",
@@ -1195,7 +1195,7 @@
     "move_event_down": "Move event down",
     "sorting_categories": "Sorting categories",
     "sortable_items": "Sortable items",
-    "reading_tools": "Reading tools",
+    "reading_tools": "ເຄື່ອງມືການອ່ານ",
     "reading_theme": "ທີມການອ່ານ",
     "annotations": "Annotations",
     "yellow_note": "Yellow note",
@@ -2266,7 +2266,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "ຕົວສ້າງເອກະສານ",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -5716,7 +5716,7 @@
     "visual_title": "AI Visuals",
     "visual_text": "Enhance comprehension with AI-generated imagery. Create visual representations of key concepts using diverse art styles and intelligent layout modes to support Dual Coding strategies.\n### Panel Options\n• **Worksheet Mode**: Creates fill-in-the-blank style visuals for student activities.\n• **Enhanced Visuals**: Uses creative logic for more artistic, less literal interpretations.\n• **Text Reduced**: Generates pure visuals without labels or captions to reduce cognitive load.\n• **Layout Mode**: Direct the AI Art Director to generate Single Images, Before/After Comparisons, Step-by-Step Sequences, or Labeled Diagrams.\n• **Art Style**: Choose from Default, Isometric, Pixel Art, Watercolor, Blueprint, Comic, Line Art, or 3D Render.\n• **Custom Instructions**: Describe specific visual requirements or constraints.\n### Interactive Features\n• **Regenerate**: Request a new variation with one click.\n• **Download**: Save high-quality images for slides or handouts.\n• **Delete**: Remove and start fresh if needed.\n### Pro Tip\nUse the \"Sequence\" layout mode with the \"Line Art\" style to instantly generate printable multi-step instructional guides!\n### UDL Connection\n• **Representation**: Clarify syntax and structure (Guideline 2) by providing visual alternatives to text.",
     "faq_title": "Predictive FAQ",
-    "faq_text": "Anticipate student confusion before it happens. Automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.\n### Panel Options\n• **Question Count**: Choose 3, 5, 8, or 10 Q&A pairs to generate.\n• **Custom Instructions**: Guide generation with specific focus areas (e.g., \"focus on vocabulary\" or \"target common errors\").\n### Key Features\n• **Auto-Generation**: Instantly creates Questions & Answers based on text analysis.\n• **Audio Support**: Text-to-Speech for both questions and answers; click any Q or A to hear it aloud.\n• **Bilingual Support**: View and hear translations if a target language is selected.\n• **Click-to-Hear Mode**: Interactive listening station for independent study.\n### Pro Tip\nUse the audio feature to create a listening station activity where students check understanding•great for centers!\n### UDL Connection\n• **Representation**: Highlights patterns and critical features (Guideline 3) by explicitly addressing common misconceptions.",
+    "faq_text": "Anticipate student confusion before it happens. Automatically generates a predictive FAQ based on the text's complexity, proactively addressing common misconceptions.\n### Panel Options\n• **Question Count**: Choose 3, 5, 8, or 10 Q&A pairs to generate.\n• **Custom Instructions**: Guide generation with specific focus areas (e.g., \"focus on vocabulary\" or \"target common errors\").\n### Key Features\n• **Auto-Generation**: Instantly creates Questions & Answers based on text analysis.\n• **Audio Support**: Text-to-Speech for both questions and answers; click any Q or A to hear it aloud.\n• **Bilingual Support**: View and hear translations if a target language is selected.\n• **Click-to-Hear Mode**: Interactive listening station for independent study.\n### Pro Tip\nUse the audio feature to create a listening station activity where students check understanding—great for centers!\n### UDL Connection\n• **Representation**: Highlights patterns and critical features (Guideline 3) by explicitly addressing common misconceptions.",
     "scaffolds_title": "ຂົວການຂຽນ",
     "scaffolds_text": "Comprehensive writing support system with AI-powered grading and customizable sentence structures. Perfect for differentiated writing instruction.\n### Scaffold Types\n• **Sentence Starters**: List-based prompts to help students begin their thoughts.\n• **Paragraph Frames**: Cloze-style fill-in-the-blank paragraphs for structured argumentation.\n• **Discussion Prompts**: Conversation starters for collaborative discussions.\n• **Custom Instructions**: Tailor frames to specific rhetorical functions (e.g., 'agreeing/disagreeing', 'cause and effect').\n### Rubric & Assessment System\n• **Auto-Generated Rubrics**: AI creates criteria-based rubrics aligned to your content.\n• **Self-Assessment Checklists**: Student-facing success criteria for self-monitoring.\n• **Mastery Assessment**: Evaluate student understanding with structured rubric grading.\n• **Rubric Zoom**: Enlarge rubric view for detailed criteria review.\n### AI Auto-Grader\n• **Instant Feedback**: Submit student drafts for immediate AI-powered evaluation.\n• **Criteria-Based Scoring**: Grades each response against rubric criteria points.\n• **Glow & Grow**: Provides specific praise (\"glow\") and improvement suggestions (\"grow\").\n• **TTS Feedback**: Allobot reads grading results aloud for accessibility.\n• **XP Rewards**: Students earn Mastery XP (100 points) for completed drafts.\n### Input Options\n• **Voice Dictation**: Students can dictate responses using the FAB microphone button.\n• **Edit Mode**: Teachers can customize sentence starters and prompts.\n• **Reset & Retry**: Clear student work for fresh attempts.\n### Pro Tip\nUse the 'Start Check' button to initiate the AI grading loop•students can revise based on feedback and resubmit!\n### UDL Connection\n• **Action & Expression**: Optimized for construction and composition (Guideline 5), providing graduated levels of support for practice and performance.",
     "quiz_title": "Gamified Quiz",
@@ -5744,9 +5744,9 @@
     "dashboard_title": "Dashboard / Tools",
     "dashboard_text": "The Tool Navigation Bar and Teacher Dashboard access point.\n### Tool Navigation Bar\n• **Tool Icons**: One-click jump to any generator (Quiz, Glossary, Adventure, etc.).\n• **Status Dots**: Green = active content, Orange = processing, Gray = empty.\n• **Logical Flow**: Tools ordered left-to-right from Input → Generate → Export.\n### Teacher Dashboard Button\nClick the Dashboard icon to open the **Teacher Grading Dashboard** - a dedicated panel for tracking student progress:\n• **Upload Student JSONs**: Students export their work as JSON files; upload them here for batch analysis.\n• **Student Roster**: View all uploaded students with nickname, date, quiz progress, and Adventure level.\n• **Individual Review**: Click any student to see their full history•quizzes, adventures, responses.\n• **Mark as Graded**: Checkbox to track which students you've reviewed.\n• **Class Insights Tab**: Analytics charts showing common misconceptions and class-wide performance.\n• **Export to CSV**: Download class data for gradebook import.\n### Related Header Actions\n• **Jump to Lesson**: Quick-return to your most recent lesson plan.\n• **View Toggle**: Switch between Teacher and Student views.\n### Pro Tip\nHave students export their JSON saves at the end of class, then batch-upload them here for efficient overnight grading!",
     "actions_title": "Action Bar",
-    "actions_text": "ໃຊ້ປຸ່ມຄວບຄຸມຢູ່ຫົວໜ້າເພື່ອຕັ້ງພາສາຂອງໜ້າຈໍ, ຈັດການເຊດຊັນສົດ, ແປຊັບພະຍາກອນ, ແລະ ເປີດເຄື່ອງມືສົ່ງອອກ.\n### ກວດເບິ່ງກ່ອນສົ່ງມອບ\n• ກວດຄວາມໝາຍ ແລະ ຄວາມຖືກຕ້ອງຂອງເນື້ອຫາທີ່ແປແລ້ວ.\n• ເປີດ Document Builder ເພື່ອເບິ່ງຊັບພະຍາກອນທີ່ເລືອກໄວ້ ແລະ ຮູບແບບການດາວໂຫຼດທີ່ມີ. ເບິ່ງຕົວຢ່າງຜົນລັບກ່ອນແບ່ງປັນໃຫ້ຜູ້ຮຽນ.\n• ເລີ່ມເຊດຊັນສົດເພື່ອຮັບລະຫັດເຂົ້າຮ່ວມ, ຫຼື ສ້າງການແບ່ງປັນວຽກບ້ານທີ່ຮອງຮັບສຳລັບການເຮັດວຽກດ້ວຍຕົນເອງ.\n### ສືບຕໍ່ສຳຫຼວດ\nເມນູເຄື່ອງມືຄູ ແລະ ການຮຽນຮູ້ ເປີດກິດຈະກຳເພີ່ມເຕີມດ້ານການວາງແຜນ, ການປະເມີນ, ການສ້າງສັນ ແລະ ການໂຕ້ຕອບ. ໂໝດມີໄກດ໌ ຊ່ວຍທ່ານສ້າງບົດຮຽນທີ່ເນັ້ນສະເພາະກ່ອນທີ່ຈະສຳຫຼວດຕົວເລືອກເຫຼົ່ານັ້ນ.",
+    "actions_text": "ໃຊ້ປຸ່ມຄວບຄຸມຢູ່ຫົວໜ້າເພື່ອຕັ້ງພາສາຂອງໜ້າຈໍ, ຈັດການເຊດຊັນສົດ, ແປຊັບພະຍາກອນ, ແລະ ເປີດເຄື່ອງມືສົ່ງອອກ.\n### ກວດເບິ່ງກ່ອນສົ່ງມອບ\n• ກວດຄວາມໝາຍ ແລະ ຄວາມຖືກຕ້ອງຂອງເນື້ອຫາທີ່ແປແລ້ວ.\n• ເປີດ ຕົວສ້າງເອກະສານ ເພື່ອເບິ່ງຊັບພະຍາກອນທີ່ເລືອກໄວ້ ແລະ ຮູບແບບການດາວໂຫຼດທີ່ມີ. ເບິ່ງຕົວຢ່າງຜົນລັບກ່ອນແບ່ງປັນໃຫ້ຜູ້ຮຽນ.\n• ເລີ່ມເຊດຊັນສົດເພື່ອຮັບລະຫັດເຂົ້າຮ່ວມ, ຫຼື ສ້າງການແບ່ງປັນວຽກບ້ານທີ່ຮອງຮັບສຳລັບການເຮັດວຽກດ້ວຍຕົນເອງ.\n### ສືບຕໍ່ສຳຫຼວດ\nເມນູເຄື່ອງມືຄູ ແລະ ການຮຽນຮູ້ ເປີດກິດຈະກຳເພີ່ມເຕີມດ້ານການວາງແຜນ, ການປະເມີນ, ການສ້າງສັນ ແລະ ການໂຕ້ຕອບ. ໂໝດມີໄກດ໌ ຊ່ວຍທ່ານສ້າງບົດຮຽນທີ່ເນັ້ນສະເພາະກ່ອນທີ່ຈະສຳຫຼວດຕົວເລືອກເຫຼົ່ານັ້ນ.",
     "history_title": "ປະຫວັດເຊດຊັນ",
-    "history_text": "ປະຫວັດ ເກັບຊັບພະຍາກອນທີ່ຢູ່ໃນພື້ນທີ່ເຮັດວຽກປັດຈຸບັນຂອງທ່ານ. ເປີດລາຍການທີ່ບັນທຶກໄວ້ເພື່ອກວດເບິ່ງ ຫຼື ກັບໄປຫາຜົນລັບກ່ອນໜ້າ.\n### ເກັບສຳເນົາສຳຮອງໄວ້\n• ບັນທຶກສຳເນົາສຳຮອງຂອງໂຄງການ ເພື່ອສືບຕໍ່ໃນອຸປະກອນອື່ນ ຫຼື ກູ້ຄືນວຽກຂອງທ່ານພາຍຫຼັງ. ໂໝດມີໄກດ໌ ຍັງສະແດງວ່າຄວາມຄືບໜ້າໄດ້ຖືກບັນທຶກໃນອຸປະກອນນີ້ ຫຼື ບໍ່.\n• ພື້ນທີ່ເຮັດວຽກໜຶ່ງອາດມີເອກະສານຈາກຫຼາຍບົດຮຽນ. ກວດເບິ່ງຊັບພະຍາກອນທີ່ເລືອກໄວ້ ກ່ອນສົ່ງອອກ ຫຼື ແບ່ງປັນ.\n### ຊຸດບົດຮຽນທີ່ມີການແນະນຳ\nເປີດ Document Builder ຈາກ ໂໝດມີໄກດ໌ ເພື່ອເຮັດວຽກກັບຊັບພະຍາກອນທີ່ເລືອກຂອງບົດຮຽນນັ້ນ. Builder ທົ່ວໄປອາດໃຊ້ພື້ນທີ່ເຮັດວຽກທີ່ກວ້າງກວ່າ ດັ່ງນັ້ນໃຫ້ກວດເນື້ອຫາຂອງມັນກ່ອນສົ່ງມອບ.",
+    "history_text": "ປະຫວັດ ເກັບຊັບພະຍາກອນທີ່ຢູ່ໃນພື້ນທີ່ເຮັດວຽກປັດຈຸບັນຂອງທ່ານ. ເປີດລາຍການທີ່ບັນທຶກໄວ້ເພື່ອກວດເບິ່ງ ຫຼື ກັບໄປຫາຜົນລັບກ່ອນໜ້າ.\n### ເກັບສຳເນົາສຳຮອງໄວ້\n• ບັນທຶກສຳເນົາສຳຮອງຂອງໂຄງການ ເພື່ອສືບຕໍ່ໃນອຸປະກອນອື່ນ ຫຼື ກູ້ຄືນວຽກຂອງທ່ານພາຍຫຼັງ. ໂໝດມີໄກດ໌ ຍັງສະແດງວ່າຄວາມຄືບໜ້າໄດ້ຖືກບັນທຶກໃນອຸປະກອນນີ້ ຫຼື ບໍ່.\n• ພື້ນທີ່ເຮັດວຽກໜຶ່ງອາດມີເອກະສານຈາກຫຼາຍບົດຮຽນ. ກວດເບິ່ງຊັບພະຍາກອນທີ່ເລືອກໄວ້ ກ່ອນສົ່ງອອກ ຫຼື ແບ່ງປັນ.\n### ຊຸດບົດຮຽນທີ່ມີການແນະນຳ\nເປີດ ຕົວສ້າງເອກະສານ ຈາກ ໂໝດມີໄກດ໌ ເພື່ອເຮັດວຽກກັບຊັບພະຍາກອນທີ່ເລືອກຂອງບົດຮຽນນັ້ນ. Builder ທົ່ວໄປອາດໃຊ້ພື້ນທີ່ເຮັດວຽກທີ່ກວ້າງກວ່າ ດັ່ງນັ້ນໃຫ້ກວດເນື້ອຫາຂອງມັນກ່ອນສົ່ງມອບ.",
     "spotlight_title": "Spotlight",
     "spotlight_message": "Say hello to {name}!",
     "dbq_title": "ຄຳຖາມອີງເອກະສານ",
@@ -5875,7 +5875,7 @@
     "click_check_hint": "Click Check below if correct",
     "close_bank": "✕ Close Bank",
     "correct": "ຖືກຕ້ອງ",
-    "correct_answer_aria": "Correct answer",
+    "correct_answer_aria": "ຄຳຕອບຖືກ",
     "correct_of_total": "ຖືກ {correct} / ທັງໝົດ {total}",
     "count": "Word Count",
     "counting_desc": "How many sounds?",
@@ -6898,10 +6898,10 @@
     "locked": "ລັອກ",
     "escaped": "You Escaped!",
     "escaped_desc": "You solved all the puzzles and escaped the room!",
-    "time_up": "? Time's Up!",
+    "time_up": "⏰ Time's Up!",
     "reveal_hint": "Reveal Hint",
-    "puzzles_remaining": "{{count}} puzzles remaining",
-    "time_remaining": "Time: {{time}}",
+    "puzzles_remaining": "{count} puzzles remaining",
+    "time_remaining": "Time: {time}",
     "progress": "ຄວາມຄືບໜ້າ",
     "start": "Start Escape Room",
     "start_hint": "Start the timer to begin inspecting objects",
@@ -6912,8 +6912,8 @@
     "room_complete": "Room Complete!",
     "loading_error": "Could not load room data",
     "no_puzzle": "No puzzle found for this object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Perfect escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Perfect escape! +{xp} bonus XP",
     "puzzle_mcq": "ຫຼາຍຕົວເລືອກ",
     "puzzle_sequence": "Put in Order",
     "puzzle_cipher": "Decode the Message",
@@ -6971,7 +6971,7 @@
     "clue": "Clue",
     "clue_found": "Clue Discovered!",
     "clue_revealed": "This clue may help with another puzzle...",
-    "clues_collected": "Clues: {{count}}/{{total}}",
+    "clues_collected": "Clues: {count}/{total}",
     "use_clue": "Use Clue",
     "final_door": "The Exit Door",
     "final_door_ready": "The exit door is now unlocked!",
@@ -6997,12 +6997,12 @@
     "left": "ຊ້າຍ",
     "wrong_attempts": "Wrong Attempts",
     "time_penalty": "-{seconds} seconds!",
-    "game_over_time": "? Time's Up! You ran out of time.",
+    "game_over_time": "⏰ Time's Up! You ran out of time.",
     "streak": "Streak",
     "streak_bonus": "Streak Bonus! x{multiplier}",
     "streak_lost": "Streak lost!",
     "one_minute_warning": "One minute remaining!",
-    "thirty_seconds_warning": "? Only 30 seconds left!",
+    "thirty_seconds_warning": "⏰ Only 30 seconds left!",
     "timer_paused": "Timer Paused",
     "timer_resume": "Resume",
     "settings_btn": "Room Settings",
@@ -7015,9 +7015,9 @@
     "launch_live_tooltip": "Start multiplayer escape room with your class",
     "team_mode": "Team Challenge",
     "team_race": "Race to Escape!",
-    "team_progress": "{{team}} Progress: {{solved}}/{{total}}",
+    "team_progress": "{team} Progress: {solved}/{total}",
     "waiting_host": "Waiting for teacher to start...",
-    "team_escaped": "{{team}} Team Escaped!",
+    "team_escaped": "{team} Team Escaped!",
     "all_teams_done": "All Teams Finished!",
     "your_team": "Your Team",
     "team_red": "Red Team",
@@ -7025,7 +7025,7 @@
     "team_green": "Green Team",
     "team_yellow": "Yellow Team",
     "team_all": "All Students",
-    "teams_competing": "{{count}} teams competing",
+    "teams_competing": "{count} teams competing",
     "first_escape": "First to Escape!",
     "end_game": "End Game",
     "end_game_confirm": "End the escape room for all students?",
@@ -7038,8 +7038,8 @@
     "resume_game": "Resume Game",
     "game_paused_by_teacher": "Game paused by teacher",
     "celebration_title": "Congratulations!",
-    "you_escaped": "Your team escaped in {{time}}!",
-    "other_team_escaped": "{{team}} escaped!",
+    "you_escaped": "Your team escaped in {time}!",
+    "other_team_escaped": "{team} escaped!",
     "class_escaped": "Class Victory!",
     "everyone_escaped": "Everyone worked together to escape!",
     "hurry_up": "Keep going! You can still escape!",
@@ -7067,7 +7067,7 @@
     "load_saved": "Load Saved",
     "loaded_saved": "Saved Escape Room loaded! Review and launch when ready.",
     "no_saved": "No saved Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready to play!",
+    "preview_confirmed": "✅ Escape Room locked — ready to play!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x streak bonus!)",
     "loaded_from_resource": "Loaded from resource."
   },
@@ -8507,7 +8507,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "ສົ່ງໄປ Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -9078,7 +9078,7 @@
       "correct": "Excellent work!",
       "partial": "Good effort, keep going!",
       "incorrect": "Not quite right • try again!",
-      "error": "Could not evaluate • please try again.",
+      "error": "Could not evaluate — please try again.",
       "verdict_correct": "Correct!",
       "verdict_partial": "Partially Correct",
       "verdict_incorrect": "Not Quite Right",
@@ -9223,7 +9223,7 @@
       "meta_info": "{date} • **Final Level**: {level}",
       "log_header": "Adventure Log",
       "chapter_separator": "***",
-      "user_label": "? YOU",
+      "user_label": "➤ YOU",
       "print_button": "Print Storybook"
     },
     "answer_key_title": "ເຄື່ອງມືກວດ",
@@ -9408,7 +9408,7 @@
     "essential_question_placeholder": "The ONE main learning question students will answer...",
     "none_set": "(none set)",
     "core_concepts": "Core Concepts",
-    "remove_concept_aria": "Remove concept ",
+    "remove_concept_aria": "ນຳແນວຄິດອອກ",
     "add_concept_placeholder": "+ add concept",
     "key_vocabulary": "ຄຳສັບສຳຄັນ",
     "remove_term_aria": "Remove term ",
@@ -10511,7 +10511,7 @@
     "type_timeline": "ຕົວສ້າງລຳດັບເຫດການ",
     "type_timeline_desc": "Sequencing activity adapted to grade level",
     "full_pack": "Full Resource Pack • Select All",
-    "deselect_all": "? Deselect All",
+    "deselect_all": "↩ Deselect All",
     "estimate": "Estimate",
     "api_calls": "API calls",
     "start_batch": "ສ້າງ",
@@ -10540,7 +10540,7 @@
     "bridge_generating": "Creating your personalized version...",
     "bridge_projection": "Projection Mode",
     "bridge_exit_projection": "Exit Projection",
-    "bridge_offline_info": "No live session • preview on this device only",
+    "bridge_offline_info": "No live session — preview on this device only",
     "bridge_term_saved": "Saved \"{term}\" to glossary",
     "bridge_term_save_failed": "Failed to save term",
     "bridge_save_term": "Save to glossary",
@@ -10566,7 +10566,7 @@
     "bridge_f2f_custom_lang": "Custom language...",
     "bridge_f2f_custom_placeholder": "e.g. Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "All terms saved to glossary!",
-    "bridge_terms_saved": "? All Saved",
+    "bridge_terms_saved": "✅ All Saved",
     "fullpack_group_target": "Target Group",
     "fullpack_group_current": "ການຕັ້ງຄ່າປັດຈຸບັນ",
     "fullpack_group_all": "ທຸກກຸ່ມ",
@@ -10991,7 +10991,7 @@
     },
     "error": {
       "title": "Simulation Glitch Detected",
-      "fallback": "The storyteller encountered an invalid data structure (WSOD). Don't worry•we can rewind time to the moment before this error occurred.",
+      "fallback": "The storyteller encountered an invalid data structure (WSOD). Don't worry—we can rewind time to the moment before this error occurred.",
       "retry": "Rewind & Restore"
     },
     "locked_title": "Adventure Locked",
@@ -12337,7 +12337,11 @@
       "trapezoid": "ສີ່ຫຼ່ຽມຄາງໝູ",
       "simpson": "Simpson",
       "rectangles_n": "Rectangles (n)",
-      "coeff_a": "Coeff a"
+      "coeff_a": "Coeff a",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ.",
+      "a11y_back_to_tools": "ກັບໄປທີ່ເຄື່ອງມື",
+      "a11y_snapshot": "ພາບນິ້ງ",
+      "a11y_next": "ຕໍ່ໄປ"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Audio not supported in this browser",
@@ -12461,13 +12465,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "ສ້າງຄຳອະທິບາຍ AI ທີ່ລະດັບ",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "ລະດັບການອ່ານ:",
+      "aria_reading_level_group": "ລະດັບການອ່ານ",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -14092,8 +14096,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Correct! It\\",
-      "that": "? That\\",
+      "correct_it": "✅ Correct! It\\",
+      "that": "❌ That\\",
       "linear": "ເສັ້ນຊື່",
       "quadratic": "ກຳລັງສອງ",
       "cubic": "ກຳລັງສາມ",
@@ -14367,7 +14371,8 @@
       "angle_u00b0": "ມຸມ (°)",
       "velocity_ms": "ຄວາມໄວ (m/s)",
       "gravity_msu00b2": "ແຮງໂນ້ມຖ່ວງ (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14395,7 +14400,10 @@
       "codominant_desc": "Allele ທັງສອງຖືກສະແດງຢ່າງເຕັມທີ່. Heterozygote ສະແດງລັກສະນະທັງສອງພ້ອມກັນ.",
       "sexLinked_desc": "ລັກສະນະນີ້ຢູ່ໃນໂຄໂມໂຊມ X. ນີ້ແມ່ນການສືບທອດ X-linked RECESSIVE (ເຊັ່ນ hemophilia ແລະຕາບອດສີແດງ-ຂຽວ): ເພດຊາຍ (XY) ຕ້ອງການສຳເນົາດຽວ; ເພດຍິງ (XX) ຕ້ອງການສອງ.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "ກັບໄປທີ່ເຄື່ອງມື STEM",
+      "a11y_snapshot": "ພາບນິ້ງ",
+      "a11y_close_flashcard": "ປິດບັດຄຳ"
     },
     "circuit": {
       "meter_status_ammeter_short": "ການວາງທີ່ບໍ່ປອດໄພ: ເສັ້ນທາງລັດວົງຈອນ",
@@ -14687,8 +14695,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct! ",
-      "it": "? It\\"
+      "correct": "✅ Correct! ",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "ການແກ້ຄັ້ງທຳອິດ",
@@ -14804,8 +14812,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Correct!",
-      "answer": "? Answer: ",
+      "correct": "✅ Correct!",
+      "answer": "❌ Answer: ",
       "hydrogen": "Hydrogen",
       "helium": "Helium",
       "lithium": "Lithium",
@@ -14947,7 +14955,7 @@
       "reddish_metal_used_since_the": "Reddish metal used since the Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal that prevents rust",
       "best_conductor_of_electricity_among": "Best conductor of electricity among all metals",
-      "dense_soft_shiny_precious_metal": "Dense, soft, shiny precious metal • never rusts",
+      "dense_soft_shiny_precious_metal": "Dense, soft, shiny precious metal — never rusts",
       "strong_as_steel_but_45": "Strong as steel but 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal that gives rubies their red color",
       "essential_for_steel_production_and": "Essential for steel production and bone health",
@@ -16053,7 +16061,9 @@
       "our_sun_is_born": "Our Sun Is Born",
       "present_day": "Present Day",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "ກັບໄປທີ່ເຄື່ອງມື",
+      "a11y_simulation_speed": "ຄວາມໄວການຈຳລອງ"
     },
     "rocks": {
       "igneous": "Igneous",
@@ -18978,7 +18988,10 @@
       "garage_desc": "ເຄື່ອງຈັກ, ຂີ້ໝ້ຽງ ແລະປະຕິກິລິຍາ — ບ່ອນຝຶກເຄມີສາດ.",
       "classroom_desc": "ຫ້ອງຮຽນວິທະຍາສາດຈິງທີ່ມີບີກເກີ ແລະການທົດລອງ.",
       "outdoors_desc": "ອອກໄປຂ້າງນອກ — ທຳມະຊາດແມ່ນຫ້ອງທົດລອງທີ່ໃຫຍ່ທີ່ສຸດ.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "ກັບໄປທີ່ເຄື່ອງມື",
+      "a11y_snapshot": "ພາບນິ້ງ",
+      "a11y_next": "ຕໍ່ໄປ"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Saved to history!",
@@ -19516,45 +19529,45 @@
       "directive_eg": "Directive (e.g. "
     },
     "tools_menu": {
-      "math_fundamentals": "Math Fundamentals",
+      "math_fundamentals": "ພື້ນຖານຄະນິດສາດ",
       "base10_blocks": "ບລັອກ ຖານ-10",
-      "coordinate_grid": "Coordinate Grid",
-      "plot_points_draw_lines_and": "Plot points, draw lines, and explore the coordinate plane.",
-      "angle_explorer": "Angle Explorer",
-      "multiplication_table": "Multiplication Table",
-      "advanced_math": "Advanced Math",
-      "function_grapher": "Function Grapher",
-      "inequality_grapher": "Inequality Grapher",
-      "graph_inequalities_on_number_lines": "Graph inequalities on number lines and coordinate planes.",
-      "calculus_visualizer": "Calculus Visualizer",
+      "coordinate_grid": "ຕາຂ່າຍພິກັດ",
+      "plot_points_draw_lines_and": "ໝາຍຈຸດ, ແຕ້ມເສັ້ນ ແລະ ສຳຫຼວດລະນາບພິກັດ.",
+      "angle_explorer": "ຕົວສຳຫຼວດມຸມ",
+      "multiplication_table": "ຕາຕະລາງສູດຄູນ",
+      "advanced_math": "ຄະນິດສາດຂັ້ນສູງ",
+      "function_grapher": "ຕົວແຕ້ມກຣາຟຟັງຊັນ",
+      "inequality_grapher": "ຕົວແຕ້ມກຣາຟອະສົມການ",
+      "graph_inequalities_on_number_lines": "ແຕ້ມກຣາຟອະສົມການເທິງເສັ້ນຈຳນວນ ແລະ ລະນາບພິກັດ.",
+      "calculus_visualizer": "ຕົວສະແດງພາບແຄລຄູລັດ",
       "probability": "ຄວາມເປັນໄປໄດ້",
-      "fractions": "Fractions",
-      "unit_converter": "Unit Converter",
-      "life_earth_science": "Life & Earth Science",
-      "cell_simulator": "Cell Simulator",
-      "galaxy_explorer": "Galaxy Explorer",
-      "universe_timelapse": "Universe Time-Lapse",
-      "rocks_minerals": "Rocks & Minerals",
-      "interactive_rock_cycle_mineral_properties": "Interactive rock cycle, mineral properties & geology",
-      "water_cycle": "Water Cycle",
-      "rock_cycle": "Rock Cycle",
-      "decomposer": "Decomposer",
-      "break_materials_into_elements": "Break materials into elements",
-      "human_anatomy": "Human Anatomy",
-      "brain_atlas": "Brain Atlas",
-      "molecule_builder": "Molecule Builder",
-      "physics_chemistry": "Physics & Chemistry",
-      "wave_simulator": "Wave Simulator",
-      "circuit_builder": "Circuit Builder",
+      "fractions": "ເສດສ່ວນ",
+      "unit_converter": "ຕົວແປງຫົວໜ່ວຍ",
+      "life_earth_science": "ວິທະຍາສາດຊີວິດ ແລະ ໂລກ",
+      "cell_simulator": "ຕົວຈຳລອງເຊລ",
+      "galaxy_explorer": "ຕົວສຳຫຼວດກາລັກຊີ",
+      "universe_timelapse": "ພາບເລື່ອນເວລາຂອງຈັກກະວານ",
+      "rocks_minerals": "ຫີນ ແລະ ແຮ່ທາດ",
+      "interactive_rock_cycle_mineral_properties": "ວົງຈອນຫີນແບບໂຕ້ຕອບ, ຄຸນສົມບັດແຮ່ທາດ ແລະ ທໍລະນີສາດ",
+      "water_cycle": "ວົງຈອນນ້ຳ",
+      "rock_cycle": "ວົງຈອນຫີນ",
+      "decomposer": "ຜູ້ຍ່ອຍສະລາຍ",
+      "break_materials_into_elements": "ແຍກວັດຖຸອອກເປັນທາດ",
+      "human_anatomy": "ກາຍຍະວິພາກມະນຸດ",
+      "brain_atlas": "ແຜນທີ່ສະໝອງ",
+      "molecule_builder": "ຕົວສ້າງໂມເລກຸນ",
+      "physics_chemistry": "ຟິສິກ ແລະ ເຄມີ",
+      "wave_simulator": "ຕົວຈຳລອງຄື້ນ",
+      "circuit_builder": "ຕົວສ້າງວົງຈອນໄຟຟ້າ",
       "equation_balancer": "ChemLab: ປະຕິກິລິຍາ ແລະ ທາດ",
-      "balance_chemical_equations_with_visual": "Balance chemical equations with visual atom counting.",
-      "punnett_square": "Punnett Square",
-      "physics_simulator": "Physics Simulator",
-      "data_plotter": "Data Plotter",
-      "plot_data_points_fit_trend": "Plot data points, fit trend lines, calculate correlation.",
-      "arts_music": "Arts & Music",
-      "music_synthesizer": "Music Synthesizer",
-      "art_design_studio": "Art & Design Studio",
+      "balance_chemical_equations_with_visual": "ດຸນສົມຜົນເຄມີ ດ້ວຍການນັບອະຕອມແບບເຫັນພາບ.",
+      "punnett_square": "ຕາຕະລາງພັນເນັດ",
+      "physics_simulator": "ຕົວຈຳລອງຟິສິກ",
+      "data_plotter": "ຕົວແຕ້ມກຣາຟຂໍ້ມູນ",
+      "plot_data_points_fit_trend": "ໝາຍຈຸດຂໍ້ມູນ, ຫາເສັ້ນແນວໂນ້ມ, ຄຳນວນຄວາມສຳພັນ.",
+      "arts_music": "ສິລະປະ ແລະ ດົນຕີ",
+      "music_synthesizer": "ຕົວສັງເຄາະສຽງດົນຕີ",
+      "art_design_studio": "ສະຕູດິໂອສິລະປະ ແລະ ອອກແບບ",
       "geometry_measurement": "📐 ເລຂາຄະນິດ ແລະ ການວັດແທກ",
       "data_statistics_probability": "📊 ຂໍ້ມູນ, ສະຖິຕິ ແລະ ຄວາມນ່າຈະເປັນ",
       "life_science_genetics": "🧬 ວິທະຍາສາດຊີວິດ ແລະ ພັນທຸກຳ",
@@ -19765,7 +19778,40 @@
       "read_what_special_education_law_actually": "ອ່ານວ່າກົດໝາຍການສຶກສາພິເສດເວົ້າຫຍັງແທ້ ດ້ວຍຄຳຂອງມັນເອງ. ຂໍ້ຄວາມຈິງຂອງ IDEA ພາກ B ແລະ ມາດຕາ 504, ດຶງມາຈາກ eCFR ພ້ອມປະທັບວັນທີ, ຄົ້ນໄດ້, ແລະ ວາງກົດລະດັບສະຫະພັນກັບລະດັບລັດຄຽງກັນ. ບໍ່ມີການຖອດຄວາມ ຫຼື ສ້າງຂຶ້ນໃໝ່: ຖ້າຂໍ້ຄວາມທາງການຍັງບໍ່ໂຫຼດ, ເຄື່ອງມືຈະບອກຊື່ໆ ແທນທີ່ຈະເດົາ.",
       "applied_k_12_behavior_practice_what": "ການປະຕິບັດດ້ານພຶດຕິກຳປະຍຸກຕັ້ງແຕ່ອະນຸບານເຖິງມັດທະຍົມປາຍ — ສິ່ງທີ່ນັກຈິດຕະວິທະຍາໂຮງຮຽນ ແລະ ຄູເຮັດແທ້ກັບສາດນີ້. ກອບສາມລະດັບ PBIS, ພຶດຕິກຳທົດແທນທີ່ຈັບຄູ່ກັບໜ້າທີ່ຈາກ FBA, ເຫດການພື້ນຫຼັງ (ຕົວກະຕຸ້ນຊ້າທີ່ BIP ສ່ວນຫຼາຍເບິ່ງຂ້າມ), ວົງຈອນເຈັດໄລຍະຂອງການລະເບີດພຶດຕິກຳຕາມ Geoff Colvin, ແລະ ຈັນຍາທຳການຈຳກັດຮ່າງກາຍ ແລະ ການແຍກ ທີ່ຍຶດຕາມໝວດ 33 ຂອງ Maine. ເຄື່ອງມືອ້າຍນ້ອງຂອງ BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "ຊີວະວິທະຍາທະເລ ແລະ ພຶດຕິກຳສາດຂອງປາໝຶກຍັກ, ໝຶກກ້ວຍ, ໝຶກກະດອງ ແລະ ຫອຍງວງຊ້າງ. ຈຸດເດັ່ນ: Hunter Sim — ເລືອກຊະນິດ, ຖິ່ນອາໄສ, ເຫຍື່ອ ແລະ ກົນລະຍຸດ, ຫຼິ້ນເກມນ້ອຍພາງຕົວ, ແລະ ຈັບຈັງຫວະເຂົ້າໂຈມຕີ. ປົດລັອກເກັດຊີວະວິທະຍາແບບປຶ້ມພາກສະໜາມ (ກົນໄກໂຄຣມາໂຕຟໍ, 9 ສະໝອງ, ເລືອດສີຟ້າ, ການຂັບເຄື່ອນດ້ວຍໄອພົ່ນ). ຄູ່ມືພາກສະໜາມ 10 ຊະນິດ ພ້ອມຄ່າຄວາມສະຫຼາດ, ການພາງຕົວ ແລະ ຄວາມໄວໄອພົ່ນ.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ແລະ HS-PS2. ເຄື່ອງຈຳລອງຄວາມຄຽດຂອງໂຄງຖັກທີ່ປັບຊ່ວງພາດ, ຄວາມສູງ, ນ້ຳໜັກບັນທຸກ ແລະ ວັດສະດຸໄດ້, ການປຽບທຽບຊະນິດຂົວ (ຄານ, ໂຄງຖັກ, ໂຄ້ງ, ແຂວນ, ຂຶງເຄເບິນ), ຖານຂໍ້ມູນວັດສະດຸ, ຊະນິດຂອງແຮງ, ກໍລະນີສຶກສາຈິງ (Tacoma Narrows, Hyatt Regency, Tay, Silver ພ້ອມທັງ Brooklyn, Golden Gate, Akashi ແລະ Millau), ວົງຈອນການອອກແບບວິສະວະກຳ, ຂໍ້ສອບແບບ AP, ແລະ ຂໍ້ກຳນົດການອອກແບບທີ່ພິມໄດ້."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 ແລະ HS-PS2. ເຄື່ອງຈຳລອງຄວາມຄຽດຂອງໂຄງຖັກທີ່ປັບຊ່ວງພາດ, ຄວາມສູງ, ນ້ຳໜັກບັນທຸກ ແລະ ວັດສະດຸໄດ້, ການປຽບທຽບຊະນິດຂົວ (ຄານ, ໂຄງຖັກ, ໂຄ້ງ, ແຂວນ, ຂຶງເຄເບິນ), ຖານຂໍ້ມູນວັດສະດຸ, ຊະນິດຂອງແຮງ, ກໍລະນີສຶກສາຈິງ (Tacoma Narrows, Hyatt Regency, Tay, Silver ພ້ອມທັງ Brooklyn, Golden Gate, Akashi ແລະ Millau), ວົງຈອນການອອກແບບວິສະວະກຳ, ຂໍ້ສອບແບບ AP, ແລະ ຂໍ້ກຳນົດການອອກແບບທີ່ພິມໄດ້.",
+      "the_gutenberg_style_screw_press_as": "ແທ່ນພິມແບບເກີບ Gutenberg ໃນຮູບການຈຳລອງທີ່ເຮັດວຽກໄດ້ຈິງ. ດຶງຄັນໂຍກ, ຮຽງໂຕພິມຂອງເຈົ້າເອງ, ແລ້ວເບິ່ງຮອຍກົດ. ພ້ອມດ້ວຍວັດສະດຸສາດ (ໂລຫະປະສົມກົ່ວ-ດີບຸກ-ພວງ), ເສດຖະສາດ (ຕົ້ນທຶນຕໍ່ຫົວປຶ້ມທີ່ພັງລົງ), ປະຫວັດສາດ (ການປະຕິຮູບສາສະໜາ, ການປະຕິວັດວິທະຍາສາດ), ການຈັດໂຕອັກສອນ, ແລະ ຄົນທີ່ຢູ່ເບື້ອງຫຼັງແທ່ນພິມ (ລວມທັງຊ່າງພິມຍິງທີ່ປະຫວັດສາດລືມ). ສ້າງເພື່ອວຽກຂ້າມວິຊາໃນຊັ້ນມັດທະຍົມຕົ້ນ.",
+      "three_js_stoop_simulator_deep_science": "ເຄື່ອງຈຳລອງການໂສບດ້ວຍ Three.js ພ້ອມວິທະຍາສາດເລິກຂອງກົນໄກການລ່າຂອງນົກລ່າເຫຍື່ອ. ບິນເປັນແຫຼວເປເຣກຣິນທີ່ 240 mph, ເປັນນົກອິນຊີຮາປີທີ່ມີເລັບ 530 psi, ຫຼື ເປັນນົກເຄົ້າໃຫຍ່ມີເຂົາທີ່ບິນງຽບ. 8 ຊະນິດ ແລະ 12 ພາກ: ແຮງເລັບ, ການເຫັນ (ຄົມກວ່າມະນຸດ 4-8 ເທົ່າ, ແຫຼວນ້ອຍເຫັນລັງສີເໜືອມ່ວງ), ຟິສິກການບິນ, ການບິນງຽບຂອງນົກເຄົ້າ, ເຄື່ອງຄິດໄລ່ຄວາມໄວສຸດທ້າຍ, ການຟື້ນຕົວຫຼັງ DDT ແລະ ວິກິດການອະນຸລັກທີ່ຍັງດຳເນີນຢູ່, ແລະ ການລະບຸໃນພາກສະໜາມຈາກເງົາຮ່າງ ແລະ ທ່າທາງລວມ.",
+      "practice_reading_and_completing_the_documents": "ຝຶກອ່ານ ແລະ ຕື່ມເອກະສານທີ່ຊີວິດຜູ້ໃຫຍ່ຕັ້ງຢູ່ເທິງນັ້ນ: ໃບສະໝັກວຽກ, ແບບຟອມ W-4, ສັນຍາເຊົ່າ, ໃບຮັບຄົນເຈັບ, ໃບອະນຸຍາດຫັດຂັບ, ແລະ ໜັງສືເຊີນປະຊຸມ IEP ຂອງເຈົ້າເອງ. ທຸກຊ່ອງຖອດຄວາມເປັນພາສາງ່າຍ, ຊ່ອງທີ່ອາດເຮັດໃຫ້ເຈົ້າເສຍຫາຍຖືກໝາຍໄວ້, ມີສະຖານະການກົດດັນສຳລັບຕອນທີ່ໃຜຢາກໃຫ້ເຈົ້າເຊັນດຽວນີ້, ແລະ ປະໂຫຍກສຳເລັດຮູບສຳລັບຂໍເວລາ. ການຝຶກທັງໝົດໃຊ້ບຸກຄົນສົມມຸດ, ບໍ່ເຄີຍໃຊ້ຂໍ້ມູນຈິງຂອງເຈົ້າ.",
+      "how_swimming_works_stroke_physics_survival": "ການລອຍນ້ຳເຮັດວຽກແນວໃດ (ຟິສິກຂອງທ່າລອຍ ແລະ ທັກສະເອົາຕົວລອດ) ແລະ ສິ່ງທີ່ຄົນລອຍນ້ຳທຸກຄົນຄວນຮູ້ເລື່ອງນ້ຳເຢັນ, ກະແສນ້ຳຍ້ອນກັບ, ນ້ຳກ້ອນ, ເສື້ອຊູຊີບ ແລະ ການຊ່ວຍເຫຼືອ. ການແຍກທ່າລອຍດ້ວຍພາບ, ວິທະຍາສາດຂອງແຮງລອຍ ແລະ ແຮງຂັບ, ແລະ ທັກສະເອົາຕົວລອດ (ລອຍຫງາຍ, ຕີຂາແບບຕີໄຂ່, ທ່າ HELP, ການເກາະກຸ່ມ) ທີ່ຊ່ວຍຊີວິດໄດ້ຈິງ. ແຫຼ່ງອ້າງອີງ: CDC, USCG, AAP, NAA, NOAA, USA Swimming. ເພື່ອການສຶກສາເທົ່ານັ້ນ: ຖ້າຈະຫັດລອຍນ້ຳຈິງ ໃຫ້ຫາຄູສອນລອຍນ້ຳ.",
+      "tax_paycheck_calculator_data_literacy_decision": "ເຄື່ອງຄິດໄລ່ພາສີ ແລະ ໃບເງິນເດືອນ, ການຮູ້ເທົ່າທັນຂໍ້ມູນ, ເມທຣິກການຕັດສິນໃຈ, ຕົວອ່ານສັນຍາ, ບັນທຶກ ແລະ ວຽກເອກະສານ, ການວາງແຜນການເດີນທາງ, ຄວາມພ້ອມໃນການເຮັດວຽກ, ການຂຽນຊີວະປະຫວັດ, ການຈັດລະບຽບຫຼັກຖານໃນແຟ້ມສະສົມຜົນງານ, ການຝຶກສຳພາດ, ທັກສະການສື່ສານ, ການຈັດການເວລາ, ປະກັນສຸຂະພາບ, ການດູແລແຂ້ວ, ການຍົດສາດໃນການດູແລຮ່າງກາຍ, ກິດຈະວັດການນອນ, ສະຫຼາກຢາ, ການກຽມໄປພົບແພດ, ຄວາມປອດໄພໃນເຮືອນ, ຄວາມປອດໄພດິຈິຕອນ, ຄວາມສະບາຍໃຈກັບອາຫານ, ແລະ ວິທະຍາສາດປະຍຸກສຳລັບຊີວິດປະຈຳວັນ.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 ແລະ HS-LS4. ໂລກຂອງຈຸລິນຊີ: ແບັກທີເຣຍ (ທີ່ເປັນປະໂຫຍດ ແລະ ທີ່ກໍ່ພະຍາດ), ໄວຣັສ (COVID, ໄຂ້ຫວັດໃຫຍ່, HIV, ເຟຈ, ໝາກສຸກ), ຈຸລະທັດສະນະສາດ (ແສງ, ເຟສຄອນທຣາສ, ຟລູອໍເຣສເຊັນ, ອິເລັກຕຣອນ, AFM), ວິວັດທະນາການຂອງການດື້ຢາຕ້ານເຊື້ອ, ຈຸລິນຊີໃນຮ່າງກາຍມະນຸດ ດິນ ແລະ ມະຫາສະໝຸດ, ວັກຊີນ ແລະ ລະບົບພູມຄຸ້ມກັນ, ການໝັກ (ແປ້ງສົ້ມ, ນົມສົ້ມ, ກິມຈິ, ຜັກກາດດອງ, ຄອມບູຊາ, ເນີຍແຂງ), ກໍລະນີສຶກສາ (Snow, Fleming, MRSA, COVID ແລະ mRNA, FMT), ແບບທົດສອບ, ແລະ ເອກະສານອ້າງອີງທີ່ພິມໄດ້ເລື່ອງຄວາມປອດໄພຫ້ອງທົດລອງ ແລະ ຈຸລິນຊີ.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "ສິບຫ້າແຄມເປນການດູແລສິ່ງແວດລ້ອມໃນສິບເອັດພາກພື້ນ. ແຄມເປນຍາວຫຼາຍໄລຍະຂອງລັດ Maine ຫ້າຊຸດ, ບວກກັບສິບສະຖານະການຂ້າມພາກພື້ນທີ່ຄອບຄຸມກົນໄກທັງຫ້າຕະກູນ: ໄຟ (Yarralin ໃນອົດສະຕຣາລີ, Karuk ໃນຄາລິຟໍເນຍເໜືອ), ການອະນຸລັກ (Yellowstone, Akagera ໃນຣວັນດາ), ສາທາລະນະສຸກ (ໄຂ້ເລືອດອອກໃນມຸມໄບ, ອີໂບລາປີ 2014 ໃນລິເບຣີຍ), ອ່າງນ້ຳ (ແມ່ນ້ຳ Klamath, ອ່າງ Murray-Darling), ແລະ ພູມອາກາດ (ໝູ່ເກາະມາແຊລ, ດິນດອນສາມຫຼ່ຽມບັງກລາເທດ). ຄວາມເຂົ້າໃຈຈາກການຈັບຄູ່ຕະກູນຈະປົດລັອກເມື່ອເຈົ້າຈົບທັງແຄມເປນຂອງ Maine ແລະ ສະຖານະການຂ້າມພາກພື້ນໃນຕະກູນກົນໄກດຽວກັນ.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 ແລະ MS-ESS3-3. ອອກແບບເມືອງນ້ອຍໜຶ່ງເທິງຕາຕະລາງ 144 ຕອນດິນ ຕໍ່ໜ້າຂໍ້ກຳນົດທີ່ຂັດແຍ້ງກັນແທ້. ສາມເມືອງ, ແຕ່ລະເມືອງມີຂໍ້ຈຳກັດຊີ້ຂາດຕ່າງກັນ: Riverbend, ບ່ອນທີ່ນ້ຳຝົນ ແລະ ພັນທະບັດບີບເຂົ້າມາ; Mesa Hollow, ບ່ອນທີ່ຊັ້ນນ້ຳໃຕ້ດິນຄົງທີ່ ແລະ ໄຮ່ນາກຳລັງດື່ມມັນ; ແລະ Harborlight, ບ່ອນທີ່ແຜນຕ້ອງຍັງໃຊ້ໄດ້ໃນປີ 2050. ນ້ຳໄຫຼດ້ວຍວິທີສົມເຫດສົມຜົນ, ສົມດຸນນ້ຳ, ສ່ວນເຜື່ອລະດັບນ້ຳທະເລສູງຂຶ້ນ, ໄລຍະຍ່າງເທິງໂຄງຂ່າຍ, ແລະ ໂຄງຂ່າຍທາງທີ່ຄິດຕົ້ນທຶນແລ້ວ, ແຕ່ລະອັນເປີດອອກມາສະແດງສູດຂອງມັນໄດ້. Assumption Lab ແລ່ນແຜນດຽວກັນຄືນດ້ວຍຊຸດພາຣາມິເຕີທີ່ພິມເຜີຍແຜ່ແລ້ວສອງຊຸດ, ເພື່ອໃຫ້ນັກຮຽນເຫັນວ່າຂໍ້ສະຫຼຸບໃດລອດທັງສອງຊຸດ. ແຜນທີ່, ຕາຕະລາງຕອນດິນທີ່ແກ້ໄຂໄດ້, ແລະ ແບບຈຳລອງສາມມິຕິຂອງແຜນດຽວກັນ. ຄຳຖາມສົນທະນາ ແລະ ປະຫວັດສາດທີ່ມີເອກະສານອ້າງອີງ ແບກຄຳຖາມທີ່ເຄື່ອງມືປະຕິເສດຈະຈຳລອງ. ບໍ່ມີຄະແນນ ແລະ ບໍ່ມີເສລີຍ.",
+      "codap_data_science": "CODAP: ວິທະຍາການຂໍ້ມູນ",
+      "lumen_research_canvas": "Lumen: ຜ້າໃບຄົ້ນຄວ້າ",
+      "evolab_evolution": "EvoLab: ວິວັດທະນາການ",
+      "dino_lab": "ຫ້ອງທົດລອງໄດໂນເສົາ",
+      "nutritionlab_nutrition_science": "NutritionLab: ວິທະຍາສາດໂພຊະນາການ",
+      "birdlab_i_spy_ornithology": "BirdLab: ປັກສີວິທະຍາແບບຄົ້ນຫາ",
+      "openbim_companion": "OpenBIM: ຄູ່ມືຄູ່ໃຈ",
+      "applab_ai_app_generator": "AppLab: ຕົວສ້າງແອັບດ້ວຍ AI",
+      "access_lens": "ເລນການເຂົ້າເຖິງ",
+      "sim_shelf": "ຊັ້ນວາງແບບຈຳລອງ",
+      "zoom_gallery": "ຫ້ອງພາບຂະຫຍາຍ",
+      "sourcebook": "ປຶ້ມແຫຼ່ງຂໍ້ມູນ",
+      "wheel_fire_pottery_lab": "ແປ້ນໝູນ ແລະ ໄຟ: ຫ້ອງທົດລອງເຄື່ອງປັ້ນດິນເຜົາ",
+      "echo_navigator": "ຕົວນຳທາງດ້ວຍສຽງສະທ້ອນ",
+      "learning_lab_how_learning_works": "Learning Lab: ການຮຽນຮູ້ເຮັດວຽກແນວໃດ",
+      "weldlab_welding_metal_joining": "WeldLab: ການເຊື່ອມ ແລະ ການຕໍ່ໂລຫະ",
+      "bikelab_physics_repair": "BikeLab: ຟິສິກ ແລະ ການສ້ອມແປງ",
+      "fisherlab_boating_fishing_sim": "FisherLab: ແບບຈຳລອງການເດີນເຮືອ ແລະ ຫາປາ",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: ແບບຈຳລອງຟາມຫອຍແມງພູ່",
+      "throwlab_sports_physics": "ThrowLab: ຟິສິກກິລາ",
+      "skatelab_skate_bmx_physics": "SkateLab: ຟິສິກສະເກັດ ແລະ BMX",
+      "playlab_strategy_on_the_field": "PlayLab: ກົນລະຍຸດໃນສະໜາມ",
+      "kepler_colony": "ອານານິຄົມເຄັບເລີ",
+      "birdlab_life_list": "BirdLab: ບັນຊີນົກຕະຫຼອດຊີວິດ",
+      "petslab_decoder": "PetsLab: ຕົວຖອດລະຫັດ"
     },
     "area": {
       "volume": "Volume..."
@@ -19805,7 +19851,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "ກັບໄປທີ່ເຄື່ອງມື",
+      "a11y_snapshot": "ພາບນິ້ງ",
+      "a11y_next": "ຕໍ່ໄປ",
+      "a11y_simulation_speed": "ຄວາມໄວການຈຳລອງ",
+      "a11y_close_flashcard": "ປິດບັດຄຳ"
     },
     "solar_sys": {
       "venus": "Venus",
@@ -20627,7 +20678,8 @@
       "scaled_volume_changed": "🔵 ປັບຂະໜາດ (ປະລິມານປ່ຽນ)",
       "skewed_shape_deformed": "🟠 ບິດ (ຮູບຮ່າງຜິດຮູບ)",
       "degenerate_volume_0": "💀 ເສື່ອມ (ປະລິມານ → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "ຄວາມຄືບໜ້າຂອງບົດແນະນຳ"
     },
     "numberline": {
       "first_mark": "ເຄື່ອງໝາຍທຳອິດ",
@@ -22770,7 +22822,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "ປີ {value1} ເລີ່ມຂຶ້ນ."
     },
     "optics": {
       "optics_lab": "ຫ້ອງທົດລອງ ໂອປຕິກ",
@@ -23116,7 +23169,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "ຄຳສັ່ງ SQL ວິເຄາະໃນເຄື່ອງ"
     },
     "geosandbox": {
       "loading_3d_engine": "ກຳລັງໂຫຼດເຄື່ອງຈັກ 3D...",
@@ -23466,7 +23520,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "ລຶບຮູບປັ້ນແລ້ວ"
     },
     "algebraCAS": {
       "solve": "🔍 ແກ້",
@@ -26062,7 +26117,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ."
     },
     "economicslab": {
       "six_figures": "ລາຍໄດ້ຫົກຫຼັກ",
@@ -28042,7 +28098,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ບັນທຶກການສະທ້ອນຄິດແລ້ວ."
     },
     "anatomy": {
       "system_explorer": "ນັກສຳຫຼວດລະບົບ",
@@ -28624,7 +28681,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "ຕັ້ງກ້ອງ 3D ຄືນ"
     },
     "dna": {
       "back_to_tools": "ກັບໄປຫາເຄື່ອງມື",
@@ -30001,7 +30059,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ບັນທຶກການສະທ້ອນຄິດແລ້ວ."
     },
     "angles": {
       "back_to_tools": "ກັບໄປທີ່ເຄື່ອງມື",
@@ -30815,7 +30874,8 @@
       "explain_how_each_parameter_shapes_a_si": "ອະທິບາຍວ່າແຕ່ລະພາຣາມິເຕີສ້າງຮູບຮ່າງຄື້ນຊາຍແນວໃດ.",
       "design_note_discrete_5_state_marker_no": "ໝາຍເຫດການອອກແບບ: ຕົວໝາຍແບບແຍກ 5 ສະຖານະ; ບໍ່ມີຄະແນນຄື້ນ; ບໍ່ມີການເປີດເຜີຍ — ຕາມການອອກແບບ.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ."
     },
     "typingpractice": {
       "typing_practice_menu": "ເມນູ ຝຶກພິມ",
@@ -31169,7 +31229,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "ກັບໄປທີ່ເມນູ"
     },
     "music": {
       "edm_lead": "EDM Lead",
@@ -33299,7 +33360,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "ປິດ",
+      "sr_nothing_to_redo": "ບໍ່ມີຫຍັງໃຫ້ເຮັດຄືນ.",
+      "sr_nothing_to_undo": "ບໍ່ມີຫຍັງໃຫ້ຍົກເລີກ.",
+      "sr_dir_left": "ຊ້າຍ",
+      "sr_dir_right": "ຂວາ"
     },
     "arithmetic": {
       "selected": " ຖືກເລືອກແລ້ວ.",
@@ -37345,7 +37411,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ຖືກກຳນົດມາດຕະຖານຕາມຈຸດກະຈາຍທີ່ຈຸດສູງສຸດຂອງທ້ອງຟ້າ ແລະ ຄ່າຄວາມສະຫວ່າງຈຳກັດ 6.5. ການປະເມີນໂດຍປະມານນີ້ສົມມຸດວ່າທ້ອງຟ້າແຈ້ງ ບໍ່ມີເດືອນ ແລະ ດັດຊະນີປະຊາກອນ 2.2. ຊັ້ນ Bortle ບອກຄ່າຄວາມສະຫວ່າງຈຳກັດພຽງແຕ່ຄາວໆ; ທ້ອງຟ້າມືດກວ່າມາດຕະຖານອາດເກີນ ZHR. ຄວາມສູງຂອງຈຸດກະຈາຍທີ່ຕ່ຳລົງ ແລະ ທ້ອງຟ້າສະຫວ່າງກວ່າຈະຫຼຸດການປະເມີນ.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "ກັບໄປທີ່ເຄື່ອງມື STEM"
     },
     "autorepair": {
       "back_to_menu": "ກັບໄປເມນູ",
@@ -38086,7 +38153,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ຄະແນນ: {value1} ຈາກ {value2}",
+      "a11y_open_2": "ເປີດ {value1}",
+      "a11y_option": "ຕົວເລືອກ {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "for_a_high_school_chemistry_student_ac": "ສຳລັບນັກຮຽນເຄມີມັດທະຍົມປາຍ ຖືກຕ້ອງ ແຕ່ເຂົ້າໃຈງ່າຍ",
@@ -38189,7 +38259,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -38935,7 +39006,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ.",
+      "a11y_investigation_progress": "ຄວາມຄືບໜ້າຂອງການສືບຄົ້ນ",
+      "a11y_flight_debrief": "ສະຫຼຸບການບິນ",
+      "a11y_tutorial_progress": "ຄວາມຄືບໜ້າຂອງບົດແນະນຳ"
     },
     "behaviorlab": {
       "chain_reaction": "ປະຕິກິລິຍາລູກໂສ້",
@@ -39107,7 +39182,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -41619,7 +41694,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "ໂມດູນທີ່ສຳຫຼວດແລ້ວ: {value1}",
+      "a11y_score_out_of": "ຄະແນນ: {value1} ຈາກ {value2}",
+      "sr_selected": "ເລືອກແລ້ວ: {value1}",
+      "sr_quiz_reset": "ຕັ້ງແບບທົດສອບຄືນແລ້ວ"
     },
     "brainatlas": {
       "group_systems": "ລະບົບ",
@@ -46775,7 +46854,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "ເລືອກຄຳຕອບ: {value1}"
     },
     "cyberdefense": {
       "custom_scenario": "ສະຖານະການກຳນົດເອງ",
@@ -47919,7 +47999,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "ເລືອກແລ້ວ: {value1}"
     },
     "echotrainer": {
       "wall": "ກຳແພງ",
@@ -49378,7 +49459,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "ໂມດູນທີ່ສຳຫຼວດແລ້ວ: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "ເຄື່ອງຄິດໄລ່ຄາບອນ",
@@ -50458,7 +50540,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "ກັບໄປທີ່ເມນູ",
+      "sr_getting_critique": "ກຳລັງດຶງຄຳວິຈານ...",
+      "sr_critique_ready": "ຄຳວິຈານພ້ອມແລ້ວ."
     },
     "flightsim": {
       "game_controls": "🎮 ການຄວບຄຸມເກມ",
@@ -50667,7 +50752,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "ມຸມມອງຫ້ອງນັກບິນຂອງເຄື່ອງຈຳລອງການບິນ. W/S ເງີຍກົ້ມ, A/D ອຽງປີກ, Shift/Ctrl ຄັນເລັ່ງ, ວົງເລັບຄວບຄຸມແຜ່ນປີກ, X ເບຣກລໍ້, Q ແບບທົດສອບ, F ແຮງ, Space ຢຸດຊົ່ວຄາວ, I ຂໍ້ມູນ.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -50679,7 +50764,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "ການບິນອິດສະຫຼະຈາກ Portland, ME",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -50725,7 +50810,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "ຫໍຄອຍຊຽງໄຮ້",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -56548,7 +56633,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "ໂມດູນທີ່ສຳຫຼວດແລ້ວ: {value1}",
+      "sr_loaded": "ໂຫຼດ {value1} ແລ້ວ",
+      "sr_showing": "ກຳລັງສະແດງ {value1}",
+      "sr_opening": "ກຳລັງເປີດ {value1}"
     },
     "platetectonics": {
       "pacific": "ປາຊີຟິກ",
@@ -56744,7 +56833,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -61370,7 +61459,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "ຄຳອະທິບາຍພ້ອມແລ້ວ.",
+      "sr_off": "ປິດ",
+      "sr_edge_left": "ຊ້າຍ",
+      "sr_edge_right": "ຂວາ",
+      "sr_correct": "ຖືກຕ້ອງ.",
+      "sr_not_quite": "ຍັງບໍ່ຖືກເທື່ອ."
     },
     "playlab": {
       "save": "ບັນທຶກ",
@@ -61438,7 +61533,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "ຄູຝຶກຢູ່ນອກສາຍ.",
+      "sr_drill_stopped": "ຢຸດແບບຝຶກແລ້ວ."
     },
     "printingpress": {
       "menu": "← ເມນູ",
@@ -63577,7 +63674,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "ກັບໄປທີ່ເມນູ",
+      "a11y_open": "ເປີດ {value1}",
+      "sr_selected": "ເລືອກແລ້ວ: {value1}",
+      "sr_loaded": "ໂຫຼດ {value1} ແລ້ວ",
+      "sr_opening": "ກຳລັງເປີດ {value1}",
+      "sr_correct": "ຖືກຕ້ອງ.",
+      "sr_not_quite": "ຍັງບໍ່ຖືກເທື່ອ.",
+      "sr_year_begins": "ປີ {value1} ເລີ່ມຂຶ້ນ.",
+      "sr_question_reset_try_again": "ຕັ້ງຄຳຖາມຄືນແລ້ວ. ລອງອີກເທື່ອໜຶ່ງ.",
+      "sr_not_quite_see_the_explanation": "ຍັງບໍ່ຖືກເທື່ອ: ເບິ່ງຄຳອະທິບາຍ."
     },
     "raptorhunt": {
       "mass": "ມວນ",
@@ -65226,7 +65333,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "ເປີດ {value1}",
+      "a11y_flight_debrief": "ສະຫຼຸບການບິນ"
     },
     "renewables": {
       "menu": "← ເມນູ",
@@ -65926,7 +66035,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "ກັບໄປທີ່ເມນູ",
+      "sr_getting_critique": "ກຳລັງດຶງຄຳວິຈານ...",
+      "sr_critique_ready": "ຄຳວິຈານພ້ອມແລ້ວ.",
+      "sr_quiz_reset": "ຕັ້ງແບບທົດສອບຄືນແລ້ວ"
     },
     "roadready": {
       "let_s_start": "ໄປເລີ່ມກັນ →",
@@ -70288,7 +70401,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "ເລືອກຄຳຕອບ: {value1}"
     },
     "spacecolony": {
       "4": "⛽ +4",
@@ -70837,7 +70951,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "ກັບໄປທີ່ເຄື່ອງມື STEM",
+      "a11y_local_analytical_sql_query": "ຄຳສັ່ງ SQL ວິເຄາະໃນເຄື່ອງ"
     },
     "stewardship": {
       "sector": "ເຂດ",
@@ -71414,7 +71530,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "ກັບໄປທີ່ເມນູ",
+      "sr_question_reset_try_again": "ຕັ້ງຄຳຖາມຄືນແລ້ວ. ລອງອີກເທື່ອໜຶ່ງ."
     },
     "throwlab": {
       "scenarios": "ສະຖານະການ",
@@ -71639,7 +71757,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "ຕັ້ງກ້ອງ 3D ຄືນ",
+      "sr_coach_is_offline": "ຄູຝຶກຢູ່ນອກສາຍ.",
+      "sr_drill_stopped": "ຢຸດແບບຝຶກແລ້ວ."
     },
     "weldlab": {
       "menu": "← ເມນູ",
@@ -73201,7 +73322,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "ໂມດູນທີ່ສຳຫຼວດແລ້ວ: {value1}",
+      "a11y_score_out_of": "ຄະແນນ: {value1} ຈາກ {value2}",
+      "sr_quiz_reset": "ຕັ້ງແບບທົດສອບຄືນແລ້ວ",
+      "sr_loaded": "ໂຫຼດ {value1} ແລ້ວ",
+      "sr_showing": "ກຳລັງສະແດງ {value1}",
+      "sr_not_quite_see_the_explanation": "ຍັງບໍ່ຖືກເທື່ອ: ເບິ່ງຄຳອະທິບາຍ."
     },
     "worldbuilder": {
       "grade_level": "ລະດັບຊັ້ນຮຽນ",
@@ -74107,7 +74234,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "ລະດັບການອ່ານ",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74794,7 +74921,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "ຕົ້ນ ໄມ້ ແຫ່ງ ຊີວິດ",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76649,7 +76776,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "ຕົວເລືອກ {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "ມຸມກ້ອງ 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76661,6 +76790,22 @@
       "finish": "ເຂົ້າໃຈແລ້ວ!",
       "replay": "ເຄັດ​ລັບ",
       "replay_aria": "ສະແດງບົດຮຽນ"
+    },
+    "pets": {
+      "sr_back_to_menu": "ກັບໄປທີ່ເມນູ",
+      "sr_getting_critique": "ກຳລັງດຶງຄຳວິຈານ...",
+      "sr_critique_ready": "ຄຳວິຈານພ້ອມແລ້ວ."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "ກັບໄປທີ່ເຄື່ອງມື STEM",
+      "a11y_3d_camera_views": "ມຸມກ້ອງ 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "ຄວາມຄືບໜ້າຂອງການສືບຄົ້ນ"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "ບໍ່ມີຫຍັງໃຫ້ເຮັດຄືນ.",
+      "sr_nothing_to_undo": "ບໍ່ມີຫຍັງໃຫ້ຍົກເລີກ."
     }
   },
   "glossary_health": {
@@ -77252,7 +77397,7 @@
       "person": "ບຸກຄົນ\\",
       "phase_label": "ປ້າຍຊື່ໄລຍະ",
       "rationale_which_antecedent_does_this_address": "ເຫດຜົນ (ນີ້ແກ້ໄຂສິ່ງກະຕຸ້ນກ່ອນໜ້າຂໍ້ໃດ?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "ສະທ້ອນຄິດກ່ຽວກັບວິທີການຂອງທ່ານ...\\n• ຫຍັງເຮັດໄດ້ດີ?\\n• ທ່ານຈະເຮັດແຕກຕ່າງແນວໃດ?\\n• ຍຸດທະວິທີໃດທີ່ທ່ານຢາກຝຶກຕໍ່ໄປ?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "ສະທ້ອນຄິດກ່ຽວກັບວິທີການຂອງທ່ານ...\n• ຫຍັງເຮັດໄດ້ດີ?\n• ທ່ານຈະເຮັດແຕກຕ່າງແນວໃດ?\n• ຍຸດທະວິທີໃດທີ່ທ່ານຢາກຝຶກຕໍ່ໄປ?",
       "reinforcement_how_you": "⭐ ການເສີມແຮງ (ວິທີທີ່ທ່ານ\\",
       "replacement_behavior_functionally_equivalent": "✅ ພຶດຕິກຳທົດແທນ (ມີໜ້າທີ່ທຽບເທົ່າ)",
       "respond_as_the_counselor": "ຕອບໃນຖານະທີ່ປຶກສາ...",
@@ -77260,7 +77405,7 @@
       "search_81_tools": "🔍  ຄົ້ນຫາເຄື່ອງມື 80+...",
       "search_aba_terms": "🔍 ຄົ້ນຫາຄຳສັບ ABA...",
       "search_terms_eg_reinforcement_fba_data": "🔍 ຄົ້ນຫາຄຳສັບ... (ຕົວຢ່າງ: \"ການເສີມແຮງ\", \"FBA\", \"ຂໍ້ມູນ\")",
-      "session_1_3nsession_2_7nsession_3_5n": "ກອງປະຊຸມ 1: 3\\nກອງປະຊຸມ 2: 7\\nກອງປະຊຸມ 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "ກອງປະຊຸມ 1: 3\nກອງປະຊຸມ 2: 7\nກອງປະຊຸມ 3: 5\n...",
       "setting_eg_math_class_cafeteria": "ສະຖານທີ່ (ຕົວຢ່າງ: ຫ້ອງຄະນິດສາດ, ໂຮງອາຫານ)",
       "share_what_you_notice_at_home_strengths_concerns_c": "ແບ່ງປັນສິ່ງທີ່ທ່ານສັງເກດເຫັນຢູ່ບ້ານ: ຈຸດແຂງ, ຄວາມເປັນຫ່ວງ, ບໍລິບົດທາງວັດທະນະທຳ, ຫຼື ຄຳແນະນຳສຳລັບທີມໂຮງຮຽນ...",
       "step_description": "ຄຳອະທິບາຍຂັ້ນຕອນ...",
@@ -78591,7 +78736,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "ຄວາມສູງຮອຍບາກ",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80542,7 +80687,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "ຮູບຂອງແນວຄິດ",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80576,10 +80721,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "ຈັດວາງເຄື່ອງໃນທຸກແນວຄິດ",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "ຄວາມຄືບໜ້າຂອງການຈັດວາງ",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80591,7 +80736,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "ຊື່ທີ່ເປັນໄປໄດ້",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80603,7 +80748,7 @@
     "recall_mode_label": "How to answer",
     "recall_mode_typed": "Type",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "ການລະນຶກເຖິງແນວຄິດ",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82206,7 +82351,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "ປິດ Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82215,7 +82360,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "ກັ່ນຕອງວຽກມອບໝາຍ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82253,15 +82398,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "ຄຳຖາມ {n}",
+    "q_choices_aria": "ຕົວເລືອກສຳລັບຄຳຖາມ {n}, ບັນທັດລະໜຶ່ງ",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "ລຶບຄຳຖາມ {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "ຂັ້ນຂອງມາດຕາສ່ວນສຳລັບຄຳຖາມ {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "ປະເພດຄຳຕອບສຳລັບຄຳຖາມ {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82271,10 +82416,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "ລິ້ງທີ່ເລືອກໄດ້ສຳລັບ {title}",
+    "scale_high_aria": "ປ້າຍສຳລັບປາຍເທິງ",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "ປ້າຍສຳລັບປາຍລຸ່ມ",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82294,7 +82439,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "ສະຫຼຸບສະຖານະຂອງວຽກມອບໝາຍ",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82310,9 +82455,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "ອັບເດດອັດຕະໂນມັດ",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "ລິ້ງວຽກບ້ານທີ່ເລືອກໄດ້",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82321,7 +82466,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "ລະຫັດ QR ຂອງວຽກບ້ານ",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84769,7 +84914,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "ເລືອກລະດັບພັດທະນາການສຳລັບຄຳຖາມນຳ ແລະ ເກນປະເມີນ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84777,7 +84922,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "ເປີດ ຫຼື ປິດມຸມມອງຄູ",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84808,17 +84953,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "ຢຸດບັນທຶກສຽງຊົ່ວຄາວ",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "ສືບຕໍ່ບັນທຶກສຽງ",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "ເລີ່ມບັນທຶກບັນທຶກສຽງ",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "ຢຸດການບັນທຶກ",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85204,22 +85349,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "ເຫດຜົນຂອງການຍ້ອງຍໍ AlloHaven",
+    "recent_deliveries_aria": "ການຍ້ອງຍໍ AlloHaven ສ່ວນຕົວຫຼ້າສຸດ",
+    "token_amount_aria": "ຈຳນວນໂທເຄັນ AlloHaven",
+    "token_cap_aria": "ຂີດຈຳກັດໂທເຄັນ AlloHaven ຕໍ່ນັກຮຽນຕໍ່ເຊດຊັນ"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "ຂໍ້ຍົກເວັ້ນທີ່ອະນຸຍາດໃນຂະນະທີ່ຍັງບັນລຸເປົ້າໝາຍ",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "ສັນຍານຄວາມຄືບໜ້າແບບເລືອກໄດ້ທີ່ແອັບຕິດຕາມສຳລັບເປົ້າໝາຍນີ້",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "ທັງທີມພ້ອມກັນ ຫຼື ນັກຮຽນແຕ່ລະຄົນແຍກກັນ",
+    "name_aria": "ຊື່ເປົ້າໝາຍຫ້ອງຮຽນ, ເກັບໄວ້ໃນອຸປະກອນນີ້ເທົ່ານັ້ນ",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "ເປົ້າໝາຍນີ້ຄອບຄຸມນັກຮຽນຄົນໃດແດ່",
+    "template_aria": "ແມ່ແບບເລີ່ມຕົ້ນສຳລັບເປົ້າໝາຍຫ້ອງຮຽນ",
+    "tokens_aria": "ໂທເຄັນທີ່ມອບໃຫ້ນັກຮຽນແຕ່ລະຄົນເມື່ອບັນລຸເປົ້າໝາຍນີ້"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85237,7 +85382,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "ໂທເຄັນຜູ້ດູແລ Class Mailbox (ເລືອກໄດ້)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85267,17 +85412,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "ຍົກມືແລ້ວ",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "ລິ້ງເຂົ້າຮ່ວມກ່ອງຈົດໝາຍສົດທີ່ເລືອກໄດ້",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "ເຊດຊັນສົດຂອງ Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85304,7 +85449,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "ການເຊື່ອມຕໍ່ແບບເວລາຈິງ",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85336,7 +85481,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL ຂອງເວັບແອັບ Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

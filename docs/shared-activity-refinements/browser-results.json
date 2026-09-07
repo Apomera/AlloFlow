@@ -1,0 +1,12 @@
+{
+  "actualMailboxHandlers": true,
+  "simulatedGoogleServices": true,
+  "surveyReload": true,
+  "decimalResponse": 2.75,
+  "saveRetry": true,
+  "slotConflict": true,
+  "slotRelease": true,
+  "availabilityReload": true,
+  "mobileOverflow": false,
+  "errors": []
+}

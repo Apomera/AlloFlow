@@ -58,8 +58,9 @@ describe('header narrow-viewport reflow', () => {
     expect(aiButton).toBeGreaterThan(navRow);
   });
   it('wraps source-panel actions instead of clipping Generate and Books', () => {
-    const app = fs.readFileSync('AlloFlowANTI.txt', 'utf8');
-    expect(app).toContain('flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0');
+    // The input surface is shipped through SidebarPanels after extraction.
+    const panel = fs.readFileSync('view_sidebar_panels_source.jsx', 'utf8');
+    expect(panel.includes('flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0')).toBe(true);
   });
   it('keeps the deployment mirror synchronized', () => {
     expect(builder).toContain("desktop/web-app', 'public', 'view_header_module.js");

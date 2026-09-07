@@ -143,6 +143,87 @@ function validateSubmission(payload) {
   return null;
 }
 
+// ── /submit abuse controls ───────────────────────────────────────────────────
+// Every accepted /submit becomes a commit on the catalog branch through the
+// GitHub token, so the endpoint needs the same budget guards /search has:
+//   * per-IP fixed windows in the SUBMIT_RATE KV namespace — fail-open when the
+//     namespace is not bound, exactly like SEARCH_RATE, so an unbound worker
+//     keeps today's behaviour; bind it before opening the form to the public
+//     (wrangler.toml has the block);
+//   * a content-hash dedupe so a replayed body cannot create a second commit.
+//     The hash is recorded only AFTER a successful commit, so a 502 from GitHub
+//     never poisons a legitimate retry;
+//   * optional Cloudflare Turnstile: when TURNSTILE_SECRET is set, the payload
+//     must carry a valid `turnstile_token`. Fail-closed ONLY once configured —
+//     the in-app form does not render the widget yet, and whether Gemini Canvas
+//     allows the challenge script has not been verified.
+const SUBMIT_DEFAULTS = { ratePerMinute: 3, ratePerDay: 20, dedupeTtlSeconds: 86400 };
+
+function submitLimit(env, name, fallback) {
+  const n = Number.parseInt(env && env[`SUBMIT_${name}`], 10);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+function submitClientIp(request) {
+  const ip = request.headers.get('CF-Connecting-IP') || request.headers.get('X-Forwarded-For') || 'unknown';
+  return String(ip).split(',')[0].trim();
+}
+
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Returns { refusal: null | { status, error, retryAfterHint }, hash }. Counts the
+// request against the per-IP windows when it is allowed through.
+async function submitAbuseRefusal(request, env, rawBody) {
+  const hash = await sha256Hex(rawBody);
+  if (!env.SUBMIT_RATE) return { refusal: null, hash }; // namespace not bound — fail open, like SEARCH_RATE
+  const ip = submitClientIp(request);
+  const minuteKey = `submitrate:${ip}:${Math.floor(Date.now() / 60000)}`;
+  const dayKey = `submitday:${ip}:${new Date().toISOString().slice(0, 10)}`;
+  const dupeKey = `submitdupe:${hash}`;
+  let minuteCount = 0, dayCount = 0, dupe = null;
+  try {
+    const [m, d, u] = await Promise.all([env.SUBMIT_RATE.get(minuteKey), env.SUBMIT_RATE.get(dayKey), env.SUBMIT_RATE.get(dupeKey)]);
+    minuteCount = Number(m) || 0;
+    dayCount = Number(d) || 0;
+    dupe = u;
+  } catch (_) { return { refusal: null, hash }; }
+  if (dupe) return { refusal: { status: 409, error: 'duplicate-submission', retryAfterHint: 'this exact submission was already received' }, hash };
+  if (dayCount >= submitLimit(env, 'RATE_PER_DAY', SUBMIT_DEFAULTS.ratePerDay)) return { refusal: { status: 429, error: 'daily-limit-reached', retryAfterHint: 'tomorrow' }, hash };
+  if (minuteCount >= submitLimit(env, 'RATE_PER_MINUTE', SUBMIT_DEFAULTS.ratePerMinute)) return { refusal: { status: 429, error: 'rate-limited', retryAfterHint: '1 minute' }, hash };
+  try {
+    await Promise.all([
+      env.SUBMIT_RATE.put(minuteKey, String(minuteCount + 1), { expirationTtl: 120 }),
+      env.SUBMIT_RATE.put(dayKey, String(dayCount + 1), { expirationTtl: 172800 }),
+    ]);
+  } catch (_) { /* counting is best-effort */ }
+  return { refusal: null, hash };
+}
+
+async function recordSubmitHash(env, hash) {
+  if (!env.SUBMIT_RATE || !hash) return;
+  try {
+    await env.SUBMIT_RATE.put(`submitdupe:${hash}`, '1', { expirationTtl: submitLimit(env, 'DEDUPE_TTL_SECONDS', SUBMIT_DEFAULTS.dedupeTtlSeconds) });
+  } catch (_) { /* best-effort */ }
+}
+
+async function turnstileRefusal(request, env, payload) {
+  if (!env.TURNSTILE_SECRET) return null;
+  const token = payload && typeof payload.turnstile_token === 'string' ? payload.turnstile_token : '';
+  if (!token) return { status: 403, error: 'turnstile-required' };
+  try {
+    const form = new URLSearchParams({ secret: env.TURNSTILE_SECRET, response: token, remoteip: submitClientIp(request) });
+    const resp = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form });
+    const data = await resp.json();
+    if (!data || data.success !== true) return { status: 403, error: 'turnstile-failed' };
+  } catch (_) {
+    return { status: 403, error: 'turnstile-unavailable' };
+  }
+  return null;
+}
+
 async function commitToGitHub(env, slug, content) {
   const owner = env.GITHUB_OWNER || 'Apomera';
   const repo = env.GITHUB_REPO || 'AlloFlow';
@@ -2077,6 +2158,17 @@ export default {
       return jsonResponse({ ok: false, error: validationError }, 400);
     }
 
+    // Abuse controls run only on a well-formed body, so a malformed request is
+    // never counted against a teacher's budget.
+    const turnstile = await turnstileRefusal(request, env, payload);
+    if (turnstile) {
+      return jsonResponse({ ok: false, error: turnstile.error }, turnstile.status);
+    }
+    const abuse = await submitAbuseRefusal(request, env, rawBody);
+    if (abuse.refusal) {
+      return jsonResponse({ ok: false, error: abuse.refusal.error, retryAfterHint: abuse.refusal.retryAfterHint }, abuse.refusal.status);
+    }
+
     const piiFindings = scanForPii(JSON.stringify(payload.lesson_payload));
 
     const submissionRecord = {
@@ -2109,6 +2201,9 @@ export default {
     } catch (err) {
       return jsonResponse({ ok: false, error: 'Could not commit to GitHub: ' + err.message }, 502);
     }
+
+    // Only a submission that actually reached GitHub is remembered as a duplicate.
+    await recordSubmitHash(env, abuse.hash);
 
     return jsonResponse(
       { ok: true, slug, filename: commitInfo.filename, pii_findings_count: piiFindings.length },

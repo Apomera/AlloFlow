@@ -1,16 +1,18 @@
 import { isSupportedOcrLanguage } from "./remediation-options";
+import { normalizePdfUaValidation, pdfDeliveryState, normalizeCandidateRejectionEvidence, type CandidateRejectionEvidence, type PdfUaValidation } from "../../../desktop/mcp/remediation_verification.cjs";
+export type { PdfUaValidation } from "../../../desktop/mcp/remediation_verification.cjs";
 
 const SHA256_RE = /^[a-f0-9]{64}$/iu;
 
 export type EffortProfile = "standard" | "thorough";
-export type RemediationDistributionLevel = "ready" | "caution";
+export type RemediationDistributionLevel = "ready" | "caution" | "review";
 export type RemediationVerificationState =
   | "complete"
   | "complete-for-tested-scope"
   | "review-required"
   | "partial"
   | "unavailable";
-export type TaggedPdfDelivery = "verified";
+export type TaggedPdfDelivery = "verified" | "review-required";
 export type TaggedPdfExportMode = "original_layout";
 
 export interface RemediationAuditCoverage {
@@ -23,29 +25,6 @@ export interface RemediationAuditCoverage {
 export type PdfUaNotRunReason =
   | "disabled_for_institution_pilot"
   | "independent_validator_not_packaged";
-
-export type PdfUaValidation =
-  | {
-      status: "not_run";
-      reason: PdfUaNotRunReason;
-    }
-  | {
-      status: "unavailable";
-      reason:
-        | "validator_not_available"
-        | "validator_timeout"
-        | "validator_error";
-    }
-  | {
-      status: "compliant" | "noncompliant";
-      validator: "veraPDF";
-      profile: "ua1";
-      validatorVersion: string | null;
-      failedRules: number;
-      failedChecks: number;
-      passedRules: number;
-      passedChecks: number;
-    };
 
 export interface RemediationReportExpectation {
   jobId: string;
@@ -78,7 +57,7 @@ export interface PublicRemediationReport {
     ocrLanguage: string;
     autoContinueRounds: number;
   };
-  summary: {
+  summary: CandidateRejectionEvidence & {
     beforeScore: number | null;
     afterScore: number | null;
     estimatedMinimumScore: number | null;
@@ -89,6 +68,9 @@ export interface PublicRemediationReport {
     activeContentDetected: false;
     distributionLevel: RemediationDistributionLevel;
     verificationState: RemediationVerificationState;
+    htmlVerificationState: RemediationVerificationState;
+    reviewRequired: boolean;
+    deliveryStatus: "review-required" | "complete-for-tested-scope";
     verificationHtmlBound: true;
     taggedPdfDelivery: TaggedPdfDelivery;
     taggedPdfExportMode: TaggedPdfExportMode;
@@ -174,7 +156,7 @@ function boolean(value: unknown): boolean {
 function distributionLevel(
   value: unknown,
 ): RemediationDistributionLevel {
-  if (value !== "ready" && value !== "caution") {
+  if (value !== "ready" && value !== "caution" && value !== "review") {
     return fail("remediation_report_malformed");
   }
   return value;
@@ -411,7 +393,7 @@ export function sanitizeRemediationReport(
     summary.verificationHtmlBound,
   );
   if (
-    summary.taggedPdfDelivery !== "verified" ||
+    (summary.taggedPdfDelivery !== "verified" && summary.taggedPdfDelivery !== "review-required") ||
     summary.activeContentScanVerified !== true ||
     summary.activeContentDetected !== false ||
     summary.taggedPdfExportMode !== "original_layout"
@@ -449,64 +431,20 @@ export function sanitizeRemediationReport(
     return fail("remediation_report_artifact_mismatch");
   }
 
-  const pdfUaValidation = record(report.pdfUaValidation);
-  let sanitizedPdfUaValidation: PublicRemediationReport["pdfUaValidation"];
-  if (
-    pdfUaValidation.status === "compliant" ||
-    pdfUaValidation.status === "noncompliant"
-  ) {
-    if (
-      pdfUaValidation.validator !== "veraPDF" ||
-      pdfUaValidation.profile !== "ua1"
-    ) {
-      return fail("remediation_report_malformed");
-    }
-    const validatorVersion = pdfUaValidation.validatorVersion;
-    if (
-      validatorVersion !== null &&
-      (
-        typeof validatorVersion !== "string" ||
-        validatorVersion.length > 32
-      )
-    ) {
-      return fail("remediation_report_malformed");
-    }
-    sanitizedPdfUaValidation = {
-      status: pdfUaValidation.status,
-      validator: "veraPDF",
-      profile: "ua1",
-      validatorVersion,
-      failedRules: integer(pdfUaValidation.failedRules, 0, 1_000_000),
-      failedChecks: integer(pdfUaValidation.failedChecks, 0, 1_000_000),
-      passedRules: integer(pdfUaValidation.passedRules, 0, 1_000_000),
-      passedChecks: integer(pdfUaValidation.passedChecks, 0, 1_000_000),
-    };
-  } else if (pdfUaValidation.status === "unavailable") {
-    if (
-      pdfUaValidation.reason !== "validator_not_available" &&
-      pdfUaValidation.reason !== "validator_timeout" &&
-      pdfUaValidation.reason !== "validator_error"
-    ) {
-      return fail("remediation_report_malformed");
-    }
-    sanitizedPdfUaValidation = {
-      status: "unavailable",
-      reason: pdfUaValidation.reason,
-    };
-  } else if (
-    pdfUaValidation.status === "not_run" &&
-    (
-      pdfUaValidation.reason === "disabled_for_institution_pilot" ||
-      pdfUaValidation.reason === "independent_validator_not_packaged"
-    )
-  ) {
-    sanitizedPdfUaValidation = {
-      status: "not_run",
-      reason: pdfUaValidation.reason,
-    };
-  } else {
+  let sanitizedPdfUaValidation: PdfUaValidation;
+  try {
+    sanitizedPdfUaValidation = normalizePdfUaValidation(report.pdfUaValidation, { size: artifactSize, sha256: artifactSha256 }, { allowLegacyUnbound: true });
+  } catch (_) {
     return fail("remediation_report_malformed");
   }
+  const htmlVerificationState = verificationState(summary.htmlVerificationState ?? sanitizedVerificationState);
+  const delivery = pdfDeliveryState({
+    hasPdf: true,
+    pdfStatus: sanitizedPdfUaValidation.status === "compliant" ? "passed" : sanitizedPdfUaValidation.status,
+    verificationState: sanitizedVerificationState,
+    level: sanitizedDistributionLevel,
+    taggedPdfVerified: summary.taggedPdfDelivery === "verified",
+  });
 
   return {
     schema: 1,
@@ -531,15 +469,19 @@ export function sanitizeRemediationReport(
         summary.estimatedMinimumScore,
       ),
       integrityCoverage: scoreOrNull(summary.integrityCoverage),
+      ...normalizeCandidateRejectionEvidence(summary),
       aiVerificationIncomplete: boolean(
         summary.aiVerificationIncomplete,
       ),
-      distributionLevel: sanitizedDistributionLevel,
+      distributionLevel: delivery.distributionLevel,
       activeContentScanVerified: true,
       activeContentDetected: false,
-      verificationState: sanitizedVerificationState,
+      verificationState: verificationState(delivery.verificationState),
+      htmlVerificationState,
+      reviewRequired: delivery.reviewRequired,
+      deliveryStatus: delivery.deliveryStatus,
       verificationHtmlBound,
-      taggedPdfDelivery: "verified",
+      taggedPdfDelivery: delivery.taggedPdfDelivery,
       taggedPdfExportMode: "original_layout",
       remainingAxeViolations,
       remainingEqualAccessFailures,

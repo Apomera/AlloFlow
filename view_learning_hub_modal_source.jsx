@@ -316,7 +316,7 @@ function LearningHubModal(props) {
                   <span className="text-4xl" aria-hidden="true">{'📚'}</span>
                   <div>
                     <h3 className="font-bold text-sky-800">{t('learning_hub.reading_library_title') || 'Reading Library'}</h3>
-                    <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Real picture books in 10 languages — read along, listen, and practice'}</p>
+                    <p className="text-xs text-sky-700 mt-1">{t('learning_hub.reading_library_desc') || 'Browse picture books, longer reads, textbooks, and primary sources'}</p>
                   </div>
                 </button>
 

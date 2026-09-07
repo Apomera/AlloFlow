@@ -1897,7 +1897,14 @@ var d = labToolData || {};
 
             // ── Header bar ──
 
-            React.createElement('div', { className: 'bg-gradient-to-r from-teal-700 to-cyan-700 text-white p-3 flex items-center justify-between' },
+            // ★ `flex-wrap`, and it is load-bearing at 640px. The controls row on the
+            // right holds two <select>s (188px + 169px - a select never shrinks below
+            // its widest option) plus two pills, 501px in all, beside a ~200px title in
+            // a nowrap bar. On a 640px viewport it ran to x=702 and the card's
+            // overflow-hidden cut the difficulty picker off with no way to scroll to
+            // it. Wrapping drops the controls under the title instead; a no-op on any
+            // screen wide enough for one line.
+            React.createElement('div', { className: 'bg-gradient-to-r from-teal-700 to-cyan-700 text-white p-3 flex flex-wrap items-center justify-between gap-y-2' },
 
               React.createElement('div', { className: 'flex items-center gap-2' },
 
@@ -1909,7 +1916,7 @@ var d = labToolData || {};
 
               ),
 
-              React.createElement('div', { className: 'flex items-center gap-3' },
+              React.createElement('div', { className: 'flex flex-wrap items-center gap-3' },
 
                 // Level pill — shows current rank + progress to the next level
                 React.createElement('span', {

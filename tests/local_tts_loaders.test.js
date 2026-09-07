@@ -206,6 +206,18 @@ describe('Kokoro local loader resilience', () => {
     expect(api.synthesisRate).toBe(1);
   });
 
+  it('force regeneration replaces cached audio only after a complete fresh batch', async () => {
+    const api = loadKokoro();
+    await api.init();
+    const oldUrl = await api.speak('Regenerate this saved sentence.', 'af_heart', 1);
+    const freshUrl = await api.speak('Regenerate this saved sentence.', 'af_heart', 1, { force: true });
+    expect(freshUrl).not.toBe(oldUrl);
+    expect(await api.speak('Regenerate this saved sentence.', 'af_heart', 1)).toBe(freshUrl);
+    FakeWorker.batchMode = 'incomplete';
+    expect(await api.speak('Regenerate this saved sentence.', 'af_heart', 1, { force: true })).toBeNull();
+    expect(await api.speak('Regenerate this saved sentence.', 'af_heart', 1)).toBe(freshUrl);
+  });
+
   it('shares a background batch with a signalled waiter without transferring cancellation', async () => {
     const api = loadKokoro();
     await api.init();
@@ -508,6 +520,18 @@ describe('Piper local loader resilience', () => {
     expect(firstAtAnotherSpeed).toBe(firstUrl);
     expect(lib.predict).toHaveBeenCalledTimes(3);
     expect(api.synthesisRate).toBe(1);
+  });
+
+  it('force regeneration bypasses cached Piper predictions and retains the good clip on failure', async () => {
+    const lib = makeLib();
+    const api = loadPiper(lib);
+    const oldUrl = await api.speak('Une nouvelle lecture.', 'fr', 1);
+    const freshUrl = await api.speak('Une nouvelle lecture.', 'fr', 1, { force: true });
+    expect(freshUrl).not.toBe(oldUrl);
+    expect(lib.predict).toHaveBeenCalledTimes(2);
+    lib.predict.mockRejectedValueOnce(new Error('temporary generation failure'));
+    expect(await api.speak('Une nouvelle lecture.', 'fr', 1, { force: true })).toBeNull();
+    expect(await api.speak('Une nouvelle lecture.', 'fr', 1)).toBe(freshUrl);
   });
 
   it('deduplicates concurrent voice downloads and tracks URL ownership', async () => {

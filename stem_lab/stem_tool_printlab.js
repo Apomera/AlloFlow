@@ -78,6 +78,23 @@
     return Math.max(lo, Math.min(hi, n));
   }
 
+  // Compare human-entered slicer outputs. These numbers never authorize a quote.
+  function compareSlicerPlans(input) {
+    input = input || {};
+    function positive(value) {
+      if (typeof value !== 'number' && typeof value !== 'string') return null;
+      if (String(value).trim() === '') return null;
+      var n = Number(value);
+      return isFinite(n) && n > 0 && n <= 1000000 ? n : null;
+    }
+    function change(before, after) {
+      var a = positive(before), b = positive(after);
+      if (a === null || b === null) return null;
+      return { before: a, after: b, saved: Math.round((a - b) * 100) / 100, percent: Math.round((a - b) / a * 1000) / 10 };
+    }
+    return { mass: change(input.baselineGrams, input.candidateGrams), time: change(input.baselineMinutes, input.candidateMinutes) };
+  }
+
   function safeText(value, max) {
     return String(value == null ? '' : value).replace(/[\u0000-\u001f\u007f]/g, ' ').trim().slice(0, max);
   }
@@ -762,6 +779,8 @@
       title: safeText(pending.title, 100) || safeText(recipe.name, 100) || 'Art Studio sculpture',
       description: safeText(pending.description, 500),
       unitMm: clamp(pending.unitMm, 0.01, 1000, 20),
+      aiUse: ['ASSISTED', 'MOSTLY_AI'].indexOf(pending.aiUse) >= 0 ? pending.aiUse : 'NONE',
+      aiDisclosure: safeText(pending.aiDisclosure, 500),
       recipe: recipe,
       sourceModel: null,
       summary: { partCount: recipe.parts.length, name: safeText(recipe.name, 80) }
@@ -834,6 +853,7 @@
     TABS: TABS.slice(),
     SHAPES: SHAPES.slice(),
     MATERIALS: MATERIALS.map(function (item) { return Object.assign({}, item); }),
+    compareSlicerPlans: compareSlicerPlans,
     allowedFile: allowedFile,
     allowedGcodeFile: allowedGcodeFile,
     sourceExtension: sourceExtension,
@@ -901,12 +921,13 @@
       var _description = React.useState(pendingHandoff ? pendingHandoff.description : (stored.description || '')), description = _description[0], setDescription = _description[1];
       var _sourceContext = React.useState(pendingHandoff ? { sourceTool: pendingHandoff.sourceTool, sourceModel: pendingHandoff.sourceModel, summary: pendingHandoff.summary } : null), sourceContext = _sourceContext[0], setSourceContext = _sourceContext[1];
       var _note = React.useState(stored.studentNote || ''), studentNote = _note[0], setStudentNote = _note[1];
-      var _aiUse = React.useState(stored.aiUse || 'NONE'), aiUse = _aiUse[0], setAiUse = _aiUse[1];
-      var _aiDisclosure = React.useState(stored.aiDisclosure || ''), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
+      var _aiUse = React.useState(pendingHandoff ? (pendingHandoff.aiUse || 'NONE') : (stored.aiUse || 'NONE')), aiUse = _aiUse[0], setAiUse = _aiUse[1];
+      var _aiDisclosure = React.useState(pendingHandoff ? (pendingHandoff.aiDisclosure || '') : (stored.aiDisclosure || '')), aiDisclosure = _aiDisclosure[0], setAiDisclosure = _aiDisclosure[1];
       var _profile = React.useState(initialProfile), profile = _profile[0], setProfile = _profile[1];
       var _material = React.useState(stored.materialId || 'PLA'), materialId = _material[0], setMaterialId = _material[1];
       var _infill = React.useState(clamp(stored.infillPercent, 0, 100, 20)), infillPercent = _infill[0], setInfillPercent = _infill[1];
       var _support = React.useState(clamp(stored.supportPercent, 0, 200, 10)), supportPercent = _support[0], setSupportPercent = _support[1];
+      var _comparison = React.useState({}), slicerComparison = _comparison[0], setSlicerComparison = _comparison[1];
       var _saved = React.useState(''), selectedSaved = _saved[0], setSelectedSaved = _saved[1];
       var _repair = React.useState(null), repairResult = _repair[0], setRepairResult = _repair[1];
       var _gcode = React.useState(null), gcodeMetadata = _gcode[0], setGcodeMetadata = _gcode[1];
@@ -946,7 +967,7 @@
         if (!pendingHandoff) return;
         // Persist only small form defaults. The STL bytes and editable source model
         // intentionally remain in component memory and disappear when Print Lab closes.
-        persist({ activeTab: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description });
+        persist({ activeTab: 'Design', recipe: pendingHandoff.recipe || null, unitMm: pendingHandoff.unitMm, preflight: null, preflightBinding: '', title: pendingHandoff.title, description: pendingHandoff.description, aiUse: pendingHandoff.aiUse || 'NONE', aiDisclosure: pendingHandoff.aiDisclosure || '' });
       }, []);
 
       React.useEffect(function () {
@@ -1089,10 +1110,11 @@
         window.__alloArtStudioPendingSculpt = {
           schema: 'alloflow-artstudio-sculpt/1',
           id: 'pl-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8),
-          recipe: JSON.parse(JSON.stringify(clean))
+          recipe: JSON.parse(JSON.stringify(clean)),
+          printContext: { unitMm: unitMm, aiUse: aiUse, aiDisclosure: safeText(aiDisclosure, 500) }
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('artStudio', { tab: 'sculpt3d', studioStarted: true });
-        announce(__alloT('stem.printlab.sr_returning_the_editable_sculpture_to_art_studio_pr', 'Returning the editable sculpture to Art Studio. Print settings remain in Print Lab only.'));
+        announce(__alloT('stem.printlab.sr_returning_the_editable_sculpture_to_art_studio_pr', 'Returning the editable sculpture to Art Studio. Physical scale and AI disclosure travel with the model. Run preflight again after editing.'));
         ctx.setStemLabTool('artStudio');
       }
       // Starting points for a student who opens Print Lab first: the three
@@ -1113,7 +1135,7 @@
           sourceModel: JSON.parse(JSON.stringify(source))
         };
         if (typeof ctx.updateMulti === 'function') ctx.updateMulti('geometryWorld', { activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory' });
-        announce(__alloT('stem.printlab.sr_returning_the_editable_selected_build_to_geometry', 'Returning the editable selected build to Geometry World. Print settings remain in Print Lab only.'));
+        announce(__alloT('stem.printlab.sr_returning_the_editable_selected_build_to_geometry', 'Returning the editable selected build to Geometry World. Physical scale and AI disclosure travel with the model. Run preflight again after editing.'));
         ctx.setStemLabTool('geometryWorld');
       }
 
@@ -1250,12 +1272,14 @@
         if ((kind === 'refine' && !aiRefinement.trim()) || (kind !== 'refine' && !aiSubject.trim())) { announce(__alloT('stem.printlab.sr_describe_what_you_want_the_modeling_assistant_to', 'Describe what you want the modeling assistant to do.')); return; }
         var operation = beginDesignOperation('ai'), token = operation.token, startedRevision = operation.revision;
         setAiBusy(true); announce(kind === 'refine' ? 'Preparing an AI-assisted revision…' : 'Preparing an AI-assisted primitive recipe…');
-        Promise.resolve(ctx.callGemini(prompt, false, false, 0.5)).then(function (response) {
+        Promise.resolve().then(function () { return ctx.callGemini(prompt, false, false, 0.5); }).then(function (response) {
           if (!operationIsCurrent('ai', token, startedRevision)) return;
           var next = P3D.parseRecipe(aiText(response));
           if (!next) throw new Error('The modeling response did not contain a valid primitive recipe.');
-          updateRecipe(next, unitMm, 'ai'); setTitle(next.name || title); setAiUse('ASSISTED');
-          if (!aiDisclosure) setAiDisclosure(kind === 'refine' ? 'AI helped revise a primitive-based model from my instruction.' : 'AI proposed a primitive-based starting model that I reviewed and can edit.');
+          updateRecipe(next, unitMm, 'ai'); setTitle(next.name || title); setAiUse(aiUse === 'MOSTLY_AI' ? 'MOSTLY_AI' : 'ASSISTED');
+          var nextDisclosure = aiDisclosure || (kind === 'refine' ? 'AI helped revise a primitive-based model from my instruction.' : 'AI proposed a primitive-based starting model that I reviewed and can edit.');
+          setAiDisclosure(nextDisclosure);
+          persist({ title: next.name || title, aiUse: aiUse === 'MOSTLY_AI' ? 'MOSTLY_AI' : 'ASSISTED', aiDisclosure: nextDisclosure });
           announce(__alloT('stem.printlab.sr_ai_assisted_recipe_ready_review_every_part_and_ru', 'AI-assisted recipe ready. Review every part and run Preflight.'));
         }).catch(function (error) { if (operationIsCurrent('ai', token, startedRevision)) announce(error && error.message ? error.message : 'AI modeling was unavailable.'); }).then(function () { if (operationIsCurrent('ai', token, startedRevision)) setAiBusy(false); });
       }
@@ -1392,7 +1416,7 @@
         options = options || {};
         return h('label', { className: 'block text-[0.6875rem] font-bold text-slate-200' },
           h('span', { className: 'mb-1 block' }, label),
-          h('input', { type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white' })
+          h('input', { type: options.type || 'text', value: value, min: options.min, max: options.max, step: options.step, maxLength: options.maxLength, onChange: function (event) { onChange(event.target.value); }, className: 'min-h-[42px] w-full rounded-lg border border-slate-500 bg-slate-950 px-3 text-sm text-white' })
         );
       }
 
@@ -1508,11 +1532,17 @@
             ),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-ai-title' },
               h('h2', { id: 'print-lab-ai-title', className: 'text-base font-black text-white' }, 'Optional AI modeling assistant'),
-              h('p', { className: 'mt-1 text-xs text-slate-300' }, 'AI proposes only editable boxes, spheres, cylinders, cones, and toruses. Do not include a student name, email, or other identifying information in a prompt.'),
+              h('p', { className: 'mt-1 text-xs text-slate-300' }, 'Describe the object, its broad base, and its main parts. AI proposes editable shapes using your configured provider. Use your device keyboard dictation in either description field if you prefer speaking; review the text before creating. Leave out names and personal details.'),
               h('div', { className: 'mt-3 grid gap-3 md:grid-cols-2' },
-                h('div', null, field('Object to create', aiSubject, setAiSubject), h('button', { type: 'button', disabled: aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('create'); }, className: 'mt-2 min-h-[42px] rounded-xl bg-violet-700 px-4 text-xs font-black text-white disabled:opacity-50' }, aiBusy ? 'Working…' : 'Create editable recipe')),
-                h('div', null, field('Change to the current model', aiRefinement, setAiRefinement), h('button', { type: 'button', disabled: !recipe || aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('refine'); }, className: 'mt-2 min-h-[42px] rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 disabled:opacity-50' }, 'Refine current recipe'))
+                h('div', null, field('Object to create', aiSubject, function (value) { setAiSubject(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('create'); }, className: 'mt-2 min-h-[42px] rounded-xl bg-violet-700 px-4 text-xs font-black text-white disabled:opacity-50' }, aiBusy ? 'Working…' : 'Create editable recipe')),
+                h('div', null, field('Change to the current model', aiRefinement, function (value) { setAiRefinement(value.slice(0, 1000)); }, { maxLength: 1000 }), h('button', { type: 'button', disabled: !recipe || aiBusy || typeof ctx.callGemini !== 'function' || !runtimeReady, onClick: function () { callRecipeAi('refine'); }, className: 'mt-2 min-h-[42px] rounded-xl border border-violet-500 px-4 text-xs font-black text-violet-100 disabled:opacity-50' }, 'Refine current recipe'))
               ),
+              h('div', { className: 'mt-3 flex flex-wrap gap-2', 'aria-label': 'Description starters' }, [
+                'A small turtle with a broad flat base and short thick legs',
+                'A simple rocket trophy attached to a wide circular base',
+                'A chunky flower token with rounded petals on a flat backing'
+              ].map(function (example) { return h('button', { key: example, type: 'button', onClick: function () { setAiSubject(example); }, className: 'min-h-[42px] rounded-lg border border-slate-500 px-3 text-left text-xs text-slate-200' }, example); })),
+              recipe && h('button', { type: 'button', onClick: returnToArtStudio, className: 'mt-3 min-h-[44px] rounded-xl bg-pink-800 px-4 text-sm font-bold text-white' }, 'Edit this model in Sculpt 3D'),
               typeof ctx.callGemini !== 'function' && h('p', { className: 'mt-2 text-xs text-amber-200' }, 'AI is not configured in this session. All manual design and import features remain available.')
             ),
             h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'print-lab-import-title' },
@@ -1703,8 +1733,39 @@
         );
       }
 
+      function strengthAndWastePanel() {
+        var comparison = compareSlicerPlans(slicerComparison);
+        function input(label, key) {
+          return field(label, slicerComparison[key] || '', function (value) {
+            setSlicerComparison(function (previous) { var next = Object.assign({}, previous); next[key] = value; return next; });
+          }, { type: 'number', min: 0.01, max: 1000000, step: 0.01 });
+        }
+        function result(label, values, unit) {
+          if (!values) return h('p', null, label + ': enter both positive values to compare.');
+          return h('p', null, label + ': ' + Math.abs(values.saved) + ' ' + unit + (values.saved > 0 ? ' less' : values.saved < 0 ? ' more' : ' change') + ' (' + Math.abs(values.percent) + '%).');
+        }
+        return h('section', { className: 'rounded-2xl border border-cyan-700 bg-slate-900 p-4', 'aria-labelledby': 'strength-waste-title' },
+          h('h2', { id: 'strength-waste-title', className: 'text-lg font-black text-white' }, 'Strength and material savings'),
+          h('p', { className: 'mt-2 text-sm leading-6 text-slate-200' }, 'Choose the intended use first: display piece, handled classroom object, or part carrying a load. A closed mesh is not proof of strength. Print Lab does not calculate load capacity or certify structural integrity.'),
+          h('div', { className: 'mt-3 grid gap-3 md:grid-cols-2' }, [
+            ['Walls and joints', 'Inspect thin features, connections, and top/bottom thickness in the slicer. Compare wall/perimeter counts before assuming that more infill makes a part stronger.'],
+            ['Layer direction', 'Review how the part will be loaded relative to its printed layers. Consider orientation, broad contact surfaces, and thicker joints; test the actual printed design for its intended use.'],
+            ['Reduce avoidable waste', 'Try an orientation with fewer supports, simplify overhangs, or print a small prototype. Keep needed walls and joints. Include supports, brim, and purge material when comparing slicer totals.'],
+            ['Size tradeoff', 'At 80% of each original dimension, geometric volume is 51.2% of the original. Filament savings will differ because walls and supports do not necessarily scale the same way. Smaller joints and holes may stop working.']
+          ].map(function (row) { return h('article', { key: row[0], className: 'rounded-xl bg-slate-950 p-3' }, h('h3', { className: 'text-sm font-bold text-cyan-200' }, row[0]), h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, row[1])); })),
+          h('h3', { className: 'mt-5 text-base font-bold text-white' }, 'Compare two slicer runs'),
+          h('p', { className: 'mt-1 text-xs leading-5 text-slate-300' }, 'Change one setting at a time and enter both slicer results, including supports and purge. These scratch comparisons stay in this open session and do not change your model, reviewed evidence, points, or job ticket.'),
+          h('div', { className: 'mt-3 grid gap-3 sm:grid-cols-2' }, input('Baseline filament (g)', 'baselineGrams'), input('Candidate filament (g)', 'candidateGrams'), input('Baseline print time (min)', 'baselineMinutes'), input('Candidate print time (min)', 'candidateMinutes')),
+          h('div', { role: 'status', className: 'mt-3 rounded-xl bg-cyan-950 p-3 text-sm font-bold text-cyan-100' }, result('Filament', comparison.mass, 'g'), result('Print time', comparison.time, 'min')),
+          h('button', { type: 'button', onClick: function () { setSlicerComparison({}); }, className: 'mt-3 min-h-[42px] rounded-lg border border-slate-500 px-3 text-xs text-white' }, 'Clear comparison'),
+          h('p', { className: 'mt-3 text-xs leading-5 text-amber-100' }, 'For a functional or load-bearing part, have a qualified reviewer define the load, environment, material, and acceptance test. Select a candidate only after checking fit and performance, then import its final slicer evidence in Submit.'),
+          h('p', { className: 'mt-2 flex flex-wrap gap-3 text-xs' }, h('a', { href: 'https://help.prusa3d.com/article/modeling-with-3d-printing-in-mind_164135', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-200 underline' }, 'Modeling and orientation guidance'), h('a', { href: 'https://help.prusa3d.com/article/layers-and-perimeters_1748', target: '_blank', rel: 'noopener noreferrer', className: 'text-cyan-200 underline' }, 'Wall and perimeter guidance'))
+        );
+      }
+
       function materialsPanel() {
         return h('div', { className: 'space-y-4' },
+          strengthAndWastePanel(),
           h('section', { className: 'rounded-2xl border border-slate-700 bg-slate-900 p-4', 'aria-labelledby': 'materials-science-title' },
             h('h2', { id: 'materials-science-title', className: 'text-lg font-black text-white' }, 'Materials are systems, not labels'),
             h('p', { className: 'mt-1 max-w-4xl text-sm leading-6 text-slate-300' }, 'Compare performance, print conditions, waste, expected lifetime, additives, and the disposal route that actually exists. Reducing size, avoiding failed prints, repairing designs, and reusing parts usually matter before changing a material name.'),
@@ -1722,7 +1783,7 @@
             h('div', { className: 'rounded-xl bg-slate-950 p-4' },
               h('p', { className: 'text-[0.625rem] font-black uppercase tracking-wide text-slate-400' }, chosenMaterial.name + ' estimate'),
               h('p', { className: 'mt-2 text-3xl font-black text-white' }, materialEstimate ? materialEstimate.estimatedGrams + ' g' : 'Slicer needed'),
-              h('p', { className: 'mt-2 text-[0.6875rem] leading-5 text-slate-300' }, materialEstimate ? 'Upper-bound educational estimate; overlapping primitive parts can overstate volume.' : 'Imported mesh reports in this pilot do not estimate solid volume reliably enough to quote material.'),
+              h('p', { className: 'mt-2 text-[0.6875rem] leading-5 text-slate-300' }, materialEstimate ? 'Rough scenario estimate, not an upper bound on filament use. It assumes a fixed 22% shell fraction; actual walls, supports, overlaps, and purge waste can change the result in either direction.' : 'Imported mesh reports in this pilot do not estimate solid volume reliably enough to quote material.'),
               h('p', { className: 'mt-3 text-[0.6875rem] leading-5 text-amber-100' }, 'Follow the printer manufacturer, filament manufacturer, school ventilation/enclosure, supervision, burn, moving-parts, and post-processing procedures. This tool does not replace them.')
             )
           )

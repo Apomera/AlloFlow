@@ -4909,10 +4909,10 @@
     "locked": "Заблоковано",
     "escaped": "ви Escaped!",
     "escaped_desc": "ви solved всі загадка та escaped room!",
-    "time_up": "? Час's Up!",
+    "time_up": "⏰ Час's Up!",
     "reveal_hint": "Reveal підказки",
-    "puzzles_remaining": "{{count}} загадка remaining",
-    "time_remaining": "Час: {{time}}",
+    "puzzles_remaining": "{count} загадка remaining",
+    "time_remaining": "Час: {time}",
     "progress": "прогрес",
     "start": "Почати Escape Room",
     "start_hint": "Почати timer до begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room Завершити!",
     "loading_error": "Не вдалося завантажити дані кімнати",
     "no_puzzle": "No загадка found для це object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "Ідеальний escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "Ідеальний escape! +{xp} bonus XP",
     "puzzle_mcq": "Кілька Choice",
     "puzzle_sequence": "Put в Order",
     "puzzle_cipher": "Decode повідомлення",
@@ -4982,17 +4982,17 @@
     "clue": "Підказка",
     "clue_found": "Підказку знайдено!",
     "clue_revealed": "Ця підказка може допомогти з іншою загадкою...",
-    "clues_collected": "Підказки: {{count}}/{{total}}",
+    "clues_collected": "Підказки: {count}/{total}",
     "use_clue": "Використати Clue",
-    "final_door": "The Exit Door",
+    "final_door": "Вихідні двері",
     "final_door_ready": "exit door є зараз unlocked!",
     "final_door_locked": "розв'язати більше загадка до unlock",
     "final_door_title": "Final виклики",
     "final_door_desc": "Використати everything you've learned до відповіді це synthesis питання.",
     "final_puzzle": "Використовуючи те, що ви вивчили, дайте відповідь:",
     "final_answer_placeholder": "Тип ваш відповіді here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "Підійти до вихідних дверей",
+    "unlock_door": "Відімкнути двері",
     "victory_perfect": "Ідеальний Escape! No wrong відповіді! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "підказки",
@@ -5008,12 +5008,12 @@
     "left": "залишилось",
     "wrong_attempts": "Невдалі спроби",
     "time_penalty": "-{seconds} секунди!",
-    "game_over_time": "? Час's Up! ви ran out час.",
+    "game_over_time": "⏰ Час's Up! ви ran out час.",
     "streak": "Серія",
     "streak_bonus": "Бонус за серію! x{multiplier}",
     "streak_lost": "Серію втрачено!",
     "one_minute_warning": "Залишилася одна хвилина!",
-    "thirty_seconds_warning": "? Тільки 30 секунди left!",
+    "thirty_seconds_warning": "⏰ Тільки 30 секунди left!",
     "timer_paused": "Таймер на паузі",
     "timer_resume": "Продовжити",
     "settings_btn": "Room налаштування",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "Почати multiplayer кімната втечі з ваш клас",
     "team_mode": "Team виклики",
     "team_race": "Race до Escape!",
-    "team_progress": "{{team}} прогрес: {{solved}}/{{total}}",
+    "team_progress": "{team} прогрес: {solved}/{total}",
     "waiting_host": "Waiting для вчителі до почати...",
-    "team_escaped": "Команда {{team}} утекла!",
+    "team_escaped": "Команда {team} утекла!",
     "all_teams_done": "всі Teams Finished!",
     "your_team": "ваш Team",
     "team_red": "Червоні",
@@ -5036,7 +5036,7 @@
     "team_green": "Зелені",
     "team_yellow": "Жовті",
     "team_all": "всі учні",
-    "teams_competing": "{{count}} команда competing",
+    "teams_competing": "{count} команда competing",
     "first_escape": "перший до Escape!",
     "end_game": "End ігри",
     "end_game_confirm": "End кімната втечі для всі учні?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume ігри",
     "game_paused_by_teacher": "ігри paused by вчителі",
     "celebration_title": "Вітаємо!",
-    "you_escaped": "ваш команда escaped в {{time}}!",
-    "other_team_escaped": "{{team}} утекли!",
+    "you_escaped": "ваш команда escaped в {time}!",
+    "other_team_escaped": "{team} утекли!",
     "class_escaped": "клас Victory!",
     "everyone_escaped": "Everyone worked together до escape!",
     "hurry_up": "Keep going! ви може still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "Завантажити Зберегти",
     "loaded_saved": "Збережену Escape Room завантажено! Перегляньте та запустіть, коли будете готові.",
     "no_saved": "No збережено Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready до грати!",
+    "preview_confirmed": "✅ Escape Room locked • ready до грати!",
     "xp_earned_streak": "+{xp} XP (бонус за серію x{multiplier}!)",
     "loaded_from_resource": "Loaded від ресурси."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Надіслати до Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent робота!",
       "partial": "добрий effort, keep going!",
       "incorrect": "Не зовсім правильно • спробуйте ще раз!",
-      "error": "Не вдалося обчислити • будь ласка, спробуйте ще раз.",
+      "error": "Не вдалося обчислити — будь ласка, спробуйте ще раз.",
       "verdict_correct": "Правильний!",
       "verdict_partial": "Partially Правильний",
       "verdict_incorrect": "не Quite Правильний",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **Final рівні**: {level}",
       "log_header": "Пригода Log",
       "chapter_separator": "***",
-      "user_label": "? ви",
+      "user_label": "➤ ви",
       "print_button": "Друкувати книга історій"
     },
     "answer_key_title": "відповіді Ключ",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "ви може натиснути будь-який слова в текст до бачити its визначення!",
     "simplified_cloze": "Спробувати 'Cloze' режим до тести словник навички.",
     "simplified_quiz": "Це текст looks чудово. Should we створити Exit Ticket до перевірити understanding?",
-    "simplified_glossary": "Слова на кшталт «{term1}» та «{term2}» можуть потребувати підтримки • глосарій може допомогти!",
+    "simplified_glossary": "Слова на кшталт «{term1}» та «{term2}» можуть потребувати підтримки — глосарій може допомогти!",
     "simplified_glossary_fallback": "Деякі з цих термінів складні. Глосарій допоможе підтримати цей текст.",
     "simplified_outline": "візуальний учні might benefit від Graphic Organizer це вміст.",
     "glossary_bingo": "Ви можете перетворити ці терміни на словесні ігри, такі як Bingo, Memory Match, кросворди або пошук слів!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "Хочете переконатися, що цей тест є складним? Запустіть Standard Audit.",
     "adventure_sim": "Пригоди дозволяють учням застосувати вивчене в безпечній симуляції.",
     "adventure_inventory": "Перевірте «Інвентар», щоб побачити, які предмети було зібрано.",
-    "adventure_context": "Ваша пригода про {topic} стає багатшою з більшою кількістю ресурсів • спробуйте додати {suggestion}!",
+    "adventure_context": "Ваша пригода про {topic} стає багатшою з більшою кількістю ресурсів — спробуйте додати {suggestion}!",
     "adventure_context_fallback": "Чим більше ресурсів ви генеруєте, тим багатшим стає контекст пригоди.",
     "timeline_drag": "Перетягуйте події, щоб змінити порядок послідовності.",
     "timeline_visualize": "Це допомагає учням візуалізувати причинно-наслідкові зв'язки.",
@@ -8869,8 +8869,8 @@
     "parent_adventure": "Спробуйте Adventure Mode для веселого заняття в дощовий день.",
     "parent_read_along": "Використовуйте «Read Along», щоб практикувати читання разом.",
     "fallback_lesson_plan": "У вас чудові ресурси. Об'єднати їх у план уроку?",
-    "fallback_brainstorm": "Зайшли в глухий кут? Спробуйте поспілкуватися зі мною та увімкніть Auto-Complete, щоб активувати Blueprint Mode • я допоможу вам спроектувати весь урок!",
-    "fallback_export": "У вас {count} ресурсів на тему {topic} • експортуйте їх у єдиний PDF!",
+    "fallback_brainstorm": "Зайшли в глухий кут? Спробуйте поспілкуватися зі мною та увімкніть Auto-Complete, щоб активувати Blueprint Mode — я допоможу вам спроектувати весь урок!",
+    "fallback_export": "У вас {count} ресурсів на тему {topic} — експортуйте їх у єдиний PDF!",
     "fallback_export_fallback": "Ви можете експортувати всі ці ресурси як єдиний пакет PDF.",
     "fallback_guide": "Виберіть «Show Me» в AI Guide, якщо ви заблукали!",
     "intro_greeting": "Натиснути me до налаштувати my голос налаштування.",
@@ -9019,7 +9019,7 @@
     "text_generated": "Ваш адаптований текст на тему {topic} готовий! Спробуйте натиснути на слово, щоб побачити його визначення, або скористайтеся інструментами, як-от глосарій чи тест, щоб поглибити розуміння.",
     "flashcards_created": "Картки створено! Ви можете експортувати їх у Quizlet, роздрукувати або спробувати Memory Game.",
     "quiz_generated": "Вікторина готова! Використовуйте Presentation Mode для класу або спробуйте AI-автогрейдер для відкритих відповідей.",
-    "glossary_generated": "Глосарій завершено! Спробуйте словесні ігри • Bingo, Memory Match, кросворди, пошук слів та інші!",
+    "glossary_generated": "Глосарій завершено! Спробуйте словесні ігри — Bingo, Memory Match, кросворди, пошук слів та інші!",
     "adventure_started": "Ваша пригода починається! Введіть свою дію нижче або скористайтеся кнопками вибору, щоб вирішити, що буде далі.",
     "adventure_scene": "що буде ви do? Every вибір форми ваш історія!",
     "analysis_complete": "Аналіз завершено! Я знайшов лексику та ключові поняття, які варто дослідити.",
@@ -10156,7 +10156,7 @@
     "type_timeline": "Конструктор послідовності",
     "type_timeline_desc": "Завдання на впорядкування, адаптоване до рівня класу",
     "full_pack": "Повний ресурси Pack • Вибрати всі",
-    "deselect_all": "? Deselect всі",
+    "deselect_all": "↩ Deselect всі",
     "estimate": "Оцінка",
     "api_calls": "API-виклики",
     "start_batch": "Створити",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating ваш personalized версії...",
     "bridge_projection": "Projection режим",
     "bridge_exit_projection": "Прогноз виходу",
-    "bridge_offline_info": "Немає активної сесії • попередній перегляд лише на цьому пристрої",
+    "bridge_offline_info": "Немає активної сесії — попередній перегляд лише на цьому пристрої",
     "bridge_term_saved": "Зберегти \"{term}\" до глосарій",
     "bridge_term_save_failed": "Failed до зберегти терміни",
     "bridge_save_term": "Зберегти до глосарій",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "Custom мови...",
     "bridge_f2f_custom_placeholder": "наприклад, йоруба, тигринья, дарі...",
     "bridge_all_saved": "всі терміни збережено до глосарій!",
-    "bridge_terms_saved": "? всі Зберегти",
+    "bridge_terms_saved": "✅ всі Зберегти",
     "fullpack_group_target": "Ціль Група",
     "fullpack_group_current": "Поточний налаштування",
     "fullpack_group_all": "всі Groups",
@@ -12182,7 +12182,11 @@
       "trapezoid": "Трапеція",
       "simpson": "Сімпсон",
       "rectangles_n": "прямокутники (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "Пояснення готове.",
+      "a11y_back_to_tools": "Назад до інструментів",
+      "a11y_snapshot": "Знімок",
+      "a11y_next": "Далі"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ Цей браузер не підтримує аудіо",
@@ -12306,13 +12310,13 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "Згенерувати пояснення ШІ на рівні",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
-      "aria_reading_level_group": "Reading level",
+      "aria_reading_level": "Рівень читання:",
+      "aria_reading_level_group": "Рівень читання",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
       "aria_reset_sources": "Reset source positions to defaults",
@@ -13937,8 +13941,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? Правильний! It\\",
-      "that": "? Те\\",
+      "correct_it": "✅ Правильний! It\\",
+      "that": "❌ Те\\",
       "linear": "Лінійна",
       "quadratic": "Квадрат.",
       "cubic": "Кубічна",
@@ -14212,7 +14216,8 @@
       "angle_u00b0": "Кут (°)",
       "velocity_ms": "Швидкість (m/s)",
       "gravity_msu00b2": "Гравітація (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "Пояснення готове."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14240,7 +14245,10 @@
       "codominant_desc": "Обидва алелі повністю експресуються. Гетерозиготи одночасно виявляють обидві ознаки.",
       "sexLinked_desc": "Ознака міститься в X-хромосомі. Це модель X-зчепленого РЕЦЕСИВНОГО успадкування (наприклад, гемофілії та червоно-зеленої колірної сліпоти): чоловікам (XY) потрібна одна копія; жінкам (XX) — дві.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "Назад до інструментів STEM",
+      "a11y_snapshot": "Знімок",
+      "a11y_close_flashcard": "Закрити картку"
     },
     "circuit": {
       "meter_status_ammeter_short": "Небезпечне розміщення: шлях короткого замикання",
@@ -14532,8 +14540,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Правильний!",
-      "it": "? It\\"
+      "correct": "✅ Правильний!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "Перше Розв'язання",
@@ -14649,8 +14657,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? Правильний!",
-      "answer": "? відповіді:",
+      "correct": "✅ Правильний!",
+      "answer": "❌ відповіді:",
       "hydrogen": "Водень",
       "helium": "Гелій",
       "lithium": "Літій",
@@ -14792,7 +14800,7 @@
       "reddish_metal_used_since_the": "Reddish metal використано since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal те prevents rust",
       "best_conductor_of_electricity_among": "Найкращий conductor electricity among всі metals",
-      "dense_soft_shiny_precious_metal": "Щільний, м'який, блискучий дорогоцінний метал • не іржавіє",
+      "dense_soft_shiny_precious_metal": "Щільний, м'який, блискучий дорогоцінний метал — не іржавіє",
       "strong_as_steel_but_45": "Strong as steel але 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal те gives rubies їх red кольори",
       "essential_for_steel_production_and": "Essential для steel production та bone health",
@@ -14943,7 +14951,7 @@
       "accessible_summary_heading": "Current simulation state",
       "accessible_summary_help": "Every camera and layer action has a keyboard-accessible button. Focus the canvas for arrow-key orbiting, plus and minus zoom, bracket-key star selection, Escape to clear, and R to reset.",
       "accessible_summary_title": "Text alternative for the 3-D scene",
-      "aria_back_to_tools": "Back to tools",
+      "aria_back_to_tools": "Назад до інструментів",
       "aria_bh_lifecycle": "Possible stages in a black hole's history",
       "aria_blackhole_canvas": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.",
       "aria_camera_controls": "Galaxy camera controls",
@@ -15898,7 +15906,9 @@
       "our_sun_is_born": "Our Sun є Born",
       "present_day": "Сьогодення",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "Назад до інструментів",
+      "a11y_simulation_speed": "Швидкість симуляції"
     },
     "rocks": {
       "igneous": "Магматичні",
@@ -18823,7 +18833,10 @@
       "garage_desc": "Двигуни, іржа й реакції — хімічна майстерня.",
       "classroom_desc": "Справжній кабінет природничих наук із мензурками та експериментами.",
       "outdoors_desc": "Вийдіть назовні — природа є найбільшою лабораторією.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "Назад до інструментів",
+      "a11y_snapshot": "Знімок",
+      "a11y_next": "Далі"
     },
     "converter": {
       "u2705_saved_to_history": "✅ Збережено до історії!",
@@ -19610,7 +19623,40 @@
       "read_what_special_education_law_actually": "Прочитайте, що насправді каже закон про спеціальну освіту, його власними словами. Справжній текст частини B закону IDEA і розділу 504, отриманий з eCFR і з датою, з пошуком, де федеральні та штатні норми стоять поруч. Нічого не переказується і не генерується: якщо офіційний текст не завантажено, інструмент так і каже, а не здогадується.",
       "applied_k_12_behavior_practice_what": "Прикладна робота з поведінкою від початкової до старшої школи: що шкільні психологи та педагоги справді роблять із цією наукою. Трирівнева рамка PBIS, замісна поведінка, зіставлена з функціями з FBA, фонові події (повільні тригери, які більшість BIP пропускає), семифазний цикл зриву Джеффа Колвіна та етика утримання й ізоляції, що спирається на главу 33 штату Мен. Споріднений інструмент BehaviorLab.",
       "marine_biology_behavioral_science_of_octopuses": "Морська біологія і наука про поведінку восьминогів, кальмарів, каракатиць і наутилусів. Головне: Hunter Sim — виберіть вид, оселище, здобич і тактику, зіграйте в мінігру з маскуванням і впіймайте мить кидка. Відкриває біологічні нотатки польового щоденника (механіка хроматофорів, 9 мізків, блакитна кров, реактивний рух). Польовий визначник на 10 видів із показниками інтелекту, маскування та швидкості кидка.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 і HS-PS2. Симулятор напружень у фермах із налаштовуваним прогоном, висотою, навантаженням і матеріалом, порівняння типів мостів (балковий, фермовий, арковий, висячий, вантовий), база матеріалів, види сил, реальні розбори (Tacoma Narrows, Hyatt Regency, Tay, Silver, а також Brooklyn, Golden Gate, Akashi і Millau), цикл інженерного проєктування, тест у форматі AP і друковані аркуші специфікацій."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 і HS-PS2. Симулятор напружень у фермах із налаштовуваним прогоном, висотою, навантаженням і матеріалом, порівняння типів мостів (балковий, фермовий, арковий, висячий, вантовий), база матеріалів, види сил, реальні розбори (Tacoma Narrows, Hyatt Regency, Tay, Silver, а також Brooklyn, Golden Gate, Akashi і Millau), цикл інженерного проєктування, тест у форматі AP і друковані аркуші специфікацій.",
+      "the_gutenberg_style_screw_press_as": "Гвинтовий прес гутенбергівського типу як робоча симуляція. Потягніть важіль, наберіть власний шрифт, подивіться на відбиток. Плюс матеріалознавство (стоп свинцю, олова та стибію), економіка (обвал вартості однієї книжки), історія (Реформація, наукова революція), типографіка і люди за пресом (зокрема друкарки, яких історія забула). Зроблено для міжпредметної роботи в середній школі.",
+      "three_js_stoop_simulator_deep_science": "Симулятор піке на Three.js і наука про механіку полювання хижих птахів у всій глибині. Летіть сапсаном на 240 mph, гарпією з кігтями в 530 psi або безшумним віргінським пугачем. 8 видів і 12 розділів: сила кігтів, зір (у 4-8× гостріший за людський, ультрафіолет у боривітрів), фізика польоту, безшумний політ сов, калькулятор граничної швидкості, відновлення після DDT і триваючі кризи охорони природи, визначення в полі за силуетом і загальним виглядом.",
+      "practice_reading_and_completing_the_documents": "Потренуйтеся читати й заповнювати документи, на яких тримається доросле життя: заяви про прийом на роботу, форми W-4, договори оренди, медичні анкети, посвідчення водія та запрошення на власну зустріч щодо IEP. Кожне поле пояснено простою мовою, позначено графи, які можуть дорого коштувати, розібрано ситуації тиску, коли від вас хочуть підпису негайно, і подано фрази, щоб попросити час. Уся практика йде на вигаданій людині, ніколи на ваших справжніх даних.",
+      "how_swimming_works_stroke_physics_survival": "Як влаштоване плавання (фізика стилів плюс навички виживання) і що кожному плавцеві треба знати про холодну воду, відбійні течії, лід, рятувальні жилети та порятунок. Наочний розбір стилів, наука про плавучість і тягу, а також навички виживання (лежання на спині, робота ніг «яйцебійкою», HELP, збитися в групу), які справді рятують. Джерела: CDC, USCG, AAP, NAA, NOAA, USA Swimming. Лише для навчання: щоб по-справжньому навчитися плавати, знайдіть інструктора з плавання.",
+      "tax_paycheck_calculator_data_literacy_decision": "Калькулятор податків і розрахункового листка, грамотність у даних, матриця рішень, читання договорів, документи й паперова робота, планування поїздок, готовність до роботи, складання резюме, впорядкування доказів портфоліо, тренування співбесід, навички спілкування, керування часом, медичне страхування, догляд за зубами, ергономіка догляду за тілом, режим сну, інструкції до ліків, підготовка до візиту, безпека вдома, цифрова безпека, спокійне ставлення до їжі та прикладна наука для щоденного життя.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 і HS-LS4. Світ мікробів: бактерії (корисні й хвороботворні), віруси (COVID, грип, HIV, фаги, кір), мікроскопія (світлова, фазово-контрастна, флуоресцентна, електронна, AFM), еволюція стійкості до антибіотиків, мікробіом людини, ґрунту та океану, вакцини й імунна система, бродіння (закваска, йогурт, кімчі, квашена капуста, комбуча, сир), розбори випадків (Snow, Fleming, MRSA, COVID і mRNA, FMT), тест і друкована пам'ятка з безпеки в лабораторії та про мікроби.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "П'ятнадцять кампаній турботи про довкілля в одинадцяти регіонах. П'ять довгих багатоперіодних кампаній штату Мен плюс десять міжрегіональних сценаріїв по всіх п'яти родинах механік: вогонь (Yarralin в Австралії, Karuk на півночі Каліфорнії), охорона природи (Єллоустон, Akagera в Руанді), громадське здоров'я (гарячка денге в Мумбаї, ебола 2014 року в Ліберії), водозбори (річка Klamath, басейн Муррей-Дарлінг) і клімат (Маршаллові Острови, дельта Бангладеш). Висновки з пар усередині родини відкриваються, коли ви проходите кампанію Мену та міжрегіональну з тієї самої родини механік.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 і MS-ESS3-3. Спроєктуйте містечко на сітці зі 144 ділянок проти вимог, які по-справжньому суперечать одна одній. Три містечка, у кожного своє зв'язувальне обмеження: Riverbend, де тиснуть зливові стоки та позика; Mesa Hollow, де водоносний горизонт заданий, а ферми його випивають; і Harborlight, де план має працювати і в 2050 році. Стік за раціональним методом, водний баланс, запас на підняття рівня моря, пішохідна доступність мережею та оцінена за вартістю дорожня мережа — кожне розкривається і показує свою формулу. Assumption Lab проганяє той самий план на двох опублікованих наборах параметрів, щоб учні побачили, які висновки переживають обидва. Карта, редагована таблиця ділянок і 3D-модель того самого плану. Питання для обговорення та задокументована історія несуть ті питання, які інструмент свідомо не моделює. Ні оцінки, ні ключа з відповідями.",
+      "codap_data_science": "CODAP: наука про дані",
+      "lumen_research_canvas": "Lumen: дослідницьке полотно",
+      "evolab_evolution": "EvoLab: еволюція",
+      "dino_lab": "Лабораторія динозаврів",
+      "nutritionlab_nutrition_science": "NutritionLab: наука про харчування",
+      "birdlab_i_spy_ornithology": "BirdLab: орнітологія в пошуках",
+      "openbim_companion": "OpenBIM: путівник",
+      "applab_ai_app_generator": "AppLab: генератор застосунків на ШІ",
+      "access_lens": "Лінза доступності",
+      "sim_shelf": "Полиця симуляцій",
+      "zoom_gallery": "Галерея наближень",
+      "sourcebook": "Книга джерел",
+      "wheel_fire_pottery_lab": "Круг і вогонь: гончарна лабораторія",
+      "echo_navigator": "Ехо-навігатор",
+      "learning_lab_how_learning_works": "Learning Lab: як влаштоване навчання",
+      "weldlab_welding_metal_joining": "WeldLab: зварювання і з’єднання металів",
+      "bikelab_physics_repair": "BikeLab: фізика і ремонт",
+      "fisherlab_boating_fishing_sim": "FisherLab: симулятор судноводіння і риболовлі",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: симулятор мідієвої ферми",
+      "throwlab_sports_physics": "ThrowLab: фізика спорту",
+      "skatelab_skate_bmx_physics": "SkateLab: фізика скейта і BMX",
+      "playlab_strategy_on_the_field": "PlayLab: стратегія на полі",
+      "kepler_colony": "Колонія Кеплер",
+      "birdlab_life_list": "BirdLab: життєвий список",
+      "petslab_decoder": "PetsLab: розшифрувач"
     },
     "area": {
       "volume": "об'єм..."
@@ -19650,7 +19696,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "Назад до інструментів",
+      "a11y_snapshot": "Знімок",
+      "a11y_next": "Далі",
+      "a11y_simulation_speed": "Швидкість симуляції",
+      "a11y_close_flashcard": "Закрити картку"
     },
     "solar_sys": {
       "venus": "Венера",
@@ -20472,7 +20523,8 @@
       "scaled_volume_changed": "🔵 Масштабовано (об'єм змінено)",
       "skewed_shape_deformed": "🟠 Скошено (форма деформована)",
       "degenerate_volume_0": "💀 Вироджено (об'єм → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "Хід навчання"
     },
     "numberline": {
       "first_mark": "Перша Позначка",
@@ -22615,7 +22667,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "Починається {value1} рік."
     },
     "optics": {
       "optics_lab": "Лабораторія оптики",
@@ -22961,7 +23014,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "Локальний аналітичний запит SQL"
     },
     "geosandbox": {
       "loading_3d_engine": "Завантаження 3D-рушія...",
@@ -23311,7 +23365,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "Скульптуру видалено"
     },
     "algebraCAS": {
       "solve": "🔍 Розв'язати",
@@ -25927,7 +25982,8 @@
       "ml_over": " мл на ",
       "trials_suffix": " визначень",
       "sr_level_suffix": " level",
-      "sr_seconds_remaining": " секунд залишилося"
+      "sr_seconds_remaining": " секунд залишилося",
+      "sr_explanation_ready": "Пояснення готове."
     },
     "economicslab": {
       "six_figures": "Шестизначна сума",
@@ -27907,7 +27963,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "Роздум збережено."
     },
     "anatomy": {
       "system_explorer": "Дослідник систем",
@@ -28489,7 +28546,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "Скинути камеру 3D"
     },
     "dna": {
       "back_to_tools": "Назад до інструментів",
@@ -29866,7 +29924,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "Роздум збережено."
     },
     "angles": {
       "back_to_tools": "Назад до інструментів",
@@ -30680,7 +30739,8 @@
       "explain_how_each_parameter_shapes_a_si": "Поясніть, як кожен параметр формує синусоїду.",
       "design_note_discrete_5_state_marker_no": "Примітка щодо дизайну: дискретний маркер із 5 станів; без балів хвилі; без розкриття — так задумано.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "Пояснення готове."
     },
     "typingpractice": {
       "typing_practice_menu": "Меню Практики набору",
@@ -31034,7 +31094,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "Назад до меню"
     },
     "music": {
       "edm_lead": "Лід EDM",
@@ -32305,7 +32366,7 @@
       "sculpt_engine_failed": "Не вдалося завантажити рушій ліплення.",
       "sculpt_failed": "Ліплення не вдалося — спробуй простіший опис.",
       "sr_sculpted": "Скульптуру розміщено",
-      "sr_art_cleared": "Скульптуру вилучено",
+      "sr_art_cleared": "Скульптуру видалено",
       "assess_failed": "Наставник не зміг відповісти — спробуй ще раз.",
       "sr_assessed": "Відгук наставника готовий під панеллю побудови",
       "recall_needs_more": "Спершу додай щонайменше 4 ідеї у 2 групи",
@@ -34443,7 +34504,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "Вибрати відповідь: {value1}"
     },
     "artstudio": {
       "back_to_tools": "Назад до інструментів",
@@ -35208,7 +35270,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "вимкнено",
+      "sr_nothing_to_redo": "Немає чого повторити.",
+      "sr_nothing_to_undo": "Немає чого скасувати.",
+      "sr_dir_left": "ліворуч",
+      "sr_dir_right": "праворуч"
     },
     "arithmetic": {
       "selected": " вибрано.",
@@ -39254,7 +39321,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR зведено до радіанта в зеніті та граничної зоряної величини 6,5. Ця приблизна оцінка припускає ясне безмісячне небо та показник популяції 2,2. Класи Бортля вказують граничну величину лише приблизно; небо, темніше за стандартне, може перевищити ZHR. Менша висота радіанта та світліше небо знижують оцінку.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "Назад до інструментів STEM"
     },
     "autorepair": {
       "back_to_menu": "Назад до меню",
@@ -39995,7 +40063,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "Рахунок: {value1} з {value2}",
+      "a11y_open_2": "Відкрити {value1}",
+      "a11y_option": "Варіант {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "Кора",
@@ -40098,7 +40169,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "Пояснення готове."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40844,7 +40916,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "Пояснення готове.",
+      "a11y_investigation_progress": "Хід дослідження",
+      "a11y_flight_debrief": "Розбір польоту",
+      "a11y_tutorial_progress": "Хід навчання"
     },
     "behaviorlab": {
       "chain_reaction": "Ланцюгова реакція",
@@ -41019,7 +41095,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "Пояснення готове.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43528,7 +43604,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "Досліджено модуль: {value1}",
+      "a11y_score_out_of": "Рахунок: {value1} з {value2}",
+      "sr_selected": "Вибрано: {value1}",
+      "sr_quiz_reset": "Тест скинуто"
     },
     "brainatlas": {
       "group_systems": "Системи",
@@ -48684,7 +48764,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "Вибрати відповідь: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "Майстер вікторини",
@@ -49828,7 +49909,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "Вибрано: {value1}"
     },
     "echotrainer": {
       "wall": "Стіна",
@@ -51287,7 +51369,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "Досліджено модуль: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "Вуглецевий калькулятор",
@@ -52367,7 +52450,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "Назад до меню",
+      "sr_getting_critique": "Отримання розбору...",
+      "sr_critique_ready": "Розбір готовий."
     },
     "flightsim": {
       "game_controls": "🎮 КЕРУВАННЯ ГРОЮ",
@@ -52572,7 +52658,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "Вигляд з кабіни авіасимулятора. W/S тангаж, A/D крен, Shift/Ctrl важіль тяги, дужки керують закрилками, X гальма коліс, Q вікторина, F сили, Space пауза, I інформація.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52584,7 +52670,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Вільний політ із Портленда, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52631,7 +52717,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "Шанхайська вежа",
       "learn": "Learn",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
@@ -58457,7 +58543,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "Досліджено модуль: {value1}",
+      "sr_loaded": "Завантажено: {value1}",
+      "sr_showing": "Показано: {value1}",
+      "sr_opening": "Відкривається {value1}"
     },
     "platetectonics": {
       "pacific": "Тихоокеанський",
@@ -58723,7 +58813,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63279,7 +63369,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "Пояснення готове.",
+      "sr_off": "вимкнено",
+      "sr_edge_left": "ліворуч",
+      "sr_edge_right": "праворуч",
+      "sr_correct": "Правильно.",
+      "sr_not_quite": "Не зовсім."
     },
     "playlab": {
       "back": "← Назад",
@@ -63347,7 +63443,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "Наставник не в мережі.",
+      "sr_drill_stopped": "Вправу зупинено."
     },
     "printingpress": {
       "menu": "← Меню",
@@ -65486,7 +65584,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "Назад до меню",
+      "a11y_open": "Відкрити {value1}",
+      "sr_selected": "Вибрано: {value1}",
+      "sr_loaded": "Завантажено: {value1}",
+      "sr_opening": "Відкривається {value1}",
+      "sr_correct": "Правильно.",
+      "sr_not_quite": "Не зовсім.",
+      "sr_year_begins": "Починається {value1} рік.",
+      "sr_question_reset_try_again": "Питання скинуто. Спробуй ще раз.",
+      "sr_not_quite_see_the_explanation": "Не зовсім: подивися пояснення."
     },
     "raptorhunt": {
       "anatomy": "Анатомія",
@@ -67135,7 +67243,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "Відкрити {value1}",
+      "a11y_flight_debrief": "Розбір польоту"
     },
     "renewables": {
       "menu": "← Меню",
@@ -67835,7 +67945,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "Назад до меню",
+      "sr_getting_critique": "Отримання розбору...",
+      "sr_critique_ready": "Розбір готовий.",
+      "sr_quiz_reset": "Тест скинуто"
     },
     "roadready": {
       "let_s_start": "Почнімо →",
@@ -70702,7 +70816,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "Назад до інструментів STEM",
+      "a11y_local_analytical_sql_query": "Локальний аналітичний запит SQL"
     },
     "stewardship": {
       "back": "← Назад",
@@ -71279,7 +71395,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "Назад до меню",
+      "sr_question_reset_try_again": "Питання скинуто. Спробуй ще раз."
     },
     "throwlab": {
       "back": "← Назад",
@@ -71504,7 +71622,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "Скинути камеру 3D",
+      "sr_coach_is_offline": "Наставник не в мережі.",
+      "sr_drill_stopped": "Вправу зупинено."
     },
     "weldlab": {
       "menu": "← Меню",
@@ -73066,7 +73187,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "Досліджено модуль: {value1}",
+      "a11y_score_out_of": "Рахунок: {value1} з {value2}",
+      "sr_quiz_reset": "Тест скинуто",
+      "sr_loaded": "Завантажено: {value1}",
+      "sr_showing": "Показано: {value1}",
+      "sr_not_quite_see_the_explanation": "Не зовсім: подивися пояснення."
     },
     "worldbuilder": {
       "grade_level": "Рівень класу",
@@ -73972,7 +74099,7 @@
       "aria_gone": " gone.",
       "aria_intact": " blocks intact, ",
       "aria_invalid": "These settings do not describe a working machine.",
-      "aria_level": "Reading level",
+      "aria_level": "Рівень читання",
       "aria_ma": "Mechanical advantage ",
       "aria_machine": "Choose a machine",
       "aria_machine3d": "Three-dimensional view of the ",
@@ -74659,7 +74786,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "Дерево життя",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76514,7 +76641,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "Варіант {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "Види камери 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76526,6 +76655,22 @@
       "finish": "Зрозуміло!",
       "replay": "Підказки",
       "replay_aria": "Показати посібник"
+    },
+    "pets": {
+      "sr_back_to_menu": "Назад до меню",
+      "sr_getting_critique": "Отримання розбору...",
+      "sr_critique_ready": "Розбір готовий."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "Назад до інструментів STEM",
+      "a11y_3d_camera_views": "Види камери 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "Хід дослідження"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "Немає чого повторити.",
+      "sr_nothing_to_undo": "Немає чого скасувати."
     }
   },
   "glossary_health": {
@@ -77128,7 +77273,7 @@
       "person": "Особа\\",
       "phase_label": "Назва фази",
       "rationale_which_antecedent_does_this_address": "Обґрунтування (який антецедент це адресує?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "Поміркуйте над вашим підходом...\\n• Що спрацювало добре?\\n• Що ви зробили б інакше?\\n• Які стратегії ви хочете практикувати далі?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "Поміркуйте над вашим підходом...\n• Що спрацювало добре?\n• Що ви зробили б інакше?\n• Які стратегії ви хочете практикувати далі?",
       "reinforcement_how_you": "⭐ Reinforcement (як ви\\",
       "replacement_behavior_functionally_equivalent": "✅ Замісна поведінка (функціонально еквівалентна)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77136,7 +77281,7 @@
       "search_81_tools": "🔍 Пошук 80+ інструмент…",
       "search_aba_terms": "🔍 Пошук ABA терміни...",
       "search_terms_eg_reinforcement_fba_data": "🔍 Пошук терміни... (e.g. \"reinforcement\", \"FBA\", \"дані\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Сесія 1: 3\\nСесія 2: 7\\nСесія 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "Сесія 1: 3\nСесія 2: 7\nСесія 3: 5\n...",
       "setting_eg_math_class_cafeteria": "налаштування (e.g., Математика клас, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "Поділіться тим, що ви помічаєте вдома — сильні сторони, занепокоєння, культурний контекст або пропозиції для шкільної команди...",
       "step_description": "кроки description...",
@@ -78607,7 +78752,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "Висота вирізу",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80800,7 +80945,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "Зображення поняття",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80835,10 +80980,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "Обставити кожне поняття",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "Поступ облаштування",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80852,7 +80997,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "Можливі назви",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80863,7 +81008,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "Пригадування поняття",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82420,7 +82565,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Закрити Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82429,7 +82574,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "Фільтрувати завдання",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82467,15 +82612,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "Питання {n}",
+    "q_choices_aria": "Варіанти для питання {n}, по одному в рядку",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "Вилучити питання {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "Щаблі шкали для питання {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "Тип відповіді на питання {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82485,10 +82630,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "Виділюване посилання на {title}",
+    "scale_high_aria": "Підпис для верхнього краю",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "Підпис для нижнього краю",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82508,7 +82653,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "Зведення стану завдань",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82524,9 +82669,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "Оновлюється автоматично",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "Виділюване посилання на домашнє завдання",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82535,7 +82680,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "QR-код домашнього завдання",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84983,7 +85128,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "Виберіть рівень розвитку для завдань і критеріїв",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84991,7 +85136,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "Увімкнути або вимкнути режим педагога",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85022,17 +85167,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "Призупинити запис голосової нотатки",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "Відновити запис голосової нотатки",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "Почати запис голосової нотатки",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "Зупинити запис",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85418,22 +85563,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "Причина відзначення AlloHaven",
+    "recent_deliveries_aria": "Нещодавні приватні відзначення AlloHaven",
+    "token_amount_aria": "Кількість жетонів AlloHaven",
+    "token_cap_aria": "Ліміт жетонів AlloHaven на учня за сесію"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "Винятки, дозволені за умови досягнення цілі",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "Необов'язковий сигнал поступу, який застосунок відстежує для цієї цілі",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "Уся команда разом або кожен учень окремо",
+    "name_aria": "Назва цілі класу, зберігається лише на цьому пристрої",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "Яких учнів охоплює ця ціль",
+    "template_aria": "Початковий шаблон цілі класу",
+    "tokens_aria": "Жетони, що нараховуються кожному учневі при досягненні цієї цілі"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85451,7 +85596,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Токен адміністратора Class Mailbox (необов'язково)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85481,17 +85626,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "піднято руку",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "Виділюване посилання для приєднання до живої скриньки",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Жива сесія Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85518,7 +85663,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "з'єднання в реальному часі",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85550,7 +85695,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL вебзастосунку Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

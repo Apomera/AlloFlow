@@ -22,20 +22,30 @@ function parseEpubcheck(report) {
   const c=report?.checker;if(!c||!Array.isArray(report.messages))throw Error('EPUBCheck returned an incomplete report.');
   const errors=count(c.nError),fatals=count(c.nFatal),warnings=count(c.nWarning);
   if([errors,fatals,warnings].some(x=>x===null))throw Error('EPUBCheck did not report complete severity counts.');
+  const reported={ERROR:0,FATAL:0,WARNING:0};
+  for(const message of report.messages){
+    if(!message||typeof message!=='object'||typeof message.severity!=='string')throw Error('EPUBCheck returned a malformed message.');
+    const severity=message.severity.toUpperCase();
+    if(severity in reported)reported[severity]++;
+  }
+  if(reported.ERROR>errors||reported.FATAL>fatals||reported.WARNING>warnings)throw Error('EPUBCheck severity counts contradict its messages.');
   return {status:errors+fatals>0?'failed':warnings>0?'review-required':'passed',errors,fatals,warnings,version:c.checkerVersion||'5.3.0'};
 }
 function parseAce(report) {
   if(report?.['@type']!=='earl:report'||!Array.isArray(report.assertions)||report.assertions.length===0)throw Error('Ace returned an invalid report.');
   const normalize=value=>({'earl:passed':'pass','earl:failed':'fail','earl:cantTell':'cantTell','earl:inapplicable':'inapplicable'})[value]||value;
   let failures=0,reviewFindings=0,assertions=0;
-  const walk=v=>{if(!v||typeof v!=='object')return;
+  const walk=v=>{if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Ace returned a malformed assertion.');
     const children=v.assertions||v['earl:assertions'];
+    if(v!==report&&v['@type']!=='earl:assertion')throw Error('Ace returned an unrecognized assertion.');
+    if(children!==undefined&&!Array.isArray(children))throw Error('Ace returned malformed nested assertions.');
     if(v['@type']==='earl:assertion'&&(!Array.isArray(children)||children.length===0)){
       const outcome=normalize(v['earl:result']?.['earl:outcome']);assertions++;
       if(outcome==='fail')failures++;else if(!['pass','inapplicable'].includes(outcome))reviewFindings++;
     }
     if(Array.isArray(children))children.forEach(walk);
   };walk(report);
+  if(assertions===0)throw Error('Ace returned no executed assertions.');
   const outcome=normalize(report['earl:result']?.['earl:outcome']);
   if(!['pass','fail','cantTell'].includes(outcome))throw Error('Ace did not report a recognized overall outcome.');
   return {status:outcome==='fail'||failures>0?'failed':outcome==='cantTell'||reviewFindings>0?'review-required':'passed',failures,reviewFindings,assertions,version:'1.4.6'};

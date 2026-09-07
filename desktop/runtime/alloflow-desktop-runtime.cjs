@@ -5425,7 +5425,8 @@ function runCheck() {
     process.exitCode = 1;
     return;
   }
-  if (FIRST_PARTY_DOWNLOAD_SHA256.size !== 5) {
+  // Four platform/architecture engine archives plus three model/voice downloads.
+  if (FIRST_PARTY_DOWNLOAD_SHA256.size !== 7) {
     throw new Error('The built-in download checksum manifest is incomplete.');
   }
   for (const [url, sha256] of FIRST_PARTY_DOWNLOAD_SHA256.entries()) {

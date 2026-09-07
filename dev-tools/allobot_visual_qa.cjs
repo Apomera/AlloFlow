@@ -46,9 +46,9 @@ const VISIBLE_PAINT_PROPERTIES = Object.freeze([
 // value so a missing summon, ambient, or known imperative binding fails with an
 // actionable message instead of silently becoming a no-op animation.
 const RUNTIME_IDLE_ANIMATIONS = Object.freeze([
-  Object.freeze({ name: 'wave', sources: Object.freeze(['ambient']) }),
-  Object.freeze({ name: 'backflip', sources: Object.freeze(['ambient']) }),
-  Object.freeze({ name: 'shrug', sources: Object.freeze(['ambient']) }),
+  Object.freeze({ name: 'wave', sources: Object.freeze(['imperative']) }),
+  Object.freeze({ name: 'backflip', sources: Object.freeze(['imperative']) }),
+  Object.freeze({ name: 'shrug', sources: Object.freeze(['imperative']) }),
   Object.freeze({ name: 'look-around', sources: Object.freeze(['ambient']) }),
   Object.freeze({ name: 'wave-hello', sources: Object.freeze(['summon', 'intro']) }),
   Object.freeze({ name: 'sympathetic-tilt', sources: Object.freeze(['imperative']) }),
@@ -393,6 +393,8 @@ async function createPage(browser, scenario) {
     ];
     if (!options.showChrome) hiddenSelectors.push('#stage .allobot-satellite-control');
     style.textContent = '*,*::before,*::after{animation:none!important;transition:none!important;caret-color:transparent!important}'
+      // Match the app's overflow-visible utility so side props and the HUD are not clipped.
+      + '#stage svg[data-allobot-detail]{overflow:visible}'
       + '#stage [data-help-key="bot_avatar"]{' + avatarPlacement + '}'
       + hiddenSelectors.join(',') + '{visibility:hidden!important}';
     document.head.appendChild(style);
@@ -695,7 +697,7 @@ async function render(browser, scenario) {
         avatarFilter: root ? root.style.filter : '',
         mouth: mouth && mouth.getAttribute('data-allobot-mouth'),
         voiceCue: cue && cue.getAttribute('data-allobot-voice-cue'),
-        eyeTransform: details ? details.style.transform : '',
+        eyeTransform: svg.querySelector('[data-allobot-soft-gaze]')?.style.transform || '',
         accessorySilhouette: accessory?.getAttribute('data-accessory-silhouette') || null,
         accessoryBounds: accessoryRect ? {
           left: round(accessoryRect.left - rect.left),

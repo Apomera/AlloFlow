@@ -232,7 +232,8 @@ const generateBingoCards = (glossaryData, count, size, deps) => {
       const totalCells = size * size;
       const centerIndex = size % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
       const termsNeeded = centerIndex !== -1 ? totalCells - 1 : totalCells;
-      let pool = [...glossaryData];
+      const validTerms = (Array.isArray(glossaryData) ? glossaryData : []).filter(item => item && typeof item.term === 'string' && item.term.trim());
+      let pool = [...validTerms];
       if (!pool || pool.length === 0) {
           addToast(t('toasts.no_glossary_terms'), "error");
           return null;
@@ -240,7 +241,7 @@ const generateBingoCards = (glossaryData, count, size, deps) => {
       if (pool.length < termsNeeded) {
           addToast(`Repeating terms to fill ${size}x${size} grid.`, "info");
           while (pool.length < termsNeeded) {
-              pool = [...pool, ...glossaryData];
+              pool = [...pool, ...validTerms];
           }
       }
       const newCards = [];

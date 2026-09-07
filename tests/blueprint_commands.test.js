@@ -102,53 +102,53 @@ describe('the commands exist and are gated', () => {
 });
 
 describe('running them', () => {
-  it('executes the plan', () => {
-    const ctx = makeCtx();
-    const out = find(ctx, 'run_lesson_blueprint').run(ctx, {});
-    expect(ctx.runBlueprint).toHaveBeenCalledTimes(1);
-    expect(String(out)).toMatch(/generat/i);
+  it('executes the plan through the public completion API', async () => {
+    const ctx = makeCtx({ runBlueprint: vi.fn(async () => ({ status: 'completed' })) });
+    const result = await AC.runCommandById(ctx, 'run_lesson_blueprint', {}, { confirmed: true, awaitCompletion: true });
+    expect(ctx.runBlueprint).toHaveBeenCalledOnce();
+    expect(result).toMatchObject({ ok: true, status: 'completed' });
   });
 
-  it('asks which step when none is named, listing them by position', () => {
+  it('requires a step before running and preserves the named position', async () => {
     const ctx = makeCtx();
-    const out = find(ctx, 'rebuild_lesson_step').run(ctx, {});
+    expect(await AC.runCommandById(ctx, 'rebuild_lesson_step', {}, { confirmed: true })).toMatchObject({ needsInput: true, ok: false });
     expect(ctx.rebuildBlueprintStep).not.toHaveBeenCalled();
-    expect(String(out)).toContain('1. analysis');
-    expect(String(out)).toContain('2. image');
-    expect(String(out)).toContain('3. image');
-  });
-
-  it('rebuilds the step the teacher named, by POSITION', () => {
-    const ctx = makeCtx();
-    find(ctx, 'rebuild_lesson_step').run(ctx, { step: 3 });
-    // Position is what the teacher sees on the card; the host maps it to the
-    // Stage-2 uiId. The palette must never carry an index into the executor.
+    expect(await AC.runCommandById(ctx, 'rebuild_lesson_step', { position: '3' }, { confirmed: true, awaitCompletion: true })).toMatchObject({ ok: true });
     expect(ctx.rebuildBlueprintStep).toHaveBeenCalledWith(3);
   });
 
-  it('reports a step it cannot find', () => {
-    const ctx = makeCtx({ rebuildBlueprintStep: vi.fn(() => null) });
-    expect(String(find(ctx, 'rebuild_lesson_step').run(ctx, { step: 99 }))).toMatch(/could not find/i);
+  it.each([0, -1, 1.5, 99, 'banana'])('rejects invalid step %s without calling the host', async step => {
+    const ctx = makeCtx();
+    const result = await AC.runCommandById(ctx, 'rebuild_lesson_step', { step }, { confirmed: true, awaitCompletion: true });
+    expect(result).toMatchObject({ needsInput: true, ok: false });
+    expect(ctx.rebuildBlueprintStep).not.toHaveBeenCalled();
   });
 
-  it('lists templates when none is named', () => {
+  it('reports a partly rebuilt step without claiming success', async () => {
+    const ctx = makeCtx({ rebuildBlueprintStep: vi.fn(async () => ({ ok: false, partial: true, status: 'partial' })) });
+    const result = await AC.runCommandById(ctx, 'rebuild_lesson_step', { step: 2 }, { confirmed: true, awaitCompletion: true });
+    expect(result).toMatchObject({ ok: false, partial: true });
+    expect(AC.formatCommandResult(result).status).toBe('partial');
+  });
+
+  it('reports a rebuild that fails to produce an item', async () => {
+    const ctx = makeCtx({ rebuildBlueprintStep: vi.fn(async () => null) });
+    expect(await AC.runCommandById(ctx, 'rebuild_lesson_step', { step: 2 }, { confirmed: true, awaitCompletion: true })).toMatchObject({ ok: false });
+  });
+
+  it('requires a template name and passes a supplied alias through sanitization', async () => {
     const ctx = makeCtx();
-    const out = find(ctx, 'apply_lesson_template').run(ctx, {});
+    expect(await AC.runCommandById(ctx, 'apply_lesson_template', {}, { confirmed: true })).toMatchObject({ needsInput: true });
     expect(ctx.applyLessonTemplateByName).not.toHaveBeenCalled();
-    expect(String(out)).toContain('Vocabulary-first');
-    expect(String(out)).toContain('Close reading');
-  });
-
-  it('applies a template by fuzzy name', () => {
-    const ctx = makeCtx();
-    const out = find(ctx, 'apply_lesson_template').run(ctx, { name: 'vocab' });
+    const out = await AC.runCommandById(ctx, 'apply_lesson_template', { template: 'vocab' }, { confirmed: true });
     expect(ctx.applyLessonTemplateByName).toHaveBeenCalledWith('vocab');
-    expect(String(out)).toContain('Vocabulary-first');
+    expect(out.narration).toContain('Vocabulary-first');
   });
 
-  it('reports a template it cannot find', () => {
-    const ctx = makeCtx();
-    expect(String(find(ctx, 'apply_lesson_template').run(ctx, { name: 'nope' }))).toMatch(/could not find/i);
+  it('reports a missing template as a failure', async () => {
+    const out = await AC.runCommandById(makeCtx(), 'apply_lesson_template', { name: 'nope' }, { confirmed: true });
+    expect(out).toMatchObject({ ok: false });
+    expect(out.narration).toMatch(/could not find/i);
   });
 
   it('opens the production Auto-Fill lesson flow', () => {
@@ -188,7 +188,7 @@ describe('host exposes the capabilities the commands gate on', () => {
     const src = read(file);
     const fn = src.slice(src.indexOf('rebuildBlueprintStep: (position)'), src.indexOf('applyLessonTemplateByName:'));
     expect(fn.length).toBeGreaterThan(0);
-    expect(fn).toContain('handleRebuildBlueprintStep(row.uiId || row.stepId)');
+    expect(fn).toContain('handleRebuildBlueprintStep(row.uiId || row.stepId, { reportCompletion: true })');
   });
 });
 

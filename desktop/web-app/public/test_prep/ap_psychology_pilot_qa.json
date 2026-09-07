@@ -18,15 +18,15 @@
       }
     },
     "topics": {
-      "universeDeclared": false,
-      "declaredCount": null,
-      "representedCount": null,
-      "coveragePercent": null,
+      "universeDeclared": true,
+      "declaredCount": 35,
+      "representedCount": 35,
+      "coveragePercent": 100,
       "missing": [],
       "offBlueprint": [],
       "observedCount": 35,
-      "minItemsPerDeclaredTopic": null,
-      "medianItemsPerDeclaredTopic": null,
+      "minItemsPerDeclaredTopic": 11,
+      "medianItemsPerDeclaredTopic": 14,
       "itemsPerTopic": {
         "1.3": 17,
         "1.5": 16,
@@ -98,10 +98,19 @@
       "studySessionPlans",
       "spacedReviewPlans"
     ],
-    "gaps": [
-      "topic-universe-not-declared"
-    ],
-    "assessment": "gaps-present",
+    "lessonDepth": {
+      "chapterCount": 5,
+      "sectionCount": 15,
+      "sectionsPerChapter": 3
+    },
+    "crossReferences": {
+      "checked": 1000,
+      "unresolvedCount": 0,
+      "unresolved": {},
+      "examples": []
+    },
+    "gaps": [],
+    "assessment": "structurally-complete",
     "boundary": "Structural blueprint coverage only. Not content validity, fairness, accessibility conformance, rights clearance, psychometric quality, score meaning, or release eligibility."
   },
   "schemaVersion": 1,
@@ -112,8 +121,8 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_psychology_pilot.json",
-      "byteLength": 2299262,
-      "sha256": "bdaacfbcc20dd2cb6bae3a5ca665092a5372abc0fa71988d7758ac43e010427d"
+      "byteLength": 2300186,
+      "sha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082"
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
@@ -347,8 +356,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "bdaacfbcc20dd2cb6bae3a5ca665092a5372abc0fa71988d7758ac43e010427d",
-      "deploySha256": "bdaacfbcc20dd2cb6bae3a5ca665092a5372abc0fa71988d7758ac43e010427d",
+      "sourceSha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082",
+      "deploySha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082",
       "note": "Source and deployment bytes are identical."
     },
     {

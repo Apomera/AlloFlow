@@ -161,11 +161,13 @@ describe('Edit-Audio regenerate pathway pins (3-host)', () => {
   };
 
 
-  it('_synthSentenceForStore skips the direct Gemini leg when it cannot succeed', () => {
-    expect(anti).toContain("const configuredProvider = String(profile.provider || _aiConfig.ttsProvider || 'auto').toLowerCase();");
-    expect(anti).toContain("const _providerAllowsGemini = configuredProvider === 'auto' || configuredProvider === 'gemini';");
-    expect(anti).toContain("const _geminiUsable = _providerAllowsGemini && !window.__ttsGeminiAuthFailed && !/^(af_|am_|bf_|bm_)/i.test(String(activeVoice || ''));");
-    expect(anti).toContain('if (_geminiUsable && window.lamejs && _ah &&');
+  it('_synthSentenceForStore uses the shared resolver without bypassing its auth and provider checks', () => {
+    const block = synthBlock(anti);
+    expect(block).toContain("if (configuredProvider === 'off' || configuredProvider === 'browser') return null;");
+    expect(block).toContain('await callTTS(sentence, activeVoice, activeSpeed, {');
+    expect(block).not.toContain('fetchTTSBytes(');
+    expect(block).toContain("force: options.force === true || options.operation === 'regenerate'");
+    expect(block).toContain('onResolvedProfile:');
   });
 
   it('the callTTS leg rides the interactive lane with a tight retry ceiling', () => {

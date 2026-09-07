@@ -28,6 +28,7 @@
     --ok: #4ade80; --warn: #fbbf24; --bad: #f87171; --rec: #ef4444;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; }
   header { display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line); }
   header h1 { font-size: 16px; margin: 0; font-weight: 700; }
@@ -46,8 +47,10 @@
   button.danger { background: transparent; border: 1px solid var(--bad); color: var(--bad); border-radius: 9px; padding: 8px 14px; font-size: 13px; cursor: pointer; }
   button[aria-pressed="true"] { border-color: var(--accent); background: rgba(99,102,241,0.18); color: #fff; }
   label { font-size: 13px; color: var(--dim); }
-  input[type="text"], input[type="number"] { background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
+  input[type="text"], input[type="number"], input[type="search"], input[type="url"], select, textarea { background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 7px; padding: 7px 9px; font-size: 13px; }
   input[type="range"] { accent-color: var(--accent); }
+  a { color:var(--accent2); text-underline-offset:3px; }
+  a:visited { color:#c4b5fd; }
   .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
   .demo-goal-composer { border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: rgba(15,23,42,0.24); }
   .demo-goal-composer textarea { width: 100%; box-sizing: border-box; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 9px; resize: vertical; }
@@ -221,6 +224,39 @@
   button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
   @media (max-width: 640px) { .project-row { grid-template-columns: 1fr; } .project-row .row { justify-content: flex-start !important; } .demo-goal-actions { align-items: stretch; flex-direction: column; } #demoPlanBtn { width: 100%; } }
   @media (prefers-reduced-motion: reduce) { .recdot { animation: none; } }
+  /* Keep the main path readable on narrow windows and at browser zoom. */
+  .studio-guide { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:16px; border:1px solid var(--line); border-radius:12px; background:linear-gradient(120deg,var(--panel2),var(--panel)); margin-bottom:14px; }
+  .studio-guide h2 { margin:0 0 4px; font-size:18px; }
+  .studio-guide p { margin:0; color:var(--dim); line-height:1.5; }
+  .studio-guide .studio-selection { color:var(--text); margin-top:8px; font-size:13px; overflow-wrap:anywhere; }
+  .studio-empty { padding:32px 20px; border:1px dashed var(--accent2); border-radius:12px; margin-bottom:16px; text-align:center; background:var(--panel); }
+  .studio-empty p { color:var(--dim); line-height:1.6; }
+  .studio-empty .row { justify-content:center; }
+  section[data-studio-empty="true"] > :not(.studio-empty) { display:none !important; }
+  .studio-empty[hidden] { display:none; }
+  .trim-actions { margin-top:12px; }
+  .studio-more { margin-top:12px; border-top:1px solid var(--line); padding-top:12px; }
+  .studio-more summary { cursor:pointer; color:var(--accent2); font-weight:600; padding:6px 0; }
+  .studio-more .choice-grid { margin-top:10px; }
+  .studio-primary .choice-card { min-height:110px; }
+  .tabs { position:sticky; top:0; z-index:12; background:var(--bg); padding-top:8px; flex-wrap:wrap; }
+  .tabs button { min-height:44px; }
+  .stage .placeholder { color:var(--dim); }
+  .grid2 > *, .row > *, .studio-guide > * { min-width:0; }
+  input, select, textarea { max-width:100%; }
+  #trimStart, #trimEnd { width:100px; }
+  @media(max-width:600px) {
+    main { padding:10px 12px 20px; }
+    header { flex-wrap:wrap; }
+    .tabs { gap:4px; }
+    .tabs button { flex:1; padding:9px 6px; font-size:12px; border-radius:8px; }
+    .card { padding:12px; }
+    .studio-guide { padding:12px; }
+    .studio-guide .row { width:100%; }
+    .studio-guide .row button { flex:1; }
+    .choice-grid { grid-template-columns:1fr !important; }
+    .take { flex-wrap:wrap; }
+  }
 </style>
 </head>
 <body>
@@ -250,6 +286,13 @@
     <button id="tabRecord" role="tab" aria-selected="true" aria-controls="panelRecord">1 · Record</button>
     <button id="tabEdit" role="tab" aria-selected="false" aria-controls="panelEdit">2 · Edit &amp; Captions</button>
     <button id="tabExport" role="tab" aria-selected="false" aria-controls="panelExport">3 · Export</button>
+  </div>
+
+  <div class="studio-guide" aria-label="Current video and next step">
+    <div><h2 id="studioStepTitle">Start with a recording or a file</h2>
+      <p id="studioStepHint">Choose a source, then start recording. Or import a video you already have.</p>
+      <p class="studio-selection" id="studioSelection" role="status" aria-live="polite" aria-atomic="true">No video selected</p><p id="studioImportFeedback" class="status" role="status" aria-live="polite" aria-atomic="true" hidden></p></div>
+    <div class="row"><button class="quiet" id="studioImportBtn">Import video / project</button><button class="action" id="studioNextBtn">Set up recording</button></div>
   </div>
 
   <!-- ─── RECORD ─── -->
@@ -535,6 +578,11 @@
 
   <!-- ─── EDIT ─── -->
   <section id="panelEdit" role="tabpanel" aria-labelledby="tabEdit" hidden>
+    <div class="studio-empty" id="studioEmptyEdit" hidden>
+      <h2>Add a video to start editing</h2>
+      <p>Record a new video or import an existing file. Each recording or imported video appears as a “take” in the editor.</p>
+      <div class="row"><button class="action" data-studio-start>Set up recording</button><button class="quiet" data-studio-import>Import video / project</button></div>
+    </div>
     <div id="editImportSummaryBox" class="restore-summary import-summary-box" hidden aria-live="polite" aria-label="Project restore summary"></div>
     <div class="card edit-focus-card">
       <div>
@@ -566,7 +614,7 @@
             <button class="action" id="demoStitchBtn" type="button">Stitch continuation takes</button>
             <span class="status" id="demoStitchStatus" role="status" aria-live="polite" aria-atomic="true" style="margin-top:0"></span>
           </div>
-          <p class="status" id="takesEmpty" role="status" aria-live="polite" aria-atomic="true">No takes yet — record one first.</p>
+          <p class="status" id="takesEmpty" role="status" aria-live="polite" aria-atomic="true">No videos yet. Record or import a video to begin.</p>
         </div>
         <div class="stage">
           <video id="editVideo" controls playsinline style="width:100%"></video>
@@ -649,13 +697,19 @@
           <div id="sceneReadinessList" class="scene-readiness"></div>
         </div>
         <div class="card" style="margin-top:12px">
-          <h2>Trim</h2>
+          <h2>Trim the beginning and end</h2>
+          <p class="status" id="trimHelp">Enter seconds to remove from each end, or pause the video where you want it to begin or finish. Your original file is kept intact.</p>
           <div class="row">
             <label for="trimStart">Cut from start (s)</label>
-            <input type="number" id="trimStart" min="0" step="0.1" value="0">
+            <input type="number" id="trimStart" aria-describedby="trimHelp" min="0" step="0.1" value="0">
             <label for="trimEnd">Cut from end (s)</label>
-            <input type="number" id="trimEnd" min="0" step="0.1" value="0">
+            <input type="number" id="trimEnd" aria-describedby="trimHelp" min="0" step="0.1" value="0">
             <button class="quiet" id="previewTrimBtn">▶ Preview trimmed</button>
+          </div>
+          <div class="row trim-actions">
+            <button class="quiet" id="trimAtStartBtn" title="Keep video from the current playhead onward">Start here</button>
+            <button class="quiet" id="trimAtEndBtn" title="Keep video up to the current playhead">End here</button>
+            <button class="quiet" id="trimResetBtn">Reset trim</button>
           </div>
           <div class="status" id="trimStatus" role="status" aria-live="polite" aria-atomic="true"></div>
         </div>
@@ -1104,6 +1158,11 @@
 
   <!-- ─── EXPORT ─── -->
   <section id="panelExport" role="tabpanel" aria-labelledby="tabExport" hidden>
+    <div class="studio-empty" id="studioEmptyExport" hidden>
+      <h2>Add a video before exporting</h2>
+      <p>Record a new video or import an existing file. Each recording or imported video appears as a “take” in the editor.</p>
+      <div class="row"><button class="action" data-studio-start>Set up recording</button><button class="quiet" data-studio-import>Import video / project</button></div>
+    </div>
     <div class="card">
       <h2>Finish checklist</h2>
       <div class="row" style="margin-bottom:8px">
@@ -4220,7 +4279,13 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   var $ = function (id) { return document.getElementById(id); };
   var live = $('live');
   function announce(msg) { live.textContent = msg; }
-  function setStatus(el, msg, cls) { el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : ''); }
+  function setStatus(el, msg, cls) {
+    el.textContent = msg || ''; el.className = 'status' + (cls ? ' ' + cls : '');
+    // Import can begin in any section; keep progress and errors visible there.
+    if (el.id === 'importStatus' && $('studioImportFeedback')) {
+      var feedback = $('studioImportFeedback'); feedback.hidden = !msg; feedback.textContent = msg || ''; feedback.className = el.className;
+    }
+  }
   function fmtClock(s) { s = Math.max(0, Math.floor(s)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function fmtBytes(n) { return n >= 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.round(n / 1024) + ' KB'; }
   var VIDEO_EXPORT_FORMATS = {
@@ -4883,6 +4948,22 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('linkState').title = 'Anything you send goes to ' + target;
   })();
 
+  function syncStudioGuide() {
+    if (!$('studioStepTitle')) return;
+    var take = currentTake();
+    var active = document.querySelector('.tabs [aria-selected="true"]');
+    var tab = active ? active.id : 'tabRecord';
+    var edit = tab === 'tabEdit', exporting = tab === 'tabExport';
+    $('studioStepTitle').textContent = edit ? 'Preview, trim, and review captions' : exporting ? 'Prepare your file, then download it' : 'Start with a recording or a file';
+    $('studioStepHint').textContent = edit ? 'Start with the basics. Use Focus to open narration, visual descriptions, or other tools.' : exporting ? 'Prepare export creates the finished video. Download it in the result panel; save a project bundle if you want to edit again later.' : 'Choose a source, then start recording. Or import a video you already have.';
+    $('studioSelection').textContent = take ? 'Selected video: ' + take.name + ' · ' + fmtClock(take.duration) + ' · ' + (take.captions || []).length + ' captions' : 'No video selected';
+    $('studioNextBtn').textContent = !take ? 'Set up recording' : edit ? 'Review export settings' : exporting ? 'Go to export controls' : 'Continue editing';
+    ['Edit', 'Export'].forEach(function (name) {
+      var empty = !take;
+      $('panel' + name).dataset.studioEmpty = String(empty);
+      $('studioEmpty' + name).hidden = !empty;
+    });
+  }
   // ── Tabs ──
   var tabs = [['tabRecord', 'panelRecord'], ['tabEdit', 'panelEdit'], ['tabExport', 'panelExport']];
   function showTab(which) {
@@ -4893,6 +4974,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       $(t[0]).tabIndex = on ? 0 : -1;
       $(t[1]).hidden = !on;
     });
+    syncStudioGuide();
   }
   tabs.forEach(function (t) { $(t[0]).addEventListener('click', function () { showTab(t[0]); }); });
   showTab('tabRecord');
@@ -4918,6 +5000,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var target = targetId && $(targetId);
       if (!target && tabId && $(tabId)) target = $(tabId);
       if (!target) return;
+      if (tabId === 'tabEdit' && target.closest('.vs-workflow-hidden')) setEditorFocusMode('all', false);
       try { target.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (_) { target.scrollIntoView(); }
       try { target.focus({ preventScroll: true }); } catch (_) { try { target.focus(); } catch (__) {} }
     }, 30);
@@ -4935,7 +5018,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     transcript: 'transcriptSearch',
     chapters: 'buildChaptersBtn',
     localization: 'localizeBtn',
-    ai: 'aiSuggestBtn'
+    ai: 'aiSuggestBtn',
+    scene: 'sceneList',
+    credits: 'mediaCreditTitle',
+    inspector: 'selectedInspector',
+    editmap: 'editMapList'
   };
   var EDITOR_FOCUS_GROUPS = {
     all: Object.keys(EDITOR_SURFACE_TARGETS),
@@ -4969,6 +5056,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     mode = EDITOR_FOCUS_GROUPS[mode] ? mode : EDITOR_FOCUS_DEFAULT;
     var forceAll = !!showAll || mode === 'all';
     var active = EDITOR_FOCUS_GROUPS[mode] || EDITOR_FOCUS_GROUPS.all;
+    if (mode !== 'basics' && mode !== 'all') active = active.concat(mode === 'caption' ? ['editmap'] : ['scene', 'credits', 'inspector', 'editmap']);
     var activeMap = {};
     active.forEach(function (name) { activeMap[name] = true; });
     Object.keys(EDITOR_SURFACE_TARGETS).forEach(function (surface) {
@@ -5203,8 +5291,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   $('flowRecord').addEventListener('click', function () { applyTemplate('mini_lesson'); setWorkflowStatus('Workflow: record a lesson. Next: choose screen/tab and press Start recording.', 'ok'); srcMode = 'screen'; syncSrcButtons(); showTab('tabRecord'); $('startBtn').focus(); });
   $('flowImport').addEventListener('click', function () { setWorkflowStatus('Workflow: edit an existing video. Next: choose a video or .allopack project.', 'ok'); $('importInput').click(); });
   $('flowCaption').addEventListener('click', function () { applyTemplate('caption_only'); setWorkflowStatus('Workflow: caption cleanup. Next: import a video, then run local auto-caption or import VTT/SRT.', 'ok'); $('importInput').click(); });
-  $('flowNarrate').addEventListener('click', function () { applyTemplate('mini_lesson'); setWorkflowStatus('Workflow: add narration. Next: open narration tools after a video is selected.', 'ok'); if (currentTake()) { showTab('tabEdit'); $('aiNarrateBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Narration & sound clips in the editor.', 'warn'); $('importInput').click(); } });
-  $('flowDescribe').addEventListener('click', function () { applyTemplate('mini_lesson'); setWorkflowStatus('Workflow: visual description. Next: import or record a video, then describe sampled frames.', 'ok'); if (currentTake()) { showTab('tabEdit'); $('visualDescribeBtn').focus(); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Visual description in the editor.', 'warn'); $('importInput').click(); } });
+  $('flowNarrate').addEventListener('click', function () { applyTemplate('mini_lesson'); setEditorFocusMode('narrate', false); setWorkflowStatus('Workflow: add narration. Next: open narration tools after a video is selected.', 'ok'); if (currentTake()) { focusStudioTarget('tabEdit', 'aiNarrateBtn'); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Narration & sound clips in the editor.', 'warn'); $('importInput').click(); } });
+  $('flowDescribe').addEventListener('click', function () { applyTemplate('mini_lesson'); setEditorFocusMode('describe', false); setWorkflowStatus('Workflow: visual description. Next: import or record a video, then describe sampled frames.', 'ok'); if (currentTake()) { focusStudioTarget('tabEdit', 'visualDescribeBtn'); } else { setStatus($('projectStatus'), 'Import or record a video first, then use Visual description in the editor.', 'warn'); $('importInput').click(); } });
   $('flowCinematic').addEventListener('click', function () {
     setWorkflowStatus('Workflow: AI-video prompt tools. Next: open Cinematic Studio, then return here to caption or package the result.', 'ok');
     if (opener && !opener.closed && postToOpener({ type: 'allostudio-open-cinematic' })) { setStatus($('projectStatus'), 'Asked AlloFlow to open Cinematic Studio.', 'ok'); }
@@ -5236,6 +5324,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     $('srcScreen').setAttribute('aria-pressed', String(srcMode === 'screen'));
     $('srcPip').setAttribute('aria-pressed', String(srcMode === 'pip'));
     $('srcCam').setAttribute('aria-pressed', String(srcMode === 'cam'));
+    $('pipCorner').hidden = srcMode !== 'pip';
+    $('pipStyle').hidden = srcMode !== 'pip';
   }
   $('srcScreen').addEventListener('click', function () { srcMode = 'screen'; syncSrcButtons(); });
   $('srcPip').addEventListener('click', function () { srcMode = 'pip'; syncSrcButtons(); });
@@ -6162,7 +6252,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     });
   }
   function inflateDraft(r) {
-    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, isDemo: !!r.isDemo, demoSeriesId: String(r.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(r.demoSeriesPart) || 0)), demoPolish: r.demoPolish ? cleanDemoPolish(r.demoPolish) : null, demoAudioMode: r.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(r.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(r.demoQualityScore) || 0), demoRunReport: typeof cleanDemoRunReport === 'function' ? cleanDemoRunReport(r.demoRunReport) : null, zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
+    return { id: r.id, name: r.name, blob: r.blob, url: URL.createObjectURL(r.blob), type: r.type || (r.blob && r.blob.type) || 'video/webm', imported: !!r.imported, trim: r.trim || null, duration: r.duration || 0, captions: r.captions || [], transcriptEdits: vsSanitizeTranscriptEdits(r.transcriptEdits || [], r.duration || 0), transcriptWords: vsSanitizeTranscriptWords(r.transcriptWords || [], r.duration || 0), transcriptCleanupQueue: Array.isArray(r.transcriptCleanupQueue) ? r.transcriptCleanupQueue.slice(0, 240) : [], visualDescriptions: r.visualDescriptions || [], chapters: r.chapters || [], inserts: r.inserts || [], visualPrompts: r.visualPrompts || [], localizations: (r.localizations || []).map(function (loc) { return vsSanitizeLocalizedDraft(loc, r.duration || 0); }), scenePlan: r.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(r.mediaCredits || []), finishReview: r.finishReview || {}, isDemo: !!r.isDemo, demoSeriesId: String(r.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(r.demoSeriesPart) || 0)), demoPolish: r.demoPolish ? cleanDemoPolish(r.demoPolish) : null, demoAudioMode: r.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(r.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(r.demoQualityScore) || 0), demoRunReport: typeof cleanDemoRunReport === 'function' ? cleanDemoRunReport(r.demoRunReport) : null, zooms: r.zooms || [], audio: cleanAudioState(r.audio, r.duration || 0), musicBed: r.musicBed || null, narration: r.narration || null, audioClips: r.audioClips || [], createdAt: r.createdAt };
   }
   function openDraftRow(r) {
     var existing = takes.find(function (t) { return t.id === r.id; });
@@ -9574,6 +9664,7 @@ function buildContactSheet(t, count, shouldCancel) {
     });
     updateDemoStitchControl();
     renderSceneBuilder();
+    syncStudioGuide();
   }
 
   function cancelTakeScopedAiJobs(nextTake) {
@@ -9618,9 +9709,9 @@ function buildContactSheet(t, count, shouldCancel) {
       $('demoStepTransition').value = demoPolish.transition;
     }
     $('editVideo').src = t.url;
-    $('trimStart').value = '0';
-    $('trimEnd').value = '0';
-    setStatus($('trimStatus'), 'Full length ' + fmtClock(t.duration) + '.');
+    $('trimStart').value = String((t.trim && t.trim.start) || 0);
+    $('trimEnd').value = String((t.trim && t.trim.end) || 0);
+    syncTakeTrim(null, false);
     aimingZoomId = null;
     aiNarrSegments = [];
     resetPreviewAudio();
@@ -10873,14 +10964,38 @@ function buildContactSheet(t, count, shouldCancel) {
   ['trimStart', 'trimEnd'].forEach(function (id) {
     $(id).addEventListener('input', function () {
       var t = currentTake(); if (!t) return;
-      var r = vsComputeSegments(t.duration, Number($('trimStart').value), Number($('trimEnd').value));
-      setStatus($('trimStatus'), 'Kept: ' + vsFormatTimestamp(r.segments[0].start).slice(3) + ' → ' + vsFormatTimestamp(r.segments[0].end).slice(3) + ' (' + fmtClock(r.duration) + ')');
-      refreshExportDecisionPreview();
+      syncTakeTrim(id, true);
     });
   });
 
+  function syncTakeTrim(changed, persist) {
+    var t = currentTake(); if (!t) return;
+    var duration = Math.max(0, Number(t.duration) || 0), limit = Math.max(0, duration - 0.1);
+    var start = Math.max(0, Math.min(limit, Number($('trimStart').value) || 0));
+    var end = Math.max(0, Math.min(limit, Number($('trimEnd').value) || 0));
+    if (start + end > limit) {
+      if (changed === 'trimEnd') end = Math.max(0, limit - start);
+      else start = Math.max(0, limit - end);
+    }
+    start = Math.round(start * 1000) / 1000; end = Math.round(end * 1000) / 1000;
+    // Preserve partially typed decimals; canonicalize on change/blur instead.
+    if (changed !== 'trimStart' || ($('trimStart').value !== '' && Number($('trimStart').value) !== start)) $('trimStart').value = String(start);
+    if (changed !== 'trimEnd' || ($('trimEnd').value !== '' && Number($('trimEnd').value) !== end)) $('trimEnd').value = String(end);
+    $('trimStart').max = String(Math.max(0, limit - end)); $('trimEnd').max = String(Math.max(0, limit - start));
+    t.trim = { start: start, end: end };
+    var kept = Math.max(0, duration - start - end);
+    setStatus($('trimStatus'), 'Keep ' + vsFormatTimestamp(start).slice(3) + ' to ' + vsFormatTimestamp(duration - end).slice(3) + ' · ' + fmtClock(kept) + ' remaining. Trims stay with this take in local drafts.');
+    if (persist) saveDraft(t);
+    drawWave(); refreshExportDecisionPreview();
+  }
+  ['trimStart', 'trimEnd'].forEach(function (id) { $(id).addEventListener('change', function () { syncTakeTrim(null, true); }); });
+  $('trimAtStartBtn').addEventListener('click', function () { $('trimStart').value = String($('editVideo').currentTime || 0); syncTakeTrim('trimStart', true); });
+  $('trimAtEndBtn').addEventListener('click', function () { var t = currentTake(); if (!t) return; $('trimEnd').value = String(Math.max(0, t.duration - ($('editVideo').currentTime || 0))); syncTakeTrim('trimEnd', true); });
+  $('trimResetBtn').addEventListener('click', function () { $('trimStart').value = '0'; $('trimEnd').value = '0'; syncTakeTrim(null, true); });
+
   // ── Caption editor ──
   function renderCues() {
+    syncStudioGuide();
     var t = currentTake();
     var body = $('cueBody');
     body.innerHTML = '';
@@ -16190,7 +16305,7 @@ function buildContactSheet(t, count, shouldCancel) {
         var tx = db.transaction(STORE, 'readwrite');
         tx.onerror = function () { reportDraftSaveFailure(tx.error); };
         tx.onabort = function () { reportDraftSaveFailure(tx.error || new Error('transaction aborted')); };
-        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoSeriesId: String(take.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(take.demoSeriesPart) || 0)), demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), demoRunReport: typeof cleanDemoRunReport === 'function' ? cleanDemoRunReport(take.demoRunReport) : null, zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
+        tx.objectStore(STORE).put({ id: take.id, name: take.name, blob: take.blob, type: take.type, imported: !!take.imported, trim: take.trim || null, duration: take.duration, captions: take.captions, transcriptEdits: vsSanitizeTranscriptEdits(take.transcriptEdits || [], take.duration || 0), transcriptWords: vsSanitizeTranscriptWords(take.transcriptWords || [], take.duration || 0), transcriptCleanupQueue: normalizeWordCleanupQueue(take, wordCleanupWords(take)), visualDescriptions: take.visualDescriptions || [], chapters: take.chapters || [], inserts: take.inserts || [], visualPrompts: take.visualPrompts || [], localizations: take.localizations || [], scenePlan: take.scenePlan || null, mediaCredits: vsSanitizeMediaCredits(take.mediaCredits || []), finishReview: take.finishReview || {}, isDemo: !!take.isDemo, demoSeriesId: String(take.demoSeriesId || '').replace(/[^a-z0-9_-]/gi, '').slice(0, 80) || null, demoSeriesPart: Math.max(0, Math.round(Number(take.demoSeriesPart) || 0)), demoPolish: take.demoPolish ? cleanDemoPolish(take.demoPolish) : null, demoAudioMode: take.demoAudioMode || null, demoExpectedNarrationCount: Math.max(0, Number(take.demoExpectedNarrationCount) || 0), demoQualityScore: Math.max(0, Number(take.demoQualityScore) || 0), demoRunReport: typeof cleanDemoRunReport === 'function' ? cleanDemoRunReport(take.demoRunReport) : null, zooms: take.zooms || [], audio: cleanAudioState(take.audio, take.duration || 0), musicBed: take.musicBed || null, narration: take.narration || null, audioClips: take.audioClips || [], createdAt: take.createdAt });
         tx.oncomplete = function () {
           // Recovered after an earlier failure — stop showing the red warning.
           if (draftSaveFailed) {
@@ -16240,6 +16355,29 @@ function buildContactSheet(t, count, shouldCancel) {
       } catch (_) {}
     });
   }
+  $('studioImportBtn').addEventListener('click', function () { $('importInput').click(); });
+  document.querySelectorAll('[data-studio-import]').forEach(function (button) { button.addEventListener('click', function () { $('importInput').click(); }); });
+  document.querySelectorAll('[data-studio-start]').forEach(function (button) { button.addEventListener('click', function () { focusStudioTarget('tabRecord', 'srcScreen'); }); });
+  $('studioNextBtn').addEventListener('click', function () {
+    if (!currentTake()) { focusStudioTarget('tabRecord', 'srcScreen'); return; }
+    if (!$('panelEdit').hidden) focusStudioTarget('tabExport', 'exportPreset');
+    else if (!$('panelExport').hidden) focusStudioTarget('tabExport', 'exportBtn');
+    else focusStudioTarget('tabEdit', 'editVideo');
+  });
+  var workflowGrid = $('flowRecord').parentElement;
+  workflowGrid.classList.add('studio-primary');
+  var moreWorkflows = document.createElement('details'); moreWorkflows.id = 'studioMoreWorkflows'; moreWorkflows.className = 'studio-more';
+  var moreSummary = document.createElement('summary'); moreSummary.textContent = 'More workflows: captions, narration, visual descriptions, and AI prompts';
+  var moreGrid = document.createElement('div'); moreGrid.className = 'choice-grid';
+  ['flowCaption', 'flowNarrate', 'flowDescribe', 'flowCinematic'].forEach(function (id) { moreGrid.appendChild($(id)); });
+  moreWorkflows.appendChild(moreSummary); moreWorkflows.appendChild(moreGrid); workflowGrid.after(moreWorkflows);
+  var recordPanel = $('panelRecord');
+  $('stage').before(document.querySelector('.recbar'), $('recStatus'));
+  recordPanel.appendChild($('saveProjectBtn').closest('.card'));
+  recordPanel.appendChild($('coachPanel'));
+  recordPanel.appendChild($('demoAutopilotCard'));
+  syncSrcButtons();
+  syncStudioGuide();
   loadSceneDraft();
   loadDrafts();
   loadRecordingCheckpoint();

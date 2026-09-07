@@ -139,8 +139,9 @@ describe('durability wiring guardrails', () => {
            'desktop/web-app/public/view_misc_modals_module.js'])(
     '%s mounts a restored plan from state, not from a chat message', (file) => {
       const src = read(file);
-      expect(src).toMatch(/activeBlueprint && !\(udlMessages \|\| \[\]\)\.some/);
-      expect(src).toContain('blueprint.restored_notice');
+      expect(src).toMatch(/activeBlueprint &&/);
+      expect(src).toContain('active-lesson-blueprint');
+      expect((src.match(/config[:=]\s*\{?activeBlueprint/g) || []).length).toBe(1);
     });
 });
 

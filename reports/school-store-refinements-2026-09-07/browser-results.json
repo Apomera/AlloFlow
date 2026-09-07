@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "path": "description → editable recipe → Sculpt manual edit → Print Lab preflight → slicer comparison",
+  "provider": "explicitly fictional fixture",
+  "scaleMm": 8,
+  "aiUse": "ASSISTED",
+  "parts": 4,
+  "comparison": {
+    "gramsSaved": 6,
+    "percentSaved": 30,
+    "minutesAdded": 20
+  },
+  "widths": {
+    "page": 390,
+    "viewport": 390
+  },
+  "errors": [],
+  "external": []
+}

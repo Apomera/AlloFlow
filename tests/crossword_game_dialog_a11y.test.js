@@ -26,7 +26,7 @@ describe('Crossword dialog accessibility', () => {
 
   it('exposes a complete active-descendant grid structure', () => {
     expect(component).toContain('aria-rowcount={grid.length}');
-    expect(component).toContain('aria-colcount={grid.length}');
+    expect(component).toContain('aria-colcount={grid[0]?.length || 0}');
     expect(component).toContain('aria-activedescendant={selectedCell ?');
     expect(component).toContain('role="row" className="contents"');
     expect(component).toContain('id={`crossword-cell-${r}-${c}`}');

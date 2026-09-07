@@ -4909,10 +4909,10 @@
     "locked": "లాక్ చేయబడింది",
     "escaped": "మీరు Escaped!",
     "escaped_desc": "మీరు solved అన్నీ పజిల్ మరియు escaped room!",
-    "time_up": "? సమయం ముగిసింది!",
+    "time_up": "⏰ సమయం ముగిసింది!",
     "reveal_hint": "Reveal సూచన",
-    "puzzles_remaining": "{{count}} పజిల్ remaining",
-    "time_remaining": "సమయం: {{time}}",
+    "puzzles_remaining": "{count} పజిల్ remaining",
+    "time_remaining": "సమయం: {time}",
     "progress": "పురోగతి",
     "start": "ప్రారంభించు Escape Room",
     "start_hint": "ప్రారంభించు timer కు begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room పూర్తి చేయి!",
     "loading_error": "Could కాదు లోడ్ చేయి room డేటా",
     "no_puzzle": "కాదు పజిల్ found కోసం ఇది object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "పరిపూర్ణ తప్పించుకోలు! +{{xp}} బోనస్ XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "పరిపూర్ణ తప్పించుకోలు! +{xp} బోనస్ XP",
     "puzzle_mcq": "బహుళ ఎంపిక",
     "puzzle_sequence": "Put లో Order",
     "puzzle_cipher": "Decode సందేశం",
@@ -4982,17 +4982,17 @@
     "clue": "సూచన",
     "clue_found": "ఆధారం కనుగొనబడింది!",
     "clue_revealed": "ఇది clue may సహాయం తో another పజిల్...",
-    "clues_collected": "ఆధారాలు: {{count}}/{{total}}",
+    "clues_collected": "ఆధారాలు: {count}/{total}",
     "use_clue": "ఉపయోగించు Clue",
-    "final_door": "The Exit Door",
+    "final_door": "బయటకు వెళ్లే తలుపు",
     "final_door_ready": "exit door ఉంది ఇప్పుడు unlocked!",
     "final_door_locked": "పరిష్కరించు మరిన్ని పజిల్ కు unlock",
     "final_door_title": "Final సవాలు",
     "final_door_desc": "ఉపయోగించు everything you've learned కు జవాబు ఇది synthesis ప్రశ్న.",
     "final_puzzle": "Using ఏమి you've learned, జవాబు ఇది:",
     "final_answer_placeholder": "Type మీ జవాబు here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "బయటకు వెళ్లే తలుపు దగ్గరకు వెళ్లండి",
+    "unlock_door": "తలుపు తాళం తెరవండి",
     "victory_perfect": "Perfect Escape! కాదు wrong జవాబు! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "సూచన",
@@ -5008,12 +5008,12 @@
     "left": "మిగిలింది",
     "wrong_attempts": "తప్పు ప్రయత్నాలు",
     "time_penalty": "-{seconds} సెకన్లు!",
-    "game_over_time": "? Time's Up! మీరు ran out యొక్క time.",
+    "game_over_time": "⏰ Time's Up! మీరు ran out యొక్క time.",
     "streak": "వరుస",
     "streak_bonus": "వరుస బోనస్! x{multiplier}",
     "streak_lost": "వరుస పోయింది!",
     "one_minute_warning": "ఒక నిమిషం మిగిలి ఉంది!",
-    "thirty_seconds_warning": "? కేవలం 30 సెకన్లు మిగిలి ఉన్నాయి!",
+    "thirty_seconds_warning": "⏰ కేవలం 30 సెకన్లు మిగిలి ఉన్నాయి!",
     "timer_paused": "టైమర్ పాజ్ చేయబడింది",
     "timer_resume": "కొనసాగించు",
     "settings_btn": "Room సెట్టింగులు",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "ప్రారంభించు multiplayer ఎస్కేప్ రూమ్ తో మీ తరగతి",
     "team_mode": "Team సవాలు",
     "team_race": "Race కు Escape!",
-    "team_progress": "{{team}} పురోగతి: {{solved}}/{{total}}",
+    "team_progress": "{team} పురోగతి: {solved}/{total}",
     "waiting_host": "Waiting కోసం ఉపాధ్యాయుడు కు ప్రారంభించు...",
-    "team_escaped": "{{team}} జట్టు తప్పించుకుంది!",
+    "team_escaped": "{team} జట్టు తప్పించుకుంది!",
     "all_teams_done": "అన్నీ Teams Finished!",
     "your_team": "మీ Team",
     "team_red": "ఎరుపు జట్టు",
@@ -5036,7 +5036,7 @@
     "team_green": "ఆకుపచ్చ జట్టు",
     "team_yellow": "పసుపు జట్టు",
     "team_all": "అన్నీ విద్యార్థి",
-    "teams_competing": "{{count}} జట్టు competing",
+    "teams_competing": "{count} జట్టు competing",
     "first_escape": "మొదటి కు Escape!",
     "end_game": "End ఆట",
     "end_game_confirm": "End ఎస్కేప్ రూమ్ కోసం అన్నీ విద్యార్థి?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume ఆట",
     "game_paused_by_teacher": "ఆట paused by ఉపాధ్యాయుడు",
     "celebration_title": "అభినందనలు!",
-    "you_escaped": "మీ జట్టు escaped లో {{time}}!",
-    "other_team_escaped": "{{team}} తప్పించుకుంది!",
+    "you_escaped": "మీ జట్టు escaped లో {time}!",
+    "other_team_escaped": "{team} తప్పించుకుంది!",
     "class_escaped": "తరగతి Victory!",
     "everyone_escaped": "Everyone worked together కు escape!",
     "hurry_up": "Keep going! మీరు చేయగలదు still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "లోడ్ చేయి సేవ్",
     "loaded_saved": "సేవ్ Escape Room loaded! Review మరియు ప్రారంభించు ఎప్పుడు ready.",
     "no_saved": "కాదు సేవ్ చేయబడింది Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready కు ఆడు!",
+    "preview_confirmed": "✅ Escape Room locked • ready కు ఆడు!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x వరుస బోనస్!)",
     "loaded_from_resource": "Loaded నుండి వనరులు."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbenchకు పంపండి",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "అద్భుతమైన పని!",
       "partial": "మంచి effort, keep going!",
       "incorrect": "కాదు quite right • ప్రయత్నించు again!",
-      "error": "Could కాదు evaluate • దయచేసి ప్రయత్నించు again.",
+      "error": "Could కాదు evaluate — దయచేసి ప్రయత్నించు again.",
       "verdict_correct": "సరైనది!",
       "verdict_partial": "పాక్షికంగా సరైనది",
       "verdict_incorrect": "కాదు Quite Right",
@@ -7906,7 +7906,7 @@
       "meta_info": "{date} • **Final స్థాయి**: {level}",
       "log_header": "సాహసం Log",
       "chapter_separator": "***",
-      "user_label": "? మీరు",
+      "user_label": "➤ మీరు",
       "print_button": "ప్రింట్ చేయి కథల పుస్తకం"
     },
     "answer_key_title": "జవాబు Key",
@@ -8855,7 +8855,7 @@
     "simplified_def_fallback": "దాని నిర్వచనాన్ని చూడటానికి మీరు వచనంలోని ఏ పదంపైనైనా క్లిక్ చేయవచ్చు!",
     "simplified_cloze": "ప్రయత్నించు 'Cloze' మోడ్ కు పరీక్ష పదజాలం నైపుణ్యం.",
     "simplified_quiz": "ఇది వచనం looks great. Should we రూపొందించు ఒక Exit Ticket కు check understanding?",
-    "simplified_glossary": "పదం like '{term1}' మరియు '{term2}' might need మద్దతు • ఒక పదకోశం could సహాయం!",
+    "simplified_glossary": "పదం like '{term1}' మరియు '{term2}' might need మద్దతు — ఒక పదకోశం could సహాయం!",
     "simplified_glossary_fallback": "ఈ పదాలలో కొన్ని కష్టమైనవి. ఒక పదకోశం ఈ వచనానికి మద్దతు ఇవ్వడంలో సహాయపడుతుంది.",
     "simplified_outline": "దృశ్య learners might benefit నుండి ఒక Graphic Organizer యొక్క ఇది కంటెంట్.",
     "glossary_bingo": "మీరు చేయగలదు turn these పదం లోకి పదం ఆట like Bingo, Memory Match, Crosswords, లేదా పదం వెతుకు!",
@@ -8866,7 +8866,7 @@
     "quiz_rigor": "Want కు ensure ఇది క్విజ్ ఉంది rigorous? అమలు చేయి ఒక ప్రమాణం Audit.",
     "adventure_sim": "సాహసం allow విద్యార్థి కు apply ఏమి they've learned లో ఒక safe simulation.",
     "adventure_inventory": "Check 'Inventory' కు చూడు ఏమి అంశం ఉంది been collected.",
-    "adventure_context": "మీ సాహసం about {topic} gets richer తో మరిన్ని వనరులు • ప్రయత్నించు adding ఒక {suggestion}!",
+    "adventure_context": "మీ సాహసం about {topic} gets richer తో మరిన్ని వనరులు — ప్రయత్నించు adding ఒక {suggestion}!",
     "adventure_context_fallback": "మరిన్ని వనరులు మీరు రూపొందించు, richer సాహసం context becomes.",
     "timeline_drag": "లాగు మరియు వదలు events కు reorder sequence.",
     "timeline_visualize": "ఇది విద్యార్థులకు కారణ-ప్రభావ సంబంధాలను దృశ్యీకరించడంలో సహాయపడుతుంది.",
@@ -8877,8 +8877,8 @@
     "parent_adventure": "ప్రయత్నించు సాహసం మోడ్ కోసం ఒక fun rainy-day activity.",
     "parent_read_along": "ఉపయోగించు 'చదువు Along' కు అభ్యాసం reading together.",
     "fallback_lesson_plan": "మీరు ఉంది great వనరులు. Synthesize them లోకి ఒక పాఠం Plan?",
-    "fallback_brainstorm": "నిలిచిపోయారా? నాతో చాట్ చేయడానికి ప్రయత్నించండి మరియు Blueprint Mode ను సక్రియం చేయడానికి Auto-Complete ను టోగుల్ చేయండి • మీ మొత్తం పాఠాన్ని డిజైన్ చేయడానికి నేను సహాయం చేస్తాను!",
-    "fallback_export": "మీరు ఉంది {count} వనరులు పై {topic} • ఎగుమతి చేయి them as ఒక single PDF!",
+    "fallback_brainstorm": "నిలిచిపోయారా? నాతో చాట్ చేయడానికి ప్రయత్నించండి మరియు Blueprint Mode ను సక్రియం చేయడానికి Auto-Complete ను టోగుల్ చేయండి — మీ మొత్తం పాఠాన్ని డిజైన్ చేయడానికి నేను సహాయం చేస్తాను!",
+    "fallback_export": "మీరు ఉంది {count} వనరులు పై {topic} — ఎగుమతి చేయి them as ఒక single PDF!",
     "fallback_export_fallback": "మీరు చేయగలదు ఎగుమతి చేయి అన్నీ these వనరులు as ఒక single PDF packet.",
     "fallback_guide": "ఎంచుకో 'చూపించు Me' లో AI Guide అయితే మీరు get lost!",
     "intro_greeting": "క్లిక్ చేయి me కు adjust my వాయిస్ సెట్టింగులు.",
@@ -9027,7 +9027,7 @@
     "text_generated": "{topic} పై మీ అనుసరించిన వచనం సిద్ధంగా ఉంది! దాని నిర్వచనాన్ని చూడటానికి ఒక పదంపై క్లిక్ చేయడాన్ని ప్రయత్నించండి, లేదా అవగాహనను లోతుగా చేయడానికి పదకోశం లేదా క్విజ్ వంటి సాధనాలను అన్వేషించండి.",
     "flashcards_created": "ఫ్లాష్ కార్డులు సృష్టించబడ్డాయి! మీరు వాటిని Quizlet కు ఎగుమతి చేయవచ్చు, వాటిని ప్రింట్ చేయవచ్చు, లేదా Memory Game ను ప్రయత్నించవచ్చు.",
     "quiz_generated": "క్విజ్ ready! ఉపయోగించు Presentation మోడ్ కోసం తరగతి, లేదా ప్రయత్నించు Auto-Grader కోసం తెరువు responses.",
-    "glossary_generated": "పదకోశం పూర్తయింది! పద ఆటలను ప్రయత్నించండి • Bingo, Memory Match, Crosswords, Word Search, మరియు మరిన్ని!",
+    "glossary_generated": "పదకోశం పూర్తయింది! పద ఆటలను ప్రయత్నించండి — Bingo, Memory Match, Crosswords, Word Search, మరియు మరిన్ని!",
     "adventure_started": "మీ సాహసం begins! Type మీ action below, లేదా ఉపయోగించు ఎంపిక బటన్ కు decide ఏమి happens తదుపరి.",
     "adventure_scene": "ఏమి చేస్తుంది మీరు do? Every ఎంపిక ఆకారం మీ కథ!",
     "analysis_complete": "Analysis పూర్తి చేయి! I found some పదజాలం మరియు key concepts worth exploring.",
@@ -10164,7 +10164,7 @@
     "type_timeline": "క్రమ నిర్మాత",
     "type_timeline_desc": "Sequencing activity adapted కు తరగతి స్థాయి",
     "full_pack": "పూర్తి వనరుల ప్యాక్ • అన్నీ ఎంచుకోండి",
-    "deselect_all": "? Deselect అన్నీ",
+    "deselect_all": "↩ Deselect అన్నీ",
     "estimate": "అంచనా",
     "api_calls": "API కాల్‌లు",
     "start_batch": "రూపొందించు",
@@ -10193,7 +10193,7 @@
     "bridge_generating": "Creating మీ personalized వెర్షన్...",
     "bridge_projection": "Projection మోడ్",
     "bridge_exit_projection": "నిష్క్రమణ ప్రొజెక్షన్",
-    "bridge_offline_info": "కాదు ప్రత్యక్ష సెషన్ • preview పై ఇది device only",
+    "bridge_offline_info": "కాదు ప్రత్యక్ష సెషన్ — preview పై ఇది device only",
     "bridge_term_saved": "సేవ్ \"{term}\" కు పదకోశం",
     "bridge_term_save_failed": "Failed కు సేవ్ చేయి పదం",
     "bridge_save_term": "సేవ్ చేయి కు పదకోశం",
@@ -10219,7 +10219,7 @@
     "bridge_f2f_custom_lang": "Custom భాష...",
     "bridge_f2f_custom_placeholder": "ఉదా. యోరుబా, టిగ్రిన్యా, దారీ...",
     "bridge_all_saved": "అన్నీ పదం సేవ్ చేయబడింది కు పదకోశం!",
-    "bridge_terms_saved": "? అన్నీ సేవ్",
+    "bridge_terms_saved": "✅ అన్నీ సేవ్",
     "fullpack_group_target": "లక్ష్య సమూహం",
     "fullpack_group_current": "Current సెట్టింగులు",
     "fullpack_group_all": "అన్నీ Groups",
@@ -12186,7 +12186,11 @@
       "trapezoid": "ట్రెపజాయిడ్",
       "simpson": "సింప్సన్",
       "rectangles_n": "దీర్ఘచతురస్రం (n)",
-      "coeff_a": "Coeff ఒక"
+      "coeff_a": "Coeff ఒక",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది.",
+      "a11y_back_to_tools": "సాధనాలకు తిరిగి",
+      "a11y_snapshot": "స్నాప్‌షాట్",
+      "a11y_next": "తదుపరి"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ ఈ బ్రౌజర్ ఆడియోను సమర్థించదు",
@@ -12310,12 +12314,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI వివరణను ఈ స్థాయిలో రూపొందించు",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "చదివే స్థాయి:",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -13941,8 +13945,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? సరియైనది! ఇది\\",
-      "that": "? అది\\",
+      "correct_it": "✅ సరియైనది! ఇది\\",
+      "that": "❌ అది\\",
       "linear": "రేఖీయం",
       "quadratic": "వర్గ",
       "cubic": "ఘన",
@@ -14216,7 +14220,8 @@
       "angle_u00b0": "కోణం (°)",
       "velocity_ms": "వేగం (m/s)",
       "gravity_msu00b2": "గురుత్వాకర్షణ (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14244,7 +14249,10 @@
       "codominant_desc": "రెండు యుగ్మబీజాలు పూర్తిగా వ్యక్తమవుతాయి. హెటెరోజైగోట్ రెండు లక్షణాలను ఒకేసారి చూపుతుంది.",
       "sexLinked_desc": "ఈ లక్షణం X క్రోమోజోమ్‌పై ఉంటుంది. ఇది X-linked RECESSIVE వారసత్వాన్ని చూపుతుంది (హీమోఫీలియా, ఎరుపు-ఆకుపచ్చ రంగు అంధత్వం వంటివి): పురుషులకు (XY) ఒక కాపీ చాలు; స్త్రీలకు (XX) రెండు కావాలి.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM సాధనాలకు తిరిగి",
+      "a11y_snapshot": "స్నాప్‌షాట్",
+      "a11y_close_flashcard": "ఫ్లాష్‌కార్డ్ మూసివేయండి"
     },
     "circuit": {
       "meter_status_ammeter_short": "అసురక్షిత స్థానం: షార్ట్-సర్క్యూట్ మార్గం",
@@ -14536,8 +14544,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? Correct!",
-      "it": "? అది\\"
+      "correct": "✅ Correct!",
+      "it": "❌ అది\\"
     },
     "inequality": {
       "badge_first_solve_label": "మొదటి పరిష్కారం",
@@ -14653,8 +14661,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? సరైనది!",
-      "answer": "? జవాబు:",
+      "correct": "✅ సరైనది!",
+      "answer": "❌ జవాబు:",
       "hydrogen": "హైడ్రోజన్",
       "helium": "హీలియం",
       "lithium": "లిథియం",
@@ -14796,7 +14804,7 @@
       "reddish_metal_used_since_the": "Reddish metal ఉపయోగించబడింది since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal అది prevents rust",
       "best_conductor_of_electricity_among": "Best conductor యొక్క electricity among అన్నీ metals",
-      "dense_soft_shiny_precious_metal": "దట్టమైన, మృదువైన, మెరిసే విలువైన లోహం • ఎప్పుడూ తుప్పు పట్టదు",
+      "dense_soft_shiny_precious_metal": "దట్టమైన, మృదువైన, మెరిసే విలువైన లోహం — ఎప్పుడూ తుప్పు పట్టదు",
       "strong_as_steel_but_45": "Strong as steel కానీ 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal అది gives rubies their red రంగు",
       "essential_for_steel_production_and": "Essential కోసం steel production మరియు bone health",
@@ -15902,7 +15910,9 @@
       "our_sun_is_born": "Our Sun ఉంది Born",
       "present_day": "ప్రస్తుత దినం",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "సాధనాలకు తిరిగి",
+      "a11y_simulation_speed": "అనుకరణ వేగం"
     },
     "rocks": {
       "igneous": "అగ్నిశిల",
@@ -18827,7 +18837,10 @@
       "garage_desc": "ఇంజిన్లు, తుప్పు మరియు ప్రతిచర్యలు — రసాయన శాస్త్ర వర్క్‌షాప్.",
       "classroom_desc": "బీకర్లు మరియు ప్రయోగాలతో కూడిన నిజమైన సైన్స్ తరగతి గది.",
       "outdoors_desc": "బయటికి అడుగు పెట్టండి — ప్రకృతే అన్నింటికంటే పెద్ద ప్రయోగశాల.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "సాధనాలకు తిరిగి",
+      "a11y_snapshot": "స్నాప్‌షాట్",
+      "a11y_next": "తదుపరి"
     },
     "converter": {
       "u2705_saved_to_history": "✅ చరిత్రకు సేవ్ చేయబడింది!",
@@ -19614,7 +19627,40 @@
       "read_what_special_education_law_actually": "ప్రత్యేక విద్యా చట్టం నిజంగా ఏమి చెబుతుందో దాని స్వంత మాటల్లోనే చదవండి. IDEA భాగం B మరియు సెక్షన్ 504 అసలు పాఠ్యం, eCFR నుంచి తెచ్చినది, తేదీతో, వెతకగలిగేది, సమాఖ్య మరియు రాష్ట్ర నియమాలు పక్కపక్కన. ఏదీ మార్చి రాయబడదు, సృష్టించబడదు: అధికారిక పాఠ్యం లోడ్ కాకపోతే, సాధనం ఊహించకుండా అదే చెబుతుంది.",
       "applied_k_12_behavior_practice_what": "ప్రాథమిక పూర్వ నుంచి పన్నెండో తరగతి వరకు అనువర్తిత ప్రవర్తన ఆచరణ: పాఠశాల మనస్తత్వవేత్తలు, ఉపాధ్యాయులు ఈ శాస్త్రంతో నిజంగా ఏమి చేస్తారు. మూడంచెల PBIS చట్రం, FBA విధులకు అనుసంధానించిన ప్రత్యామ్నాయ ప్రవర్తనలు, నేపథ్య ఘటనలు (చాలా BIPలు గమనించని నెమ్మది ప్రేరకాలు), జెఫ్ కాల్విన్ ఏడు దశల విరుచుకుపడే చక్రం, మెయిన్ అధ్యాయం 33పై ఆధారపడిన నియంత్రణ, ఏకాంతవాస నైతికత. BehaviorLab సోదర సాధనం.",
       "marine_biology_behavioral_science_of_octopuses": "ఆక్టోపస్, స్క్విడ్, కటిల్‌ఫిష్, నాటిలస్ సముద్ర జీవశాస్త్రం మరియు ప్రవర్తన శాస్త్రం. ముఖ్యాంశం: Hunter Sim — జాతి, ఆవాసం, ఎర, ఎత్తుగడ ఎంచుకోండి, మారువేష చిన్న ఆటను ఆడండి, దాడి సమయాన్ని అంచనా వేయండి. క్షేత్ర గమనికల జీవశాస్త్ర విశేషాలను తెరుస్తుంది (క్రొమాటోఫోర్ యంత్రాంగం, 9 మెదడులు, నీలి రక్తం, జెట్ చోదనం). 10 జాతుల క్షేత్ర మార్గదర్శి, తెలివి, మారువేషం, జెట్ వేగ గణాంకాలతో.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 మరియు HS-PS2. విస్తీర్ణం, ఎత్తు, భారం, పదార్థం మార్చగల ట్రస్ ఒత్తిడి అనుకరణి, వంతెన రకాల పోలిక (బీమ్, ట్రస్, ఆర్చ్, వేలాడే, కేబుల్ ఆధారిత), పదార్థాల డేటాబేస్, బల రకాలు, నిజ కేస్ అధ్యయనాలు (Tacoma Narrows, Hyatt Regency, Tay, Silver, అలాగే Brooklyn, Golden Gate, Akashi, Millau), ఇంజనీరింగ్ డిజైన్ చక్రం, AP శైలి పరీక్ష, ముద్రించదగిన డిజైన్ వివరణలు."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 మరియు HS-PS2. విస్తీర్ణం, ఎత్తు, భారం, పదార్థం మార్చగల ట్రస్ ఒత్తిడి అనుకరణి, వంతెన రకాల పోలిక (బీమ్, ట్రస్, ఆర్చ్, వేలాడే, కేబుల్ ఆధారిత), పదార్థాల డేటాబేస్, బల రకాలు, నిజ కేస్ అధ్యయనాలు (Tacoma Narrows, Hyatt Regency, Tay, Silver, అలాగే Brooklyn, Golden Gate, Akashi, Millau), ఇంజనీరింగ్ డిజైన్ చక్రం, AP శైలి పరీక్ష, ముద్రించదగిన డిజైన్ వివరణలు.",
+      "the_gutenberg_style_screw_press_as": "గుటెన్‌బర్గ్ శైలి స్క్రూ ప్రెస్ పనిచేసే అనుకరణగా. కడ్డీ లాగండి, మీ సొంత అక్షరాలు పేర్చండి, ముద్రను చూడండి. దానితో పాటు పదార్థ శాస్త్రం (సీసం-తగరం-యాంటిమనీ మిశ్రమం), అర్థశాస్త్రం (ఒక్కో పుస్తకం ఖర్చు కూలిపోవడం), చరిత్ర (మతసంస్కరణ, శాస్త్రీయ విప్లవం), అక్షరకళ, మరియు ముద్రణాయంత్రం వెనుక ఉన్న మనుషులు (చరిత్ర మరిచిపోయిన మహిళా ముద్రాపకులతో సహా). మాధ్యమిక తరగతుల అంతర్విభాగ పనికోసం నిర్మించినది.",
+      "three_js_stoop_simulator_deep_science": "Three.js లో దూకుడు అనుకరణి మరియు వేటాడే పక్షుల వేట యాంత్రికత గురించి లోతైన శాస్త్రం. 240 mph వేగంతో డేగలా ఎగరండి, 530 psi గోళ్ల హార్పీలా, లేదా శబ్దం లేని కొమ్ము గుడ్లగూబలా. 8 జాతులు, 12 విభాగాలు: గోళ్ల బలం, చూపు (మనిషి కంటే 4-8× పదునైనది, గోరింకలలో అతినీలలోహిత), ఎగిరే భౌతికశాస్త్రం, గుడ్లగూబల నిశ్శబ్ద ఎగురుట, అంతిమ వేగ గణకం, DDT తర్వాత కోలుకోవడం, కొనసాగుతున్న సంరక్షణ సంక్షోభాలు, మరియు నీడ రూపం, మొత్తం తీరు చూసి క్షేత్రంలో గుర్తింపు.",
+      "practice_reading_and_completing_the_documents": "పెద్దల జీవితం ఏ పత్రాలపై నడుస్తుందో వాటిని చదవడం, నింపడం సాధన చేయండి: ఉద్యోగ దరఖాస్తులు, W-4 ఫారాలు, అద్దె ఒప్పందాలు, వైద్య ప్రవేశ ఫారాలు, డ్రైవింగ్ అనుమతులు, మరియు మీ సొంత IEP సమావేశ ఆహ్వానం. ప్రతి గడి సరళ భాషలో విడమరిచినది, మీకు ఖరీదవగల గడులు గుర్తించినవి, ఎవరైనా ఇప్పుడే సంతకం చేయమనే ఒత్తిడి సన్నివేశాలు, మరియు సమయం అడగడానికి సిద్ధ వాక్యాలు. మొత్తం సాధన ఒక ఊహాత్మక వ్యక్తితోనే జరుగుతుంది, ఎప్పుడూ మీ నిజమైన సమాచారంతో కాదు.",
+      "how_swimming_works_stroke_physics_survival": "ఈత ఎలా పనిచేస్తుంది (కదలికల భౌతికశాస్త్రం, మనుగడ నైపుణ్యాలు) మరియు ప్రతి ఈతగాడు చల్లని నీరు, తిరుగు ప్రవాహాలు, మంచు, ప్రాణరక్షక కోటు, రక్షణ గురించి తెలుసుకోవలసినవి. కదలికల దృశ్య విశ్లేషణ, తేలియాడటం, ముందుకు కదలడం వెనుక శాస్త్రం, మరియు నిజంగా ప్రాణాలు కాపాడే మనుగడ నైపుణ్యాలు (వెల్లకిలా తేలడం, గుడ్డు తిప్పు తన్ను, HELP, గుంపుగా చేరడం). ఆధారాలు: CDC, USCG, AAP, NAA, NOAA, USA Swimming. విద్యా ప్రయోజనం మాత్రమే: నిజంగా ఈత నేర్చుకోవడానికి ఈత శిక్షకుడిని వెతకండి.",
+      "tax_paycheck_calculator_data_literacy_decision": "పన్ను మరియు జీతం చీటీ గణకం, డేటా అక్షరాస్యత, నిర్ణయ మాత్రిక, ఒప్పంద పఠనం, రికార్డులు మరియు కాగితపు పని, ప్రయాణ ప్రణాళిక, ఉద్యోగ సన్నద్ధత, స్వీయ వివరణ తయారీ, పోర్ట్‌ఫోలియో ఆధారాల అమరిక, ఇంటర్వ్యూ సాధన, సంభాషణ నైపుణ్యాలు, సమయ నిర్వహణ, ఆరోగ్య బీమా, దంత సంరక్షణ, శరీర సంరక్షణ ఎర్గోనామిక్స్, నిద్ర అలవాట్లు, ఔషధ లేబుళ్లు, అపాయింట్‌మెంట్ సన్నాహం, ఇంటి భద్రత, డిజిటల్ భద్రత, ఆహారంపై నిశ్చింత, మరియు దైనందిన జీవితానికి అనువర్తిత శాస్త్రం.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 మరియు HS-LS4. సూక్ష్మజీవ ప్రపంచం: బ్యాక్టీరియా (ఉపయోగకరం, వ్యాధికారకం), వైరస్‌లు (COVID, ఫ్లూ, HIV, ఫేజ్‌లు, మీజిల్స్), సూక్ష్మదర్శిని (కాంతి, దశా వ్యత్యాసం, ప్రతిదీప్తి, ఎలక్ట్రాన్, AFM), యాంటీబయాటిక్ నిరోధకత పరిణామం, మానవ, నేల, సముద్ర సూక్ష్మజీవరాశి, టీకాలు మరియు రోగనిరోధక వ్యవస్థ, పులియబెట్టడం (పులిసిన పిండి, పెరుగు, కిమ్చి, సౌర్‌క్రాట్, కొంబుచా, చీజ్), కేస్ అధ్యయనాలు (Snow, Fleming, MRSA, COVID మరియు mRNA, FMT), క్విజ్, మరియు ప్రయోగశాల భద్రత, సూక్ష్మజీవుల ముద్రించదగిన సూచిక.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "పదకొండు ప్రాంతాల్లో పర్యావరణ సంరక్షణ పదిహేను ప్రచారాలు. మెయిన్ ఐదు సుదీర్ఘ, బహుకాలిక ప్రచారాలు, అలాగే ఐదు యాంత్రిక కుటుంబాలన్నింటినీ తాకే పది అంతర్‌ప్రాంత దృశ్యాలు: అగ్ని (ఆస్ట్రేలియాలో Yarralin, ఉత్తర కాలిఫోర్నియాలో Karuk), సంరక్షణ (Yellowstone, రువాండాలో Akagera), ప్రజారోగ్యం (ముంబైలో డెంగ్యూ, లైబీరియాలో 2014 ఎబోలా), పరీవాహకం (Klamath నది, Murray-Darling బేసిన్), మరియు వాతావరణం (మార్షల్ దీవులు, బంగ్లాదేశ్ డెల్టా). కుటుంబ జతల అంతర్దృష్టులు, మెయిన్ ప్రచారాన్ని మరియు అదే యాంత్రిక కుటుంబపు అంతర్‌ప్రాంత దృశ్యాన్ని పూర్తి చేసినప్పుడు తెరుచుకుంటాయి.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 మరియు MS-ESS3-3. నిజంగా ఒకదానితో ఒకటి ఘర్షించే అవసరాలకు ఎదురుగా 144 స్థలాల గ్రిడ్‌పై ఒక పట్టణాన్ని రూపొందించండి. మూడు పట్టణాలు, ప్రతిదానికీ వేరే కట్టుబడి ఉంచే పరిమితి: Riverbend, అక్కడ వర్షపు నీరు మరియు రుణం నొక్కుతాయి; Mesa Hollow, అక్కడ భూగర్భ జలం స్థిరం, పొలాలు దాన్ని తాగుతున్నాయి; మరియు Harborlight, అక్కడ ప్రణాళిక 2050లోనూ పనిచేయాలి. హేతుబద్ధ పద్ధతిలో ప్రవాహం, నీటి సమతుల్యత, సముద్ర మట్టం పెరుగుదల భత్యం, నెట్‌వర్క్‌పై నడక దూరం, మరియు ఖర్చుతో కూడిన రహదారి నెట్‌వర్క్ — ప్రతి ఒక్కటీ తెరుచుకుని తన సూత్రాన్ని చూపుతుంది. Assumption Lab ఒకే ప్రణాళికను ప్రచురితమైన రెండు పరామితి సమితులపై మళ్లీ నడుపుతుంది, తద్వారా విద్యార్థులు ఏ నిర్ణయాలు రెండింటిలోనూ నిలుస్తాయో చూస్తారు. పటం, సవరించదగిన స్థల పట్టిక, మరియు అదే ప్రణాళిక త్రిమితీయ నమూనా. చర్చా ప్రశ్నలు, నమోదైన చరిత్ర, సాధనం నమూనా చేయడానికి నిరాకరించే ప్రశ్నలను మోస్తాయి. మార్కులూ లేవు, జవాబు కీలూ లేదు.",
+      "codap_data_science": "CODAP: డేటా సైన్స్",
+      "lumen_research_canvas": "Lumen: పరిశోధన ఫలకం",
+      "evolab_evolution": "EvoLab: పరిణామం",
+      "dino_lab": "డైనోసార్ ప్రయోగశాల",
+      "nutritionlab_nutrition_science": "NutritionLab: పోషకాహార శాస్త్రం",
+      "birdlab_i_spy_ornithology": "BirdLab: వెతికి కనిపెట్టే పక్షి శాస్త్రం",
+      "openbim_companion": "OpenBIM: తోడు మార్గదర్శి",
+      "applab_ai_app_generator": "AppLab: ఏఐతో యాప్ తయారీ",
+      "access_lens": "అందుబాటు కటకం",
+      "sim_shelf": "అనుకరణల అర",
+      "zoom_gallery": "జూమ్ గ్యాలరీ",
+      "sourcebook": "మూల గ్రంథం",
+      "wheel_fire_pottery_lab": "చక్రం మరియు నిప్పు: కుమ్మరి ప్రయోగశాల",
+      "echo_navigator": "ప్రతిధ్వని దిక్సూచి",
+      "learning_lab_how_learning_works": "Learning Lab: నేర్చుకోవడం ఎలా జరుగుతుంది",
+      "weldlab_welding_metal_joining": "WeldLab: వెల్డింగ్ మరియు లోహ కలయిక",
+      "bikelab_physics_repair": "BikeLab: భౌతికశాస్త్రం మరియు మరమ్మతు",
+      "fisherlab_boating_fishing_sim": "FisherLab: పడవ నడక, చేపల వేట అనుకరణి",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: గవ్వల పొలం అనుకరణి",
+      "throwlab_sports_physics": "ThrowLab: క్రీడల భౌతికశాస్త్రం",
+      "skatelab_skate_bmx_physics": "SkateLab: స్కేట్, BMX భౌతికశాస్త్రం",
+      "playlab_strategy_on_the_field": "PlayLab: మైదానంలో వ్యూహం",
+      "kepler_colony": "కెప్లర్ వలస",
+      "birdlab_life_list": "BirdLab: జీవిత జాబితా",
+      "petslab_decoder": "PetsLab: సంకేత విడమరిచేది"
     },
     "area": {
       "volume": "ఘనపరిమాణం..."
@@ -19654,7 +19700,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "సాధనాలకు తిరిగి",
+      "a11y_snapshot": "స్నాప్‌షాట్",
+      "a11y_next": "తదుపరి",
+      "a11y_simulation_speed": "అనుకరణ వేగం",
+      "a11y_close_flashcard": "ఫ్లాష్‌కార్డ్ మూసివేయండి"
     },
     "solar_sys": {
       "venus": "శుక్రుడు",
@@ -20476,7 +20527,8 @@
       "scaled_volume_changed": "🔵 స్కేల్ చేయబడింది (ఘనపరిమాణం మారింది)",
       "skewed_shape_deformed": "🟠 వంగినది (ఆకారం వికృతమైంది)",
       "degenerate_volume_0": "💀 క్షీణించింది (ఘనపరిమాణం → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "ట్యుటోరియల్ పురోగతి"
     },
     "numberline": {
       "first_mark": "మొదటి గుర్తు",
@@ -22619,7 +22671,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} సంవత్సరం మొదలవుతుంది."
     },
     "optics": {
       "optics_lab": "కాంతిశాస్త్ర ప్రయోగశాల",
@@ -22965,7 +23018,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "స్థానిక విశ్లేషణాత్మక SQL ప్రశ్న"
     },
     "geosandbox": {
       "loading_3d_engine": "3D ఇంజిన్ లోడ్ అవుతోంది...",
@@ -23315,7 +23369,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "శిల్పం తొలగించబడింది"
     },
     "algebraCAS": {
       "solve": "🔍 సాధించు",
@@ -25911,7 +25966,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది."
     },
     "economicslab": {
       "six_figures": "ఆరు అంకెల ఆదాయం",
@@ -27891,7 +27947,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ఆలోచన సేవ్ అయింది."
     },
     "anatomy": {
       "skeletal": "అస్థిపంజరం",
@@ -28473,7 +28530,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D కెమెరాను రీసెట్ చేయండి"
     },
     "dna": {
       "back_to_tools": "సాధనాలకు తిరిగి",
@@ -29850,7 +29908,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ఆలోచన సేవ్ అయింది."
     },
     "angles": {
       "back_to_tools": "సాధనాలకు తిరిగి వెళ్లు",
@@ -30664,7 +30723,8 @@
       "explain_how_each_parameter_shapes_a_si": "ప్రతి పరామితి సైన్ తరంగాన్ని ఎలా రూపొందిస్తుందో వివరించు.",
       "design_note_discrete_5_state_marker_no": "డిజైన్ గమనిక: వివిక్త 5-స్థితి గుర్తు; తరంగ స్కోరు లేదు; వెల్లడి లేదు — డిజైన్ ప్రకారం.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది."
     },
     "typingpractice": {
       "typing_practice_menu": "టైపింగ్ అభ్యాసం మెనూ",
@@ -31018,7 +31078,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "మెనూకి తిరిగి"
     },
     "music": {
       "edm_lead": "EDM లీడ్",
@@ -32289,7 +32350,7 @@
       "sculpt_engine_failed": "శిల్ప ఇంజిన్‌ను లోడ్ చేయలేకపోయాము.",
       "sculpt_failed": "శిల్పం విఫలమైంది — సరళమైన వివరణను ప్రయత్నించండి.",
       "sr_sculpted": "శిల్పం ఉంచబడింది",
-      "sr_art_cleared": "శిల్పం తీసివేయబడింది",
+      "sr_art_cleared": "శిల్పం తొలగించబడింది",
       "assess_failed": "శిక్షకుడు స్పందించలేకపోయాడు — మళ్లీ ప్రయత్నించండి.",
       "sr_assessed": "శిక్షకుని అభిప్రాయం బిల్డర్ ప్యానెల్ కింద సిద్ధంగా ఉంది",
       "recall_needs_more": "ముందుగా 2 సమూహాలలో కనీసం 4 ఆలోచనలు జోడించండి",
@@ -34427,7 +34488,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "జవాబు ఎంచుకోండి: {value1}"
     },
     "artstudio": {
       "back_to_tools": "సాధనాలకు తిరిగి",
@@ -35192,7 +35254,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "ఆఫ్",
+      "sr_nothing_to_redo": "మళ్లీ చేయడానికి ఏమీ లేదు.",
+      "sr_nothing_to_undo": "రద్దు చేయడానికి ఏమీ లేదు.",
+      "sr_dir_left": "ఎడమ",
+      "sr_dir_right": "కుడి"
     },
     "arithmetic": {
       "selected": " ఎంపిక చేయబడింది.",
@@ -39238,7 +39305,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ఖమధ్యంలోని రేడియంట్ మరియు 6.5 పరిమితి కాంతిమానం ఆధారంగా ప్రామాణీకరించబడింది. ఈ సుమారు అంచనా స్వచ్ఛమైన, చంద్రుడు లేని ఆకాశాన్ని మరియు 2.2 జనాభా సూచికను ఊహిస్తుంది. బోర్టిల్ తరగతులు పరిమితి కాంతిమానాన్ని స్థూలంగా మాత్రమే సూచిస్తాయి; ప్రామాణికం కంటే చీకటి ఆకాశం ZHR ను మించవచ్చు. రేడియంట్ యొక్క తక్కువ ఎత్తు మరియు ప్రకాశవంతమైన ఆకాశం అంచనాను తగ్గిస్తాయి.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM సాధనాలకు తిరిగి"
     },
     "autorepair": {
       "back_to_menu": "మెనూకు తిరిగి",
@@ -39979,7 +40047,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "స్కోరు: {value2}లో {value1}",
+      "a11y_open_2": "{value1} తెరవండి",
+      "a11y_option": "ఎంపిక {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "పైపెంకు",
@@ -40082,7 +40153,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -40828,7 +40900,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది.",
+      "a11y_investigation_progress": "పరిశోధన పురోగతి",
+      "a11y_flight_debrief": "విమాన సమీక్ష",
+      "a11y_tutorial_progress": "ట్యుటోరియల్ పురోగతి"
     },
     "behaviorlab": {
       "chain_reaction": "గొలుసు చర్య",
@@ -40998,7 +41074,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43512,7 +43588,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "అన్వేషించిన మాడ్యూల్: {value1}",
+      "a11y_score_out_of": "స్కోరు: {value2}లో {value1}",
+      "sr_selected": "ఎంచుకున్నది: {value1}",
+      "sr_quiz_reset": "క్విజ్ రీసెట్ అయింది"
     },
     "brainatlas": {
       "group_systems": "వ్యవస్థలు",
@@ -48668,7 +48748,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "జవాబు ఎంచుకోండి: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "క్విజ్ నిపుణుడు",
@@ -49812,7 +49893,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "ఎంచుకున్నది: {value1}"
     },
     "echotrainer": {
       "wall": "గోడ",
@@ -51271,7 +51353,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "అన్వేషించిన మాడ్యూల్: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "కార్బన్ కాలిక్యులేటర్",
@@ -52351,7 +52434,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "మెనూకి తిరిగి",
+      "sr_getting_critique": "విమర్శ తెస్తోంది...",
+      "sr_critique_ready": "విమర్శ సిద్ధంగా ఉంది."
     },
     "flightsim": {
       "game_controls": "🎮 గేమ్ నియంత్రణలు",
@@ -52559,7 +52645,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "విమాన అనుకరణి కాక్‌పిట్ దృశ్యం. W/S పిచ్, A/D బ్యాంక్, Shift/Ctrl థ్రాటిల్, కుండలీకరణాలు ఫ్లాప్‌లను నియంత్రిస్తాయి, X చక్రాల బ్రేకులు, Q క్విజ్, F బలాలు, Space విరామం, I సమాచారం.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52571,7 +52657,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "పోర్ట్‌ల్యాండ్, ME నుండి స్వేచ్ఛా విమానయానం",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -52617,7 +52703,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "షాంఘై టవర్",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58441,7 +58527,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "అన్వేషించిన మాడ్యూల్: {value1}",
+      "sr_loaded": "{value1} లోడ్ అయింది",
+      "sr_showing": "{value1} చూపబడుతోంది",
+      "sr_opening": "{value1} తెరవబడుతోంది"
     },
     "platetectonics": {
       "pacific": "పసిఫిక్",
@@ -58702,7 +58792,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63263,7 +63353,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "వివరణ సిద్ధంగా ఉంది.",
+      "sr_off": "ఆఫ్",
+      "sr_edge_left": "ఎడమ",
+      "sr_edge_right": "కుడి",
+      "sr_correct": "సరైనది.",
+      "sr_not_quite": "సరిగ్గా కాదు."
     },
     "printingpress": {
       "menu": "← మెనూ",
@@ -65402,7 +65498,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "మెనూకి తిరిగి",
+      "a11y_open": "{value1} తెరవండి",
+      "sr_selected": "ఎంచుకున్నది: {value1}",
+      "sr_loaded": "{value1} లోడ్ అయింది",
+      "sr_opening": "{value1} తెరవబడుతోంది",
+      "sr_correct": "సరైనది.",
+      "sr_not_quite": "సరిగ్గా కాదు.",
+      "sr_year_begins": "{value1} సంవత్సరం మొదలవుతుంది.",
+      "sr_question_reset_try_again": "ప్రశ్న రీసెట్ అయింది. మళ్లీ ప్రయత్నించండి.",
+      "sr_not_quite_see_the_explanation": "సరిగ్గా కాదు: వివరణ చూడండి."
     },
     "raptorhunt": {
       "glossary": "పదకోశం",
@@ -67051,7 +67157,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} తెరవండి",
+      "a11y_flight_debrief": "విమాన సమీక్ష"
     },
     "renewables": {
       "menu": "← మెనూ",
@@ -67751,7 +67859,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "మెనూకి తిరిగి",
+      "sr_getting_critique": "విమర్శ తెస్తోంది...",
+      "sr_critique_ready": "విమర్శ సిద్ధంగా ఉంది.",
+      "sr_quiz_reset": "క్విజ్ రీసెట్ అయింది"
     },
     "roadready": {
       "let_s_start": "ప్రారంభిద్దాం →",
@@ -70618,7 +70730,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM సాధనాలకు తిరిగి",
+      "a11y_local_analytical_sql_query": "స్థానిక విశ్లేషణాత్మక SQL ప్రశ్న"
     },
     "stewardship": {
       "sector": "రంగం",
@@ -71195,7 +71309,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "మెనూకి తిరిగి",
+      "sr_question_reset_try_again": "ప్రశ్న రీసెట్ అయింది. మళ్లీ ప్రయత్నించండి."
     },
     "throwlab": {
       "scenarios": "దృశ్యాలు",
@@ -71420,7 +71536,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D కెమెరాను రీసెట్ చేయండి",
+      "sr_coach_is_offline": "కోచ్ ఆఫ్‌లైన్‌లో ఉన్నారు.",
+      "sr_drill_stopped": "సాధన ఆపివేయబడింది."
     },
     "weldlab": {
       "menu": "← మెనూ",
@@ -72982,7 +73101,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "అన్వేషించిన మాడ్యూల్: {value1}",
+      "a11y_score_out_of": "స్కోరు: {value2}లో {value1}",
+      "sr_quiz_reset": "క్విజ్ రీసెట్ అయింది",
+      "sr_loaded": "{value1} లోడ్ అయింది",
+      "sr_showing": "{value1} చూపబడుతోంది",
+      "sr_not_quite_see_the_explanation": "సరిగ్గా కాదు: వివరణ చూడండి."
     },
     "worldbuilder": {
       "grade_level": "తరగతి స్థాయి",
@@ -74575,7 +74700,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "జీవన వృక్షం",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76430,7 +76555,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "ఎంపిక {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D కెమెరా దృశ్యాలు"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -76498,7 +76625,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "కోచ్ ఆఫ్‌లైన్‌లో ఉన్నారు.",
+      "sr_drill_stopped": "సాధన ఆపివేయబడింది."
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76510,6 +76639,22 @@
       "finish": "అర్థమైంది!",
       "replay": "చిట్కాలు",
       "replay_aria": "ట్యుటోరియల్‌ను చూపించు"
+    },
+    "pets": {
+      "sr_back_to_menu": "మెనూకి తిరిగి",
+      "sr_getting_critique": "విమర్శ తెస్తోంది...",
+      "sr_critique_ready": "విమర్శ సిద్ధంగా ఉంది."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM సాధనాలకు తిరిగి",
+      "a11y_3d_camera_views": "3D కెమెరా దృశ్యాలు"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "పరిశోధన పురోగతి"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "మళ్లీ చేయడానికి ఏమీ లేదు.",
+      "sr_nothing_to_undo": "రద్దు చేయడానికి ఏమీ లేదు."
     }
   },
   "glossary_health": {
@@ -77112,7 +77257,7 @@
       "person": "వ్యక్తి\\",
       "phase_label": "దశ లేబుల్",
       "rationale_which_antecedent_does_this_address": "హేతువు (ఇది ఏ పూర్వ-సూచకాన్ని పరిష్కరిస్తుంది?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "మీ విధానంపై ప్రతిబింబించండి...\\n• ఏది బాగా పనిచేసింది?\\n• మీరు ఏమి భిన్నంగా చేస్తారు?\\n• తదుపరి ఏ వ్యూహాలను అభ్యాసం చేయాలనుకుంటున్నారు?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "మీ విధానంపై ప్రతిబింబించండి...\n• ఏది బాగా పనిచేసింది?\n• మీరు ఏమి భిన్నంగా చేస్తారు?\n• తదుపరి ఏ వ్యూహాలను అభ్యాసం చేయాలనుకుంటున్నారు?",
       "reinforcement_how_you": "⭐ Reinforcement (ఎలా మీరు\\",
       "replacement_behavior_functionally_equivalent": "✅ ప్రత్యామ్నాయ ప్రవర్తన (క్రియాత్మకంగా సమానమైనది)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77120,7 +77265,7 @@
       "search_81_tools": "🔍 వెతుకు 80+ సాధనాలు…",
       "search_aba_terms": "🔍 వెతుకు ABA పదం...",
       "search_terms_eg_reinforcement_fba_data": "🔍 వెతుకు పదం... (e.g. \"reinforcement\", \"FBA\", \"డేటా\")",
-      "session_1_3nsession_2_7nsession_3_5n": "సెషన్ 1: 3\\nసెషన్ 2: 7\\nసెషన్ 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "సెషన్ 1: 3\nసెషన్ 2: 7\nసెషన్ 3: 5\n...",
       "setting_eg_math_class_cafeteria": "సెట్టింగ్ (ఉదా., గణిత తరగతి, క్యాఫెటేరియా)",
       "share_what_you_notice_at_home_strengths_concerns_c": "మీరు ఇంట్లో ఏమి గమనించారో పంచుకోండి — బలాలు, ఆందోళనలు, సాంస్కృతిక సందర్భం లేదా పాఠశాల బృందానికి సూచనలు...",
       "step_description": "దశ description...",
@@ -78591,7 +78736,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "గాడి ఎత్తు",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80783,7 +80928,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "భావన చిత్రం",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80819,10 +80964,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "ప్రతి భావనను అమర్చండి",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "అమరిక పురోగతి",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80835,7 +80980,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "సాధ్యమయ్యే పేర్లు",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80846,7 +80991,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "భావన స్మరణ",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82404,7 +82549,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect మూసివేయండి",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82413,7 +82558,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "అసైన్‌మెంట్లను వడపోయండి",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82451,15 +82596,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "ప్రశ్న {n}",
+    "q_choices_aria": "ప్రశ్న {n} కోసం ఎంపికలు, ప్రతి పంక్తికి ఒకటి",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "ప్రశ్న {n} తొలగించండి",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "ప్రశ్న {n} కోసం స్కేల్ దశలు",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "ప్రశ్న {n} కోసం సమాధాన రకం",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82469,10 +82614,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} కోసం ఎంచుకోగలిగే లింక్",
+    "scale_high_aria": "పై చివరకు లేబుల్",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "కింది చివరకు లేబుల్",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82492,7 +82637,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "అసైన్‌మెంట్ల స్థితి సారాంశం",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82508,9 +82653,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "స్వయంచాలకంగా నవీకరించబడుతుంది",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "ఎంచుకోగలిగే ఇంటిపని లింక్",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82519,7 +82664,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "ఇంటిపని QR కోడ్",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84967,7 +85112,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "ప్రేరణలు మరియు మూల్యాంకన పట్టికల కోసం వికాస స్థాయిని ఎంచుకోండి",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84975,7 +85120,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "ఉపాధ్యాయ వీక్షణను ఆన్ లేదా ఆఫ్ చేయండి",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85006,17 +85151,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "వాయిస్ నోట్ రికార్డింగ్‌ను తాత్కాలికంగా ఆపండి",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "వాయిస్ నోట్ రికార్డింగ్‌ను కొనసాగించండి",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "వాయిస్ నోట్ రికార్డింగ్ ప్రారంభించండి",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "రికార్డింగ్ ఆపండి",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85402,22 +85547,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven గుర్తింపు కారణం",
+    "recent_deliveries_aria": "ఇటీవలి ప్రైవేట్ AlloHaven గుర్తింపులు",
+    "token_amount_aria": "AlloHaven టోకెన్ మొత్తం",
+    "token_cap_aria": "ఒక్కో విద్యార్థికి ఒక్కో సెషన్‌కు AlloHaven టోకెన్ పరిమితి"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "లక్ష్యం చేరుకుంటూనే అనుమతించబడిన మినహాయింపులు",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "ఈ లక్ష్యం కోసం యాప్ ట్రాక్ చేసే ఐచ్ఛిక పురోగతి సంకేతం",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "బృందం మొత్తం కలిసి, లేదా ప్రతి విద్యార్థి విడిగా",
+    "name_aria": "తరగతి లక్ష్యం పేరు, ఈ పరికరంలో మాత్రమే ఉంచబడుతుంది",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "ఈ లక్ష్యం ఏ విద్యార్థులను కలిగి ఉంటుంది",
+    "template_aria": "తరగతి లక్ష్యం ప్రారంభ మూస",
+    "tokens_aria": "ఈ లక్ష్యం చేరుకున్నప్పుడు ప్రతి విద్యార్థికి ఇచ్చే టోకెన్లు"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85435,7 +85580,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox నిర్వాహక టోకెన్ (ఐచ్ఛికం)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85465,17 +85610,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "చెయ్యి ఎత్తారు",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "ఎంచుకోగలిగే ప్రత్యక్ష మెయిల్‌బాక్స్ చేరిక లింక్",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox యొక్క ప్రత్యక్ష సెషన్",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85502,7 +85647,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "వాస్తవ-కాల కనెక్షన్",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85534,7 +85679,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox వెబ్ యాప్ URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

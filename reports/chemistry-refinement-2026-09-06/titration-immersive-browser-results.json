@@ -1,0 +1,91 @@
+{
+  "checks": [
+    "Measured addition raises flask level and lowers burette meniscus; reduced motion stays still.",
+    "Front, side, and keyboard orbit visibly change the real WebGL camera.",
+    "Switching to the diagram disposes 3D and preserves the experiment; returning restores the same readings.",
+    "Bench addition controls share the experiment state; animation ends; polyprotic refills and redox potential use the correct readings.",
+    "Context loss reveals the usable 2D apparatus."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "width": 1200,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "initial": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 1022,
+      "h": 580
+    },
+    "objects": 77,
+    "reading": 0,
+    "delivered": 0,
+    "fillFraction": 0.3333333333333333,
+    "liquidSurface": 0.4617158626401806,
+    "meniscus": 6.24,
+    "color": "rgba(200,220,255,0.25)",
+    "animating": false
+  },
+  "endpoint": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 1022,
+      "h": 580
+    },
+    "objects": 77,
+    "reading": 26,
+    "delivered": 26,
+    "fillFraction": 0.68,
+    "liquidSurface": 0.8785874873636701,
+    "meniscus": 4.6176,
+    "color": "#ec4899",
+    "animating": false
+  },
+  "refill": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 318,
+      "h": 390
+    },
+    "objects": 77,
+    "reading": 25,
+    "delivered": 75,
+    "fillFraction": 0.9523809523809523,
+    "liquidSurface": 1.531968492360424,
+    "meniscus": 4.68,
+    "color": "#ec4899",
+    "animating": false
+  },
+  "redox": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 318,
+      "h": 390
+    },
+    "objects": 77,
+    "reading": 0,
+    "delivered": 0,
+    "fillFraction": 0.6756756756756757,
+    "liquidSurface": 0.8719288863764678,
+    "meniscus": 6.24,
+    "color": "rgba(214,240,226,0.200)",
+    "animating": false
+  }
+}

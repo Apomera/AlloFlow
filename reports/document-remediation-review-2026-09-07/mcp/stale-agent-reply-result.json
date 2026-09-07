@@ -1,0 +1,15 @@
+{
+  "demonstrated": "Stale reply from an earlier attempt is accepted after resume",
+  "runId": "arun-49b22700-9724-49c8-8228-8ee1e4e8cd1d",
+  "previousRequest": {
+    "id": "mreq-1",
+    "prompt": "Document version 1"
+  },
+  "resumedRequest": {
+    "id": "mreq-1",
+    "prompt": "Document version 2"
+  },
+  "accepted": true,
+  "finalAcceptedReply": "Answer for document version 1",
+  "note": "Executes current startAgentRun and remediation_agent_respond source with a stubbed model-dependent pipeline; no files, browser, model or network are used."
+}

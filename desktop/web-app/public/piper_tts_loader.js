@@ -567,6 +567,7 @@
         if (!text || typeof text !== 'string' || text.trim().length === 0) return null;
 
         options = options || {};
+        const force = options.force === true;
         const request = _createRequest(options.signal);
         _activeRequests.add(request);
         const signal = request.signal;
@@ -586,7 +587,7 @@
 
             const cacheKey = _cacheKey(text, voiceId);
             const cached = _cacheGet(cacheKey, text, voiceId);
-            if (cached) return cached;
+            if (cached && !force) return cached;
 
             const lib = await _awaitWithSignal(_ensureLibLoaded(), signal);
             if (signal.aborted) throw _signalAbortError(signal);
@@ -626,7 +627,7 @@
             }
 
             const raced = _cacheGet(cacheKey, text, voiceId);
-            if (raced) return raced;
+            if (raced && !force) return raced;
 
             const audioUrl = URL.createObjectURL(blob);
             if (!audioUrl) return null;

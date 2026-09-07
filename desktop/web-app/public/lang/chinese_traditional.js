@@ -1357,7 +1357,7 @@
     "move_event_down": "將事件下移",
     "sorting_categories": "分類類別",
     "sortable_items": "Sortable items",
-    "reading_tools": "Reading tools",
+    "reading_tools": "閱讀工具",
     "reading_theme": "閱讀主題",
     "annotations": "Annotations",
     "yellow_note": "Yellow note",
@@ -5131,7 +5131,7 @@
       "correct": "出色的工作！",
       "partial": "努力不錯,繼續加油！",
       "incorrect": "不太對 • 再試一次！",
-      "error": "無法評估 • 請重試。",
+      "error": "無法評估 — 請重試。",
       "verdict_correct": "正確！",
       "verdict_partial": "部分正確",
       "verdict_incorrect": "不太對",
@@ -7026,7 +7026,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "傳送至專家工作台",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7358,7 +7358,7 @@
     "type_timeline": "順序構建器",
     "type_timeline_desc": "適配年級水平的順序活動",
     "full_pack": "完整資源包 · 全選",
-    "deselect_all": "? 取消全選",
+    "deselect_all": "↩ 取消全選",
     "estimate": "估算",
     "api_calls": "API 調用",
     "start_batch": "生成",
@@ -7413,7 +7413,7 @@
     "bridge_f2f_custom_lang": "自定義語言……",
     "bridge_f2f_custom_placeholder": "例如：約魯巴語、提格裡尼亞語、達裡語……",
     "bridge_all_saved": "所有術語已儲存到詞彙表！",
-    "bridge_terms_saved": "? 全部已儲存",
+    "bridge_terms_saved": "✅ 全部已儲存",
     "fullpack_group_target": "目標小組",
     "fullpack_group_current": "當前設定",
     "fullpack_group_all": "所有小組",
@@ -7617,7 +7617,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "凹口的高",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -11266,7 +11266,7 @@
       "meta_info": "{date} • **最终等級**:{level}",
       "log_header": "冒險日志",
       "chapter_separator": "***",
-      "user_label": "? 你",
+      "user_label": "➤ 你",
       "print_button": "打印故事書"
     },
     "answer_key_title": "答案密鑰",
@@ -11851,10 +11851,10 @@
     "locked": "已鎖定",
     "escaped": "你逃脫了！",
     "escaped_desc": "你解開了所有謎題並逃出了房間！",
-    "time_up": "? 時間到！",
+    "time_up": "⏰ 時間到！",
     "reveal_hint": "顯示提示",
-    "puzzles_remaining": "剩余 {{count}} 個謎題",
-    "time_remaining": "時間：{{time}}",
+    "puzzles_remaining": "剩余 {count} 個謎題",
+    "time_remaining": "時間：{time}",
     "progress": "進度",
     "start": "開始密室逃脫",
     "start_hint": "啟動計時器以開始檢查物體",
@@ -11865,8 +11865,8 @@
     "room_complete": "房間完成！",
     "loading_error": "無法載入房間數據",
     "no_puzzle": "未找到此物體的謎題",
-    "xp_earned": "+{{xp}} 經驗",
-    "bonus_xp": "完美逃脫！+{{xp}} 獎勵經驗",
+    "xp_earned": "+{xp} 經驗",
+    "bonus_xp": "完美逃脫！+{xp} 獎勵經驗",
     "puzzle_mcq": "多項選擇",
     "puzzle_sequence": "排序",
     "puzzle_cipher": "解碼消息",
@@ -11924,7 +11924,7 @@
     "clue": "線索",
     "clue_found": "發現線索！",
     "clue_revealed": "這個線索可能有助於另一個謎題……",
-    "clues_collected": "線索：{{count}}/{{total}}",
+    "clues_collected": "線索：{count}/{total}",
     "use_clue": "使用線索",
     "final_door": "出口門",
     "final_door_ready": "出口門現已解鎖！",
@@ -11950,12 +11950,12 @@
     "left": "剩余",
     "wrong_attempts": "錯誤嘗試",
     "time_penalty": "-{seconds} 秒！",
-    "game_over_time": "? 時間到！你的時間用完了。",
+    "game_over_time": "⏰ 時間到！你的時間用完了。",
     "streak": "連續",
     "streak_bonus": "連續獎勵！x{multiplier}",
     "streak_lost": "連續中斷！",
     "one_minute_warning": "剩余一分鐘！",
-    "thirty_seconds_warning": "? 只剩 30 秒！",
+    "thirty_seconds_warning": "⏰ 只剩 30 秒！",
     "timer_paused": "計時器暂停",
     "timer_resume": "恢復",
     "settings_btn": "房間設定",
@@ -11968,9 +11968,9 @@
     "launch_live_tooltip": "與你的班級開始多人密室逃脫",
     "team_mode": "團隊挑戰",
     "team_race": "競速逃脫！",
-    "team_progress": "{{team}} 進度：{{solved}}/{{total}}",
+    "team_progress": "{team} 進度：{solved}/{total}",
     "waiting_host": "等待老師開始……",
-    "team_escaped": "{{team}} 隊伍逃脫了！",
+    "team_escaped": "{team} 隊伍逃脫了！",
     "all_teams_done": "所有隊伍完成！",
     "your_team": "你的隊伍",
     "team_red": "紅隊",
@@ -11978,7 +11978,7 @@
     "team_green": "綠隊",
     "team_yellow": "黃隊",
     "team_all": "所有學生",
-    "teams_competing": "{{count}} 個隊伍在競爭",
+    "teams_competing": "{count} 個隊伍在競爭",
     "first_escape": "第一個逃脫！",
     "end_game": "結束遊戲",
     "end_game_confirm": "為所有學生結束密室逃脫？",
@@ -11991,8 +11991,8 @@
     "resume_game": "恢復遊戲",
     "game_paused_by_teacher": "遊戲已被老師暂停",
     "celebration_title": "恭喜！",
-    "you_escaped": "你的隊伍在 {{time}} 內逃脫了！",
-    "other_team_escaped": "{{team}} 逃脫了！",
+    "you_escaped": "你的隊伍在 {time} 內逃脫了！",
+    "other_team_escaped": "{team} 逃脫了！",
     "class_escaped": "班級勝利！",
     "everyone_escaped": "每個人都齊心協力逃脫了！",
     "hurry_up": "繼續！你仍然可以逃脫！",
@@ -12020,7 +12020,7 @@
     "load_saved": "載入已儲存",
     "loaded_saved": "已載入儲存的密室逃脫！準備好時審閱並啟動。",
     "no_saved": "未找到已儲存的密室逃脫",
-    "preview_confirmed": "? 密室逃脫已鎖定 · 準備玩！",
+    "preview_confirmed": "✅ 密室逃脫已鎖定 · 準備玩！",
     "xp_earned_streak": "+{xp} 經驗({multiplier}x 連續獎勵！)",
     "loaded_from_resource": "從資源載入。"
   },
@@ -12699,7 +12699,11 @@
       "trapezoid": "梯形",
       "simpson": "辛普森",
       "rectangles_n": "矩形(n)",
-      "coeff_a": "係數 a"
+      "coeff_a": "係數 a",
+      "sr_explanation_ready": "解釋已就緒。",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一個"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ 此瀏覽器不支持音頻",
@@ -12823,7 +12827,7 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "生成 AI 解釋，水平為",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
@@ -14454,8 +14458,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? 正確！它是",
-      "that": "? 那",
+      "correct_it": "✅ 正確！它是",
+      "that": "❌ 那",
       "linear": "線性",
       "quadratic": "二次",
       "cubic": "三次",
@@ -14729,7 +14733,8 @@
       "angle_u00b0": "角度 (°)",
       "velocity_ms": "速度 (m/s)",
       "gravity_msu00b2": "重力 (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "解釋已就緒。"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 隨機：",
@@ -14757,7 +14762,10 @@
       "codominant_desc": "兩個等位基因都會充分表達。雜合子會同時呈現兩種性狀。",
       "sexLinked_desc": "該性狀由 X 染色體攜帶。這表示 X 連鎖隱性遺傳（例如血友病、紅綠色盲）：男性（XY）只需一份拷貝即可表達；女性（XX）需要兩份。",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_snapshot": "快照",
+      "a11y_close_flashcard": "關閉卡片"
     },
     "circuit": {
       "meter_status_ammeter_short": "不安全的放置：短路路徑",
@@ -15049,8 +15057,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? 正確！",
-      "it": "? 它"
+      "correct": "✅ 正確！",
+      "it": "❌ 它"
     },
     "inequality": {
       "badge_first_solve_label": "首次解答",
@@ -15166,8 +15174,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? 正確！",
-      "answer": "? 答案：",
+      "correct": "✅ 正確！",
+      "answer": "❌ 答案：",
       "hydrogen": "氢",
       "helium": "氦",
       "lithium": "锂",
@@ -15460,7 +15468,7 @@
       "accessible_summary_heading": "Current simulation state",
       "accessible_summary_help": "Every camera and layer action has a keyboard-accessible button. Focus the canvas for arrow-key orbiting, plus and minus zoom, bracket-key star selection, Escape to clear, and R to reset.",
       "accessible_summary_title": "Text alternative for the 3-D scene",
-      "aria_back_to_tools": "Back to tools",
+      "aria_back_to_tools": "返回工具",
       "aria_bh_lifecycle": "Possible stages in a black hole's history",
       "aria_blackhole_canvas": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.",
       "aria_camera_controls": "Galaxy camera controls",
@@ -16415,7 +16423,9 @@
       "our_sun_is_born": "我們的太陽诞生",
       "present_day": "今日",
       "the_far_future": "遙遠的未來",
-      "universe": "宇宙："
+      "universe": "宇宙：",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_simulation_speed": "模擬速度"
     },
     "rocks": {
       "igneous": "火成岩",
@@ -19340,7 +19350,10 @@
       "garage_desc": "引擎、生鏽和反應 — 一個化學工作室。",
       "classroom_desc": "一個真正的科學教室，裡面有燒杯和實驗。",
       "outdoors_desc": "走到戶外 — 大自然是最大的實驗室。",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一個"
     },
     "converter": {
       "u2705_saved_to_history": "✅ 已儲存到歷史記錄！",
@@ -20127,7 +20140,40 @@
       "read_what_special_education_law_actually": "讀一讀特殊教育法究竟怎麼說，用它自己的原話。IDEA B 部分與第 504 條的真實條文，取自 eCFR 並附取用日期，可檢索，聯邦與州的規定並排呈現。沒有任何轉述或生成：若官方條文未載入，工具會直說，而不是猜。",
       "applied_k_12_behavior_practice_what": "從幼兒園到高中的應用行為實務——學校心理工作者和教師真正拿這門科學做些什麼。PBIS 三層架構、與 FBA 功能相對應的替代行為、背景事件（多數 BIP 忽略的慢觸發因素）、Geoff Colvin 的七階段發作週期，以及以緬因州第 33 章為依據的約束與隔離倫理。BehaviorLab 的姊妹工具。",
       "marine_biology_behavioral_science_of_octopuses": "章魚、魷魚、烏賊和鸚鵡螺的海洋生物學與行為科學。重頭戲：Hunter Sim——挑物種、挑棲地、挑獵物、挑戰術，玩偽裝小遊戲，掐準出擊時機。解鎖野外筆記式的生物學冷知識（色素細胞的機制、9 個腦、藍色血液、噴射推進）。10 個物種的野外圖鑑，附智力、偽裝與噴射速度數據。",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1 與 HS-PS2。桁架應力模擬器，跨距、高度、載重與材料均可調；橋型比較（梁橋、桁架橋、拱橋、懸索橋、斜張橋）；材料資料庫；受力類型；真實案例（Tacoma Narrows、Hyatt Regency、Tay、Silver，以及 Brooklyn、Golden Gate、Akashi 與 Millau）；工程設計循環；AP 風格測驗；可列印的設計規格。"
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1 與 HS-PS2。桁架應力模擬器，跨距、高度、載重與材料均可調；橋型比較（梁橋、桁架橋、拱橋、懸索橋、斜張橋）；材料資料庫；受力類型；真實案例（Tacoma Narrows、Hyatt Regency、Tay、Silver，以及 Brooklyn、Golden Gate、Akashi 與 Millau）；工程設計循環；AP 風格測驗；可列印的設計規格。",
+      "the_gutenberg_style_screw_press_as": "古騰堡式螺旋壓印機，做成一台真的能轉起來的模擬。拉動手柄，自己排版，看看壓出的印痕。此外還有材料科學（鉛錫銻合金）、經濟學（每本書成本的崩塌）、歷史（宗教改革、科學革命）、字體排印，以及壓印機背後的人（包括被歷史遺忘的女性印工）。為國中的跨學科學習而建。",
+      "three_js_stoop_simulator_deep_science": "Three.js 俯衝模擬器，外加猛禽捕獵力學的深度科學。以 240 mph 的速度當一隻遊隼，當一隻爪力 530 psi 的角鵰，或者當一隻無聲的美洲鵰鴞。8 個物種、12 個章節：爪力、視力（人類的 4-8 倍，紅隼可見紫外）、飛行物理、貓頭鷹的靜音飛行、終端速度計算器、DDT 之後的族群恢復與仍在進行的保育危機，以及靠剪影和整體神態在野外辨識。",
+      "practice_reading_and_completing_the_documents": "練習讀懂並填寫成年生活賴以運轉的那些文件：求職申請、W-4 表、租約、就診登記表、駕駛學習許可，以及你自己的 IEP 會議邀請函。每一欄都用平實語言拆解，會讓你付出代價的方格都標了出來，還有別人催你「現在就簽」時的壓力情境，以及開口要時間的現成說法。所有練習都用一個虛構的人，絕不會用你的真實資訊。",
+      "how_swimming_works_stroke_physics_survival": "游泳是怎麼回事（泳姿物理加上求生技能），以及每個游泳的人都該知道的冷水、離岸流、冰面、救生衣和救援知識。泳姿的圖解拆分、浮力與推進的科學，以及那些真正能救命的求生技能（仰漂、踩水、HELP 抱膝姿勢、抱團）。資料來源：CDC、USCG、AAP、NAA、NOAA、USA Swimming。僅供教學：要真正學會游泳，請找一位游泳教練。",
+      "tax_paycheck_calculator_data_literacy_decision": "稅務與薪資單計算機、資料素養、決策矩陣、合約閱讀器、檔案與文書、出行規劃、就業準備、履歷撰寫、作品集證據的整理、面試練習、溝通技巧、時間管理、醫療保險、口腔照護、身體照顧的人因工程、睡眠作息、藥品標示、就診準備、居家安全、數位安全、與食物相處的從容，以及用於日常生活的應用科學。",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1、HS-LS1、HS-LS3 與 HS-LS4。微生物世界：細菌（有益的與致病的）、病毒（COVID、流感、HIV、噬菌體、麻疹）、顯微技術（光學、相差、螢光、電子、AFM）、抗生素抗藥性的演化、人體與土壤與海洋的微生物組、疫苗與免疫系統、發酵（酸種、優格、泡菜、酸菜、康普茶、起司）、案例研究（Snow、Fleming、MRSA、COVID 與 mRNA、FMT）、測驗，以及可列印的實驗室安全與微生物速查表。",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "十一個地區、十五場環境守護行動。緬因州的五場橫跨多個時期的長線行動，另有十個跨地區情境，涵蓋全部五個機制族：火（澳洲的 Yarralin、北加州的 Karuk）、保育（Yellowstone、盧安達的 Akagera）、公共衛生（孟買登革熱、賴比瑞亞 2014 年伊波拉）、流域（Klamath 河、Murray-Darling 流域）、氣候（馬紹爾群島、孟加拉三角洲）。當你在同一機制族裡同時完成緬因州行動與跨地區情境時，族內配對洞察就會解鎖。",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1、HS-ETS1-3 與 MS-ESS3-3。在 144 個地塊的網格上設計一座小鎮，面對的是真正互相衝突的要求。三座小鎮，各有不同的約束條件：Riverbend，雨水與債券兩頭緊；Mesa Hollow，含水層是定量，而農場正在把它喝乾；以及 Harborlight，規劃到 2050 年還得站得住。合理化法逕流、水量平衡、海平面上升餘量、路網步行距離，以及一套計價的道路網絡，每一項都能展開看它的公式。Assumption Lab 會用兩套已發表的參數把同一份規劃再跑一遍，讓學生看清哪些結論在兩套參數下都站得住。地圖、可編輯的地塊表格，以及同一份規劃的三維模型。討論提示與有據可查的歷史承載著這個工具拒絕建模的那些問題。不打分，也沒有標準答案。",
+      "codap_data_science": "CODAP：資料科學",
+      "lumen_research_canvas": "Lumen：研究畫布",
+      "evolab_evolution": "EvoLab：演化",
+      "dino_lab": "恐龍實驗室",
+      "nutritionlab_nutrition_science": "NutritionLab：營養科學",
+      "birdlab_i_spy_ornithology": "BirdLab：找一找鳥類學",
+      "openbim_companion": "OpenBIM：隨行指南",
+      "applab_ai_app_generator": "AppLab：AI 應用產生器",
+      "access_lens": "無障礙透鏡",
+      "sim_shelf": "模擬書架",
+      "zoom_gallery": "放大畫廊",
+      "sourcebook": "資料源書",
+      "wheel_fire_pottery_lab": "輪與火：陶藝實驗室",
+      "echo_navigator": "回聲導航",
+      "learning_lab_how_learning_works": "Learning Lab：學習是怎麼發生的",
+      "weldlab_welding_metal_joining": "WeldLab：銲接與金屬接合",
+      "bikelab_physics_repair": "BikeLab：物理與維修",
+      "fisherlab_boating_fishing_sim": "FisherLab：航行與釣魚模擬",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab：淡菜養殖模擬",
+      "throwlab_sports_physics": "ThrowLab：運動物理",
+      "skatelab_skate_bmx_physics": "SkateLab：滑板與 BMX 物理",
+      "playlab_strategy_on_the_field": "PlayLab：場上策略",
+      "kepler_colony": "克卜勒殖民地",
+      "birdlab_life_list": "BirdLab：終身鳥種名錄",
+      "petslab_decoder": "PetsLab：行為解讀器"
     },
     "area": {
       "volume": "體積……"
@@ -20167,7 +20213,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "返回工具",
+      "a11y_snapshot": "快照",
+      "a11y_next": "下一個",
+      "a11y_simulation_speed": "模擬速度",
+      "a11y_close_flashcard": "關閉卡片"
     },
     "solar_sys": {
       "venus": "金星",
@@ -20989,7 +21040,8 @@
       "scaled_volume_changed": "🔵 已縮放（體積已改變）",
       "skewed_shape_deformed": "🟠 傾斜（形狀已變形）",
       "degenerate_volume_0": "💀 退化（體積 → 0）",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "教學進度"
     },
     "numberline": {
       "first_mark": "首個標記",
@@ -23132,7 +23184,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} 年開始。"
     },
     "optics": {
       "optics_lab": "光學實驗室",
@@ -23478,7 +23531,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "本機分析型 SQL 查詢"
     },
     "geosandbox": {
       "loading_3d_engine": "正在載入3D引擎...",
@@ -23828,7 +23882,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "已移除雕塑"
     },
     "algebraCAS": {
       "solve": "🔍 求解",
@@ -26444,7 +26499,8 @@
       "bench_punchline_c": " mm，約為同樣一毫升在 250 mL 燒杯中所能達到高度的 ",
       "bench_punchline_d": "× 。在燒杯裡它只形成 ",
       "bench_punchline_e": " mm 的薄膜，你根本看不見，更別說讀數了。這正是要用滴定管滴定、而不是在燒杯裡滴定的全部原因。",
-      "explain_label": "你的解釋"
+      "explain_label": "你的解釋",
+      "sr_explanation_ready": "解釋已就緒。"
     },
     "economicslab": {
       "six_figures": "六位數收入",
@@ -28424,7 +28480,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "反思已儲存。"
     },
     "anatomy": {
       "system_explorer": "系統探索者",
@@ -29006,7 +29063,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "重設 3D 相機"
     },
     "dna": {
       "back_to_tools": "返回工具",
@@ -30383,7 +30441,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "反思已儲存。"
     },
     "angles": {
       "back_to_tools": "返回工具",
@@ -31197,7 +31256,8 @@
       "explain_how_each_parameter_shapes_a_si": "講解每個參數如何塑造正弦波。",
       "design_note_discrete_5_state_marker_no": "設計說明：離散的 5 狀態標記；無波形評分；無揭示——出於設計。",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "解釋已就緒。"
     },
     "typingpractice": {
       "typing_practice_menu": "打字練習菜單",
@@ -31551,7 +31611,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "返回選單"
     },
     "music": {
       "edm_lead": "EDM 主音",
@@ -34102,7 +34163,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "選擇答案：{value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -34866,7 +34928,7 @@
       "sculpt_engine_failed": "無法加載雕刻引擎。",
       "sculpt_failed": "雕刻失敗——試試更簡單的描述。",
       "sr_sculpted": "雕塑已放置",
-      "sr_art_cleared": "雕塑已移除",
+      "sr_art_cleared": "已移除雕塑",
       "assess_failed": "教練無法回應——請重試。",
       "sr_assessed": "教練反饋已在構建面板下方就緒",
       "recall_needs_more": "請先在2個分組中添加至少4個想法",
@@ -35725,7 +35787,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "關閉",
+      "sr_nothing_to_redo": "沒有可重做的內容。",
+      "sr_nothing_to_undo": "沒有可復原的內容。",
+      "sr_dir_left": "左",
+      "sr_dir_right": "右"
     },
     "arithmetic": {
       "selected": " 已選擇。",
@@ -39771,7 +39838,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR 以天頂輻射點和極限星等 6.5 為標準。此粗略估計假設晴朗無月的天空和數量指數 2.2。波特爾等級只能大致指示極限星等；比標準更暗的天空可能超過 ZHR。輻射點高度較低和天空較亮都會降低該估計值。",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "返回 STEM 工具"
     },
     "autorepair": {
       "back_to_menu": "返回菜單",
@@ -40512,7 +40580,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "得分：{value2} 分中的 {value1} 分",
+      "a11y_open_2": "開啟{value1}",
+      "a11y_option": "選項 {value1}：{value2}{value3}"
     },
     "bakingscience": {
       "crust": "地殼",
@@ -40615,7 +40686,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "解釋已就緒。"
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41361,7 +41433,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "解釋已就緒。",
+      "a11y_investigation_progress": "探究進度",
+      "a11y_flight_debrief": "飛行講評",
+      "a11y_tutorial_progress": "教學進度"
     },
     "behaviorlab": {
       "chain_reaction": "連鎖反應",
@@ -41534,7 +41610,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "解釋已就緒。",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -44045,7 +44121,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "已探索模組：{value1}",
+      "a11y_score_out_of": "得分：{value2} 分中的 {value1} 分",
+      "sr_selected": "已選擇：{value1}",
+      "sr_quiz_reset": "測驗已重設"
     },
     "brainatlas": {
       "group_systems": "系統",
@@ -49201,7 +49281,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "選擇答案：{value1}"
     },
     "cyberdefense": {
       "quiz_master": "答題達人",
@@ -50345,7 +50426,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "已選擇：{value1}"
     },
     "echotrainer": {
       "wall": "牆",
@@ -51804,7 +51886,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "已探索模組：{value1}"
     },
     "fireecology": {
       "carbon_calculator": "碳計算機",
@@ -52884,7 +52967,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "返回選單",
+      "sr_getting_critique": "正在取得點評……",
+      "sr_critique_ready": "點評已就緒。"
     },
     "flightsim": {
       "game_controls": "🎮 遊戲控制",
@@ -53092,7 +53178,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "飛行模擬器駕駛艙視圖。W/S 俯仰，A/D 橫滾，Shift/Ctrl 油門，方括號控制襟翼，X 機輪煞車，Q 測驗，F 受力，Space 暫停，I 資訊。",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -53104,7 +53190,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "從緬因州波特蘭出發的自由飛行",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -53151,7 +53237,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "上海中心大廈",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58974,7 +59060,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "已探索模組：{value1}",
+      "sr_loaded": "已載入{value1}",
+      "sr_showing": "正在顯示{value1}",
+      "sr_opening": "正在開啟{value1}"
     },
     "platetectonics": {
       "pacific": "太平洋",
@@ -59235,7 +59325,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63796,7 +63886,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "解釋已就緒。",
+      "sr_off": "關閉",
+      "sr_edge_left": "左",
+      "sr_edge_right": "右",
+      "sr_correct": "正確。",
+      "sr_not_quite": "不太對。"
     },
     "playlab": {
       "back": "← 返回",
@@ -63864,7 +63960,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "輔導員已離線。",
+      "sr_drill_stopped": "練習已停止。"
     },
     "printingpress": {
       "menu": "← 菜單",
@@ -66003,7 +66101,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "返回選單",
+      "a11y_open": "開啟{value1}",
+      "sr_selected": "已選擇：{value1}",
+      "sr_loaded": "已載入{value1}",
+      "sr_opening": "正在開啟{value1}",
+      "sr_correct": "正確。",
+      "sr_not_quite": "不太對。",
+      "sr_year_begins": "{value1} 年開始。",
+      "sr_question_reset_try_again": "題目已重設。再試一次。",
+      "sr_not_quite_see_the_explanation": "不太對：看看解釋。"
     },
     "raptorhunt": {
       "show_answer": "顯示答案",
@@ -67652,7 +67760,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "開啟{value1}",
+      "a11y_flight_debrief": "飛行講評"
     },
     "renewables": {
       "menu": "← 菜單",
@@ -68352,7 +68462,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "返回選單",
+      "sr_getting_critique": "正在取得點評……",
+      "sr_critique_ready": "點評已就緒。",
+      "sr_quiz_reset": "測驗已重設"
     },
     "roadready": {
       "let_s_start": "開始吧 →",
@@ -71219,7 +71333,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_local_analytical_sql_query": "本機分析型 SQL 查詢"
     },
     "stewardship": {
       "back": "← 返回",
@@ -71796,7 +71912,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "返回選單",
+      "sr_question_reset_try_again": "題目已重設。再試一次。"
     },
     "throwlab": {
       "back": "← 返回",
@@ -72021,7 +72139,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "重設 3D 相機",
+      "sr_coach_is_offline": "輔導員已離線。",
+      "sr_drill_stopped": "練習已停止。"
     },
     "weldlab": {
       "menu": "← 菜單",
@@ -73583,7 +73704,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "已探索模組：{value1}",
+      "a11y_score_out_of": "得分：{value2} 分中的 {value1} 分",
+      "sr_quiz_reset": "測驗已重設",
+      "sr_loaded": "已載入{value1}",
+      "sr_showing": "正在顯示{value1}",
+      "sr_not_quite_see_the_explanation": "不太對：看看解釋。"
     },
     "worldbuilder": {
       "grade_level": "年級水平",
@@ -75176,7 +75303,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "生命樹",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -77031,7 +77158,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "選項 {value1}：{value2}{value3}",
+      "a11y_3d_camera_views": "3D 相機視角"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -77043,6 +77172,22 @@
       "finish": "明白了！",
       "replay": "提示",
       "replay_aria": "顯示教學"
+    },
+    "pets": {
+      "sr_back_to_menu": "返回選單",
+      "sr_getting_critique": "正在取得點評……",
+      "sr_critique_ready": "點評已就緒。"
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "返回 STEM 工具",
+      "a11y_3d_camera_views": "3D 相機視角"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "探究進度"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "沒有可重做的內容。",
+      "sr_nothing_to_undo": "沒有可復原的內容。"
     }
   },
   "behavior_lens": {
@@ -77585,7 +77730,7 @@
       "person": "人物",
       "phase_label": "階段標簽",
       "rationale_which_antecedent_does_this_address": "理由(這針對哪個前因？)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "反思你的方法……\\n• 什么有效？\\n• 你會做什么不同？\\n• 你想接下來練習什么策略？",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "反思你的方法……\n• 什么有效？\n• 你會做什么不同？\n• 你想接下來練習什么策略？",
       "reinforcement_how_you": "⭐ 強化(你如何)",
       "replacement_behavior_functionally_equivalent": "✅ 替代行為(功能等效)",
       "respond_as_the_counselor": "以咨詢師身份回應……",
@@ -77593,7 +77738,7 @@
       "search_81_tools": "🔍 搜尋 80+ 工具……",
       "search_aba_terms": "🔍 搜尋 ABA 術語……",
       "search_terms_eg_reinforcement_fba_data": "🔍 搜尋術語……(例如「強化」、「FBA」、「數據」)",
-      "session_1_3nsession_2_7nsession_3_5n": "會話 1:3\\n會話 2:7\\n會話 3:5\\n……",
+      "session_1_3nsession_2_7nsession_3_5n": "會話 1:3\n會話 2:7\n會話 3:5\n……",
       "setting_eg_math_class_cafeteria": "環境(例如：數學課、食堂)",
       "share_what_you_notice_at_home_strengths_concerns_c": "分享你在家裡注意到的 — 優勢、擔憂、文化情境或對學校團隊的建議……",
       "step_description": "步驟描述……",
@@ -80508,7 +80653,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "概念圖像",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80543,10 +80688,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "為每個概念布置陳設",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "布置進度",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80558,7 +80703,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "可能的名稱",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80569,7 +80714,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "概念回憶",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82126,7 +82271,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "關閉 Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82135,7 +82280,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "篩選作業",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82173,15 +82318,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "第 {n} 題",
+    "q_choices_aria": "第 {n} 題的選項，每行一個",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "移除第 {n} 題",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "第 {n} 題的量表級數",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "第 {n} 題的作答類型",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82191,10 +82336,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} 的可選取連結",
+    "scale_high_aria": "高端的標籤",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "低端的標籤",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82214,7 +82359,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "作業狀態摘要",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82230,9 +82375,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "自動更新",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "可選取的家庭作業連結",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82241,7 +82386,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "家庭作業 QR 碼",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84689,7 +84834,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "為提示語和評量表選擇發展階段",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84697,7 +84842,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "開啟或關閉教師檢視",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84728,17 +84873,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "暫停語音備註錄製",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "繼續語音備註錄製",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "開始錄製語音備註",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "停止錄製",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85124,22 +85269,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven 表揚理由",
+    "recent_deliveries_aria": "最近的私下 AlloHaven 表揚",
+    "token_amount_aria": "AlloHaven 代幣數量",
+    "token_cap_aria": "每位學生每節課的 AlloHaven 代幣上限"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "在仍達成目標的前提下允許的例外",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "應用程式為此目標追蹤的選用進度訊號",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "全組一起，或每位學生各自進行",
+    "name_aria": "班級目標名稱，僅儲存在本裝置上",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "此目標涵蓋哪些學生",
+    "template_aria": "班級目標的起始範本",
+    "tokens_aria": "達成此目標時每位學生獲得的代幣"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85157,7 +85302,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox 管理員權杖（選用）",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85187,17 +85332,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "已舉手",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "可選取的即時信箱加入連結",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox 的即時課堂",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85224,7 +85369,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "即時連線",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85256,7 +85401,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox 網頁應用程式的 URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

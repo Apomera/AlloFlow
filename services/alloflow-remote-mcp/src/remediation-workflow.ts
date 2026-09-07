@@ -634,11 +634,15 @@ function runnerResult(
     body.summary.activeContentDetected !== false ||
     (
       body.summary.distributionLevel !== "ready" &&
-      body.summary.distributionLevel !== "caution"
+      body.summary.distributionLevel !== "caution" &&
+      body.summary.distributionLevel !== "review"
     ) ||
     !isRunnerVerificationState(body.summary.verificationState) ||
     body.summary.verificationHtmlBound !== true ||
-    body.summary.taggedPdfDelivery !== "verified" ||
+    (body.summary.taggedPdfDelivery !== "verified" &&
+      !(body.summary.taggedPdfDelivery === "review-required" &&
+        body.summary.distributionLevel === "review" &&
+        body.summary.verificationState === "review-required")) ||
     body.summary.taggedPdfExportMode !== "original_layout" ||
     !isNullableFindingCount(
       body.summary.remainingAxeViolations,

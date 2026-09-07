@@ -33,8 +33,9 @@
   const quest = escapeState?.conceptQuest;
   const engine = window.AlloModules?.ConceptQuestEngine;
   const progress = escapeState?.teamProgress?.All || {};
-  const votes = progress.questVotes || {};
-  const actions = progress.questActions || {};
+  const votes = engine?.currentVotes?.(quest, progress.questVotes, progress.questVoteTurns) || {};
+  const turnKey = engine?.getTurnKey?.(quest) || quest?.turnKey || String(quest?.turn || 0);
+  const actions = engine?.currentActions?.(quest, progress.questActions) || {};
   const roles = progress.questRoles || {};
   const currentRoom = engine?.getRoom?.(quest, quest?.currentRoomId);
   const [gmType, setGmType] = React.useState('narrative');
@@ -42,24 +43,62 @@
   const [gmRequest, setGmRequest] = React.useState('');
   const [gmDraft, setGmDraft] = React.useState(null);
   const [busy, setBusy] = React.useState(false);
-  if (!quest || !engine) return null;
+  const [syncing, setSyncing] = React.useState(false);
+  const [draftScope, setDraftScope] = React.useState('');
+  const latestScopeRef = React.useRef('');
+  latestScopeRef.current = activeSessionCode + ':' + turnKey;
+  const savedWriteRef = React.useRef('');
+  const draftHeadingRef = React.useRef(null);
+  const [endConfirm, setEndConfirm] = React.useState(false);
+  const endDialogRef = React.useRef(null);
+  const endTriggerRef = React.useRef(null);
+  React.useEffect(() => {
+    if (gmDraft) draftHeadingRef.current?.focus();
+  }, [!!gmDraft]);
+  React.useEffect(() => {
+    if (endConfirm) endDialogRef.current?.querySelector('button')?.focus();
+  }, [endConfirm]);
+  const [syncError, setSyncError] = React.useState('');
+  const syncRef = React.useRef(false);
+  if (!quest || !engine || escapeState?.isActive === false) return null;
   const sessionRef = () => doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
   const sync = async updates => {
+    const requestScope = latestScopeRef.current;
+    const signature = requestScope + ':' + (quest.gmRevision || 0) + ':' + JSON.stringify(updates);
+    if (syncRef.current || savedWriteRef.current === signature) return false;
+    syncRef.current = true;
+    setSyncing(true);
+    setSyncError('');
     try {
       await updateDoc(sessionRef(), updates);
+      savedWriteRef.current = signature;
       return true;
     } catch (error) {
       warnLog('Concept Quest sync failed:', error);
+      if (latestScopeRef.current === requestScope) setSyncError(tr('sync_failed', 'Concept Quest could not sync.'));
       addToast?.(tr('sync_failed', 'Concept Quest could not sync.'), 'error');
       return false;
+    } finally {
+      syncRef.current = false;
+      setSyncing(false);
     }
   };
   const syncQuest = (nextQuest, clearField) => {
+    const nextKey = engine.getTurnKey(nextQuest);
     const updates = {
-      'escapeRoomState.conceptQuest': nextQuest
+      'escapeRoomState.conceptQuest': {
+        ...nextQuest,
+        turnKey: nextKey,
+        gmRevision: (quest.gmRevision || 0) + 1
+      },
+      'escapeRoomState.teamProgress.All.isEscaped': nextQuest.phase === 'complete'
     };
     if (clearField) updates[`escapeRoomState.teamProgress.All.${clearField}`] = {};
-    if (nextQuest.phase === 'complete') updates['escapeRoomState.teamProgress.All.isEscaped'] = true;
+    if (nextKey !== turnKey) {
+      updates['escapeRoomState.teamProgress.All.questActions'] = {};
+      updates['escapeRoomState.teamProgress.All.questVotes'] = {};
+      updates['escapeRoomState.teamProgress.All.questVoteTurns'] = {};
+    }
     return sync(updates);
   };
   const showEngineError = (result, tone) => {
@@ -69,17 +108,19 @@
     return true;
   };
   const resolveTravel = async roomId => {
+    if (busy || syncRef.current || escapeState.isPaused) return;
     setBusy(true);
     const result = engine.resolveTravel(quest, votes, roomId);
     if (!showEngineError(result, 'warning')) await syncQuest(result.quest, 'questVotes');
     setBusy(false);
   };
   const resolveRound = async () => {
+    if (busy || syncRef.current || escapeState.isPaused) return;
     setBusy(true);
     const result = engine.resolveBattle(quest, actions, roles);
     if (!showEngineError(result, 'warning')) {
-      await syncQuest(result.quest, 'questActions');
-      addToast?.(tr('checks_succeeded', '{correct}/{total} concept checks succeeded.', {
+      const saved = await syncQuest(result.quest, 'questActions');
+      if (saved) addToast?.(tr('checks_succeeded', '{correct}/{total} concept checks succeeded.', {
         correct: result.summary.correct,
         total: result.summary.total
       }), result.summary.enemyDefeated ? 'success' : 'info');
@@ -87,6 +128,7 @@
     setBusy(false);
   };
   const manualDraft = () => {
+    setDraftScope(latestScopeRef.current);
     const description = gmRequest.trim() || tr('manual_default_description', 'A new development asks the party to apply the current concept together.');
     const title = gmType === 'item' ? tr('draft_title_item', 'Concept Relic') : gmType === 'enemy' ? tr('draft_title_enemy', 'Misconception Appears') : gmType === 'challenge' ? tr('draft_title_challenge', 'GM Challenge') : tr('draft_title_story', 'Story Event');
     const base = {
@@ -115,9 +157,15 @@
       };
       base.challenge = currentRoom?.challenge;
     }
-    setGmDraft(engine.normalizeGmDraft(base, quest.localizedStrings));
+    try {
+      setGmDraft(engine.normalizeGmDraft(base, quest.localizedStrings));
+    } catch (error) {
+      setSyncError(error.message);
+    }
   };
   const aiDraft = async () => {
+    if (busy || syncRef.current) return;
+    const requestedScope = latestScopeRef.current;
     if (typeof callGemini !== 'function') {
       manualDraft();
       addToast?.(tr('ai_unavailable_manual', 'AI is unavailable, so an editable manual draft was created.'), 'info');
@@ -128,9 +176,14 @@
       const prompt = `You assist a teacher co-GMing a cooperative educational dungeon crawler. Draft ONE ${gmType} grounded in "${currentRoom?.concept}". Teacher direction: "${gmRequest || 'Make it engaging and instructionally useful.'}". Return only JSON with type, title, description. For item include item{name,emoji,description,effect{type:heal|shield|clue,amount:1-3}}. For challenge include challenge{prompt,options,correctIndex,explanation}. For enemy include enemy{name,emoji,hp:4-16,attack:1-3} and challenge. Do not determine student outcomes.`;
       const response = await callGemini(prompt, true);
       const jsonText = String(response || '').replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+      setDraftScope(requestedScope);
       setGmDraft(engine.normalizeGmDraft(JSON.parse(jsonText), quest.localizedStrings));
     } catch (error) {
       warnLog('Concept Quest AI draft failed:', error);
+      if (requestedScope !== latestScopeRef.current) {
+        setSyncError(tr('draft_context_changed', 'The room changed while drafting. Create a draft for the current encounter.'));
+        return;
+      }
       manualDraft();
       addToast?.(tr('ai_draft_failed', 'AI draft failed; an editable manual draft is ready.'), 'warning');
     } finally {
@@ -138,11 +191,16 @@
     }
   };
   const publishDraft = async () => {
-    const nextQuest = engine.publishGmDraft(quest, gmDraft);
-    if (await syncQuest(nextQuest, gmDraft?.type === 'enemy' ? 'questActions' : null)) {
-      setGmDraft(null);
-      setGmRequest('');
-      addToast?.(tr('event_published', 'GM event published to every student.'), 'success');
+    if (!gmDraft || syncing || busy || draftScope !== latestScopeRef.current) return;
+    try {
+      const nextQuest = engine.publishGmDraft(quest, gmDraft);
+      if (await syncQuest(nextQuest)) {
+        setGmDraft(null);
+        setGmRequest('');
+        addToast?.(tr('event_published', 'GM event published to every student.'), 'success');
+      }
+    } catch (error) {
+      setSyncError(error.message || tr('sync_failed', 'Concept Quest could not sync.'));
     }
   };
   const adjustEncounter = async (kind, amount) => {
@@ -167,6 +225,8 @@
     await syncQuest(engine.dismissEvent(quest));
   };
   const participantCount = Object.keys(sessionData?.roster || {}).length;
+  const neededSigils = engine.requiredSigils(quest);
+  const canTravelTo = room => room.kind !== 'boss' || (quest.sigils || []).length >= neededSigils;
   const voteCounts = (currentRoom?.neighbors || []).map(id => ({
     room: engine.getRoom(quest, id),
     count: Object.values(votes).filter(value => value === id).length
@@ -179,8 +239,15 @@
   const debrief = engine.createDebrief(quest);
   const phaseLabel = tr(`phase_${quest.phase}`, quest.phase);
   return /*#__PURE__*/React.createElement("div", {
+    "aria-busy": syncing || busy,
     className: "mb-4 rounded-2xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-50 to-purple-50 p-4 shadow-lg"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, (syncing || busy) && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mb-3 text-sm font-bold text-indigo-900"
+  }, tr('working', 'Working…')), syncError && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "rounded-lg bg-red-100 p-3 text-red-900"
+  }, syncError), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center justify-between gap-3"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
     className: "text-lg font-black text-indigo-950"
@@ -191,20 +258,34 @@
     room: currentRoom?.name || '',
     phase: phaseLabel
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "flex gap-2"
+    className: "flex flex-wrap gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    disabled: syncing,
+    "aria-pressed": !!escapeState.isPaused,
     onClick: () => sync({
       'escapeRoomState.isPaused': !escapeState.isPaused
     }),
     className: "min-h-11 rounded-lg bg-amber-100 px-3 text-sm font-bold text-amber-900"
   }, escapeState.isPaused ? tr('resume', 'Resume') : tr('pause', 'Pause')), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    onClick: () => sync({
-      'escapeRoomState.isActive': false
-    }),
+    disabled: syncing,
+    onClick: event => {
+      endTriggerRef.current = event.currentTarget;
+      setEndConfirm(true);
+    },
     className: "min-h-11 rounded-lg bg-red-600 px-3 text-sm font-bold text-white"
-  }, tr('end_quest', 'End quest')))), /*#__PURE__*/React.createElement("div", {
+  }, tr('end_quest', 'End quest')))), quest.excludedQuestions > 0 && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "mt-3 rounded-lg bg-amber-50 p-2 text-sm text-amber-900"
+  }, tr('excluded_questions', '{count} source question(s) were skipped because they lack a supported multiple-choice answer key.', {
+    count: quest.excludedQuestions
+  })), /*#__PURE__*/React.createElement("fieldset", {
+    disabled: syncing || busy,
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "sr-only"
+  }, tr('teacher_heading', 'Concept Quest teacher controls')), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 grid gap-4 lg:grid-cols-2"
   }, /*#__PURE__*/React.createElement("section", {
     className: "rounded-xl border border-indigo-200 bg-white p-3",
@@ -230,7 +311,7 @@
     className: "rounded-lg bg-cyan-50 p-2"
   }, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-cyan-700"
-  }, (quest.sigils || []).length, "/", quest.sigilsRequired || 3), tr('concept_sigils', 'Concept sigils'))), /*#__PURE__*/React.createElement("div", {
+  }, (quest.sigils || []).length, "/", neededSigils), tr('concept_sigils', 'Concept sigils'))), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 flex flex-wrap gap-1.5",
     "aria-label": tr('role_distribution_aria', 'Party role distribution')
   }, roleCounts.map(role => /*#__PURE__*/React.createElement("span", {
@@ -238,7 +319,9 @@
     className: "rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-700"
   }, role.emoji, " ", gameLabel(role, 'role'), ": ", /*#__PURE__*/React.createElement("strong", null, role.count)))), quest.lastRound && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-lg border border-cyan-200 bg-cyan-50 p-2 text-xs text-cyan-950"
-  }, /*#__PURE__*/React.createElement("strong", null, tr('last_round', 'Last round:')), ' ', tr('round_damage_summary', '{correct}/{total} correct · {damage} damage', {
+  }, quest.lastRound.prompt && /*#__PURE__*/React.createElement("p", {
+    className: "mb-1 font-bold"
+  }, quest.lastRound.prompt), /*#__PURE__*/React.createElement("strong", null, tr('last_round', 'Last round:')), ' ', tr('round_damage_summary', '{correct}/{total} correct · {damage} damage', {
     correct: quest.lastRound.correct,
     total: quest.lastRound.total,
     damage: quest.lastRound.damage
@@ -280,10 +363,14 @@
   }) => /*#__PURE__*/React.createElement("button", {
     key: room.id,
     type: "button",
-    disabled: busy,
+    disabled: busy || escapeState.isPaused || !canTravelTo(room),
     onClick: () => resolveTravel(room.id),
     className: "flex min-h-11 w-full items-center justify-between rounded-lg border border-indigo-200 px-3 text-sm font-bold text-indigo-800 hover:bg-indigo-50"
-  }, /*#__PURE__*/React.createElement("span", null, room.emoji, " ", room.name), /*#__PURE__*/React.createElement("span", null, tr(count === 1 ? 'vote_count_one' : 'vote_count_many', count === 1 ? '{count} vote' : '{count} votes', {
+  }, /*#__PURE__*/React.createElement("span", null, canTravelTo(room) ? room.emoji : '🔒', " ", room.name, !canTravelTo(room) && /*#__PURE__*/React.createElement("span", {
+    className: "block text-xs font-normal"
+  }, tr('travel_gate_locked', 'The Mastery Gate needs {count} more concept sigil(s).', {
+    count: neededSigils - (quest.sigils || []).length
+  }))), /*#__PURE__*/React.createElement("span", null, tr(count === 1 ? 'vote_count_one' : 'vote_count_many', count === 1 ? '{count} vote' : '{count} votes', {
     count
   }))))), quest.phase === 'battle' && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-lg bg-fuchsia-50 p-3"
@@ -301,7 +388,7 @@
     count: Object.values(actions).filter(action => action?.supportTargetUid).length
   })), /*#__PURE__*/React.createElement("button", {
     type: "button",
-    disabled: busy || !Object.keys(actions).length,
+    disabled: busy || escapeState.isPaused || !Object.keys(actions).length,
     onClick: resolveRound,
     className: "mt-3 min-h-11 w-full rounded-lg bg-fuchsia-700 px-3 font-bold text-white disabled:opacity-50"
   }, tr(Object.keys(actions).length === 1 ? 'resolve_action_one' : 'resolve_actions_many', Object.keys(actions).length === 1 ? 'Resolve {count} action' : 'Resolve {count} actions', {
@@ -333,7 +420,9 @@
     className: "min-h-11 rounded-lg border border-slate-300 bg-white px-3 text-xs font-bold text-slate-700 disabled:opacity-40"
   }, tr('undo_gm_change', 'Undo GM change'), (quest.gmHistory || []).length > 1 ? ` ${tr('available_count', '({count} available)', {
     count: quest.gmHistory.length
-  })}` : '')), /*#__PURE__*/React.createElement("label", {
+  })}` : '')), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-xs text-slate-600"
+  }, tr('undo_boundary', 'Undo is available until the next resolved student turn or room change.')), /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-xs font-bold text-slate-700"
   }, tr('type', 'Type'), /*#__PURE__*/React.createElement("select", {
     value: gmType,
@@ -381,7 +470,11 @@
   }, busy ? tr('working', 'Working…') : tr('ai_draft', 'AI draft'))), gmDraft && /*#__PURE__*/React.createElement("div", {
     className: "mt-3 rounded-lg border-2 border-amber-300 bg-amber-50 p-3",
     "aria-label": tr('draft_preview_aria', 'GM draft preview')
-  }, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("h5", {
+    ref: draftHeadingRef,
+    tabIndex: -1,
+    className: "font-black text-amber-950"
+  }, tr('draft_preview_aria', 'GM draft preview')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-black uppercase text-amber-800"
   }, tr('preview_not_live', 'Preview — not live')), /*#__PURE__*/React.createElement("label", {
     className: "mt-2 block text-xs font-bold"
@@ -402,7 +495,176 @@
     }),
     rows: 3,
     className: "mt-1 w-full rounded border border-amber-300 p-2 text-sm"
-  })), /*#__PURE__*/React.createElement("div", {
+  })), draftScope !== latestScopeRef.current && /*#__PURE__*/React.createElement("div", {
+    role: "status",
+    className: "mt-3 rounded-lg bg-amber-100 p-3 text-sm text-amber-950"
+  }, tr('draft_context_changed', 'The encounter changed. Review the draft before using it here.'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setDraftScope(latestScopeRef.current),
+    className: "mt-2 block min-h-11 rounded-lg border border-amber-500 bg-white px-3 font-bold"
+  }, tr('draft_use_here', 'Use in this encounter'))), gmDraft.challenge && /*#__PURE__*/React.createElement("fieldset", {
+    className: "mt-3 min-w-0 space-y-2 rounded-lg border border-amber-300 p-3"
+  }, /*#__PURE__*/React.createElement("legend", {
+    className: "px-1 font-bold"
+  }, tr('challenge', 'Challenge')), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold"
+  }, tr('question', 'Question'), /*#__PURE__*/React.createElement("textarea", {
+    value: gmDraft.challenge.prompt,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      challenge: {
+        ...gmDraft.challenge,
+        prompt: event.target.value
+      }
+    }),
+    className: "mt-1 w-full rounded border border-amber-300 p-2",
+    rows: 3
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, tr('draft_answer_help', 'Edit the choices and select the correct answer before publishing.')), (gmDraft.challenge.options || []).map((option, index) => /*#__PURE__*/React.createElement("label", {
+    key: index,
+    className: "flex items-center gap-2 text-sm"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "radio",
+    name: "cq-draft-answer",
+    "aria-label": tr('draft_correct_choice', 'Correct answer: choice {number}', {
+      number: index + 1
+    }),
+    checked: gmDraft.challenge.correctIndex === index,
+    onChange: () => setGmDraft({
+      ...gmDraft,
+      challenge: {
+        ...gmDraft.challenge,
+        correctIndex: index
+      }
+    })
+  }), /*#__PURE__*/React.createElement("input", {
+    "aria-label": tr('draft_choice', 'Choice {number}', {
+      number: index + 1
+    }),
+    value: option,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      challenge: {
+        ...gmDraft.challenge,
+        options: gmDraft.challenge.options.map((value, i) => i === index ? event.target.value : value)
+      }
+    }),
+    className: "min-h-11 min-w-0 flex-1 rounded border border-amber-300 p-2"
+  }))), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold"
+  }, tr('explanation', 'Explanation'), /*#__PURE__*/React.createElement("textarea", {
+    value: gmDraft.challenge.explanation,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      challenge: {
+        ...gmDraft.challenge,
+        explanation: event.target.value
+      }
+    }),
+    rows: 2,
+    className: "mt-1 w-full rounded border border-amber-300 p-2"
+  }))), gmDraft.enemy && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 grid grid-cols-2 gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "col-span-2 text-xs font-bold"
+  }, tr('enemy_name', 'Enemy name'), /*#__PURE__*/React.createElement("input", {
+    value: gmDraft.enemy.name,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      enemy: {
+        ...gmDraft.enemy,
+        name: event.target.value
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold"
+  }, tr('enemy_hp', 'Enemy HP'), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "4",
+    max: "16",
+    value: gmDraft.enemy.hp,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      enemy: {
+        ...gmDraft.enemy,
+        hp: Number(event.target.value),
+        maxHp: Number(event.target.value)
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "text-xs font-bold"
+  }, tr('enemy_attack', 'Enemy attack'), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "3",
+    value: gmDraft.enemy.attack,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      enemy: {
+        ...gmDraft.enemy,
+        attack: Number(event.target.value)
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  }))), gmDraft.item && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-2"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700"
+  }, tr('item_award_help', 'The item goes into shared inventory. Its effect applies when you choose Use.')), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold"
+  }, tr('item_name', 'Item name'), /*#__PURE__*/React.createElement("input", {
+    value: gmDraft.item.name,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      item: {
+        ...gmDraft.item,
+        name: event.target.value
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  })), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold"
+  }, tr('item_effect', 'Item effect'), /*#__PURE__*/React.createElement("select", {
+    value: gmDraft.item.effect.type,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      item: {
+        ...gmDraft.item,
+        effect: {
+          ...gmDraft.item.effect,
+          type: event.target.value
+        }
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "heal"
+  }, tr('restore_party_hp', 'Restore party HP')), /*#__PURE__*/React.createElement("option", {
+    value: "shield"
+  }, tr('grant_party_shield', 'Grant party shield')), /*#__PURE__*/React.createElement("option", {
+    value: "clue"
+  }, tr('reveal_concept_clue', 'Reveal a concept clue')))), /*#__PURE__*/React.createElement("label", {
+    className: "block text-xs font-bold"
+  }, tr('item_amount', 'Amount'), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "1",
+    max: "3",
+    value: gmDraft.item.effect.amount,
+    onChange: event => setGmDraft({
+      ...gmDraft,
+      item: {
+        ...gmDraft.item,
+        effect: {
+          ...gmDraft.item.effect,
+          amount: Number(event.target.value)
+        }
+      }
+    }),
+    className: "mt-1 min-h-11 w-full rounded border border-amber-300 p-2"
+  }))), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -410,10 +672,15 @@
     className: "min-h-11 flex-1 rounded-lg bg-slate-200 font-bold text-slate-700"
   }, tr('discard', 'Discard')), /*#__PURE__*/React.createElement("button", {
     type: "button",
+    disabled: draftScope !== latestScopeRef.current,
     onClick: publishDraft,
     className: "min-h-11 flex-1 rounded-lg bg-emerald-700 font-bold text-white"
-  }, tr('publish_to_class', 'Publish to class')))))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6",
+  }, tr('publish_to_class', 'Publish to class')))))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-sm font-bold text-emerald-900"
+  }, tr(debrief.rounds === 1 ? 'recent_evidence_one' : 'recent_evidence', debrief.rounds === 1 ? 'Learning evidence · last round' : 'Learning evidence · last {count} rounds', {
+    count: debrief.rounds
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 grid grid-cols-2 gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center text-xs sm:grid-cols-6",
     "aria-label": tr('campaign_summary_aria', 'Campaign evidence summary')
   }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", {
     className: "block text-lg text-emerald-800"
@@ -473,7 +740,64 @@
     type: "button",
     onClick: () => useSharedItem(index),
     className: "min-h-11 shrink-0 rounded-lg bg-indigo-700 px-3 font-bold text-white"
-  }, tr('use', 'Use')))) : /*#__PURE__*/React.createElement("li", null, tr('no_items', 'No items yet.'))))));
+  }, tr('use', 'Use')))) : /*#__PURE__*/React.createElement("li", null, tr('no_items', 'No items yet.')))))), endConfirm && /*#__PURE__*/React.createElement("div", {
+    className: "fixed inset-0 z-[10000] grid place-items-center bg-black/60 p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    ref: endDialogRef,
+    role: "alertdialog",
+    "aria-modal": "true",
+    "aria-labelledby": "cq-end-title",
+    "aria-describedby": "cq-end-description",
+    className: "w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl",
+    onKeyDown: event => {
+      if (event.key === 'Escape' && !syncing) {
+        setEndConfirm(false);
+        setTimeout(() => endTriggerRef.current?.focus(), 0);
+      }
+      if (event.key === 'Tab') {
+        const buttons = [...event.currentTarget.querySelectorAll('button:not([disabled])')];
+        if (!buttons.length) {
+          event.preventDefault();
+          return;
+        }
+        const target = event.shiftKey ? buttons.at(-1) : buttons[0];
+        if (event.shiftKey ? document.activeElement === buttons[0] : document.activeElement === buttons.at(-1)) {
+          event.preventDefault();
+          target.focus();
+        }
+      }
+    }
+  }, /*#__PURE__*/React.createElement("h4", {
+    id: "cq-end-title",
+    className: "text-lg font-black text-slate-950"
+  }, tr('end_quest', 'End quest')), /*#__PURE__*/React.createElement("p", {
+    id: "cq-end-description",
+    className: "mt-2 text-sm text-slate-700"
+  }, tr('end_quest_description', 'Close this quest for everyone? Keep playing to return to the current encounter.')), syncError && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-2 text-sm text-red-800"
+  }, syncError), /*#__PURE__*/React.createElement("div", {
+    className: "mt-4 flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: syncing,
+    onClick: () => {
+      setEndConfirm(false);
+      setTimeout(() => endTriggerRef.current?.focus(), 0);
+    },
+    className: "min-h-11 flex-1 rounded-lg bg-slate-200 px-3 font-bold text-slate-900"
+  }, tr('keep_playing', 'Keep playing')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: syncing,
+    onClick: async () => {
+      if (await sync({
+        'escapeRoomState.isActive': false,
+        'escapeRoomState.isPaused': false,
+        'escapeRoomState.isGameOver': false
+      })) setEndConfirm(false);
+    },
+    className: "min-h-11 flex-1 rounded-lg bg-red-700 px-3 font-bold text-white"
+  }, tr('end_quest', 'End quest'))))));
 });
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.ConceptQuestTeacherControls = ConceptQuestTeacherControls;

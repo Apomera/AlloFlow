@@ -1,0 +1,9 @@
+# Responsive coaster instruments
+
+Replaced the overflowing horizontal instrument strip with a dashboard that adapts to the available 3-D viewport width. Wide views keep the force map, ride state, and track map; medium views keep ride state; compact views prioritize speed, height, vertical seat g, lateral seat g, and energy. The energy row spans the full dashboard at every size.
+
+Motion, Height, and Heat now display rounded numeric percentages alongside their colored bar segments. These values come directly from the existing release-reference energy calculation; the simulation and energy model are unchanged. The bar can have unfilled space. Layouts without the required analysis show unavailable values rather than stale readings. Energy output updates are not live screen-reader announcements.
+
+Force bars now show their existing numeric ranges, including the zero position. Accessible descriptions include the current reading and scale. Height and peak-force units stay together. Brighter energy labels, tabular readouts, reserved force-value space, and viewport-based column sizing keep readings legible and reduce layout shifts. The existing camera-clearance calculation positions view controls above the dashboard. Scene focus and pinned piece previews continue to hide instruments.
+
+Validation: 264 focused unit tests passed. The browser workflow passed at wide, medium, and phone sizes, confirming visible readings fit inside the HUD, there is no horizontal overflow, camera controls remain above the HUD, energy percentages match bar values, presentation changes leave track analysis unchanged, and scene focus hides/restores instruments. A completed simulation run also passed the energy-value check. The final visual adjustment widens desktop height/state columns and brightens the legend; final artifacts are in scratch/coaster-instruments-final.

@@ -11,7 +11,14 @@ const require = createRequire(import.meta.url);
 const { buildApBlueprintCoverage } = require(resolve(process.cwd(), 'dev-tools/ap_blueprint_coverage_core.cjs'));
 
 const packFiles = fs.readdirSync(resolve(process.cwd(), 'test_prep')).filter((name) => /^ap_.*_pilot\.json$/.test(name));
-const readJson = (name) => JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep', name), 'utf8'));
+// The AP packs run to several megabytes each and live on a synced drive, so
+// parse each file once and share it across assertions.
+const jsonCache = new Map();
+const readJson = (name) => {
+  if (!jsonCache.has(name)) jsonCache.set(name, JSON.parse(fs.readFileSync(resolve(process.cwd(), 'test_prep', name), 'utf8')));
+  return jsonCache.get(name);
+};
+const SLOW = 60_000;
 
 function basePack() {
   return {
@@ -61,6 +68,65 @@ describe('AP blueprint coverage block', () => {
     expect(undeclared.topics.representedCount).toBeNull();
     expect(undeclared.gaps).toContain('topic-universe-not-declared');
     expect(undeclared.assessment).toBe('gaps-present');
+  });
+
+  it('catches every kind of unresolved cross reference', () => {
+    // These ids become navigation in the Hub's study-plan view: a route section
+    // is a "Read the lesson first" button, itemIds are a practice set. An id
+    // that resolves to nothing is a dead control, so each kind is calibrated.
+    const library = {
+      chapters: [{ id: 'c1', sections: [{ id: 's1', knowledgeChecks: [{ id: 'k1' }] }] }],
+      flashcards: [{ id: 'f1' }],
+      memoryAids: [{ id: 'a1' }],
+      topicDiagnosticRoutes: [{
+        id: 'r1', chapterId: 'c-gone', sectionIds: ['s1', 's-gone'], flashcardIds: ['f-gone'],
+        memoryAidIds: ['a1'], knowledgeCheckIds: ['k-gone'], itemIds: ['i-gone'],
+        diagnosticSets: [{ id: 'set1', sectionId: 's-gone-too', itemIds: ['i-gone-too'] }],
+      }],
+      reviewLadders: [{ id: 'l1', itemIds: ['i-ladder-gone'] }],
+      studySessionPlans: [{ id: 'p1', itemIds: ['i-session-gone'] }],
+    };
+    const pack = {
+      ...basePack(),
+      items: [{ id: 'i1', domainId: 'u1', topicIds: ['1.1'], answerIndex: 0, choices: ['a', 'b'], learningSectionId: 's-item-gone', chapterIds: ['c-item-gone'] }],
+    };
+    const coverage = buildApBlueprintCoverage({ pack, library });
+    expect(coverage.crossReferences.unresolved).toEqual({
+      'item-learning-section': 1,
+      'item-chapter': 1,
+      'route-chapter': 1,
+      'route-section': 1,
+      'route-flashcard': 1,
+      'route-knowledge-check': 1,
+      'route-item': 1,
+      'set-section': 1,
+      'set-item': 1,
+      'reviewLadders-item': 1,
+      'studySessionPlans-item': 1,
+    });
+    expect(coverage.crossReferences.unresolvedCount).toBe(11);
+    expect(coverage.crossReferences.examples.length).toBeGreaterThan(0);
+    expect(coverage.crossReferences.examples[0]).toMatch(/->/);
+    expect(coverage.gaps).toContain('unresolved-cross-references');
+
+    // A resolvable id must not be reported.
+    const clean = buildApBlueprintCoverage({
+      pack: { ...basePack(), items: [{ id: 'i1', domainId: 'u1', topicIds: ['1.1'], answerIndex: 0, choices: ['a', 'b'], learningSectionId: 's1', chapterIds: ['c1'] }] },
+      library: { chapters: [{ id: 'c1', sections: [{ id: 's1' }] }] },
+    });
+    expect(clean.crossReferences.unresolvedCount).toBe(0);
+    expect(clean.crossReferences.checked).toBe(2);
+    expect(clean.gaps).not.toContain('unresolved-cross-references');
+  });
+
+  it('reports lesson depth per chapter', () => {
+    const coverage = buildApBlueprintCoverage({
+      pack: basePack(),
+      library: { chapters: [{ id: 'c1' }, { id: 'c2' }], summary: { sections: 6 } },
+    });
+    expect(coverage.lessonDepth).toEqual({ chapterCount: 2, sectionCount: 6, sectionsPerChapter: 3 });
+    const noChapters = buildApBlueprintCoverage({ pack: basePack(), library: {} });
+    expect(noChapters.lessonDepth.sectionsPerChapter).toBeNull();
   });
 
   it('counts library layers and names the empty ones', () => {
@@ -113,22 +179,121 @@ describe('AP blueprint coverage block', () => {
       // Answer keys are balanced across positions in every shipped bank.
       expect(coverage.answerBalance.keyedItemCount).toBe(pack.items.length);
       expect(coverage.answerBalance.dominantSharePercent).toBeLessThanOrEqual(40);
+      // Every id the study-plan view turns into navigation must resolve.
+      expect(coverage.crossReferences.checked).toBeGreaterThan(0);
+      expect(coverage.crossReferences.unresolved, pack.id + ' has dead references').toEqual({});
+      expect(coverage.crossReferences.unresolvedCount).toBe(0);
+      expect(coverage.gaps).not.toContain('unresolved-cross-references');
     });
-  });
+  }, SLOW);
 
-  it('records which four packs still declare no topic universe', () => {
-    // Pinned deliberately: these four are 2,200 items whose topic coverage no
-    // gate can verify. Declaring a universe for one should update this list.
+  it('gives every pack three lesson sections per unit', () => {
+    // Biology and Chemistry each gave a unit a single native lesson section
+    // while every other pack gave three. Both were raised to three per unit on
+    // 2026-09-06, with items re-routed to the section for their own topic.
+    const thin = packFiles
+      .map((packFile) => readJson(packFile.replace('.json', '_qa.json')).blueprintCoverage)
+      .filter((coverage) => coverage.lessonDepth.sectionsPerChapter < 3)
+      .map((coverage) => coverage.packId);
+    expect(thin).toEqual([]);
+    expect(readJson('ap_biology_foundation_pilot_qa.json').blueprintCoverage.lessonDepth).toEqual({ chapterCount: 8, sectionCount: 24, sectionsPerChapter: 3 });
+    expect(readJson('ap_chemistry_foundation_pilot_qa.json').blueprintCoverage.lessonDepth).toEqual({ chapterCount: 9, sectionCount: 27, sectionsPerChapter: 3 });
+  }, SLOW);
+
+  // Shared for the two backfilled packs: every item routes to the section that
+  // lists its topic, every section receives items, every section is a full rich
+  // lesson with a section-bound check, and check keys are spread across positions.
+  function expectTopicRoutedLibrary(packFile, libraryFile, specModule, chapterCount) {
+    const pack = readJson(packFile);
+    const library = readJson(libraryFile);
+    const specs = require(resolve(process.cwd(), specModule));
+    const unitSpecs = specs[Object.keys(specs)[0]];
+    const sectionIds = new Set(library.chapters.flatMap((chapter) => chapter.sections.map((section) => section.id)));
+    const used = {};
+    pack.items.forEach((item) => {
+      expect(sectionIds.has(item.learningSectionId), item.id).toBe(true);
+      used[item.learningSectionId] = (used[item.learningSectionId] || 0) + 1;
+      const unit = Number(item.chapterIds[0].slice(-2));
+      const spec = unitSpecs[unit - 1];
+      const topic = item.topicIds[0];
+      const expectedIndex = spec.section1Topics.includes(topic) ? 1 : spec.sections.findIndex((section) => section.topics.includes(topic)) + 2;
+      expect(expectedIndex, item.id + ' topic ' + topic + ' is assigned to no section').toBeGreaterThan(0);
+      expect(item.learningSectionId.endsWith('-section-0' + expectedIndex), item.id + ' topic ' + topic).toBe(true);
+    });
+    expect(Object.keys(used)).toHaveLength(chapterCount * 3);
+    library.chapters.forEach((chapter) => {
+      expect(chapter.sections).toHaveLength(3);
+      expect(chapter.knowledgeChecks).toHaveLength(3);
+      chapter.sections.forEach((section) => {
+        // Thresholds match each pack's own QA gate (Chemistry's original
+        // sections carry two retrieval prompts; the new ones carry three).
+        expect(section.examples.length).toBeGreaterThanOrEqual(2);
+        expect(section.nonExamples.length).toBeGreaterThanOrEqual(2);
+        expect(section.retrievalPrompts.length).toBeGreaterThanOrEqual(2);
+        expect(section.workedDataExample.rows.length).toBeGreaterThanOrEqual(2);
+        expect(section.transferMove).toBeTruthy();
+        expect(chapter.knowledgeChecks.some((check) => check.sectionId === section.id)).toBe(true);
+      });
+      chapter.knowledgeChecks.forEach((check) => {
+        expect(check.choices).toHaveLength(4);
+        expect(check.choices[check.answerIndex]).toBeTruthy();
+      });
+    });
+    const positions = {};
+    library.chapters.flatMap((chapter) => chapter.knowledgeChecks).forEach((check) => { positions[check.answerIndex] = (positions[check.answerIndex] || 0) + 1; });
+    expect(Object.keys(positions)).toHaveLength(4);
+    expect(Math.max(...Object.values(positions))).toBeLessThanOrEqual(Math.ceil(chapterCount * 3 * 0.4));
+  }
+
+  it('routes every Biology item to the lesson section for its own topic', () => {
+    expectTopicRoutedLibrary('ap_biology_foundation_pilot.json', 'ap_biology_foundation_pilot_learning_library.json', 'dev-tools/ap_biology_lesson_sections.cjs', 8);
+  }, SLOW);
+
+  it('routes every Chemistry item to the lesson section for its own topic', () => {
+    expectTopicRoutedLibrary('ap_chemistry_foundation_pilot.json', 'ap_chemistry_foundation_pilot_learning_library.json', 'dev-tools/ap_chemistry_lesson_sections.cjs', 9);
+  }, SLOW);
+
+  it('declares a framework topic universe for every pack whose ids are framework ids', () => {
+    // Biology, Chemistry and Psychology were transcribed from their official
+    // CEDs on 2026-09-06 and matched their packs exactly. AP Physics 1 is the
+    // one holdout: its item topicIds are an internal numbering, so no official
+    // universe is declared for it and its coverage stays unmeasured on purpose.
     const undeclared = packFiles
       .map((packFile) => readJson(packFile.replace('.json', '_qa.json')).blueprintCoverage)
       .filter((coverage) => !coverage.topics.universeDeclared)
-      .map((coverage) => coverage.packId)
-      .sort();
-    expect(undeclared).toEqual([
-      'ap-biology-foundation-pilot',
-      'ap-chemistry-foundation-pilot',
-      'ap-physics-1-foundation-pilot',
-      'ap-psychology-pilot',
-    ]);
-  });
+      .map((coverage) => coverage.packId);
+    expect(undeclared).toEqual(['ap-physics-1-foundation-pilot']);
+
+    const physics = readJson('ap_physics_1_foundation_pilot.json');
+    expect(physics.blueprint.topicIdScheme).toBe('internal-pack-numbering');
+    expect(physics.blueprint.topicIdSchemeNote).toMatch(/does not correspond/);
+    expect(physics.blueprint.officialFrameworkTopicCountReference).toBe(43);
+    expect(physics.blueprint.officialFrameworkTopicIds).toBeUndefined();
+  }, SLOW);
+
+  it('declares only topic ids the pack actually uses, with a recorded source', () => {
+    const { AP_FRAMEWORK_TOPIC_IDS } = require(resolve(process.cwd(), 'dev-tools/ap_framework_topics.cjs'));
+    const expected = {
+      'ap-biology-foundation-pilot': 60,
+      'ap-chemistry-foundation-pilot': 91,
+      'ap-psychology-pilot': 35,
+    };
+    Object.entries(expected).forEach(([packId, count]) => {
+      expect(AP_FRAMEWORK_TOPIC_IDS[packId]).toHaveLength(count);
+      const packFile = packFiles.find((name) => readJson(name).id === packId);
+      const pack = readJson(packFile);
+      const declared = pack.blueprint.officialFrameworkTopicIds;
+      expect(declared, packId).toEqual(AP_FRAMEWORK_TOPIC_IDS[packId]);
+      expect(pack.blueprint.officialFrameworkTopicCount).toBe(count);
+      expect(pack.blueprint.officialFrameworkTopicSource.url).toMatch(/^https:\/\/apcentral\.collegeboard\.org\//);
+      expect(pack.blueprint.officialFrameworkTopicSource.transcribedAt).toBe('2026-09-06');
+      // The declared universe must be exactly what the items use: no aspirational
+      // topics, and no item routed outside the declared framework.
+      const used = new Set();
+      pack.items.forEach((item) => (item.topicIds || []).forEach((topicId) => used.add(String(topicId))));
+      expect([...used].sort(), packId).toEqual([...declared].sort());
+    });
+    // No titles or other CED prose are reproduced, only the numbering.
+    Object.values(AP_FRAMEWORK_TOPIC_IDS).flat().forEach((id) => expect(id).toMatch(/^\d{1,2}\.\d{1,2}$/));
+  }, SLOW);
 });

@@ -362,6 +362,20 @@ const PLAN_CONTRACTS = Object.freeze({
     params: ['topic', 'grade'],
     reason: 'Starts an interactive lesson wizard; it does not finish lesson content automatically.'
   },
+  run_lesson_blueprint: {
+    demoSafe: false, requires: ['blueprint'], terminal: true,
+    reason: 'Generates the reviewed lesson Blueprint and waits for its run result.'
+  },
+  rebuild_lesson_step: {
+    demoSafe: false, requires: ['blueprint'], params: ['step'],
+    paramSchema: { step: { type: 'integer', required: true, min: 1, aliases: ['position', 'index', 'number'], labelKey: 'cmd.param_step', label: 'Step number' } },
+    reason: 'Regenerates the selected row of the current lesson Blueprint.'
+  },
+  apply_lesson_template: {
+    demoSafe: false, terminal: true, params: ['name'],
+    paramSchema: { name: { type: 'string', required: true, maxLength: 200, aliases: ['template', 'topic'], labelKey: 'cmd.param_template', label: 'Template name' } },
+    reason: 'Opens a saved lesson template as a new draft for review.'
+  },
   start_lesson_blueprint: {
     demoSafe: false,
     interaction: 'guided',
@@ -626,6 +640,7 @@ function getCommandContract(commandOrId) {
     requires: Array.isArray(declared.requires) ? declared.requires.slice() : [],
     produces: Array.isArray(declared.produces) ? declared.produces.slice() : [],
     params: Array.isArray(declared.params) ? declared.params.slice() : [],
+    paramSchema: Object.fromEntries(Object.entries(declared.paramSchema || {}).map(([key, field]) => [key, { ...field, aliases: (field.aliases || []).slice() }])),
     reason: declared.reason || ''
   };
 }
@@ -633,6 +648,7 @@ function getCommandContract(commandOrId) {
 function _planCapabilities(ctx) {
   const out = new Set();
   if (ctx && ctx.hasSourceOrAnalysis) out.add('source');
+  if (ctx && ctx.hasActiveBlueprint) out.add('blueprint');
   if (ctx && ctx.contentIsGlossary) out.add('glossary');
   if (ctx && ctx.contentLoaded) out.add('content');
   if (ctx && ctx.pipelineOpen) out.add('pipeline');
@@ -646,13 +662,54 @@ function _contractPlanParams(p, contract) {
   if (!allowed.length) return {};
   const out = {};
   for (const k of allowed) {
+    const field = contract.paramSchema && contract.paramSchema[k];
+    const alias = field && (field.aliases || []).find(name => Object.prototype.hasOwnProperty.call(clean, name));
     if (Object.prototype.hasOwnProperty.call(clean, k)) out[k] = clean[k];
+    else if (alias) out[k] = clean[alias];
+    if (field && field.type === 'integer' && typeof out[k] === 'string' && /^\d+$/.test(out[k])) out[k] = Number(out[k]);
   }
   return out;
 }
 
 function sanitizeCommandParams(commandOrId, params) {
   return _contractPlanParams(params, getCommandContract(commandOrId));
+}
+
+function validateCommandParams(commandOrId, params, ctx = {}) {
+  const contract = getCommandContract(commandOrId);
+  const clean = sanitizeCommandParams(commandOrId, params);
+  const errors = [];
+  for (const [key, field] of Object.entries(contract.paramSchema)) {
+    const value = clean[key];
+    const label = tx(ctx, field.labelKey, field.label || key);
+    if (value == null || value === '') {
+      if (field.required) errors.push({ key, message: tx(ctx, 'cmd.param_required', '{field} is required.').replace('{field}', label) });
+    } else if ((field.type === 'integer' && (!Number.isInteger(value) || value < field.min)) ||
+               (field.type === 'string' && (typeof value !== 'string' || !value.trim() || value.length > field.maxLength))) {
+      errors.push({ key, message: tx(ctx, 'cmd.param_invalid', 'Enter a valid {field}.').replace('{field}', label) });
+    }
+  }
+  const id = typeof commandOrId === 'string' ? commandOrId : commandOrId && commandOrId.id;
+  if (!errors.length && id === 'rebuild_lesson_step' && typeof ctx.blueprintStepList === 'function' &&
+      !ctx.blueprintStepList().some(step => Number(step.position) === clean.step)) {
+    errors.push({ key: 'step', message: tx(ctx, 'cmd.rebuild_lesson_step_missing', 'I could not find that step in the plan.') });
+  }
+  return { ok: !errors.length, params: clean, errors };
+}
+
+function formatCommandResult(result, ctx = {}) {
+  const status = !result || !result.handled ? 'unavailable'
+    : result.needsInput ? 'needs-input' : result.pending || result.timedOut ? 'pending'
+    : result.partial || result.status === 'partial' ? 'partial'
+    : result.cancelled || result.status === 'stopped' ? 'cancelled'
+    : result.ok === false ? 'error' : 'success';
+  const narration = result && result.narration || (status === 'unavailable'
+    ? tx(ctx, 'voice.action_unavailable', 'That action is no longer available here, so nothing was changed.')
+    : status === 'pending' ? tx(ctx, 'cmd.working', 'Working...')
+    : status === 'success' ? tx(ctx, 'router.done', 'Done.')
+    : tx(ctx, 'cmd.failed', 'That command could not finish.'));
+  const prefix = { success: '✅ ', pending: '⏳ ', partial: '⚠️ ', cancelled: '⏹ ', error: '⚠️ ', unavailable: '⚠️ ', 'needs-input': '' }[status];
+  return { status, narration, text: prefix + narration };
 }
 
 // Resolve the command audience once from the host's role state. `isTeacherMode`
@@ -783,6 +840,11 @@ function validatePlan(ctx, rawSteps, opts = {}) {
           detail = 'This command is not available in the current app state.';
         }
       }
+    }
+    const parameterCheck = validateCommandParams(cmd || step.commandId, step.params, ctx || {});
+    if (status !== 'block' && !parameterCheck.ok) {
+      status = 'block';
+      detail = parameterCheck.errors.map(error => error.message).join(' ');
     }
     if (status !== 'block') contract.produces.forEach((name) => capabilities.add(name));
     items.push({
@@ -940,7 +1002,20 @@ function buildAlloCommands(ctx, opts = {}) {
       label: t('cmd.run_lesson_blueprint', 'Generate the lesson plan'),
       aliases: ['generate the plan', 'run the blueprint', 'build the lesson', 'generate the lesson pack', 'execute the plan', 'make the resources'],
       hint: t('cmd.run_lesson_blueprint_hint', 'Generates every resource in the current plan'),
-      run: (c) => { c.runBlueprint(); return t('cmd.run_lesson_blueprint_done', 'Generating the plan now — you can watch each step on the card.'); } },
+      pendingNarration: t('cmd.run_lesson_blueprint_working', 'Generating the reviewed lesson plan...'),
+      runAsync: async (c) => {
+        const stop = () => { if (typeof c.stopBlueprintRun === 'function') c.stopBlueprintRun(); };
+        if (c.signal) c.signal.addEventListener('abort', stop, { once: true });
+        try {
+          if (c.signal && c.signal.aborted) return { ok: false, cancelled: true, narration: t('cmd.cancelled', 'Cancelled.') };
+          const result = await c.runBlueprint();
+          if (!result || !result.status) return { ok: false, narration: t('cmd.run_lesson_blueprint_no_result', 'The lesson plan did not return a completion result. Check its progress before retrying.') };
+          return { ...result, ok: result.status === 'completed', partial: result.status === 'partial', cancelled: result.status === 'stopped',
+            narration: result.narration || (result.status === 'completed'
+              ? t('cmd.run_lesson_blueprint_complete', 'The lesson plan finished generating.')
+              : t('cmd.run_lesson_blueprint_incomplete', 'The lesson plan is not complete. Review its progress and retryable rows.')) };
+        } finally { if (c.signal) c.signal.removeEventListener('abort', stop); }
+      } },
     { id: 'start_lesson_blueprint', icon: '\u{1F9ED}', roles: 'teacher', when: (c) => typeof c.startLessonFlow === 'function',
       label: t('cmd.start_blueprint_mode', 'Blueprint Mode — build a lesson'),
       aliases: ['blueprint mode', 'build a lesson', 'start auto fill', 'start autofill', 'auto fill mode', 'autofill mode', 'start blueprint mode', 'make a lesson blueprint', 'create a lesson blueprint', 'plan with allobot'],
@@ -978,17 +1053,20 @@ function buildAlloCommands(ctx, opts = {}) {
       label: t('cmd.rebuild_lesson_step', 'Rebuild one step of the plan'),
       aliases: ['rebuild step', 'regenerate step', 'redo step', 'rebuild that resource', 'try that step again'],
       hint: t('cmd.rebuild_lesson_step_hint', 'Regenerates a single resource — say which step number'),
-      run: (c, p) => {
+      pendingNarration: t('cmd.rebuild_lesson_step_working', 'Rebuilding the selected lesson step...'),
+      runAsync: async (c, p) => {
         const steps = typeof c.blueprintStepList === 'function' ? c.blueprintStepList() : [];
         const asked = p && (p.step || p.position || p.index || p.number);
         if (!asked) {
           const listed = steps.slice(0, 8).map(s => `${s.position}. ${s.tool}`).join(', ');
           return t('cmd.rebuild_lesson_step_which', 'Which step? ') + (listed || t('cmd.rebuild_lesson_step_none', 'the plan has no steps yet.'));
         }
-        const hit = c.rebuildBlueprintStep(asked);
-        return hit === null
-          ? t('cmd.rebuild_lesson_step_missing', 'I could not find that step in the plan.')
-          : t('cmd.rebuild_lesson_step_done', 'Rebuilding step ') + asked + '.';
+        const hit = await c.rebuildBlueprintStep(asked);
+        if (hit && hit.partial) return { ok: false, partial: true, status: 'partial',
+          narration: t('cmd.rebuild_lesson_step_partial', 'Some versions of step {step} finished. Review the failed versions before retrying.').replace('{step}', asked) };
+        return !hit || hit.ok === false
+          ? { ok: false, narration: t('cmd.rebuild_lesson_step_failed', 'The selected step did not finish. Review its status before retrying.') }
+          : t('cmd.rebuild_lesson_step_complete', 'Finished rebuilding step {step}.').replace('{step}', asked);
       } },
     { id: 'apply_lesson_template', icon: '\u{1F4D0}', roles: 'teacher', when: (c) => typeof c.applyLessonTemplateByName === 'function' && typeof c.lessonTemplateNames === 'function' && c.lessonTemplateNames().length > 0,
       label: t('cmd.apply_lesson_template', 'Start from a saved template'),
@@ -1001,7 +1079,7 @@ function buildAlloCommands(ctx, opts = {}) {
         const hit = c.applyLessonTemplateByName(asked);
         return hit
           ? t('cmd.apply_lesson_template_done', 'Started from ') + '"' + hit.name + '".'
-          : t('cmd.apply_lesson_template_missing', 'I could not find a template called ') + '"' + asked + '".';
+          : { ok: false, narration: t('cmd.apply_lesson_template_missing', 'I could not find a template called ') + '"' + asked + '".' };
       } },
     { id: 'open_command_blueprints', icon: '\u{1F9E9}', roles: 'teacher', label: t('cmd.open_command_blueprints', 'Saved Command Blueprints'), aliases: ['command blueprints', 'saved command blueprints', 'saved workflows', 'workflow library', 'saved plans', 'command workflow library'], hint: t('cmd.open_command_blueprints_hint', 'Open, review, and rerun saved multi-step command workflows'), run: (c) => { c.openCommandBlueprintLibrary(); return t('cmd.open_command_blueprints_done', 'Saved Command Blueprints opened in AlloBot.'); } },
     { id: 'create_activity_rubric', icon: '\u{1F4D0}', roles: 'teacher', requiresCapabilities: ['activityRubricGenerator'], label: t('cmd.create_activity_rubric', 'Create a rubric for this activity'), aliases: ['create rubric', 'make a rubric', 'generate rubric', 'rubric for this activity'], hint: t('cmd.create_activity_rubric_hint', 'Generate observable, student-friendly success criteria'), run: (c) => { c.generateCurrentRubric(); return t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'); }, pendingNarration: t('cmd.create_activity_rubric_working', 'Generating an activity rubric...'), runAsync: async (c) => { const ok = await c.generateCurrentRubric(); if (ok === false) throw new Error(t('cmd.create_activity_rubric_failed', 'The activity rubric could not be created.')); return t('cmd.create_activity_rubric_done', 'Activity rubric created.'); } },
@@ -2885,6 +2963,8 @@ async function routeUtterance(ctx, rawText, opts = {}) {
     { id: 'find_reading', re: /^(?:i\s+want\s+to\s+(?:learn|read)\s+about|i'?m\s+looking\s+for\s+(?:a\s+)?(?:book|source|reading|article|text)\s+about|something\s+about|what\s+can\s+i\s+read\s+about)\s+(.+?)\??$/i, params: (m) => _readingParams(m[1], null) },
     { id: 'create_lesson', re: /^(?:turn|use)\s+(?:this|our|the)\s+(?:lesson\s+)?(?:discussion|conversation|idea|guidance)\s+(?:into|for)\s+(?:a\s+)?lesson\s*\??$/i, params: () => ({ topic: null, grade: null }) },
     { id: 'create_lesson', re: /^(?:create|generate|make|start|build|plan)\s+(?:a\s+|new\s+)?lesson\s*(?:about|on)?\s*(.*?)(?:\s+for\s+(?:grade\s+)?(\d{1,2})(?:st|nd|rd|th)?(?:\s+grade(?:rs)?)?)?\s*\??$/i, params: (m) => ({ topic: (m[1] || '').trim() || null, grade: m[2] || null }) },
+    { id: 'rebuild_lesson_step', re: /^(?:rebuild|regenerate|redo|retry)\s+(?:lesson\s+)?step\s+(\d+)\s*[.!]?$/i, params: m => ({ step: Number(m[1]) }) },
+    { id: 'apply_lesson_template', re: /^(?:use|apply|load)\s+(?:the\s+)?(?:lesson\s+)?template\s+["“]?(.+?)["”]?\s*[.!]?$/i, params: m => ({ name: m[1].trim() }) },
     { id: 'set_grade_level', re: /^(?:set|change|make)\s+(?:the\s+)?(?:grade|grade level|target grade|reading level|level)\s*(?:to|for)?\s*(kindergarten|k|pre[-\s]?k|college|graduate(?: level)?|\d{1,2}(?:st|nd|rd|th)?(?:\s*grade)?)\s*\??$/i, params: (m) => ({ grade: m[1] || null }) },
     { id: 'set_source_tone', re: /^(?:set|change|make)\s+(?:the\s+)?(?:source\s+)?tone\s*(?:to)?\s*([a-z -]{3,40})\s*\??$/i, params: (m) => ({ tone: m[1].trim() }) },
     { id: 'set_source_length', re: /^(?:set|change|make)\s+(?:the\s+)?(?:source|text|reading|passage)?\s*(?:length|word count)\s*(?:to)?\s*([a-z]+|\d{1,4})(?:\s*words?)?\s*\??$/i, params: (m) => ({ length: m[1] || null }) },
@@ -3037,7 +3117,10 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
   const commands = buildAlloCommands(ctx);
   const cmd = commands.find((c) => c.id === id);
   if (!cmd) return null;
-  const safeParams = sanitizeCommandParams(cmd, params || {});
+  const parameterCheck = validateCommandParams(cmd, params || {}, ctx);
+  const safeParams = parameterCheck.params;
+  if (!parameterCheck.ok) return { handled: true, ok: false, needsInput: true, commandId: cmd.id, params: safeParams,
+    paramErrors: parameterCheck.errors, narration: parameterCheck.errors.map(error => error.message).join(' ') };
   // Return the already-sanitized parameter snapshot with a confirmation
   // request. Voice control stores this exact command + params pair and may
   // confirm only that pair; it never re-routes a bare "yes" utterance.
@@ -3084,10 +3167,13 @@ function executeCommand(ctx, commandOrId, params, opts = {}) {
     const cancelledResult = () => ({ handled: true, ok: false, cancelled: true, narration: t('cmd.cancelled', 'Cancellation requested. The current operation will stop when its provider honors it.'), commandId: cmd.id, via, startedAt });
     const completion = action.then((message) => {
       if (entry && entry.cancelled) return cancelledResult();
-      const narration = message || t('router.done', 'Done.');
-      _recordCommandUse(cmd.id);
-      _emitCommandLifecycle(ctx, cmd, 'success', narration, via, !opts.awaitCompletion, { params: safeParams, startedAt, retryable: false, cancellable: false });
-      return { handled: true, ok: true, narration, commandId: cmd.id, via, startedAt };
+      const outcome = message && typeof message === 'object' ? message : { narration: message };
+      const ok = outcome.ok !== false && !outcome.partial && !outcome.cancelled && !outcome.needsInput;
+      const narration = outcome.narration || t(ok ? 'router.done' : 'cmd.failed', ok ? 'Done.' : 'That command did not finish.');
+      if (ok) _recordCommandUse(cmd.id);
+      _emitCommandLifecycle(ctx, cmd, ok ? 'success' : outcome.cancelled ? 'cancelled' : 'error', narration, via, !opts.awaitCompletion,
+        { params: safeParams, startedAt, retryable: !ok && !outcome.cancelled && !outcome.partial, cancellable: false });
+      return { ...outcome, handled: true, ok, narration, commandId: cmd.id, via, startedAt };
     }).catch((error) => {
       if (entry && entry.cancelled) return cancelledResult();
       const narration = t('router.failed', 'That did not work: ') + ((error && error.message) || 'unknown');
@@ -3274,7 +3360,12 @@ function _cleanPlanParams(p) {
 // or null. Nothing here executes — the caller must confirm + runPlan.
 async function planUtterance(ctx, rawText, opts = {}) {
   const text = String(rawText || '').trim();
-  if (!text || text.length > 400) return null;
+  if (!text) return null;
+  if (text.length > 12000) {
+    const error = new Error(tx(ctx, 'cmd.plan_input_too_long', 'Please shorten this request to 12,000 characters or fewer. No steps have been run.'));
+    error.code = 'COMMAND_PLAN_INPUT_TOO_LONG';
+    throw error;
+  }
   if (!ctx || typeof ctx.callGemini !== 'function') return null;
   // Include gated commands so the model may propose a real producer before a
   // dependent command. The contract validator below proves that dependency;
@@ -3380,7 +3471,7 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
     }
     if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'start', cmd, null); } catch (_) {} }
     let r = null;
-    try { r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: 'plan', timeoutMs: opts.timeoutMs, shouldStop: stopRequested }); }
+    try { r = await runCommandById(ctx, s.commandId, s.params || {}, { confirmed: true, awaitCompletion: true, via: 'plan', timeoutMs: opts.timeoutMs, shouldStop: opts.stopAfterCurrent ? null : stopRequested }); }
     catch (e) { r = { handled: false, narration: (e && e.message) || 'unknown' }; }
     results.push(r);
     if (!r || !r.handled || r.ok === false) {
@@ -3391,6 +3482,9 @@ async function runPlan(ctxOrGet, steps, opts = {}) {
     // step now would race it (two concurrent generations fighting over shared
     // state). Hold the remainder instead; nothing failed, so say so honestly.
     if (r.timedOut) return { ok: false, timedOut: true, failedStep: i, results, remainingSteps: list.slice(i + 1), reason: (cmd.label || s.commandId) + t('plan.step_timeout', ' is taking a while and is still working in the background. I’ve held the remaining steps — once it finishes, ask me again for the rest.') };
+    // Allow the host to publish state produced by this command before resolving
+    // the next command's guards and callbacks.
+    if (typeof ctx.waitForCommandState === 'function') await ctx.waitForCommandState();
     if (typeof opts.onStep === 'function') { try { opts.onStep(i, 'done', cmd, r.narration); } catch (_) {} }
   }
   return { ok: true, results, remainingSteps: [] };

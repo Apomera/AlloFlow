@@ -1,0 +1,10 @@
+{
+  "menuEscapeReturnsFocus": true,
+  "outsideClickDismisses": true,
+  "focusOutsideDismisses": true,
+  "unavailableAiDisabled": true,
+  "ratingsKeyboardAccessible": true,
+  "reviewProgression": true,
+  "accessibility": [],
+  "errors": []
+}

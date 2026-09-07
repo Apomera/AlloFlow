@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AlloFlow Immersive Geometry — Stretch Lab</title>
+<title>AlloFlow — Immersive Stretch Lab</title>
 <!--
   AlloFlow Immersive Geometry — "Stretch Lab" (WebXR companion window).
 
@@ -27,8 +27,7 @@
   embodied mathematics, so a learner who cannot use hand controllers can still
   make and measure the figures. Credit to the IMRE Lab for the idea.
 
-  Everything is local. A-Frame is vendored (vendor/aframe.min.js); nothing is
-  fetched from a third-party host and nothing touches a server.
+  A-Frame is vendored (vendor/aframe.min.js). Geometry and preferences stay on this device.
 -->
 <script src="vendor/aframe.min.js"></script>
 <style>
@@ -223,6 +222,127 @@
     #hud .stateline { margin-top:0; }
     .a-enter-vr,.a-enter-ar { bottom:auto !important; top:12px; }
   }
+
+  /* A calm workbench: mode and destinations stay one tap away. */
+  :root { --panel: #111a2c; --line: #465a80; --control: #1a2840; --dim: #cad5eb; --muted: #b4c2db; }
+  #hud { border-radius: 20px; border-color: #4c5f82; box-shadow: 0 20px 56px rgba(0,0,0,.35); }
+  .hud-header { padding: 13px 15px; background: linear-gradient(120deg, #1c2b48, #141f35); border-bottom-color: #354866; }
+  .hud-eyebrow { display: block; color: #bccaf2; font-size: 9px; font-weight: 800; letter-spacing: .16em; margin-bottom: 3px; }
+  #hud .hud-header h1 { font-size: 20px; letter-spacing: -.035em; }
+  #hud #uiHudToggle { flex: 0 0 auto; min-height: 34px; padding: 6px 9px; font-size: 11px; background: transparent; }
+  #hudBody { padding: 0 15px 15px; max-height: calc(100dvh - 116px); scrollbar-width: thin; scrollbar-color: #62759a transparent; }
+  .workspace-navigation { position: sticky; top: 0; z-index: 2; padding: 12px 0 8px; background: var(--panel); }
+  .workspace-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border: 1px solid var(--line); border-radius: 12px; background: #0c1425; }
+  .workspace-modes button, .workspace-tabs button { appearance: none; font: inherit; color: var(--dim); font-weight: 750; cursor: pointer; border: 1px solid transparent; background: transparent; border-radius: 8px; padding: 8px 5px; }
+  .workspace-modes button[aria-pressed="true"] { background: #665cf5; color: white; border-color: #a79fff; box-shadow: 0 3px 10px #0003; }
+  .workspace-modes button:hover { border-color: #a79fff; color: white; }
+  .workspace-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin-top: 8px; }
+  .workspace-tabs button { border-radius: 7px; padding: 5px; }
+  .workspace-tabs button[aria-pressed="true"] { color: #fff; background: #273957; border-color: #708ab0; }
+  .workspace-tabs button:hover { color: #fff; background: #22324b; }
+  .workspace-navigation button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+  [hidden] { display: none !important; }
+  .workspace-description { margin: 4px 0 13px; font-size: 12px; line-height: 1.5; color: var(--dim); }
+  .workspace-section-label { font-size: 9px; font-weight: 800; letter-spacing: .15em; color: #c1baff; margin: 7px 0 9px; }
+  #hud h2 { font-size: 17px; font-weight: 750; line-height: 1.3; letter-spacing: -.025em; margin: 9px 0 6px; }
+  #hud h3 { font-size: 12px; color: var(--text); margin: 20px 0 10px; }
+  .hud-primary { border: 1px solid #3f5275; border-radius: 13px; background: #141f33; padding: 12px; }
+  #hud .stateline { font-size: 17px; letter-spacing: -.025em; margin-bottom: 4px; }
+  #measure { min-height: 0; line-height: 1.5; margin-bottom: 14px; }
+  #axisline { border-top: 1px solid #344864; padding-top: 10px; font-size: 11px; }
+  .dimchips { margin: 11px 0 8px; gap: 5px; }
+  .dimchips span { padding: 6px 3px; font-size: 10px; border-color: #3b4d6b; border-radius: 7px; }
+  #hud .btnrow { gap: 6px; }
+  #hud .btnrow:last-child { margin-bottom: 0; }
+  #hud .btnrow button { padding: 7px 8px; }
+  #hud #uiStretch { font-size: 13px; }
+  .workspace-footer { display: flex; align-items: center; justify-content: space-between; gap: 9px; margin: 9px 0 0; color: var(--dim); font-size: 10.5px; }
+  #hud .workspace-footer button { flex: 0 0 auto; min-height: 32px; font-size: 11px; padding: 6px 8px; }
+  .hud-section { margin: 7px 0; padding: 0; border: 1px solid #415573; border-radius: 11px; overflow: hidden; background: #152036; }
+  .hud-section summary { padding: 12px; font-size: 12px; line-height: 1.4; }
+  .hud-section summary span { display: block; font-size: 10px; line-height: 1.4; color: var(--dim); font-weight: 500; padding-left: 15px; margin-top: 3px; }
+  .hud-section[open] > summary { border-bottom: 1px solid #3b4e6d; }
+  .settings-content { padding: 12px; }
+  .settings-content > :last-child { margin-bottom: 0; }
+  #hud .tooloption { font-size: 11px; gap: 6px; }
+  #hud .tooloption select { min-height: 38px; font-size: 12px; padding: 7px; }
+  .preference-row { display: flex; gap: 9px; margin: 4px 0 12px; min-height: 30px; font-size: 12px; }
+  .measuretoggle input, .missiontoggle input { accent-color: #978fff; }
+  #missionDetails .mission { border: 0; margin: 0; border-radius: 0; padding: 12px; background: transparent; }
+  .guidebox { border-color: #6e69a8; background: linear-gradient(130deg, #262546, #18243a); padding: 12px; border-radius: 12px; }
+  .guideprompt { font-size: 12px; line-height: 1.5; min-height: 0; }
+  .guidetrack { gap: 4px; }
+  #hud .guidestep, #hud .missionsteps button { font-size: 10px; }
+  .scenelegend { gap: 12px 15px; font-size: 11px; line-height: 1.6; }
+  .kbd { border-top: 0; padding-top: 0; font-size: 12px; line-height: 1.85; }
+  @media (max-width: 760px) {
+    #hud { border-radius: 17px; max-height: 46dvh; }
+    .hud-header { padding: 9px 12px; }
+    #hud .hud-header h1 { font-size: 17px; }
+    .hud-eyebrow { font-size: 8px; margin-bottom: 2px; }
+    #hudBody { padding: 0 12px 12px; max-height: calc(46dvh - 65px); }
+    .workspace-navigation { padding-top: 9px; }
+    .workspace-description { font-size: 11px; }
+    .tooloptions { grid-template-columns: 1fr 1fr; }
+    #hud .workspace-modes button { min-height: 36px; }
+  }
+  @media (forced-colors: active) {
+    .workspace-modes button, .workspace-tabs button, .hud-section { border: 1px solid ButtonText; }
+    .workspace-navigation button[aria-pressed="true"] { border: 2px solid Highlight; color: Highlight; }
+  }
+
+  .sandbox-return { display:inline-flex; gap:6px; margin:3px 0 9px; color:#c7d9fa; font-size:11px; text-decoration:none; border-bottom:1px solid #536b93; padding-bottom:2px; }
+  .sandbox-return:hover { color:#fff; border-color:#c7d9fa; }
+  .sandbox-return:focus-visible { outline:3px solid var(--focus); outline-offset:4px; }
+  #hud .hud-header h1 { font-size:18px; }
+  .starter-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:10px; }
+  #hud .starter-grid button { display:grid; grid-template-columns:32px 1fr; grid-template-rows:auto auto; text-align:left; gap:3px 8px; min-height:65px; padding:10px; background:linear-gradient(135deg,#283755,#1c2a43); color:#f1f5ff; border:1px solid #566d96; border-radius:10px; }
+  .starter-grid button > span { grid-row:1/3; align-self:center; font-size:29px; line-height:1; color:#a6d7ff; }
+  .starter-grid strong { font-size:12px; }.starter-grid small { font-size:10px; color:#c5d3ec; }
+  .axis-buttons,.view-presets,.scene-presets { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; margin:10px 0; }
+  #hud .axis-buttons button,#hud .view-presets button,#hud .scene-presets button { min-width:0; min-height:36px; border:1px solid #516789; border-radius:8px; background:#1b2c47; color:#e6efff; font-size:11px; padding:7px 3px; }
+  .axis-buttons button span { color:#b7c5e6; font-size:10px; display:block; margin-top:2px; }
+  #hud .axis-buttons button[aria-pressed="true"],#hud .view-presets button[aria-pressed="true"] { color:#fff; background:#554cad; border-color:#c1b7ff; }
+  #hud .axis-buttons button:disabled { opacity:.4; }
+  #uiAxis { display:none; }
+  .exact-dimensions { margin:10px 0 14px; border-top:1px solid #3f5275; border-bottom:1px solid #3f5275; padding:9px 0; }
+  .exact-dimensions summary { cursor:pointer; color:#d8e4fb; font-size:11px; font-weight:700; }.exact-dimensions summary span { float:right; color:#a5b7d4; font-weight:400; }
+  .exact-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; margin:12px 0 8px; }.exact-grid label { min-width:0; display:grid; gap:5px; font-size:10px; color:#c5d3ec; }
+  .exact-grid input { width:100%; min-width:0; min-height:38px; background:#0e182a; border:1px solid #6c83aa; border-radius:7px; color:white; padding:7px; font:inherit; font-size:13px; }
+  .exact-grid input:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }.exact-grid input:disabled { opacity:.45; }
+  .appearance-options { margin:12px 0; }.lesson-picker { padding:12px 12px 0; display:grid; gap:7px; }.lesson-picker label { font-size:11px; font-weight:700; }.lesson-picker select { min-width:0; width:100%; min-height:36px; color:#fff; background:#16213d; border:1px solid #7086a8; border-radius:8px; padding:6px; font:inherit; font-size:12px; }
+  #hud .reset-presentation { min-height:36px; width:100%; margin-top:12px; }
+  .guidebox .guidetrack { margin:8px 0; }.guidehead { gap:8px; }.guideprogress { white-space:nowrap; }
+  @media (max-width:760px) { #hud .hud-header h1 { font-size:15px; letter-spacing:-.035em; } .sandbox-return { font-size:10px; margin-bottom:6px; }.starter-grid { gap:6px; }.starter-grid small { font-size:9px; } #hud .starter-grid button { padding:8px; min-height:58px; }.exact-grid { gap:5px; } }
+
+  @media (max-width:760px) {
+    #workspaceModeHelp,.dimchips { display:none; }
+    .starter-section > summary span { display:none; }
+    .starter-section > summary { padding:9px 12px; }
+    .starter-section { margin:4px 0 9px; }
+    .workspace-navigation { padding:8px 0 6px; }
+    .sandbox-return { margin:3px 0 5px; }
+    #measure { margin-bottom:8px; font-size:12px; }
+  }
+
+  /* A stable view dock keeps navigation available while the editor scrolls. */
+  #sceneToolbar { position:fixed; z-index:21; top:16px; right:16px; display:flex; align-items:center; gap:8px; padding:6px 8px; border:1px solid #536487; border-radius:14px; background:#101b30ed; box-shadow:0 8px 24px #0003; backdrop-filter:blur(12px); }
+  .scene-toolbar-label { color:#b5c7e5; font-size:9px; font-weight:800; letter-spacing:.12em; padding:0 4px; }
+  #sceneToolbar .view-presets { display:flex; gap:4px; margin:0; }
+  #sceneToolbar button { min-height:36px; border:1px solid transparent; border-radius:8px; padding:7px 11px; background:transparent; color:#dbe8ff; font:600 12px system-ui; cursor:pointer; }
+  #sceneToolbar button:hover { background:#2a3a58; border-color:#859bc4; }
+  #sceneToolbar button[aria-pressed="true"] { background:#514998; border-color:#b1a6fa; color:#fff; }
+  #sceneToolbar #uiBuildCenter { border-left:1px solid #536487; border-radius:0 8px 8px 0; }
+  #sceneToolbar button:focus-visible,.settings-jumps button:focus-visible,.custom-material-row input:focus-visible,.material-slider input:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+  .settings-jumps { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin:12px 0; }
+  #hud .settings-jumps button { min-height:36px; padding:6px 4px; border:1px solid #516789; border-radius:8px; background:#1a2942; color:#dbe8ff; font-size:10px; }
+  .custom-material-row { display:flex; align-items:center; gap:9px; margin:14px 0; color:var(--dim); font-size:11px; }
+  .custom-material-row label { flex:1; }.custom-material-row input { width:40px; height:34px; padding:3px; background:#0c1728; border:1px solid #7187ac; border-radius:7px; cursor:pointer; }.custom-material-row output { font-size:10px; font-variant-numeric:tabular-nums; }
+  .material-slider { display:grid; grid-template-columns:1fr auto; gap:8px; margin:14px 0; color:var(--dim); font-size:11px; }.material-slider input { grid-column:1/-1; width:100%; margin:0; accent-color:#b5a6ff; }
+  .hud-section summary { scroll-margin-top:115px; }
+  @media(max-width:760px) { #sceneToolbar { top:8px; left:8px; right:8px; justify-content:center; gap:4px; padding:5px; border-radius:12px; }.scene-toolbar-label { display:none; } #sceneToolbar button { min-height:36px; padding:7px 12px; font-size:11px; } }
+  @media(forced-colors:active) { #sceneToolbar,#sceneToolbar button,.settings-jumps button { border:1px solid ButtonText; } #sceneToolbar button[aria-pressed="true"] { border:2px solid Highlight; } }
+  #hud [data-comfort][aria-pressed="true"] { background:#514998; border-color:#b1a6fa; color:white; }
 </style>
 </head>
 <body>
@@ -234,65 +354,34 @@
 </section>
 
 <!-- Flatscreen HUD (also fully keyboard-operable). Hidden during an immersive VR session. -->
+<nav id="sceneToolbar" aria-label="Scene viewing controls">
+  <span class="scene-toolbar-label">VIEW</span>
+  <div class="view-presets" role="group" aria-label="Viewing angle">
+    <button type="button" data-view-angle="corner" aria-pressed="true">Corner</button><button type="button" data-view-angle="front" aria-pressed="false">Front</button><button type="button" data-view-angle="side" aria-pressed="false">Side</button>
+  </div>
+  <button id="uiBuildCenter" type="button" title="Center the workspace (H)">Center view</button>
+</nav>
 <div id="hud">
-  <div class="hud-header"><h1>Stretch Lab</h1><button id="uiHudToggle" class="q" type="button" aria-expanded="true" aria-controls="hudBody">Hide controls</button></div>
+  <div class="hud-header"><div><span class="hud-eyebrow">GEOMETRY SANDBOX</span><h1>Immersive Stretch Lab</h1></div><button id="uiHudToggle" class="q" type="button" aria-expanded="true" aria-controls="hudBody">Hide controls</button></div>
   <div id="hudBody">
-  <div class="sub">Stretch changes geometry. View scale changes only its presentation.</div>
-  <section class="hud-primary" aria-label="Shape and editing controls">
-  <p class="stateline" id="stateline">A point.</p>
-  <div id="measure">Zero dimensions. Press <b>Stretch ▲</b> to pull it into a line.</div>
-  <div id="boundaryMeasure" hidden></div>
-  <label class="measuretoggle"><input id="uiBoundary" type="checkbox"> Show perimeter / surface area</label>
-  <div id="axisline">No editable axis yet.</div>
-
-  <label class="axisrange" for="uiAxisValue">
-    <span id="axisSliderLabel">Selected axis size</span><output id="axisValueOut" for="uiAxisValue">0</output>
-    <span class="axistarget" id="axisTargetOut">Mission target: —</span>
-    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" aria-describedby="axisValueOut axisTargetOut" disabled>
-    <datalist id="axisTargetTicks"><option id="axisTargetTick" value="2.1"></option></datalist>
-  </label>
-
-  <div class="btnrow">
-    <button class="act" id="uiStretch" aria-label="Stretch up one dimension">Stretch ▲</button>
-    <button class="q" id="uiCollapse" aria-label="Collapse down one dimension">▼</button>
-  </div>
-
-  <div class="btnrow">
-    <button class="q" id="uiGrow" aria-label="Grow the selected dimension">＋ longer</button>
-    <button class="q" id="uiShrink" aria-label="Shrink the selected dimension">－ shorter</button>
-  </div>
-
-  <div class="btnrow">
-    <button class="q" id="uiAxis" aria-label="Cycle the editable axis">Axis</button>
-    <button class="q" id="uiUndo" aria-label="Undo the last geometry change">↶ undo</button>
-    <button class="q" id="uiRedo" aria-label="Redo the last undone geometry change">↷ redo</button>
-    <button class="q" id="uiReset" aria-label="Reset to a point">↺ reset</button>
-  </div>
-  <div class="btnrow"><button id="uiViewLeft" class="q" type="button" aria-label="Turn view left">← Look</button><button id="uiRecenter" class="q" type="button">Center view</button><button id="uiViewRight" class="q" type="button" aria-label="Turn view right">Look →</button></div>
-  </section>
-
-  <div class="dimchips" aria-hidden="true">
-    <span id="chip0">Point</span><span id="chip1">Line</span><span id="chip2">Plane</span><span id="chip3">Solid</span>
-  </div>
-  <details class="hud-section"><summary>Build missions</summary>
-  <section class="mission" id="missionBox" aria-labelledby="missionTitle">
-    <div class="missionhead"><strong id="missionTitle">Stretch mission</strong><span class="missionactions"><button class="q" id="uiMission" type="button">New target</button><button class="q" id="uiFresh" type="button">Start over</button></span></div>
-    <div class="missiongoal" id="missionGoal">Make a segment with L = 2.1 units.</div>
-    <div class="missionmeasure" id="missionMeasure">Length — target 2.1 units · stretch to 1D to compare</div>
-    <div class="missionsteps" id="missionSteps" role="list" aria-label="Mission progress">
-      <span role="listitem"><button id="missionStep0" type="button">Segment</button></span><span role="listitem"><button id="missionStep1" type="button">Rectangle</button></span><span role="listitem"><button id="missionStep2" type="button">Box</button></span><span role="listitem"><button id="missionStep3" type="button">Cube</button></span>
+    <div class="workspace-navigation">
+      <div class="workspace-modes" role="group" aria-label="Learning mode">
+        <button id="uiModeFree" type="button" aria-pressed="true" aria-describedby="workspaceModeHelp">Free build</button>
+        <button id="uiModeLesson" type="button" aria-pressed="false" aria-describedby="workspaceModeHelp">Lesson sequence</button>
+      </div>
+      <div class="workspace-tabs" role="group" aria-label="Workspace navigation">
+        <button id="uiPanelBuild" type="button" aria-pressed="true" aria-controls="workspaceBuild">Build</button>
+        <button id="uiPanelSettings" type="button" aria-pressed="false" aria-controls="workspaceSettings">Settings</button>
+        <button id="uiPanelHelp" type="button" aria-pressed="false" aria-controls="workspaceHelp">Help</button>
+      </div>
     </div>
-    <div class="missionprogress" id="missionProgress">Stretch to 1D, then resize length.</div>
-    <button class="missionhint" id="missionHint" type="button">Next: stretch to 1D.</button>
-    <label class="missiontoggle"><input id="uiGhost" type="checkbox" checked> Show target outline</label>
-    <div class="sessionnote" id="sessionNote">Progress saves on this device.</div>
-  </section>
-
-
-  </details>
-  <details class="hud-section" open><summary>Guided exploration</summary>
+    <a id="uiReturnSandbox" class="sandbox-return" href="../app/">← Back to Sandbox</a>
+    <p id="workspaceModeHelp" class="workspace-description">Make your own shapes. Switch to lessons anytime; your geometry stays.</p>
+    <section id="workspaceBuild" aria-label="Geometry workspace">
+      <div id="lessonWorkspace" hidden>
+        <div class="workspace-section-label">YOUR LEARNING PATH</div>
   <section class="guidebox" id="guideBox" aria-labelledby="guideTitle">
-    <div class="guidehead"><strong id="guideTitle">Guided exploration</strong><span class="guideprogress" id="guideProgress">Step 1 of 4</span></div>
+    <div class="guidehead"><strong id="guideTitle">Dimension journey</strong><span class="guideprogress" id="guideProgress">Step 1 of 4</span></div>
     <div class="guidetrack" id="guideTrack" role="list" aria-label="Dimension learning path">
       <span role="listitem"><button class="guidestep current" id="guideStep0" type="button">Point</button></span>
       <span role="listitem"><button class="guidestep" id="guideStep1" type="button">Segment</button></span>
@@ -307,36 +396,98 @@
     <div class="guidewhy" id="guideWhy" hidden></div>
     <div id="guideStatus" class="sr-only" role="status" aria-live="polite"></div>
   </section>
-  </details>
-  <details class="hud-section"><summary>Story, comparison and settings</summary>
-  <section class="showcasebox" id="showcaseBox" aria-labelledby="showcaseTitle">
-    <div class="showcasehead"><strong id="showcaseTitle">Dimension story</strong><span class="showcaseprogress" id="showcaseProgress">Ready</span></div>
-    <div class="showcasecaption" id="showcaseCaption" aria-live="polite">Play a short, non-destructive tour from point to solid.</div>
-    <div class="showcaseactions">
-      <button class="q" id="uiShowcase" type="button" aria-describedby="showcaseHelp">Play story</button>
-      <button class="q" id="uiShowcaseStop" type="button" hidden>Stop</button>
+        <details id="missionDetails" class="hud-section"><summary>Practice targets <span>4 challenges</span></summary>
+  <div class="lesson-picker"><label for="uiMissionSelect">Practice target</label><select id="uiMissionSelect"><option value="0">1. Segment</option><option value="1">2. Rectangle</option><option value="2">3. Box</option><option value="3">4. Cube</option></select><div class="btnrow"><button id="uiMissionPrev" type="button">Previous</button><button id="uiMissionNext" type="button">Next</button></div></div>
+  <section class="mission" id="missionBox" aria-labelledby="missionTitle">
+    <div class="missionhead"><strong id="missionTitle">Stretch mission</strong><span class="missionactions"><button class="q" id="uiMission" type="button">New target</button><button class="q" id="uiFresh" type="button">Start over</button></span></div>
+    <div class="missiongoal" id="missionGoal">Make a segment with L = 2.1 units.</div>
+    <div class="missionmeasure" id="missionMeasure">Length — target 2.1 units · stretch to 1D to compare</div>
+    <div class="missionsteps" id="missionSteps" role="list" aria-label="Mission progress">
+      <span role="listitem"><button id="missionStep0" type="button">Segment</button></span><span role="listitem"><button id="missionStep1" type="button">Rectangle</button></span><span role="listitem"><button id="missionStep2" type="button">Box</button></span><span role="listitem"><button id="missionStep3" type="button">Cube</button></span>
     </div>
-    <div id="showcaseHelp" class="historynote">The story previews the dimension ladder without changing your geometry or undo history.</div>
+    <div class="missionprogress" id="missionProgress">Stretch to 1D, then resize length.</div>
+    <button class="missionhint" id="missionHint" type="button">Next: stretch to 1D.</button>
+    <label class="missiontoggle"><input id="uiGhost" type="checkbox" checked> Show target outline</label>
+    <div class="sessionnote" id="sessionNote">Progress saves on this device.</div>
   </section>
-  <div id="invariantNotice" class="invariantnote" role="status" aria-live="polite">Notice: change one dimension and watch what stays invariant.</div>
-  <section id="sliceExplainer" class="sliceexplainer" aria-labelledby="sliceExplainerTitle" hidden>
-    <div class="slicehead"><strong id="sliceExplainerTitle">Slice microscope</strong><button class="q" id="uiExplainSlice" type="button" aria-describedby="sliceExplainHelp" disabled>Explain selected slice</button></div>
-    <div id="sliceFormula" class="sliceformula" aria-live="polite">Stretch to a rectangle or box to inspect a slice.</div>
-    <div id="sliceDetail" class="slicedetail">The highlighted lattice shows how a held cross-section builds the measure.</div>
-    <div id="sliceExplainHelp" class="historynote">Click the highlighted section or use this button to connect the lattice to the formula.</div>
-  </section>
-  <div class="scenelegend" role="group" aria-label="Scene key: solid is now, blue outline is before, yellow marks the selected dimension and cross-sections, the dashed floor footprint is the plan projection, the fine lattice shows unit structure, and the dotted gold link connects the selected handle to its formula.">
-    <span><i class="legendmark now" aria-hidden="true"></i>Now</span>
-    <span><i class="legendmark before" aria-hidden="true"></i>Before</span>
-    <span><i class="legendmark ruler" aria-hidden="true"></i>Selected axis</span>
-    <span><i class="legendmark projection" aria-hidden="true"></i>Plan projection</span>
-    <span><i class="legendmark section" aria-hidden="true"></i>Cross-sections</span>
-    <span><i class="legendmark lattice" aria-hidden="true"></i>Unit lattice</span>
-    <span><i class="legendmark connector" aria-hidden="true"></i>Math link</span>
+        </details>
+      </div>
+  <details id="starterShapes" class="hud-section starter-section" open><summary>Starter shapes <span>Choose a starting point. Undo always takes you back.</span></summary>
+    <div class="starter-grid" role="group" aria-label="Starter shapes">
+      <button id="uiStarterLine" type="button" data-starter="line"><span aria-hidden="true">╱</span><strong>Line</strong><small>Length 2</small></button>
+      <button id="uiStarterSquare" type="button" data-starter="square"><span aria-hidden="true">▱</span><strong>Square</strong><small>2 × 2</small></button>
+      <button id="uiStarterCube" type="button" data-starter="cube"><span aria-hidden="true">◇</span><strong>Cube</strong><small>1.6 × 1.6 × 1.6</small></button>
+      <button id="uiStarterBox" type="button" data-starter="box"><span aria-hidden="true">▰</span><strong>Wide box</strong><small>3 × 1.5 × 1.25</small></button>
+    </div>
+  </details>
+  <div class="dimchips" aria-hidden="true">
+    <span id="chip0">Point</span><span id="chip1">Line</span><span id="chip2">Plane</span><span id="chip3">Solid</span>
   </div>
-  <div class="btnrow"><button class="q" id="uiViewScale" type="button" aria-describedby="viewScaleHelp">View scale: Body 1×</button></div>
-  <div id="viewScaleHelp" class="viewscalehelp">Presentation only. Length, area, and volume do not change.</div>
-  <div class="tooloptions" role="group" aria-label="Scene presentation controls">
+
+  <section class="hud-primary" aria-label="Shape and editing controls">
+  <p class="stateline" id="stateline">A point.</p>
+  <div id="measure">Zero dimensions. Press <b>Stretch ▲</b> to pull it into a line.</div>
+  <div id="boundaryMeasure" hidden></div>
+  <div class="btnrow">
+    <button class="act" id="uiStretch" aria-label="Stretch up one dimension">Stretch ▲</button>
+    <button class="q" id="uiCollapse" aria-label="Collapse down one dimension">▼</button>
+  </div>
+
+  <div id="axisline">No editable axis yet.</div>
+
+  <div class="axis-buttons" role="group" aria-label="Choose an editable dimension">
+    <button id="uiPickAxis0" type="button" aria-pressed="false">Length <span>X</span></button>
+    <button id="uiPickAxis1" type="button" aria-pressed="false">Width <span>Z</span></button>
+    <button id="uiPickAxis2" type="button" aria-pressed="false">Height <span>Y</span></button>
+  </div>
+  <label class="axisrange" for="uiAxisValue">
+    <span id="axisSliderLabel">Selected axis size</span><output id="axisValueOut" for="uiAxisValue">0</output>
+    <span class="axistarget" id="axisTargetOut">Mission target: —</span>
+    <input id="uiAxisValue" type="range" min="0.25" max="4" step="0.05" value="1.6" list="axisTargetTicks" aria-labelledby="axisSliderLabel" aria-describedby="axisValueOut axisTargetOut" disabled>
+    <datalist id="axisTargetTicks"><option id="axisTargetTick" value="2.1"></option></datalist>
+  </label>
+
+  <details id="exactDimensions" class="exact-dimensions"><summary>Exact dimensions <span>units</span></summary>
+    <div class="exact-grid">
+      <label for="uiExactL">Length X<input id="uiExactL" type="number" min="0.25" max="4" step="0.05" aria-label="Exact length X" disabled></label>
+      <label for="uiExactW">Width Z<input id="uiExactW" type="number" min="0.25" max="4" step="0.05" aria-label="Exact width Z" disabled></label>
+      <label for="uiExactH">Height Y<input id="uiExactH" type="number" min="0.25" max="4" step="0.05" aria-label="Exact height Y" disabled></label>
+    </div>
+    <p class="historynote">0.25–4 units per edge. Finish an edit, then Undo to restore it.</p>
+  </details>
+
+  <div class="btnrow">
+    <button class="q" id="uiGrow" aria-label="Grow the selected dimension">＋ longer</button>
+    <button class="q" id="uiShrink" aria-label="Shrink the selected dimension">－ shorter</button>
+  </div>
+
+  <div class="btnrow">
+    <button class="q" id="uiAxis" aria-label="Cycle the editable axis">Axis</button>
+    <button class="q" id="uiUndo" aria-label="Undo the last geometry change">↶ undo</button>
+    <button class="q" id="uiRedo" aria-label="Redo the last undone geometry change">↷ redo</button>
+    <button class="q" id="uiReset" aria-label="Reset to a point">↺ reset</button>
+  </div>
+  </section>
+
+    </section>
+    <section id="workspaceSettings" aria-label="Workspace settings" hidden>
+      <h2>Make it your space</h2><p class="workspace-description">Choose what you see and how you explore.</p>
+      <nav class="settings-jumps" aria-label="Find a setting"><button type="button" data-setting-target="appearanceSettings">Appearance</button><button type="button" data-setting-target="guideSettings">Scene guides</button><button type="button" data-setting-target="measurementSettings">Measurements</button><button type="button" data-setting-target="headsetSettings">Headset</button><button type="button" data-setting-target="playbackSettings">Playback</button><button type="button" data-setting-target="sharingSettings">Sharing</button></nav>
+      <details class="hud-section" id="appearanceSettings" open><summary>Appearance <span>Color, material &amp; lighting</span></summary>
+      <div class="settings-content">
+      <div class="tooloptions appearance-options">
+        <label class="tooloption" for="uiBackdrop">Backdrop<select id="uiBackdrop"><option value="midnight">Midnight</option><option value="slate">Slate</option><option value="ocean">Ocean</option><option value="paper">Paper</option></select></label>
+        <label class="tooloption" for="uiShapeTint">Shape color<select id="uiShapeTint"><option value="dimension">By dimension</option><option value="violet">Violet</option><option value="cyan">Cyan</option><option value="mint">Mint</option><option value="rose">Rose</option><option value="amber">Amber</option><option value="custom">Custom color</option></select></label>
+        <label class="tooloption" for="uiSurfaceStyle">Surface<select id="uiSurfaceStyle"><option value="solid">Solid</option><option value="glass">Glass</option><option value="wire">Wireframe</option></select></label>
+        <label class="tooloption" for="uiLighting">Lighting<select id="uiLighting"><option value="studio">Studio</option><option value="soft">Soft</option><option value="bright">Bright</option></select></label>
+
+      </div>
+      <div id="customColorRow" class="custom-material-row" hidden><label for="uiCustomColor">Custom color</label><input id="uiCustomColor" type="color" value="#a78bfa"><output id="customColorValue" for="uiCustomColor">#A78BFA</output></div>
+      <div id="glassOpacityRow" class="material-slider" hidden><label for="uiGlassOpacity">Glass opacity</label><output id="glassOpacityValue" for="uiGlassOpacity">32%</output><input id="uiGlassOpacity" type="range" min="10" max="90" step="1" value="32"></div>
+      <label class="measuretoggle preference-row"><input id="uiShapeEdges" type="checkbox" checked> Outline edges</label>
+      <button class="q reset-presentation" id="uiResetPresentation" type="button">Reset display settings</button>
+      </div></details>
+      <details class="hud-section" id="guideSettings"><summary>Scene guides &amp; sizing <span>Overlays, scale &amp; resize step</span></summary><div class="settings-content">      <div class="tooloptions" role="group" aria-label="Scene presentation controls">
     <label class="tooloption" for="uiFocusMode">Scene focus
       <select id="uiFocusMode" aria-describedby="focusModeHelp">
         <option value="explore">Explore: shape + scale</option>
@@ -344,6 +495,19 @@
         <option value="compare">Compare: before + now</option>
       </select>
     </label>
+      </div>
+      <div class="scene-presets" role="group" aria-label="Scene presets"><button id="uiSceneMinimal" type="button">Minimal</button><button id="uiSceneExplain" type="button">Explain</button><button id="uiSceneCompare" type="button">Compare</button></div>
+      <div id="focusModeHelp" class="historynote">Choose how much construction guidance stays visible.</div>
+      <label class="measuretoggle preference-row"><input id="uiGroundGrid" type="checkbox" checked> Ground grid</label>
+      <label class="measuretoggle preference-row"><input id="uiMeasureCard" type="checkbox" checked> Floating formula card</label>
+  <div class="btnrow"><button class="q" id="uiViewScale" type="button" aria-describedby="viewScaleHelp">View scale: Body 1×</button></div>
+  <div id="viewScaleHelp" class="viewscalehelp">Presentation only. Length, area, and volume do not change.</div>
+
+  <div class="btnrow"><button id="uiViewLeft" class="q" type="button" aria-label="Turn view left">← Look</button><button id="uiRecenter" class="q" type="button">Center view</button><button id="uiViewRight" class="q" type="button" aria-label="Turn view right">Look →</button></div>
+
+<div class="tooloptions">        <label class="tooloption" for="uiResizeStep">Resize step<select id="uiResizeStep"><option value="0.05">Fine · 0.05</option><option value="0.1">Small · 0.1</option><option value="0.25">Standard · 0.25</option><option value="0.5">Large · 0.5</option></select></label></div></div></details>
+      <details class="hud-section" id="measurementSettings"><summary>Measurements <span>Precision &amp; explanations</span></summary><div class="settings-content">
+      <div class="tooloptions">
     <label class="tooloption" for="uiPrecision">Math precision
       <select id="uiPrecision" aria-label="Math display precision">
         <option value="1">1 decimal</option>
@@ -351,6 +515,19 @@
         <option value="3">3 decimals</option>
       </select>
     </label>
+      </div>
+  <label class="measuretoggle"><input id="uiBoundary" type="checkbox"> Show perimeter / surface area</label>
+
+  <div id="invariantNotice" class="invariantnote" role="status" aria-live="polite">Notice: change one dimension and watch what stays invariant.</div>
+  <section id="sliceExplainer" class="sliceexplainer" aria-labelledby="sliceExplainerTitle" hidden>
+    <div class="slicehead"><strong id="sliceExplainerTitle">Slice microscope</strong><button class="q" id="uiExplainSlice" type="button" aria-describedby="sliceExplainHelp" disabled>Explain selected slice</button></div>
+    <div id="sliceFormula" class="sliceformula" aria-live="polite">Stretch to a rectangle or box to inspect a slice.</div>
+    <div id="sliceDetail" class="slicedetail">The highlighted lattice shows how a held cross-section builds the measure.</div>
+    <div id="sliceExplainHelp" class="historynote">Click the highlighted section or use this button to connect the lattice to the formula.</div>
+  </section>
+
+      </div></details>
+      <details class="hud-section" id="headsetSettings"><summary>Headset &amp; performance <span>XR controls, quality</span></summary><div class="settings-content"><div class="tooloptions">
     <label class="tooloption" for="uiStickMode">XR stick mode
       <select id="uiStickMode" aria-label="XR thumbstick mode">
         <option value="geometry" selected>Resize + axis</option>
@@ -364,24 +541,59 @@
         <option value="battery">Battery saver</option>
       </select>
     </label>
-    <button class="q" id="uiReplay" type="button" aria-describedby="historyHelp">Replay history</button>
-  </div>
-  <div id="focusModeHelp" class="historynote">Choose how much construction guidance stays visible.</div>
-  <div class="instructorbar">
-    <label class="measuretoggle"><input id="uiInstructor" type="checkbox"> Instructor mode</label>
-    <button class="q" id="uiLessonLink" type="button" aria-describedby="instructorHelp">Copy lesson link</button>
-  </div>
-  <div id="instructorHelp" class="historynote" hidden>Instructor mode highlights the demo state. Copy the lesson link to share this exact geometry and presentation setup.</div>
-  <input id="uiLessonUrl" class="lessonurl" type="text" readonly hidden aria-label="Shareable lesson link">
+      </div>
+      <h3>Make the panel comfortable</h3>
+      <p class="historynote">Choose a starting preset, then adjust it to suit you. Panel height follows your eye level.</p>
+      <div class="scene-presets" role="group" aria-label="Headset comfort presets"><button id="uiComfortStanding" data-comfort="standing" type="button">Standing</button><button id="uiComfortSeated" data-comfort="seated" type="button">Seated</button><button id="uiComfortSpacious" data-comfort="spacious" type="button">Spacious</button></div>
+      <div class="tooloptions">
+        <label class="tooloption" for="uiPanelDistance">Panel distance<select id="uiPanelDistance"><option value="1.35">Near · 1.35 m</option><option value="1.75">Standard · 1.75 m</option><option value="2.25">Far · 2.25 m</option></select></label>
+        <label class="tooloption" for="uiPanelSize">Panel size<select id="uiPanelSize"><option value="0.72">Compact</option><option value="0.88">Standard</option><option value="1.08">Large</option></select></label>
+        <label class="tooloption" for="uiPanelHeight">Panel height<select id="uiPanelHeight"><option value="-0.55">Lower</option><option value="-0.3">Balanced</option><option value="-0.15">Raised</option></select></label>
+      </div><p class="historynote">In your headset, the comfort button cycles these presets. Center places the panel in front of you.</p>
+      </div></details>
+      <details class="hud-section" id="playbackSettings"><summary>Playback <span>Dimension story &amp; history</span></summary><div class="settings-content">
+  <section class="showcasebox" id="showcaseBox" aria-labelledby="showcaseTitle">
+    <div class="showcasehead"><strong id="showcaseTitle">Dimension story</strong><span class="showcaseprogress" id="showcaseProgress">Ready</span></div>
+    <div class="showcasecaption" id="showcaseCaption" aria-live="polite">Play a short, non-destructive tour from point to solid.</div>
+    <div class="showcaseactions">
+      <button class="q" id="uiShowcase" type="button" aria-describedby="showcaseHelp">Play story</button>
+      <button class="q" id="uiShowcaseStop" type="button" hidden>Stop</button>
+    </div>
+    <div id="showcaseHelp" class="historynote">The story previews the dimension ladder without changing your geometry or undo history.</div>
+  </section>
+
+      <div class="btnrow"><button class="q" id="uiReplay" type="button" aria-describedby="historyHelp">Replay history</button></div>
   <div id="historyHelp" class="historynote">Replays the saved geometry path without changing your undo history.</div>
   <div class="storytimeline" role="group" aria-label="Geometry story timeline">
     <div class="storyhead"><label for="uiHistoryScrub">Geometry story</label><output id="historyValue" for="uiHistoryScrub">Current shape</output></div>
     <input id="uiHistoryScrub" type="range" min="0" max="0" value="0" step="1" disabled aria-describedby="historyValue historyHelp" aria-valuetext="No saved geometry steps">
     <button class="q" id="uiHistoryRestore" type="button" disabled>Return to current shape</button>
   </div>
+      </div></details>
+      <details class="hud-section" id="sharingSettings"><summary>Teaching &amp; sharing <span>Instructor view, lesson link</span></summary><div class="settings-content">
+  <div class="instructorbar">
+    <label class="measuretoggle"><input id="uiInstructor" type="checkbox"> Instructor mode</label>
+    <button class="q" id="uiLessonLink" type="button" aria-describedby="instructorHelp">Copy lesson link</button>
+  </div>
+  <div id="instructorHelp" class="historynote" hidden>Instructor mode highlights the demo state. Copy the lesson link to share this exact geometry and presentation setup.</div>
+  <input id="uiLessonUrl" class="lessonurl" type="text" readonly hidden aria-label="Shareable lesson link">
 
+      </div></details>
+    </section>
+    <section id="workspaceHelp" aria-label="Controls and scene guide" hidden>
+      <h2>A point. A line. A whole new dimension.</h2><p class="workspace-description">Stretch adds a dimension. Resize changes its measure. View scale changes only how large it appears.</p>
+      <h3>Read the scene</h3>
+  <div class="scenelegend" role="group" aria-label="Scene key: solid is now, blue outline is before, yellow marks the selected dimension and cross-sections, the dashed floor footprint is the plan projection, the fine lattice shows unit structure, and the dotted gold link connects the selected handle to its formula.">
+    <span><i class="legendmark now" aria-hidden="true"></i>Now</span>
+    <span><i class="legendmark before" aria-hidden="true"></i>Before</span>
+    <span><i class="legendmark ruler" aria-hidden="true"></i>Selected axis</span>
+    <span><i class="legendmark projection" aria-hidden="true"></i>Plan projection</span>
+    <span><i class="legendmark section" aria-hidden="true"></i>Cross-sections</span>
+    <span><i class="legendmark lattice" aria-hidden="true"></i>Unit lattice</span>
+    <span><i class="legendmark connector" aria-hidden="true"></i>Math link</span>
+  </div>
 
-
+      <h3>Keyboard &amp; navigation</h3>
   <div class="kbd">
     Shape: <kbd>↑</kbd>/<kbd>↓</kbd> stretch &amp; collapse · <kbd>→</kbd>/<kbd>←</kbd> grow &amp; shrink · <kbd>A</kbd> axis · <kbd>U</kbd> undo · <kbd>Y</kbd> redo · <kbd>C</kbd> center workspace · <kbd>R</kbd> reset · <kbd>Shift</kbd>+<kbd>R</kbd> start over · <kbd>M</kbd> boundary measures · <kbd>V</kbd> view scale · <kbd>T</kbd> play dimension story · <kbd>F</kbd> focus next step · <kbd>1</kbd>–<kbd>4</kbd> missions<br>Move &amp; look: <kbd>W</kbd>/<kbd>S</kbd> walk forward &amp; back · <kbd>Q</kbd>/<kbd>E</kbd> step left &amp; right · <kbd>J</kbd>/<kbd>L</kbd> turn · <kbd>I</kbd>/<kbd>K</kbd> look up &amp; down · <kbd>H</kbd> back to the start · drag with the mouse to look<br>Scene handles: click the active handle to grow · <kbd>Shift</kbd>+click to shrink · rapid resizes group into one undo step · target crossings snap exactly
   </div>
@@ -390,8 +602,8 @@
     Paradigm inspired by <b>HandWaver</b> (Dimmel &amp; Bock, IMRE Lab, University of Maine). Web-native accessible re-implementation.
   </div>
 
-</details>
-</div>
+    </section>
+  </div>
 </div>
 <!-- Screen-reader live narration of every state change (the accessibility path through the paradigm). -->
 <div id="live" class="sr-only" role="status" aria-live="polite"></div>
@@ -405,11 +617,11 @@
   device-orientation-permission-ui="enabled: false">
 
   <!-- Lighting -->
-  <a-entity light="type: hemisphere; color: #cfe0ff; groundColor: #22304f; intensity: 0.9"></a-entity>
-  <a-entity light="type: directional; color: #ffffff; intensity: 0.85; castShadow: true" position="4 8 5"></a-entity>
+  <a-entity id="ambientLight" light="type: hemisphere; color: #cfe0ff; groundColor: #22304f; intensity: 0.9"></a-entity>
+  <a-entity id="keyLight" light="type: directional; color: #ffffff; intensity: 0.85; castShadow: true" position="4 8 5"></a-entity>
 
   <!-- Ground + grid -->
-  <a-plane rotation="-90 0 0" width="60" height="60" position="0 0 0"
+  <a-plane id="ground" rotation="-90 0 0" width="60" height="60" position="0 0 0"
            material="color: #131c33; roughness: 1; metalness: 0"></a-plane>
   <a-entity id="grid" metric-grid position="0 0.012 0"></a-entity>
 
@@ -423,75 +635,79 @@
              material="color: #050816; opacity: 0.92; transparent: true; side: double; roughness: 0.8"></a-plane>
     <a-plane id="labelAccent" width="3.25" height="0.04" position="0 0.47 0.005"
              material="color: #f5b301; emissive: #f5b301; emissiveIntensity: 0.4; side: double"></a-plane>
-    <a-text id="labelTitle" value="A point" align="left" anchor="left" position="-1.45 0.34 0.02"
-            width="2.9" wrap-count="34" color="#f5b301" side="double"></a-text>
-    <a-text id="label3d" value="Zero dimensions" align="left" anchor="left" position="-1.45 0.1 0.02"
-            width="2.9" wrap-count="48" color="#f7faff" side="double"></a-text>
-    <a-text id="labelAxis" value="Selected: no editable axis" align="left" anchor="left" position="-1.45 -0.2 0.02"
-            width="2.9" wrap-count="48" color="#fde68a" side="double"></a-text>
-    <a-text id="labelDelta" value="Resize a dimension to compare change." align="left" anchor="left" position="-1.45 -0.36 0.02"
-            width="2.9" wrap-count="48" color="#93c5fd" side="double"></a-text>
-    <a-text id="labelReason" value="" align="left" anchor="left" position="-1.45 -0.52 0.02"
-            width="2.9" wrap-count="48" color="#c4b5fd" side="double" visible="false"></a-text>
+    <a-entity lab-label id="labelTitle" value="A point" align="left" anchor="left" position="-1.45 0.34 0.02"
+            width="2.9" wrap-count="34" color="#f5b301" side="double"></a-entity>
+    <a-entity lab-label id="label3d" value="Zero dimensions" align="left" anchor="left" position="-1.45 0.1 0.02"
+            width="2.9" wrap-count="48" color="#f7faff" side="double"></a-entity>
+    <a-entity lab-label id="labelAxis" value="Selected: no editable axis" align="left" anchor="left" position="-1.45 -0.2 0.02"
+            width="2.9" wrap-count="48" color="#fde68a" side="double"></a-entity>
+    <a-entity lab-label id="labelDelta" value="Resize a dimension to compare change." align="left" anchor="left" position="-1.45 -0.36 0.02"
+            width="2.9" wrap-count="48" color="#93c5fd" side="double"></a-entity>
+    <a-entity lab-label id="labelReason" value="" align="left" anchor="left" position="-1.45 -0.52 0.02"
+            width="2.9" wrap-count="48" color="#c4b5fd" side="double" visible="false"></a-entity>
   </a-entity>
 
   <!-- In-scene control panel (used in VR; also clickable with the mouse on desktop) -->
   <a-entity id="panel" role="group" aria-label="Immersive geometry controls" aria-hidden="true" position="0 0.95 -1.35" rotation="-22 0 0" visible="false">
-    <a-plane width="2.24" height="1.78" position="0 -0.33 -0.035"
-             material="color: #050816; opacity: 0.9; transparent: true; side: double"></a-plane>
-    <a-text id="vrTransformText" value="MATH STRETCH | measures change"
-            align="center" position="0 0.42 0.02" width="2.05" wrap-count="38" color="#a7f3d0"></a-text>
-    <a-text id="vrLiveMathText" value="Point | 0 dimensions"
-            align="center" position="0 0.29 0.02" width="2.05" wrap-count="42" color="#f7faff"></a-text>
+    <a-plane width="2.24" height="2.04" position="0 -0.46 -0.035"
+             material="color: #050816; opacity: 0.9; transparent: true; side: double; depthTest: false; depthWrite: false; transparent: true"></a-plane>
+    <a-entity lab-label id="vrTransformText" value="MATH STRETCH | measures change"
+            align="center" position="0 0.49 0.02" width="2.05" wrap-count="38" color="#a7f3d0"></a-entity>
+    <a-entity lab-label id="vrLiveMathText" value="Point | 0 dimensions"
+            align="center" position="0 0.29 0.02" width="2.05" wrap-count="42" color="#f7faff"></a-entity>
     <a-entity role="button" aria-label="Stretch up one dimension" class="clickable vrbtn" id="vrStretch"
               geometry="primitive: box; width: 0.52; height: 0.17; depth: 0.04"
-              material="color: #665cf5; emissive: #665cf5; emissiveIntensity: 0.18" position="-0.58 0 0">
-      <a-text value="Stretch ^" align="center" position="0 0 0.03" width="1.7" color="#fff"></a-text>
+              material="color: #665cf5; emissive: #665cf5; emissiveIntensity: 0.18; depthTest: false; depthWrite: false; transparent: true" position="-0.58 0 0">
+      <a-entity lab-label value="Stretch ^" align="center" position="0 0 0.03" width="1.7" color="#fff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Collapse down one dimension" class="clickable vrbtn" id="vrCollapse"
               geometry="primitive: box; width: 0.32; height: 0.17; depth: 0.04"
-              material="color: #4a6094" position="0 0 0">
-      <a-text value="v" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+              material="color: #4a6094; depthTest: false; depthWrite: false; transparent: true" position="0 0 0">
+      <a-entity lab-label value="v" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Reset geometry to a point" class="clickable vrbtn" id="vrReset"
               geometry="primitive: box; width: 0.42; height: 0.17; depth: 0.04"
-              material="color: #4a6094" position="0.5 0 0">
-      <a-text value="reset" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+              material="color: #4a6094; depthTest: false; depthWrite: false; transparent: true" position="0.5 0 0">
+      <a-entity lab-label value="reset" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Cycle selected axis" class="clickable vrbtn" id="vrAxis"
               geometry="primitive: box; width: 0.62; height: 0.17; depth: 0.04"
-              material="color: #315f78" position="-0.5 -0.22 0">
-      <a-text id="vrAxisText" value="axis" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+              material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="-0.5 -0.22 0">
+      <a-entity lab-label id="vrAxisText" value="axis" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Undo geometry change" class="clickable vrbtn" id="vrUndo"
               geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
-              material="color: #4a6094" position="0.08 -0.22 0">
-      <a-text value="undo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+              material="color: #4a6094; depthTest: false; depthWrite: false; transparent: true" position="0.08 -0.22 0">
+      <a-entity lab-label value="undo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Redo geometry change" class="clickable vrbtn" id="vrRedo"
               geometry="primitive: box; width: 0.4; height: 0.17; depth: 0.04"
-              material="color: #4a6094" position="0.52 -0.22 0">
-      <a-text value="redo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-text>
+              material="color: #4a6094; depthTest: false; depthWrite: false; transparent: true" position="0.52 -0.22 0">
+      <a-entity lab-label value="redo" align="center" position="0 0 0.03" width="1.7" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Choose next stretch mission" class="clickable vrbtn" id="vrMission"
               geometry="primitive: box; width: 0.94; height: 0.16; depth: 0.04"
-              material="color: #3b4d7a" position="-0.25 -0.43 0">
-      <a-text id="vrMissionText" value="target: segment L 2.1" align="center" position="0 0 0.03" width="1.5" color="#f7faff"></a-text>
+              material="color: #3b4d7a; depthTest: false; depthWrite: false; transparent: true" position="-0.25 -0.43 0">
+      <a-entity lab-label id="vrMissionText" value="target: segment L 2.1" align="center" position="0 0 0.03" width="1.5" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Toggle perimeter and surface area" class="clickable vrbtn" id="vrMeasure"
               geometry="primitive: box; width: 0.48; height: 0.16; depth: 0.04"
-              material="color: #315f78" position="0.54 -0.43 0">
-      <a-text id="vrMeasureText" value="P/SA off" align="center" position="0 0 0.03" width="1.25" color="#f7faff"></a-text>
+              material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="0.54 -0.43 0">
+      <a-entity lab-label id="vrMeasureText" value="P/SA off" align="center" position="0 0 0.03" width="1.25" color="#f7faff"></a-entity>
     </a-entity>
     <a-entity role="button" aria-label="Cycle presentation scale" class="clickable vrbtn" id="vrView"
               geometry="primitive: box; width: 0.82; height: 0.16; depth: 0.04"
-              material="color: #315f78" position="-0.62 -0.65 0">
-      <a-text id="vrViewText" value="View: Body 1×" align="center" position="0 0 0.03" width="1.35" color="#f7faff"></a-text>
+              material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="-0.62 -0.65 0">
+      <a-entity lab-label id="vrViewText" value="View: Body 1×" align="center" position="0 0 0.03" width="1.35" color="#f7faff"></a-entity>
     </a-entity>
-    <a-text id="vrNoticeText" value="NOTICE | Change one dimension"
-            align="center" position="0.43 -0.65 0.02" width="1.25" wrap-count="34" color="#bae6fd"></a-text>
-    <a-text value="Pull a face handle. Stick resizes or changes axis. Menu centers."
-            align="center" position="0 -0.88 0.02" width="2.05" color="#dbe7ff"></a-text>
+    <a-entity lab-label id="vrNoticeText" value="NOTICE | Change one dimension"
+            align="center" position="0.43 -0.65 0.02" width="1.25" wrap-count="34" color="#bae6fd"></a-entity>
+    <a-entity role="button" aria-label="Switch free build and lesson sequence" class="clickable vrbtn" id="vrWorkspace" geometry="primitive: box; width: 0.5; height: 0.17; depth: 0.04" material="color: #4c478a; depthTest: false; depthWrite: false; transparent: true" position="-0.84 -0.89 0"><a-entity lab-label id="vrWorkspaceText" value="Free build" align="center" position="0 0 0.03" width="1.35" color="#fff"></a-entity></a-entity>
+    <a-entity role="button" aria-label="Cycle scene focus" class="clickable vrbtn" id="vrFocus" geometry="primitive: box; width: 0.5; height: 0.17; depth: 0.04" material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="-0.28 -0.89 0"><a-entity lab-label id="vrFocusText" value="Explore" align="center" position="0 0 0.03" width="1.35" color="#fff"></a-entity></a-entity>
+    <a-entity role="button" aria-label="Center immersive workspace" class="clickable vrbtn" id="vrCenter" geometry="primitive: box; width: 0.5; height: 0.17; depth: 0.04" material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="0.28 -0.89 0"><a-entity lab-label value="Center" align="center" position="0 0 0.03" width="1.35" color="#fff"></a-entity></a-entity>
+    <a-entity role="button" aria-label="Cycle headset comfort preset" class="clickable vrbtn" id="vrComfort" geometry="primitive: box; width: 0.5; height: 0.17; depth: 0.04" material="color: #315f78; depthTest: false; depthWrite: false; transparent: true" position="0.84 -0.89 0"><a-entity lab-label id="vrComfortText" value="Standing" align="center" position="0 0 0.03" width="1.2" color="#fff"></a-entity></a-entity>
+    <a-entity lab-label value="Pull a face handle. Stick resizes or changes axis. Menu centers."
+            align="center" position="0 -1.13 0.02" width="2.05" color="#dbe7ff"></a-entity>
   </a-entity>
 
   <!-- Rig: camera + laser controllers + mouse cursor -->
@@ -499,8 +715,8 @@
     <a-entity id="camera" camera position="0 1.6 0" look-controls="pointerLockEnabled: false" wasd-controls="enabled: false">
       <a-entity cursor="rayOrigin: mouse" raycaster="objects: .clickable; far: 30"></a-entity>
     </a-entity>
-    <a-entity id="handL" laser-controls="hand: left"  raycaster="objects: .clickable; lineColor: #7aa2ff; far: 8"></a-entity>
-    <a-entity id="handR" laser-controls="hand: right" raycaster="objects: .clickable; lineColor: #7aa2ff; far: 8"></a-entity>
+    <a-entity id="handL" laser-controls="hand: left"  raycaster="objects: .clickable; lineColor: #7aa2ff; far: 12"></a-entity>
+    <a-entity id="handR" laser-controls="hand: right" raycaster="objects: .clickable; lineColor: #7aa2ff; far: 12"></a-entity>
   </a-entity>
 </a-scene>
 
@@ -613,6 +829,33 @@ var MISSIONS = [
 ];
 
 var STORAGE_KEY = 'alloflow_stretch_lab_v1';
+var WORKSPACE_MODES = ['free', 'lesson'];
+var BACKDROP_MODES = ['midnight', 'slate', 'ocean', 'paper'];
+var SHAPE_TINTS = { dimension: null, custom: null, violet: '#a78bfa', cyan: '#22d3ee', mint: '#6ee7b7', rose: '#fb7185', amber: '#fbbf24' };
+var SURFACE_STYLES = ['solid', 'glass', 'wire'];
+var LIGHTING_STYLES = ['studio', 'soft', 'bright'];
+var VIEW_ANGLES = ['corner', 'front', 'side'];
+var COMFORT_PRESETS = [
+  { id: 'standing', label: 'Standing', panelDistance: 1.75, panelSize: 0.88, panelHeight: -0.3 },
+  { id: 'seated', label: 'Seated', panelDistance: 1.35, panelSize: 0.72, panelHeight: -0.15 },
+  { id: 'spacious', label: 'Spacious', panelDistance: 2.25, panelSize: 1.08, panelHeight: -0.3 }
+];
+function normalizePanelValue(value, choices, fallback) { value = Number(value); return choices.indexOf(value) >= 0 ? value : fallback; }
+function comfortPresetIndex(value) { return COMFORT_PRESETS.findIndex(function(preset) { return preset.panelDistance === value.panelDistance && preset.panelSize === value.panelSize && preset.panelHeight === value.panelHeight; }); }
+var RESIZE_STEPS = [0.05, 0.1, 0.25, 0.5];
+var STARTER_SHAPES = {
+  line: { d: 1, L: 2, W: 1.1, H: 1.1, axis: 0, name: 'Line' },
+  square: { d: 2, L: 2, W: 2, H: 1.1, axis: 1, name: 'Square' },
+  cube: { d: 3, L: 1.6, W: 1.6, H: 1.6, axis: 2, name: 'Cube' },
+  box: { d: 3, L: 3, W: 1.5, H: 1.25, axis: 2, name: 'Wide box' }
+};
+function normalizeResizeStep(value) { value = Number(value); return RESIZE_STEPS.indexOf(value) >= 0 ? value : 0.25; }
+function normalizeGlassOpacity(value) { return value == null || value === '' || !isFinite(Number(value)) ? 0.32 : Math.max(0.1, Math.min(0.9, Number(value))); }
+function normalizeCustomColor(value) { return typeof value === 'string' && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : '#a78bfa'; }
+function normalizePresentation(value) {
+  value = value || {};
+  return { panelDistance: normalizePanelValue(value.panelDistance, [1.35, 1.75, 2.25], 1.75), panelSize: normalizePanelValue(value.panelSize, [0.72, 0.88, 1.08], 0.88), panelHeight: normalizePanelValue(value.panelHeight, [-0.55, -0.3, -0.15], -0.3), customColor: normalizeCustomColor(value.customColor), glassOpacity: normalizeGlassOpacity(value.glassOpacity), shapeTint: normalizeChoice(value.shapeTint, Object.keys(SHAPE_TINTS), 'dimension'), surfaceStyle: normalizeChoice(value.surfaceStyle, SURFACE_STYLES, 'solid'), lighting: normalizeChoice(value.lighting, LIGHTING_STYLES, 'studio'), showShapeEdges: value.showShapeEdges !== false, viewAngle: normalizeChoice(value.viewAngle, VIEW_ANGLES, 'corner'), resizeStep: normalizeResizeStep(value.resizeStep) };
+}
 var FOCUS_MODES = ['explore', 'explain', 'compare'];
 var STICK_MODES = ['geometry', 'navigate'];
 var QUALITY_MODES = ['auto', 'high', 'battery'];
@@ -642,14 +885,14 @@ function loadSavedState() {
     var missionIndex = Number.isInteger(saved.missionIndex) ? Math.max(0, Math.min(saved.missionIndex, MISSIONS.length - 1)) : 0;
     var completedMask = Number.isInteger(saved.completedMask) ? Math.max(0, Math.min(saved.completedMask, 15)) : 0;
     var viewScaleIndex = Number.isInteger(saved.viewScaleIndex) ? Math.max(0, Math.min(saved.viewScaleIndex, VIEW_SCALES.length - 1)) : 1;
-    return { d: saved.d, L: L, W: W, H: H, axis: axis, missionIndex: missionIndex, showTarget: saved.showTarget !== false, showBoundary: saved.showBoundary === true, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain'), precision: normalizePrecision(saved.precision), stickMode: normalizeChoice(saved.stickMode, STICK_MODES, 'geometry'), quality: normalizeChoice(saved.quality, QUALITY_MODES, 'auto'), instructorMode: saved.instructorMode === true };
+    return Object.assign(normalizePresentation(saved), { d: saved.d, L: L, W: W, H: H, axis: axis, missionIndex: missionIndex, showTarget: saved.showTarget !== false, showBoundary: saved.showBoundary === true, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain'), precision: normalizePrecision(saved.precision), stickMode: normalizeChoice(saved.stickMode, STICK_MODES, 'geometry'), quality: normalizeChoice(saved.quality, QUALITY_MODES, 'auto'), instructorMode: saved.instructorMode === true, workspaceMode: normalizeChoice(saved.workspaceMode, WORKSPACE_MODES, 'lesson'), backdrop: normalizeChoice(saved.backdrop, BACKDROP_MODES, 'midnight'), showGroundGrid: saved.showGroundGrid !== false, showMeasureCard: saved.showMeasureCard !== false });
   } catch (ignore) { return null; }
 }
 function loadLaunchState() {
   try {
     var query = new URLSearchParams(window.location.search || '');
     if (!query.has('d')) return null;
-    var launched = {
+    var launched = Object.assign(normalizePresentation({ panelDistance: query.get('paneldistance'), panelSize: query.get('panelsize'), panelHeight: query.get('panelheight'), customColor: query.get('color'), glassOpacity: query.get('opacity'), shapeTint: query.get('tint'), surfaceStyle: query.get('surface'), lighting: query.get('light'), showShapeEdges: query.get('edges') !== '0', viewAngle: query.get('angle'), resizeStep: query.get('step') }), {
       v: 1,
       d: Number(query.get('d')),
       L: Number(query.get('L')),
@@ -661,12 +904,16 @@ function loadLaunchState() {
       showBoundary: query.get('boundary') === '1',
       completedMask: 0,
       viewScaleIndex: query.has('view') ? Number(query.get('view')) : 1,
-      focusMode: normalizeChoice(query.get('focus'), FOCUS_MODES, 'explain'),
+      focusMode: normalizeChoice(query.get('focus'), FOCUS_MODES, query.get('workspace') === 'free' ? 'explore' : 'explain'),
       precision: normalizePrecision(query.get('precision')),
       stickMode: normalizeChoice(query.get('stick'), STICK_MODES, 'geometry'),
       quality: normalizeChoice(query.get('quality'), QUALITY_MODES, 'auto'),
-      instructorMode: query.get('instructor') === '1'
-    };
+      instructorMode: query.get('instructor') === '1',
+      workspaceMode: normalizeChoice(query.get('workspace'), WORKSPACE_MODES, 'lesson'),
+      backdrop: normalizeChoice(query.get('backdrop'), BACKDROP_MODES, 'midnight'),
+      showGroundGrid: query.get('grid') !== '0',
+      showMeasureCard: query.has('card') ? query.get('card') !== '0' : query.get('workspace') !== 'free'
+    });
     if (!Number.isInteger(launched.d) || launched.d < 0 || launched.d > 3) return null;
     if (![launched.L, launched.W, launched.H].every(function (value) { return isFinite(value) && value >= MINV && value <= MAXV; })) return null;
     launched.axis = launched.d ? Math.max(0, Math.min(Number.isInteger(launched.axis) ? launched.axis : 0, launched.d - 1)) : 0;
@@ -675,13 +922,16 @@ function loadLaunchState() {
     return launched;
   } catch (ignore) { return null; }
 }
+var LAUNCH_WORKSPACE = null;
+try { LAUNCH_WORKSPACE = normalizeChoice(new URLSearchParams(window.location.search || '').get('workspace'), WORKSPACE_MODES, null); } catch (ignore) {}
 var LAUNCH_STATE = loadLaunchState();
 var SAVED_STATE = LAUNCH_STATE || loadSavedState();
+if (SAVED_STATE && LAUNCH_WORKSPACE) SAVED_STATE.workspaceMode = LAUNCH_WORKSPACE;
 // A lesson payload initializes this visit once; refresh resumes autosaved work.
-if (LAUNCH_STATE) {
+if (LAUNCH_STATE || LAUNCH_WORKSPACE) {
   try {
     var resumeUrl = new URL(window.location.href);
-    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
+    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor','workspace','backdrop','grid','card','tint','surface','light','edges','angle','step'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
     window.history.replaceState(window.history.state, '', resumeUrl.pathname + resumeUrl.search + resumeUrl.hash);
   } catch (ignore) { /* Some embedded browsers cannot replace history. */ }
 }
@@ -696,6 +946,76 @@ function metricValue(d, dimensions) {
   if (d === 3) return Number(dimensions.L) * Number(dimensions.W) * Number(dimensions.H);
   return NaN;
 }
+
+// Render spatial labels locally, so formulas use the same crisp system glyphs as the HUD.
+function createLabText() {
+  var label = document.createElement('a-entity');
+  label.setAttribute('lab-label', '');
+  return label;
+}
+AFRAME.registerComponent('lab-label', {
+  init: function () {
+    this.canvas = document.createElement('canvas');
+    this.texture = new THREE.CanvasTexture(this.canvas);
+    this.texture.colorSpace = THREE.SRGBColorSpace;
+    this.texture.minFilter = THREE.LinearFilter;
+    this.texture.generateMipmaps = false;
+    this.geometry = new THREE.PlaneGeometry(1, 1);
+    this.material = new THREE.MeshBasicMaterial({ map: this.texture, transparent: true, depthTest: !this.el.closest('#panel'), depthWrite: false, toneMapped: false });
+    this.mesh = new THREE.Mesh(this.geometry, this.material);
+    this.el.setObject3D('text', this.mesh);
+    this.signature = '';
+    this.tick();
+  },
+  tick: function () {
+    var value = String(this.el.getAttribute('value') || ''), color = this.el.getAttribute('color') || '#f7faff';
+    var width = Math.max(0.1, Number(this.el.getAttribute('width')) || 1), wrap = Math.max(8, Number(this.el.getAttribute('wrap-count')) || 40);
+    var align = this.el.getAttribute('align') || 'left', anchor = this.el.getAttribute('anchor') || align;
+    var signature = JSON.stringify([value, color, width, wrap, align, anchor]);
+    if (signature === this.signature) return;
+    this.signature = signature;
+    this.mesh.visible = !!value;
+    if (!value) return;
+    var context = this.canvas.getContext('2d'), font = '600 48px system-ui, sans-serif', target = Math.min(1900, wrap * 25), lines = [];
+    context.font = font;
+    value.split('\n').forEach(function (paragraph) {
+      var line = '';
+      paragraph.split(/\s+/).forEach(function (word) {
+        var candidate = line ? line + ' ' + word : word;
+        if (line && context.measureText(candidate).width > target) { lines.push(line); line = word; }
+        else line = candidate;
+      });
+      lines.push(line);
+    });
+    var measured = Math.max.apply(Math, lines.map(function (line) { return context.measureText(line).width; }));
+    this.canvas.width = Math.min(2048, Math.ceil(measured + 16));
+    this.canvas.height = Math.max(72, lines.length * 64 + 8);
+    context = this.canvas.getContext('2d'); context.font = font; context.fillStyle = color; context.textBaseline = 'middle';
+    context.textAlign = align === 'center' || align === 'right' ? align : 'left';
+    var x = align === 'center' ? this.canvas.width / 2 : align === 'right' ? this.canvas.width - 8 : 8;
+    lines.forEach(function (line, i) { context.fillText(line, x, 36 + i * 64, 2032); });
+    var worldWidth = width * this.canvas.width / target, worldHeight = width * this.canvas.height / target;
+    this.mesh.scale.set(worldWidth, worldHeight, 1);
+    this.mesh.position.x = anchor === 'left' ? worldWidth / 2 : anchor === 'right' ? -worldWidth / 2 : 0;
+    // WebGL textures must be reallocated when a label changes canvas dimensions.
+    if (this.textureWidth !== this.canvas.width || this.textureHeight !== this.canvas.height) {
+      this.texture.dispose();
+      this.texture = new THREE.CanvasTexture(this.canvas);
+      this.texture.colorSpace = THREE.SRGBColorSpace;
+      this.texture.minFilter = THREE.LinearFilter;
+      this.texture.generateMipmaps = false;
+      this.material.map = this.texture;
+      this.textureWidth = this.canvas.width; this.textureHeight = this.canvas.height;
+    }
+    this.texture.needsUpdate = true;
+  },
+  remove: function () {
+    this.el.removeObject3D('text');
+    if (this.texture) this.texture.dispose();
+    if (this.material) this.material.dispose();
+    if (this.geometry) this.geometry.dispose();
+  }
+});
 
 AFRAME.registerComponent('metric-grid', {
   init: function () {
@@ -771,7 +1091,9 @@ AFRAME.registerComponent('stretch-lab', {
       if (this.motionQuery.addEventListener) this.motionQuery.addEventListener('change', this.motionPreferenceHandler);
       else if (this.motionQuery.addListener) this.motionQuery.addListener('change', this.motionPreferenceHandler);
     }
-    this.focusMode = saved ? normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain') : 'explain';
+    this.focusMode = saved ? normalizeChoice(saved.focusMode, FOCUS_MODES, 'explain') : (LAUNCH_WORKSPACE === 'lesson' ? 'explain' : 'explore');
+    this.presentation = normalizePresentation(saved);
+    this.resizeStep = this.presentation.resizeStep;
     this.presentationScale = saved ? VIEW_SCALES[saved.viewScaleIndex].scale : VIEW_SCALES[1].scale;
 
     this.box = document.createElement('a-entity');
@@ -817,7 +1139,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.comparisonFrame.setAttribute('aria-label', 'Before geometry comparison');
     this.comparisonFrame.setAttribute('visible', 'false');
     this.el.appendChild(this.comparisonFrame);
-    this.comparisonLabel = document.createElement('a-text');
+    this.comparisonLabel = createLabText();
     this.comparisonLabel.setAttribute('value', 'BEFORE');
     this.comparisonLabel.setAttribute('align', 'center');
     this.comparisonLabel.setAttribute('width', '1.35');
@@ -834,7 +1156,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.el.appendChild(this.comparisonBadge);
     this.comparisonState = null;
 
-    this.targetLabel = document.createElement('a-text');
+    this.targetLabel = createLabText();
     this.targetLabel.setAttribute('value', 'TARGET'); this.targetLabel.setAttribute('align', 'center');
     this.targetLabel.setAttribute('width', '1.35'); this.targetLabel.setAttribute('color', '#facc15');
     this.targetLabel.setAttribute('wrap-count', '32');
@@ -889,7 +1211,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.projectionDrops.setAttribute('visible', 'false');
     this.el.appendChild(this.projectionDrops);
 
-    this.projectionLabel = document.createElement('a-text');
+    this.projectionLabel = createLabText();
     this.projectionLabel.setAttribute('value', 'PLAN | A = L × W');
     this.projectionLabel.setAttribute('align', 'center');
     this.projectionLabel.setAttribute('width', '1.35');
@@ -950,7 +1272,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.sectionGrid.setAttribute('visible', 'false');
     this.el.appendChild(this.sectionGrid);
     this.sliceInsight = null;
-    this.sliceInsightLabel = document.createElement('a-text');
+    this.sliceInsightLabel = createLabText();
     this.sliceInsightLabel.setAttribute('value', 'SLICE MICROSCOPE');
     this.sliceInsightLabel.setAttribute('align', 'center');
     this.sliceInsightLabel.setAttribute('width', '1.08');
@@ -994,7 +1316,7 @@ AFRAME.registerComponent('stretch-lab', {
       this.el.sceneEl.appendChild(this.dragTrail);
       this.dragTrailParent = this.el.sceneEl;
     }
-    this.dragDeltaLabel = document.createElement('a-text');
+    this.dragDeltaLabel = createLabText();
     this.dragDeltaLabel.setAttribute('value', 'ΔX +0 units');
     this.dragDeltaLabel.setAttribute('align', 'center');
     this.dragDeltaLabel.setAttribute('width', '1.1');
@@ -1024,7 +1346,7 @@ AFRAME.registerComponent('stretch-lab', {
     }
     this.rulerLabels = [];
     for (var wholeUnit = 1; wholeUnit <= 4; wholeUnit++) {
-      var rulerLabel = document.createElement('a-text');
+      var rulerLabel = createLabText();
       rulerLabel.setAttribute('value', wholeUnit + 'u');
       rulerLabel.setAttribute('align', 'center');
       rulerLabel.setAttribute('width', '0.42');
@@ -1052,7 +1374,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.causalSlice.setAttribute('material', 'color: #fde047; emissive: #fde047; emissiveIntensity: 0.5; opacity: 0.22; transparent: true; depthWrite: false; depthTest: false; side: double');
     this.causalSlice.setAttribute('visible', 'false');
     this.el.appendChild(this.causalSlice);
-    this.causalLabel = document.createElement('a-text');
+    this.causalLabel = createLabText();
     this.causalLabel.setAttribute('value', 'AREA SLICE');
     this.causalLabel.setAttribute('align', 'center');
     this.causalLabel.setAttribute('width', '0.92');
@@ -1067,7 +1389,7 @@ AFRAME.registerComponent('stretch-lab', {
     this.showcaseHalo.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.72; opacity: 0.44; transparent: true; side: double; depthWrite: false');
     this.showcaseHalo.setAttribute('visible', 'false');
     this.el.appendChild(this.showcaseHalo);
-    this.showcaseBadge = document.createElement('a-text');
+    this.showcaseBadge = createLabText();
     this.showcaseBadge.setAttribute('value', 'DIMENSION STORY');
     this.showcaseBadge.setAttribute('align', 'center');
     this.showcaseBadge.setAttribute('width', '1.18');
@@ -1088,7 +1410,7 @@ AFRAME.registerComponent('stretch-lab', {
       handle.setAttribute('geometry', 'primitive: sphere; radius: 0.075; segmentsWidth: 16; segmentsHeight: 12');
       handle.setAttribute('material', 'color: #facc15; emissive: #facc15; emissiveIntensity: 0.8; roughness: 0.3');
       handle.setAttribute('visible', 'false');
-      var tag = document.createElement('a-text');
+      var tag = createLabText();
       tag.setAttribute('value', axisName); tag.setAttribute('align', 'center'); tag.setAttribute('width', '0.55');
       tag.setAttribute('position', '0 0.14 0'); tag.setAttribute('color', '#ffffff'); tag.setAttribute('side', 'double');
       handle.appendChild(tag);
@@ -1312,7 +1634,7 @@ AFRAME.registerComponent('stretch-lab', {
     geometry.attributes.position.needsUpdate = true;
   },
   updateProjection: function () {
-    var visible = this.d >= 2 && this.focusMode !== 'compare';
+    var visible = this.d >= 2 && this.focusMode === 'explain';
     if (this.projectionFill) { this.projectionFill.object3D.visible = visible; this.projectionFill.setAttribute('tabindex', visible ? '0' : '-1'); this.projectionFill.setAttribute('aria-hidden', visible ? 'false' : 'true'); if (!visible && document.activeElement === this.projectionFill) this.projectionFill.blur(); }
     if (this.projectionFrame) this.projectionFrame.object3D.visible = visible;
     if (this.projectionAxis) this.projectionAxis.object3D.visible = visible && this.axis < this.d;
@@ -1456,8 +1778,14 @@ AFRAME.registerComponent('stretch-lab', {
     if (this.comparisonBadge) this.comparisonBadge.object3D.visible = comparisonVisible;
   },
   setTarget: function (mission, complete, visible) {
-    if (!this.targetGhost || !mission) return;
-    this.activeMission = mission;
+    this.activeMission = mission || null;
+    if (!this.targetGhost) return;
+    if (!mission) {
+      this.targetGhost.setAttribute('visible', false);
+      this.targetGhost.setAttribute('aria-hidden', 'true');
+      if (this.targetLabel) this.targetLabel.setAttribute('visible', false);
+      return;
+    }
     var x = mission.L || THIN, z = mission.d >= 2 ? mission.W : THIN, y = mission.d >= 3 ? mission.H : THIN;
     var color = complete ? '#4ade80' : '#facc15';
     this.targetGhost.object3D.scale.set(x, y, z);
@@ -1663,8 +1991,7 @@ AFRAME.registerComponent('stretch-lab', {
     var colr = DIM_COLORS[this.d];
     this.dot.setAttribute('visible', this.d === 0);
     this.box.setAttribute('visible', this.d >= 1);
-    this.edgeFrame.setAttribute('visible', this.d >= 1);
-    if (this.d >= 1) this.box.setAttribute('material', 'color: ' + colr + '; roughness: 0.35; metalness: 0.05; emissive: ' + colr + '; emissiveIntensity: 0.14');
+    this.renderAppearance();
     if (this.projectionFill) {
       this.projectionFill.setAttribute('material', 'color', colr);
       this.projectionFill.setAttribute('material', 'emissive', colr);
@@ -1682,6 +2009,29 @@ AFRAME.registerComponent('stretch-lab', {
     this.emitState(message, silent);
   },
 
+  setAppearance: function (preferences) {
+    this.presentation = normalizePresentation(preferences);
+    this.resizeStep = this.presentation.resizeStep;
+    this.renderAppearance();
+  },
+  renderAppearance: function () {
+    var preferences = this.presentation || normalizePresentation();
+    var color = preferences.shapeTint === 'custom' ? preferences.customColor : SHAPE_TINTS[preferences.shapeTint] || DIM_COLORS[this.d];
+    var glass = preferences.surfaceStyle === 'glass', wire = preferences.surfaceStyle === 'wire';
+    if (this.box) this.box.setAttribute('material', 'color: ' + color + '; roughness: ' + (glass ? 0.12 : 0.45) + '; metalness: 0.04; emissive: ' + color + '; emissiveIntensity: 0.08; opacity: ' + (glass ? preferences.glassOpacity : 1) + '; transparent: ' + glass + '; depthWrite: ' + !glass + '; wireframe: ' + wire);
+    if (this.dot) this.dot.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: 0.3');
+    if (this.edgeFrame) this.edgeFrame.setAttribute('visible', this.d >= 1 && preferences.showShapeEdges);
+  },
+  loadStarter: function (key) {
+    var starter = Object.prototype.hasOwnProperty.call(STARTER_SHAPES, key) ? STARTER_SHAPES[key] : null; if (!starter || this.replayActive) return false;
+    if (this.showcaseActive) this.stopShowcase(true);
+    if (this.previewActive) this.restorePreview(true);
+    this.endResize(); this.endNudge(true);
+    if (this.d === starter.d && this.L === starter.L && this.W === starter.W && this.H === starter.H && this.axis === starter.axis) return false;
+    this.remember(); this.d = starter.d; this.L = starter.L; this.W = starter.W; this.H = starter.H; this.axis = starter.axis;
+    this.apply(false, starter.name + ' starter loaded. Undo restores your previous geometry.');
+    return true;
+  },
   capture: function () { return { d: this.d, L: this.L, W: this.W, H: this.H, axis: this.axis }; },
   remember: function () { this.endNudge(true); this.clearComparison(); this.future = []; this.history.push(this.capture()); if (this.history.length > 50) this.history.shift(); },
   rememberSnapshot: function (snapshot) { this.future = []; this.history.push(snapshot); if (this.history.length > 50) this.history.shift(); },
@@ -1991,7 +2341,7 @@ AFRAME.registerComponent('stretch-lab', {
   grow: function (sign) {
     var key = ['L', 'W', 'H'][this.axis];
     if (!key || this.axis >= this.d) { this.emitState('Stretch the point before resizing an axis.'); return; }
-    var current = this[key], rawNext = current + sign * STEP;
+    var current = this[key], rawNext = current + sign * normalizeResizeStep(this.resizeStep);
     var target = this.activeMission && this.axis < this.activeMission.d ? Number(this.activeMission[key]) : NaN;
     var crossesTarget = isFinite(target) && ((sign > 0 && current < target && rawNext > target) || (sign < 0 && current > target && rawNext < target));
     var next = Math.max(MINV, Math.min(MAXV, crossesTarget ? target : rawNext));
@@ -2136,10 +2486,103 @@ window.addEventListener('load', function () {
   var missionIndex = SAVED_STATE ? SAVED_STATE.missionIndex : 0, missionComplete = false, showTarget = SAVED_STATE ? SAVED_STATE.showTarget : true, lastMissionState = null;
   var showBoundary = SAVED_STATE ? SAVED_STATE.showBoundary : false, completedMask = SAVED_STATE ? SAVED_STATE.completedMask : 0, suppressNextSave = false, currentMissionAction = null;
   var viewScaleIndex = SAVED_STATE ? SAVED_STATE.viewScaleIndex : 1, immersiveActive = false;
-  var focusMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.focusMode, FOCUS_MODES, 'explain') : 'explain';
+  var focusMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.focusMode, FOCUS_MODES, 'explain') : (LAUNCH_WORKSPACE === 'lesson' ? 'explain' : 'explore');
   var stickMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.stickMode, STICK_MODES, 'geometry') : 'geometry';
   var renderQuality = SAVED_STATE ? normalizeChoice(SAVED_STATE.quality, QUALITY_MODES, 'auto') : 'auto';
   var instructorMode = SAVED_STATE ? SAVED_STATE.instructorMode === true : false;
+  var workspaceMode = SAVED_STATE ? normalizeChoice(SAVED_STATE.workspaceMode, WORKSPACE_MODES, 'lesson') : (LAUNCH_WORKSPACE || 'free');
+  var backdrop = SAVED_STATE ? normalizeChoice(SAVED_STATE.backdrop, BACKDROP_MODES, 'midnight') : 'midnight';
+  var showGroundGrid = !SAVED_STATE || SAVED_STATE.showGroundGrid !== false;
+  var showMeasureCard = SAVED_STATE ? SAVED_STATE.showMeasureCard !== false : LAUNCH_WORKSPACE === 'lesson';
+  var presentation = normalizePresentation(SAVED_STATE);
+  var activeWorkspacePanel = 'build', firstWorkspaceState = true;
+  function activeLesson() { return workspaceMode === 'lesson' ? MISSIONS[missionIndex] : null; }
+  function openWorkspacePanel(panel) {
+    activeWorkspacePanel = normalizeChoice(panel, ['build', 'settings', 'help'], 'build');
+    ['Build', 'Settings', 'Help'].forEach(function (name) {
+      var active = name.toLowerCase() === activeWorkspacePanel;
+      document.getElementById('workspace' + name).hidden = !active;
+      document.getElementById('uiPanel' + name).setAttribute('aria-pressed', String(active));
+    });
+    document.getElementById('hudBody').scrollTop = 0;
+    scheduleFlatReframe();
+  }
+  function renderWorkspaceMode() {
+    document.getElementById('vrWorkspaceText').setAttribute('value', workspaceMode === 'lesson' ? 'Lessons' : 'Free build');
+    var lesson = workspaceMode === 'lesson';
+    document.getElementById('uiModeFree').setAttribute('aria-pressed', String(!lesson));
+    document.getElementById('uiModeLesson').setAttribute('aria-pressed', String(lesson));
+    document.getElementById('uiPanelBuild').textContent = lesson ? 'Learn & build' : 'Build';
+    document.getElementById('lessonWorkspace').hidden = !lesson;
+    document.getElementById('starterShapes').open = !lesson && firstWorkspaceState;
+    document.getElementById('workspaceModeHelp').textContent = lesson
+      ? 'Follow point → line → plane → solid, then try the practice targets.'
+      : 'Make your own shapes. Switch to lessons anytime; your geometry stays.';
+    if (axisTargetOut) axisTargetOut.hidden = !lesson;
+    if (uiAxisValue) uiAxisValue.setAttribute('aria-describedby', lesson ? 'axisValueOut axisTargetOut' : 'axisValueOut');
+  }
+  function applyWorkspaceMode(value, announce) {
+    leaveHistoryPreview();
+    commitPendingGesture();
+    workspaceMode = normalizeChoice(value, WORKSPACE_MODES, 'free');
+    renderWorkspaceMode();
+    openWorkspacePanel('build');
+    var component = comp();
+    if (component) component.emitState(null);
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = workspaceMode === 'lesson'
+      ? 'Lesson sequence selected. Follow the learning path or open practice targets. Your geometry is preserved.'
+      : 'Free build selected. Explore without lesson targets. Your geometry and lesson progress are preserved.';
+  }
+  function renderComfortControls() {
+    document.getElementById('uiPanelDistance').value = String(presentation.panelDistance);
+    document.getElementById('uiPanelSize').value = String(presentation.panelSize);
+    document.getElementById('uiPanelHeight').value = String(presentation.panelHeight);
+    var index = comfortPresetIndex(presentation), preset = COMFORT_PRESETS[index];
+    document.querySelectorAll('[data-comfort]').forEach(function(button) { button.setAttribute('aria-pressed', String(!!preset && button.getAttribute('data-comfort') === preset.id)); });
+    document.getElementById('vrComfortText').setAttribute('value', preset ? preset.label : 'Custom');
+    document.getElementById('vrComfort').setAttribute('aria-label', 'Comfort: ' + (preset ? preset.label : 'Custom') + '. Activate for the next preset.');
+  }
+  function applyComfortPreset(id) {
+    var preset = COMFORT_PRESETS.find(function(item) { return item.id === id; }); if (!preset) return;
+    presentation.panelDistance = preset.panelDistance; presentation.panelSize = preset.panelSize; presentation.panelHeight = preset.panelHeight;
+    renderComfortControls(); saveLabState(lastMissionState);
+    if (immersiveActive) recenterSpatialPanel(false);
+    if (live) live.textContent = preset.label + ' headset comfort selected. Geometry is unchanged.';
+  }
+  function applyScenePreferences(announce) {
+    var colors = { midnight: ['#0b1020', '#131c33'], slate: ['#202b3c', '#263449'], ocean: ['#071d28', '#102b38'], paper: ['#e4ebf3', '#cbd8e5'] };
+    var palette = colors[backdrop] || colors.midnight;
+    var sceneElement = document.querySelector('a-scene'), ground = document.getElementById('ground'), grid = document.getElementById('grid');
+    if (sceneElement) { sceneElement.setAttribute('background', 'color', palette[0]); sceneElement.setAttribute('fog', 'color', palette[0]); }
+    if (ground) ground.setAttribute('material', 'color', palette[1]);
+    if (grid) grid.setAttribute('visible', showGroundGrid);
+    if (labelWrap) labelWrap.setAttribute('visible', showMeasureCard && !immersiveActive);
+    document.getElementById('uiBackdrop').value = backdrop;
+    document.getElementById('uiGroundGrid').checked = showGroundGrid;
+    document.getElementById('uiMeasureCard').checked = showMeasureCard;
+    document.getElementById('uiShapeTint').value = presentation.shapeTint;
+    document.getElementById('uiSurfaceStyle').value = presentation.surfaceStyle;
+    document.getElementById('customColorRow').hidden = presentation.shapeTint !== 'custom';
+    document.getElementById('uiCustomColor').value = presentation.customColor;
+    document.getElementById('customColorValue').textContent = presentation.customColor.toUpperCase();
+    document.getElementById('glassOpacityRow').hidden = presentation.surfaceStyle !== 'glass';
+    document.getElementById('uiGlassOpacity').value = String(Math.round(presentation.glassOpacity * 100));
+    document.getElementById('glassOpacityValue').textContent = Math.round(presentation.glassOpacity * 100) + '%';
+    document.getElementById('uiLighting').value = presentation.lighting;
+    document.getElementById('uiShapeEdges').checked = presentation.showShapeEdges;
+    document.getElementById('uiResizeStep').value = String(presentation.resizeStep);
+    renderComfortControls();
+    var lights = { studio: [0.9, 0.85], soft: [1.15, 0.35], bright: [1.3, 1.05] }[presentation.lighting];
+    document.getElementById('ambientLight').setAttribute('light', 'intensity', lights[0]);
+    document.getElementById('keyLight').setAttribute('light', 'intensity', lights[1]);
+    var component = comp(); if (component && component.setAppearance) component.setAppearance(presentation);
+    document.querySelectorAll('[data-view-angle]').forEach(function(button) { button.setAttribute('aria-pressed', String(button.getAttribute('data-view-angle') === presentation.viewAngle)); });
+    scheduleFlatReframe();
+    saveLabState(lastMissionState);
+    if (announce && live) live.textContent = 'Scene appearance updated. Geometry and measurements are unchanged.';
+  }
+  renderWorkspaceMode();
   var FOCUS_MODE_HELP = {
     explore: 'Explore keeps the shape, scale, and selected ruler prominent while hiding extra construction overlays.',
     explain: 'Explain shows the floor plan, unit lattice, active slices, and the math link from the selected handle.',
@@ -2152,6 +2595,7 @@ window.addEventListener('load', function () {
   if (uiInstructor) uiInstructor.checked = instructorMode;
   if (uiPrecision) uiPrecision.value = String(MATH_PRECISION);
   function updateFocusModeHelp() {
+    document.getElementById('vrFocusText').setAttribute('value', focusMode.charAt(0).toUpperCase() + focusMode.slice(1));
     var help = FOCUS_MODE_HELP[focusMode] || FOCUS_MODE_HELP.explain;
     if (focusModeHelp) focusModeHelp.textContent = help;
     if (uiFocusMode) uiFocusMode.setAttribute('aria-label', 'Scene focus. ' + help);
@@ -2178,6 +2622,8 @@ window.addEventListener('load', function () {
     params.set('d', snapshot.d); params.set('L', snapshot.L); params.set('W', snapshot.W); params.set('H', snapshot.H); params.set('axis', snapshot.axis);
     params.set('mission', missionIndex); params.set('target', showTarget ? '1' : '0'); params.set('boundary', showBoundary ? '1' : '0');
     params.set('view', viewScaleIndex); params.set('focus', focusMode); params.set('precision', MATH_PRECISION); params.set('stick', stickMode); params.set('quality', renderQuality); params.set('instructor', instructorMode ? '1' : '0');
+    params.set('paneldistance', presentation.panelDistance); params.set('panelsize', presentation.panelSize); params.set('panelheight', presentation.panelHeight); params.set('color', presentation.customColor); params.set('opacity', presentation.glassOpacity); params.set('tint', presentation.shapeTint); params.set('surface', presentation.surfaceStyle); params.set('light', presentation.lighting); params.set('edges', presentation.showShapeEdges ? '1' : '0'); params.set('angle', presentation.viewAngle); params.set('step', presentation.resizeStep);
+    params.set('workspace', workspaceMode); params.set('backdrop', backdrop); params.set('grid', showGroundGrid ? '1' : '0'); params.set('card', showMeasureCard ? '1' : '0');
     url.search = params.toString(); url.hash = '';
     return url.toString();
   }
@@ -2206,7 +2652,7 @@ window.addEventListener('load', function () {
     var step = GUIDE_STEPS[d];
     var priorStep = guideStatus ? guideStatus.getAttribute('data-step') : null;
     if (guideProgress) guideProgress.textContent = 'Step ' + (d + 1) + ' of ' + GUIDE_STEPS.length;
-    if (guideStatus && priorStep !== String(d)) {
+    if (workspaceMode === 'lesson' && guideStatus && priorStep !== String(d)) {
       guideStatus.setAttribute('data-step', String(d));
       guideStatus.textContent = 'Guided exploration step ' + (d + 1) + ' of ' + GUIDE_STEPS.length + ': ' + step.label + '. ' + step.prompt;
     }
@@ -2465,7 +2911,7 @@ window.addEventListener('load', function () {
     if (!s) return;
     var component = comp();
     var comparing = focusMode !== 'explore' && !!(component && component.comparisonState);
-    var boundaryText = boundaryComparison(s, MISSIONS[missionIndex]);
+    var boundaryText = boundaryComparison(s, activeLesson());
     var boundaryLines = boundaryText ? boundaryText.split('\n').length : 0;
     var mathLine = liveMathLine(s);
     var sectionLine = crossSectionLine(s);
@@ -2528,6 +2974,20 @@ window.addEventListener('load', function () {
 
   figure.addEventListener('statechange', function (e) {
     var s = e.detail, stateComponent = comp();
+    if (firstWorkspaceState) { document.getElementById('starterShapes').open = workspaceMode === 'free' && s.d === 0; firstWorkspaceState = false; }
+    // Once a shape exists, prioritize its build action over the optional starters.
+    var starters = document.getElementById('starterShapes'), editor = document.querySelector('.hud-primary');
+    var starterAnchor = s.d === 0 ? document.querySelector('.dimchips') : editor.nextSibling;
+    if (starterAnchor !== starters && starters.nextSibling !== starterAnchor) editor.parentNode.insertBefore(starters, starterAnchor);
+    ['L','W','H'].forEach(function(key, index) {
+      var button = document.getElementById('uiPickAxis' + index), exact = document.getElementById('uiExact' + key);
+      button.disabled = index >= s.d || !!(stateComponent && stateComponent.replayActive); button.setAttribute('aria-pressed', String(index < s.d && index === s.axis));
+      exact.disabled = index >= s.d || !!(stateComponent && stateComponent.replayActive); if (document.activeElement !== exact) exact.value = rState(s.dimensions[key]);
+    });
+    document.querySelectorAll('[data-starter]').forEach(function(button) { button.disabled = !!(stateComponent && stateComponent.replayActive); });
+    document.getElementById('uiMissionSelect').value = String(missionIndex);
+    document.getElementById('uiMissionPrev').disabled = missionIndex === 0;
+    document.getElementById('uiMissionNext').disabled = missionIndex === MISSIONS.length - 1;
     stateline.textContent = s.title;
     measure.innerHTML = s.measure.replace(/(-?\d+(\.\d+)?)/g, '<b>$1</b>');
     renderMeasureLabels(s);
@@ -2553,7 +3013,7 @@ window.addEventListener('load', function () {
     if (uiReplay) { uiReplay.disabled = !s.canUndo || !!(stateComponent && (stateComponent.replayActive || stateComponent.previewActive || stateComponent.showcaseActive)); uiReplay.textContent = stateComponent && stateComponent.replayActive ? 'Replaying...' : 'Replay history'; }
     if (uiGrow) { uiGrow.disabled = (s.d <= 0 || s.activeValue >= MAXV); uiGrow.setAttribute('aria-label', 'Grow ' + s.axisLabel); }
     if (uiShrink) { uiShrink.disabled = (s.d <= 0 || s.activeValue <= MINV); uiShrink.setAttribute('aria-label', 'Shrink ' + s.axisLabel); }
-    var activeKey = ['L', 'W', 'H'][s.axis], activeMission = MISSIONS[missionIndex];
+    var activeKey = ['L', 'W', 'H'][s.axis], activeMission = activeLesson();
     var missionTarget = s.d > 0 && activeMission && s.axis < activeMission.d ? Number(activeMission[activeKey]) : null;
     var targetMatched = missionTarget !== null && Math.abs(s.activeValue - missionTarget) <= 0.03;
 
@@ -2586,7 +3046,7 @@ window.addEventListener('load', function () {
       else if (s.axis !== lastHapticState.axis || s.activeValue !== lastHapticState.activeValue) pulseControllers(0.28, 35);
     }
     if (!s.silent) lastHapticState = { d: s.d, axis: s.axis, activeValue: s.activeValue };
-    var visualPreview = !!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive)); if (visualPreview) { lastMissionState = s; if (immersiveActive) positionMeasurePanel(s, MISSIONS[missionIndex]); else positionDesktopWorkspace(s); } else updateMission(s);
+    var visualPreview = !!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive)); if (visualPreview) { lastMissionState = s; if (immersiveActive) positionMeasurePanel(s, activeLesson()); else positionDesktopWorkspace(s); } else updateMission(s);
     if (!(stateComponent && stateComponent.showcaseActive)) guideState(s);
     updateHistoryTimeline();
     if (!(stateComponent && (stateComponent.previewActive || stateComponent.showcaseActive))) saveLabState(s);
@@ -2598,7 +3058,7 @@ window.addEventListener('load', function () {
 
   figure.addEventListener('sliceexplain', function (e) {
     var detail = e.detail || {};
-    if (sliceExplainer && detail.available !== false) sliceExplainer.hidden = false;
+    if (sliceExplainer && detail.available !== false) { sliceExplainer.hidden = false; openWorkspacePanel('settings'); var explanationGroup = sliceExplainer.closest('details'); if (explanationGroup) explanationGroup.open = true; }
     if (sliceFormula) sliceFormula.textContent = detail.formula || 'Stretch to a rectangle or box to inspect a slice.';
     if (sliceDetail) sliceDetail.textContent = detail.detail || 'The highlighted lattice shows how a held cross-section builds the measure.';
     if (live && detail.formula) live.textContent = (detail.title || 'Slice explanation') + '. ' + detail.formula + ' ' + (detail.detail || '');
@@ -2642,7 +3102,8 @@ window.addEventListener('load', function () {
   function startOver() {
     if (!window.confirm('Start over? This clears the saved geometry, mission, preferences, and undo history.')) return;
     var activeShowcase = comp(); if (activeShowcase && activeShowcase.showcaseActive) activeShowcase.stopShowcase(false, 'Dimension story stopped.');
-    missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explain'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; LAUNCH_STATE = null; SAVED_STATE = null;
+    missionIndex = 0; missionComplete = false; showTarget = true; showBoundary = false; completedMask = 0; viewScaleIndex = 1; focusMode = 'explore'; MATH_PRECISION = 2; stickMode = 'geometry'; renderQuality = 'auto'; instructorMode = false; workspaceMode = 'free'; backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = false; presentation = normalizePresentation(); LAUNCH_STATE = null; SAVED_STATE = null;
+    renderWorkspaceMode(); openWorkspacePanel('build'); applyScenePreferences(false);
     if (uiGhost) uiGhost.checked = true;
     if (uiBoundary) uiBoundary.checked = false;
     if (uiFocusMode) uiFocusMode.value = focusMode;
@@ -2655,6 +3116,7 @@ window.addEventListener('load', function () {
     suppressNextSave = true;
     try { localStorage.removeItem(STORAGE_KEY); } catch (ignore) { /* Storage may be unavailable. */ }
     var c = comp();
+    if (c && c.setFocusMode) c.setFocusMode(focusMode);
     if (c && c.freshStart) c.freshStart();
     else suppressNextSave = false;
     applyViewScale(1, false);
@@ -2684,7 +3146,7 @@ window.addEventListener('load', function () {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         v: 1, d: s.d, L: s.dimensions.L, W: s.dimensions.W, H: s.dimensions.H,
-        axis: s.axis, missionIndex: missionIndex, showTarget: showTarget, showBoundary: showBoundary, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: focusMode, precision: MATH_PRECISION, stickMode: stickMode, quality: renderQuality, instructorMode: instructorMode
+        axis: s.axis, missionIndex: missionIndex, showTarget: showTarget, showBoundary: showBoundary, completedMask: completedMask, viewScaleIndex: viewScaleIndex, focusMode: focusMode, precision: MATH_PRECISION, stickMode: stickMode, quality: renderQuality, instructorMode: instructorMode, workspaceMode: workspaceMode, backdrop: backdrop, showGroundGrid: showGroundGrid, showMeasureCard: showMeasureCard, panelDistance: presentation.panelDistance, panelSize: presentation.panelSize, panelHeight: presentation.panelHeight, customColor: presentation.customColor, glassOpacity: presentation.glassOpacity, shapeTint: presentation.shapeTint, surfaceStyle: presentation.surfaceStyle, lighting: presentation.lighting, showShapeEdges: presentation.showShapeEdges, viewAngle: presentation.viewAngle, resizeStep: presentation.resizeStep
       }));
       if (sessionNote) sessionNote.textContent = 'Progress saved on this device.';
     } catch (ignore) {
@@ -2696,7 +3158,7 @@ window.addEventListener('load', function () {
   // base 1.05 m) so the workspace never moves under a mouse user. Compact/portrait viewports
   // solve the distance and height from the camera FOV, the viewport aspect and the band of
   // screen left visible above a bottom-anchored HUD, so the figure and its measure card fit.
-  var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -18 };
+  var FLAT_DESKTOP_POSE = { forward: 3.2, lateral: 0.65, baseY: 1.05, yawDeg: -42 };
   var MEASURE_CARD_WIDTH = 3.25;
   function measurePanelLift(s, mission) {
     var presentationScale = viewScaleDef().scale;
@@ -2733,7 +3195,9 @@ window.addEventListener('load', function () {
         bottomNdc = Math.max(-1, Math.min(0.6, Math.round((1 - 2 * (rect.top / h)) * 20) / 20));
       }
     }
-    return { tanV: tanV, tanH: tanH, eyeY: eyeY, bottomNdc: bottomNdc };
+    var topNdc = 1, toolbar = document.getElementById('sceneToolbar');
+    if (toolbar && !toolbar.hidden) { var toolbarRect = toolbar.getBoundingClientRect(); if (toolbarRect.height > 0) topNdc = Math.min(1, 1 - 2 * (toolbarRect.bottom + 8) / h); }
+    return { tanV: tanV, tanH: tanH, eyeY: eyeY, bottomNdc: bottomNdc, topNdc: topNdc };
   }
   function positionDesktopWorkspace(s, viewDir) {
     if (!s || !window.THREE) return;
@@ -2744,25 +3208,56 @@ window.addEventListener('load', function () {
     var presentationScale = viewScaleDef().scale;
     var length = (s.d >= 1 ? s.dimensions.L : THIN) * presentationScale;
     var depth = (s.d >= 2 ? s.dimensions.W : THIN) * presentationScale;
-    var localYaw = THREE.MathUtils.degToRad(FLAT_DESKTOP_POSE.yawDeg);
+    var localYaw = THREE.MathUtils.degToRad(presentation.viewAngle === 'front' ? 0 : presentation.viewAngle === 'side' ? -90 : FLAT_DESKTOP_POSE.yawDeg);
     var forward = FLAT_DESKTOP_POSE.forward, lateral = FLAT_DESKTOP_POSE.lateral, baseY = FLAT_DESKTOP_POSE.baseY;
-    var compact = compactViewport();
+    var compact = compactViewport() && (window.innerWidth || 0) <= 760;
     if (compact) {
       var m = flatFramingMetrics();
-      var panel = measurePanelLift(s, MISSIONS[missionIndex]);
+      var panel = measurePanelLift(s, activeLesson());
       var footprintHalf = (Math.abs(Math.cos(localYaw)) * length + Math.abs(Math.sin(localYaw)) * depth) / 2;
-      var halfWidth = Math.max(footprintHalf, panel.cardWidth / 2) + 0.15;
-      var contentBottom = -0.12, contentTop = panel.lift + panel.cardHeight / 2;
+      var halfWidth = Math.max(footprintHalf, showMeasureCard ? panel.cardWidth / 2 : 0.55) + 0.15;
+      var contentBottom = -0.12, contentTop = showMeasureCard ? panel.lift + panel.cardHeight / 2 : Math.max(0.65, (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale + 0.3);
       var contentHeight = contentTop - contentBottom;
-      var band = Math.max(0.3, 1 - m.bottomNdc), fill = 0.86;
-      var distance = Math.max(forward, halfWidth / (m.tanH * fill) + depth / 2, contentHeight / (m.tanV * band * fill));
-      forward = Math.min(distance, 14);
+      var band = Math.max(0.3, m.topNdc - m.bottomNdc), fill = 0.86;
+      // Fit the nearest face of the rotated box, not only its center plane.
+      // Side views swap length/depth, and perspective magnifies a tall near face.
+      var halfDepth = (Math.abs(Math.sin(localYaw)) * length + Math.abs(Math.cos(localYaw)) * depth) / 2 + 0.12;
+      var topLimit = m.topNdc - band * (1 - fill) / 2, bottomLimit = m.bottomNdc + band * (1 - fill) / 2;
+      var distance = Math.max(forward, halfWidth / (m.tanH * fill) + halfDepth, contentHeight / (m.tanV * band * fill) + halfDepth, (0.3 + contentTop - m.eyeY) / (m.tanV * topLimit) + halfDepth);
+      forward = Math.min(distance, 32);
       lateral = 0;
-      var midNdc = (1 + m.bottomNdc) / 2;
+      var midNdc = (m.topNdc + m.bottomNdc) / 2;
       var contentMid = m.eyeY + midNdc * forward * m.tanV;
       // Keep the view angle to the workspace gentle (at most ~20 degrees up) so the figure is not seen from far beneath.
       contentMid = Math.min(contentMid, m.eyeY + forward * Math.tan(THREE.MathUtils.degToRad(20)));
-      baseY = Math.max(0.3, contentMid - (contentTop + contentBottom) / 2);
+      var nearDistance = Math.max(0.2, forward - halfDepth);
+      var bottomDistance = bottomLimit > 0 ? forward + halfDepth : nearDistance;
+      var lowestBase = m.eyeY + bottomLimit * bottomDistance * m.tanV - contentBottom;
+      var highestBase = m.eyeY + topLimit * nearDistance * m.tanV - contentTop;
+      baseY = Math.max(0.3, Math.min(highestBase, Math.max(lowestBase, contentMid - (contentTop + contentBottom) / 2)));
+    }
+    if (!compact) {
+      var metrics = flatFramingMetrics(), viewportW = window.innerWidth || 1, viewportH = window.innerHeight || 1;
+      var hudBounds = document.getElementById('hud').getBoundingClientRect();
+      var leftEdge = hudBounds.height > viewportH * 0.35 ? hudBounds.right + 24 : 24;
+      var leftLimit = 2 * leftEdge / viewportW - 1, rightLimit = 1 - 48 / viewportW;
+      var upperLimit = metrics.topNdc - 0.06, lowerLimit = -0.88;
+      var deskPanel = measurePanelLift(s, activeLesson());
+      var deskHalfWidth = Math.max((Math.abs(Math.cos(localYaw)) * length + Math.abs(Math.sin(localYaw)) * depth) / 2 + 0.2, showMeasureCard ? deskPanel.cardWidth / 2 + 0.1 : 0.5);
+      var deskHalfDepth = (Math.abs(Math.sin(localYaw)) * length + Math.abs(Math.cos(localYaw)) * depth) / 2 + 0.15;
+      var deskBottom = -0.12, deskTop = showMeasureCard ? deskPanel.lift + deskPanel.cardHeight / 2 : Math.max(0.65, (s.d >= 3 ? s.dimensions.H : THIN) * presentationScale + 0.3);
+      var clearWidth = Math.max(0.2, rightLimit - leftLimit), clearHeight = Math.max(0.2, upperLimit - lowerLimit);
+      var horizontalFit = (2 * deskHalfWidth + deskHalfDepth * metrics.tanH * (Math.abs(leftLimit) + Math.abs(rightLimit))) / (metrics.tanH * clearWidth);
+      var verticalFit = (deskTop - deskBottom + deskHalfDepth * metrics.tanV * (Math.abs(lowerLimit) + Math.abs(upperLimit))) / (metrics.tanV * clearHeight);
+      var floorFit = (deskTop + 0.3 - metrics.eyeY) / (metrics.tanV * Math.max(0.1, upperLimit)) + deskHalfDepth;
+      forward = Math.max(forward, horizontalFit, verticalFit, floorFit);
+      var near = forward - deskHalfDepth, far = forward + deskHalfDepth;
+      var minX = Math.max(leftLimit * near, leftLimit * far) * metrics.tanH + deskHalfWidth;
+      var maxX = Math.min(rightLimit * near, rightLimit * far) * metrics.tanH - deskHalfWidth;
+      lateral = (minX + maxX) / 2;
+      var minY = metrics.eyeY + Math.max(lowerLimit * near, lowerLimit * far) * metrics.tanV - deskBottom;
+      var maxY = metrics.eyeY + Math.min(upperLimit * near, upperLimit * far) * metrics.tanV - deskTop;
+      baseY = Math.max(0.3, Math.min(maxY, Math.max(minY, FLAT_DESKTOP_POSE.baseY)));
     }
     var yaw = Math.atan2(-view.x, -view.z) + localYaw;
     var centerX = view.x * forward + right.x * lateral, centerZ = view.z * forward + right.z * lateral;
@@ -2774,7 +3269,7 @@ window.addEventListener('load', function () {
     workspacePose.baseY = baseY; workspacePose.yaw = yaw; workspacePose.compact = compact;
     figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z);
     figure.object3D.rotation.set(0, yaw, 0);
-    positionMeasurePanel(s, MISSIONS[missionIndex]);
+    positionMeasurePanel(s, activeLesson());
   }
   var flatReframeHandle = 0;
   function scheduleFlatReframe() {
@@ -2835,8 +3330,17 @@ window.addEventListener('load', function () {
     var mission = MISSIONS[missionIndex], keys = ['L', 'W', 'H'].slice(0, mission.d);
     var firstRestoredRender = lastMissionState === null && !!SAVED_STATE;
     lastMissionState = s;
-    if (immersiveActive) positionMeasurePanel(s, mission);
+    if (immersiveActive) positionMeasurePanel(s, activeLesson());
     else positionDesktopWorkspace(s);
+    if (workspaceMode === 'free') {
+      var freeComponent = comp();
+      if (freeComponent && freeComponent.setTarget) freeComponent.setTarget(null, false, false);
+      if (freeComponent && freeComponent.setMissionHint) freeComponent.setMissionHint(-1, 0, false, null, s.dimensions);
+      var freeVrLabel = document.getElementById('vrMissionText');
+      if (freeVrLabel) freeVrLabel.setAttribute('value', 'Start lesson');
+      missionComplete = false;
+      return;
+    }
     var dimensionReady = s.d === mission.d;
     var done = dimensionReady && keys.every(function (key) { return Math.abs(s.dimensions[key] - mission[key]) <= 0.03; });
     var hintAxis = -1, hintDirection = 0, hintText = '', action = { kind: 'next' };
@@ -2892,6 +3396,7 @@ window.addEventListener('load', function () {
   function selectMission(index) {
     leaveHistoryPreview();
     if (!Number.isInteger(index) || index < 0 || index >= MISSIONS.length) return;
+    if (workspaceMode !== 'lesson') applyWorkspaceMode('lesson', false);
     if (index === missionIndex) { live.textContent = 'Already viewing the ' + MISSIONS[index].name + ' mission.'; return; }
     missionIndex = index; missionComplete = false;
     var c = comp();
@@ -2907,11 +3412,14 @@ window.addEventListener('load', function () {
   }
 
   function nextMission() {
+    if (workspaceMode !== 'lesson') { applyWorkspaceMode('lesson', true); document.getElementById('missionDetails').open = true; return; }
     var unfinished = nextUnfinishedMission();
     selectMission(unfinished >= 0 ? unfinished : (missionIndex + 1) % MISSIONS.length);
   }
 
   function focusMissionStep() {
+    if (workspaceMode !== 'lesson') applyWorkspaceMode('lesson', false);
+    openWorkspacePanel('build');
     var missionDetails = document.getElementById("missionBox").closest("details"); if (missionDetails) missionDetails.open = true;
     var action = currentMissionAction, c = comp(), control = null, label = '';
     if (!action || !c) return;
@@ -2931,17 +3439,17 @@ window.addEventListener('load', function () {
     showTarget = !!value;
     if (uiGhost) uiGhost.checked = showTarget;
     var c = comp();
-    if (c && c.setTarget) c.setTarget(MISSIONS[missionIndex], missionComplete, showTarget);
-    positionMeasurePanel(lastMissionState, MISSIONS[missionIndex]);
+    if (c && c.setTarget) c.setTarget(activeLesson(), missionComplete, showTarget);
+    positionMeasurePanel(lastMissionState, activeLesson());
     saveLabState(lastMissionState);
-    if (announce) live.textContent = 'Target outline ' + (showTarget ? 'shown.' : 'hidden.');
+    if (announce) live.textContent = workspaceMode === 'lesson' ? 'Target outline ' + (showTarget ? 'shown.' : 'hidden.') : 'Lesson target outline preference saved. Select Lesson sequence to use it.';
   }
 
   function toggleBoundaryMeasures(value, announce) {
     showBoundary = !!value;
     if (uiBoundary) uiBoundary.checked = showBoundary;
     renderMeasureLabels(lastMissionState);
-    positionMeasurePanel(lastMissionState, MISSIONS[missionIndex]);
+    positionMeasurePanel(lastMissionState, activeLesson());
     saveLabState(lastMissionState);
     if (announce) live.textContent = 'Boundary measures ' + (showBoundary ? 'shown.' : 'hidden.');
   }
@@ -3012,7 +3520,9 @@ window.addEventListener('load', function () {
   var vrReset = document.getElementById('vrReset');
   var vrAxis = document.getElementById('vrAxis'), vrUndo = document.getElementById('vrUndo'), vrRedo = document.getElementById('vrRedo');
   var vrMission = document.getElementById('vrMission'), vrMeasure = document.getElementById('vrMeasure'), vrView = document.getElementById('vrView');
-  var spatialButtons = [vrStretch, vrCollapse, vrReset, vrAxis, vrUndo, vrRedo, vrMission, vrMeasure, vrView];
+  var vrWorkspace = document.getElementById('vrWorkspace'), vrFocus = document.getElementById('vrFocus'), vrCenter = document.getElementById('vrCenter');
+  var vrComfort = document.getElementById('vrComfort');
+  var spatialButtons = [vrComfort, vrWorkspace, vrFocus, vrCenter, vrStretch, vrCollapse, vrReset, vrAxis, vrUndo, vrRedo, vrMission, vrMeasure, vrView];
   function setSpatialAccessibility(active) {
     if (spatialPanel) spatialPanel.setAttribute('aria-hidden', active ? 'false' : 'true');
     spatialButtons.forEach(function (button) {
@@ -3052,6 +3562,10 @@ window.addEventListener('load', function () {
   wireSpatialButton(vrMission, nextMission, 'Mission navigation is unavailable.');
   wireSpatialButton(vrMeasure, function () { toggleBoundaryMeasures(!showBoundary, true); }, 'Boundary measures are unavailable.');
   wireSpatialButton(vrView, cycleViewScale, 'View scale is unavailable.');
+  wireSpatialButton(vrComfort, function() { var index = comfortPresetIndex(presentation); applyComfortPreset(COMFORT_PRESETS[(index + 1) % COMFORT_PRESETS.length].id); }, 'Comfort controls unavailable.');
+  wireSpatialButton(vrWorkspace, function() { applyWorkspaceMode(workspaceMode === 'free' ? 'lesson' : 'free', true); }, 'Workspace switch unavailable.');
+  wireSpatialButton(vrFocus, function() { applyFocusMode(FOCUS_MODES[(FOCUS_MODES.indexOf(focusMode) + 1) % FOCUS_MODES.length], true); }, 'Scene focus unavailable.');
+  wireSpatialButton(vrCenter, function() { recenterSpatialPanel(true); }, 'Center view unavailable.');
   setSpatialAccessibility(false);
 
   // ── Camera: move and look without a mouse or a headset ──
@@ -3237,6 +3751,52 @@ window.addEventListener('load', function () {
   var scene = document.querySelector('a-scene');
   var hud = document.getElementById('hud');
   var hudToggle = document.getElementById('uiHudToggle'), hudBody = document.getElementById('hudBody');
+  ['Build', 'Settings', 'Help'].forEach(function (name) {
+    document.getElementById('uiPanel' + name).addEventListener('click', function () { openWorkspacePanel(name.toLowerCase()); });
+  });
+  document.getElementById('uiModeFree').addEventListener('click', function () { applyWorkspaceMode('free', true); });
+  document.getElementById('uiModeLesson').addEventListener('click', function () { applyWorkspaceMode('lesson', true); });
+  document.getElementById('uiBackdrop').addEventListener('change', function (event) { backdrop = normalizeChoice(event.target.value, BACKDROP_MODES, 'midnight'); applyScenePreferences(true); });
+  document.getElementById('uiGroundGrid').addEventListener('change', function (event) { showGroundGrid = event.target.checked; applyScenePreferences(true); });
+  document.getElementById('uiMeasureCard').addEventListener('change', function (event) { showMeasureCard = event.target.checked; applyScenePreferences(true); });
+  document.querySelectorAll('[data-starter]').forEach(function(button) { button.addEventListener('click', function() { leaveHistoryPreview(); commitPendingGesture(); var c = comp(); if (c && c.loadStarter(button.getAttribute('data-starter'))) document.getElementById('starterShapes').open = false; }); });
+  ['L','W','H'].forEach(function(key, index) {
+    document.getElementById('uiPickAxis' + index).addEventListener('click', function() { leaveHistoryPreview(); commitPendingGesture(); var c = comp(); if (c) c.selectAxis(index); });
+    var field = document.getElementById('uiExact' + key);
+    field.addEventListener('focus', function() { leaveHistoryPreview(); commitPendingGesture(); var c = comp(); if (c && index < c.d) { c.selectAxis(index); c.beginResize(); } });
+    field.addEventListener('input', function() { var c = comp(); if (c && field.value !== '' && isFinite(Number(field.value))) c.setAxisValue(Number(field.value)); });
+    field.addEventListener('blur', function() { var c = comp(); if (c) { c.endResize(); field.value = rState(c[key]); } });
+    field.addEventListener('keydown', function(event) { if (event.key === 'Enter') { event.preventDefault(); field.blur(); } });
+  });
+  document.getElementById('uiMissionSelect').addEventListener('change', function(event) { selectMission(Number(event.target.value)); });
+  document.getElementById('uiMissionPrev').addEventListener('click', function() { selectMission(missionIndex - 1); });
+  document.getElementById('uiMissionNext').addEventListener('click', function() { selectMission(missionIndex + 1); });
+  [['uiShapeTint','shapeTint'],['uiSurfaceStyle','surfaceStyle'],['uiLighting','lighting'],['uiResizeStep','resizeStep']].forEach(function(pair) { document.getElementById(pair[0]).addEventListener('change', function(event) { presentation[pair[1]] = event.target.value; presentation = normalizePresentation(presentation); applyScenePreferences(true); }); });
+  document.querySelectorAll('[data-comfort]').forEach(function(button) { button.addEventListener('click', function() { applyComfortPreset(button.getAttribute('data-comfort')); }); });
+  [['uiPanelDistance','panelDistance'],['uiPanelSize','panelSize'],['uiPanelHeight','panelHeight']].forEach(function(pair) { document.getElementById(pair[0]).addEventListener('change', function(event) {
+    presentation[pair[1]] = Number(event.target.value); presentation = normalizePresentation(presentation); renderComfortControls(); saveLabState(lastMissionState);
+    if (immersiveActive) recenterSpatialPanel(false);
+    if (live) live.textContent = 'Headset panel placement updated. Geometry is unchanged.';
+  }); });
+  document.getElementById('uiCustomColor').addEventListener('input', function(event) { presentation.customColor = normalizeCustomColor(event.target.value); applyScenePreferences(false); });
+  document.getElementById('uiGlassOpacity').addEventListener('input', function(event) { presentation.glassOpacity = normalizeGlassOpacity(Number(event.target.value) / 100); applyScenePreferences(false); });
+  document.querySelectorAll('[data-setting-target]').forEach(function(button) { button.addEventListener('click', function() {
+    var section = document.getElementById(button.getAttribute('data-setting-target'));
+    if (!section) return;
+    section.open = true;
+    var summary = section.querySelector('summary');
+    summary.focus();
+    if (summary.scrollIntoView) summary.scrollIntoView({block: 'nearest', behavior: 'instant'});
+  }); });
+  document.getElementById('uiShapeEdges').addEventListener('change', function(event) { presentation.showShapeEdges = event.target.checked; applyScenePreferences(true); });
+  document.querySelectorAll('[data-view-angle]').forEach(function(button) { button.addEventListener('click', function() { if (immersiveActive) return; presentation.viewAngle = normalizeChoice(button.getAttribute('data-view-angle'), VIEW_ANGLES, 'corner'); applyScenePreferences(false); resetView(); if (live) live.textContent = button.textContent + ' view. Geometry and measurements are unchanged.'; }); });
+  [['uiSceneMinimal','explore',false,false],['uiSceneExplain','explain',true,true],['uiSceneCompare','compare',true,false]].forEach(function(preset) { document.getElementById(preset[0]).addEventListener('click', function() { showGroundGrid = preset[2]; showMeasureCard = preset[3]; applyFocusMode(preset[1], false); applyScenePreferences(true); }); });
+  document.getElementById('uiResetPresentation').addEventListener('click', function() { presentation = normalizePresentation(); backdrop = 'midnight'; showGroundGrid = true; showMeasureCard = workspaceMode === 'lesson'; applyFocusMode(workspaceMode === 'lesson' ? 'explain' : 'explore', false); applyScenePreferences(true); applyViewScale(1, false); });
+  var returnLink = document.getElementById('uiReturnSandbox');
+  try { var referrer = new URL(document.referrer); if (referrer.origin === window.location.origin && !/immersive_geometry/.test(referrer.pathname)) returnLink.href = referrer.href; } catch (ignore) {}
+  returnLink.addEventListener('click', function(event) { try { if (window.opener && !window.opener.closed) { window.opener.focus(); event.preventDefault(); window.close(); } } catch (ignore) {} });
+  document.getElementById('uiBuildCenter').addEventListener('click', function () { resetView(); recenterSpatialPanel(true); });
+  document.querySelectorAll('.hud-section').forEach(function (section) { section.addEventListener('toggle', scheduleFlatReframe); });
   hudToggle.addEventListener('click', function() { var open = hudToggle.getAttribute('aria-expanded') !== 'true'; hudToggle.setAttribute('aria-expanded', String(open)); hudToggle.textContent = open ? 'Hide controls' : 'Show controls'; hudBody.hidden = !open; scheduleFlatReframe(); });
   document.getElementById('uiViewLeft').addEventListener('click', function() { turnRig(-1); });
   document.getElementById('uiViewRight').addEventListener('click', function() { turnRig(1); });
@@ -3261,7 +3821,7 @@ window.addEventListener('load', function () {
     var length = (state && state.d >= 1 ? dims.L : THIN) * presentationScale;
     var depth = (state && state.d >= 2 ? dims.W : THIN) * presentationScale;
     var right = new THREE.Vector3().crossVectors(view, new THREE.Vector3(0, 1, 0)).normalize();
-    var centerDistance = 3;
+    var centerDistance = Math.max(3, depth / 2 + presentation.panelDistance + 0.75);
     workspacePose.centerX = eye.x + view.x * centerDistance;
     workspacePose.centerZ = eye.z + view.z * centerDistance;
     workspacePose.x = workspacePose.centerX - right.x * length / 2 + view.x * depth / 2;
@@ -3269,16 +3829,21 @@ window.addEventListener('load', function () {
     workspacePose.baseY = Math.max(0.35, eye.y - 0.5); workspacePose.yaw = yaw;
     figure.object3D.position.set(workspacePose.x, workspacePose.baseY, workspacePose.z);
     figure.object3D.rotation.set(0, yaw, 0);
-    positionMeasurePanel(lastMissionState, MISSIONS[missionIndex]);
-    var panelDistance = 1.75;
-    spatialPanel.object3D.position.set(eye.x + view.x * panelDistance, Math.max(0.85, eye.y - 0.3), eye.z + view.z * panelDistance);
-    spatialPanel.object3D.scale.setScalar(0.88);
+    positionMeasurePanel(lastMissionState, activeLesson());
+    var panelDistance = presentation.panelDistance;
+    spatialPanel.object3D.position.set(eye.x + view.x * panelDistance, Math.max(0.2, eye.y + presentation.panelHeight), eye.z + view.z * panelDistance);
+    spatialPanel.object3D.scale.setScalar(presentation.panelSize);
+    // Headset controls remain legible when a seated user's panel crosses the floor plane.
+    spatialPanel.object3D.traverse(function(object) { object.renderOrder = object.material && object.material.map ? 1002 : 1001; });
+    var panelBackdrop = spatialPanel.querySelector('a-plane');
+    if (panelBackdrop && panelBackdrop.getObject3D('mesh')) panelBackdrop.getObject3D('mesh').renderOrder = 1000;
     spatialPanel.object3D.rotation.set(THREE.MathUtils.degToRad(-18), yaw, 0);
     if (announce) live.textContent = 'Spatial workspace centered in front of you.';
   }
   function setImmersiveMode(active) {
     commitPendingGesture();
     immersiveActive = !!active;
+    document.getElementById('sceneToolbar').hidden = immersiveActive;
     if (spatialPanel) spatialPanel.setAttribute('visible', immersiveActive);
     setSpatialAccessibility(immersiveActive);
     if (active) {
@@ -3293,10 +3858,11 @@ window.addEventListener('load', function () {
     }
     hud.style.display = '';
     hud.removeAttribute('aria-hidden');
-    if (labelWrap) labelWrap.setAttribute('visible', true);
+    resetView();
+    if (labelWrap) labelWrap.setAttribute('visible', showMeasureCard);
     live.textContent = 'Immersive mode exited. Desktop controls restored.';
     window.setTimeout(function () {
-      var restore = lastHudFocus && !lastHudFocus.disabled ? lastHudFocus : missionHint;
+      var restore = lastHudFocus && !lastHudFocus.disabled && lastHudFocus.getClientRects().length ? lastHudFocus : hudToggle;
       if (restore && restore.focus) restore.focus();
     }, 0);
   }
@@ -3310,10 +3876,11 @@ window.addEventListener('load', function () {
   // can be deferred by A-Frame, so report readiness from either path.
   var immersiveBoot = window.__alloImmersiveBoot;
   figure.addEventListener('componentinitialized', function (event) {
-    if (event && event.detail && event.detail.name === 'stretch-lab' && immersiveBoot) immersiveBoot.markComponentReady();
+    if (event && event.detail && event.detail.name === 'stretch-lab') { var c = comp(); if (c && c.setAppearance) c.setAppearance(presentation); if (immersiveBoot) immersiveBoot.markComponentReady(); }
   });
   figure.setAttribute('stretch-lab', '');
   if (comp() && immersiveBoot) immersiveBoot.markComponentReady();
+  applyScenePreferences(false);
   applyInstructorMode(instructorMode, false);
   applyViewScale(viewScaleIndex, false);
 });

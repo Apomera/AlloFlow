@@ -810,7 +810,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           var fMin = Math.min.apply(null, sampleY), fMax = Math.max.apply(null, sampleY);
           var yR = { min: Math.min(fMin - 0.3, 0), max: fMax + 0.3 };
 
-          // Exact via fine-grained trapezoid
+          // Numerical reference via fine-grained trapezoid
           var exactAcc = 0, NE = 2000, dxE = (xR.max - xR.min) / NE;
           var prevY = fn.f(xR.min);
           for (var i = 1; i <= NE; i++) {
@@ -877,7 +877,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // Footer: n readout + exact value
           c.fillStyle = '#fde047'; c.textAlign = 'center';
           c.font = 'bold 11px "Inter", sans-serif';
-          c.fillText('n = ' + n + '  \u2022  exact \u222B f = ' + exactAcc.toFixed(4) + '  \u2022  each method shrinks error as n \u2192 \u221E', W/2, H - 12);
+          c.fillText('n = ' + n + '  \u2022  reference \u222B f \u2248 ' + exactAcc.toFixed(4) + '  \u2022  compare convergence as n increases', W/2, H - 12);
         }
 
         // ── VIEW 6: Slope Fields + trajectories ──
@@ -1775,6 +1775,12 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           }
         }
         var err = Math.abs(area - exact);
+        var signedCuts=[xMin,xMax2],positiveRegion=0,negativeRegion=0;
+        var addSignedCut=function(root){if(Number.isFinite(root)&&root>xMin&&root<xMax2)signedCuts.push(root);};
+        if(fa===0){if(fb!==0)addSignedCut(-fc/fb);}else{var signedDiscriminant=fb*fb-4*fa*fc;if(signedDiscriminant>=0){addSignedCut((-fb-Math.sqrt(signedDiscriminant))/(2*fa));addSignedCut((-fb+Math.sqrt(signedDiscriminant))/(2*fa));}}
+        signedCuts.sort(function(a,b){return a-b;});
+        for(var signedIndex=1;signedIndex<signedCuts.length;signedIndex++){var signedLeft=signedCuts[signedIndex-1],signedRight=signedCuts[signedIndex];var piece=evalAntiAt(fa,fb,fc,signedRight)-evalAntiAt(fa,fb,fc,signedLeft);if(evalF((signedLeft+signedRight)/2)>=0)positiveRegion+=Math.abs(piece);else negativeRegion+=Math.abs(piece);}
+        var totalRegion=positiveRegion+negativeRegion;
 
         // ── CONVERGENCE DATA ────────────────────────────────────────────
         var CW = 160, Cpad = 15;
@@ -1836,7 +1842,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           '.calculus-shell .text-rose-600{color:#be123c!important}' +
           '.calculus-shell .bg-orange-600{background-color:#c2410c!important}' +
           '.calculus-shell .bg-amber-600{background-color:#b45309!important}' +
-          '.calculus-shell .bg-emerald-600{background-color:#047857!important}';
+          '.calculus-shell .bg-emerald-600{background-color:#047857!important}' +
+          (ctx.isContrast ? '.calculus-shell [class*="text-red-"],.calculus-shell [class*="text-cyan-"],.calculus-shell [class*="text-amber-"],.calculus-shell [class*="text-emerald-"],.calculus-shell [class*="text-violet-"],.calculus-shell [class*="text-orange-"],.calculus-shell [class*="text-yellow-"],.calculus-shell [class*="text-rose-"]{color:var(--allo-stem-text,#ffff00)!important}' : '');
 
         // ── MODES ────────────────────────────────────────────────────────
         var MODES = [
@@ -2123,9 +2130,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
           // ── Topic-accent hero band per tab ──
           (function() {
             var TAB_META = {
-              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 area under the curve',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit becomes the exact area. For smooth curves, Simpson\'s rule often converges fastest here and integrates every polynomial through degree 3 exactly when n is even.' },
-              derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Power rule + chain rule + product rule + quotient rule cover ~95% of AP Calc problems.' },
-              visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Calculus that looked abstract on paper becomes obvious in motion.' },
+              integral:   { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\u222B', title: 'Integral \u2014 signed area',         hint: 'Riemann sums (left, right, midpoint, trapezoid, Simpson) approximate the integral. As n \u2192 \u221E, the limit is the signed integral. For smooth curves, Simpson\'s rule often converges fastest here and integrates every polynomial through degree 3 exactly when n is even.' },
+              derivative: { accent: '#0ea5e9', soft: 'rgba(14,165,233,0.10)', icon: '\uD83D\uDCC8', title: 'Derivative \u2014 slope at a point',     hint: 'lim(h\u21920) [f(x+h)\u2212f(x)]/h. Slope of the tangent line. Explore how a secant slope approaches the tangent slope, then connect the graph to the power rule.' },
+              visualize:  { accent: '#a855f7', soft: 'rgba(168,85,247,0.10)', icon: '\uD83C\uDFAC', title: 'Visualize \u2014 see the math move',     hint: 'Watch a Riemann sum refine to the exact integral as n grows. Watch a tangent line slide along a curve. Pause and compare the graph, quantities, and equations as the model changes.' },
               challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFAF', title: 'Challenge \u2014 graded problems',       hint: 'AP Calc AB / BC items with step-by-step feedback. Common traps: sign errors in chain rule, forgetting the +C in indefinite integrals, mixing up [f(x)]\u00b2 vs f(x\u00b2).' },
               discover:   { accent: '#15803d', soft: 'rgba(22,163,74,0.10)',  icon: '\uD83D\uDD2C', title: 'Discover \u2014 the big ideas',           hint: 'Fundamental Theorem of Calculus: integration and differentiation are inverse operations. The single most beautiful result in mathematics. Newton + Leibniz, independently, ~1670s.' },
               derivHunt:  { accent: '#6d28d9', soft: 'rgba(109,40,217,0.10)', icon: '\u2753', title: 'Inquiry \u2014 derivative behavior', hint: 'Vary one coefficient or the x-point at a time, log what you observe, and build a rule for when a quadratic increases, decreases, or reaches an extremum.' }
@@ -2217,8 +2224,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-sm font-bold text-violet-800 mb-1' }, '\uD83D\uDCCF What do you estimate \u222B[' + xMin + ',' + xMax2 + '] f(x) dx to be?'),
               h('p', { className: 'text-xs text-violet-600 mb-1 italic' }, 'Look at the graph. Think about average height \u00D7 width. Don\u2019t compute \u2014 just estimate!'),
               h('p', { className: 'text-[0.6875rem] text-violet-700 mb-3' }, 'This is quantitative calibration practice. The displayed difference is descriptive feedback, not a grade.'),
-              h('div', { className: 'flex gap-2' },
-                h('input', { type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': __alloT('stem.calculus.a11y_integral_estimate_input', 'Integral estimate input'), className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
+              h('div', { className: 'flex flex-col sm:flex-row gap-2' },
+                h('input', {style:{minWidth:0,background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'My estimate...', value: predictInput, onChange: function(e){upd('predictInput',e.target.value);}, onKeyDown: function(e){if(e.key==='Enter'&&predictInput)upd('predictSubmitted',true);}, 'aria-label': __alloT('stem.calculus.a11y_integral_estimate_input', 'Integral estimate input'), className:'flex-1 px-3 py-2 border-2 border-violet-600 rounded-lg text-sm font-bold text-violet-900 focus:border-violet-500', autoFocus: true }),
                 h('button', {"aria-label":__alloT('stem.calculus.a11y_compare_estimate_with_exact_integral', 'Compare estimate with exact integral'), disabled:!predictInput, onClick:function(){if(predictInput)upd('predictSubmitted',true);}, className:'transition-colors px-4 py-2 bg-violet-600 text-white rounded-lg text-xs font-bold hover:bg-violet-700 disabled:opacity-50' }, 'Commit and compare \u2192')
               )
             ),
@@ -2249,11 +2256,22 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   'Use the difference to recalibrate: choose a representative height, multiply by interval width, and try again.'
                 ),
                 h('label', { htmlFor:'calc-estimate-reflection', className: 'block mt-3 text-[0.6875rem] font-bold text-violet-800' }, 'Calibration note (optional): what cue will you use on the next estimate?'),
-                h('input', { id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':__alloT('stem.calculus.a11y_optional_integral_estimate_calibration_note', 'Optional integral estimate calibration note'), className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
+                h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  id:'calc-estimate-reflection', type:'text', value:d.estimateReflection||'', onChange:function(e){upd('estimateReflection',e.target.value);}, 'aria-label':__alloT('stem.calculus.a11y_optional_integral_estimate_calibration_note', 'Optional integral estimate calibration note'), className:'mt-1 w-full px-2 py-1.5 border border-violet-300 rounded-lg text-xs' }),
                 h('button', {"aria-label":__alloT('stem.calculus.a11y_try_another_estimate', 'Try another estimate'), onClick:function(){upd('predictSubmitted',false);upd('predictInput','');}, className:'transition-colors mt-2 text-[0.6875rem] text-violet-500 hover:text-violet-700 font-bold' }, '\u21BA Try another estimate')
               );
             })(),
 
+            (!predictMode||predictSubmitted)&&h('section',{'data-signed-area':true,className:'rounded-xl p-3 space-y-2',style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)',border:'1px solid var(--allo-stem-text-soft,#475569)'}},
+              h('h3',{className:'text-sm font-bold'},__alloT('stem.calculus.signed_area_title','Signed integral and total area')),
+              h('div',{className:'grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm'},
+                h('p',null,__alloT('stem.calculus.above_axis_area','Above the axis: '),h('strong',{'data-positive-area':positiveRegion},positiveRegion.toFixed(4))),
+                h('p',null,__alloT('stem.calculus.below_axis_area','Below the axis (magnitude): '),h('strong',{'data-negative-area':negativeRegion},negativeRegion.toFixed(4))),
+                h('p',null,__alloT('stem.calculus.total_geometric_area','Total geometric area: '),h('strong',{'data-total-area':totalRegion},totalRegion.toFixed(4)))),
+              h('div',{'aria-hidden':'true',style:{display:'flex',height:14,border:'1px solid currentColor',borderRadius:4,overflow:'hidden'}},
+                h('span',{style:{width:totalRegion?100*positiveRegion/totalRegion+'%':'0%',background:'#1d4ed8'}}),
+                h('span',{style:{width:totalRegion?100*negativeRegion/totalRegion+'%':'0%',background:'#c2410c'}})),
+              h('p',{className:'text-sm'},__alloT('stem.calculus.signed_net_equation','Net integral = above − below: ')+positiveRegion.toFixed(4)+' − '+negativeRegion.toFixed(4)+' ≈ '+exact.toFixed(4)),
+              h('p',{className:'text-xs'},__alloT('stem.calculus.signed_area_reason','The integral subtracts the region below the axis. Total geometric area adds both magnitudes. Displayed values are rounded.'))),
             // Analysis panel (only show if not in predict mode OR already submitted)
             (!predictMode || predictSubmitted) && h('div', { className: 'mt-3 grid grid-cols-5 gap-3' },
               h('div', { className: 'col-span-3 bg-red-50 rounded-xl border border-red-200 p-3' },
@@ -2308,11 +2326,11 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p', { className: 'text-xs text-cyan-800 mb-2' }, 'For f(x) = ' + buildFStr(fa, fb, fc) + ', complete F(x):'),
               h('div', { className: 'flex items-center gap-1 flex-wrap' },
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, 'F(x) = '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_cubed_coefficient', 'Antiderivative x-cubed coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'?', value:antiA, onChange:function(e){upd('antiA',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_cubed_coefficient', 'Antiderivative x-cubed coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B3/3 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_squared_coefficient', 'Antiderivative x-squared coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'?', value:antiB, onChange:function(e){upd('antiB',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_squared_coefficient', 'Antiderivative x-squared coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x\u00B2/2 + '),
-                h('input', { type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_coefficient', 'Antiderivative x coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'?', value:antiC2, onChange:function(e){upd('antiC2',e.target.value);upd('antiChecked',false);}, 'aria-label': __alloT('stem.calculus.a11y_antiderivative_x_coefficient', 'Antiderivative x coefficient'), className:'w-10 text-center border-2 border-cyan-600 rounded px-1 py-0.5 text-xs font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                 h('span', { className: 'text-sm font-bold text-cyan-900' }, '\u00B7x + C'),
                 h('button', {"aria-label":__alloT('stem.calculus.a11y_check', 'Check'), disabled:antiA===''||antiB===''||antiC2==='', onClick:function(){upd('antiChecked',true);stemBeep&&stemBeep('click');}, className:'transition-colors ml-2 px-3 py-1 bg-cyan-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-cyan-800' }, 'Check')
               ),
@@ -2426,9 +2444,9 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 h('p', { className: 'text-[0.6875rem] text-emerald-600 mb-2 italic' }, 'Rules: d/dx[ax\u00B2] = 2ax \u00B7\u00B7\u00B7 d/dx[bx] = b \u00B7\u00B7\u00B7 d/dx[c] = 0'),
                 h('div', { className: 'flex items-center gap-1 flex-wrap' },
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, "f\u2032(x) = "),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':__alloT('stem.calculus.a11y_derivative_x_coefficient', 'Derivative x coefficient'), onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'?', value:derivInput1, 'aria-label':__alloT('stem.calculus.a11y_derivative_x_coefficient', 'Derivative x coefficient'), onChange:function(e){upd('derivInput1',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   h('span', { className: 'text-sm font-bold text-emerald-900' }, 'x + '),
-                  h('input', { type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':__alloT('stem.calculus.a11y_derivative_constant', 'Derivative constant'), onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
+                  h('input', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  type:'number', step:'any', placeholder:'?', value:derivInput2, 'aria-label':__alloT('stem.calculus.a11y_derivative_constant', 'Derivative constant'), onChange:function(e){upd('derivInput2',e.target.value);upd('derivInputChecked',false);}, className:'w-12 text-center border-2 border-emerald-600 rounded px-1 py-0.5 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1' }),
                   h('button', {"aria-label":__alloT('stem.calculus.a11y_check', 'Check'), disabled:derivInput1===''||derivInput2==='', onClick:function(){upd('derivInputChecked',true);stemBeep&&stemBeep('click');}, className:'ml-2 px-3 py-1 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40' }, 'Check')
                 ),
                 derivInputChecked && (function(){
@@ -2495,7 +2513,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               h('p',{className:'text-sm font-bold text-emerald-800 mb-1'},cq.question),
               h('p',{className:'text-[0.6875rem] text-emerald-600 mb-3 italic'},'\u222B x\u207F dx = x\u207F\u207A\u00B9/(n+1) + C. Enter a decimal; round to 3 places when needed.'),
               h('div',{className:'flex gap-2'},
-                h('input',{type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':__alloT('stem.calculus.a11y_exact_integral_value', 'Exact integral value'),onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-600'}),
+                h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',autoFocus:true,value:d._calcExactInput||'','aria-label':__alloT('stem.calculus.a11y_exact_integral_value', 'Exact integral value'),onChange:function(e){upd('_calcExactInput',e.target.value);},onKeyDown:function(e){if(e.key==='Enter'&&d._calcExactInput)checkCalcAnswer(d._calcExactInput);},placeholder:'Type exact value\u2026',className:'flex-1 px-3 py-2 rounded-lg border-2 border-emerald-600 text-sm font-bold bg-white focus:border-emerald-600'}),
                 h('button',{"aria-label":__alloT('stem.calculus.a11y_check', 'Check'),onClick:function(){if(d._calcExactInput)checkCalcAnswer(d._calcExactInput);},className:'transition-colors px-4 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold hover:bg-emerald-800'},'Check \u2192')
               )
             ),
@@ -2560,7 +2578,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-700 mb-2 font-bold' + onHostInk},'Now go to the Integral tab and find the error value for n=4. Come back and enter it below:'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=4:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_4', 'Riemann-sum error at n equals 4'),onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'0.????',value:data.err4||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_4', 'Riemann-sum error at n equals 4'),onChange:function(e){saveData('err4',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.err4,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2584,7 +2602,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-3'},'Go to the Integral tab, set n=8 (using the slider), and record the error:'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold text-slate-600' + onHostInk},'Error at n=8:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_8', 'Riemann-sum error at n equals 8'),onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'0.????',value:data.err8||'','aria-label':__alloT('stem.calculus.a11y_riemann_sum_error_at_n_equals_8', 'Riemann-sum error at n equals 8'),onChange:function(e){saveData('err8',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.err8,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Got it \u2192')
                   )
                 ),
@@ -2615,7 +2633,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                       h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now estimate the error at n=16 by applying the measured ratio again.'),
                       h('div',{ className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600'},'Estimated error at n=16:'),
-                        h('input',{type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16'),onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                        h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'0.????',value:data.predictN16||'','aria-label':__alloT('stem.calculus.a11y_estimated_error_at_n_equals_16', 'Estimated error at n equals 16'),onChange:function(e){saveData('predictN16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                         h('button',{"aria-label":__alloT('stem.calculus.a11y_estimate_committed', 'Estimate committed'),disabled:!data.predictN16,onClick:function(){nextStep();stemBeep&&stemBeep('click');},className:'transition-colors px-3 py-1.5 bg-red-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-red-700'},'Estimate committed \u2192')
                       )
                     );
@@ -2628,7 +2646,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Set n=16 on the Integral tab and record the measured error. Then compare it with your committed estimate.'),
                   h('div',{className:'flex gap-2 items-center mb-3'},
                     h('span',{className:'text-xs font-bold text-slate-600'},'Measured error at n=16:'),
-                    h('input',{type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16'),onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'0.????',value:data.err16||'','aria-label':__alloT('stem.calculus.a11y_measured_error_at_n_equals_16', 'Measured error at n equals 16'),onChange:function(e){saveData('err16',e.target.value);},className:'w-24 px-2 py-1 border-2 border-red-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
                   ),
                   data.err16 && (function(){
                     var pred=parseFloat(data.predictN16)||0, actual=parseFloat(data.err16)||0;
@@ -2736,7 +2754,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     [['1','slope1'],['2','slope2'],['3','slope3']].map(function(item){
                       return h('div',{ key:item[0],className:'flex gap-2 items-center'},
                         h('span',{ className:'text-xs font-bold text-slate-600 w-24'},'f\u2032('+item[0]+') ='),
-                        h('input',{type:'number',step:'any',placeholder:'?',value:data[item[1]]||'','aria-label':'Derivative value at x '+item[0],onChange:function(e){saveData(item[1],e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
+                        h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'?',value:data[item[1]]||'','aria-label':'Derivative value at x '+item[0],onChange:function(e){saveData(item[1],e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'})
                       );
                     })
                   ),
@@ -2768,7 +2786,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Now change a=2 (f(x) = 2x\u00B2) on the Derivative tab. Measure f\u2032(1). What do you predict?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'f\u2032(1) for 2x\u00B2:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.slope2x||'','aria-label':__alloT('stem.calculus.a11y_derivative_at_x_equals_1_for_2x_squared', 'Derivative at x equals 1 for 2x squared'),onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'?',value:data.slope2x||'','aria-label':__alloT('stem.calculus.a11y_derivative_at_x_equals_1_for_2x_squared', 'Derivative at x equals 1 for 2x squared'),onChange:function(e){saveData('slope2x',e.target.value);},className:'w-20 px-2 py-1 border-2 border-violet-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_verify', 'Verify'),disabled:!data.slope2x,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-violet-600 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-violet-700'},'Verify \u2192')
                   )
                 ),
@@ -2807,7 +2825,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'(Hint: Area of triangle = \u00BD \u00D7 base \u00D7 height. Base = 3, height = v(3) = 2\u00D73 = ?)'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'My triangle area:'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'','aria-label':__alloT('stem.calculus.a11y_triangle_area_in_meters', 'Triangle area in meters'),onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'? m',value:data.triangleArea||'','aria-label':__alloT('stem.calculus.a11y_triangle_area_in_meters', 'Triangle area in meters'),onChange:function(e){saveData('triangleArea',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('span',{ className:'text-xs text-slate-600'},'meters'),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_got_it', 'Got it'),disabled:!data.triangleArea,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Got it \u2192')
                   )
@@ -2817,7 +2835,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs text-slate-600 mb-2'},'Go to the Integral tab. The exact value shown is the definite integral of v(t) = 2t from 0 to 3. What is it?'),
                   h('div',{ className:'flex gap-2 items-center mb-3'},
                     h('span',{ className:'text-xs font-bold'},'Integral value:'),
-                    h('input',{type:'number',step:'any',placeholder:'?',value:data.integralVal||'','aria-label':__alloT('stem.calculus.a11y_definite_integral_value_in_meters', 'Definite integral value in meters'),onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'?',value:data.integralVal||'','aria-label':__alloT('stem.calculus.a11y_definite_integral_value_in_meters', 'Definite integral value in meters'),onChange:function(e){saveData('integralVal',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_verify', 'Verify'),disabled:!data.integralVal,onClick:nextStep,className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Verify \u2192')
                   )
                 ),
@@ -2832,7 +2850,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('p',{className:'text-xs font-bold text-slate-700 mb-2'},'Extension: estimate how far the car travels in 5 seconds before changing the interval.'),
                   h('div',{ className:'flex gap-2 items-center'},
                     h('span',{ className:'text-xs font-bold'},'Distance in 5s (estimate):'),
-                    h('input',{type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':__alloT('stem.calculus.a11y_estimated_distance_in_5_seconds_in_meters', 'Estimated distance in 5 seconds in meters'),onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
+                    h('input',{style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'}, type:'number',step:'any',placeholder:'? m',value:data.predict5||'','aria-label':__alloT('stem.calculus.a11y_estimated_distance_in_5_seconds_in_meters', 'Estimated distance in 5 seconds in meters'),onChange:function(e){saveData('predict5',e.target.value);},className:'w-20 px-2 py-1 border-2 border-emerald-600 rounded-lg text-sm font-bold text-center outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1'}),
                     h('button',{"aria-label":__alloT('stem.calculus.a11y_commit_distance_estimate_and_test_it', 'Commit distance estimate and test it'),disabled:!data.predict5,onClick:function(){setLabToolData(function(prev){return Object.assign({},prev,{calculus:Object.assign({},prev.calculus,{xMax:5,tab:'discover'})});});nextStep();},className:'transition-colors px-3 py-1.5 bg-emerald-700 text-white rounded-lg text-xs font-bold disabled:opacity-40 hover:bg-emerald-800'},'Commit estimate and test \u2192')
                   )
                 ),
@@ -3070,6 +3088,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
               decreasingDown: { label: 'Decreasing; parabola opens down', color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
             };
             var sm = stateMeta[state];
+            if(ctx.isContrast){sm.bg='var(--allo-stem-panel,#000)';sm.color='var(--allo-stem-text,#ffff00)';sm.border='currentColor';}
             var currentLogKey = [iq.a, iq.b, iq.c, iq.xPoint].join('|');
             var currentAlreadyLogged = inquiryLog.some(function(entry) { return derivativeLogKey(entry) === currentLogKey; });
             var evidenceReady = inquiryLog.length >= 2;
@@ -3102,7 +3121,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                     return h('li', { key: derivativeLogKey(entry) + '-' + index, className: 'font-mono' }, (index + 1) + '. a=' + entry.a + ', b=' + entry.b + ', c=' + entry.c + ', x=' + entry.x + ' \u2192 f\'(x)=' + entry.d + '; ' + (loggedMeta ? loggedMeta.label : entry.st));
                   }))
                 ),
-                h('textarea', { 'aria-label': __alloT('stem.calculus.a11y_working_explanation_from_live_derivative_eviden', 'Working explanation from live derivative evidence'), 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
+                h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_working_explanation_from_live_derivative_eviden', 'Working explanation from live derivative evidence'), 'data-calculus-post-observation-explanation': 'working', value: iq.hypothesis || '', onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, placeholder: 'Working explanation after observing: what relationships do you notice among a, b, x, the sign of f\'(x), and the graph behavior? Cite logged settings.',
                   className: 'w-full text-[0.75rem] border border-slate-300 rounded p-2 font-mono leading-snug', rows: 3 }),
                 !iq.stuckRevealed && h('button', { type: 'button', onClick: function() { setIQ({ stuckRevealed: true }); }, className: 'px-2 py-1 rounded bg-amber-50 text-[0.6875rem] font-bold text-amber-800 border border-amber-300' }, '\uD83E\uDD14 Stuck? Show comparison prompts'),
                 iq.stuckRevealed && h('div', { className: 'p-3 rounded bg-amber-50 border border-amber-200 text-[0.6875rem] text-slate-700' },
@@ -3117,7 +3136,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                   h('input', { type: 'checkbox', id: 'calc-deriv-understood', checked: evidenceReady && !!iq.understood, disabled: !evidenceReady, 'aria-disabled': evidenceReady ? 'false' : 'true', 'aria-describedby': 'calc-deriv-evidence-ready', onChange: function(e) { setIQ({ understood: e.target.checked }); }, className: 'w-4 h-4' }),
                   h('label', { htmlFor: 'calc-deriv-understood', className: 'text-[0.75rem] font-bold text-emerald-800 cursor-pointer' }, 'I can explain the pattern I observed')
                 ),
-                evidenceReady && iq.understood && h('textarea', { 'aria-label': __alloT('stem.calculus.a11y_evidence_based_derivative_behavior_explanation', 'Evidence-based derivative behavior explanation'), 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
+                evidenceReady && iq.understood && h('textarea', {style:{background:'var(--allo-stem-panel,#fff)',color:'var(--allo-stem-text,#0f172a)'},  'aria-label': __alloT('stem.calculus.a11y_evidence_based_derivative_behavior_explanation', 'Evidence-based derivative behavior explanation'), 'data-calculus-post-observation-explanation': 'final', value: iq.explanation || '', onChange: function(e) { setIQ({ explanation: e.target.value }); }, placeholder: 'Use at least one logged comparison as evidence. Explain what f\'(x) says about increasing, decreasing, constant, and turning behavior.',
                   className: 'w-full text-[0.75rem] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
                 h('div', { className: 'text-[0.625rem] italic text-slate-500' }, 'Model note: the live marker and numerical derivative are visible, descriptive evidence. They are not a hidden prediction result or a score.')
               )

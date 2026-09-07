@@ -49,7 +49,7 @@ describe('Word Sounds runtime session integrity', () => {
 
     expect(scoped).toContain('String(row.learnerId ?? "") !== String(historyLearnerId)');
     expect(scoped).toContain('String(row.language).toLowerCase() !== languageKey');
-    expect(source).toContain('const hist = learnerScopedHistory.filter(wsIsGradedRow)');
+    expect(source).toContain('learnerScopedHistory.filter(wsIsGradedRow), wordSoundsActivity');
     expect(source).toContain('const activityHistory = learnerScopedHistory');
     expect(source).toContain('const history = learnerScopedHistory;');
   });

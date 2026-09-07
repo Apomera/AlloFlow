@@ -22,6 +22,9 @@ var Download = _lazyIcon('Download');
 var ImageIcon = _lazyIcon('ImageIcon');
 var RefreshCw = _lazyIcon('RefreshCw');
 var X = _lazyIcon('X');
+function _builderPrefersReducedMotion() {
+  return !!document.querySelector(".reduce-motion") || !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+}
 let _harperPromise = null;
 function _ensureHarper() {
   if (_harperPromise) return _harperPromise;
@@ -3543,6 +3546,28 @@ function _builderH5PCompatibility(item) {
   }
   return { type, unit: "item", library: "", total: 0, valid: 0, omitted: 0, embeddedMedia: 0, omittedMedia: 0, ready: false };
 }
+function _builderEditorPageCss(enabled, pageSetup) {
+  if (!enabled) return [
+    "html { background: transparent !important; }",
+    "body { width:auto !important;max-width:none !important;min-height:0 !important;margin:0 !important;background-image:none !important;box-shadow:none !important; }"
+  ].join("\n");
+  const dimensions = _builderPageDimensions(pageSetup);
+  const stripeHeight = dimensions.height + 0.25;
+  return [
+    "html { background:#e2e8f0 !important; }",
+    "body {",
+    "width:" + dimensions.widthCss + " !important;",
+    "max-width:calc(100% - 2rem) !important;",
+    "min-height:" + dimensions.heightCss + " !important;",
+    "box-sizing:border-box !important;",
+    "margin:1rem auto 2rem !important;",
+    "background-color:#fff !important;",
+    "background-image: linear-gradient(to bottom,transparent calc(" + dimensions.heightCss + " - 1px),rgba(148,163,184,0.55) calc(" + dimensions.heightCss + " - 1px),rgba(148,163,184,0.55) " + dimensions.heightCss + ",transparent " + dimensions.heightCss + ") !important;",
+    "background-size:100% " + stripeHeight + "in !important;",
+    "box-shadow:0 0 0 1px rgba(100,116,139,0.3),0 12px 28px rgba(15,23,42,0.15) !important;",
+    "}"
+  ].join("\n");
+}
 function ExportPreviewView(props) {
   const {
     BUILT_IN_PRESETS,
@@ -3986,7 +4011,7 @@ function ExportPreviewView(props) {
     if (!showExportPreview || pendingImageFile) return void 0;
     const dialog = exportDialogRef.current;
     if (!dialog) return void 0;
-    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])')).filter((el) => el.getClientRects().length > 0);
+    const getFocusable = () => Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]):not([type="hidden"]):not([tabindex="-1"]), select:not([disabled]), textarea:not([disabled]), iframe, [tabindex]:not([tabindex="-1"]), summary')).filter((el) => !el.matches(":disabled") && el.getClientRects().length > 0);
     if (!dialog.contains(document.activeElement)) (getFocusable()[0] || dialog).focus();
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
@@ -4190,28 +4215,7 @@ function ExportPreviewView(props) {
   React.useEffect(() => {
     applyPageSetup(pageSetup);
   }, [applyPageSetup, pageSetup, showExportPreview]);
-  const editorPageCss2 = React.useCallback((enabled) => {
-    if (!enabled) return [
-      "html { background: transparent !important; }",
-      "body { width:auto !important;max-width:none !important;min-height:0 !important;margin:0 !important;background-image:none !important;box-shadow:none !important; }"
-    ].join("\n");
-    const dimensions = _builderPageDimensions(pageSetup);
-    const stripeHeight = dimensions.height + 0.25;
-    return [
-      "html { background:#e2e8f0 !important; }",
-      "body {",
-      "width:" + dimensions.widthCss + " !important;",
-      "max-width:calc(100% - 2rem) !important;",
-      "min-height:" + dimensions.heightCss + " !important;",
-      "box-sizing:border-box !important;",
-      "margin:1rem auto 2rem !important;",
-      "background-color:#fff !important;",
-      "background-image: linear-gradient(to bottom,transparent calc(" + dimensions.heightCss + " - 1px),rgba(148,163,184,0.55) calc(" + dimensions.heightCss + " - 1px),rgba(148,163,184,0.55) " + dimensions.heightCss + ",transparent " + dimensions.heightCss + ") !important;",
-      "background-size:100% " + stripeHeight + "in !important;",
-      "box-shadow:0 0 0 1px rgba(100,116,139,0.3),0 12px 28px rgba(15,23,42,0.15) !important;",
-      "}"
-    ].join("\n");
-  }, [pageSetup.size, pageSetup.orientation]);
+  const editorPageCss = React.useCallback((enabled) => _builderEditorPageCss(enabled, pageSetup), [pageSetup.size, pageSetup.orientation]);
   const applyEditorZoom = React.useCallback((zoom) => {
     const value = _builderClampEditorZoom(zoom);
     try {
@@ -4220,14 +4224,14 @@ function ExportPreviewView(props) {
       const style = iframe?.contentDocument?.getElementById("allo-builder-edit-css");
       if (!style) return;
       const base = style.getAttribute("data-allo-base-css") || style.textContent.replace(/\n?\s*body\s*\{[^}]*zoom:[^}]*\}\s*$/i, "");
-      const pageCss = style.getAttribute("data-allo-page-css") || editorPageCss2(iframe?.__alloBuilderPageView !== false);
+      const pageCss = style.getAttribute("data-allo-page-css") || editorPageCss(iframe?.__alloBuilderPageView !== false);
       style.setAttribute("data-allo-page-css", pageCss);
       style.textContent = `${base}
 ${pageCss}
         body { zoom: ${value}%; }`;
     } catch (_) {
     }
-  }, [exportPreviewRef, editorPageCss2]);
+  }, [exportPreviewRef, editorPageCss]);
   const applyEditorPageView = React.useCallback((enabled) => {
     try {
       const iframe = exportPreviewRef.current;
@@ -4235,7 +4239,7 @@ ${pageCss}
       const style = iframe?.contentDocument?.getElementById("allo-builder-edit-css");
       if (!style) return;
       const base = style.getAttribute("data-allo-base-css") || style.textContent.replace(/\n?\s*body\s*\{[^}]*zoom:[^}]*\}\s*$/i, "");
-      const pageCss = editorPageCss2(Boolean(enabled));
+      const pageCss = editorPageCss(Boolean(enabled));
       const zoom = _builderClampEditorZoom(iframe?.__alloBuilderZoom);
       style.setAttribute("data-allo-page-css", pageCss);
       style.textContent = `${base}
@@ -4243,7 +4247,7 @@ ${pageCss}
         body { zoom: ${zoom}%; }`;
     } catch (_) {
     }
-  }, [exportPreviewRef, editorPageCss2]);
+  }, [exportPreviewRef, editorPageCss]);
   const calculateEditorZoomPreset = React.useCallback((mode) => {
     const iframe = exportPreviewRef.current;
     if (!iframe) return 100;
@@ -4988,9 +4992,9 @@ ${pageCss}
     const zoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
     const pageAdvance = (_builderPageDimensions(pageSetup).heightPx + (iframe.__alloBuilderPageView === false ? 0 : 24)) * (zoom / 100);
     const top = Math.max(0, Number(pageIndex) || 0) * pageAdvance;
-    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = _builderPrefersReducedMotion();
     try {
-      doc.defaultView?.scrollTo({ top, behavior: reducedMotion ? "auto" : "smooth" });
+      doc.defaultView?.scrollTo({ top, behavior: reducedMotion ? "instant" : "smooth" });
     } catch (_) {
       try {
         doc.defaultView?.scrollTo(0, top);
@@ -5012,9 +5016,9 @@ ${pageCss}
     let target = marker?.nextElementSibling || doc.body.firstElementChild;
     while (target && target.matches?.("[data-allo-page-element],script,style,[data-allo-page-break],[data-allo-section-break]")) target = target.nextElementSibling;
     const scrollTarget = marker || target || doc.body;
-    const reducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reducedMotion = _builderPrefersReducedMotion();
     try {
-      scrollTarget.scrollIntoView({ block: "start", behavior: reducedMotion ? "auto" : "smooth" });
+      scrollTarget.scrollIntoView({ block: "start", behavior: reducedMotion ? "instant" : "smooth" });
     } catch (_) {
     }
     if (target) {
@@ -5757,7 +5761,7 @@ ${pageCss}
     const doc = exportPreviewRef.current?.contentDocument;
     const node = heading?.node;
     if (!doc || !node?.isConnected) return;
-    node.scrollIntoView({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    node.scrollIntoView({ behavior: _builderPrefersReducedMotion() ? "instant" : "smooth", block: "center" });
     const range = doc.createRange();
     range.selectNodeContents(node);
     range.collapse(false);
@@ -5805,7 +5809,7 @@ ${pageCss}
       selection?.removeAllRanges();
       selection?.addRange(range);
       editorSelectionRangeRef.current = range.cloneRange();
-      marker.scrollIntoView({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+      marker.scrollIntoView({ behavior: _builderPrefersReducedMotion() ? "instant" : "smooth", block: "center" });
       setActiveCommentId(commentId);
       openReviewComments(commentId);
       exportPreviewRef.current?.focus();
@@ -6436,7 +6440,7 @@ ${pageCss}
       return;
     }
     try {
-      node.scrollIntoView({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+      node.scrollIntoView({ behavior: _builderPrefersReducedMotion() ? "instant" : "smooth", block: "center" });
       const range = doc.createRange();
       if (node.childNodes.length) range.selectNodeContents(node);
       else range.selectNode(node);
@@ -6549,7 +6553,7 @@ ${pageCss}
       range.selectNodeContents(liveMarker);
       _builderSetTrackedSelection(doc, range);
       editorSelectionRangeRef.current = range.cloneRange();
-      liveMarker.scrollIntoView({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+      liveMarker.scrollIntoView({ behavior: _builderPrefersReducedMotion() ? "instant" : "smooth", block: "center" });
       setActiveTrackedChangeId(changeId);
       openTrackedChanges(changeId);
       exportPreviewRef.current?.focus();
@@ -6811,8 +6815,8 @@ ${pageCss}
     range.setEnd(foundNode, foundAt + needle.length);
     selection.removeAllRanges();
     selection.addRange(range);
-    const prefersReducedMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    foundNode.parentElement?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth", block: "center" });
+    const prefersReducedMotion = _builderPrefersReducedMotion();
+    foundNode.parentElement?.scrollIntoView({ behavior: prefersReducedMotion ? "instant" : "smooth", block: "center" });
     findCursorRef.current = { node: foundNode, offset: foundAt + needle.length };
     setFindMatchState((previous) => {
       const current = direction > 0 ? previous.current >= totalMatches ? 1 : previous.current + 1 : previous.current <= 1 ? totalMatches : previous.current - 1;
@@ -7020,7 +7024,7 @@ ${pageCss}
     target.setAttribute("data-allo-semantic-selected", "1");
     setAdvancedReviewSelectedId(nodeId);
     try {
-      target.scrollIntoView({ block: "center", behavior: "smooth" });
+      target.scrollIntoView({ block: "center", behavior: _builderPrefersReducedMotion() ? "instant" : "smooth" });
     } catch (_) {
       target.scrollIntoView?.();
     }
@@ -7431,7 +7435,7 @@ ${pageCss}
       return;
     }
     if (restored.tracked) setActiveTrackedChangeId(restored.marker?.getAttribute?.("data-allo-change-id") || "");
-    restored.marker?.scrollIntoView?.({ behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center" });
+    restored.marker?.scrollIntoView?.({ behavior: _builderPrefersReducedMotion() ? "instant" : "smooth", block: "center" });
     commitTrackedChangeMutation(restored.tracked ? "Saved block applied as a tracked structural change." : "Saved block restored from version history.");
     const refreshed = _builderCompareDocumentVersions(doc, snapshot.html);
     if (refreshed.ok) setVersionComparison({ ...refreshed, snapshotId: snapshot.id, label: snapshot.label, at: snapshot.at });
@@ -7491,15 +7495,9 @@ ${pageCss}
     document.addEventListener("alloflow-builder-save-snapshot", onSaveSnapshotRequest);
     return () => document.removeEventListener("alloflow-builder-save-snapshot", onSaveSnapshotRequest);
   }, [showExportPreview, saveVersionSnapshot]);
-  const discardLocalDraft = React.useCallback(() => {
-    try {
-      window.localStorage.removeItem(draftStorageKey);
-    } catch (_) {
-    }
+  const dismissLocalDraft = React.useCallback(() => {
     setDraftRecovery(null);
-    setVersionHistory([]);
-    setVersionComparison(null);
-  }, [draftStorageKey]);
+  }, []);
   const downloadBuilderBlob = React.useCallback((blob, options = {}) => {
     if (!blob) throw new Error("The export did not produce a file.");
     const clean = getCleanBuilderDocument();
@@ -7520,6 +7518,16 @@ ${pageCss}
     }
     return fileName;
   }, [getCleanBuilderDocument, onExportSuccess]);
+  const beginAlternativeExport = React.useCallback((kind) => {
+    if (exportActionLockRef.current) return false;
+    exportActionLockRef.current = true;
+    setAltExportBusy(kind);
+    return true;
+  }, []);
+  const finishAlternativeExport = React.useCallback(() => {
+    exportActionLockRef.current = false;
+    if (mountedRef.current) setAltExportBusy("");
+  }, []);
   const runPackageExport = React.useCallback(async (kind) => {
     if (altExportBusy) return;
     const handler = kind === "qti" ? handleExportQTI : kind === "h5p" ? handleExportH5P : handleExportIMS;
@@ -7527,7 +7535,7 @@ ${pageCss}
       addToast && addToast(`${kind.toUpperCase()} export is unavailable right now.`, "error");
       return;
     }
-    setAltExportBusy(kind);
+    if (!beginAlternativeExport(kind)) return;
     try {
       if (kind === "qti" || kind === "h5p") {
         const activities = kind === "qti" ? qtiAssessments : h5pActivities;
@@ -7539,7 +7547,8 @@ ${pageCss}
       } else {
         const clean = getCleanBuilderDocument({ forExport: true });
         if (!clean) throw new Error("The editable preview is not ready.");
-        await handler({ liveHtml: clean.html, liveTitle: clean.title });
+        const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
+        if (succeeded === false) return;
       }
       try {
         if (typeof onExportSuccess === "function") onExportSuccess({ kind: "package", format: kind });
@@ -7548,9 +7557,9 @@ ${pageCss}
     } catch (error) {
       addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || "unknown error"}`, "error");
     } finally {
-      if (mountedRef.current) setAltExportBusy("");
+      finishAlternativeExport();
     }
-  }, [altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess]);
   const runOfficeExport = React.useCallback(async (format) => {
     if (altExportBusy) return;
     const doc = exportPreviewRef.current?.contentDocument;
@@ -7560,7 +7569,7 @@ ${pageCss}
       addToast && addToast("Office export stopped: fix the blocking preflight issues first.", "error");
       return;
     }
-    setAltExportBusy(format);
+    if (!beginAlternativeExport(format)) return;
     try {
       let api = window.AlloModules?.AccessibleOfficeExport;
       if (!api || typeof api.build !== "function") {
@@ -7581,9 +7590,9 @@ ${pageCss}
     } catch (error) {
       addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || "unknown error"}`, "error");
     } finally {
-      if (mountedRef.current) setAltExportBusy("");
+      finishAlternativeExport();
     }
-  }, [altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
   const runExportFromPreview = React.useCallback(async () => {
     const preflight = runBuilderPreflight(exportPreviewMode, false);
     if (preflight.errors) {
@@ -8366,7 +8375,7 @@ ${pageCss}
         const el = blocks && blocks[item.blockIndex];
         if (!el) return null;
         try {
-          el.scrollIntoView({ block: "center", behavior: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+          el.scrollIntoView({ block: "center", behavior: _builderPrefersReducedMotion() ? "instant" : "smooth" });
           if (outline) {
             el.style.outline = "3px solid #f59e0b";
             el.style.outlineOffset = "2px";
@@ -8619,7 +8628,7 @@ ${pageCss}
       {
         "data-help-key": "doc_builder_export_action",
         onClick: runExportFromPreview,
-        disabled: exportActionBusy || exportPreviewMode === "slides" && !pptxLoaded,
+        disabled: exportActionBusy || !!altExportBusy || exportPreviewMode === "slides" && !pptxLoaded,
         "aria-busy": exportActionBusy,
         "aria-label": exportActionBusy ? "Export in progress" : void 0,
         className: "bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed",
@@ -8627,7 +8636,7 @@ ${pageCss}
       },
       /* @__PURE__ */ React.createElement(Download, { size: 14 }),
       " ",
-      exportPreviewMode === "worksheet" || exportPreviewMode === "print" ? t("export_preview.action_print_pdf") || "Print / Save as PDF" : exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF"
+      exportActionBusy ? "Preparing export..." : exportPreviewMode === "worksheet" || exportPreviewMode === "print" ? t("export_preview.action_print_pdf") || "Print / Save as PDF" : exportPreviewMode === "html" ? t("export_preview.action_download_html") || "Download HTML" : exportPreviewMode === "slides" ? pptxLoaded ? t("export_preview.action_export_slides") || "Export Slides" : "Loading..." : t("export_preview.action_print_pdf") || "Print / Save as PDF"
     ), exportPreviewMode === "slides" && typeof openInAlloStudio === "function" && /* @__PURE__ */ React.createElement(
       "button",
       {
@@ -8637,7 +8646,15 @@ ${pageCss}
       },
       "\u{1F3A8} ",
       t("export_preview.edit_in_page_designer") || "Edit in Page Designer"
-    ), /* @__PURE__ */ React.createElement("details", { className: "relative" }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F Alt Formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("div", { className: "absolute right-0 top-full mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 w-72 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
+    ), /* @__PURE__ */ React.createElement("style", null, `.allo-builder-export-formats { position:absolute;right:0;top:100%;width:18rem;max-width:calc(100vw - 2rem);max-height:60vh;overflow-y:auto;overscroll-behavior:contain; }
+                      @media (max-width:639px) { .allo-builder-export-formats { position:fixed;left:1rem;right:1rem;top:auto;bottom:1rem;width:auto; } }`), /* @__PURE__ */ React.createElement("details", { className: "relative", onKeyDownCapture: (event) => {
+      if (event.key === "Escape" && event.currentTarget.open) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.currentTarget.open = false;
+        event.currentTarget.querySelector("summary")?.focus();
+      }
+    } }, /* @__PURE__ */ React.createElement("summary", { className: "bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-2 rounded-lg cursor-pointer flex items-center gap-1 transition-colors list-none" }, "\u267F More export formats ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600" }, "\u25BE")), /* @__PURE__ */ React.createElement("fieldset", { disabled: exportActionBusy || !!altExportBusy, "aria-label": "Additional export formats", "aria-busy": !!altExportBusy, className: "allo-builder-export-formats mt-1 bg-white border border-slate-400 rounded-xl shadow-xl p-2 z-50 space-y-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Editable documents"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("docx"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-sky-700 hover:bg-sky-50 rounded-lg disabled:opacity-50" }, altExportBusy === "docx" ? "Building Word..." : "Accessible Word (.docx)"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runOfficeExport("odt"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-teal-700 hover:bg-teal-50 rounded-lg disabled:opacity-50" }, altExportBusy === "odt" ? "Building ODT..." : "OpenDocument (.odt)"), qtiAssessments.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Assessment packages"), qtiAssessments.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Quiz to export as QTI", value: selectedQtiKey, onChange: (event) => setSelectedQtiKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, qtiAssessments.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `Quiz ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("qti"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "qti" ? "Building QTI..." : "QTI quiz package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "QTI uses the selected quiz's structured questions and answers.")), h5pActivities.length > 0 && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Interactive H5P"), h5pActivities.length > 1 && /* @__PURE__ */ React.createElement("select", { "aria-label": "Activity to export as H5P", value: selectedH5PKey, onChange: (event) => setSelectedH5PKey(event.target.value), disabled: !!altExportBusy, className: "w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white" }, h5pActivities.map(({ item, key }, index) => /* @__PURE__ */ React.createElement("option", { key, value: key }, item.title || `${item.type === "quiz" ? "Quiz" : "Study cards"} ${index + 1}`))), /* @__PURE__ */ React.createElement("button", { type: "button", "aria-describedby": "h5p-compatibility-summary", disabled: !!altExportBusy || !h5pCompatibility.ready, onClick: () => runPackageExport("h5p"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50" }, altExportBusy === "h5p" ? "Building H5P..." : "H5P interactive activity (.h5p)"), /* @__PURE__ */ React.createElement("div", { id: "h5p-compatibility-summary", role: "status", className: `px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? "text-amber-700" : "text-emerald-700" : "text-red-700"}` }, h5pCompatibility.valid, " of ", h5pCompatibility.total, " ", h5pCompatibility.unit, h5pCompatibility.total === 1 ? "" : "s", " ready for ", h5pCompatibility.library || "H5P", ".", h5pCompatibility.omitted > 0 ? ` ${h5pCompatibility.omitted} incomplete or incompatible.` : "", h5pCompatibility.adapted > 0 ? ` ${h5pCompatibility.adapted} adapted to equivalent H5P interactions.` : "", h5pCompatibility.manualReview > 0 ? ` ${h5pCompatibility.manualReview} ungraded/manual-review.` : "", h5pCompatibility.embeddedMedia > 0 ? ` ${h5pCompatibility.embeddedMedia} embedded media asset(s) will be packaged.` : "", h5pCompatibility.omittedMedia > 0 ? ` ${h5pCompatibility.omittedMedia} external or unsupported media asset(s) will be omitted.` : ""), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "MCQ-only quizzes export as Single Choice Set. Mixed assessments export as Question Set with Multiple Choice, Fill in the Blanks, and ungraded Essay adaptations. The destination needs the referenced H5P libraries installed.")), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Content package"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !!altExportBusy, onClick: () => runPackageExport("ims"), className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-violet-700 hover:bg-violet-50 rounded-lg disabled:opacity-50" }, altExportBusy === "ims" ? "Building IMS..." : "IMS content package"), /* @__PURE__ */ React.createElement("div", { className: "px-2 text-[10px] leading-tight text-slate-500" }, "IMS includes the current editable Builder document."), /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1" }, "Reading & text"), /* @__PURE__ */ React.createElement("button", { onClick: () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       let text = "";
@@ -8702,7 +8719,7 @@ ${pageCss}
       addToast("Markdown downloaded", "success");
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg" }, "\u{1F4DD} Markdown (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
       if (altExportBusy) return;
-      setAltExportBusy("notebooklm");
+      if (!beginAlternativeExport("notebooklm")) return;
       try {
         const doc = exportPreviewRef.current?.contentDocument;
         const items = Array.isArray(history) ? history.filter((h) => h && h.data != null) : [];
@@ -8861,7 +8878,7 @@ ${pageCss}
       } catch (e) {
         if (addToast) addToast("NotebookLM export failed", "error");
       } finally {
-        if (mountedRef.current) setAltExportBusy("");
+        finishAlternativeExport();
       }
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-indigo-700 hover:bg-indigo-50 rounded-lg disabled:opacity-50" }, altExportBusy === "notebooklm" ? "Building NotebookLM source..." : "\u{1F4D3} Send to NotebookLM (.md)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
       const _preflight = runBuilderPreflight("epub", false);
@@ -8875,7 +8892,7 @@ ${pageCss}
         return;
       }
       if (altExportBusy) return;
-      setAltExportBusy("epub");
+      if (!beginAlternativeExport("epub")) return;
       try {
         let _clone = doc.documentElement.cloneNode(true);
         try {
@@ -9018,13 +9035,13 @@ ${pageCss}
       } catch (error) {
         addToast && addToast("ePub export failed: " + (error?.message || "unknown error"), "error");
       } finally {
-        if (mountedRef.current) setAltExportBusy("");
+        finishAlternativeExport();
       }
     }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "epub" ? "Building ePub..." : "\u{1F4DA} ePub (e-readers)"), /* @__PURE__ */ React.createElement("button", { disabled: !!altExportBusy, onClick: async () => {
       const doc = exportPreviewRef.current?.contentDocument;
       if (!doc) return;
       if (altExportBusy) return;
-      setAltExportBusy("brf");
+      if (!beginAlternativeExport("brf")) return;
       try {
         let text = "";
         try {
@@ -9211,9 +9228,9 @@ ${pageCss}
       } catch (error) {
         addToast && addToast("Braille export failed: " + (error?.message || "unknown error"), "error");
       } finally {
-        if (mountedRef.current) setAltExportBusy("");
+        finishAlternativeExport();
       }
-    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message)))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, "Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: discardLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
+    }, className: "w-full text-left px-2 py-1.5 text-[11px] font-medium text-slate-700 hover:bg-slate-50 rounded-lg disabled:opacity-50" }, altExportBusy === "brf" ? "Building Braille..." : "\u283F Electronic Braille (.brf)"))))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", "aria-atomic": "true", className: exportActionBusy || altExportBusy ? "border-b border-indigo-200 bg-indigo-50 px-3 py-2 text-xs text-indigo-900" : "sr-only" }, exportActionBusy ? "Preparing your export. Keep the builder open until it finishes." : altExportBusy ? "Preparing " + altExportBusy.toUpperCase() + " export. Keep the builder open until it finishes." : ""), preflightResult && /* @__PURE__ */ React.createElement("div", { className: `border-b px-3 py-2 text-xs ${preflightResult.errors ? "bg-red-50 border-red-300 text-red-900" : preflightResult.warnings ? "bg-amber-50 border-amber-300 text-amber-900" : "bg-green-50 border-green-300 text-green-900"}`, role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement("strong", null, preflightResult.errors ? "Export blocked by preflight" : preflightResult.warnings ? "Preflight passed with warnings" : "Preflight passed"), /* @__PURE__ */ React.createElement("span", null, preflightResult.errors, " error", preflightResult.errors === 1 ? "" : "s", " / ", preflightResult.warnings, " warning", preflightResult.warnings === 1 ? "" : "s"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPreflightResult(null), className: "ml-auto underline font-bold" }, "Dismiss")), !!preflightResult.issues.length && /* @__PURE__ */ React.createElement("ul", { className: "mt-1 list-disc pl-5 space-y-0.5" }, preflightResult.issues.map((issue, index) => /* @__PURE__ */ React.createElement("li", { key: issue.code + "-" + index }, /* @__PURE__ */ React.createElement("strong", null, issue.severity === "error" ? "Fix:" : "Review:"), " ", issue.message)))), draftRecovery && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "Local draft available"), /* @__PURE__ */ React.createElement("span", null, "Saved ", draftRecovery.at ? new Date(draftRecovery.at).toLocaleString() : "recently", " on this device."), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: restoreLocalDraft, className: "rounded bg-amber-700 px-2 py-1 font-bold text-white hover:bg-amber-800" }, "Restore draft"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: dismissLocalDraft, className: "rounded px-2 py-1 font-semibold text-amber-800 underline hover:text-amber-950" }, "Dismiss")), /* @__PURE__ */ React.createElement("div", { className: "flex shrink-0 items-center gap-1 overflow-x-auto border-b border-slate-300 bg-slate-100 px-2 py-1", role: "tablist", "aria-label": "Document Builder ribbon" }, [["home", "Home"], ["insert", "Insert"], ["layout", "Layout"], ["review", "Review"], ["view", "View"], ["expert", isAgentRunning ? "\u{1F916} Expert Workbench \u2022" : "\u{1F916} Expert Workbench"]].map(([tab, label]) => {
       const selected = activeRibbonTab === tab;
       return /* @__PURE__ */ React.createElement(
         "button",
@@ -10203,7 +10220,7 @@ async function updateExportPreview(deps) {
       `;
     editStyle.setAttribute("data-allo-base-css", _baseEditCss);
     const _editorZoom = _builderClampEditorZoom(iframe.__alloBuilderZoom);
-    const _pageCss = editorPageCss(iframe.__alloBuilderPageView !== false);
+    const _pageCss = _builderEditorPageCss(iframe.__alloBuilderPageView !== false, iframe.__alloBuilderPageSetup);
     editStyle.setAttribute("data-allo-page-css", _pageCss);
     editStyle.textContent = `${_baseEditCss}
 ${_pageCss}
@@ -10287,7 +10304,7 @@ ${_pageCss}
               const selection = doc.getSelection();
               selection.removeAllRanges();
               selection.addRange(range);
-              target.scrollIntoView({ block: "nearest" });
+              target.scrollIntoView({ block: "nearest", behavior: _builderPrefersReducedMotion() ? "instant" : "auto" });
               return;
             }
           }

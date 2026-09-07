@@ -121,5 +121,5 @@ var _lazyIcon = function (name) {
                   setCsAddingCatId(null);
                   setCsAddingText('');
                 }} className="px-2 py-1 bg-white text-slate-600 rounded text-[11px] font-bold border border-slate-400 hover:bg-slate-50">Cancel</button></div>}</div></div>;
-        })}</div>}{isConceptSortGame && <ErrorBoundary fallbackMessage="Concept Sort Game encountered an error."><ConceptSortGame data={generatedContent?.data} onClose={closeConceptSort} playSound={playSound} onGenerateItem={handleGenerateConceptItem} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} onExplainIncorrect={handleExplainConceptSortItem} imageScale={conceptSortImageScale} onImageScaleChange={setConceptSortImageScale} /></ErrorBoundary>}</div>;
+        })}</div>}{isConceptSortGame && <ErrorBoundary fallbackMessage="Concept Sort Game encountered an error."><ConceptSortGame data={generatedContent?.data} onClose={closeConceptSort} playSound={playSound} onGenerateItem={handleGenerateConceptItem} onScoreUpdate={handleGameScoreUpdate} onGameComplete={handleGameCompletion} onExplainIncorrect={handleExplainConceptSortItem} imageScale={conceptSortImageScale} onImageScaleChange={setConceptSortImageScale} allowAddItems={Boolean(isTeacherMode)} /></ErrorBoundary>}</div>;
   }

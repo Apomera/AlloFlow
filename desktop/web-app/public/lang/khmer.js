@@ -4909,10 +4909,10 @@
     "locked": "ចាក់សោ",
     "escaped": "អ្នក Escaped!",
     "escaped_desc": "អ្នក solved ទាំងអស់ ល្បែង និង escaped room!",
-    "time_up": "? ពេលវេលា's Up!",
+    "time_up": "⏰ ពេលវេលា's Up!",
     "reveal_hint": "Reveal ការបង្ហាញ",
-    "puzzles_remaining": "{{count}} ល្បែង remaining",
-    "time_remaining": "ពេលវេលា: {{time}}",
+    "puzzles_remaining": "{count} ល្បែង remaining",
+    "time_remaining": "ពេលវេលា: {time}",
     "progress": "វឌ្ឍនភាព",
     "start": "ចាប់ផ្តើម Escape Room",
     "start_hint": "ចាប់ផ្តើម timer ទៅ begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room បញ្ចប់!",
     "loading_error": "មិនអាចផ្ទុកទិន្នន័យបន្ទប់បានទេ",
     "no_puzzle": "ទេ ល្បែង found សម្រាប់ នេះ object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "ល្អឥតខ្ចោះ escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "ល្អឥតខ្ចោះ escape! +{xp} bonus XP",
     "puzzle_mcq": "ច្រើន Choice",
     "puzzle_sequence": "Put ក្នុង Order",
     "puzzle_cipher": "Decode សារ",
@@ -4982,17 +4982,17 @@
     "clue": "ព័ត៌មាន",
     "clue_found": "បានរកឃើញតម្រុយ!",
     "clue_revealed": "តម្រុយនេះអាចជួយជាមួយល្បែងផ្គុំរូបមួយទៀត...",
-    "clues_collected": "តម្រុយ: {{count}}/{{total}}",
+    "clues_collected": "តម្រុយ: {count}/{total}",
     "use_clue": "ប្រើ Clue",
-    "final_door": "The Exit Door",
+    "final_door": "ទ្វារចេញ",
     "final_door_ready": "exit door គឺ ឥឡូវ unlocked!",
     "final_door_locked": "ដោះស្រាយ ច្រើនទៀត ល្បែង ទៅ unlock",
     "final_door_title": "Final បញ្ហាប្រឈម",
     "final_door_desc": "ប្រើ everything you've learned ទៅ ចម្លើយ នេះ synthesis សំណួរ.",
     "final_puzzle": "Using អ្វី you've learned, ចម្លើយ នេះ:",
     "final_answer_placeholder": "ប្រភេទ របស់អ្នក ចម្លើយ here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "ចូលទៅជិតទ្វារចេញ",
+    "unlock_door": "ដោះសោទ្វារ",
     "victory_perfect": "ល្អឥតខ្ចោះ Escape! ទេ wrong ចម្លើយ! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "ការបង្ហាញ",
@@ -5008,12 +5008,12 @@
     "left": "នៅសល់",
     "wrong_attempts": "ការព្យាយាមខុស",
     "time_penalty": "-{seconds} វិនាទី!",
-    "game_over_time": "? អស់ពេលហើយ! អ្នកអស់ពេលវេលា។",
+    "game_over_time": "⏰ អស់ពេលហើយ! អ្នកអស់ពេលវេលា។",
     "streak": "ជាប់ៗគ្នា",
     "streak_bonus": "ប្រាក់រង្វាន់ជាប់ៗគ្នា! x{multiplier}",
     "streak_lost": "បាត់បង់ការជាប់ៗគ្នា!",
     "one_minute_warning": "នៅសល់មួយនាទី!",
-    "thirty_seconds_warning": "? តែប៉ុណ្ណោះ 30 វិនាទី left!",
+    "thirty_seconds_warning": "⏰ តែប៉ុណ្ណោះ 30 វិនាទី left!",
     "timer_paused": "នាឡិកាបានផ្អាក",
     "timer_resume": "បន្ត",
     "settings_btn": "Room ការកំណត់",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "ចាប់ផ្តើម multiplayer បន្ទប់រត់គេច ជាមួយ របស់អ្នក ថ្នាក់រៀន",
     "team_mode": "Team បញ្ហាប្រឈម",
     "team_race": "Race ទៅ Escape!",
-    "team_progress": "{{team}} វឌ្ឍនភាព: {{solved}}/{{total}}",
+    "team_progress": "{team} វឌ្ឍនភាព: {solved}/{total}",
     "waiting_host": "Waiting សម្រាប់ គ្រូ ទៅ ចាប់ផ្តើម...",
-    "team_escaped": "ក្រុម {{team}} បានរត់គេចខ្លួន!",
+    "team_escaped": "ក្រុម {team} បានរត់គេចខ្លួន!",
     "all_teams_done": "ទាំងអស់ Teams Finished!",
     "your_team": "របស់អ្នក Team",
     "team_red": "ក្រុមក្រហម",
@@ -5036,7 +5036,7 @@
     "team_green": "ក្រុមបៃតង",
     "team_yellow": "ក្រុមលឿង",
     "team_all": "ទាំងអស់ សិស្ស",
-    "teams_competing": "{{count}} ក្រុម competing",
+    "teams_competing": "{count} ក្រុម competing",
     "first_escape": "ដំបូង ទៅ Escape!",
     "end_game": "End ហ្គេម",
     "end_game_confirm": "End បន្ទប់រត់គេច សម្រាប់ ទាំងអស់ សិស្ស?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume ហ្គេម",
     "game_paused_by_teacher": "ហ្គេម paused by គ្រូ",
     "celebration_title": "សូមអបអរសាទរ!",
-    "you_escaped": "របស់អ្នក ក្រុម escaped ក្នុង {{time}}!",
-    "other_team_escaped": "{{team}} បានរត់គេចខ្លួន!",
+    "you_escaped": "របស់អ្នក ក្រុម escaped ក្នុង {time}!",
+    "other_team_escaped": "{team} បានរត់គេចខ្លួន!",
     "class_escaped": "ថ្នាក់រៀន Victory!",
     "everyone_escaped": "Everyone worked together ទៅ escape!",
     "hurry_up": "Keep going! អ្នក អាច still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "ផ្ទុក រក្សាទុក",
     "loaded_saved": "Escape Room ដែលបានរក្សាទុកត្រូវបានផ្ទុក! ពិនិត្យឡើងវិញ និងចាប់ផ្តើមនៅពេលរួចរាល់។",
     "no_saved": "ទេ បានរក្សាទុក Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready ទៅ លេង!",
+    "preview_confirmed": "✅ Escape Room locked • ready ទៅ លេង!",
     "xp_earned_streak": "+{xp} XP (ប្រាក់រង្វាន់ជាប់ៗគ្នា {multiplier}x!)",
     "loaded_from_resource": "Loaded ពី ធនធាន."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "ផ្ញើទៅ Expert Workbench",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent ការងារ!",
       "partial": "ល្អ effort, keep going!",
       "incorrect": "មិនទាន់ត្រឹមត្រូវ • សាកល្បងម្តងទៀត!",
-      "error": "Could មិន evaluate • សូម សាកល្បង again.",
+      "error": "Could មិន evaluate — សូម សាកល្បង again.",
       "verdict_correct": "ត្រឹមត្រូវ!",
       "verdict_partial": "Partially ត្រឹមត្រូវ",
       "verdict_incorrect": "មិន Quite ត្រឹមត្រូវ",
@@ -7906,7 +7906,7 @@
       "meta_info": "{date} • **Final កម្រិត**: {level}",
       "log_header": "ដំណើរផ្សងព្រេង Log",
       "chapter_separator": "***",
-      "user_label": "? អ្នក",
+      "user_label": "➤ អ្នក",
       "print_button": "បោះពុម្ព សៀវភៅរឿង"
     },
     "answer_key_title": "ចម្លើយ គន្លឹះ",
@@ -8855,7 +8855,7 @@
     "simplified_def_fallback": "អ្នក អាច ចុច ណាមួយ ពាក្យ ក្នុង អត្ថបទ ទៅ មើល its និយមន័យ!",
     "simplified_cloze": "សាកល្បង 'Cloze' របៀប ទៅ តេស្ត វាក្យសព្ទ ជំនាញ.",
     "simplified_quiz": "នេះ អត្ថបទ looks ល្អ. Should we បង្កើត Exit Ticket ទៅ ពិនិត្យ understanding?",
-    "simplified_glossary": "ពាក្យដូចជា '{term1}' និង '{term2}' ប្រហែលជាត្រូវការការគាំទ្រ • វាក្យានុក្រមអាចជួយបាន!",
+    "simplified_glossary": "ពាក្យដូចជា '{term1}' និង '{term2}' ប្រហែលជាត្រូវការការគាំទ្រ — វាក្យានុក្រមអាចជួយបាន!",
     "simplified_glossary_fallback": "ពាក្យមួយចំនួនទាំងនេះពិបាក។ វាក្យានុក្រមនឹងជួយគាំទ្រអត្ថបទនេះ។",
     "simplified_outline": "រូបភាព អ្នករៀន might benefit ពី Graphic Organizer នៃ នេះ មាតិកា.",
     "glossary_bingo": "អ្នក អាច turn these ពាក្យ ចូលទៅ ពាក្យ ហ្គេម like Bingo, Memory ផ្គូផ្គង, Crosswords, ឬ ពាក្យ ស្វែងរក!",
@@ -8866,7 +8866,7 @@
     "quiz_rigor": "ចង់ធានាថាសំណួរបញ្ហានេះមានភាពម៉ឺងម៉ាត់ឬ? សូមដំណើរការ Standard Audit។",
     "adventure_sim": "ដំណើរផ្សងព្រេង allow សិស្ស ទៅ apply អ្វី ពួកគេ've learned ក្នុង safe simulation.",
     "adventure_inventory": "ពិនិត្យ 'បញ្ជី' ដើម្បីមើលថាមានធាតុអ្វីខ្លះត្រូវបានប្រមូល។",
-    "adventure_context": "ដំណើរផ្សងព្រេងរបស់អ្នកអំពី {topic} កាន់តែសម្បូរបែបជាមួយធនធានកាន់តែច្រើន • សាកល្បងបន្ថែម {suggestion}!",
+    "adventure_context": "ដំណើរផ្សងព្រេងរបស់អ្នកអំពី {topic} កាន់តែសម្បូរបែបជាមួយធនធានកាន់តែច្រើន — សាកល្បងបន្ថែម {suggestion}!",
     "adventure_context_fallback": "ធនធានដែលអ្នកបង្កើតកាន់តែច្រើន បរិបទដំណើរផ្សងព្រេងកាន់តែសម្បូរបែប។",
     "timeline_drag": "អូស និងទម្លាក់ព្រឹត្តិការណ៍ ដើម្បីរៀបលំដាប់ឡើងវិញ។",
     "timeline_visualize": "នេះជួយសិស្សមើលឃើញទំនាក់ទំនងមូលហេតុ-និង-ផល។",
@@ -8877,8 +8877,8 @@
     "parent_adventure": "សាកល្បង Adventure Mode សម្រាប់សកម្មភាពសប្បាយៗនៅថ្ងៃភ្លៀង។",
     "parent_read_along": "ប្រើ 'អានតាម' ដើម្បីអនុវត្តការអានជាមួយគ្នា។",
     "fallback_lesson_plan": "អ្នកមានធនធានល្អ។ សំយោគពួកវាទៅជាផែនការមេរៀនឬ?",
-    "fallback_brainstorm": "មានអារម្មណ៍ជាប់គាំង? សាកល្បងជជែកជាមួយខ្ញុំ និងបិទបើក Auto-Complete ដើម្បីដំណើរការ Blueprint Mode • ខ្ញុំនឹងជួយអ្នករចនាមេរៀនទាំងមូលរបស់អ្នក!",
-    "fallback_export": "អ្នក មាន {count} ធនធាន លើ {topic} • នាំចេញ them as single PDF!",
+    "fallback_brainstorm": "មានអារម្មណ៍ជាប់គាំង? សាកល្បងជជែកជាមួយខ្ញុំ និងបិទបើក Auto-Complete ដើម្បីដំណើរការ Blueprint Mode — ខ្ញុំនឹងជួយអ្នករចនាមេរៀនទាំងមូលរបស់អ្នក!",
+    "fallback_export": "អ្នក មាន {count} ធនធាន លើ {topic} — នាំចេញ them as single PDF!",
     "fallback_export_fallback": "អ្នក អាច នាំចេញ ទាំងអស់ these ធនធាន as single PDF packet.",
     "fallback_guide": "ជ្រើសរើស 'បង្ហាញខ្ញុំ' ក្នុង AI Guide ប្រសិនបើអ្នកវង្វេង!",
     "intro_greeting": "ចុច me ទៅ កែសម្រួល my សំឡេង ការកំណត់.",
@@ -9027,7 +9027,7 @@
     "text_generated": "អត្ថបទដែលបានកែសម្រួលរបស់អ្នកអំពី {topic} រួចរាល់ហើយ! សាកល្បងចុចលើពាក្យ ដើម្បីមើលនិយមន័យរបស់វា ឬស្វែងយល់ឧបករណ៍ដូចជា វាក្យានុក្រម ឬ សំណួរបញ្ហា ដើម្បីពង្រឹងការយល់ដឹង។",
     "flashcards_created": "កាតបង្ហាញត្រូវបានបង្កើត! អ្នកអាចនាំចេញពួកវាទៅ Quizlet បោះពុម្ពពួកវា ឬសាកល្បងហ្គេមចងចាំ។",
     "quiz_generated": "សំណួរបញ្ហា ready! ប្រើ Presentation របៀប សម្រាប់ ថ្នាក់រៀន, ឬ សាកល្បង Auto-Grader សម្រាប់ បើក responses.",
-    "glossary_generated": "វាក្យានុក្រមបានបញ្ចប់! សាកល្បងហ្គេមពាក្យ • Bingo, ផ្គូផ្គងចងចាំ, ល្បែងផ្គុំពាក្យ, ស្វែងរកពាក្យ, និងច្រើនទៀត!",
+    "glossary_generated": "វាក្យានុក្រមបានបញ្ចប់! សាកល្បងហ្គេមពាក្យ — Bingo, ផ្គូផ្គងចងចាំ, ល្បែងផ្គុំពាក្យ, ស្វែងរកពាក្យ, និងច្រើនទៀត!",
     "adventure_started": "ដំណើរផ្សងព្រេងរបស់អ្នកចាប់ផ្តើមហើយ! វាយសកម្មភាពរបស់អ្នកនៅខាងក្រោម ឬប្រើប៊ូតុងជម្រើស ដើម្បីសម្រេចថាតើមានអ្វីកើតឡើងបន្ទាប់។",
     "adventure_scene": "អ្វី នឹង អ្នក do? Every ជម្រើស រូបរាង របស់អ្នក រឿង!",
     "analysis_complete": "ការវិភាគបានបញ្ចប់! ខ្ញុំបានរកឃើញវាក្យសព្ទ និងគំនិតគន្លឹះមួយចំនួនដែលគួរស្វែងយល់។",
@@ -10164,7 +10164,7 @@
     "type_timeline": "កម្មវិធីបង្កើតលំដាប់",
     "type_timeline_desc": "Sequencing សកម្មភាព adapted ទៅ កម្រិតថ្នាក់",
     "full_pack": "ពេញលេញ ធនធាន Pack • ជ្រើសរើស ទាំងអស់",
-    "deselect_all": "? Deselect ទាំងអស់",
+    "deselect_all": "↩ Deselect ទាំងអស់",
     "estimate": "ប៉ាន់ប្រមាណ",
     "api_calls": "ការហៅ API",
     "start_batch": "បង្កើត",
@@ -10193,7 +10193,7 @@
     "bridge_generating": "Creating របស់អ្នក personalized កំណែ...",
     "bridge_projection": "Projection របៀប",
     "bridge_exit_projection": "ការព្យាករណ៍ចេញ",
-    "bridge_offline_info": "គ្មានវគ្គបន្តផ្ទាល់ • មើលជាមុនលើឧបករណ៍នេះតែប៉ុណ្ណោះ",
+    "bridge_offline_info": "គ្មានវគ្គបន្តផ្ទាល់ — មើលជាមុនលើឧបករណ៍នេះតែប៉ុណ្ណោះ",
     "bridge_term_saved": "រក្សាទុក \"{term}\" ទៅ វាក្យានុក្រម",
     "bridge_term_save_failed": "Failed ទៅ រក្សាទុក ពាក្យ",
     "bridge_save_term": "រក្សាទុក ទៅ វាក្យានុក្រម",
@@ -10219,7 +10219,7 @@
     "bridge_f2f_custom_lang": "Custom ភាសា...",
     "bridge_f2f_custom_placeholder": "ឧ. Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "ទាំងអស់ ពាក្យ បានរក្សាទុក ទៅ វាក្យានុក្រម!",
-    "bridge_terms_saved": "? ទាំងអស់ រក្សាទុក",
+    "bridge_terms_saved": "✅ ទាំងអស់ រក្សាទុក",
     "fullpack_group_target": "គោលដៅ ក្រុម",
     "fullpack_group_current": "បច្ចុប្បន្ន ការកំណត់",
     "fullpack_group_all": "ទាំងអស់ Groups",
@@ -12190,7 +12190,11 @@
       "trapezoid": "ចតុកោណព្នាយ",
       "simpson": "ស៊ីមសុន",
       "rectangles_n": "ចតុកោណកែង (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។",
+      "a11y_back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
+      "a11y_snapshot": "រូបភាពខណៈ",
+      "a11y_next": "បន្ទាប់"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ កម្មវិធីរុករកនេះមិនគាំទ្រសំឡេងទេ",
@@ -12314,12 +12318,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "បង្កើតការពន្យល់ AI នៅកម្រិត",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "កម្រិតអាន៖",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -13945,8 +13949,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? ត្រឹមត្រូវ! It\\",
-      "that": "? នោះ\\",
+      "correct_it": "✅ ត្រឹមត្រូវ! It\\",
+      "that": "❌ នោះ\\",
       "linear": "លីនេអ៊ែរ",
       "quadratic": "ការ៉េ",
       "cubic": "គូប",
@@ -14220,7 +14224,8 @@
       "angle_u00b0": "មុំ (°)",
       "velocity_ms": "ល្បឿន (m/s)",
       "gravity_msu00b2": "ទំនាញ (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14248,7 +14253,10 @@
       "codominant_desc": "អាល់ឡែលទាំងពីរត្រូវបានបង្ហាញពេញលេញ។ ហេតេរ៉ូស៊ីកូតបង្ហាញលក្ខណៈទាំងពីរក្នុងពេលតែមួយ។",
       "sexLinked_desc": "លក្ខណៈនេះស្ថិតលើក្រូម៉ូសូម X។ វាបង្ហាញការទទួលមរតក RECESSIVE ដែលភ្ជាប់នឹង X (ឧ. ហេម៉ូហ្វីលី និងពិការភ្នែកពណ៌ក្រហម-បៃតង)៖ បុរស (XY) ត្រូវការច្បាប់ចម្លងតែមួយ; ស្ត្រី (XX) ត្រូវការពីរ។",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "ត្រឡប់ទៅឧបករណ៍ STEM",
+      "a11y_snapshot": "រូបភាពខណៈ",
+      "a11y_close_flashcard": "បិទប័ណ្ណ"
     },
     "circuit": {
       "meter_status_ammeter_short": "ការដាក់មិនសុវត្ថិភាព៖ ផ្លូវខ្លីសៀគ្វី",
@@ -14540,8 +14548,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? ត្រឹមត្រូវ!",
-      "it": "? It\\"
+      "correct": "✅ ត្រឹមត្រូវ!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "ការដោះស្រាយដំបូង",
@@ -14657,8 +14665,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? ត្រឹមត្រូវ!",
-      "answer": "? ចម្លើយ:",
+      "correct": "✅ ត្រឹមត្រូវ!",
+      "answer": "❌ ចម្លើយ:",
       "hydrogen": "អ៊ីដ្រូសែន",
       "helium": "អេលីយ៉ូម",
       "lithium": "លីចូម",
@@ -14800,7 +14808,7 @@
       "reddish_metal_used_since_the": "Reddish metal បានប្រើ since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal នោះ prevents rust",
       "best_conductor_of_electricity_among": "ល្អបំផុត conductor នៃ electricity among ទាំងអស់ metals",
-      "dense_soft_shiny_precious_metal": "ដែកមានតម្លៃ ក្រាស់ ទន់ ភ្លឺ • មិនច្រេះ",
+      "dense_soft_shiny_precious_metal": "ដែកមានតម្លៃ ក្រាស់ ទន់ ភ្លឺ — មិនច្រេះ",
       "strong_as_steel_but_45": "Strong as steel ប៉ុន្តែ 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal នោះ gives rubies របស់ពួកគេ red ពណ៌",
       "essential_for_steel_production_and": "Essential សម្រាប់ steel production និង bone health",
@@ -15906,7 +15914,9 @@
       "our_sun_is_born": "Our Sun គឺ Born",
       "present_day": "សម័យបច្ចុប្បន្ន",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
+      "a11y_simulation_speed": "ល្បឿននៃការត្រាប់តាម"
     },
     "rocks": {
       "igneous": "ភ្នំភ្លើង",
@@ -18831,7 +18841,10 @@
       "garage_desc": "ម៉ាស៊ីន ច្រេះ និងប្រតិកម្ម — សិក្ខាសាលាគីមីវិទ្យា។",
       "classroom_desc": "ថ្នាក់វិទ្យាសាស្ត្រពិតប្រាកដដែលមានប៊ីកឃឺ និងការពិសោធន៍។",
       "outdoors_desc": "ចេញទៅខាងក្រៅ — ធម្មជាតិជាមន្ទីរពិសោធន៍ធំបំផុត។",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
+      "a11y_snapshot": "រូបភាពខណៈ",
+      "a11y_next": "បន្ទាប់"
     },
     "converter": {
       "u2705_saved_to_history": "✅ បានរក្សាទុកទៅប្រវត្តិ!",
@@ -19618,7 +19631,40 @@
       "read_what_special_education_law_actually": "អានអ្វីដែលច្បាប់អប់រំពិសេសនិយាយពិតប្រាកដ ដោយពាក្យរបស់វាផ្ទាល់។ អត្ថបទពិតនៃផ្នែក B នៃ IDEA និងមាត្រា 504 ដកយកពី eCFR និងមានកាលបរិច្ឆេទ អាចស្វែងរកបាន ជាមួយវិធានសហព័ន្ធ និងរដ្ឋក្បែរគ្នា។ គ្មានអ្វីត្រូវបានសរសេរឡើងវិញ ឬបង្កើតទេ៖ បើអត្ថបទផ្លូវការមិនបានផ្ទុក ឧបករណ៍និយាយដូច្នេះជំនួសឲ្យការទាយ។",
       "applied_k_12_behavior_practice_what": "ការអនុវត្តឥរិយាបថអនុវត្តពីមត្តេយ្យដល់វិទ្យាល័យ — អ្វីដែលចិត្តវិទូសាលា និងគ្រូធ្វើពិតប្រាកដជាមួយវិទ្យាសាស្ត្រនេះ។ ក្របខ័ណ្ឌបីកម្រិត PBIS ឥរិយាបថជំនួសដែលភ្ជាប់នឹងមុខងារ FBA ព្រឹត្តិការណ៍បរិបទ (កត្តាជំរុញយឺតដែល BIP ភាគច្រើនខកខាន) វដ្តប្រតិកម្មប្រាំពីរដំណាក់កាលរបស់ Geoff Colvin និងក្រមសីលធម៌នៃការទប់ស្កាត់ និងការញែកដាច់ ដែលផ្អែកលើជំពូក 33 របស់ Maine។ ឧបករណ៍បងប្អូននឹង BehaviorLab។",
       "marine_biology_behavioral_science_of_octopuses": "ជីវវិទ្យាសមុទ្រ និងវិទ្យាសាស្ត្រឥរិយាបថនៃមឹកយក្ស មឹក មឹកឆ្អឹង និងណូទីលុស។ ចំណុចសំខាន់៖ Hunter Sim — ជ្រើសប្រភេទ ជម្រក សត្វរំពា និងកលល្បិច លេងល្បែងតូចក្លែងខ្លួន និងកំណត់ពេលវាយប្រហារ។ បើកចំណេះជីវវិទ្យាបែបសៀវភៅវាល (យន្តការក្រូម៉ាតូហ្វ័រ ខួរក្បាល ៩ ឈាមខៀវ ការរុញច្រានដោយចរន្ត)។ សៀវភៅណែនាំវាល ១០ ប្រភេទ ជាមួយតួលេខភាពឆ្លាត ការក្លែងខ្លួន និងល្បឿនចរន្ត។",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 និង HS-PS2។ ម៉ាស៊ីនត្រាប់តាមភាពតានតឹងរបស់រចនាសម្ព័ន្ធត្រីកោណ ដែលអាចកែរយៈ កម្ពស់ បន្ទុក និងសម្ភារៈ ការប្រៀបធៀបប្រភេទស្ពាន (ធ្នឹម ត្រីកោណ ធ្នូ ព្យួរ ខ្សែទាញ) មូលដ្ឋានទិន្នន័យសម្ភារៈ ប្រភេទកម្លាំង ករណីសិក្សាពិត (Tacoma Narrows, Hyatt Regency, Tay, Silver ព្រមទាំង Brooklyn, Golden Gate, Akashi និង Millau) វដ្តរចនាវិស្វកម្ម តេស្តបែប AP និងលក្ខណៈបច្ចេកទេសរចនាដែលអាចបោះពុម្ព។"
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 និង HS-PS2។ ម៉ាស៊ីនត្រាប់តាមភាពតានតឹងរបស់រចនាសម្ព័ន្ធត្រីកោណ ដែលអាចកែរយៈ កម្ពស់ បន្ទុក និងសម្ភារៈ ការប្រៀបធៀបប្រភេទស្ពាន (ធ្នឹម ត្រីកោណ ធ្នូ ព្យួរ ខ្សែទាញ) មូលដ្ឋានទិន្នន័យសម្ភារៈ ប្រភេទកម្លាំង ករណីសិក្សាពិត (Tacoma Narrows, Hyatt Regency, Tay, Silver ព្រមទាំង Brooklyn, Golden Gate, Akashi និង Millau) វដ្តរចនាវិស្វកម្ម តេស្តបែប AP និងលក្ខណៈបច្ចេកទេសរចនាដែលអាចបោះពុម្ព។",
+      "the_gutenberg_style_screw_press_as": "ម៉ាស៊ីនបោះពុម្ពខ្នាតវីសបែប Gutenberg ជាការត្រាប់តាមដែលដំណើរការពិត។ ទាញដងគាន ចាត់តួអក្សរផ្ទាល់ខ្លួន និងមើលស្នាមបោះពុម្ព។ បន្ថែមទាំងវិទ្យាសាស្ត្រសម្ភារៈ (លោហៈផ្សំសំណ-សំណប៉ាហាំង-អង់ទីម៉ូន) សេដ្ឋកិច្ច (ការធ្លាក់ចុះនៃថ្លៃដើមក្នុងមួយសៀវភៅ) ប្រវត្តិសាស្ត្រ (កំណែទម្រង់សាសនា បដិវត្តវិទ្យាសាស្ត្រ) សិល្បៈអក្សរ និងមនុស្សនៅពីក្រោយម៉ាស៊ីនបោះពុម្ព (រួមទាំងស្ត្រីអ្នកបោះពុម្ពដែលប្រវត្តិសាស្ត្របានភ្លេច)។ សាងសង់សម្រាប់ការងារឆ្លងមុខវិជ្ជានៅមធ្យមសិក្សាបឋមភូមិ។",
+      "three_js_stoop_simulator_deep_science": "ម៉ាស៊ីនត្រាប់តាមការចោលចុះក្នុង Three.js និងវិទ្យាសាស្ត្រជ្រៅនៃយន្តការបរបាញ់របស់បក្សីមំសាសី។ ហោះជាខ្លែងប៉េរេគ្រីនក្នុងល្បឿន 240 mph ជាឥន្ទ្រីហាពីដែលមានក្រញាំ 530 psi ឬជាទីទុយស្នែងធំដែលស្ងាត់។ ៨ ប្រភេទ និង ១២ ផ្នែក៖ កម្លាំងក្រញាំ ការមើលឃើញ (មុតជាងមនុស្ស ៤-៨ ដង អ៊ុលត្រាវីយូឡេនៅក្នុងខ្លែងតូច) រូបវិទ្យានៃការហោះ ការហោះស្ងាត់របស់ទីទុយ ម៉ាស៊ីនគិតល្បឿនចុងក្រោយ ការងើបឡើងវិញក្រោយ DDT និងវិបត្តិអភិរក្សដែលកំពុងបន្ត និងការសម្គាល់ក្នុងវាលតាមស្រមោល និងទឹកមុខទូទៅ។",
+      "practice_reading_and_completing_the_documents": "អនុវត្តអានឯកសារ និងបំពេញឯកសារដែលជីវិតមនុស្សពេញវ័យដំណើរការលើ៖ ពាក្យសុំការងារ ទម្រង់ W-4 កិច្ចសន្យាជួល ទម្រង់ចូលព្យាបាល អាជ្ញាបណ្ណបើកបរ និងលិខិតអញ្ជើញកិច្ចប្រជុំ IEP ផ្ទាល់ខ្លួនរបស់អ្នក។ រាល់ប្រអប់ត្រូវបានពន្យល់ជាភាសាធម្មតា ប្រអប់ដែលអាចធ្វើឲ្យអ្នកខាតត្រូវបានសម្គាល់ មានឈុតសម្ពាធសម្រាប់ពេលដែលនរណាម្នាក់ចង់ឲ្យអ្នកចុះហត្ថលេខាភ្លាម និងឃ្លារួចរាល់សម្រាប់សុំពេលវេលា។ ការអនុវត្តទាំងអស់ប្រើមនុស្សប្រឌិត មិនប្រើព័ត៌មានពិតរបស់អ្នកឡើយ។",
+      "how_swimming_works_stroke_physics_survival": "ការហែលទឹកដំណើរការយ៉ាងណា (រូបវិទ្យានៃចលនា និងជំនាញរស់រាន) និងអ្វីដែលអ្នកហែលទឹកគ្រប់រូបគួរដឹងអំពីទឹកត្រជាក់ ចរន្តត្រឡប់ ទឹកកក អាវសង្គ្រោះ និងការសង្គ្រោះ។ ការបំបែកចលនាដោយរូបភាព វិទ្យាសាស្ត្រនៃការអណ្តែត និងការរុញ និងជំនាញរស់រាន (អណ្តែតផ្ងារ ការធាក់បែបវាយពងមាន់ ឥរិយាបថ HELP ការប្រមូលផ្តុំគ្នា) ដែលពិតជាជួយសង្គ្រោះជីវិត។ ប្រភព៖ CDC, USCG, AAP, NAA, NOAA, USA Swimming។ សម្រាប់ការអប់រំតែប៉ុណ្ណោះ៖ ដើម្បីរៀនហែលទឹកពិតប្រាកដ សូមរកគ្រូបង្វឹកហែលទឹក។",
+      "tax_paycheck_calculator_data_literacy_decision": "ម៉ាស៊ីនគិតពន្ធ និងបញ្ជីប្រាក់ខែ អក្ខរកម្មទិន្នន័យ ម៉ាទ្រីសសម្រេចចិត្ត អ្នកអានកិច្ចសន្យា កំណត់ត្រា និងឯកសារ ការរៀបចំដំណើរ ការត្រៀមធ្វើការ ការសរសេរប្រវត្តិរូប ការរៀបចំភស្តុតាងឯកសារស្នាដៃ ការហាត់សម្ភាសន៍ ជំនាញទំនាក់ទំនង ការគ្រប់គ្រងពេលវេលា ធានារ៉ាប់រងសុខភាព ការថែទាំធ្មេញ ergonomics នៃការថែទាំរាងកាយ ទម្លាប់គេង ស្លាកឱសថ ការត្រៀមណាត់ជួប សុវត្ថិភាពក្នុងផ្ទះ សុវត្ថិភាពឌីជីថល ភាពស្រួលជាមួយអាហារ និងវិទ្យាសាស្ត្រអនុវត្តសម្រាប់ជីវិតប្រចាំថ្ងៃ។",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 និង HS-LS4។ ពិភពមីក្រូសរីរាង្គ៖ បាក់តេរី (មានប្រយោជន៍ និងបង្កជំងឺ) វីរុស (COVID, ផ្តាសាយ, HIV, ហ្វាហ្ស, កញ្ជ្រិល) មីក្រូទស្សន៍ (ពន្លឺ កុងត្រាស្តហ្វាស ហ្វ្លុយអូរេស អេឡិចត្រុង AFM) ការវិវត្តនៃភាពស៊ាំនឹងអង់ទីប៊ីយ៉ូទិក មីក្រូបៀមរបស់មនុស្ស ដី និងមហាសមុទ្រ វ៉ាក់សាំង និងប្រព័ន្ធភាពស៊ាំ ការបំប្លែង (ម្សៅជូរ ទឹកដោះគោជូរ គីមឈី ស្ពៃជូរ កុំប៊ូឆា ឈីស) ការសិក្សាករណី (Snow, Fleming, MRSA, COVID និង mRNA, FMT) សំណួរ និងឯកសារយោងអាចបោះពុម្ពអំពីសុវត្ថិភាពមន្ទីរពិសោធន៍ និងមីក្រូសរីរាង្គ។",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "យុទ្ធនាការថែរក្សាបរិស្ថានដប់ប្រាំនៅតំបន់ដប់មួយ។ យុទ្ធនាការវែងច្រើនដំណាក់កាលរបស់ Maine ចំនួនប្រាំ បូកនឹងឈុតឆ្លងតំបន់ដប់ដែលគ្របដណ្តប់គ្រប់គ្រួសារយន្តការទាំងប្រាំ៖ ភ្លើង (Yarralin នៅអូស្ត្រាលី, Karuk នៅកាលីហ្វ័រញ៉ាខាងជើង) អភិរក្ស (Yellowstone, Akagera នៅរវ៉ាន់ដា) សុខភាពសាធារណៈ (គ្រុនឈាមនៅមុំបៃ, អេបូឡាឆ្នាំ ២០១៤ នៅលីបេរីយ៉ា) អាងទឹក (ទន្លេ Klamath, អាង Murray-Darling) និងអាកាសធាតុ (កោះម៉ាស្យល់, ដីសណ្តបង់ក្លាដែស)។ ការយល់ដឹងពីការផ្គូផ្គងតាមគ្រួសារបើកនៅពេលអ្នកបញ្ចប់យុទ្ធនាការ Maine និងឈុតឆ្លងតំបន់ក្នុងគ្រួសារយន្តការតែមួយ។",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 និង MS-ESS3-3។ រចនាទីក្រុងតូចមួយលើក្រឡាចត្រង្គ ១៤៤ ដីឡូត៍ ប្រឆាំងនឹងតម្រូវការដែលពិតជាផ្ទុយគ្នា។ ទីក្រុងតូចបី នីមួយៗមានឧបសគ្គកំណត់ខុសគ្នា៖ Riverbend ដែលទឹកភ្លៀង និងបំណុលច្របាច់; Mesa Hollow ដែលស្រទាប់ទឹកក្រោមដីថេរ ហើយកសិដ្ឋានកំពុងផឹកវា; និង Harborlight ដែលផែនការត្រូវនៅតែដំណើរការនៅឆ្នាំ ២០៥០។ លំហូរតាមវិធីសមហេតុផល តុល្យភាពទឹក រង្វើលការឡើងកម្ពស់ទឹកសមុទ្រ ចម្ងាយដើរលើបណ្តាញ និងបណ្តាញផ្លូវដែលបានគិតថ្លៃ នីមួយៗអាចបើកបង្ហាញរូបមន្តរបស់វា។ Assumption Lab ដំណើរការផែនការតែមួយឡើងវិញជាមួយឈុតប៉ារ៉ាម៉ែត្រដែលបានបោះពុម្ពពីរ ដើម្បីឲ្យសិស្សឃើញថាការសន្និដ្ឋានណាខ្លះរស់រានពីទាំងពីរ។ ផែនទី តារាងដីឡូត៍អាចកែបាន និងគំរូបីវិមាត្រនៃផែនការតែមួយ។ សំណួរពិភាក្សា និងប្រវត្តិសាស្ត្រដែលមានឯកសារ ផ្ទុកសំណួរដែលឧបករណ៍បដិសេធមិនធ្វើគំរូ។ គ្មានពិន្ទុ និងគ្មានសោចម្លើយ។",
+      "codap_data_science": "CODAP: វិទ្យាសាស្ត្រទិន្នន័យ",
+      "lumen_research_canvas": "Lumen: ផ្ទាំងស្រាវជ្រាវ",
+      "evolab_evolution": "EvoLab: វិវត្តន៍",
+      "dino_lab": "មន្ទីរពិសោធន៍ដាយណូស័រ",
+      "nutritionlab_nutrition_science": "NutritionLab: វិទ្យាសាស្ត្រអាហារូបត្ថម្ភ",
+      "birdlab_i_spy_ornithology": "BirdLab: បក្សីវិទ្យាបែបស្វែងរក",
+      "openbim_companion": "OpenBIM: មគ្គុទ្ទេសក៍រួមដំណើរ",
+      "applab_ai_app_generator": "AppLab: កម្មវិធីបង្កើតកម្មវិធីដោយ AI",
+      "access_lens": "កែវពង្រីកភាពងាយស្រួល",
+      "sim_shelf": "ធ្នើរការត្រាប់តាម",
+      "zoom_gallery": "វិចិត្រសាលពង្រីក",
+      "sourcebook": "សៀវភៅប្រភព",
+      "wheel_fire_pottery_lab": "កង់និងភ្លើង៖ មន្ទីរពិសោធន៍ក្រឡាចម្អិន",
+      "echo_navigator": "អ្នកនាំផ្លូវដោយសំឡេងបន្លឺ",
+      "learning_lab_how_learning_works": "Learning Lab: ការរៀនដំណើរការយ៉ាងណា",
+      "weldlab_welding_metal_joining": "WeldLab: ការផ្សារ និងការតភ្ជាប់លោហៈ",
+      "bikelab_physics_repair": "BikeLab: រូបវិទ្យា និងការជួសជុល",
+      "fisherlab_boating_fishing_sim": "FisherLab: ការត្រាប់តាមការធ្វើនាវា និងនេសាទ",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: ការត្រាប់តាមកសិដ្ឋានងាវ",
+      "throwlab_sports_physics": "ThrowLab: រូបវិទ្យាកីឡា",
+      "skatelab_skate_bmx_physics": "SkateLab: រូបវិទ្យាស្គីនិង BMX",
+      "playlab_strategy_on_the_field": "PlayLab: យុទ្ធសាស្ត្រក្នុងទីលាន",
+      "kepler_colony": "អាណានិគមខេប្លឺរ",
+      "birdlab_life_list": "BirdLab: បញ្ជីពេញមួយជីវិត",
+      "petslab_decoder": "PetsLab: ឧបករណ៍ឌិកូដ"
     },
     "area": {
       "volume": "មាឌ..."
@@ -19658,7 +19704,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
+      "a11y_snapshot": "រូបភាពខណៈ",
+      "a11y_next": "បន្ទាប់",
+      "a11y_simulation_speed": "ល្បឿននៃការត្រាប់តាម",
+      "a11y_close_flashcard": "បិទប័ណ្ណ"
     },
     "solar_sys": {
       "venus": "ភពសុក្រ",
@@ -20480,7 +20531,8 @@
       "scaled_volume_changed": "🔵 ធ្វើមាត្រដ្ឋាន (មាឌផ្លាស់ប្តូរ)",
       "skewed_shape_deformed": "🟠 ឆ្អៀង (រូបរាងខូចទ្រង់ទ្រាយ)",
       "degenerate_volume_0": "💀 រិចរិល (មាឌ → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "វឌ្ឍនភាពនៃការណែនាំ"
     },
     "numberline": {
       "first_mark": "សញ្ញាសម្គាល់ដំបូង",
@@ -22623,7 +22675,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "ឆ្នាំ {value1} ចាប់ផ្តើម។"
     },
     "optics": {
       "optics_lab": "មន្ទីរពិសោធន៍អុបទិក",
@@ -22969,7 +23022,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "សំណួរ SQL វិភាគក្នុងតំបន់"
     },
     "geosandbox": {
       "loading_3d_engine": "កំពុងផ្ទុកម៉ាស៊ីន 3D...",
@@ -23319,7 +23373,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "បានលុបចម្លាក់"
     },
     "algebraCAS": {
       "solve": "🔍 ដោះស្រាយ",
@@ -25915,7 +25970,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។"
     },
     "economicslab": {
       "six_figures": "ចំណូលប្រាំមួយខ្ទង់",
@@ -27895,7 +27951,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "បានរក្សាទុកការត្រិះរិះ។"
     },
     "anatomy": {
       "system_explorer": "អ្នករុករកប្រព័ន្ធ",
@@ -28477,7 +28534,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "កំណត់កាមេរ៉ា 3D ឡើងវិញ"
     },
     "dna": {
       "back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
@@ -29854,7 +29912,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "បានរក្សាទុកការត្រិះរិះ។"
     },
     "angles": {
       "back_to_tools": "ត្រឡប់ទៅឧបករណ៍",
@@ -30668,7 +30727,8 @@
       "explain_how_each_parameter_shapes_a_si": "ពន្យល់ថាតើប៉ារ៉ាម៉ែត្រនីមួយៗបង្កើតរូបរាងរលកស៊ីនុសយ៉ាងណា។",
       "design_note_discrete_5_state_marker_no": "កំណត់សម្គាល់ការរចនា៖ សញ្ញាដាច់ដោយឡែក ៥ ស្ថានភាព; គ្មានពិន្ទុរលក; គ្មានការបង្ហាញ — តាមការរចនា។",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។"
     },
     "typingpractice": {
       "typing_practice_menu": "ម៉ឺនុយ លំហាត់វាយអក្សរ",
@@ -31022,7 +31082,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ"
     },
     "music": {
       "edm_lead": "EDM Lead",
@@ -32293,7 +32354,7 @@
       "sculpt_engine_failed": "មិនអាចផ្ទុកម៉ាស៊ីនចម្លាក់បានទេ។",
       "sculpt_failed": "ការចម្លាក់បរាជ័យ — សាកល្បងការពិពណ៌នាសាមញ្ញជាង។",
       "sr_sculpted": "បានដាក់រូបចម្លាក់",
-      "sr_art_cleared": "បានលុបរូបចម្លាក់",
+      "sr_art_cleared": "បានលុបចម្លាក់",
       "assess_failed": "គ្រូបង្វឹកមិនអាចឆ្លើយតបបានទេ — សាកល្បងម្ដងទៀត។",
       "sr_assessed": "មតិយោបល់របស់គ្រូបង្វឹករួចរាល់ខាងក្រោមផ្ទាំងសាងសង់",
       "recall_needs_more": "សូមបន្ថែមគំនិតយ៉ាងតិច ៤ ក្នុង ២ ក្រុមជាមុនសិន",
@@ -33152,7 +33213,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "បិទ",
+      "sr_nothing_to_redo": "គ្មានអ្វីត្រូវធ្វើឡើងវិញទេ។",
+      "sr_nothing_to_undo": "គ្មានអ្វីត្រូវត្រឡប់ក្រោយទេ។",
+      "sr_dir_left": "ឆ្វេង",
+      "sr_dir_right": "ស្តាំ"
     },
     "arithmetic": {
       "selected": " ត្រូវបានជ្រើសរើស។",
@@ -37198,7 +37264,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ត្រូវបានធ្វើឱ្យស្តង់ដារតាមចំណុចរះនៅកំពូលមេឃ និងខ្នាតពន្លឺកំណត់ 6.5។ ការប៉ាន់ស្មាននេះសន្មតថាមេឃស្រឡះ គ្មានព្រះច័ន្ទ និងសន្ទស្សន៍ចំនួន 2.2។ ថ្នាក់ Bortle បង្ហាញខ្នាតពន្លឺកំណត់តែប្រហែលប៉ុណ្ណោះ។ មេឃងងឹតជាងស្តង់ដារអាចលើសពី ZHR។ កម្ពស់ចំណុចរះទាប និងមេឃភ្លឺជាងធ្វើឱ្យការប៉ាន់ស្មានថយចុះ។",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "ត្រឡប់ទៅឧបករណ៍ STEM"
     },
     "autorepair": {
       "back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
@@ -37939,7 +38006,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ពិន្ទុ៖ {value1} ក្នុងចំណោម {value2}",
+      "a11y_open_2": "បើក {value1}",
+      "a11y_option": "ជម្រើស {value1}៖ {value2}{value3}"
     },
     "bakingscience": {
       "maillard": "ម៉ៃយ៉ារ",
@@ -38042,7 +38112,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។"
     },
     "beehive": {
       "5": "⏭ +5",
@@ -38788,7 +38859,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។",
+      "a11y_investigation_progress": "វឌ្ឍនភាពនៃការស៊ើបអង្កេត",
+      "a11y_flight_debrief": "ការពិនិត្យឡើងវិញនៃការហោះ",
+      "a11y_tutorial_progress": "វឌ្ឍនភាពនៃការណែនាំ"
     },
     "behaviorlab": {
       "chain_reaction": "ប្រតិកម្មខ្សែសង្វាក់",
@@ -38965,7 +39040,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -41472,7 +41547,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "ម៉ូឌុលដែលបានស្វែងយល់៖ {value1}",
+      "a11y_score_out_of": "ពិន្ទុ៖ {value1} ក្នុងចំណោម {value2}",
+      "sr_selected": "បានជ្រើស៖ {value1}",
+      "sr_quiz_reset": "បានកំណត់សំណួរឡើងវិញ"
     },
     "brainatlas": {
       "group_systems": "ប្រព័ន្ធ",
@@ -46628,7 +46707,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "ជ្រើសចម្លើយ៖ {value1}"
     },
     "cyberdefense": {
       "custom_scenario": "សេណារីយ៉ូផ្ទាល់ខ្លួន",
@@ -47772,7 +47852,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "បានជ្រើស៖ {value1}"
     },
     "echotrainer": {
       "wall": "ជញ្ជាំង",
@@ -49231,7 +49312,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "ម៉ូឌុលដែលបានស្វែងយល់៖ {value1}"
     },
     "fireecology": {
       "carbon_calculator": "ម៉ាស៊ីនគណនាកាបូន",
@@ -50311,7 +50393,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
+      "sr_getting_critique": "កំពុងទាញយកការវាយតម្លៃ...",
+      "sr_critique_ready": "ការវាយតម្លៃរួចរាល់ហើយ។"
     },
     "flightsim": {
       "game_controls": "🎮 ការគ្រប់គ្រងហ្គេម",
@@ -50518,7 +50603,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "ទិដ្ឋភាពបន្ទប់អ្នកបើកយន្តហោះក្នុងកម្មវិធីត្រាប់តាមការហោះហើរ។ W/S លើកច្រមុះឡើងចុះ, A/D ផ្អៀងចំហៀង, Shift/Ctrl ដងកម្លាំង, វង់ក្រចកបញ្ជាស្លាបតូច, X ហ្វ្រាំងកង់, Q សំណួរ, F កម្លាំង, Space ផ្អាក, I ព័ត៌មាន។",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -50530,7 +50615,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "ការហោះហើរសេរីពី Portland, ME",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -50577,7 +50662,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "ប៉មសៀងហៃ",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -56401,7 +56486,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "ម៉ូឌុលដែលបានស្វែងយល់៖ {value1}",
+      "sr_loaded": "បានផ្ទុក {value1}",
+      "sr_showing": "កំពុងបង្ហាញ {value1}",
+      "sr_opening": "កំពុងបើក {value1}"
     },
     "platetectonics": {
       "pacific": "ប៉ាស៊ីហ្វិក",
@@ -56661,7 +56750,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -61223,7 +61312,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "ការពន្យល់រួចរាល់ហើយ។",
+      "sr_off": "បិទ",
+      "sr_edge_left": "ឆ្វេង",
+      "sr_edge_right": "ស្តាំ",
+      "sr_correct": "ត្រឹមត្រូវ។",
+      "sr_not_quite": "មិនទាន់ត្រូវទេ។"
     },
     "playlab": {
       "save": "រក្សាទុក",
@@ -61291,7 +61386,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "គ្រូបង្វឹកមិននៅលើបណ្តាញទេ។",
+      "sr_drill_stopped": "បានឈប់លំហាត់។"
     },
     "printingpress": {
       "menu": "← ម៉ឺនុយ",
@@ -63430,7 +63527,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
+      "a11y_open": "បើក {value1}",
+      "sr_selected": "បានជ្រើស៖ {value1}",
+      "sr_loaded": "បានផ្ទុក {value1}",
+      "sr_opening": "កំពុងបើក {value1}",
+      "sr_correct": "ត្រឹមត្រូវ។",
+      "sr_not_quite": "មិនទាន់ត្រូវទេ។",
+      "sr_year_begins": "ឆ្នាំ {value1} ចាប់ផ្តើម។",
+      "sr_question_reset_try_again": "បានកំណត់សំណួរឡើងវិញ។ សាកល្បងម្តងទៀត។",
+      "sr_not_quite_see_the_explanation": "មិនទាន់ត្រូវទេ៖ មើលការពន្យល់។"
     },
     "raptorhunt": {
       "anatomy": "កាយវិភាគ",
@@ -65079,7 +65186,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "បើក {value1}",
+      "a11y_flight_debrief": "ការពិនិត្យឡើងវិញនៃការហោះ"
     },
     "renewables": {
       "menu": "← ម៉ឺនុយ",
@@ -65779,7 +65888,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
+      "sr_getting_critique": "កំពុងទាញយកការវាយតម្លៃ...",
+      "sr_critique_ready": "ការវាយតម្លៃរួចរាល់ហើយ។",
+      "sr_quiz_reset": "បានកំណត់សំណួរឡើងវិញ"
     },
     "roadready": {
       "let_s_start": "តោះចាប់ផ្តើម →",
@@ -70141,7 +70254,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "ជ្រើសចម្លើយ៖ {value1}"
     },
     "spacecolony": {
       "4": "⛽ +4",
@@ -70690,7 +70804,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "ត្រឡប់ទៅឧបករណ៍ STEM",
+      "a11y_local_analytical_sql_query": "សំណួរ SQL វិភាគក្នុងតំបន់"
     },
     "stewardship": {
       "sector": "វិស័យ",
@@ -71267,7 +71383,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
+      "sr_question_reset_try_again": "បានកំណត់សំណួរឡើងវិញ។ សាកល្បងម្តងទៀត។"
     },
     "throwlab": {
       "scenarios": "សេណារីយ៉ូ",
@@ -71492,7 +71610,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "កំណត់កាមេរ៉ា 3D ឡើងវិញ",
+      "sr_coach_is_offline": "គ្រូបង្វឹកមិននៅលើបណ្តាញទេ។",
+      "sr_drill_stopped": "បានឈប់លំហាត់។"
     },
     "weldlab": {
       "menu": "← ម៉ឺនុយ",
@@ -73054,7 +73175,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "ម៉ូឌុលដែលបានស្វែងយល់៖ {value1}",
+      "a11y_score_out_of": "ពិន្ទុ៖ {value1} ក្នុងចំណោម {value2}",
+      "sr_quiz_reset": "បានកំណត់សំណួរឡើងវិញ",
+      "sr_loaded": "បានផ្ទុក {value1}",
+      "sr_showing": "កំពុងបង្ហាញ {value1}",
+      "sr_not_quite_see_the_explanation": "មិនទាន់ត្រូវទេ៖ មើលការពន្យល់។"
     },
     "worldbuilder": {
       "grade_level": "កម្រិតថ្នាក់",
@@ -74647,7 +74774,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "ដើមឈើនៃជីវិត",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76502,7 +76629,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "ជម្រើស {value1}៖ {value2}{value3}",
+      "a11y_3d_camera_views": "ទិដ្ឋភាពកាមេរ៉ា 3D"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76514,6 +76643,22 @@
       "finish": "យល់ហើយ!",
       "replay": "គន្លឹះ",
       "replay_aria": "បង្ហាញមេរៀន"
+    },
+    "pets": {
+      "sr_back_to_menu": "ត្រឡប់ទៅម៉ឺនុយ",
+      "sr_getting_critique": "កំពុងទាញយកការវាយតម្លៃ...",
+      "sr_critique_ready": "ការវាយតម្លៃរួចរាល់ហើយ។"
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "ត្រឡប់ទៅឧបករណ៍ STEM",
+      "a11y_3d_camera_views": "ទិដ្ឋភាពកាមេរ៉ា 3D"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "វឌ្ឍនភាពនៃការស៊ើបអង្កេត"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "គ្មានអ្វីត្រូវធ្វើឡើងវិញទេ។",
+      "sr_nothing_to_undo": "គ្មានអ្វីត្រូវត្រឡប់ក្រោយទេ។"
     }
   },
   "glossary_health": {
@@ -77116,7 +77261,7 @@
       "person": "បុគ្គល\\",
       "phase_label": "ឈ្មោះដំណាក់កាល",
       "rationale_which_antecedent_does_this_address": "ហេតុផល (តើនេះដោះស្រាយកត្តាមុនមួយណា?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "ឆ្លុះបញ្ចាំងលើវិធីសាស្ត្ររបស់អ្នក...\\n• អ្វីដែលដំណើរការល្អ?\\n• តើអ្នកនឹងធ្វើខុសគ្នាយ៉ាងណា?\\n• តើយុទ្ធសាស្ត្រអ្វីដែលអ្នកចង់អនុវត្តបន្ទាប់?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "ឆ្លុះបញ្ចាំងលើវិធីសាស្ត្ររបស់អ្នក...\n• អ្វីដែលដំណើរការល្អ?\n• តើអ្នកនឹងធ្វើខុសគ្នាយ៉ាងណា?\n• តើយុទ្ធសាស្ត្រអ្វីដែលអ្នកចង់អនុវត្តបន្ទាប់?",
       "reinforcement_how_you": "⭐ Reinforcement (ដូចម្តេច អ្នក\\",
       "replacement_behavior_functionally_equivalent": "✅ អាកប្បកិរិយាជំនួស (មុខងារស្មើគ្នា)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77124,7 +77269,7 @@
       "search_81_tools": "🔍 ស្វែងរក 80+ ឧបករណ៍…",
       "search_aba_terms": "🔍 ស្វែងរក ABA ពាក្យ...",
       "search_terms_eg_reinforcement_fba_data": "🔍 ស្វែងរក ពាក្យ... (e.g. \"reinforcement\", \"FBA\", \"ទិន្នន័យ\")",
-      "session_1_3nsession_2_7nsession_3_5n": "វគ្គទី ១: ៣\\nវគ្គទី ២: ៧\\nវគ្គទី ៣: ៥\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "វគ្គទី ១: ៣\nវគ្គទី ២: ៧\nវគ្គទី ៣: ៥\n...",
       "setting_eg_math_class_cafeteria": "ការកំណត់ (e.g., គណិត ថ្នាក់រៀន, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "ចែករំលែកនូវអ្វីដែលអ្នកសង្កេតឃើញនៅផ្ទះ — ភាពខ្លាំង កង្វល់ បរិបទវប្បធម៌ ឬសំណើសម្រាប់ក្រុមការងារសាលា...",
       "step_description": "ជំហាន description...",
@@ -78595,7 +78740,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "កម្ពស់ស្នាម",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80787,7 +80932,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "រូបភាពនៃគំនិត",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80823,10 +80968,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "តុបតែងគំនិតនីមួយៗ",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "វឌ្ឍនភាពនៃការតុបតែង",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80840,7 +80985,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "ឈ្មោះដែលអាចមាន",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80851,7 +80996,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "ការនឹកឃើញគំនិត",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82408,7 +82553,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "បិទ Share & Collect",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82417,7 +82562,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "ត្រងកិច្ចការ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82455,15 +82600,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "សំណួរ {n}",
+    "q_choices_aria": "ជម្រើសសម្រាប់សំណួរ {n} មួយក្នុងមួយបន្ទាត់",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "លុបសំណួរ {n}",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "កម្រិតមាត្រដ្ឋានសម្រាប់សំណួរ {n}",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "ប្រភេទចម្លើយសម្រាប់សំណួរ {n}",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82473,10 +82618,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "តំណដែលអាចជ្រើសបានសម្រាប់ {title}",
+    "scale_high_aria": "ស្លាកសម្រាប់ចុងខាងលើ",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "ស្លាកសម្រាប់ចុងខាងក្រោម",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82496,7 +82641,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "សេចក្តីសង្ខេបស្ថានភាពកិច្ចការ",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82512,9 +82657,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "ធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "តំណកិច្ចការផ្ទះដែលអាចជ្រើសបាន",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82523,7 +82668,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "លេខកូដ QR នៃកិច្ចការផ្ទះ",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84971,7 +85116,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "ជ្រើសរើសកម្រិតអភិវឌ្ឍន៍សម្រាប់សំណួរណែនាំ និងតារាងវាយតម្លៃ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84979,7 +85124,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "បើក ឬបិទទិដ្ឋភាពគ្រូបង្រៀន",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85010,17 +85155,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "ផ្អាកការថតកំណត់ចំណាំសំឡេង",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "បន្តការថតកំណត់ចំណាំសំឡេង",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "ចាប់ផ្តើមថតកំណត់ចំណាំសំឡេង",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "ឈប់ថត",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85406,22 +85551,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "មូលហេតុនៃការទទួលស្គាល់ AlloHaven",
+    "recent_deliveries_aria": "ការទទួលស្គាល់ AlloHaven ឯកជនថ្មីៗ",
+    "token_amount_aria": "បរិមាណថូខិន AlloHaven",
+    "token_cap_aria": "កម្រិតកំណត់ថូខិន AlloHaven ក្នុងមួយសិស្សក្នុងមួយវគ្គ"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "ករណីលើកលែងដែលអនុញ្ញាតខណៈពេលនៅតែសម្រេចគោលដៅ",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "សញ្ញាវឌ្ឍនភាពជាជម្រើសដែលកម្មវិធីតាមដានសម្រាប់គោលដៅនេះ",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "ក្រុមទាំងមូលជាមួយគ្នា ឬសិស្សម្នាក់ៗដោយឡែក",
+    "name_aria": "ឈ្មោះគោលដៅថ្នាក់ រក្សាទុកតែលើឧបករណ៍នេះប៉ុណ្ណោះ",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "គោលដៅនេះគ្របដណ្តប់សិស្សណាខ្លះ",
+    "template_aria": "គំរូចាប់ផ្តើមសម្រាប់គោលដៅថ្នាក់",
+    "tokens_aria": "កាក់ដែលផ្តល់ជូនសិស្សម្នាក់ៗនៅពេលសម្រេចគោលដៅនេះ"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85439,7 +85584,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "ថូខិនអ្នកគ្រប់គ្រង Class Mailbox (ជាជម្រើស)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85469,17 +85614,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "លើកដៃ",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "តំណចូលរួមប្រអប់សំបុត្រផ្ទាល់ដែលអាចជ្រើសបាន",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "វគ្គផ្សាយផ្ទាល់របស់ Class Mailbox",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85506,7 +85651,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "ការតភ្ជាប់ពេលវេលាជាក់ស្តែង",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85538,7 +85683,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "URL នៃកម្មវិធីវេប Class Mailbox",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

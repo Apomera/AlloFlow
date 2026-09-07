@@ -363,7 +363,7 @@
   function estimateMaterial(report, input) {
     input=input||{};var density=clamp(input.densityGPerCm3,.1,10,1.24),infill=clamp(input.infillPercent,0,100,20)/100,support=clamp(input.supportPercent,0,200,10)/100;
     var volume=number(report&&report.volumeMm3UpperBound);var effective=volume*(.22+.78*infill)*(1+support),grams=effective/1000*density;
-    return { estimatedGrams:round(grams,1),infillPercent:round(infill*100),supportPercent:round(support*100),densityGPerCm3:density,method:'advisory-upper-bound-v1' };
+    return { estimatedGrams:round(grams,1),infillPercent:round(infill*100),supportPercent:round(support*100),densityGPerCm3:density,method:'advisory-fixed-shell-v2',shellFractionAssumption:0.22,advisory:'Uses an assumed shell fraction, not measured walls. Actual filament use may be higher or lower; compare reviewed slicer runs.' };
   }
   function estimatePointQuote(material,input){
     input=input||{};

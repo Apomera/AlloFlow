@@ -25,11 +25,19 @@ const COPIES = [
 let anti;
 let block;
 
+function overlayBlock(source) {
+  const normalized = source.replace(/\r\n/g, "\n");
+  const start = normalized.indexOf("{colorOverlay !== 'none'");
+  const endMarker = "\n            document.body\n        )}";
+  const end = normalized.indexOf(endMarker, start);
+  expect(start, "the colour-overlay block should exist").toBeGreaterThan(-1);
+  expect(end, "the portal block should close").toBeGreaterThan(start);
+  return normalized.slice(start, end + endMarker.length);
+}
+
 beforeAll(() => {
   anti = fs.readFileSync(path.join(process.cwd(), COPIES[0]), 'utf8');
-  const start = anti.indexOf("{colorOverlay !== 'none'");
-  expect(start, 'the colour-overlay block should exist').toBeGreaterThan(-1);
-  block = anti.slice(start, start + 1800);
+  block = overlayBlock(anti);
 });
 
 describe('colour overlay', () => {
@@ -77,11 +85,13 @@ describe('colour overlay', () => {
   });
 
   it('is identical across all three checked-in copies', () => {
-    const first = fs.readFileSync(path.join(process.cwd(), COPIES[0]), 'utf8');
+    // Development builds intentionally rewrite unrelated CDN URLs. Compare
+    // the complete overlay implementation, not the entire application shell.
+    const first = overlayBlock(fs.readFileSync(path.join(process.cwd(), COPIES[0]), 'utf8'));
     for (const rel of COPIES.slice(1)) {
       const p = path.join(process.cwd(), rel);
       if (!fs.existsSync(p)) continue;
-      expect(fs.readFileSync(p, 'utf8'), rel + ' drifted from AlloFlowANTI.txt').toBe(first);
+      expect(overlayBlock(fs.readFileSync(p, 'utf8')), rel + ' overlay drifted from AlloFlowANTI.txt').toBe(first);
     }
   });
 });

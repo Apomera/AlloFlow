@@ -1,0 +1,151 @@
+{
+  "aceEmptyExecution": {
+    "status": "passed",
+    "failures": 0,
+    "reviewFindings": 0,
+    "assertions": 0,
+    "version": "1.4.6"
+  },
+  "epubcheckContradiction": {
+    "status": "passed",
+    "errors": 0,
+    "fatals": 0,
+    "warnings": 0,
+    "version": "5.3.0"
+  },
+  "sharedIncompleteAiCoverage": {
+    "verificationState": "complete",
+    "fullyVerifiedSuccess": true,
+    "coverage": {
+      "standard": "WCAG 2.2 AA",
+      "ai": "complete",
+      "axe": "complete",
+      "equalAccess": "complete",
+      "pdfUaSelfCheck": "not-run"
+    }
+  },
+  "sharedNegativeCounts": {
+    "verificationState": "complete",
+    "fullyVerifiedSuccess": true
+  },
+  "equalAccessContradictoryCounts": {
+    "status": "passed",
+    "findings": 0,
+    "reviewFindings": 0
+  },
+  "pdfCliIncompleteCountsAndFailedExit": {
+    "status": "compliant",
+    "validator": "veraPDF",
+    "validatorVersion": null,
+    "failedRules": 0,
+    "failedChecks": 0,
+    "passedRules": 0,
+    "passedChecks": 0,
+    "failedRuleSummaries": [],
+    "inputSha256": "19ef4b46782414e50d6cf6fb15140e73751ee34bc690d75b2febe7a55778c82a",
+    "inputBytes": 67377,
+    "profile": "ua1",
+    "validatedAt": "2026-09-07T03:52:32.777Z",
+    "validationDurationMs": 27
+  },
+  "finalPdfEvidenceFromMalformedCli": {
+    "standard": "PDF/UA-1 (ISO 14289-1)",
+    "profile": "ua1",
+    "scope": "machine-verifiable PDF/UA checks",
+    "status": "passed",
+    "compliant": true,
+    "validator": "veraPDF CLI",
+    "validatorVersion": null,
+    "inputSha256": "19ef4b46782414e50d6cf6fb15140e73751ee34bc690d75b2febe7a55778c82a",
+    "inputBytes": 67377,
+    "validatedAt": null,
+    "validationDurationMs": null,
+    "failedChecks": 0,
+    "failedRuleCount": 0,
+    "failedRules": []
+  },
+  "remoteNoncompliantDelivery": {
+    "summary": {
+      "beforeScore": 42,
+      "afterScore": 96,
+      "estimatedMinimumScore": 96,
+      "integrityCoverage": 100,
+      "aiVerificationIncomplete": false,
+      "autoContinueRoundsRun": 0,
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "distributionLevel": "ready",
+      "verificationState": "complete",
+      "verificationHtmlBound": true,
+      "taggedPdfDelivery": "verified",
+      "taggedPdfExportMode": "original_layout",
+      "remainingAxeViolations": 0,
+      "remainingEqualAccessFailures": 0,
+      "auditCoverage": {
+        "configuredAuditorCap": 5,
+        "requestedAuditors": 3,
+        "completedAuditors": 3,
+        "sliced": false
+      }
+    },
+    "pdfUaValidation": {
+      "status": "noncompliant",
+      "validator": "veraPDF",
+      "profile": "ua1",
+      "validatorVersion": "1.30.2",
+      "failedRules": 2,
+      "failedChecks": 3,
+      "passedRules": 104,
+      "passedChecks": 4459
+    },
+    "artifact": {
+      "kind": "tagged_pdf",
+      "contentType": "application/pdf",
+      "size": 50,
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  },
+  "remotePublicNoncompliantDelivery": {
+    "summary": {
+      "beforeScore": 42,
+      "afterScore": 96,
+      "estimatedMinimumScore": 96,
+      "integrityCoverage": 100,
+      "aiVerificationIncomplete": false,
+      "distributionLevel": "ready",
+      "activeContentScanVerified": true,
+      "activeContentDetected": false,
+      "verificationState": "complete",
+      "verificationHtmlBound": true,
+      "taggedPdfDelivery": "verified",
+      "taggedPdfExportMode": "original_layout",
+      "remainingAxeViolations": 0,
+      "remainingEqualAccessFailures": 0,
+      "auditCoverage": {
+        "configuredAuditorCap": 5,
+        "requestedAuditors": 3,
+        "completedAuditors": 3,
+        "sliced": false
+      },
+      "autoContinueRoundsRun": 0
+    },
+    "pdfUaValidation": {
+      "status": "noncompliant",
+      "validator": "veraPDF",
+      "profile": "ua1",
+      "validatorVersion": "1.30.2",
+      "failedRules": 2,
+      "failedChecks": 3,
+      "passedRules": 104,
+      "passedChecks": 4459
+    }
+  },
+  "remoteFinalizationReserve": {
+    "accepted": false,
+    "code": "remediation_report_malformed",
+    "emitted": {
+      "status": "unavailable",
+      "reason": "attempt_finalization_reserve"
+    }
+  }
+}

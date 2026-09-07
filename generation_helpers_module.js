@@ -1324,7 +1324,7 @@ const verifyGeneratedMathProblems = (problems) => {
     const traversalBudget = _createGeneratedMathTraversalBudget();
     const current = _snapshotGeneratedMathRecord(
       problem,
-      ['question', 'problem', 'prompt', 'expression', 'answer', 'correct_answer', 'taskType', 'id', 'problemId', 'steps'],
+      ['question', 'problem', 'prompt', 'expression', 'answer', 'correct_answer', 'taskType', 'id', 'problemId', 'steps', 'realWorld', 'manipulativeSupport', 'manipulativeResponse'],
       {},
       traversalBudget
     );
@@ -1332,7 +1332,8 @@ const verifyGeneratedMathProblems = (problems) => {
     const verification = { verified: false, mismatch: false, computed: null, autoCorrected: false };
     const next = { ...current };
     const computed = _evaluateGeneratedNumericExpression(current.expression);
-    const answerNumber = _parseGeneratedPlainNumber(current.answer);
+    if (next.answer == null && current.correct_answer != null) next.answer = current.correct_answer;
+    const answerNumber = _parseGeneratedPlainNumber(next.answer);
     if (computed !== null) {
       verification.computed = computed;
       if (answerNumber !== null) {
@@ -1340,10 +1341,30 @@ const verifyGeneratedMathProblems = (problems) => {
         verification.mismatch = !verification.verified;
         if (verification.mismatch) {
           next._originalAnswer = current.answer;
-          next.answer = String(computed);
-          verification.autoCorrected = true;
+          verification.reviewRequired = true;
+          verification.reason = 'answer_expression_conflict';
         }
       }
+    }
+    const questionComputed = _evaluateGeneratedNumericExpression(String(current.question || '').replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-'));
+    if (questionComputed !== null && computed !== null && Math.abs(questionComputed - computed) >= 0.01) {
+      verification.verified = false;
+      verification.mismatch = true;
+      verification.reviewRequired = true;
+      verification.reason = 'question_expression_conflict';
+      verification.questionComputed = questionComputed;
+    }
+    if (questionComputed !== null && answerNumber !== null) {
+      if (Math.abs(questionComputed - answerNumber) >= 0.01) {
+        verification.verified = false; verification.mismatch = true;
+        verification.reviewRequired = true; verification.reason = 'question_answer_conflict';
+      } else if (computed === null) { verification.verified = true; verification.computed = questionComputed; }
+    }
+    if (next.answer != null && typeof next.answer !== 'string' && typeof next.answer !== 'number') {
+      verification.reviewRequired = true; verification.reason = 'invalid_answer';
+    }
+    if (next.answer == null || typeof next.answer === 'string' && next.answer.trim() === '') {
+      verification.reviewRequired = true; verification.reason = 'missing_answer';
     }
     if (_isGeneratedMathArray(current.steps)) {
       next.steps = [];
@@ -1486,6 +1507,84 @@ const _nextMathGeneratedResourceId = history => {
   _mathGeneratedResourceCounter += 1;
   return `math-${Date.now().toString(36)}-fallback-${_mathGeneratedResourceCounter.toString(36)}`;
 };
+
+// Both Math Studio entry points prepare the same reviewable artifact.
+const resolveMathRequestedCount = (input, quantity = 5) => {
+  const matches = [...String(input || '').matchAll(/\b(\d{1,3})\s+(?:(?:mixed|math|addition|subtraction|multiplication|division|word|computation)\s+){0,3}(?:problems?|questions?|items?|exercises?)\b/gi)];
+  const explicit = matches.reduce((sum, match) => sum + Number(match[1]), 0);
+  return Math.max(1, Math.min(100, Math.floor(explicit || Number(quantity) || 5)));
+};
+const prepareGeneratedMathContent = (raw, fallback, resourceId, requestedCount) => {
+  const content = normalizeGeneratedMathContent(raw, fallback, resourceId);
+  const received = content.problems.length;
+  const requested = Math.max(1, Math.min(100, Math.floor(Number(requestedCount) || received || 1)));
+  content.problems = verifyGeneratedMathProblems(content.problems.slice(0, requested));
+  const reviewRequired = content.problems.filter(p => p._verification?.reviewRequired).length;
+  content.preparation = { version: 1, requested, received, accepted: content.problems.length,
+    ready: content.problems.length - reviewRequired, reviewRequired,
+    omitted: Math.max(0, received - requested),
+    status: content.problems.length < requested || reviewRequired ? 'partial' : 'ready' };
+  return content;
+};
+const generateMathAssessment = async (blocks, options = {}) => {
+  if (!Array.isArray(blocks) || !blocks.length || blocks.length > 200
+      || blocks.reduce((sum, block) => sum + resolveMathRequestedCount('', block.quantity), 0) > 200) {
+    throw new Error('An assessment can contain up to 200 problems. Reduce the section quantities and try again.');
+  }
+  const sections = [];
+  const language = options.language || 'English';
+  const translation = typeof options.resolveTranslationPolicy === 'function'
+    ? options.resolveTranslationPolicy(options.translationMode, language, options.uiLanguage)
+    : { enabled: language !== 'English' && options.translationMode !== 'off', target: 'English' };
+  const resourceId = options.resourceId || _nextMathGeneratedResourceId([]);
+  for (let index = 0; index < blocks.length; index++) {
+    const block = blocks[index];
+    const requested = resolveMathRequestedCount('', block.quantity);
+    const signature = JSON.stringify([block, options.grade, options.subject, language, translation]);
+    const previous = (options.previousSections || []).find(section => section.signature === signature && section.status === 'ready');
+    if (previous) { sections.push(previous); continue; }
+    const section = { id: String(block.id || 'section-' + (index + 1)), signature, requested, status: 'failed', problems: [] };
+    options.onProgress?.({ index, total: blocks.length, section });
+    let timer;
+    try {
+      const prompt = 'Create exactly ' + requested + ' ' + String(block.type || 'computation').replace(/_/g, ' ') + ' math problems.\n'
+        + 'Grade: ' + options.grade + '. Subject: ' + (options.subject || 'Math') + '.\n'
+        + 'Focus: ' + (block.directive || 'general') + '.\n'
+        + 'Write all questions and explanations in ' + language + '. '
+        + (translation.enabled ? 'Include ' + translation.target + ' translations in parentheses.\n' : 'Do not add translations.\n')
+        + 'Return JSON only: {"title":"Section title","problems":[{"question":"...","taskType":"compute","expression":"...","answer":"...","steps":[{"explanation":"...","latex":"..."}]}]}. The question, expression, answer and steps must agree. Use the appropriate taskType: compute, word_problem, solve, simplify, evaluate, factor, graph, prove or convert.';
+      const response = await Promise.race([
+        Promise.resolve().then(() => options.callGemini(prompt, true)),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('Section generation timed out.')), 60000); })
+      ]);
+      let raw = String(response || '').replace(/\x60\x60\x60(?:json)?/gi, '').trim();
+      const start = raw.indexOf('{'), end = raw.lastIndexOf('}');
+      if (start >= 0 && end >= start) raw = raw.slice(start, end + 1);
+      const parsed = JSON.parse(typeof window.jsonrepair === 'function' ? window.jsonrepair(raw) : raw);
+      const content = prepareGeneratedMathContent(parsed, '', resourceId + '-' + section.id, requested);
+      section.problems = content.problems.map(p => ({ ...p, _sectionId: section.id, _blockType: block.type }));
+      section.preparation = content.preparation;
+      section.status = content.problems.length ? content.preparation.status : 'failed';
+      if (!content.problems.length) section.error = 'No usable problems returned.';
+    } catch (error) { section.error = _safeMathGenerationErrorText(error); }
+    finally { if (timer) clearTimeout(timer); }
+    sections.push(section);
+  }
+  const usedIds = new Set();
+  const problems = sections.flatMap(section => section.problems.map(problem => {
+    const preferred = section.id + '-' + problem.id;
+    let id = preferred, suffix = 2;
+    while (usedIds.has(id)) id = preferred + '-' + suffix++;
+    usedIds.add(id);
+    return { ...problem, id };
+  }));
+  const requested = sections.reduce((sum, section) => sum + section.requested, 0);
+  const reviewRequired = problems.filter(p => p._verification?.reviewRequired).length;
+  return { id: resourceId, sections, content: { title: 'Assessment: ' + (options.subject || 'Math'), problems, graphData: null,
+    preparation: { version: 1, requested, received: problems.length, accepted: problems.length, ready: problems.length - reviewRequired,
+      reviewRequired, status: sections.every(section => section.status === 'ready') ? 'ready' : 'partial' } } };
+};
+
 const handleGenerateMath = async (inputOverride = null, switchView = true, modeOverride = null, deps) => {
   const { mathInput, history, inputText, useMathSourceContext, studentInterests, gradeLevel, mathMode, mathSubject, mathQuantity, autoAttachManipulatives, leveledTextLanguage, translationMode, resolveTranslationPolicy, currentUiLanguage, isMathGraphEnabled, autoSnapshotManipulatives, setIsProcessing, setGenerationStep, setGenerationStage, setError, setGeneratedContent, setActiveView, setShowMathAnswers, setHistory, setToolSnapshots, addToast, t, callGemini, cleanJson, safeJsonParse, warnLog, flyToElement } = deps;
   // Resolved once from the host-threaded policy. Falls back to the historical
@@ -1535,6 +1634,8 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           if (!isCurrentMathGeneration()) return;
           let prompt = "";
           const effectiveMode = modeOverride || mathMode;
+          const requestedCount = effectiveMode === 'Freeform Builder' || effectiveMode === 'Problem Set Generator'
+            ? resolveMathRequestedCount(problemToSolve, mathQuantity) : 1;
           if (effectiveMode === 'Freeform Builder') {
               prompt = `
                 You are an Expert Math Curriculum Designer creating a CUSTOM problem set.
@@ -1546,7 +1647,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 
                 INSTRUCTIONS:
                 The teacher has described exactly what they want in natural language. Create the requested mix of problems.
-                Number of Problems: Generate EXACTLY ${mathQuantity} problems unless the teacher's request specifies a different count.
+                Number of Problems: Generate EXACTLY ${requestedCount} problems.
                 ${autoAttachManipulatives ? `
                 MANIPULATIVE INTEGRATION (REQUIRED when toggle is ON):
                 You MUST include "manipulativeSupport" and/or "manipulativeResponse" objects for problems where a visual manipulative would aid understanding. Use your judgment on which tool fits best:
@@ -1604,7 +1705,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 ${leveledTextLanguage && leveledTextLanguage !== 'English' ? 'IMPORTANT: Generate ALL text content (questions, explanations, steps, real-world applications) in ' + leveledTextLanguage + '.' + (_xlate.enabled ? ' After each text field, include a ' + _xlate.target + ' translation in parentheses.' : ' Do NOT add a translation in parentheses or anywhere else.') + ' Keep mathematical expressions and JSON keys in English.' : ''}
                 Topic/Skill: "${problemToSolve}"
                 ${mathContextPrompt}
-                Instruction: Create EXACTLY the number and types of problems described in the Topic/Skill above. Match the count, types, and difficulty the user specified. If no specific count is given, create 5 problems.
+                Instruction: Create EXACTLY ${requestedCount} problems, matching the requested skill, types, and difficulty.
                 Context Usage: Frame the word problems using characters, settings, or themes from the Source Context. Use names/concepts from the Student Interests.
                 Output Format:
                 Return a JSON object with a "problems" array.
@@ -1700,15 +1801,15 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
           }
           if (!isCurrentMathGeneration()) return;
           const mathResourceId = _nextMathGeneratedResourceId(history);
-          let normalizedContent = normalizeGeneratedMathContent(rawContent, problemToSolve, mathResourceId);
+          let normalizedContent = prepareGeneratedMathContent(rawContent, problemToSolve, mathResourceId, requestedCount);
           if (normalizedContent.problems.length === 0) {
             throw new Error('The AI response did not contain any usable math problems.');
           }
-          normalizedContent.problems = verifyGeneratedMathProblems(normalizedContent.problems);
+
           const verifiedCount = normalizedContent.problems.filter(p => p._verification?.verified).length;
           const mismatchCount = normalizedContent.problems.filter(p => p._verification?.mismatch).length;
           if (mismatchCount > 0) {
-            warnLog(`Math verification: ${mismatchCount} answer(s) auto-corrected via expression evaluation`);
+            warnLog(`Math verification: ${mismatchCount} answer(s) need review because the answer and expression disagree`);
           }
           if (verifiedCount > 0) {
             console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
@@ -1752,7 +1853,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             }
           }
           console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
-          try { addToast(_safeMathGenerationTranslation(t, 'math.success_toast', 'Math activity generated.'), "success"); } catch (_) {}
+          try { const p = normalizedContent.preparation; addToast(p.status === 'ready' ? _safeMathGenerationTranslation(t, 'math.success_toast', 'Math activity generated.') : p.requested + ' requested, ' + p.ready + ' ready, ' + p.reviewRequired + ' need review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.status === 'ready' ? 'success' : 'warning'); } catch (_) {}
           try { flyToElement('tour-tool-math'); } catch (_) {}
       } catch (e) {
           if (!isCurrentMathGeneration()) return;
@@ -4387,6 +4488,9 @@ window.AlloModules.GenerationHelpers = {
   handleGenerateMath,
   normalizeGeneratedMathContent,
   verifyGeneratedMathProblems,
+  resolveMathRequestedCount,
+  prepareGeneratedMathContent,
+  generateMathAssessment,
   handleGenerateFullPack,
   handlePlanFullPack,
   getFullPackEditableResourceTypes,

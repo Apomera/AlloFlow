@@ -5120,7 +5120,7 @@
       "correct": "素晴らしい仕事！",
       "partial": "良い努力、続けてください！",
       "incorrect": "もう少し • もう一度お試しください！",
-      "error": "評価できませんでした • もう一度お試しください。",
+      "error": "評価できませんでした — もう一度お試しください。",
       "verdict_correct": "正解！",
       "verdict_partial": "部分的に正解",
       "verdict_incorrect": "もう少し",
@@ -5256,7 +5256,7 @@
     "simplified_def_fallback": "テキスト内の任意の単語をクリックして定義を確認できます！",
     "simplified_cloze": "「クローズ」モードを試して語彙スキルをテストしてください。",
     "simplified_quiz": "このテキストは素晴らしいです。理解度を確認するための退出チケットを生成しますか？",
-    "simplified_glossary": "「{term1}」や「{term2}」のような単語にはサポートが必要かもしれません • 用語集が役立つかもしれません！",
+    "simplified_glossary": "「{term1}」や「{term2}」のような単語にはサポートが必要かもしれません — 用語集が役立つかもしれません！",
     "simplified_glossary_fallback": "これらの用語のいくつかは難しいです。用語集がこのテキストのサポートに役立つでしょう。",
     "simplified_outline": "視覚学習者はこのコンテンツのグラフィックオーガナイザーから恩恵を受けるかもしれません。",
     "glossary_bingo": "これらの用語をビンゴ、メモリーマッチ、クロスワード、ワードサーチなどの単語ゲームに変えることができます！",
@@ -5267,7 +5267,7 @@
     "quiz_rigor": "このクイズが厳密であることを確認したいですか？標準監査を実行してください。",
     "adventure_sim": "アドベンチャーは生徒が安全なシミュレーションで学んだことを応用できるようにします。",
     "adventure_inventory": "「インベントリ」を確認して収集したアイテムを確認してください。",
-    "adventure_context": "{topic}に関するアドベンチャーはリソースが多くなるほど豊かになります • {suggestion}を追加してみてください！",
+    "adventure_context": "{topic}に関するアドベンチャーはリソースが多くなるほど豊かになります — {suggestion}を追加してみてください！",
     "adventure_context_fallback": "リソースを生成するほどアドベンチャーのコンテキストが豊かになります。",
     "timeline_drag": "イベントをドラッグ&ドロップして順序を変更します。",
     "timeline_visualize": "これは生徒が因果関係を視覚化するのに役立ちます。",
@@ -5278,8 +5278,8 @@
     "parent_adventure": "雨の日のアクティビティにアドベンチャーモードを試してみてください。",
     "parent_read_along": "「一緒に読む」を使って一緒に読む練習をしてください。",
     "fallback_lesson_plan": "素晴らしいリソースがあります。それらを授業計画に統合しますか？",
-    "fallback_brainstorm": "行き詰まりましたか？私とチャットして自動補完を切り替えてBlueprint Modeを有効化してください • 授業全体の設計をお手伝いします！",
-    "fallback_export": "{count}に関する{topic}件のリソースがあります • 単一のPDFとしてエクスポートしてください！",
+    "fallback_brainstorm": "行き詰まりましたか？私とチャットして自動補完を切り替えてBlueprint Modeを有効化してください — 授業全体の設計をお手伝いします！",
+    "fallback_export": "{count}に関する{topic}件のリソースがあります — 単一のPDFとしてエクスポートしてください！",
     "fallback_export_fallback": "これらすべてのリソースを単一のPDFパケットとしてエクスポートできます。",
     "fallback_guide": "迷子になった場合はAIガイドで「教えて」を選択してください！",
     "intro_greeting": "クリックして音声設定を調整してください。",
@@ -6300,7 +6300,7 @@
     "type_timeline": "シーケンスビルダー",
     "type_timeline_desc": "学年に適応したシーケンスアクティビティ",
     "full_pack": "フルリソースパック • すべて選択",
-    "deselect_all": "? すべて選択解除",
+    "deselect_all": "↩ すべて選択解除",
     "estimate": "見積もり",
     "api_calls": "API呼び出し",
     "start_batch": "生成",
@@ -6329,7 +6329,7 @@
     "bridge_generating": "パーソナライズ版を作成中...",
     "bridge_projection": "投影モード",
     "bridge_exit_projection": "投影を終了",
-    "bridge_offline_info": "ライブセッションなし • このデバイスのみでプレビュー",
+    "bridge_offline_info": "ライブセッションなし — このデバイスのみでプレビュー",
     "bridge_term_saved": "「{term}」を用語集に保存しました",
     "bridge_term_save_failed": "用語の保存に失敗しました",
     "bridge_save_term": "用語集に保存",
@@ -6355,7 +6355,7 @@
     "bridge_f2f_custom_lang": "カスタム言語...",
     "bridge_f2f_custom_placeholder": "例： ヨルバ語、ティグリニャ語、ダリ語...",
     "bridge_all_saved": "すべての用語を用語集に保存しました！",
-    "bridge_terms_saved": "? すべて保存しました",
+    "bridge_terms_saved": "✅ すべて保存しました",
     "fullpack_group_target": "対象グループ",
     "fullpack_group_current": "現在の設定",
     "fullpack_group_all": "すべてのグループ",
@@ -6703,10 +6703,10 @@
     "locked": "ロック中",
     "escaped": "脱出成功！",
     "escaped_desc": "すべてのパズルを解いて部屋から脱出しました！",
-    "time_up": "? タイムアップ！",
+    "time_up": "⏰ タイムアップ！",
     "reveal_hint": "ヒントを表示",
-    "puzzles_remaining": "{{count}} 個のパズルが残っています",
-    "time_remaining": "時間： {{time}}",
+    "puzzles_remaining": "{count} 個のパズルが残っています",
+    "time_remaining": "時間： {time}",
     "progress": "進捗",
     "start": "脱出ゲーム開始",
     "start_hint": "タイマーを開始してオブジェクトの調査を始める",
@@ -6717,8 +6717,8 @@
     "room_complete": "部屋完了！",
     "loading_error": "部屋データを読み込めませんでした",
     "no_puzzle": "このオブジェクトのパズルが見つかりません",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "完璧な脱出！+{{xp}} ボーナスXP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "完璧な脱出！+{xp} ボーナスXP",
     "puzzle_mcq": "選択式",
     "puzzle_sequence": "順序に並べる",
     "puzzle_cipher": "メッセージを解読",
@@ -6776,7 +6776,7 @@
     "clue": "ヒント",
     "clue_found": "ヒント発見！",
     "clue_revealed": "このヒントは他のパズルに役立つかもしれません...",
-    "clues_collected": "ヒント： {{count}}/{{total}}",
+    "clues_collected": "ヒント： {count}/{total}",
     "use_clue": "ヒントを使用",
     "final_door": "出口の扉",
     "final_door_ready": "出口の扉のロックが解除されました！",
@@ -6802,12 +6802,12 @@
     "left": "残り",
     "wrong_attempts": "間違った試行",
     "time_penalty": "-{seconds} 秒！",
-    "game_over_time": "? タイムアップ！時間切れです。",
+    "game_over_time": "⏰ タイムアップ！時間切れです。",
     "streak": "連続",
     "streak_bonus": "連続ボーナス！x{multiplier}",
     "streak_lost": "連続が途切れました！",
     "one_minute_warning": "残り1分！",
-    "thirty_seconds_warning": "? 残り30秒のみ！",
+    "thirty_seconds_warning": "⏰ 残り30秒のみ！",
     "timer_paused": "タイマー一時停止",
     "timer_resume": "再開",
     "settings_btn": "部屋の設定",
@@ -6820,9 +6820,9 @@
     "launch_live_tooltip": "クラスとマルチプレイヤー脱出ゲームを開始",
     "team_mode": "チームチャレンジ",
     "team_race": "脱出レース！",
-    "team_progress": "{{team}} 進捗： {{solved}}/{{total}}",
+    "team_progress": "{team} 進捗： {solved}/{total}",
     "waiting_host": "先生の開始を待っています...",
-    "team_escaped": "{{team}} チームが脱出！",
+    "team_escaped": "{team} チームが脱出！",
     "all_teams_done": "すべてのチームが終了！",
     "your_team": "あなたのチーム",
     "team_red": "赤チーム",
@@ -6830,7 +6830,7 @@
     "team_green": "緑チーム",
     "team_yellow": "黄チーム",
     "team_all": "全生徒",
-    "teams_competing": "{{count}} チームが競争中",
+    "teams_competing": "{count} チームが競争中",
     "first_escape": "最初の脱出！",
     "end_game": "ゲーム終了",
     "end_game_confirm": "全生徒の脱出ゲームを終了しますか？",
@@ -6843,8 +6843,8 @@
     "resume_game": "ゲームを再開",
     "game_paused_by_teacher": "先生がゲームを一時停止しました",
     "celebration_title": "おめでとうございます！",
-    "you_escaped": "あなたのチームは {{time}} で脱出！",
-    "other_team_escaped": "{{team}} が脱出！",
+    "you_escaped": "あなたのチームは {time} で脱出！",
+    "other_team_escaped": "{team} が脱出！",
     "class_escaped": "クラスの勝利！",
     "everyone_escaped": "みんなで協力して脱出！",
     "hurry_up": "続けて！まだ脱出できます！",
@@ -6872,7 +6872,7 @@
     "load_saved": "保存済みを読み込む",
     "loaded_saved": "保存済みの脱出ゲームを読み込みました！確認して準備ができたら起動してください。",
     "no_saved": "保存された脱出ゲームが見つかりません",
-    "preview_confirmed": "? 脱出ゲームをロックしました • プレイ準備完了！",
+    "preview_confirmed": "✅ 脱出ゲームをロックしました • プレイ準備完了！",
     "xp_earned_streak": "+{xp} XP ({multiplier}x 連続ボーナス！)",
     "loaded_from_resource": "リソースから読み込みました。"
   },
@@ -7296,7 +7296,7 @@
       "meta_info": "{date} • **最終レベル**: {level}",
       "log_header": "アドベンチャーログ",
       "chapter_separator": "***",
-      "user_label": "? あなた",
+      "user_label": "➤ あなた",
       "print_button": "ストーリーブックを印刷"
     },
     "answer_key_title": "解答キー",
@@ -8698,7 +8698,7 @@
     "text_generated": "{topic} に関する適応テキストが準備できました！単語をクリックして定義を見るか、用語集やクイズなどのツールを試して理解を深めてください。",
     "flashcards_created": "フラッシュカードを作成しました！Quizletにエクスポート、印刷、またはメモリーゲームを試すことができます。",
     "quiz_generated": "クイズの準備ができました！クラス用にプレゼンテーションモードを使うか、自由回答用にオートグレーダーを試してください。",
-    "glossary_generated": "用語集が完了しました！単語ゲームを試してみてください • ビンゴ、メモリーマッチ、クロスワード、ワードサーチなど！",
+    "glossary_generated": "用語集が完了しました！単語ゲームを試してみてください — ビンゴ、メモリーマッチ、クロスワード、ワードサーチなど！",
     "adventure_started": "アドベンチャー開始！下にアクションを入力するか、選択ボタンで次に何が起こるか決めてください。",
     "adventure_scene": "何をしますか？すべての選択があなたの物語を形作ります！",
     "analysis_complete": "分析完了！探求する価値のある語彙とキーコンセプトを見つけました。",
@@ -10765,7 +10765,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "切り込みの高さ",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -11748,7 +11748,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbenchに送信",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -12935,7 +12935,7 @@
       "person": "個人\\",
       "phase_label": "フェーズラベル",
       "rationale_which_antecedent_does_this_address": "根拠（これはどの先行事象に対処しますか？）",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "あなたのアプローチを振り返ってください...\\n• うまくいったことは？\\n• 違うやり方をするなら何？\\n• 次に練習したい戦略は？",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "あなたのアプローチを振り返ってください...\n• うまくいったことは？\n• 違うやり方をするなら何？\n• 次に練習したい戦略は？",
       "reinforcement_how_you": "⭐ 強化（どのように\\",
       "replacement_behavior_functionally_equivalent": "✅ 代替行動（機能的に同等）",
       "respond_as_the_counselor": "カウンセラーとして応答...",
@@ -12943,7 +12943,7 @@
       "search_81_tools": "🔍  80以上のツールを検索…",
       "search_aba_terms": "🔍 ABA用語を検索...",
       "search_terms_eg_reinforcement_fba_data": "🔍 用語を検索...（例：「強化」「FBA」「データ」）",
-      "session_1_3nsession_2_7nsession_3_5n": "セッション1: 3\\nセッション2: 7\\nセッション3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "セッション1: 3\nセッション2: 7\nセッション3: 5\n...",
       "setting_eg_math_class_cafeteria": "設定（例：算数の授業、カフェテリア）",
       "share_what_you_notice_at_home_strengths_concerns_c": "家庭で気付いたことを共有してください — 強み、懸念、文化的背景、または学校チームへの提案...",
       "step_description": "ステップの説明...",
@@ -14589,7 +14589,11 @@
       "trapezoid": "台形",
       "simpson": "シンプソン",
       "rectangles_n": "矩形 (n)",
-      "coeff_a": "係数 a"
+      "coeff_a": "係数 a",
+      "sr_explanation_ready": "解説ができました。",
+      "a11y_back_to_tools": "ツールに戻る",
+      "a11y_snapshot": "スナップショット",
+      "a11y_next": "次へ"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ このブラウザでは音声がサポートされていません",
@@ -14713,12 +14717,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI説明を生成、レベルは",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "読解レベル：",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -16344,8 +16348,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? 正解！ それは",
-      "that": "? それは",
+      "correct_it": "✅ 正解！ それは",
+      "that": "❌ それは",
       "linear": "線形",
       "quadratic": "二次",
       "cubic": "三次",
@@ -16619,7 +16623,8 @@
       "angle_u00b0": "角度 (°)",
       "velocity_ms": "速度 (m/s)",
       "gravity_msu00b2": "重力 (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "解説ができました。"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 ランダム： ",
@@ -16647,7 +16652,10 @@
       "codominant_desc": "両方の対立遺伝子が完全に発現します。ヘテロ接合体は2つの形質を同時に示します。",
       "sexLinked_desc": "この形質はX染色体上にあります。これはX連鎖性劣性遺伝（血友病、赤緑色覚異常など）を表します。男性（XY）は発現に1コピーだけ必要ですが、女性（XX）は2コピー必要です。",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEMツールに戻る",
+      "a11y_snapshot": "スナップショット",
+      "a11y_close_flashcard": "カードを閉じる"
     },
     "circuit": {
       "meter_status_ammeter_short": "危険な配置：短絡経路",
@@ -16939,8 +16947,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? 正解！ ",
-      "it": "? それは"
+      "correct": "✅ 正解！ ",
+      "it": "❌ それは"
     },
     "inequality": {
       "badge_first_solve_label": "初めての解答",
@@ -17056,8 +17064,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? 正解！",
-      "answer": "? 答え： ",
+      "correct": "✅ 正解！",
+      "answer": "❌ 答え： ",
       "hydrogen": "水素",
       "helium": "ヘリウム",
       "lithium": "リチウム",
@@ -17199,7 +17207,7 @@
       "reddish_metal_used_since_the": "青銅器時代から使用されている赤みがかった金属",
       "bluishwhite_metal_that_prevents_rust": "錆を防ぐ青白い金属",
       "best_conductor_of_electricity_among": "すべての金属で最も電気伝導性が高い",
-      "dense_soft_shiny_precious_metal": "高密度で柔らかく輝く貴金属 • 錆びない",
+      "dense_soft_shiny_precious_metal": "高密度で柔らかく輝く貴金属 — 錆びない",
       "strong_as_steel_but_45": "鋼と同等の強度だが45%軽量",
       "shiny_metal_that_gives_rubies": "ルビーに赤色を与える輝く金属",
       "essential_for_steel_production_and": "鋼の製造と骨の健康に不可欠",
@@ -17350,7 +17358,7 @@
       "accessible_summary_heading": "Current simulation state",
       "accessible_summary_help": "Every camera and layer action has a keyboard-accessible button. Focus the canvas for arrow-key orbiting, plus and minus zoom, bracket-key star selection, Escape to clear, and R to reset.",
       "accessible_summary_title": "Text alternative for the 3-D scene",
-      "aria_back_to_tools": "Back to tools",
+      "aria_back_to_tools": "ツールに戻る",
       "aria_bh_lifecycle": "Possible stages in a black hole's history",
       "aria_blackhole_canvas": "Interactive model of a rotating black hole with an event horizon, photon ring, accretion disk, polar jets, and a tidal-forces object-drop experiment.",
       "aria_camera_controls": "Galaxy camera controls",
@@ -18305,7 +18313,9 @@
       "our_sun_is_born": "太陽の誕生",
       "present_day": "現代",
       "the_far_future": "遠い未来",
-      "universe": "宇宙： "
+      "universe": "宇宙： ",
+      "a11y_back_to_tools": "ツールに戻る",
+      "a11y_simulation_speed": "シミュレーションの速さ"
     },
     "rocks": {
       "igneous": "火成岩",
@@ -21230,7 +21240,10 @@
       "garage_desc": "エンジン、さび、反応 — 化学の作業場。",
       "classroom_desc": "ビーカーと実験がある本物の理科教室。",
       "outdoors_desc": "外へ出よう — 自然は何よりも大きな実験室です。",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "ツールに戻る",
+      "a11y_snapshot": "スナップショット",
+      "a11y_next": "次へ"
     },
     "converter": {
       "u2705_saved_to_history": "✅ 履歴に保存！",
@@ -22017,7 +22030,40 @@
       "read_what_special_education_law_actually": "特別支援教育の法が実際に何と書いてあるかを、その言葉のまま読もう。IDEA パートB と第504条の本文を、eCFR から取得して日付を添え、検索でき、連邦と州の規則を並べて示す。言い換えも生成もしない。公式の条文が読み込めていなければ、推測せずにそう言う。",
       "applied_k_12_behavior_practice_what": "幼稚園から高校までの応用行動実践。学校心理士や教師がこの科学を実際にどう使っているか。PBIS の三層モデル、FBA の機能に対応づけた代替行動、背景事象（多くの BIP が見落とす遅い引き金）、Geoff Colvin の七段階の行動化サイクル、そしてメイン州第33章に根ざした身体拘束と隔離の倫理。BehaviorLab の姉妹ツール。",
       "marine_biology_behavioral_science_of_octopuses": "タコ、イカ、コウイカ、オウムガイの海洋生物学と行動科学。目玉は Hunter Sim。種、生息場所、獲物、戦術を選び、擬態のミニゲームを遊び、飛びかかる瞬間を計る。フィールドノート風の生物学の小ネタが開く（色素胞の仕組み、9つの脳、青い血、ジェット推進）。10種の図鑑には知能・擬態・噴射速度の値つき。",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1、HS-PS2。支間・高さ・荷重・材料を変えられるトラス応力シミュレーター、橋種の比較（桁、トラス、アーチ、吊橋、斜張橋）、材料データベース、力の種類、実例研究（Tacoma Narrows、Hyatt Regency、Tay、Silver、さらに Brooklyn、Golden Gate、Akashi、Millau）、工学設計サイクル、AP 形式のクイズ、印刷できる設計仕様。"
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1、HS-ETS1、HS-PS2。支間・高さ・荷重・材料を変えられるトラス応力シミュレーター、橋種の比較（桁、トラス、アーチ、吊橋、斜張橋）、材料データベース、力の種類、実例研究（Tacoma Narrows、Hyatt Regency、Tay、Silver、さらに Brooklyn、Golden Gate、Akashi、Millau）、工学設計サイクル、AP 形式のクイズ、印刷できる設計仕様。",
+      "the_gutenberg_style_screw_press_as": "グーテンベルク式のねじ式印刷機を、実際に動くシミュレーションにした。バーを引き、自分で活字を組み、刷り上がりを見る。あわせて材料科学（鉛・スズ・アンチモンの合金）、経済（一冊あたりの費用の崩落）、歴史（宗教改革、科学革命）、タイポグラフィ、そして印刷機の背後にいた人びと（歴史が忘れた女性の印刷工も）。中学校の教科横断の学習のために作った。",
+      "three_js_stoop_simulator_deep_science": "Three.js の急降下シミュレーターと、猛禽の狩りの力学を掘り下げた科学。240 mph のハヤブサとして、530 psi の趾で掴むオウギワシとして、あるいは音のしないアメリカワシミミズクとして飛ぶ。8種、12セクション。趾の力、視力（人の4-8倍、チョウゲンボウは紫外線も）、飛翔の物理、フクロウの静かな飛翔、終端速度の計算機、DDT からの回復と今も続く保全の危機、そしてシルエットと全体の雰囲気による野外識別。",
+      "practice_reading_and_completing_the_documents": "大人の暮らしが回っている書類を、読んで書く練習をしよう。求職の応募書類、W-4 の様式、賃貸契約、診療の問診票、運転許可、そして自分の IEP 会議の案内。どの欄もやさしい言葉でほどき、あとで高くつきうる欄には印をつける。「今すぐ署名を」と迫られる場面の練習と、時間をくださいと言うための言い回しつき。練習はすべて架空の人物で行い、本当の個人情報は使わない。",
+      "how_swimming_works_stroke_physics_survival": "泳ぎのしくみ（ストロークの物理と生き延びる技術）と、泳ぐ人なら知っておきたい冷たい水、離岸流、氷、ライフジャケット、そして救助のこと。ストロークを目で見て分解し、浮力と推進の科学を押さえ、本当に命を救う技術（背浮き、立ち泳ぎ、HELP の姿勢、寄り集まる）を学ぶ。出典は CDC、USCG、AAP、NAA、NOAA、USA Swimming。教育目的のみ。実際に泳ぎを習うなら水泳の指導者を探すこと。",
+      "tax_paycheck_calculator_data_literacy_decision": "税と給与明細の計算機、データを読む力、意思決定マトリクス、契約書リーダー、記録と書類仕事、移動の計画、就労の準備、履歴書づくり、ポートフォリオの証拠の整理、面接の練習、コミュニケーションの技術、時間の管理、健康保険、歯のケア、体のケアの人間工学、睡眠の習慣、薬の表示、受診の準備、家の安全、デジタルの安全、食べることへの安心、そして日々の暮らしのための応用科学。",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1、HS-LS1、HS-LS3、HS-LS4。微生物の世界。細菌（役に立つものと病を起こすもの）、ウイルス（COVID、インフルエンザ、HIV、ファージ、麻疹）、顕微鏡法（光学、位相差、蛍光、電子、AFM）、薬剤耐性の進化、ヒト・土壌・海洋のマイクロバイオーム、ワクチンと免疫系、発酵（サワードウ、ヨーグルト、キムチ、ザワークラウト、コンブチャ、チーズ）、事例研究（Snow、Fleming、MRSA、COVID と mRNA、FMT）、クイズ、そして印刷できる実験室の安全と微生物の早見表。",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "十一の地域にまたがる十五の環境保全キャンペーン。メイン州の長い多期間キャンペーンが五本、加えて五つのメカニクス系統すべてを横断する地域横断シナリオが十本。火（オーストラリアの Yarralin、北カリフォルニアの Karuk）、保全（Yellowstone、ルワンダの Akagera）、公衆衛生（ムンバイのデング熱、リベリアの2014年エボラ）、流域（Klamath 川、Murray-Darling 盆地）、気候（マーシャル諸島、バングラデシュのデルタ）。同じメカニクス系統でメイン州のものと地域横断のものを両方終えると、系統ペアの考察が開く。",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1、HS-ETS1-3、MS-ESS3-3。144区画のグリッド上に、本当に両立しない要件を相手に町を設計する。三つの町、それぞれ効いてくる制約が違う。Riverbend は雨水と起債が効く。Mesa Hollow は帯水層が決まっていて、農場がそれを飲んでいる。Harborlight は2050年でも成り立たなければならない。合理式による流出、水収支、海面上昇の余裕、ネットワーク上の歩行距離、そして費用を積んだ道路網。どれも開けば式が見える。Assumption Lab は同じ計画を、公表された二組のパラメータで走らせ直す。どの結論が両方を生き延びるのかが生徒に見えるように。地図、編集できる区画表、同じ計画の3Dモデル。話し合いの問いと出典のある歴史が、このツールがあえてモデル化しない問いを担う。点数もなければ、模範解答もない。",
+      "codap_data_science": "CODAP：データサイエンス",
+      "lumen_research_canvas": "Lumen：リサーチキャンバス",
+      "evolab_evolution": "EvoLab：進化",
+      "dino_lab": "恐竜ラボ",
+      "nutritionlab_nutrition_science": "NutritionLab：栄養の科学",
+      "birdlab_i_spy_ornithology": "BirdLab：さがして学ぶ鳥類学",
+      "openbim_companion": "OpenBIM：おともガイド",
+      "applab_ai_app_generator": "AppLab：AIアプリ生成",
+      "access_lens": "アクセシビリティ・レンズ",
+      "sim_shelf": "シミュレーション棚",
+      "zoom_gallery": "ズームギャラリー",
+      "sourcebook": "出典ブック",
+      "wheel_fire_pottery_lab": "ろくろと炎：陶芸ラボ",
+      "echo_navigator": "エコー・ナビゲーター",
+      "learning_lab_how_learning_works": "Learning Lab：学びのしくみ",
+      "weldlab_welding_metal_joining": "WeldLab：溶接と金属の接合",
+      "bikelab_physics_repair": "BikeLab：物理と整備",
+      "fisherlab_boating_fishing_sim": "FisherLab：操船と釣りのシミュレーター",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab：ムール貝養殖シミュレーター",
+      "throwlab_sports_physics": "ThrowLab：スポーツの物理",
+      "skatelab_skate_bmx_physics": "SkateLab：スケートとBMXの物理",
+      "playlab_strategy_on_the_field": "PlayLab：フィールドの戦術",
+      "kepler_colony": "ケプラー・コロニー",
+      "birdlab_life_list": "BirdLab：ライフリスト",
+      "petslab_decoder": "PetsLab：しぐさの解読"
     },
     "area": {
       "volume": "体積..."
@@ -22057,7 +22103,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "ツールに戻る",
+      "a11y_snapshot": "スナップショット",
+      "a11y_next": "次へ",
+      "a11y_simulation_speed": "シミュレーションの速さ",
+      "a11y_close_flashcard": "カードを閉じる"
     },
     "solar_sys": {
       "venus": "金星",
@@ -22879,7 +22930,8 @@
       "scaled_volume_changed": "🔵 スケール変更（体積が変わりました）",
       "skewed_shape_deformed": "🟠 傾斜（形が変形しました）",
       "degenerate_volume_0": "💀 退化（体積 → 0）",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "チュートリアルの進みぐあい"
     },
     "numberline": {
       "first_mark": "最初のマーク",
@@ -25022,7 +25074,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1}年が始まります。"
     },
     "optics": {
       "optics_lab": "光学ラボ",
@@ -25368,7 +25421,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "ローカルの分析用SQLクエリ"
     },
     "geosandbox": {
       "loading_3d_engine": "3Dエンジンを読み込み中...",
@@ -25718,7 +25772,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "彫刻を削除しました"
     },
     "algebraCAS": {
       "solve": "🔍 解く",
@@ -28334,7 +28389,8 @@
       "bench_punchline_c": " mm。これは同じ 1 mL が 250 mL ビーカーで達する高さの約 ",
       "bench_punchline_d": " 倍だ。ビーカーでは厚さ ",
       "bench_punchline_e": " mm の膜にしかならず、見ることも、まして読み取ることもできない。ビュレットで滴定してビーカーで滴定しない理由は、まさにこれだ。",
-      "explain_label": "あなたの説明"
+      "explain_label": "あなたの説明",
+      "sr_explanation_ready": "解説ができました。"
     },
     "economicslab": {
       "six_figures": "6桁の収入",
@@ -30314,7 +30370,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ふり返りを保存しました。"
     },
     "anatomy": {
       "system_explorer": "システム探検家",
@@ -30896,7 +30953,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3Dカメラをリセット"
     },
     "dna": {
       "back_to_tools": "ツールに戻る",
@@ -32273,7 +32331,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ふり返りを保存しました。"
     },
     "angles": {
       "back_to_tools": "ツールに戻る",
@@ -33087,7 +33146,8 @@
       "explain_how_each_parameter_shapes_a_si": "各パラメータが正弦波をどう形づくるか説明しよう。",
       "design_note_discrete_5_state_marker_no": "設計上の注記：離散的な 5 状態のマーカー；波の得点なし；答えの表示なし——意図的な設計。",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "解説ができました。"
     },
     "typingpractice": {
       "typing_practice_menu": "タイピング練習メニュー",
@@ -33441,7 +33501,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "メニューに戻る"
     },
     "music": {
       "edm_lead": "EDM リード",
@@ -35992,7 +36053,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "答えを選ぶ：{value1}"
     },
     "manipulatives": {
       "5": "+ 5",
@@ -37615,7 +37677,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "オフ",
+      "sr_nothing_to_redo": "やり直せるものはありません。",
+      "sr_nothing_to_undo": "元に戻せるものはありません。",
+      "sr_dir_left": "左",
+      "sr_dir_right": "右"
     },
     "arithmetic": {
       "selected": " を選びました。",
@@ -41661,7 +41728,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR は天頂の輻射点と限界等級 6.5 に標準化されています。この概算は、晴れて月のない空と個数密度指数 2.2 を前提としています。ボートル階級は限界等級をおおまかに示すだけで、標準より暗い空では ZHR を上回ることがあります。輻射点の高度が低いことや空が明るいことは、この見積もりを下げます。",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEMツールに戻る"
     },
     "autorepair": {
       "back_to_menu": "メニューに戻る",
@@ -42402,7 +42470,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "スコア：{value2}点中{value1}点",
+      "a11y_open_2": "{value1}を開く",
+      "a11y_option": "選択肢{value1}：{value2}{value3}"
     },
     "bakingscience": {
       "crust": "地殻",
@@ -42505,7 +42576,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "解説ができました。"
     },
     "beehive": {
       "5": "⏭ +5",
@@ -43251,7 +43323,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "解説ができました。",
+      "a11y_investigation_progress": "調査の進みぐあい",
+      "a11y_flight_debrief": "飛行のふり返り",
+      "a11y_tutorial_progress": "チュートリアルの進みぐあい"
     },
     "behaviorlab": {
       "chain_reaction": "連鎖反応",
@@ -43423,7 +43499,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "解説ができました。",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -45935,7 +46011,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "探索したモジュール：{value1}",
+      "a11y_score_out_of": "スコア：{value2}点中{value1}点",
+      "sr_selected": "選択：{value1}",
+      "sr_quiz_reset": "クイズをリセットしました"
     },
     "brainatlas": {
       "group_systems": "システム",
@@ -51091,7 +51171,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "答えを選ぶ：{value1}"
     },
     "cyberdefense": {
       "quiz_master": "クイズマスター",
@@ -52235,7 +52316,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "選択：{value1}"
     },
     "echotrainer": {
       "wall": "壁",
@@ -53694,7 +53776,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "探索したモジュール：{value1}"
     },
     "fireecology": {
       "carbon_calculator": "カーボン計算機",
@@ -54774,7 +54857,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "メニューに戻る",
+      "sr_getting_critique": "講評を取得しています…",
+      "sr_critique_ready": "講評ができました。"
     },
     "flightsim": {
       "game_controls": "🎮 ゲーム操作",
@@ -54983,7 +55069,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "フライトシミュレーターのコックピット表示。W/S ピッチ、A/D バンク、Shift/Ctrl スロットル、角かっこでフラップ操作、X ホイールブレーキ、Q クイズ、F 力、Space 一時停止、I 情報。",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -54995,7 +55081,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "ポートランド（ME）からのフリーフライト",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -55042,7 +55128,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "上海タワー",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -60864,7 +60950,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "探索したモジュール：{value1}",
+      "sr_loaded": "{value1}を読み込みました",
+      "sr_showing": "{value1}を表示しています",
+      "sr_opening": "{value1}を開いています"
     },
     "platetectonics": {
       "pacific": "太平洋",
@@ -61128,7 +61218,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -65686,7 +65776,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "解説ができました。",
+      "sr_off": "オフ",
+      "sr_edge_left": "左",
+      "sr_edge_right": "右",
+      "sr_correct": "正解です。",
+      "sr_not_quite": "おしいです。"
     },
     "playlab": {
       "back": "← 戻る",
@@ -65754,7 +65850,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "コーチはオフラインです。",
+      "sr_drill_stopped": "練習を止めました。"
     },
     "printingpress": {
       "menu": "← メニュー",
@@ -67893,7 +67991,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "メニューに戻る",
+      "a11y_open": "{value1}を開く",
+      "sr_selected": "選択：{value1}",
+      "sr_loaded": "{value1}を読み込みました",
+      "sr_opening": "{value1}を開いています",
+      "sr_correct": "正解です。",
+      "sr_not_quite": "おしいです。",
+      "sr_year_begins": "{value1}年が始まります。",
+      "sr_question_reset_try_again": "問題をリセットしました。もう一度どうぞ。",
+      "sr_not_quite_see_the_explanation": "おしいです。解説を見てください。"
     },
     "raptorhunt": {
       "anatomy": "解剖",
@@ -69542,7 +69650,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1}を開く",
+      "a11y_flight_debrief": "飛行のふり返り"
     },
     "renewables": {
       "menu": "← メニュー",
@@ -70242,7 +70352,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "メニューに戻る",
+      "sr_getting_critique": "講評を取得しています…",
+      "sr_critique_ready": "講評ができました。",
+      "sr_quiz_reset": "クイズをリセットしました"
     },
     "roadready": {
       "let_s_start": "始めよう →",
@@ -73109,7 +73223,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEMツールに戻る",
+      "a11y_local_analytical_sql_query": "ローカルの分析用SQLクエリ"
     },
     "stewardship": {
       "back": "← 戻る",
@@ -73686,7 +73802,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "メニューに戻る",
+      "sr_question_reset_try_again": "問題をリセットしました。もう一度どうぞ。"
     },
     "throwlab": {
       "back": "← 戻る",
@@ -73911,7 +74029,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3Dカメラをリセット",
+      "sr_coach_is_offline": "コーチはオフラインです。",
+      "sr_drill_stopped": "練習を止めました。"
     },
     "weldlab": {
       "menu": "← メニュー",
@@ -75473,7 +75594,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "探索したモジュール：{value1}",
+      "a11y_score_out_of": "スコア：{value2}点中{value1}点",
+      "sr_quiz_reset": "クイズをリセットしました",
+      "sr_loaded": "{value1}を読み込みました",
+      "sr_showing": "{value1}を表示しています",
+      "sr_not_quite_see_the_explanation": "おしいです。解説を見てください。"
     },
     "worldbuilder": {
       "grade_level": "学年レベル",
@@ -77066,7 +77193,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "生命の樹",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -78921,7 +79048,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "選択肢{value1}：{value2}{value3}",
+      "a11y_3d_camera_views": "3Dカメラの視点"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -78933,6 +79062,22 @@
       "finish": "わかった！",
       "replay": "ヒント",
       "replay_aria": "チュートリアルを表示"
+    },
+    "pets": {
+      "sr_back_to_menu": "メニューに戻る",
+      "sr_getting_critique": "講評を取得しています…",
+      "sr_critique_ready": "講評ができました。"
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEMツールに戻る",
+      "a11y_3d_camera_views": "3Dカメラの視点"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "調査の進みぐあい"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "やり直せるものはありません。",
+      "sr_nothing_to_undo": "元に戻せるものはありません。"
     }
   },
   "placeholders": {
@@ -79278,7 +79423,7 @@
     "per_dimension_findings": "あたり-次元 Findings。",
     "your_self_assessment": "自己-評価。",
     "cloud_voice_unavailable": "クラウド音声 Unavailable。",
-    "allohaven": "AlloHaven。",
+    "allohaven": "AlloHaven",
     "tts": "テキスト--音声。"
   },
   "th": {
@@ -80656,7 +80801,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "概念のイメージ図",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80692,10 +80837,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "すべての概念に置くものを配置する",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "配置の進み具合",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stopped": "Stopped — {ok} made so far.",
     "furnish_storage_full": "Stopped at {ok} — there is no room left to save more art. Remove some, or use sculptures instead of images.",
@@ -80707,7 +80852,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "考えられる名前",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80718,7 +80863,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "概念の想起",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82276,7 +82421,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect を閉じる",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82285,7 +82430,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "課題を絞り込む",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82323,15 +82468,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "問題 {n}",
+    "q_choices_aria": "問題 {n} の選択肢、1 行に 1 つ",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "問題 {n} を削除する",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "問題 {n} の尺度の段階数",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "問題 {n} の解答形式",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82341,10 +82486,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} の選択できるリンク",
+    "scale_high_aria": "上端のラベル",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "下端のラベル",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82364,7 +82509,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "課題の状況の概要",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82380,9 +82525,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "自動的に更新されます",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "選択できる宿題のリンク",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82391,7 +82536,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "宿題の QR コード",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84839,7 +84984,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "問いかけとルーブリックの発達段階を選ぶ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84847,7 +84992,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "教員ビューの表示を切り替える",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84878,17 +85023,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "音声メモの録音を一時停止する",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "音声メモの録音を再開する",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "音声メモの録音を開始する",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "録音を停止する",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85274,22 +85419,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven で認める理由",
+    "recent_deliveries_aria": "最近の非公開 AlloHaven の表彰",
+    "token_amount_aria": "AlloHaven トークンの数量",
+    "token_cap_aria": "児童生徒ひとりあたり 1 セッションの AlloHaven トークン上限"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "目標を満たしたまま認められる例外",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "この目標についてアプリが追跡する任意の進捗シグナル",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "チーム全体で一緒に、または児童生徒それぞれ個別に",
+    "name_aria": "クラス目標の名前。この端末にのみ保存されます",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "この目標が対象とする児童生徒",
+    "template_aria": "クラス目標の初期テンプレート",
+    "tokens_aria": "この目標を達成したときに児童生徒ひとりあたりに付与されるトークン"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85307,7 +85452,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox の管理トークン（任意）",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85337,17 +85482,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "挙手あり",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "選択できるライブメールボックス参加リンク",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox のライブセッション",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85374,7 +85519,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "リアルタイム接続",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85406,7 +85551,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox ウェブアプリの URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

@@ -820,7 +820,7 @@ describe('School Rewards Apps Script repository', () => {
     }).request;
     expect(quoted.status).toBe('QUOTED');
     h.setActive(STUDENT);
-    const confirmation = { requestId: submitted.id, idempotencyKey: 'print_confirm_flow1' };
+    const confirmation = { requestId: submitted.id, quoteToken: quoted.quoteToken, idempotencyKey: 'print_confirm_flow1' };
     const reserved = h.call('confirmSchoolRewardsPrintQuote', confirmation);
     const reservedRetry = h.call('confirmSchoolRewardsPrintQuote', confirmation);
     expect(reserved).toMatchObject({ balance: 40, reservedPoints: 15, availableBalance: 25, request: { status: 'RESERVED' }, hold: { status: 'ACTIVE', amount: 15 } });
@@ -882,7 +882,7 @@ describe('School Rewards Apps Script repository', () => {
     const model = h.call('createSchoolRewardsPrintModel', { title: 'Name tag', sourceFormat: 'RECIPE', recipe: { parts: [{ shape: 'box', size: [1, 0.2, 0.4], position: [0, 0, 0], rotation: [0, 0, 0], color: '#7c3aed' }] }, widthMm: 45, depthMm: 18, heightMm: 4, triangleCount: 12, idempotencyKey: 'print_model_cancel01' }).model;
     const item = h.call('submitSchoolRewardsPrintRequest', { modelId: model.id, windowId: windowItem.id, idempotencyKey: 'print_submit_cancel1' }).request;
     h.setActive(STAFF); h.call('reviewSchoolRewardsPrintRequest', { requestId: item.id, action: 'QUOTE', quotePoints: 10, quoteExpiresAt: new Date(Date.now() + 86400000).toISOString(), preflightDecision: 'APPROVED', idempotencyKey: 'print_quote_cancel01' });
-    h.setActive(STUDENT); h.call('confirmSchoolRewardsPrintQuote', { requestId: item.id, idempotencyKey: 'print_confirm_cancel' });
+    h.setActive(STUDENT); h.call('confirmSchoolRewardsPrintQuote', { requestId: item.id, quoteToken: h.call('getSchoolRewardsPrintBootstrap').requests.find(r => r.id === item.id).quoteToken, idempotencyKey: 'print_confirm_cancel' });
     const cancelInput = { requestId: item.id, reason: 'Changed my mind', idempotencyKey: 'print_cancel_request' };
     const cancelled = h.call('cancelSchoolRewardsPrintRequest', cancelInput);
     const retry = h.call('cancelSchoolRewardsPrintRequest', cancelInput);

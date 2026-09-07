@@ -183,10 +183,54 @@ function eeExpiryDate_(raw) {
   return when;
 }
 
+// Packet folders are a disclosure boundary: a same-name folder is not proof
+// that evaluation content can safely be written there. Never repair broad or
+// named access silently; require the owner to review that folder in Drive.
+function eeAssertCustody_(item, parentId, label) {
+  var owner = eeRequireManagedOwner_();
+  if (!item || item.isTrashed() !== false || String(item.getOwner().getEmail() || '').trim().toLowerCase() !== owner) {
+    throw new Error(label + ' owner or retention state could not be verified. Review the folder in Drive.');
+  }
+  var parents = item.getParents();
+  if (!parents.hasNext() || String(parents.next().getId()) !== String(parentId) || parents.hasNext()) {
+    throw new Error(label + ' parent does not match the reviewed private folder.');
+  }
+  if (item.getSharingAccess() !== DriveApp.Access.PRIVATE) {
+    throw new Error(label + ' must be private. Review its access in Drive before trying again.');
+  }
+}
+
+function eeAssertExactAccess_(fileId, recipient, role, expiry) {
+  var owner = eeRequireManagedOwner_();
+  var permissions = eePermissionsFor_(fileId);
+  var ownerCount = 0, recipientCount = 0;
+  for (var i = 0; i < permissions.length; i++) {
+    var permission = permissions[i];
+    var email = String(permission.emailAddress || '').trim().toLowerCase();
+    if (!permission.deleted && permission.type === 'user' && permission.role === 'owner' && email === owner) { ownerCount++; continue; }
+    if (!permission.deleted && recipient && permission.type === 'user' && email === recipient && permission.role === role && eeSameExpiration_(permission.expirationTime, expiry || '')) { recipientCount++; continue; }
+    throw new Error('Unexpected access exists on the evaluation file or folder. Owner-only storage and the exact reviewed recipient are required. Review access in Drive.');
+  }
+  if (ownerCount !== 1 || recipientCount !== (recipient ? 1 : 0)) {
+    throw new Error('The exact owner-only or reviewed recipient access could not be verified.');
+  }
+}
+
 function eeChildFolder_(parent, name) {
   var existing = parent.getFoldersByName(name);
-  if (existing.hasNext()) return existing.next();
-  return parent.createFolder(name);
+  var folder;
+  if (existing.hasNext()) {
+    folder = existing.next();
+    if (existing.hasNext()) throw new Error('Multiple evaluation folders have the same name. Resolve the ambiguous folder path in Drive.');
+  } else {
+    folder = parent.createFolder(name);
+    folder.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+  }
+  eeAssertCustody_(folder, parent.getId(), 'Evaluation folder');
+  eeAssertExactAccess_(folder.getId(), '', '', '');
+  folder.setShareableByEditors(false);
+  if (folder.isShareableByEditors() !== false) throw new Error('Evaluation folder editor resharing could not be disabled.');
+  return folder;
 }
 
 function eeRootFolder_() {
@@ -714,11 +758,15 @@ function eePermissionsFor_(fileId) {
   if (!eeDriveApiReady_()) throw new Error('Drive API v3 is required to verify permissions.');
   var all = [];
   var pageToken = null;
+  var seenPages = {};
   do {
+    if (pageToken && seenPages[pageToken]) throw new Error('Drive returned a repeated permission page; access could not be verified.');
+    if (pageToken) seenPages[pageToken] = true;
     var params = { pageSize: 100, fields: 'nextPageToken,permissions(id,type,emailAddress,role,expirationTime,deleted)' };
     if (pageToken) params.pageToken = pageToken;
-    var page = Drive.Permissions.list(fileId, params) || {};
-    all = all.concat(page.permissions || []);
+    var page = Drive.Permissions.list(fileId, params);
+    if (!page || !Array.isArray(page.permissions)) throw new Error('Drive permission inspection was unavailable.');
+    all = all.concat(page.permissions);
     pageToken = page.nextPageToken || null;
   } while (pageToken);
   return all;
@@ -764,17 +812,30 @@ function eeVerifiedPermission_(fileId, educatorEmail, driveRole, expectedExpirat
 
 function eeCompensateShare_(file, educatorEmail) {
   var issues = [];
+  // This function is used only for the new file created by this attempt. Any
+  // non-owner grant on it is outside a failed disclosure and must be removed.
   if (file && file.getId && eeDriveApiReady_()) {
     try {
-      var matches = eeMatchingPermissions_(file.getId(), educatorEmail);
-      for (var i = 0; i < matches.length; i++) Drive.Permissions.remove(file.getId(), matches[i].id);
-      if (eeMatchingPermissions_(file.getId(), educatorEmail).length) issues.push('recipient access could not be proven removed');
+      file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+      file.setShareableByEditors(false);
+      var permissions = eePermissionsFor_(file.getId());
+      for (var i = 0; i < permissions.length; i++) {
+        if (permissions[i].role === 'owner') continue;
+        try { Drive.Permissions.remove(file.getId(), permissions[i].id); }
+        catch (removeError) { issues.push('an unexpected permission could not be removed'); }
+      }
+      eeAssertExactAccess_(file.getId(), '', '', '');
+      if (file.getSharingAccess() !== DriveApp.Access.PRIVATE || file.isShareableByEditors() !== false) issues.push('private owner-only access could not be confirmed');
     } catch (permissionError) {
-      issues.push('recipient access could not be rechecked');
+      issues.push('owner-only access could not be rechecked');
     }
   }
-  try { if (file && file.setTrashed) file.setTrashed(true); }
-  catch (trashError) { issues.push('the failed Drive file could not be moved to trash'); }
+  try {
+    if (file && file.setTrashed) {
+      file.setTrashed(true);
+      if (file.isTrashed() !== true) issues.push('the failed Drive file was not confirmed in trash');
+    }
+  } catch (trashError) { issues.push('the failed Drive file could not be moved to trash'); }
   return issues;
 }
 
@@ -784,6 +845,7 @@ function shareEvaluationPacket(request) {
   var deployerEmail = eeRequireManagedOwner_();
   var managedDomain = deployerEmail.split('@')[1];
   var educatorEmail = eeEmail_(request.educatorEmail, 'Educator email');
+  if (educatorEmail === deployerEmail) throw new Error('The educator recipient must differ from the deployment owner.');
   var confirmedEmail = eeEmail_(request.recipientConfirmation, 'Recipient confirmation');
   if (confirmedEmail !== educatorEmail) throw new Error('Recipient confirmation must exactly match the educator email.');
   if (request.policyConfirmed !== true) throw new Error('Confirm district approval and the recipient before sharing.');
@@ -814,9 +876,15 @@ function shareEvaluationPacket(request) {
   var stamp = Utilities.formatDate(new Date(), timeZone, 'yyyy-MM-dd-HHmmss');
   var safePacketId = packetMeta.packetId.replace(/[^A-Za-z0-9_-]/g, '').slice(-48) || 'packet';
   var renderedHtml = eeRenderPacketHtml_(packetMeta.packet);
-  var file = folder.createFile('Evaluation packet ' + stamp + ' ' + safePacketId + '.html', renderedHtml, 'text/html');
+  var file = folder.createFile('Evaluation packet ' + stamp + ' ' + safePacketId + '.html', '', 'text/html');
   var permission = null;
   try {
+    file.setSharing(DriveApp.Access.PRIVATE, DriveApp.Permission.NONE);
+    file.setShareableByEditors(false);
+    eeAssertCustody_(file, folder.getId(), 'Evaluation packet');
+    eeAssertExactAccess_(file.getId(), '', '', '');
+    if (file.isShareableByEditors() !== false) throw new Error('Evaluation packet editor resharing could not be disabled.');
+    file.setContent(renderedHtml);
     var permissionBody = { type: 'user', role: driveRole, emailAddress: educatorEmail };
     if (expiry) permissionBody.expirationTime = expiry.toISOString();
     var created = Drive.Permissions.create(permissionBody, file.getId(), {
@@ -825,6 +893,10 @@ function shareEvaluationPacket(request) {
     }) || {};
     if (!created.id) throw new Error('Drive did not return the new permission id.');
     permission = eeVerifiedPermission_(file.getId(), educatorEmail, driveRole, expiry ? expiry.toISOString() : '', created.id);
+    eeAssertExactAccess_(file.getId(), educatorEmail, driveRole, expiry ? expiry.toISOString() : '');
+    eeAssertCustody_(file, folder.getId(), 'Evaluation packet');
+    if (file.isShareableByEditors() !== false) throw new Error('Evaluation packet editor resharing changed during sharing.');
+    if (String(eeFolder_(academicYear, educatorLabel).getId()) !== String(folder.getId())) throw new Error('Evaluation folder changed during sharing.');
     var sharedAt = eeIsoNow_();
     var shareEvent = eeEvent_('share_verified', {
       packetId: packetMeta.packetId,
@@ -909,6 +981,7 @@ function revokeEvaluationAccess(request) {
   if (eeMatchingPermissions_(fileId, educatorEmail).length) {
     throw new Error('Drive did not confirm that every matching educator permission was removed. Open the file in Drive and remove access manually.');
   }
+  eeAssertExactAccess_(fileId, '', '', '');
   var revokedAt = eeIsoNow_();
   var revokeEvent = eeEvent_('revoke_verified', { fileId: fileId, recipient: educatorEmail, removedPermissions: matches.length });
   meta.version = EE_VERSION;
@@ -957,18 +1030,23 @@ function listSharedEvaluations(academicYear) {
       }
       var current = matching[0] || null;
       var currentlyShared = !!current;
+      var policyError = '';
+      if (!checkError) {
+        try { eeAssertExactAccess_(file.getId(), currentlyShared ? meta.sharedWith : '', currentlyShared ? eePermissionRole_(meta.role) : '', currentlyShared ? (meta.expirationTime || '') : ''); }
+        catch (accessError) { policyError = String(accessError && accessError.message || accessError); }
+      }
       var liveRole = current ? eeLogicalRole_(current.role) : '';
       var expirationMatches = current ? eeSameExpiration_(current.expirationTime, meta.expirationTime || '') : false;
       var liveExpiresOn = current ? (expirationMatches && meta.expiresOn ? meta.expiresOn : (eeExpirationDay_(current.expirationTime) || null)) : null;
       var liveStatus = checkError ? 'check_failed'
-        : currentlyShared ? ((liveRole === meta.role && expirationMatches) ? 'active_verified' : 'active_changed')
+        : policyError ? 'active_changed' : currentlyShared ? ((liveRole === meta.role && expirationMatches && !policyError) ? 'active_verified' : 'active_changed')
           : 'not_shared';
       packets.push({
         name: file.getName(), url: file.getUrl(), id: file.getId(), packetId: meta.packetId || '',
         sharedWith: meta.sharedWith || '', role: meta.role || '', expiresOn: meta.expiresOn || null,
         sharedAt: meta.sharedAt || null, revokedAt: meta.revokedAt || null,
         currentlyShared: currentlyShared, liveStatus: liveStatus, liveRole: liveRole,
-        liveExpiresOn: liveExpiresOn, matchingPermissionCount: matching.length, accessCheckError: checkError
+        liveExpiresOn: liveExpiresOn, matchingPermissionCount: matching.length, accessCheckError: checkError || policyError
       });
     }
     educators.push({ educator: educatorFolder.getName(), url: educatorFolder.getUrl(), packets: packets });
@@ -981,11 +1059,11 @@ function verifyShareHelper() {
   var email = identity.activeEmail;
   var domain = String(email || '').split('@')[1] || '';
   var managedIdentityReady = identity.matched && !!domain;
-  var root = managedIdentityReady ? eeRootFolder_() : null;
   var driveAdvanced = eeDriveApiReady_();
-  if (driveAdvanced && root) {
-    try { eePermissionsFor_(root.getId()); }
-    catch (error) { driveAdvanced = false; }
+  var root = null, storageError = '';
+  if (managedIdentityReady && driveAdvanced) {
+    try { root = eeRootFolder_(); }
+    catch (error) { storageError = String(error && error.message || error); }
   }
   var ready = managedIdentityReady && driveAdvanced && !!root;
   return {
@@ -998,12 +1076,14 @@ function verifyShareHelper() {
     rootFolderUrl: root ? root.getUrl() : '',
     driveApiV3Ready: driveAdvanced,
     ready: ready,
+    storagePrivacyReady: !!root,
+    storageError: storageError,
     expirySupported: driveAdvanced,
     notificationBehavior: 'Google Drive share notification requested',
     note: ready
       ? 'Managed identity and Drive API v3 are visible. Every share will still be blocked unless its packet and live permission match the final review.'
       : (!managedIdentityReady
         ? 'Google did not expose the deployer email. Re-deploy from the intended managed account; sharing stays locked.'
-        : 'Drive API v3 is not reachable. Enable the Advanced Drive service; sharing stays locked.')
+        : (storageError ? storageError + ' Sharing stays locked.' : 'Drive API v3 is not reachable. Enable the Advanced Drive service; sharing stays locked.'))
   };
 }

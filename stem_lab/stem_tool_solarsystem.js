@@ -1235,8 +1235,8 @@ const d = labToolData.solarSystem || {};
               '@media(max-width:640px){.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage){overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:thin;scrollbar-color:#67e8f9 rgba(15,23,42,.72)}.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage)>svg{width:720px;min-width:720px;max-width:none}.solar-cosmos :is(.solar-seasons-stage,.solar-signal-stage,.solar-moon-stage):focus-visible{outline:3px solid #67e8f9;outline-offset:3px}}',
               '@media(max-width:640px){.solar-cosmos .solar-tutorial-orbit{height:106px}.solar-cosmos .solar-tutorial-orbit-line--three{width:270px}.solar-cosmos .solar-tutorial-content{padding:16px}.solar-cosmos .solar-tutorial-title{font-size:19px}.solar-cosmos .solar-tutorial-steps{grid-template-columns:1fr;gap:7px;margin-top:13px}.solar-cosmos .solar-tutorial-step{min-height:54px}.solar-cosmos .solar-tutorial-jupiter{left:calc(50% + 112px)}}',
               '@media(prefers-reduced-motion:reduce){.solar-cosmos .solar-tutorial-sun,.solar-cosmos .solar-tutorial-planet,.solar-cosmos .solar-tutorial-craft{animation:none!important}.solar-cosmos .solar-tutorial-launch,.solar-cosmos .solar-tutorial-launch::before,.solar-cosmos .solar-tutorial-launch-arrow{transition:none!important}.solar-cosmos .solar-tutorial-launch:hover{transform:none}}',
-              '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{top:auto;left:10px;right:10px;bottom:66px;max-width:none;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
-              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}',
+              '@media(max-width:640px){.solar-cosmos .solar-tool-heading{padding:8px 10px}.solar-cosmos .solar3d-canvas{height:430px!important}.solar-cosmos .solar-model-note{position:relative;top:auto;left:auto;right:auto;bottom:auto;max-width:none;margin:8px 10px 66px;padding:7px 9px}.solar-cosmos .solar-model-note span{font-size:10px;line-height:1.38}.solar-cosmos .solar-canvas-world-picker{grid-template-columns:repeat(3,minmax(0,1fr));padding:7px}.solar-cosmos .solar-canvas-world-button,.solar-cosmos .solar-canvas-controls button,.solar-cosmos .solar-world-view-tab{min-height:44px}.solar-cosmos svg[viewBox]{border-radius:9px}}',
+              '.solar-cosmos [data-drone-presentation=scene] :is(.rover-hud,[data-drone-compass],[data-drone-depth-gauge],[data-drone-map-panel],[data-drone-ticker],[data-drone-sound-caption],[data-drone-action-dock],#rover-traverse-panel,#poi-arrow,#hud-sonar,#hud-spectrometer){display:none!important}.solar-cosmos [data-drone-camera-bar] button:focus-visible{outline:3px solid #fbbf24;outline-offset:2px}.solar-cosmos [data-drone-sampling-active=true] #hud-sample-prox{display:none!important}@media(max-width:640px){.solar-cosmos [data-drone-sampling-overlay]{bottom:120px!important}}',
               '@media(max-width:640px){.solar-cosmos .rover-hud{top:8px!important;left:8px!important;width:min(220px,calc(100% - 160px))!important;max-width:none!important;max-height:154px!important;overflow:hidden!important;padding:8px 10px!important;border-radius:10px!important}.solar-cosmos .rover-hud #hud-mode{font-size:10px!important;margin-bottom:3px!important}.solar-cosmos .rover-hud #hud-world-context,.solar-cosmos .rover-hud #hud-notable,.solar-cosmos .rover-hud #hud-shortcuts,.solar-cosmos .rover-hud #hud-ocean-panel,.solar-cosmos .rover-hud #hud-atmo-panel{display:none!important}.solar-cosmos .rover-hud #hud-simple-row{gap:1px 6px!important;margin-bottom:3px!important;padding-top:3px!important;font-size:9px!important}.solar-cosmos .rover-hud #hud-science-focus{padding-top:3px!important;margin-bottom:0!important}.solar-cosmos .rover-hud #hud-science-focus>div:nth-child(2){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.solar-cosmos .rover-hud #hud-science-reading{font-size:9px!important}.solar-cosmos [data-drone-fullscreen-toggle],.solar-cosmos [data-rover-sound-toggle],.solar-cosmos [data-drone-compass]{top:8px!important;width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;border-radius:10px!important}.solar-cosmos [data-drone-compass]{right:8px!important}.solar-cosmos [data-drone-fullscreen-toggle]{right:56px!important;font-size:20px!important}.solar-cosmos [data-rover-sound-toggle]{right:104px!important;font-size:18px!important}.solar-cosmos [data-drone-depth-gauge]{top:60px!important;right:8px!important;width:24px!important;height:142px!important}.solar-cosmos [data-drone-action-dock]{top:auto!important;left:8px!important;right:8px!important;bottom:8px!important;width:auto!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:4px!important}.solar-cosmos [data-drone-action-dock] button{min-height:44px!important;padding:4px 2px!important;flex-direction:column!important;justify-content:center!important;gap:1px!important;border-radius:9px!important;font-size:9px!important}.solar-cosmos [data-drone-action-dock] kbd{display:none!important}.solar-cosmos [data-drone-map-panel]{right:8px!important;bottom:64px!important;width:112px!important;padding:4px!important}.solar-cosmos [data-drone-minimap]{position:relative!important;right:auto!important;bottom:auto!important;width:100%!important;height:auto!important}.solar-cosmos #rover-traverse-panel{left:8px!important;right:8px!important;bottom:60px!important;width:auto!important;max-height:calc(100% - 128px)!important;padding:0!important;overflow:auto!important;border-radius:10px!important}.solar-cosmos #rover-traverse-panel[data-collapsed="true"]{right:auto!important;width:min(220px,calc(100% - 132px))!important;overflow:hidden!important}.solar-cosmos #rover-traverse-toggle{display:flex!important}.solar-cosmos #rover-traverse-details{padding:0 10px 10px}.solar-cosmos #rover-traverse-panel[data-collapsed="true"] #rover-traverse-details{display:none!important}}',
               '@media(max-width:640px){.solar-cosmos [data-drone-hazard]{top:168px!important;left:8px!important;right:40px!important;width:auto!important;transform:none!important;padding:5px 8px!important;border-radius:7px!important;font-size:9px!important;line-height:1.25!important}.solar-cosmos [data-drone-ticker]{display:none!important}.solar-cosmos [data-drone-sound-caption]{display:none!important}.solar-cosmos [data-drone-navigation-card]{left:8px!important;bottom:120px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:calc(100% - 300px)!important;overflow:auto!important;padding:8px!important;font-size:10px!important;pointer-events:auto!important}.solar-cosmos [data-drone-navigation-card]>div:first-child{font-size:11px!important}.solar-cosmos #hud-sonar{left:8px!important;bottom:64px!important;width:calc(100% - 132px)!important;box-sizing:border-box!important;max-height:50px!important;overflow:hidden!important;padding:4px 6px!important}}',
                '@media(prefers-reduced-motion:reduce){.solar-cosmos svg[viewBox],.solar-cosmos .solar-world-thumb,.solar-cosmos .solar-season-bar,.solar-cosmos .solar-moon-moving,.solar-cosmos .solar-moon-phase-disk,.solar-cosmos .solar-evidence-fill,.solar-cosmos .solar-evidence-node,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]){transition:none!important}.solar-cosmos .solar-season-sun,.solar-cosmos .solar-season-beam,.solar-cosmos .solar-signal-line,.solar-cosmos .solar-signal-pulse,.solar-cosmos .solar-drop-ball{animation:none!important}.solar-cosmos .solar-signal-pulse{left:90%;opacity:1}.solar-cosmos .solar-drop-ball{top:146px}.solar-cosmos .solar-evidence-node[data-current="true"],.solar-cosmos .solar-evidence-node[data-recommended="true"]{transform:none}.solar-cosmos .solar-world-card:hover .solar-world-thumb,.solar-cosmos .solar-world-card[aria-current="true"] .solar-world-thumb,.solar-cosmos div.mt-3.rounded-xl.p-3.border:has(svg[viewBox]):hover svg{transform:none}}'
@@ -4252,32 +4252,35 @@ const d = labToolData.solarSystem || {};
                 sunCtx.arc(spx + 6, spy + 1.5, 1.7, 0, Math.PI * 2);
                 sunCtx.fill();
               }
-              const sunMat = new THREE.MeshBasicMaterial({ map: new THREE.CanvasTexture(sunCv) });
+              const sunTexture = new THREE.CanvasTexture(sunCv);
+              sunTexture.encoding = THREE.sRGBEncoding;
+              const sunMat = new THREE.ShaderMaterial({
+                name: 'solar-photosphere',
+                uniforms: { photosphere: { value: sunTexture } },
+                vertexShader: [
+                  'varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye;',
+                  'void main() { vUv = uv; vNormal = normalMatrix * normal;',
+                  'vec4 p = modelViewMatrix * vec4(position, 1.0); vEye = -p.xyz; gl_Position = projectionMatrix * p; }'
+                ].join('\n'),
+                fragmentShader: [
+                  'uniform sampler2D photosphere; varying vec2 vUv; varying vec3 vNormal; varying vec3 vEye;',
+                  'void main() {',
+                  'float mu = max(0.0, dot(normalize(vNormal), normalize(vEye)));',
+                  'vec3 surface = pow(texture2D(photosphere, vUv).rgb, vec3(2.2));',
+                  'float cells = 0.94 + 0.06 * sin(vUv.x * 628.3185 + sin(vUv.y * 219.91)) * sin(vUv.y * 402.12);',
+                  'gl_FragColor = vec4(surface * cells * (0.48 + 0.65 * mu), 1.0);',
+                  '#include <tonemapping_fragment>',
+                  '#include <encodings_fragment>',
+                  '}'
+                ].join('\n')
+              });
 
               const sun = new THREE.Mesh(sunGeo, sunMat);
 
               scene.add(sun);
 
-              // Limb darkening: the Sun's edge is measurably dimmer and redder than
-              // its centre, because a sightline near the limb only reaches the cooler
-              // upper photosphere. A camera-facing overlay is the cheap way to show it
-              // on a sphere without a custom shader.
-              const limbCanvas = document.createElement('canvas'); limbCanvas.setAttribute('aria-hidden', 'true');
-              limbCanvas.width = limbCanvas.height = 128;
-              const limbCtx = limbCanvas.getContext('2d');
-              const limbGrad = limbCtx.createRadialGradient(64, 64, 10, 64, 64, 64);
-              limbGrad.addColorStop(0, 'rgba(120,40,0,0)');
-              limbGrad.addColorStop(0.62, 'rgba(120,40,0,0.05)');
-              limbGrad.addColorStop(0.88, 'rgba(122,44,4,0.3)');
-              limbGrad.addColorStop(1, 'rgba(96,30,0,0.55)');
-              limbCtx.fillStyle = limbGrad;
-              limbCtx.beginPath(); limbCtx.arc(64, 64, 64, 0, Math.PI * 2); limbCtx.fill();
-              const limbSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-                map: new THREE.CanvasTexture(limbCanvas), transparent: true, depthWrite: false, depthTest: false
-              }));
-              limbSprite.scale.set(11.2, 11.2, 1);
-              limbSprite.renderOrder = 2;
-              sun.add(limbSprite);
+              sun.name = 'solar-photosphere';
+
               const sunLight = new THREE.PointLight(0xffffff, 1.5, 200);
 
               scene.add(sunLight);
@@ -4475,6 +4478,55 @@ const d = labToolData.solarSystem || {};
                 }
                 return new THREE.MeshStandardMaterial({ map: solarMoonTexCache[kind], color: 0xffffff, roughness: kind === 'europa' || kind === 'enceladus' ? 0.55 : 0.9, metalness: 0 });
               }
+              // Lighting effects share the actual scene Sun at world origin. Local-space
+              // shadow rays stay correct while worlds orbit, tilt, and spin. No extra lights
+              // or shadow-map render passes are needed. Shell widths and exposure are artistic.
+              function solarLocalSun(mesh, uniform) {
+                const inverse = new THREE.Matrix4();
+                mesh.onBeforeRender = function () {
+                  inverse.copy(mesh.matrixWorld).invert();
+                  uniform.value.set(0, 0, 0).applyMatrix4(inverse);
+                };
+              }
+
+              function solarAtmosphereShell(planet) {
+                const depth = solarAtmosphereDepth(planet);
+                const rgb = solarAtmosphereRgb(planet);
+                const material = new THREE.ShaderMaterial({
+                  name: 'solar-directional-atmosphere',
+                  uniforms: {
+                    tint: { value: new THREE.Color(rgb[0] / 255, rgb[1] / 255, rgb[2] / 255).convertSRGBToLinear() },
+                    strength: { value: 0.28 + depth * 0.62 }
+                  },
+                  vertexShader: [
+                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight;',
+                    'void main() {',
+                    'vec4 p = modelViewMatrix * vec4(position, 1.0);',
+                    'vNormal = normalMatrix * normal; vEye = -p.xyz;',
+                    'vLight = (viewMatrix * vec4(0.0, 0.0, 0.0, 1.0)).xyz - p.xyz;',
+                    'gl_Position = projectionMatrix * p; }'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform vec3 tint; uniform float strength;',
+                    'varying vec3 vNormal; varying vec3 vEye; varying vec3 vLight;',
+                    'void main() {',
+                    'vec3 n = normalize(vNormal);',
+                    'float facing = max(0.0, dot(n, normalize(vEye)));',
+                    'float daylight = smoothstep(-0.16, 0.45, dot(n, normalize(vLight)));',
+                    'float rim = pow(1.0 - facing, 3.2) * smoothstep(0.0, 0.12, facing);',
+                    'gl_FragColor = vec4(tint * (0.7 + daylight * 0.6), rim * daylight * strength);',
+                    '#include <tonemapping_fragment>',
+                    '#include <encodings_fragment>',
+                    '}'
+                  ].join('\n'),
+                  transparent: true, depthWrite: false, blending: THREE.AdditiveBlending
+                });
+                const shell = new THREE.Mesh(new THREE.SphereGeometry(planet.size * (1.012 + depth * 0.06), 48, 32), material);
+                shell.name = 'solar-atmosphere-' + planet.key;
+                shell.renderOrder = 1;
+                return shell;
+              }
+
               const planetMeshes = [];
 
               const orbitLines = [];
@@ -4531,10 +4583,14 @@ const d = labToolData.solarSystem || {};
                 Saturn: {
                   label: 'bright icy rings with the Cassini Division',
                   bands: [
-                    { inner: 1.20, outer: 1.48, opacity: 0.32, color: 0xbba879 },
-                    { inner: 1.50, outer: 1.94, opacity: 0.78, color: 0xe9d9a7 },
-                    { inner: 2.02, outer: 2.28, opacity: 0.54, color: 0xcdbb87 },
-                    { inner: 2.34, outer: 2.37, opacity: 0.30, color: 0xf1dfb1 }
+                    { inner: 1.200, outer: 1.236, opacity: 0.10, color: 0xb9a880 },
+                    { inner: 1.239, outer: 1.527, opacity: 0.40, color: 0xc3ac7d },
+                    { inner: 1.527, outer: 1.760, opacity: 0.95, color: 0xefe0b4 },
+                    { inner: 1.760, outer: 1.951, opacity: 0.86, color: 0xe6d5a6 },
+                    // The Cassini Division separates B and A; narrow gaps stay open.
+                    { inner: 2.025, outer: 2.214, opacity: 0.66, color: 0xddc9a0 },
+                    { inner: 2.219, outer: 2.265, opacity: 0.62, color: 0xd6c398 },
+                    { inner: 2.324, outer: 2.330, opacity: 0.34, color: 0xefe6cc }
                   ]
                 },
                 Uranus: {
@@ -4572,16 +4628,58 @@ const d = labToolData.solarSystem || {};
                   thetaStart || 0,
                   thetaLength || Math.PI * 2
                 );
-                const ringMat = new THREE.MeshBasicMaterial({
-                  color: band.color,
-                  side: THREE.DoubleSide,
-                  transparent: true,
-                  opacity: band.opacity,
-                  depthWrite: false
+                // A mipmapped radial strip gives broad bands fine ringlets without
+                // thousands of meshes or distant high-frequency shader shimmer.
+                const strip = document.createElement('canvas'); strip.width = 512; strip.height = 4;
+                strip.setAttribute('aria-hidden', 'true');
+                const stripContext = strip.getContext('2d');
+                for (let x = 0; x < 512; x++) {
+                  const r = band.inner + (band.outer - band.inner) * x / 511;
+                  const value = Math.round(208 + 28 * Math.sin(r * 216) + 15 * Math.sin(r * 617));
+                  stripContext.fillStyle = 'rgb(' + value + ',' + value + ',' + value + ')';
+                  stripContext.fillRect(x, 0, 1, 4);
+                }
+                const ringTexture = new THREE.CanvasTexture(strip);
+                const ringMat = new THREE.ShaderMaterial({
+                  name: 'solar-shadowed-ring',
+                  uniforms: {
+                    ringlets: { value: ringTexture },
+                    tint: { value: new THREE.Color(band.color).convertSRGBToLinear() },
+                    alpha: { value: band.opacity },
+                    innerRadius: { value: planetSize * band.inner },
+                    bandWidth: { value: planetSize * (band.outer - band.inner) },
+                    planetRadius: { value: planetSize },
+                    localSun: { value: new THREE.Vector3() }
+                  },
+                  vertexShader: [
+                    'varying vec3 vLocal;',
+                    'void main() { vLocal = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }'
+                  ].join('\n'),
+                  fragmentShader: [
+                    'uniform sampler2D ringlets; uniform vec3 tint; uniform vec3 localSun;',
+                    'uniform float alpha; uniform float innerRadius; uniform float bandWidth; uniform float planetRadius;',
+                    'varying vec3 vLocal;',
+                    'void main() {',
+                    'vec3 lightRay = normalize(localSun - vLocal);',
+                    'float along = dot(-vLocal, lightRay);',
+                    'float miss = length(vLocal + max(0.0, along) * lightRay);',
+                    // Spherical occluder approximation; edge softness is illustrative.
+                    'float shadow = along > 0.0 ? smoothstep(planetRadius * 0.97, planetRadius * 1.025, miss) : 1.0;',
+                    'float radial = clamp((length(vLocal.xy) - innerRadius) / bandWidth, 0.0, 1.0);',
+                    'float detail = texture2D(ringlets, vec2(radial, 0.5)).r;',
+                    'float illumination = (0.40 + 0.60 * sqrt(abs(lightRay.z))) * mix(0.075, 1.0, shadow);',
+                    'gl_FragColor = vec4(tint * detail * illumination, alpha * (0.70 + detail * 0.30));',
+                    '#include <tonemapping_fragment>',
+                    '#include <encodings_fragment>',
+                    '}'
+                  ].join('\n'),
+                  side: THREE.DoubleSide, transparent: true, depthWrite: false
                 });
                 const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+                ringMesh.name = 'solar-ring-band';
                 ringMesh.rotation.x = -Math.PI / 2;
                 ringMesh.renderOrder = 2;
+                solarLocalSun(ringMesh, ringMat.uniforms.localSun);
                 parent.add(ringMesh);
               }
 
@@ -4630,8 +4728,26 @@ const d = labToolData.solarSystem || {};
                 // 48 segments: at 24 the close-up silhouette showed visible facets.
                 const geo = new THREE.SphereGeometry(p.size, 48, 48);
                 const tex = makeWorldTex(p, idx);
-                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: p.terrainType === 'earthlike' ? 0.45 : 0.8, metalness: 0.1 }); // ocean sun-glint on Earth
+                const mat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.88, metalness: 0 });
+                if (p.terrainType === 'earthlike') {
+                  // Match the authored albedo map: blue water is smooth, land stays
+                  // matte. This is a visual material mask, not measured ocean state.
+                  const mask = document.createElement('canvas'); mask.width = tex.image.width; mask.height = tex.image.height;
+                  mask.setAttribute('aria-hidden', 'true');
+                  const maskContext = mask.getContext('2d');
+                  maskContext.drawImage(tex.image, 0, 0);
+                  const pixels = maskContext.getImageData(0, 0, mask.width, mask.height);
+                  for (let i = 0; i < pixels.data.length; i += 4) {
+                    const water = pixels.data[i + 2] > pixels.data[i] * 1.35 && pixels.data[i + 2] > pixels.data[i + 1] * 1.1;
+                    const rough = water ? 76 : 235;
+                    pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = rough;
+                  }
+                  maskContext.putImageData(pixels, 0, 0);
+                  mat.roughness = 1;
+                  mat.roughnessMap = new THREE.CanvasTexture(mask);
+                }
                 const mesh = new THREE.Mesh(geo, mat);
+                mesh.name = 'solar-world-' + p.key;
                 // Flatten along the spin axis (local y, before the tilt is applied).
                 if (SOLAR_OBLATENESS[p.key]) mesh.scale.y = 1 - SOLAR_OBLATENESS[p.key];
                 if (p.terrainType === 'earthlike') {
@@ -4647,15 +4763,32 @@ const d = labToolData.solarSystem || {};
                     const clat = (cloudRnd() * 2 - 1) * 72;
                     const belt = Math.abs(clat) < 12 ? 0.75 : Math.abs(clat) > 42 ? 0.8 : 0.35;
                     cg.globalAlpha = 0.35 + belt * 0.5 * cloudRnd();
-                    cg.beginPath();
-                    cg.ellipse(cloudRnd() * 1024, (90 - clat) / 180 * 512, 18 + cloudRnd() * 70, 5 + cloudRnd() * 12, (cloudRnd() - 0.5) * 0.6, 0, Math.PI * 2);
-                    cg.fill();
+                    const cx = cloudRnd() * 1024, cy = (90 - clat) / 180 * 512;
+                    const span = 18 + cloudRnd() * 70;
+                    // Broken filaments follow a curved front, with feathered edges.
+                    // Wrap copies prevent a seam at the date line. Pattern is illustrative.
+                    for (let wisp = 0; wisp < 12; wisp++) {
+                      const q = wisp / 11;
+                      const wx = cx + (q - 0.5) * span;
+                      const wy = cy + Math.sin(q * Math.PI * 1.4) * 9;
+                      const radius = 3 + cloudRnd() * 7;
+                      for (let wrap = -1; wrap <= 1; wrap++) {
+                        const x = wx + wrap * 1024;
+                        const feather = cg.createRadialGradient(x, wy, 0, x, wy, radius);
+                        feather.addColorStop(0, 'rgba(255,255,255,0.85)');
+                        feather.addColorStop(0.5, 'rgba(255,255,255,0.45)');
+                        feather.addColorStop(1, 'rgba(255,255,255,0)');
+                        cg.fillStyle = feather;
+                        cg.fillRect(x - radius, wy - radius, radius * 2, radius * 2);
+                      }
+                    }
                   }
                   const cloudTex = new THREE.CanvasTexture(cloudCv); cloudTex.needsUpdate = true;
                   const cloudMesh = new THREE.Mesh(
                     new THREE.SphereGeometry(p.size * 1.018, 48, 48),
                     new THREE.MeshStandardMaterial({ map: cloudTex, transparent: true, opacity: 0.9, depthWrite: false, roughness: 1, metalness: 0 })
                   );
+                  cloudMesh.name = 'solar-earth-clouds';
                   mesh.add(cloudMesh); mesh._cloudMesh = cloudMesh;
                 }
                 mesh.userData = { name: p.name, idx: idx, orbitE: p.orbitE, orbitI: p.orbitI };
@@ -4682,22 +4815,12 @@ const d = labToolData.solarSystem || {};
 
                 planetMeshes.push(mesh);
 
-                // Atmosphere glow — soft halo around planets with atmospheres
-                // 'Virtually none' (Mercury) must count as none: an airless world has no halo.
-                if (p.atmosphere && !/\bnone\b/i.test(p.atmosphere) && p.terrainType !== 'cratered') {
-                  var glowSize = p.size * 2.4;
-                  var glowCanvas = document.createElement('canvas'); glowCanvas.setAttribute('aria-hidden', 'true'); glowCanvas.width = 128; glowCanvas.height = 128;
-                  var gctx = glowCanvas.getContext('2d');
-                  var glowGrad = gctx.createRadialGradient(64, 64, 20, 64, 64, 64);
-                  var atmoRgb = solarAtmosphereRgb(p);
-                  glowGrad.addColorStop(0, 'rgba(' + atmoRgb[0] + ',' + atmoRgb[1] + ',' + atmoRgb[2] + ',0.3)');
-                  glowGrad.addColorStop(0.5, 'rgba(' + atmoRgb[0] + ',' + atmoRgb[1] + ',' + atmoRgb[2] + ',0.1)');
-                  glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
-                  gctx.fillStyle = glowGrad; gctx.fillRect(0, 0, 128, 128);
-                  var glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(glowCanvas), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
-                  glowSprite.scale.set(glowSize, glowSize, 1);
-                  mesh.add(glowSprite);
-                  mesh._atmosGlow = glowSprite;
+                // Only worlds with an atmosphere get a sun-facing limb. The night
+                // side no longer glows like a uniformly emissive billboard.
+                if (solarHasAtmosphere(p)) {
+                  const atmosphere = solarAtmosphereShell(p);
+                  mesh.add(atmosphere);
+                  mesh._atmosGlow = atmosphere;
                 }
 
                 // Saturn's rings
@@ -4806,66 +4929,7 @@ const d = labToolData.solarSystem || {};
                   triton.userData.retrograde = true;
                   mesh.add(triton); mesh._moons.push(triton);
                 }
-                if (p.hasRings) {
-
-                  const ringGeo = new THREE.RingGeometry(p.size * 1.2, p.size * 2.37, 96);
-
-                  // Radial profile from the real ring radii, in Saturn radii, mapped
-                  // across the mesh's 1.2 to 2.37 span. A smooth gradient turned the
-                  // Cassini Division into a soft shadow; it is a 4,700 km gap swept
-                  // clear by a resonance with Mimas, and it should read as a gap.
-                  const RING_W = 1024;
-                  const ringCanvas = document.createElement('canvas'); ringCanvas.setAttribute('aria-hidden', 'true'); ringCanvas.width = RING_W; ringCanvas.height = 1;
-                  const rctx = ringCanvas.getContext('2d');
-                  const ringProfile = [
-                    { from: 1.200, to: 1.236, a: 0.10, c: '#b9a880' },
-                    { from: 1.239, to: 1.527, a: 0.40, c: '#c3ac7d' },
-                    { from: 1.527, to: 1.760, a: 0.95, c: '#efe0b4' },
-                    { from: 1.760, to: 1.951, a: 0.86, c: '#e6d5a6' },
-                    { from: 1.951, to: 2.025, a: 0.06, c: '#8e8570' },
-                    { from: 2.025, to: 2.214, a: 0.66, c: '#ddc9a0' },
-                    { from: 2.214, to: 2.219, a: 0.03, c: '#6d6455' },
-                    { from: 2.219, to: 2.265, a: 0.62, c: '#d6c398' },
-                    { from: 2.265, to: 2.269, a: 0.05, c: '#6d6455' },
-                    { from: 2.269, to: 2.324, a: 0.04, c: '#7d7360' },
-                    { from: 2.324, to: 2.330, a: 0.34, c: '#efe6cc' }
-                  ];
-                  rctx.clearRect(0, 0, RING_W, 1);
-                  function solarRingU(rr) { return (rr - 1.2) / (2.37 - 1.2); }
-                  for (let rb = 0; rb < ringProfile.length; rb++) {
-                    const ringBand = ringProfile[rb];
-                    const rx0 = solarRingU(ringBand.from) * RING_W, rx1 = solarRingU(ringBand.to) * RING_W;
-                    rctx.globalAlpha = ringBand.a;
-                    rctx.fillStyle = ringBand.c;
-                    rctx.fillRect(rx0, 0, Math.max(1, rx1 - rx0), 1);
-                  }
-                  // Ringlet striations, so the bands do not read as flat plastic.
-                  const ringRnd = solarSeededRandom(6011);
-                  for (let rl = 0; rl < 160; rl++) {
-                    const ru = ringRnd();
-                    if (1.2 + ru * 1.17 > 1.951 && 1.2 + ru * 1.17 < 2.025) continue;
-                    rctx.globalAlpha = 0.06 + ringRnd() * 0.14;
-                    rctx.fillStyle = ringRnd() < 0.5 ? '#fff6dc' : '#8d7f5f';
-                    rctx.fillRect(ru * RING_W, 0, 1 + ringRnd() * 2, 1);
-                  }
-                  rctx.globalAlpha = 1;
-
-                  const ringTex = new THREE.CanvasTexture(ringCanvas);
-
-                  const ringMat = new THREE.MeshBasicMaterial({ map: ringTex, side: THREE.DoubleSide, transparent: true, opacity: 0.8, depthWrite: false }); // ring no longer punch-clips the atmosphere halo
-
-                  const ringMesh = new THREE.Mesh(ringGeo, ringMat);
-
-                  // Pure equatorial — the parent mesh now carries the axial tilt, so the ring
-                  // inherits it (tilting here too would double-apply it).
-                  ringMesh.rotation.x = -Math.PI / 2;
-
-                  mesh.add(ringMesh);
-
-                }
-
-                // Layer measured narrow bands over Saturn's broad textured rings and
-                // provide the faint ring systems missing from the other three giants.
+                // One equatorial ring system: avoid overlapping legacy geometry and UV seams.
                 addSolarRingSystem(mesh, p);
 
               });
@@ -5046,6 +5110,17 @@ const d = labToolData.solarSystem || {};
 
 
 
+              function solarFocusDistance(world) {
+                const radius = world.geometry && world.geometry.parameters.radius || 1;
+                const rings = PLANET_RING_SYSTEMS[world._orbitBody && world._orbitBody.key];
+                let extent = radius * 1.08;
+                if (rings) rings.bands.forEach(function (band) { extent = Math.max(extent, radius * band.outer); });
+                // Fit the whole ring system against the NARROWER field of view.
+                // The old fixed cap cropped Saturn's outer rings on phones.
+                const halfField = Math.atan(Math.tan(camera.fov * Math.PI / 360) * Math.min(1, camera.aspect));
+                return Math.max(3, radius * 5, extent * 1.15 / Math.sin(halfField));
+              }
+
               function updateCamera() {
 
                 camera.position.x = currentLookAt.x + currentDist * Math.sin(camPhi) * Math.cos(camTheta);
@@ -5200,7 +5275,7 @@ const d = labToolData.solarSystem || {};
 
                   var radius = hitObj.geometry.parameters.radius;
 
-                  targetDist = Math.max(3, Math.min(18, radius * 5));
+                  targetDist = solarFocusDistance(hitObj);
 
                   // Set lookAt target to planet's current position (will be tracked each frame)
 
@@ -5343,7 +5418,23 @@ const d = labToolData.solarSystem || {};
                 if (composer) { try { (composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} composer = null; }
                 renderer.dispose();
 
-                scene.traverse(function (o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (o.material.map) o.material.map.dispose(); o.material.dispose(); } });
+                const solarDisposedResources = new Set();
+                function disposeSolarResource(resource) {
+                  if (!resource || !resource.dispose || solarDisposedResources.has(resource)) return;
+                  solarDisposedResources.add(resource); resource.dispose();
+                }
+                scene.traverse(function (o) {
+                  disposeSolarResource(o.geometry);
+                  (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (material) {
+                    if (!material) return;
+                    Object.keys(material).forEach(function (key) { if (material[key] && material[key].isTexture) disposeSolarResource(material[key]); });
+                    if (material.uniforms) Object.keys(material.uniforms).forEach(function (key) {
+                      const value = material.uniforms[key].value;
+                      if (value && value.isTexture) disposeSolarResource(value);
+                    });
+                    disposeSolarResource(material);
+                  });
+                });
 
                 stopPlanetAmbience();
 
@@ -5491,9 +5582,18 @@ const d = labToolData.solarSystem || {};
                     if (_fm && _fm.userData && _fm.userData.name === _ftName) {
                       focusedPlanetIdx = (_fm.userData.idx != null) ? _fm.userData.idx : _fi;
                       var _fr = (_fm.geometry && _fm.geometry.parameters && _fm.geometry.parameters.radius) || 1;
-                      targetDist = Math.max(3, Math.min(18, _fr * 5));
+                      targetDist = solarFocusDistance(_fm);
+                      canvas.dataset.focusDistance = String(targetDist);
                       targetLookAt.copy(_fm.position);
                       targetPhi = 0.8;
+                      const preset = canvas.dataset.cameraPreset;
+                      if (preset) {
+                        const sunAngle = Math.atan2(-_fm.position.z, -_fm.position.x);
+                        camTheta = sunAngle + (preset === 'crescent' ? 2.25 : preset === 'polar' ? 0.35 : 1.05);
+                        targetPhi = preset === 'polar' ? 0.18 : 1.05;
+                        canvas.dataset.cameraPreset = '';
+                        canvas.dataset.observationView = preset;
+                      }
                       break;
                     }
                   }
@@ -5542,11 +5642,11 @@ const d = labToolData.solarSystem || {};
 
                 // Smoothly interpolate camera toward target
 
-                currentLookAt.lerp(targetLookAt, cameraLerp);
+                currentLookAt.lerp(targetLookAt, _rmCam ? 1 : cameraLerp);
 
-                currentDist += (targetDist - currentDist) * cameraLerp;
+                currentDist += (targetDist - currentDist) * (_rmCam ? 1 : cameraLerp);
 
-                camPhi += (targetPhi - camPhi) * cameraLerp; // eased polar angle (no snap)
+                camPhi += (targetPhi - camPhi) * (_rmCam ? 1 : cameraLerp); // eased polar angle (no snap)
 
                 updateCamera();
 
@@ -12244,7 +12344,7 @@ const d = labToolData.solarSystem || {};
               React.createElement("div", { id: "solar3d-model-note", className: "solar-model-note", role: "note", "aria-label": __alloT('stem.solarsystem.a11y_scientific_model_scale_and_orbit_note', 'Scientific model scale and orbit note') },
                 React.createElement("strong", null, "Scientific model"),
                 React.createElement("span", null, "Eccentricity + inclination shown \u2022 Keplerian relative speeds \u2022 distances compressed \u2022 body sizes and debris density enlarged"),
-                React.createElement("span", { className: "solar-model-layers" }, "Visible layers: Main belt 2\u20134 AU \u2022 Kuiper Belt 30\u201350 AU \u2022 four giant-planet ring systems")
+                React.createElement("span", { className: "solar-model-layers" }, "Visible layers: Main belt 2\u20134 AU \u2022 Kuiper Belt 30\u201350 AU \u2022 four giant-planet ring systems \u2022 lighting + atmospheric widths illustrative")
               ),
 
               // Controls overlay
@@ -12289,6 +12389,28 @@ const d = labToolData.solarSystem || {};
 
               )
 
+            ),
+
+            !d.orreryMode && sel && React.createElement('div', {
+              role: 'group', 'aria-label': 'Orbital observation viewpoints',
+              style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px', padding: '12px', marginTop: '10px', borderRadius: '14px', border: '1px solid #36526f', background: 'linear-gradient(120deg,#0a172c,#15243d)', color: '#e2e8f0' }
+            },
+              React.createElement('div', { style: { flex: '1 1 190px', fontSize: '12px', lineHeight: 1.5 } },
+                React.createElement('strong', { style: { display: 'block', color: '#a5e7ff' } }, 'Observe ' + sel.name),
+                'Change viewpoint without advancing orbital time.'),
+              [{ id: 'sunlit', label: 'Sunlit view' }, { id: 'crescent', label: 'Crescent view' }, { id: 'polar', label: 'Above orbit' }].map(function (view) {
+                return React.createElement('button', {
+                  key: view.id, type: 'button',
+                  style: { minHeight: '44px', padding: '10px 14px', borderRadius: '10px', border: '1px solid #567392', background: '#1c3450', color: '#f0f9ff', fontWeight: 700, fontSize: '12px' },
+                  onClick: function () {
+                    const model = document.querySelector('.solar3d-canvas');
+                    if (model) {
+                      model.dataset.cameraPreset = view.id; model.dataset.flyTo = sel.name;
+                      model.focus({ preventScroll: true }); model.scrollIntoView({ block: 'center', behavior: 'auto' });
+                    }
+                  }
+                }, view.label);
+              })
             ),
 
             // Planet buttons row
@@ -15357,10 +15479,11 @@ const d = labToolData.solarSystem || {};
                               // is sunlit regolith, and on a gas giant it is the cloud banding
                               // itself — those bands are the science, and blowing them out
                               // costs a student the very structure they came to read. In the
-                              // ocean nothing competes, so the threshold can drop far enough
-                              // for the bioluminescence to actually carry.
+                              // ocean the painted hull and silver fittings also reflect light.
+                              // Keep them below the glow threshold so the vehicle stays readable
+                              // while the brighter headlights and bioluminescence carry.
                               var tune = isOcean
-                                ? { threshold: 0.55, strength: 1.05 }
+                                ? { threshold: 0.82, strength: 0.42 }
                                 : isGas
                                   ? { threshold: 0.86, strength: 0.55 }
                                   : sel.terrainType === 'volcanic'
@@ -15641,6 +15764,68 @@ const d = labToolData.solarSystem || {};
                             : sel.terrainType === 'volcanic' ? 'fractured-basalt'
                               : sel.terrainType === 'iceworld' ? 'crevassed-ice'
                                 : 'rocky-granular';
+                        // World-space color detail complements the existing geometric height
+                        // grid and linear bump map. It never changes collision/slope queries.
+                        var geologyPalette = {
+                          'aeolian-rippled': { base: '#9c7154', rock: '#80624f', light: '#baa083', label: 'Ochre dust, exposed layers, and scattered rock fragments' },
+                          'regolith-pitted': { base: '#827d74', rock: '#635f58', light: '#a7a299', label: 'Mottled regolith and angular impact fragments' },
+                          'fractured-basalt': { base: '#735447', rock: '#4c4140', light: '#998071', label: 'Dark volcanic rock and fractured surface textures' },
+                          'crevassed-ice': { base: '#9b9ca3', rock: '#9eabb7', light: '#dce7ec', label: 'Contrasting ice textures and frost-bright fragments' },
+                          'rocky-granular': { base: '#8b7963', rock: '#726453', light: '#b1a189', label: 'Granular terrain and weathered rock fragments' }
+                        }[rockySurfaceProfile];
+                        var geologyMaterials = [];
+                        var geologyDetailMesh = null;
+                        function applyDroneGeology(material, rockStrength, separatelyOwned) {
+                          var profileCode = rockySurfaceProfile === 'aeolian-rippled' ? 1 : rockySurfaceProfile === 'fractured-basalt' ? 2 : rockySurfaceProfile === 'crevassed-ice' ? 3 : 0;
+                          material.userData.geologyProfile = rockySurfaceProfile;
+                          material.customProgramCacheKey = function () { return 'drone-geology-1-' + profileCode + '-' + rockStrength; };
+                          material.onBeforeCompile = function (shader) {
+                            shader.uniforms.geologyRockStrength = { value: rockStrength };
+                            shader.vertexShader = shader.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vGeologyPosition; varying float vGeologySlope;');
+                            shader.vertexShader = shader.vertexShader.replace('#include <defaultnormal_vertex>', '#include <defaultnormal_vertex>\nvGeologySlope = 1.0 - abs(dot(normalize(transformedNormal), normalize((viewMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz)));');
+                            shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', [
+                              '#include <worldpos_vertex>',
+                              'vec4 geologyLocal = vec4(transformed, 1.0);',
+                              '#ifdef USE_INSTANCING',
+                              'geologyLocal = instanceMatrix * geologyLocal;',
+                              '#endif',
+                              'vGeologyPosition = (modelMatrix * geologyLocal).xyz;'
+                            ].join('\n'));
+                            shader.fragmentShader = shader.fragmentShader.replace('#include <common>', [
+                              '#include <common>',
+                              'varying vec3 vGeologyPosition; varying float vGeologySlope; uniform float geologyRockStrength;',
+                              'float geologyHash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }',
+                              'float geologyNoise(vec2 p) {',
+                              'vec2 i = floor(p); vec2 f = fract(p); f = f * f * (3.0 - 2.0 * f);',
+                              'return mix(mix(geologyHash(i), geologyHash(i + vec2(1.0, 0.0)), f.x), mix(geologyHash(i + vec2(0.0, 1.0)), geologyHash(i + vec2(1.0, 1.0)), f.x), f.y); }'
+                            ].join('\n'));
+                            var surfaceColor = [
+                              '#include <map_fragment>',
+                              'vec3 gp = vGeologyPosition;',
+                              'float macro = geologyNoise(gp.xz * 0.075) * 0.7 + geologyNoise(gp.xz * 0.24) * 0.3;',
+                              'float nearDetail = 1.0 - smoothstep(12.0, 65.0, length(vViewPosition));',
+                              'float exposure = smoothstep(0.08, 0.50, vGeologySlope);',
+                              'diffuseColor.rgb *= mix(0.72, 1.22, macro);'
+                            ];
+                            if (profileCode === 1) surfaceColor.push(
+                              'float strata = 0.5 + 0.5 * sin(gp.y * 8.0 + geologyNoise(gp.xz * 0.22) * 2.8);',
+                              'float bedding = mix(0.70, 1.16, strata);',
+                              'diffuseColor.rgb *= mix(1.0, bedding, max(exposure * 0.55, geologyRockStrength) * nearDetail);',
+                              'diffuseColor.rgb *= mix(vec3(1.08, 1.02, 0.93), vec3(0.88, 0.91, 0.95), exposure * 0.6);'
+                            );
+                            if (profileCode === 2) surfaceColor.push(
+                              'float fracture = abs(sin(gp.x * 0.91 + sin(gp.z * 0.27)) * sin(gp.z * 0.76 + gp.y * 0.35));',
+                              'diffuseColor.rgb *= mix(1.0, mix(0.58, 1.0, smoothstep(0.018, 0.095, fracture)), nearDetail * 0.65);'
+                            );
+                            if (profileCode === 3) surfaceColor.push(
+                              'float frost = smoothstep(0.35, 0.72, macro) * (1.0 - exposure * 0.65);',
+                              'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.66, 0.75, 0.81), frost * 0.34);'
+                            );
+                            shader.fragmentShader = shader.fragmentShader.replace('#include <map_fragment>', surfaceColor.join('\n'));
+                          };
+                          if (!separatelyOwned) geologyMaterials.push(material);
+                        }
+
                         var rockyHorizonMesh = null;
                         var rockyHorizonGeo = null;
                         var rockyHorizonMat = null;
@@ -15683,9 +15868,10 @@ const d = labToolData.solarSystem || {};
                           rockyHorizonGeo.setIndex(horizonIndices);
                           rockyHorizonGeo.computeVertexNormals();
                           rockyHorizonMat = new THREE.MeshStandardMaterial({
-                            color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.48),
+                            color: new THREE.Color(geologyPalette.base).multiplyScalar(0.56),
                             roughness: 0.99, metalness: 0, flatShading: false, fog: true, side: THREE.DoubleSide
                           });
+                          applyDroneGeology(rockyHorizonMat, 0.4, true);
                           rockyHorizonMesh = new THREE.Mesh(rockyHorizonGeo, rockyHorizonMat);
                           rockyHorizonMesh.userData.horizonPeak = true;
                           rockyHorizonMesh.castShadow = false;
@@ -16086,7 +16272,7 @@ const d = labToolData.solarSystem || {};
                           // Higher-resolution terrain texture (512x512)
                           var tCv = document.createElement('canvas'); tCv.setAttribute('aria-hidden', 'true'); tCv.width = 512; tCv.height = 512;
                           var tCx = tCv.getContext('2d');
-                          var baseC = new THREE.Color(sel.terrainColor || '#886644');
+                          var baseC = new THREE.Color(geologyPalette.base);
                           var secC = sel.terrainType === 'volcanic' ? new THREE.Color('#331100') :
                                      sel.terrainType === 'earthlike' ? new THREE.Color('#4a6741') :
                                      sel.terrainType === 'desert' ? new THREE.Color('#c4a35a') :
@@ -16160,12 +16346,15 @@ const d = labToolData.solarSystem || {};
                           terrainMicroTex.magFilter = THREE.LinearFilter;
                           terrainMicroTex.generateMipmaps = true;
                           try { terrainMicroTex.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy()); } catch (e) { terrainMicroTex.anisotropy = 1; }
-                          var terrainBumpScale = rockySurfaceProfile === 'aeolian-rippled' ? 0.16 : rockySurfaceProfile === 'fractured-basalt' ? 0.26 : rockySurfaceProfile === 'crevassed-ice' ? 0.20 : 0.22;
+                          // Fine grain should modulate light, not turn each data texel into a steep block.
+                          var terrainBumpScale = rockySurfaceProfile === 'aeolian-rippled' ? 0.035 : rockySurfaceProfile === 'fractured-basalt' ? 0.055 : rockySurfaceProfile === 'crevassed-ice' ? 0.040 : 0.030;
                           // The grayscale micro map describes height, not reflectance. Using
                           // it as roughness made dark pits/fissures incorrectly glossy because
                           // MeshStandardMaterial multiplies the map by scalar roughness.
                           var terrainMat = new THREE.MeshStandardMaterial({ map: terrainTex, bumpMap: terrainMicroTex, bumpScale: terrainBumpScale, roughness: 0.96, metalness: 0.03, flatShading: false });
+                          applyDroneGeology(terrainMat, 0.0);
                           var terrain = new THREE.Mesh(terrainGeo, terrainMat);
+                          terrain.name = 'drone-geology-ground';
                           terrain.rotation.x = -Math.PI / 2; scene.add(terrain);
                           _terrainMesh = terrain;
 
@@ -16198,7 +16387,10 @@ const d = labToolData.solarSystem || {};
                           };
 
                           // Add scattered rocks and boulders for visual detail
-                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(sel.terrainColor || '#886644').multiplyScalar(0.7), roughness: 0.95, metalness: 0.05, flatShading: false });
+                          var rockMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(geologyPalette.rock), roughness: 0.95, metalness: 0, flatShading: false });
+                          var layeredRockMat = rockMat.clone();
+                          applyDroneGeology(rockMat, 0.12);
+                          applyDroneGeology(layeredRockMat, 0.86);
                           for (var ri = 0; ri < 60; ri++) {
                             var rx = (Math.random() - 0.5) * 180, rz = (Math.random() - 0.5) * 180;
                             var rScale = 0.2 + Math.random() * 1.5;
@@ -16209,13 +16401,51 @@ const d = labToolData.solarSystem || {};
                               Math.random() * 100,
                               0.75
                             );
-                            var rock = new THREE.Mesh(rockGeo, rockMat);
+                            var rock = new THREE.Mesh(rockGeo, ri % 3 === 0 ? layeredRockMat : rockMat);
+                            rock.name = 'drone-geology-boulder';
                             var ry = _terrainHeightAt(rx, rz);
                             rock.position.set(rx, ry + rScale * 0.3, rz);
                             rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
                             scene.add(rock);
                             addRoverObstacle(rx, rz, Math.max(0.45, rScale * 0.85), 'rock');
                           }
+
+                          // Small fragments provide foreground scale in one instanced draw.
+                          // They are shallow visual dressing, below the existing wheel radius,
+                          // not new obstacles or collectible/mineral measurements.
+                          var fragmentCount = rockySurfaceLowPower ? 320 : 720;
+                          var fragmentGeometry = __alloRockDeform(new THREE.DodecahedronGeometry(1, 0), 731, 0.72);
+                          var fragmentMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.98, metalness: 0, flatShading: true });
+                          geologyMaterials.push(fragmentMaterial);
+                          geologyDetailMesh = new THREE.InstancedMesh(fragmentGeometry, fragmentMaterial, fragmentCount);
+                          geologyDetailMesh.name = 'drone-surface-fragments';
+                          geologyDetailMesh.userData.surfaceMicrodetail = true;
+                          geologyDetailMesh.frustumCulled = false;
+                          geologyDetailMesh.receiveShadow = true;
+                          geologyDetailMesh.castShadow = false;
+                          var fragmentRandom = solarSeededRandom(4309 + rockySurfaceProfile.length * 73);
+                          var fragmentDummy = new THREE.Object3D();
+                          var fragmentColor = new THREE.Color();
+                          var fragmentDark = new THREE.Color(geologyPalette.rock).convertSRGBToLinear();
+                          var fragmentLight = new THREE.Color(geologyPalette.light).convertSRGBToLinear();
+                          for (var fi = 0; fi < fragmentCount; fi++) {
+                            var extent = fi < fragmentCount * 0.45 ? 38 : 111;
+                            var fx = (fragmentRandom() * 2 - 1) * extent;
+                            var fz = (fragmentRandom() * 2 - 1) * extent;
+                            var fragmentScale = 0.055 + fragmentRandom() * 0.13;
+                            fragmentDummy.position.set(fx, _terrainHeightAt(fx, fz) + fragmentScale * 0.18, fz);
+                            fragmentDummy.rotation.set(fragmentRandom() * 0.4, fragmentRandom() * Math.PI * 2, fragmentRandom() * 0.4);
+                            fragmentDummy.scale.set(fragmentScale * (0.8 + fragmentRandom()), fragmentScale * 0.45, fragmentScale);
+                            fragmentDummy.updateMatrix();
+                            geologyDetailMesh.setMatrixAt(fi, fragmentDummy.matrix);
+                            fragmentColor.copy(fragmentDark).lerp(fragmentLight, fragmentRandom() * 0.82);
+                            geologyDetailMesh.setColorAt(fi, fragmentColor);
+                          }
+                          geologyDetailMesh.instanceMatrix.needsUpdate = true;
+                          if (geologyDetailMesh.instanceColor) geologyDetailMesh.instanceColor.needsUpdate = true;
+                          scene.add(geologyDetailMesh);
+                          canvasEl.dataset.droneGeology = rockySurfaceProfile;
+                          canvasEl.dataset.droneFragmentCount = String(fragmentCount);
 
                           // ═══ PLANET-SPECIFIC TERRAIN FEATURES ═══
 
@@ -16703,6 +16933,58 @@ const d = labToolData.solarSystem || {};
                         // â"€â"€ 3D Rover / Probe / Submarine Model â"€â"€
 
                         var roverGroup = new THREE.Group();
+                        roverGroup.name = 'exploration-vehicle';
+                        // Small manufactured parts are baked once per material and moving parent.
+                        // Wheel details inherit the existing axle spin; no per-frame geometry work.
+                        var vehicleDetailBatches = new Map();
+                        var vehicleDetailMeshes = [];
+                        var vehicleDetailMaterials = [];
+                        var vehicleThrusterRotors = [];
+                        var vehiclePreviousPosition = new THREE.Vector3();
+                        var vehiclePositionReady = false;
+                        function vehicleMaterial(name, color, metalness, roughness) {
+                          var material = new THREE.MeshStandardMaterial({ color: color, metalness: metalness, roughness: roughness });
+                          material.name = 'vehicle-detail-' + name;
+                          vehicleDetailMaterials.push(material);
+                          return material;
+                        }
+                        var vehicleTitanium = vehicleMaterial('titanium', 0x9faeb9, 0.62, 0.36);
+                        var vehicleCeramic = vehicleMaterial('ceramic', 0xe4ded0, 0.15, 0.48);
+                        var vehicleCarbon = vehicleMaterial('carbon', 0x253039, 0.25, 0.58);
+                        var vehicleGold = vehicleMaterial('thermal-foil', 0xbd913e, 0.66, 0.4);
+                        var vehicleOptics = vehicleMaterial('optics', 0x214c73, 0.36, 0.22);
+                        function vehiclePart(parent, geometry, material, x, y, z, rx, ry, rz) {
+                          geometry.rotateX(rx || 0); geometry.rotateY(ry || 0); geometry.rotateZ(rz || 0);
+                          geometry.translate(x || 0, y || 0, z || 0);
+                          if (geometry.index) { var indexed = geometry; geometry = geometry.toNonIndexed(); indexed.dispose(); }
+                          var key = parent.uuid + ':' + material.uuid;
+                          if (!vehicleDetailBatches.has(key)) vehicleDetailBatches.set(key, { parent: parent, material: material, parts: [] });
+                          vehicleDetailBatches.get(key).parts.push(geometry);
+                        }
+                        function vehicleBox(parent, material, w, h, d, x, y, z, rx, ry, rz) {
+                          vehiclePart(parent, new THREE.BoxGeometry(w, h, d), material, x, y, z, rx, ry, rz);
+                        }
+                        function vehicleRing(parent, material, radius, tube, x, y, z, rx, ry) {
+                          vehiclePart(parent, new THREE.TorusGeometry(radius, tube, 6, 24), material, x, y, z, rx, ry);
+                        }
+                        function finishVehicleDetails() {
+                          vehicleDetailBatches.forEach(function(batch) {
+                            var geometry = new THREE.BufferGeometry();
+                            ['position', 'normal', 'uv'].forEach(function(name) {
+                              var length = 0; batch.parts.forEach(function(part) { length += part.attributes[name].array.length; });
+                              var data = new Float32Array(length), offset = 0;
+                              batch.parts.forEach(function(part) { data.set(part.attributes[name].array, offset); offset += part.attributes[name].array.length; });
+                              geometry.setAttribute(name, new THREE.BufferAttribute(data, name === 'uv' ? 2 : 3));
+                            });
+                            batch.parts.forEach(function(part) { part.dispose(); });
+                            geometry.computeBoundingSphere();
+                            var mesh = new THREE.Mesh(geometry, batch.material);
+                            mesh.name = batch.material.name;
+                            batch.parent.add(mesh); vehicleDetailMeshes.push(mesh);
+                          });
+                          vehicleDetailBatches.clear();
+                        }
+                        canvasEl.dataset.droneVehicleDetail = isOcean ? 'submersible' : isGas ? 'atmospheric-probe' : 'surface-rover';
                         var rockyWheelRigs = [];
                         var roverPoseReady = false;
                         var roverVisualGround = 0;
@@ -16738,7 +17020,7 @@ const d = labToolData.solarSystem || {};
                           // Main hull (elongated sphere)
                           var hullGeo = new THREE.SphereGeometry(0.5, 16, 12);
                           hullGeo.scale(1.6, 0.9, 0.9);
-                          var hullMat = new THREE.MeshStandardMaterial({ color: 0xeeaa00, metalness: 0.6, roughness: 0.3 });
+                          var hullMat = new THREE.MeshStandardMaterial({ color: 0xc99128, metalness: 0.35, roughness: 0.48 });
                           var hull = new THREE.Mesh(hullGeo, hullMat);
                           hull.position.y = 0;
                           roverGroup.add(hull);
@@ -16749,14 +17031,36 @@ const d = labToolData.solarSystem || {};
                           dome.position.set(0, 0.1, -0.7);
                           roverGroup.add(dome);
                           // Propeller shrouds (4 thrusters)
-                          var thrusterPositions = [[-0.6, 0.2, 0.5], [0.6, 0.2, 0.5], [-0.5, -0.25, 0], [0.5, -0.25, 0]];
-                          thrusterPositions.forEach(function(tp) {
-                            var shroudGeo = new THREE.CylinderGeometry(0.12, 0.15, 0.25, 8);
-                            var shroudMat = new THREE.MeshStandardMaterial({ color: 0x666666, metalness: 0.7, roughness: 0.4 });
-                            var shroud = new THREE.Mesh(shroudGeo, shroudMat);
-                            shroud.position.set(tp[0], tp[1], tp[2]);
-                            shroud.rotation.x = Math.PI / 2;
-                            roverGroup.add(shroud);
+                          var vehicleDuct = vehicleMaterial('duct', 0x253039, 0.25, 0.58);
+                          vehicleDuct.side = THREE.DoubleSide;
+                          var thrusterPositions = [[-0.82, 0.08, 0.45], [0.82, 0.08, 0.45], [-0.7, -0.25, -0.35], [0.7, -0.25, -0.35]];
+                          thrusterPositions.forEach(function(tp, index) {
+                            var housing = new THREE.Group();
+                            housing.name = 'vehicle-thruster-housing';
+                            // Connect each duct's inner rim to the pressure hull, clear of its rotor.
+                            var mountStart = new THREE.Vector3(tp[0] * 0.54, 0.04, tp[2] * 0.45);
+                            var mountEnd = new THREE.Vector3(tp[0] - Math.sign(tp[0]) * 0.13, tp[1], tp[2]);
+                            var mountDirection = mountEnd.clone().sub(mountStart);
+                            var mountGeometry = new THREE.CylinderGeometry(0.024, 0.032, mountDirection.length(), 8);
+                            var mountRotation = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), mountDirection.normalize());
+                            mountGeometry.applyMatrix4(new THREE.Matrix4().makeRotationFromQuaternion(mountRotation));
+                            var mountMidpoint = mountStart.add(mountEnd).multiplyScalar(0.5);
+                            vehiclePart(roverGroup, mountGeometry, vehicleTitanium, mountMidpoint.x, mountMidpoint.y, mountMidpoint.z);
+                            housing.position.set(tp[0], tp[1], tp[2]);
+                            if (index > 1) housing.rotation.x = Math.PI / 2;
+                            roverGroup.add(housing);
+                            // Open ducts expose the propeller instead of covering it with end caps.
+                            vehiclePart(housing, new THREE.CylinderGeometry(0.145, 0.145, 0.22, 16, 1, true), vehicleDuct, 0, 0, 0, Math.PI / 2);
+                            vehicleRing(housing, vehicleTitanium, 0.14, 0.014, 0, 0, -0.11);
+                            vehicleRing(housing, vehicleTitanium, 0.14, 0.014, 0, 0, 0.11);
+                            vehicleBox(housing, vehicleTitanium, 0.25, 0.016, 0.022, 0, 0, 0.08);
+                            var rotor = new THREE.Group(); rotor.name = 'vehicle-thruster-rotor';
+                            housing.add(rotor); vehicleThrusterRotors.push(rotor);
+                            vehiclePart(rotor, new THREE.CylinderGeometry(0.032, 0.032, 0.065, 12), vehicleGold, 0, 0, 0, Math.PI / 2);
+                            for (var blade = 0; blade < 3; blade++) {
+                              var angle = blade * Math.PI * 2 / 3;
+                              vehicleBox(rotor, vehicleGold, 0.09, 0.038, 0.012, Math.cos(angle) * 0.069, Math.sin(angle) * 0.069, 0, 0.2, 0, angle);
+                            }
                           });
                           // Manipulator arm (folded underneath)
                           var armGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.8, 6);
@@ -16829,13 +17133,13 @@ const d = labToolData.solarSystem || {};
 
                           // Body
 
-                          var bodyGeo = new THREE.BoxGeometry(0.8, 0.35, 1.2);
+                          var bodyGeo = new THREE.BoxGeometry(0.68, 0.30, 1.08);
 
                           var bodyMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.6, roughness: 0.3 });
 
                           var body = new THREE.Mesh(bodyGeo, bodyMat);
 
-                          body.position.y = 0.35;
+                          body.position.y = 0.37;
 
                           roverGroup.add(body);
 
@@ -16877,7 +17181,7 @@ const d = labToolData.solarSystem || {};
 
                           // Solar panel
 
-                          var panelGeo = new THREE.BoxGeometry(1.0, 0.03, 0.6);
+                          var panelGeo = new THREE.BoxGeometry(0.74, 0.025, 0.64);
 
                           var panelMat = new THREE.MeshStandardMaterial({ color: 0x1a1a5e, metalness: 0.3, roughness: 0.5 });
 
@@ -16914,6 +17218,8 @@ const d = labToolData.solarSystem || {};
                             wheelRig.position.set(wp[0], wp[1], wp[2]);
 
                             var wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                            // Apply spin around the cylinder's local axle before orienting it sideways.
+                            wheel.rotation.order = 'ZYX';
                             wheel.rotation.z = Math.PI / 2;
                             wheelRig.add(wheel);
 
@@ -17057,7 +17363,9 @@ const d = labToolData.solarSystem || {};
 
                           var shield = new THREE.Mesh(shieldGeo, shieldMat);
 
-                          shield.rotation.x = Math.PI;
+                          shield.name = 'vehicle-heat-shield';
+                          // The geometry already spans the lower hemisphere.
+                          shield.rotation.x = 0;
 
                           roverGroup.add(shield);
 
@@ -17107,6 +17415,75 @@ const d = labToolData.solarSystem || {};
 
                         }
 
+                        if (!isFluid) {
+                          // Exposed wheel grousers, rims and hub bolts follow each physical axle.
+                          rockyWheelRigs.forEach(function(data, index) {
+                            data.wheel.name = 'vehicle-wheel-' + index;
+                            for (var rib = 0; rib < 14; rib++) {
+                              var angle = rib * Math.PI * 2 / 14;
+                              vehicleBox(data.wheel, vehicleTitanium, 0.012, 0.096, 0.027, Math.cos(angle) * 0.151, 0, Math.sin(angle) * 0.151, 0, -angle);
+                            }
+                            [-1, 1].forEach(function(side) {
+                              vehicleRing(data.wheel, vehicleTitanium, 0.103, 0.011, 0, side * 0.047, 0, Math.PI / 2);
+                              vehiclePart(data.wheel, new THREE.CylinderGeometry(0.064, 0.064, 0.015, 12), vehicleGold, 0, side * 0.048, 0);
+                              for (var bolt = 0; bolt < 6; bolt++) {
+                                var a = bolt * Math.PI / 3;
+                                vehiclePart(data.wheel, new THREE.CylinderGeometry(0.009, 0.009, 0.018, 6), vehicleTitanium, Math.cos(a) * 0.046, side * 0.057, Math.sin(a) * 0.046);
+                              }
+                            });
+                          });
+                          // Photovoltaic cells and busbars are geometry, remaining crisp without an external texture.
+                          for (var row = 0; row < 4; row++) for (var col = 0; col < 6; col++) {
+                            var cellX = (col - 2.5) * 0.117, cellZ = 0.15 + (row - 1.5) * 0.151;
+                            vehicleBox(roverGroup, vehicleOptics, 0.109, 0.006, 0.139, cellX, 0.576, cellZ);
+                            vehicleBox(roverGroup, vehicleTitanium, 0.0025, 0.007, 0.133, cellX, 0.58, cellZ);
+                          }
+                          [-0.37, 0.37].forEach(function(x) { vehicleBox(roverGroup, vehicleTitanium, 0.016, 0.035, 0.66, x, 0.566, 0.15); });
+                          [-0.18, 0.48].forEach(function(z) { vehicleBox(roverGroup, vehicleTitanium, 0.74, 0.035, 0.015, 0, 0.566, z); });
+                          // Radiator strips, deck instruments and insulated service boxes.
+                          [-1, 1].forEach(function(side) {
+                            vehicleBox(roverGroup, vehicleCarbon, 0.018, 0.18, 0.42, side * 0.348, 0.36, 0.03);
+                            for (var fin = 0; fin < 7; fin++) vehicleBox(roverGroup, vehicleTitanium, 0.025, 0.14, 0.018, side * 0.36, 0.36, -0.15 + fin * 0.06);
+                            vehicleBox(roverGroup, vehicleGold, 0.15, 0.105, 0.20, side * 0.22, 0.545, -0.38);
+                            vehicleRing(roverGroup, vehicleTitanium, 0.048, 0.014, side * 0.066, 1.05, -0.412);
+                            vehiclePart(roverGroup, new THREE.CylinderGeometry(0.034, 0.034, 0.017, 12), vehicleOptics, side * 0.066, 1.05, -0.428, Math.PI / 2);
+                          });
+                          lens.visible = false;
+                          head.scale.x = 1.3;
+                          vehicleBox(roverGroup, vehicleCeramic, 0.29, 0.023, 0.22, 0, 1.127, -0.34);
+                          vehicleRing(roverGroup, vehicleTitanium, 0.065, 0.014, 0, 0.60, -0.3, Math.PI / 2);
+                          vehicleBox(roverGroup, vehicleCarbon, 0.36, 0.05, 0.025, 0, 0.36, 0.555);
+                          vehicleBox(roverGroup, vehicleGold, 0.13, 0.07, 0.025, 0, 0.42, 0.56);
+                        } else if (isOcean) {
+                          // Pressure-housing bands and protective skids give the ROV a readable silhouette.
+                          [-0.44, 0.44].forEach(function(x) {
+                            vehicleRing(roverGroup, vehicleTitanium, 0.378, 0.025, x, 0, 0, 0, Math.PI / 2);
+                            vehicleBox(roverGroup, vehicleTitanium, 0.05, 0.055, 1.36, x, -0.56, -0.03);
+                            [-0.46, 0.43].forEach(function(z) { vehicleBox(roverGroup, vehicleTitanium, 0.035, 0.28, 0.035, x, -0.40, z); });
+                          });
+                          [-0.53, 0.53].forEach(function(z) { vehicleBox(roverGroup, vehicleTitanium, 0.94, 0.04, 0.04, 0, -0.55, z); });
+                          vehicleRing(roverGroup, vehicleTitanium, 0.257, 0.025, 0, 0.10, -0.80);
+                          [-0.09, 0.09].forEach(function(x) {
+                            vehiclePart(roverGroup, new THREE.CylinderGeometry(0.051, 0.051, 0.10, 12), vehicleCarbon, x, 0.10, -0.90, Math.PI / 2);
+                            vehiclePart(roverGroup, new THREE.CylinderGeometry(0.036, 0.036, 0.012, 12), vehicleOptics, x, 0.10, -0.96, Math.PI / 2);
+                          });
+                          vehicleBox(roverGroup, vehicleCarbon, 0.28, 0.12, 0.33, 0, 0.43, 0.04);
+                          vehicleBox(roverGroup, vehicleCeramic, 0.20, 0.024, 0.25, 0, 0.5, 0.04);
+                        } else {
+                          // Illustrative entry capsule: ablative shield below, instruments above.
+                          vehicleRing(roverGroup, vehicleTitanium, 0.418, 0.022, 0, 0, 0, Math.PI / 2);
+                          vehicleRing(roverGroup, vehicleCarbon, 0.36, 0.008, 0, -0.22, 0, Math.PI / 2);
+                          vehicleRing(roverGroup, vehicleCarbon, 0.26, 0.008, 0, -0.33, 0, Math.PI / 2);
+                          for (var instrument = 0; instrument < 8; instrument++) {
+                            var a = instrument * Math.PI / 4;
+                            vehicleBox(roverGroup, vehicleGold, 0.16, 0.14, 0.045, Math.sin(a) * 0.35, 0.16, Math.cos(a) * 0.35, 0, a);
+                            vehicleBox(roverGroup, vehicleCarbon, 0.064, 0.045, 0.057, Math.sin(a) * 0.38, 0.19, Math.cos(a) * 0.38, 0, a);
+                          }
+                          vehicleRing(roverGroup, vehicleTitanium, 0.24, 0.018, 0, 0.32, 0, Math.PI / 2);
+                          vehicleRing(roverGroup, vehicleTitanium, 0.16, 0.013, 0, 0.81, 0, Math.PI / 2);
+                          vehiclePart(roverGroup, new THREE.CylinderGeometry(0.065, 0.065, 0.14, 12), vehicleCeramic, 0, 0.48, 0);
+                        }
+                        finishVehicleDetails();
                         roverGroup.position.set(0, isFluid ? 5 : 0, 0);
 
                         scene.add(roverGroup);
@@ -18158,7 +18535,11 @@ const d = labToolData.solarSystem || {};
 
                             case 'e': case 'shift': moveState.down = pressed; break;
 
-                            case 'f': moveState.sample = pressed; break;
+                            case 'f':
+                              moveState.sample = pressed;
+                              if (pressed && !sampleInputHeld && sampleStation) startDroneSampling();
+                              sampleInputHeld = pressed;
+                              break;
 
                             case 'tab':
                               if (pressed && isFluid) {
@@ -19116,7 +19497,8 @@ const d = labToolData.solarSystem || {};
 
                         function recordSampleEvidence(name, type, fact, context) {
                           markMissionStat('sampled');
-                          recordDroneJournal('Sample', name, fact, buildDroneCER('sample', name, (type ? type + ': ' : '') + fact, context || fact), true);
+                          var procedure = sampleLastContext || '';
+                          recordDroneJournal('Sample', name, fact + (procedure ? ' Collection method: ' + procedure : ''), buildDroneCER('sample', name, (type ? type + ': ' : '') + fact, (context || fact) + (procedure ? ' ' + procedure : '')), true);
                           refreshMissionPanel();
                         }
 
@@ -19838,6 +20220,14 @@ const d = labToolData.solarSystem || {};
                         });
                         roverCameraBar.appendChild(cameraChoices);
                         roverCameraBar.appendChild(sceneFocusButton);
+                        if (!isFluid) {
+                          var geologyCaption = document.createElement('div');
+                          geologyCaption.setAttribute('data-drone-geology-caption', rockySurfaceProfile);
+                          geologyCaption.setAttribute('role', 'note');
+                          geologyCaption.style.cssText = 'grid-column:1/-1;color:#bfd6e7;font-size:11px;line-height:1.5;padding-top:4px';
+                          geologyCaption.textContent = geologyPalette.label + '. Illustrative scenery; appearance alone does not identify a mineral or prove past water.';
+                          roverCameraBar.appendChild(geologyCaption);
+                        }
                         var surveyControls = document.createElement('div');
                         surveyControls.setAttribute('data-drone-survey-controls', 'true');
                         surveyControls.setAttribute('role', 'group');
@@ -19896,6 +20286,165 @@ const d = labToolData.solarSystem || {};
                         photoControls.appendChild(capturePhotoButton); photoControls.appendChild(reviewPhotoButton);
                         roverCameraBar.appendChild(photoControls);
                         roverCameraBar.appendChild(cameraHelp);
+
+                        // One transactional sampling operation shared by rover, sub and probe.
+                        // Rewards and evidence remain in the original inventory paths and can
+                        // only be claimed once, after the tool has sealed its specimen.
+                        var sampleOperation = null, sampleReadyOrb = null, sampleInputHeld = false;
+                        var sampleLastContext = '';
+                        var sampleStation = document.createElement('section');
+                        sampleStation.setAttribute('aria-label', 'Sampling station');
+                        sampleStation.setAttribute('data-drone-sampling', 'idle');
+                        sampleStation.style.cssText = 'grid-column:1/-1;min-width:0;border-top:1px solid #334155;padding-top:8px;display:grid;gap:6px';
+                        var sampleControls = document.createElement('div');
+                        sampleControls.style.cssText = 'display:flex;flex-wrap:wrap;align-items:center;gap:6px';
+                        var sampleMethod = document.createElement('select');
+                        sampleMethod.setAttribute('aria-label', 'Collection method');
+                        sampleMethod.style.cssText = 'min-height:44px;max-width:100%;background:#14263b;color:#e0f2fe;border:1px solid #64748b;border-radius:7px;padding:6px;font:600 12px system-ui';
+                        sampleMethod.innerHTML = isFluid ? '<option value="intake">Sealed intake</option>' : '<option value="scoop">Surface scoop</option><option value="drill">Core drill (demo)</option>';
+                        var sampleStartButton = document.createElement('button');
+                        sampleStartButton.type = 'button'; sampleStartButton.textContent = 'Collect sample';
+                        sampleStartButton.style.cssText = 'min-height:44px;padding:6px 12px;border:1px solid #67e8f9;border-radius:7px;background:#164e63;color:#ecfeff;font:700 12px system-ui;cursor:pointer';
+                        var sampleCancelButton = document.createElement('button');
+                        sampleCancelButton.type = 'button'; sampleCancelButton.textContent = 'Cancel sampling'; sampleCancelButton.disabled = true;
+                        sampleCancelButton.style.cssText = 'min-height:44px;padding:6px 10px;border:1px solid #64748b;border-radius:7px;background:#14263b;color:#e0f2fe;font:600 12px system-ui';
+                        var sampleStatus = document.createElement('div');
+                        sampleStatus.setAttribute('role', 'status'); sampleStatus.style.cssText = 'font:600 12px/1.5 system-ui;color:#a5f3fc;overflow-wrap:anywhere';
+                        sampleStatus.textContent = 'Approach a glowing specimen, then collect (F).';
+                        var sampleProgress = document.createElement('progress');
+                        sampleProgress.max = 100; sampleProgress.value = 0; sampleProgress.setAttribute('aria-label', 'Sample collection progress');
+                        sampleProgress.style.cssText = 'width:100%;height:6px;accent-color:#22d3ee';
+                        var sampleNote = document.createElement('div');
+                        sampleNote.style.cssText = 'font:11px/1.4 system-ui;color:#cbd5e1';
+                        sampleNote.textContent = 'Animated procedure; specimens and composition are preset. Drilling does not measure hidden layers.';
+                        if (isFluid) sampleNote.textContent = 'Animated intake procedure; specimens and composition are preset.';
+                        sampleControls.appendChild(sampleMethod); sampleControls.appendChild(sampleStartButton); sampleControls.appendChild(sampleCancelButton);
+                        var colonyMissionButton = document.createElement('button');
+                        colonyMissionButton.type = 'button'; colonyMissionButton.textContent = 'Kepler Colony ↗';
+                        colonyMissionButton.setAttribute('aria-label','Open Kepler Colony habitat mission');
+                        colonyMissionButton.style.cssText = sampleCancelButton.style.cssText;
+                        function openColonyHabitatMission() { if (typeof setStemLabTool === 'function') setStemLabTool('spaceColony'); }
+                        colonyMissionButton.addEventListener('click',openColonyHabitatMission);
+                        sampleControls.appendChild(colonyMissionButton);
+                        sampleStation.appendChild(sampleControls); sampleStation.appendChild(sampleStatus); sampleStation.appendChild(sampleProgress); sampleStation.appendChild(sampleNote);
+                        roverCameraBar.appendChild(sampleStation);
+                        var sampleOverlay = document.createElement('div');
+                        sampleOverlay.setAttribute('data-drone-sampling-overlay','true');
+                        sampleOverlay.setAttribute('aria-hidden','true');
+                        sampleOverlay.style.cssText = 'display:none;position:absolute;left:8px;bottom:12px;width:min(300px,calc(100% - 144px));box-sizing:border-box;padding:10px;border:1px solid #22d3ee;border-radius:10px;background:rgba(8,30,45,0.95);color:#a5f3fc;font:700 12px/1.4 system-ui;z-index:24;pointer-events:none;overflow-wrap:anywhere';
+                        var sampleOverlayText = document.createElement('div');
+                        var sampleOverlayTrack = document.createElement('div'); sampleOverlayTrack.style.cssText = 'height:5px;margin-top:7px;background:#334155;border-radius:5px;overflow:hidden';
+                        var sampleOverlayFill = document.createElement('div'); sampleOverlayFill.style.cssText = 'height:100%;width:0;background:#22d3ee';
+                        sampleOverlayTrack.appendChild(sampleOverlayFill); sampleOverlay.appendChild(sampleOverlayText); sampleOverlay.appendChild(sampleOverlayTrack);
+                        canvasEl.parentElement.appendChild(sampleOverlay);
+
+                        var sampleRig = new THREE.Group(); sampleRig.name = 'drone-sampling-rig'; sampleRig.visible = false; scene.add(sampleRig);
+                        var sampleMetal = new THREE.MeshStandardMaterial({color:0xcbd5e1,metalness:0.7,roughness:0.35});
+                        var sampleAccent = new THREE.MeshStandardMaterial({color:0x22d3ee,emissive:0x0891b2,emissiveIntensity:0.4});
+                        var sampleArmGeo = new THREE.CylinderGeometry(0.055,0.075,1,8);
+                        var sampleArmA = new THREE.Mesh(sampleArmGeo,sampleMetal), sampleArmB = new THREE.Mesh(sampleArmGeo,sampleMetal);
+                        sampleRig.add(sampleArmA); sampleRig.add(sampleArmB);
+                        var sampleTool = new THREE.Group(); sampleRig.add(sampleTool);
+                        var sampleToolBody = new THREE.Mesh(new THREE.CylinderGeometry(0.13,0.16,0.38,12),sampleMetal); sampleTool.add(sampleToolBody);
+                        var sampleBit = new THREE.Mesh(new THREE.ConeGeometry(0.1,0.36,6),sampleAccent); sampleBit.rotation.z = Math.PI; sampleBit.position.y = -0.32; sampleTool.add(sampleBit);
+                        var sampleFlutePoints = [];
+                        for (var fluteIndex=0;fluteIndex<=64;fluteIndex++) {
+                          var fluteFraction=fluteIndex/64, fluteAngle=fluteFraction*Math.PI*8;
+                          var fluteRadius=0.095*(1-fluteFraction)+0.012;
+                          sampleFlutePoints.push(new THREE.Vector3(Math.cos(fluteAngle)*fluteRadius,0.17-fluteFraction*0.34,Math.sin(fluteAngle)*fluteRadius));
+                        }
+                        var sampleFlute = new THREE.Line(new THREE.BufferGeometry().setFromPoints(sampleFlutePoints),new THREE.LineBasicMaterial({color:0xfde68a}));
+                        sampleFlute.rotation.z = Math.PI; sampleBit.add(sampleFlute);
+                        var sampleToolCollar = new THREE.Mesh(new THREE.TorusGeometry(0.16,0.025,6,16),sampleAccent);
+                        sampleToolCollar.rotation.x = Math.PI/2; sampleToolCollar.position.y = -0.12; sampleTool.add(sampleToolCollar);
+                        var sampleJaws = [];
+                        [-1,1].forEach(function(side) { var jaw = new THREE.Mesh(new THREE.BoxGeometry(0.07,0.3,0.2),sampleAccent); jaw.position.set(side*0.18,-0.25,0); sampleTool.add(jaw); sampleJaws.push(jaw); });
+                        var sampleVial = new THREE.Mesh(new THREE.CylinderGeometry(0.1,0.1,0.25,10),new THREE.MeshBasicMaterial({color:0xfbbf24})); sampleRig.add(sampleVial);
+                        var sampleHalo = new THREE.Mesh(new THREE.RingGeometry(0.45,0.5,32),new THREE.MeshBasicMaterial({color:0x22d3ee,side:THREE.DoubleSide,transparent:true,opacity:0.75}));
+                        sampleHalo.rotation.x = -Math.PI/2; sampleRig.add(sampleHalo);
+                        var sampleMount = new THREE.Vector3(), sampleElbow = new THREE.Vector3(), sampleTip = new THREE.Vector3(), sampleTarget = new THREE.Vector3();
+                        var sampleUp = new THREE.Vector3(0,1,0), sampleDirection = new THREE.Vector3();
+                        function poseSampleArm(mesh, from, to) {
+                          sampleDirection.subVectors(to,from); mesh.position.copy(from).add(to).multiplyScalar(0.5);
+                          mesh.scale.y = Math.max(0.001,sampleDirection.length()); mesh.quaternion.setFromUnitVectors(sampleUp,sampleDirection.normalize());
+                        }
+                        function setSampleStatus(phase, text) {
+                          sampleStation.setAttribute('data-drone-sampling', phase);
+                          canvasEl.parentElement.setAttribute('data-drone-sampling-active', String(['deploying','collecting','sealing'].indexOf(phase) >= 0));
+                          if (sampleStatus.textContent !== text) sampleStatus.textContent = text;
+                          sampleOverlayText.textContent = text;
+                          sampleOverlay.style.display = ['deploying','collecting','sealing'].indexOf(phase) >= 0 ? 'block' : 'none';
+                        }
+                        function cancelDroneSampling() {
+                          if (!sampleOperation && !sampleReadyOrb) return;
+                          var orb = sampleOperation ? sampleOperation.orb : sampleReadyOrb;
+                          orb.scale.setScalar(1); sampleOperation = null; sampleReadyOrb = null; sampleRig.visible = false;
+                          sampleProgress.value = 0; sampleCancelButton.disabled = true; sampleMethod.disabled = false; sampleStartButton.disabled = false;
+                          setSampleStatus('cancelled','Sampling cancelled. Specimen remains available; no evidence recorded.');
+                        }
+                        function startDroneSampling() {
+                          if (sampleOperation || sampleReadyOrb) return;
+                          if (_descentPhase === 0) { setSampleStatus('idle','Wait for vehicle deployment, then approach a specimen.'); return; }
+                          var orbs = isOcean ? oceanAtmo.sampleOrbs : isGas ? gasAtmo.sampleOrbs : geoSampleOrbs;
+                          var nearest = null, distance = 2;
+                          orbs.forEach(function(orb) { var d = playerPos.distanceTo(orb.position); if (!orb._collected && d < distance) { distance = d; nearest = orb; } });
+                          if (!nearest) { setSampleStatus('idle','No specimen in reach. Move closer to a glowing marker, then collect (F).'); return; }
+                          sampleOperation = {orb:nearest,method:sampleMethod.value,elapsed:0,phase:''};
+                          sampleReadyOrb = null; sampleProgress.value = 0; sampleCancelButton.disabled = false; sampleMethod.disabled = true; sampleStartButton.disabled = true;
+                          sampleBit.visible = sampleOperation.method === 'drill'; sampleJaws.forEach(function(jaw) { jaw.visible = sampleOperation.method === 'scoop'; });
+                          sampleOverlayFill.style.width = '0%';
+                          setSampleStatus('deploying','Deploying tool: '+nearest._sampleData.name);
+                          canvasEl.focus({preventScroll:true});
+                          canvasEl.scrollIntoView({block:'nearest',behavior:'instant'});
+                        }
+                        sampleStartButton.addEventListener('click',startDroneSampling);
+                        sampleCancelButton.addEventListener('click',cancelDroneSampling);
+                        function claimDroneSample(orb) {
+                          if (sampleReadyOrb !== orb) return false;
+                          if (playerPos.distanceTo(orb.position) > 3) { cancelDroneSampling(); return false; }
+                          sampleReadyOrb = null; orb.scale.setScalar(1);
+                          sampleCancelButton.disabled = true; sampleMethod.disabled = false; sampleStartButton.disabled = false;
+                          setSampleStatus('sealed','Sample sealed: '+orb._sampleData.name+'. Saved to your evidence journal.');
+                          return true;
+                        }
+                        function updateDroneSampling() {
+                          // A held key cannot harvest multiple specimens. Touch/click starts
+                          // the same operation without needing to hold a button throughout.
+                          if (moveState.sample && !sampleInputHeld) startDroneSampling();
+                          sampleInputHeld = !!moveState.sample;
+                          if (!sampleOperation) return;
+                          var op = sampleOperation, orb = op.orb;
+                          if (playerPos.distanceTo(orb.position) > 3) { cancelDroneSampling(); return; }
+                          op.elapsed += droneFrameDt;
+                          var p = Math.min(1,op.elapsed/(op.method === 'drill' ? 4 : 3));
+                          var phase = p < 0.25 ? 'deploying' : p < 0.72 ? 'collecting' : 'sealing';
+                          var verb = phase === 'deploying' ? 'Deploying tool' : phase === 'sealing' ? 'Retracting and sealing' : op.method === 'drill' ? 'Drilling core (demonstration)' : op.method === 'scoop' ? 'Scooping specimen' : 'Drawing sample into intake';
+                          if (op.phase !== phase) { op.phase = phase; setSampleStatus(phase,verb+': '+orb._sampleData.name); }
+                          sampleProgress.value = Math.round(p*100);
+                          sampleOverlayFill.style.width = Math.round(p*100)+'%';
+                          sampleMount.set(0.4,isFluid ? 0.1 : 0.45,0.3);
+                          roverGroup.localToWorld(sampleMount);
+                          sampleTarget.copy(orb.position); if (!isFluid) sampleTarget.y = _terrainHeightAt(orb.position.x,orb.position.z)+0.48;
+                          var extension = p < 0.25 ? p/0.25 : p > 0.72 ? (1-p)/0.28 : 1;
+                          extension = extension*extension*(3-2*extension);
+                          sampleTip.copy(sampleMount).lerp(sampleTarget,droneReduceMotion ? 1 : extension);
+                          sampleElbow.copy(sampleMount).lerp(sampleTip,0.45); sampleElbow.y += 0.65;
+                          sampleTool.position.copy(sampleTip); sampleTool.position.y += 0.4;
+                          sampleTool.rotation.y = !droneReduceMotion && op.method === 'drill' && phase === 'collecting' ? op.elapsed*18 : 0;
+                          sampleJaws.forEach(function(jaw,i) { jaw.position.x = (i ? 1 : -1)*(phase === 'collecting' ? 0.1 : 0.2); });
+                          poseSampleArm(sampleArmA,sampleMount,sampleElbow); poseSampleArm(sampleArmB,sampleElbow,sampleTool.position);
+                          sampleHalo.position.copy(sampleTarget); sampleHalo.position.y -= 0.38;
+                          sampleVial.visible = phase === 'sealing'; sampleVial.position.copy(sampleTip);
+                          sampleVial.material.color.setHex(orb._sampleData.color || 0xfbbf24);
+                          if (!droneReduceMotion) orb.scale.setScalar(phase === 'sealing' ? Math.max(0.05,(1-p)/0.28) : 1);
+                          sampleRig.visible = true;
+                          if (p >= 1) {
+                            sampleLastContext = (op.method === 'drill' ? 'Core drill (demonstration)' : op.method === 'scoop' ? 'Surface scoop' : 'Sealed intake')+'. Animated procedure; specimen composition is preset, not a new measurement.';
+                            sampleReadyOrb = orb; sampleOperation = null; sampleRig.visible = false;
+                            setSampleStatus('sealing','Sealing complete: recording '+orb._sampleData.name+'.');
+                          }
+                        }
+
                         updateSurveyFraming();
                         getDroneFullscreenContainer().appendChild(roverCameraBar);
                         canvasEl.setAttribute('aria-describedby', 'hud-science-focus drone-camera-help');
@@ -20103,7 +20652,7 @@ const d = labToolData.solarSystem || {};
 
                         var droneActions = [
                           { key: 'g', label: 'Scan', announcement: 'Environment scan started.' },
-                          { key: 'f', label: isFluid ? 'Sample' : 'Collect', hold: 280, announcement: 'Collection command active. Move near a specimen to collect it.' },
+                          { key: 'f', label: isFluid ? 'Sample' : 'Collect', hold: 280, announcement: 'Sampling requested. Approach a specimen first. Progress appears below the camera controls.' },
                           { key: 'c', label: 'Photo', announcement: 'Photo capture requested.' },
                           { key: 'm', label: 'Mission', announcement: 'Mission progress toggled.' },
                           { key: 'j', label: 'Journal', announcement: 'Evidence journal toggled.' },
@@ -22034,10 +22583,9 @@ const d = labToolData.solarSystem || {};
                               orb.position.y += Math.sin(tick3d * 0.02 + orb._pulsePhase) * 0.003;
 
                               // Collection detection (proximity + press F or click)
-                              var sampleDist = playerPos.distanceTo(orb.position);
-                              if (sampleDist < 3 && gasSampleCooldown <= 0) {
+                              if (sampleReadyOrb === orb) {
                                 // Show proximity indicator
-                                if (sampleDist < 2 && moveState.sample) {
+                                if (claimDroneSample(orb)) {
                                   orb._collected = true;
                                   orb.visible = false;
                                   gasSampleCooldown = 60;
@@ -22127,7 +22675,7 @@ const d = labToolData.solarSystem || {};
                               });
                               orb.position.y += Math.sin(tick3d * 0.015 + orb._pulsePhase) * 0.002;
                               var sDist = playerPos.distanceTo(orb.position);
-                              if (sDist < 3 && oceanSampleCooldown <= 0 && sDist < 2 && moveState.sample) {
+                              if (claimDroneSample(orb)) {
                                 orb._collected = true; orb.visible = false;
                                 oceanSampleCooldown = 60;
                                 var sd = orb._sampleData;
@@ -22559,7 +23107,7 @@ const d = labToolData.solarSystem || {};
                                 orb.position.y += Math.sin(tick3d * 0.02 + orb._pulsePhase) * 0.002;
                                 // Collection
                                 var gDist = playerPos.distanceTo(orb.position);
-                                if (gDist < 3 && geoSampleCooldown <= 0 && gDist < 2 && moveState.sample) {
+                                if (claimDroneSample(orb)) {
                                   orb._collected = true; orb.visible = false;
                                   geoSampleCooldown = 60;
                                   var gsd = orb._sampleData;
@@ -22589,6 +23137,8 @@ const d = labToolData.solarSystem || {};
                               });
                             }
                           }
+
+                          updateDroneSampling();
 
                           // Fluid vehicle wake: bubbles for ocean dives, ionized trail for atmospheric probes
                           if (isFluid && thrustTrailMesh && thrustTrailLife) {
@@ -23216,6 +23766,15 @@ const d = labToolData.solarSystem || {};
                           // Hide rover in 1st person, show in 3rd
 
                           roverGroup.visible = thirdPerson;
+                          if (vehicleThrusterRotors.length) {
+                            // Motion cue only: not a calibrated thrust or fluid-flow simulation.
+                            var vehicleTravelSpeed = vehiclePositionReady ? playerPos.distanceTo(vehiclePreviousPosition) / Math.max(0.001, droneFrameDt) : 0;
+                            if (!droneReduceMotion && vehicleTravelSpeed > 0.01) {
+                              var rotorStep = Math.min(24, vehicleTravelSpeed * 9) * droneFrameDt;
+                              vehicleThrusterRotors.forEach(function(rotor, index) { rotor.rotation.z = (rotor.rotation.z + rotorStep * (index % 2 ? -1 : 1)) % (Math.PI * 2); });
+                            }
+                            vehiclePreviousPosition.copy(playerPos); vehiclePositionReady = true;
+                          }
 
                           // The headlight rig is NOT part of that hide — it tracks the
                           // vehicle's final transform so the beams survive first person.
@@ -23243,7 +23802,7 @@ const d = labToolData.solarSystem || {};
                         if (droneShadows) {
                           scene.traverse(function (o) {
                             if (!o.isMesh || !o.material) return;
-                            if (o.userData && o.userData.horizonPeak) return; // out of frustum anyway
+                            if (o.userData && (o.userData.horizonPeak || o.userData.surfaceMicrodetail)) return; // no distant or tiny-fragment shadow passes
                             var m = Array.isArray(o.material) ? o.material[0] : o.material;
                             if (!m || m.transparent || m.blending === THREE.AdditiveBlending) return;
                             if (!m.isMeshStandardMaterial && !m.isMeshPhongMaterial && !m.isMeshLambertMaterial) return;
@@ -23375,6 +23934,23 @@ const d = labToolData.solarSystem || {};
                           delete canvasEl.dataset.roverView;
                           delete canvasEl.dataset.roverDustCapacity;
 
+                          if (geologyDetailMesh) {
+                            scene.remove(geologyDetailMesh);
+                            geologyDetailMesh.geometry.dispose();
+                            if (geologyDetailMesh.dispose) geologyDetailMesh.dispose();
+                            geologyDetailMesh = null;
+                          }
+                          geologyMaterials.forEach(function (material) { material.dispose(); });
+                          geologyMaterials.length = 0;
+                          vehicleDetailMeshes.forEach(function(mesh) { mesh.parent.remove(mesh); mesh.geometry.dispose(); });
+                          vehicleDetailMeshes.length = 0;
+                          vehicleDetailMaterials.forEach(function(material) { material.dispose(); });
+                          vehicleDetailMaterials.length = 0;
+                          vehicleThrusterRotors.length = 0;
+                          delete canvasEl.dataset.droneVehicleDetail;
+                          delete canvasEl.dataset.droneGeology;
+                          delete canvasEl.dataset.droneFragmentCount;
+
                           // Fifth-pass rocky surface resources are not owned by renderer.dispose().
                           // Release each exactly once on planet change/unmount.
                           if (rockyHorizonMesh) {
@@ -23404,6 +23980,16 @@ const d = labToolData.solarSystem || {};
 
                           if (journalPanel.parentElement) journalPanel.parentElement.removeChild(journalPanel);
 
+                          sampleOperation = null; sampleReadyOrb = null;
+                          sampleStartButton.removeEventListener('click',startDroneSampling);
+                          sampleCancelButton.removeEventListener('click',cancelDroneSampling);
+                          colonyMissionButton.removeEventListener('click',openColonyHabitatMission);
+                          sampleStation.remove(); sampleOverlay.remove(); scene.remove(sampleRig);
+                          if (canvasEl.parentElement) canvasEl.parentElement.removeAttribute('data-drone-sampling-active');
+                          var sampleGeometries = new Set(), sampleMaterials = new Set();
+                          sampleRig.traverse(function(object) { if (object.geometry) sampleGeometries.add(object.geometry); if (object.material) sampleMaterials.add(object.material); });
+                          sampleGeometries.forEach(function(geometry) { geometry.dispose(); });
+                          sampleMaterials.forEach(function(material) { material.dispose(); });
                           if (actionDock.parentElement) actionDock.parentElement.removeChild(actionDock);
 
                           if (roverSoundButton && roverSoundButton.parentElement) roverSoundButton.parentElement.removeChild(roverSoundButton);

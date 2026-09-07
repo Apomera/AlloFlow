@@ -124,7 +124,20 @@ window.StemLab = window.StemLab || {
       '#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-canvas],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-canvas]{grid-column:1;max-height:52vh;object-fit:contain}',
       '#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:2;grid-row:2/span 6;margin-top:0!important;max-height:calc(100vh - 150px);overflow:auto;position:sticky;top:8px}',
       '@media(max-width:1100px){#throwlab-fs-workspace:fullscreen [data-throwlab-immersive-zone],#throwlab-fs-workspace:-webkit-full-screen [data-throwlab-immersive-zone]{grid-template-columns:1fr}#throwlab-fs-workspace:fullscreen .throwlab-analysis-details,#throwlab-fs-workspace:-webkit-full-screen .throwlab-analysis-details{grid-column:1;grid-row:auto;position:static;max-height:none}}',
-      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:1fr!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}.throwlab-learning-loop{grid-template-columns:1fr 1fr}}',
+      // ★ Both canvases are authored at 640px and were painted at exactly that
+      // on a 640px viewport: the sim shell's 7px of padding a side made the
+      // panel 654px, and it spilled 38px past the tool column with nothing to
+      // scroll it back (19 echoes across the sport views on the first 640px
+      // board). Scaling is safe - the trajectory canvas takes keyboard input
+      // only and the 3D canvas drags by clientX/clientY DELTAS, which are
+      // scale-independent - and `max-width:100%` is a no-op whenever the shell
+      // is wide enough for the bitmap.
+      '[data-throwlab-canvas],[data-throwlab-immersive-canvas]{max-width:100%;height:auto}',
+      // ★ `1fr` is `minmax(auto,1fr)`, whose minimum is the children's
+      // min-content; the desktop rules guard with `minmax(0,…)` and this
+      // narrow override dropped that guard, which is why the track grew to
+      // 654px inside a 592px grid. Same shape as the author's own desktop rule.
+      '@media(max-width:920px){.throwlab-play-grid,.throwlab-run-focus-grid{grid-template-columns:minmax(0,1fr)!important}.throwlab-sim-shell{padding:6px!important}.throwlab-metric-grid,.throwlab-result-grid{grid-template-columns:1fr 1fr!important}.throwlab-sim-toolbar{justify-content:flex-start!important}.throwlab-learning-loop{grid-template-columns:1fr 1fr}}',
       '@media(max-width:560px){.throwlab-preset-grid,.throwlab-result-grid,.throwlab-call-grid,.throwlab-learning-loop{grid-template-columns:1fr!important}.throwlab-launch-arc{min-height:104px}.throwlab-mode-tabs{flex-wrap:nowrap!important;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity}.throwlab-mode-tab{flex:0 0 auto}}',
       '@media(forced-colors:active){[data-throwlab-root] button:focus-visible,[data-throwlab-root] summary:focus-visible,[data-throwlab-root] input:focus-visible,[data-throwlab-root] textarea:focus-visible,.throwlab-compendium-scroll:focus-visible{outline:3px solid Highlight!important}}'
     ].join('');
@@ -3686,8 +3699,19 @@ window.StemLab = window.StemLab || {
         if (canvas._tlDpr === dpr && canvas._tlLogicalW === logicalW && canvas._tlLogicalH === logicalH) return;
         canvas.width = Math.round(logicalW * dpr);
         canvas.height = Math.round(logicalH * dpr);
-        canvas.style.width = logicalW + 'px';
-        canvas.style.height = logicalH + 'px';
+        // ★ Cap at the logical size instead of PINNING it. The element's own
+        // style prop already says `width:'100%', height:'auto'` (the author
+        // wanted a responsive canvas); pinning `style.width = '640px'` here
+        // overrode that, so on a 640px viewport the canvas painted at 640
+        // inside a 592px shell and spilled 38px past the tool column. On any
+        // screen wide enough this is identical to before (max-width = 640);
+        // below that the bitmap scales down uniformly, aspect kept. Safe: the
+        // trajectory canvas is keyboard-driven and the 3D canvas drags by
+        // clientX/clientY DELTAS, so neither maps pointer px to bitmap px.
+        canvas.style.width = '100%';
+        canvas.style.maxWidth = logicalW + 'px';
+        canvas.style.height = 'auto';
+        canvas.style.aspectRatio = logicalW + ' / ' + logicalH;
         canvas._tlDpr = dpr;
         canvas._tlLogicalW = logicalW;
         canvas._tlLogicalH = logicalH;
@@ -6070,7 +6094,7 @@ window.StemLab = window.StemLab || {
               'aria-label': canvasSceneDescription()
                 + (lr ? ' Last throw outcome: ' + cleanOutcomeText(lr) + '.' + describeShape(lr) : '')
                 + referenceComparisonDescription(),
-              style: { width: '100%', maxWidth: 'none', height: 'auto', borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', background: 'var(--allo-stem-canvas, #0f172a)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.07)' }
+              style: { width: '100%', maxWidth: 640, height: 'auto', borderRadius: 12, border: '1px solid rgba(148,163,184,0.26)', background: 'var(--allo-stem-canvas, #0f172a)', boxShadow: 'inset 0 0 44px rgba(14,165,233,0.07)' }
             }),
             // Fullscreen toggle (top-right of canvas wrapper)
             h('button', {

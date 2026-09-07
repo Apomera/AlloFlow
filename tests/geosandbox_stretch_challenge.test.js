@@ -128,6 +128,21 @@ describe('surface area + Cavalieri oblique stretch (geoPrismSurfaceArea, slant)'
 });
 
 describe('missions ladder (GEO_MISSIONS, geoEvalMission)', () => {
+  it('requires a slanted prism for Lean it over, not a slanted plane or tapered solid', () => {
+    const mission = P.GEO_MISSIONS.find((m) => m.id === 'oblique');
+    const segment = P.stretchPoint({ type: 'point', position: [0, 0, 0] }, 'x', 3);
+    const slantedPlane = P.stretchSegment(segment, 'y', 4, 0.8);
+    const straightPlane = P.stretchSegment(segment, 'y', 4, 0);
+    const straightPrism = P.stretchRect(straightPlane, 'z', 5, 0);
+    const slantedPyramid = P.taperRect(straightPlane, 'z', 5, 0, 0.8);
+    const slantedPrism = P.stretchRect(straightPlane, 'z', 5, 0.8);
+
+    expect(P.geoStretchMeasure(slantedPyramid).oblique).toBe(true);
+    expect(P.geoEvalMission(mission, [segment, slantedPlane, straightPrism]).solved).toBe(false);
+    expect(P.geoEvalMission(mission, [slantedPyramid]).solved).toBe(false);
+    expect(P.geoEvalMission(mission, [slantedPlane, slantedPyramid, slantedPrism]).solved).toBe(true);
+  });
+
   it('exposes an ordered mission list with declarative tests', () => {
     expect(Array.isArray(P.GEO_MISSIONS)).toBe(true);
     expect(P.GEO_MISSIONS.length).toBeGreaterThanOrEqual(5);

@@ -71,10 +71,10 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
       expect(html).toContain('data-beehive-vital=');
-      expect(html).toContain('data-beehive-layout="overview-first"');
-      expect(html).toContain('data-layout-state="overview-first"');
+      expect(html).toContain('data-beehive-layout="stage-first"');
+      expect(html).toContain('data-layout-state="stage-first"');
       expect(html).toContain('data-beehive-focus-layout="true"');
-      expect(html).toContain('aria-pressed="false"');
+      expect(html).toContain('aria-pressed="true"');
       expect(html).toContain('Stage-first layout');
       expect(html).toContain('data-beehive-flow-nav="true"');
       expect(html).toContain('data-mobile-rail="learning-flow"');
@@ -157,7 +157,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('data-beehive-build-zone="true"');
     expect(queen).toContain('data-beehive-rival-zone="true"');
     expect(queen).toContain('Valid build zone');
-    expect(queen).toContain('Rival territory');
+    expect(queen).toContain('Rival game station');
     expect(queen).toContain('data-structure-selected="true"');
     expect(queen).toContain('data-beehive-build-selection="true"');
     expect(queen).toContain('Placement armed');
@@ -166,7 +166,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('data-placement-zone="mid-comb"');
     expect(queen).toContain('data-placement-zone="outer-edge"');
     expect(queen).toContain('Your brood core');
-    expect(queen).toContain('Forage control');
+    expect(queen).toContain('RTS advantage');
     expect(queen).toContain('Thistle Crown');
     expect(queen).toContain('data-beehive-rts-economy="true"');
     expect(queen).toContain('data-beehive-battlefield-overlay="true"');
@@ -210,7 +210,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('aria-pressed="true"');
       expect(html).toContain('Stage-first layout');
       expect(html).toContain('Live stage appears before supporting dashboards.');
-      expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-pulse="true"'));
+      expect(html.indexOf('data-beehive-pulse="true"')).toBeLessThan(html.indexOf('id="' + targetId + '"'));
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-learning-brief="true"'));
       expect(html.indexOf('id="' + targetId + '"')).toBeLessThan(html.indexOf('data-beehive-notebook='));
       expect(html).toContain('data-beehive-journey-disclosure="true"');
@@ -319,9 +319,9 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(queen).toContain('data-structure-preview="guard"');
     expect(queen).toContain('Each cycle adds nurse and forager capacity for a stronger workforce.');
     expect(queen).toContain('Each cycle adds guards to absorb rival pressure.');
-    expect(queen).toContain('Reveal rival power; shift forage +2% immediately.');
+    expect(queen).toContain('Reveal rival power; add 2 points of RTS advantage.');
     expect(queen).toContain('Mobilize 20 guards; raise defense before pressure peaks.');
-    expect(queen).toContain('Damage the rival hive; trade guards for territory.');
+    expect(queen).toContain('Fictional combat: trade guards for damage and RTS advantage.');
     expect(queen.indexOf('data-beehive-queen-canvas')).toBeLessThan(queen.indexOf('Strategic advisor'));
   });
 
@@ -341,7 +341,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(focusIndex).toBeGreaterThan(modeIndex);
     expect(briefIndex).toBeGreaterThan(focusIndex);
     expect(journeyIndex).toBeGreaterThan(briefIndex);
-    expect(canvasIndex).toBeGreaterThan(journeyIndex);
+    expect(canvasIndex).toBeLessThan(journeyIndex);
 
     const expanded = render({ viewMode: 'beekeeper', missionBriefOpen: true, journeyOpen: true });
     expect((expanded.match(/ open=""/g) || []).length).toBeGreaterThanOrEqual(2);

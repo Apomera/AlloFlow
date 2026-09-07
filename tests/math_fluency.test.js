@@ -249,9 +249,9 @@ describe('Strategy Coach and mastery dashboard helpers', () => {
 
   it('classifies persistent facts conservatively across all four dashboard groups', () => {
     const mastery = {
-      secure: { a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 15000 },
+      secure: { independentCorrect: 5, evidenceDays: ['2026-07-24', '2026-07-25'], a: 2, b: 3, op: 'add', symbol: '+', answer: 5, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 15000 },
       developing: { a: 9, b: 4, op: 'sub', symbol: '−', answer: 5, attempts: 2, correct: 2, timedAttempts: 2, responseMsTotal: 5000 },
-      slow: { a: 6, b: 7, op: 'mul', symbol: '×', answer: 42, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 35000 },
+      slow: { independentCorrect: 5, evidenceDays: ['2026-07-24', '2026-07-25'], a: 6, b: 7, op: 'mul', symbol: '×', answer: 42, attempts: 5, correct: 5, timedAttempts: 5, responseMsTotal: 35000 },
       focus: { a: 42, b: 6, op: 'div', symbol: '÷', answer: 7, attempts: 5, correct: 2, timedAttempts: 5, responseMsTotal: 20000 },
     };
     const dashboard = M.buildFactMasteryDashboard(mastery);
@@ -337,7 +337,8 @@ describe('probe timing and comparison integrity contract', () => {
 
 describe('student supports, adaptation, and review', () => {
   it('uses bounded adaptive levels', () => {
-    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 3, coachedOrMissed: 0 })).toBe('stretch');
+    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 3, coachedOrMissed: 0 })).toBe('steady');
+    expect(M.getAdaptivePracticeLevel({ firstTryStreak: 6, distinctFacts: ['a','b','c','d'], coachedOrMissed: 0 })).toBe('stretch');
     expect(M.getAdaptivePracticeLevel({ firstTryStreak: 0, coachedOrMissed: 2 })).toBe('support');
     expect(M.getAdaptivePracticeLevel({ firstTryStreak: 1, coachedOrMissed: 0 })).toBe('steady');
   });
@@ -428,7 +429,7 @@ describe('Accuracy Focus and responsive probe contract', () => {
     expect(source).toContain('if (manualPracticePauseRef.current !== null) return');
     expect(source).toContain("e.key === 'p' || e.key === 'P'");
     expect(source).toContain('practicePauseCount: practicePauseStatsRef.current.count');
-    expect(source).toContain('saveAccuracyDraft({');
+    expect(source).toContain('saveLearnerAccuracyDraft({');
     expect(source).toContain("config.mode !== 'practice'");
   });
 
@@ -535,7 +536,7 @@ describe('Smart Review scheduling and teacher reporting', () => {
   const fact = (op, a, b, answer, attempts, correct, responseMsTotal, timedAttempts, lastSeen) => ({
     key: op + '|' + a + '|' + b, op, a, b, answer,
     symbol: op === 'add' ? '+' : op === 'sub' ? '-' : op === 'mul' ? 'x' : '/',
-    attempts, correct, responseMsTotal, timedAttempts, lastSeen,
+    attempts, correct, responseMsTotal, timedAttempts, lastSeen, independentCorrect: correct, evidenceDays: ['2026-07-17', '2026-07-18'],
   });
 
   it('marks facts due using status-specific review intervals', () => {
@@ -615,7 +616,7 @@ describe('Smart Review scheduling and teacher reporting', () => {
 describe('operation growth synthesis and Next Best Step', () => {
   const makeFact = (op, a, b, answer, attempts, correct, totalMs, timedAttempts, lastSeen) => ({
     key: op + '|' + a + '|' + b, op, a, b, answer, symbol: op === 'add' ? '+' : op === 'sub' ? '-' : op === 'mul' ? 'x' : '/',
-    attempts, correct, responseMsTotal: totalMs, timedAttempts, lastSeen,
+    attempts, correct, responseMsTotal: totalMs, timedAttempts, lastSeen, independentCorrect: correct, evidenceDays: ['2026-07-17', '2026-07-18'],
   });
 
   it('keeps recent accuracy broad while calculating DCPM trend only from a comparable series', () => {

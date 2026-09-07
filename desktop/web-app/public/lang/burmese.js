@@ -4909,10 +4909,10 @@
     "locked": "သော့ပိတ်",
     "escaped": "သင် Escaped!",
     "escaped_desc": "သင် solved အားလုံး ပဟေဠိ နှင့် escaped room!",
-    "time_up": "? အချိန်'s Up!",
+    "time_up": "⏰ အချိန်'s Up!",
     "reveal_hint": "Reveal အရိပ်အမြွက်",
-    "puzzles_remaining": "{{count}} ပဟေဠိ remaining",
-    "time_remaining": "အချိန်: {{time}}",
+    "puzzles_remaining": "{count} ပဟေဠိ remaining",
+    "time_remaining": "အချိန်: {time}",
     "progress": "တိုးတက်မှု",
     "start": "စတင်ပါ Escape Room",
     "start_hint": "စတင်ပါ timer သို့ begin inspecting objects",
@@ -4923,8 +4923,8 @@
     "room_complete": "Room ပြီးစီးပါ!",
     "loading_error": "Could မ တင်ပါ room ဒေတာ",
     "no_puzzle": "မဟုတ်ပါ ပဟေဠိ found အတွက် ဤ object",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "ပြီးပြည့်စုံ escape! +{{xp}} bonus XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "ပြီးပြည့်စုံ escape! +{xp} bonus XP",
     "puzzle_mcq": "များစွာ Choice",
     "puzzle_sequence": "Put တွင် Order",
     "puzzle_cipher": "Decode မက်ဆေ့ချ်",
@@ -4982,17 +4982,17 @@
     "clue": "သဲလွန်စ",
     "clue_found": "သဲလွန်စ တွေ့ရှိပါပြီ!",
     "clue_revealed": "ဤ သဲလွန်စသည် အခြားပဟေဠိတစ်ခုအတွက် အကူအညီဖြစ်နိုင်သည်...",
-    "clues_collected": "သဲလွန်စများ - {{count}}/{{total}}",
+    "clues_collected": "သဲလွန်စများ - {count}/{total}",
     "use_clue": "အသုံးပြုပါ Clue",
-    "final_door": "The Exit Door",
+    "final_door": "ထွက်ပေါက်တံခါး",
     "final_door_ready": "exit door ဖြစ်သည် ယခု unlocked!",
     "final_door_locked": "ဖြေရှင်းပါ ပိုပြီး ပဟေဠိ သို့ unlock",
     "final_door_title": "Final စိန်ခေါ်မှု",
     "final_door_desc": "အသုံးပြုပါ everything you've learned သို့ အဖြေ ဤ synthesis မေးခွန်း.",
     "final_puzzle": "Using ဘာ you've learned, အဖြေ ဤ:",
     "final_answer_placeholder": "အမျိုးအစား သင်၏ အဖြေ here...",
-    "approach_door": "Approach the Exit Door",
-    "unlock_door": "Unlock the Door",
+    "approach_door": "ထွက်ပေါက်တံခါးသို့ ချဉ်းကပ်ပါ",
+    "unlock_door": "တံခါးသော့ဖွင့်ပါ",
     "victory_perfect": "ပြီးပြည့်စုံ Escape! မဟုတ်ပါ wrong အဖြေ! +50 Bonus XP",
     "victory_normal": "you've Escaped! Congratulations!",
     "hint": "အရိပ်အမြွက်",
@@ -5008,12 +5008,12 @@
     "left": "ကျန်",
     "wrong_attempts": "မှားယွင်းသော ကြိုးပမ်းမှုများ",
     "time_penalty": "-{seconds} စက္ကန့်!",
-    "game_over_time": "? အချိန်'s Up! သင် ran out ၏ အချိန်.",
+    "game_over_time": "⏰ အချိန်'s Up! သင် ran out ၏ အချိန်.",
     "streak": "အဆက်မပြတ်",
     "streak_bonus": "ဆက်တိုက်အောင်မြင်မှု ဆုကြေး! x{multiplier}",
     "streak_lost": "ဆက်တိုက်အောင်မြင်မှု ဆုံးရှုံးသွားသည်!",
     "one_minute_warning": "တစ်မိနစ်သာ ကျန်တော့သည်!",
-    "thirty_seconds_warning": "? သာ 30 စက္ကန့် left!",
+    "thirty_seconds_warning": "⏰ သာ 30 စက္ကန့် left!",
     "timer_paused": "အချိန်ကိုက်စက် ခေတ္တရပ်ထား",
     "timer_resume": "ဆက်လုပ်",
     "settings_btn": "Room ဆက်တင်များ",
@@ -5026,9 +5026,9 @@
     "launch_live_tooltip": "စတင်ပါ multiplayer ထွက်ပြေးရန် အခန်း ဖြင့် သင်၏ အတန်း",
     "team_mode": "အသင်း စိန်ခေါ်မှု",
     "team_race": "Race သို့ Escape!",
-    "team_progress": "{{team}} တိုးတက်မှု: {{solved}}/{{total}}",
+    "team_progress": "{team} တိုးတက်မှု: {solved}/{total}",
     "waiting_host": "Waiting အတွက် ဆရာ သို့ စတင်ပါ...",
-    "team_escaped": "{{team}} အသင်း Escaped!",
+    "team_escaped": "{team} အသင်း Escaped!",
     "all_teams_done": "အားလုံး အသင်း Finished!",
     "your_team": "သင်၏ အသင်း",
     "team_red": "Red အသင်း",
@@ -5036,7 +5036,7 @@
     "team_green": "Green အသင်း",
     "team_yellow": "Yellow အသင်း",
     "team_all": "အားလုံး ကျောင်းသား",
-    "teams_competing": "{{count}} အသင်း competing",
+    "teams_competing": "{count} အသင်း competing",
     "first_escape": "ပထမ သို့ Escape!",
     "end_game": "End ဂိမ်း",
     "end_game_confirm": "End ထွက်ပြေးရန် အခန်း အတွက် အားလုံး ကျောင်းသား?",
@@ -5049,8 +5049,8 @@
     "resume_game": "Resume ဂိမ်း",
     "game_paused_by_teacher": "ဂိမ်း paused by ဆရာ",
     "celebration_title": "ဂုဏ်ပြုပါသည်!",
-    "you_escaped": "သင်၏ အသင်း escaped တွင် {{time}}!",
-    "other_team_escaped": "{{team}} လွတ်ထွက်သွားပါပြီ!",
+    "you_escaped": "သင်၏ အသင်း escaped တွင် {time}!",
+    "other_team_escaped": "{team} လွတ်ထွက်သွားပါပြီ!",
     "class_escaped": "အတန်း Victory!",
     "everyone_escaped": "Everyone worked together သို့ escape!",
     "hurry_up": "Keep going! သင် နိုင်သည် still escape!",
@@ -5078,7 +5078,7 @@
     "load_saved": "တင်ပါ သိမ်းဆည်းပါ",
     "loaded_saved": "သိမ်းဆည်းပါ Escape Room loaded! ပြန်လည်စိစစ် နှင့် စတင်ပါ အခါ ready.",
     "no_saved": "မဟုတ်ပါ သိမ်းပြီး Escape Room found",
-    "preview_confirmed": "? Escape Room locked • ready သို့ ဆော့ပါ!",
+    "preview_confirmed": "✅ Escape Room locked • ready သို့ ဆော့ပါ!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x ဆက်တိုက်ဆုကြေး!)",
     "loaded_from_resource": "Loaded မှ အရင်းအမြစ်များ."
   },
@@ -7015,7 +7015,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbench သို့ ပို့ရန်",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7586,7 +7586,7 @@
       "correct": "Excellent အလုပ်!",
       "partial": "ကောင်း effort, keep going!",
       "incorrect": "မ quite မှန်ကန် • ကြိုးစားပါ again!",
-      "error": "Could မ evaluate • ကျေးဇူးပြု၍ ကြိုးစားပါ again.",
+      "error": "Could မ evaluate — ကျေးဇူးပြု၍ ကြိုးစားပါ again.",
       "verdict_correct": "မှန်ကန်!",
       "verdict_partial": "Partially မှန်ကန်",
       "verdict_incorrect": "မ Quite မှန်ကန်",
@@ -7898,7 +7898,7 @@
       "meta_info": "{date} • **Final အဆင့်**: {level}",
       "log_header": "ခရီး Log",
       "chapter_separator": "***",
-      "user_label": "? သင်",
+      "user_label": "➤ သင်",
       "print_button": "ပုံနှိပ်ပါ ပုံပြင်စာအုပ်"
     },
     "answer_key_title": "အဖြေ သော့",
@@ -8847,7 +8847,7 @@
     "simplified_def_fallback": "သင် နိုင်သည် နှိပ်ပါ မည်သည့် စကားလုံး တွင် စာသား သို့ ကြည့်ပါ its အဓိပ္ပါယ်!",
     "simplified_cloze": "ကြိုးစားပါ 'Cloze' မုဒ် သို့ စာမေးပွဲ ဝေါဟာရ ကျွမ်းကျင်မှု.",
     "simplified_quiz": "ဤ စာသား looks ကြီးမား. Should we ထုတ်လုပ်ပါ Exit Ticket သို့ စစ်ဆေး understanding?",
-    "simplified_glossary": "စကားလုံး like '{term1}' နှင့် '{term2}' might လိုအပ် ပံ့ပိုးမှု • အဘိဓာန် could အကူအညီ!",
+    "simplified_glossary": "စကားလုံး like '{term1}' နှင့် '{term2}' might လိုအပ် ပံ့ပိုးမှု — အဘိဓာန် could အကူအညီ!",
     "simplified_glossary_fallback": "ဤဝေါဟာရအချို့သည် ခက်ခဲသည်။ အဘိဓာန်တစ်ခုက ဤစာသားကို ပံ့ပိုးကူညီပေးပါမည်။",
     "simplified_outline": "အမြင် သင်ယူသူများ might benefit မှ Graphic Organizer ၏ ဤ အကြောင်းအရာ.",
     "glossary_bingo": "ဤဝေါဟာရများကို Bingo၊ Memory Match၊ Crossword၊ သို့မဟုတ် Word Search ကဲ့သို့ စကားလုံးဂိမ်းများအဖြစ် ပြောင်းနိုင်သည်!",
@@ -8858,7 +8858,7 @@
     "quiz_rigor": "ဤ quiz တင်းကျပ်မှု ရှိစေရန် သေချာစေလိုပါသလား? Standard Audit တစ်ခု လုပ်ဆောင်ပါ။",
     "adventure_sim": "ခရီး allow ကျောင်းသား သို့ apply ဘာ ၎င်းတို့'ve learned တွင် safe simulation.",
     "adventure_inventory": "မည်သည့်အရာများ စုဆောင်းပြီးကြောင်း ကြည့်ရန် 'Inventory' ကို စစ်ဆေးပါ။",
-    "adventure_context": "သင်၏ ခရီး အကြောင်း {topic} gets richer ဖြင့် ပိုပြီး အရင်းအမြစ်များ • ကြိုးစားပါ adding {suggestion}!",
+    "adventure_context": "သင်၏ ခရီး အကြောင်း {topic} gets richer ဖြင့် ပိုပြီး အရင်းအမြစ်များ — ကြိုးစားပါ adding {suggestion}!",
     "adventure_context_fallback": "သင် အရင်းအမြစ် ပိုထုတ်လုပ်လေ၊ adventure context က ပိုမို ကြွယ်ဝလာလေဖြစ်သည်။",
     "timeline_drag": "ဆွဲပါ နှင့် ချပါ ဖြစ်ရပ်များ သို့ reorder sequence.",
     "timeline_visualize": "၎င်းသည် ကျောင်းသားများကို အကြောင်းအကျိုး ဆက်နွယ်မှုများကို မြင်သာစွာ မြင်နိုင်ရန် ကူညီသည်။",
@@ -8870,7 +8870,7 @@
     "parent_read_along": "အတူတကွ ဖတ်ရှုခြင်းကို လေ့ကျင့်ရန် 'Read Along' ကို သုံးပါ။",
     "fallback_lesson_plan": "သင့်တွင် အရင်းအမြစ်ကောင်းများ ရှိသည်။ ၎င်းတို့ကို သင်ခန်းစာ အစီအစဉ်တစ်ခုအဖြစ် ပေါင်းစပ်မလား?",
     "fallback_brainstorm": "စိတ်ရှုပ်နေပါသလား? ကျွန်တော်နှင့် စကားပြောကြည့်ပြီး Blueprint Mode အသက်ဝင်စေရန် Auto-Complete ကို ဖွင့်ပါ — သင်၏ သင်ခန်းစာတစ်ခုလုံးကို ဒီဇိုင်းရေးဆွဲရန် ကူညီပါမည်!",
-    "fallback_export": "သင် ရှိသည် {count} အရင်းအမြစ်များ အပေါ် {topic} • ထုတ်ယူပါ them as single PDF!",
+    "fallback_export": "သင် ရှိသည် {count} အရင်းအမြစ်များ အပေါ် {topic} — ထုတ်ယူပါ them as single PDF!",
     "fallback_export_fallback": "သင် နိုင်သည် ထုတ်ယူပါ အားလုံး these အရင်းအမြစ်များ as single PDF packet.",
     "fallback_guide": "ရွေးချယ်ပါ 'ပြပါ Me' တွင် AI Guide လျှင် သင် get lost!",
     "intro_greeting": "နှိပ်ပါ me သို့ ညှိ my အသံ ဆက်တင်များ.",
@@ -9019,7 +9019,7 @@
     "text_generated": "{topic} အကြောင်း သင်၏ လိုက်လျောညီထွေပြင်ဆင်ထားသော စာသား အသင့်ဖြစ်ပါပြီ! စကားလုံးတစ်လုံးကို နှိပ်၍ ၎င်း၏ အဓိပ္ပါယ်ကို ကြည့်ကြည့်ပါ၊ သို့မဟုတ် နားလည်မှု ပိုမိုနက်ရှိုင်းစေရန် အဘိဓာန် သို့မဟုတ် Quiz ကဲ့သို့ ကိရိယာများကို လေ့လာပါ။",
     "flashcards_created": "flashcard ဖန်တီးပြီး! သင် နိုင်သည် ထုတ်ယူပါ them သို့ Quizlet, ပုံနှိပ်ပါ them, သို့မဟုတ် ကြိုးစားပါ Memory ဂိမ်း.",
     "quiz_generated": "စစ်ဆေးခြင်း ready! အသုံးပြုပါ Presentation မုဒ် အတွက် အတန်း, သို့မဟုတ် ကြိုးစားပါ Auto-Grader အတွက် ဖွင့်ပါ responses.",
-    "glossary_generated": "အဘိဓာန် ပြီးစီးပါပြီ! စကားလုံးဂိမ်းများ • Bingo၊ Memory Match၊ Crossword၊ Word Search နှင့် အခြားများကို ကြိုးစားကြည့်ပါ!",
+    "glossary_generated": "အဘိဓာန် ပြီးစီးပါပြီ! စကားလုံးဂိမ်းများ — Bingo၊ Memory Match၊ Crossword၊ Word Search နှင့် အခြားများကို ကြိုးစားကြည့်ပါ!",
     "adventure_started": "သင်၏ ခရီး begins! အမျိုးအစား သင်၏ action below, သို့မဟုတ် အသုံးပြုပါ ရွေးချယ်မှု ခလုတ် သို့ decide ဘာ happens နောက်.",
     "adventure_scene": "ဘာ မည် သင် do? Every ရွေးချယ်မှု ပုံသဏ္ဍာန် သင်၏ ပုံပြင်!",
     "analysis_complete": "ခွဲခြမ်းစိတ်ဖြာမှု ပြီးစီးပါပြီ! လေ့လာထိုက်သော ဝေါဟာရအချို့နှင့် အဓိက အယူအဆများကို တွေ့ရှိခဲ့သည်။",
@@ -10156,7 +10156,7 @@
     "type_timeline": "အစီအစဉ် တည်ဆောက်ကိရိယာ",
     "type_timeline_desc": "Sequencing လှုပ်ရှားမှု adapted သို့ အတန်းအဆင့်",
     "full_pack": "အပြည့်အ၀ အရင်းအမြစ်များ Pack • ရွေးချယ်ပါ အားလုံး",
-    "deselect_all": "? Deselect အားလုံး",
+    "deselect_all": "↩ Deselect အားလုံး",
     "estimate": "ခန့်မှန်း",
     "api_calls": "API ခေါ်",
     "start_batch": "ထုတ်လုပ်ပါ",
@@ -10185,7 +10185,7 @@
     "bridge_generating": "Creating သင်၏ personalized ဗားရှင်း...",
     "bridge_projection": "Projection မုဒ်",
     "bridge_exit_projection": "ထွက်ပြောင်းခြင်း ခန့်မှန်းချက်",
-    "bridge_offline_info": "မဟုတ်ပါ တိုက်ရိုက် sessions • preview အပေါ် ဤ device သာ",
+    "bridge_offline_info": "မဟုတ်ပါ တိုက်ရိုက် sessions — preview အပေါ် ဤ device သာ",
     "bridge_term_saved": "သိမ်းဆည်းပါ \"{term}\" သို့ အဘိဓာန်",
     "bridge_term_save_failed": "Failed သို့ သိမ်းပါ ဝေါဟာရ",
     "bridge_save_term": "သိမ်းပါ သို့ အဘိဓာန်",
@@ -10211,7 +10211,7 @@
     "bridge_f2f_custom_lang": "Custom ဘာသာစကား...",
     "bridge_f2f_custom_placeholder": "ဥပမာ Yoruba, Tigrinya, Dari...",
     "bridge_all_saved": "အားလုံး ဝေါဟာရ သိမ်းပြီး သို့ အဘိဓာန်!",
-    "bridge_terms_saved": "? အားလုံး သိမ်းဆည်းပါ",
+    "bridge_terms_saved": "✅ အားလုံး သိမ်းဆည်းပါ",
     "fullpack_group_target": "ပစ်မှတ် အုပ်စု",
     "fullpack_group_current": "လက်ရှိ ဆက်တင်များ",
     "fullpack_group_all": "အားလုံး အုပ်စု",
@@ -12182,7 +12182,11 @@
       "trapezoid": "ထရပ်ပီဇိုက်",
       "simpson": "Simpson",
       "rectangles_n": "ထောင့်မှန်စတုဂံ (n)",
-      "coeff_a": "Coeff"
+      "coeff_a": "Coeff",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။",
+      "a11y_back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_snapshot": "ဓာတ်ပုံရိုက်ချက်",
+      "a11y_next": "နောက်တစ်ခု"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ ဤဘရောက်ဇာသည် အသံကို မပံ့ပိုးပါ",
@@ -12306,12 +12310,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI ရှင်းလင်းချက်ကို အဆင့်တွင် ဖန်တီးပါ",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "ဖတ်ရှုမှု အဆင့်-",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -13937,8 +13941,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? မှန်ကန်! It\\",
-      "that": "? ထို\\",
+      "correct_it": "✅ မှန်ကန်! It\\",
+      "that": "❌ ထို\\",
       "linear": "မျဉ်းဖြောင့်",
       "quadratic": "နှစ်ထပ်ကိန်း",
       "cubic": "သုံးထပ်ကိန်း",
@@ -14212,7 +14216,8 @@
       "angle_u00b0": "ထောင့် (°)",
       "velocity_ms": "အလျင် (m/s)",
       "gravity_msu00b2": "ဆွဲငင်အား (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Random: ",
@@ -14240,7 +14245,10 @@
       "codominant_desc": "Allele နှစ်ခုလုံးကို အပြည့်အဝ ဖော်ပြသည်။ Heterozygote များသည် လက္ခဏာနှစ်ခုလုံးကို တစ်ပြိုင်နက် ပြသည်။",
       "sexLinked_desc": "လက္ခဏာကို X chromosome ပေါ်တွင် သယ်ဆောင်သည်။ ဤသည် X-linked RECESSIVE မျိုးရိုးဆက်ခံမှုကို ဖော်ပြသည် (ဥပမာ hemophilia၊ အနီ-အစိမ်း အရောင်မမြင်ခြင်း)။ အမျိုးသား (XY) များသည် ဖော်ပြရန် copy တစ်ခုသာလိုပြီး အမျိုးသမီး (XX) များသည် နှစ်ခုလိုသည်။",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_snapshot": "ဓာတ်ပုံရိုက်ချက်",
+      "a11y_close_flashcard": "ကတ်ပြား ပိတ်ရန်"
     },
     "circuit": {
       "meter_status_ammeter_short": "အန္တရာယ်ရှိသော နေရာချထားမှု: ရှော့ဆားကစ်လမ်းကြောင်း",
@@ -14532,8 +14540,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? မှန်ကန်!",
-      "it": "? It\\"
+      "correct": "✅ မှန်ကန်!",
+      "it": "❌ It\\"
     },
     "inequality": {
       "badge_first_solve_label": "ပထမဆုံး ဖြေရှင်းချက်",
@@ -14649,8 +14657,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? မှန်ကန်!",
-      "answer": "? အဖြေ:",
+      "correct": "✅ မှန်ကန်!",
+      "answer": "❌ အဖြေ:",
       "hydrogen": "ဟိုက်ဒရိုဂျင်",
       "helium": "ဟီလီယမ်",
       "lithium": "လီသီယမ်",
@@ -14792,7 +14800,7 @@
       "reddish_metal_used_since_the": "Reddish metal အသုံးပြုပြီး since Bronze Age",
       "bluishwhite_metal_that_prevents_rust": "Bluish-white metal ထို prevents rust",
       "best_conductor_of_electricity_among": "အကောင်းဆုံး conductor ၏ electricity among အားလုံး metals",
-      "dense_soft_shiny_precious_metal": "သိပ်သည်း၊ ပျော့ပျောင်း၊ တောက်ပသော အဖိုးတန် သတ္တု • အဘယ်အခါမှ သံချေးမတက်",
+      "dense_soft_shiny_precious_metal": "သိပ်သည်း၊ ပျော့ပျောင်း၊ တောက်ပသော အဖိုးတန် သတ္တု — အဘယ်အခါမှ သံချေးမတက်",
       "strong_as_steel_but_45": "Strong as steel သို့သော် 45% lighter",
       "shiny_metal_that_gives_rubies": "Shiny metal ထို gives rubies ၎င်းတို့၏ red အရောင်",
       "essential_for_steel_production_and": "Essential အတွက် steel production နှင့် bone health",
@@ -15898,7 +15906,9 @@
       "our_sun_is_born": "Our Sun ဖြစ်သည် Born",
       "present_day": "ပစ္စုပ္ပန်",
       "the_far_future": "The Far Future",
-      "universe": "Universe: "
+      "universe": "Universe: ",
+      "a11y_back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_simulation_speed": "ပုံတူ အရှိန်"
     },
     "rocks": {
       "igneous": "မီးတောင်ကျောက်",
@@ -18823,7 +18833,10 @@
       "garage_desc": "အင်ဂျင်များ၊ သံချေးနှင့် တုံ့ပြန်မှုများ — ဓာတုဗေဒ အလုပ်ရုံ။",
       "classroom_desc": "ဘီကာများနှင့် စမ်းသပ်မှုများပါသော တကယ့်သိပ္ပံစာသင်ခန်း။",
       "outdoors_desc": "အပြင်ထွက်ပါ — သဘာဝသည် အကြီးဆုံး ဓာတ်ခွဲခန်းဖြစ်သည်။",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_snapshot": "ဓာတ်ပုံရိုက်ချက်",
+      "a11y_next": "နောက်တစ်ခု"
     },
     "converter": {
       "u2705_saved_to_history": "✅ မှတ်တမ်းတွင် သိမ်းဆည်းပြီး!",
@@ -19610,7 +19623,40 @@
       "read_what_special_education_law_actually": "အထူးပညာရေး ဥပဒေက တကယ် ဘာပြောသလဲ ဆိုတာ ကိုယ်ပိုင် စကားလုံးများဖြင့် ဖတ်ပါ။ IDEA အပိုင်း B နှင့် ပုဒ်မ 504 ၏ စစ်မှန်သော စာသား၊ eCFR မှ ယူထားပြီး ရက်စွဲတပ်ထားသည်၊ ရှာဖွေနိုင်သည်၊ ဖက်ဒရယ်နှင့် ပြည်နယ် စည်းမျဉ်းများ ဘေးချင်းယှဉ်။ မည်သည်ကိုမျှ ပြန်လည်ရေးသားခြင်း သို့မဟုတ် ဖန်တီးခြင်း မရှိပါ — တရားဝင် စာသား မတင်နိုင်လျှင် ကိရိယာက မှန်းဆမည့်အစား ထိုသို့ ပြောသည်။",
       "applied_k_12_behavior_practice_what": "မူလတန်းကြိုမှ အထက်တန်းအထိ အသုံးချ အပြုအမူ လက်တွေ့ — ကျောင်း စိတ်ပညာရှင်များနှင့် ဆရာများက ဤသိပ္ပံဖြင့် တကယ် ဘာလုပ်ကြသလဲ။ သုံးဆင့် PBIS မူဘောင်၊ FBA လုပ်ဆောင်ချက်များနှင့် ချိတ်ဆက်ထားသော အစားထိုး အပြုအမူများ၊ နောက်ခံ အဖြစ်အပျက်များ (BIP အများစု လွတ်သွားသည့် နှေးသော လှုံ့ဆော်မှုများ)၊ Geoff Colvin ၏ ခုနစ်ဆင့် ပေါက်ကွဲမှု စက်ဝန်း၊ နှင့် Maine အခန်း 33 ကို အခြေခံသည့် ချုပ်နှောင်ခြင်းနှင့် သီးခြားထားခြင်း ကျင့်ဝတ်။ BehaviorLab ၏ ညီအစ်မ ကိရိယာ။",
       "marine_biology_behavioral_science_of_octopuses": "ဘဝဲ၊ ပြည်ကြီးငါး၊ ကတ္တီပါငါးနှင့် နောက်တီးလပ်စ်၏ ပင်လယ်ဇီဝဗေဒနှင့် အပြုအမူ သိပ္ပံ။ အဓိက — Hunter Sim — မျိုးစိတ်၊ နေရာ၊ သားကောင်နှင့် နည်းဗျူဟာ ရွေးပါ၊ ဖုံးကွယ်မှု ဂိမ်းငယ် ကစားပါ၊ တိုက်ခိုက်မည့် အချိန်ကို ချိန်ပါ။ ကွင်းဆင်းမှတ်စု ဇီဝဗေဒ အချက်များ ဖွင့်ပေးသည် (ခရိုမာတိုဖော အလုပ်လုပ်ပုံ၊ ဦးနှောက် ၉ ခု၊ အပြာရောင် သွေး၊ ဂျက် တွန်းအား)။ မျိုးစိတ် ၁၀ မျိုး ကွင်းလမ်းညွှန်၊ ဉာဏ်ရည်၊ ဖုံးကွယ်မှုနှင့် ဂျက်အရှိန် ကိန်းဂဏန်းများနှင့်။",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1၊ HS-ETS1 နှင့် HS-PS2။ အကွာအဝေး၊ အမြင့်၊ ဝန်နှင့် ပစ္စည်း ချိန်ညှိနိုင်သော ထရပ်စ် ဖိအား ပုံတူ၊ တံတား အမျိုးအစား နှိုင်းယှဉ်မှု (ထုပ်၊ ထရပ်စ်၊ မိုးကုပ်၊ ဆွဲ၊ ကြိုးဆွဲ)၊ ပစ္စည်း ဒေတာဘေ့စ်၊ အား အမျိုးအစားများ၊ တကယ့် ဖြစ်ရပ်လေ့လာမှုများ (Tacoma Narrows၊ Hyatt Regency၊ Tay၊ Silver အပြင် Brooklyn၊ Golden Gate၊ Akashi နှင့် Millau)၊ အင်ဂျင်နီယာ ဒီဇိုင်း စက်ဝန်း၊ AP စတိုင် စာမေးပွဲနှင့် ပုံနှိပ်နိုင်သော ဒီဇိုင်း သတ်မှတ်ချက်များ။"
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1၊ HS-ETS1 နှင့် HS-PS2။ အကွာအဝေး၊ အမြင့်၊ ဝန်နှင့် ပစ္စည်း ချိန်ညှိနိုင်သော ထရပ်စ် ဖိအား ပုံတူ၊ တံတား အမျိုးအစား နှိုင်းယှဉ်မှု (ထုပ်၊ ထရပ်စ်၊ မိုးကုပ်၊ ဆွဲ၊ ကြိုးဆွဲ)၊ ပစ္စည်း ဒေတာဘေ့စ်၊ အား အမျိုးအစားများ၊ တကယ့် ဖြစ်ရပ်လေ့လာမှုများ (Tacoma Narrows၊ Hyatt Regency၊ Tay၊ Silver အပြင် Brooklyn၊ Golden Gate၊ Akashi နှင့် Millau)၊ အင်ဂျင်နီယာ ဒီဇိုင်း စက်ဝန်း၊ AP စတိုင် စာမေးပွဲနှင့် ပုံနှိပ်နိုင်သော ဒီဇိုင်း သတ်မှတ်ချက်များ။",
+      "the_gutenberg_style_screw_press_as": "ဂူတန်ဘတ် ပုံစံ ဝက်အူ ပုံနှိပ်စက်ကို တကယ် လည်ပတ်နိုင်သော ပုံတူအဖြစ်။ တံကျင်ကို ဆွဲပါ၊ ကိုယ်ပိုင် စာလုံးများ စီပါ၊ နှိပ်ရာကို ကြည့်ပါ။ ထို့အပြင် ပစ္စည်းသိပ္ပံ (ခဲ-သံဖြူ-အန်တီမိုနီ သတ္တုစပ်)၊ စီးပွားရေး (စာအုပ်တစ်အုပ်ကုန်ကျစရိတ် ပြိုကျခြင်း)၊ သမိုင်း (ဘာသာရေး ပြုပြင်ပြောင်းလဲမှု၊ သိပ္ပံ တော်လှန်ရေး)၊ စာလုံးအလှ၊ နှင့် ပုံနှိပ်စက် နောက်ကွယ်မှ လူများ (သမိုင်းက မေ့လျော့ခဲ့သော အမျိုးသမီး ပုံနှိပ်သမားများ အပါအဝင်)။ အလယ်တန်း ဘာသာရပ်ဖြတ်ကျော် လုပ်ငန်းအတွက် တည်ဆောက်ထားသည်။",
+      "three_js_stoop_simulator_deep_science": "Three.js ဖြင့် ထိုးဆင်းမှု ပုံတူနှင့် သားကောင်ဖမ်း ငှက်များ၏ အမဲလိုက် စက်မှုဗေဒ အနက်ရှိုင်း သိပ္ပံ။ 240 mph ဖြင့် ပီရီဂရင် သိမ်းငှက်အဖြစ် ပျံပါ၊ 530 psi ခြေသည်းများနှင့် ဟာပီ လင်းယုန်အဖြစ်၊ သို့မဟုတ် အသံမထွက်သော ဦးချိုကြီး ဇီးကွက်အဖြစ်။ မျိုးစိတ် ၈ မျိုးနှင့် အပိုင်း ၁၂ ပိုင်း — ခြေသည်းအား၊ အမြင် (လူထက် ၄-၈ ဆ၊ ကက်စထရယ်များတွင် ခရမ်းလွန်)၊ ပျံသန်းမှု ရူပဗေဒ၊ ဇီးကွက်များ၏ အသံတိတ် ပျံသန်းမှု၊ အဆုံးအရှိန် တွက်စက်၊ DDT နောက်ပိုင်း ပြန်လည်နာလန်ထူမှုနှင့် ဆက်လက်ဖြစ်ပွားနေသော ထိန်းသိမ်းရေး အကျပ်အတည်းများ၊ နှင့် အရိပ်ပုံသဏ္ဌာန်နှင့် စုစုပေါင်း ဟန်ပန်ဖြင့် ကွင်းဆင်း ခွဲခြားခြင်း။",
+      "practice_reading_and_completing_the_documents": "လူကြီးဘဝ လည်ပတ်နေသော စာရွက်စာတမ်းများကို ဖတ်ရန်နှင့် ဖြည့်ရန် လေ့ကျင့်ပါ — အလုပ်လျှောက်လွှာများ၊ W-4 ပုံစံများ၊ အငှားစာချုပ်များ၊ ဆေးကုသမှု လက်ခံပုံစံများ၊ ယာဉ်မောင်း ခွင့်ပြုချက်များ၊ နှင့် သင့်ကိုယ်ပိုင် IEP အစည်းအဝေး ဖိတ်စာ။ ကွက်လပ်တိုင်းကို ရိုးရှင်းသော စကားဖြင့် ဖြေရှင်းပြထားပြီး၊ သင့်အတွက် ကုန်ကျစေနိုင်သော ကွက်များကို အမှတ်အသားပြုထားသည်။ တစ်စုံတစ်ယောက်က ယခုပင် လက်မှတ်ထိုးစေလိုသည့်အခါအတွက် ဖိအား အခြေအနေများနှင့် အချိန်တောင်းရန် အသင့်စကားလုံးများပါဝင်သည်။ လေ့ကျင့်မှုအားလုံးကို စိတ်ကူးယဉ် ပုဂ္ဂိုလ်တစ်ဦးဖြင့်သာ ပြုလုပ်ပြီး၊ သင့်၏ တကယ့်အချက်အလက်များကို ဘယ်တော့မှ မသုံးပါ။",
+      "how_swimming_works_stroke_physics_survival": "ရေကူးခြင်း မည်သို့ လုပ်ဆောင်သည် (ကူးနည်းများ၏ ရူပဗေဒနှင့် အသက်ရှင်ရေး ကျွမ်းကျင်မှုများ) နှင့် ရေကူးသူတိုင်း ရေအေး၊ ပြန်စီးရေစီး၊ ရေခဲ၊ အသက်ကယ် အင်္ကျီနှင့် ကယ်ဆယ်ရေးအကြောင်း သိသင့်သည်များ။ ကူးနည်းများ၏ မြင်ကွင်း ခွဲခြမ်းစိတ်ဖြာမှု၊ ပေါလွင်မှုနှင့် တွန်းအား၏ သိပ္ပံ၊ နှင့် တကယ် အသက်ကယ်သော အသက်ရှင်ရေး ကျွမ်းကျင်မှုများ (ပက်လက်မျော၊ ကြက်ဥခတ် ကန်နည်း၊ HELP အနေအထား၊ အုပ်စုဖွဲ့ခြင်း)။ ရင်းမြစ်များ — CDC၊ USCG၊ AAP၊ NAA၊ NOAA၊ USA Swimming။ ပညာရေးအတွက်သာ — တကယ် ရေကူးသင်ရန် ရေကူးနည်းပြ တစ်ဦး ရှာပါ။",
+      "tax_paycheck_calculator_data_literacy_decision": "အခွန်နှင့် လစာစာရွက် တွက်စက်၊ ဒေတာ စာတတ်မြောက်မှု၊ ဆုံးဖြတ်ချက် မက်ထရစ်၊ စာချုပ် ဖတ်စက်၊ မှတ်တမ်းများနှင့် စာရွက်စာတမ်းလုပ်ငန်း၊ သွားလာရေး စီစဉ်ခြင်း၊ အလုပ်အတွက် အသင့်ဖြစ်မှု၊ ကိုယ်ရေးရာဇဝင် ရေးသားခြင်း၊ လက်ရာစုစည်းမှု အထောက်အထား စီစဉ်ခြင်း၊ အင်တာဗျူး လေ့ကျင့်မှု၊ ဆက်သွယ်ရေး ကျွမ်းကျင်မှု၊ အချိန် စီမံခန့်ခွဲမှု၊ ကျန်းမာရေး အာမခံ၊ သွား ပြုစုစောင့်ရှောက်မှု၊ ခန္ဓာကိုယ် ပြုစုမှု အာဂိုနောမစ်၊ အိပ်စက်မှု ပုံမှန်လုပ်ရိုးများ၊ ဆေးတံဆိပ်များ၊ ချိန်းဆိုမှု ပြင်ဆင်ခြင်း၊ အိမ်တွင်း ဘေးကင်းရေး၊ ဒစ်ဂျစ်တယ် ဘေးကင်းရေး၊ အစားအစာနှင့် သက်တောင့်သက်သာဖြစ်မှု၊ နှင့် နေ့စဉ်ဘဝအတွက် အသုံးချ သိပ္ပံ။",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1၊ HS-LS1၊ HS-LS3 နှင့် HS-LS4။ အဏုဇီဝ ကမ္ဘာ — ဘက်တီးရီးယား (အကျိုးပြုနှင့် ရောဂါဖြစ်စေသော)၊ ဗိုင်းရပ်စ် (COVID၊ တုပ်ကွေး၊ HIV၊ ဖေ့ဂျ်၊ ဝက်သက်)၊ အဏုကြည့်နည်း (အလင်း၊ ဖေ့စ်ကွန်ထရပ်၊ ဖလိုရိုဆင့်၊ အီလက်ထရွန်၊ AFM)၊ ပဋိဇီဝဆေး ခံနိုင်ရည်၏ ဆင့်ကဲဖြစ်စဉ်၊ လူ၊ မြေဆီလွှာနှင့် သမုဒ္ဒရာ၏ အဏုဇီဝအစု၊ ကာကွယ်ဆေးများနှင့် ခုခံအားစနစ်၊ အချဉ်ဖောက်ခြင်း (အချဉ်မုန့်ညက်၊ ဒိန်ချဉ်၊ ကင်ချီ၊ ဆောက်ကရောက်၊ ကွန်ဘူချာ၊ ဒိန်ခဲ)၊ ဖြစ်ရပ်လေ့လာမှုများ (Snow၊ Fleming၊ MRSA၊ COVID နှင့် mRNA၊ FMT)၊ စာမေးပွဲနှင့် ပုံနှိပ်နိုင်သော ဓာတ်ခွဲခန်း ဘေးကင်းရေးနှင့် အဏုဇီဝ ကိုးကားချက်။",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "ဒေသ ဆယ့်တစ်ခုတွင် ပတ်ဝန်းကျင် ထိန်းသိမ်းရေး လှုပ်ရှားမှု ဆယ့်ငါးခု။ Maine ၏ ကာလအပိုင်းအခြား များစွာဖြင့် ရှည်လျားသော လှုပ်ရှားမှု ငါးခုနှင့် စက်မှုမိသားစု ငါးခုစလုံးကို ဖြတ်သန်းသည့် ဒေသဖြတ်ကျော် အခြေအနေ ဆယ်ခု — မီး (ဩစတြေးလျရှိ Yarralin၊ မြောက်ကယ်လီဖိုးနီးယားရှိ Karuk)၊ ထိန်းသိမ်းရေး (Yellowstone၊ ရဝမ်ဒါရှိ Akagera)၊ ပြည်သူ့ကျန်းမာရေး (မွန်ဘိုင်းရှိ သွေးလွန်တုပ်ကွေး၊ လိုက်ဘေးရီးယားရှိ ၂၀၁၄ အီဘိုလာ)၊ ရေဝေရေလဲ (Klamath မြစ်၊ Murray-Darling ရေဝှမ်း)၊ နှင့် ရာသီဥတု (မာရှယ် ကျွန်းစု၊ ဘင်္ဂလားဒေ့ရှ် မြစ်ဝကျွန်းပေါ်)။ မိသားစု တွဲဖက် အမြင်များသည် Maine လှုပ်ရှားမှုနှင့် တူညီသော စက်မှုမိသားစုမှ ဒေသဖြတ်ကျော် အခြေအနေကို ပြီးဆုံးစေသောအခါ ပွင့်လာသည်။",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1၊ HS-ETS1-3 နှင့် MS-ESS3-3။ တကယ် အချင်းချင်း ဆန့်ကျင်နေသော လိုအပ်ချက်များနှင့် ရင်ဆိုင်ကာ ၁၄၄ ကွက် ဇယားကွက်ပေါ်တွင် မြို့ငယ်တစ်မြို့ ဒီဇိုင်းဆွဲပါ။ မြို့ငယ် သုံးမြို့၊ တစ်ခုစီတွင် ကွဲပြားသော ဆုံးဖြတ်ပေးသည့် ကန့်သတ်ချက် — Riverbend၊ မိုးရေနှင့် ငွေချေးစာချုပ်က ဖိစီးရာ; Mesa Hollow၊ မြေအောက်ရေလွှာ တည်ငြိမ်ပြီး လယ်ယာများက ၎င်းကို သောက်နေရာ; နှင့် Harborlight၊ အစီအစဉ်သည် ၂၀၅၀ တွင်လည်း အလုပ်ဖြစ်ရမည့်နေရာ။ ကျိုးကြောင်းဆီလျော်သော နည်းဖြင့် စီးဆင်းမှု၊ ရေ ဟန်ချက်၊ ပင်လယ်ရေမျက်နှာပြင် မြင့်တက်မှု ခွင့်ပြုချက်၊ ကွန်ရက်ပေါ် လမ်းလျှောက်အကွာအဝေး၊ နှင့် ကုန်ကျစရိတ် တွက်ထားသော လမ်းကွန်ရက် — တစ်ခုစီကို ဖွင့်၍ ၎င်း၏ ပုံသေနည်းကို ကြည့်နိုင်သည်။ Assumption Lab က တူညီသော အစီအစဉ်တစ်ခုကို ထုတ်ပြန်ထားသော ပါရာမီတာ နှစ်စုံဖြင့် ပြန်လည် လည်ပတ်စေပြီး၊ မည်သည့် ကောက်ချက်များက နှစ်ခုစလုံးကို ရှင်သန်ကျော်လွှားသည်ကို ကျောင်းသားများ မြင်စေသည်။ မြေပုံ၊ တည်းဖြတ်နိုင်သော ကွက်ဇယားနှင့် တူညီသော အစီအစဉ်၏ သုံးဖက်မြင် ပုံစံငယ်။ ဆွေးနွေးမှု မေးခွန်းများနှင့် အထောက်အထားရှိ သမိုင်းက ဤကိရိယာ ပုံစံမပြုလုပ်ရန် ငြင်းဆိုသည့် မေးခွန်းများကို သယ်ဆောင်သည်။ အမှတ်လည်း မရှိ၊ အဖြေသော့လည်း မရှိ။",
+      "codap_data_science": "CODAP - ဒေတာ သိပ္ပံ",
+      "lumen_research_canvas": "Lumen - သုတေသန ကင်းဗတ်",
+      "evolab_evolution": "EvoLab - ဆင့်ကဲဖြစ်စဉ်",
+      "dino_lab": "ဒိုင်နိုဆော ဓာတ်ခွဲခန်း",
+      "nutritionlab_nutrition_science": "NutritionLab - အာဟာရ သိပ္ပံ",
+      "birdlab_i_spy_ornithology": "BirdLab - ရှာဖွေ လေ့လာ ငှက်ပညာ",
+      "openbim_companion": "OpenBIM - လမ်းပြ အဖော်",
+      "applab_ai_app_generator": "AppLab - AI ဖြင့် အက်ပ် ဖန်တီးစက်",
+      "access_lens": "အသုံးပြုနိုင်မှု မှန်ဘီလူး",
+      "sim_shelf": "ပုံတူ စင်",
+      "zoom_gallery": "ချဲ့ကြည့် ပြခန်း",
+      "sourcebook": "ရင်းမြစ် စာအုပ်",
+      "wheel_fire_pottery_lab": "ဘီးနှင့် မီး - အိုးထိန်း ဓာတ်ခွဲခန်း",
+      "echo_navigator": "ပဲ့တင်သံ လမ်းညွှန်",
+      "learning_lab_how_learning_works": "Learning Lab - သင်ယူမှု ဘယ်လို ဖြစ်သလဲ",
+      "weldlab_welding_metal_joining": "WeldLab - ဂဟေနှင့် သတ္တု ဆက်စပ်ခြင်း",
+      "bikelab_physics_repair": "BikeLab - ရူပဗေဒနှင့် ပြုပြင်ခြင်း",
+      "fisherlab_boating_fishing_sim": "FisherLab - လှေမောင်းနှင့် ငါးဖမ်း ပုံတူ",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab - ခရု မွေးမြူရေး ပုံတူ",
+      "throwlab_sports_physics": "ThrowLab - အားကစား ရူပဗေဒ",
+      "skatelab_skate_bmx_physics": "SkateLab - စကိတ်နှင့် BMX ရူပဗေဒ",
+      "playlab_strategy_on_the_field": "PlayLab - ကွင်းအတွင်း နည်းဗျူဟာ",
+      "kepler_colony": "ကက်ပလာ ကိုလိုနီ",
+      "birdlab_life_list": "BirdLab - တစ်သက်တာ စာရင်း",
+      "petslab_decoder": "PetsLab - အမူအရာ ဖတ်စက်"
     },
     "area": {
       "volume": "ထုထည်..."
@@ -19650,7 +19696,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_snapshot": "ဓာတ်ပုံရိုက်ချက်",
+      "a11y_next": "နောက်တစ်ခု",
+      "a11y_simulation_speed": "ပုံတူ အရှိန်",
+      "a11y_close_flashcard": "ကတ်ပြား ပိတ်ရန်"
     },
     "solar_sys": {
       "venus": "သောကြာ",
@@ -20472,7 +20523,8 @@
       "scaled_volume_changed": "🔵 အတိုင်းအတာ ချိန်ညှိ (ထုထည် ပြောင်းလဲ)",
       "skewed_shape_deformed": "🟠 စောင်း (ပုံသဏ္ဍာန် ပျက်ယွင်း)",
       "degenerate_volume_0": "💀 ယိုယွင်း (ထုထည် → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "လမ်းညွှန် တိုးတက်မှု"
     },
     "numberline": {
       "first_mark": "ပထမအမှတ်အသား",
@@ -22615,7 +22667,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "{value1} ခုနှစ် စတင်သည်။"
     },
     "optics": {
       "optics_lab": "ရောင်ခြည်ပညာ ဓာတ်ခွဲခန်း",
@@ -22961,7 +23014,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "ဒေသတွင်း ခွဲခြမ်းစိတ်ဖြာမှု SQL စုံစမ်းချက်"
     },
     "geosandbox": {
       "loading_3d_engine": "3D အင်ဂျင်ကို တင်နေသည်...",
@@ -23311,7 +23365,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "ပန်းပု ဖယ်ရှားပြီး"
     },
     "algebraCAS": {
       "solve": "🔍 ဖြေရှင်းပါ",
@@ -25907,7 +25962,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။"
     },
     "economicslab": {
       "six_figures": "ဂဏန်းခြောက်လုံးဝင်ငွေ",
@@ -27887,7 +27943,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "ပြန်လည်သုံးသပ်ချက် သိမ်းပြီးပါပြီ။"
     },
     "anatomy": {
       "system_explorer": "စနစ်ရှာဖွေသူ",
@@ -28469,7 +28526,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D ကင်မရာ ပြန်လည်သတ်မှတ်ရန်"
     },
     "dna": {
       "back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
@@ -29846,7 +29904,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "ပြန်လည်သုံးသပ်ချက် သိမ်းပြီးပါပြီ။"
     },
     "angles": {
       "back_to_tools": "ကိရိယာများသို့ ပြန်သွားရန်",
@@ -30660,7 +30719,8 @@
       "explain_how_each_parameter_shapes_a_si": "ပါရာမီတာတစ်ခုစီသည် ဆိုင်းလှိုင်းကို မည်သို့ပုံဖော်သည်ကို ရှင်းပြပါ။",
       "design_note_discrete_5_state_marker_no": "ဒီဇိုင်းမှတ်စု− သီးခြား ၅ အခြေအနေ အမှတ်အသား; လှိုင်းရမှတ်မရှိ; ဖော်ပြမှုမရှိ — ဒီဇိုင်းအရ။",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။"
     },
     "typingpractice": {
       "typing_practice_menu": "စာစီစာရိုက် လေ့ကျင့်ခန်း မီနူး",
@@ -31014,7 +31074,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "မီနူးသို့ ပြန်သွားရန်"
     },
     "music": {
       "edm_lead": "EDM Lead",
@@ -31533,7 +31594,7 @@
       "sculpt_engine_failed": "ပန်းပုအင်ဂျင်ကို မတင်နိုင်ပါ။",
       "sculpt_failed": "ပန်းပုထုခြင်း မအောင်မြင်ပါ — ပိုရိုးရှင်းသော ဖော်ပြချက်ကို စမ်းပါ။",
       "sr_sculpted": "ရုပ်ထု နေရာချပြီး",
-      "sr_art_cleared": "ရုပ်ထု ဖယ်ရှားပြီး",
+      "sr_art_cleared": "ပန်းပု ဖယ်ရှားပြီး",
       "assess_failed": "နည်းပြ တုံ့ပြန်၍မရပါ — ထပ်စမ်းပါ။",
       "sr_assessed": "နည်းပြ၏ တုံ့ပြန်ချက် တည်ဆောက်ရေးပန်နယ်အောက်တွင် အသင့်ရှိသည်",
       "recall_needs_more": "အုပ်စု ၂ ခုတွင် အကြံ အနည်းဆုံး ၄ ခု အရင်ထည့်ပါ",
@@ -33144,7 +33205,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "ပိတ်",
+      "sr_nothing_to_redo": "ပြန်လုပ်စရာ မရှိပါ။",
+      "sr_nothing_to_undo": "နောက်ပြန်ဆုတ်စရာ မရှိပါ။",
+      "sr_dir_left": "ဘယ်",
+      "sr_dir_right": "ညာ"
     },
     "arithmetic": {
       "selected": " ကို ရွေးလိုက်ပါပြီ။",
@@ -37190,7 +37256,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR ကို ကောင်းကင်ထိပ်ရှိ ရေဒီယင့်နှင့် ကန့်သတ် အလင်းတန်ဖိုး 6.5 အရ စံသတ်မှတ်ထားသည်။ ဤခန့်မှန်းချက်သည် ကြည်လင်ပြီး လမရှိသော ကောင်းကင်နှင့် ဦးရေညွှန်းကိန်း 2.2 ကို ယူဆသည်။ Bortle အဆင့်များသည် ကန့်သတ် အလင်းတန်ဖိုးကို ခန့်မှန်းခြေသာ ပြသည်၊ စံထက် မှောင်သော ကောင်းကင်သည် ZHR ကို ကျော်လွန်နိုင်သည်။ ရေဒီယင့်၏ အမြင့် နိမ့်ခြင်းနှင့် ပိုလင်းသော ကောင်းကင်သည် ခန့်မှန်းချက်ကို လျှော့ချသည်။",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM ကိရိယာများသို့ ပြန်သွားရန်"
     },
     "autorepair": {
       "back_to_menu": "မီနူးသို့ ပြန်",
@@ -37931,7 +37998,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "ရမှတ် - {value2} တွင် {value1}",
+      "a11y_open_2": "{value1} ကို ဖွင့်ရန်",
+      "a11y_option": "ရွေးချယ်စရာ {value1} - {value2}{value3}"
     },
     "bakingscience": {
       "for_a_high_school_chemistry_student_ac": "အထက်တန်းဓာတုဗေဒကျောင်းသားအတွက် တိကျ၍ နားလည်လွယ်",
@@ -38034,7 +38104,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။"
     },
     "beehive": {
       "5": "⏭ +5",
@@ -38780,7 +38851,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။",
+      "a11y_investigation_progress": "စုံစမ်းမှု တိုးတက်မှု",
+      "a11y_flight_debrief": "ပျံသန်းမှု ပြန်လည်သုံးသပ်ချက်",
+      "a11y_tutorial_progress": "လမ်းညွှန် တိုးတက်မှု"
     },
     "behaviorlab": {
       "chain_reaction": "ဆက်စပ်တုံ့ပြန်မှု",
@@ -38949,7 +39024,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -41464,7 +41539,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "လေ့လာပြီးသော မော်ဂျူး - {value1}",
+      "a11y_score_out_of": "ရမှတ် - {value2} တွင် {value1}",
+      "sr_selected": "ရွေးထားသည် - {value1}",
+      "sr_quiz_reset": "စာမေးပွဲကို ပြန်လည်သတ်မှတ်ပြီး"
     },
     "brainatlas": {
       "group_systems": "စနစ်များ",
@@ -46620,7 +46699,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "အဖြေ ရွေးရန် - {value1}"
     },
     "cyberdefense": {
       "custom_scenario": "စိတ်ကြိုက် အခြေအနေ",
@@ -47764,7 +47844,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "ရွေးထားသည် - {value1}"
     },
     "echotrainer": {
       "wall": "နံရံ",
@@ -49223,7 +49304,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "လေ့လာပြီးသော မော်ဂျူး - {value1}"
     },
     "fireecology": {
       "carbon_calculator": "ကာဗွန် ဂဏန်းတွက်စက်",
@@ -50303,7 +50385,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "မီနူးသို့ ပြန်သွားရန်",
+      "sr_getting_critique": "သုံးသပ်ချက် ရယူနေသည်...",
+      "sr_critique_ready": "သုံးသပ်ချက် အဆင်သင့်ဖြစ်ပါပြီ။"
     },
     "flightsim": {
       "game_controls": "🎮 ဂိမ်းထိန်းချုပ်မှုများ",
@@ -50511,7 +50596,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "ပျံသန်းမှု အတုယူစက်၏ လေယာဉ်မှူးခန်း မြင်ကွင်း။ W/S ခေါင်းပိုင်း အတက်အကျ၊ A/D ဘေးတိမ်းစောင်း၊ Shift/Ctrl အားပေးလက်ကိုင်၊ ကွင်းစကွင်းပိတ်များက ပျံတောင်ငယ်များကို ထိန်းချုပ်သည်၊ X ဘီးဘရိတ်၊ Q စာမေးပွဲ၊ F အား၊ Space ခေတ္တရပ်၊ I အချက်အလက်။",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -50523,7 +50608,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "Portland, ME မှ လွတ်လပ်သော ပျံသန်းမှု",
       "free_resources": "Free Resources",
       "full_stall": "🔴 Full stall",
       "fullscreen": "⛶ Fullscreen",
@@ -50569,7 +50654,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "ရှန်ဟိုင်း မျှော်စင်",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -56393,7 +56478,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "လေ့လာပြီးသော မော်ဂျူး - {value1}",
+      "sr_loaded": "{value1} ကို ဖွင့်ပြီးပါပြီ",
+      "sr_showing": "{value1} ကို ပြသနေသည်",
+      "sr_opening": "{value1} ကို ဖွင့်နေသည်"
     },
     "platetectonics": {
       "pacific": "ပစိဖိတ်",
@@ -56651,7 +56740,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -61215,7 +61304,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "ရှင်းလင်းချက် အဆင်သင့်ဖြစ်ပါပြီ။",
+      "sr_off": "ပိတ်",
+      "sr_edge_left": "ဘယ်",
+      "sr_edge_right": "ညာ",
+      "sr_correct": "မှန်ပါသည်။",
+      "sr_not_quite": "အတိအကျ မဟုတ်သေးပါ။"
     },
     "printingpress": {
       "menu": "← မီနူး",
@@ -63354,7 +63449,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "မီနူးသို့ ပြန်သွားရန်",
+      "a11y_open": "{value1} ကို ဖွင့်ရန်",
+      "sr_selected": "ရွေးထားသည် - {value1}",
+      "sr_loaded": "{value1} ကို ဖွင့်ပြီးပါပြီ",
+      "sr_opening": "{value1} ကို ဖွင့်နေသည်",
+      "sr_correct": "မှန်ပါသည်။",
+      "sr_not_quite": "အတိအကျ မဟုတ်သေးပါ။",
+      "sr_year_begins": "{value1} ခုနှစ် စတင်သည်။",
+      "sr_question_reset_try_again": "မေးခွန်း ပြန်လည်သတ်မှတ်ပြီး။ ထပ်ကြိုးစားပါ။",
+      "sr_not_quite_see_the_explanation": "အတိအကျ မဟုတ်သေးပါ - ရှင်းလင်းချက်ကို ကြည့်ပါ။"
     },
     "raptorhunt": {
       "show_answer": "ပြပါ အဖြေ",
@@ -65003,7 +65108,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} ကို ဖွင့်ရန်",
+      "a11y_flight_debrief": "ပျံသန်းမှု ပြန်လည်သုံးသပ်ချက်"
     },
     "renewables": {
       "menu": "← မီနူး",
@@ -65703,7 +65810,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "မီနူးသို့ ပြန်သွားရန်",
+      "sr_getting_critique": "သုံးသပ်ချက် ရယူနေသည်...",
+      "sr_critique_ready": "သုံးသပ်ချက် အဆင်သင့်ဖြစ်ပါပြီ။",
+      "sr_quiz_reset": "စာမေးပွဲကို ပြန်လည်သတ်မှတ်ပြီး"
     },
     "roadready": {
       "let_s_start": "စတင်ကြပါစို့ →",
@@ -70065,7 +70176,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "အဖြေ ရွေးရန် - {value1}"
     },
     "spacecolony": {
       "4": "⛽ +4",
@@ -70614,7 +70726,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_local_analytical_sql_query": "ဒေသတွင်း ခွဲခြမ်းစိတ်ဖြာမှု SQL စုံစမ်းချက်"
     },
     "stewardship": {
       "sector": "ကဏ္ဍ",
@@ -71191,7 +71305,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "မီနူးသို့ ပြန်သွားရန်",
+      "sr_question_reset_try_again": "မေးခွန်း ပြန်လည်သတ်မှတ်ပြီး။ ထပ်ကြိုးစားပါ။"
     },
     "throwlab": {
       "scenarios": "အခြေအနေများ",
@@ -71416,7 +71532,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D ကင်မရာ ပြန်လည်သတ်မှတ်ရန်",
+      "sr_coach_is_offline": "နည်းပြ အွန်လိုင်း မရှိပါ။",
+      "sr_drill_stopped": "လေ့ကျင့်ခန်း ရပ်လိုက်ပါပြီ။"
     },
     "weldlab": {
       "menu": "← မီနူး",
@@ -72978,7 +73097,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "လေ့လာပြီးသော မော်ဂျူး - {value1}",
+      "a11y_score_out_of": "ရမှတ် - {value2} တွင် {value1}",
+      "sr_quiz_reset": "စာမေးပွဲကို ပြန်လည်သတ်မှတ်ပြီး",
+      "sr_loaded": "{value1} ကို ဖွင့်ပြီးပါပြီ",
+      "sr_showing": "{value1} ကို ပြသနေသည်",
+      "sr_not_quite_see_the_explanation": "အတိအကျ မဟုတ်သေးပါ - ရှင်းလင်းချက်ကို ကြည့်ပါ။"
     },
     "worldbuilder": {
       "grade_level": "အတန်းအဆင့်",
@@ -74571,7 +74696,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "ဘဝ သစ်ပင်",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76426,7 +76551,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "ရွေးချယ်စရာ {value1} - {value2}{value3}",
+      "a11y_3d_camera_views": "3D ကင်မရာ မြင်ကွင်းများ"
     },
     "playlab": {
       "11_vs_11_100_yd_field_4_downs_to_gain_": "11 vs 11, 100 yd field, 4 downs to gain 10. Cover-2, Cover-3, man-press, blitz pickup. Every play is a designed answer to a defense — and good QBs read the answer pre-snap.",
@@ -76494,7 +76621,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "နည်းပြ အွန်လိုင်း မရှိပါ။",
+      "sr_drill_stopped": "လေ့ကျင့်ခန်း ရပ်လိုက်ပါပြီ။"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76506,6 +76635,22 @@
       "finish": "နားလည်ပါပြီ!",
       "replay": "အကြံပြုချက်များ",
       "replay_aria": "သင်ခန်းစာပြ"
+    },
+    "pets": {
+      "sr_back_to_menu": "မီနူးသို့ ပြန်သွားရန်",
+      "sr_getting_critique": "သုံးသပ်ချက် ရယူနေသည်...",
+      "sr_critique_ready": "သုံးသပ်ချက် အဆင်သင့်ဖြစ်ပါပြီ။"
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM ကိရိယာများသို့ ပြန်သွားရန်",
+      "a11y_3d_camera_views": "3D ကင်မရာ မြင်ကွင်းများ"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "စုံစမ်းမှု တိုးတက်မှု"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "ပြန်လုပ်စရာ မရှိပါ။",
+      "sr_nothing_to_undo": "နောက်ပြန်ဆုတ်စရာ မရှိပါ။"
     }
   },
   "glossary_health": {
@@ -77108,7 +77253,7 @@
       "person": "ပုဂ္ဂိုလ်\\",
       "phase_label": "အဆင့်အမည်",
       "rationale_which_antecedent_does_this_address": "အကြောင်းပြချက် (မည်သည့် antecedent ကို ဖြေရှင်းသနည်း?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "သင်၏ချဉ်းကပ်မှုကို ပြန်လည်သုံးသပ်ပါ...\\n• ဘာက ကောင်းကောင်းအလုပ်ဖြစ်ခဲ့သနည်း?\\n• သင်ဘာကို ကွဲပြားစွာ လုပ်မည်နည်း?\\n• နောက်တစ်ခါ မည်သည့်နည်းဗျူဟာများကို လေ့ကျင့်လိုသနည်း?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "သင်၏ချဉ်းကပ်မှုကို ပြန်လည်သုံးသပ်ပါ...\n• ဘာက ကောင်းကောင်းအလုပ်ဖြစ်ခဲ့သနည်း?\n• သင်ဘာကို ကွဲပြားစွာ လုပ်မည်နည်း?\n• နောက်တစ်ခါ မည်သည့်နည်းဗျူဟာများကို လေ့ကျင့်လိုသနည်း?",
       "reinforcement_how_you": "⭐ Reinforcement (ဘယ်လို သင်\\",
       "replacement_behavior_functionally_equivalent": "✅ အစားထိုး အပြုအမူ (လုပ်ဆောင်မှုအရ ညီမျှသော)",
       "respond_as_the_counselor": "Respond as the counselor...",
@@ -77116,7 +77261,7 @@
       "search_81_tools": "🔍 ရှာဖွေပါ 80+ ကိရိယာများ…",
       "search_aba_terms": "🔍 ရှာဖွေပါ ABA ဝေါဟာရ...",
       "search_terms_eg_reinforcement_fba_data": "🔍 ရှာဖွေပါ ဝေါဟာရ... (e.g. \"reinforcement\", \"FBA\", \"ဒေတာ\")",
-      "session_1_3nsession_2_7nsession_3_5n": "Session 1: 3\\nSession 2: 7\\nSession 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "စက်ရှင် 1: 3\nစက်ရှင် 2: 7\nစက်ရှင် 3: 5\n...",
       "setting_eg_math_class_cafeteria": "ဆက်တင် (e.g., သင်္ချာ အတန်း, Cafeteria)",
       "share_what_you_notice_at_home_strengths_concerns_c": "အိမ်တွင် သင်သတိပြုမိသည်များကို မျှဝေပါ — အားသာချက်များ၊ စိုးရိမ်မှုများ၊ ယဉ်ကျေးမှုဆိုင်ရာ အကြောင်းအရာ၊ သို့မဟုတ် ကျောင်းအဖွဲ့အတွက် အကြံပြုချက်များ...",
       "step_description": "အဆင့် description...",
@@ -78587,7 +78732,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "ချိုင့်ဝှမ်း အမြင့်",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80779,7 +80924,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "အယူအဆ ရုပ်ပုံ",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80815,10 +80960,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "အယူအဆတိုင်းကို ပရိဘောဂနှင့် ပြင်ဆင်ပါ",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "ပြင်ဆင်မှု တိုးတက်မှု",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80831,7 +80976,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "ဖြစ်နိုင်သော အမည်များ",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80842,7 +80987,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "အယူအဆကို ပြန်လည်မှတ်မိခြင်း",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82400,7 +82545,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect ကို ပိတ်ပါ",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82409,7 +82554,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "လုပ်ငန်းတာဝန်များကို စစ်ထုတ်ပါ",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82447,15 +82592,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "မေးခွန်း {n}",
+    "q_choices_aria": "မေးခွန်း {n} အတွက် ရွေးချယ်စရာများ၊ တစ်ကြောင်းလျှင် တစ်ခု",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "မေးခွန်း {n} ကို ဖယ်ရှားပါ",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "မေးခွန်း {n} အတွက် စကေးအဆင့်များ",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "မေးခွန်း {n} အတွက် အဖြေအမျိုးအစား",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82465,10 +82610,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} အတွက် ရွေးယူနိုင်သော လင့်ခ်",
+    "scale_high_aria": "အထက်ဆုံးအဆင့်အတွက် အညွှန်း",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "အောက်ဆုံးအဆင့်အတွက် အညွှန်း",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82488,7 +82633,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "လုပ်ငန်းတာဝန် အခြေအနေ အနှစ်ချုပ်",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82504,9 +82649,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "အလိုအလျောက် အပ်ဒိတ်လုပ်သည်",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "ရွေးယူနိုင်သော အိမ်စာ လင့်ခ်",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82515,7 +82660,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "အိမ်စာ QR ကုဒ်",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84963,7 +85108,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "အရိပ်အမြွက်များနှင့် အကဲဖြတ်ဇယားများအတွက် ဖွံ့ဖြိုးမှုအဆင့် ရွေးပါ",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84971,7 +85116,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "ဆရာ့မြင်ကွင်းကို ဖွင့်ရန် သို့မဟုတ် ပိတ်ရန်",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -85002,17 +85147,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "အသံမှတ်စု အသံသွင်းခြင်းကို ခေတ္တရပ်ပါ",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "အသံမှတ်စု အသံသွင်းခြင်းကို ဆက်လုပ်ပါ",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "အသံမှတ်စု အသံသွင်းခြင်း စတင်ပါ",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "အသံသွင်းခြင်း ရပ်ပါ",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85398,22 +85543,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven အသိအမှတ်ပြုမှု အကြောင်းရင်း",
+    "recent_deliveries_aria": "မကြာသေးမီက သီးသန့် AlloHaven အသိအမှတ်ပြုမှုများ",
+    "token_amount_aria": "AlloHaven တိုကင် ပမာဏ",
+    "token_cap_aria": "ကျောင်းသားတစ်ဦးလျှင် စက်ရှင်တစ်ခုအတွက် AlloHaven တိုကင် ကန့်သတ်ချက်"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "ပန်းတိုင် ပြည့်မီနေဆဲတွင် ခွင့်ပြုထားသော ခြွင်းချက်များ",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "ဤပန်းတိုင်အတွက် အက်ပ်က ခြေရာခံသော ရွေးချယ်နိုင်သည့် တိုးတက်မှု အချက်ပြမှု",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "အဖွဲ့တစ်ခုလုံး အတူတကွ၊ သို့မဟုတ် ကျောင်းသားတစ်ဦးချင်းစီ",
+    "name_aria": "အတန်း ပန်းတိုင် အမည်၊ ဤစက်ပစ္စည်းတွင်သာ သိမ်းထားသည်",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "ဤပန်းတိုင်သည် မည်သည့်ကျောင်းသားများကို လွှမ်းခြုံသနည်း",
+    "template_aria": "အတန်း ပန်းတိုင် စတင် ပုံစံခွက်",
+    "tokens_aria": "ဤပန်းတိုင် ပြည့်မီသောအခါ ကျောင်းသားတစ်ဦးလျှင် ပေးသော တိုကင်များ"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85431,7 +85576,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox စီမံခန့်ခွဲမှု တိုကင် (ရွေးချယ်နိုင်)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85461,17 +85606,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "လက်မြှောက်ထားသည်",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "ရွေးယူနိုင်သော တိုက်ရိုက် စာတိုက်ပုံး ပါဝင်ရန် လင့်ခ်",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox ၏ တိုက်ရိုက် စက်ရှင်",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85498,7 +85643,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "အချိန်နှင့်တပြေးညီ ချိတ်ဆက်မှု",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85530,7 +85675,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox ဝဘ်အက်ပ် URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",

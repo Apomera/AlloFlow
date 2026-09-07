@@ -969,6 +969,15 @@
               S.camera.updateProjectionMatrix();
             };
             on(window, 'resize', onResize);
+            // Fullscreen and panel layouts can resize the host without resizing
+            // the browser window. Keep the projection and drawing buffer in sync.
+            if (typeof window.ResizeObserver === 'function') {
+              var observedState = S;
+              observedState.ro = new window.ResizeObserver(function () {
+                if (S === observedState) onResize();
+              });
+              observedState.ro.observe(observedState.node);
+            }
 
             on(el, 'pointercancel', function () {
               // Fires when the browser takes the gesture over for scrolling
@@ -1036,6 +1045,7 @@
             if (!S) return;
             if (S.raf) cancelAnimationFrame(S.raf);
             if (S.io) { try { S.io.disconnect(); } catch (e) {} S.io = null; }
+            if (S.ro) { try { S.ro.disconnect(); } catch (e) {} S.ro = null; }
             S.handlers.forEach(function (hd) {
               try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) {}
             });
@@ -2159,6 +2169,7 @@
         storageDB,
         ai,
         sourceProvenance,
+        readingSource, onReturnToReading,
         sourceLocator,
         sourceType,
         callGemini,
@@ -7668,6 +7679,7 @@
             inputText: typeof inputText === 'string' ? inputText : '',
             sourceTopic: typeof sourceTopic === 'string' ? sourceTopic : '',
             sourceProvenance: sourceProvenance && typeof sourceProvenance === 'object' ? sourceProvenance : null,
+            readingSource: readingSource || null, onReturnToReading: onReturnToReading,
             sourceLocator: typeof sourceLocator === 'string' ? sourceLocator : '',
             sourceType: typeof sourceType === 'string' ? sourceType : '',
             // gradeLevel, studentNickname and isTeacherMode were ALSO defined

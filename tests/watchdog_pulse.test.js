@@ -127,6 +127,40 @@ describe('queued Gemini calls keep their owning remediation lease alive', () => 
     expect(g.pulses.filter((pulse) => pulse.owner === owner)).toHaveLength(pulseCount);
   });
 
+  it('BEHAVIORAL: a call the pump admits at once, or within the grace period, never pulses; a long wait pulses first at 5s (2026-09-06)', async () => {
+    // Pulsing at enqueue stamped every healthy call 'throttled' for a moment (and for the whole
+    // stagger gap), so the view's amber "Waiting safely: Rate-limit cooldown in progress" box
+    // flashed before every request of a run that was not throttled at all.
+    const g = makeQueuedHeartbeatGate();
+    const owner = { runId: 'prompt-run', documentEpoch: 9 };
+    const admitted = g.api.acquire(null, 'admitted at once', owner);
+    await admitted;
+    await flush();
+    g.advance(60 * 1000);
+    expect(g.pulses.filter((pulse) => pulse.owner === owner)).toHaveLength(0);
+    expect(g.pendingTimers()).toBe(0);
+    g.api.release();
+
+    for (let i = 0; i < 3; i++) g.api.acquire(null, 'foreign-' + i, { runId: 'foreign-' + i, documentEpoch: 9 });
+    const brief = { runId: 'brief-wait', documentEpoch: 9 };
+    const briefly = g.api.acquire(null, 'queued 2s', brief);
+    g.advance(2000);
+    g.api.release();
+    await briefly;
+    await flush();
+    g.advance(60 * 1000);
+    expect(g.pulses.filter((pulse) => pulse.owner === brief)).toHaveLength(0);
+
+    const long = { runId: 'long-wait', documentEpoch: 9 };
+    g.api.acquire(null, 'queued 70s', long);
+    g.advance(4999);
+    expect(g.pulses.filter((pulse) => pulse.owner === long)).toHaveLength(0);
+    g.advance(1);
+    expect(g.pulses.filter((pulse) => pulse.owner === long)).toHaveLength(1);
+    g.advance(65 * 1000);
+    expect(g.pulses.filter((pulse) => pulse.owner === long)).toHaveLength(3);
+  });
+
   it('threads ownership through real calls, probes, and the auto-continue calm wait', () => {
     expect(pipe).toMatch(/_sig, 'gemini-probe', o\.owner \|\| null/);
     expect(pipe).toMatch(/_gateSignal, label, owner \|\| null/);

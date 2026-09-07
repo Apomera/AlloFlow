@@ -708,7 +708,7 @@ function MathView(props) {
   var mathSelfAnswerInputId = problemKey => 'math-self-answer-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var mathEditButtonId = problemKey => 'math-edit-toggle-' + _mathStableHash(mathResourceId + '|' + problemKey);
   var answeredSelfGradeCount = mathProblems.filter(problem => _mathScalarText(mathStudentAnswers[problem.__viewKey]).trim()).length;
-  var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length;
+  var hasAllSelfGradeAnswers = answeredSelfGradeCount === mathProblems.length && !mathProblems.some(problem => problem._verification?.reviewRequired);
   var selfGradeHelpId = 'math-self-grade-help-' + _mathStableHash(mathResourceId);
   var activeCheckIndex = mathProblems.findIndex(problem => getMathCheckResult(problem.__viewKey)?.checking === true);
   var activeHintIndex = mathProblems.findIndex(problem => getMathHintState(problem.__viewKey).loading === true);
@@ -1046,6 +1046,11 @@ function MathView(props) {
                             <h2 className="text-2xl md:text-3xl font-bold text-indigo-900 font-serif leading-tight">
                                 {mathTitle || 'Math Practice'}
                             </h2>
+                            {Number(generatedContent.data.preparation?.requested) > 0 && (() => {
+                                const requested = Number(generatedContent.data.preparation.requested);
+                                const reviewCount = mathProblems.filter(problem => problem._verification?.reviewRequired).length;
+                                return <p role="status" className="mt-2 text-sm text-slate-700">{requested} requested · {mathProblems.length} available · {reviewCount} need teacher review{requested > mathProblems.length ? ' · ' + (requested - mathProblems.length) + ' missing' : ''}</p>;
+                            })()}
                             {mathSelfGradeMode && (
                                 <p id={selfGradeHelpId} className="mt-2 text-sm font-medium text-emerald-800">
                                     {hasAllSelfGradeAnswers
@@ -1117,6 +1122,7 @@ function MathView(props) {
                                                 {formatInlineText(formatMathQuestion(problem), false)}
                                             </h3>
                                         )}
+                                        {problem._verification?.reviewRequired && <div role="alert" className="mt-2 rounded-lg border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950">This problem needs teacher review before answers can be checked. Its question, answer, or expression is missing or inconsistent.</div>}
                                         {problem._verification && <span style={{ fontSize: "11px", marginLeft: "6px", opacity: 0.8 }} title={problem._verification.verified ? "Answer computationally verified" : problem._verification.autoCorrected ? "Answer auto-corrected by evaluator" : ""}>{problem._verification.verified ? "✅" : problem._verification.autoCorrected ? "🔧" : problem._verification.edited ? "✏️" : ""}</span>}
                                     </div>
                                     {isTeacherMode && !mathSelfGradeMode && (
@@ -1142,7 +1148,7 @@ function MathView(props) {
                                         {_mathManipulativeFallbackMessage(getMathManipulativeResponseAvailability(problem))}
                                     </div>
                                 )}
-                                {mathSelfGradeMode ? (
+                                {problem._verification?.reviewRequired && (!isTeacherMode || mathSelfGradeMode) ? null : mathSelfGradeMode ? (
                                     <div className="ml-0 sm:ml-12 mt-4 space-y-2">
                                         <label htmlFor={mathSelfAnswerInputId(problem.__viewKey)} className="block text-sm font-bold text-emerald-800">
                                             {'Your answer for problem ' + (pIdx + 1)}
@@ -1169,7 +1175,7 @@ function MathView(props) {
                                     </div>
                                 ) : isTeacherMode ? (
                                     <>
-                                    {isIndependentMode && (
+                                    {isIndependentMode && !problem._verification?.reviewRequired && (
                                         <div className="ml-0 sm:ml-12 mt-4 mb-4 space-y-3">
                                             {problem.manipulativeSupport && (() => {
                                                // Inline accessible diagram (step 2): show the parametric scaffold inline +

@@ -432,6 +432,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;
     this.sketchFeedbackByUid = /* @__PURE__ */ new Map();
     this.sketchAttemptsByUid = /* @__PURE__ */ new Map();
+    this.sketchStatusesByUid = /* @__PURE__ */ new Map();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -483,7 +484,7 @@ class PictionaryHost {
     const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: offerData.offer && offerData.offer.sdp || null };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
-      if (!e.candidate) return;
+      if (!e.candidate || this._stopped || this.peers.get(uid) !== peerRecord) return;
       peerRecord.sentIce.push(e.candidate.toJSON());
       fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {
       });
@@ -492,6 +493,7 @@ class PictionaryHost {
       const dc = e.channel;
       peerRecord.dc = dc;
       dc.onopen = () => {
+        if (this._stopped || this.peers.get(uid) !== peerRecord) return;
         this.onGuestConnected(uid, codename);
         if (this.activeRound) {
           const isDrawer = this.activeRound.drawerUids.has(uid);
@@ -507,6 +509,8 @@ class PictionaryHost {
             status: this.activeRound.status,
             mode: normalizePictionaryActivityMode(this.activeRound.mode),
             isDrawer,
+            sketchStatus: this.sketchStatusesByUid.get(uid) || "editing",
+            sketchAttempt: Number(this.sketchAttemptsByUid.get(uid)) || 1,
             concept: isDrawer ? this.activeRound.concept : null,
             criterion: this.activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE ? this.activeRound.criterion : null,
             drawerUids: Array.from(this.activeRound.drawerUids),
@@ -550,44 +554,71 @@ class PictionaryHost {
       };
       dc.onmessage = (msg) => {
         try {
+          if (this._stopped || this.peers.get(uid) !== peerRecord) return;
           const parsed = JSON.parse(msg.data);
           if (!parsed || !parsed.type) return;
           if (parsed.type === "stroke" && parsed.payload) {
             this._onIncomingStroke(uid, codename, parsed.payload);
           } else if (parsed.type === "strokeUndo" && parsed.payload && parsed.payload.strokeId) {
-            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId);
+            this._onIncomingStrokeUndo(uid, parsed.payload.strokeId, parsed.payload.roundId);
           } else if (parsed.type === "sketchStatus" && parsed.payload) {
             this._onIncomingSketchStatus(uid, codename, parsed.payload);
           } else if (parsed.type === "sketchVote" && parsed.payload) {
             this._onIncomingSketchVote(uid, parsed.payload);
           } else if (parsed.type === "guess" && parsed.payload) {
+            if (parsed.payload.roundId && parsed.payload.roundId !== this.activeRound?.roundId) return;
             if (!this.activeRound || this.activeRound.isPaused || this.activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE) return;
             this.onGuess(uid, codename, parsed.payload);
           }
         } catch (_) {
         }
       };
-      dc.onclose = () => this._cleanupPeer(uid);
+      dc.onclose = () => this._cleanupPeer(uid, peerRecord);
     };
     pc.onconnectionstatechange = () => {
+      if (this.peers.get(uid) !== peerRecord) return;
       if (pc.connectionState === "connected") {
-        setTimeout(() => fb.deleteDoc(signalingRef).catch(() => {
-        }), 750);
+        setTimeout(() => {
+          if (!this._stopped && this.peers.get(uid) === peerRecord) fb.deleteDoc(signalingRef).catch(() => {
+          });
+        }, 750);
       } else if (pc.connectionState === "failed" || pc.connectionState === "closed" || pc.connectionState === "disconnected") {
-        this._cleanupPeer(uid);
+        this._cleanupPeer(uid, peerRecord);
       }
     };
     try {
       await pc.setRemoteDescription(new RTCSessionDescription(offerData.offer));
+      if (this._stopped || this.peers.get(uid) !== peerRecord) {
+        try {
+          pc.close();
+        } catch (_) {
+        }
+        return;
+      }
       const answer = await pc.createAnswer();
+      if (this._stopped || this.peers.get(uid) !== peerRecord) {
+        try {
+          pc.close();
+        } catch (_) {
+        }
+        return;
+      }
       await pc.setLocalDescription(answer);
+      if (this._stopped || this.peers.get(uid) !== peerRecord) {
+        try {
+          pc.close();
+        } catch (_) {
+        }
+        return;
+      }
       await fb.setDoc(signalingRef, { answer: { type: answer.type, sdp: answer.sdp } }, { merge: true });
     } catch (err) {
       console.warn("[Pictionary host] accept peer failed:", err && err.message);
-      this._cleanupPeer(uid);
+      this._cleanupPeer(uid, peerRecord);
     }
   }
   _onIncomingStroke(senderUid, senderCodename, stroke) {
+    if (!stroke || stroke.roundId && stroke.roundId !== this.activeRound?.roundId) return;
     if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     const safeStroke = sanitizeSketchRevealStrokes([stroke])[0];
     if (!safeStroke) return;
@@ -611,13 +642,15 @@ class PictionaryHost {
     this.onStroke(senderUid, senderCodename, augmented);
   }
   _onIncomingSketchStatus(senderUid, senderCodename, payload) {
-    if (!this.activeRound || this.activeRound.mode !== SKETCH_RESPONSE_ACTIVITY_MODE || !this.activeRound.drawerUids.has(senderUid)) return;
+    if (!payload || payload.roundId && payload.roundId !== this.activeRound?.roundId) return;
+    if (!this.activeRound || this.activeRound.isPaused || this.activeRound.mode !== SKETCH_RESPONSE_ACTIVITY_MODE || !this.activeRound.drawerUids.has(senderUid)) return;
     const status = payload && payload.status;
     if (status !== "submitted" && status !== "editing") return;
     const attempt = Number(payload.attempt) >= 2 ? 2 : 1;
     const priorAttempt = Number(this.sketchAttemptsByUid.get(senderUid)) || 1;
     const effectiveAttempt = Math.max(priorAttempt, attempt);
     this.sketchAttemptsByUid.set(senderUid, effectiveAttempt);
+    this.sketchStatusesByUid.set(senderUid, status);
     if (effectiveAttempt >= 2 && this.sketchFeedbackByUid.has(senderUid)) {
       const priorFeedback = this.sketchFeedbackByUid.get(senderUid);
       this.sketchFeedbackByUid.set(senderUid, { ...priorFeedback, attempt: 2, allowRevision: false });
@@ -638,7 +671,8 @@ class PictionaryHost {
     this.sketchVotesByUid = upsertSketchVote(this.sketchVotesByUid, vote);
     this.onSketchVote(senderUid, { roundId: this.sketchVoteRound.roundId, candidateId: vote.candidateId, votedAt: vote.votedAt });
   }
-  _onIncomingStrokeUndo(senderUid, strokeId) {
+  _onIncomingStrokeUndo(senderUid, strokeId, roundId) {
+    if (roundId && roundId !== this.activeRound?.roundId) return;
     if (!this.activeRound || this.activeRound.isPaused || !this.activeRound.drawerUids.has(senderUid)) return;
     const idx = this.strokeHistory.findIndex((s) => s && s.strokeId === strokeId);
     if (idx < 0) return;
@@ -680,6 +714,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -908,6 +943,7 @@ class PictionaryHost {
     this.lastResolvedSketch = null;
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -921,14 +957,14 @@ class PictionaryHost {
       }
     });
   }
-  _cleanupPeer(uid) {
+  _cleanupPeer(uid, expectedPeer) {
     const peer = this.peers.get(uid);
-    if (!peer) return;
+    if (!peer || expectedPeer && peer !== expectedPeer) return;
+    this.peers.delete(uid);
     try {
       if (peer.pc) peer.pc.close();
     } catch (_) {
     }
-    this.peers.delete(uid);
     this.onGuestLeft(uid);
   }
   stop() {
@@ -960,6 +996,7 @@ class PictionaryHost {
     this.strokeHistory = [];
     this.sketchFeedbackByUid.clear();
     this.sketchAttemptsByUid.clear();
+    this.sketchStatusesByUid.clear();
     this.sketchVoteRound = null;
     this.sketchVotesByUid = {};
     this.sketchVoteResults = null;
@@ -1022,13 +1059,16 @@ class PictionaryGuest {
     this.signalingRef = _signalingDocRef(this.sessionCode, this.userUid);
     this.pc = new RTCPeerConnection(_getRtcConfig());
     this.dc = this.pc.createDataChannel("pictionary", { ordered: true });
+    const pc = this.pc, dc = this.dc, signalingRef = this.signalingRef;
     this.pc.onicecandidate = (e) => {
+      if (this.pc !== pc || this.dc !== dc) return;
       if (!e.candidate) return;
       this.sentIce.push(e.candidate.toJSON());
       fb.setDoc(this.signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {
       });
     };
     this.dc.onopen = () => {
+      if (this.pc !== pc || this.dc !== dc) return;
       this._connected = true;
       if (this._timeoutHandle) {
         clearTimeout(this._timeoutHandle);
@@ -1037,15 +1077,23 @@ class PictionaryGuest {
       this.onConnected();
     };
     this.dc.onclose = () => {
-      if (this._connected) this.onDisconnected();
+      if (this.pc !== pc || this.dc !== dc) return;
+      const connected = this._connected;
+      this._connected = false;
+      if (connected) this.onDisconnected();
     };
     this.dc.onmessage = (msg) => {
+      if (this.pc !== pc || this.dc !== dc) return;
       try {
         const parsed = JSON.parse(msg.data);
         if (!parsed || !parsed.type) return;
-        if (parsed.type === "roundStart") this.onRoundStart(parsed.payload);
-        else if (parsed.type === "roundResolved") this.onRoundResolved(parsed.payload);
-        else if (parsed.type === "roundSync") this.onRoundSync(parsed.payload || {});
+        if (parsed.type === "roundStart") {
+          this.roundId = parsed.payload?.roundId || null;
+          this.onRoundStart(parsed.payload);
+        } else if (parsed.type === "roundResolved") {
+          this.roundId = null;
+          this.onRoundResolved(parsed.payload);
+        } else if (parsed.type === "roundSync") this.onRoundSync(parsed.payload || {});
         else if (parsed.type === "roundTiming") this.onRoundTiming(parsed.payload || {});
         else if (parsed.type === "hostClosed") this.onHostClosed(parsed.payload || {});
         else if (parsed.type === "stroke") this.onStroke(parsed.payload);
@@ -1060,27 +1108,35 @@ class PictionaryGuest {
       }
     };
     this.pc.onconnectionstatechange = () => {
+      if (this.pc !== pc || this.dc !== dc) return;
       if (this.pc.connectionState === "connected") {
-        setTimeout(() => fb.deleteDoc(this.signalingRef).catch(() => {
-        }), 750);
+        setTimeout(() => {
+          if (this.pc === pc) fb.deleteDoc(signalingRef).catch(() => {
+          });
+        }, 750);
       } else if (this.pc.connectionState === "failed") {
         this.onFailed();
       }
     };
     try {
       const offer = await this.pc.createOffer();
-      await this.pc.setLocalDescription(offer);
+      if (this.pc !== pc) return;
+      await pc.setLocalDescription(offer);
+      if (this.pc !== pc) return;
       await fb.setDoc(this.signalingRef, {
         offer: { type: offer.type, sdp: offer.sdp },
         codename: this.codename,
         createdAt: Date.now()
       });
     } catch (err) {
+      if (this.pc !== pc) return;
       console.warn("[Pictionary guest] setup failed:", err && err.message);
       this.onFailed();
       return;
     }
-    this.signalingUnsub = fb.onSnapshot(this.signalingRef, (snap) => {
+    if (this.pc !== pc) return;
+    this.signalingUnsub = fb.onSnapshot(signalingRef, (snap) => {
+      if (this.pc !== pc) return;
       const data = snap && snap.data && snap.data() || null;
       if (!data) return;
       if (data.answer && this.pc.signalingState === "have-local-offer") {
@@ -1096,7 +1152,7 @@ class PictionaryGuest {
     }, () => {
     });
     this._timeoutHandle = setTimeout(() => {
-      if (!this._connected) {
+      if (this.pc === pc && !this._connected) {
         console.warn("[Pictionary guest] connection timeout");
         this.onFailed();
       }
@@ -1105,7 +1161,7 @@ class PictionaryGuest {
   sendStroke(stroke) {
     if (!this.dc || this.dc.readyState !== "open") return false;
     try {
-      this.dc.send(JSON.stringify({ type: "stroke", payload: stroke }));
+      this.dc.send(JSON.stringify({ type: "stroke", payload: { ...stroke, ...this.roundId ? { roundId: this.roundId } : {} } }));
       return true;
     } catch (_) {
       return false;
@@ -1114,7 +1170,7 @@ class PictionaryGuest {
   sendStrokeUndo(strokeId) {
     if (!this.dc || this.dc.readyState !== "open") return false;
     try {
-      this.dc.send(JSON.stringify({ type: "strokeUndo", payload: { strokeId } }));
+      this.dc.send(JSON.stringify({ type: "strokeUndo", payload: { strokeId, ...this.roundId ? { roundId: this.roundId } : {} } }));
       return true;
     } catch (_) {
       return false;
@@ -1124,7 +1180,7 @@ class PictionaryGuest {
     if (!this.dc || this.dc.readyState !== "open") return false;
     if (status !== "submitted" && status !== "editing") return false;
     try {
-      this.dc.send(JSON.stringify({ type: "sketchStatus", payload: { status, attempt: Number(attempt) >= 2 ? 2 : 1, timestamp: Date.now() } }));
+      this.dc.send(JSON.stringify({ type: "sketchStatus", payload: { status, ...this.roundId ? { roundId: this.roundId } : {}, attempt: Number(attempt) >= 2 ? 2 : 1, timestamp: Date.now() } }));
       return true;
     } catch (_) {
       return false;
@@ -1141,7 +1197,7 @@ class PictionaryGuest {
   }
   sendGuess(text) {
     if (!this.dc || this.dc.readyState !== "open") return false;
-    const payload = { text: String(text || "").slice(0, 200), timestamp: Date.now(), codename: this.codename };
+    const payload = { ...this.roundId ? { roundId: this.roundId } : {}, text: String(text || "").slice(0, 200), timestamp: Date.now(), codename: this.codename };
     try {
       this.dc.send(JSON.stringify({ type: "guess", payload }));
       return true;
@@ -1166,12 +1222,14 @@ class PictionaryGuest {
       if (fb) fb.deleteDoc(this.signalingRef).catch(() => {
       });
     }
-    try {
-      if (this.pc) this.pc.close();
-    } catch (_) {
-    }
+    const pc = this.pc;
     this.pc = null;
     this.dc = null;
+    this._connected = false;
+    try {
+      if (pc) pc.close();
+    } catch (_) {
+    }
   }
 }
 const PictionaryCanvas = React.memo((props) => {
@@ -2509,7 +2567,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
         scheduleRejoin();
       },
       onFailed: () => {
-        setConnState((prev) => prev === "connected" ? prev : "failed");
+        setConnState("failed");
         scheduleRejoin();
       },
       onRoundSync: (payload) => {
@@ -2546,9 +2604,12 @@ const PictionaryGuestOverlay = React.memo((props) => {
         setStrokes([]);
         setMyStrokeIds([]);
         setResolved(null);
-        setSketchSubmitted(false);
+        setGuessText("");
+        setGuessNotice(null);
+        lastGuessAtRef.current = 0;
+        setSketchSubmitted(round?.sketchStatus === "submitted");
         setSharedSketch(null);
-        setSketchAttempt(1);
+        setSketchAttempt(Number(round?.sketchAttempt) >= 2 ? 2 : 1);
         setSketchFeedback(null);
         setSketchVoteRound(null);
         setSketchVoteResults(null);
@@ -2570,7 +2631,10 @@ const PictionaryGuestOverlay = React.memo((props) => {
         setActiveRound(null);
       },
       onStroke: (stroke) => setStrokes((prev) => prev.concat([stroke])),
-      onStrokeHistory: (history) => setStrokes(history || []),
+      onStrokeHistory: (history) => {
+        setStrokes(history || []);
+        setMyStrokeIds((history || []).filter((stroke) => stroke.uid === userUid).map((stroke) => stroke.strokeId));
+      },
       onCanvasClear: () => {
         setStrokes([]);
         setMyStrokeIds([]);
@@ -2626,30 +2690,33 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const isDrawer = !!(activeRound && activeRound.isDrawer);
   const isSketchResponse = !!(activeRound && activeRound.mode === SKETCH_RESPONSE_ACTIVITY_MODE || resolved && resolved.mode === SKETCH_RESPONSE_ACTIVITY_MODE);
   const handleStrokeBatch = (stroke) => {
+    if (connState !== "connected" || activeRound?.isPaused || !guestRef.current?.sendStroke(stroke)) return;
     setStrokes((prev) => prev.concat([{ ...stroke, uid: userUid }]));
     setMyStrokeIds((prev) => prev.concat([stroke.strokeId]));
     if (isSketchResponse && sketchSubmitted) {
       setSketchSubmitted(false);
       if (guestRef.current) guestRef.current.sendSketchStatus("editing", sketchAttempt);
     }
-    if (guestRef.current) guestRef.current.sendStroke(stroke);
   };
   const handleUndo = () => {
-    if (myStrokeIds.length === 0) return;
+    if (myStrokeIds.length === 0 || connState !== "connected" || activeRound?.isPaused) return;
     const lastId = myStrokeIds[myStrokeIds.length - 1];
+    if (!guestRef.current?.sendStrokeUndo(lastId)) return;
     setMyStrokeIds((prev) => prev.slice(0, -1));
     setStrokes((prev) => prev.filter((s) => s.strokeId !== lastId));
-    if (guestRef.current) guestRef.current.sendStrokeUndo(lastId);
   };
   const handleSketchSubmit = () => {
+    if (connState !== "connected" || activeRound?.isPaused) return;
     if (!isSketchResponse || strokes.length === 0 || !guestRef.current) return;
     if (guestRef.current.sendSketchStatus("submitted", sketchAttempt)) setSketchSubmitted(true);
   };
   const handleSketchEdit = () => {
+    if (connState !== "connected" || activeRound?.isPaused) return;
     if (!isSketchResponse || !guestRef.current || sketchAttempt >= 2) return;
     if (guestRef.current.sendSketchStatus("editing", sketchAttempt)) setSketchSubmitted(false);
   };
   const handleSketchRevision = () => {
+    if (connState !== "connected" || activeRound?.isPaused) return;
     if (!isSketchResponse || !guestRef.current || !sketchFeedback || !sketchFeedback.allowRevision || sketchAttempt >= 2) return;
     if (guestRef.current.sendSketchStatus("editing", 2)) {
       setSketchAttempt(2);
@@ -2664,6 +2731,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
   const lastGuessAtRef = React.useRef(0);
   const [guessNotice, setGuessNotice] = React.useState(null);
   const handleSubmitGuess = () => {
+    if (connState !== "connected" || activeRound?.isPaused) return;
     const t = guessText.trim();
     if (!t || !guestRef.current) return;
     const now = Date.now();
@@ -2726,18 +2794,18 @@ const PictionaryGuestOverlay = React.memo((props) => {
         },
         onSubmit: handleSketchVoteSubmit
       }
-    ), activeRound && activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900" }, "Round paused by the teacher. Drawing and guessing will resume with the timer.") : null, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-rose-700" }, isSketchResponse ? "Drawing prompt" : "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-rose-700 italic mt-1" }, isSketchResponse ? "Your board stays private to the teacher until an approved anonymous reveal." : "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch."), isSketchResponse && activeRound.criterion ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-indigo-200 bg-white p-2 text-[11px] text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", activeRound.criterion) : null) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, isSketchResponse ? "Sketch collection ended" : "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, isSketchResponse ? "Prompt: " : "Concept was: ", resolved.concept || "(not revealed)")) : null, sketchFeedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-800" }, "Teacher feedback"), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 whitespace-pre-wrap" }, sketchFeedback.text), sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchRevision, className: "mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900" }, "Revise with feedback") : null) : null, /* @__PURE__ */ React.createElement(
+    ), activeRound && connState !== "connected" && /* @__PURE__ */ React.createElement("p", { role: "status", className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm font-bold text-amber-900" }, "Reconnecting. Drawing and submitting will resume when the connection is ready."), activeRound && activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { role: "status", className: "bg-amber-100 border border-amber-300 rounded-lg p-3 mb-3 text-sm font-bold text-amber-900" }, "Round paused by the teacher. Drawing and guessing will resume with the timer.") : null, activeRound && isDrawer ? /* @__PURE__ */ React.createElement("div", { className: "bg-rose-50 border border-rose-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-bold uppercase tracking-wider text-rose-700" }, isSketchResponse ? "Drawing prompt" : "Concept to draw together"), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-rose-900 mt-1" }, activeRound.concept), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-rose-700 italic mt-1" }, isSketchResponse ? "Your board stays private to the teacher until an approved anonymous reveal." : "No letters or numbers \u2014 just the picture. Other drawers can add to your sketch."), isSketchResponse && activeRound.criterion ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 rounded border border-indigo-200 bg-white p-2 text-[11px] text-indigo-950" }, /* @__PURE__ */ React.createElement("strong", null, "Success criterion:"), " ", activeRound.criterion) : null) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-amber-800" }, "Watch the drawing and guess what concept they're representing.")) : null, !activeRound && !resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border border-slate-200 rounded-lg p-3 mb-3 text-center text-sm text-slate-600" }, "Waiting for the teacher to start a round\u2026") : null, resolved ? /* @__PURE__ */ React.createElement("div", { className: "bg-emerald-50 border border-emerald-200 rounded-lg p-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold uppercase tracking-wider text-emerald-800" }, isSketchResponse ? "Sketch collection ended" : "Round resolved"), /* @__PURE__ */ React.createElement("div", { className: "text-base font-black text-emerald-900 mt-1" }, isSketchResponse ? "Prompt: " : "Concept was: ", resolved.concept || "(not revealed)")) : null, sketchFeedback ? /* @__PURE__ */ React.createElement("div", { className: "mb-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950", role: "status" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black uppercase tracking-wider text-amber-800" }, "Teacher feedback"), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 whitespace-pre-wrap" }, sketchFeedback.text), sketchFeedback.allowRevision && sketchAttempt < 2 && sketchSubmitted ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchRevision, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "mt-2 w-full rounded border border-amber-400 bg-white px-3 py-2 text-xs font-black text-amber-900" }, "Revise with feedback") : null) : null, /* @__PURE__ */ React.createElement(
       PictionaryCanvas,
       {
         strokes,
-        drawingEnabled: !!(activeRound && isDrawer && activeRound.status === "drawing" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted)),
+        drawingEnabled: !!(connState === "connected" && activeRound && isDrawer && activeRound.status === "drawing" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted)),
         ariaLabel: isSketchResponse ? "Your private sketch response canvas" : "Pictionary drawing canvas",
         color,
         mode,
         onStrokeBatch: handleStrokeBatch,
         fullscreenMode: isGuestFullscreen
       }
-    ), activeRound && isDrawer && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? /* @__PURE__ */ React.createElement(
+    ), activeRound && isDrawer && connState === "connected" && !activeRound.isPaused && !(isSketchResponse && sketchSubmitted) ? /* @__PURE__ */ React.createElement(
       DrawerToolbox,
       {
         color,
@@ -2746,13 +2814,13 @@ const PictionaryGuestOverlay = React.memo((props) => {
         setMode,
         onUndo: myStrokeIds.length > 0 ? handleUndo : null
       }
-    ) : null, activeRound && isSketchResponse && isDrawer && !activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, sketchSubmitted ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, sketchAttempt > 1 ? "Revision submitted." : "Drawing submitted."), " It remains private until the teacher approves and reveals it.", !sketchFeedback && sketchAttempt < 2 ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchEdit, className: "block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800" }, "Edit drawing") : null) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchSubmit, disabled: strokes.length === 0, className: "w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Submit drawing")) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
+    ) : null, activeRound && isSketchResponse && isDrawer && !activeRound.isPaused ? /* @__PURE__ */ React.createElement("div", { className: "mt-3" }, sketchSubmitted ? /* @__PURE__ */ React.createElement("div", { className: "p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-sm text-emerald-900" }, /* @__PURE__ */ React.createElement("strong", null, sketchAttempt > 1 ? "Revision submitted." : "Drawing submitted."), " It remains private until the teacher approves and reveals it.", !sketchFeedback && sketchAttempt < 2 ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchEdit, disabled: connState !== "connected" || !!activeRound?.isPaused, className: "block w-full mt-2 px-3 py-2 text-xs font-bold rounded border border-emerald-300 bg-white text-emerald-800" }, "Edit drawing") : null) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: handleSketchSubmit, disabled: strokes.length === 0 || connState !== "connected", className: "w-full px-4 py-2 text-sm font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-40" }, "Submit drawing")) : null, activeRound && !isDrawer && !isSketchResponse ? /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mt-3" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         type: "text",
         value: guessText,
         onChange: (e) => setGuessText(e.target.value),
-        disabled: !!activeRound.isPaused,
+        disabled: !!activeRound.isPaused || connState !== "connected",
         onKeyDown: (e) => {
           if (e.key === "Enter") handleSubmitGuess();
         },
@@ -2765,7 +2833,7 @@ const PictionaryGuestOverlay = React.memo((props) => {
       {
         type: "button",
         onClick: handleSubmitGuess,
-        disabled: !guessText.trim() || !!activeRound.isPaused,
+        disabled: !guessText.trim() || !!activeRound.isPaused || connState !== "connected",
         className: "px-4 py-2 text-sm font-bold rounded-lg bg-amber-600 text-white hover:bg-amber-700 disabled:opacity-40"
       },
       "Send"

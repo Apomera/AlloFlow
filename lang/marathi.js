@@ -43,9 +43,9 @@
     "dashboard_title": "डॅशबोर्ड / साधने",
     "dashboard_text": "साधन नेव्हिगेशन बार आणि शिक्षक डॅशबोर्ड प्रवेश बिंदू.\n### साधन नेव्हिगेशन बार\n• **साधन चिन्हे**: कोणत्याही जनरेटरकडे (क्विझ, शब्दकोश, साहस इत्यादी) एक-क्लिक उडी.\n• **स्थिती बिंदू**: हिरवा = सक्रिय आशय, केशरी = प्रक्रिया सुरू, राखाडी = रिकामे.\n• **तार्किक प्रवाह**: इनपुट → तयार करा → निर्यात असे साधने डावीकडून उजवीकडे क्रमबद्ध.\n### शिक्षक डॅशबोर्ड बटण\n**शिक्षक मूल्यांकन डॅशबोर्ड** उघडण्यासाठी डॅशबोर्ड चिन्हावर क्लिक करा - विद्यार्थी प्रगतीचा मागोवा घेण्यासाठी एक समर्पित पॅनेल:\n• **विद्यार्थी JSON अपलोड करा**: विद्यार्थी त्यांचे काम JSON फाइल्स म्हणून निर्यात करतात; बॅच विश्लेषणासाठी त्या इथे अपलोड करा.\n• **विद्यार्थी यादी**: टोपणनाव, तारीख, क्विझ प्रगती आणि साहस स्तरासह सर्व अपलोड केलेले विद्यार्थी पाहा.\n• **वैयक्तिक पुनरावलोकन**: कोणत्याही विद्यार्थ्याचा संपूर्ण इतिहास पाहण्यासाठी त्यावर क्लिक करा•क्विझ, साहसे, प्रतिसाद.\n• **मूल्यांकित म्हणून चिन्हांकित करा**: तुम्ही कोणत्या विद्यार्थ्यांचे पुनरावलोकन केले याचा मागोवा घेण्यासाठी चेकबॉक्स.\n• **वर्ग अंतर्दृष्टी टॅब**: सामान्य गैरसमज आणि वर्ग-व्यापी कामगिरी दर्शविणारे विश्लेषण तक्ते.\n• **CSV मध्ये निर्यात**: गुणपुस्तक आयातीसाठी वर्ग डेटा डाउनलोड करा.\n### संबंधित शीर्षलेख क्रिया\n• **धड्याकडे जा**: तुमच्या सर्वात अलीकडील धडा योजनेकडे जलद परत.\n• **दृश्य टॉगल**: शिक्षक आणि विद्यार्थी दृश्यांमध्ये स्विच करा.\n### प्रो टिप\nविद्यार्थ्यांना वर्गाच्या शेवटी त्यांचे JSON जतन निर्यात करायला सांगा, मग कार्यक्षम रात्रभर मूल्यांकनासाठी ते इथे बॅच-अपलोड करा!",
     "actions_title": "क्रिया बार",
-    "actions_text": "इंटरफेसची भाषा ठरवण्यासाठी, थेट सत्रे सांभाळण्यासाठी, संसाधनांचे भाषांतर करण्यासाठी आणि निर्यात साधने उघडण्यासाठी शीर्षकातील नियंत्रणे वापरा.\n### देण्यापूर्वी पुनरावलोकन करा\n• भाषांतरित मजकुराचा अर्थ आणि अचूकता तपासा.\n• निवडलेली संसाधने आणि उपलब्ध डाउनलोड स्वरूपे पाहण्यासाठी Document Builder उघडा. विद्यार्थ्यांना देण्यापूर्वी निकालाचे पूर्वावलोकन पहा.\n• सामील होण्याचा कोड मिळवण्यासाठी थेट सत्र सुरू करा, किंवा स्वतंत्र कामासाठी समर्थित गृहपाठ सामायिकरण तयार करा.\n### शोध सुरू ठेवा\nशिक्षक आणि शिकण्याच्या साधनांचे मेनू नियोजन, मूल्यांकन, सर्जनशील आणि परस्परसंवादी अधिक उपक्रम उघडतात. ते पर्याय पाहण्यापूर्वी केंद्रित धडा तयार करण्यात मार्गदर्शित मोड मदत करतो.",
+    "actions_text": "इंटरफेसची भाषा ठरवण्यासाठी, थेट सत्रे सांभाळण्यासाठी, संसाधनांचे भाषांतर करण्यासाठी आणि निर्यात साधने उघडण्यासाठी शीर्षकातील नियंत्रणे वापरा.\n### देण्यापूर्वी पुनरावलोकन करा\n• भाषांतरित मजकुराचा अर्थ आणि अचूकता तपासा.\n• निवडलेली संसाधने आणि उपलब्ध डाउनलोड स्वरूपे पाहण्यासाठी दस्तऐवज निर्माता उघडा. विद्यार्थ्यांना देण्यापूर्वी निकालाचे पूर्वावलोकन पहा.\n• सामील होण्याचा कोड मिळवण्यासाठी थेट सत्र सुरू करा, किंवा स्वतंत्र कामासाठी समर्थित गृहपाठ सामायिकरण तयार करा.\n### शोध सुरू ठेवा\nशिक्षक आणि शिकण्याच्या साधनांचे मेनू नियोजन, मूल्यांकन, सर्जनशील आणि परस्परसंवादी अधिक उपक्रम उघडतात. ते पर्याय पाहण्यापूर्वी केंद्रित धडा तयार करण्यात मार्गदर्शित मोड मदत करतो.",
     "history_title": "सत्र इतिहास",
-    "history_text": "इतिहास तुमच्या सध्याच्या कार्यक्षेत्रातील संसाधने ठेवतो. जतन केलेली एखादी बाब उघडून तपासा किंवा आधीच्या निकालावर परत जा.\n### बॅकअप ठेवा\n• दुसऱ्या उपकरणावर काम सुरू ठेवण्यासाठी किंवा नंतर तुमचे काम परत मिळवण्यासाठी प्रकल्पाचा बॅकअप जतन करा. प्रगती या उपकरणावर जतन झाली की नाही हेही मार्गदर्शित मोड दाखवतो.\n• एका कार्यक्षेत्रात अनेक धड्यांची सामग्री असू शकते. निर्यात करण्यापूर्वी किंवा सामायिक करण्यापूर्वी निवडलेली संसाधने तपासा.\n### मार्गदर्शित धड्यांची पॅकेजेस\nत्या धड्याच्या निवडलेल्या संसाधनांसह काम करण्यासाठी मार्गदर्शित मोड मधून Document Builder उघडा. सामान्य Builder अधिक व्यापक कार्यक्षेत्र वापरू शकतो, म्हणून देण्यापूर्वी त्याची सामग्री तपासा.",
+    "history_text": "इतिहास तुमच्या सध्याच्या कार्यक्षेत्रातील संसाधने ठेवतो. जतन केलेली एखादी बाब उघडून तपासा किंवा आधीच्या निकालावर परत जा.\n### बॅकअप ठेवा\n• दुसऱ्या उपकरणावर काम सुरू ठेवण्यासाठी किंवा नंतर तुमचे काम परत मिळवण्यासाठी प्रकल्पाचा बॅकअप जतन करा. प्रगती या उपकरणावर जतन झाली की नाही हेही मार्गदर्शित मोड दाखवतो.\n• एका कार्यक्षेत्रात अनेक धड्यांची सामग्री असू शकते. निर्यात करण्यापूर्वी किंवा सामायिक करण्यापूर्वी निवडलेली संसाधने तपासा.\n### मार्गदर्शित धड्यांची पॅकेजेस\nत्या धड्याच्या निवडलेल्या संसाधनांसह काम करण्यासाठी मार्गदर्शित मोड मधून दस्तऐवज निर्माता उघडा. सामान्य Builder अधिक व्यापक कार्यक्षेत्र वापरू शकतो, म्हणून देण्यापूर्वी त्याची सामग्री तपासा.",
     "spotlight_title": "स्पॉटलाइट",
     "spotlight_message": "{name} ला नमस्कार म्हणा!",
     "dbq_title": "दस्तऐवज-आधारित प्रश्न",
@@ -510,7 +510,7 @@
     "local_data_title": "Local Guided data",
     "navigation_changed": "Guided path updated.",
     "no_reflections": "No reflections saved on this device.",
-    "open_builder": "Document Builder",
+    "open_builder": "दस्तऐवज निर्माता",
     "preflight_finish_anyway": "Finish anyway",
     "preflight_finish_hint": "{count} student-readiness checks will remain open in this completion summary.",
     "preflight_finish_title": "Finish Guided Mode with open checks?",
@@ -3368,7 +3368,7 @@
     "toggle_theme": "थीम बदला",
     "close_story_forge": "StoryForge बंद करा",
     "story_creation_phases": "कथा निर्मिती टप्पे",
-    "doc_builder": "Document Builder",
+    "doc_builder": "दस्तऐवज निर्माता",
     "close_doc_builder": "document builder बंद करा",
     "font_size": "फॉन्ट आकार",
     "target_word_count": "लक्ष्य शब्द संख्या उद्दिष्ट",
@@ -5071,10 +5071,10 @@
     "locked": "कुलूपबंद",
     "escaped": "तुम्ही बाहेर पडलात!",
     "escaped_desc": "तुम्ही सर्व कोडी सोडवली आणि खोलीतून बाहेर पडलात!",
-    "time_up": "? वेळ संपली!",
+    "time_up": "⏰ वेळ संपली!",
     "reveal_hint": "इशारा दाखवा",
-    "puzzles_remaining": "{{count}} कोडी शिल्लक",
-    "time_remaining": "वेळ: {{time}}",
+    "puzzles_remaining": "{count} कोडी शिल्लक",
+    "time_remaining": "वेळ: {time}",
     "progress": "प्रगती",
     "start": "Escape Room सुरू करा",
     "start_hint": "वस्तू तपासण्यास सुरुवात करण्यासाठी टायमर सुरू करा",
@@ -5085,8 +5085,8 @@
     "room_complete": "खोली पूर्ण झाली!",
     "loading_error": "खोलीचा डेटा लोड करता आला नाही",
     "no_puzzle": "या वस्तूसाठी कोणतेही कोडे सापडले नाही",
-    "xp_earned": "+{{xp}} XP",
-    "bonus_xp": "निर्दोष escape! +{{xp}} बोनस XP",
+    "xp_earned": "+{xp} XP",
+    "bonus_xp": "निर्दोष escape! +{xp} बोनस XP",
     "puzzle_mcq": "बहुपर्यायी",
     "puzzle_sequence": "क्रमाने लावा",
     "puzzle_cipher": "संदेश उलगडा",
@@ -5144,7 +5144,7 @@
     "clue": "सुगावा",
     "clue_found": "सुगावा सापडला!",
     "clue_revealed": "हा सुगावा दुसऱ्या कोड्यासाठी उपयोगी ठरू शकतो...",
-    "clues_collected": "सुगावे: {{count}}/{{total}}",
+    "clues_collected": "सुगावे: {count}/{total}",
     "use_clue": "सुगावा वापरा",
     "final_door": "बाहेर पडण्याचा दरवाजा",
     "final_door_ready": "बाहेर पडण्याचा दरवाजा आता उघडला आहे!",
@@ -5170,12 +5170,12 @@
     "left": "शिल्लक",
     "wrong_attempts": "चुकीचे प्रयत्न",
     "time_penalty": "-{seconds} सेकंद!",
-    "game_over_time": "? वेळ संपली! तुमचा वेळ संपला.",
+    "game_over_time": "⏰ वेळ संपली! तुमचा वेळ संपला.",
     "streak": "सलग यश",
     "streak_bonus": "सलग यशाचा बोनस! x{multiplier}",
     "streak_lost": "सलग यश गमावले!",
     "one_minute_warning": "एक मिनिट शिल्लक!",
-    "thirty_seconds_warning": "? फक्त 30 सेकंद शिल्लक!",
+    "thirty_seconds_warning": "⏰ फक्त 30 सेकंद शिल्लक!",
     "timer_paused": "टाइमर थांबवला",
     "timer_resume": "पुन्हा सुरू करा",
     "settings_btn": "रूम सेटिंग्ज",
@@ -5188,9 +5188,9 @@
     "launch_live_tooltip": "तुमच्या वर्गासह बहु-खेळाडू escape room सुरू करा",
     "team_mode": "संघ आव्हान",
     "team_race": "सुटण्याची शर्यत!",
-    "team_progress": "{{team}} प्रगती: {{solved}}/{{total}}",
+    "team_progress": "{team} प्रगती: {solved}/{total}",
     "waiting_host": "शिक्षकांच्या सुरुवातीची प्रतीक्षा...",
-    "team_escaped": "{{team}} संघ सुटला!",
+    "team_escaped": "{team} संघ सुटला!",
     "all_teams_done": "सर्व संघ पूर्ण झाले!",
     "your_team": "तुमचा संघ",
     "team_red": "लाल संघ",
@@ -5198,7 +5198,7 @@
     "team_green": "हिरवा संघ",
     "team_yellow": "पिवळा संघ",
     "team_all": "सर्व विद्यार्थी",
-    "teams_competing": "{{count}} संघ स्पर्धा करत आहेत",
+    "teams_competing": "{count} संघ स्पर्धा करत आहेत",
     "first_escape": "सर्वात आधी सुटणारे!",
     "end_game": "खेळ संपवा",
     "end_game_confirm": "सर्व विद्यार्थ्यांसाठी escape room संपवायचे का?",
@@ -5211,8 +5211,8 @@
     "resume_game": "खेळ पुन्हा सुरू करा",
     "game_paused_by_teacher": "शिक्षकांनी खेळ थांबवला",
     "celebration_title": "अभिनंदन!",
-    "you_escaped": "तुमचा संघ {{time}} मध्ये सुटला!",
-    "other_team_escaped": "{{team}} सुटला!",
+    "you_escaped": "तुमचा संघ {time} मध्ये सुटला!",
+    "other_team_escaped": "{team} सुटला!",
     "class_escaped": "वर्ग विजय!",
     "everyone_escaped": "सुटण्यासाठी सर्वांनी एकत्र काम केले!",
     "hurry_up": "सुरू ठेवा! तुम्ही अजूनही सुटू शकता!",
@@ -5240,7 +5240,7 @@
     "load_saved": "जतन केलेले लोड करा",
     "loaded_saved": "जतन केलेले Escape Room लोड झाले! तयार असताना तपासा आणि सुरू करा.",
     "no_saved": "जतन केलेले कोणतेही Escape Room सापडले नाही",
-    "preview_confirmed": "? Escape Room लॉक केले • खेळण्यास तयार!",
+    "preview_confirmed": "✅ Escape Room लॉक केले • खेळण्यास तयार!",
     "xp_earned_streak": "+{xp} XP ({multiplier}x सलग यश बोनस!)",
     "loaded_from_resource": "संसाधनातून लोड केले."
   },
@@ -7222,7 +7222,7 @@
       "source_region": "Source of issue",
       "source_title": "Show the source of this issue inline — no need to open the preview",
       "spot_moved": "Couldn’t find that spot in the current preview (the text may have changed).",
-      "workbench_aria": "Send to Expert Workbench",
+      "workbench_aria": "Expert Workbench कडे पाठवा",
       "workbench_title": "Send to the Expert Workbench — prefills a targeted fix command (with the exact spot when known)"
     },
     "palette": {
@@ -7793,7 +7793,7 @@
       "correct": "उत्कृष्ट काम!",
       "partial": "चांगला प्रयत्न, सुरू ठेवा!",
       "incorrect": "अगदी बरोबर नाही • पुन्हा प्रयत्न करा!",
-      "error": "मूल्यांकन करता आले नाही • कृपया पुन्हा प्रयत्न करा.",
+      "error": "मूल्यांकन करता आले नाही — कृपया पुन्हा प्रयत्न करा.",
       "verdict_correct": "बरोबर!",
       "verdict_partial": "अंशतः बरोबर",
       "verdict_incorrect": "अगदी बरोबर नाही",
@@ -8105,7 +8105,7 @@
       "meta_info": "{date} • **अंतिम स्तर**: {level}",
       "log_header": "साहस नोंद",
       "chapter_separator": "***",
-      "user_label": "? तुम्ही",
+      "user_label": "➤ तुम्ही",
       "print_button": "स्टोरीबुक प्रिंट करा"
     },
     "answer_key_title": "उत्तरतालिका",
@@ -9062,7 +9062,7 @@
     "simplified_def_fallback": "त्याची व्याख्या पाहण्यासाठी तुम्ही मजकुरातील कोणत्याही शब्दावर क्लिक करू शकता!",
     "simplified_cloze": "शब्दसंग्रह कौशल्ये तपासण्यासाठी 'Cloze' मोड वापरून पहा.",
     "simplified_quiz": "हा मजकूर छान दिसतो. समज तपासण्यासाठी आपण Exit Ticket तयार करावे का?",
-    "simplified_glossary": "'{term1}' आणि '{term2}' सारख्या शब्दांना आधाराची गरज असू शकते • एक शब्दकोश मदत करू शकेल!",
+    "simplified_glossary": "'{term1}' आणि '{term2}' सारख्या शब्दांना आधाराची गरज असू शकते — एक शब्दकोश मदत करू शकेल!",
     "simplified_glossary_fallback": "यातील काही संज्ञा कठीण आहेत. एक शब्दकोश या मजकुराला आधार देण्यास मदत करेल.",
     "simplified_outline": "दृश्य पद्धतीने शिकणाऱ्या विद्यार्थ्यांना या मजकुराच्या Graphic Organizer चा फायदा होऊ शकतो.",
     "glossary_bingo": "तुम्ही या संज्ञांचे रूपांतर Bingo, Memory Match, Crosswords किंवा Word Search सारख्या शब्दखेळांमध्ये करू शकता!",
@@ -9073,7 +9073,7 @@
     "quiz_rigor": "ही क्विझ कठीण आहे याची खात्री करायची आहे का? एक Standard Audit चालवा.",
     "adventure_sim": "Adventures विद्यार्थ्यांना सुरक्षित सिम्युलेशनमध्ये त्यांनी जे शिकले ते लागू करण्याची संधी देतात.",
     "adventure_inventory": "कोणत्या वस्तू गोळा केल्या आहेत हे पाहण्यासाठी 'Inventory' तपासा.",
-    "adventure_context": "{topic} बद्दलची तुमची साहसकथा अधिक संसाधनांसह अधिक समृद्ध होते • एक {suggestion} जोडून पहा!",
+    "adventure_context": "{topic} बद्दलची तुमची साहसकथा अधिक संसाधनांसह अधिक समृद्ध होते — एक {suggestion} जोडून पहा!",
     "adventure_context_fallback": "तुम्ही जितकी जास्त संसाधने तयार कराल, तितका साहसकथेचा संदर्भ अधिक समृद्ध होतो.",
     "timeline_drag": "क्रम पुन्हा रचण्यासाठी घटना ड्रॅग करून सोडा.",
     "timeline_visualize": "हे विद्यार्थ्यांना कारण-परिणाम संबंध दृश्य स्वरूपात समजण्यास मदत करते.",
@@ -9084,8 +9084,8 @@
     "parent_adventure": "पावसाळी दिवशी मजेदार उपक्रमासाठी Adventure Mode वापरून पहा.",
     "parent_read_along": "एकत्र वाचनाचा सराव करण्यासाठी 'Read Along' वापरा.",
     "fallback_lesson_plan": "तुमच्याकडे उत्तम संसाधने आहेत. त्यांचे एका धडा योजनेत संकलन करायचे का?",
-    "fallback_brainstorm": "अडकल्यासारखे वाटते का? माझ्याशी गप्पा मारून पहा आणि Blueprint Mode सक्रिय करण्यासाठी Auto-Complete चालू करा • मी तुमचा संपूर्ण धडा रचण्यास मदत करेन!",
-    "fallback_export": "तुमच्याकडे {topic} वर {count} संसाधने आहेत • ती एकाच PDF म्हणून एक्सपोर्ट करा!",
+    "fallback_brainstorm": "अडकल्यासारखे वाटते का? माझ्याशी गप्पा मारून पहा आणि Blueprint Mode सक्रिय करण्यासाठी Auto-Complete चालू करा — मी तुमचा संपूर्ण धडा रचण्यास मदत करेन!",
+    "fallback_export": "तुमच्याकडे {topic} वर {count} संसाधने आहेत — ती एकाच PDF म्हणून एक्सपोर्ट करा!",
     "fallback_export_fallback": "तुम्ही ही सर्व संसाधने एकाच PDF पॅकेट म्हणून एक्सपोर्ट करू शकता.",
     "fallback_guide": "तुम्ही गोंधळलात तर AI Guide मध्ये 'Show Me' निवडा!",
     "intro_greeting": "माझ्या आवाजाच्या सेटिंग्ज समायोजित करण्यासाठी माझ्यावर क्लिक करा.",
@@ -9234,7 +9234,7 @@
     "text_generated": "{topic} वरील तुमचा रूपांतरित मजकूर तयार आहे! एखाद्या शब्दाची व्याख्या पाहण्यासाठी त्यावर क्लिक करून पहा, किंवा समज अधिक खोलवर नेण्यासाठी Glossary किंवा Quiz सारखी साधने एक्सप्लोर करा.",
     "flashcards_created": "Flashcards तयार झाले! तुम्ही ते Quizlet ला एक्सपोर्ट करू शकता, छापू शकता किंवा Memory Game खेळून पाहू शकता.",
     "quiz_generated": "क्विझ तयार आहे! वर्गासाठी Presentation Mode वापरा, किंवा मुक्त उत्तरांसाठी Auto-Grader वापरून पहा.",
-    "glossary_generated": "Glossary पूर्ण झाली! शब्दखेळ खेळून पहा • Bingo, Memory Match, Crosswords, Word Search आणि बरेच काही!",
+    "glossary_generated": "Glossary पूर्ण झाली! शब्दखेळ खेळून पहा — Bingo, Memory Match, Crosswords, Word Search आणि बरेच काही!",
     "adventure_started": "तुमची साहसकथा सुरू होत आहे! खाली तुमची कृती टाइप करा, किंवा पुढे काय होईल हे ठरवण्यासाठी निवड बटणे वापरा.",
     "adventure_scene": "तुम्ही काय कराल? प्रत्येक निवड तुमची कथा घडवते!",
     "analysis_complete": "विश्लेषण पूर्ण झाले! मला एक्सप्लोर करण्यायोग्य काही शब्दसंग्रह आणि महत्त्वाच्या संकल्पना सापडल्या.",
@@ -10410,7 +10410,7 @@
     "type_timeline": "क्रम निर्माता",
     "type_timeline_desc": "इयत्ता स्तराशी अनुकूलित क्रमवारी क्रिया",
     "full_pack": "संपूर्ण संसाधन पॅक • सर्व निवडा",
-    "deselect_all": "? सर्व अनिवडा",
+    "deselect_all": "↩ सर्व अनिवडा",
     "estimate": "अंदाज",
     "api_calls": "API कॉल्स",
     "start_batch": "तयार करा",
@@ -10439,7 +10439,7 @@
     "bridge_generating": "तुमची वैयक्तिकृत आवृत्ती तयार करत आहे...",
     "bridge_projection": "प्रोजेक्शन मोड",
     "bridge_exit_projection": "प्रोजेक्शनमधून बाहेर पडा",
-    "bridge_offline_info": "लाइव्ह सत्र नाही • फक्त या उपकरणावर पूर्वावलोकन",
+    "bridge_offline_info": "लाइव्ह सत्र नाही — फक्त या उपकरणावर पूर्वावलोकन",
     "bridge_term_saved": "\"{term}\" शब्दकोशात जतन केले",
     "bridge_term_save_failed": "संज्ञा जतन करण्यात अयशस्वी",
     "bridge_save_term": "शब्दकोशात जतन करा",
@@ -10465,7 +10465,7 @@
     "bridge_f2f_custom_lang": "सानुकूल भाषा...",
     "bridge_f2f_custom_placeholder": "उदा. योरुबा, टिग्रिन्या, दारी...",
     "bridge_all_saved": "सर्व संज्ञा शब्दकोशात जतन झाल्या!",
-    "bridge_terms_saved": "? सर्व जतन झाले",
+    "bridge_terms_saved": "✅ सर्व जतन झाले",
     "fullpack_group_target": "लक्ष्य गट",
     "fullpack_group_current": "सध्याची सेटिंग्ज",
     "fullpack_group_all": "सर्व गट",
@@ -12429,7 +12429,11 @@
       "trapezoid": "समलंब चौकोन",
       "simpson": "सिम्पसन",
       "rectangles_n": "आयत (n)",
-      "coeff_a": "गुणांक a"
+      "coeff_a": "गुणांक a",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे.",
+      "a11y_back_to_tools": "साधनांवर परत",
+      "a11y_snapshot": "स्नॅपशॉट",
+      "a11y_next": "पुढे"
     },
     "wave": {
       "u26a0_audio_not_supported_in": "⚠ या ब्राउझरमध्ये ऑडिओ समर्थित नाही",
@@ -12553,12 +12557,12 @@
       "aria_free_end": "Free end (string free to move — phase preserved on reflection)",
       "aria_freq_vt_a": " hertz, period ",
       "aria_freq_vt_b": " seconds — frequency sets the pitch",
-      "aria_generate_at": "Generate AI explanation at ",
+      "aria_generate_at": "AI स्पष्टीकरण या स्तरावर तयार करा",
       "aria_level_suffix": " level",
       "aria_mode_suffix": " mode",
       "aria_pause_animation": "Pause animation (or press Space on the wave)",
       "aria_play_animation": "Play animation",
-      "aria_reading_level": "Reading level: ",
+      "aria_reading_level": "वाचन स्तर:",
       "aria_reading_level_group": "Reading level",
       "aria_reflectivity": "Wall reflectivity 0 to 1",
       "aria_reset_all": "Reset all wave controls to their defaults",
@@ -14184,8 +14188,8 @@
     },
     "func_grapher": {
       "ud83dudcc8": "📈 ",
-      "correct_it": "? बरोबर! ते\\",
-      "that": "? ते\\",
+      "correct_it": "✅ बरोबर! ते\\",
+      "that": "❌ ते\\",
       "linear": "रेषीय",
       "quadratic": "वर्गीय",
       "cubic": "घनीय",
@@ -14459,7 +14463,8 @@
       "angle_u00b0": "कोन (°)",
       "velocity_ms": "वेग (m/s)",
       "gravity_msu00b2": "गुरुत्वाकर्षण (m/s²)",
-      "iq_explanation_input": "Projectile physics explanation"
+      "iq_explanation_input": "Projectile physics explanation",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे."
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 यादृच्छिक: ",
@@ -14487,7 +14492,10 @@
       "codominant_desc": "दोन्ही अ‍ॅलील पूर्णपणे व्यक्त होतात. हेटरोझायगोट दोन्ही गुणधर्म एकाच वेळी दाखवतो.",
       "sexLinked_desc": "हा गुणधर्म X गुणसूत्रावर असतो. हे X-linked RECESSIVE वारसा दर्शवते (उदा. हिमोफिलिया आणि लाल-हिरवा रंगांधळेपणा): पुरुषांना (XY) व्यक्त होण्यासाठी एक प्रत पुरेशी; स्त्रियांना (XX) दोन प्रती लागतात.",
       "explanation_input": "Explain allele selection and mutation",
-      "hypothesis_input": "Allele frequency hypothesis"
+      "hypothesis_input": "Allele frequency hypothesis",
+      "a11y_back_to_stem_tools": "STEM साधनांवर परत",
+      "a11y_snapshot": "स्नॅपशॉट",
+      "a11y_close_flashcard": "फ्लॅशकार्ड बंद करा"
     },
     "circuit": {
       "meter_status_ammeter_short": "असुरक्षित स्थान: शॉर्ट-सर्किट मार्ग",
@@ -14779,8 +14787,8 @@
       "voltage_divider_desc": "Two resistors sharing voltage"
     },
     "data_plot": {
-      "correct": "? बरोबर! ",
-      "it": "? ते\\"
+      "correct": "✅ बरोबर! ",
+      "it": "❌ ते\\"
     },
     "inequality": {
       "badge_first_solve_label": "पहिले उत्तर",
@@ -14896,8 +14904,8 @@
       "hypothesis": "Inequality relationship hypothesis"
     },
     "periodic": {
-      "correct": "? बरोबर!",
-      "answer": "? उत्तर: ",
+      "correct": "✅ बरोबर!",
+      "answer": "❌ उत्तर: ",
       "hydrogen": "हायड्रोजन",
       "helium": "हेलियम",
       "lithium": "लिथियम",
@@ -15039,7 +15047,7 @@
       "reddish_metal_used_since_the": "कांस्य युगापासून वापरला जाणारा लालसर धातू",
       "bluishwhite_metal_that_prevents_rust": "गंज रोखणारा निळसर-पांढरा धातू",
       "best_conductor_of_electricity_among": "सर्व धातूंमध्ये विजेचा सर्वोत्तम वाहक",
-      "dense_soft_shiny_precious_metal": "घन, मऊ, चकचकीत मौल्यवान धातू • कधीच गंजत नाही",
+      "dense_soft_shiny_precious_metal": "घन, मऊ, चकचकीत मौल्यवान धातू — कधीच गंजत नाही",
       "strong_as_steel_but_45": "पोलादाइतका मजबूत पण ४५% हलका",
       "shiny_metal_that_gives_rubies": "माणकांना त्यांचा लाल रंग देणारा चकचकीत धातू",
       "essential_for_steel_production_and": "पोलाद उत्पादन आणि हाडांच्या आरोग्यासाठी आवश्यक",
@@ -16145,7 +16153,9 @@
       "our_sun_is_born": "आपल्या सूर्याचा जन्म होतो",
       "present_day": "सध्याचा काळ",
       "the_far_future": "दूरचे भविष्य",
-      "universe": "विश्व: "
+      "universe": "विश्व: ",
+      "a11y_back_to_tools": "साधनांवर परत",
+      "a11y_simulation_speed": "सिम्युलेशनचा वेग"
     },
     "rocks": {
       "igneous": "अग्निजन्य",
@@ -19070,7 +19080,10 @@
       "garage_desc": "इंजिने, गंज आणि अभिक्रिया — रसायनशास्त्राची कार्यशाळा.",
       "classroom_desc": "बीकर आणि प्रयोग असलेला खरा विज्ञान वर्ग.",
       "outdoors_desc": "बाहेर पडा — निसर्ग ही सर्वांत मोठी प्रयोगशाळा आहे.",
-      "compare_material": "Compare with material"
+      "compare_material": "Compare with material",
+      "a11y_back_to_tools": "साधनांवर परत",
+      "a11y_snapshot": "स्नॅपशॉट",
+      "a11y_next": "पुढे"
     },
     "converter": {
       "u2705_saved_to_history": "✅ इतिहासात जतन केले!",
@@ -19623,7 +19636,7 @@
       "fractions": "अपूर्णांक",
       "unit_converter": "एकक रूपांतरक",
       "life_earth_science": "जीवशास्त्र आणि पृथ्वीशास्त्र",
-      "cell_simulator": "Cell Simulator",
+      "cell_simulator": "पेशी सिम्युलेटर",
       "galaxy_explorer": "आकाशगंगा एक्सप्लोरर",
       "universe_timelapse": "विश्व टाइम-लॅप्स",
       "rocks_minerals": "खडक आणि खनिजे",
@@ -19633,7 +19646,7 @@
       "decomposer": "विघटक",
       "break_materials_into_elements": "पदार्थांचे मूलद्रव्यांमध्ये विघटन करा",
       "human_anatomy": "मानवी शरीररचना",
-      "brain_atlas": "Brain Atlas",
+      "brain_atlas": "मेंदूचा नकाशा",
       "molecule_builder": "रेणू निर्माता",
       "physics_chemistry": "भौतिकशास्त्र आणि रसायनशास्त्र",
       "wave_simulator": "तरंग सिम्युलेटर",
@@ -19857,7 +19870,40 @@
       "read_what_special_education_law_actually": "वाचा की विशेष शिक्षणाचा कायदा खरोखर काय म्हणतो, त्याच्याच शब्दांत. IDEA च्या भाग B आणि कलम 504 चा खरा मजकूर, eCFR मधून आणलेला व तारीख नोंदलेला, शोधता येणारा, संघीय आणि राज्य नियम शेजारी शेजारी. काहीही पुन्हा लिहिले जात नाही किंवा तयार केले जात नाही: अधिकृत मजकूर लोड झाला नसेल तर साधन अंदाज लावण्याऐवजी तेच सांगते.",
       "applied_k_12_behavior_practice_what": "बालवाडीपासून बारावीपर्यंतची उपयोजित वर्तन प्रथा: शाळेतील मानसशास्त्रज्ञ आणि शिक्षक या विज्ञानाचे प्रत्यक्षात काय करतात. त्रिस्तरीय PBIS चौकट, FBA च्या कार्यांशी जोडलेली पर्यायी वर्तने, पार्श्वभूमीच्या घटना (ते संथ चालना देणारे घटक जे बहुतेक BIP दुर्लक्षित करतात), जेफ कॉल्विनचे सात टप्प्यांचे उद्रेक चक्र, आणि मेनच्या प्रकरण 33 वर आधारलेली आवर व एकांतवासाची नीती. BehaviorLab ची भावंड.",
       "marine_biology_behavioral_science_of_octopuses": "ऑक्टोपस, स्क्विड, कटलफिश आणि नॉटिलस यांचे सागरी जीवशास्त्र आणि वर्तनशास्त्र. मुख्य आकर्षण: Hunter Sim — प्रजाती, अधिवास, भक्ष्य आणि डावपेच निवडा, छद्मावरणाचा छोटा खेळ खेळा, आणि हल्ल्याची वेळ साधा. क्षेत्र-टिपणातील जीवशास्त्रीय गमती उघडतो (क्रोमॅटोफोरची यंत्रणा, 9 मेंदू, निळे रक्त, झोत प्रणोदन). 10 प्रजातींची क्षेत्र पुस्तिका, बुद्धिमत्ता, छद्मावरण आणि झोत वेगाच्या आकड्यांसह.",
-      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 आणि HS-PS2. ट्रस प्रतिबल सिम्युलेटर ज्यात गाळा, उंची, भार आणि सामग्री बदलता येते, पुलांच्या प्रकारांची तुलना (तुळई, ट्रस, कमान, झुलता, केबलने ताणलेला), सामग्री डेटाबेस, बलांचे प्रकार, प्रत्यक्ष केस अभ्यास (Tacoma Narrows, Hyatt Regency, Tay, Silver, तसेच Brooklyn, Golden Gate, Akashi आणि Millau), अभियांत्रिकी अभिकल्प चक्र, AP शैलीची चाचणी, आणि छापण्याजोगे अभिकल्प तपशील."
+      "ngss_ms_ets1_hs_ets1_hs": "NGSS MS-ETS1, HS-ETS1 आणि HS-PS2. ट्रस प्रतिबल सिम्युलेटर ज्यात गाळा, उंची, भार आणि सामग्री बदलता येते, पुलांच्या प्रकारांची तुलना (तुळई, ट्रस, कमान, झुलता, केबलने ताणलेला), सामग्री डेटाबेस, बलांचे प्रकार, प्रत्यक्ष केस अभ्यास (Tacoma Narrows, Hyatt Regency, Tay, Silver, तसेच Brooklyn, Golden Gate, Akashi आणि Millau), अभियांत्रिकी अभिकल्प चक्र, AP शैलीची चाचणी, आणि छापण्याजोगे अभिकल्प तपशील.",
+      "the_gutenberg_style_screw_press_as": "गुटेनबर्ग शैलीचा स्क्रू प्रेस चालू सिम्युलेशन म्हणून. दांडा ओढा, स्वतःचे टंक जुळवा, ठसा पाहा. सोबत पदार्थ विज्ञान (शिसे-कथिल-अँटिमनी मिश्रधातू), अर्थशास्त्र (प्रति पुस्तक खर्चाचा कोसळणे), इतिहास (धर्मसुधारणा, वैज्ञानिक क्रांती), मुद्राक्षरकला, आणि छापखान्यामागील माणसे (इतिहासाने विसरलेल्या स्त्री मुद्रकांसह). माध्यमिक शाळेतील आंतरविद्याशाखीय कामासाठी बनवलेले.",
+      "three_js_stoop_simulator_deep_science": "Three.js मधील झेपेचा सिम्युलेटर आणि शिकारी पक्ष्यांच्या शिकार यांत्रिकीचे सखोल विज्ञान. 240 mph वेगाने भोवत्या ससाणा म्हणून उडा, 530 psi नख्यांच्या हार्पी म्हणून, किंवा आवाज न करणारे शिंगे असलेले घुबड म्हणून. 8 प्रजाती आणि 12 विभाग: नख्यांचे बळ, दृष्टी (माणसापेक्षा 4-8× तीक्ष्ण, खरुची घारीत अतिनील), उड्डाणाची भौतिकी, घुबडांचे निःशब्द उडणे, अंतिम वेगाचे कॅल्क्युलेटर, DDT नंतरची पुनर्भरारी आणि सुरू असलेली संवर्धन संकटे, आणि क्षेत्रात आकृती व एकंदर रूपावरून ओळख.",
+      "practice_reading_and_completing_the_documents": "प्रौढ आयुष्य ज्या कागदपत्रांवर चालते ती वाचण्याचा आणि भरण्याचा सराव करा: नोकरीचे अर्ज, W-4 फॉर्म, भाडेकरार, वैद्यकीय दाखल्याचे फॉर्म, वाहन परवाने, आणि तुमच्या स्वतःच्या IEP बैठकीचे निमंत्रण. प्रत्येक रकाना सोप्या भाषेत उलगडलेला, जे रकाने तुम्हाला महाग पडू शकतात ते खुणावलेले, कोणी आत्ताच सही करायला लावत असेल तेव्हाची दबावाची प्रसंगचित्रे, आणि वेळ मागण्यासाठी तयार वाक्ये. सगळा सराव काल्पनिक व्यक्तीवर होतो, कधीच तुमच्या खऱ्या माहितीवर नाही.",
+      "how_swimming_works_stroke_physics_survival": "पोहणे कसे चालते (स्ट्रोकची भौतिकी आणि टिकून राहण्याची कौशल्ये) आणि प्रत्येक पोहणाऱ्याला थंड पाणी, परतीचे प्रवाह, बर्फ, लाइफ जॅकेट आणि बचाव याबद्दल काय माहीत हवे. स्ट्रोकचे दृश्य विश्लेषण, तरंगण्याचे आणि पुढे ढकलले जाण्याचे विज्ञान, आणि ती टिकून राहण्याची कौशल्ये (पाठीवर तरंगणे, अंड्यासारखी लाथ, HELP, गटात एकत्र येणे) जी खरोखर जीव वाचवतात. स्रोत: CDC, USCG, AAP, NAA, NOAA, USA Swimming. फक्त शैक्षणिक: खरोखर पोहायला शिकण्यासाठी पोहण्याचा प्रशिक्षक शोधा.",
+      "tax_paycheck_calculator_data_literacy_decision": "कर आणि पगारपत्रक कॅल्क्युलेटर, माहिती साक्षरता, निर्णय मॅट्रिक्स, करार वाचक, नोंदी आणि कागदपत्रे, प्रवासाचे नियोजन, नोकरीची तयारी, बायोडेटा बनवणे, पोर्टफोलिओच्या पुराव्यांची मांडणी, मुलाखतीचा सराव, संवाद कौशल्ये, वेळेचे व्यवस्थापन, आरोग्य विमा, दातांची काळजी, शरीराच्या काळजीची अर्गोनॉमिक्स, झोपेच्या सवयी, औषधांची लेबले, भेटीची तयारी, घरातील सुरक्षा, डिजिटल सुरक्षा, अन्नाबाबत सहजता, आणि दैनंदिन जीवनासाठी उपयोजित विज्ञान.",
+      "ngss_ms_ls1_hs_ls1_hs": "NGSS MS-LS1, HS-LS1, HS-LS3 आणि HS-LS4. सूक्ष्मजीवांचे जग: जीवाणू (उपयुक्त आणि रोगकारक), विषाणू (COVID, फ्लू, HIV, फेज, गोवर), सूक्ष्मदर्शन (प्रकाश, फेज कॉन्ट्रास्ट, प्रतिदीप्त, इलेक्ट्रॉन, AFM), प्रतिजैविक प्रतिकाराची उत्क्रांती, मानवी, मातीतील आणि सागरी सूक्ष्मजीवसमूह, लसी आणि प्रतिकारशक्ती, आंबवण (आंबट पीठ, दही, किमची, सॉरक्राउट, कोम्बुचा, चीज), केस अभ्यास (Snow, Fleming, MRSA, COVID आणि mRNA, FMT), प्रश्नमंजूषा, आणि प्रयोगशाळा सुरक्षा व सूक्ष्मजीवांची छापण्याजोगी संदर्भ पत्रिका.",
+      "fifteen_environmental_stewardship_campaigns_across_eleven": "अकरा प्रदेशांत पर्यावरण जपणुकीच्या पंधरा मोहिमा. मेनच्या पाच दीर्घ, अनेक कालखंडांच्या मोहिमा, शिवाय दहा आंतरप्रादेशिक प्रसंग जे यांत्रिकीच्या पाचही कुळांना स्पर्श करतात: आग (ऑस्ट्रेलियात Yarralin, उत्तर कॅलिफोर्नियात Karuk), संवर्धन (Yellowstone, रवांडात Akagera), सार्वजनिक आरोग्य (मुंबईत डेंग्यू, लायबेरियात 2014 चा इबोला), पाणलोट (Klamath नदी, Murray-Darling खोरे), आणि हवामान (मार्शल बेटे, बांगलादेशचा त्रिभुज प्रदेश). कुळ जोडणीतील अंतर्दृष्टी तेव्हा उघडतात जेव्हा तुम्ही मेनची आणि त्याच यांत्रिकी कुळाची आंतरप्रादेशिक मोहीम पूर्ण करता.",
+      "ngss_ms_ets1_hs_ets1_3": "NGSS MS-ETS1, HS-ETS1-3 आणि MS-ESS3-3. 144 भूखंडांच्या जाळीवर अशा गरजांसमोर एक गाव रचा ज्या खरोखर एकमेकींशी भिडतात. तीन गावे, प्रत्येकात वेगळी निर्णायक मर्यादा: Riverbend, जिथे पावसाचे पाणी आणि कर्ज दाबतात; Mesa Hollow, जिथे भूजलसाठा ठरलेला आहे आणि शेते तो पीत आहेत; आणि Harborlight, जिथे आराखडा 2050 मध्येही चालायला हवा. तर्कशुद्ध पद्धतीने वाहून जाणारे पाणी, जलसंतुलन, समुद्रपातळी वाढीची सवलत, जाळ्यावरील पायी अंतर, आणि खर्चासह रस्त्यांचे जाळे — प्रत्येक उघडून आपले सूत्र दाखवतो. Assumption Lab एकाच आराखड्याला दोन प्रकाशित प्राचल संचांवर पुन्हा चालवते, म्हणजे विद्यार्थ्यांना दिसते कोणते निष्कर्ष दोन्हींत टिकतात. नकाशा, संपादनयोग्य भूखंड तक्ता, आणि त्याच आराखड्याचे त्रिमितीय प्रारूप. चर्चेचे प्रश्न आणि नोंदवलेला इतिहास ते प्रश्न उचलतात ज्यांचे प्रारूप बनवायला हे साधन नकार देते. गुण नाहीत आणि उत्तरतालिकाही नाही.",
+      "codap_data_science": "CODAP: डेटा विज्ञान",
+      "lumen_research_canvas": "Lumen: संशोधन पटल",
+      "evolab_evolution": "EvoLab: उत्क्रांती",
+      "dino_lab": "डायनासोर प्रयोगशाळा",
+      "nutritionlab_nutrition_science": "NutritionLab: पोषण विज्ञान",
+      "birdlab_i_spy_ornithology": "BirdLab: शोधा-ओळखा पक्षिविज्ञान",
+      "openbim_companion": "OpenBIM: सोबती मार्गदर्शिका",
+      "applab_ai_app_generator": "AppLab: एआयने अ‍ॅप बनवणारा",
+      "access_lens": "सुलभता भिंग",
+      "sim_shelf": "सिम्युलेशन फळी",
+      "zoom_gallery": "झूम दालन",
+      "sourcebook": "स्रोत पुस्तिका",
+      "wheel_fire_pottery_lab": "चाक आणि आग: कुंभारकाम प्रयोगशाळा",
+      "echo_navigator": "प्रतिध्वनी दिशादर्शक",
+      "learning_lab_how_learning_works": "Learning Lab: शिकणे कसे चालते",
+      "weldlab_welding_metal_joining": "WeldLab: वेल्डिंग आणि धातू जोडणी",
+      "bikelab_physics_repair": "BikeLab: भौतिकी आणि दुरुस्ती",
+      "fisherlab_boating_fishing_sim": "FisherLab: नौकानयन आणि मासेमारी सिम्युलेटर",
+      "aquaculturelab_mussel_farm_sim": "AquacultureLab: शिंपले शेती सिम्युलेटर",
+      "throwlab_sports_physics": "ThrowLab: खेळाची भौतिकी",
+      "skatelab_skate_bmx_physics": "SkateLab: स्केट आणि BMX ची भौतिकी",
+      "playlab_strategy_on_the_field": "PlayLab: मैदानावरील डावपेच",
+      "kepler_colony": "केप्लर वसाहत",
+      "birdlab_life_list": "BirdLab: जीवन यादी",
+      "petslab_decoder": "PetsLab: संकेत उलगडणारा"
     },
     "area": {
       "volume": "आकारमान..."
@@ -19897,7 +19943,12 @@
       "quizStreak3_desc": "Get 3 quiz answers correct in a row",
       "quizStreak5_desc": "5 quiz answers correct in a row",
       "reference_desc": "Glossary + finale",
-      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it."
+      "tap_organelle": "Tap an organelle in the cell (or a button above) to see what it does — and which cells have it.",
+      "a11y_back_to_tools": "साधनांवर परत",
+      "a11y_snapshot": "स्नॅपशॉट",
+      "a11y_next": "पुढे",
+      "a11y_simulation_speed": "सिम्युलेशनचा वेग",
+      "a11y_close_flashcard": "फ्लॅशकार्ड बंद करा"
     },
     "solar_sys": {
       "venus": "शुक्र",
@@ -20719,7 +20770,8 @@
       "scaled_volume_changed": "🔵 मापित (आकारमान बदलले)",
       "skewed_shape_deformed": "🟠 तिरपे (आकार विकृत)",
       "degenerate_volume_0": "💀 अपकर्षित (आकारमान → 0)",
-      "tool_name": "Geometry World"
+      "tool_name": "Geometry World",
+      "a11y_tutorial_progress": "मार्गदर्शिकेची प्रगती"
     },
     "numberline": {
       "first_mark": "पहिली खूण",
@@ -22862,7 +22914,8 @@
       "pilot_transition_announce": "Water changed from {from} to {to}: {process}.",
       "pilot_try_next_route": "Try next: land on {surface}.",
       "pilot_virga_progress": "Unsaturated air is evaporating the drop · {pct}%",
-      "pilot_virga_risk": "Dry-air exposure"
+      "pilot_virga_risk": "Dry-air exposure",
+      "sr_year_begins": "वर्ष {value1} सुरू होते."
     },
     "optics": {
       "optics_lab": "प्रकाशशास्त्र प्रयोगशाळा",
@@ -23208,7 +23261,8 @@
       "strong_r2_desc": "Achieve R² > 0.95",
       "ten_points_desc": "Have 10+ points on chart",
       "transform_desc": "Apply a data transformation",
-      "z_score_desc": "Calculate a z-score"
+      "z_score_desc": "Calculate a z-score",
+      "a11y_local_analytical_sql_query": "स्थानिक विश्लेषणात्मक SQL क्वेरी"
     },
     "geosandbox": {
       "loading_3d_engine": "3D इंजिन लोड होत आहे...",
@@ -23558,7 +23612,8 @@
       "stlExport_desc": "Export your first STL file",
       "streak3_desc": "3 challenges correct in a row",
       "streak5_desc": "5 challenges correct in a row",
-      "wireframeToggle_desc": "Toggle wireframe mode"
+      "wireframeToggle_desc": "Toggle wireframe mode",
+      "sr_sculpture_removed": "शिल्प काढले"
     },
     "algebraCAS": {
       "solve": "🔍 सोडवा",
@@ -26154,7 +26209,8 @@
       "resume": "Resume",
       "resume_safety_drill": "Resume safety drill",
       "safety_drill_countdown": "Safety drill countdown",
-      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station."
+      "safety_equipment_map": "Safety equipment map. Locate the eyewash, fire extinguisher, and SDS station.",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे."
     },
     "economicslab": {
       "six_figures": "सहा आकडी उत्पन्न",
@@ -28134,7 +28190,8 @@
       "ref_goal": "A printable takeaway students (or teachers) can keep nearby while actually using AI.",
       "spotter_goal": "Convert hallucination-detection from a passive warning into an active skill students practice.",
       "tokens_goal": "Make the model’s machinery visible so “AI magic” stops being a category students use.",
-      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target."
+      "udl_goal": "Give students a rubric for deciding when AI is a legitimate accommodation vs. a shortcut that undermines the learning target.",
+      "sr_reflection_saved": "चिंतन जतन केले."
     },
     "anatomy": {
       "system_explorer": "संस्था अन्वेषक",
@@ -28716,7 +28773,8 @@
       "trace_nephron_processing": "Follow a drop of plasma as the nephron filters blood, recovers useful material, secretes wastes, and forms urine.",
       "trace_skin_repair": "Connect body surface and skin layers to the overlapping phases that stop bleeding, clear damage, rebuild tissue, and remodel a scar.",
       "two_variables_outside_reference": "2 variables outside reference",
-      "within_teaching_references": "All within teaching references"
+      "within_teaching_references": "All within teaching references",
+      "a11y_reset_3d_camera": "3D कॅमेरा पुन्हा सेट करा"
     },
     "dna": {
       "back_to_tools": "साधनांकडे परत",
@@ -30093,7 +30151,8 @@
       "ember_clockwork_subtitle": "Gears of starlight and tides of molten logic",
       "hard_desc": "Sharpen retrieval speed — short window, 4 rooms.",
       "standard_desc": "Balanced challenge — 6-second crit window, 3 rooms.",
-      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words"
+      "whispering_archive_subtitle": "A library of forgotten runes, guarded by words",
+      "sr_reflection_saved": "चिंतन जतन केले."
     },
     "angles": {
       "back_to_tools": "साधनांकडे परत जा",
@@ -30907,7 +30966,8 @@
       "explain_how_each_parameter_shapes_a_si": "प्रत्येक प्राचल ज्या तरंगेला कसा आकार देतो ते समजावा.",
       "design_note_discrete_5_state_marker_no": "रचना टीप: सुटे 5-अवस्था चिन्ह; तरंग गुण नाहीत; उघड करणे नाही — रचनेनुसार.",
       "explanation_input": "Function grapher explanation",
-      "hypothesis_input": "Function grapher hypothesis"
+      "hypothesis_input": "Function grapher hypothesis",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे."
     },
     "typingpractice": {
       "typing_practice_menu": "टायपिंग सराव मेनू",
@@ -31261,7 +31321,8 @@
       "save_private_resume_draft_and_return": "Save a private resume draft and return to the menu",
       "self-advocacy_description": "Seven sentences a student with a disability might actually need to say to a teacher, peer, or clinician — typing practice and language rehearsal at once. Covers needing help, asking for breaks, audio learning, fidget tools, IEP testing accommodations, sensory recess needs, and medical lighting accommodations. K through high school.",
       "symbols_description": "Shift + numbers for ! @ # $ % & ( ) and other punctuation.",
-      "top-row_description": "Reach up to q w e r t y u i o p"
+      "top-row_description": "Reach up to q w e r t y u i o p",
+      "a11y_back_to_menu": "मेनूवर परत"
     },
     "music": {
       "edm_lead": "EDM लीड",
@@ -34670,7 +34731,8 @@
       "what_observation_explanation_changed_thinking": "What observation or part of the explanation kept or changed your thinking?",
       "year_length": "Year",
       "your_claim_label": "Your claim: ",
-      "your_claim_reasoning": "Your claim and reasoning"
+      "your_claim_reasoning": "Your claim and reasoning",
+      "a11y_select_answer": "उत्तर निवडा: {value1}"
     },
     "artstudio": {
       "back_to_tools": "साधनांकडे परत",
@@ -35435,7 +35497,12 @@
       "visualization": "🔍 Visualization",
       "was_invented_by_mathematician_john_hor": " was invented by mathematician John Horton Conway in 1970. Despite having only 4 simple rules, it can produce extraordinary complexity — it's actually ",
       "wcag_22_contrast_guidance": "WCAG 2.2 AA requires 4.5:1 for normal text and 3:1 for large text. AAA requires 7:1 for normal text.",
-      "x_ray": "🔬 X-Ray"
+      "x_ray": "🔬 X-Ray",
+      "a11y_state_off": "बंद",
+      "sr_nothing_to_redo": "पुन्हा करण्यासारखे काही नाही.",
+      "sr_nothing_to_undo": "पूर्ववत करण्यासारखे काही नाही.",
+      "sr_dir_left": "डावीकडे",
+      "sr_dir_right": "उजवीकडे"
     },
     "arithmetic": {
       "selected": " निवडले.",
@@ -39481,7 +39548,8 @@
       "your_question": "Your question...",
       "zhr_is_the_rate_one_observer_would_see": "ZHR हे खमध्यावरील रेडिएंट आणि 6.5 सीमांत तेजांक यांनुसार प्रमाणित केले आहे. हा ढोबळ अंदाज स्वच्छ, चंद्रविरहित आकाश आणि 2.2 लोकसंख्या निर्देशांक गृहीत धरतो. बोर्टल वर्ग सीमांत तेजांक केवळ ढोबळमानाने दर्शवतात; प्रमाणापेक्षा अधिक अंधारे आकाश ZHR पेक्षा जास्त होऊ शकते. रेडिएंटची कमी उंची आणि अधिक तेजस्वी आकाश अंदाज कमी करतात.",
       "constellation_results": "Constellation results",
-      "glossary_entries": "Glossary entries"
+      "glossary_entries": "Glossary entries",
+      "a11y_back_to_stem_tools": "STEM साधनांवर परत"
     },
     "autorepair": {
       "back_to_menu": "मेनूवर परत",
@@ -40222,7 +40290,10 @@
       "urgent_safety": "Urgent safety",
       "view_badge_gallery": "View badge gallery",
       "walkthrough_complete": "Walkthrough complete",
-      "what_brings_you_into_the_garage": "What brings you into the garage?"
+      "what_brings_you_into_the_garage": "What brings you into the garage?",
+      "a11y_score_out_of_2": "गुण: {value2} पैकी {value1}",
+      "a11y_open_2": "{value1} उघडा",
+      "a11y_option": "पर्याय {value1}: {value2}{value3}"
     },
     "bakingscience": {
       "crust": "कवच",
@@ -40325,7 +40396,8 @@
       "which_slider_matters_most_for_hitting_": "Which slider matters most for hitting perfect caramel? Does moisture have a big effect or a small one?",
       "why_weight_beats_volume": "Why weight beats volume",
       "without_enough_water_the_proteins_can_": ": without enough water the proteins can’t unfold and meet each other; too much water and they’re diluted into a soup. The sweet spot for most breads is 60–75% hydration.",
-      "yeast": "Yeast"
+      "yeast": "Yeast",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे."
     },
     "beehive": {
       "5": "⏭ +5",
@@ -41071,7 +41143,11 @@
       "worker_nasonov_relay": "Worker Nasonov Relay",
       "worker_nasonov_relay_desc": "Scenting workers expose Nasonov glands and fan, helping displaced nestmates orient",
       "close_treatment_choices": "Close treatment choices",
-      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance."
+      "treatment_forecast_intro": "Each card uses the current brood and season to forecast this model's result. Compare mite change, colony cost, and the safety and timing note before applying. In a real apiary, follow the product label and local guidance.",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे.",
+      "a11y_investigation_progress": "तपासाची प्रगती",
+      "a11y_flight_debrief": "उड्डाणाचा आढावा",
+      "a11y_tutorial_progress": "मार्गदर्शिकेची प्रगती"
     },
     "behaviorlab": {
       "chain_reaction": "साखळी प्रतिक्रिया",
@@ -41243,7 +41319,7 @@
       "sound_on": "Sound On",
       "speed_fast": "Fast",
       "speed_medium": "Medium",
-      "sr_explanation_ready": "Explanation ready.",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे.",
       "sr_l3_complete": "Level 3 complete. You observed the extinction burst.",
       "sr_view_2d": "Diagram chamber view.",
       "sr_view_3d": "Three-D chamber view. Drag or use arrow keys to look around.",
@@ -43755,7 +43831,11 @@
       "your_personal_birder_log": "Your personal birder log",
       "your_saved_entries_become_a_personal_f": "Your saved entries become a personal field notebook (stored on this device only).",
       "your_sightings_real_science": "Your sightings = real science",
-      "your_top_matches": "🎯 Your top matches"
+      "your_top_matches": "🎯 Your top matches",
+      "sr_module_explored": "शोधलेले मॉड्यूल: {value1}",
+      "a11y_score_out_of": "गुण: {value2} पैकी {value1}",
+      "sr_selected": "निवडलेले: {value1}",
+      "sr_quiz_reset": "प्रश्नमंजूषा पुन्हा सेट झाली"
     },
     "brainatlas": {
       "group_systems": "संस्था",
@@ -48911,7 +48991,8 @@
       "your_garden_ecosystem_is_thriving_dive": "🌳 Your garden ecosystem is thriving! Diversity and companion planting are working.",
       "your_mint_has_spread_to_adjacent_plots": "Your mint has spread to adjacent plots! Mint sends underground runners that colonize nearby soil.",
       "your_pollinator_dependent_crops_need_n": "Your pollinator-dependent crops need nearby flowers. Plant marigold, borage, lavender, or sunflower within 2 cells for full yield.",
-      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden"
+      "zoom_into_the_invisible_world_beneath_": "Zoom into the invisible world beneath the garden",
+      "a11y_select_answer": "उत्तर निवडा: {value1}"
     },
     "cyberdefense": {
       "quiz_master": "प्रश्नमंजुषा तज्ज्ञ",
@@ -50055,7 +50136,8 @@
       "insectivore_desc": "A tiny insectivorous bat that uses rapid-fire echolocation to hunt moths and mosquitoes in the dark. Your sonar is powerful and precise.",
       "insectivore_subtitle": "Insect Hunter",
       "owl_desc": "Owls hoot at low frequencies that travel far through forests. Their asymmetric ears let them pinpoint prey by sound alone in total darkness.",
-      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal."
+      "whale_desc": "Whale songs can travel thousands of miles underwater. At 188 decibels, blue whale calls are the loudest sound made by any animal.",
+      "sr_selected": "निवडलेले: {value1}"
     },
     "echotrainer": {
       "wall": "भिंत",
@@ -51514,7 +51596,8 @@
       "resume_investigation": "Resume investigation →",
       "return_to_capstone_project": "Return to your in-progress Capstone Project",
       "return_to_project": "🎓 Return to project",
-      "saved_during_lab_visits": "Saved during lab visits"
+      "saved_during_lab_visits": "Saved during lab visits",
+      "sr_module_explored": "शोधलेले मॉड्यूल: {value1}"
     },
     "fireecology": {
       "carbon_calculator": "कार्बन कॅल्क्युलेटर",
@@ -52594,7 +52677,10 @@
       "you_will_see_10_brief_emergency_vignet": "You will see 10 brief emergency vignettes. For each, pick the first action from six options. After you pick, a coaching block names why this is the first action and what NOT to do first (the most-common confusion). This is decision-reflex practice — it does not substitute for hands-on certification.",
       "your_aunt_is_over_for_dinner_mid_conve": "Your aunt is over for dinner. Mid-conversation she suddenly can’t lift her right arm to take a glass of water. Her smile is uneven on one side and she keeps trying to say \"I’m fine\" but it comes out garbled. Time is 7:14 PM.",
       "your_emergency_response_2_to_3_sentenc": "Your emergency response, 2 to 3 sentences",
-      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)"
+      "your_response_2_3_sentences": "✏️ Your response (2–3 sentences)",
+      "sr_back_to_menu": "मेनूवर परत",
+      "sr_getting_critique": "समीक्षा आणली जात आहे...",
+      "sr_critique_ready": "समीक्षा तयार आहे."
     },
     "flightsim": {
       "game_controls": "🎮 गेम नियंत्रणे",
@@ -52802,7 +52888,7 @@
       "flight_planner": "🗺️ Flight Planner",
       "flight_planning_checklist": "Flight Planning Checklist",
       "flight_planning_scenarios": "Flight Planning Scenarios",
-      "flight_simulator_cockpit_view_w_s_pitc": "Flight simulator cockpit view. W/S pitch, A/D bank, Shift/Ctrl throttle, Q quiz, F forces, Space pause, I info.",
+      "flight_simulator_cockpit_view_w_s_pitc": "उड्डाण सिम्युलेटरचे कॉकपिट दृश्य. W/S पिच, A/D बँक, Shift/Ctrl थ्रॉटल, कंस फ्लॅप नियंत्रित करतात, X चाकांचे ब्रेक, Q प्रश्नमंजुषा, F बले, Space विराम, I माहिती.",
       "flight_tips": "🧭 FLIGHT TIPS",
       "flightsim_interactive_visualization": "Flightsim interactive visualization",
       "flightsim_visualization": "Flightsim visualization",
@@ -52814,7 +52900,7 @@
       "four_60_ft_presidential_heads_carved_1": "Four 60-ft presidential heads carved 1927-1941 by 400 workers.",
       "france_germany": "France / Germany",
       "free_flight": "Free Flight",
-      "free_flight_from_portland_me": "🛫 Free Flight from Portland, ME",
+      "free_flight_from_portland_me": "पोर्टलँड, ME येथून मुक्त उड्डाण",
       "free_resources": "Free Resources",
       "from": "From",
       "full_stall": "🔴 Full stall",
@@ -52861,7 +52947,7 @@
       "las_vegas_strip": "Las Vegas Strip",
       "lean_caused_by_soft_soil_in_1178_stabi": "Lean caused by soft soil in 1178. Stabilized in 2008 — tilts 3.97°.",
       "leaning_tower_of_pisa": "Leaning Tower of Pisa",
-      "leaning_tower_of_shanghai": "Leaning Tower of Shanghai",
+      "leaning_tower_of_shanghai": "शांघाय टॉवर",
       "learn_practice_calculate": "🎓 Learn, Practice, Calculate",
       "learn_to_fly_learn_the_world": "Learn to fly. Learn the world.",
       "learn_topics": "Learn topics",
@@ -58684,7 +58770,11 @@
       "start_step_2_hint": "See which organs use each nutrient, in 3D",
       "start_step_3": "Decode a label",
       "start_step_3_hint": "Serving-size tricks, % Daily Value, added sugars",
-      "where_it_works": "Where it works in the body"
+      "where_it_works": "Where it works in the body",
+      "sr_module_explored": "शोधलेले मॉड्यूल: {value1}",
+      "sr_loaded": "{value1} लोड झाले",
+      "sr_showing": "{value1} दाखवले जात आहे",
+      "sr_opening": "{value1} उघडले जात आहे"
     },
     "platetectonics": {
       "pacific": "पॅसिफिक",
@@ -58944,7 +59034,7 @@
       "30_of_national_electricity_from_geothe": "30% of national electricity from geothermal. Hellisheidi + Krafla + Reykjanes plants.",
       "30_of_species_less_catastrophic": "30% of species, less catastrophic",
       "30_paths_in_the_geosciences_with_educa": "30 paths in the geosciences, with education requirements and outlook. Geology jobs span academia, government (USGS, NPS, EPA, NOAA), industry (oil, mining, environmental consulting), and education.",
-      "30_scientists_who_shaped_our_understan": "30 scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
+      "30_scientists_who_shaped_our_understan": "{n} scientists who shaped our understanding of the Earth, from Steno (1669) to modern researchers. Their personal stories illuminate how the science advanced.",
       "30_textbooks_organizations_and_online_": "30 textbooks, organizations, and online resources for further geology study. Many are free or low-cost.",
       "330_mw_albay_province": "330 MW. Albay Province.",
       "330_mw_n_sumatra": "330 MW; N Sumatra.",
@@ -63506,7 +63596,13 @@
       "great_desc": "Megathrust — whole regions shake",
       "shelf_hidden_body": "The boundary table, the magnitude panels and the simulators are still here. Four of these eight questions are answered outright by them, and trying to remember first is what makes it stick. Open them whenever you want to — it reopens on its own once you have been through all eight.",
       "shelf_hidden_title": "The reference shelf is put away while you answer",
-      "shelf_open_btn": "Show the reference shelf"
+      "shelf_open_btn": "Show the reference shelf",
+      "sr_explanation_ready": "स्पष्टीकरण तयार आहे.",
+      "sr_off": "बंद",
+      "sr_edge_left": "डावीकडे",
+      "sr_edge_right": "उजवीकडे",
+      "sr_correct": "बरोबर.",
+      "sr_not_quite": "अगदी नाही."
     },
     "playlab": {
       "save": "जतन करा",
@@ -63574,7 +63670,9 @@
       "try_these_before_you_run_it": "🤔 Try these before you run it",
       "workspace": "PlayLab workspace",
       "xg_heatmap": "xG heatmap",
-      "yards_to_goal": "Yards to goal:"
+      "yards_to_goal": "Yards to goal:",
+      "sr_coach_is_offline": "प्रशिक्षक ऑफलाइन आहे.",
+      "sr_drill_stopped": "सराव थांबवला."
     },
     "printingpress": {
       "menu": "← मेनू",
@@ -65713,7 +65811,17 @@
       "your_question": "Your question:",
       "your_tier": "Your tier",
       "your_wanderjahre_take_you_across_europ": "Your wanderjahre take you across Europe — and shape your career",
-      "zines_fanzines": "Zines + Fanzines"
+      "zines_fanzines": "Zines + Fanzines",
+      "sr_back_to_menu": "मेनूवर परत",
+      "a11y_open": "{value1} उघडा",
+      "sr_selected": "निवडलेले: {value1}",
+      "sr_loaded": "{value1} लोड झाले",
+      "sr_opening": "{value1} उघडले जात आहे",
+      "sr_correct": "बरोबर.",
+      "sr_not_quite": "अगदी नाही.",
+      "sr_year_begins": "वर्ष {value1} सुरू होते.",
+      "sr_question_reset_try_again": "प्रश्न पुन्हा सेट झाला. पुन्हा प्रयत्न करा.",
+      "sr_not_quite_see_the_explanation": "अगदी नाही: स्पष्टीकरण पाहा."
     },
     "raptorhunt": {
       "show_answer": "उत्तर दाखवा",
@@ -67362,7 +67470,9 @@
       "your_nest_holds_2_hungry_chicks_they_n": "Your nest holds 2 hungry chicks. They need 200 kcal each by sunset.",
       "your_tour_progress": "🗺 Your Tour Progress",
       "zoom_acuity_multiplier": "Zoom (acuity multiplier)",
-      "interactive_field_plate": "Interactive field plate"
+      "interactive_field_plate": "Interactive field plate",
+      "a11y_open": "{value1} उघडा",
+      "a11y_flight_debrief": "उड्डाणाचा आढावा"
     },
     "renewables": {
       "menu": "← मेनू",
@@ -68062,7 +68172,11 @@
       "your_family_books_an_efficiency_maine_": ": your family books an Efficiency Maine assessment. ",
       "your_last_six_customers_loved_you_thre": "Your last six customers loved you. Three referrals come in unprompted; satisfaction-boosted leads next year.",
       "your_mix_at_a_glance": "📈 Your mix at a glance",
-      "your_renewable_energy_system_design": "Your renewable energy system design"
+      "your_renewable_energy_system_design": "Your renewable energy system design",
+      "sr_back_to_menu": "मेनूवर परत",
+      "sr_getting_critique": "समीक्षा आणली जात आहे...",
+      "sr_critique_ready": "समीक्षा तयार आहे.",
+      "sr_quiz_reset": "प्रश्नमंजूषा पुन्हा सेट झाली"
     },
     "roadready": {
       "let_s_start": "चला सुरू करूया →",
@@ -70929,7 +71043,9 @@
       "prompt_same_power": "Can two different designs reach a similar power band? Which tradeoff produced it?",
       "prompt_small_effect": "For an assumed small effect, how does n per group change the approximate power?",
       "show_investigation_prompts": "I'm stuck — show investigation prompts",
-      "two_sided_alpha": "Two-sided alpha"
+      "two_sided_alpha": "Two-sided alpha",
+      "a11y_back_to_stem_tools": "STEM साधनांवर परत",
+      "a11y_local_analytical_sql_query": "स्थानिक विश्लेषणात्मक SQL क्वेरी"
     },
     "stewardship": {
       "sector": "क्षेत्र",
@@ -71506,7 +71622,9 @@
       "you_will_exhaust_yourself_and_drown_th": " You will exhaust yourself and drown. The current is faster than you can swim.",
       "your_answer": "Your answer: ",
       "your_local": ", your local ",
-      "your_question": "Your question:"
+      "your_question": "Your question:",
+      "sr_back_to_menu": "मेनूवर परत",
+      "sr_question_reset_try_again": "प्रश्न पुन्हा सेट झाला. पुन्हा प्रयत्न करा."
     },
     "throwlab": {
       "scenarios": "परिस्थिती",
@@ -71731,7 +71849,10 @@
       "set_up_next_rep": "SET UP NEXT REP",
       "successful_basketball_reps": "Successful reps",
       "tune_release_controls": "2 · Tune the release",
-      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive."
+      "volleyball_learning_goal": "Goal: clear the net and land in court. Speed creates depth; launch angle creates clearance; topspin helps the ball dive.",
+      "a11y_reset_3d_camera": "3D कॅमेरा पुन्हा सेट करा",
+      "sr_coach_is_offline": "प्रशिक्षक ऑफलाइन आहे.",
+      "sr_drill_stopped": "सराव थांबवला."
     },
     "weldlab": {
       "menu": "← मेनू",
@@ -73293,7 +73414,13 @@
       "your_tier": "Your tier",
       "your_top_matches": "🎯 Your top matches",
       "yumi_abb": "YuMi (ABB)",
-      "zumwalts": "Zumwalts"
+      "zumwalts": "Zumwalts",
+      "sr_module_explored": "शोधलेले मॉड्यूल: {value1}",
+      "a11y_score_out_of": "गुण: {value2} पैकी {value1}",
+      "sr_quiz_reset": "प्रश्नमंजूषा पुन्हा सेट झाली",
+      "sr_loaded": "{value1} लोड झाले",
+      "sr_showing": "{value1} दाखवले जात आहे",
+      "sr_not_quite_see_the_explanation": "अगदी नाही: स्पष्टीकरण पाहा."
     },
     "worldbuilder": {
       "grade_level": "इयत्ता पातळी",
@@ -74886,7 +75013,7 @@
       "aria_legend": "Hazard tier legend",
       "aria_main": "Taxonomy Explorer",
       "aria_tabs": "Taxonomy Explorer views",
-      "aria_tree": "Tree of life",
+      "aria_tree": "जीवनाचे झाड",
       "blanket_rule": "Blanket rule",
       "but_may_actually_be": "But may actually be",
       "confused_with": "Confused with",
@@ -76741,7 +76868,9 @@
       "title": "📊 Data Lab — real data science, Socratic style"
     },
     "magnetism": {
-      "initializing": "🧲 Charging the coils…"
+      "initializing": "🧲 Charging the coils…",
+      "a11y_option": "पर्याय {value1}: {value2}{value3}",
+      "a11y_3d_camera_views": "3D कॅमेरा दृश्ये"
     },
     "volume_label": "Volume",
     "tutorial": {
@@ -76753,6 +76882,22 @@
       "finish": "समजले!",
       "replay": "टिपा",
       "replay_aria": "ट्यूटोरियल दाखवा"
+    },
+    "pets": {
+      "sr_back_to_menu": "मेनूवर परत",
+      "sr_getting_critique": "समीक्षा आणली जात आहे...",
+      "sr_critique_ready": "समीक्षा तयार आहे."
+    },
+    "weathersystems": {
+      "a11y_back_to_stem_tools": "STEM साधनांवर परत",
+      "a11y_3d_camera_views": "3D कॅमेरा दृश्ये"
+    },
+    "cellatlas": {
+      "a11y_investigation_progress": "तपासाची प्रगती"
+    },
+    "wheelandfire": {
+      "sr_nothing_to_redo": "पुन्हा करण्यासारखे काही नाही.",
+      "sr_nothing_to_undo": "पूर्ववत करण्यासारखे काही नाही."
     }
   },
   "glossary_health": {
@@ -77355,7 +77500,7 @@
       "person": "व्यक्ती\\",
       "phase_label": "टप्पा लेबल",
       "rationale_which_antecedent_does_this_address": "तर्क (हे कोणत्या पूर्ववर्ती घटकाला संबोधित करते?)",
-      "reflect_on_your_approachn_what_worked_welln_what_w": "तुमच्या दृष्टिकोनावर विचार करा...\\n• काय चांगले कार्य केले?\\n• तुम्ही काय वेगळे केले असते?\\n• पुढे कोणत्या धोरणांचा सराव करायचा आहे?",
+      "reflect_on_your_approachn_what_worked_welln_what_w": "तुमच्या दृष्टिकोनावर विचार करा...\n• काय चांगले कार्य केले?\n• तुम्ही काय वेगळे केले असते?\n• पुढे कोणत्या धोरणांचा सराव करायचा आहे?",
       "reinforcement_how_you": "⭐ प्रबलन (तुम्ही कसे\\",
       "replacement_behavior_functionally_equivalent": "✅ पर्यायी वर्तन (कार्यात्मकदृष्ट्या समतुल्य)",
       "respond_as_the_counselor": "समुपदेशक म्हणून प्रतिसाद द्या...",
@@ -77363,7 +77508,7 @@
       "search_81_tools": "🔍  80+ साधने शोधा…",
       "search_aba_terms": "🔍 ABA संज्ञा शोधा...",
       "search_terms_eg_reinforcement_fba_data": "🔍 संज्ञा शोधा... (उदा. \"प्रबलन\", \"FBA\", \"डेटा\")",
-      "session_1_3nsession_2_7nsession_3_5n": "सत्र 1: 3\\nसत्र 2: 7\\nसत्र 3: 5\\n...",
+      "session_1_3nsession_2_7nsession_3_5n": "सत्र 1: 3\nसत्र 2: 7\nसत्र 3: 5\n...",
       "setting_eg_math_class_cafeteria": "ठिकाण (उदा., गणिताचा वर्ग, उपाहारगृह)",
       "share_what_you_notice_at_home_strengths_concerns_c": "घरी तुम्हाला काय जाणवते ते शेअर करा — बलस्थाने, चिंता, सांस्कृतिक संदर्भ किंवा शाळेच्या संघासाठी सूचना...",
       "step_description": "टप्प्याचे वर्णन...",
@@ -78944,7 +79089,7 @@
     "feedback_wrong_rect": "Not quite. Try V = L × W × H",
     "layers_all": "All",
     "layers_label": "Layers:",
-    "notch_aria_height": "Notch height",
+    "notch_aria_height": "खाचेची उंची",
     "notch_aria_length": "Notch length",
     "notch_aria_width": "Notch width",
     "notch_label_height": "Height Notch",
@@ -80610,7 +80755,7 @@
     "art_has_sculpture": "A sculpture floats above this concept.",
     "art_no_imagen": "Image generation is unavailable here — try a sculpture.",
     "art_or_direct": "or describe your own:",
-    "art_panel_aria": "Concept art",
+    "art_panel_aria": "संकल्पनेचे चित्र",
     "art_placed": "✨ Placed! Refine it, or click another concept.",
     "art_prompt_placeholder": "e.g. a glowing brain with gears",
     "art_remove": "Remove art",
@@ -80646,10 +80791,10 @@
     "furnish_mode_image": "Images",
     "furnish_mode_label": "What to generate",
     "furnish_mode_sculpture": "Sculptures",
-    "furnish_panel_aria": "Furnish every concept",
+    "furnish_panel_aria": "प्रत्येक संकल्पना सजवा",
     "furnish_partial": "Made art for {ok} concepts; {fail} could not be generated.",
     "furnish_pending": "{n} still need art",
-    "furnish_progress_aria": "Furnishing progress",
+    "furnish_progress_aria": "सजावटीची प्रगती",
     "furnish_start": "Make art for {n} concepts",
     "furnish_stop": "Stop",
     "furnish_stopped": "Stopped — {ok} made so far.",
@@ -80663,7 +80808,7 @@
     "hint_for": "Thinking about “{label}”:",
     "hint_tooltip": "Get a nudge about one misplaced concept — the answer is never given away",
     "recall_again": "Go again",
-    "recall_choices_aria": "Possible names",
+    "recall_choices_aria": "संभाव्य नावे",
     "recall_correct": "Yes — {label}.",
     "recall_cue_described": "The picture shows: {desc}",
     "recall_cue_undescribed": "This concept is cued by a picture that has no text description.",
@@ -80674,7 +80819,7 @@
     "recall_mode_bank": "Choose",
     "recall_mode_label": "How to answer",
     "recall_mode_typed_tooltip": "Expert: type the name instead of choosing it",
-    "recall_panel_aria": "Concept recall",
+    "recall_panel_aria": "संकल्पनेचे स्मरण",
     "recall_play": "Concept Recall",
     "recall_position": "Concept {n} of {total}. Its name is hidden — use the picture to name it.",
     "recall_progress": "{n} of {total}",
@@ -82231,7 +82376,7 @@
     "activity_wordcloud": "Shared Word Cloud",
     "add_question": "+ Add question",
     "allow_maybe": "Allow \"maybe\" as well as yes and no",
-    "close_aria": "Close Share & Collect",
+    "close_aria": "Share & Collect बंद करा",
     "create_link": "Create the link and QR code",
     "default_title": "AlloFlow homework",
     "default_title_short": "homework",
@@ -82240,7 +82385,7 @@
     "expires_on": "Expires {date}",
     "export_csv": "Export aggregate CSV",
     "filter_all": "All assignments",
-    "filter_aria": "Filter assignments",
+    "filter_aria": "कार्ये गाळा",
     "filter_errors": "Status errors",
     "filter_needs_review": "Needs review",
     "identity_anon_short": "anonymous",
@@ -82278,15 +82423,15 @@
     "prompt_signup": "Choose a time that works for you",
     "prompt_survey": "How did this week go?",
     "prompt_word_cloud": "What word or short phrase best captures your thinking?",
-    "q_aria": "Question {n}",
-    "q_choices_aria": "Choices for question {n}, one per line",
+    "q_aria": "प्रश्न {n}",
+    "q_choices_aria": "प्रश्न {n} साठी पर्याय, प्रति ओळ एक",
     "q_max": "Max",
     "q_min": "Min",
-    "q_remove_aria": "Remove question {n}",
+    "q_remove_aria": "प्रश्न {n} काढून टाका",
     "q_required": "Required",
-    "q_steps_aria": "Scale steps for question {n}",
+    "q_steps_aria": "प्रश्न {n} साठी मापनश्रेणीचे टप्पे",
     "q_steps_n": "{n}-point",
-    "q_type_aria": "Answer type for question {n}",
+    "q_type_aria": "प्रश्न {n} साठी उत्तराचा प्रकार",
     "q_type_choice": "Multiple choice",
     "q_type_freetext": "Short answer",
     "q_type_likert": "Scale (agree to disagree)",
@@ -82296,10 +82441,10 @@
     "resource_one": "resource",
     "resource_only_note": "Resource-only privacy mode: this link does not collect student progress or responses.",
     "resource_other": "resources",
-    "row_link_aria": "Selectable link for {title}",
-    "scale_high_aria": "Label for the high end",
+    "row_link_aria": "{title} साठी निवडता येणारी लिंक",
+    "scale_high_aria": "वरच्या टोकासाठी लेबल",
     "scale_high_default": "Strongly agree",
-    "scale_low_aria": "Label for the low end",
+    "scale_low_aria": "खालच्या टोकासाठी लेबल",
     "scale_low_default": "Strongly disagree",
     "setup_sub": "Attached to the next assignment link or QR code you create. People answer without an account.",
     "setup_title": "Add a shared activity",
@@ -82319,7 +82464,7 @@
     "status_error": "Status unavailable. Reconnect the Class Mailbox and refresh.",
     "status_loading": "Loading anonymous activity status…",
     "status_refresh": "Refresh to check activity status.",
-    "status_summary_aria": "Assignment status summary",
+    "status_summary_aria": "कार्यांच्या स्थितीचा सारांश",
     "subtitle": "Set up a poll, sign-up sheet or class activity, share it by link or QR, and watch the responses arrive. Everything here is saved on this teacher device.",
     "suggest_note": "Suggestions land in the box below for you to edit. Nothing is shared until you create the link.",
     "suggest_options": "Suggest options",
@@ -82335,9 +82480,9 @@
     "window_placeholder": "45 minutes next week, weekday afternoons",
     "assignment_contents": "Assignment contents",
     "attach_private_presenter_cues_and_existing": "Attach private presenter cues and existing quick check, Word Cloud, open-response, feedback, Sketch Response, or live-quiz checkpoints to lesson steps. This does not start a session.",
-    "auto_updates_aria": "Updates automatically",
+    "auto_updates_aria": "आपोआप अद्ययावत होते",
     "expires_default_window": "14 days after creation",
-    "link_aria": "Selectable homework link",
+    "link_aria": "निवडता येणारी गृहपाठ लिंक",
     "make_self_contained_version_no_accounts": "Make self-contained version (no accounts needed)",
     "manage_shared": "Manage shared",
     "more_resources": "more resources",
@@ -82346,7 +82491,7 @@
     "prepare_live_run": "Prepare live lesson",
     "prepare_the_lesson_flow_if_you": "Prepare the lesson flow if you want, then choose how student devices will connect.",
     "print_qr": "Print QR",
-    "qr_aria": "Homework assignment QR code",
+    "qr_aria": "गृहपाठाचा QR कोड",
     "qr_unavailable_use_link": "QR unavailable - use the link below",
     "ready_to_scan": "Ready to scan",
     "revoke_homework_link": "Revoke homework link",
@@ -84794,7 +84939,7 @@
     "ai_convention_banner": "AlloBot helps by asking questions and surfacing alternatives. It will not write your model, your hypothesis, your argument, or your trade-off decisions for you. You author your work; AlloBot critiques.",
     "back_to_lanes": "Choose a different lane",
     "confirm_reset": "All portfolio artifacts, sources, voice notes, method episodes, models, and AI history will be cleared. This cannot be undone.",
-    "dev_level_aria": "Select developmental level for prompts and rubrics",
+    "dev_level_aria": "सूचना आणि मूल्यमापन तक्त्यांसाठी विकासात्मक स्तर निवडा",
     "dev_level_label": "Reading level",
     "educator_view_back": "Exit educator view",
     "educator_view_error": "The educator dashboard failed to render. Toggling back to student view.",
@@ -84802,7 +84947,7 @@
     "educator_view_missing": "No educator view registered yet. Load research_hub_educator_module.js to enable.",
     "educator_view_off": "Educator view",
     "educator_view_on": "Educator view",
-    "educator_view_toggle_aria": "Toggle educator view",
+    "educator_view_toggle_aria": "शिक्षक दृश्य चालू किंवा बंद करा",
     "educator_view_toggle_title": "Educator view — read-only inquiry trajectory",
     "exemplar_pair_prompt": "Which of these is stronger work, and why?",
     "exemplar_pair_reasoning_placeholder": "In 1–2 sentences: which is stronger, and what makes it stronger?",
@@ -84833,17 +84978,17 @@
     "voice_note_idle": "Up to 60s — local only",
     "voice_note_mic_denied": "Microphone permission was denied.",
     "voice_note_pause": "Pause",
-    "voice_note_pause_aria": "Pause voice note recording",
+    "voice_note_pause_aria": "ध्वनी टिपणाचे रेकॉर्डिंग थांबवा",
     "voice_note_pause_unsupported": "Pause is not supported in this browser. Stop and start a new note instead.",
     "voice_note_paused": "Paused",
     "voice_note_recording": "Recording",
     "voice_note_rerecord": "Re-record",
     "voice_note_resume": "Resume",
-    "voice_note_resume_aria": "Resume voice note recording",
+    "voice_note_resume_aria": "ध्वनी टिपणाचे रेकॉर्डिंग पुन्हा सुरू करा",
     "voice_note_start": "Record",
-    "voice_note_start_aria": "Start recording a voice note",
+    "voice_note_start_aria": "ध्वनी टिपण रेकॉर्ड करण्यास सुरुवात करा",
     "voice_note_stop": "Stop",
-    "voice_note_stop_aria": "Stop recording",
+    "voice_note_stop_aria": "रेकॉर्डिंग थांबवा",
     "voice_note_unsupported": "Voice notes are not supported in this browser.",
     "ai_calls_remaining_prefix": "AI questions remaining: "
   },
@@ -85229,22 +85374,22 @@
     "sources_unverified_note": "These sources were surfaced by AI-assisted search and have not been independently verified — confirm each one before citing it."
   },
   "allohaven": {
-    "reason_aria": "AlloHaven recognition reason",
-    "recent_deliveries_aria": "Recent private AlloHaven recognition deliveries",
-    "token_amount_aria": "AlloHaven token amount",
-    "token_cap_aria": "AlloHaven per-student session token cap"
+    "reason_aria": "AlloHaven गौरवाचे कारण",
+    "recent_deliveries_aria": "अलीकडील खाजगी AlloHaven गौरव",
+    "token_amount_aria": "AlloHaven टोकनची संख्या",
+    "token_cap_aria": "प्रति विद्यार्थी प्रति सत्र AlloHaven टोकन मर्यादा"
   },
   "class_goals": {
-    "allowance_aria": "Exceptions allowed while still meeting the goal",
+    "allowance_aria": "ध्येय पूर्ण राखत असताना परवानगी असलेले अपवाद",
     "allowance_help": "Good Behavior Game-style allowance: the goal still counts as met with up to this many exceptions. No student is ever named as the exception.",
-    "criteria_aria": "Optional app-tracked progress signal for this goal",
+    "criteria_aria": "या ध्येयासाठी अ‍ॅप मागोवा घेणारा पर्यायी प्रगती संकेत",
     "criteria_help": "App-tracked criteria show live progress and prompt you when met. Awarding is always your tap, never automatic.",
-    "mode_aria": "Whole team together, or each student individually",
-    "name_aria": "Class goal name, kept on this device only",
+    "mode_aria": "संपूर्ण संघ एकत्र, किंवा प्रत्येक विद्यार्थी स्वतंत्रपणे",
+    "name_aria": "वर्ग ध्येयाचे नाव, फक्त याच उपकरणावर ठेवले जाते",
     "name_placeholder": "e.g., Lined up ready in under 2 minutes",
-    "scope_aria": "Which students this goal covers",
-    "template_aria": "Class goal starting template",
-    "tokens_aria": "Tokens awarded per student when this goal is met"
+    "scope_aria": "हे ध्येय कोणत्या विद्यार्थ्यांना समाविष्ट करते",
+    "template_aria": "वर्ग ध्येयाचा प्रारंभिक साचा",
+    "tokens_aria": "हे ध्येय पूर्ण झाल्यावर प्रत्येक विद्यार्थ्याला दिले जाणारे टोकन"
   },
   "saved_work": {
     "close_aria": "Close saved work manager",
@@ -85262,7 +85407,7 @@
     "a_google_account_alone_does_not": "A Google account alone does not make a workflow FERPA-compliant.",
     "access": "→ access",
     "add_to_pack": "Add to pack",
-    "admin_token_aria": "Class Mailbox admin token (optional)",
+    "admin_token_aria": "Class Mailbox प्रशासक टोकन (पर्यायी)",
     "admin_token_placeholder": "Admin token (only when reconnecting from a new device)",
     "admin_token_recovery_note_the_same": "Admin-token recovery note: the same private Drive folder. It is never placed in a student QR.",
     "admin_token_save_it_like_a": "Admin token — save it like a password",
@@ -85292,17 +85437,17 @@
     "forget_mailbox": "Forget mailbox",
     "google_can_show_this_warning_because": "Google can show this warning because a script you create for yourself is an unpublished OAuth app, not because Google has identified this mailbox as malware. The warning is still meaningful: continue only when",
     "google_s_apps_script_authorization_explanation": "Google’s Apps Script authorization explanation",
-    "hand_aria": "hand raised",
+    "hand_aria": "हात वर केला",
     "hand_title": "Hand raised",
     "homework_ready": "Homework ready ·",
     "hosted_homework_and_completed_mailbox_submission": "Hosted homework and completed mailbox submissions: ordinary files in your private “AlloFlow Class Mailbox” Drive folder until you delete them.",
     "how_do_student_saving_and_submissions": "How do student saving and submissions work in each mode?",
-    "join_link_aria": "Selectable mailbox live join link",
+    "join_link_aria": "निवडता येणारी थेट मेलबॉक्स सामील होण्याची लिंक",
     "k_12_privacy_ferpa_checklist_is": "K–12 privacy / FERPA checklist: is this appropriate for my class?",
     "keep_the_admin_token_private_rotate": "Keep the admin token private, rotate it if exposed, and delete submission/homework files from Drive according to district retention rules.",
     "leave_session": "Leave session",
     "live_class_without_accounts": "Live class without accounts",
-    "live_dialog_aria": "Class Mailbox live session",
+    "live_dialog_aria": "Class Mailbox चे थेट सत्र",
     "live_messages_and_class_state_bounded": "Live messages and class state: bounded Apps Script cache, normally expiring within 45 minutes to 6 hours and eligible for earlier eviction.",
     "live_quiz_answer_content_travels_peer": "live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.",
     "loading_lesson_preparation_tools": "Loading lesson preparation tools...",
@@ -85329,7 +85474,7 @@
     "retry_loading": "retry loading",
     "retry_resources": "Retry resources",
     "rotate_token": "Rotate token",
-    "rtc_aria": "real-time connection",
+    "rtc_aria": "रिअल-टाइम जोडणी",
     "rtc_title": "Real-time connection",
     "runs_from_a_google_apps_script": "Runs from a Google Apps Script project that you create and control. Students use codenames and scan a QR without signing into Google. Live state is temporary; hosted homework and completed mailbox submissions are saved in your private Drive folder.",
     "save_setup_to_a_file": "Save setup to a file",
@@ -85361,7 +85506,7 @@
     "validating_live_session_qr": "Validating live-session QR...",
     "view_the_same_source_online": "view the same source online",
     "waiting_for_students_to_scan": "Waiting for students to scan…",
-    "webapp_url_aria": "Class Mailbox web app URL",
+    "webapp_url_aria": "Class Mailbox वेब अ‍ॅपचा URL",
     "what_is_stored_where_and_for": "What is stored, where, and for how long?",
     "why_might_google_say_unverified_app": "Why might Google say “unverified app” or “unsafe”?",
     "work_stays_on_the_student_device": "work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.",
