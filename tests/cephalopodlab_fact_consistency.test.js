@@ -143,3 +143,42 @@ describe('Cephalopod Lab species join', () => {
     });
   });
 });
+
+describe('Cephalopod Lab data accents stay readable as text', () => {
+  // Several datasets carry a period or event colour — deep Triassic browns, the
+  // sky blue of a glaciation. Those are fine as a band fill with white on top,
+  // but used directly as TEXT on this tool's dark ground they collapse: the
+  // Triassic heading measured 1.88:1. axe cannot see it, because the root
+  // paints a gradient and axe reports gradient-backed text as unmeasurable, so
+  // this pins the rule in source instead.
+  const textSites = [
+    /color: clReadableInk\(era\.color\)/,
+    /color: clReadableInk\(ext\.color\)/,
+    /color: clReadableInk\(stage\.color\)/,
+  ];
+
+  it('routes every data colour used as heading text through the ink helper', () => {
+    textSites.forEach((re) => expect(src).toMatch(re));
+    // and no raw data colour is used as text at those sites any more
+    expect(src).not.toMatch(/fontWeight: 900, color: era\.color/);
+    expect(src).not.toMatch(/fontWeight: 900, color: ext\.color[^)]/);
+    expect(src).not.toMatch(/fontWeight: 900, color: stage\.color/);
+  });
+
+  it('lifts a dark accent to a readable ink and leaves a light one alone', () => {
+    // reimplement the helper's contract to check its stated behaviour
+    const GROUND = [16, 24, 45];
+    const lum = (rgb) => {
+      const c = rgb.map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    };
+    const ratio = (rgb) => (Math.max(lum(rgb), lum(GROUND)) + 0.05) / (Math.min(lum(rgb), lum(GROUND)) + 0.05);
+    const hexToRgb = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+    // the Triassic brown is the colour that failed at 1.88:1
+    expect(ratio(hexToRgb('#7c2d12'))).toBeLessThan(2.5);
+    // the helper must aim above the 4.5 line, since the real ground measures
+    // lighter than a naive constant
+    expect(src).toMatch(/var want = minRatio \|\| 5\.2;/);
+    expect(src).toMatch(/var GROUND = \[16, 24, 45\];/);
+  });
+});

@@ -409,6 +409,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   //   habitat (array), prey (array), tactics (array of best-suited)
   //   weird (one striking fact), conservation (IUCN status or proxy)
   //   notes (paragraph)
+  // ─── Readable ink from a data accent ─────────────────────────────
+  // Several datasets carry a colour that reads as a period or an event (deep
+  // Triassic browns, the sky blue of a glaciation). Those work as a band fill
+  // with white on top, but used directly as TEXT on this tool's dark ground
+  // they fall to ~2:1 — the Triassic heading measured 1.88:1. axe cannot see
+  // it, because the root paints a gradient and axe reports gradient-backed text
+  // as unmeasurable rather than failing it; the pixel probe catches it.
+  // This lifts an accent toward white until it clears the threshold, so each
+  // entry keeps its identity colour for fills and borders while its label stays
+  // readable — and any accent added later is handled automatically.
+  var CL_INK_CACHE = {};
+  function clReadableInk(hex, minRatio) {
+    var want = minRatio || 5.2;   // aim above 4.5: the real ground measures a shade lighter than the constant
+    if (typeof hex !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(hex)) return '#e2e8f0';
+    var key = hex.toLowerCase() + ':' + want;
+    if (CL_INK_CACHE[key]) return CL_INK_CACHE[key];
+    var GROUND = [16, 24, 45];   // measured card ground over this tool's root gradient
+    function lum(rgb) {
+      var c = rgb.map(function(v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    }
+    function ratio(rgb) {
+      var a = lum(rgb), b = lum(GROUND);
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    }
+    var n = parseInt(hex.slice(1), 16);
+    var base = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    var out = base;
+    for (var t = 0; t <= 20; t++) {
+      var mix = base.map(function(v) { return Math.round(v + (255 - v) * (t / 20)); });
+      out = mix;
+      if (ratio(mix) >= want) break;
+    }
+    var hexOut = '#' + out.map(function(v) { var x = v.toString(16); return x.length === 1 ? '0' + x : x; }).join('');
+    CL_INK_CACHE[key] = hexOut;
+    return hexOut;
+  }
+
   // ─── Canonical species join ──────────────────────────────────────
   // The same fifteen animals appear in three datasets under two different key
   // conventions: SPECIES (this list) uses short ids, while SPECIES_DEEP_DIVES
@@ -17352,7 +17390,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             // Selected era detail
             h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + era.color }) },
               h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 10, flexWrap: 'wrap' } },
-                h('div', { style: { fontSize: 20, fontWeight: 900, color: era.color, letterSpacing: '-0.01em' } }, era.name),
+                h('div', { style: { fontSize: 20, fontWeight: 900, color: clReadableInk(era.color), letterSpacing: '-0.01em' } }, era.name),
                 h('div', { style: { fontSize: 12, color: '#fb923c', fontFamily: 'ui-monospace, Menlo, monospace', background: 'rgba(251,146,60,0.1)', padding: '3px 8px', borderRadius: 6 } },
                   era.startMya + '–' + era.endMya + ' million years ago')),
               h('div', { style: { fontSize: 16, fontWeight: 700, color: 'var(--allo-stem-text, #fde68a)', marginBottom: 12 } },
@@ -17464,7 +17502,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                           onClick: function() { setCL({ timeExtinctionId: on ? null : ext.id }); awardXP(1); clAnnounce(ext.name + ', about ' + ext.mya + ' million years ago.'); } },
                         h('line', { x1: x, y1: TOP - 12, x2: x, y2: TOP + BAND + 10 + drop, stroke: ext.color, strokeWidth: on ? 3 : 2 }),
                         h('circle', { cx: x, cy: TOP - 16, r: on ? 7 : 5, fill: ext.color, stroke: on ? '#ffffff' : 'rgba(15,23,42,0.7)', strokeWidth: on ? 2 : 1 }),
-                        h('text', { x: x, y: TOP + BAND + 26 + drop, textAnchor: 'middle', fontSize: 9.5, fontWeight: on ? 900 : 700, fill: on ? '#ffffff' : ext.color }, ext.mya),
+                        h('text', { x: x, y: TOP + BAND + 26 + drop, textAnchor: 'middle', fontSize: 9.5, fontWeight: on ? 900 : 700, fill: on ? '#ffffff' : clReadableInk(ext.color, 3) }, ext.mya),
                         h('text', { x: x, y: TOP + BAND + 40 + drop, textAnchor: 'middle', fontSize: 8.5, fill: on ? '#f1f5f9' : '#cbd5e1' },
                           ext.name.length > 16 ? ext.name.slice(0, 15) + '…' : ext.name));
                     }),
@@ -17481,7 +17519,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       border: '1px solid ' + (on ? ext.color : 'rgba(100,116,139,0.3)'),
                       borderLeft: '4px solid ' + ext.color, padding: '14px 16px', borderRadius: 10 } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
-                      h('div', { style: { fontSize: 16, fontWeight: 900, color: ext.color } }, ext.name),
+                      h('div', { style: { fontSize: 16, fontWeight: 900, color: clReadableInk(ext.color) } }, ext.name),
                       h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace' } },
                         '~' + ext.mya + ' MYA')),
                     h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 8, fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },
@@ -17545,7 +17583,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       borderLeft: '4px solid ' + stage.color, borderRadius: 10 } },
                     h('div', { style: { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, minWidth: 60, flexShrink: 0 } },
                       h('div', { style: { fontSize: 32, lineHeight: 1 } }, stage.icon),
-                      h('div', { style: { fontSize: 14, fontWeight: 900, color: stage.color, fontFamily: 'ui-monospace, Menlo, monospace' } }, stage.stage)),
+                      h('div', { style: { fontSize: 14, fontWeight: 900, color: clReadableInk(stage.color), fontFamily: 'ui-monospace, Menlo, monospace' } }, stage.stage)),
                     h('div', { style: { flex: 1 } },
                       h('div', { style: { fontSize: 14, fontWeight: 800, color: '#fde68a', marginBottom: 3 } }, stage.name),
                       h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontFamily: 'ui-monospace, Menlo, monospace', marginBottom: 8 } }, stage.era),
