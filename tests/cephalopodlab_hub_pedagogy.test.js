@@ -266,3 +266,52 @@ describe('Cephalopod Lab Quiz', () => {
     expect(c.querySelector('svg[role="img"][aria-label^="Score "]')).not.toBeNull();
   });
 });
+
+// ── Evasion Sim strike lane ──
+function renderEvasion(data = {}) {
+  const container = document.createElement('div');
+  container.innerHTML = renderTool('cephalopodLab', {
+    cephalopodLab: { activeSection: 'evasion', evasionPhase: 'execute', evasionSpeciesId: 'commonOcto', evasionPredatorId: 'reef-shark', evasionTacticId: 'ink-flee', ...data },
+  });
+  return container;
+}
+
+describe('Cephalopod Lab Evasion Sim strike lane', () => {
+  it('is one focusable lane whose label narrates the phase: ready, waiting, strike, escaped', () => {
+    const lane = (c) => c.querySelector('button[aria-label^="Strike lane."]');
+    expect(lane(renderEvasion()).getAttribute('aria-label')).toMatch(/Press to begin/);
+    expect(lane(renderEvasion({ _evasionArmed: true })).getAttribute('aria-label')).toMatch(/wait for the lunge/);
+    expect(lane(renderEvasion({ _evasionArmed: true, _evasionShowGo: true })).getAttribute('aria-label')).toMatch(/STRIKE/);
+    const done = lane(renderEvasion({ evasionReactionMs: 180 }));
+    expect(done.getAttribute('aria-label')).toMatch(/Escaped/);
+    expect(done.hasAttribute('disabled')).toBe(true);
+  });
+
+  it('animates the predator approach only while armed, and the lunge only on GO', () => {
+    const idle = renderEvasion();
+    expect(idle.querySelector('.cl-ev-pred-approach')).toBeNull();
+    expect(idle.querySelector('.cl-ev-pred-lunge')).toBeNull();
+    const armed = renderEvasion({ _evasionArmed: true, _evasionApproachMs: 1234 });
+    const pred = armed.querySelector('.cl-ev-pred-approach');
+    expect(pred).not.toBeNull();
+    expect(pred.getAttribute('style')).toMatch(/--cl-ev-ms:\s*1234ms/);
+    const go = renderEvasion({ _evasionArmed: true, _evasionShowGo: true });
+    expect(go.querySelector('.cl-ev-pred-lunge')).not.toBeNull();
+    expect(go.querySelector('.cl-ev-flash')).not.toBeNull();
+    const css = go.querySelector('style').textContent;
+    expect(css).toMatch(/prefers-reduced-motion: reduce[^}]*animation: none/);
+  });
+
+  it('reports false starts and explains the cost; shows the reaction scale with reference bands after an escape', () => {
+    const fs2 = renderEvasion({ _evasionFalseStarts: 2 });
+    expect(fs2.textContent).toMatch(/2 false starts/);
+    expect(fs2.textContent).toMatch(/bolting early burns energy/);
+    const done = renderEvasion({ evasionReactionMs: 180 });
+    const scale = done.querySelector('[role="img"][aria-label^="Reaction scale"]');
+    expect(scale).not.toBeNull();
+    expect(scale.getAttribute('aria-label')).toMatch(/yours 180 ms/);
+    expect(done.textContent).toMatch(/cephalopod 25–150/);
+    expect(done.querySelector('.cl-ev-ink')).not.toBeNull();
+    expect(Array.from(done.querySelectorAll('button')).some((b) => /See result/.test(b.textContent))).toBe(true);
+  });
+});

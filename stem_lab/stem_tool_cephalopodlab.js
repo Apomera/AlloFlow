@@ -11049,7 +11049,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
 
         var renderer = new THREE.WebGLRenderer({ canvas: canvasEl, antialias: true });
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-        renderer.setSize(W, H);
+        // Third arg false: three.js would otherwise write width/height px into
+        // the canvas's inline style and freeze a width:100% canvas at its first
+        // measurement (fullscreen and window resize both stop working).
+        renderer.setSize(W, H, false);
 
         // ── Bloom post-processing (guarded, auto-fallback) — AlloFlow FX rollout ──
         // Dark underwater scene: low threshold so the bright bioluminescent parts
@@ -11082,6 +11085,54 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var sun = new THREE.DirectionalLight(0xb8e6f0, 0.85);
         sun.position.set(20, 40, 10);
         scene.add(sun);
+
+        // ─── Water column backdrop ───
+        // A flat clear colour reads as a wall. This inverted sphere paints a
+        // vertical gradient (bright toward the surface, dark toward the deep)
+        // and is re-tinted every frame from scene.background, so the existing
+        // day/night and depth-zone colour logic still drives the look.
+        var backdropMat = new THREE.ShaderMaterial({
+          side: THREE.BackSide, depthWrite: false, fog: false,
+          uniforms: { topColor: { value: new THREE.Color(0x1d6f96) }, bottomColor: { value: new THREE.Color(0x03101f) } },
+          vertexShader: 'varying float vY; void main(){ vY = normalize(position).y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }',
+          fragmentShader: 'uniform vec3 topColor; uniform vec3 bottomColor; varying float vY; void main(){ float t = smoothstep(-0.55, 0.85, vY); gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0); }'
+        });
+        var backdrop = new THREE.Mesh(new THREE.SphereGeometry(150, 24, 16), backdropMat);
+        backdrop.renderOrder = -10;
+        backdrop.frustumCulled = false;
+        scene.add(backdrop);
+
+        // Surface sheet: a faint bright plane at the top of the water column so
+        // "up" exists. Fog fades it with depth, exactly as it should.
+        var surfaceMat = new THREE.MeshBasicMaterial({ color: 0x9fdcff, transparent: true, opacity: 0.22, side: THREE.DoubleSide, depthWrite: false });
+        var surfaceSheet = new THREE.Mesh(new THREE.PlaneGeometry(400, 400, 1, 1), surfaceMat);
+        surfaceSheet.rotation.x = -Math.PI / 2;
+        surfaceSheet.position.y = 21;
+        surfaceSheet.visible = !((!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4));
+        scene.add(surfaceSheet);
+
+        // Sun shafts: tall additive planes hung from the surface around the
+        // player. They sway slowly (not under reduced motion), fade at night
+        // and with depth, and follow the octopus so the light never recedes.
+        var shaftReducedMotion = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        // Large transparent planes are overdraw; skip them on low-power devices
+        // (same rule the bloom pass uses) and under a software rasteriser.
+        var shaftLowPower = !window.__alloForceFX && (shaftReducedMotion || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+          (function() { try { var gl = renderer.getContext(); var dbg = gl.getExtension('WEBGL_debug_renderer_info'); var rn = dbg ? String(gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)) : ''; return /SwiftShader|llvmpipe|Software/i.test(rn); } catch (e) { return false; } })());
+        var shaftGroup = new THREE.Group();
+        var shafts = [];
+        for (var shI = 0; shI < (shaftLowPower ? 0 : 7); shI++) {
+          var shMat = new THREE.MeshBasicMaterial({ color: 0xcdefff, transparent: true, opacity: 0.06, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+          var shMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.8 + Math.random() * 2.2, 46, 1, 1), shMat);
+          var shAng = (shI / 9) * Math.PI * 2 + Math.random() * 0.5;
+          var shRad = 8 + Math.random() * 18;
+          shMesh.position.set(Math.cos(shAng) * shRad, 12, Math.sin(shAng) * shRad);
+          shMesh.rotation.y = Math.random() * Math.PI;
+          shMesh.rotation.z = (Math.random() - 0.5) * 0.35;
+          shaftGroup.add(shMesh);
+          shafts.push({ mesh: shMesh, phase: Math.random() * Math.PI * 2, baseZ: shMesh.rotation.z, baseOpacity: 0.045 + Math.random() * 0.04 });
+        }
+        scene.add(shaftGroup);
 
         // ─── Sandy seafloor with displacement ───
         // Floor follows the player each frame, so a 200×200 plane combined
@@ -11124,7 +11175,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var rz = (Math.random() - 0.5) * 110;
           if (Math.abs(rx) < 6 && Math.abs(rz) < 6) continue; // keep center clear
           var rs = 0.6 + Math.random() * 1.4;
-          var rockGeo = new THREE.SphereGeometry(rs, 8, 6);
+          var rockGeo = new THREE.IcosahedronGeometry(rs, 2);
           var rPos = rockGeo.attributes.position.array;
           for (var rj = 0; rj < rPos.length; rj += 3) {
             rPos[rj] += (Math.random() - 0.5) * 0.25;
@@ -11132,8 +11183,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             rPos[rj + 2] += (Math.random() - 0.5) * 0.25;
           }
           rockGeo.computeVertexNormals();
-          var rockTint = 0x504030 + Math.floor(Math.random() * 0x080808);
-          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint, roughness: 0.93 }));
+          var ROCK_TINTS = [0x55483a, 0x3f4d3d, 0x5c4f3f, 0x46524a, 0x4a3f36];
+          var rockTint = ROCK_TINTS[Math.floor(Math.random() * ROCK_TINTS.length)] + Math.floor(Math.random() * 0x060606);
+          var rockMesh = new THREE.Mesh(rockGeo, new THREE.MeshStandardMaterial({ color: rockTint, roughness: 0.9, flatShading: true }));
+          rockMesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+          rockMesh.scale.set(1, 0.7 + Math.random() * 0.5, 1);
           rockMesh.position.set(rx, rs * 0.35, rz);
           // Tag for the camouflage substrate-detector. Octopus skin will lerp
           // toward this color when stationary on/near this rock.
@@ -11174,7 +11228,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var gz = (Math.random() - 0.5) * 120;
           var gH = 0.6 + Math.random() * 1.3;
           var grassGeo = new THREE.PlaneGeometry(0.35, gH);
-          var grassMat = new THREE.MeshBasicMaterial({ color: 0x2a8c4a, side: THREE.DoubleSide, transparent: true, opacity: 0.78 });
+          // PlaneGeometry(1x1 segment) vertex order: top-left, top-right, bottom-left, bottom-right.
+          grassGeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array([
+            0.36, 0.86, 0.5,  0.36, 0.86, 0.5,  0.08, 0.36, 0.2,  0.08, 0.36, 0.2
+          ]), 3));
+          var grassMat = new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide, transparent: true, opacity: 0.82 });
           var gmesh = new THREE.Mesh(grassGeo, grassMat);
           gmesh.position.set(gx, gH / 2 + 0.05, gz);
           gmesh.rotation.y = Math.random() * Math.PI;
@@ -12698,7 +12756,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         }
         planktonGeo.setAttribute('position', new THREE.BufferAttribute(planktonPositions, 3));
         var planktonMat = new THREE.PointsMaterial({
-          color: 0xe6f3ff, size: 0.08, transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false,
+          color: 0xe6f3ff, size: 0.11, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false,
           sizeAttenuation: true,
         });
         var plankton = new THREE.Points(planktonGeo, planktonMat);
@@ -12885,6 +12943,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         hud.setAttribute('aria-live', 'polite');
         hud.setAttribute('aria-label', 'Hunter Sim status: health, stamina, hunger, camouflage, score');
         canvasEl.parentElement.appendChild(hud);
+        var vignette = document.createElement('div');
+        vignette.setAttribute('aria-hidden', 'true');
+        vignette.style.cssText = 'position:absolute;inset:0;pointer-events:none;z-index:1;border-radius:inherit;' +
+          'background:radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(2,10,28,0.42) 100%);' +
+          'box-shadow: inset 0 0 60px rgba(4,20,40,0.35);';
+        canvasEl.parentElement.appendChild(vignette);
 
         // ─── Captions overlay (a11y) ─────────────────────────
         // When captionMode is on, every audio cue we play is mirrored to
@@ -14019,6 +14083,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             caustics.position.x = octopus.position.x + Math.sin(now * 0.0003) * 4;
             caustics.position.z = octopus.position.z + Math.cos(now * 0.00025) * 4;
             caustics.material.opacity = (0.55 + Math.sin(now * 0.001) * 0.18) * dayMix;
+            // Backdrop rides on the camera; tints derive from the frame's
+            // background so zones and night still own the palette.
+            backdrop.position.copy(camera.position);
+            // Keep the column BLUE: the deep end drops toward navy, the top gains
+            // mostly blue/cyan so it never drifts pale green.
+            backdropMat.uniforms.bottomColor.value.setRGB(scene.background.r * 0.3, scene.background.g * 0.38, scene.background.b * 0.55);
+            backdropMat.uniforms.topColor.value.setRGB(
+              Math.min(1, scene.background.r * 0.9 + 0.01 * dayMix),
+              Math.min(1, scene.background.g * 1.05 + 0.09 * dayMix),
+              Math.min(1, scene.background.b * 1.15 + 0.22 * dayMix));
+            surfaceSheet.position.x = octopus.position.x;
+            surfaceSheet.position.z = octopus.position.z;
+            surfaceMat.opacity = 0.08 + 0.18 * dayMix;
+            shaftGroup.position.x = octopus.position.x;
+            shaftGroup.position.z = octopus.position.z;
+            var shaftDepthMix = Math.max(0, Math.min(1, (gameState.verticalY + 30) / 40));
+            for (var shU = 0; shU < shafts.length; shU++) {
+              var shf = shafts[shU];
+              if (!shaftReducedMotion) shf.mesh.rotation.z = shf.baseZ + Math.sin(now * 0.00035 + shf.phase) * 0.06;
+              shf.mesh.material.opacity = shf.baseOpacity * (0.7 + 0.3 * Math.sin(now * 0.0007 + shf.phase)) * dayMix * shaftDepthMix;
+            }
 
             // ─── Endless-ocean object recycling ──────────────────
             // Throttled to every 400ms (cheap enough on a per-frame budget
@@ -14940,14 +15025,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           var nH = canvasEl.clientHeight || 500;
           camera.aspect = nW / nH;
           camera.updateProjectionMatrix();
-          renderer.setSize(nW, nH);
+          renderer.setSize(nW, nH, false);
           try{ if(renderer._alloComposer){ renderer._alloComposer.setSize(nW, nH); } }catch(e){}
         }
         window.addEventListener('resize', onResize);
+        // The container can change size without a window resize (sidebar,
+        // fullscreen, orientation). Watch it directly.
+        var resizeObs = null;
+        try {
+          if (typeof ResizeObserver !== 'undefined' && canvasEl.parentElement) {
+            resizeObs = new ResizeObserver(function() { onResize(); });
+            resizeObs.observe(canvasEl.parentElement);
+          }
+        } catch (e) { resizeObs = null; }
 
         // ─── Cleanup ───
         canvasEl._clCleanup = function() {
           cancelAnimationFrame(animId);
+          try { if (resizeObs) resizeObs.disconnect(); } catch (e) {}
+          if (vignette.parentElement) vignette.parentElement.removeChild(vignette);
           canvasEl.removeEventListener('keydown', onKeyDown);
           canvasEl.removeEventListener('keyup', onKeyUp);
           canvasEl.removeEventListener('click', onClick);
@@ -15233,7 +15329,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               }))),
 
           h('div', { style: { display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' } },
-            h('button', { onClick: function() { if (canProceed) setCL({ evasionPhase: 'execute', evasionReactionMs: 0 }); },
+            h('button', { onClick: function() { if (canProceed) setCL({ _evasionArmed: false, _evasionShowGo: false, _evasionArmToken: null, evasionPhase: 'execute', evasionReactionMs: 0 }); },
               disabled: !canProceed,
               style: { padding: '12px 26px',
                 background: canProceed ? '#a78bfa' : 'rgba(100,116,139,0.3)',
@@ -15249,55 +15345,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       }
 
       function renderEvasionExecute() {
-        // Reaction-time minigame: press the button as fast as possible after the "GO" prompt.
-        // Faster reaction = better escape outcome.
+        // Reaction-time strike. Previously a colour-changing button with a
+        // DOCUMENT-wide click listener (any click anywhere counted, and an
+        // early click was never a false start). Now: an animated strike lane
+        // where the predator closes in over a random delay, lunges on GO, and
+        // the student escapes with click / Space / Enter on the lane itself.
+        var sp = SPECIES.find(function(x) { return x.id === d.evasionSpeciesId; }) || SPECIES[0];
+        var pred = PREDATORS.find(function(p) { return p.id === d.evasionPredatorId; }) || PREDATORS[0];
         var hasReacted = (d.evasionReactionMs || 0) > 0;
-        return h('div', null,
-          panelHeader('🛡️ Execute — reaction time matters',
-            'The predator is striking. Click the GO button below as fast as you can. Faster reaction = better escape. Real cephalopods react in 25-150 milliseconds depending on species.'),
+        var armed = !!d._evasionArmed;
+        var go = !!d._evasionShowGo;
+        var falseStarts = d._evasionFalseStarts || 0;
+        var approachMs = d._evasionApproachMs || 1600;
+        var reducedMotion = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var rt = d.evasionReactionMs || 0;
 
-          h('div', { style: Object.assign({}, cardStyle(), { textAlign: 'center', padding: 40 }) },
-            hasReacted ?
-              h('div', null,
-                h('div', { style: { fontSize: 12, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 } }, __alloT('stem.cephalopodlab.your_reaction_time', 'Your reaction time')),
-                h('div', { style: { fontSize: 48, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1, marginBottom: 8 } },
-                  d.evasionReactionMs + ' ms'),
-                h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 20 } },
-                  d.evasionReactionMs < 200 ? 'Lightning fast — cephalopod-grade reflexes.' :
-                  d.evasionReactionMs < 400 ? 'Quick. Above-average human reaction.' :
-                  d.evasionReactionMs < 700 ? 'Average reaction time.' :
-                  'Slow. Predator probably already had you.'),
-                h('button', { onClick: function() { runEvasionJudge(d.evasionReactionMs); },
-                  style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410',
-                    border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer' } },
-                  __alloT('stem.cephalopodlab.see_result', '→ See result')))
-              :
-              h('div', null,
-                h('div', { style: { fontSize: 64, marginBottom: 16 } }, '🚨'),
-                h('div', { style: { fontSize: 14, color: '#fca5a5', marginBottom: 18, lineHeight: 1.6 } },
-                  __alloT('stem.cephalopodlab.the_predator_strikes_click_as_fast_as_', 'The predator strikes. Click as fast as you can when ready.')),
-                h('button', {
-                  onClick: function() {
-                    // Start reaction-time clock. We'll show a "GO!" after random delay.
-                    var delayMs = 800 + Math.random() * 1500;
-                    var startedAt = Date.now() + delayMs;
-                    setCL({ _evasionGoAt: startedAt });
-                    setTimeout(function() {
-                      var rxStart = Date.now();
-                      function captureClick() {
-                        var rt = Date.now() - rxStart;
-                        setCL({ evasionReactionMs: rt });
-                        document.removeEventListener('click', captureClick);
-                      }
-                      document.addEventListener('click', captureClick);
-                      // Show GO via state
-                      setCL({ _evasionShowGo: true });
-                    }, delayMs);
-                  },
-                  style: { width: 200, padding: '24px', background: d._evasionShowGo ? '#15803d' : '#dc2626',
-                    color: 'white', border: 'none', borderRadius: 12, fontSize: 24, fontWeight: 900, cursor: 'pointer',
-                    boxShadow: '0 6px 18px rgba(220,38,38,0.4)' } },
-                  d._evasionShowGo ? '✓ CLICK NOW!' : '⏳ Wait for GO...')))
+        var styleBlock = h('style', null,
+          '@keyframes clEvApproach { from { left: 2%; } to { left: 62%; } }' +
+          '@keyframes clEvLunge { from { left: 62%; transform: scale(1); } to { left: 79%; transform: scale(1.3); } }' +
+          '@keyframes clEvFlash { 0% { opacity: 0.55; } 100% { opacity: 0; } }' +
+          '@keyframes clEvFlee { from { transform: translate(0, 0) rotate(0deg) scale(1); } to { transform: translate(28px, -92px) rotate(-18deg) scale(0.55); } }' +
+          '@keyframes clEvInk { from { transform: scale(0.2); opacity: 0.9; } to { transform: scale(2.2); opacity: 0; } }' +
+          '.cl-ev-pred-approach { animation: clEvApproach var(--cl-ev-ms) linear forwards; }' +
+          '.cl-ev-pred-lunge { animation: clEvLunge 180ms ease-in forwards; }' +
+          '.cl-ev-flash { animation: clEvFlash 420ms ease-out forwards; }' +
+          '.cl-ev-flee { animation: clEvFlee 260ms ease-out forwards; }' +
+          '.cl-ev-ink { animation: clEvInk 700ms ease-out forwards; }' +
+          '@media (prefers-reduced-motion: reduce) { .cl-ev-pred-approach, .cl-ev-pred-lunge, .cl-ev-flee, .cl-ev-ink { animation: none !important; } .cl-ev-flash { animation-duration: 1ms; } }'
+        );
+
+        function arm() {
+          var delay = 900 + Math.floor(Math.random() * 1600);
+          var token = Date.now() + ':' + Math.floor(Math.random() * 1e6);
+          setCL({ _evasionArmed: true, _evasionShowGo: false, _evasionApproachMs: delay, _evasionArmToken: token, _evasionGoRealAt: 0 });
+          clAnnounce(pred.name + ' approaching. Escape the instant it lunges.');
+          setTimeout(function() {
+            setCL(function(prior) {
+              if (prior._evasionArmToken !== token || !prior._evasionArmed) return {};
+              return { _evasionShowGo: true, _evasionGoRealAt: Date.now() };
+            });
+            clAnnounce('Strike! Escape now.');
+          }, delay);
+        }
+        function react() {
+          if (hasReacted) return;
+          if (!armed) { arm(); return; }
+          if (!go) {
+            // False start: bolting before the strike.
+            setCL({ _evasionArmed: false, _evasionShowGo: false, _evasionFalseStarts: falseStarts + 1, _evasionArmToken: null });
+            clAnnounce('Too early. That was a false start.');
+            return;
+          }
+          var ms = Math.max(1, Date.now() - (d._evasionGoRealAt || Date.now()));
+          setCL({ evasionReactionMs: ms, _evasionArmed: false });
+          clAnnounce('Escaped in ' + ms + ' milliseconds.');
+          awardXP(ms < 400 ? 3 : 1);
+        }
+
+        // Reference bands for the readout: species text says 25-150 ms; typical
+        // human visual reaction is on the order of a quarter second.
+        var CEPH_LO = 25, CEPH_HI = 150, HUMAN_TYP = 250, SCALE_MAX = 800;
+        var pct = function(v) { return Math.max(0, Math.min(100, v / SCALE_MAX * 100)); };
+        var verdictText = rt < 200 ? __alloT('stem.cephalopodlab.ev_rt_lightning', 'Lightning fast — cephalopod-grade reflexes.') :
+                          rt < 400 ? __alloT('stem.cephalopodlab.ev_rt_quick', 'Quick. Above-average human reaction.') :
+                          rt < 700 ? __alloT('stem.cephalopodlab.ev_rt_average', 'Average reaction time.') :
+                                     __alloT('stem.cephalopodlab.ev_rt_slow', 'Slow. Predator probably already had you.');
+        var stateLabel = hasReacted ? __alloT('stem.cephalopodlab.ev_state_escaped', 'Escaped') :
+                         go ? __alloT('stem.cephalopodlab.ev_state_strike', 'STRIKE! Escape now') :
+                         armed ? __alloT('stem.cephalopodlab.ev_state_wait', 'Hold… wait for the lunge') :
+                                 __alloT('stem.cephalopodlab.ev_state_ready', 'Press to begin. Then press again the instant the predator lunges.');
+
+        // ── Strike lane ──
+        var lane = h('button', { type: 'button', onClick: react, disabled: hasReacted,
+            'aria-label': __alloT('stem.cephalopodlab.ev_lane_label', 'Strike lane. ') + stateLabel,
+            style: { position: 'relative', display: 'block', width: '100%', height: 220, padding: 0, overflow: 'hidden', borderRadius: 14, cursor: hasReacted ? 'default' : 'pointer', fontFamily: 'inherit',
+              border: '2px solid ' + (go ? '#f87171' : armed ? '#fbbf24' : 'rgba(167,139,250,0.5)'),
+              background: 'linear-gradient(180deg, #0b3a5e 0%, #072a45 55%, #0a2036 100%)',
+              boxShadow: go ? '0 0 0 4px rgba(248,113,113,0.35)' : 'none' } },
+          // seabed
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 34, background: 'linear-gradient(180deg, rgba(201,160,106,0) 0%, rgba(201,160,106,0.55) 100%)' } }),
+          // light shafts
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', inset: 0, background: 'repeating-linear-gradient(100deg, rgba(190,235,255,0.06) 0 14px, rgba(190,235,255,0) 14px 46px)', pointerEvents: 'none' } }),
+          // predator
+          h('div', { 'aria-hidden': 'true',
+              className: go ? 'cl-ev-pred-lunge' : armed ? 'cl-ev-pred-approach' : '',
+              style: { position: 'absolute', left: hasReacted ? '79%' : '2%', top: 62, fontSize: 64, lineHeight: 1, filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))',
+                '--cl-ev-ms': approachMs + 'ms', transform: hasReacted ? 'scale(1.3)' : undefined, transition: 'none' } }, pred.emoji),
+          // octopus (flees on escape)
+          h('div', { 'aria-hidden': 'true', className: hasReacted ? 'cl-ev-flee' : '',
+              style: { position: 'absolute', right: 70, top: 78, fontSize: 52, lineHeight: 1, filter: 'drop-shadow(0 6px 10px rgba(0,0,0,0.5))' } }, sp.emoji),
+          hasReacted && h('div', { 'aria-hidden': 'true', className: 'cl-ev-ink',
+              style: { position: 'absolute', right: 86, top: 84, width: 70, height: 70, borderRadius: '50%', background: 'radial-gradient(circle, rgba(15,23,42,0.95), rgba(15,23,42,0))' } }),
+          go && !hasReacted && h('div', { 'aria-hidden': 'true', className: 'cl-ev-flash', style: { position: 'absolute', inset: 0, background: '#ef4444', pointerEvents: 'none' } }),
+          // state banner
+          h('div', { style: { position: 'absolute', left: 0, right: 0, top: 12, textAlign: 'center', fontSize: go ? 26 : 14, fontWeight: 900, letterSpacing: go ? '0.06em' : '0.02em',
+              color: go ? '#fecaca' : armed ? '#fde68a' : '#e0e7ff', textShadow: '0 2px 8px rgba(0,0,0,0.7)', pointerEvents: 'none', padding: '0 12px' } },
+            hasReacted ? '✓ ' + stateLabel + ' · ' + rt + ' ms' : go ? '⚡ ' + stateLabel : armed ? '👀 ' + stateLabel : '▶ ' + stateLabel),
+          h('div', { style: { position: 'absolute', left: 0, right: 0, bottom: 8, textAlign: 'center', fontSize: 10.5, color: '#bae6fd', pointerEvents: 'none' } },
+            __alloT('stem.cephalopodlab.ev_lane_keys', 'Click, or press Space / Enter while the lane is focused.')));
+
+        // ── Reaction readout with reference bands ──
+        var readout = hasReacted && h('div', { style: { marginTop: 14 } },
+          h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap', marginBottom: 6 } },
+            h('div', { style: { fontSize: 42, fontWeight: 900, color: '#fde68a', fontFamily: 'ui-monospace, Menlo, monospace', lineHeight: 1 } }, rt + ' ms'),
+            h('div', { style: { fontSize: 13, color: '#e2e8f0' } }, verdictText)),
+          h('div', { role: 'img', 'aria-label': __alloT('stem.cephalopodlab.ev_scale_label', 'Reaction scale: cephalopod strike response about 25 to 150 milliseconds, typical human about 250 milliseconds, yours ') + rt + ' ms',
+              style: { position: 'relative', height: 26, borderRadius: 6, background: 'rgba(148,163,184,0.18)', overflow: 'hidden', marginTop: 8 } },
+            h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: pct(CEPH_LO) + '%', width: (pct(CEPH_HI) - pct(CEPH_LO)) + '%', background: 'rgba(52,211,153,0.35)' } }),
+            h('div', { style: { position: 'absolute', top: 0, bottom: 0, left: pct(HUMAN_TYP) + '%', width: 2, background: '#94a3b8' } }),
+            h('div', { style: { position: 'absolute', top: 3, bottom: 3, left: 'calc(' + pct(rt) + '% - 6px)', width: 12, borderRadius: 3, background: rt <= CEPH_HI ? '#34d399' : rt < 400 ? '#fbbf24' : '#fb7185', boxShadow: '0 0 0 2px rgba(15,23,42,0.8)' } })),
+          h('div', { 'aria-hidden': 'true', style: { display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#cbd5e1', marginTop: 4 } },
+            h('span', null, '0 ms'),
+            h('span', { style: { color: '#a7f3d0' } }, __alloT('stem.cephalopodlab.ev_band_ceph', 'cephalopod 25–150')),
+            h('span', null, __alloT('stem.cephalopodlab.ev_band_human', 'human ≈ 250')),
+            h('span', null, SCALE_MAX + ' ms')),
+          h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 } },
+            h('button', { type: 'button', onClick: function() { runEvasionJudge(rt); },
+              style: { padding: '12px 26px', background: '#a78bfa', color: '#1c1410', border: 'none', borderRadius: 8, fontSize: 14, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } },
+              __alloT('stem.cephalopodlab.see_result', '→ See result')),
+            h('button', { type: 'button', onClick: function() { setCL({ evasionReactionMs: 0, _evasionArmed: false, _evasionShowGo: false, _evasionArmToken: null }); },
+              style: { padding: '12px 18px', background: 'transparent', color: '#c7d2fe', border: '1px solid rgba(167,139,250,0.5)', borderRadius: 8, fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } },
+              __alloT('stem.cephalopodlab.ev_try_again', '↻ Try again'))));
+
+        return h('div', null,
+          styleBlock,
+          panelHeader('🛡️ Execute — reaction time matters',
+            __alloT('stem.cephalopodlab.ev_execute_intro', 'Press the lane to start the encounter. The predator closes in, then lunges: press again the instant it does. Faster reaction = better escape. Real cephalopods react in 25-150 milliseconds depending on species.')),
+          h('div', { style: cardStyle() },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 10 } },
+              h('div', { style: { fontSize: 12, color: '#e2e8f0' } },
+                h('span', { 'aria-hidden': 'true' }, pred.emoji + ' '), h('b', null, pred.name), ' vs ', h('span', { 'aria-hidden': 'true' }, sp.emoji + ' '), h('b', null, sp.name)),
+              h('div', { role: 'status', style: { fontSize: 11, color: falseStarts ? '#fca5a5' : '#cbd5e1' } },
+                falseStarts ? falseStarts + ' ' + __alloT('stem.cephalopodlab.ev_false_starts', 'false start') + (falseStarts === 1 ? '' : 's') + ' · ' + __alloT('stem.cephalopodlab.ev_false_start_why', 'bolting early burns energy and gives away your position') : '')),
+            lane,
+            readout)
         );
       }
 
