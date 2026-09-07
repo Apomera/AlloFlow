@@ -16448,6 +16448,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     hour < 18 ? { name: __alloT('stem.cephalopodlab.late_day_population_maxing', 'Late Day — Population Maxing'), color: '#a78bfa', detail: __alloT('stem.cephalopodlab.by_late_afternoon_the_bacterial_popula', 'By late afternoon, the bacterial population has fully recovered to ~10^9 cells in the light organ. The squid is ready to emerge for nighttime feeding.') } :
                     hour < 22 ? { name: __alloT('stem.cephalopodlab.night_counter_illumination_active', 'Night — Counter-Illumination Active'), color: '#86efac', detail: __alloT('stem.cephalopodlab.the_squid_emerges_to_hunt_bacterial_bi', 'The squid emerges to hunt. Bacterial bioluminescence pours from the ventral light organ at ~moonlight brightness — matching downwelling moonlight to erase its silhouette from predators below.') } :
                                 { name: __alloT('stem.cephalopodlab.pre_dawn_returning_to_substrate', 'Pre-Dawn — Returning to Substrate'), color: '#fb923c', detail: __alloT('stem.cephalopodlab.the_squid_returns_to_its_sandy_hideout', 'The squid returns to its sandy hideout as light begins to creep across the eastern sky. The cycle prepares to reset at dawn.') };
+        // ── Symbiosis cycle model ──────────────────────────────────────
+        // Read straight off the five phases above, so the curve says exactly
+        // what the phase cards say and nothing more:
+        //   0-6   expulsion + reset  -> ~95% expelled, ~5% left
+        //   6-12  hidden, repopulating from that 5%
+        //   12-18 population back to full (~10^9 cells)
+        //   18-22 out hunting, ventral light organ at ~moonlight
+        //   22-24 returning to the sand, cycle about to reset
+        // It is a schematic of a described sequence, not plotted measurements,
+        // and the caption says so.
+        function symbiosisPopAt(hr) {
+          if (hr < 6) return 100 - (hr / 6) * 95;      // 100 -> 5
+          if (hr < 12) return 5 + ((hr - 6) / 6) * 65;  // 5 -> 70
+          if (hr < 18) return 70 + ((hr - 12) / 6) * 30; // 70 -> 100
+          return 100;
+        }
+        function symbiosisGlowAt(hr) {
+          if (hr >= 18 && hr < 22) return 100;                 // counter-illumination active
+          if (hr >= 22) return 100 - ((hr - 22) / 2) * 100;    // fading as it returns
+          return 0;
+        }
+        var symPop = symbiosisPopAt(hour);
+        var symGlow = symbiosisGlowAt(hour);
+        var symPhases = [
+          { from: 0, to: 6, color: '#fbbf24', label: __alloT('stem.cephalopodlab.sym_band_expulsion', 'expulsion') },
+          { from: 6, to: 12, color: '#38bdf8', label: __alloT('stem.cephalopodlab.sym_band_regrow', 'regrowth') },
+          { from: 12, to: 18, color: '#a78bfa', label: __alloT('stem.cephalopodlab.sym_band_full', 'full') },
+          { from: 18, to: 22, color: '#86efac', label: __alloT('stem.cephalopodlab.sym_band_glow', 'glowing') },
+          { from: 22, to: 24, color: '#fb923c', label: __alloT('stem.cephalopodlab.sym_band_return', 'return') }
+        ];
+
         return h('div', null,
           panelHeader('✨ Bioluminescence Lab',
             'Cephalopods produce their own light. About 90% of deep-sea cephalopods are bioluminescent — vampire squid + firefly squid + glowing octopuses + the Hawaiian bobtail with its symbiotic bacterial partner. This module covers the chemistry, the photophore types, the bacterial symbiosis model, and an interactive counter-illumination simulator.'),
@@ -16600,6 +16631,78 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_24_hour_cycle', '🕐 The 24-hour cycle')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 12 } },
                 __alloT('stem.cephalopodlab.drag_the_slider_to_advance_through_one', 'Drag the slider to advance through one full day. The bacterial population cycles dramatically — expelled at dawn, repopulated by dusk.')),
+              (function() {
+                // Left: the squid + its light organ at this hour. Right: the
+                // whole day as a curve, so one hour reads in context.
+                var W = 640, H = 250, plotL = 250, plotR = 620, plotT = 40, plotB = 176;
+                var xAt = function(hr) { return plotL + (hr / 24) * (plotR - plotL); };
+                var yAt = function(v) { return plotB - (v / 100) * (plotB - plotT); };
+                var popPts = [], glowPts = [];
+                for (var q = 0; q <= 48; q++) {
+                  var hq = q / 2;
+                  popPts.push(xAt(hq).toFixed(1) + ',' + yAt(symbiosisPopAt(hq)).toFixed(1));
+                  glowPts.push(xAt(hq).toFixed(1) + ',' + yAt(symbiosisGlowAt(hq)).toFixed(1));
+                }
+                var isGlowing = symGlow > 0;
+                var summary = __alloT('stem.cephalopodlab.sym_chart_summary_a', 'Bacterial symbiosis over one day. At ') + String(Math.floor(hour)).padStart(2, '0') + ':00 — ' + phase.name + '. ' +
+                  __alloT('stem.cephalopodlab.sym_chart_summary_b', 'Light-organ population about ') + Math.round(symPop) + __alloT('stem.cephalopodlab.sym_chart_summary_c', ' percent of full, ventral glow ') + Math.round(symGlow) + __alloT('stem.cephalopodlab.sym_chart_summary_d', ' percent.');
+                // Bacteria dots: how many are drawn tracks the population.
+                var dotCount = Math.max(1, Math.round(symPop / 100 * 34));
+                var dots = [];
+                for (var b = 0; b < dotCount; b++) {
+                  var ang = b * 2.399963, rad = 4 + Math.sqrt(b / 34) * 27;
+                  dots.push(h('circle', { key: 'b' + b, cx: 118 + Math.cos(ang) * rad, cy: 104 + Math.sin(ang) * rad * 0.7, r: 2.6, fill: isGlowing ? '#dcfce7' : '#86efac', opacity: isGlowing ? 0.95 : 0.75 }));
+                }
+                return h('div', { style: { background: 'linear-gradient(180deg, #071e33 0%, #050f1e 100%)', borderRadius: 12, border: '1px solid rgba(56,189,248,0.28)', overflow: 'hidden', marginBottom: 14 } },
+                  h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': summary, style: { display: 'block' } },
+                    h('defs', null,
+                      h('radialGradient', { id: 'clSymGlow', cx: '50%', cy: '50%', r: '50%' },
+                        h('stop', { offset: '0%', stopColor: '#dcfce7', stopOpacity: 0.95 }),
+                        h('stop', { offset: '100%', stopColor: '#86efac', stopOpacity: 0 })),
+                      h('linearGradient', { id: 'clSymPopFill', x1: 0, y1: 0, x2: 0, y2: 1 },
+                        h('stop', { offset: '0%', stopColor: '#86efac', stopOpacity: 0.45 }),
+                        h('stop', { offset: '100%', stopColor: '#86efac', stopOpacity: 0.04 }))),
+                    // ── left panel: the animal ──
+                    h('text', { x: 20, y: 24, fontSize: 11, fontWeight: 800, fill: '#bae6fd' }, __alloT('stem.cephalopodlab.sym_organ_title', 'Light organ now')),
+                    isGlowing ? h('ellipse', { cx: 118, cy: 132, rx: 96, ry: 52, fill: 'url(#clSymGlow)', opacity: (symGlow / 100) * 0.85 }) : null,
+                    // mantle + fins + head
+                    h('ellipse', { cx: 118, cy: 100, rx: 46, ry: 32, fill: '#7c5c8f', stroke: 'rgba(226,232,240,0.35)', strokeWidth: 1.5 }),
+                    h('ellipse', { cx: 74, cy: 96, rx: 14, ry: 18, fill: '#8b6a9e', opacity: 0.9 }),
+                    h('ellipse', { cx: 162, cy: 96, rx: 14, ry: 18, fill: '#8b6a9e', opacity: 0.9 }),
+                    h('circle', { cx: 100, cy: 92, r: 7, fill: '#fef3c7' }),
+                    h('circle', { cx: 100, cy: 92, r: 3, fill: '#1e1b4b' }),
+                    [0, 1, 2, 3].map(function(i) { return h('path', { key: 'a' + i, d: 'M' + (98 + i * 13) + ' 128 q ' + (i % 2 ? 6 : -6) + ' 18 ' + (i % 2 ? 2 : -2) + ' 30', stroke: '#7c5c8f', strokeWidth: 5, fill: 'none', strokeLinecap: 'round' }); }),
+                    // sand drawn IN FRONT of the arms so "buried" actually reads;
+                    // the light organ stays visible because it is the subject here
+                    hour >= 6 && hour < 18 ? h('rect', { x: 14, y: 126, width: 210, height: 60, rx: 6, fill: 'rgba(201,160,106,0.55)' }) : null,
+                    // the light organ itself, with its bacteria
+                    h('ellipse', { cx: 118, cy: 104, rx: 34, ry: 24, fill: 'rgba(15,23,42,0.55)', stroke: 'rgba(134,239,172,0.6)', strokeWidth: 1.5 }),
+                    dots,
+                    h('text', { x: 118, y: 196, textAnchor: 'middle', fontSize: 11, fontWeight: 800, fill: '#86efac', fontFamily: 'ui-monospace, Menlo, monospace' }, Math.round(symPop) + '% ' + __alloT('stem.cephalopodlab.sym_of_full', 'of full')),
+                    h('text', { x: 118, y: 212, textAnchor: 'middle', fontSize: 10, fill: '#cbd5e1' }, isGlowing ? __alloT('stem.cephalopodlab.sym_state_glowing', 'glowing · counter-illumination') : hour < 6 ? __alloT('stem.cephalopodlab.sym_state_expelling', 'expelling through the siphon') : __alloT('stem.cephalopodlab.sym_state_buried', 'buried in sand, repopulating')),
+                    // ── right panel: the day ──
+                    symPhases.map(function(P) {
+                      return h('rect', { key: 'ph' + P.from, x: xAt(P.from), y: plotT - 14, width: xAt(P.to) - xAt(P.from), height: (plotB - plotT) + 14, fill: P.color, opacity: hour >= P.from && hour < P.to ? 0.16 : 0.06 });
+                    }),
+                    h('line', { x1: plotL, y1: plotB, x2: plotR, y2: plotB, stroke: 'rgba(148,163,184,0.45)', strokeWidth: 1 }),
+                    h('polygon', { points: popPts.join(' ') + ' ' + plotR + ',' + plotB + ' ' + plotL + ',' + plotB, fill: 'url(#clSymPopFill)' }),
+                    h('polyline', { points: popPts.join(' '), fill: 'none', stroke: '#86efac', strokeWidth: 2 }),
+                    h('polyline', { points: glowPts.join(' '), fill: 'none', stroke: '#fde68a', strokeWidth: 2, strokeDasharray: '4 3' }),
+                    // current hour
+                    h('line', { x1: xAt(hour), y1: plotT - 14, x2: xAt(hour), y2: plotB, stroke: '#f1f5f9', strokeWidth: 1.5 }),
+                    h('circle', { cx: xAt(hour), cy: yAt(symPop), r: 5, fill: '#86efac', stroke: '#052e16', strokeWidth: 1.5 }),
+                    // direct labels instead of a legend box
+                    h('text', { x: plotL + 6, y: plotT - 20, fontSize: 10.5, fontWeight: 800, fill: '#86efac' }, __alloT('stem.cephalopodlab.sym_series_pop', 'bacterial population')),
+                    h('text', { x: plotR, y: plotT - 20, textAnchor: 'end', fontSize: 10.5, fontWeight: 800, fill: '#fde68a' }, __alloT('stem.cephalopodlab.sym_series_glow', 'ventral glow')),
+                    symPhases.map(function(P) {
+                      return h('text', { key: 'pl' + P.from, x: (xAt(P.from) + xAt(P.to)) / 2, y: plotB + 14, textAnchor: 'middle', fontSize: 8.5, fill: hour >= P.from && hour < P.to ? P.color : '#94a3b8', fontWeight: hour >= P.from && hour < P.to ? 800 : 600 }, P.label);
+                    }),
+                    [0, 6, 12, 18, 24].map(function(t) {
+                      return h('text', { key: 't' + t, x: xAt(t), y: plotB + 28, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' }, (t === 24 ? '24' : String(t).padStart(2, '0')) + ':00');
+                    }),
+                    h('text', { x: plotL, y: H - 8, fontSize: 9, fill: '#94a3b8' }, __alloT('stem.cephalopodlab.sym_chart_caption', 'Schematic of the phases described below, not plotted measurements.')))
+                );
+              })(),
               h('label', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 6, fontWeight: 700 } },
                 h('span', null, __alloT('stem.cephalopodlab.time_of_day', 'Time of day')),
                 h('span', { style: { color: phase.color, fontFamily: 'ui-monospace, Menlo, monospace' } },

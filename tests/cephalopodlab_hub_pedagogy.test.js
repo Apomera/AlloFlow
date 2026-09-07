@@ -416,3 +416,37 @@ describe('Cephalopod Lab Skin Anatomy', () => {
     expect(presets.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
   });
 });
+
+// ── Bioluminescence Lab: the 24-hour symbiosis cycle ──
+describe('Cephalopod Lab bacterial symbiosis cycle', () => {
+  const renderSym = (hour) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'biolux', bioluxView: 'symbiosis', bioluxSymbiosisHour: hour } });
+    return c;
+  };
+  const chart = (c) => c.querySelector('svg[aria-label^="Bacterial symbiosis over one day"]');
+
+  it('tracks the stated phase sequence: near-empty after the dawn expulsion, refilled by late day', () => {
+    // the phase cards say ~95% is expelled by dawn and the 5% left regrows to full
+    expect(chart(renderSym(0)).getAttribute('aria-label')).toMatch(/population about 100 percent/);
+    expect(chart(renderSym(6)).getAttribute('aria-label')).toMatch(/population about 5 percent/);
+    expect(chart(renderSym(18)).getAttribute('aria-label')).toMatch(/population about 100 percent/);
+    expect(renderSym(6).textContent).toMatch(/5% of full/);
+  });
+
+  it('turns the ventral glow on only for the counter-illumination window', () => {
+    expect(chart(renderSym(8)).getAttribute('aria-label')).toMatch(/ventral glow 0 percent/);
+    expect(chart(renderSym(20)).getAttribute('aria-label')).toMatch(/ventral glow 100 percent/);
+    expect(renderSym(20).textContent).toMatch(/glowing · counter-illumination/);
+    expect(renderSym(8).textContent).toMatch(/buried in sand, repopulating/);
+  });
+
+  it('names the phase in the chart summary and labels the series directly rather than by colour alone', () => {
+    const c = renderSym(20);
+    expect(chart(c).getAttribute('aria-label')).toMatch(/Night — Counter-Illumination Active/);
+    expect(c.textContent).toMatch(/bacterial population/);
+    expect(c.textContent).toMatch(/ventral glow/);
+    // and it is honest about what the curve is
+    expect(c.textContent).toMatch(/Schematic of the phases described below, not plotted measurements/);
+  });
+});
