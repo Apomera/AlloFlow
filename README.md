@@ -27,7 +27,7 @@ AlloFlow is an **open-source, privacy-first AI classroom assistant and instructi
 
 **Search identity:** AlloFlow is a free open-source AI classroom assistant for differentiated instruction, UDL, accessibility, AAC communication, STEM/SEL tools, RTI, and local-first school deployments.
 
-**Current inventory (verified August 31, 2026):** the repository registry check reports 147 STEM tool registrations and 71 SEL tool registrations; the STEM directory contains 147 plugin files. The broader July 3 codebase review remains the dated source for architecture and size estimates. AlloFlow Desktop is the everyday local-first path, while the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
+**Current inventory (verified September 7, 2026):** the repository registry check reports 148 STEM tool registrations and 72 SEL tool registrations; the STEM directory contains 148 plugin files. The broader July 3 codebase review remains the dated source for architecture and size estimates. AlloFlow Desktop is the everyday local-first path, while the Docker School Box stack is optional server/appliance infrastructure. See [docs/codebase_review_2026-07-03.md](./docs/codebase_review_2026-07-03.md), [docs/code_size_inventory_2026-07-03.csv](./docs/code_size_inventory_2026-07-03.csv), [docs/competitive_positioning_review_2026-07-03.md](./docs/competitive_positioning_review_2026-07-03.md), and [desktop/README.md](./desktop/README.md).
 
 🔗 **[Launch AlloFlow](https://apomera.github.io/AlloFlow/launch.html)**
 
@@ -124,9 +124,9 @@ An agent can author the same portable resource-pack structure without opening th
 
 ---
 
-## STEM Lab (147 Plugin Files / 147 Registered Tool IDs)
+## STEM Lab (148 Plugin Files / 148 Registered Tool IDs)
 
-The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As verified by `node dev-tools/check_tool_registry.cjs` on August 31, 2026, the workspace contains **147 `stem_tool_*.js` files** and **147 registered STEM tool IDs**.
+The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. As verified by `node dev-tools/check_tool_registry.cjs` on September 7, 2026, the workspace contains **148 `stem_tool_*.js` files** and **148 registered STEM tool IDs**.
 
 | Domain | Tools |
 |--------|-------|
@@ -144,9 +144,9 @@ Each tool supports **Generate Drill** for instant related practice sets and save
 
 ---
 
-## 💚 SEL Hub (71 Interactive Tools)
+## 💚 SEL Hub (72 Interactive Tools)
 
-The SEL Hub provides **71 social-emotional learning tools** aligned with CASEL's core competencies and expanded AlloFlow categories such as self-direction, inner work, care of self, and stewardship:
+The SEL Hub provides **72 social-emotional learning tools** aligned with CASEL's core competencies and expanded AlloFlow categories such as self-direction, inner work, care of self, and stewardship:
 
 | Competency | Tools |
 |------------|-------|
@@ -244,7 +244,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 | UDL Principle | AlloFlow Tools |
 |---------------|----------------|
 | **Engagement** | Adventure Mode, Boss Battle, Escape Room, Democracy Mode, Symbol Quest, Symbol Search, StoryForge, Growth Mindset Workshop, Gamification Engine |
-| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (147 plugin files / 147 registered IDs), SEL Hub (71 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
+| **Representation** | Leveled Text, Bilingual Views, Glossary with Icons, STEM Lab (148 plugin files / 148 registered IDs), SEL Hub (72 tools), TTS (40+ languages), Color Overlays, Bionic Reading, Symbol Studio AAC boards |
 | **Action & Expression** | Writing Scaffolds, StoryForge, Auto-Grader, Rubrics, Oral Fluency Coach, Dictation, QTI Export, Symbol Studio, Report Writer, PDF Pipeline |
 
 ---
@@ -271,7 +271,7 @@ Every feature maps to [CAST's UDL Guidelines](https://udlguidelines.cast.org/):
 
 ## 🔧 For Developers
 
-AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads a large set of modules and plugin families on demand: STEM Lab (147 plugin files / 147 registered IDs), SEL Hub (71 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), AlloStudio, Open Groove Studio, Professional Development, Doc Pipeline, Games, AI Backend, and more. Modules are served from the selected deployment's static asset host; `build.js` handles URL resolution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
+AlloFlow uses a **Hub-and-Spoke architecture** — a single orchestrator component (`App.jsx` / `AlloFlowANTI.txt`, ~31K lines in the current deploy copy) dynamically loads a large set of modules and plugin families on demand: STEM Lab (148 plugin files / 148 registered IDs), SEL Hub (72 tools), BehaviorLens, Report Writer, Symbol Studio, Word Sounds, Student Analytics, StoryForge, Cinematic Studio (doc→video), AlloStudio, Open Groove Studio, Professional Development, Doc Pipeline, Games, AI Backend, and more. Modules are served from the selected deployment's static asset host; `build.js` handles URL resolution. See [CONTRIBUTING.md](./CONTRIBUTING.md) for architecture rules and [architecture.md](./architecture.md) for a full technical overview.
 
 ```bash
 # Cloud deployment (Firebase)

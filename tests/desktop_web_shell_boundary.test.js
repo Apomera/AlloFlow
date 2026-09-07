@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
 
 const root = path.resolve(import.meta.dirname, '..');
@@ -11,6 +12,13 @@ describe('desktop web shell boundary', () => {
     'desktop/web-app/src/AlloFlowANTI.txt',
     'desktop/web-app/src/App.jsx',
   ];
+
+  it('preserves the React mount and boot scripts when the marketing page changes', () => {
+    const document = new JSDOM(read('desktop/web-app/public/index.html')).window.document;
+    expect(document.getElementById('root')).not.toBeNull();
+    expect(document.querySelector('#alloflow-ai-backend-script')?.getAttribute('src')).toBe('./ai_backend_module.js');
+    expect(document.querySelector('script[src*="alloflow_desktop_bridge.js"]')).not.toBeNull();
+  });
 
   it('does not require VexFlow from the host compiler', () => {
     for (const sourcePath of appSources) {
