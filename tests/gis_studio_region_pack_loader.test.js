@@ -359,6 +359,37 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(host.textContent).toContain('4 of 4 mapped records shown.');
   });
 
+  it('brings a pack’s boundaries back when the tool reopens on that pack', { timeout: 30000 }, async () => {
+    // Adoption and the region selector both load a pack's polygons. Reopening
+    // the tool with that pack already active is a third path, and it did not,
+    // so a saved session came back with the places but no boundaries.
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Otago wards',
+      metrics: [{ id: 'residents', label: 'Residents' }],
+      records: [{ name: 'Dunedin', lat: -45.87, lon: 170.5, residents: 130000 }, { name: 'Oamaru', lat: -45.1, lon: 170.97, residents: 14000 }],
+      boundaries: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { name: 'Harbour ward', index: 4 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -46], [170.9, -46], [170.9, -45.2], [170.2, -45.2], [170.2, -46]]] } }]
+      }
+    });
+    mountGIS({ gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+    expect(await settle(() => host.textContent.includes('Harbour ward'))).toBe(true);
+    expect(host.textContent).toContain('Dunedin');
+    expect(host.textContent).toContain('GeoJSON choropleth');
+
+    // A pack without boundaries must not conjure a layer.
+    if (root) React.act(function () { root.unmount(); });
+    root = null;
+    const plain = tool.testing.serializeGISRegionPack({
+      label: 'Plain pack',
+      metrics: [{ id: 'residents', label: 'Residents' }],
+      records: [{ name: 'Dunedin', lat: -45.87, lon: 170.5, residents: 130000 }]
+    });
+    mountGIS({ gisBasemap: 'none', gisCustomRegionPacks: [plain], gisRegionPack: plain.id });
+    expect(await settle(() => host.textContent.includes('Plain pack'))).toBe(true);
+    expect(host.textContent).not.toContain('GeoJSON choropleth');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

@@ -4598,6 +4598,15 @@
 
 
 
+        var packBoundariesLoaded = React.useRef(false);
+        React.useEffect(function () {
+          if (packBoundariesLoaded.current || geoData || !activeRegionPack.boundaries) return;
+          packBoundariesLoaded.current = true;
+          try {
+            applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(activeRegionPack.boundaries)), { sourceFormat: 'geojson' }), activeRegionPack.label, {}, activeRegionPack.id);
+          } catch (boundaryProblem) { setGeoError(boundaryProblem.message); }
+        }, [activeRegionPack, geoData]);
+
         React.useEffect(function () {
           if (typeof ctx.canvasNarrate === 'function') {
             ctx.canvasNarrate('gis-studio', 'init', {
@@ -5731,7 +5740,7 @@
           announce(__alloT('stem.gisstudio.sr_playing_values_from_low_pitch_to_high_pitch', 'Playing values from low pitch to high pitch.'));
         }
 
-        var panel = { background: '#102536', border: '1px solid #28516a', borderRadius: 14, padding: 14 };
+        var panel = { background: '#102536', border: '1px solid #28516a', borderRadius: 14, padding: 14, boxSizing: 'border-box' };
         var control = { padding: '8px 9px', borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#f8fafc' };
         var primary = { padding: '9px 12px', border: 0, borderRadius: 9, background: '#0f766e', color: '#fff', fontWeight: 800, cursor: 'pointer' };
 
@@ -6505,7 +6514,7 @@
                   joinPreview.unmatchedGeo.length > 0 && h('p', null, 'GeoJSON only: ' + joinPreview.unmatchedGeo.join(', ')),
                   joinPreview.duplicates.length > 0 && h('p', null, 'Duplicate CSV keys: ' + joinPreview.duplicates.join(', '))),
                 h('button', { type: 'button', onClick: applyJoinData, disabled: !joinPreview.matched, style: Object.assign({}, primary, { marginTop: 10 }) }, '3. Apply join + map ' + joinValueKey))),
-            h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 12 } },
+            h('aside', { style: { padding: 12, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', borderRadius: 8, fontSize: 12, boxSizing: 'border-box' } },
               h('strong', null, 'Data ethics: '), 'Do not map student home addresses or sensitive locations. Aggregate, blur, or suppress identifiable points.'));
         }
 
