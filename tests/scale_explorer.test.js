@@ -224,3 +224,48 @@ describe('Scale Explorer strings in ui_strings.js (all four copies)', () => {
     expect(src).toMatch(/t\('stem\.scaleExplorer\.item_' \+ item\.id\.replace/);
   });
 });
+
+describe('Scale Explorer estimate-first loop', () => {
+  // Browsing alone does not build a feel for orders of magnitude. This is the
+  // house Predict → Explore → Explain shape applied to scale.
+  it('asks before it tells, and never scores the student', () => {
+    expect(src).toMatch(/function lockInEstimate\(\)/);
+    expect(src).toMatch(/revealed \? h\('p', \{ role: 'status'/);
+    // The reveal is gated on `revealed`, which only lockInEstimate sets.
+    expect(src).toMatch(/setRevealed\(true\);/);
+    // The three verdicts describe distance, they do not judge. Checking the
+    // verdict strings themselves rather than the whole file, which legitimately
+    // contains words like "points of light" in an image description.
+    const verdicts = [...src.matchAll(/S\('est_(spot|close|off)', '([^']*(?:\\'[^']*)*)'/g)].map((m) => m[2]);
+    expect(verdicts.length, 'all three verdict tiers').toBe(3);
+    for (const v of verdicts) expect(v, v).not.toMatch(/\b(wrong|incorrect|failed|bad)\b/i);
+  });
+
+  it('picks pairs that are worth guessing at', () => {
+    // Under two decades is a coin flip; over twenty is unguessable rather than
+    // instructive, and either way the student learns nothing from the reveal.
+    expect(src).toMatch(/if \(gap < 2 \|\| gap > 20\) continue;/);
+    expect(src).toMatch(/if \(a\.id === b\.id\) continue;/);
+  });
+
+  it('grades by distance in decades, and says the factor that distance means', () => {
+    expect(src).toMatch(/if \(off <= 0\.5\) return S\('est_spot'/);
+    expect(src).toMatch(/if \(off <= 1\.5\) return S\('est_close'/);
+    expect(src).toMatch(/est_off.*factor of \{factor\}/);
+  });
+
+  it('always gives the real number, whatever the student guessed', () => {
+    expect(src).toMatch(/function challengeReveal\(\)/);
+    expect(src).toMatch(/The gap is \{dec\} powers of ten/);
+  });
+
+  it('counts an estimate toward its own quest', () => {
+    expect(src).toMatch(/cur\.estimateCount = \(cur\.estimateCount \|\| 0\) \+ 1;/);
+    expect(src).toMatch(/id: 'scale_estimate'/);
+    expect(src).toMatch(/\(d\.estimateCount \|\| 0\) >= 1/);
+  });
+
+  it('lets the keyboard commit without reaching for the button', () => {
+    expect(src).toMatch(/if \(e\.key === 'Enter'\) \{ e\.preventDefault\(\); lockInEstimate\(\); \}/);
+  });
+});

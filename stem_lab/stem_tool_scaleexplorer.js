@@ -240,7 +240,9 @@
       { id: 'scale_compare', label: 'Compare the size of two things', icon: '⚖️',
         check: function (d) { return !!(d && (d.compareCount || 0) >= 1); } },
       { id: 'scale_read', label: 'Read about something you found', icon: '📖',
-        check: function (d) { return !!(d && (d.readCount || 0) >= 1); } }
+        check: function (d) { return !!(d && (d.readCount || 0) >= 1); } },
+      { id: 'scale_estimate', label: 'Estimate a gap before checking it', icon: '🎯',
+        check: function (d) { return !!(d && (d.estimateCount || 0) >= 1); } }
     ],
     render: function (ctx) {
       var React = ctx.React;
@@ -263,6 +265,9 @@
       var _cmpB = React.useState('rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
+      var _pair = React.useState({ big: 'earth', small: 'human' }); var pair = _pair[0], setPair = _pair[1];
+      var _guess = React.useState(''); var guess = _guess[0], setGuess = _guess[1];
+      var _revealed = React.useState(false); var revealed = _revealed[0], setRevealed = _revealed[1];
 
       var canvasRef = React.useRef(null);
       var wrapRef = React.useRef(null);
@@ -505,6 +510,57 @@
         var ratio = big.size / small.size;
         return { big: big, small: small, ratio: ratio, decades: log10(ratio) };
       }, [cmpA, cmpB]);
+      // ── Estimate first ──────────────────────────────────────────────────
+      // Every other tool in this lab makes the student commit to a guess before
+      // it shows an answer. Browsing alone does not build a feel for orders of
+      // magnitude; being wrong by six decades once does.
+      function pickPair() {
+        for (var tries = 0; tries < 60; tries++) {
+          var a = sorted[Math.floor(Math.random() * sorted.length)];
+          var b = sorted[Math.floor(Math.random() * sorted.length)];
+          if (a.id === b.id) continue;
+          var gap = Math.abs(log10(a.size) - log10(b.size));
+          // Under 2 decades is a coin flip; over 20 is unguessable rather than
+          // instructive.
+          if (gap < 2 || gap > 20) continue;
+          return a.size >= b.size ? { big: a.id, small: b.id } : { big: b.id, small: a.id };
+        }
+        return { big: 'earth', small: 'human' };
+      }
+      function newChallenge() {
+        setPair(pickPair());
+        setGuess('');
+        setRevealed(false);
+      }
+      function lockInEstimate() {
+        if (revealed) return;
+        var n = parseFloat(guess);
+        if (!isFinite(n)) return;
+        setRevealed(true);
+        updateSlice(function (cur) { cur.estimateCount = (cur.estimateCount || 0) + 1; });
+        say(estimateVerdict(n) + ' ' + challengeReveal());
+      }
+      var challenge = React.useMemo(function () {
+        var big = byId[pair.big], small = byId[pair.small];
+        if (!big || !small) return null;
+        return { big: big, small: small, decades: log10(big.size / small.size), ratio: big.size / small.size };
+      }, [pair]);
+      function estimateVerdict(n) {
+        if (!challenge) return '';
+        var off = Math.abs(n - challenge.decades);
+        // Never "wrong": say how close, then give the real number. Being two
+        // decades out is a hundredfold error and worth naming plainly.
+        if (off <= 0.5) return S('est_spot', 'Spot on.');
+        if (off <= 1.5) return S('est_close', 'Close — within a power of ten or so.');
+        return S('est_off', 'Not yet. You were {off} powers of ten out, which is a factor of {factor}.',
+          { off: round2(off), factor: timesPhrase(Math.pow(10, off)).replace(' times', '') });
+      }
+      function challengeReveal() {
+        if (!challenge) return '';
+        return S('est_reveal', 'The gap is {dec} powers of ten: {big} is about {times} bigger across than {small}.',
+          { dec: round2(challenge.decades), big: itemText(challenge.big, 'name'),
+            times: timesPhrase(challenge.ratio), small: lowerArticle(itemText(challenge.small, 'name')) });
+      }
       function runCompare() {
         if (!compare) return;
         updateSlice(function (cur) { cur.compareCount = (cur.compareCount || 0) + 1; });
@@ -587,6 +643,27 @@
                 focused.note ? h('p', { style: { margin: '6px 0 0', fontSize: '0.71875rem', color: P.dim, lineHeight: 1.45 } }, '⚖️ ' + itemText(focused, 'note')) : null,
                 speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : '')) ?
                   h('div', { style: { marginTop: 8 } }, speakBtn('focus', itemText(focused, 'describe') + (focused.note ? ' ' + itemText(focused, 'note') : ''))) : null)),
+
+            // Estimate first, then check: the house Predict → Explore → Explain
+            // shape. The reveal is never withheld and never scored.
+            challenge ? h('div', null,
+              h('h3', { style: { margin: '0 0 4px', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: P.dim } }, S('est_heading', 'Estimate first')),
+              h('div', { style: Object.assign({}, card, { display: 'flex', flexDirection: 'column', gap: 8 }) },
+                h('p', { style: { margin: 0 } },
+                  S('est_question', 'How many powers of ten bigger across is {big} than {small}?',
+                    { big: itemText(challenge.big, 'name'), small: lowerArticle(itemText(challenge.small, 'name')) })),
+                h('label', { style: { fontSize: '0.71875rem', color: P.dim } },
+                  S('est_label', 'Your estimate, in powers of ten'),
+                  h('input', { type: 'number', inputMode: 'decimal', step: '1', min: '0', max: '45', value: guess, disabled: revealed,
+                    onChange: function (e) { setGuess(e.target.value); },
+                    onKeyDown: function (e) { if (e.key === 'Enter') { e.preventDefault(); lockInEstimate(); } },
+                    style: Object.assign({}, sel, { width: '100%', marginTop: 2 }) })),
+                h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  !revealed ? h('button', { type: 'button', style: Object.assign({}, goBtn, guess === '' ? { opacity: 0.55, cursor: 'not-allowed' } : null), disabled: guess === '', onClick: lockInEstimate }, S('est_go', 'Lock in my estimate')) : null,
+                  revealed ? h('button', { type: 'button', style: btn, onClick: function () { setCmpA(challenge.small.id); setCmpB(challenge.big.id); flyTo(challenge.big); } }, S('est_show', 'Show me')) : null,
+                  h('button', { type: 'button', style: btn, onClick: newChallenge }, S('est_new', 'Another pair'))),
+                revealed ? h('p', { role: 'status', style: { margin: 0, fontWeight: 600 } },
+                  estimateVerdict(parseFloat(guess)) + ' ' + challengeReveal()) : null)) : null,
 
             // Compare
             h('div', null,
