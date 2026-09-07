@@ -334,6 +334,31 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(findLabeledControl('Minimum', 'input[type="number"]').value).toBe('');
   });
 
+  it('drops a spatial selection that pointed at the previous dataset', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+
+    // Map the prefilled practice boundaries, then select the sample points inside one.
+    await click(findButton('Review layer'));
+    expect(await settle(() => !!findButton('Map reviewed layer'))).toBe(true);
+    await click(findButton('Map reviewed layer'));
+    expect(await settle(() => !!findButton('Select points inside boundary'))).toBe(true);
+    await click(findButton('Select points inside boundary'));
+    expect(await settle(() => host.textContent.includes('Selected'))).toBe(true);
+    const selectedBefore = Array.from(host.querySelectorAll('td')).filter((cell) => cell.textContent.trim() === 'Selected').length;
+    expect(selectedBefore).toBeGreaterThan(0);
+
+    // Now map a four-row CSV. The selection was a list of row positions in the
+    // sixteen Maine counties, so carried over it would mark the wrong places.
+    await click(findButton('Import data'));
+    expect(await settle(() => !!findButton('Map this CSV'))).toBe(true);
+    await click(findButton('Map this CSV'));
+    expect(await settle(() => host.textContent.includes('School garden'))).toBe(true);
+
+    const selectedAfter = Array.from(host.querySelectorAll('td')).filter((cell) => cell.textContent.trim() === 'Selected').length;
+    expect(selectedAfter, 'the imported rows inherited a selection made on other data').toBe(0);
+    expect(host.textContent).toContain('4 of 4 mapped records shown.');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

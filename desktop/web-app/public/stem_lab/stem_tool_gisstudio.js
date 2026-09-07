@@ -5209,8 +5209,7 @@
               axisOrder: rows.axisOrder,
               columnMap: rows.columnMap
             });
-            mapViewState.current = null;
-            compareViewState.current = null;
+            resetDatasetDerivedState();
             timeViewState.current = null;
             setImportedRows(rows); setSource('import'); setError(''); setTab('map');
             persist('gisImported', true);
@@ -5632,16 +5631,8 @@
             persist('gisMetric', nextMetric);
           }
           setSource('sample');
-          mapViewState.current = null;
-          compareViewState.current = null;
-          setAnalysisPoints([]);
-          setAnalysisSelection([]);
-          setAnalysisSelectionSource('none');
-          setAnalysisHistory([]);
-          setAnalysisFuture([]);
-          setAnalysisCopyStatus('');
+          resetDatasetDerivedState();
           setProjectError('');
-          resetTableExplorer(true);
           if (next.boundaries) {
             try {
               applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(next.boundaries)), { sourceFormat: 'geojson' }), next.label, {}, next.id);
@@ -5659,7 +5650,6 @@
             setPackBoundaryOwner('');
           }
           persist('gisRegionPack', next.id);
-          persist('gisSpatialAnalysis', false);
           announce(localizedRegionLabel(next) + ' loaded. ' + next.description + ' ' + next.sourceNote);
         }
         function clearAnalysis() {
@@ -5751,6 +5741,20 @@
 
         // Only the unit-bound controls: a different attribute is a different
         // scale, but the place names have not changed.
+        function resetDatasetDerivedState() {
+          mapViewState.current = null;
+          compareViewState.current = null;
+          setAnalysisPoints([]);
+          setAnalysisSelection([]);
+          setAnalysisSelectionSource('none');
+          setAnalysisHistory([]);
+          setAnalysisFuture([]);
+          setAnalysisCopyStatus('');
+          setSelectedFeatureIndex(0);
+          resetTableExplorer(true);
+          persist('gisSpatialAnalysis', false);
+        }
+
         function resetTableRange() {
           setTableMinimum('');
           setTableMaximum('');
@@ -6023,8 +6027,8 @@
                 h('p', { style: { margin: '0 0 13px', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, 'A GIS combines geometry, attributes, and layers.'),
                 h('fieldset', { style: { border: 0, padding: 0, margin: '0 0 13px' } },
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'DATA SOURCE'),
-                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('sample'); } }), ' Sample / region pack'),
-                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('import'); } }), ' My CSV')),
+                  h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { resetDatasetDerivedState(); setSource('sample'); } }), ' Sample / region pack'),
+                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { resetDatasetDerivedState(); setSource('import'); } }), ' My CSV')),
                 !imported && h('div', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('label', { style: { display: 'grid', gap: 5 } },
                     h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
