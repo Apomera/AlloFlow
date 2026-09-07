@@ -1,5 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+// Mounted jsdom work here is slow under a full parallel suite run, and the
+// 5 s default timeout fails random tests without anything being wrong. Each
+// file finishes in about a second on its own; this only removes the starvation.
+vi.setConfig({ testTimeout: 20000 });
 
 describe('GIS Studio', () => {
   beforeEach(() => resetStemLab());

@@ -501,6 +501,48 @@ describe('GIS Studio - custom region packs', () => {
     expect(tool.testing.writeGISDraft(storageThatAccepts(5), 'k', plain)).toEqual({ level: 'none', saved: false });
   });
 
+  it('keeps interactive controls out of the labels that name other controls', () => {
+    loadTool(TOOL, 'gisStudio');
+    const tabs = ['map', 'import', 'compare', 'missions', 'timeline', 'project', 'composer', 'remote', 'story', 'quality', 'planner', 'review', 'packet', 'projection'];
+    const offenders = [];
+    for (const tab of tabs) {
+      const host = document.createElement('div');
+      host.innerHTML = renderTool('gisStudio', { gisTab: tab, gisBasemap: 'none' });
+      host.querySelectorAll('label').forEach((label) => {
+        // A button or a second control inside a label lands in the accessible
+        // name of the control the label names, and clicking it activates that
+        // control too.
+        if (label.querySelector('button')) offenders.push(tab + ': button inside "' + label.textContent.trim().slice(0, 60) + '"');
+        if (label.querySelectorAll('input, select, textarea').length > 1) {
+          offenders.push(tab + ': several controls inside "' + label.textContent.trim().slice(0, 60) + '"');
+        }
+      });
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('names the region selector with its own label, not with the notes beside it', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+    const host = document.createElement('div');
+    host.innerHTML = renderTool('gisStudio', { gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+
+    const select = host.querySelector('select[aria-describedby="gis-region-pack-note"]');
+    expect(select).toBeTruthy();
+    const label = select.closest('label');
+    expect(label).toBeTruthy();
+    expect(label.textContent).toContain('Sample region pack');
+    expect(label.textContent).not.toContain('Load a different region');
+    expect(label.querySelector('#gis-region-pack-note')).toBeNull();
+
+    // The description is still reachable as a description, and the quick link
+    // is still on the page, just no longer inside the label.
+    const note = host.querySelector('#gis-region-pack-note');
+    expect(note).toBeTruthy();
+    expect(note.textContent).toContain(samplePack().scope);
+    expect(Array.from(host.querySelectorAll('button')).some((button) => button.textContent.includes('Load a different region'))).toBe(true);
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

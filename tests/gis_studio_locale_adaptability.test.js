@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createRequire } from 'node:module';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -7,6 +7,11 @@ import {
   renderTool,
   resetStemLab
 } from './helpers/stem_widgets_smoke_harness.js';
+
+// Mounted jsdom work here is slow under a full parallel suite run, and the
+// 5 s default timeout fails random tests without anything being wrong. Each
+// file finishes in about a second on its own; this only removes the starvation.
+vi.setConfig({ testTimeout: 20000 });
 
 const require = createRequire(import.meta.url);
 const acorn = require(resolve(process.cwd(), 'node_modules/acorn'));

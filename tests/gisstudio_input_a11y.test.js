@@ -1,6 +1,11 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Mounted jsdom work here is slow under a full parallel suite run, and the
+// 5 s default timeout fails random tests without anything being wrong. Each
+// file finishes in about a second on its own; this only removes the starvation.
+vi.setConfig({ testTimeout: 20000 });
 
 const sourcePath = 'stem_lab/stem_tool_gisstudio.js';
 const publicPath = 'desktop/web-app/public/stem_lab/stem_tool_gisstudio.js';

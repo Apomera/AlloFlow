@@ -7,6 +7,11 @@ import {
   resetStemLab
 } from './helpers/stem_widgets_smoke_harness.js';
 
+// Mounted jsdom work here is slow under a full parallel suite run, and the
+// 5 s default timeout fails random tests without anything being wrong. Each
+// file finishes in about a second on its own; this only removes the starvation.
+vi.setConfig({ testTimeout: 20000 });
+
 const TOOL_PATH = 'stem_lab/stem_tool_gisstudio.js';
 let host;
 let root;

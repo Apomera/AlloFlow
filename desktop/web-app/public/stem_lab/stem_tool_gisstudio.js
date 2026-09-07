@@ -5825,15 +5825,16 @@
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'DATA SOURCE'),
                   h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('sample'); } }), ' Sample / region pack'),
                   h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { mapViewState.current = null; compareViewState.current = null; setSource('import'); } }), ' My CSV')),
-                !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
-                  h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
-                  h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: Object.assign({}, control, { width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }), 'aria-describedby': 'gis-region-pack-note' },
+                !imported && h('div', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
+                  h('label', { style: { display: 'grid', gap: 5 } },
+                    h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
+                    h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: Object.assign({}, control, { width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }), 'aria-describedby': 'gis-region-pack-note' },
                     customRegionPacks.length
                       ? [
                         h('optgroup', { key: 'custom', label: gisText.regionCustomGroup }, customRegionPacks.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, pack.label); })),
                         h('optgroup', { key: 'built-in', label: gisText.regionBuiltInGroup }, GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); }))
                       ]
-                      : GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
+                      : GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); }))),
                   h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote),
                   h('button', { type: 'button', onClick: function () { go('import'); }, style: Object.assign({}, control, { cursor: 'pointer', justifySelf: 'start' }) }, gisText.packQuickLink)),
                 h('details', {

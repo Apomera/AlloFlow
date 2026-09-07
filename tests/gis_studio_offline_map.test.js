@@ -11,8 +11,13 @@
 // no-basemap path ever calls getLeaflet, because getLeaflet injects the unpkg
 // <script>/<link> as a side effect the moment it is called.
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+// Mounted jsdom work here is slow under a full parallel suite run, and the
+// 5 s default timeout fails random tests without anything being wrong. Each
+// file finishes in about a second on its own; this only removes the starvation.
+vi.setConfig({ testTimeout: 20000 });
 
 const TOOL = 'stem_lab/stem_tool_gisstudio.js';
 const load = () => loadTool(TOOL, 'gisStudio');
@@ -147,7 +152,7 @@ describe('GIS Studio â€” no-basemap mode is genuinely no-egress', () => {
   });
 });
 
-describe('GIS Studio"éÝyø§yÔ schematic geometry decomposition', () => {
+describe('GIS Studio"ï¿½ï¿½yï¿½ï¿½yï¿½ schematic geometry decomposition', () => {
   beforeEach(() => resetStemLab());
 
   it('keeps points, open lines, polygon shells, and polygon holes in distinct parts', () => {
