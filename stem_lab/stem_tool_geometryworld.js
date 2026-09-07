@@ -4327,13 +4327,18 @@
           engine.scene.add(sprite);
 
           // "Press E" interaction prompt (hidden until player is near — managed in animate loop)
-          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 128; promptCanvas.height = 48;
+          // Drawn at 2x and tagged sRGB: at 128 px the prompt was soft at any
+          // distance and, untagged, its violet read as lilac.
+          var promptCanvas = document.createElement('canvas'); promptCanvas.width = 256; promptCanvas.height = 96;
           var pcx = promptCanvas.getContext('2d');
-          pcx.clearRect(0, 0, 128, 48);
-          pcx.fillStyle = 'rgba(124,58,237,0.85)';
-          if (pcx.roundRect) { pcx.beginPath(); pcx.roundRect(4, 4, 120, 40, 8); pcx.fill(); } else { pcx.fillRect(4, 4, 120, 40); }
-          pcx.fillStyle = '#fff'; pcx.font = 'bold 16px sans-serif'; pcx.textAlign = 'center'; pcx.fillText('Press E', 64, 30);
-          var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(promptCanvas), transparent: true, depthTest: false, opacity: 0 }));
+          pcx.clearRect(0, 0, 256, 96);
+          pcx.fillStyle = 'rgba(109,40,217,0.92)';
+          if (pcx.roundRect) { pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.fill(); } else { pcx.fillRect(8, 8, 240, 80); }
+          if (pcx.roundRect) { pcx.strokeStyle = 'rgba(255,255,255,0.35)'; pcx.lineWidth = 3; pcx.beginPath(); pcx.roundRect(8, 8, 240, 80, 16); pcx.stroke(); }
+          pcx.fillStyle = '#fff'; pcx.font = 'bold 34px sans-serif'; pcx.textAlign = 'center'; pcx.textBaseline = 'middle'; pcx.fillText('Press E', 128, 50);
+          var promptTex = new THREE.CanvasTexture(promptCanvas);
+          if (typeof THREE.sRGBEncoding !== 'undefined') promptTex.encoding = THREE.sRGBEncoding;
+          var promptSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: promptTex, transparent: true, depthTest: false, opacity: 0 }));
           promptSprite.scale.set(1.2, 0.45, 1);
           promptSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.5, data.position[2] + 0.5);
           engine.scene.add(promptSprite);
@@ -4341,16 +4346,19 @@
           // Floating question mark indicator (for NPCs with questions)
           var qMarkSprite = null;
           if (data.question) {
-            var qCanvas = document.createElement('canvas'); qCanvas.width = 64; qCanvas.height = 64;
+            var qCanvas = document.createElement('canvas'); qCanvas.width = 128; qCanvas.height = 128;
             var qcx = qCanvas.getContext('2d');
-            // Glowing circle background
-            var grd = qcx.createRadialGradient(32, 32, 8, 32, 32, 28);
-            grd.addColorStop(0, 'rgba(251,191,36,0.9)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
-            qcx.fillStyle = grd; qcx.fillRect(0, 0, 64, 64);
-            // Question mark
-            qcx.fillStyle = '#fff'; qcx.font = 'bold 36px sans-serif'; qcx.textAlign = 'center'; qcx.textBaseline = 'middle';
-            qcx.fillText('?', 32, 34);
-            qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(qCanvas), transparent: true, depthTest: false }));
+            // Glowing circle background, drawn at 2x so the mark stays sharp up close
+            var grd = qcx.createRadialGradient(64, 64, 16, 64, 64, 56);
+            grd.addColorStop(0, 'rgba(251,191,36,0.95)'); grd.addColorStop(0.55, 'rgba(251,191,36,0.55)'); grd.addColorStop(1, 'rgba(251,191,36,0)');
+            qcx.fillStyle = grd; qcx.fillRect(0, 0, 128, 128);
+            // Question mark, outlined so it holds against a bright sky
+            qcx.font = 'bold 72px sans-serif'; qcx.textAlign = 'center'; qcx.textBaseline = 'middle';
+            qcx.lineWidth = 6; qcx.strokeStyle = 'rgba(120,53,15,0.8)'; qcx.strokeText('?', 64, 68);
+            qcx.fillStyle = '#fff'; qcx.fillText('?', 64, 68);
+            var qTex = new THREE.CanvasTexture(qCanvas);
+            if (typeof THREE.sRGBEncoding !== 'undefined') qTex.encoding = THREE.sRGBEncoding;
+            qMarkSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: qTex, transparent: true, depthTest: false }));
             qMarkSprite.scale.set(0.6, 0.6, 1);
             qMarkSprite.position.set(data.position[0] + 0.5, data.position[1] + 2.7, data.position[2] + 0.5);
             engine.scene.add(qMarkSprite);
@@ -4557,10 +4565,16 @@
           engine._measureCenter = { x: (x0 + x1) / 2, y: (y0 + y1) / 2, z: (z0 + z1) / 2 };
 
           function dimLine(ax, ay, az, bx, by, bz, color) {
-            var mat = new THREE.LineBasicMaterial({ color: color, transparent: true, opacity: 0.85, linewidth: 2 });
-            var geo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(ax, ay, az), new THREE.Vector3(bx, by, bz)]);
-            var line = new THREE.LineSegments(geo, mat);
-            engine.scene.add(line); engine._dimLines.push(line);
+            // Axis-aligned by construction (each runs along one of L, W, H), so a
+            // box spanning the segment plus a little thickness is the bar, and the
+            // extra thickness at each end is its cap.
+            var thick = 0.06;
+            var geo = new THREE.BoxGeometry(Math.abs(bx - ax) + thick, Math.abs(by - ay) + thick, Math.abs(bz - az) + thick);
+            var mat = new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+            var bar = new THREE.Mesh(geo, mat);
+            bar.position.set((ax + bx) / 2, (ay + by) / 2, (az + bz) / 2);
+            bar.renderOrder = 998;
+            engine.scene.add(bar); engine._dimLines.push(bar);
           }
 
           // ── Sequential formula buildup (L, then W, then H, then V) ──

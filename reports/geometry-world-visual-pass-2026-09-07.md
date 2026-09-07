@@ -120,6 +120,14 @@ When the last question is answered the sky runs from day through golden hour to 
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round12-complete.mjs`): after triggering completion with the player standing at x = 40, the card sits 7 units ahead and 1.3 above the camera, 1024 px wide, sRGB-tagged, fading in. Zero page errors. Captures: `before-complete.png`, `after2-complete.png`.
 
+## Round 13 (same day): dimension bars and character prompts
+
+**L, W and H are bars now.** They were one-pixel lines: WebGL ignores line width, so at any distance each edge was a single pixel and it vanished under the layer glow. Each is now a thin box spanning its edge with a small cap at either end, drawn on top, in the same red, blue and green as its label. They read from across the lesson and through the glow.
+
+**The "Press E" prompt and the "?" marker are crisp.** Both were tiny untagged canvases, 128 by 48 and 64 by 64, so the prompt was soft at any distance and its violet read as lilac, and the marker blurred up close. Both are drawn at 2x and tagged sRGB, the prompt with a light border and the mark with a dark outline so it holds against a bright sky.
+
+Captures: `r13-measure.png` (bars through the glow) and `r13-aimed-desktop.png` (prompt and name plate over Professor Block).
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -139,3 +147,7 @@ Round 10 run of the same spec: **17 passed, 0 failed, 0 flaky** in 4.4 minutes o
 Round 11 verification at commit time: 307 unit tests, and the five e2e tests covering lesson reset, building and teardown passed 5/5 with retries off under a competing browser suite. The full spec was queued for a quiet machine; its result is recorded below when it lands.
 
 Round 12 verification at commit time: 309 unit tests, and the four e2e tests covering lesson change, the sprite census and teardown passed 4/4 with retries off under a competing browser suite. The queued full spec will run against this tree.
+
+Full spec for the tree carrying rounds 11 and 12, run under a competing suite after a 20-minute wait for quiet that never came: **17 passed, 0 failed, 0 flaky** in 6.7 minutes.
+
+Round 13 verification at commit time: 311 unit tests, and the four e2e tests covering mount, characters, the sprite census and teardown passed 4/4 with retries off. The full spec is queued for a quiet machine.

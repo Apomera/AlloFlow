@@ -390,6 +390,24 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('new THREE.BoxGeometry(0.14, 0.02, 0.09)');
   });
 
+  it('draws L, W and H as bars that read at distance, not one-pixel lines', () => {
+    // WebGL ignores linewidth, so the old LineSegments were a single pixel wide
+    // at any distance and vanished under the layer glow
+    const fn = src.slice(src.indexOf('function dimLine(ax, ay, az, bx, by, bz, color)'), src.indexOf('// ── Sequential formula buildup'));
+    expect(fn).toContain('new THREE.BoxGeometry(Math.abs(bx - ax) + thick, Math.abs(by - ay) + thick, Math.abs(bz - az) + thick)');
+    expect(fn).toContain('depthTest: false');
+    expect(fn).not.toContain('LineSegments');
+    expect(fn).toContain('engine._dimLines.push(bar);');
+  });
+
+  it('draws the character prompt and question marker at 2x, tagged sRGB', () => {
+    expect(src).toContain('promptCanvas.width = 256; promptCanvas.height = 96;');
+    expect(src).toContain('promptTex.encoding = THREE.sRGBEncoding');
+    expect(src).toContain('qCanvas.width = 128; qCanvas.height = 128;');
+    expect(src).toContain('qTex.encoding = THREE.sRGBEncoding');
+    expect(src).toContain("qcx.strokeText('?', 64, 68);");
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();
