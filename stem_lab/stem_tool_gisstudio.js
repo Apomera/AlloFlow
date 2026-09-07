@@ -3423,6 +3423,31 @@
       ' highlight evidence. Exact coordinates and values are provided in the table.';
   }
 
+  function annotationsOutsideData(rows, annotations) {
+    var marks = Array.isArray(annotations) ? annotations : [];
+    var points = (rows || []).map(function (row) { return { lat: Number(row.lat), lon: Number(row.lon) }; })
+      .filter(function (point) { return Number.isFinite(point.lat) && Number.isFinite(point.lon); });
+    if (!points.length || !marks.length) return { outside: [], checked: marks.length };
+    var arc = minimalLongitudeArc(points.map(function (point) { return point.lon; }));
+    var latitudes = points.map(function (point) { return point.lat; });
+    var south = Math.min.apply(Math, latitudes), north = Math.max.apply(Math, latitudes);
+    var west = arc.westUnwrapped, east = arc.eastUnwrapped;
+    // Allow one full extent of margin, with a floor so a campus-sized map does
+    // not flag a label just outside its own handful of points.
+    var latMargin = Math.max(north - south, 0.5);
+    var lonMargin = Math.max(east - west, 0.5);
+    var outside = [];
+    marks.forEach(function (annotation, index) {
+      var lat = Number(annotation.lat);
+      var lon = unwrapLongitudeForArc(Number(annotation.lon), arc);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+      if (lat < south - latMargin || lat > north + latMargin || lon < west - lonMargin || lon > east + lonMargin) {
+        outside.push({ index: index, label: String(annotation.label || ('A' + (index + 1))) });
+      }
+    });
+    return { outside: outside, checked: marks.length };
+  }
+
   function auditMapComposition(model) {
     model = model || {};
     var composition = normalizeMapComposition(model);
@@ -3442,6 +3467,14 @@
     else passes.push('Data source identified');
     if (!(model.rows || []).length) issue('warning', 'data', 'No point records are available for the composed map.');
     else passes.push('Map has a synchronized data-table twin');
+    var strayAnnotations = annotationsOutsideData(model.rows, composition.annotations);
+    if (strayAnnotations.outside.length) {
+      issue('warning', 'annotation-extent', strayAnnotations.outside.length + ' annotation' + (strayAnnotations.outside.length === 1 ? '' : 's') +
+        ' sit outside the mapped region, which stretches the map to fit them: ' +
+        strayAnnotations.outside.map(function (item) { return item.label; }).join(', ') + '.');
+    } else if (composition.annotations.length) {
+      passes.push('Annotations fall inside the mapped region');
+    }
     passes.push('Symbols use outlines and labels in addition to color');
     var errors = issues.filter(function (item) { return item.severity === 'error'; }).length;
     var warnings = issues.length - errors;
@@ -3850,7 +3883,7 @@
       gisDraftWithoutPackBoundaries: gisDraftWithoutPackBoundaries, gisDraftWithoutPacks: gisDraftWithoutPacks,
       roundRegionPackCoordinates: roundRegionPackCoordinates,
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
-      auditMapComposition: auditMapComposition, buildMapComposerReport: buildMapComposerReport,
+      auditMapComposition: auditMapComposition, annotationsOutsideData: annotationsOutsideData, buildMapComposerReport: buildMapComposerReport,
       schematicProjection: schematicProjection, graticuleStep: graticuleStep,
       graticuleLines: graticuleLines, graticuleForViewport: graticuleForViewport, graticuleLabel: graticuleLabel,
       graticuleDecimals: graticuleDecimals,
@@ -3945,6 +3978,10 @@
         autosaveUnavailable: t('stem.gisstudio.autosave.unavailable', 'Local autosave is unavailable or the project is too large. Download a project file instead.'),
         draftBoundariesOmitted: t('stem.gisstudio.autosave.draft_without_boundaries', 'It was saved without region pack boundaries.'),
         draftPacksOmitted: t('stem.gisstudio.autosave.draft_without_packs', 'It was saved without region packs or the polygon layer.'),
+        annotationStrayLabel: t('stem.gisstudio.composer.stray_label', 'Outside this region:'),
+        annotationStrayNote: t('stem.gisstudio.composer.stray_note', '{count} callout(s) sit outside the mapped places, so the exported map stretches to fit them and the region shrinks:'),
+        annotationStrayRemove: t('stem.gisstudio.composer.stray_remove', 'Remove the callouts outside this region'),
+        annotationOutsideTag: t('stem.gisstudio.composer.outside_tag', 'outside this region'),
         packQualityLabel: t('stem.gisstudio.pack.quality_label', 'Worth checking before you map this:'),
         packQuality_duplicate_names: t('stem.gisstudio.pack.quality_duplicate_names', '{count} place name(s) appear more than once, so rows may be double counted:'),
         packQuality_null_island: t('stem.gisstudio.pack.quality_null_island', '{count} place(s) sit at 0, 0 in the Gulf of Guinea, which usually means a coordinate did not parse:'),
@@ -4378,6 +4415,7 @@
           basemap: basemap === 'none' ? 'No basemap — offline schematic' : basemap === 'satellite' ? 'Esri World Imagery' : 'OpenStreetMap'
         });
         var composerAudit = auditMapComposition(composerModel);
+        var strayAnnotations = annotationsOutsideData(composerModel.rows, composer.annotations);
         var remoteScene = REMOTE_SCENE;
         var remoteSummary = summarizeRemoteChange(remoteScene, remoteSensing.analysisIndex, remoteScene.resolutionMeters);
         var remoteSelectedCell = remoteScene.cells.filter(function (cell) { return cell.id === remoteSensing.selectedPixel; })[0] || remoteScene.cells[0];
@@ -7159,6 +7197,16 @@
           announce(__alloT('stem.gisstudio.sr_map_annotation_added', 'Map annotation added.'));
         }
 
+        function removeStrayAnnotations() {
+          var drop = {};
+          strayAnnotations.outside.forEach(function (item) { drop[item.index] = true; });
+          var kept = composer.annotations.filter(function (annotation, index) { return !drop[index]; });
+          var next = normalizeMapComposition(Object.assign({}, composer, { annotations: kept }));
+          setComposer(next);
+          persist('gisComposer', next);
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_stray_annotations_removed', '{count} annotation(s) outside the mapped region removed.'), { count: strayAnnotations.outside.length }));
+        }
+
         function removeComposerAnnotation(index) {
           updateComposer('annotations', composer.annotations.filter(function (_, itemIndex) { return itemIndex !== index; }));
           setComposerStatus('Annotation removed.');
@@ -7730,10 +7778,18 @@
                 h('label', { style: { display: 'grid', gap: 4, fontSize: 11, fontWeight: 700 } }, 'Longitude',
                   h('input', { type: 'number', min: -180, max: 180, step: 'any', value: annotationDraft.lon, onChange: function (event) { updateAnnotationDraft('lon', event.target.value); }, style: control })),
                 h('button', { type: 'button', onClick: addComposerAnnotation, style: primary }, 'Add callout')),
+              strayAnnotations.outside.length > 0 && h('div', { role: 'status', style: { margin: '12px 0 0', padding: 10, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.annotationStrayLabel + ' '),
+                gisFillTemplate(gisText.annotationStrayNote, { count: strayAnnotations.outside.length }) + ' ' +
+                strayAnnotations.outside.map(function (item) { return item.label; }).join(', '),
+                h('button', { type: 'button', onClick: removeStrayAnnotations, style: Object.assign({}, control, { display: 'block', marginTop: 8, cursor: 'pointer' }) }, gisText.annotationStrayRemove)),
               composer.annotations.length > 0 && h('ul', { style: { margin: '12px 0 0', padding: 0, listStyle: 'none', display: 'grid', gap: 6 } },
                 composer.annotations.map(function (annotation, index) {
                   return h('li', { key: annotation.id, style: { display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center', padding: 8, borderRadius: 8, background: '#071827', fontSize: 11 } },
-                    h('span', null, h('strong', { style: { color: '#fde047' } }, 'A' + (index + 1) + ' '), annotation.label + ' (' + display.coordinate(annotation.lat, 4, 'lat') + ', ' + display.coordinate(annotation.lon, 4, 'lon') + ')'),
+                    h('span', null, h('strong', { style: { color: '#fde047' } }, 'A' + (index + 1) + ' '), annotation.label + ' (' + display.coordinate(annotation.lat, 4, 'lat') + ', ' + display.coordinate(annotation.lon, 4, 'lon') + ')',
+                      strayAnnotations.outside.some(function (item) { return item.index === index; })
+                        ? h('em', { style: { color: '#fde68a', marginLeft: 8, fontStyle: 'normal', fontWeight: 700 } }, gisText.annotationOutsideTag)
+                        : null),
                     h('button', { type: 'button', onClick: function () { removeComposerAnnotation(index); }, 'aria-label': 'Remove annotation A' + (index + 1), style: Object.assign({}, control, { cursor: 'pointer', padding: '5px 8px' }) }, 'Remove'));
                 }))),
             h('section', { 'aria-labelledby': 'gis-cartography-coach-heading', style: panel },

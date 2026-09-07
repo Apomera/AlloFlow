@@ -13391,7 +13391,14 @@
       "compare": {
         "single_label": "One attribute only:",
         "single_note": "{pack} carries only {attribute}, so both maps show the same layer and there is no contrast to read. Add another numeric column to the pack, map a GeoJSON layer to compare against, or switch to a pack with more attributes."
-      }
+      },
+      "composer": {
+        "stray_label": "Outside this region:",
+        "stray_note": "{count} callout(s) sit outside the mapped places, so the exported map stretches to fit them and the region shrinks:",
+        "stray_remove": "Remove the callouts outside this region",
+        "outside_tag": "outside this region"
+      },
+      "sr_stray_annotations_removed": "{count} annotation(s) outside the mapped region removed."
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",

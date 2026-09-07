@@ -729,6 +729,78 @@ describe('GIS Studio - custom region packs', () => {
     expect(tool.testing.inspectRegionPackQuality(null)).toEqual({ findings: [], checked: 0 });
   });
 
+  it('spots a callout left behind by another region', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const rows = [
+      { name: 'Dunedin', lat: -45.87, lon: 170.5, value: 10 },
+      { name: 'Oamaru', lat: -45.1, lon: 170.97, value: 20 }
+    ];
+    const stray = { label: 'Left over from Maine', lat: 43.66, lon: -70.26 };
+    const near = { label: 'Harbour mouth', lat: -45.8, lon: 170.6 };
+
+    const report = tool.testing.annotationsOutsideData(rows, [near, stray]);
+    expect(report.outside.map((item) => item.label)).toEqual(['Left over from Maine']);
+    expect(report.outside[0].index).toBe(1);
+    expect(report.checked).toBe(2);
+
+    // A callout just beyond a handful of points is not a mistake.
+    expect(tool.testing.annotationsOutsideData(rows, [near]).outside).toEqual([]);
+    expect(tool.testing.annotationsOutsideData([], [stray]).outside).toEqual([]);
+    expect(tool.testing.annotationsOutsideData(rows, []).outside).toEqual([]);
+
+    // Across the antimeridian the arc is short, so a nearby callout is inside.
+    const dateline = [{ name: 'A', lat: -16, lon: 179.2 }, { name: 'B', lat: -18, lon: -179.5 }];
+    expect(tool.testing.annotationsOutsideData(dateline, [{ label: 'Reef', lat: -17, lon: 179.9 }]).outside).toEqual([]);
+
+    // The composer coach and the quality review both see it.
+    const audit = tool.testing.auditMapComposition({
+      rows, title: 'Otago population', altText: 'x'.repeat(50), unit: 'people', source: 'test',
+      annotations: [near, stray]
+    });
+    const stretched = audit.issues.find((issue) => issue.id === 'annotation-extent');
+    expect(stretched).toBeTruthy();
+    expect(stretched.message).toContain('Left over from Maine');
+    expect(stretched.severity).toBe('warning');
+
+    const clean = tool.testing.auditMapComposition({
+      rows, title: 'Otago population', altText: 'x'.repeat(50), unit: 'people', source: 'test', annotations: [near]
+    });
+    expect(clean.issues.find((issue) => issue.id === 'annotation-extent')).toBeFalsy();
+    expect(clean.passes).toContain('Annotations fall inside the mapped region');
+  });
+
+  it('offers to remove only the callouts that belong elsewhere', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Otago towns',
+      metrics: [{ id: 'population', label: 'Population' }],
+      records: [{ name: 'Dunedin', lat: -45.87, lon: 170.5, population: 130000 }, { name: 'Oamaru', lat: -45.1, lon: 170.97, population: 14000 }]
+    });
+    const composer = {
+      title: 'Otago population', altText: 'x'.repeat(50), showLegend: true,
+      annotations: [
+        { id: 'a1', label: 'Harbour mouth', lat: -45.8, lon: 170.6 },
+        { id: 'a2', label: 'Left over from Maine', lat: 43.66, lon: -70.26 }
+      ]
+    };
+    const html = renderTool('gisStudio', {
+      gisTab: 'composer', gisBasemap: 'none',
+      gisCustomRegionPacks: [pack], gisRegionPack: pack.id, gisComposer: composer
+    });
+    expect(html).toContain('Outside this region:');
+    expect(html).toContain('Left over from Maine');
+    expect(html).toContain('Remove the callouts outside this region');
+    expect(html).toContain('outside this region');
+
+    const tidy = renderTool('gisStudio', {
+      gisTab: 'composer', gisBasemap: 'none',
+      gisCustomRegionPacks: [pack], gisRegionPack: pack.id,
+      gisComposer: Object.assign({}, composer, { annotations: [composer.annotations[0]] })
+    });
+    expect(tidy).not.toContain('Outside this region:');
+    expect(tidy).toContain('Harbour mouth');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });
