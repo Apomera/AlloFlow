@@ -13,11 +13,41 @@ function adventureVisualTokens(theme = 'light', immersive = false) {
     '--av-muted': dark ? '#cbd5e1' : '#475569',
     '--av-surface': contrast ? '#000000' : dark ? '#0f172a' : '#ffffff',
     '--av-wash': contrast ? '#000000' : dark ? '#19263b' : '#f4f7fb',
+    '--av-control': contrast ? '#ffffff' : '#64748b',
     '--av-line': contrast ? '#ffffff' : dark ? '#64748b' : '#cbd5e1',
     '--av-accent': contrast ? '#fde047' : dark ? '#67e8f9' : '#115e59',
     '--av-shadow': contrast ? 'none' : dark ? '0 16px 36px #02061740' : '0 12px 32px #1e3a5f12',
     '--av-focus': contrast ? '#fde047' : dark ? '#67e8f9' : '#4338ca'
   };
+}
+
+
+function AdventureDecisionProgress({ state, t, theme, immersive = false }) {
+  // The opening scene is turn one, before the learner has completed a decision.
+  const recorded = state.stats && state.stats.decisions;
+  const legacyTurn = Number(state.turnCount);
+  const completed = Math.max(0, Math.floor(typeof recorded === 'number' && Number.isFinite(recorded)
+    ? recorded : (Number.isFinite(legacyTurn) ? legacyTurn : 1) - 1));
+  const bounded = value => Math.max(3, Math.min(50, Math.round(Number(value) || 20)));
+  const limit = Object.prototype.hasOwnProperty.call(state, 'episodeTurnLimit')
+    ? (state.episodeTurnLimit == null ? null : bounded(state.episodeTurnLimit))
+    : (state.enableAutoClimax ? null : bounded(state.climaxMinTurns));
+  const label = adventureSettingsText(t, 'episode_progress', 'Episode progress');
+  const detail = completed + ' ' + adventureSettingsText(t, 'decisions_completed', 'completed') + ' · ' +
+    (state.isGameOver ? adventureSettingsText(t, 'episode_ended', 'Episode ended')
+      : limit == null ? adventureSettingsText(t, 'open', 'Open-ended')
+      : Math.max(0, limit - completed) + ' ' + adventureSettingsText(t, 'decisions_remaining', 'remaining'));
+  return <div data-adventure-progress style={adventureVisualTokens(theme, immersive)} className="mb-3 text-[var(--av-muted)]">
+    <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 text-xs leading-relaxed">
+      <span className="font-bold text-[var(--av-ink)]">{label}</span>
+      <span className="tabular-nums">{detail}</span>
+    </div>
+    {limit != null && <div role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={limit}
+      aria-valuenow={Math.min(limit, completed)} aria-valuetext={detail}
+      className="mt-2 h-1.5 overflow-hidden rounded-full bg-[var(--av-wash)] border border-[var(--av-control)]">
+      <div className="h-full rounded-full bg-[var(--av-accent)]" style={{ width: Math.min(100, completed / limit * 100) + '%' }} />
+    </div>}
+  </div>;
 }
 
 function AdventureProfileMark({ profile = 'guided', className = '' }) {
@@ -681,6 +711,41 @@ function AdventureView(props) {
       </div>
     );
   };
+
+  var renderAdventureChoiceListen = function (opt, idx) {
+    const optionText = typeof opt === 'object' && opt?.action ? opt.action : String(opt);
+    return <button type="button" data-adventure-listen
+      aria-label={(t('common.listen') || 'Listen') + ': ' + optionText}
+      title={t('common.listen')}
+      onClick={event => {
+        event.stopPropagation();
+        if (typeof opt === 'object' && opt?.audio) {
+          const audio = new Audio(opt.audio);
+          audio.play();
+        } else if (handleSpeak) {
+          handleSpeak(optionText, 'adventure-option-' + idx);
+        }
+      }}
+      className="min-w-11 min-h-11 shrink-0 self-start mt-2 mr-2 flex items-center justify-center rounded-xl border border-[var(--av-control)] bg-[var(--av-surface)] text-[var(--av-ink)] hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]">
+      <Volume2 size={17} aria-hidden="true" />
+    </button>;
+  };
+  var adventureChoiceClass = function (isMyVote, isReading) {
+    return 'min-w-0 rounded-2xl border-2 text-[var(--av-ink)] shadow-sm transition-colors motion-reduce:transition-none motion-reduce:transform-none ' +
+      (isReading || isMyVote ? 'border-[var(--av-accent)] bg-[var(--av-wash)]' : 'border-[var(--av-control)] bg-[var(--av-surface)] hover:border-[var(--av-focus)]');
+  };
+  var renderAdventureChoiceStatus = function (isDemocracy, isMyVote, voteCount, percent, isReading) {
+    if (!(isDemocracy && isTeacherMode) && !isMyVote && !isReading) return null;
+    return <div className="mx-3 mb-3 pt-2 border-t border-[var(--av-line)] flex flex-wrap items-center gap-2 text-[var(--av-accent)]">
+      {isDemocracy && isTeacherMode && <>
+        <span aria-live="polite" aria-atomic="true" className={`text-[11px] font-bold tabular-nums`}>{t('adventure.vote_status', { count: voteCount, percent: percent })}</span>
+        <span aria-hidden="true" className="h-1 w-12 rounded-full overflow-hidden bg-[var(--av-wash)] border border-[var(--av-control)]"><span className="block h-full bg-[var(--av-accent)]" style={{ width: percent + '%' }}/></span>
+      </>}
+      {isMyVote && <span className="text-xs font-bold flex items-center gap-1.5"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" focusable="false"><path d="m3 8 3 3 7-7" /></svg>{adventureSettingsText(t, 'your_vote', 'Your vote')}</span>}
+      {isReading && <span className="text-xs font-bold flex items-center gap-1.5"><Volume2 size={14} aria-hidden="true" />{adventureSettingsText(t, 'listening', 'Listening')}</span>}
+    </div>;
+  };
+
   var renderStrategyHintCard = function (isDark) {
     var hint = adventureState.currentHint;
     if (!hint || hint.turn !== adventureState.turnCount) return null;
@@ -1625,9 +1690,9 @@ function AdventureView(props) {
                                 {theme !== 'contrast' && (
                                     <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent opacity-90 pointer-events-none"></div>
                                 )}
-                                <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
-                                    <div className="flex flex-col gap-2">
-                                        <div className="bg-black/60 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold w-fit shadow-sm">
+                                <div className="absolute top-4 left-3 right-3 sm:left-4 sm:right-4 grid grid-cols-[minmax(0,1fr)_auto] gap-2 items-start z-20">
+                                    <div className="flex flex-col gap-2 min-w-0">
+                                        <div className="bg-black/60 backdrop-blur-md text-white border border-white/20 px-3 py-1 rounded-full text-xs font-bold w-fit max-w-full break-words shadow-sm">
                                             {t('common.level_abbrev')} {adventureState.level}
                                         </div>
                                         {adventureInputMode === 'system' && (
@@ -1639,7 +1704,7 @@ function AdventureView(props) {
                                             <div className={`p-1 rounded-full ${adventureInputMode === 'system' ? 'bg-amber-500/20' : 'bg-yellow-500/20'}`}>
                                                 <Zap size={12} aria-hidden="true" className={`fill-current ${adventureInputMode === 'system' ? 'text-amber-400' : 'text-yellow-400'}`} />
                                             </div>
-                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
+                                            <div className="w-12 sm:w-24 min-w-0 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={adventureInputMode === 'system' ? t('adventure.tooltips.stability', { value: energyValue }) : t('adventure.tooltips.energy', { value: energyValue })} aria-valuemin={0} aria-valuemax={100} aria-valuenow={energyValue}>
                                                 <div
                                                     aria-hidden="true" className={`h-full transition-all duration-500 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-gradient-to-r from-amber-400 to-amber-600' : 'bg-gradient-to-r from-yellow-400 to-orange-500'}`}
                                                     style={{ width: energyValue + '%' }}
@@ -1650,7 +1715,7 @@ function AdventureView(props) {
                                             <div className="bg-indigo-500/20 p-1 rounded-full">
                                                 <Trophy size={12} className="text-indigo-300 fill-current" aria-hidden="true" />
                                             </div>
-                                            <div className="w-24 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
+                                            <div className="w-12 sm:w-24 min-w-0 h-2 bg-black/50 rounded-full overflow-hidden border border-white/10" role="progressbar" aria-label={t('common.xp') || 'XP'} aria-valuemin={0} aria-valuemax={xpMax} aria-valuenow={xpValue} aria-valuetext={t('adventure.tooltips.xp', { current: xpValue, next: xpMax })}>
                                                 <div
                                                     className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 transition-all duration-500 motion-reduce:transition-none" aria-hidden="true"
                                                     style={{ width: xpProgressPercent + '%' }}
@@ -1796,8 +1861,8 @@ function AdventureView(props) {
                                     </div>
                                 </div>
                                 {!immersiveHideUI && (
-                                <div className="absolute bottom-0 left-0 right-0 px-4 pb-2 z-30 flex flex-col justify-end">
-                                    <div className="bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center">
+                                <div className="absolute bottom-0 left-0 right-0 px-2 sm:px-4 pb-2 z-30 flex flex-col justify-end">
+                                    <div className="bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] flex flex-col justify-center">
                                         <div className="absolute -top-5 left-1/2 -translate-x-1/2 z-40">
                                              <button
                                                  type="button"
@@ -1811,7 +1876,8 @@ function AdventureView(props) {
                                              </button>
                                         </div>
                                         {immersiveShowChoices ? (
-                                            <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
+                                            <div data-adventure-actions="immersive" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
+                                                {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} immersive />}
                                                 {failedAdventureAction ? (
                                                     <div role="alert" aria-atomic="true" className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm">
                                                         <div className="bg-red-500 p-3 rounded-full mb-3 text-white">
@@ -1894,56 +1960,20 @@ function AdventureView(props) {
                                                                         const voteCount = isTeacherMode ? Object.values(democracyVotes).filter(v => String(v).trim() === optionValue).length : 0;
                                                                         const percent = isTeacherMode && democracyTotalVotes > 0 ? Math.round((voteCount / democracyTotalVotes) * 100) : 0;
                                                                         const isMyVote = isDemocracy && !isTeacherMode && !!currentUserVote && currentUserVote === optionValue;
-                                                                        const isReadingThisOption = isPlaying &&
-                                                                                    playingContentId === 'adventure-active' &&
-                                                                                    playbackState.currentIdx === (textSentenceCount + idx);
-                                                        return (
-                                                            <div
-                                                                key={idx}
-                                                                className={`bg-white/10 hover:bg-white/20 border text-left p-4 rounded-xl text-white text-sm font-bold transition-all backdrop-blur-sm group relative overflow-hidden motion-reduce:transform-none
-                                                                ${isMyVote ? 'border-emerald-300 ring-2 ring-emerald-300/60 bg-emerald-500/20 shadow-lg z-10' : isReadingThisOption ? 'border-yellow-400 ring-2 ring-yellow-400/50 bg-white/20 shadow-lg scale-[1.02] z-10' : 'border-white/30 hover:border-white'}`}
-                                                            >
-                                                                {isDemocracy && isTeacherMode && voteCount > 0 && (
-                                                                    <div aria-hidden="true"
-                                                                        className="absolute left-0 top-0 bottom-0 bg-indigo-500/30 transition-all duration-500 motion-reduce:transition-none"
-                                                                        style={{ width: `${percent}%` }}
-                                                                    ></div>
-                                                                )}
-                                                                                <div className="flex items-center justify-between relative z-10 w-full">
-                                                                                    <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading} aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined} className="min-h-11 flex items-center gap-3 flex-grow text-left rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:opacity-50 disabled:cursor-not-allowed">
-                                                                                        <span className={`bg-white/20 px-2.5 py-1 rounded text-xs opacity-70 group-hover:bg-white group-hover:text-black transition-colors ${isMyVote ? 'bg-emerald-300 text-emerald-950 opacity-100' : isReadingThisOption ? 'bg-yellow-400 text-black opacity-100' : ''}`}>{idx + 1}</span>
-                                                                                        <span className="text-left">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
+                                                                        const isReadingThisOption = isPlaying && (playingContentId === 'adventure-option-' + idx ||
+                                                                          (playingContentId === 'adventure-active' && playbackState.currentIdx === (textSentenceCount + idx)));
+                                                                        return (
+                                                                            <div key={idx} data-adventure-choice data-reading={isReadingThisOption || undefined} className={adventureChoiceClass(isMyVote, isReadingThisOption)}>
+                                                                                <div className="flex items-start gap-1">
+                                                                                    <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading}
+                                                                                        aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}
+                                                                                        className="min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
+                                                                                        <span aria-hidden="true" className="w-7 h-7 shrink-0 rounded-lg border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center text-xs font-bold">{idx + 1}</span>
+                                                                                        <span className="min-w-0 pt-0.5 [overflow-wrap:anywhere]">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
                                                                                     </button>
-                                                                                    <div className="flex items-center gap-2">
-                                                                                        {/* Listen (2026-07-16): previously rendered ONLY when opt.audio existed —
-                                                                                            but nothing ever generates opt.audio, so the button was effectively dead.
-                                                                                            Now always available: plays the recorded clip when present, otherwise
-                                                                                            synthesizes the option text on demand (UDL: non-readers can hear choices). */}
-                                                                                        <button type="button"
-                                                                                            aria-label={(t('common.listen') || 'Listen') + ': ' + (typeof opt === 'object' && opt?.action ? opt.action : opt)}
-                                                                                            onClick={(e) => {
-                                                                                                e.stopPropagation();
-                                                                                                if (typeof opt === 'object' && opt?.audio) {
-                                                                                                    const audio = new Audio(opt.audio);
-                                                                                                    audio.play();
-                                                                                                } else if (handleSpeak) {
-                                                                                                    const optText = typeof opt === 'object' && opt?.action ? opt.action : String(opt);
-                                                                                                    handleSpeak(optText, 'adventure-option-' + idx);
-                                                                                                }
-                                                                                            }}
-                                                                                            className="min-w-11 min-h-11 rounded-full bg-white/10 hover:bg-white/30 text-white hover:text-white transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                                                                                            title={t('common.listen')}
-                                                                                        >
-                                                                                            <Volume2 size={16} aria-hidden="true" />
-                                                                                        </button>
-                                                                                        {isDemocracy && isTeacherMode && (
-                                                                                            <span aria-live="polite" aria-atomic="true" className={`text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded ${voteCount > 0 ? 'bg-indigo-500 text-white shadow-sm' : 'opacity-40'}`}>
-                                                                                                {t('adventure.vote_status', { count: voteCount, percent: percent })}
-                                                                                            </span>
-                                                                                        )}
-                                                                                        {isMyVote && <span className="text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-300 text-emerald-950">Your vote</span>}
-                                                                                    </div>
+                                                                                    {renderAdventureChoiceListen(opt, idx)}
                                                                                 </div>
+                                                                                {renderAdventureChoiceStatus(isDemocracy, isMyVote, voteCount, percent, isReadingThisOption)}
                                                                             </div>
                                                                         );
                                                                     });
@@ -2047,7 +2077,8 @@ function AdventureView(props) {
                             </div>
                         )}
                         {!adventureState.isImmersiveMode && (
-                        <div className="p-4 bg-white border-t border-slate-200 shrink-0">
+                        <div data-adventure-actions="standard" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme)} className="p-4 bg-[var(--av-surface)] border-t border-[var(--av-line)] shrink-0 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto overscroll-contain">
+                            {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} />}
                             {adventureState.currentScene && !adventureState.isGameOver ? (
                                 <div className="space-y-3">
                                     {adventureInputMode === 'debate' && adventureState.debatePhase === 'setup' && (
@@ -2135,33 +2166,21 @@ function AdventureView(props) {
                                                     const voteCount = isTeacherMode ? Object.values(democracyVotes).filter(v => String(v).trim() === optionValue).length : 0;
                                                     const percent = isTeacherMode && democracyTotalVotes > 0 ? Math.round((voteCount / democracyTotalVotes) * 100) : 0;
                                                     const isMyVote = isDemocracy && !isTeacherMode && !!currentUserVote && currentUserVote === optionValue;
-                                                    const isReadingThisOption = isPlaying &&
-                                                                                playingContentId === 'adventure-active' &&
-                                                                                playbackState.currentIdx === (textSentenceCount + idx);
+                                                    const isReadingThisOption = isPlaying && (playingContentId === 'adventure-option-' + idx ||
+                                                      (playingContentId === 'adventure-active' && playbackState.currentIdx === (textSentenceCount + idx)));
                                                     return (
-                                                        <button
-                                                            key={idx}
-                                                            type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading} aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}
-                                                            className={`min-h-11 p-3 rounded-xl border-2 font-bold text-sm transition-all text-left flex items-center gap-3 group shadow-sm hover:shadow-md relative overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed motion-reduce:transform-none
-                                                                ${isDebateSetup
-                                                                    ? 'border-teal-200 bg-teal-50 text-teal-800 hover:bg-teal-600 hover:text-white hover:border-teal-600'
-                                                                    : 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-600 hover:text-white hover:border-indigo-600'}
-                                                                ${isMyVote ? 'ring-4 ring-emerald-300 bg-emerald-50 border-emerald-500 text-emerald-950 z-10' : isReadingThisOption ? 'ring-4 ring-yellow-400 bg-yellow-100 border-yellow-400 text-indigo-900 scale-[1.02] z-10' : ''}
-                                                            `}
-                                                        >
-                                                            {isDemocracy && isTeacherMode && voteCount > 0 && <div aria-hidden="true" className="absolute inset-y-0 left-0 bg-indigo-100 transition-all duration-500 motion-reduce:transition-none" style={{ width: `${percent}%` }}></div>}
-                                                            <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs border shrink-0 transition-colors z-10
-                                                                ${isMyVote ? 'bg-emerald-500 text-white border-emerald-700' : isReadingThisOption ? 'bg-yellow-400 text-indigo-900 border-yellow-600' :
-                                                                isDebateSetup
-                                                                    ? 'bg-white text-teal-700 border-teal-200 group-hover:border-transparent'
-                                                                    : 'bg-white text-indigo-600 border-indigo-200 group-hover:border-transparent'}`}>
-                                                                {isDebateSetup ? <Scale size={12} aria-hidden="true"/> : (idx + 1)}
-                                                            </span>
-                                                            <span className="z-10">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
-                                                            {isDemocracy && isTeacherMode && <span className="z-10 ml-auto text-[11px] font-black whitespace-nowrap">{voteCount} · {percent}%</span>}
-                                                            {isMyVote && <span className="z-10 ml-auto text-[11px] font-black whitespace-nowrap text-emerald-800">Your vote</span>}
-                                                            <div aria-hidden="true" className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 motion-reduce:transition-none motion-reduce:transform-none"></div>
-                                                        </button>
+                                                        <div key={idx} data-adventure-choice data-reading={isReadingThisOption || undefined} className={adventureChoiceClass(isMyVote, isReadingThisOption)}>
+                                                            <div className="flex items-start gap-1">
+                                                                <button type="button" data-help-key="adventure_choice_btn" onClick={() => handleAdventureChoice(opt)} disabled={adventureState.isLoading}
+                                                                    aria-pressed={isDemocracy && !isTeacherMode ? isMyVote : undefined}
+                                                                    className="min-h-11 min-w-0 flex-1 flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-3 rounded-xl text-left text-sm leading-relaxed font-semibold hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed">
+                                                                    <span aria-hidden="true" className="w-7 h-7 shrink-0 rounded-lg border border-[var(--av-control)] bg-[var(--av-wash)] text-[var(--av-accent)] flex items-center justify-center text-xs font-bold">{isDebateSetup ? <Scale size={14} aria-hidden="true" /> : idx + 1}</span>
+                                                                    <span className="min-w-0 pt-0.5 [overflow-wrap:anywhere]">{typeof opt === 'object' && opt?.action ? opt.action : opt}</span>
+                                                                </button>
+                                                                {renderAdventureChoiceListen(opt, idx)}
+                                                            </div>
+                                                            {renderAdventureChoiceStatus(isDemocracy, isMyVote, voteCount, percent, isReadingThisOption)}
+                                                        </div>
                                                     );
                                                 });
                                             })()}
