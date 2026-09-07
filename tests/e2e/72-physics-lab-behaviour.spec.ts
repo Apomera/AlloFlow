@@ -193,6 +193,42 @@ test('does not narrate the running simulation through a live region', async ({ p
   expect(result.hits).toBeLessThanOrEqual(3);
 });
 
+test('a fair test of velocity derives the squared law from the student own runs', async ({ page }) => {
+  // R = v^2 sin(2t)/g, so two runs differing ONLY in velocity give
+  // ln(R2/R1)/ln(v2/v1) ~ 2. The log reports that exponent, which turns the
+  // controlled comparison into the actual physics rather than a claim the tool
+  // makes. Offered only when the algebra holds: drag off, one variable moved.
+  await mountPhysics(page);
+  await setState(page, { angle: 45, velocity: 25, gravity: 9.8, mass: 1, airResist: false, simSpeed: 1 });
+  const first = await launchAndLand(page);
+  await setState(page, { velocity: 40 });          // the single change
+  const second = await launchAndLand(page);
+
+  // Sanity: the ranges themselves must show the v^2 growth before we trust the label.
+  const measured = Math.log(second.range / first.range) / Math.log(40 / 25);
+  expect(measured).toBeGreaterThan(1.7);
+  expect(measured).toBeLessThan(2.3);
+
+  const logText = await page.evaluate(
+    () => (document.querySelector('[data-physics-run-log]') as HTMLElement)?.innerText ?? '',
+  );
+  expect(logText).toContain('a fair test');
+  expect(logText).toMatch(/\^(1\.[7-9]|2\.[0-3])/);            // the derived exponent
+  expect(logText).toContain('double the speed and the range roughly quadruples');
+
+  // With drag ON the closed form no longer holds, so no exponent is claimed.
+  await setState(page, { airResist: true, velocity: 25 });
+  await launchAndLand(page);
+  await setState(page, { velocity: 40 });
+  await launchAndLand(page);
+  const dragText = await page.evaluate(() => {
+    const rows = Array.from(document.querySelectorAll('[data-physics-run-log] tbody tr'));
+    return (rows[rows.length - 1] as HTMLElement)?.innerText ?? '';
+  });
+  expect(dragText).toContain('a fair test');
+  expect(dragText).not.toContain('range scales as');
+});
+
 test('the symmetry demo fires both complementary angles and they land together', async ({ page }) => {
   // The tool teaches that complementary angles share a range, and this button is
   // how it shows that. It chains two launches on real-time setTimeouts, so it only

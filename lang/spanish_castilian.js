@@ -16814,7 +16814,12 @@
       "runlog_confounded": "más de un cambio, así que el resultado no puede atribuirse a ninguna variable concreta",
       "runlog_fair_count": "de tus comparaciones cambiaron exactamente una variable. De esas sí puedes sacar una conclusión.",
       "runlog_none_fair": "Todavía ninguna comparación cambió exactamente una variable. Repite un lanzamiento y mueve un solo control para conseguirlo.",
-      "cv_run_prefix": "Lanzamiento "
+      "cv_run_prefix": "Lanzamiento ",
+      "runlog_law_prefix": "Cambiaste ",
+      "runlog_law_and_range": "y el alcance varió ",
+      "runlog_law_scales": "el alcance escala como ",
+      "runlog_law_squared": "al cuadrado: si duplicas la velocidad, el alcance se cuadruplica aproximadamente",
+      "runlog_law_inverse": "inverso: si reduces la gravedad a la mitad, el alcance se duplica aproximadamente"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aleatorio: ",

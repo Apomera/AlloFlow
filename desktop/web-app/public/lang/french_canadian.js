@@ -16427,7 +16427,12 @@
       "runlog_confounded": "plus d'un changement, le résultat ne peut donc être attribué à une seule variable",
       "runlog_fair_count": "de tes comparaisons ont changé exactement une variable. Ce sont celles dont tu peux tirer une conclusion.",
       "runlog_none_fair": "Aucune comparaison n'a encore changé exactement une variable. Refais un lancement en bougeant un seul curseur.",
-      "cv_run_prefix": "Lancer "
+      "cv_run_prefix": "Lancer ",
+      "runlog_law_prefix": "Tu as changé ",
+      "runlog_law_and_range": "et la portée a bougé de ",
+      "runlog_law_scales": "la portée varie comme ",
+      "runlog_law_squared": "au carré : double la vitesse et la portée quadruple à peu près",
+      "runlog_law_inverse": "inverse : divise la gravité par deux et la portée double à peu près"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aléatoire : ",

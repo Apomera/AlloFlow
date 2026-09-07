@@ -2244,11 +2244,45 @@ const d = labToolData.physics;
             var out = [];
             RUN_VARS.forEach(function (v) {
               var a = prev[v.k], b = cur[v.k];
-              if (typeof a === 'boolean' || typeof b === 'boolean') { if (!!a !== !!b) out.push(v.label); return; }
+              if (typeof a === 'boolean' || typeof b === 'boolean') { if (!!a !== !!b) out.push({ k: v.k, label: v.label }); return; }
               if (a == null || b == null) return;
-              if (Math.abs(parseFloat(a) - parseFloat(b)) > 1e-9) out.push(v.label);
+              if (Math.abs(parseFloat(a) - parseFloat(b)) > 1e-9) out.push({ k: v.k, label: v.label });
             });
             return out;
+          }
+          // ── What a fair test actually bought the student ──
+          // Given two runs that differ in ONE multiplicative variable, the range
+          // ratio against the variable ratio IS the exponent of the relationship:
+          //   R = v²·sin(2θ)/g   =>   R ∝ v²  and  R ∝ 1/g
+          // so ln(R2/R1) / ln(x2/x1) comes out near +2 for velocity and -1 for
+          // gravity, derived from the student's own two launches rather than
+          // asserted by the tool. Only offered when the algebra actually holds:
+          // drag breaks the closed form, and angle is not a power law at all.
+          function physRunExponent(prev, cur, key) {
+            if (key !== 'vel' && key !== 'grav') return null;
+            if (prev.drag || cur.drag) return null;
+            var x1 = parseFloat(prev[key]), x2 = parseFloat(cur[key]);
+            var r1 = prev.range, r2 = cur.range;
+            if (!(x1 > 0 && x2 > 0 && r1 > 0 && r2 > 0)) return null;
+            if (Math.abs(x2 / x1 - 1) < 0.02) return null; // too small a change to read
+            var n = Math.log(r2 / r1) / Math.log(x2 / x1);
+            if (!isFinite(n)) return null;
+            return {
+              key: key,
+              exponent: n,
+              varPct: ((x2 - x1) / x1) * 100,
+              rangePct: ((r2 - r1) / r1) * 100
+            };
+          }
+          // "^2.0", plus the plain-language consequence when the measured
+          // exponent lands near a whole number a student can act on. Euler error
+          // and a short flight keep it from being exact, so the band is generous
+          // and the raw figure is always shown next to the gloss.
+          function physExponentLabel(n) {
+            var txt = '^' + n.toFixed(1);
+            if (Math.abs(n - 2) < 0.35) return txt + ' — ' + __alloT('stem.physics.runlog_law_squared', 'squared: double the speed and the range roughly quadruples');
+            if (Math.abs(n + 1) < 0.35) return txt + ' — ' + __alloT('stem.physics.runlog_law_inverse', 'inverse: halve the gravity and the range roughly doubles');
+            return txt;
           }
           function physRunLogCsv() {
             var log = d.runLog || [];
@@ -2755,8 +2789,11 @@ const d = labToolData.physics;
                     var verdict;
                     if (changes == null) verdict = { text: __alloT('stem.physics.runlog_first', 'first run — the baseline'), cls: 'text-slate-600' };
                     else if (changes.length === 0) verdict = { text: '🔁 ' + __alloT('stem.physics.runlog_repeat', 'nothing changed — a repeat trial'), cls: 'text-slate-700' };
-                    else if (changes.length === 1) verdict = { text: '✅ ' + changes[0] + ' — ' + __alloT('stem.physics.runlog_fair', 'a fair test'), cls: 'text-emerald-800 font-bold' };
-                    else verdict = { text: '⚠️ ' + changes.join(', ') + ' — ' + __alloT('stem.physics.runlog_confounded', 'more than one change, so the result cannot be pinned on any single variable'), cls: 'text-amber-900 font-bold' };
+                    else if (changes.length === 1) verdict = { text: '✅ ' + changes[0].label + ' — ' + __alloT('stem.physics.runlog_fair', 'a fair test'), cls: 'text-emerald-800 font-bold' };
+                    else verdict = { text: '⚠️ ' + changes.map(function (c) { return c.label; }).join(', ') + ' — ' + __alloT('stem.physics.runlog_confounded', 'more than one change, so the result cannot be pinned on any single variable'), cls: 'text-amber-900 font-bold' };
+                    // On a fair test of a multiplicative variable, say what the
+                    // two runs together imply about the relationship.
+                    var law = (changes && changes.length === 1) ? physRunExponent(log[i - 1], r, changes[0].k) : null;
                     // Same hue the Compare overlay paints this run's trail with,
                     // so the table and the canvas identify each other. The run
                     // NUMBER is the actual link; colour is a secondary cue only,
@@ -2773,7 +2810,16 @@ const d = labToolData.physics;
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.drag ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.mass),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono font-bold text-indigo-900" }, r.range.toFixed(1) + ' m'),
-                      React.createElement("td", { className: "px-2 py-0.5 " + verdict.cls }, verdict.text)
+                      React.createElement("td", { className: "px-2 py-0.5 " + verdict.cls },
+                        verdict.text,
+                        law && React.createElement("div", { className: "mt-0.5 font-normal text-indigo-900" },
+                          "📐 " + __alloT('stem.physics.runlog_law_prefix', 'You changed ') + (law.varPct > 0 ? '+' : '') + law.varPct.toFixed(0) + '% ' +
+                          __alloT('stem.physics.runlog_law_and_range', 'and the range moved ') + (law.rangePct > 0 ? '+' : '') + law.rangePct.toFixed(0) + '% — ' +
+                          __alloT('stem.physics.runlog_law_scales', 'range scales as ') +
+                          (law.key === 'vel' ? __alloT('stem.physics.var_velocity', 'velocity') : __alloT('stem.physics.var_gravity', 'gravity')) +
+                          physExponentLabel(law.exponent)
+                        )
+                      )
                     );
                   }))
                 ),
