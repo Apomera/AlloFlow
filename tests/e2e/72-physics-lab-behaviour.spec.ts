@@ -180,4 +180,20 @@ test('counts launches and logs each run with a fair-test verdict', async ({ page
   );
   expect(logText).toContain('a fair test');
   expect(logText).toContain('more than one change');
+
+  // Compare-overlay trails and log rows must identify each other by run number.
+  // Numbering comes from a monotonic counter, not the capped log length, or run 9
+  // would come back as run 1 and stop matching its trail.
+  const linkage = await page.evaluate(() => {
+    const d = (window as any).__toolData.physics;
+    const cv = document.getElementById('physicsCanvas') as any;
+    return {
+      logNumbers: (d.runLog || []).map((r: any) => r.n),
+      trailNumbers: (cv._trails || []).map((t: any) => t.run),
+      runCount: d.runCount,
+    };
+  });
+  expect(linkage.logNumbers).toEqual([1, 2, 3]);
+  expect(linkage.trailNumbers).toEqual([1, 2, 3]);
+  expect(linkage.runCount).toBe(3);
 });

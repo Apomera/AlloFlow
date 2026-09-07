@@ -431,13 +431,17 @@ const d = labToolData.physics;
                   // landings can queue inside setTimeout chains (symmetry demo
                   // fires two flights), and a captured `d.runLog` would drop one.
                   setLabToolData(function (prev) {
+                    // runCount is monotonic; the log itself keeps only the last 8,
+                    // so numbering must not be derived from its length or run 9
+                    // would come back as run 1 and stop matching the canvas label.
+                    var nextNo = (prev.physics.runCount || 0) + 1;
                     var log = (prev.physics.runLog || []).concat([{
-                      n: (prev.physics.runLog || []).length + 1,
+                      n: nextNo,
                       angle: summary.angle, vel: summary.vel, grav: summary.grav,
                       drag: !!summary.drag, mass: summary.mass,
                       range: summary.range, maxH: summary.maxH, time: summary.time
                     }]).slice(-8);
-                    return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { runLog: log }) });
+                    return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { runLog: log, runCount: nextNo }) });
                   });
                 }
                 // Tier challenge completion (50 m flag / 100 m through air /
@@ -501,6 +505,7 @@ const d = labToolData.physics;
               fast: __alloT('stem.physics.cv_fast', 'FAST'),
               dragOn: __alloT('stem.physics.cv_drag_on', 'Drag ON'),
               shots: __alloT('stem.physics.cv_shots', 'Shots: '),
+              runPrefix: __alloT('stem.physics.cv_run_prefix', 'Run '),
               narrLaunchFirst: __alloT('stem.physics.narr_launch_first', 'Projectile launched at {angle} degrees with a velocity of {vel} meters per second. Gravity is {grav} meters per second squared.'),
               narrLaunchDrag: __alloT('stem.physics.narr_launch_drag', ' Air resistance is on.'),
               narrLaunchRepeat: __alloT('stem.physics.narr_launch_repeat', 'Launched. Angle: {angle} degrees, velocity: {vel} meters per second.'),
@@ -1227,7 +1232,11 @@ const d = labToolData.physics;
                   ctx.setLineDash([]);
 
                   if (overlayMode && trail.angle != null) {
-                    var lbl = 'θ=' + trail.angle + '°, v=' + trail.velocity + ' m/s';
+                    // Lead with the run number so the trail and its row in the
+                    // experiment log identify each other. Colour matches the
+                    // row's swatch, but the number is the link a student reads.
+                    var lbl = (trail.run ? (canvasEl._L && canvasEl._L.runPrefix ? canvasEl._L.runPrefix : 'Run ') + trail.run + ' · ' : '')
+                      + 'θ=' + trail.angle + '°, v=' + trail.velocity + ' m/s';
                     ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif';
                     ctx.textAlign = 'center';
                     var lblY = apexSY - 8 * dpr;
@@ -1579,6 +1588,12 @@ const d = labToolData.physics;
                   // (the estimate part no-ops if no prediction was set).
                   // Deferred via setTimeout in callback.
                   var _trL = trails.length > 0 ? trails[trails.length - 1] : null;
+                  // Stamp the run number on the trail at LANDING, not at launch:
+                  // only a flight that lands earns a log row, so a launch the
+                  // student interrupts never consumes a number. data-run-next is
+                  // this flight's number because the row is appended after this.
+                  var _runNo = parseInt(canvasEl.dataset.runNext || '0', 10);
+                  if (_trL && isFinite(_runNo) && _runNo > 0) _trL.run = _runNo;
                   if (canvasEl._onAnyLand) canvasEl._onAnyLand(exactLandX, {
                     range: exactLandX, maxH: _landMaxH, time: ball.t || 0,
                     apexT: canvasEl._apex ? canvasEl._apex.tSec : null,
@@ -2380,6 +2395,9 @@ const d = labToolData.physics;
                 "data-show-overlay": d.showOverlay ? 'true' : 'false',
                 "data-show-formulas": d.showFormulas ? 'true' : 'false',
                 "data-sim-speed": String(d.simSpeed != null ? d.simSpeed : 1.0),
+                // The number the NEXT landing will claim, so the draw loop can
+                // stamp the trail without reading React state.
+                "data-run-next": String((d.runCount || 0) + 1),
 
                 onKeyDown: function (e) {
 
@@ -2723,8 +2741,16 @@ const d = labToolData.physics;
                     else if (changes.length === 0) verdict = { text: '🔁 ' + __alloT('stem.physics.runlog_repeat', 'nothing changed — a repeat trial'), cls: 'text-slate-700' };
                     else if (changes.length === 1) verdict = { text: '✅ ' + changes[0] + ' — ' + __alloT('stem.physics.runlog_fair', 'a fair test'), cls: 'text-emerald-800 font-bold' };
                     else verdict = { text: '⚠️ ' + changes.join(', ') + ' — ' + __alloT('stem.physics.runlog_confounded', 'more than one change, so the result cannot be pinned on any single variable'), cls: 'text-amber-900 font-bold' };
+                    // Same hue the Compare overlay paints this run's trail with,
+                    // so the table and the canvas identify each other. The run
+                    // NUMBER is the actual link; colour is a secondary cue only,
+                    // and the swatch is aria-hidden so it is not read aloud.
+                    var rowHue = Math.round(240 * (1 - Math.max(0, Math.min(90, r.angle)) / 90));
                     return React.createElement("tr", { key: 'rr' + i, className: "border-b border-indigo-100" },
-                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, i + 1),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" },
+                        React.createElement("span", { "aria-hidden": "true", style: { display: 'inline-block', width: 8, height: 8, borderRadius: 2, marginRight: 5, background: 'hsl(' + rowHue + ', 80%, 45%)' } }),
+                        r.n != null ? r.n : i + 1
+                      ),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.angle),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.vel),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.grav),

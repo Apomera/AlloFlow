@@ -54,6 +54,7 @@
   "cv_fast": "FAST",
   "cv_drag_on": "Drag ON",
   "cv_shots": "Shots: ",
+  "cv_run_prefix": "Run ",
   "narr_launch_first": "Projectile launched at {angle} degrees with a velocity of {vel} meters per second. Gravity is {grav} meters per second squared.",
   "narr_launch_drag": " Air resistance is on.",
   "narr_launch_repeat": "Launched. Angle: {angle} degrees, velocity: {vel} meters per second.",

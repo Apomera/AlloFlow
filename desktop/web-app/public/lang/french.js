@@ -16425,7 +16425,8 @@
       "runlog_fair": "un test équitable",
       "runlog_confounded": "plus d'un changement, le résultat ne peut donc être attribué à une seule variable",
       "runlog_fair_count": "de tes comparaisons ont changé exactement une variable. Ce sont celles dont tu peux tirer une conclusion.",
-      "runlog_none_fair": "Aucune comparaison n'a encore changé exactement une variable. Refais un lancement en bougeant un seul curseur."
+      "runlog_none_fair": "Aucune comparaison n'a encore changé exactement une variable. Refais un lancement en bougeant un seul curseur.",
+      "cv_run_prefix": "Lancer "
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aléatoire : ",
