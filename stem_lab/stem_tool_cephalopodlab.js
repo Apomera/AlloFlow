@@ -18112,6 +18112,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           for (var i = 0; i < 3; i++) out += i < n ? '★' : '☆';
           return out;
         };
+        // Star glyphs are unreadable aloud, so every cell also states its
+        // rating in words. The tint is a second encoding of the same number,
+        // never the only one — the stars and the word carry it too.
+        var RATING_WORD = [
+          __alloT('stem.cephalopodlab.comp_rate_0', 'no documented evidence'),
+          __alloT('stem.cephalopodlab.comp_rate_1', 'documented'),
+          __alloT('stem.cephalopodlab.comp_rate_2', 'strong'),
+          __alloT('stem.cephalopodlab.comp_rate_3', 'exceptional')
+        ];
+        var RATING_TINT = ['rgba(148,163,184,0.06)', 'rgba(148,163,184,0.14)', 'rgba(134,239,172,0.16)', 'rgba(251,191,36,0.22)'];
         return h('div', null,
           panelHeader('🧩 Comparative Cognition Lab',
             'Cephalopod intelligence in context. Compared across five animals from different evolutionary lineages — bees (invertebrate, 600M years apart), octopus (invertebrate, 600M years), corvids (vertebrate bird, 320M), dolphins (marine mammal, 95M), chimps (primate, 6M). All five evolved sophisticated cognition. The architectures are different. The capabilities overlap.'),
@@ -18137,7 +18147,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: cardStyle() },
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_big_comparison', '📊 The big comparison')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.6, marginBottom: 14 } },
-                __alloT('stem.cephalopodlab.six_cognitive_dimensions_five_animals_', 'Six cognitive dimensions × five animals. Stars: ☆ minimal, ★ documented, ★★ strong, ★★★ exceptional. Click any cell for the specific evidence.')),
+                __alloT('stem.cephalopodlab.comp_matrix_intro', 'Six cognitive dimensions × five animals. Every cell carries its own evidence note, so nothing is hidden behind a click. Stars, the wording and the depth of the tint all track one rating: ☆☆☆ no documented evidence, ★ documented, ★★ strong, ★★★ exceptional.')),
               // The matrix table
               h('div', { style: { overflowX: 'auto' } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)' } },
@@ -18163,10 +18173,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                           var rating = dim.ratings[a.id];
                           var starColor = rating === 3 ? '#fbbf24' : rating === 2 ? '#86efac' : rating === 1 ? '#94a3b8' : '#475569';
                           return h('td', { key: a.id,
-                            title: dim.notes[a.id],
-                            style: { padding: '12px 8px', textAlign: 'center', verticalAlign: 'top', cursor: 'help' } },
+                            style: { padding: '12px 8px', textAlign: 'center', verticalAlign: 'top', background: RATING_TINT[rating] || RATING_TINT[0] } },
                             h('div', { style: { fontSize: 14, color: starColor, letterSpacing: '0.05em', fontFamily: 'ui-monospace, Menlo, monospace' } },
-                              stars(rating)),
+                              h('span', { 'aria-hidden': 'true' }, stars(rating)),
+                              h('span', { className: 'sr-only' }, (RATING_WORD[rating] || RATING_WORD[0]) + '.')),
+                            h('div', { 'aria-hidden': 'true', style: { fontSize: 9.5, fontWeight: 800, color: starColor, textTransform: 'uppercase', letterSpacing: '0.05em', marginTop: 2 } },
+                              RATING_WORD[rating] || RATING_WORD[0]),
                             h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } },
                               dim.notes[a.id]));
                         }));

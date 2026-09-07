@@ -630,3 +630,40 @@ describe('Cephalopod Lab Myth Busters', () => {
     expect(c.querySelector('button[aria-pressed="true"]').textContent).toMatch(/Hide corrections again/);
   });
 });
+
+// ── Comparative Cognition matrix ──
+describe('Cephalopod Lab comparative cognition matrix', () => {
+  const renderMatrix = () => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'compcog', compView: 'matrix' } });
+    return c;
+  };
+
+  it('no longer advertises a click that does not exist', () => {
+    const c = renderMatrix();
+    expect(c.textContent).not.toMatch(/Click any cell/);
+    expect(c.textContent).toMatch(/Every cell carries its own evidence note/);
+    expect(c.innerHTML).not.toMatch(/cursor: help/);
+  });
+
+  it('states each rating in words, so the stars are never the only encoding', () => {
+    const c = renderMatrix();
+    const cells = Array.from(c.querySelectorAll('tbody td'));
+    expect(cells).toHaveLength(30);
+    // every cell names its rating for a screen reader as well as on screen
+    expect(cells.every((td) => /no documented evidence|documented|strong|exceptional/.test(td.textContent))).toBe(true);
+    // the star glyphs themselves are hidden from assistive tech
+    expect(cells[0].querySelector('[aria-hidden="true"]').textContent).toMatch(/[★☆]/);
+    // and the tint is a second encoding, not the only one
+    expect(cells.every((td) => /background:/.test(td.getAttribute('style') || ''))).toBe(true);
+  });
+
+  it('uses one meaning of zero stars, matching its own footnote', () => {
+    const c = renderMatrix();
+    // the legend used to say zero stars meant "minimal" while the footnote said
+    // it meant absence of evidence; the footnote is the careful reading
+    expect(c.textContent).toMatch(/☆☆☆ no documented evidence/);
+    expect(c.textContent).toMatch(/Absence of stars = absence of evidence/);
+    expect(c.textContent).not.toMatch(/☆ minimal/);
+  });
+});
