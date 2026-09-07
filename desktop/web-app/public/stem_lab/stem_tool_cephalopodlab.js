@@ -804,6 +804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // Through Time state
       timeView: 'timeline',                // 'timeline' | 'fossils' | 'extinctions' | 'body-evolution'
       timeEraId: 'ordovician',
+      timeExtinctionId: null,              // Through Time: highlighted mass extinction
       timeFossilId: 'cameroceras',
       // Jet Propulsion Lab state
       jetSpeciesId: 'humboldt',            // species for jet comparison
@@ -17275,7 +17276,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             lost: '~50% of marine species. Most ceratitid ammonoids die.',
             cephalopodImpact: 'Opens the door for new ammonite lineages (true ammonites with elaborate sutures) to dominate. Belemnites continue diversifying.',
             recovery: 'Jurassic ammonite + belemnite golden age begins. Body plans get more elaborate.' },
-          { id: 'end-cretaceous', name: __alloT('stem.cephalopodlab.end_cretaceous_k_pg', 'End-Cretaceous (K-Pg)'), mya: 66, color: '#0c1432',
+          { id: 'end-cretaceous', name: __alloT('stem.cephalopodlab.end_cretaceous_k_pg', 'End-Cretaceous (K-Pg)'), mya: 66, color: '#c084fc',
             cause: 'Chicxulub asteroid impact + Deccan Traps volcanism',
             lost: 'All non-avian dinosaurs, all ammonites, all belemnites, ~75% of all species',
             cephalopodImpact: 'COMPLETE extinction of ammonites + belemnites — two groups that ruled the oceans for 200+ million years. Only nautiloids + coleoids (octopus/squid/cuttlefish ancestors) survive.',
@@ -17432,10 +17433,52 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_5_mass_extinctions_cephalopods_liv', '☄️ The 5 mass extinctions cephalopods lived through')),
               h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.65, marginBottom: 14 } },
                 __alloT('stem.cephalopodlab.cephalopods_are_one_of_the_only_animal', 'Cephalopods are one of the only animal groups to survive ALL FIVE major mass extinctions in Earth history. Each one reshaped which lineages dominated next. The end-Cretaceous (K-Pg) is the one that killed ammonites + belemnites and left us with the modern cephalopod world.')),
+              // ── The five events on one deep-time axis ──
+              // Same 538 MYA span and the same era bands as the Timeline view,
+              // so the two views describe one story rather than two. Position
+              // is the event's own `mya`; nothing here is estimated.
+              (function() {
+                var SPAN = 538, W = 680, L = 30, R = 660, TOP = 40, BAND = 26;
+                var xAt = function(mya) { return R - (mya / SPAN) * (R - L); };
+                var selExt = d.timeExtinctionId || null;
+                var summary = __alloT('stem.cephalopodlab.ext_axis_summary', 'The five mass extinctions on a 538-million-year axis: ') +
+                  EXTINCTIONS.map(function(e) { return e.name + ' at about ' + e.mya + ' million years ago'; }).join('; ') + '.';
+                return h('div', { style: { background: 'linear-gradient(180deg, #121a2e 0%, #0a1020 100%)', borderRadius: 12, border: '1px solid rgba(251,146,60,0.28)', overflow: 'hidden', marginBottom: 14 } },
+                  h('svg', { viewBox: '0 0 ' + W + ' 168', width: '100%', height: 168, role: 'img', 'aria-label': summary, style: { display: 'block' } },
+                    // era bands, straight from the same ERAS data the Timeline uses
+                    ERAS.map(function(er) {
+                      var x1 = xAt(er.startMya), x2 = xAt(er.endMya);
+                      return h('g', { key: er.id },
+                        h('rect', { x: x1, y: TOP, width: Math.max(1, x2 - x1), height: BAND, fill: er.color, opacity: 0.55 }),
+                        (x2 - x1) > 46 ? h('text', { x: (x1 + x2) / 2, y: TOP + 17, textAnchor: 'middle', fontSize: 8.5, fontWeight: 700, fill: 'rgba(255,255,255,0.92)' },
+                          er.name.length > 13 ? er.name.slice(0, 11) + '…' : er.name) : null);
+                    }),
+                    // extinction markers
+                    EXTINCTIONS.map(function(ext, exi) {
+                      var x = xAt(ext.mya);
+                      var on = selExt === ext.id;
+                      // events are placed by date, so neighbours can crowd;
+                      // alternate rows rather than moving anything off its date
+                      var drop = (exi % 2) ? 26 : 0;
+                      return h('g', { key: ext.id, style: { cursor: 'pointer' },
+                          onClick: function() { setCL({ timeExtinctionId: on ? null : ext.id }); awardXP(1); clAnnounce(ext.name + ', about ' + ext.mya + ' million years ago.'); } },
+                        h('line', { x1: x, y1: TOP - 12, x2: x, y2: TOP + BAND + 10 + drop, stroke: ext.color, strokeWidth: on ? 3 : 2 }),
+                        h('circle', { cx: x, cy: TOP - 16, r: on ? 7 : 5, fill: ext.color, stroke: on ? '#ffffff' : 'rgba(15,23,42,0.7)', strokeWidth: on ? 2 : 1 }),
+                        h('text', { x: x, y: TOP + BAND + 26 + drop, textAnchor: 'middle', fontSize: 9.5, fontWeight: on ? 900 : 700, fill: on ? '#ffffff' : ext.color }, ext.mya),
+                        h('text', { x: x, y: TOP + BAND + 40 + drop, textAnchor: 'middle', fontSize: 8.5, fill: on ? '#f1f5f9' : '#cbd5e1' },
+                          ext.name.length > 16 ? ext.name.slice(0, 15) + '…' : ext.name));
+                    }),
+                    h('text', { x: L, y: 20, fontSize: 9.5, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' }, '538 MYA'),
+                    h('text', { x: R, y: 20, textAnchor: 'end', fontSize: 9.5, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' }, __alloT('stem.cephalopodlab.ext_axis_today', 'today')),
+                    h('text', { x: L, y: 162, fontSize: 9.5, fill: '#cbd5e1' },
+                      __alloT('stem.cephalopodlab.ext_axis_note', 'Evenly spaced on the page would be a lie — these are placed by date, so the gaps are real. Select an event to highlight its card.'))));
+              })(),
               h('div', { style: { display: 'flex', flexDirection: 'column', gap: 10 } },
                 EXTINCTIONS.map(function(ext) {
+                  var on = d.timeExtinctionId === ext.id;
                   return h('div', { key: ext.id,
-                    style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(100,116,139,0.3)',
+                    style: { background: on ? ext.color + '14' : 'rgba(15,23,42,0.5)',
+                      border: '1px solid ' + (on ? ext.color : 'rgba(100,116,139,0.3)'),
                       borderLeft: '4px solid ' + ext.color, padding: '14px 16px', borderRadius: 10 } },
                     h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 8, flexWrap: 'wrap' } },
                       h('div', { style: { fontSize: 16, fontWeight: 900, color: ext.color } }, ext.name),

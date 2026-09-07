@@ -667,3 +667,49 @@ describe('Cephalopod Lab comparative cognition matrix', () => {
     expect(c.textContent).not.toMatch(/☆ minimal/);
   });
 });
+
+// ── Through Time: mass extinctions on a dated axis ──
+describe('Cephalopod Lab mass extinction axis', () => {
+  const renderExt = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'time', timeView: 'extinctions', ...data } });
+    return c;
+  };
+  const axis = (c) => c.querySelector('svg[aria-label^="The five mass extinctions"]');
+
+  it('places all five events by date and names them in its summary', () => {
+    const label = axis(renderExt()).getAttribute('aria-label');
+    ['444', '372', '252', '201', '66'].forEach((mya) => expect(label).toContain(mya + ' million years ago'));
+    expect(label).toMatch(/End-Permian/);
+  });
+
+  it('positions markers by their real dates, not evenly', () => {
+    const svg = axis(renderExt());
+    const xs = Array.from(svg.querySelectorAll('circle')).map((c) => Number(c.getAttribute('cx')));
+    expect(xs).toHaveLength(5);
+    // dates run 444, 372, 252, 201, 66 -> left to right, increasing x
+    for (let i = 1; i < xs.length; i++) expect(xs[i]).toBeGreaterThan(xs[i - 1]);
+    // and the gaps are genuinely uneven: 252->201 is much closer than 372->252
+    const gapPermianTriassic = xs[3] - xs[2];
+    const gapDevonianPermian = xs[2] - xs[1];
+    expect(gapPermianTriassic).toBeLessThan(gapDevonianPermian);
+  });
+
+  it('gives every event an accent that is not the page background', () => {
+    // the end-Cretaceous accent used to be #0c1432, the first stop of this
+    // tool's own root gradient, so its marker and card border were invisible
+    const svg = axis(renderExt());
+    const fills = Array.from(svg.querySelectorAll('circle')).map((c) => c.getAttribute('fill').toLowerCase());
+    expect(fills).not.toContain('#0c1432');
+    expect(new Set(fills).size).toBe(5);
+  });
+
+  it('highlights the matching card when an event is selected', () => {
+    const none = renderExt();
+    const chosen = renderExt({ timeExtinctionId: 'end-permian' });
+    // the harness serializes inline styles without a space after the colon
+    const bordered = (c) => Array.from(c.querySelectorAll('div')).filter((el) => /border:\s?1px solid #dc2626/i.test(el.getAttribute('style') || ''));
+    expect(bordered(none)).toHaveLength(0);
+    expect(bordered(chosen).length).toBeGreaterThan(0);
+  });
+});
