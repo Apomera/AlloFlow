@@ -13092,7 +13092,7 @@
       "pack": {
         "kicker": "YOUR OWN GEOGRAPHY",
         "heading": "Load a different region",
-        "intro": "Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, and project file as the built-in samples.",
+        "intro": "Bring any place into the studio as a region pack: a GeoJSON, KML, or GPX layer with numeric attributes, a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Boundary files become both the places and the polygon layer. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, generated missions, and project file as the built-in samples.",
         "choose_file": "Region pack file (.json or .csv)",
         "label": "Pack name",
         "label_placeholder": "Example: Cumberland County towns",
@@ -13110,7 +13110,7 @@
         "empty": "No custom packs yet. Packs you load travel with the project file and device-local autosave.",
         "active": "Active",
         "places": "places",
-        "limit_note": "Up to 12 packs, 250 places, and 8 attributes each. Custom packs have no guided missions or official layers; the guided Maine series stays available from the built-in packs.",
+        "limit_note": "Up to 12 packs, 250 places, and 8 attributes each. Every pack gets generated inquiry missions; the hand-authored Maine series and official layers stay with the built-in packs.",
         "limit_reached": "Remove a region pack before loading another. The studio keeps up to 12 custom packs.",
         "status_replaced": "Updated region pack",
         "status_loaded": "Loaded region pack",
