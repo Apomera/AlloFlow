@@ -3536,6 +3536,20 @@
           sunSprite.position.set(20, 45, 20);
           engine.scene.add(sunSprite);
           engine._sunSprite = sunSprite;
+          // Moon: opposite the sun, pale, three soft craters; fades in as the sun
+          // intensity drops (night, late sunset), so the sky has a light at night.
+          var moonCanvas = document.createElement('canvas'); moonCanvas.width = 128; moonCanvas.height = 128;
+          var mctx = moonCanvas.getContext('2d');
+          var mg = mctx.createRadialGradient(64, 64, 30, 64, 64, 64);
+          mg.addColorStop(0, 'rgba(235,240,248,1)'); mg.addColorStop(0.62, 'rgba(226,232,240,1)'); mg.addColorStop(0.72, 'rgba(226,232,240,0.35)'); mg.addColorStop(1, 'rgba(226,232,240,0)');
+          mctx.fillStyle = mg; mctx.fillRect(0, 0, 128, 128);
+          mctx.fillStyle = 'rgba(160,170,190,0.55)';
+          [[50, 52, 8], [76, 70, 6], [60, 80, 4]].forEach(function(cr) { mctx.beginPath(); mctx.arc(cr[0], cr[1], cr[2], 0, Math.PI * 2); mctx.fill(); });
+          var moonSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(moonCanvas), transparent: true, depthWrite: false, opacity: 0 }));
+          moonSprite.scale.set(7, 7, 1);
+          moonSprite.position.set(-38, 40, -34);
+          engine.scene.add(moonSprite);
+          engine._moonSprite = moonSprite;
 
           // Cloud plane — a large flat plane with procedural cloud texture, slowly drifting
           var cloudCanvas = document.createElement('canvas'); cloudCanvas.width = 512; cloudCanvas.height = 512;
@@ -3591,6 +3605,7 @@
 
         // ── Procedural textures ──
         var _procTexCache = {};
+        engine._procTexCache = _procTexCache;
         // Painted textures are authored in sRGB; tell three so they are not
         // gamma-encoded a second time on output (which read as washed-out pastel).
         function finishBlockTexture(tex) {
@@ -3651,6 +3666,78 @@
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
           finishBlockTexture(tex);
           _procTexCache.grass = tex;
+          return tex;
+        }
+        // Grass cube atlas: grass on the top half of the image (UV v 0.5..1, which
+        // the cube's top face is remapped to), dirt with a grass fringe on the lower
+        // half for the four sides and the underside. Only the cube shape gets the
+        // atlas; slabs and wedges keep the plain grass so their unmapped faces
+        // never show a seam.
+        function makeGrassAtlasTexture() {
+          if (_procTexCache.grassAtlas) return _procTexCache.grassAtlas;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 128;
+          var ctx = c.getContext('2d');
+          try { ctx.drawImage(makeGrassTexture().image, 0, 0); } catch (e) { ctx.fillStyle = '#4CAF50'; ctx.fillRect(0, 0, 64, 64); }
+          ctx.fillStyle = '#7a5537'; ctx.fillRect(0, 64, 64, 64);
+          for (var i = 0; i < 160; i++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(40,24,12,0.16)' : 'rgba(180,140,100,0.12)';
+            ctx.fillRect(Math.random() * 64, 64 + Math.random() * 64, 1 + Math.random() * 3, 1 + Math.random() * 2);
+          }
+          for (var k = 0; k < 14; k++) {
+            var px = Math.random() * 64, py = 74 + Math.random() * 50, pr = 2 + Math.random() * 3;
+            ctx.fillStyle = 'rgba(96,70,48,0.55)'; ctx.beginPath(); ctx.ellipse(px, py, pr, pr * 0.7, 0, 0, Math.PI * 2); ctx.fill();
+          }
+          // grass fringe hanging over the top edge of the side faces
+          ctx.fillStyle = '#4CAF50'; ctx.fillRect(0, 64, 64, 5);
+          ctx.fillStyle = '#3f9a45';
+          for (var f = 0; f < 64; f += 3) { var h = 4 + Math.round(Math.random() * 5); ctx.fillRect(f, 64, 2, h); }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.grassAtlas = tex;
+          return tex;
+        }
+        // Tangent-space normal map from a painted height field (finite differences),
+        // so water can carry an animated ripple and ice a crackle without any
+        // extra geometry. Linear data: deliberately NOT tagged sRGB.
+        function makeBumpNormalTexture(kind) {
+          var key = kind + 'Normal';
+          if (_procTexCache[key]) return _procTexCache[key];
+          var N = 64, hc = document.createElement('canvas'); hc.width = N; hc.height = N;
+          var hx = hc.getContext('2d');
+          hx.fillStyle = '#808080'; hx.fillRect(0, 0, N, N);
+          if (kind === 'water') {
+            for (var i = 0; i < 26; i++) {
+              var cx2 = Math.random() * N, cy2 = Math.random() * N, r = 6 + Math.random() * 14;
+              var g = hx.createRadialGradient(cx2, cy2, 0, cx2, cy2, r);
+              var up = Math.random() > 0.5;
+              g.addColorStop(0, up ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'); g.addColorStop(1, 'rgba(128,128,128,0)');
+              hx.fillStyle = g; hx.fillRect(0, 0, N, N);
+            }
+          } else {
+            hx.strokeStyle = 'rgba(0,0,0,0.5)'; hx.lineWidth = 1.2;
+            for (var j = 0; j < 9; j++) {
+              var sx = Math.random() * N, sy = Math.random() * N;
+              hx.beginPath(); hx.moveTo(sx, sy);
+              for (var seg = 0; seg < 4; seg++) { sx += (Math.random() - 0.5) * 22; sy += (Math.random() - 0.5) * 22; hx.lineTo(sx, sy); }
+              hx.stroke();
+            }
+          }
+          var hd = hx.getImageData(0, 0, N, N).data;
+          var H = function(x, y) { x = (x + N) % N; y = (y + N) % N; return hd[(y * N + x) * 4] / 255; };
+          var nc = document.createElement('canvas'); nc.width = N; nc.height = N;
+          var nx2 = nc.getContext('2d'), out = nx2.createImageData(N, N), od = out.data;
+          var strength = kind === 'water' ? 2.2 : 3.0;
+          for (var y = 0; y < N; y++) for (var x = 0; x < N; x++) {
+            var dx = (H(x + 1, y) - H(x - 1, y)) * strength, dy = (H(x, y + 1) - H(x, y - 1)) * strength;
+            var len = Math.sqrt(dx * dx + dy * dy + 1);
+            var o = (y * N + x) * 4;
+            od[o] = Math.round((-dx / len * 0.5 + 0.5) * 255); od[o + 1] = Math.round((dy / len * 0.5 + 0.5) * 255); od[o + 2] = Math.round((1 / len * 0.5 + 0.5) * 255); od[o + 3] = 255;
+          }
+          nx2.putImageData(out, 0, 0);
+          var tex = new THREE.CanvasTexture(nc);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          _procTexCache[key] = tex;
           return tex;
         }
         function makeBrickTexture() {
@@ -3755,9 +3842,9 @@
           } else if (type === 'sand') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeSandTexture(), roughness: 0.95, metalness: 0.0 });
           } else if (type === 'water') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3 });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3, normalMap: makeBumpNormalTexture('water'), normalScale: new THREE.Vector2(0.35, 0.35) });
           } else if (type === 'ice') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.62, roughness: 0.06, metalness: 0.05, transmission: 0.5, thickness: 0.3, envMapIntensity: 1.2 });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.62, roughness: 0.06, metalness: 0.05, transmission: 0.5, thickness: 0.3, envMapIntensity: 1.2, normalMap: makeBumpNormalTexture('ice'), normalScale: new THREE.Vector2(0.25, 0.25) });
           } else if (type === 'stone') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeStoneTexture(), roughness: 0.9, metalness: 0.0 });
           } else if (type === 'brick') {
@@ -3766,6 +3853,8 @@
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.4, metalness: 0.1, emissive: 0xFF3D00, emissiveIntensity: 0.6 });
           } else if (type === 'torch') {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3, metalness: 0.0, emissive: 0xFFAB00, emissiveIntensity: 0.9 });
+          } else if (type === 'grass_cube') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassAtlasTexture(), roughness: 0.8, metalness: 0.0 });
           } else if (type === 'grass') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassTexture(), roughness: 0.8, metalness: 0.0 });
           } else {
@@ -3918,7 +4007,14 @@
           var shapeId = shape || 'cube';
           var rot = rotation || 0; // 0-3 = 0°, 90°, 180°, 270°
           var geo = createShapeGeometry(shapeId);
-          var mat = getBlockMaterial(type);
+          var grassCube = type === 'grass' && shapeId === 'cube';
+          if (grassCube) {
+            // BoxGeometry vertex order: px, nx, py (top), ny, pz, nz; four each.
+            var uv = geo.getAttribute('uv');
+            if (uv && uv.count === 24) { for (var ui = 0; ui < 24; ui++) uv.setY(ui, (ui >= 8 && ui < 12) ? 0.5 + uv.getY(ui) * 0.5 : uv.getY(ui) * 0.5); uv.needsUpdate = true; }
+            else grassCube = false;
+          }
+          var mat = getBlockMaterial(grassCube ? 'grass_cube' : type);
           // Lesson ground only: alternate cells by a hair so the floor reads as unit
           // squares a student can count for V = L x W x H, without a line grid. The
           // material is this block's own clone, and a student's grass block keeps
@@ -6384,6 +6480,16 @@
           }
           // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
           // "run off" into a strange corner when the player explores a large world.
+          if (engine._moonSprite && engine.camera) {
+            engine._moonSprite.position.set(engine.camera.position.x - 38, 40, engine.camera.position.z - 34);
+            var sunI = engine.sun ? engine.sun.intensity : 1;
+            engine._moonSprite.material.opacity = Math.max(0, Math.min(1, (0.45 - sunI) / 0.25));
+            if (engine._sunSprite) engine._sunSprite.material.opacity = Math.max(0.1, Math.min(1, (sunI - 0.15) / 0.6));
+          }
+          // Water ripple: the shared normal map drifts, every water block shares it.
+          if (engine._ambientMotionEnabled !== false && engine._procTexCache && engine._procTexCache.waterNormal) {
+            engine._procTexCache.waterNormal.offset.x += dt * 0.035; engine._procTexCache.waterNormal.offset.y += dt * 0.02;
+          }
           if (engine._sunSprite && engine.camera) {
             engine._sunSprite.position.x = engine.camera.position.x + 40;
             engine._sunSprite.position.y = 45;
@@ -6895,6 +7001,7 @@
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
           if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
           if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
+          if (engine._moonSprite) { engine.scene.remove(engine._moonSprite); try { engine._moonSprite.material.map.dispose(); engine._moonSprite.material.dispose(); } catch (e) {} engine._moonSprite = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows

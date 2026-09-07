@@ -746,8 +746,10 @@ test.describe('Geometry World — real WebGL', () => {
     await page.waitForTimeout(300);
     const census = await page.evaluate(() => (window as any).__spriteCensus());
     expect(census.npcs).toBe(0);
-    // The sun is the only sprite a character-free world should carry.
-    expect(census.sprites).toBe(1);
+    // The sun and the moon are the only sprites a character-free world should
+    // carry (the moon joined the sky in the 2026-09-07 visual pass; it is a
+    // permanent sky sprite, not a character leftover).
+    expect(census.sprites).toBe(2);
   });
 
   test('keeps HUD presets playable across desktop, tablet, phone, landscape, and fullscreen', async ({ page }) => {

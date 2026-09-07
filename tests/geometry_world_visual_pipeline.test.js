@@ -112,8 +112,11 @@ describe('colour pipeline source contract', () => {
   });
 
   it('tags every painted block texture as sRGB', () => {
-    // one finishBlockTexture per generator: grass, brick, wood, sand, stone
-    expect(src.split('finishBlockTexture(tex);').length - 1).toBe(5);
+    // one finishBlockTexture per painted generator: grass, grass atlas, brick,
+    // wood, sand, stone. Normal maps are linear data and must NOT be tagged.
+    expect(src.split('finishBlockTexture(tex);').length - 1).toBe(6);
+    expect(src).toContain("_procTexCache[key] = tex;");
+    expect(src).not.toMatch(/makeBumpNormalTexture[\s\S]{0,2400}finishBlockTexture\(tex\);[\s\S]{0,200}_procTexCache\[key\]/);
     expect(src).toContain('tex.encoding = THREE.sRGBEncoding');
   });
 

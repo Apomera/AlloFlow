@@ -42,8 +42,20 @@ Geometry World is the first-person voxel builder (`stem_lab/stem_tool_geometrywo
 
 **Placement pop.** A block placed by the student scales in from 0.7 over 160 ms (skipped under reduced motion / battery saver). Direct `placeBlock` calls, which lessons and the e2e block-fidelity checks use, stay exact.
 
+## Round 6 (same day): grass sides, water and ice surfaces, a moon
+
+**Grass cubes have a top and sides.** A grass cube now uses a two-part atlas: grass on the top face, dirt with a hanging grass fringe on the four sides and the underside. The cube's top-face UVs are remapped to the upper half of the atlas at placement; slabs and wedges keep the plain grass so no unmapped face shows a seam. The rim of every lesson floor now reads as turf on earth.
+
+**Water ripples, ice crackles.** Both get a tangent-space normal map derived from a painted height field by finite differences (linear data, deliberately not tagged sRGB). The single shared water map drifts every frame so all water blocks ripple together; ice keeps a static crackle.
+
+**A moon at night.** A pale disc with three soft craters sits opposite the sun and fades in as the sun intensity falls, while the sun disc fades out. In the night preset the probe measured moon opacity 0.76 and sun disc 0.18.
+
+Probe results (`scratch/geometry-world-visuals-2026-09-07/probe-round6.mjs`): grass cube atlas 64x128 with top-face v in [0.5, 1] and side v in [0, 0.5]; water normal map present and drifting; ice normal map present; moon opacity 0 by day. Zero page errors.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
 
 Round 5 run of the same spec: **14 passed, 3 flaky (passed on retry)** in 14.7 minutes while another session had a browser suite running (13 Chromium processes alive before the run). The three, "starting a lesson leaves ONE canvas", "W walks the player forward" and "slab or wedge preflight", were then re-run unchanged twice each with retries off: **6 passed** in 2.1 minutes. The flakes were load, not the code.
+
+Round 6 run of the same spec: **16 passed, 1 failed**. The failure was the sprite census pin "the sun is the only sprite a character-free world carries"; the moon is now a second permanent sky sprite, so the pin moved to two with the reason inline, and the test passed on re-run (12.8 s, retries off). No other test changed.
