@@ -93,6 +93,44 @@ test('air drag shortens the flight instead of reversing it, and mass matters in 
   expect(heavy.range).toBeLessThan(vacuum.range);
 });
 
+test('the flight runs in real time, not at the display refresh rate', async ({ page }) => {
+  // The loop advanced a fixed 0.035s of simulated time per FRAME, so the flight
+  // ran at whatever rate the monitor refreshed: measured 2.02x real time at 58fps
+  // and it would be ~4x on a 120Hz laptop. Two students on different machines saw
+  // different speeds, and the flight time the tool reports did not match a
+  // stopwatch — which matters because that number is a taught measurement.
+  await mountPhysics(page);
+  // A high lob under Moon gravity, so the flight outlasts the sampling window.
+  await setState(page, { angle: 80, velocity: 50, gravity: 1.6, mass: 1, airResist: false, simSpeed: 1 });
+
+  const sample = async (ms: number) => await page.evaluate(async (waitMs) => {
+    const cv = document.getElementById('physicsCanvas') as any;
+    const t0 = performance.now();
+    const s0 = cv._ball ? cv._ball.t : 0;
+    await new Promise((r) => setTimeout(r, waitMs));
+    return {
+      wall: (performance.now() - t0) / 1000,
+      sim: (cv._ball ? cv._ball.t : 0) - s0,
+      flying: !!cv._launched,
+    };
+  }, ms);
+
+  await page.getByRole('button', { name: 'Launch!' }).click();
+  await page.waitForTimeout(150);
+  const full = await sample(1500);
+  expect(full.flying, 'flight must outlast the window or the ratio is meaningless').toBe(true);
+  // Generous band: frame pacing varies on CI, but frame-driven timing sat at 2.02.
+  expect(full.sim / full.wall).toBeGreaterThan(0.7);
+  expect(full.sim / full.wall).toBeLessThan(1.3);
+
+  // Half speed must still be half of real time, not half of a frame count.
+  await setState(page, { simSpeed: 0.5 });
+  const half = await sample(1500);
+  expect(half.flying).toBe(true);
+  expect(half.sim / half.wall).toBeGreaterThan(0.3);
+  expect(half.sim / half.wall).toBeLessThan(0.75);
+});
+
 test('pausing mid-flight freezes the physics instead of draining velocity', async ({ page }) => {
   await mountPhysics(page);
   await setState(page, { angle: 55, velocity: 30, airResist: true, mass: 1, simSpeed: 1 });

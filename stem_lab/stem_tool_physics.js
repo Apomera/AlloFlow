@@ -749,7 +749,7 @@ const d = labToolData.physics;
             var dt = 0.035;
             var DT_BASE = 0.035;
 
-            function draw() {
+            function draw(nowTs) {
               if (!physAlive) return;
               canvasEl._physAnim = null;
               if (!canvasEl.isConnected) {
@@ -764,13 +764,29 @@ const d = labToolData.physics;
               // energy bars, and trail position without losing context. When
               // paused, a one-shot _stepNext flag advances exactly one tick
               // at base dt (the Step button sets this).
+              // Real elapsed time, not a fixed slice per frame. Advancing a
+              // constant DT_BASE every frame made the flight run at the DISPLAY's
+              // refresh rate: measured 2.02x real time at 58fps, and it would be
+              // ~4x on a 120Hz laptop. Two students on different machines saw
+              // different speeds, "1x" was not real time, and the flight time the
+              // tool reports did not match a stopwatch. Clamped to 50ms so a
+              // backgrounded tab or a long GC pause cannot teleport the ball.
+              var _now = (typeof nowTs === 'number' && isFinite(nowTs))
+                ? nowTs
+                : ((typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now());
+              var _prevTs = canvasEl._prevTs;
+              canvasEl._prevTs = _now;
+              var _elapsed = (typeof _prevTs === 'number' && _now > _prevTs)
+                ? Math.min(0.05, (_now - _prevTs) / 1000)
+                : DT_BASE;
               var _ss = parseFloat(canvasEl.dataset.simSpeed);
               if (!isFinite(_ss) || _ss < 0) _ss = 1.0;
               if (_ss === 0 && canvasEl._stepNext) {
+                // One deterministic tick, so stepping is reproducible.
                 dt = DT_BASE;
                 canvasEl._stepNext = false;
               } else {
-                dt = DT_BASE * _ss;
+                dt = _elapsed * _ss;
               }
               tick += physMotionReduced ? 0.2 : 1;
 

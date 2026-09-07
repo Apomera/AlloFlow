@@ -26,6 +26,14 @@ describe('physics source gates (both live copies)', () => {
       expect(src).toContain('if (dt > 0) physStep(ball, dt);');
       expect(src).toContain('if (dt > 0 && trails.length > 0)');
       expect(src).toContain('window.StemLab._physics = {');
+      // The canvas loop must take its timestep from the real clock. A fixed
+      // slice per frame ran the flight at the display refresh rate (2.02x real
+      // time at 58fps, ~4x at 120Hz), so reported flight time did not match a
+      // stopwatch. The solver keeps a fixed step on purpose, for determinism.
+      expect(src).toContain('function draw(nowTs) {');
+      expect(src).toContain('dt = _elapsed * _ss;');
+      expect(src).toContain('Math.min(0.05, (_now - _prevTs) / 1000)');
+      expect(src).not.toContain('dt = DT_BASE * _ss;');
     });
   });
 
