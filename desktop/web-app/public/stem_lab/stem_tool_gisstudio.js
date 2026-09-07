@@ -874,15 +874,15 @@
         if (quoted && source[i + 1] === '"') { field += '"'; i += 1; }
         else quoted = !quoted;
       } else if (character === delimiter && !quoted) {
-        row.push(field.trim()); field = '';
+        row.push(unguardGISCSVCell(field.trim())); field = '';
       } else if ((character === '\n' || character === '\r') && !quoted) {
         if (character === '\r' && source[i + 1] === '\n') i += 1;
-        row.push(field.trim()); field = '';
+        row.push(unguardGISCSVCell(field.trim())); field = '';
         if (row.some(function (cell) { return cell !== ''; })) rows.push(row);
         row = [];
       } else field += character;
     }
-    row.push(field.trim());
+    row.push(unguardGISCSVCell(field.trim()));
     if (row.some(function (cell) { return cell !== ''; })) rows.push(row);
     return { rows: rows, delimiter: delimiter };
   }
@@ -1269,9 +1269,20 @@
     return limited;
   }
 
+  var GIS_CSV_FORMULA_START = /^[=+\-@\t\r]/;
+
   function csvCell(value) {
     var text = String(value == null ? '' : value);
+    if (GIS_CSV_FORMULA_START.test(text) && !Number.isFinite(Number(text))) text = "'" + text;
     return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+  }
+
+  // The mirror of the guard above, so re-importing the studio's own export gives
+  // back the original name. It only removes an apostrophe that is doing the
+  // guarding, never one that belongs to the text.
+  function unguardGISCSVCell(value) {
+    var text = String(value == null ? '' : value);
+    return /^'[=+\-@\t\r]/.test(text) ? text.slice(1) : text;
   }
 
   function rowsToCSV(rows) {
@@ -3739,7 +3750,7 @@
       transformGISCoordinatePair: transformGISCoordinatePair, inverseGISWebMercator: inverseGISWebMercator, inverseGISUTM: inverseGISUTM,
       suggestGISImportColumns: suggestGISImportColumns, inspectGISCSV: inspectGISCSV,
       gisImportParseOptions: gisImportParseOptions,
-      parseCSV: parseCSV, rowsToCSV: rowsToCSV, safeFileStem: safeFileStem, parseGeoJSON: parseGeoJSON, parseKML: parseKML, parseGPX: parseGPX, detectGISVectorFormat: detectGISVectorFormat, parseGISVectorText: parseGISVectorText, inspectGISVectorLayer: inspectGISVectorLayer, parseTableCSV: parseTableCSV,
+      parseCSV: parseCSV, rowsToCSV: rowsToCSV, csvCell: csvCell, unguardGISCSVCell: unguardGISCSVCell, safeFileStem: safeFileStem, parseGeoJSON: parseGeoJSON, parseKML: parseKML, parseGPX: parseGPX, detectGISVectorFormat: detectGISVectorFormat, parseGISVectorText: parseGISVectorText, inspectGISVectorLayer: inspectGISVectorLayer, parseTableCSV: parseTableCSV,
       normalizeJoinKey: normalizeJoinKey, joinTableToGeoJSON: joinTableToGeoJSON, calculateBreaks: calculateBreaks, classColor: classColor,
       minimalLongitudeArc: minimalLongitudeArc, dataViewport: dataViewport, normalizeLongitude: normalizeLongitude,
       summarizeGeographicCoverage: summarizeGeographicCoverage,

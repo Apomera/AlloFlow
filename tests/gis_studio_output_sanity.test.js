@@ -110,6 +110,81 @@ describe('GIS Studio output sanity', () => {
     expect(sweep('with-boundaries', bounded)).toEqual([]);
   });
 
+  it('does not hand a spreadsheet a formula it never wrote', () => {
+    // Place names now arrive in files the studio did not author. Excel, Numbers
+    // and Sheets treat a leading =, +, - or @ as a formula, so an exported CSV
+    // can execute when a colleague opens it.
+    const csv = tool.testing.rowsToCSV([
+      ['name', 'value'],
+      ['=HYPERLINK("http://example.invalid","click")', 1],
+      ['+1+1', 2],
+      ['@SUM(A1)', 3],
+      ['-notanumber', 4],
+      ['normal place', 5]
+    ]);
+    const lines = csv.trim().split('\r\n');
+    expect(lines[1]).toContain("'=HYPERLINK");
+    expect(lines[2]).toBe("'+1+1,2");
+    expect(lines[3]).toBe("'@SUM(A1),3");
+    expect(lines[4]).toBe("'-notanumber,4");
+    expect(lines[5]).toBe('normal place,5');
+
+    // Every guarded cell is inert: no exported field begins with a trigger.
+    for (const line of lines.slice(1)) {
+      for (const cell of line.split(',')) {
+        expect(/^"?[=+@]/.test(cell), 'a cell still starts with a formula trigger: ' + cell).toBe(false);
+      }
+    }
+  });
+
+  it('leaves real numbers alone, including negative ones', () => {
+    const csv = tool.testing.rowsToCSV([['name', 'elevation'], ['Below sea level', -5], ['Deep', '-12.5'], ['Zero', 0]]);
+    const lines = csv.trim().split('\r\n');
+    expect(lines[1]).toBe('Below sea level,-5');
+    expect(lines[2]).toBe('Deep,-12.5');
+    expect(lines[3]).toBe('Zero,0');
+    expect(tool.testing.csvCell(-5)).toBe('-5');
+    expect(tool.testing.csvCell('-5e3')).toBe('-5e3');
+    expect(tool.testing.csvCell('')).toBe('');
+    expect(tool.testing.csvCell(null)).toBe('');
+  });
+
+  it('round-trips its own export, guard and all', () => {
+    const name = '=Cape Town';
+    const csv = tool.testing.rowsToCSV([['name', 'latitude', 'longitude', 'value'], [name, -33.92, 18.42, 42]]);
+    expect(csv).toContain("'=Cape Town");
+    const parsed = tool.testing.parseCSV(csv);
+    expect(parsed[0].name).toBe(name);
+    expect(parsed[0]).toMatchObject({ lat: -33.92, lon: 18.42, value: 42 });
+
+    // Only the guard is removed, never an apostrophe that belongs to the text.
+    expect(tool.testing.unguardGISCSVCell("'=x")).toBe('=x');
+    expect(tool.testing.unguardGISCSVCell("'Ndjamena")).toBe("'Ndjamena");
+    expect(tool.testing.unguardGISCSVCell("O'Brien Point")).toBe("O'Brien Point");
+    expect(tool.testing.unguardGISCSVCell('')).toBe('');
+  });
+
+  it('escapes hostile text in every exported report', () => {
+    const payload = '<img src=x onerror=alert(1)>';
+    const rows = [{ name: payload, lat: 1, lon: 2, value: 3, geometry: 'Point' }];
+    const reports = {
+      evidence: tool.testing.buildEvidenceReport({ left: { label: payload, rows }, right: { label: payload, rows } }),
+      composer: tool.testing.buildMapComposerReport({ rows, title: payload, altText: payload, annotations: [{ label: payload, lat: 1, lon: 2 }], provenance: { source: payload } }),
+      story: tool.testing.buildStoryMapReport({ rows, story: { title: payload, subtitle: payload, slides: [{ title: payload, narrative: payload }] } }),
+      quality: tool.testing.buildDataQualityReport({ importedRows: rows, provenance: { source: payload } }),
+      packet: tool.testing.buildInvestigationPacketReport({ rows, storyMap: { title: payload, slides: [{ title: payload, narrative: payload }] }, provenance: { source: payload } })
+    };
+    for (const [name, html] of Object.entries(reports)) {
+      expect(html, name + ' report contains an unescaped tag from user text').not.toContain('<img src=x');
+    }
+    // The reports that echo names and titles must still show the text, escaped,
+    // rather than dropping it. The quality review only summarises, so it is not
+    // expected to carry the string at all.
+    for (const name of ['evidence', 'composer', 'story', 'packet']) {
+      expect(reports[name], name + ' report should still show the text, escaped').toContain('&lt;img src=x');
+    }
+  });
+
   it('says so when a pack has only one attribute to compare', () => {
     const single = packState({
       label: 'Otago towns',
