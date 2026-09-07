@@ -844,3 +844,12 @@ Validation: 19 existing setup, active-turn, live-vote and HUD contracts passed; 
 - Note: a `page.goto` timeout on the pop-out audit was a NETWORK FLAKE — an unchanged re-run passed. Don't "fix" it.
 - Still open: language packs hold English for all 179 `stem.zoomGallery` keys.
 - Not deployed.
+
+### 2026-09-07 — Zoom Gallery v2.3: three defects in my own v2.1/v2.2 work (Claude Code) @959202f66
+- ★★★Found by reading the browser's ACCESSIBILITY TREE (CDP `Accessibility.getPartialAXTree`) and driving the tool, not by re-reading source that had already passed review and axe. axe was clean through all three.
+- (1) `aria-describedby` pointed at the whole disclosure panel, whose first child is the "A written description of what the picture shows…" intro. The computed accessible description was therefore that boilerplate and the picture was NEVER read. Now names the description text node alone. Confirmed it resolves even while the panel is COLLAPSED, so a screen reader gets it on reaching the viewer.
+- (2) A pasted bring-your-own image has no `describe`, but still offered a "Describe this image" control that opened onto the intro paragraph and nothing else. Control + aria-describedby now appear only when there is text.
+- (3) A speech call that never settled left read-aloud stuck on "Speaking…" for the rest of the session, and changing picture did not clear it. Requests now carry a token, time out at 30s, and are abandoned on leaving the picture.
+- The v2.1 test pinning `aria-describedby` to the panel id was asserting the DEFECT; updated, not kept.
+- Generalisable: for a canvas tool, "axe clean" and "source looks right" both missed this. Read the AX tree for name/description, and drive the feature.
+- 32 tests; axe 0/0 on both surfaces across dark/light/contrast. Not deployed.
