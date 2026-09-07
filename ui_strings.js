@@ -13003,7 +13003,9 @@
         "maine": "Maine counties (16)",
         "new_england": "New England (6-state sample)",
         "united_states": "United States (macro-region sample)",
-        "global": "Global regions (classroom sample)"
+        "global": "Global regions (classroom sample)",
+        "custom_group": "Your region packs",
+        "built_in_group": "Built-in sample packs"
       },
       "csv": {
         "convention": "CSV number and separator convention",
@@ -13085,7 +13087,42 @@
         "longitude": "longitude",
         "easting": "easting / X",
         "northing": "northing / Y"
-      }
+      },
+      "pack": {
+        "kicker": "YOUR OWN GEOGRAPHY",
+        "heading": "Load a different region",
+        "intro": "Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, and project file as the built-in samples.",
+        "choose_file": "Region pack file (.json or .csv)",
+        "label": "Pack name",
+        "label_placeholder": "Example: Cumberland County towns",
+        "scope": "Area covered",
+        "scope_placeholder": "Example: Southern Maine",
+        "metric_label": "Attribute name for the mapped value",
+        "metric_unit": "Unit",
+        "save_mapped": "Save mapped CSV as a region pack",
+        "save_mapped_hint": "Map a CSV above first, then keep it as a reusable pack.",
+        "template": "Download a starter pack (JSON)",
+        "list_heading": "Loaded region packs",
+        "use": "Use",
+        "download": "Download",
+        "remove": "Remove",
+        "empty": "No custom packs yet. Packs you load travel with the project file and device-local autosave.",
+        "active": "Active",
+        "places": "places",
+        "limit_note": "Up to 12 packs, 250 places, and 8 attributes each. Custom packs have no guided missions or official layers; the guided Maine series stays available from the built-in packs.",
+        "limit_reached": "Remove a region pack before loading another. The studio keeps up to 12 custom packs.",
+        "status_replaced": "Updated region pack",
+        "status_loaded": "Loaded region pack",
+        "too_large": "Choose a region pack smaller than 2 MB.",
+        "rows_skipped": "rows were skipped for missing names, coordinates, or values.",
+        "unreadable": "That file could not be read.",
+        "status_removed": "Removed region pack"
+      },
+      "sr_region_pack_loaded": "Region pack loaded and mapped.",
+      "sr_region_pack_error": "Region pack error.",
+      "sr_region_pack_removed": "Region pack removed.",
+      "sr_region_pack_downloaded": "Region pack downloaded.",
+      "sr_region_pack_template_downloaded": "Region pack template downloaded."
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",

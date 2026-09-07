@@ -202,6 +202,254 @@
     return metrics.filter(function (item) { return item.id === id; })[0] || metrics[0];
   }
 
+  // Custom region packs. A teacher or learner can bring their own geography
+  // (a district, a country, a watershed) as a JSON pack or a plain CSV whose
+  // extra numeric columns become thematic attributes. Packs are normalized
+  // here so the rest of the studio treats them exactly like the built-in
+  // samples: same metrics contract, same coverage lens, same project file.
+  var GIS_REGION_PACK_FORMAT = 'alloflow-gis-region-pack';
+  var GIS_REGION_PACK_VERSION = 1;
+  var GIS_CUSTOM_PACK_LIMIT = 12;
+  var GIS_CUSTOM_PACK_RECORD_LIMIT = 250;
+  var GIS_CUSTOM_PACK_METRIC_LIMIT = 8;
+  var GIS_PACK_NAME_ALIASES = ['name', 'label', 'place', 'location', 'region', 'county', 'district', 'city', 'town', 'nom', 'nombre', 'nome', 'ort', 'naam'];
+  var GIS_PACK_LAT_ALIASES = ['latitude', 'lat', 'latitud', 'breitengrad', '纬度', '緯度', 'خط العرض', 'широта', 'y'];
+  var GIS_PACK_LON_ALIASES = ['longitude', 'lon', 'lng', 'long', 'longitud', 'lengtegraad', 'längengrad', '经度', '経度', 'خط الطول', 'долгота', 'x'];
+
+  function gisPackSlug(value, fallback) {
+    var slug = String(value == null ? '' : value).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return slug || fallback || 'pack';
+  }
+
+  function gisPackText(value, limit) {
+    return String(value == null ? '' : value).replace(/\s+/g, ' ').trim().slice(0, limit || 200);
+  }
+
+  function gisPackStringList(value, limit) {
+    if (!Array.isArray(value)) return [];
+    return value.map(function (item) { return gisPackText(item, 120); }).filter(Boolean).slice(0, limit || 20);
+  }
+
+  function normalizeGISRegionPackMetric(value, index, usedIds) {
+    var source = value && typeof value === 'object' ? value : { label: String(value || '') };
+    var label = gisPackText(source.label || source.name || source.field || source.id, 80);
+    if (!label) throw new Error('Region pack metric ' + (index + 1) + ' needs a label.');
+    var originalLabel = label;
+    var unit = gisPackText(source.unit, 40);
+    if (!unit) {
+      var unitMatch = /\(([^()]{1,40})\)\s*$/.exec(label);
+      if (unitMatch) { unit = unitMatch[1].trim(); label = label.slice(0, unitMatch.index).trim() || label; }
+    }
+    var id = gisPackSlug(source.id || label, 'metric-' + (index + 1));
+    if (id === 'name' || id === 'lat' || id === 'lon') id = 'metric-' + id;
+    var base = id, counter = 2;
+    while (usedIds[id]) { id = base + '-' + counter; counter += 1; }
+    usedIds[id] = true;
+    var digits = Number(source.maximumFractionDigits);
+    return {
+      id: id, field: id, label: label, unit: unit,
+      sourceField: gisPackText(source.field || source.sourceField || source.id || originalLabel, 80),
+      maximumFractionDigits: Number.isFinite(digits) ? Math.max(0, Math.min(6, Math.round(digits))) : 1
+    };
+  }
+
+  function normalizeGISRegionPackRecord(value, metrics, index) {
+    var source = value && typeof value === 'object' ? value : {};
+    var name = gisPackText(source.name == null ? (source.label == null ? source.place : source.label) : source.name, 120);
+    if (!name) throw new Error('Region pack record ' + (index + 1) + ' needs a name.');
+    var lat = Number(source.lat == null ? source.latitude : source.lat);
+    var lon = Number(source.lon == null ? (source.lng == null ? source.longitude : source.lng) : source.lon);
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) throw new Error('Region pack record "' + name + '" needs a latitude between -90 and 90.');
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180) throw new Error('Region pack record "' + name + '" needs a longitude between -180 and 180.');
+    var record = { name: name, lat: Math.round(lat * 1e6) / 1e6, lon: Math.round(lon * 1e6) / 1e6 };
+    metrics.forEach(function (metric) {
+      var raw = source[metric.field];
+      if (raw == null && metric.sourceField && metric.sourceField !== metric.field) raw = source[metric.sourceField];
+      var numeric = raw === '' || raw == null ? NaN : Number(raw);
+      if (!Number.isFinite(numeric)) throw new Error('Region pack record "' + name + '" needs a numeric value for ' + metric.label + '.');
+      record[metric.field] = numeric;
+    });
+    return record;
+  }
+
+  function normalizeGISRegionPack(input, options) {
+    options = options || {};
+    var source = input && typeof input === 'object' && !Array.isArray(input) ? input : null;
+    if (!source) throw new Error('A region pack must be a JSON object.');
+    if (source.format && source.format !== GIS_REGION_PACK_FORMAT) throw new Error('This is not a GIS Studio region pack file.');
+    if (source.version != null && Number(source.version) > GIS_REGION_PACK_VERSION) throw new Error('This region pack was created by a newer GIS Studio version.');
+    var label = gisPackText(source.label || source.title || source.name, 80);
+    if (!label) throw new Error('A region pack needs a label, for example "Cumberland County towns".');
+    var rawMetrics = Array.isArray(source.metrics) ? source.metrics : [];
+    if (!rawMetrics.length) throw new Error('A region pack needs at least one numeric attribute (metric).');
+    if (rawMetrics.length > GIS_CUSTOM_PACK_METRIC_LIMIT) throw new Error('A region pack can hold at most ' + GIS_CUSTOM_PACK_METRIC_LIMIT + ' attributes.');
+    var usedMetricIds = {};
+    var metrics = rawMetrics.map(function (metric, index) { return normalizeGISRegionPackMetric(metric, index, usedMetricIds); });
+    var rawRecords = Array.isArray(source.records) ? source.records : (Array.isArray(source.rows) ? source.rows : []);
+    if (!rawRecords.length) throw new Error('A region pack needs at least one coordinate record.');
+    if (rawRecords.length > GIS_CUSTOM_PACK_RECORD_LIMIT) throw new Error('A region pack can hold at most ' + GIS_CUSTOM_PACK_RECORD_LIMIT + ' records.');
+    var records = rawRecords.map(function (record, index) { return normalizeGISRegionPackRecord(record, metrics, index); });
+    metrics = metrics.map(function (metric) {
+      return { id: metric.id, field: metric.field, label: metric.label, unit: metric.unit, maximumFractionDigits: metric.maximumFractionDigits };
+    });
+    var viewport = dataViewport(records, { center: [0, 0], zoom: 2 });
+    var view = source.view && typeof source.view === 'object' ? source.view : {};
+    var center = Array.isArray(view.center) && view.center.length === 2 && view.center.every(function (value) { return Number.isFinite(Number(value)); })
+      ? [Number(view.center[0]), Number(view.center[1])] : viewport.center;
+    var zoom = Number.isFinite(Number(view.zoom)) ? Math.max(1, Math.min(16, Number(view.zoom))) : viewport.zoom;
+    var coverageSource = source.coverage && typeof source.coverage === 'object' ? source.coverage : {};
+    var scope = gisPackText(source.scope, 80) || label;
+    var requestedId = gisPackText(source.id, 60);
+    var id = 'custom-' + (requestedId && /^custom-/.test(requestedId) ? gisPackSlug(requestedId.replace(/^custom-/, ''), 'pack') : gisPackSlug(label, 'pack'));
+    var taken = Array.isArray(options.existingIds) ? options.existingIds : [];
+    if (!options.allowExistingId) {
+      var baseId = id, suffix = 2;
+      while (taken.indexOf(id) >= 0 || GIS_REGION_PACKS.some(function (pack) { return pack.id === id; })) { id = baseId + '-' + suffix; suffix += 1; }
+    }
+    var defaultMetric = metrics.some(function (metric) { return metric.id === source.defaultMetric; }) ? source.defaultMetric : metrics[0].id;
+    return {
+      id: id,
+      custom: true,
+      revision: Math.max(1, Math.round(Number(source.revision)) || 1),
+      label: label,
+      scope: scope,
+      defaultZoom: zoom,
+      view: { center: center, zoom: zoom },
+      defaultMetric: defaultMetric,
+      metrics: metrics,
+      modules: { missions: [], officialLayers: [], remoteScene: null },
+      standardsProfile: 'generic',
+      coverage: {
+        level: gisPackText(coverageSource.level, 120) || 'Learner-supplied reference points',
+        represented: gisPackStringList(coverageSource.represented, 40),
+        gaps: gisPackStringList(coverageSource.gaps, 40),
+        note: gisPackText(coverageSource.note, 500) || 'Coverage was described by whoever built this pack. Review which places are missing before claiming completeness.'
+      },
+      description: gisPackText(source.description, 300) || (records.length + ' reference points for ' + scope + '.'),
+      sourceNote: gisPackText(source.sourceNote || source.source, 400) || 'Learner-supplied values; document the source, date, and method in the project provenance.',
+      records: records
+    };
+  }
+
+  function serializeGISRegionPack(pack) {
+    var normalized = normalizeGISRegionPack(pack, { allowExistingId: true });
+    return {
+      format: GIS_REGION_PACK_FORMAT,
+      version: GIS_REGION_PACK_VERSION,
+      id: normalized.id,
+      label: normalized.label,
+      scope: normalized.scope,
+      description: normalized.description,
+      sourceNote: normalized.sourceNote,
+      defaultMetric: normalized.defaultMetric,
+      view: normalized.view,
+      coverage: normalized.coverage,
+      metrics: normalized.metrics.map(function (metric) {
+        return { id: metric.id, label: metric.label, unit: metric.unit, maximumFractionDigits: metric.maximumFractionDigits };
+      }),
+      records: normalized.records
+    };
+  }
+
+  function regionPackTemplate() {
+    return serializeGISRegionPack({
+      label: 'My region (rename me)',
+      scope: 'Describe the area these points cover',
+      description: 'Replace these three rows with your own places. Keep name, lat, and lon; add one key per attribute.',
+      sourceNote: 'Say where the values came from and when they were collected.',
+      coverage: { level: 'Sample of three places', represented: ['Place A', 'Place B', 'Place C'], gaps: ['Everywhere not listed'], note: 'Three points cannot describe a whole region.' },
+      metrics: [{ id: 'population', label: 'Population', unit: 'people' }, { id: 'elevation', label: 'Elevation', unit: 'm' }],
+      records: [
+        { name: 'Place A', lat: 44.0, lon: -70.0, population: 1200, elevation: 40 },
+        { name: 'Place B', lat: 44.5, lon: -69.5, population: 800, elevation: 120 },
+        { name: 'Place C', lat: 45.0, lon: -69.0, population: 300, elevation: 310 }
+      ]
+    });
+  }
+
+  function regionPackFromCSV(text, options) {
+    options = options || {};
+    var table = parseTableCSV(text, options);
+    var headers = table.headers;
+    var nameIndex = findGISColumn(headers, GIS_PACK_NAME_ALIASES, options.nameColumn);
+    var latIndex = findGISColumn(headers, GIS_PACK_LAT_ALIASES, options.latitudeColumn);
+    var lonIndex = findGISColumn(headers, GIS_PACK_LON_ALIASES, options.longitudeColumn);
+    if (nameIndex < 0) nameIndex = headers.map(function (header) { return table.numericKeys.indexOf(header) < 0; }).indexOf(true);
+    if (nameIndex < 0) throw new Error('The region CSV needs a name column (name, place, county, or similar).');
+    if (latIndex < 0 || lonIndex < 0) throw new Error('The region CSV needs latitude and longitude columns.');
+    var nameHeader = headers[nameIndex], latHeader = headers[latIndex], lonHeader = headers[lonIndex];
+    var parseOptions = { decimalSeparator: table.decimalSeparator };
+    var metricHeaders = table.numericKeys.filter(function (header) { return [nameHeader, latHeader, lonHeader].indexOf(header) < 0; });
+    if (!metricHeaders.length) throw new Error('The region CSV needs at least one numeric attribute column besides the coordinates.');
+    metricHeaders = metricHeaders.slice(0, GIS_CUSTOM_PACK_METRIC_LIMIT);
+    var usedIds = {};
+    var metrics = metricHeaders.map(function (header, index) { return normalizeGISRegionPackMetric({ label: header, field: header }, index, usedIds); });
+    var rejected = [];
+    var records = [];
+    table.rows.forEach(function (row, index) {
+      var record = { name: row[nameHeader], lat: parseGISAngle(row[latHeader], 'lat', parseOptions), lon: parseGISAngle(row[lonHeader], 'lon', parseOptions) };
+      metrics.forEach(function (metric) { record[metric.field] = parseGISNumber(row[metric.sourceField], parseOptions); });
+      try {
+        records.push(normalizeGISRegionPackRecord(record, metrics, index));
+      } catch (problem) {
+        rejected.push({ row: index + 2, name: String(row[nameHeader] || ''), reason: problem.message });
+      }
+    });
+    if (!records.length) throw new Error('No CSV row had a name, valid coordinates, and numeric attributes.' + (rejected[0] ? ' First problem: ' + rejected[0].reason : ''));
+    var truncated = Math.max(0, records.length - GIS_CUSTOM_PACK_RECORD_LIMIT);
+    var pack = normalizeGISRegionPack({
+      label: options.label || (options.fileName ? String(options.fileName).replace(/\.[a-z0-9]+$/i, '') : 'Imported region'),
+      scope: options.scope,
+      description: options.description,
+      sourceNote: options.sourceNote || (options.fileName ? 'Loaded from ' + options.fileName + '.' : ''),
+      coverage: options.coverage,
+      metrics: metrics.map(function (metric) { return { id: metric.id, label: metric.label, unit: metric.unit }; }),
+      records: records.slice(0, GIS_CUSTOM_PACK_RECORD_LIMIT)
+    }, options);
+    return { pack: pack, rejected: rejected.slice(0, 50), rejectedRows: rejected.length, truncatedRows: truncated, metricHeaders: metricHeaders };
+  }
+
+  function regionPackFromImportedRows(rows, options) {
+    options = options || {};
+    var metricLabel = gisPackText(options.metricLabel, 80) || 'Imported value';
+    var metric = normalizeGISRegionPackMetric({ label: metricLabel, unit: options.metricUnit, id: gisPackSlug(metricLabel, 'value') }, 0, {});
+    var records = (rows || []).map(function (row) {
+      var record = { name: row.name, lat: row.lat, lon: row.lon };
+      record[metric.field] = row.value;
+      return record;
+    });
+    return normalizeGISRegionPack({
+      label: options.label,
+      scope: options.scope,
+      description: options.description,
+      sourceNote: options.sourceNote,
+      coverage: options.coverage,
+      metrics: [{ id: metric.id, label: metric.label, unit: metric.unit }],
+      records: records
+    }, options);
+  }
+
+  function normalizeGISRegionPackList(value) {
+    if (!Array.isArray(value)) return [];
+    var ids = [], result = [];
+    value.slice(0, GIS_CUSTOM_PACK_LIMIT).forEach(function (item) {
+      try {
+        var pack = normalizeGISRegionPack(item, { existingIds: ids, allowExistingId: true });
+        if (ids.indexOf(pack.id) >= 0) return;
+        ids.push(pack.id);
+        result.push(pack);
+      } catch (problem) { /* drop packs that no longer validate rather than failing the whole restore */ }
+    });
+    return result;
+  }
+
+  function resolveRegionPack(id, customPacks) {
+    var custom = (Array.isArray(customPacks) ? customPacks : []).filter(function (pack) { return pack && pack.id === id; })[0];
+    if (custom) return custom;
+    return GIS_REGION_PACKS.filter(function (pack) { return pack.id === id; })[0] || GIS_REGION_PACKS[0];
+  }
+
   // Online basemaps are described as data so deployments can audit the
   // network domains, attribution, coverage, and privacy implications in one
   // place. Region packs cannot inject providers or arbitrary URLs.
@@ -2590,6 +2838,11 @@
         }
       });
     }
+    if (data.customRegionPacks != null) {
+      if (!Array.isArray(data.customRegionPacks)) throw new Error('Project custom region packs must be a list.');
+      if (data.customRegionPacks.length > GIS_CUSTOM_PACK_LIMIT) throw new Error('Project contains more than ' + GIS_CUSTOM_PACK_LIMIT + ' custom region packs.');
+      data.customRegionPacks.forEach(function (pack) { normalizeGISRegionPack(pack, { allowExistingId: true }); });
+    }
     var timeRows = data.timeDataset && Array.isArray(data.timeDataset.rows) ? data.timeDataset.rows : [];
     if (timeRows.length > 3000) throw new Error('Project contains more than 3,000 time-series records.');
     timeRows.forEach(function (row) {
@@ -3075,6 +3328,10 @@
       unwrapLongitudeForArc: unwrapLongitudeForArc, leafletCenterForViewport: leafletCenterForViewport,
       collectGISGeoJSONPoints: collectGISGeoJSONPoints, unwrapGISGeoJSONForArc: unwrapGISGeoJSONForArc,
       regionMetrics: regionMetrics, regionMetric: regionMetric,
+      normalizeGISRegionPack: normalizeGISRegionPack, serializeGISRegionPack: serializeGISRegionPack, regionPackTemplate: regionPackTemplate,
+      regionPackFromCSV: regionPackFromCSV, regionPackFromImportedRows: regionPackFromImportedRows,
+      normalizeGISRegionPackList: normalizeGISRegionPackList, resolveRegionPack: resolveRegionPack,
+      regionPackFormat: GIS_REGION_PACK_FORMAT, customPackLimit: GIS_CUSTOM_PACK_LIMIT,
       basemapProviders: GIS_BASEMAP_PROVIDERS, getGISBasemapProvider: getGISBasemapProvider, createGISBasemapLayer: createGISBasemapLayer,
       haversineKm: haversineKm, pathLengthKm: pathLengthKm, polygonAreaSquareKm: polygonAreaSquareKm,
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
@@ -3156,6 +3413,29 @@
         regionNewEngland: t('stem.gisstudio.region.new_england', 'New England (6-state sample)'),
         regionUnitedStates: t('stem.gisstudio.region.united_states', 'United States (macro-region sample)'),
         regionGlobal: t('stem.gisstudio.region.global', 'Global regions (classroom sample)'),
+        regionCustomGroup: t('stem.gisstudio.region.custom_group', 'Your region packs'),
+        regionBuiltInGroup: t('stem.gisstudio.region.built_in_group', 'Built-in sample packs'),
+        packKicker: t('stem.gisstudio.pack.kicker', 'YOUR OWN GEOGRAPHY'),
+        packHeading: t('stem.gisstudio.pack.heading', 'Load a different region'),
+        packIntro: t('stem.gisstudio.pack.intro', 'Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, and project file as the built-in samples.'),
+        packChooseFile: t('stem.gisstudio.pack.choose_file', 'Region pack file (.json or .csv)'),
+        packLabel: t('stem.gisstudio.pack.label', 'Pack name'),
+        packLabelPlaceholder: t('stem.gisstudio.pack.label_placeholder', 'Example: Cumberland County towns'),
+        packScope: t('stem.gisstudio.pack.scope', 'Area covered'),
+        packScopePlaceholder: t('stem.gisstudio.pack.scope_placeholder', 'Example: Southern Maine'),
+        packMetricLabel: t('stem.gisstudio.pack.metric_label', 'Attribute name for the mapped value'),
+        packMetricUnit: t('stem.gisstudio.pack.metric_unit', 'Unit'),
+        packSaveMapped: t('stem.gisstudio.pack.save_mapped', 'Save mapped CSV as a region pack'),
+        packSaveMappedHint: t('stem.gisstudio.pack.save_mapped_hint', 'Map a CSV above first, then keep it as a reusable pack.'),
+        packTemplate: t('stem.gisstudio.pack.template', 'Download a starter pack (JSON)'),
+        packListHeading: t('stem.gisstudio.pack.list_heading', 'Loaded region packs'),
+        packUse: t('stem.gisstudio.pack.use', 'Use'),
+        packDownload: t('stem.gisstudio.pack.download', 'Download'),
+        packRemove: t('stem.gisstudio.pack.remove', 'Remove'),
+        packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
+        packActive: t('stem.gisstudio.pack.active', 'Active'),
+        packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        packLimitNote: t('stem.gisstudio.pack.limit_note', 'Up to 12 packs, 250 places, and 8 attributes each. Custom packs have no guided missions or official layers; the guided Maine series stays available from the built-in packs.'),
         csvConvention: t('stem.gisstudio.csv.convention', 'CSV number and separator convention'),
         csvAuto: t('stem.gisstudio.csv.auto', 'Auto-detect'),
         csvCommaDot: t('stem.gisstudio.csv.comma_dot', 'Comma separator + decimal point'),
@@ -3253,6 +3533,10 @@
         var s2 = React.useState(initial.gisMetric || 'density'), metric = s2[0], setMetric = s2[1];
         var s3 = React.useState('sample'), source = s3[0], setSource = s3[1];
         var regionPackState = React.useState(initial.gisRegionPack || 'maine'), regionPackId = regionPackState[0], setRegionPackId = regionPackState[1];
+        var customRegionPacksState = React.useState(function () { return normalizeGISRegionPackList(initial.gisCustomRegionPacks); }), customRegionPacks = customRegionPacksState[0], setCustomRegionPacks = customRegionPacksState[1];
+        var packFormState = React.useState({ label: '', scope: '', metricLabel: '', metricUnit: '' }), packForm = packFormState[0], setPackForm = packFormState[1];
+        var packErrorState = React.useState(''), packError = packErrorState[0], setPackError = packErrorState[1];
+        var packStatusState = React.useState(''), packStatus = packStatusState[0], setPackStatus = packStatusState[1];
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
         var s5 = React.useState(EXAMPLE), csv = s5[0], setCSV = s5[1];
@@ -3417,7 +3701,7 @@
         }, []);
 
         var imported = source === 'import';
-        var activeRegionPack = getRegionPack(regionPackId);
+        var activeRegionPack = resolveRegionPack(regionPackId, customRegionPacks);
         var metricDefinition = regionMetric(activeRegionPack, metric);
         var records = imported ? importedRows : activeRegionPack.records.map(function (record) {
           if (!metricDefinition || !metricDefinition.field || metricDefinition.field === metric) return record;
@@ -3718,7 +4002,7 @@
         React.useEffect(function () {
           if (typeof ctx.canvasNarrate === 'function') {
             ctx.canvasNarrate('gis-studio', 'init', {
-              first: 'GIS Studio loaded. Map layers and equivalent tables show Maine learning data. Import CSV or GeoJSON, compare satellite imagery, or explore projections.',
+              first: 'GIS Studio loaded. Map layers and equivalent tables show ' + localizedRegionLabel(activeRegionPack) + '. Import CSV or GeoJSON, load a different region pack, compare satellite imagery, or explore projections.',
               repeat: 'GIS Studio active.', terse: 'GIS Studio.'
             }, { debounce: 800 });
           }
@@ -3752,7 +4036,7 @@
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
-        }, [autosaveReady, tab, source, regionPackId, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan, teacherReview]);
+        }, [autosaveReady, tab, source, regionPackId, customRegionPacks, importedRows, metric, layers, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, compareLeft, compareRight, compareLeftBasemap, compareRightBasemap, comparisonObservation, missionProgress, missionResponses, activeMissionId, timeDataset, timeBaseline, timeFocusYear, timeObservation, projectTitle, provenance, projection, latitude, composer, remoteSensing, storyMap, qualityReviewState, inquiryPlan, teacherReview]);
 
         React.useLayoutEffect(function () {
           if (tab !== 'map' || basemap === 'none' || leafletBlocked) {
@@ -3937,7 +4221,7 @@
           return function () {
             active = false;
           };
-        }, [tab, source, regionPackId, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletBlocked, leafletRetry]);
+        }, [tab, source, regionPackId, activeRegionPack, importedRows, metric, layers.points, layers.coast, layers.grid, layers.polygons, basemap, geoData, geoMetric, classification, classCount, customBreaks, analysisMode, analysisPoints, bufferRadiusKm, analysisSelection, analysisSelectionSource, analysisUnit, leafletBlocked, leafletRetry]);
 
         React.useLayoutEffect(function () {
           if (tab !== 'compare') {
@@ -4080,7 +4364,7 @@
           return function () {
             active = false;
           };
-        }, [tab, source, regionPackId, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints, leafletRetry]);
+        }, [tab, source, regionPackId, activeRegionPack, importedRows, geoData, geoNameKey, leftChoice, rightChoice, compareLeftBasemap, compareRightBasemap, classification, classCount, customBreaks, analysisSelection, analysisSelectionSource, bufferRadiusKm, analysisPoints, leafletRetry]);
 
         React.useEffect(function () {
           if (!timePlaying || timeYears.length < 2) return undefined;
@@ -4541,8 +4825,115 @@
           announce('Join applied. Choropleth now maps ' + joinValueKey + '.');
         }
 
-        function changeRegionPack(nextId) {
-          var next = getRegionPack(nextId);
+        function updatePackForm(key, value) {
+          setPackForm(Object.assign({}, packForm, (function () { var patch = {}; patch[key] = value; return patch; })()));
+        }
+
+        function storeCustomRegionPacks(nextPacks) {
+          setCustomRegionPacks(nextPacks);
+          persist('gisCustomRegionPacks', nextPacks.map(serializeGISRegionPack));
+        }
+
+        function adoptRegionPack(pack, note) {
+          var replaced = customRegionPacks.some(function (item) { return item.id === pack.id; });
+          var remaining = customRegionPacks.filter(function (item) { return item.id !== pack.id; });
+          if (remaining.length >= GIS_CUSTOM_PACK_LIMIT) {
+            setPackError(__alloT('stem.gisstudio.pack.limit_reached', 'Remove a region pack before loading another. The studio keeps up to 12 custom packs.'));
+            return false;
+          }
+          storeCustomRegionPacks(remaining.concat([pack]));
+          persist('gisRegionPackLoaded', true);
+          setPackError('');
+          setPackStatus((replaced ? __alloT('stem.gisstudio.pack.status_replaced', 'Updated region pack') : __alloT('stem.gisstudio.pack.status_loaded', 'Loaded region pack')) + ': ' + pack.label + ' (' + pack.records.length + ' \u00D7 ' + pack.metrics.length + ')' + (note ? ' ' + note : ''));
+          changeRegionPack(pack.id, pack);
+          setTab('map');
+          announce(__alloT('stem.gisstudio.sr_region_pack_loaded', 'Region pack loaded and mapped.') + ' ' + pack.label);
+          return true;
+        }
+
+        function importRegionPackText(text, fileName) {
+          var trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
+          var existingIds = customRegionPacks.map(function (item) { return item.id; });
+          var overrides = { existingIds: existingIds, allowExistingId: true };
+          if (/^[\[{]/.test(trimmed)) {
+            var data;
+            try { data = JSON.parse(trimmed); } catch (parseError) { throw new Error('The region pack file is not valid JSON. ' + parseError.message); }
+            var merged = Object.assign({}, data);
+            if (packForm.label.trim()) merged.label = packForm.label.trim();
+            if (packForm.scope.trim()) merged.scope = packForm.scope.trim();
+            return { pack: normalizeGISRegionPack(merged, overrides), rejectedRows: 0, truncatedRows: 0 };
+          }
+          return regionPackFromCSV(trimmed, Object.assign({}, overrides, {
+            fileName: fileName, label: packForm.label.trim(), scope: packForm.scope.trim(), sourceNote: provenance.source
+          }));
+        }
+
+        function readRegionPackFile(event) {
+          var input = event.target;
+          var file = input.files && input.files[0];
+          if (!file) return;
+          if (file.size > 2 * 1024 * 1024) { setPackError(__alloT('stem.gisstudio.pack.too_large', 'Choose a region pack smaller than 2 MB.')); return; }
+          var reader = new FileReader();
+          reader.onload = function () {
+            try {
+              var result = importRegionPackText(String(reader.result || ''), file.name);
+              var note = result.rejectedRows ? result.rejectedRows + ' ' + __alloT('stem.gisstudio.pack.rows_skipped', 'rows were skipped for missing names, coordinates, or values.') : '';
+              adoptRegionPack(result.pack, note);
+            } catch (problem) {
+              setPackError(problem.message);
+              announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
+            }
+            try { input.value = ''; } catch (ignoreReset) {}
+          };
+          reader.onerror = function () { setPackError(__alloT('stem.gisstudio.pack.unreadable', 'That file could not be read.')); };
+          reader.readAsText(file);
+        }
+
+        function saveMappedRowsAsPack() {
+          if (!importedRows.length) { setPackError(gisText.packSaveMappedHint); return; }
+          try {
+            var pack = regionPackFromImportedRows(importedRows, {
+              label: packForm.label.trim() || (provenance.datasetTitle || projectTitle || 'Mapped CSV').trim(),
+              scope: packForm.scope.trim(),
+              metricLabel: packForm.metricLabel.trim(),
+              metricUnit: packForm.metricUnit.trim(),
+              sourceNote: provenance.source,
+              existingIds: customRegionPacks.map(function (item) { return item.id; }),
+              allowExistingId: true
+            });
+            adoptRegionPack(pack, '');
+          } catch (problem) {
+            setPackError(problem.message);
+            announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
+          }
+        }
+
+        function removeRegionPack(id) {
+          var removed = customRegionPacks.filter(function (item) { return item.id === id; })[0];
+          if (!removed) return;
+          storeCustomRegionPacks(customRegionPacks.filter(function (item) { return item.id !== id; }));
+          if (activeRegionPack.id === id) changeRegionPack(GIS_REGION_PACKS[0].id, GIS_REGION_PACKS[0]);
+          setPackError('');
+          setPackStatus(__alloT('stem.gisstudio.pack.status_removed', 'Removed region pack') + ': ' + removed.label);
+          announce(__alloT('stem.gisstudio.sr_region_pack_removed', 'Region pack removed.') + ' ' + removed.label);
+        }
+
+        function downloadRegionPack(pack) {
+          try {
+            triggerDownload(JSON.stringify(serializeGISRegionPack(pack), null, 2), safeFileStem(pack.label, 'region-pack') + '.gispack.json', 'application/json;charset=utf-8');
+            announce(__alloT('stem.gisstudio.sr_region_pack_downloaded', 'Region pack downloaded.'));
+          } catch (problem) { setPackError(problem.message); }
+        }
+
+        function downloadRegionPackTemplate() {
+          try {
+            triggerDownload(JSON.stringify(regionPackTemplate(), null, 2), 'gis-region-pack-template.gispack.json', 'application/json;charset=utf-8');
+            announce(__alloT('stem.gisstudio.sr_region_pack_template_downloaded', 'Region pack template downloaded.'));
+          } catch (problem) { setPackError(problem.message); }
+        }
+
+        function changeRegionPack(nextId, packOverride) {
+          var next = packOverride || resolveRegionPack(nextId, customRegionPacks);
           var nextMetrics = regionMetrics(next);
           var nextMetric = nextMetrics.some(function (definition) { return definition.id === metric; })
             ? metric : (next.defaultMetric || nextMetrics[0].id);
@@ -4924,7 +5315,12 @@
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),
                   h('select', { value: activeRegionPack.id, onChange: function (event) { changeRegionPack(event.target.value); }, style: Object.assign({}, control, { width: '100%', maxWidth: '100%', minWidth: 0, boxSizing: 'border-box' }), 'aria-describedby': 'gis-region-pack-note' },
-                    GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
+                    customRegionPacks.length
+                      ? [
+                        h('optgroup', { key: 'custom', label: gisText.regionCustomGroup }, customRegionPacks.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, pack.label); })),
+                        h('optgroup', { key: 'built-in', label: gisText.regionBuiltInGroup }, GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); }))
+                      ]
+                      : GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
                   h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote)),
                 h('details', {
                   open: !imported && activeRegionPack.id === 'global',
@@ -5144,6 +5540,47 @@
         }
 
 
+        function regionPackPanel() {
+          var canSaveMapped = importedRows.length > 0;
+          var fieldLabel = { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 };
+          return h('section', { 'aria-labelledby': 'gis-region-pack-heading', style: Object.assign({}, panel, { padding: 18 }) },
+            h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, gisText.packKicker),
+            h('h2', { id: 'gis-region-pack-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, gisText.packHeading),
+            h('p', { style: { color: '#b7d2df', lineHeight: 1.6, fontSize: 13 } }, gisText.packIntro),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10, margin: '12px 0' } },
+              h('label', { style: fieldLabel }, gisText.packLabel,
+                h('input', { type: 'text', value: packForm.label, maxLength: 80, placeholder: gisText.packLabelPlaceholder, onChange: function (event) { updatePackForm('label', event.target.value); }, style: control })),
+              h('label', { style: fieldLabel }, gisText.packScope,
+                h('input', { type: 'text', value: packForm.scope, maxLength: 80, placeholder: gisText.packScopePlaceholder, onChange: function (event) { updatePackForm('scope', event.target.value); }, style: control })),
+              h('label', { style: fieldLabel }, gisText.packMetricLabel,
+                h('input', { type: 'text', value: packForm.metricLabel, maxLength: 80, placeholder: gisText.importedValue, onChange: function (event) { updatePackForm('metricLabel', event.target.value); }, style: control })),
+              h('label', { style: fieldLabel }, gisText.packMetricUnit,
+                h('input', { type: 'text', value: packForm.metricUnit, maxLength: 40, onChange: function (event) { updatePackForm('metricUnit', event.target.value); }, style: control }))),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
+              h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.packChooseFile,
+                h('input', { type: 'file', accept: '.json,.csv,.gispack.json,application/json,text/csv', onChange: readRegionPackFile, style: { display: 'block', marginTop: 7 } })),
+              h('button', { type: 'button', onClick: saveMappedRowsAsPack, disabled: !canSaveMapped, 'aria-describedby': canSaveMapped ? undefined : 'gis-region-pack-save-hint', style: Object.assign({}, primary, { opacity: canSaveMapped ? 1 : 0.55 }) }, gisText.packSaveMapped),
+              h('button', { type: 'button', onClick: downloadRegionPackTemplate, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.packTemplate)),
+            !canSaveMapped && h('p', { id: 'gis-region-pack-save-hint', style: { margin: '8px 0 0', color: '#9fb6c5', fontSize: 11 } }, gisText.packSaveMappedHint),
+            packError && h('p', { role: 'alert', style: { background: '#7f1d1d', color: '#fecaca', padding: 9, borderRadius: 8, marginTop: 10 } }, packError),
+            packStatus && h('p', { role: 'status', style: { margin: '10px 0 0', color: '#86efac', fontSize: 12 } }, packStatus),
+            h('h3', { style: { color: '#67e8f9', fontSize: 12, margin: '14px 0 6px' } }, gisText.packListHeading),
+            customRegionPacks.length
+              ? h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 } }, customRegionPacks.map(function (pack) {
+                var active = !imported && pack.id === activeRegionPack.id;
+                return h('li', { key: pack.id, style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', padding: 10, borderRadius: 8, border: '1px solid ' + (active ? '#22d3ee' : '#2d5868'), background: '#081d29' } },
+                  h('div', { style: { display: 'grid', gap: 3, minWidth: 0 } },
+                    h('strong', { style: { color: '#f0fdfa', fontSize: 13 } }, pack.label, active ? h('span', { style: { color: '#67e8f9', fontWeight: 700, marginLeft: 8, fontSize: 11 } }, gisText.packActive) : null),
+                    h('span', { style: { color: '#9fb6c5', fontSize: 11 } }, pack.records.length + ' ' + gisText.packPlaces + ' \u00B7 ' + pack.metrics.map(function (metric) { return metric.label + (metric.unit ? ' (' + metric.unit + ')' : ''); }).join(', '))),
+                  h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                    h('button', { type: 'button', onClick: function () { changeRegionPack(pack.id, pack); setTab('map'); }, 'aria-label': gisText.packUse + ': ' + pack.label, style: Object.assign({}, primary, { padding: '7px 10px' }) }, gisText.packUse),
+                    h('button', { type: 'button', onClick: function () { downloadRegionPack(pack); }, 'aria-label': gisText.packDownload + ': ' + pack.label, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.packDownload),
+                    h('button', { type: 'button', onClick: function () { removeRegionPack(pack.id); }, 'aria-label': gisText.packRemove + ': ' + pack.label, style: Object.assign({}, control, { cursor: 'pointer', color: '#fecaca' }) }, gisText.packRemove)));
+              }))
+              : h('p', { style: { margin: 0, color: '#9fb6c5', fontSize: 12 } }, gisText.packEmpty),
+            h('p', { style: { margin: '10px 0 0', color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, gisText.packLimitNote));
+        }
+
         function importView() {
           return h('div', { style: { maxWidth: 980, margin: '0 auto', display: 'grid', gap: 14 } },
             h('section', { 'aria-labelledby': 'gis-import-heading', style: Object.assign({}, panel, { padding: 18 }) },
@@ -5208,6 +5645,7 @@
                   setError('');
                 }, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.importRestore)),
               importPreviewPanel()),
+            regionPackPanel(),
             h('section', { 'aria-labelledby': 'gis-geojson-heading', style: Object.assign({}, panel, { padding: 18 }) },
               h('p', { style: { margin: 0, color: '#67e8f9', fontSize: 11, fontWeight: 800 } }, gisText.vectorKicker),
               h('h2', { id: 'gis-geojson-heading', style: { color: '#f0fdfa', margin: '5px 0 8px' } }, gisText.vectorHeading),
@@ -5215,7 +5653,7 @@
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', margin: '12px 0' } },
                 h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.vectorChooseFile,
                   h('input', { type: 'file', accept: '.geojson,.json,.kml,.gpx,application/geo+json,application/json,application/vnd.google-earth.kml+xml,application/gpx+xml', onChange: readGeoFile, style: { display: 'block', marginTop: 7 } })),
-                h('button', { type: 'button', onClick: loadOfficialEcoregions, disabled: officialBusy, style: Object.assign({}, primary, { background: '#155e75' }) }, officialBusy ? 'Loading Maine layer\u2026' : 'Load official Maine ecoregions')),
+                (activeRegionPack.modules && Array.isArray(activeRegionPack.modules.officialLayers) && activeRegionPack.modules.officialLayers.indexOf('maine-ecoregions') >= 0) && h('button', { type: 'button', onClick: loadOfficialEcoregions, disabled: officialBusy, style: Object.assign({}, primary, { background: '#155e75' }) }, officialBusy ? 'Loading Maine layer\u2026' : 'Load official Maine ecoregions')),
               h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700 } }, gisText.vectorPaste,
                 h('textarea', { value: geoText, onChange: function (event) { setGeoText(event.target.value); clearGeoImportReview(); setGeoError(''); }, rows: 10, spellCheck: false, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#e6fffb', fontFamily: 'monospace', lineHeight: 1.45 } })),
               geoError && h('p', { role: 'alert', style: { background: '#7f1d1d', color: '#fecaca', padding: 9, borderRadius: 8 } }, geoError),
@@ -5287,7 +5725,8 @@
               geoData: geoData,
               geoKeys: geoKeys,
               geoNameKey: geoNameKey,
-              timeDataset: timeDataset
+              timeDataset: timeDataset,
+              customRegionPacks: customRegionPacks.map(serializeGISRegionPack)
             },
             work: {
               comparisonObservation: comparisonObservation, imageryNote: imageryNote,
@@ -5311,7 +5750,9 @@
           setProvenance(normalizeProvenance(project.provenance));
           setImportedRows(restoredPoints);
           setSource(settings.source === 'import' && restoredPoints.length ? 'import' : 'sample');
-          var restoredPack = getRegionPack(settings.regionPack || 'maine');
+          var restoredCustomPacks = normalizeGISRegionPackList(data.customRegionPacks);
+          storeCustomRegionPacks(restoredCustomPacks);
+          var restoredPack = resolveRegionPack(settings.regionPack || 'maine', restoredCustomPacks);
           var restoredMetrics = regionMetrics(restoredPack);
           var restoredMetric = restoredMetrics.some(function (definition) { return definition.id === settings.metric; })
             ? settings.metric : (restoredPack.defaultMetric || restoredMetrics[0].id);
