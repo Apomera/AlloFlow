@@ -218,7 +218,7 @@ describe('Zoom Gallery accessibility contract', () => {
     // An aria-label on a bare div wrapper is ignored (aria-prohibited-attr); the
     // label has to sit on OSD's own focusable canvas element.
     expect(toolSrc).toMatch(/c\.setAttribute\('role', 'application'\)/);
-    expect(toolSrc).toMatch(/c\.setAttribute\('aria-describedby', descId\)/);
+    expect(toolSrc).toMatch(/c\.setAttribute\('aria-describedby', descTextId\)/);
     expect(popupSrc).toMatch(/osdCanvas\.setAttribute\('role', 'application'\)/);
     expect(toolSrc).not.toMatch(/ref: stageRef, 'aria-label'/);
   });
@@ -301,5 +301,39 @@ describe('Zoom Gallery read-aloud', () => {
     // It sits exactly where the credit chip sits and eats a third of a small stage.
     expect(toolSrc).toMatch(/showNavigator: \(el\.clientWidth \|\| 0\) >= 480/);
     expect(popupSrc).toMatch(/showNavigator: \(osdEl\.clientWidth \|\| 0\) >= 480/);
+  });
+});
+
+describe('Zoom Gallery description plumbing', () => {
+  // Three defects found by reading the accessibility tree rather than the source.
+  it('describes the picture, not the paragraph about descriptions', () => {
+    // aria-describedby aimed at the whole panel resolved to the intro copy
+    // ("A written description of what the picture shows..."), so a screen
+    // reader never heard the picture. It must name the description text alone.
+    expect(toolSrc).toMatch(/var descTextId = descId \+ '-text';/);
+    expect(toolSrc).toMatch(/c\.setAttribute\('aria-describedby', descTextId\)/);
+    expect(toolSrc).not.toMatch(/setAttribute\('aria-describedby', descId\)/);
+    expect(toolSrc).toMatch(/h\('p', \{ id: descTextId/);
+    expect(popupSrc).toMatch(/setAttribute\('aria-describedby', 'describeText'\)/);
+    expect(popupSrc).not.toMatch(/setAttribute\('aria-describedby', 'describeBody'\)/);
+  });
+
+  it('offers no description control when there is nothing to describe', () => {
+    // A pasted "bring your own" image has no describe text; the disclosure used
+    // to open onto the intro paragraph and nothing else.
+    expect(toolSrc).toMatch(/current && imgText\(current, 'describe'\) \? h\('div'/);
+    expect(popupSrc).toMatch(/if \(!current \|\| !imgStr\(current, 'describe'\)\) \{ describeWrap\.style\.display = 'none'; return; \}/);
+    expect(toolSrc).toMatch(/else c\.removeAttribute\('aria-describedby'\)/);
+    expect(popupSrc).toMatch(/else osdCanvas\.removeAttribute\('aria-describedby'\)/);
+  });
+
+  it('never leaves the read-aloud control stuck on Speaking', () => {
+    // A speech call that never settles used to disable read-aloud for the rest
+    // of the session, and changing picture did not clear it.
+    expect(toolSrc).toMatch(/speakTokenRef\.current !== token/);
+    expect(toolSrc).toMatch(/speakTimerRef\.current = setTimeout\(function \(\) \{ settle\(true\); \}, 30000\)/);
+    expect(toolSrc).toMatch(/speakTokenRef\.current\+\+;[\s\S]{0,120}setSpeaking\(''\);\n *\}, \[currentId\]\)/);
+    expect(popupSrc).toMatch(/function abandonSpeech\(\)/);
+    expect(popupSrc).toMatch(/abandonSpeech\(\);\n    picker\.style\.display = 'none';/);
   });
 });

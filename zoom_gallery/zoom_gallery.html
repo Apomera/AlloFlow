@@ -559,6 +559,12 @@
       clearTimeout(pendingSpeak[id].timer); delete pendingSpeak[id]; done(false);
     }
   }
+  // Leaving a picture abandons any speech request that belongs to it, so the
+  // control cannot sit reading "Speaking…" for the rest of the session.
+  function abandonSpeech() {
+    Object.keys(pendingSpeak).forEach(function (id) { clearTimeout(pendingSpeak[id].timer); delete pendingSpeak[id]; });
+    speakingKey = '';
+  }
   function speakBtn(key, text, label) {
     if (!ttsAvailable || !text) return null;
     var busy = speakingKey === key;
@@ -834,7 +840,7 @@
   // div tabindex=0 but no role and no name, and an aria-label on a plain <div>
   // wrapper is ignored (aria-prohibited-attr).
   function renderDescribe() {
-    if (!current) { describeWrap.style.display = 'none'; return; }
+    if (!current || !imgStr(current, 'describe')) { describeWrap.style.display = 'none'; return; }
     describeWrap.style.display = 'block';
     describeText.textContent = imgStr(current, 'describe') || '';
     var oldBtn = describeBody.querySelector('.speak'); if (oldBtn) oldBtn.remove();
@@ -844,7 +850,11 @@
       if (osdCanvas) {
         osdCanvas.setAttribute('role', 'application');
         osdCanvas.setAttribute('aria-label', fmt(STR.viewer_aria, { name: imgStr(current, 'name') }));
-        osdCanvas.setAttribute('aria-describedby', 'describeBody');
+        // Point at the description text ONLY: aimed at the whole panel, the
+        // accessible description came back as the intro paragraph about
+        // descriptions and the picture itself was never read.
+        if (imgStr(current, 'describe')) osdCanvas.setAttribute('aria-describedby', 'describeText');
+        else osdCanvas.removeAttribute('aria-describedby');
       }
     } catch (_) {}
   }
@@ -885,6 +895,7 @@
     current = (customItem && customItem.id === id) ? customItem : (IMAGES.find(function (s) { return s.id === id; }) || null);
     if (!current) return;
     setPinMode(false);
+    abandonSpeech();
     picker.style.display = 'none';
     backbar.style.display = 'flex';
     imgSelect.value = current.id === 'custom' ? '' : current.id;
@@ -926,6 +937,7 @@
   }
   function showPicker() {
     setPinMode(false);
+    abandonSpeech();
     describeWrap.style.display = 'none';
     picker.style.display = 'block';
     backbar.style.display = 'none';

@@ -419,7 +419,10 @@
       var _copied = React.useState(''); var copied = _copied[0], setCopied = _copied[1];
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
+      var speakTokenRef = React.useRef(0);
+      var speakTimerRef = React.useRef(null);
       var descId = React.useMemo(function () { return 'zg-desc-' + Math.random().toString(36).slice(2, 8); }, []);
+      var descTextId = descId + '-text';
       var _customUrl = React.useState(''); var customUrl = _customUrl[0], setCustomUrl = _customUrl[1];
       var _customErr = React.useState(''); var customErr = _customErr[0], setCustomErr = _customErr[1];
       var _reflect = React.useRef(Math.floor(Math.random() * 5));
@@ -520,10 +523,20 @@
       function speak(key, text) {
         if (typeof ctx.callTTS !== 'function' || !text) return;
         if (speaking) return;
+        var token = ++speakTokenRef.current;
+        var settle = function (failed) {
+          if (speakTokenRef.current !== token) return;   // a newer request owns the UI
+          clearTimeout(speakTimerRef.current);
+          setSpeaking('');
+          if (failed) say(W('read_aloud_failed'));
+        };
         setSpeaking(key);
+        // A call that never settles must not leave the control dead forever.
+        clearTimeout(speakTimerRef.current);
+        speakTimerRef.current = setTimeout(function () { settle(true); }, 30000);
         Promise.resolve(ctx.callTTS(String(text), null, null, { force: true }))
-          .then(function (url) { setSpeaking(''); if (!url) say(W('read_aloud_failed')); })
-          .catch(function () { setSpeaking(''); say(W('read_aloud_failed')); });
+          .then(function (url) { settle(!url); })
+          .catch(function () { settle(true); });
       }
       function speakBtn(key, text, label) {
         if (typeof ctx.callTTS !== 'function' || !text) return null;
@@ -694,15 +707,27 @@
         try {
           c.setAttribute('role', 'application');
           c.setAttribute('aria-label', W('viewer_aria', { name: imgText(current, 'name') }));
-          c.setAttribute('aria-describedby', descId);
+          // Point at the description text ONLY. Pointed at the whole panel, the
+          // accessible description came back as the intro paragraph about
+          // descriptions, and the actual picture was never read.
+          if (imgText(current, 'describe')) c.setAttribute('aria-describedby', descTextId);
+          else c.removeAttribute('aria-describedby');
         } catch (_) {}
       }, [currentId, imgState, ctx.lang]);
+
+      // Leaving a picture abandons any speech request that belongs to it.
+      React.useEffect(function () {
+        speakTokenRef.current++;
+        clearTimeout(speakTimerRef.current);
+        setSpeaking('');
+      }, [currentId]);
 
       // Destroy the viewer on unmount (releases its canvases and listeners).
       React.useEffect(function () {
         return function () {
           try { if (viewerRef.current) viewerRef.current.destroy(); } catch (_) {}
           viewerRef.current = null; overlaysRef.current = [];
+          clearTimeout(speakTimerRef.current);
         };
       }, []);
 
@@ -951,12 +976,12 @@
             // Text alternative for the picture itself. A deep-zoom viewer is a
             // canvas: without this there is nothing for a screen reader to read,
             // and no way into Notice/Wonder for a student who cannot see it.
-            current ? h('div', { style: { marginTop: 4 } },
+            current && imgText(current, 'describe') ? h('div', { style: { marginTop: 4 } },
               h('button', { type: 'button', onClick: function () { setShowDesc(!showDesc); }, 'aria-expanded': showDesc ? 'true' : 'false', 'aria-controls': descId, style: btnBase },
                 (showDesc ? '▾ ' : '▸ ') + (showDesc ? W('describe_hide') : W('describe_show'))),
               h('div', { id: descId, hidden: !showDesc, style: Object.assign({}, card, { marginTop: 6, fontSize: '0.78125rem' }) },
                 h('p', { style: { margin: '0 0 6px', fontSize: '0.6875rem', color: P.dim, lineHeight: 1.45 } }, W('describe_intro')),
-                h('p', { style: { margin: 0 } }, imgText(current, 'describe')),
+                h('p', { id: descTextId, style: { margin: 0 } }, imgText(current, 'describe')),
                 speakBtn('describe', imgText(current, 'describe')) ? h('div', { style: { marginTop: 8 } }, speakBtn('describe', imgText(current, 'describe'))) : null)) : null,
             h('p', { style: { margin: 'auto 0 0', fontSize: '0.65625rem', color: P.dim, lineHeight: 1.45 } }, I('inline_hint'))
           )
