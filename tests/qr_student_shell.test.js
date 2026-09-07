@@ -419,7 +419,14 @@ describe('Cloudflare student shell build wiring', () => {
     expect(installBlock).not.toContain('self.skipWaiting()');
     const messageBlock = serviceWorker.slice(serviceWorker.indexOf("addEventListener('message'"));
     expect(messageBlock).toMatch(/ALLOFLOW_ACTIVATE_UPDATE[\s\S]{0,120}self\.skipWaiting\(\)/);
-    expect(files.length).toBeGreaterThanOrEqual(7);
+    const precachePaths = JSON.parse(serviceWorker.match(/const PRECACHE_PATHS = (\[[^;]*\]);/)[1]);
+    for (const asset of precachePaths) {
+      expect(readFileSync(resolve(shellDir, asset)).length, 'Missing precache asset: ' + asset).toBeGreaterThan(0);
+    }
+    expect(index).toContain('src="./ai_backend_module.js"');
+    expect(index).toContain('src="./alloflow_desktop_bridge.js"');
+    expect(readFileSync(resolve(shellDir, 'ai_backend_module.js')).length).toBeGreaterThan(0);
+    expect(files.length).toBeGreaterThanOrEqual(9);
     expect(files.some((file) => statSync(file).size >= 25 * 1024 * 1024)).toBe(false);
     expect(files.some((file) => /alloflow_intro_(teacher|family)\.mp4$/.test(file))).toBe(false);
   });

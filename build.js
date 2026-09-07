@@ -56,6 +56,8 @@ const STUDENT_SHELL_ENTRIES = [
     'manifest.json',
     'sw.js',
     'qrcode.js',
+    'ai_backend_module.js',
+    'alloflow_desktop_bridge.js',
     'static',
 ];
 const CLOUDFLARE_MAX_FILE_BYTES = 25 * 1024 * 1024;
@@ -114,6 +116,8 @@ function publishStudentShell() {
 
     const publishedIndex = path.join(STUDENT_SHELL_PUBLIC_DIR, 'index.html');
     let publishedHtml = fs.readFileSync(publishedIndex, 'utf8');
+    // The hosted build uses a root URL; the /app/ copy owns this boot asset locally.
+    publishedHtml = publishedHtml.replace(/(["'])\/alloflow_desktop_bridge\.js\1/g, '$1./alloflow_desktop_bridge.js$1');
     // postbuild may preserve readable or minified service-worker registration.
     const rootSwRegistration = /navigator\.serviceWorker\.register\((['"])\/sw\.js\1,\s*\{\s*updateViaCache:\s*(['"])none\2\s*\}\)/;
     if (!rootSwRegistration.test(publishedHtml)) {
