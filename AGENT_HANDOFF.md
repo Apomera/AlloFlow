@@ -834,3 +834,13 @@ Validation: 19 existing setup, active-turn, live-vote and HUD contracts passed; 
 - Testing note, still biting: ids.si.edu answers the `HeadlessChrome` user agent with a 245-byte CORS-less HTML page, so every Smithsonian tile "fails" in a default Playwright run. Spoof a normal Chrome UA before believing a tile failure.
 - Not deployed. Language packs still hold English for this section.
 - Note: the 174 `stem.zoomGallery` strings for v2.1 reached ui_strings.js inside commit fe22eb380 (GIS Studio) — that session committed in the window between my write and my commit and carried them along. Nothing lost on either side.
+
+### 2026-09-07 — Zoom Gallery v2.2: read-aloud + phone polish (Claude Code) @8d752efcd
+- The v2.1 image descriptions only helped a student who reads. Wired them to the house speech player, which this tool was not using at all: a speaker button on the Notice prompt, the Wonder prompt, the description and the coach reply, each calling `ctx.callTTS(text, null, null, {force:true})` — the sanctioned mute bypass for an explicitly requested action. Nothing autoplays.
+- Buttons are absent (not disabled) when the host offers no speech; a failure announces to the screen reader rather than failing silently, which is how TTS failures normally hide.
+- The pop-out has no host, so it asks the opener over the bridge: `alloczoom-speak` / `alloczoom-speak-result`, with the opener advertising `tts:` on the handshake so the pop-out hides the buttons when the owning tab cannot speak.
+- Reflow audit at 320/375/768 CSS px came back CLEAN (no horizontal scroll, nothing clipped) — so the phone work is polish: OSD's navigator inset is off below a 480px stage (it sits where the credit chip sits and ate a third of a phone stage), and the source-record link got padding (it was the only control under the 24px target floor, and it sits over a photograph).
+- axe: still 0 violations / 0 incomplete on BOTH surfaces across dark/light/contrast with the new controls. 29 tests in `tests/zoom_gallery_catalog.test.js`.
+- Note: a `page.goto` timeout on the pop-out audit was a NETWORK FLAKE — an unchanged re-run passed. Don't "fix" it.
+- Still open: language packs hold English for all 179 `stem.zoomGallery` keys.
+- Not deployed.
