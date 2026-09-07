@@ -160,6 +160,41 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(host.textContent).toContain('Example district');
   });
 
+  it('turns a dropped boundary file into a working region with polygons and missions', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+    const layer = {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { NAME: 'Harbour ward', residents: 4200 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -46.0], [170.8, -46.0], [170.8, -45.6], [170.2, -45.6], [170.2, -46.0]]] } },
+        { type: 'Feature', properties: { NAME: 'Hill ward', residents: 1800 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -45.6], [170.8, -45.6], [170.8, -45.2], [170.2, -45.2], [170.2, -45.6]]] } }
+      ]
+    };
+    const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
+    const file = new File([JSON.stringify(layer)], 'Wards.geojson', { type: 'application/geo+json' });
+    Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+    await React.act(async function () {
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+
+    expect(await settle(() => host.textContent.includes('Review before using'))).toBe(true);
+    expect(host.textContent).toContain('Review before using: Wards');
+    expect(host.textContent).toContain('Built from a boundary layer.');
+    expect(host.textContent).toContain('2 places');
+    expect(host.textContent).toContain('2 boundary features');
+    expect(host.textContent).toContain('Harbour ward');
+
+    await click(findButton('Use this pack'));
+    expect(await settle(() => !!host.querySelector('option[value="custom-wards"]'))).toBe(true);
+    expect(host.textContent).toContain('GeoJSON choropleth');
+    expect(host.querySelector('option[value="residents"]')).toBeTruthy();
+    expect(sharedToolData.gisCustomRegionPacks[0].boundaries.features).toHaveLength(2);
+    expect(sharedToolData.gisGeoJSONImported).toBe(true);
+
+    await click(findButton('Guided missions'));
+    expect(await settle(() => host.textContent.includes('Inside the boundaries'))).toBe(true);
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

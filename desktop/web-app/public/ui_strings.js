@@ -13141,7 +13141,9 @@
         "include_boundaries": "Include the current boundary layer in the saved pack",
         "boundary_features": "boundary features",
         "pasted_label": "Pasted region",
-        "paste_empty": "Paste region rows or a JSON pack first."
+        "paste_empty": "Paste region rows or a JSON pack first.",
+        "derived_boundaries": "Built from a boundary layer. Each place is the representative point of one boundary, and the boundaries came along as the polygon layer.",
+        "derived_points": "Built from the point features in this layer."
       },
       "sr_region_pack_loaded": "Region pack loaded and mapped.",
       "sr_region_pack_error": "Region pack error.",
@@ -13200,6 +13202,10 @@
         "boundaries_step_measure": "Measure one polygon and select mapped places inside it.",
         "boundaries_step_evidence": "Use the feature table and point table as evidence.",
         "boundaries_step_limits": "Explain how boundaries and classification choices shape conclusions."
+      },
+      "time": {
+        "mismatch_label": "Different region:",
+        "mismatch_note": "This time series is the built-in Maine sample. It does not describe {pack}. Import a time-series CSV for your own region, or read the change results as a separate Maine dataset."
       }
     },
     "a11yauditor": {

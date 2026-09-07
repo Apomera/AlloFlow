@@ -437,6 +437,153 @@
     return { pack: pack, rejected: rejected.slice(0, 50), rejectedRows: rejected.length, truncatedRows: truncated, metricHeaders: metricHeaders };
   }
 
+  // Most open geographic data is a boundary file, not a point CSV. A feature's
+  // representative point is the area-weighted centroid of its largest outer
+  // ring (polygons), the mean of its vertices (lines), or the point itself.
+  // Longitudes are unwrapped onto the feature's own minimal arc first so a
+  // shape crossing the antimeridian does not land in the middle of the ocean.
+  function featureRepresentativePoint(feature) {
+    var geometry = feature && feature.geometry;
+    if (!geometry) return null;
+    var positions = [];
+    forEachGISGeometryPosition(geometry, function (position) {
+      var point = mapPoint(position);
+      if (Number.isFinite(point.lat) && Number.isFinite(point.lon)) positions.push(point);
+    });
+    if (!positions.length) return null;
+    var arc = minimalLongitudeArc(positions.map(function (point) { return point.lon; }));
+    function unwrapped(point) { return { lat: point.lat, lon: unwrapLongitudeForArc(point.lon, arc) }; }
+    function mean(points) {
+      var latitude = 0, longitude = 0;
+      points.forEach(function (point) { latitude += point.lat; longitude += point.lon; });
+      return { lat: latitude / points.length, lon: normalizeLongitude(longitude / points.length) };
+    }
+    var isArea = geometry.type === 'Polygon' || geometry.type === 'MultiPolygon';
+    if (isArea) {
+      var best = null;
+      featureOuterRings(feature).forEach(function (ring) {
+        var vertices = (ring || []).map(mapPoint).filter(function (point) { return Number.isFinite(point.lat) && Number.isFinite(point.lon); }).map(unwrapped);
+        if (vertices.length < 3) return;
+        var twiceArea = 0, latitude = 0, longitude = 0;
+        for (var i = 0; i < vertices.length; i++) {
+          var current = vertices[i], next = vertices[(i + 1) % vertices.length];
+          var cross = current.lon * next.lat - next.lon * current.lat;
+          twiceArea += cross;
+          longitude += (current.lon + next.lon) * cross;
+          latitude += (current.lat + next.lat) * cross;
+        }
+        if (!Number.isFinite(twiceArea) || Math.abs(twiceArea) < 1e-12) return;
+        var candidate = { lat: latitude / (3 * twiceArea), lon: normalizeLongitude(longitude / (3 * twiceArea)), weight: Math.abs(twiceArea) };
+        if (!Number.isFinite(candidate.lat) || !Number.isFinite(candidate.lon)) return;
+        if (!best || candidate.weight > best.weight) best = candidate;
+      });
+      if (best) {
+        var centroid = { lat: best.lat, lon: best.lon };
+        if (pointInFeature(centroid, feature)) return centroid;
+        var interior = interiorPointOnScanLine(feature, centroid.lat);
+        if (interior) return interior;
+        return centroid;
+      }
+    }
+    return mean(positions.map(unwrapped));
+  }
+
+  // Widest span of the polygon along one line of latitude, then its midpoint.
+  function interiorPointOnScanLine(feature, latitude) {
+    var rings = featureOuterRings(feature);
+    if (!rings.length) return null;
+    var crossings = [];
+    rings.forEach(function (ring) {
+      var vertices = (ring || []).map(mapPoint).filter(function (point) { return Number.isFinite(point.lat) && Number.isFinite(point.lon); });
+      if (vertices.length < 3) return;
+      var arc = minimalLongitudeArc(vertices.map(function (vertex) { return vertex.lon; }));
+      for (var i = 0; i < vertices.length; i++) {
+        var current = vertices[i], next = vertices[(i + 1) % vertices.length];
+        if ((current.lat > latitude) === (next.lat > latitude)) continue;
+        var ratio = (latitude - current.lat) / (next.lat - current.lat);
+        var currentLon = unwrapLongitudeForArc(current.lon, arc);
+        var nextLon = unwrapLongitudeForArc(next.lon, arc);
+        crossings.push(currentLon + ratio * (nextLon - currentLon));
+      }
+    });
+    if (crossings.length < 2) return null;
+    crossings.sort(function (a, b) { return a - b; });
+    var widest = null;
+    for (var pair = 0; pair + 1 < crossings.length; pair += 2) {
+      var width = crossings[pair + 1] - crossings[pair];
+      if (!widest || width > widest.width) widest = { width: width, lon: (crossings[pair] + crossings[pair + 1]) / 2 };
+    }
+    if (!widest || !(widest.width > 0)) return null;
+    return { lat: latitude, lon: normalizeLongitude(widest.lon) };
+  }
+
+  function gisFeatureLabel(properties, nameKey, index) {
+    var candidates = nameKey ? [nameKey] : [];
+    ['name', 'Name', 'NAME', 'label', 'title', 'NAMELSAD', 'admin', 'ADMIN', 'shapeName', 'county', 'district', 'region']
+      .forEach(function (key) { if (candidates.indexOf(key) < 0) candidates.push(key); });
+    for (var i = 0; i < candidates.length; i++) {
+      var value = properties ? properties[candidates[i]] : null;
+      if (value != null && String(value).trim()) return gisPackText(value, 120);
+    }
+    return 'Feature ' + (index + 1);
+  }
+
+  function regionPackFromGeoJSON(input, options) {
+    options = options || {};
+    var parsed = input && input.data && Array.isArray(input.data.features)
+      ? input
+      : parseGISVectorText(typeof input === 'string' ? input : JSON.stringify(input), options.format || 'auto', options.fileName || 'spatial-layer');
+    var features = parsed.data.features;
+    if (!features.length) throw new Error('That spatial layer has no supported features.');
+    var numericKeys = (Array.isArray(parsed.numericKeys) ? parsed.numericKeys : []).slice(0, GIS_CUSTOM_PACK_METRIC_LIMIT);
+    if (!numericKeys.length) {
+      throw new Error('Add at least one numeric property to create a thematic layer, or map the layer as a boundary and join a CSV to it instead.');
+    }
+    var usedIds = {};
+    var metrics = numericKeys.map(function (key, index) { return normalizeGISRegionPackMetric({ label: key, field: key }, index, usedIds); });
+    var hasArea = features.some(function (feature) {
+      var type = feature.geometry ? feature.geometry.type : '';
+      return type !== 'Point' && type !== 'MultiPoint';
+    });
+    var rejected = [], records = [], usedNames = {};
+    features.forEach(function (feature, index) {
+      var properties = feature.properties || {};
+      var label = gisFeatureLabel(properties, parsed.nameKey, index);
+      var point = featureRepresentativePoint(feature);
+      if (!point) { rejected.push({ row: index + 1, name: label, reason: 'The feature has no usable coordinates.' }); return; }
+      var unique = label, counter = 2;
+      while (usedNames[unique]) { unique = label + ' (' + counter + ')'; counter += 1; }
+      usedNames[unique] = true;
+      var record = { name: unique, lat: point.lat, lon: point.lon };
+      metrics.forEach(function (metric) { record[metric.field] = properties[metric.sourceField]; });
+      try {
+        records.push(normalizeGISRegionPackRecord(record, metrics, index));
+      } catch (problem) {
+        rejected.push({ row: index + 1, name: unique, reason: problem.message });
+      }
+    });
+    if (!records.length) {
+      throw new Error('No feature had a usable location and numeric value.' + (rejected[0] ? ' First problem: ' + rejected[0].reason : ''));
+    }
+    var truncated = Math.max(0, records.length - GIS_CUSTOM_PACK_RECORD_LIMIT);
+    var keepBoundaries = hasArea && options.boundaries !== false && features.length <= GIS_CUSTOM_PACK_BOUNDARY_LIMIT;
+    var pack = normalizeGISRegionPack({
+      label: options.label || (options.fileName ? String(options.fileName).replace(/\.[a-z0-9]+$/i, '') : 'Imported layer'),
+      scope: options.scope,
+      description: options.description,
+      sourceNote: options.sourceNote || (options.fileName ? 'Derived from ' + options.fileName + '.' : ''),
+      coverage: options.coverage,
+      metrics: metrics.map(function (metric) { return { id: metric.id, label: metric.label, unit: metric.unit }; }),
+      records: records.slice(0, GIS_CUSTOM_PACK_RECORD_LIMIT),
+      boundaries: keepBoundaries ? parsed.data : undefined
+    }, options);
+    return {
+      pack: pack, rejected: rejected.slice(0, 50), rejectedRows: rejected.length,
+      truncatedRows: truncated + (Number(parsed.truncatedFeatures) || 0),
+      derivedFrom: hasArea ? 'boundaries' : 'points', metricKeys: numericKeys
+    };
+  }
+
   function regionPackFromImportedRows(rows, options) {
     options = options || {};
     var metricLabel = gisPackText(options.metricLabel, 80) || 'Imported value';
@@ -3460,6 +3607,8 @@
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS, regionPacks: GIS_REGION_PACKS,
       generateRegionMissions: generateRegionMissions, gisFillTemplate: gisFillTemplate,
       normalizeGISRegionPackBoundaries: normalizeGISRegionPackBoundaries,
+      featureRepresentativePoint: featureRepresentativePoint, regionPackFromGeoJSON: regionPackFromGeoJSON,
+      interiorPointOnScanLine: interiorPointOnScanLine,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
       calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
       normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
@@ -3540,7 +3689,7 @@
         regionBuiltInGroup: t('stem.gisstudio.region.built_in_group', 'Built-in sample packs'),
         packKicker: t('stem.gisstudio.pack.kicker', 'YOUR OWN GEOGRAPHY'),
         packHeading: t('stem.gisstudio.pack.heading', 'Load a different region'),
-        packIntro: t('stem.gisstudio.pack.intro', 'Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. A JSON pack can also carry GeoJSON boundaries. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, generated missions, and project file as the built-in samples.'),
+        packIntro: t('stem.gisstudio.pack.intro', 'Bring any place into the studio as a region pack: a GeoJSON, KML, or GPX layer with numeric attributes, a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Boundary files become both the places and the polygon layer. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, generated missions, and project file as the built-in samples.'),
         packChooseFile: t('stem.gisstudio.pack.choose_file', 'Region pack file (.json or .csv)'),
         packLabel: t('stem.gisstudio.pack.label', 'Pack name'),
         packLabelPlaceholder: t('stem.gisstudio.pack.label_placeholder', 'Example: Cumberland County towns'),
@@ -3558,6 +3707,10 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        packDerivedBoundaries: t('stem.gisstudio.pack.derived_boundaries', 'Built from a boundary layer. Each place is the representative point of one boundary, and the boundaries came along as the polygon layer.'),
+        packDerivedPoints: t('stem.gisstudio.pack.derived_points', 'Built from the point features in this layer.'),
+        timeMismatchLabel: t('stem.gisstudio.time.mismatch_label', 'Different region:'),
+        timeMismatchNote: t('stem.gisstudio.time.mismatch_note', 'This time series is the built-in Maine sample. It does not describe {pack}. Import a time-series CSV for your own region, or read the change results as a separate Maine dataset.'),
         packPaste: t('stem.gisstudio.pack.paste', 'Or paste region rows (CSV) or a JSON pack'),
         packPastePlaceholder: t('stem.gisstudio.pack.paste_placeholder', 'name,latitude,longitude,population,elevation (m)\nPlace A,44.0,-70.0,1200,40'),
         packPastePreview: t('stem.gisstudio.pack.paste_preview', 'Preview pasted region'),
@@ -3924,6 +4077,8 @@
         var activeMissionProgress = missionProgress[activeMission.id] || {};
         var activeMissionCompletion = missionCompletion(activeMission, activeMissionProgress);
         var timeYears = timeDataset.years || [];
+        var timeIsBuiltInSample = timeDataset === EXAMPLE_TIME_DATA;
+        var timeSeriesMismatch = timeIsBuiltInSample && activeRegionPack.id !== 'maine';
         var effectiveBaseline = timeYears.indexOf(Number(timeBaseline)) >= 0 ? Number(timeBaseline) : timeYears[0];
         var effectiveFocusYear = timeYears.indexOf(Number(timeFocusYear)) >= 0 ? Number(timeFocusYear) : timeYears[timeYears.length - 1];
         var baselineSnapshot = timelineSnapshot(timeDataset.rows, effectiveBaseline);
@@ -5016,9 +5171,15 @@
           var trimmed = String(text || '').replace(/^\uFEFF/, '').trim();
           var existingIds = customRegionPacks.map(function (item) { return item.id; });
           var overrides = { existingIds: existingIds, allowExistingId: true };
+          var spatialOverrides = Object.assign({}, overrides, {
+            fileName: fileName, label: packForm.label.trim(), scope: packForm.scope.trim(), sourceNote: provenance.source
+          });
+          if (/^</.test(trimmed)) return regionPackFromGeoJSON(trimmed, spatialOverrides);
           if (/^[\[{]/.test(trimmed)) {
             var data;
             try { data = JSON.parse(trimmed); } catch (parseError) { throw new Error('The region pack file is not valid JSON. ' + parseError.message); }
+            var kind = data && typeof data === 'object' ? String(data.type || '') : '';
+            if (kind === 'FeatureCollection' || kind === 'Feature' || Array.isArray(data)) return regionPackFromGeoJSON(data, spatialOverrides);
             var merged = Object.assign({}, data);
             if (packForm.label.trim()) merged.label = packForm.label.trim();
             if (packForm.scope.trim()) merged.scope = packForm.scope.trim();
@@ -5030,7 +5191,7 @@
         }
 
         function showRegionPackPreview(result, fileName) {
-          setPackPreview({ pack: result.pack, rejectedRows: result.rejectedRows || 0, rejected: result.rejected || [], truncatedRows: result.truncatedRows || 0, fileName: fileName });
+          setPackPreview({ pack: result.pack, rejectedRows: result.rejectedRows || 0, rejected: result.rejected || [], truncatedRows: result.truncatedRows || 0, fileName: fileName, derivedFrom: result.derivedFrom || '' });
           setPackForm(Object.assign({}, packForm, {
             label: result.pack.label, scope: result.pack.scope,
             represented: result.pack.coverage.represented.join(', '), gaps: result.pack.coverage.gaps.join(', '),
@@ -5760,6 +5921,8 @@
               (packPreview.rejectedRows ? ' \u00B7 ' + packPreview.rejectedRows + ' ' + gisText.packRowsSkippedShort : '') +
               (packPreview.truncatedRows ? ' \u00B7 ' + packPreview.truncatedRows + ' ' + gisText.packRowsTruncated : '') +
               (pack.boundaries ? ' \u00B7 ' + pack.boundaries.features.length + ' ' + gisText.packBoundaryFeatures : '')),
+            packPreview.derivedFrom === 'boundaries' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedBoundaries),
+            packPreview.derivedFrom === 'points' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedPoints),
             packPreview.rejected.length > 0 && h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, color: '#fde68a', fontSize: 11 } },
               packPreview.rejected.slice(0, 5).map(function (item) { return h('li', { key: 'rejected-' + item.row }, gisText.packRow + ' ' + item.row + (item.name ? ' (' + item.name + ')' : '') + ': ' + item.reason); })),
             h('div', { style: { overflowX: 'auto', maxHeight: 240, overflowY: 'auto' } },
@@ -5815,7 +5978,7 @@
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
               h('button', { type: 'button', onClick: previewPastedRegionPack, style: primary }, gisText.packPastePreview),
               h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.packChooseFile,
-                h('input', { type: 'file', accept: '.json,.csv,.gispack.json,application/json,text/csv', onChange: readRegionPackFile, style: { display: 'block', marginTop: 7 } })),
+                h('input', { type: 'file', accept: '.json,.csv,.geojson,.kml,.gpx,.gispack.json,application/json,application/geo+json,text/csv', onChange: readRegionPackFile, style: { display: 'block', marginTop: 7 } })),
               h('button', { type: 'button', onClick: saveMappedRowsAsPack, disabled: !canSaveMapped, 'aria-describedby': canSaveMapped ? undefined : 'gis-region-pack-save-hint', style: Object.assign({}, primary, { opacity: canSaveMapped ? 1 : 0.55 }) }, gisText.packSaveMapped),
               h('button', { type: 'button', onClick: downloadRegionPackTemplate, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.packTemplate)),
             !canSaveMapped && h('p', { id: 'gis-region-pack-save-hint', style: { margin: '8px 0 0', color: '#9fb6c5', fontSize: 11 } }, gisText.packSaveMappedHint),
@@ -7500,6 +7663,8 @@
             h('section', { 'aria-labelledby': 'gis-timeline-heading', style: panel },
               h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'CHANGE OVER TIME'),
               h('h2', { id: 'gis-timeline-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Time-Series Change Lab'),
+              timeSeriesMismatch && h('p', { role: 'status', style: { margin: '9px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.timeMismatchLabel + ' '), gisFillTemplate(gisText.timeMismatchNote, { pack: activeRegionPack.label })),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Compare the same locations across years. Keep the baseline fixed, move or play the focus year, and distinguish measured change from explanations that require more evidence.'),
               h('details', { style: { marginTop: 11, color: '#cfe8f3', fontSize: 11 } },
                 h('summary', { style: { cursor: 'pointer', fontWeight: 800, color: '#67e8f9' } }, 'Import a time-series CSV'),

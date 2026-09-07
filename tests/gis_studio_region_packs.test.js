@@ -245,6 +245,113 @@ describe('GIS Studio - custom region packs', () => {
     expect(html).toContain('Broadband access index contra Population density');
   });
 
+  it('places a representative point inside each feature, including across the antimeridian', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const point = tool.testing.featureRepresentativePoint({ geometry: { type: 'Point', coordinates: [12, 34] } });
+    expect(point).toMatchObject({ lat: 34, lon: 12 });
+
+    const square = tool.testing.featureRepresentativePoint({
+      geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] }
+    });
+    expect(square.lat).toBeCloseTo(5, 6);
+    expect(square.lon).toBeCloseTo(5, 6);
+
+    // An L-shaped polygon: its area centroid (2.2, 2.2) lies outside the shape,
+    // so the representative point must fall back to a point on the surface.
+    const shape = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[[0, 0], [6, 0], [6, 2], [2, 2], [2, 6], [0, 6], [0, 0]]] } };
+    expect(tool.testing.pointInFeature({ lat: 2.2, lon: 2.2 }, shape)).toBe(false);
+    const inside = tool.testing.featureRepresentativePoint(shape);
+    expect(tool.testing.pointInFeature(inside, shape)).toBe(true);
+    expect(tool.testing.interiorPointOnScanLine(shape, 1)).toMatchObject({ lat: 1, lon: 3 });
+    expect(tool.testing.interiorPointOnScanLine(shape, 99)).toBeNull();
+
+    // Straddling 180 degrees: the point belongs near the dateline, not near 0.
+    const dateline = tool.testing.featureRepresentativePoint({
+      geometry: { type: 'Polygon', coordinates: [[[179, -1], [-179, -1], [-179, 1], [179, 1], [179, -1]]] }
+    });
+    expect(Math.abs(dateline.lon)).toBeGreaterThan(179);
+    expect(dateline.lat).toBeCloseTo(0, 6);
+
+    // The larger part of a multipolygon wins.
+    const multi = tool.testing.featureRepresentativePoint({
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]],
+          [[[40, 40], [50, 40], [50, 50], [40, 50], [40, 40]]]
+        ]
+      }
+    });
+    expect(multi.lat).toBeCloseTo(45, 6);
+    expect(multi.lon).toBeCloseTo(45, 6);
+
+    const line = tool.testing.featureRepresentativePoint({ geometry: { type: 'LineString', coordinates: [[0, 0], [4, 8]] } });
+    expect(line).toMatchObject({ lat: 4, lon: 2 });
+    expect(tool.testing.featureRepresentativePoint({ geometry: { type: 'Polygon', coordinates: [] } })).toBeNull();
+    expect(tool.testing.featureRepresentativePoint(null)).toBeNull();
+  });
+
+  it('derives a pack from a boundary layer and keeps the boundaries as the polygon layer', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const layer = {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { NAME: 'North ward', residents: 4200, parks: 3 }, geometry: { type: 'Polygon', coordinates: [[[0, 10], [10, 10], [10, 20], [0, 20], [0, 10]]] } },
+        { type: 'Feature', properties: { NAME: 'South ward', residents: 1800, parks: 7 }, geometry: { type: 'Polygon', coordinates: [[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]] } }
+      ]
+    };
+    const result = tool.testing.regionPackFromGeoJSON(layer, { fileName: 'Wards.geojson' });
+    expect(result.derivedFrom).toBe('boundaries');
+    expect(result.pack.label).toBe('Wards');
+    expect(result.pack.records.map((record) => record.name)).toEqual(['North ward', 'South ward']);
+    expect(result.pack.records[0]).toMatchObject({ lat: 15, lon: 5, residents: 4200, parks: 3 });
+    expect(result.pack.metrics.map((metric) => metric.id)).toEqual(['residents', 'parks']);
+    expect(result.pack.boundaries.features).toHaveLength(2);
+    expect(result.pack.sourceNote).toContain('Wards.geojson');
+    // Boundaries in the pack mean the generated missions include the boundary investigation.
+    expect(tool.testing.generateRegionMissions(result.pack).map((mission) => mission.kind)).toContain('boundaries');
+  });
+
+  it('names, de-duplicates, and rejects features honestly when deriving a pack', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const layer = {
+      type: 'FeatureCollection',
+      features: [
+        { type: 'Feature', properties: { admin: 'Ward', population: 10 }, geometry: { type: 'Point', coordinates: [1, 1] } },
+        { type: 'Feature', properties: { admin: 'Ward', population: 20 }, geometry: { type: 'Point', coordinates: [2, 2] } },
+        { type: 'Feature', properties: { population: 30 }, geometry: { type: 'Point', coordinates: [3, 3] } },
+        { type: 'Feature', properties: { admin: 'No value', population: '' }, geometry: { type: 'Point', coordinates: [4, 4] } }
+      ]
+    };
+    const result = tool.testing.regionPackFromGeoJSON(layer, { label: 'Wards' });
+    expect(result.derivedFrom).toBe('points');
+    expect(result.pack.boundaries).toBeNull();
+    expect(result.pack.records.map((record) => record.name)).toEqual(['Ward', 'Ward (2)', 'Feature 3']);
+    expect(result.rejectedRows).toBe(1);
+    expect(result.rejected[0]).toMatchObject({ row: 4, name: 'No value' });
+    expect(() => tool.testing.regionPackFromGeoJSON({
+      type: 'FeatureCollection',
+      features: [{ type: 'Feature', properties: { name: 'Only text' }, geometry: { type: 'Point', coordinates: [0, 0] } }]
+    })).toThrow(/at least one numeric property/);
+  });
+
+  it('flags the built-in time series as a different region without discarding it', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+    const maine = renderTool('gisStudio', { gisTab: 'timeline' });
+    expect(maine).not.toContain('Different region:');
+
+    const custom = renderTool('gisStudio', { gisTab: 'timeline', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+    expect(custom).toContain('Different region:');
+    expect(custom).toContain('It does not describe Otago towns.');
+    // The Maine series still runs; it is labelled, not hidden.
+    expect(custom).toContain('Time-Series Change Lab');
+    expect(custom).toContain('Cumberland');
+
+    const global = renderTool('gisStudio', { gisTab: 'timeline', gisRegionPack: 'global' });
+    expect(global).toContain('It does not describe Global regions (classroom sample).');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });
