@@ -80,9 +80,13 @@
   .empty { flex: 1 1 auto; display: flex; align-items: center; justify-content: center; color: var(--dim); text-align: center; padding: 24px; }
   .empty div { max-width: 460px; line-height: 1.6; }
   /* Manual builder drawer */
-  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 88vw; background: var(--panel); border-left: 1px solid var(--line); transform: translateX(100%); transition: transform 0.2s; z-index: 50; display: flex; flex-direction: column; overflow-y: auto; }
-  .drawer.open { transform: translateX(0); }
+  .drawer { position: fixed; top: 0; right: 0; height: 100%; width: 340px; max-width: 88vw; background: var(--panel); border-left: 1px solid var(--line); transform: translateX(100%); visibility: hidden; transition: transform 0.2s, visibility 0s linear 0.2s; z-index: 50; display: flex; flex-direction: column; overflow-y: auto; }
+  .drawer.open { transform: translateX(0); visibility: visible; transition: transform 0.2s; }
+  @media (prefers-reduced-motion: reduce) { .drawer, .drawer.open { transition: none; } }
   .drawer h2 { font-size: 13px; margin: 0; padding: 12px 14px 4px; color: #fecdd3; }
+  .drawer .drawer-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-right: 10px; }
+  .drawer .drawer-close { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; min-width: 44px; min-height: 44px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .drawer .drawer-close:hover { border-color: var(--accent); }
   .drawer .body { padding: 6px 14px 16px; display: flex; flex-direction: column; gap: 8px; }
   .drawer label { font-size: 11px; color: var(--dim); font-weight: 700; }
   .drawer input, .drawer textarea { width: 100%; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 7px 9px; font-size: 13px; font-family: inherit; }
@@ -101,7 +105,7 @@
   <h1>🕰️ Timeline Studio</h1>
   <span class="sub">TimelineJS by Knight Lab (open source, MPL) + AlloFlow</span>
   <span class="spacer"></span>
-  <button id="builderBtn" type="button" aria-label="Open the manual event builder">✍️ Add events</button>
+  <button id="builderBtn" type="button" aria-expanded="false" aria-controls="drawer">✍️ Add events</button>
 </header>
 <div id="timeline-embed"></div>
 <div class="empty" id="empty">
@@ -111,8 +115,11 @@
   </div>
 </div>
 
-<aside class="drawer" id="drawer" aria-label="Manual timeline builder">
-  <h2>Build a timeline by hand</h2>
+<aside class="drawer" id="drawer" aria-label="Manual timeline builder" inert>
+  <div class="drawer-head">
+    <h2>Build a timeline by hand</h2>
+    <button class="drawer-close" id="drawerCloseBtn" type="button" aria-label="Close the manual event builder">×</button>
+  </div>
   <div class="body">
     <div>
       <label for="mHeadline">Event headline</label>
@@ -194,10 +201,36 @@
   }
 
   // ── Bridge with opener ──
+  // Which origins may feed this window a timeline. A page that opens this
+  // URL itself is the opener, so "is the opener" alone proves nothing; the
+  // opener must also be somewhere AlloFlow runs. Opaque origins ("null",
+  // sandboxed frames, file://) are refused.
+  function isTrustedOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host);
+    } catch (_) { return false; }
+  }
+  function isTrustedOpenerMessage(event) {
+    if (!window.opener) return true; // standalone: nothing sends messages
+    if (!event || event.source !== window.opener) return false;
+    return isTrustedOrigin(event.origin);
+  }
+  window.__alloTimelineTrust = { isTrustedOrigin: isTrustedOrigin, isTrustedOpenerMessage: isTrustedOpenerMessage };
   window.addEventListener('message', function (event) {
+    // Same rule as the theme listener above: with an opener, only the opener
+    // may drive this window. TimelineJS renders the text fields as HTML, so an
+    // unguarded listener let any page that opened this URL inject markup here.
+    if (!isTrustedOpenerMessage(event)) return;
     var msg = event && event.data;
     if (!msg || typeof msg.type !== 'string') return;
-    if (msg.type === 'allotimeline-data' && msg.timeline) {
+    if (msg.type === 'allotimeline-data' && msg.timeline && typeof msg.timeline === 'object') {
       data = msg.timeline;
       ensureData();
       render();
@@ -206,9 +239,21 @@
   });
 
   // ── Manual builder ──
-  builderBtn.addEventListener('click', function () {
-    drawer.classList.toggle('open');
+  function setDrawer(open) {
+    drawer.classList.toggle('open', open);
+    if (open) drawer.removeAttribute('inert'); else drawer.setAttribute('inert', '');
+    builderBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
     refreshEvList();
+    // move focus with the disclosure, and bring it back when it closes
+    var first = document.getElementById('mHeadline');
+    if (open && first) first.focus(); else if (!open) builderBtn.focus();
+  }
+  builderBtn.addEventListener('click', function () { setDrawer(!drawer.classList.contains('open')); });
+  document.getElementById('drawerCloseBtn').addEventListener('click', function () { setDrawer(false); });
+  // Escape closes the drawer from anywhere inside it; the open panel covers
+  // the header toggle, so this and the close button are the mouse-free ways out
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape' && drawer.classList.contains('open')) { ev.preventDefault(); setDrawer(false); }
   });
   addEventBtn.addEventListener('click', function () {
     var headline = document.getElementById('mHeadline').value.trim();

@@ -43,9 +43,54 @@
     return cdnUrl;
   }
   var TIMELINE_STUDIO_URL = companionUrl('timeline_studio/timeline_studio.html?v=1', TIMELINE_STUDIO_CDN_URL);
+  // postMessage target: the companion's own origin. Opaque origins (file://)
+  // report "null", which postMessage rejects, so those fall back to '*'.
+  var COMPANION_ORIGIN = (function () {
+    try {
+      var o = new URL(TIMELINE_STUDIO_URL, (window.location && window.location.href) || undefined).origin;
+      return (o && o !== 'null') ? o : '*';
+    } catch (_) { return '*'; }
+  })();
 
   function withParam(url, key, value) {
     return url + (url.indexOf('?') === -1 ? '?' : '&') + encodeURIComponent(key) + '=' + encodeURIComponent(value);
+  }
+
+  // The host marks its theme with a class on <html> or <body>. The companion
+  // reads ?theme= once at load and defaults to DARK when it is absent, which
+  // handed every light-theme and high-contrast teacher a dark window.
+  function hostTheme(doc) {
+    doc = doc || (typeof document !== 'undefined' ? document : null);
+    var root = doc && doc.documentElement, body = doc && doc.body;
+    function has(c) { return !!((root && root.classList && root.classList.contains(c)) || (body && body.classList && body.classList.contains(c))); }
+    if (has('theme-contrast')) return 'contrast';
+    if (has('theme-dark')) return 'dark';
+    return 'light';
+  }
+
+  // The host passes its gradeLevel prop; the studio used to ignore it and
+  // always start at middle school. Unknown shapes still land there.
+  var GRADE_IDS = ['early-elementary', 'upper-elementary', 'middle-school', 'high-school'];
+  function gradeToLevel(g) {
+    if (g == null) return 'middle-school';
+    var s = String(g).trim().toLowerCase();
+    if (!s) return 'middle-school';
+    if (GRADE_IDS.indexOf(s) !== -1) return s;
+    if (/^(k|pre-?k|kindergarten)$/.test(s)) return 'early-elementary';
+    var m = s.match(/\d+/);
+    if (m) {
+      var n = parseInt(m[0], 10);
+      if (n <= 2) return 'early-elementary';
+      if (n <= 5) return 'upper-elementary';
+      if (n <= 8) return 'middle-school';
+      if (n <= 12) return 'high-school';
+      return 'high-school';
+    }
+    if (/high|secondary/.test(s)) return 'high-school';
+    if (/middle/.test(s)) return 'middle-school';
+    if (/upper|intermediate/.test(s)) return 'upper-elementary';
+    if (/kinder|early|primary/.test(s)) return 'early-elementary';
+    return 'middle-school';
   }
 
   function tr(t, key, fallback) {
@@ -347,7 +392,12 @@
   // The companion renders TimelineJS3 HTML text fields, so badges/sources/
   // disclosure travel inside the payload — no companion changes needed.
   function decorateTimelineForDisplay(tl, research, t) {
-    var out = { title: tl.title, events: [] };
+    // TimelineJS renders every text field as HTML, so model output is escaped
+    // here for BOTH modes; the title used to travel raw.
+    var out = { events: [] };
+    if (tl.title && tl.title.text) {
+      out.title = { text: { headline: escapeHtml(tl.title.text.headline || ''), text: escapeHtml(tl.title.text.text || '') } };
+    }
     var flagged = 0;
     out.events = (tl.events || []).map(function (e) {
       var v = e.verification;
@@ -447,7 +497,7 @@
     var mustState = React.useState('');
     var mustInclude = mustState[0];
     var setMustInclude = mustState[1];
-    var gradeState = React.useState('middle-school');
+    var gradeState = React.useState(gradeToLevel(props.gradeLevel));
     var grade = gradeState[0];
     var setGrade = gradeState[1];
     var statusState = React.useState('idle');
@@ -509,7 +559,7 @@
     function sendData() {
       var w = winRef.current;
       if (w && !w.closed && dataRef.current) {
-        try { w.postMessage({ type: 'allotimeline-data', timeline: dataRef.current }, '*'); } catch (_) {}
+        try { w.postMessage({ type: 'allotimeline-data', timeline: dataRef.current }, COMPANION_ORIGIN); } catch (_) {}
       }
     }
 
@@ -517,10 +567,13 @@
       function onMsg(ev) {
         var data = ev && ev.data;
         if (!data || typeof data.type !== 'string') return;
+        // Only the window this studio opened may drive it. Any page holding
+        // a handle to this window could otherwise ask for the timeline, or
+        // spoof the companion's status messages.
+        if (!winRef.current || ev.source !== winRef.current) return;
         if (data.type === 'allotimeline-hello') {
-          var replyTo = ev.source || winRef.current;
           try {
-            if (replyTo && dataRef.current) replyTo.postMessage({ type: 'allotimeline-data', timeline: dataRef.current }, '*');
+            if (dataRef.current) winRef.current.postMessage({ type: 'allotimeline-data', timeline: dataRef.current }, COMPANION_ORIGIN);
           } catch (_) {}
           if (!busyRef.current) setStatus('open');
           return;
@@ -540,7 +593,7 @@
       }
       var w = null;
       try {
-        w = window.open(withParam(TIMELINE_STUDIO_URL, 'lang', lang), 'alloflow-timeline-studio', 'width=1200,height=800');
+        w = window.open(withParam(withParam(TIMELINE_STUDIO_URL, 'lang', lang), 'theme', hostTheme()), 'alloflow-timeline-studio', 'width=1200,height=800');
       } catch (_) {
         w = null;
       }
@@ -583,7 +636,7 @@
           setStatus('noevents');
           return;
         }
-        dataRef.current = tl;
+        dataRef.current = decorateTimelineForDisplay(tl, null, t).timeline;
         setStatus('ready');
         setTimeout(sendData, 400);
       }).catch(function (e) {
@@ -869,7 +922,9 @@
     decorateTimelineForDisplay: decorateTimelineForDisplay,
     runGroundedVerify: runGroundedVerify,
     escapeHtml: escapeHtml,
-    safeUri: safeUri
+    safeUri: safeUri,
+    hostTheme: hostTheme,
+    gradeToLevel: gradeToLevel
   };
   console.log('[CDN] TimelineStudio loaded');
 })();
