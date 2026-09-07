@@ -2693,6 +2693,81 @@ const d = labToolData.physics;
 
             ),
 
+            d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": __alloT('stem.physics.a11y_range_estimation_comparison_and_reflection', 'Range estimation comparison and reflection') },
+              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
+                React.createElement("div", null,
+                  React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, __alloT('stem.physics.est_section_title', 'Quantitative estimation challenge')),
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, __alloT('stem.physics.est_section_blurb', 'Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.'))
+                ),
+                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% " + __alloT('stem.physics.est_error', 'error'))
+              ),
+              React.createElement("fieldset", { className: "mt-2" },
+                React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_legend', 'How did the measured result affect your estimate?')),
+                React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": __alloT('stem.physics.a11y_how_the_measured_range_affected_the_estimate', 'How the measured range affected the estimate') },
+                  [
+                    { id: 'supported', label: __alloT('stem.physics.est_opt_supported', 'It supported my method') },
+                    { id: 'revised', label: __alloT('stem.physics.est_opt_revised', 'I would revise my method') },
+                    { id: 'uncertain', label: __alloT('stem.physics.est_opt_uncertain', 'I need another controlled trial') }
+                  ].map(function(option) {
+                    var selectedRevision = d.predictionResult.revision === option.id;
+                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[0.625rem] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
+                      React.createElement("input", { type: "radio", name: "physics-estimation-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('predictionResult', Object.assign({}, d.predictionResult, { revision: option.id, reflectionComplete: false })); }, className: "mt-0.5 h-4 w-4 accent-fuchsia-700" }),
+                      React.createElement("span", null, option.label)
+                    );
+                  })
+                )
+              ),
+              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_reason_label', 'What will you keep or change next time?')),
+              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: __alloT('stem.physics.est_reason_placeholder', 'The measured range and percent error show... Next time I will...'), className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
+              React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
+                if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
+                upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
+                if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
+              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? __alloT('stem.physics.est_reflection_saved', 'Reflection saved') : __alloT('stem.physics.est_save_reflection', 'Save estimation reflection'))
+            ),
+
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
+
+              [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }].map(function (s) {
+                var isLocked = d.targetMode && d.targetConstraint && (
+                  (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
+                  (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
+                );
+                return React.createElement("div", { key: s.k, className: "text-center rounded-lg p-2 border " + (isLocked ? 'bg-red-50 border-red-300' : 'bg-slate-50') },
+
+                  React.createElement("label", { className: "text-[0.6875rem] font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-600') }, isLocked ? '\u{1F512} ' + s.label : s.label),
+
+                  React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
+
+                  React.createElement("input", { type: "range", "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
+                    if (!isLocked) {
+                      var newVal = parseFloat(e.target.value);
+                      upd(s.k, newVal);
+                      // Canvas Narration: parameter change (high debounce to avoid spam during drag)
+                      if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'param_' + s.k, s.label.split(' ')[0] + ': ' + newVal, { debounce: 800 });
+                    }
+                  }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') })
+
+                );
+
+              })
+
+            ),
+
+            // ── XP & Stats Bar ──
+            React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
+              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
+              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
+              d.predictionStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
+              d.quizStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
+            ),
+
+            // \u2500\u2500 Live "Show Your Work" Formulas Panel \u2500\u2500
+            // Updates in real time as the angle/velocity/gravity sliders move.
+            // Three forms per equation (symbolic \u2192 substituted \u2192 numeric) so
+            // the student SEES how slider changes flow through the algebra.
+            // Drag is ignored in these closed-form expressions; a note flags
+            // that when air resist is on.
             // ── Last flight: measured results against the no-drag formula ──
             // The formulas panel predicts; this strip MEASURES. Putting the two
             // side by side is where drag stops being a slogan and becomes a
@@ -2831,81 +2906,6 @@ const d = labToolData.physics;
               );
             })(),
 
-            d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": __alloT('stem.physics.a11y_range_estimation_comparison_and_reflection', 'Range estimation comparison and reflection') },
-              React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
-                React.createElement("div", null,
-                  React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, __alloT('stem.physics.est_section_title', 'Quantitative estimation challenge')),
-                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, __alloT('stem.physics.est_section_blurb', 'Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.'))
-                ),
-                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% " + __alloT('stem.physics.est_error', 'error'))
-              ),
-              React.createElement("fieldset", { className: "mt-2" },
-                React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_legend', 'How did the measured result affect your estimate?')),
-                React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": __alloT('stem.physics.a11y_how_the_measured_range_affected_the_estimate', 'How the measured range affected the estimate') },
-                  [
-                    { id: 'supported', label: __alloT('stem.physics.est_opt_supported', 'It supported my method') },
-                    { id: 'revised', label: __alloT('stem.physics.est_opt_revised', 'I would revise my method') },
-                    { id: 'uncertain', label: __alloT('stem.physics.est_opt_uncertain', 'I need another controlled trial') }
-                  ].map(function(option) {
-                    var selectedRevision = d.predictionResult.revision === option.id;
-                    return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[0.625rem] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
-                      React.createElement("input", { type: "radio", name: "physics-estimation-revision", value: option.id, checked: selectedRevision, onChange: function() { upd('predictionResult', Object.assign({}, d.predictionResult, { revision: option.id, reflectionComplete: false })); }, className: "mt-0.5 h-4 w-4 accent-fuchsia-700" }),
-                      React.createElement("span", null, option.label)
-                    );
-                  })
-                )
-              ),
-              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_reason_label', 'What will you keep or change next time?')),
-              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: __alloT('stem.physics.est_reason_placeholder', 'The measured range and percent error show... Next time I will...'), className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
-              React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
-                if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
-                upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
-                if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
-              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? __alloT('stem.physics.est_reflection_saved', 'Reflection saved') : __alloT('stem.physics.est_save_reflection', 'Save estimation reflection'))
-            ),
-
-            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
-
-              [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }].map(function (s) {
-                var isLocked = d.targetMode && d.targetConstraint && (
-                  (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
-                  (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
-                );
-                return React.createElement("div", { key: s.k, className: "text-center rounded-lg p-2 border " + (isLocked ? 'bg-red-50 border-red-300' : 'bg-slate-50') },
-
-                  React.createElement("label", { className: "text-[0.6875rem] font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-600') }, isLocked ? '\u{1F512} ' + s.label : s.label),
-
-                  React.createElement("span", { className: "text-sm font-bold block " + (isLocked ? 'text-red-700' : 'text-slate-700') }, d[s.k]),
-
-                  React.createElement("input", { type: "range", "aria-valuetext": (d[s.k] + " " + ((s.label.match(/\(([^)]+)\)/) || ["", ""])[1])), "aria-label": s.label, min: s.min, max: s.max, step: s.step, value: d[s.k], disabled: isLocked, onChange: function (e) {
-                    if (!isLocked) {
-                      var newVal = parseFloat(e.target.value);
-                      upd(s.k, newVal);
-                      // Canvas Narration: parameter change (high debounce to avoid spam during drag)
-                      if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'param_' + s.k, s.label.split(' ')[0] + ': ' + newVal, { debounce: 800 });
-                    }
-                  }, className: "w-full " + (isLocked ? 'accent-red-400 opacity-50 cursor-not-allowed' : 'accent-sky-600') })
-
-                );
-
-              })
-
-            ),
-
-            // ── XP & Stats Bar ──
-            React.createElement("div", { className: "flex items-center gap-3 mb-2 px-1" },
-              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
-              React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
-              d.predictionStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
-              d.quizStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
-            ),
-
-            // \u2500\u2500 Live "Show Your Work" Formulas Panel \u2500\u2500
-            // Updates in real time as the angle/velocity/gravity sliders move.
-            // Three forms per equation (symbolic \u2192 substituted \u2192 numeric) so
-            // the student SEES how slider changes flow through the algebra.
-            // Drag is ignored in these closed-form expressions; a note flags
-            // that when air resist is on.
             d.showFormulas && (function() {
               var ang = parseFloat(d.angle || 45);
               var vel = parseFloat(d.velocity || 25);
