@@ -1,0 +1,19 @@
+# Cloudflare Pages headers (this file is served from the repository root, like _redirects).
+#
+# The accessibility engines are vendored here so Gemini Canvas, whose CSP refuses the
+# third-party CDNs, can still load them from the origin it already trusts for every
+# module. The doc pipeline also FETCHES axe-core's source text once to inject it inline
+# into each audit frame; that fetch is cross-origin from Canvas and needs CORS. Scoped to
+# the engine directories only.
+/axe-core/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+/accessibility-checker-engine/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+/pdfjs-dist/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable
+/pdf-lib/*
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=31536000, immutable

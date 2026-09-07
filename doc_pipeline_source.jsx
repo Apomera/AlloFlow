@@ -13270,14 +13270,31 @@ var createDocPipeline = function(deps) {
       }
     } catch (_) {}
     return _loadCdnScript('pdflib', [
+      'https://alloflow-cdn.pages.dev/pdf-lib/1.17.1/pdf-lib.min.js', // (2026-09-06) first-party copy, see ensurePdfJsLoaded
       'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js',
       'https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js',
     ], _ready, { timeout: 15000 });
   };
 
+  // (2026-09-06) The worker must come from the mirror that actually served pdf.min.js: a host
+  // that refused the main script refuses the worker too, and pdf.js gives a dead worker no
+  // timeout. _loadCdnScript appends one tag per attempt and returns on the first success, so
+  // the LAST tag is the mirror that loaded.
+  const _pdfJsWorkerBesideLoadedScript = () => {
+    try {
+      if (typeof document === 'undefined') return '';
+      const tags = document.querySelectorAll('script[data-docpipe-pdfjs]');
+      const src = tags.length ? String(tags[tags.length - 1].src || '') : '';
+      return /\/pdf\.min\.js(\?.*)?$/.test(src) ? src.replace(/\/pdf\.min\.js(\?.*)?$/, '/pdf.worker.min.js') : '';
+    } catch (_) { return ''; }
+  };
   const ensurePdfJsLoaded = async () => {
     const ok = await _loadCdnScript('pdfjs', [
+      // (2026-09-06) First-party copy first (vendored at the repo root like temml/): Canvas's CSP
+      // refuses the third-party hosts, and pdf.js is what the structure read, the deterministic
+      // baseline and text extraction all stand on.
+      'https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
       'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js',
       'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js',
@@ -13285,7 +13302,7 @@ var createDocPipeline = function(deps) {
     if (!ok) throw new Error('pdf.js unavailable (all CDN sources failed)');
     if (window.pdfjsLib && window.pdfjsLib.GlobalWorkerOptions) {
       const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
-      window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || _pdfJsWorkerBesideLoadedScript() || 'https://alloflow-cdn.pages.dev/pdfjs-dist/3.11.174/pdf.worker.min.js';
     }
   };
 
@@ -20347,10 +20364,15 @@ HTML section ${chunkNum}/${chunks.length}:
   var _axeSourcePromise = null;
   // Mirror chain (each HTTP-200-verified): one blocked CDN host must not kill the
   // axe baseline — locked-down school networks routinely block a single CDN.
+  // (2026-09-06) First-party copy first: Gemini Canvas's CSP refuses jsdelivr and unpkg, and the
+  // cdnjs entry that used to sit third was a dead URL (HTTP 404: cdnjs never published axe-core
+  // 4.12.1), so in Canvas axe never loaded at all and every audit was AI-only. The origin below is
+  // the one Canvas already loads every module from; the file is vendored at the repo root exactly
+  // like temml/, and served with CORS via _headers so the source-text fetch works too.
   const _AXE_CDN_URLS = [
+    'https://alloflow-cdn.pages.dev/axe-core/4.12.1/axe.min.js',
     'https://cdn.jsdelivr.net/npm/axe-core@4.12.1/axe.min.js',
     'https://unpkg.com/axe-core@4.12.1/axe.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/axe-core/4.12.1/axe.min.js',
   ];
   const _AXE_CDN_URL = _AXE_CDN_URLS[0];
   const runAxeAudit = async (htmlContent) => {
@@ -21243,6 +21265,8 @@ HTML section ${chunkNum}/${chunks.length}:
   // cache couldn't tell). 3.1.83 = the @3 resolution verified 2026-07-10; bump deliberately, with
   // _PIPELINE_PROMPT_VERSION, so cached scores and fresh scores always come from the same rules.
   const _ACE_CDN_URLS = [
+    // (2026-09-06) First-party copy first; both third-party mirrors are refused by Canvas's CSP (A3 below).
+    'https://alloflow-cdn.pages.dev/accessibility-checker-engine/3.1.83/ace.js',
     'https://cdn.jsdelivr.net/npm/accessibility-checker-engine@3.1.83/ace.js',
     'https://unpkg.com/accessibility-checker-engine@3.1.83/ace.js',
   ];
@@ -25396,25 +25420,10 @@ Respond with ONLY a JSON object: {"score": NUMBER, "issues": ["issue1", "issue2"
             let pdfDoc = null; // H-2 (audit 2026-06-23): hoisted so the finally can destroy() it — this was the only getDocument site that leaked the pdf.js worker/transport (Canvas-iframe OOM contributor)
             try {
               // Load PDF.js from CDN if not already available
-              if (!window.pdfjsLib) {
-                await _awaitImageWork(new Promise((resolve, reject) => {
-                  if (document.querySelector('script[data-pdfjs]')) {
-                    const wait = setInterval(() => { if (window.pdfjsLib) { clearInterval(wait); resolve(); } }, 100);
-                    setTimeout(() => { clearInterval(wait); reject(new Error('PDF.js timeout')); }, 10000);
-                    return;
-                  }
-                  const script = document.createElement('script');
-                  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
-                  script.setAttribute('data-pdfjs', 'true');
-                  script.onload = () => {
-                    const _vendorWorker = typeof window !== 'undefined' && window.__alloflowRuntimeAssets && window.__alloflowRuntimeAssets.pdfjsWorker;
-                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = _vendorWorker || 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                    resolve();
-                  };
-                  script.onerror = () => reject(new Error('Failed to load PDF.js'));
-                  document.head.appendChild(script);
-                }));
-              }
+              // (2026-09-06) Was a lone cdnjs script tag with its own worker URL, the one pdf.js
+              // load site that ignored the mirror chain. Routed through ensurePdfJsLoaded so it
+              // gets the first-party copy, the failure memo and the error-event fail-over.
+              if (!window.pdfjsLib) await _awaitImageWork(ensurePdfJsLoaded());
               _throwIfImageCancelled();
               // Convert base64 PDF to Uint8Array (capped at _MAX_PDF_BYTES — was uncapped atob)
               const pdfBytes = _b64ToBytes(_base64);

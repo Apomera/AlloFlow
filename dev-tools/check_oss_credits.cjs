@@ -98,6 +98,15 @@ const VENDORED = [
   'immersive_geometry/vendor/aframe.min.js',
   'temml/temml.min.js',
   'qrcode.js',
+  // (2026-09-06) The accessibility engines are served first-party for Gemini Canvas
+  // (its CSP refuses the third-party CDNs). Each carries its upstream banner; IBM
+  // Equal Access's banner only points at ace.js.LICENSE.txt, which is vendored beside
+  // it and is the file that holds the copyright line.
+  'axe-core/4.12.1/axe.min.js',
+  'accessibility-checker-engine/3.1.83/ace.js.LICENSE.txt',
+  'pdfjs-dist/3.11.174/pdf.min.js',
+  'pdfjs-dist/3.11.174/pdf.worker.min.js',
+  'pdf-lib/1.17.1/pdf-lib.min.js',
 ];
 for (const rel of VENDORED) {
   const p = path.join(ROOT, rel);

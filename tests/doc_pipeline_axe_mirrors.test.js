@@ -25,13 +25,18 @@ describe('doc_pipeline · axe-core CDN mirror chain', () => {
       expect(urls.length).toBeGreaterThanOrEqual(3);
       const hosts = new Set(urls.map(u => new URL(u).host));
       expect(hosts.size).toBeGreaterThanOrEqual(3);
-      // jsdelivr/unpkg use axe-core@4.12.1; cdnjs uses axe-core/4.12.1
+      // jsdelivr/unpkg use axe-core@4.12.1; the first-party copy uses axe-core/4.12.1
       for (const u of urls) expect(u).toMatch(/axe-core[@/]4\.12\.1/);
+      // (2026-09-06) The first-party copy leads: Canvas's CSP refuses the third-party hosts, and
+      // the cdnjs entry that used to sit third was a dead URL (HTTP 404), so the chain was two
+      // refused mirrors deep in Canvas and axe never loaded there.
+      expect(urls[0]).toBe('https://alloflow-cdn.pages.dev/axe-core/4.12.1/axe.min.js');
+      expect(urls.some((u) => /cdnjs\.cloudflare\.com/.test(u))).toBe(false);
     });
 
     it(`${label}: no load site uses a lone hardcoded axe URL anymore`, () => {
       // Every literal axe URL must live inside the _AXE_CDN_URLS definition —
-      // count occurrences: exactly the 1 jsdelivr + 1 unpkg + 1 cdnjs in the list.
+      // count occurrences: exactly the 1 first-party + 1 jsdelivr + 1 unpkg in the list.
       const literals = (text.match(/https:\/\/[^'"\s]*axe-core[@/]4\.12\.1[^'"\s]*/g) || []);
       expect(literals.length).toBe(3);
     });
