@@ -93,7 +93,7 @@ describe('Live bench titration curve',()=>{
 
 const { dose, notebook, compare }=new Function(pureSource+';return {dose:titrationBenchDose,notebook:titrationBenchNotebook,compare:titrationBenchCompare};')();
 describe('Titration bench measurement tools',()=>{
-  const reading={id:1,preset:'sa_sb',setup:'HCl + NaOH',axis:'pH',volume:0,value:1,indicator:'Phenolphthalein',observation:'Before endpoint'};
+  const reading={id:1,preset:'sa_sb',setup:'HCl + NaOH',axis:'pH',volume:0,value:1,indicator:'Phenolphthalein',observation:'Before endpoint',note:''};
   it('accepts tenths of a milliliter up to the exact remaining range',()=>{
     expect(dose('2.5',50)).toBe(2.5);expect(dose('0.1',0.1)).toBe(0.1);expect(dose('50',50)).toBe(50);
   });
@@ -119,5 +119,66 @@ describe('Titration bench measurement tools',()=>{
   });
   it('retains millivolt precision for potential differences',()=>{
     expect(compare({...reading,axis:'E',value:0.751},{...reading,id:2,axis:'E',volume:1.2,value:0.763})).toEqual({volume:1.2,response:0.012,axis:'E'});
+  });
+});
+
+const csv=new Function(pureSource+';return titrationBenchCSV;')();
+describe('Notebook notes and CSV export',()=>{
+  const reading={id:1,preset:'sa_sb',setup:'HCl + NaOH',axis:'pH',volume:2.5,value:1.09,indicator:'Phenolphthalein',observation:'Before endpoint',note:''};
+  it('keeps old notebooks compatible and limits notes to 500 characters',()=>{
+    expect(notebook([{...reading,note:undefined}])[0].note).toBe('');
+    expect(notebook([{...reading,note:'a'.repeat(600)}])[0].note).toHaveLength(500);
+    expect(notebook([{...reading,note:{bad:true}}])[0].note).toBe('');
+  });
+  it('exports pH and voltage in separate columns with explicit units',()=>{
+    const output=csv([reading,{...reading,id:2,preset:'redox_kmno4',axis:'E',value:0.741}]);
+    expect(output).toContain('"Titrant volume (mL)","pH","Potential (V)"');
+    expect(output).toContain('"2.5","1.09",""');
+    expect(output).toContain('"2.5","","0.741"');
+  });
+  it('preserves commas, quotes, multiline notes, and Unicode in quoted CSV cells',()=>{
+    const output=csv([{...reading,note:'Pink, then "clear"\nΔ observation'}]);
+    expect(output.startsWith('\uFEFF')).toBe(true);
+    expect(output).toContain('"Pink, then ""clear""\nΔ observation"\r\n');
+  });
+  it('exports spreadsheet-like student text as literal text, including leading whitespace',()=>{
+    for(const note of ['=1+1','+SUM(A1:A2)','-1+2','@SUM(A1:A2)',' \t=1+1','\n@SUM(1)'])expect(csv([{...reading,note}])).toContain('"\''+note+'"');
+    expect(csv([{...reading,axis:'E',value:-0.12}])).toContain('"-0.12"');
+  });
+  it('exports all saved setups without changing the notebook or including malformed rows',()=>{
+    const raw=[reading,{...reading,id:2,preset:'wa_sb'},null];const before=JSON.stringify(raw);
+    expect(csv(raw).split('\r\n').filter(Boolean)).toHaveLength(3);expect(JSON.stringify(raw)).toBe(before);
+    expect(csv(null).split('\r\n').filter(Boolean)).toHaveLength(1);
+  });
+});
+
+const buildDilution=new Function(pureSource+';return buildTitrationDilutionScene;')();
+describe('3D dilution comparison',()=>{
+  function dilution(fraction,markers=true){const s={model:new THREE.Group()};buildDilution(THREE,s,{fraction,stockMl:fraction*100,finalMl:100,markers});return s;}
+  it('represents the stock-to-final volume ratio with equal vessel cross sections',()=>{
+    for(const fraction of [0.00001,0.1,0.5,1]){
+      const s=dilution(fraction),stock=object(s,'stock-liquid'),final=object(s,'final-liquid');
+      expect(stock.geometry.parameters.radiusTop).toBe(final.geometry.parameters.radiusTop);
+      expect(stock.geometry.parameters.height/final.geometry.parameters.height).toBeCloseTo(fraction,8);
+    }
+  });
+  it('retains equal counts of representative solute packets inside both liquids',()=>{
+    for(const fraction of [0.00001,0.1,1]){
+      const s=dilution(fraction);
+      for(const prefix of ['stock','final']){
+        const liquid=object(s,prefix+'-liquid'),top=liquid.position.y+liquid.geometry.parameters.height/2;
+        const packets=s.model.children.filter(o=>o.name.startsWith(prefix+'-solute-'));expect(packets).toHaveLength(18);
+        for(const packet of packets){const radius=packet.geometry.parameters.radius;expect(packet.position.y-radius).toBeGreaterThanOrEqual(0.13);expect(packet.position.y+radius).toBeLessThanOrEqual(top);expect(Math.hypot(packet.position.x-liquid.position.x,packet.position.z)+radius).toBeLessThan(0.79);}
+      }
+    }
+  });
+  it('toggles solute markers without changing liquid volumes',()=>{
+    const s=dilution(0.2,false);expect(s.model.children.filter(o=>o.name.includes('-solute-')).every(o=>!o.visible)).toBe(true);
+    expect(object(s,'stock-liquid').geometry.parameters.height).toBe(0.4);
+  });
+  it('fits the entire static scene into the camera bounds',()=>{
+    const s=dilution(0.5),bounds=new THREE.Box3(s.target.clone().sub(s.half),s.target.clone().add(s.half));
+    for(const o of s.model.children)expect(bounds.containsBox(new THREE.Box3().setFromObject(o)),o.name).toBe(true);
+    expect(s.tick).toBeUndefined();
   });
 });

@@ -1,22 +1,38 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-09-07T02:01:28.832Z",
+  "generated_at": "2026-09-07T14:27:04.065Z",
   "entries": [
     {
-      "slug": "water_cycle",
-      "title": "The Water Cycle",
+      "slug": "forces_motion_grade3_illustrated",
+      "title": "Forces and Motion — Illustrated Edition",
       "subject": "Science",
-      "grade_level": "2-3",
+      "grade_level": "3",
       "tags": [
-        "water-cycle",
+        "forces-motion",
+        "illustrated",
         "ngss",
-        "informational-text",
-        "ela"
+        "ccss"
       ],
-      "credit": "AlloFlow Seed Library",
-      "license": "CC0",
-      "submitted_at": "2026-05-05T01:48:23.225Z",
-      "path": "catalog/approved/water_cycle.json"
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-09-05T13:20:00.000Z",
+      "path": "allopacks/illustrated/forces_motion_grade3.allopack.json"
+    },
+    {
+      "slug": "states_of_matter_grade4_illustrated",
+      "title": "States of Matter — Illustrated Edition",
+      "subject": "Science",
+      "grade_level": "4-5",
+      "tags": [
+        "states-of-matter",
+        "illustrated",
+        "ngss",
+        "ccss"
+      ],
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-07-21T09:00:00.000Z",
+      "path": "allopacks/illustrated/states_of_matter_grade4.allopack.json"
     },
     {
       "slug": "water_cycle_grade6_illustrated",
@@ -33,6 +49,54 @@
       "license": "CC-BY-4.0",
       "submitted_at": "2026-09-04T00:00:00.000Z",
       "path": "allopacks/illustrated/water_cycle_grade6.allopack.json"
+    },
+    {
+      "slug": "weather_vs_climate_grade5_illustrated",
+      "title": "Weather vs. Climate — Illustrated Edition",
+      "subject": "Science",
+      "grade_level": "5-6",
+      "tags": [
+        "weather-vs-climate",
+        "illustrated",
+        "ngss",
+        "ccss"
+      ],
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-07-20T02:00:00.000Z",
+      "path": "allopacks/illustrated/weather_vs_climate_grade5.allopack.json"
+    },
+    {
+      "slug": "plant_needs_grade3_illustrated",
+      "title": "What Plants Need — Illustrated Edition",
+      "subject": "Science",
+      "grade_level": "3",
+      "tags": [
+        "plant-needs",
+        "illustrated",
+        "ngss",
+        "ccss"
+      ],
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-07-21T18:00:00.000Z",
+      "path": "allopacks/illustrated/plant_needs_grade3.allopack.json"
+    },
+    {
+      "slug": "materials_grade2_illustrated",
+      "title": "Why Windows Are Not Wool — Illustrated Edition",
+      "subject": "Science",
+      "grade_level": "2",
+      "tags": [
+        "materials",
+        "illustrated",
+        "ngss",
+        "ccss"
+      ],
+      "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+      "license": "CC-BY-4.0",
+      "submitted_at": "2026-09-05T23:50:00.000Z",
+      "path": "allopacks/illustrated/materials_grade2.allopack.json"
     }
   ]
 }

@@ -353,6 +353,24 @@ function text(el) {
   return (el.textContent || '').replace(/\s+/g, ' ').trim();
 }
 
+/**
+ * Is this element removed from the accessibility tree?
+ *
+ * aria-hidden is INHERITED: `<div aria-hidden="true"><svg/></div>` hides the svg
+ * just as surely as putting the attribute on the svg itself. Checking only the
+ * element produced false `svg-name` warnings on beehive (a decorative route
+ * overlay under div.bee-discovery-routes[aria-hidden]) and magnetism (a shell
+ * emblem under span.mag-shell-emblem[aria-hidden]) -- both already correct.
+ */
+function hiddenFromA11yTree(el) {
+  for (let node = el; node && node.getAttribute; node = node.parentElement) {
+    if (attr(node, 'aria-hidden') === 'true') return true;
+    const role = attr(node, 'role');
+    if (role === 'presentation' || role === 'none') return true;
+  }
+  return false;
+}
+
 function cssPath(el) {
   if (!el || !el.tagName) return '';
   const parts = [];
@@ -684,7 +702,7 @@ function auditMarkup(toolId, html, tool) {
     const role = attr(el, 'role');
     // aria-hidden canvases are removed from the a11y tree, so they need no
     // accessible name (matches the canvas-focus check below, which also skips them).
-    if (attr(el, 'aria-hidden') !== 'true' && (!role || !meaningfulName(name))) {
+    if (!hiddenFromA11yTree(el) && (!role || !meaningfulName(name))) {
       issues.push(issue(toolId, 'warning', 'canvas-name', 'Canvas lacks a tool-specific role/accessible name before host fallback runs.', {
         index: idx,
         selector: cssPath(el),
@@ -700,7 +718,7 @@ function auditMarkup(toolId, html, tool) {
     const staticImageCanvas = role === 'img' &&
       attr(el, 'data-a11y-static') === 'true' &&
       meaningfulName(name) && hasDescription;
-    if (!attr(el, 'tabindex') && attr(el, 'aria-hidden') !== 'true' && !staticImageCanvas) {
+    if (!attr(el, 'tabindex') && !hiddenFromA11yTree(el) && !staticImageCanvas) {
       issues.push(issue(toolId, 'warning', 'canvas-focus', 'Canvas may be interactive but is not focusable in initial markup.', {
         index: idx,
         selector: cssPath(el)
@@ -709,7 +727,7 @@ function auditMarkup(toolId, html, tool) {
   });
 
   Array.from(doc.querySelectorAll('svg')).forEach(function (el, idx) {
-    if (attr(el, 'aria-hidden') === 'true') return;
+    if (hiddenFromA11yTree(el)) return;
     const name = accessibleName(el, doc);
     if (!meaningfulName(name)) {
       issues.push(issue(toolId, 'warning', 'svg-name', 'SVG is neither aria-hidden nor named.', {

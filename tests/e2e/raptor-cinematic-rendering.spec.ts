@@ -60,6 +60,9 @@ test.describe('Raptor cinematic simulator rendering', () => {
       expect(before.softShadows).toBe(scene.quality !== 'low');
       expect(before.drawCalls).toBeLessThan(150);
       expect(before.forestTreeCount).toBeGreaterThan(50);
+      expect(before.boughPanelVertices).toBe(52);
+      expect(before.meadowClumpCount).toBeGreaterThan(200);
+      expect(before.meadowBladeCount).toBe(scene.quality==='low'?7:scene.quality==='high'?13:10);
       expect(before.distantTerrainOffsetX + before.raptorPosition.x).toBeCloseTo(0, 5);
       expect(before.distantTerrainOffsetZ + before.raptorPosition.z).toBeCloseTo(0, 5);
       if (scene.label === 'lake') { expect(before.waterUpdates).toBeGreaterThan(0); expect(before.lakeSurfaceVertices).toBeGreaterThan(1000); }
@@ -68,6 +71,10 @@ test.describe('Raptor cinematic simulator rendering', () => {
       await expect(page.locator('.rh-flight-telemetry-strip')).toBeHidden();
       await page.evaluate(() => { (window as any).advanceScenery(25); });
       await page.locator('[data-raptor-flight-stage]').screenshot({ path: `scratch/raptor-flight-review/cinematic-${scene.label}.png`, timeout: 90000 });
+      if(scene.label==='cliffs'){
+        await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('hold',{key:'q',pressed:true});for(let i=0;i<120&&c._rhSnapshot().terrainClearance>12;i++)(window as any).advanceScenery(40);c._rhCommand('hold',{key:'q',pressed:false});(window as any).advanceScenery(25);});
+        await page.locator('[data-raptor-flight-stage]').screenshot({path:'scratch/raptor-flight-review/cinematic-meadow.png',timeout:90000});
+      }
       const paused = await page.locator('[data-raptor-canvas]').evaluate((c: any) => {
         c._rhCommand('pause');
         const before = c._rhSnapshot();

@@ -28503,7 +28503,7 @@ React.createElement("div", {
                   className: "wc-matter-energy",
                   "aria-labelledby": "wcMatterEnergyTitle"
                 },
-                  React.createElement("h4", { id: "wcMatterEnergyTitle", className: "wc-matter-energy-title" }, "Matter, energy, and physical time"),
+                  React.createElement("h3", { id: "wcMatterEnergyTitle", className: "wc-matter-energy-title" }, "Matter, energy, and physical time"),
                   React.createElement("p", { className: "wc-matter-energy-note" }, "Water cycles; energy flows. Physical time is qualitative and separate from playback."),
                   React.createElement("div", {
                     className: "wc-science-story",

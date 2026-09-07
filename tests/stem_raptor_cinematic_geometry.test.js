@@ -83,3 +83,55 @@ describe('Raptor refined flight surfaces', () => {
     }
   });
 });
+
+
+describe('Raptor curved meadow tufts', () => {
+  it('keeps roots on the planting plane and gives every blade a curved taper', () => {
+    const make=extractGeometry('createMeadowClumpGeometry','        var grassInstanceCount');
+    const geometry=make(10),p=geometry.attributes.position,c=geometry.attributes.color;
+    expect(p.count).toBe(80);expect(geometry.index.count).toBe(150);
+    for(let blade=0;blade<10;blade++){
+      const i=blade*8;expect(p.getY(i)).toBe(0);expect(p.getY(i+1)).toBe(0);
+      expect(p.getY(i+6)).toBeGreaterThan(0.6);expect(p.getY(i+6)).toBeLessThanOrEqual(1.5);
+      const rootX=(p.getX(i)+p.getX(i+1))/2,rootZ=(p.getZ(i)+p.getZ(i+1))/2;
+      expect(Math.hypot(p.getX(i+6)-rootX,p.getZ(i+6)-rootZ)).toBeGreaterThan(0.15);
+      expect(c.getY(i+6)).toBeGreaterThan(c.getY(i));
+    }
+    for(const index of geometry.index.array){expect(index).toBeLessThan(p.count);expect(geometry.attributes.normal.getX(index)).toBeTypeOf('number');}
+    expect(Array.from(geometry.attributes.normal.array).every(Number.isFinite)).toBe(true);geometry.dispose();
+  });
+  it('scales tuft geometry by quality without zero-area rendered triangles', () => {
+    const make=extractGeometry('createMeadowClumpGeometry','        var grassInstanceCount'),counts=[];
+    for(const blades of [7,10,13]){
+      const g=make(blades),p=g.attributes.position,ids=g.index.array;counts.push(p.count);
+      const a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+      for(let i=0;i<ids.length;i+=3){a.fromBufferAttribute(p,ids[i]);b.fromBufferAttribute(p,ids[i+1]);c.fromBufferAttribute(p,ids[i+2]);expect(b.sub(a).cross(c.sub(a)).length()).toBeGreaterThan(0.00001);}
+      g.dispose();
+    }
+    expect(counts).toEqual([56,80,104]);
+  });
+});
+
+
+describe('Raptor curved forest boughs',()=>{
+  it('keeps curved panels seamless, finite, and inside their crown envelope',()=>{
+    const make=extractGeometry('canopyCards','        var needleCanopy');
+    const needles=make(false),leaves=make(true),p=needles.attributes.position,uv=needles.attributes.uv;
+    expect(p.count).toBe(52);expect(needles.index.count).toBe(78);
+    expect(leaves.attributes.position.count).toBe(16);
+    expect(p.getZ(0)).toBeCloseTo(0,6);expect(p.getZ(5)).toBeCloseTo(0.24,6);
+    for(let card=0;card<3;card++)for(let panel=0;panel<3;panel++){
+      const edge=card*16+panel*4;
+      for(const [a,b] of [[edge+1,edge+4],[edge+2,edge+7]]){
+        expect(p.getX(a)).toBeCloseTo(p.getX(b),6);expect(p.getY(a)).toBeCloseTo(p.getY(b),6);expect(p.getZ(a)).toBeCloseTo(p.getZ(b),6);expect(uv.getX(a)).toBeCloseTo(uv.getX(b),6);
+      }
+    }
+    for(const g of [needles,leaves]){
+      expect(Array.from(g.attributes.position.array).every(v=>Number.isFinite(v)&&Math.abs(v)<=1.01)).toBe(true);
+      const n=g.attributes.normal;for(let i=0;i<n.count;i++)expect(Math.hypot(n.getX(i),n.getY(i),n.getZ(i))).toBeCloseTo(1,5);
+      const ids=g.index.array,a=new THREE.Vector3(),b=new THREE.Vector3(),c=new THREE.Vector3();
+      for(let i=0;i<ids.length;i+=3){a.fromBufferAttribute(g.attributes.position,ids[i]);b.fromBufferAttribute(g.attributes.position,ids[i+1]);c.fromBufferAttribute(g.attributes.position,ids[i+2]);expect(b.sub(a).cross(c.sub(a)).length()).toBeGreaterThan(0.01);}
+      g.dispose();
+    }
+  });
+});

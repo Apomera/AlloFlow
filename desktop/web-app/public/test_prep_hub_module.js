@@ -1087,6 +1087,7 @@ function normalizeTestPrepItem(item, index, domainIds) {
     choices,
     choiceRationales,
     answerIndex,
+    choicePresentation: input.choicePresentation === "fixed" ? "fixed" : "",
     rationale: String(input.rationale || "").trim().slice(0, 4e3),
     references,
     sourceDetails,
@@ -1153,6 +1154,7 @@ function normalizeTestPrepPack(pack) {
     responseTypes: Array.from(new Set((Array.isArray(input.responseTypes) ? input.responseTypes : Array.isArray(input.capabilities && input.capabilities.responseTypes) ? input.capabilities.responseTypes : ["single-choice"]).map((type) => String(type || "").trim().slice(0, 60)).filter(Boolean))),
     examModes: Array.from(new Set((Array.isArray(input.examModes) ? input.examModes : [input.examMode || input.blueprint && input.blueprint.examModeReference]).map((mode) => String(mode || "").trim().slice(0, 80)).filter(Boolean))),
     id: testPrepSlug(input.id || input.title, "exam-pack"),
+    choicePresentation: input.choicePresentation === "fixed" ? "fixed" : "shuffled",
     title: String(input.title || "").trim().slice(0, 180),
     shortTitle: String(input.shortTitle || input.title || "").trim().slice(0, 100),
     description: String(input.description || "").trim().slice(0, 800),
@@ -2256,6 +2258,49 @@ function testPrepSeededShuffle(items, seed) {
   }
   return output;
 }
+const TEST_PREP_CHOICE_ORDER_LOCK = /all of the above|none of the above|\bboth\s+\S+\s+and\s+\S+|\b(?:I|II|III|IV)\s+(?:only|and)\b|\b[A-D] and [A-D]\b|\b(?:options?|choices?|answers?|alternatives?)\s*\(?[A-D]\)?\b/i;
+const TEST_PREP_LETTER_REFERENCE = /\b(?:[Oo]ptions?|[Cc]hoices?|[Aa]nswers?|[Aa]lternatives?)\s*\(?[A-D]\)?\b|\(\s*[A-D]\s*\)|\b[A-D]\s+(?:is|are)\s+(?:incorrect|wrong|correct|right|the best)\b/;
+const TEST_PREP_NUMERIC_CHOICE = /^[$€£]?[-−+]?\d[\d.,\/]*(?:\s*(?:[×x*]\s*10\s*\^?\s*[-−]?\d+|e[-−]?\d+))?\s*[%°]?\s*[a-zA-Zµ°²³\/·]{0,12}$/;
+function testPrepChoiceOrderLocked(item) {
+  if (!item || typeof item !== "object") return true;
+  if (item.choicePresentation === "fixed") return true;
+  const choices = Array.isArray(item.choices) ? item.choices : [];
+  if (choices.length < 3) return true;
+  if (choices.every((choice) => TEST_PREP_NUMERIC_CHOICE.test(String(choice).trim()))) return true;
+  if (choices.some((choice) => TEST_PREP_CHOICE_ORDER_LOCK.test(String(choice)))) return true;
+  const rationaleText = [item.rationale].concat(Array.isArray(item.choiceRationales) ? item.choiceRationales : []).join(" ");
+  if (TEST_PREP_LETTER_REFERENCE.test(rationaleText)) return true;
+  return false;
+}
+function testPrepPresentItem(item, seed) {
+  if (!item || typeof item !== "object" || !Array.isArray(item.choices)) return item;
+  const identity = item.choices.map((_, index) => index);
+  const locked = !seed || testPrepChoiceOrderLocked(item);
+  const choiceOrder = locked ? identity : testPrepSeededShuffle(identity, String(seed) + ":" + String(item.id || ""));
+  const unchanged = choiceOrder.every((value, index) => value === index);
+  if (unchanged) return Object.assign({}, item, { choiceOrder, sourceAnswerIndex: item.answerIndex, choicePresentation: locked ? "fixed" : "shuffled" });
+  const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === item.choices.length ? choiceOrder.map((index) => item.choiceRationales[index]) : item.choiceRationales;
+  return Object.assign({}, item, {
+    choices: choiceOrder.map((index) => item.choices[index]),
+    choiceRationales,
+    answerIndex: choiceOrder.indexOf(item.answerIndex),
+    choiceOrder,
+    sourceAnswerIndex: item.answerIndex,
+    choicePresentation: "shuffled"
+  });
+}
+function testPrepSourceChoiceIndex(item, displayIndex) {
+  if (displayIndex == null) return displayIndex;
+  const index = Number(displayIndex);
+  const order = item && Array.isArray(item.choiceOrder) ? item.choiceOrder : null;
+  return order && Number.isInteger(index) && index >= 0 && index < order.length ? order[index] : index;
+}
+function testPrepDistractorRationalesIdentical(item) {
+  if (!item || !Array.isArray(item.choiceRationales) || !Array.isArray(item.choices)) return false;
+  if (item.choiceRationales.length !== item.choices.length) return false;
+  const others = item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((text) => String(text || "").replace(/\s+/g, " ").trim());
+  return others.length > 1 && others.every((text) => text === others[0]);
+}
 function testPrepNormalizeDifficultyIds(value) {
   return Array.from(new Set((Array.isArray(value) ? value : []).slice(0, 12).map((difficulty) => testPrepSlug(difficulty, "")).filter(Boolean)));
 }
@@ -2973,9 +3018,12 @@ function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail) {
     const otherNotes = [];
     let noteCharacters = 0;
     let omittedNotes = 0;
+    const spokenBodies = /* @__PURE__ */ new Set([selectedRaw]);
     choiceRationales.forEach((rationale, index) => {
       if (index === supportedIndex || index === selectedIndex) return;
       const body = brief ? testPrepSpeechExcerpt(rationale, 240) : String(rationale || "").replace(/\s+/g, " ").trim();
+      if (spokenBodies.has(body)) return;
+      spokenBodies.add(body);
       const note = "Option " + String.fromCharCode(65 + index) + ". " + body;
       if (otherNotes.length >= noteLimit || noteCharacters + note.length > characterLimit) {
         omittedNotes += 1;
@@ -3971,6 +4019,7 @@ function TestPrepHub(props) {
   const [, setCatalogRegistryRevision] = React.useState(0);
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedChoice, setSelectedChoice] = React.useState(null);
+  const [practiceSeed, setPracticeSeed] = React.useState("");
   const [checked, setChecked] = React.useState(false);
   const [answers, setAnswers] = React.useState({});
   const [confidence, setConfidence] = React.useState({});
@@ -4167,7 +4216,9 @@ function TestPrepHub(props) {
   const practiceItems = selectedPack && activeItemIds.length ? activeItemIds.map((id) => itemLookup.get(id)).filter(Boolean) : selectedPack ? selectedPack.items : [];
   const activeBatchSize = !selectedPack ? 100 : practiceMode === "diagnostic" || practiceMode === "guided-review" ? Math.max(1, practiceItems.length) : practiceMode === "standard" ? selectedPack.batchSize : Math.max(selectedPack.batchSize, practiceItems.length + 1);
   const activePack = selectedPack ? Object.assign({}, selectedPack, { items: practiceItems, batchSize: activeBatchSize }) : null;
-  const currentItem = practiceStarted && activePack && activePack.items[questionIndex];
+  const sourceCurrentItem = practiceStarted && activePack && activePack.items[questionIndex];
+  const currentItemSeed = selectedPack && selectedPack.choicePresentation === "fixed" ? "" : practiceSeed;
+  const currentItem = React.useMemo(() => testPrepPresentItem(sourceCurrentItem, currentItemSeed), [sourceCurrentItem, currentItemSeed]);
   currentItemIdRef.current = currentItem ? currentItem.id : "";
   const currentBatch = activePack ? testPrepBatchMeta(activePack, questionIndex) : null;
   const currentSection = selectedPack && selectedPack.sections[Math.floor(sourceStartIndex / Math.max(1, selectedPack.batchSize))] || null;
@@ -4720,6 +4771,7 @@ function TestPrepHub(props) {
     cancelTestPrepClarification(false);
     disableHandsFree();
     setQuestionIndex(0);
+    setPracticeSeed(Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8));
     setSelectedChoice(null);
     setChecked(false);
     setAnswers({});
@@ -6430,12 +6482,12 @@ function TestPrepHub(props) {
   }
   function checkAnswer() {
     if (!currentItem || selectedChoice == null) return;
-    setAnswers((previous) => Object.assign({}, previous, { [currentItem.id]: selectedChoice }));
+    setAnswers((previous) => Object.assign({}, previous, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) }));
     setChecked(true);
   }
   function advanceSimulation() {
     if (!currentItem || selectedChoice == null || !activePack) return;
-    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: selectedChoice });
+    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) });
     setAnswers(finalAnswers);
     if (questionIndex >= activePack.items.length - 1) {
       finishPractice(false, finalAnswers);
@@ -6447,7 +6499,7 @@ function TestPrepHub(props) {
   }
   function advance() {
     if (!currentItem || !checked || !currentBatch || !activePack) return;
-    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: selectedChoice });
+    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) });
     setAnswers(finalAnswers);
     const reachedBatchEnd = questionIndex + 1 >= currentBatch.endIndex;
     if (activePack.items.length >= currentBatch.batchSize && reachedBatchEnd) {
@@ -6567,7 +6619,7 @@ function TestPrepHub(props) {
     const correctChoice = checked && index === currentItem.answerIndex;
     const incorrectChoice = checked && index === selectedChoice && index !== currentItem.answerIndex;
     return /* @__PURE__ */ React.createElement("label", { key: inputId, htmlFor: inputId, className: "flex cursor-pointer items-start gap-3 rounded-xl border-2 p-3 text-sm font-semibold focus-within:ring-2 focus-within:ring-indigo-600 " + (correctChoice ? "border-emerald-600 bg-emerald-50 text-emerald-950" : incorrectChoice ? "border-rose-600 bg-rose-50 text-rose-950" : selectedChoice === index ? "border-indigo-600 bg-indigo-50 text-indigo-950" : "border-slate-300 bg-white text-slate-900 hover:border-indigo-400") }, /* @__PURE__ */ React.createElement("input", { id: inputId, type: "radio", name: "answer-" + currentItem.id, checked: selectedChoice === index, onChange: () => setSelectedChoice(index), className: "mt-0.5 h-4 w-4 accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "mr-2 font-black" }, String.fromCharCode(65 + index), "."), choice));
-  }))), checked && practiceMode !== "simulation" && /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border p-4 " + (selectedChoice === currentItem.answerIndex ? "border-emerald-400 bg-emerald-50" : "border-amber-400 bg-amber-50"), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, selectedChoice === currentItem.answerIndex ? "Correct" : "Not yet - review the reasoning"), selectedChoice !== currentItem.answerIndex && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2 rounded-lg border border-amber-300 bg-white/80 p-3 text-sm text-slate-900 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, "Your answer:"), /* @__PURE__ */ React.createElement("br", null), String.fromCharCode(65 + selectedChoice), ". ", currentItem.choices[selectedChoice]), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, "Supported answer:"), /* @__PURE__ */ React.createElement("br", null), String.fromCharCode(65 + currentItem.answerIndex), ". ", currentItem.choices[currentItem.answerIndex])), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm leading-relaxed text-slate-800" }, currentItem.rationale), (currentItem.learningObjectiveLabel || currentItem.learningObjectiveId || Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 text-sm text-indigo-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Next study target"), currentItem.learningObjectiveLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, currentItem.learningObjectiveLabel), currentItem.learningSectionLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold uppercase tracking-wide text-indigo-800" }, "Lesson route: ", currentItem.learningSectionLabel), /* @__PURE__ */ React.createElement("p", { className: "mt-2 leading-relaxed" }, "Review the linked lesson, explain the distinction in your own words, then retry a targeted practice set."), selectedPack.learningLibraryUrl && Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openItemLearningTarget(currentItem), className: "mt-3 rounded-lg border border-indigo-500 bg-white px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600" }, "Review linked chapter")), currentItem.choiceRationales.length === currentItem.choices.length && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, "Why the other options do not fit"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-3" }, currentItem.choices.map((choice, index) => index === currentItem.answerIndex ? null : /* @__PURE__ */ React.createElement("li", { key: currentItem.id + "-rationale-" + index, className: selectedChoice === index ? "rounded-lg border border-rose-300 bg-rose-50 p-2" : "" }, /* @__PURE__ */ React.createElement("p", { className: "flex flex-wrap items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement("span", null, String.fromCharCode(65 + index), ". ", choice), selectedChoice === index && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-rose-700 px-2 py-0.5 text-xs font-black text-white" }, "Your answer")), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 leading-relaxed" }, currentItem.choiceRationales[index]))))), !!currentItem.references.length && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("p", { className: "font-black uppercase tracking-wide text-slate-800" }, "Answer sources"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-3" }, currentItem.references.map((reference) => {
+  }))), checked && practiceMode !== "simulation" && /* @__PURE__ */ React.createElement("div", { className: "mt-5 rounded-xl border p-4 " + (selectedChoice === currentItem.answerIndex ? "border-emerald-400 bg-emerald-50" : "border-amber-400 bg-amber-50"), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, selectedChoice === currentItem.answerIndex ? "Correct" : "Not yet - review the reasoning"), selectedChoice !== currentItem.answerIndex && /* @__PURE__ */ React.createElement("div", { className: "mt-3 grid gap-2 rounded-lg border border-amber-300 bg-white/80 p-3 text-sm text-slate-900 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, "Your answer:"), /* @__PURE__ */ React.createElement("br", null), String.fromCharCode(65 + selectedChoice), ". ", currentItem.choices[selectedChoice]), /* @__PURE__ */ React.createElement("p", null, /* @__PURE__ */ React.createElement("strong", null, "Supported answer:"), /* @__PURE__ */ React.createElement("br", null), String.fromCharCode(65 + currentItem.answerIndex), ". ", currentItem.choices[currentItem.answerIndex])), /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-sm leading-relaxed text-slate-800" }, currentItem.rationale), (currentItem.learningObjectiveLabel || currentItem.learningObjectiveId || Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0) && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-indigo-300 bg-indigo-50 p-3 text-sm text-indigo-950" }, /* @__PURE__ */ React.createElement("p", { className: "font-black" }, "Next study target"), currentItem.learningObjectiveLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, currentItem.learningObjectiveLabel), currentItem.learningSectionLabel && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold uppercase tracking-wide text-indigo-800" }, "Lesson route: ", currentItem.learningSectionLabel), /* @__PURE__ */ React.createElement("p", { className: "mt-2 leading-relaxed" }, "Review the linked lesson, explain the distinction in your own words, then retry a targeted practice set."), selectedPack.learningLibraryUrl && Array.isArray(currentItem.chapterIds) && currentItem.chapterIds.length > 0 && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openItemLearningTarget(currentItem), className: "mt-3 rounded-lg border border-indigo-500 bg-white px-3 py-2 text-sm font-black text-indigo-950 hover:bg-indigo-100 focus:ring-2 focus:ring-indigo-600" }, "Review linked chapter")), currentItem.choiceRationales.length === currentItem.choices.length && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, "Why the other options do not fit"), testPrepDistractorRationalesIdentical(currentItem) ? /* @__PURE__ */ React.createElement("p", { className: "mt-2 leading-relaxed", "data-test-prep-distractor-note": "shared" }, currentItem.choiceRationales[(currentItem.answerIndex + 1) % currentItem.choices.length]) : /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-3" }, currentItem.choices.map((choice, index) => index === currentItem.answerIndex ? null : /* @__PURE__ */ React.createElement("li", { key: currentItem.id + "-rationale-" + index, className: selectedChoice === index ? "rounded-lg border border-rose-300 bg-rose-50 p-2" : "" }, /* @__PURE__ */ React.createElement("p", { className: "flex flex-wrap items-center gap-2 font-bold" }, /* @__PURE__ */ React.createElement("span", null, String.fromCharCode(65 + index), ". ", choice), selectedChoice === index && /* @__PURE__ */ React.createElement("span", { className: "rounded-full bg-rose-700 px-2 py-0.5 text-xs font-black text-white" }, "Your answer")), /* @__PURE__ */ React.createElement("p", { className: "mt-0.5 leading-relaxed" }, currentItem.choiceRationales[index]))))), !!currentItem.references.length && /* @__PURE__ */ React.createElement("div", { className: "mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("p", { className: "font-black uppercase tracking-wide text-slate-800" }, "Answer sources"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-3" }, currentItem.references.map((reference) => {
     const source = (currentItem.sourceDetails || []).find((detail) => detail.url === reference) || testPrepDescribeReference(reference);
     return /* @__PURE__ */ React.createElement("li", { key: reference, className: "rounded-lg border border-slate-200 bg-white p-3" }, /* @__PURE__ */ React.createElement("a", { href: reference, target: "_blank", rel: "noreferrer", className: "font-black text-indigo-800 underline" }, source.title), source.organization && /* @__PURE__ */ React.createElement("p", { className: "mt-1 font-bold text-slate-800" }, source.organization), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Brief source summary:"), " ", source.summary || "This source provides context for the related answer explanation; open it to review the complete scope and limitations."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, "Why this source is credible:"), " ", source.credibility));
   }))), /* @__PURE__ */ React.createElement("div", { className: "mt-4 flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-sm font-bold text-slate-800" }, "How certain were you?"), ["sure", "unsure", "guess"].map((value) => /* @__PURE__ */ React.createElement("button", { key: value, type: "button", "aria-pressed": confidence[currentItem.id] === value, onClick: () => setItemConfidence(value), className: "rounded-full border px-3 py-1 text-sm font-bold focus:ring-2 focus:ring-indigo-600 " + (confidence[currentItem.id] === value ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-800 hover:bg-slate-100") }, value === "sure" ? "I knew it" : value === "unsure" ? "I was unsure" : "I guessed")))), /* @__PURE__ */ React.createElement("div", { className: "mt-6 flex justify-end" }, practiceMode === "simulation" ? /* @__PURE__ */ React.createElement("button", { type: "button", disabled: selectedChoice == null, onClick: advanceSimulation, className: "rounded-xl bg-amber-800 px-5 py-3 font-black text-white hover:bg-amber-900 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-amber-700 focus:ring-offset-2" }, questionIndex >= activePack.items.length - 1 ? "Submit timed simulation" : "Save answer and continue") : !checked ? /* @__PURE__ */ React.createElement("button", { type: "button", disabled: selectedChoice == null, onClick: checkAnswer, className: "rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 disabled:cursor-not-allowed disabled:opacity-50 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" }, "Check answer") : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: advance, className: "rounded-xl bg-indigo-700 px-5 py-3 font-black text-white hover:bg-indigo-800 focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2" }, currentBatch && activePack.items.length >= currentBatch.batchSize && questionIndex + 1 >= currentBatch.endIndex ? "View diagnostic feedback" : questionIndex >= activePack.items.length - 1 ? "Finish practice" : "Next question")))), tab === "library" && selectedPack && /* @__PURE__ */ React.createElement("div", { className: "mx-auto max-w-6xl space-y-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("p", { className: "text-xs font-black uppercase tracking-wider text-indigo-700" }, "Native learning catalog"), /* @__PURE__ */ React.createElement("h3", { className: "text-xl font-black text-slate-900" }, learningLibrary && learningLibrary.title || selectedPack.shortTitle + " learning library"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 max-w-3xl text-sm leading-relaxed text-slate-700" }, learningLibrary ? learningLibrary.description : selectedPack.learningLibraryUrl ? "Loading chapters, study cards, and memory aids for this pack." : "This pack ships practice questions only. Packs with a learning library open to chapters, flashcards, and memory aids here."), learningLibrary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs font-bold text-emerald-800" }, learningLibrary.summary.sourceReviewedChapters || 0, " source reviewed \xB7 ", (learningLibrary.summary.chapters || 0) - (learningLibrary.summary.sourceReviewedChapters || 0), " review required \xB7 independent expert validation pending")), libraryChapterId && /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => beginAnnotation({ targetType: "chapter", targetId: libraryChapterId, targetLabel: "Chapter: " + (((learningLibrary && learningLibrary.chapters || []).find((chapter) => chapter.id === libraryChapterId) || {}).title || libraryChapterId) }), className: "rounded-lg border border-amber-400 bg-amber-50 px-3 py-2 text-sm font-bold text-amber-950 focus:ring-2 focus:ring-amber-600" }, "Add chapter note"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setLibraryChapterId(""), className: "rounded-lg border border-slate-400 bg-white px-3 py-2 text-sm font-bold text-slate-900 focus:ring-2 focus:ring-indigo-600" }, "Back to chapter catalog"))), selectedPack.learningLibraryUrl && /* @__PURE__ */ React.createElement("nav", { className: "flex flex-wrap gap-2", "aria-label": "Learning library modes" }, [["search", "Search all"], ["chapters", "Chapters"]].concat(learningLibrary && Array.isArray(learningLibrary.studyRoutes) && learningLibrary.studyRoutes.length ? [["study-routes", "Study routes"]] : []).concat(learningLibrary && Array.isArray(learningLibrary.quickReference) && learningLibrary.quickReference.length ? [["quick-reference", "Quick reference"]] : []).concat(learningLibrary && Array.isArray(learningLibrary.foundationalDocumentRoutes) && learningLibrary.foundationalDocumentRoutes.length ? [["foundational-documents", "Foundational documents"]] : []).concat([["flashcards", "Flashcards"], ["memory-aids", "Memory aids"]]).concat(learningLibrary && Array.isArray(learningLibrary.glossary) && learningLibrary.glossary.length ? [["glossary", "Glossary"]] : []).concat(learningLibrary && Array.isArray(learningLibrary.constructedResponseWorkshops) && learningLibrary.constructedResponseWorkshops.length ? [["constructed-response", learningLibrary.workshopLabel || "Written-response workshops"]] : []).concat(studyPlanLayers.hasStudyPlan ? [["study-plan", "Study plan"]] : []).concat(studyPlanLayers.hasPlaybooks ? [["playbooks", "Misconception playbooks"]] : []).concat(studyPlanLayers.hasSessions ? [["study-sessions", "Study sessions"]] : []).concat(studyPlanLayers.hasSources ? [["sources", "Sources"]] : []).map(([id, label]) => /* @__PURE__ */ React.createElement("button", { key: id, type: "button", "aria-pressed": libraryMode === id, onClick: () => {
@@ -6899,6 +6951,10 @@ function TestPrepHub(props) {
     searchPack: testPrepSearchPack,
     studyPlanLayers: testPrepStudyPlanLayers,
     normalizeWorkshop: testPrepNormalizeWorkshop,
+    presentItem: testPrepPresentItem,
+    choiceOrderLocked: testPrepChoiceOrderLocked,
+    sourceChoiceIndex: testPrepSourceChoiceIndex,
+    distractorRationalesIdentical: testPrepDistractorRationalesIdentical,
     studyPlanRoutePointer: testPrepStudyPlanRoutePointer,
     studyPlanAgoLabel: testPrepStudyPlanAgoLabel,
     routeProgress: testPrepFoundationalDocumentRouteProgress,

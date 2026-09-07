@@ -143,6 +143,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     try { var lr = document.getElementById('allo-live-weldlab'); if (lr) lr.textContent = msg; } catch (_) {}
   };
 
+  // ── Menu card colours: measured, not eyeballed ──
+  // Every module card painted its title, subtitle and Core/Lab pill in white on
+  // a `bg-gradient-to-br from-<bright>` band. Measured against the from- stop,
+  // which is where the pill and icon sit: 5 of 23 titles came in under 3:1
+  // (Heat Input and PPE both 1.92:1 on yellow-500), 15 of 23 subtitles under
+  // 4.5:1, and 20 of 23 pills under 4.5:1 — because `bg-white/20` LIGHTENS the
+  // ground under white text. axe never flagged any of it: it cannot compute a
+  // ratio over a linear-gradient and files those elements as `incomplete`.
+  //
+  // Rather than flatten the palette, the header band is deepened to a measured
+  // floor and the card's original bright pair is kept as an accent bar across
+  // the top — so each module keeps its identity colour, the fire palette stays
+  // warm, and the ink is legible. Deepening scales RGB, holding the hue exactly.
+  var TW_HEX = {
+    'yellow-500': '#eab308', 'amber-500': '#f59e0b', 'amber-600': '#d97706', 'amber-700': '#b45309',
+    'orange-500': '#f97316', 'orange-600': '#ea580c', 'orange-700': '#c2410c', 'orange-800': '#9a3412',
+    'red-600': '#dc2626', 'red-700': '#b91c1c', 'red-800': '#991b1b', 'red-900': '#7f1d1d',
+    'rose-500': '#f43f5e', 'rose-600': '#e11d48', 'rose-700': '#be123c', 'rose-900': '#881337',
+    'fuchsia-500': '#d946ef', 'fuchsia-600': '#c026d3', 'fuchsia-700': '#a21caf',
+    'purple-600': '#9333ea', 'purple-800': '#6b21a8', 'violet-700': '#6d28d9',
+    'indigo-600': '#4f46e5', 'indigo-700': '#4338ca',
+    'blue-600': '#2563eb', 'blue-700': '#1d4ed8', 'blue-800': '#1e40af', 'blue-900': '#1e3a8a',
+    'sky-600': '#0284c7', 'cyan-600': '#0891b2', 'cyan-700': '#0e7490',
+    'teal-700': '#0f766e', 'emerald-500': '#10b981', 'emerald-600': '#059669', 'emerald-900': '#064e3b',
+    'slate-500': '#64748b', 'slate-700': '#334155', 'stone-500': '#78716c', 'stone-700': '#44403c',
+    'stone-800': '#292524', 'zinc-600': '#52525b'
+  };
+  function _hexToRgb(hex) {
+    return [parseInt(hex.substr(1, 2), 16), parseInt(hex.substr(3, 2), 16), parseInt(hex.substr(5, 2), 16)];
+  }
+  function _rgbToHex(c) {
+    return '#' + c.map(function (v) {
+      var t = Math.max(0, Math.min(255, Math.round(v))).toString(16);
+      return t.length < 2 ? '0' + t : t;
+    }).join('');
+  }
+  // WCAG relative luminance, and the ratio against white.
+  function _relLum(hex) {
+    return _hexToRgb(hex).map(function (v) {
+      var c = v / 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    }).reduce(function (a, v, i) { return a + [0.2126, 0.7152, 0.0722][i] * v; }, 0);
+  }
+  function contrastWithWhite(hex) { return 1.05 / (_relLum(hex) + 0.05); }
+  // Scale RGB down until white clears `min`. 5.2 leaves headroom for the
+  // subtitle, which paints at 90% opacity and so measures ~13% lower.
+  function deepenForWhite(hex, min) {
+    var rgb = _hexToRgb(hex);
+    for (var i = 0; i < 40 && contrastWithWhite(_rgbToHex(rgb)) < (min || 5.2); i++) {
+      rgb = rgb.map(function (v) { return v * 0.93; });
+    }
+    return _rgbToHex(rgb);
+  }
+  // Contrast between two opaque colours.
+  function contrastPair(hexA, hexB) {
+    var la = _relLum(hexA), lb = _relLum(hexB);
+    return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+  }
+  // ── Chip label ink ──
+  // Process Sleuth and Defect Diagnose paint each category's LABEL in that
+  // category's own colour on an 8% wash of the same colour. Measured: all eleven
+  // chips came in under 4.5:1 and four under 3:1 — flux-cored at 2.02:1,
+  // MIG and "heat too low" at 2.55:1 — on the text a student has to read to
+  // answer the question. Darkening only the label keeps the swatch, the border
+  // and the wash in the identity hue, so the colour coding survives intact.
+  function inkOnWash(hex, alphaByte, min) {
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#') return '#1e293b';
+    var a = (parseInt(alphaByte || '15', 16) || 21) / 255;
+    var base = _hexToRgb(hex);
+    var wash = _rgbToHex(base.map(function (v) { return v * a + 255 * (1 - a); }));
+    var ink = base.slice();
+    for (var i = 0; i < 60 && contrastPair(_rgbToHex(ink), wash) < (min || 4.6); i++) {
+      ink = ink.map(function (v) { return v * 0.94; });
+    }
+    return _rgbToHex(ink);
+  }
+
+  // 'from-orange-500 to-red-700' -> { bright: [hex, hex], deep: [hex, hex] }.
+  // Falls back to the fire palette for any pair not in TW_HEX, so an unmapped
+  // class degrades to a legible card rather than a transparent one.
+  function cardGradient(colorClasses) {
+    var parts = String(colorClasses || '').split(/\s+/);
+    var from = null, to = null;
+    parts.forEach(function (cls) {
+      if (cls.indexOf('from-') === 0) from = TW_HEX[cls.slice(5)] || null;
+      if (cls.indexOf('to-') === 0) to = TW_HEX[cls.slice(3)] || null;
+    });
+    from = from || '#f97316';
+    to = to || '#b91c1c';
+    return {
+      bright: [from, to],
+      deep: [deepenForWhite(from, 5.2), deepenForWhite(to, 5.2)]
+    };
+  }
+
+  // ── Radiogroup keyboard contract ──
+  // ARIA says a radiogroup is ONE control: the arrow keys move between its
+  // radios, Home/End jump to the ends. All 17 groups in this file render each
+  // option as its own native <button role="radio">, so a screen-reader user who
+  // hears "radio, not checked" and presses an arrow got nothing — the exact
+  // interaction the role promises. The only arrow handling anywhere in the file
+  // was the 3-D scene's camera orbit. axe cannot catch this: it checks roles and
+  // aria-checked, not behaviour.
+  //
+  // Delegated from the CONTAINER rather than wired per group, so it cannot fall
+  // out of sync with the options a group happens to render: it finds the radios
+  // in the DOM, moves focus, and clicks — running whatever onClick that group
+  // already had. Deliberate deviation from the APG: every radio stays tabbable
+  // rather than taking a roving tabindex, so Tab still reaches each option.
+  function radioGroupKeys(e) {
+    var k = e.key;
+    if (k !== 'ArrowRight' && k !== 'ArrowLeft' && k !== 'ArrowUp' &&
+        k !== 'ArrowDown' && k !== 'Home' && k !== 'End') return;
+    var group = e.currentTarget;
+    if (!group || !group.querySelectorAll) return;
+    var radios = [];
+    try {
+      radios = Array.prototype.slice.call(group.querySelectorAll('[role="radio"]'))
+        .filter(function (r) { return !r.disabled && r.getAttribute('aria-disabled') !== 'true'; });
+    } catch (_) { return; }
+    if (radios.length < 2) return;
+    var self = (e.target && e.target.closest) ? e.target.closest('[role="radio"]') : e.target;
+    var at = radios.indexOf(self);
+    if (at === -1) return;
+    var n;
+    if (k === 'Home') n = 0;
+    else if (k === 'End') n = radios.length - 1;
+    else if (k === 'ArrowRight' || k === 'ArrowDown') n = (at + 1) % radios.length;
+    else n = (at - 1 + radios.length) % radios.length;
+    e.preventDefault();
+    try { radios[n].focus(); } catch (_) {}
+    try { radios[n].click(); } catch (_) {}
+  }
+
   // ── localStorage helpers ──
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
@@ -172,10 +306,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // Material thermal conductivity factor — drives bead width spread. Higher
   // conductivity = heat spreads sideways = wider HAZ but shallower penetration.
   // Numbers are normalized to mild-steel = 1.0.
+  //
+  // ★ `color` is painted onto a CANVAS (2D fillStyle and THREE.Color.setStyle),
+  // never into CSS. It used to hold 'var(--allo-stem-text-soft, #94a3b8)'.
+  // Canvas2D silently IGNORES an unparseable fillStyle — the assignment is a
+  // no-op and the context keeps whatever colour it already had, which here was
+  // the '#1f2937' plate BACKGROUND. So the plate painted itself invisible and
+  // all three materials looked identical, in the top-down view, the 3-D scene
+  // and the cross-section alike. Literal hex only; tests/weldlab_physics pins it.
+  // `sheen` is the brushed-metal highlight streaked across the plate face.
   var MATERIAL = {
-    steel:     { name: 'Mild Steel A36', kFactor: 1.0,  meltK: 1798, density: 7850, color: 'var(--allo-stem-text-soft, #94a3b8)' },
-    aluminum:  { name: 'Aluminum 6061',  kFactor: 2.4,  meltK: 925,  density: 2700, color: 'var(--allo-stem-text, #cbd5e1)' },
-    stainless: { name: 'Stainless 304',  kFactor: 0.65, meltK: 1700, density: 7980, color: 'var(--allo-stem-text, #e2e8f0)' }
+    steel:     { name: 'Mild Steel A36', kFactor: 1.0,  meltK: 1798, density: 7850, color: '#7d8794', sheen: '#98a3af' },
+    aluminum:  { name: 'Aluminum 6061',  kFactor: 2.4,  meltK: 925,  density: 2700, color: '#c2cbd4', sheen: '#e4e9ee' },
+    stainless: { name: 'Stainless 304',  kFactor: 0.65, meltK: 1700, density: 7980, color: '#9fb2bf', sheen: '#cddae3' }
+  };
+
+  // Penetration depth in inches, from NET heat input and the material's
+  // heat-spreading factor. Top-level so the number a student is graded on is a
+  // single testable fact (same reasoning as heatInputTier).
+  //
+  // ★ The old form divided by plate thickness — `0.012 * net / (TH * √k)` — which
+  // says a thicker plate is penetrated LESS by the same arc. An arc does not know
+  // how thick the plate is; thickness sets the TARGET penetration, not the depth
+  // achieved. That error made the module's own default (MIG 22 V / 180 A /
+  // 12 in-min on 1/4" steel) report 0.375" of penetration — clamped at the 1.5×TH
+  // ceiling, a burn-through — and score 0/100, while the Heat Input Calculator
+  // called the very same numbers "MEDIUM: typical operating range for most
+  // structural welds" and _computeWeldDefects returned a clean bead. One bead,
+  // three verdicts. The constant is calibrated so that default lands on its own
+  // 0.7 × TH target: 0.175" / 15.84 kJ/in = 0.01105.
+  function beadPenetration(net, TH, kFactor) {
+    var k = (isFinite(kFactor) && kFactor > 0) ? kFactor : 1;
+    return clamp(0.01105 * net / Math.sqrt(k), 0.02, Math.max(0.03, TH * 1.5));
+  }
+
+  // ── Defect marker colours: ONE source for the 3-D marker and its legend ──
+  // The scene's THREE materials and the swatch list beside it used to be two
+  // independent lists, and three of the six had drifted apart: the legend showed
+  // #7c2d12 for undercut where the marker is #431407, #92400e against #713f12 for
+  // overlap, and lack-of-fusion painted `var(--allo-stem-text-soft)` — so that
+  // swatch changed colour with the theme while the marker it identifies never
+  // did. A legend whose entire job is "this colour means this defect" cannot be
+  // allowed to guess. tests/weldlab_physics pins the two to each other.
+  var DEFECT_3D_COLOR = {
+    burnthrough:  '#000000',
+    lackOfFusion: '#6b7280',
+    undercut:     '#431407',
+    overlap:      '#713f12',
+    spatter:      '#f59e0b',
+    porosity:     '#1e293b'
   };
 
   // Heat-input tier for steel, per the AWS Welding Handbook ranges. Boundaries are
@@ -294,6 +473,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     heatInputGross: heatInputGross,
     heatInputNet: heatInputNet,
     heatInputTier: heatInputTier,
+    beadPenetration: beadPenetration,
+    DEFECT_3D_COLOR: DEFECT_3D_COLOR,
+    inkOnWash: inkOnWash,
+    contrastPair: contrastPair,
     computeWeldDefects: _computeWeldDefects,
     positionRotation: _positionRotation,
     ARC_EFFICIENCY: ARC_EFFICIENCY,
@@ -467,6 +650,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // ─────────────────────────────────────────────────────
       // SHARED COMPONENTS
       // ─────────────────────────────────────────────────────
+
+      // ── Responsive canvas fitting ──
+      // ★ StemLab.setupHiDPI writes `canvas.style.width = logicalW + 'px'`. That
+      // INLINE width beats the element's own `w-full` class, so every canvas here
+      // froze at its 900px attribute width: 178px past the right edge of a 768px
+      // tool column — a page-wide sideways scroll on a phone or Chromebook,
+      // measured by `check_stem_layout_defects --narrow` — and, on a wide screen,
+      // 200px short of its card, leaving a dead strip of empty slate beside the
+      // weld. Re-running the hi-DPI setup at the width the CONTAINER actually has
+      // fixes both ends, and the buffer still matches the box so nothing is
+      // scaled or blurred.
+      function fitCanvas(canvas, aspect) {
+        if (!canvas || !canvas.parentNode) return false;
+        // Hand the box back to CSS first, then measure: reading the pinned
+        // element would just return the frozen width we are trying to replace.
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        var avail = Math.round((canvas.getBoundingClientRect && canvas.getBoundingClientRect().width) || 0);
+        if (avail < 40) return false;
+        var W = Math.round(clamp(avail, 240, 1400));
+        var H = Math.round(clamp(W / aspect, 190, 420));
+        var changed = !(canvas._logicalW === W && canvas._logicalH === H);
+        if (changed) {
+          if (window.StemLab && window.StemLab.setupHiDPI) {
+            window.StemLab.setupHiDPI(canvas, W, H);
+          } else {
+            canvas.width = W; canvas.height = H;
+            canvas._logicalW = W; canvas._logicalH = H; canvas._dpr = 1;
+          }
+        }
+        canvas.style.width = '100%';
+        canvas.style.height = H + 'px';
+        return changed;
+      }
+      // Returns a tick that changes whenever the canvas was re-fitted, so a draw
+      // effect can list it as a dependency and repaint at the new size.
+      function useFittedCanvas(canvasRef, aspect) {
+        var tickState = useState(0);
+        var setTick = tickState[1];
+        useEffect(function () {
+          var canvas = canvasRef.current;
+          if (!canvas) return;
+          var bump = function () {
+            if (fitCanvas(canvas, aspect)) setTick(function (n) { return n + 1; });
+          };
+          bump();
+          var ro = null;
+          try {
+            // ★ Observe the PARENT, never the canvas itself: an observer watching
+            // the element its own callback resizes either never fires (it is
+            // pinned) or loops. Same trap as renderer.setSize(w, h) with
+            // updateStyle left on.
+            ro = new ResizeObserver(bump);
+            ro.observe(canvas.parentNode);
+          } catch (e) {}
+          window.addEventListener('resize', bump);
+          return function () {
+            if (ro) { try { ro.disconnect(); } catch (e) {} }
+            window.removeEventListener('resize', bump);
+          };
+        }, []);
+        return tickState[0];
+      }
 
       function BackBar(props) {
         return h('div', { className: 'flex items-center gap-3 bg-gradient-to-r from-orange-700 to-red-700 text-white p-4 shadow' },
@@ -723,7 +969,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           {
             id: 'inspection', title: __alloT('stem.weldlab.welding_inspection_cwi', 'Welding Inspection (CWI)'), icon: '🧐',
             subtitle: __alloT('stem.weldlab.aws_certified_welding_inspector_prep', 'AWS Certified Welding Inspector prep'),
-            desc: __alloT('stem.weldlab.the_certified_welding_inspector_cwi_is', 'The Certified Welding Inspector (CWI) is the gatekeeper. ~$70-110K pay, $1,150 exam, 3 parts (fundamentals, code book, hands-on). Visual inspection (VT), 5 NDT methods (PT, MT, UT, RT, ET), code interpretation, ethical responsibilities. Top of the welding career ladder for someone who reads + writes well.'),
+            desc: __alloT('stem.weldlab.the_certified_welding_inspector_cwi_is', 'The Certified Welding Inspector (CWI) is the gatekeeper. ~$60-110K pay, $1,150 exam, 3 parts (fundamentals, code book, hands-on). Visual inspection (VT), 5 NDT methods (PT, MT, UT, RT, ET), code interpretation, ethical responsibilities. Top of the welding career ladder for someone who reads + writes well.'),
             color: 'from-amber-700 to-orange-800',
             ring: 'ring-amber-700/40',
             ready: true
@@ -778,6 +1024,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var renderCard = function(c, isBig) {
           var visited = !!badges[c.id];
           var notReady = !c.ready;
+          var cardGrad = cardGradient(c.color);
           return h('button', {
             key: c.id,
             onClick: function() {
@@ -802,13 +1049,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               'aria-hidden': true,
               className: 'absolute top-2 right-2 z-10 bg-slate-700 text-white text-[0.625rem] font-bold uppercase tracking-wider px-2 py-1 rounded-full shadow-md'
             }, __alloT('stem.weldlab.soon', 'Soon')),
-            h('div', { className: 'bg-gradient-to-br ' + c.color + ' p-5 text-white' },
+            // Header band: the card's own colours, deepened to a measured floor
+            // (see cardGradient / deepenForWhite). The bright original survives as
+            // the accent bar, so the card is still recognisably "the yellow one".
+            h('div', {
+              className: 'p-5 text-white relative',
+              style: { background: 'linear-gradient(135deg, ' + cardGrad.deep[0] + ' 0%, ' + cardGrad.deep[1] + ' 100%)' }
+            },
+              h('span', {
+                'aria-hidden': true,
+                className: 'absolute inset-x-0 top-0 h-1.5',
+                style: { background: 'linear-gradient(90deg, ' + cardGrad.bright[0] + ' 0%, ' + cardGrad.bright[1] + ' 100%)' }
+              }),
               h('div', { className: 'flex items-start justify-between mb-2' },
                 h('span', { className: isBig ? 'text-5xl' : 'text-4xl' }, c.icon),
-                h('span', { className: 'bg-white/20 backdrop-blur px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider' }, isBig ? 'Core' : 'Lab')
+                // Pill was bg-white/20 — a WASH that lightened the ground under
+                // white text. A dark scrim darkens it instead, so the same white
+                // label gains contrast rather than losing it.
+                h('span', {
+                  className: 'px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ring-1 ring-white/30',
+                  style: { background: 'rgba(15,23,42,0.42)' }
+                }, isBig ? 'Core' : 'Lab')
               ),
               h('h2', { className: isBig ? 'text-2xl font-black' : 'text-xl font-black' }, c.title),
-              h('p', { className: 'text-sm opacity-90 font-medium' }, c.subtitle)
+              // opacity-90 cost the subtitle ~13% of its ratio for no visual gain
+              // once the band is deep; full-strength white is both cleaner and legible.
+              h('p', { className: 'text-sm font-medium text-white' }, c.subtitle)
             ),
             h('div', { className: 'p-5' },
               h('p', { className: 'text-sm text-slate-700 leading-relaxed ' + (isBig ? 'mb-3' : '') }, c.desc),
@@ -1018,8 +1284,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' },
             miniCards.map(function(c) { return renderCard(c, false); })
           ),
+          // Count comes from BADGE_IDS, not a number typed into a sentence: this
+          // line still read "All 10 modules live" with 22 of them on the screen
+          // above it, and the progress card three rows up said "0 / 22".
           h('div', { className: 'mt-8 text-center text-xs text-slate-700 italic' + onHostInk },
-            __alloT('stem.weldlab.all_10_modules_live_from_heat_input_ph', 'All 10 modules live. From heat-input physics to AWS welding symbols to Maine welding careers, plus underwater specialty + timed Speed Challenge — explore in any order.'))
+            __alloFill(__alloT('stem.weldlab.all_modules_live_from_heat_input_ph', 'All {value1} modules live. From heat-input physics to AWS welding symbols to Maine welding careers, plus underwater specialty + timed Speed Challenge — explore in any order.'), { value1: BADGE_IDS.length }))
         );
       }
 
@@ -1091,7 +1360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Process selector
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.welding_process', 'Welding Process')),
-              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_2', 'Welding process'), className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
+              h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_2', 'Welding process'), className: 'grid grid-cols-2 md:grid-cols-4 gap-2' },
                 ['mig','tig','stick','oxy'].map(function(p) {
                   var sel = (P === p);
                   return h('button', {
@@ -1247,7 +1516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var beadReinf = clamp(0.0008 * net / mat.kFactor, 0.01, 0.10);
         var rippleSp  = clamp(TS * 0.012, 0.04, 0.30);
         // Penetration depth — function of net HI and (inversely) thickness
-        var penetration = clamp(0.012 * net / Math.max(0.05, TH * Math.sqrt(mat.kFactor)), 0.02, TH * 1.5);
+        var penetration = beadPenetration(net, TH, mat.kFactor);
 
         // Score components (0-100). These echo what an inspector would call out.
         // Penetration: ideal is ~70% of plate thickness for a fillet, full for groove.
@@ -1265,6 +1534,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var canvasRef = useRef(null);
         var rafRef = useRef(null);
         var arcXRef = useRef(0);
+        // 900x280 was the authored box; keep that shape, take the real width.
+        var fitTick = useFittedCanvas(canvasRef, 900 / 280);
 
         // Live values for RAF closure (avoids stale-closure bug)
         var liveRef = useRef({});
@@ -1273,33 +1544,67 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         useEffect(function() {
           var canvas = canvasRef.current;
           if (!canvas) return;
-          if (window.StemLab && window.StemLab.setupHiDPI) {
-            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
-          }
           var ctxC = canvas.getContext('2d');
-          if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
-          var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
           var startTime = performance.now();
 
           function draw(now) {
             var live = liveRef.current;
             var elapsed = (now - startTime) / 1000;
+            // Read the size EVERY frame: fitCanvas re-fits on container resize,
+            // and a loop that captured W/H once would keep painting the old box.
+            if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+            var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
             // Arc tip travels left to right at TS scaled to canvas width
             var travelTime = 6.0 * (12 / Math.max(3, live.TS)); // 6s baseline at 12 ipm
             var t = _prefersReducedMotion ? 1 : ((elapsed % travelTime) / travelTime);
             arcXRef.current = t;
 
-            // Plate background
+            // Bench background
             ctxC.fillStyle = '#1f2937';
             ctxC.fillRect(0, 0, W, H);
 
-            // Steel/al/stainless plate
-            var plateY0 = H * 0.25, plateY1 = H * 0.75;
-            ctxC.fillStyle = live.mat.color;
-            ctxC.fillRect(W * 0.05, plateY0, W * 0.9, plateY1 - plateY0);
-            ctxC.strokeStyle = '#475569';
+            // -- The plate --
+            // Taller than it was (0.25-0.75 left a third of the canvas empty above
+            // and below the bead) and shaded rather than flat-filled, so the three
+            // materials are told apart at a glance: matte grey A36, bright silver
+            // 6061, cool bluish 304. Vertical gradient = rolled-plate sheen; the
+            // streaks are the mill's brushed grain.
+            var plateX0 = W * 0.05, plateX1 = W * 0.95;
+            var plateY0 = H * 0.18, plateY1 = H * 0.82;
+            var plateH = plateY1 - plateY0;
+            var plateGrad = ctxC.createLinearGradient(0, plateY0, 0, plateY1);
+            plateGrad.addColorStop(0,    live.mat.sheen);
+            plateGrad.addColorStop(0.45, live.mat.color);
+            plateGrad.addColorStop(1,    live.mat.color);
+            ctxC.fillStyle = plateGrad;
+            ctxC.fillRect(plateX0, plateY0, plateX1 - plateX0, plateH);
+            // Brushed grain -- deterministic offsets, no per-frame randomness, so
+            // the plate does not shimmer.
+            ctxC.save();
+            ctxC.beginPath();
+            ctxC.rect(plateX0, plateY0, plateX1 - plateX0, plateH);
+            ctxC.clip();
+            ctxC.globalAlpha = 0.12;
+            ctxC.strokeStyle = live.mat.sheen;
+            ctxC.lineWidth = 1;
+            for (var gi = 0; gi < 14; gi++) {
+              var gy = plateY0 + ((gi * 37) % 100) / 100 * plateH;
+              ctxC.beginPath();
+              ctxC.moveTo(plateX0, gy);
+              ctxC.lineTo(plateX1, gy);
+              ctxC.stroke();
+            }
+            ctxC.restore();
+            // Bright top edge + dark outline read as plate thickness.
+            ctxC.strokeStyle = 'rgba(255,255,255,0.45)';
+            ctxC.lineWidth = 1.5;
+            ctxC.beginPath();
+            ctxC.moveTo(plateX0, plateY0 + 1);
+            ctxC.lineTo(plateX1, plateY0 + 1);
+            ctxC.stroke();
+            ctxC.strokeStyle = '#334155';
             ctxC.lineWidth = 2;
-            ctxC.strokeRect(W * 0.05, plateY0, W * 0.9, plateY1 - plateY0);
+            ctxC.strokeRect(plateX0, plateY0, plateX1 - plateX0, plateH);
 
             // Joint center line
             var jointY = (plateY0 + plateY1) / 2;
@@ -1397,7 +1702,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           return function() {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
           };
-        }, [beadView]); // re-run when view toggles so 2D draw loop stops while 3D is active and restarts cleanly when user returns to top-down
+        }, [beadView, fitTick]); // re-run when view toggles so 2D draw loop stops while 3D is active and restarts cleanly when user returns to top-down
 
         var canvasAriaLabel = 'Weld bead simulation. ' +
           (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy-Fuel') +
@@ -1413,7 +1718,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.process', 'Process')),
-                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_3', 'Welding process'), className: 'grid grid-cols-2 gap-1.5' },
+                h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_process_3', 'Welding process'), className: 'grid grid-cols-2 gap-1.5' },
                   ['mig','tig','stick','oxy'].map(function(p) {
                     var sel = (P === p);
                     var lbl = p === 'mig' ? 'MIG' : p === 'tig' ? 'TIG' : p === 'stick' ? 'Stick' : 'Oxy';
@@ -1430,7 +1735,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.material', 'Material')),
-                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.base_metal', 'Base metal'), className: 'space-y-1.5' },
+                h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.base_metal', 'Base metal'), className: 'space-y-1.5' },
                   Object.keys(MATERIAL).map(function(mk) {
                     var sel = (M === mk);
                     return h('button', {
@@ -1446,7 +1751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-3' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.plate_thickness', 'Plate Thickness')),
-                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.plate_thickness_2', 'Plate thickness'), className: 'grid grid-cols-2 gap-1.5' },
+                h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.plate_thickness_2', 'Plate thickness'), className: 'grid grid-cols-2 gap-1.5' },
                   [0.125, 0.1875, 0.25, 0.375].map(function(t) {
                     var sel = (TH === t);
                     var lbl = t === 0.125 ? '1/8"' : t === 0.1875 ? '3/16"' : t === 0.25 ? '1/4"' : '3/8"';
@@ -1528,7 +1833,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 // Joint type selector
                 h('div', null,
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.weldlab.joint_type', 'Joint Type')),
-                  h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_2', 'Joint type'), className: 'grid grid-cols-5 gap-1.5' },
+                  h('div', { onKeyDown: radioGroupKeys, role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_2', 'Joint type'), className: 'grid grid-cols-5 gap-1.5' },
                     [
                       { id: 'butt',   label: __alloT('stem.weldlab.butt', 'Butt'),   icon: '⎯⎯', desc: __alloT('stem.weldlab.edge_to_edge', 'Edge to edge') },
                       { id: 'lap',    label: 'Lap',    icon: '⎯̲̲',   desc: __alloT('stem.weldlab.overlap', 'Overlap') },
@@ -1555,7 +1860,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 // Weld position selector
                 h('div', null,
                   h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5' }, __alloT('stem.weldlab.weld_position', 'Weld Position')),
-                  h('div', { role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_position', 'Welding position'), className: 'grid grid-cols-4 gap-1.5' },
+                  h('div', { onKeyDown: radioGroupKeys, role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.welding_position', 'Welding position'), className: 'grid grid-cols-4 gap-1.5' },
                     [
                       { id: '1G', label: '1G/1F', icon: '⬜', desc: __alloT('stem.weldlab.flat_gravity_helps', 'Flat — gravity helps') },
                       { id: '2G', label: '2G/2F', icon: '▭',  desc: __alloT('stem.weldlab.horizontal_bead_runs_sideways', 'Horizontal — bead runs sideways') },
@@ -1645,9 +1950,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-3' }, __alloT('stem.weldlab.inspector_scorecard', 'Inspector Scorecard')),
               h('div', { className: 'space-y-2' },
                 [
-                  { label: __alloT('stem.weldlab.penetration_2', 'Penetration'), val: penScore, hint: 'Ideal ≈ 70% of plate thickness (' + (penIdeal * 1000 | 0)/1000 + '" target)' },
-                  { label: __alloT('stem.weldlab.uniformity', 'Uniformity'), val: unifScore, hint: __alloT('stem.weldlab.even_ripple_spacing_steady_travel_spee', 'Even ripple spacing — steady travel speed') },
-                  { label: __alloT('stem.weldlab.spatter_control', 'Spatter Control'), val: spatterScore, hint: 'Amperage matched to process (target ~' + ampIdeal + 'A for ' + (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy') + ')' }
+                  { label: __alloT('stem.weldlab.penetration_2', 'Penetration'), val: penScore, hint: 'Ideal ≈ 70% of plate thickness (' + (penIdeal * 1000 | 0)/1000 + '" target)',
+                    // A red bar tells a student they are wrong; it does not tell
+                    // them which way to move. Every low score now names the control
+                    // AND the direction, which is what a shop instructor says.
+                    coach: penetration < penIdeal
+                      ? 'Too shallow at ' + penetration.toFixed(3) + '". Raise amperage or slow travel down — both put more heat into each inch.'
+                      : 'Too deep at ' + penetration.toFixed(3) + '" — this is heading for burn-through. Drop amperage or speed travel up.' },
+                  { label: __alloT('stem.weldlab.uniformity', 'Uniformity'), val: unifScore, hint: __alloT('stem.weldlab.even_ripple_spacing_steady_travel_spee', 'Even ripple spacing — steady travel speed'),
+                    coach: TS > 12
+                      ? 'Travelling at ' + TS.toFixed(1) + ' in/min stretches the ripples thin. Ease back toward 12.'
+                      : 'Travelling at ' + TS.toFixed(1) + ' in/min piles the ripples up. Move out toward 12.' },
+                  { label: __alloT('stem.weldlab.spatter_control', 'Spatter Control'), val: spatterScore, hint: 'Amperage matched to process (target ~' + ampIdeal + 'A for ' + (P === 'mig' ? 'MIG' : P === 'tig' ? 'TIG' : P === 'stick' ? 'Stick' : 'Oxy') + ')',
+                    coach: A > ampIdeal
+                      ? Math.round(A - ampIdeal) + 'A over what this process likes. Excess current blows droplets off the wire — bring amperage down toward ' + ampIdeal + 'A.'
+                      : Math.round(ampIdeal - A) + 'A under what this process likes. The arc is unstable and stubbing — bring amperage up toward ' + ampIdeal + 'A.' }
                 ].map(function(row, i) {
                   var color = row.val >= 80 ? 'bg-emerald-500' : row.val >= 60 ? 'bg-amber-500' : 'bg-rose-500';
                   return h('div', { key: i },
@@ -1658,7 +1975,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden mt-1', 'aria-hidden': true },
                       h('div', { className: 'h-full ' + color + ' transition-all', style: { width: row.val + '%' } })
                     ),
-                    h('div', { className: 'text-xs text-slate-700 mt-0.5' }, row.hint)
+                    h('div', { className: 'text-xs text-slate-700 mt-0.5' }, row.hint),
+                    row.val < 80 && row.coach && h('div', {
+                      className: 'mt-1 text-xs text-amber-900 bg-amber-50 border border-amber-300 rounded-md px-2 py-1 flex gap-1.5'
+                    },
+                      h('span', { 'aria-hidden': true }, '⚙️'),
+                      h('span', null, row.coach)
+                    )
                   );
                 })
               )
@@ -1732,12 +2055,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         // Defect color legend rendered alongside the 3D scene when
         // showDefects is on. Each entry: { key, label, color, swatch }.
         var defectLegend = [
-          { key: 'burnthrough',  label: __alloT('stem.weldlab.burnthrough', 'Burnthrough'),   color: '#000000', desc: __alloT('stem.weldlab.hole_punched_through', 'hole punched through') },
-          { key: 'lackOfFusion', label: __alloT('stem.weldlab.lack_of_fusion', 'Lack of fusion'), color: 'var(--allo-stem-text-soft, #475569)', desc: __alloT('stem.weldlab.cold_weld_no_bond', 'cold weld, no bond') },
-          { key: 'undercut',     label: __alloT('stem.weldlab.undercut', 'Undercut'),      color: '#7c2d12', desc: __alloT('stem.weldlab.groove_next_to_bead', 'groove next to bead') },
-          { key: 'overlap',      label: __alloT('stem.weldlab.overlap_2', 'Overlap'),       color: '#92400e', desc: __alloT('stem.weldlab.bead_overhangs_edge', 'bead overhangs edge') },
-          { key: 'spatter',      label: __alloT('stem.weldlab.spatter', 'Spatter'),       color: '#f59e0b', desc: __alloT('stem.weldlab.molten_splatter', 'molten splatter') },
-          { key: 'porosity',     label: __alloT('stem.weldlab.porosity', 'Porosity'),      color: '#1e293b', desc: __alloT('stem.weldlab.gas_bubbles_in_bead', 'gas bubbles in bead') }
+          { key: 'burnthrough',  label: __alloT('stem.weldlab.burnthrough', 'Burnthrough'),   color: DEFECT_3D_COLOR.burnthrough, desc: __alloT('stem.weldlab.hole_punched_through', 'hole punched through') },
+          { key: 'lackOfFusion', label: __alloT('stem.weldlab.lack_of_fusion', 'Lack of fusion'), color: DEFECT_3D_COLOR.lackOfFusion, desc: __alloT('stem.weldlab.cold_weld_no_bond', 'cold weld, no bond') },
+          { key: 'undercut',     label: __alloT('stem.weldlab.undercut', 'Undercut'),      color: DEFECT_3D_COLOR.undercut, desc: __alloT('stem.weldlab.groove_next_to_bead', 'groove next to bead') },
+          { key: 'overlap',      label: __alloT('stem.weldlab.overlap_2', 'Overlap'),       color: DEFECT_3D_COLOR.overlap, desc: __alloT('stem.weldlab.bead_overhangs_edge', 'bead overhangs edge') },
+          { key: 'spatter',      label: __alloT('stem.weldlab.spatter', 'Spatter'),       color: DEFECT_3D_COLOR.spatter, desc: __alloT('stem.weldlab.molten_splatter', 'molten splatter') },
+          { key: 'porosity',     label: __alloT('stem.weldlab.porosity', 'Porosity'),      color: DEFECT_3D_COLOR.porosity, desc: __alloT('stem.weldlab.gas_bubbles_in_bead', 'gas bubbles in bead') }
         ];
 
         function resetCamera() {
@@ -1955,12 +2278,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             //   spatter      — small orange spheres scattered near bead
             //   porosity     — small dark spheres on bead surface
             var defectMeshes = { burnthrough: [], lackOfFusion: [], undercut: [], overlap: [], spatter: [], porosity: [] };
-            var defectMatBlack = new THREE.MeshBasicMaterial({ color: 0x000000 });
-            var defectMatLOF   = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.8 });
-            var defectMatUndercut = new THREE.MeshStandardMaterial({ color: 0x431407, roughness: 0.85 });
-            var defectMatOverlap  = new THREE.MeshStandardMaterial({ color: 0x713f12, roughness: 0.85 });
-            var defectMatSpatter  = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
-            var defectMatPorosity = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+            var defectMatBlack = new THREE.MeshBasicMaterial({ color: DEFECT_3D_COLOR.burnthrough });
+            var defectMatLOF   = new THREE.MeshStandardMaterial({ color: DEFECT_3D_COLOR.lackOfFusion, roughness: 0.8 });
+            var defectMatUndercut = new THREE.MeshStandardMaterial({ color: DEFECT_3D_COLOR.undercut, roughness: 0.85 });
+            var defectMatOverlap  = new THREE.MeshStandardMaterial({ color: DEFECT_3D_COLOR.overlap, roughness: 0.85 });
+            var defectMatSpatter  = new THREE.MeshBasicMaterial({ color: DEFECT_3D_COLOR.spatter });
+            var defectMatPorosity = new THREE.MeshStandardMaterial({ color: DEFECT_3D_COLOR.porosity, roughness: 0.6 });
             // Helper to create a small group of meshes per defect type
             function makeDefectMarkers(geom, mat, count) {
               var arr = [];
@@ -2666,10 +2989,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   xctx.fillText('← HAZ', beadCenterX + hazW + 4, plateTop + 8);
                   xctx.fillStyle = '#fdba74';
                   xctx.fillText('← Reinforcement (crown)', beadCenterX + beadHalfW + 4, plateTop - crownH * 0.6);
-                  xctx.fillStyle = '#fca5a5';
-                  xctx.fillText('← Penetration', beadCenterX + beadHalfW + 4, plateTop + penDepth * 0.5);
-                  xctx.fillStyle = '#cbd5e1';
-                  xctx.fillText('Base metal', plateLeft + 4, plateBottom - 4);
+                  // ★ These two labels sit ON the plate, not on the dark ground the
+                  // other two use. Once MATERIAL.color started painting (it was a
+                  // CSS var() that Canvas2D silently dropped, so the plate used to
+                  // stay the near-black background), light ink on a light plate
+                  // fell to ~2:1. A dark plaque keeps the colour coding that ties
+                  // each label to the explainer text below AND the legibility.
+                  var plaque = function (text, tx, ty, fill) {
+                    var wpx = xctx.measureText(text).width;
+                    xctx.fillStyle = 'rgba(15,23,42,0.82)';
+                    if (xctx.roundRect) {
+                      xctx.beginPath();
+                      xctx.roundRect(tx - 3, ty - 9, wpx + 6, 13, 3);
+                      xctx.fill();
+                    } else {
+                      xctx.fillRect(tx - 3, ty - 9, wpx + 6, 13);
+                    }
+                    xctx.fillStyle = fill;
+                    xctx.fillText(text, tx, ty);
+                  };
+                  plaque('← Penetration', beadCenterX + beadHalfW + 4, plateTop + penDepth * 0.5, '#fca5a5');
+                  plaque('Base metal', plateLeft + 4, plateBottom - 4, '#e2e8f0');
                 }
               }
 
@@ -3009,23 +3349,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var rafRef = useRef(null);
         var startRef = useRef(0);
         var liveRef = props.liveRef;
+        // 900x360 authored box.
+        var fitTick = useFittedCanvas(canvasRef, 900 / 360);
 
         useEffect(function () {
           var canvas = canvasRef.current;
           if (!canvas) return;
-          if (window.StemLab && window.StemLab.setupHiDPI) {
-            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
-          }
           var ctxC = canvas.getContext('2d');
-          if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
-          var W = canvas._logicalW || canvas.width;
-          var H = canvas._logicalH || canvas.height;
           startRef.current = performance.now();
 
           function draw(now) {
             if (!canvasRef.current) return;
             var live = liveRef.current || {};
             var elapsed = (now - startRef.current) / 1000;
+            // Size read per frame — see the top-down loop.
+            if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
+            var W = canvas._logicalW || canvas.width;
+            var H = canvas._logicalH || canvas.height;
             var travelTime = 6.0 * (12 / Math.max(3, live.TS || 12));
             var t = _prefersReducedMotion ? 0.95 : ((elapsed % travelTime) / travelTime);
 
@@ -3184,7 +3524,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           return function () {
             if (rafRef.current) cancelAnimationFrame(rafRef.current);
           };
-        }, [props.P, props.M]);
+        }, [props.P, props.M, fitTick]);
 
         var procLabel = props.P === 'mig' ? 'MIG' : props.P === 'tig' ? 'TIG' : props.P === 'stick' ? 'Stick' : 'Oxy-Fuel';
         var helmetAria = 'First-person view through an auto-darkening welding hood. Lens at Shade 11 darkens the field of view to near-black; the arc and immediate weld pool are the only clearly visible elements. Process: ' + procLabel + '. ' + (props.ariaLabel || '');
@@ -3328,6 +3668,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         }, [sampleIdx]);
 
         var canvasRef = useRef(null);
+        // 900x280 authored box. Defect coordinates are normalised 0-1, so the
+        // hit-test below is unaffected by the canvas taking its container's width.
+        var fitTick = useFittedCanvas(canvasRef, 900 / 280);
 
         // Hit-test radius in canvas coordinates (normalized 0-1)
         var HIT_RADIUS = 0.045;
@@ -3403,9 +3746,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         useEffect(function() {
           var canvas = canvasRef.current;
           if (!canvas) return;
-          if (window.StemLab && window.StemLab.setupHiDPI) {
-            window.StemLab.setupHiDPI(canvas, canvas._logicalW || canvas.width, canvas._logicalH || canvas.height);
-          }
           var ctxC = canvas.getContext('2d');
           if (canvas._dpr) ctxC.setTransform(canvas._dpr, 0, 0, canvas._dpr, 0, 0);
           var W = canvas._logicalW || canvas.width, H = canvas._logicalH || canvas.height;
@@ -3539,7 +3879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           var foundCount = Object.keys(found).length;
           ctxC.fillText('Defects found: ' + foundCount + ' / ' + totalDefects, W * 0.95, plateY0 - 8);
 
-        }, [sample, found, revealAll, falseReads]);
+        }, [sample, found, revealAll, falseReads, fitTick]);
 
         var totalDefects = sample.defects.length;
         var foundCount = Object.keys(found).length;
@@ -3555,7 +3895,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Sample selector
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.inspection_sample', 'Inspection Sample')),
-              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.select_sample_to_inspect', 'Select sample to inspect'), className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
+              h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.select_sample_to_inspect', 'Select sample to inspect'), className: 'grid grid-cols-1 md:grid-cols-3 gap-2' },
                 DEFECT_SAMPLES.map(function(s, i) {
                   var sel = (sampleIdx === i);
                   return h('button', {
@@ -4193,7 +4533,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   className: 'bg-slate-100 rounded-xl border-2 border-slate-300 p-4 mb-4 mx-auto',
                   style: { maxWidth: '320px', height: '160px' }
                 }, current.joint.svgRender(h, '#ea580c')),
-                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_choices', 'Joint type choices'), className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
+                h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.joint_type_choices', 'Joint type choices'), className: 'grid grid-cols-1 md:grid-cols-2 gap-2 mb-3' },
                   allChoices.map(function(ck) {
                     var picked = quizFeedback && quizFeedback.picked === ck;
                     var revealedRight = quizFeedback && quizFeedback.was === ck;
@@ -4344,42 +4684,124 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // harder real-world examples.
 
       // Symbol anatomy renderer — label each part of a master diagram
-      function renderSymbolAnatomy(h) {
-        return h('svg', { viewBox: '0 0 400 220', className: 'w-full max-w-2xl mx-auto', 'aria-label': __alloT('stem.weldlab.welding_symbol_anatomy_diagram', 'Welding symbol anatomy diagram') },
-          // Reference line (horizontal)
-          h('line', { x1: 80, y1: 110, x2: 280, y2: 110, stroke: '#1f2937', strokeWidth: 2 }),
-          // Arrow line
-          h('line', { x1: 80, y1: 110, x2: 50, y2: 160, stroke: '#1f2937', strokeWidth: 2 }),
-          // Arrow head
-          h('path', { d: 'M 50 160 L 56 153 L 60 158 Z', fill: '#1f2937' }),
-          // Weld symbol — fillet triangle below reference line (arrow side)
-          h('path', { d: 'M 160 110 L 170 122 L 178 110 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
-          // Weld symbol above (other side) — same but mirrored
-          h('path', { d: 'M 200 110 L 210 98 L 218 110 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
-          // Weld-all-around circle at junction
-          h('circle', { cx: 80, cy: 110, r: 7, fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
-          // Field weld flag
-          h('path', { d: 'M 80 110 L 80 95 L 92 100 L 80 105 Z', fill: '#1f2937' }),
-          // Size to the left of arrow-side symbol
-          h('text', { x: 138, y: 124, fontSize: 12, fontFamily: 'monospace', fill: '#1f2937' }, '6'),
-          // Tail with process
-          h('line', { x1: 280, y1: 110, x2: 305, y2: 100, stroke: '#1f2937', strokeWidth: 2 }),
-          h('line', { x1: 280, y1: 110, x2: 305, y2: 120, stroke: '#1f2937', strokeWidth: 2 }),
-          h('text', { x: 312, y: 114, fontSize: 11, fontFamily: 'monospace', fill: '#1f2937' }, 'GMAW'),
-          // Annotations
-          h('text', { x: 30, y: 175, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.arrow_joint', 'Arrow → joint')),
-          h('text', { x: 60, y: 92, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, 'All-around'),
-          h('text', { x: 75, y: 80, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.field_weld', '+ Field weld')),
-          h('text', { x: 130, y: 145, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.size_6_mm', 'Size 6 (mm)')),
-          h('text', { x: 152, y: 140, fontSize: 10, fill: '#dc2626' }, __alloT('stem.weldlab.arrow_side', 'Arrow side ↑')),
-          h('text', { x: 192, y: 90, fontSize: 10, fill: '#dc2626' }, __alloT('stem.weldlab.other_side', 'Other side ↓')),
-          h('text', { x: 305, y: 135, fontSize: 11, fill: '#dc2626', fontWeight: 'bold' }, __alloT('stem.weldlab.process_mig_gmaw', 'Process: MIG (GMAW)'))
+      // ── AWS A2.4 symbol anatomy: one source for the diagram and the legend ──
+      // The old diagram carried eight red text labels crammed into a 400x220 box.
+      // check_stem_layout_defects measured "Process: MIG (GMAW)" running 32.7px
+      // past the right edge of its own viewBox in every theme; "All-around" and
+      // "+ Field weld" stacked on each other over the arrow line; "Size 6 (mm)"
+      // overlapped "Arrow side" — on the one diagram whose whole job is teaching
+      // a student to read a crowded drawing.
+      //
+      // Numbers replace the labels. Each part carries a numbered callout, and the
+      // definition cards below carry the same number and light their part up on
+      // hover, focus or click. Nothing in the SVG is prose any more, so no
+      // translation can overflow it, and the diagram-to-definition lookup runs
+      // both ways instead of asking a reader to match red text to grey shapes.
+      var SYMBOL_PARTS = [
+        { id: 'refline',  n: 1, name: 'Reference line',                 badge: [250, 124], tip: [250, 150],
+          desc: 'Horizontal line — the "spine." Everything attaches to it.' },
+        { id: 'arrow',    n: 2, name: 'Arrow',                          badge: [96, 236],  tip: [110, 212],
+          desc: 'Points to the joint that gets welded. The leg with the arrowhead is the "arrow side."' },
+        { id: 'below',    n: 3, name: 'Symbol below ref. line',         badge: [250, 202], tip: [232, 165],
+          desc: 'Weld goes on the ARROW side of the joint.' },
+        { id: 'above',    n: 4, name: 'Symbol above ref. line',         badge: [312, 102], tip: [310, 134],
+          desc: 'Weld goes on the OTHER side of the joint.' },
+        { id: 'size',     n: 5, name: 'Size (left of symbol)',          badge: [200, 202], tip: [206, 170],
+          desc: 'Leg length for fillets, depth for grooves. Numbers without units = inches in US shops.' },
+        { id: 'pitch',    n: 6, name: 'Length-pitch (right of symbol)', badge: [300, 202], tip: [266, 170],
+          desc: 'For intermittent welds: weld length, dash, center-to-center spacing.' },
+        { id: 'allround', n: 7, name: 'Circle at junction',             badge: [150, 202], tip: [150, 162],
+          desc: 'Weld-all-around — continues completely around the joint.' },
+        { id: 'field',    n: 8, name: 'Flag at junction',               badge: [176, 110], tip: [166, 127],
+          desc: 'Field weld — performed at the install site, not in the shop.' },
+        { id: 'tail',     n: 9, name: 'Tail',                           badge: [382, 196], tip: [376, 162],
+          desc: 'Holds the process abbreviation (GMAW, GTAW, SMAW, FCAW), specs, references.' }
+      ];
+
+      // focusId lights one part up; null draws the plain symbol.
+      function renderSymbolAnatomy(h, focusId) {
+        var INK = '#1f2937';
+        var LIT = '#c2410c';           // orange-700 — 5.18:1 on this ground
+        var on = function (id) { return focusId === id; };
+        var ink = function (id) { return on(id) ? LIT : INK; };
+        var wide = function (id, base) { return on(id) ? base + 1.4 : base; };
+        // Halo behind the focused part, drawn before the ink so it never covers it.
+        var halo = function (id, cx, cy, r) {
+          return on(id) ? h('circle', { key: 'halo-' + id, cx: cx, cy: cy, r: r, fill: 'rgba(251,146,60,0.32)' }) : null;
+        };
+        var grid = [];
+        for (var gx = 75; gx <= 430; gx += 25) {
+          grid.push(h('line', { key: 'gv' + gx, x1: gx, y1: 85, x2: gx, y2: 257, stroke: '#e2e8f0', strokeWidth: 0.6 }));
+        }
+        for (var gy = 90; gy <= 255; gy += 25) {
+          grid.push(h('line', { key: 'gh' + gy, x1: 70, y1: gy, x2: 435, y2: gy, stroke: '#e2e8f0', strokeWidth: 0.6 }));
+        }
+        // Numbered callout: a dashed leader from the part out to a filled disc.
+        var callout = function (p) {
+          var lit = on(p.id);
+          return h('g', { key: 'c' + p.id },
+            h('line', {
+              x1: p.tip[0], y1: p.tip[1], x2: p.badge[0], y2: p.badge[1],
+              stroke: lit ? LIT : '#94a3b8', strokeWidth: lit ? 1.6 : 1, strokeDasharray: '3 2'
+            }),
+            h('circle', {
+              cx: p.badge[0], cy: p.badge[1], r: 11,
+              fill: lit ? LIT : '#334155', stroke: '#ffffff', strokeWidth: 1.5
+            }),
+            h('text', {
+              x: p.badge[0], y: p.badge[1] + 4.5, fontSize: 13, fontWeight: 'bold',
+              fill: '#ffffff', textAnchor: 'middle'
+            }, String(p.n))
+          );
+        };
+        return h('svg', {
+          viewBox: '70 85 365 172',
+          className: 'w-full max-w-2xl mx-auto',
+          role: 'img',
+          'aria-label': __alloT('stem.weldlab.welding_symbol_anatomy_diagram', 'Welding symbol anatomy diagram')
+        },
+          h('rect', { x: 70, y: 85, width: 365, height: 172, fill: '#f8fafc' }),
+          h('g', null, grid),
+          // Highlight layer
+          halo('allround', 150, 150, 20),
+          halo('field', 160, 130, 21),
+          halo('below', 232, 160, 24),
+          halo('above', 310, 140, 24),
+          halo('size', 202, 163, 19),
+          halo('pitch', 266, 163, 21),
+          halo('tail', 382, 150, 30),
+          on('refline') && h('rect', { x: 146, y: 143, width: 218, height: 14, rx: 7, ry: 7, fill: 'rgba(251,146,60,0.32)' }),
+          on('arrow') && h('line', { x1: 150, y1: 150, x2: 106, y2: 204, stroke: 'rgba(251,146,60,0.42)', strokeWidth: 13, strokeLinecap: 'round' }),
+          // 1 — reference line
+          h('line', { x1: 150, y1: 150, x2: 360, y2: 150, stroke: ink('refline'), strokeWidth: wide('refline', 2.2) }),
+          // 2 — leader + arrowhead
+          h('line', { x1: 150, y1: 150, x2: 106, y2: 204, stroke: ink('arrow'), strokeWidth: wide('arrow', 2.2) }),
+          h('path', { d: 'M 102 209 L 112 199 L 117 205 Z', fill: ink('arrow') }),
+          // 7 — weld-all-around circle at the junction
+          h('circle', { cx: 150, cy: 150, r: 9, fill: 'none', stroke: ink('allround'), strokeWidth: wide('allround', 1.8) }),
+          // 8 — field-weld flag flying from the junction
+          h('line', { x1: 150, y1: 141, x2: 150, y2: 119, stroke: ink('field'), strokeWidth: wide('field', 1.8) }),
+          h('path', { d: 'M 150 121 L 150 137 L 171 129 Z', fill: ink('field') }),
+          // 5 — size, left of the arrow-side symbol
+          h('text', { x: 214, y: 168, fontSize: 15, fontFamily: 'monospace', textAnchor: 'end', fill: ink('size'), fontWeight: on('size') ? 'bold' : 'normal' }, '1/4'),
+          // 3 — arrow-side fillet, BELOW the reference line. A fillet symbol is a
+          // RIGHT triangle whose perpendicular leg is always on the left; drawn as an
+          // isoceles wedge it reads as a V-groove, which is a different weld.
+          h('path', { d: 'M 222 150 L 222 170 L 246 150 Z', fill: 'none', stroke: ink('below'), strokeWidth: wide('below', 1.8), strokeLinejoin: 'round' }),
+          // 6 — length-pitch, right of the arrow-side symbol
+          h('text', { x: 252, y: 168, fontSize: 15, fontFamily: 'monospace', fill: ink('pitch'), fontWeight: on('pitch') ? 'bold' : 'normal' }, '2-4'),
+          // 4 — other-side fillet, ABOVE the reference line (same right triangle, mirrored)
+          h('path', { d: 'M 300 150 L 300 130 L 324 150 Z', fill: 'none', stroke: ink('above'), strokeWidth: wide('above', 1.8), strokeLinejoin: 'round' }),
+          // 9 — tail carrying the process
+          h('line', { x1: 360, y1: 150, x2: 388, y2: 138, stroke: ink('tail'), strokeWidth: wide('tail', 2.2) }),
+          h('line', { x1: 360, y1: 150, x2: 388, y2: 162, stroke: ink('tail'), strokeWidth: wide('tail', 2.2) }),
+          h('text', { x: 392, y: 155, fontSize: 13, fontFamily: 'monospace', fill: ink('tail'), fontWeight: on('tail') ? 'bold' : 'normal' }, 'GMAW'),
+          SYMBOL_PARTS.map(callout)
         );
       }
-
       // Symbol library — common weld symbols with description
       var WELD_SYMBOLS = [
-        { id: 'fillet',     name: __alloT('stem.weldlab.fillet_weld', 'Fillet weld'),          render: function(h) { return h('path', { d: 'M 30 40 L 45 60 L 60 40 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'T, lap, corner joints' },
+        { id: 'fillet',     name: __alloT('stem.weldlab.fillet_weld', 'Fillet weld'),          render: function(h) { return h('path', { d: 'M 30 40 L 30 62 L 58 40 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 2, strokeLinejoin: 'round' }); }, use: 'T, lap, corner joints' },
         { id: 'sqGroove',   name: __alloT('stem.weldlab.square_groove', 'Square groove'),        render: function(h) { return h('rect', { x: 30, y: 40, width: 30, height: 20, fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Thin butt joints' },
         { id: 'vGroove',    name: 'V-groove',             render: function(h) { return h('path', { d: 'M 30 40 L 45 65 L 60 40', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'Medium-thick butt joints' },
         { id: 'bevel',      name: __alloT('stem.weldlab.bevel_groove', 'Bevel groove'),         render: function(h) { return h('path', { d: 'M 30 40 L 45 65 L 60 40 L 60 60', fill: 'none', stroke: '#1f2937', strokeWidth: 2 }); }, use: 'One-sided prep on butt or T' },
@@ -4403,14 +4825,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('line', { x1: 60, y1: 70, x2: 180, y2: 70, stroke: '#1f2937', strokeWidth: 2 }),
               h('line', { x1: 60, y1: 70, x2: 35, y2: 105, stroke: '#1f2937', strokeWidth: 2 }),
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
-              h('path', { d: 'M 110 70 L 120 82 L 128 70 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
+              h('path', { d: 'M 110 70 L 110 86 L 130 70 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5, strokeLinejoin: 'round' }),
               h('text', { x: 90, y: 84, fontSize: 12, fontFamily: 'monospace', fill: '#1f2937' }, '1/4')
             );
           },
           questions: [
             { q: 'What kind of weld is specified?', choices: ['Fillet', 'V-groove', 'Plug', 'Bevel'], answer: 0 },
-            { q: 'Which side gets the weld?', choices: ['Arrow side (below ref. line)', 'Other side (above ref. line)', 'Both sides'], answer: 0 },
-            { q: 'What\'s the weld size?', choices: ['1/4 inch leg', '1/2 inch throat', '4 inch length', 'Unspecified'], answer: 0 }
+            { q: 'Which side gets the weld?', choices: ['Other side (above ref. line)', 'Arrow side (below ref. line)', 'Both sides'], answer: 1 },
+            { q: 'What\'s the weld size?', choices: ['1/2 inch throat', '4 inch length', '1/4 inch leg', 'Unspecified'], answer: 2 }
           ]
         },
         {
@@ -4424,12 +4846,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('path', { d: 'M 35 105 L 41 99 L 45 104 Z', fill: '#1f2937' }),
               h('circle', { cx: 60, cy: 70, r: 7, fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
               h('path', { d: 'M 60 70 L 60 55 L 72 60 L 60 65 Z', fill: '#1f2937' }),
-              h('path', { d: 'M 110 70 L 120 82 L 128 70 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5 }),
+              h('path', { d: 'M 110 70 L 110 86 L 130 70 Z', fill: 'none', stroke: '#1f2937', strokeWidth: 1.5, strokeLinejoin: 'round' }),
               h('text', { x: 90, y: 84, fontSize: 12, fontFamily: 'monospace', fill: '#1f2937' }, '3/16')
             );
           },
           questions: [
-            { q: 'What does the circle at the joint mean?', choices: ['Drill hole here', 'Weld all the way around the joint', 'Stop and inspect before the next pass', 'Field tested'], answer: 1 },
+            { q: 'What does the circle at the joint mean?', choices: ['Drill hole here', 'Stop and inspect before the next pass', 'Field tested', 'Weld all the way around the joint'], answer: 3 },
             { q: 'What does the flag at the joint mean?', choices: ['Field weld — done at install site', 'Quality flag', 'Optional weld', 'Tail reference to the shop drawing'], answer: 0 },
             { q: 'Why "weld all-around + field weld" for a railing?', choices: ['Aesthetic only', 'Railings are installed on-site and need full perimeter sealing for strength', 'It\'s the cheapest option', 'Required by code regardless of design whenever a railing is more than 30 inches high'], answer: 1 }
           ]
@@ -4452,9 +4874,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             );
           },
           questions: [
-            { q: 'What\'s the joint preparation?', choices: ['Square groove', 'Double V-groove (both sides beveled)', 'Lap joint with fillet welds on both sides', 'Plug weld'], answer: 1 },
-            { q: 'Why double V instead of single?', choices: ['Looks better', 'Heavy section needing full penetration with less filler than single V', 'Required for stainless because a single bevel traps heat and warps the plate', 'Cheaper'], answer: 1 },
-            { q: 'What\'s the size of each groove?', choices: ['3/8 inch depth on each side', '3/16 inch each', '3/4 inch combined across both sides', 'Unspecified'], answer: 0 }
+            { q: 'What\'s the joint preparation?', choices: ['Square groove', 'Lap joint with fillet welds on both sides', 'Double V-groove (both sides beveled)', 'Plug weld'], answer: 2 },
+            { q: 'Why double V instead of single?', choices: ['Looks better', 'Required for stainless because a single bevel traps heat and warps the plate', 'Cheaper', 'Heavy section needing full penetration with less filler than single V'], answer: 3 },
+            { q: 'What\'s the size of each groove?', choices: ['3/16 inch each', '3/4 inch combined across both sides', '3/8 inch depth on each side', 'Unspecified'], answer: 2 }
           ]
         },
         {
@@ -4480,9 +4902,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           },
           questions: [
             { q: 'What process does "GTAW" call out?', choices: ['MIG', 'TIG', 'Stick', 'Oxy-fuel'], answer: 1 },
-            { q: 'What does "6G" specify?', choices: ['6th iteration', 'Pipe fixed at 45° (hardest test position)', 'A grade of steel rated for six times the load', 'Inspector ID'], answer: 1 },
-            { q: 'What does the convex curve below the V mean?', choices: ['Concave grind, with the weld dished below flush', 'Convex contour — weld bulges above flush', 'Radius cut', 'Unspecified'], answer: 1 },
-            { q: 'Combined: what skill level does this print demand?', choices: ['Entry-level shop welder with a one-day MIG orientation', 'Intermediate fab', 'High — requires AWS 6G TIG-certified pipe welder', 'Robotic only'], answer: 2 }
+            { q: 'What does "6G" specify?', choices: ['6th iteration', 'A grade of steel rated for six times the load', 'Pipe fixed at 45° (hardest test position)', 'Inspector ID'], answer: 2 },
+            { q: 'What does the convex curve below the V mean?', choices: ['Concave grind, with the weld dished below flush', 'Radius cut', 'Convex contour — weld bulges above flush', 'Unspecified'], answer: 2 },
+            { q: 'Combined: what skill level does this print demand?', choices: ['High — requires AWS 6G TIG-certified pipe welder', 'Entry-level shop welder with a one-day MIG orientation', 'Intermediate fab', 'Robotic only'], answer: 0 }
           ]
         }
       ];
@@ -4494,6 +4916,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var challengeIdx = challengeIdx_state[0], setChallengeIdx = challengeIdx_state[1];
         var answers_state = useState({});
         var answers = answers_state[0], setAnswers = answers_state[1];
+        // Which anatomy part the numbered legend is pointing at, or null.
+        var focusPart_state = useState(null);
+        var focusPart = focusPart_state[0], setFocusPart = focusPart_state[1];
 
         function answer(qIdx, choice) {
           var key = challengeIdx + '_' + qIdx;
@@ -4541,24 +4966,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' },
                   __alloT('stem.weldlab.every_welded_part_on_every_engineering', 'Every welded part on every engineering drawing in the country uses this same compact language. The reference line is the spine; everything else hangs off it. Master the parts and you can read any print.'))
               ),
-              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 flex justify-center' },
-                renderSymbolAnatomy(h)
+              h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5' },
+                h('div', { className: 'flex justify-center' }, renderSymbolAnatomy(h, focusPart)),
+                h('p', { className: 'mt-3 text-center text-xs text-slate-700' },
+                  __alloT('stem.weldlab.anatomy_hint', 'Nine numbered parts. Pick a number below to light that part up on the drawing.'))
               ),
               h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
-                [
-                  ['Reference line', 'Horizontal line — the "spine." Everything attaches to it.'],
-                  ['Arrow', 'Points to the joint that gets welded. The leg with the arrowhead is the "arrow side."'],
-                  ['Symbol below ref. line', 'Weld goes on the ARROW side of the joint.'],
-                  ['Symbol above ref. line', 'Weld goes on the OTHER side of the joint.'],
-                  ['Size (left of symbol)', 'Leg length for fillets, depth for grooves. Numbers without units = inches in US shops.'],
-                  ['Length-pitch (right of symbol)', 'For intermittent welds: weld length, dash, center-to-center spacing.'],
-                  ['Circle at junction', 'Weld-all-around — continues completely around the joint.'],
-                  ['Flag at junction', 'Field weld — performed at the install site, not in the shop.'],
-                  ['Tail', 'Holds the process abbreviation (GMAW, GTAW, SMAW, FCAW), specs, references.']
-                ].map(function(pair, i) {
-                  return h('div', { key: i, className: 'p-3 bg-slate-50 rounded-lg border border-slate-300' },
-                    h('div', { className: 'text-xs font-bold uppercase tracking-wider text-orange-700 mb-1' }, pair[0]),
-                    h('div', { className: 'text-sm text-slate-800' }, pair[1])
+                SYMBOL_PARTS.map(function (part) {
+                  var lit = (focusPart === part.id);
+                  return h('button', {
+                    key: part.id,
+                    type: 'button',
+                    // Toggling rather than latching, so a student can clear the
+                    // highlight and see the plain drawing a print would show them.
+                    onClick: function () {
+                      var next = lit ? null : part.id;
+                      setFocusPart(next);
+                      if (next) announce(part.n + '. ' + part.name + '. ' + part.desc);
+                    },
+                    onMouseEnter: function () { setFocusPart(part.id); },
+                    onFocus: function () { setFocusPart(part.id); },
+                    'aria-pressed': lit ? 'true' : 'false',
+                    className: 'p-3 rounded-lg border-2 text-left flex gap-3 items-start transition focus:outline-none focus:ring-2 ring-orange-500/40 ' +
+                      (lit ? 'bg-orange-50 border-orange-500 shadow' : 'bg-slate-50 border-slate-300 hover:border-orange-400')
+                  },
+                    h('span', {
+                      'aria-hidden': true,
+                      className: 'flex-shrink-0 w-6 h-6 rounded-full text-xs font-black flex items-center justify-center text-white ' +
+                        (lit ? 'bg-orange-700' : 'bg-slate-700')
+                    }, String(part.n)),
+                    h('span', { className: 'min-w-0' },
+                      h('span', { className: 'block text-xs font-bold uppercase tracking-wider text-orange-700 mb-1' }, part.name),
+                      h('span', { className: 'block text-sm text-slate-800' }, part.desc)
+                    )
                   );
                 })
               )
@@ -4626,7 +5066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     var picked = answers[key];
                     return h('div', { key: qi, className: 'p-3 bg-slate-50 rounded-lg border border-slate-300' },
                       h('div', { className: 'text-sm font-bold text-slate-800 mb-2' }, (qi + 1) + '. ' + q.q),
-                      h('div', { 'role': 'radiogroup', 'aria-label': q.q, className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
+                      h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': q.q, className: 'grid grid-cols-1 md:grid-cols-2 gap-2' },
                         q.choices.map(function(ch, ci) {
                           var sel = (picked === ci);
                           var revealCorrect = picked != null && q.answer === ci;
@@ -4983,7 +5423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('div', { className: 'p-4 bg-slate-100 rounded-xl border border-slate-300' },
                     h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, sc.situation)
                   ),
-                  h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.response_choices', 'Response choices'), className: 'space-y-2' },
+                  h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.response_choices', 'Response choices'), className: 'space-y-2' },
                     sc.choices.map(function(c, ci) {
                       var sel = (picked === ci);
                       var revealCorrect = picked != null && c.correct;
@@ -5118,7 +5558,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           time: '5+ years welding experience + AWS exam',
           what: 'Certified Welding Inspector. Reads prints, inspects welds, signs off on code-compliant work. Office + field hybrid. Very stable career.',
           pay: '$70-95K / yr  ·  often higher with travel',
-          how: 'Pass AWS CWI exam (3-part: fundamentals, practical, code). Required: 5y experience OR formal welding education + experience. ~$1500 exam fee.'
+          how: 'Pass AWS CWI exam (3-part: fundamentals, practical, code). Required: 5y experience OR formal welding education + experience. ~$1,150 exam fee.'
         },
         {
           tier: 5,
@@ -5126,7 +5566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           time: '5+ years + niche certs',
           what: 'Underwater commercial diver-welder, aerospace D17.1, nuclear N509, military shipyard. Highest pay; specialized credentials and physical demands.',
           pay: '$90-200K+ / yr  ·  varies wildly by specialty',
-          how: 'Underwater: commercial dive school + AWS underwater cert ($25-30K school cost). Aerospace: experience + specific D17.1/D17.2 testing. Nuclear: company-sponsored qualification.'
+          how: 'Underwater: commercial dive school + AWS underwater cert ($20-30K school cost). Aerospace: experience + specific D17.1/D17.2 testing. Nuclear: company-sponsored qualification.'
         }
       ];
 
@@ -5166,7 +5606,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       var ME_EMPLOYERS = [
-        { name: __alloT('stem.weldlab.bath_iron_works_bath', 'Bath Iron Works (Bath)'), industry: 'Shipbuilding (US Navy destroyers)', size: '~6,800 employees, welding the largest single trade', site: 'biw.com/careers' },
+        { name: __alloT('stem.weldlab.bath_iron_works_bath', 'Bath Iron Works (Bath)'), industry: 'Shipbuilding (US Navy destroyers)', size: '~6,500 employees, welding the largest single trade', site: 'biw.com/careers' },
         { name: __alloT('stem.weldlab.cianbro_pittsfield_statewide', 'Cianbro (Pittsfield + statewide)'), industry: 'Heavy civil construction, modular fabrication', size: 'Large self-perform contractor', site: 'cianbro.com/careers' },
         { name: __alloT('stem.weldlab.nd_paper_old_town', 'ND Paper (Old Town)'), industry: 'Pulp & paper machinery maintenance', size: 'Mill maintenance welder positions', site: 'ndpaper.com' },
         { name: __alloT('stem.weldlab.portland_yacht_services', 'Portland Yacht Services'), industry: 'Marine fabrication and repair', size: 'Smaller marine yards across the coast', site: 'portlandyacht.com' },
@@ -5386,7 +5826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ],
               misconceptions: [
                 '"Trades are for people who can\'t do college" — modern welding requires print reading, geometry, materials science, and physics literacy. The skills overlap with engineering, just applied through your hands.',
-                '"Welders all top out at $50K" — entry-level welders may, but 6G pipe, CWI inspectors, and underwater welders routinely earn $80-200K+. The ceiling is high if you stack certifications.',
+                '"Welders all top out at $50K" — entry-level welders may, but 6G pipe welders and underwater welders routinely earn $80-200K+, and a CWI ticket puts $60-110K on the table without the travel or the water. The ceiling is high if you stack certifications.',
                 '"AI / robots will replace welders" — high-volume linear welds (auto body, simple structural) are robot-welded. Custom fabrication, repair, complex positions, exotic metals, and field work are all extremely human-driven and growing.'
               ],
               extension: 'Pick one Maine employer above and visit their careers page. Find one currently-posted welding job. Note the required certifications, pay range, and shift schedule. Then sketch out a 2-year plan to be qualified for that exact job by graduation.'
@@ -5532,7 +5972,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             view === 'pressure' && h('div', { className: 'space-y-4' },
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
                 h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.technique', 'Technique')),
-                h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.underwater_welding_technique', 'Underwater welding technique'), className: 'grid grid-cols-2 gap-2' },
+                h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.underwater_welding_technique', 'Underwater welding technique'), className: 'grid grid-cols-2 gap-2' },
                   ['wet', 'dry'].map(function(t) {
                     var sel = (technique === t);
                     var lbl = t === 'wet' ? '🌊 Wet welding' : '🛎️ Hyperbaric (dry)';
@@ -5806,6 +6246,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { id: 'spot', label: __alloT('stem.weldlab.resistance_spot', 'Resistance / Spot'),   color: '#16a34a', icon: '⚙️',
             def: 'Two electrodes squeeze + electrify thin sheet. Fast, automatable. Automotive body assembly + appliance manufacturing.' }
         ];
+
+        // Hoisted so the intro screen and the quiz screen render the SAME
+        // notes; they used to live only on the quiz screen, which a teacher only
+        // reaches after starting a run.
+        var PS_NOTES = {
+              standards: ['CTE Manufacturing 3.2 (Process selection)', 'HS-ETS1-3 (Trade-off criteria)', 'AWS SENSE QC10 Module 2'],
+              questions: [
+                'Scenario 2 (windy job site) and scenario 8 (indoor shop, thick plate) are both structural steel. Why does the answer change from Stick to FCAW when the only difference is where you are standing?',
+                'Three scenarios in this set are stainless. One answers TIG for food service, one TIG for a brewery, one asks about backside purging. What does stainless demand that mild steel does not, and why does that push the answer toward TIG every time?',
+                'A shop owner says "just buy one machine that does everything." Using these ten scenarios as evidence, which single process would leave the fewest jobs unservable, and which jobs would still be impossible?'
+              ],
+              misconceptions: [
+                '"There is one best welding process" — every answer here is conditional on material, thickness, position, environment and volume. A process that is right in scenario 3 is wrong in scenario 9.',
+                '"TIG is the highest-skill process, so it is always the highest-quality answer" — TIG is the wrong tool for a 3/4-inch hull plate. Quality means meeting the spec, not maximising difficulty.',
+                '"Stick is obsolete" — two scenarios answer Stick precisely because it tolerates wind, rust and no gas bottle. It survives on the conditions it works in, not on deposition rate.',
+                '"Spot welding is just cheap MIG" — resistance welding uses no filler, no gas and no arc. It is a different joining physics, chosen for sub-second cycle time at production scale.'
+              ],
+              extension: 'Have students photograph three welded objects around the school (railing, bike frame, cafeteria shelving) and argue from the visible bead — ripple pattern, spatter, slag marks, colour — which process made each one. Then find out. Disagreements are the lesson.'
+            };
         var V = [
           { id: 1, scenario: 'Stainless steel sheet metal, 16-gauge (thin), butt joint, flat position. Custom food-service equipment for a Maine restaurant kitchen.', correct: 'tig',
             why: 'TIG\'s low heat input + clean argon shielding + no slag is mandatory for food-service stainless. Visible weld bead must look professional + sanitary. MIG works but produces more spatter; stick is too dirty for food-service spec.' },
@@ -5832,6 +6291,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var psIdx = d.psIdx == null ? -1 : d.psIdx;
         var psSeed = d.psSeed || 1;
         var psAns = !!d.psAns;
+        // ── Focus after answering ──
+        // Every radio carries `disabled: psAns` once the question is answered, so
+        // the moment a student picks, the element they had focused is disabled,
+        // the browser blurs it, and focus falls to <body>. From there the only
+        // route to the explanation or the Next button is Tab from the top of the
+        // page — on every one of the ten questions. Measured with
+        // `stem_tool_shot.cjs --probe`: focus index -1 after an arrow-key pick.
+        // Moving focus onto the feedback panel makes a screen reader read the
+        // result and puts Next one Tab away. Guarded on the false-to-true edge so
+        // re-entering an already-answered question does not steal focus.
+        var psFeedbackRef = useRef(null);
+        var psFeedbackRefPrev = useRef(false);
+        useEffect(function () {
+          var was = psFeedbackRefPrev.current;
+          psFeedbackRefPrev.current = psAns;
+          if (!was && psAns && psFeedbackRef.current) {
+            try { psFeedbackRef.current.focus(); } catch (_) {}
+          }
+        }, [psAns, psIdx]);
         var psPick = d.psPick;
         var psScore = d.psScore || 0;
         var psRounds = d.psRounds || 0;
@@ -5882,7 +6360,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     return h('div', { key: pr.id, style: { padding: '8px 10px', borderRadius: 8, background: pr.color + '15', border: '1px solid ' + pr.color + '55' } },
                       h('div', { className: 'flex items-center gap-2 mb-1' },
                         h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, pr.icon),
-                        h('span', { style: { color: pr.color, fontWeight: 800, fontSize: 12 } }, pr.label)
+                        h('span', { style: { color: inkOnWash(pr.color, '15'), fontWeight: 800, fontSize: 12 } }, pr.label)
                       ),
                       h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, pr.def)
                     );
@@ -5892,7 +6370,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('button', {
                 onClick: startPs,
                 className: 'transition-colors w-full px-5 py-3 rounded-xl bg-amber-700 text-white font-bold hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-400'
-              }, __alloT('stem.weldlab.start_vignette_1_of_10', '🕵️ Start — vignette 1 of 10'))
+              }, __alloT('stem.weldlab.start_vignette_1_of_10', '🕵️ Start — vignette 1 of 10')),
+              h(TeacherNotes, PS_NOTES)
             )
           );
         }
@@ -5921,7 +6400,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.scenario)
             ),
             // 5 process picker buttons
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_right_welding_process', 'Pick the right welding process') },
+            h('div', { onKeyDown: radioGroupKeys, className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_right_welding_process', 'Pick the right welding process') },
               PROCESSES.map(function(pr) {
                 var picked = psAns && psPick === pr.id;
                 var isRight = psAns && pr.id === v.correct;
@@ -5943,7 +6422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, pr.icon),
-                    h('span', { style: { color: psAns ? color : pr.color, fontSize: 13, fontWeight: 800 } }, pr.label)
+                    h('span', { style: { color: psAns ? color : inkOnWash(pr.color, '12'), fontSize: 13, fontWeight: 800 } }, pr.label)
                   ),
                   h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: psAns ? color: 'var(--allo-stem-text-soft, #475569)' } }, pr.def)
                 );
@@ -5951,6 +6430,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             // Feedback
             psAns && h('section', {
+              ref: psFeedbackRef,
+              tabIndex: -1,
               className: 'p-4 rounded-2xl',
               style: {
                 background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
@@ -5982,7 +6463,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onClick: startPs,
                     className: 'transition-colors px-4 py-2 rounded-lg bg-amber-700 text-white font-bold text-sm hover:bg-amber-800 focus:outline-none focus:ring-2 ring-amber-400'
                   }, __alloT('stem.weldlab.next_vignette', '➡️ Next vignette'))
-            )
+            ),
+            h(TeacherNotes, PS_NOTES)
           )
         );
       }
@@ -6001,8 +6483,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { id: 'travelSlow',  label: __alloT('stem.weldlab.travel_too_slow', 'Travel too slow'),    color: '#16a34a', icon: '🐢', def: 'Torch lingered; puddle sat too long. Overlap (weld sits ON TOP), excess buildup, burn-through on thin material.' },
           { id: 'travelFast',  label: __alloT('stem.weldlab.travel_too_fast', 'Travel too fast'),    color: '#f59e0b', icon: '🐇', def: 'Torch moved too quickly to develop full fusion. Undercut, narrow bead, lack of penetration.' },
           { id: 'contamination', label: __alloT('stem.weldlab.contamination', 'Contamination'),     color: '#a855f7', icon: '🦠', def: 'Base metal had paint, oil, rust, mill scale, or moisture. Or shielding gas was lost (wind, leak, no purge). Causes porosity, oxidation, brittleness.' },
-          { id: 'technique',   label: __alloT('stem.weldlab.technique_error', 'Technique error'),    color: 'var(--allo-stem-text-soft, #64748b)', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
+          { id: 'technique',   label: __alloT('stem.weldlab.technique_error', 'Technique error'),    color: '#64748b', icon: '👷', def: 'Wrong angle, no inter-pass cleaning, no taper-off, no preheat, poor sequence. The miscellaneous category that is actually most common.' }
         ];
+
+        // Hoisted so the intro screen and the quiz screen render the SAME
+        // notes; they used to live only on the quiz screen, which a teacher only
+        // reaches after starting a run.
+        var DD_NOTES = {
+              standards: ['CTE Manufacturing 5.3 (Quality control)', 'HS-ETS1-2 (Root-cause analysis)', 'AWS CWI Part A — Visual inspection'],
+              questions: [
+                'Defect Hunt asks what a defect LOOKS like; this module asks what CAUSED it. Why is the second question the one an employer pays more for?',
+                'Undercut and burn-through both answer "heat too high," yet they look nothing alike. What decides which one a given weld gets?',
+                'Three of these ten answer "technique error" rather than a machine setting. What do crater cracks, slag inclusions and distortion have in common that no dial on the welder can fix?',
+                'Lack of fusion is described here as the dangerous one because it "usually looks great on the surface." What does that imply about relying on visual inspection alone, and which NDT method from the Inspection module would catch it?'
+              ],
+              misconceptions: [
+                '"A defect has one cause" — most of these list a primary and a secondary cause. Porosity from wind and porosity from oily plate look identical and need opposite fixes.',
+                '"If the weld looks good it is good" — lack of fusion and slag inclusion are specifically the defects that pass a glance and fail radiography.',
+                '"Turn the amperage down and most problems go away" — half of this set is travel speed, cleaning or sequence. Reaching for the dial first is the habit this module is meant to break.',
+                '"Distortion is caused by too much heat" — it is caused by heat distributed unevenly. The same total heat input, balanced side to side, may not distort at all.'
+              ],
+              extension: 'Give students a weld coupon with a known defect and no explanation. Ask them to write a two-sentence root-cause statement and a one-line corrective action, in the format a CWI writes on a rejection tag. Compare their tags to each other before revealing the cause.'
+            };
         var V = [
           { id: 1, defect: 'Porosity — gas pockets trapped in the weld, visible as small round holes on the surface or revealed by radiography.', correct: 'contamination',
             why: 'Porosity = gas trapped during solidification. Sources: paint/oil/rust on base metal (fix: grind clean), wind blowing shielding gas away (fix: weld indoors or stick electrode), wet flux (fix: oven-dry low-hydrogen rods), or hydrogen from contaminated water-cooled tooling. Correctly cleaning the joint prevents 80%+ of porosity issues.' },
@@ -6029,6 +6531,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var ddIdx2 = d.dd2Idx == null ? -1 : d.dd2Idx;
         var ddSeed2 = d.dd2Seed || 1;
         var ddAns2 = !!d.dd2Ans;
+        // ── Focus after answering ──
+        // Every radio carries `disabled: ddAns2` once the question is answered, so
+        // the moment a student picks, the element they had focused is disabled,
+        // the browser blurs it, and focus falls to <body>. From there the only
+        // route to the explanation or the Next button is Tab from the top of the
+        // page — on every one of the ten questions. Measured with
+        // `stem_tool_shot.cjs --probe`: focus index -1 after an arrow-key pick.
+        // Moving focus onto the feedback panel makes a screen reader read the
+        // result and puts Next one Tab away. Guarded on the false-to-true edge so
+        // re-entering an already-answered question does not steal focus.
+        var ddFeedbackRef = useRef(null);
+        var ddFeedbackRefPrev = useRef(false);
+        useEffect(function () {
+          var was = ddFeedbackRefPrev.current;
+          ddFeedbackRefPrev.current = ddAns2;
+          if (!was && ddAns2 && ddFeedbackRef.current) {
+            try { ddFeedbackRef.current.focus(); } catch (_) {}
+          }
+        }, [ddAns2, ddIdx2]);
         var ddPick2 = d.dd2Pick;
         var ddScore2 = d.dd2Score || 0;
         var ddRounds2 = d.dd2Rounds || 0;
@@ -6079,7 +6600,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     return h('div', { key: c.id, style: { padding: '8px 10px', borderRadius: 8, background: c.color + '15', border: '1px solid ' + c.color + '55' } },
                       h('div', { className: 'flex items-center gap-2 mb-1' },
                         h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, c.icon),
-                        h('span', { style: { color: c.color, fontWeight: 800, fontSize: 12 } }, c.label)
+                        h('span', { style: { color: inkOnWash(c.color, '15'), fontWeight: 800, fontSize: 12 } }, c.label)
                       ),
                       h('div', { className: 'text-xs text-slate-700 leading-relaxed' }, c.def)
                     );
@@ -6089,7 +6610,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('button', {
                 onClick: startDd2,
                 className: 'transition-colors w-full px-5 py-3 rounded-xl bg-rose-600 text-white font-bold hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
-              }, __alloT('stem.weldlab.start_defect_1_of_10', '🔬 Start — defect 1 of 10'))
+              }, __alloT('stem.weldlab.start_defect_1_of_10', '🔬 Start — defect 1 of 10')),
+              h(TeacherNotes, DD_NOTES)
             )
           );
         }
@@ -6115,7 +6637,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { className: 'text-xs font-bold uppercase tracking-widest text-rose-700 mb-2' }, 'Defect ' + ddShown2.length + ' of ' + V.length),
               h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, v.defect)
             ),
-            h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_root_cause', 'Pick the root cause') },
+            h('div', { onKeyDown: radioGroupKeys, className: 'grid grid-cols-1 md:grid-cols-2 gap-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.pick_the_root_cause', 'Pick the root cause') },
               CAUSES.map(function(c) {
                 var picked = ddAns2 && ddPick2 === c.id;
                 var isRight = ddAns2 && c.id === v.correct;
@@ -6137,13 +6659,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 },
                   h('div', { className: 'flex items-center gap-2 mb-1' },
                     h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, c.icon),
-                    h('span', { style: { color: ddAns2 ? color : c.color, fontSize: 13, fontWeight: 800 } }, c.label)
+                    h('span', { style: { color: ddAns2 ? color : inkOnWash(c.color, '12'), fontSize: 13, fontWeight: 800 } }, c.label)
                   ),
                   h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: ddAns2 ? color: 'var(--allo-stem-text-soft, #475569)' } }, c.def)
                 );
               })
             ),
             ddAns2 && h('section', {
+              ref: ddFeedbackRef,
+              tabIndex: -1,
               className: 'p-4 rounded-2xl',
               style: {
                 background: pickedCorrect ? '#ecfdf5' : '#fef2f2',
@@ -6175,7 +6699,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     onClick: startDd2,
                     className: 'transition-colors px-4 py-2 rounded-lg bg-rose-600 text-white font-bold text-sm hover:bg-rose-700 focus:outline-none focus:ring-2 ring-rose-400'
                   }, __alloT('stem.weldlab.next_defect', '➡️ Next defect'))
-            )
+            ),
+            h(TeacherNotes, DD_NOTES)
           )
         );
       }
@@ -6317,7 +6842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             // Tier picker
             h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-4' },
               h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-2' }, __alloT('stem.weldlab.difficulty_tier', 'Difficulty Tier')),
-              h('div', { 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.difficulty_tier_2', 'Difficulty tier'), className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
+              h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.difficulty_tier_2', 'Difficulty tier'), className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 Object.keys(SPEED_TIERS).map(function(tk) {
                   var t = SPEED_TIERS[tk];
                   var sel = (tier === tk);
@@ -6618,7 +7143,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 onClick: function () { goto('processCompare'); },
                 className: 'transition-colors px-4 py-2 rounded-xl bg-slate-700 hover:bg-slate-800 text-white font-bold text-sm shadow focus:outline-none focus:ring-4 ring-slate-500/40'
               }, __alloT('stem.weldlab.process_comparison_3', '⚖️ Process comparison'))
-            )
+            ),
+            h(TeacherNotes, {
+              standards: ['CTE Manufacturing 5.1 (Discontinuities)', 'AWS CWI Part A — Visual inspection', 'HS-ETS1-3 (Evaluating evidence)'],
+              questions: [
+                'This catalog only records a defect type after you have identified one yourself in Defect Hunt. Why is a list you built worth more to you than the same list printed in a textbook?',
+                'Which defect type took you longest to find, and what were you looking for that turned out to be wrong?',
+                'A CWI carries this catalog in their head. What would it cost a shop if an inspector had a blind spot for one defect type — and which of the six would be the most expensive one to miss?'
+              ],
+              misconceptions: [
+                '"Finding a defect once means I know it" — recognising a defect on a clean training sample is easier than spotting it on a dirty production weld under bad light. The catalog records exposure, not mastery.',
+                '"A full catalog means I am qualified to inspect" — AWS CWI certification is a three-part exam plus documented experience. This is the mental library it rests on, not the credential.',
+                '"Every defect is a reject" — codes define acceptance limits. Some porosity is allowed by AWS D1.1; the inspector\'s job is measuring against the code, not finding fault.'
+              ],
+              extension: 'Once the catalog is complete, have students rank the six defect types by how dangerous each is in a load-bearing joint, then defend the ranking against the Metallurgy and Codes modules. Lack of fusion and crater cracking usually move up on the second pass.'
+            })
           )
         );
       }
@@ -7094,37 +7633,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var ans = ansState[0], setAns = ansState[1];
 
         var examQuestions = [
-          { q: 'What does the "6G" position designation mean?', opts: ['Pipe at 45° angle with axis fixed', 'Plate vertical with axis fixed', 'Pipe horizontal with the axis fixed in place', 'Plate overhead with axis fixed'], correct: 0, explain: '6G is pipe at 45° from horizontal, fixed (can\'t rotate). The most demanding position because the welder must adjust technique continuously as the bead climbs around the pipe.' },
-          { q: 'A welder is qualified in 6G with carbon steel. Can they weld a 3G pipe joint on the same material without re-testing?', opts: ['No — must re-test for 3G', 'Yes — 6G qualifies for all positions', 'Yes — but only on plate, never on pipe joints', 'Yes — but only for fillet welds'], correct: 1, explain: '6G is the most challenging pipe position. Per AWS D1.1 + ASME Section IX, 6G qualification qualifies for all other positions (1G, 2G, 3G, 4G, 5G).' },
-          { q: 'Why is interpass temperature controlled during multi-pass welding?', opts: ['To save energy', 'To prevent the welder from getting tired between passes', 'To control HAZ microstructure + prevent cracking', 'To make the bead look better'], correct: 2, explain: 'Interpass temperature (max temp between passes) controls cooling rate which controls microstructure. Too hot interpass = excessive grain growth + soft HAZ. Too cold = martensite formation + cracking.' },
-          { q: 'In SMAW (stick) welding, what does the "18" in E7018 indicate?', opts: ['Electrode diameter in 64ths of an inch', 'Tensile strength', 'Position + coating type', 'Year of manufacture'], correct: 2, explain: 'AWS A5.1 classification: E70-18. E = electrode. 70 = 70 ksi tensile strength. 1 = all positions. 8 = low-hydrogen iron powder coating with DC + or AC. The 18 is position + coating.' },
+          { q: 'What does the "6G" position designation mean?', opts: ['Plate vertical with axis fixed', 'Pipe at 45° angle with axis fixed', 'Pipe horizontal with the axis fixed in place', 'Plate overhead with axis fixed'], correct: 1, explain: '6G is pipe at 45° from horizontal, fixed (can\'t rotate). The most demanding position because the welder must adjust technique continuously as the bead climbs around the pipe.' },
+          { q: 'A welder is qualified in 6G with carbon steel. Can they weld a 3G pipe joint on the same material without re-testing?', opts: ['No — must re-test for 3G', 'Yes — but only on plate, never on pipe joints', 'Yes — 6G qualifies for all positions', 'Yes — but only for fillet welds'], correct: 2, explain: '6G is the most challenging pipe position. Per AWS D1.1 + ASME Section IX, 6G qualification qualifies for all other positions (1G, 2G, 3G, 4G, 5G).' },
+          { q: 'Why is interpass temperature controlled during multi-pass welding?', opts: ['To save energy', 'To prevent the welder from getting tired between passes', 'To make the bead look better', 'To control HAZ microstructure + prevent cracking'], correct: 3, explain: 'Interpass temperature (max temp between passes) controls cooling rate which controls microstructure. Too hot interpass = excessive grain growth + soft HAZ. Too cold = martensite formation + cracking.' },
+          { q: 'In SMAW (stick) welding, what does the "18" in E7018 indicate?', opts: ['Position + coating type', 'Electrode diameter in 64ths of an inch', 'Tensile strength', 'Year of manufacture'], correct: 0, explain: 'AWS A5.1 classification: E70-18. E = electrode. 70 = 70 ksi tensile strength. 1 = all positions. 8 = low-hydrogen iron powder coating with DC + or AC. The 18 is position + coating.' },
           { q: 'What is the purpose of preheat?', opts: ['Make the welder more comfortable in a cold shop', 'Reduce cooling rate to prevent HAZ cracking', 'Burn off contamination', 'Speed up welding time'], correct: 1, explain: 'Preheat raises base metal temperature so the weld + HAZ cool more slowly. Slower cooling = less martensite formation = less crack risk. Required for high-CE steels + thick sections.' },
           { q: 'What is the typical CO2 percentage in C25 shielding gas?', opts: ['10%', '25%', '50%', '100%'], correct: 1, explain: 'C25 = 75% argon + 25% CO2. Most common shielding gas for MIG on mild steel. Higher CO2 = better penetration but more spatter. Pure argon = minimum spatter but poor penetration on steel.' },
           { q: 'A welder hears a frying-bacon sound during MIG welding. What does this indicate?', opts: ['Wire feed speed too fast', 'Wire feed too slow', 'Arc length is correct', 'Gas flow too low'], correct: 2, explain: 'The "frying bacon" sound is the audible signature of a properly-set short-circuit MIG arc. Sizzling or popping = arc length too long. Erratic frying with pops = wire speed mismatch.' },
-          { q: 'What is the primary cause of porosity in MIG welds?', opts: ['Wire too thick', 'Inadequate shielding gas coverage', 'Travel speed too slow, overheating the puddle', 'Arc length too short'], correct: 1, explain: 'Porosity = gas bubbles trapped in the bead. Most common cause is inadequate shielding gas coverage: gas flow too low, drafty environment, contaminated nozzle, or contaminated base metal allowing atmospheric N + O to react with molten metal.' },
-          { q: 'What position is "2F"?', opts: ['Flat-position fillet', 'Horizontal fillet', 'Vertical fillet', 'Overhead fillet'], correct: 1, explain: '2 = horizontal. F = fillet. So 2F is a horizontal fillet weld. Position naming: 1=flat, 2=horizontal, 3=vertical, 4=overhead. G=groove, F=fillet.' },
+          { q: 'What is the primary cause of porosity in MIG welds?', opts: ['Wire too thick', 'Travel speed too slow, overheating the puddle', 'Arc length too short', 'Inadequate shielding gas coverage'], correct: 3, explain: 'Porosity = gas bubbles trapped in the bead. Most common cause is inadequate shielding gas coverage: gas flow too low, drafty environment, contaminated nozzle, or contaminated base metal allowing atmospheric N + O to react with molten metal.' },
+          { q: 'What position is "2F"?', opts: ['Horizontal fillet', 'Flat-position fillet', 'Vertical fillet', 'Overhead fillet'], correct: 0, explain: '2 = horizontal. F = fillet. So 2F is a horizontal fillet weld. Position naming: 1=flat, 2=horizontal, 3=vertical, 4=overhead. G=groove, F=fillet.' },
           { q: 'What is the purpose of a "weave" technique?', opts: ['To make the bead look fancy for inspection', 'To widen the bead + add heat', 'To prevent porosity', 'To reduce amperage'], correct: 1, explain: 'Weaving moves the torch side-to-side perpendicular to travel direction. This widens the bead, adds heat to the joint, and helps fill wider gaps. Used commonly in vertical-up + when joining thicker sections.' },
-          { q: 'What does "stringer bead" mean?', opts: ['First pass of a multi-pass weld', 'A straight, narrow bead with no weaving', 'A bead made with a dedicated stringer rod', 'A defective bead'], correct: 1, explain: 'Stringer bead = travel straight along the joint without weaving. Narrower, less heat-input. Used for high-strength steels where you want to limit HAZ size + minimize grain coarsening.' },
-          { q: 'In TIG welding aluminum, why is AC current used?', opts: ['It\'s safer', 'AC arc-cleans the aluminum oxide', 'AC produces more heat', 'AC is required by code for aluminum'], correct: 1, explain: 'AC TIG includes a positive half-cycle where electrons flow from workpiece toward electrode. This blasts aluminum oxide off the surface (cathodic etching). DC can\'t do this — DC straight polarity (DCEN) won\'t penetrate the oxide.' },
+          { q: 'What does "stringer bead" mean?', opts: ['First pass of a multi-pass weld', 'A bead made with a dedicated stringer rod', 'A straight, narrow bead with no weaving', 'A defective bead'], correct: 2, explain: 'Stringer bead = travel straight along the joint without weaving. Narrower, less heat-input. Used for high-strength steels where you want to limit HAZ size + minimize grain coarsening.' },
+          { q: 'In TIG welding aluminum, why is AC current used?', opts: ['It\'s safer', 'AC produces more heat', 'AC is required by code for aluminum', 'AC arc-cleans the aluminum oxide'], correct: 3, explain: 'AC TIG includes a positive half-cycle where electrons flow from workpiece toward electrode. This blasts aluminum oxide off the surface (cathodic etching). DC can\'t do this — DC straight polarity (DCEN) won\'t penetrate the oxide.' },
           { q: 'What is a "tack weld"?', opts: ['A small temporary weld to hold parts in alignment', 'A defective weld that must be ground out and removed', 'The first pass of a groove weld', 'A weld made with a magnetic backing'], correct: 0, explain: 'Tacks are short temporary welds that hold parts in alignment during fit-up + final welding. They\'re later incorporated into or melted out by the production weld. Improperly placed tacks (too small, wrong location) can cause defects.' },
           { q: 'What is "undercut"?', opts: ['Weld bead sitting below the surface of the plate', 'Groove eroded into base metal alongside bead', 'Bead width too narrow', 'Crater at end of weld'], correct: 1, explain: 'Undercut is a groove melted into the base metal alongside the bead toe, where the weld didn\'t fill. Caused by excessive heat input (too much amperage + too fast travel). Creates stress concentration + reduces effective throat. Code-limited (typically max 1/32" deep).' },
-          { q: 'What is the difference between SMAW + FCAW?', opts: ['SMAW uses solid wire, FCAW uses flux-coated stick electrodes', 'SMAW uses stick electrodes, FCAW uses flux-cored wire', 'They\'re the same thing', 'FCAW is older than SMAW'], correct: 1, explain: 'SMAW (Shielded Metal Arc Welding, aka "stick") uses individual flux-coated electrode sticks. FCAW (Flux-Cored Arc Welding) uses a continuous tubular wire with flux inside, fed through a gun like MIG. FCAW is faster + higher deposition rate; SMAW is more portable + works in worse conditions.' },
-          { q: 'What is a "backing bar"?', opts: ['A bar that holds the welder up when working overhead for long stretches', 'A bar placed behind a groove weld to support molten metal', 'A bar used to clamp parts', 'A bar of weld metal'], correct: 1, explain: 'Backing bar (usually copper or steel) is placed behind a groove weld to support the molten metal + allow full penetration without burning through. Copper backing isn\'t fused (high melting point). Steel backing may be left in or removed depending on design.' },
-          { q: 'What does "PWHT" stand for?', opts: ['Pre-Weld Hot Treatment', 'Post-Weld Heat Treatment', 'Plate Welding High Temperature', 'Procedure for Welding Heavy Tubing'], correct: 1, explain: 'PWHT = Post-Weld Heat Treatment. Heating the welded part after welding to relieve stresses, refine microstructure, drive off hydrogen, or restore properties. Different procedures for different purposes (stress relief, normalizing, tempering, solution treating).' },
+          { q: 'What is the difference between SMAW + FCAW?', opts: ['SMAW uses solid wire, FCAW uses flux-coated stick electrodes', 'They\'re the same thing', 'SMAW uses stick electrodes, FCAW uses flux-cored wire', 'FCAW is older than SMAW'], correct: 2, explain: 'SMAW (Shielded Metal Arc Welding, aka "stick") uses individual flux-coated electrode sticks. FCAW (Flux-Cored Arc Welding) uses a continuous tubular wire with flux inside, fed through a gun like MIG. FCAW is faster + higher deposition rate; SMAW is more portable + works in worse conditions.' },
+          { q: 'What is a "backing bar"?', opts: ['A bar that holds the welder up when working overhead for long stretches', 'A bar used to clamp parts', 'A bar of weld metal', 'A bar placed behind a groove weld to support molten metal'], correct: 3, explain: 'Backing bar (usually copper or steel) is placed behind a groove weld to support the molten metal + allow full penetration without burning through. Copper backing isn\'t fused (high melting point). Steel backing may be left in or removed depending on design.' },
+          { q: 'What does "PWHT" stand for?', opts: ['Post-Weld Heat Treatment', 'Pre-Weld Hot Treatment', 'Plate Welding High Temperature', 'Procedure for Welding Heavy Tubing'], correct: 0, explain: 'PWHT = Post-Weld Heat Treatment. Heating the welded part after welding to relieve stresses, refine microstructure, drive off hydrogen, or restore properties. Different procedures for different purposes (stress relief, normalizing, tempering, solution treating).' },
           { q: 'Why are low-hydrogen electrodes (E7018) stored hot?', opts: ['To make them easier to use', 'To keep them dry — moisture creates hydrogen in weld', 'To pre-heat the base metal through the electrode as the arc starts', 'To extend shelf life'], correct: 1, explain: 'E7018 coating absorbs moisture from the air. When that moisture reaches the arc, it dissociates into H + O. The hydrogen dissolves in the weld pool + can cause cold cracking. Hot storage (~250°F) keeps coating dry. Damp E7018 = certified-job-killer.' },
-          { q: 'What is a "stringer pass" + "weave pass" used together?', opts: ['Same thing', 'Stringer = root pass, weave = filler + cap passes', 'Stringer + weave alternate', 'Weave = root pass, stringer = filler and cap passes'], correct: 1, explain: 'In multi-pass welds on thick sections: stringer (narrow) for the root pass for precise penetration, then weave (wider) for filler + cap passes to fill the groove faster + smooth the cap. Combination optimizes both precision + speed.' },
-          { q: 'What is the AWS specification number for low-hydrogen mild steel SMAW electrodes?', opts: ['A5.1', 'D1.1', 'IX', '1104'], correct: 0, explain: 'AWS A5.1 specifies carbon steel electrodes for SMAW (covers E6010, E6011, E6013, E7018, etc.). D1.1 is the structural welding code. IX is ASME. 1104 is API.' },
-          { q: 'What is a "fillet weld"?', opts: ['A weld laid in a groove machined between two plates that meet edge to edge', 'A triangular weld at the intersection of two perpendicular surfaces', 'A weld around a hole', 'A weld with no preparation'], correct: 1, explain: 'Fillet = triangular cross-section weld joining surfaces approximately at right angles (T-joint, lap, corner). No edge preparation needed. Most common weld type in structural + general fabrication. Measured by leg length.' },
-          { q: 'What is "throat size" of a fillet weld?', opts: ['Distance from root to face of weld', 'Width of bead', 'Length of weld', 'Depth of fusion into the base metal'], correct: 0, explain: 'Throat = shortest distance from root of joint to face of weld. For equal-leg fillets, theoretical throat = 0.707 × leg size. Throat is what carries the load — it\'s what engineers design for + inspectors verify.' },
-          { q: 'What is "crater crack"?', opts: ['Crack from cold cracking hours after the weld cools', 'Crack at end of weld where arc was extinguished', 'Crack along weld centerline', 'Crack in HAZ'], correct: 1, explain: 'Crater = depression at end of weld where arc was broken. As the metal there solidifies last + faster than rest of weld, contraction stress can crack the crater. Prevention: cap the crater (back-fill before breaking arc) or use weld tabs + chip them off.' },
-          { q: 'What does "GMAW" stand for?', opts: ['Gas Metal Arc Welding', 'General Manual Arc Welding', 'Gas Manual Arc Welding', 'Gun Manual Arc Welding'], correct: 0, explain: 'GMAW = Gas Metal Arc Welding. Industry term for what\'s commonly called MIG (Metal Inert Gas). Continuous wire + shielding gas + electric arc. Includes spray transfer, globular, short-circuit, pulse modes.' },
-          { q: 'What is "duty cycle" on a welding machine?', opts: ['How long the welder can work per day before mandatory rest under OSHA rules', 'Percentage of a 10-min period machine can run at rated output', 'How often to clean the machine', 'Number of welds per hour'], correct: 1, explain: 'Duty cycle is rated at a specific output (e.g., 200A @ 60% means the machine can run at 200A for 6 minutes out of every 10 before thermal limit kicks in). Higher duty cycle = heavier-duty (industrial) machine.' },
+          { q: 'What is a "stringer pass" + "weave pass" used together?', opts: ['Same thing', 'Stringer + weave alternate', 'Stringer = root pass, weave = filler + cap passes', 'Weave = root pass, stringer = filler and cap passes'], correct: 2, explain: 'In multi-pass welds on thick sections: stringer (narrow) for the root pass for precise penetration, then weave (wider) for filler + cap passes to fill the groove faster + smooth the cap. Combination optimizes both precision + speed.' },
+          { q: 'What is the AWS specification number for low-hydrogen mild steel SMAW electrodes?', opts: ['D1.1', 'IX', '1104', 'A5.1'], correct: 3, explain: 'AWS A5.1 specifies carbon steel electrodes for SMAW (covers E6010, E6011, E6013, E7018, etc.). D1.1 is the structural welding code. IX is ASME. 1104 is API.' },
+          { q: 'What is a "fillet weld"?', opts: ['A triangular weld at the intersection of two perpendicular surfaces', 'A weld laid in a groove machined between two plates that meet edge to edge', 'A weld around a hole', 'A weld with no preparation'], correct: 0, explain: 'Fillet = triangular cross-section weld joining surfaces approximately at right angles (T-joint, lap, corner). No edge preparation needed. Most common weld type in structural + general fabrication. Measured by leg length.' },
+          { q: 'What is "throat size" of a fillet weld?', opts: ['Width of bead', 'Distance from root to face of weld', 'Length of weld', 'Depth of fusion into the base metal'], correct: 1, explain: 'Throat = shortest distance from root of joint to face of weld. For equal-leg fillets, theoretical throat = 0.707 × leg size. Throat is what carries the load — it\'s what engineers design for + inspectors verify.' },
+          { q: 'What is "crater crack"?', opts: ['Crack from cold cracking hours after the weld cools', 'Crack along weld centerline', 'Crack at end of weld where arc was extinguished', 'Crack in HAZ'], correct: 2, explain: 'Crater = depression at end of weld where arc was broken. As the metal there solidifies last + faster than rest of weld, contraction stress can crack the crater. Prevention: cap the crater (back-fill before breaking arc) or use weld tabs + chip them off.' },
+          { q: 'What does "GMAW" stand for?', opts: ['General Manual Arc Welding', 'Gas Manual Arc Welding', 'Gun Manual Arc Welding', 'Gas Metal Arc Welding'], correct: 3, explain: 'GMAW = Gas Metal Arc Welding. Industry term for what\'s commonly called MIG (Metal Inert Gas). Continuous wire + shielding gas + electric arc. Includes spray transfer, globular, short-circuit, pulse modes.' },
+          { q: 'What is "duty cycle" on a welding machine?', opts: ['Percentage of a 10-min period machine can run at rated output', 'How long the welder can work per day before mandatory rest under OSHA rules', 'How often to clean the machine', 'Number of welds per hour'], correct: 0, explain: 'Duty cycle is rated at a specific output (e.g., 200A @ 60% means the machine can run at 200A for 6 minutes out of every 10 before thermal limit kicks in). Higher duty cycle = heavier-duty (industrial) machine.' },
           { q: 'Why does TIG welding require a separate filler rod?', opts: ['For better appearance', 'TIG doesn\'t have wire feed like MIG; filler is added manually', 'To match the base metal color so the finished bead is invisible', 'Code requirement only'], correct: 1, explain: 'TIG uses a non-consumable tungsten electrode (doesn\'t add metal to weld). If you need filler (most joints do), you add it with a separate rod held in your other hand. Some autogenous TIG (no filler) is used on tight-fit thin material.' },
-          { q: 'What is a "puddle" in welding?', opts: ['Spilled coolant under the machine', 'Molten weld metal at the arc', 'Defect type', 'Slag layer'], correct: 1, explain: 'Puddle (or weld pool) = molten metal at the arc that the welder watches + controls. Reading the puddle is the welder\'s primary feedback. Puddle size, fluidity, shape tell you about heat input + fit-up + travel speed.' },
-          { q: 'What is "amperage" measuring?', opts: ['Pressure of electricity', 'Volume of electron flow', 'Resistance', 'Power'], correct: 1, explain: 'Amperage (current) = rate of electron flow. In welding, amperage primarily controls penetration depth + bead width. Higher amperage = more current = more heat = deeper penetration + wider bead.' },
-          { q: 'What is "DCEN" + "DCEP"?', opts: ['Different machine models: DCEN is the entry-level series, DCEP the industrial one', 'Direct Current Electrode Negative vs Positive — affects penetration + cleaning', 'Electrode brands', 'Insurance codes'], correct: 1, explain: 'DCEN (DC Electrode Negative, "straight polarity") = electrons flow from electrode TO workpiece. Better penetration. Used for TIG on most materials. DCEP (DC Electrode Positive, "reverse polarity") = electrons flow FROM workpiece TO electrode. Better cleaning (blasts oxide off). Used for SMAW + GMAW + DCEP TIG aluminum (rare).' },
-          { q: 'What is "burn-through"?', opts: ['Burning a hole through the base metal', 'Burning your skin from arc flash exposure', 'Burning out a welding machine', 'Burning consumables'], correct: 0, explain: 'Burn-through = melted hole punched through the base metal due to excessive heat input on thin material. Visible as a sag or hole in the bead. Caused by too much amperage, too slow travel, or insufficient base metal thickness for the chosen procedure.' },
-          { q: 'What is "essential variable" in a WPS?', opts: ['Optional setting', 'Variable that requires re-qualification if changed beyond limits', 'Welder personality trait recorded during the certification interview', 'Inspector requirement'], correct: 1, explain: 'Essential variables per ASME IX include: base metal class, filler classification, electrical characteristics, joint design, position, technique. Changing any essential variable beyond ranges requires WPS requalification. Non-essential variables can be changed without re-qualifying.' }
+          { q: 'What is a "puddle" in welding?', opts: ['Spilled coolant under the machine', 'Defect type', 'Molten weld metal at the arc', 'Slag layer'], correct: 2, explain: 'Puddle (or weld pool) = molten metal at the arc that the welder watches + controls. Reading the puddle is the welder\'s primary feedback. Puddle size, fluidity, shape tell you about heat input + fit-up + travel speed.' },
+          { q: 'What is "amperage" measuring?', opts: ['Pressure of electricity', 'Resistance', 'Power', 'Volume of electron flow'], correct: 3, explain: 'Amperage (current) = rate of electron flow. In welding, amperage primarily controls penetration depth + bead width. Higher amperage = more current = more heat = deeper penetration + wider bead.' },
+          { q: 'What is "DCEN" + "DCEP"?', opts: ['Direct Current Electrode Negative vs Positive — affects penetration + cleaning', 'Different machine models: DCEN is the entry-level series, DCEP the industrial one', 'Electrode brands', 'Insurance codes'], correct: 0, explain: 'DCEN (DC Electrode Negative, "straight polarity") = electrons flow from electrode TO workpiece. Better penetration. Used for TIG on most materials. DCEP (DC Electrode Positive, "reverse polarity") = electrons flow FROM workpiece TO electrode. Better cleaning (blasts oxide off). Used for SMAW + GMAW + DCEP TIG aluminum (rare).' },
+          { q: 'What is "burn-through"?', opts: ['Burning your skin from arc flash exposure', 'Burning a hole through the base metal', 'Burning out a welding machine', 'Burning consumables'], correct: 1, explain: 'Burn-through = melted hole punched through the base metal due to excessive heat input on thin material. Visible as a sag or hole in the bead. Caused by too much amperage, too slow travel, or insufficient base metal thickness for the chosen procedure.' },
+          { q: 'What is "essential variable" in a WPS?', opts: ['Optional setting', 'Welder personality trait recorded during the certification interview', 'Variable that requires re-qualification if changed beyond limits', 'Inspector requirement'], correct: 2, explain: 'Essential variables per ASME IX include: base metal class, filler classification, electrical characteristics, joint design, position, technique. Changing any essential variable beyond ranges requires WPS requalification. Non-essential variables can be changed without re-qualifying.' }
         ];
         // The authored exam put 61% of correct answers in slot 2 (measured
         // 11/30/8/0 with slot 4 never) — passable by position. Deterministic
@@ -7220,7 +7759,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'bg-white rounded-2xl shadow border border-slate-300 p-5 space-y-3' },
                 h('div', { className: 'text-base font-bold text-slate-900' }, current.q),
-                h('div', { className: 'space-y-2', role: 'radiogroup' },
+                h('div', { onKeyDown: radioGroupKeys, className: 'space-y-2', role: 'radiogroup', 'aria-label': current.q },
                   current.opts.map(function(opt, oi) {
                     var isAns = answered && (oi === current.correct);
                     var isWrong = answered && (oi === userAns) && (oi !== current.correct);
@@ -7879,96 +8418,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           {
             title: __alloT('stem.weldlab.pipeline_root_pass_on_cross_country_li', 'Pipeline root pass on cross-country line'),
             scenario: 'You are welding the root pass of a 36" buried gas transmission pipeline. Joint is open V-groove. Position is fixed 5G (rolled by hand). Outdoor work, sometimes windy. Need fast-freeze characteristics so the root doesn\'t sag.',
-            options: [
-              'E6010 stick electrode on DC+',
-              'E7018 stick electrode on AC',
-              'ER70S-6 solid wire with C25 gas (MIG)',
-              'ER308L TIG rod with 100% argon'
-            ],
-            correct: 0,
+            options: ['E7018 stick electrode on AC', 'ER70S-6 solid wire with C25 gas (MIG)', 'ER308L TIG rod with 100% argon', 'E6010 stick electrode on DC+'],
+            correct: 3,
             explain: 'E6010 (high-cellulose sodium coating) is THE pipeline root electrode. Deep penetration + fast-freeze = root won\'t sag overhead. Wind tolerance is good (no gas to blow away). 7018 is too sluggish for root; MIG needs wind shielding; TIG is too slow for production pipeline.'
           },
           {
             title: __alloT('stem.weldlab.structural_beam_to_column_weld_for_hig', 'Structural beam-to-column weld for high-rise'),
             scenario: 'You are welding a 3/4" thick W-shape beam to a column flange. AWS D1.1 structural code work. Inspector is on site. Joint is 2F horizontal fillet. Indoor (climate-controlled). Need certifiable low-hydrogen practice.',
-            options: [
-              'E6011 stick (works on AC)',
-              'E7018 stick electrode (kept in hot box)',
-              'E71T-GS self-shielded flux-cored wire, no gas',
-              'ER70S-3 with 100% CO2'
-            ],
-            correct: 1,
+            options: ['E7018 stick electrode (kept in hot box)', 'E6011 stick (works on AC)', 'E71T-GS self-shielded flux-cored wire, no gas', 'ER70S-3 with 100% CO2'],
+            correct: 0,
             explain: 'E7018 is THE structural code electrode. Low-hydrogen coating = no cold cracking risk. AWS D1.1 essentially requires it for important structural work. Must be hot-stored (250°F+) to keep coating dry. E6011 is for repair; E71T-GS is too rough for code; ER70S-3 with CO2 is OK but stick is the inspector\'s default.'
           },
           {
             title: __alloT('stem.weldlab.auto_body_repair_on_rusty_quarter_pane', 'Auto body repair on rusty quarter panel'),
             scenario: 'Customer brings in a 1990s pickup with rust holes in the rear quarter panel. Sheet metal is 20 gauge (thin). Surface is rusty + has some old undercoating. You need a wire that\'s tolerant of contamination.',
-            options: [
-              'ER70S-2 0.024" wire with C25 gas',
-              'ER70S-3 0.030" wire with 100% CO2',
-              'ER70S-6 0.024" wire with C25 gas',
-              'ER4043 0.035" wire with 100% argon'
-            ],
-            correct: 2,
+            options: ['ER70S-2 0.024" wire with C25 gas', 'ER70S-6 0.024" wire with C25 gas', 'ER70S-3 0.030" wire with 100% CO2', 'ER4043 0.035" wire with 100% argon'],
+            correct: 1,
             explain: 'ER70S-6 has the highest Mn + Si content = most tolerant of rust + contamination. 0.024" thin wire for sheet metal (avoids burnthrough). C25 gas for smooth bead with minimal spatter. ER4043 is for ALUMINUM only (wrong metal). ER70S-2 also good but typically used for higher-end clean work.'
           },
           {
             title: __alloT('stem.weldlab.stainless_food_grade_dairy_tank_repair', 'Stainless food-grade dairy tank repair'),
             scenario: 'A 304L stainless dairy holding tank has a leak at a weld. Tank thickness 0.10" (light gauge). Repair must be sanitary (smooth bead, no crevices). Indoor. You will use TIG.',
-            options: [
-              'ER70S-6 TIG rod with C25 gas',
-              'ER308 TIG rod with 100% argon',
-              'ER308L TIG rod with 100% argon',
-              'ER4043 TIG rod with argon-helium mix'
-            ],
+            options: ['ER70S-6 TIG rod with C25 gas', 'ER308 TIG rod with 100% argon', 'ER308L TIG rod with 100% argon', 'ER4043 TIG rod with argon-helium mix'],
             correct: 2,
             explain: 'ER308L (low-carbon stainless) is the right match for 304L base metal. Low carbon prevents carbide precipitation (sensitization) that would ruin corrosion resistance at the dairy pH + temperature cycling. ER308 (regular carbon) would risk sensitization. 100% argon is standard TIG gas. ER70S is mild steel (wrong); 4043 is aluminum (wrong).'
           },
           {
             title: __alloT('stem.weldlab.aluminum_extrusion_bracket_6061_t6', 'Aluminum extrusion bracket (6061-T6)'),
             scenario: 'You\'re fabricating brackets from 1/4" 6061-T6 aluminum extrusion. Material is 6000-series (silicon + magnesium alloy). Customer wants smooth appearance and good fatigue resistance. You\'re using MIG.',
-            options: [
-              'ER4043 wire with 100% argon',
-              'ER5356 wire with 100% argon',
-              'ER70S-6 wire with C25',
-              'ER308L wire with 100% argon'
-            ],
-            correct: 0,
+            options: ['ER5356 wire with 100% argon', 'ER70S-6 wire with C25', 'ER308L wire with 100% argon', 'ER4043 wire with 100% argon'],
+            correct: 3,
             explain: 'ER4043 (Al-Si alloy) is the standard match for 6061 aluminum — easier to use, smoother bead, better cosmetic appearance. ER5356 is stronger but harder to use + slightly grainier bead (better for 5xxx-series marine alloys). ER70S is steel wire (wrong); ER308L is stainless (wrong).'
           },
           {
             title: __alloT('stem.weldlab.welding_rebar_5_for_a_foundation_repai', 'Welding rebar (#5) for a foundation repair'),
             scenario: 'A residential foundation needs additional rebar tied into existing structure. Bars are #5 Grade 60 (5/8" diameter mild steel). Indoor crawl space, awkward positions. Quick work — not code/structural inspected.',
-            options: [
-              'E6011 stick electrode on AC',
-              'E7018 stick electrode in dry can',
-              'ER70S-6 MIG with C25',
-              'ER4043 MIG with argon'
-            ],
+            options: ['E6011 stick electrode on AC', 'E7018 stick electrode in dry can', 'ER70S-6 MIG with C25', 'ER4043 MIG with argon'],
             correct: 0,
             explain: 'E6011 is the right call for non-code rebar work. Versatile — runs on cheap AC machines, tolerates dirty/rusty metal (rebar often is). All-positions for the awkward crawl space angles. E7018 is overkill (not code work). MIG is awkward in tight spaces (need to drag the gun + hose).'
           },
           {
             title: __alloT('stem.weldlab.tig_welding_1_8_aluminum_boat_hull_ac', 'TIG-welding 1/8" aluminum boat hull (AC)'),
             scenario: 'Boat hull repair on a Lund aluminum fishing boat. 5052 aluminum (marine-grade), 1/8" thick. Boatyard work, climate-controlled. AC TIG (alternating current cleans oxide layer). Need tungsten that handles AC well.',
-            options: [
-              '2% thoriated tungsten ground to a sharp point',
-              '1.5% lanthanated tungsten balled at tip',
-              'Pure tungsten ground to a sharp point',
-              '2% ceriated tungsten ground to a sharp point'
-            ],
+            options: ['2% thoriated tungsten ground to a sharp point', '1.5% lanthanated tungsten balled at tip', 'Pure tungsten ground to a sharp point', '2% ceriated tungsten ground to a sharp point'],
             correct: 1,
             explain: '1.5% lanthanated (gold tip) is the modern AC-friendly tungsten. Balled tip (not pointed) is correct for AC — the heat from AC reverse-polarity melts the tip into a ball that conducts current cleanly. Sharp-pointed tungsten on AC will erode + spit. Pure tungsten (green) is the old AC standard but lanthanated has replaced it.'
           },
           {
             title: __alloT('stem.weldlab.high_production_fillet_welding_on_1_2_', 'High-production fillet welding on 1/2" plate'),
             scenario: 'Shop produces snowplow blades. Job: 8 ft of 5/16" fillet weld per blade, flat position. You weld 40 blades per shift. Cost-per-foot matters. The customer doesn\'t care about cosmetic bead — function over form.',
-            options: [
-              'E7018 stick electrode',
-              'ER70S-6 with C25 gas (short-circuit MIG)',
-              'E70T-1 gas-shielded FCAW',
-              'ER308L TIG'
-            ],
+            options: ['E7018 stick electrode', 'ER70S-6 with C25 gas (short-circuit MIG)', 'E70T-1 gas-shielded FCAW', 'ER308L TIG'],
             correct: 2,
             explain: 'E70T-1 (gas-shielded flux-cored) is the production king for plate work. Deposition rate 2-3x stick, smooth bead, slag covers as it cools. Short-circuit MIG would work but is slower (8-15 lb/hr vs 15-25 for FCAW). Stick is way too slow for 40 blades/shift. TIG is wrong process entirely.'
           }
@@ -8256,7 +8755,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 h('p', { className: 'text-sm text-slate-800 leading-relaxed' }, curScenario.scenario)
               ),
               h('div', { className: 'text-sm font-bold text-slate-800' }, __alloT('stem.weldlab.which_consumable_combination_best_fits', 'Which consumable combination best fits this job?')),
-              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.consumable_options', 'Consumable options') },
+              h('div', { onKeyDown: radioGroupKeys, className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.consumable_options', 'Consumable options') },
                 curScenario.options.map(function(opt, i) {
                   var picked = (consScPicked === i);
                   var isCorrect = (i === curScenario.correct);
@@ -9169,121 +9668,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_mean', 'What does this symbol mean?'),
-            options: [
-              'A 1/4-inch fillet weld on arrow side only',
-              'A 1/4-inch fillet weld on both sides',
-              'A 1/4-inch fillet weld on the other side only',
-              'A 1/4-inch V-groove weld on arrow side'
-            ],
-            correct: 0,
+            options: ['A 1/4-inch fillet weld on both sides', 'A 1/4-inch fillet weld on the other side only', 'A 1/4-inch V-groove weld on arrow side', 'A 1/4-inch fillet weld on arrow side only'],
+            correct: 3,
             explain: 'Triangle below the reference line = arrow-side fillet. "1/4" is the leg size. No symbol above means no other-side weld.'
           },
           {
             viz: { other: '▲ 1/4', arrow: '▲ 1/4', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_2', 'What does this symbol mean?'),
-            options: [
-              '1/4-inch fillet weld on arrow side only',
-              '1/4-inch fillet welds on BOTH sides, continuous',
-              '1/4-inch fillet on arrow side + 1/8-inch on other',
-              'Stagger-welded 1/4-inch fillets'
-            ],
-            correct: 1,
+            options: ['1/4-inch fillet welds on BOTH sides, continuous', '1/4-inch fillet weld on arrow side only', '1/4-inch fillet on arrow side + 1/8-inch on other', 'Stagger-welded 1/4-inch fillets'],
+            correct: 0,
             explain: 'Triangles on BOTH sides of the reference line = weld on both sides. Same 1/4 size on each. Continuous (no length number).'
           },
           {
             viz: { other: '', arrow: '▲ 3/16-2(6)', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_3', 'What does this symbol mean?'),
-            options: [
-              '3/16 fillet, 2" long, 6" deep',
-              '3/16 fillet, 2 welds at 6 amps',
-              '3/16 fillet, intermittent 2" long welds, 6" pitch (center-to-center)',
-              '3/16 fillet, 2" long welds overlapping each other by 6" at every joint corner'
-            ],
-            correct: 2,
+            options: ['3/16 fillet, 2" long, 6" deep', '3/16 fillet, intermittent 2" long welds, 6" pitch (center-to-center)', '3/16 fillet, 2 welds at 6 amps', '3/16 fillet, 2" long welds overlapping each other by 6" at every joint corner'],
+            correct: 1,
             explain: 'The "L-P" format (length-pitch) means intermittent welding. 2" of weld every 6" of joint. Saves filler + heat input on long fillets.'
           },
           {
             viz: { other: '', arrow: '⌵ 60°', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_4', 'What does this symbol mean?'),
-            options: [
-              'V-groove weld, 60° bevel angle, arrow side',
-              'V-shaped fillet, 60% penetration',
-              'Bevel weld, 60° included angle, other side',
-              'Vertical weld, 60° from horizontal'
-            ],
-            correct: 0,
+            options: ['V-shaped fillet, 60% penetration', 'Bevel weld, 60° included angle, other side', 'V-groove weld, 60° bevel angle, arrow side', 'Vertical weld, 60° from horizontal'],
+            correct: 2,
             explain: 'The ⌵ shape is a V-groove. Number with ° = included angle (total angle of the V). Below the line = arrow side preparation.'
           },
           {
             viz: { other: '', arrow: '⌵ 60°', tail: '', junction: '', root: '1/16' },
             prompt: __alloT('stem.weldlab.a_1_16_root_opening_is_added_to_the_v_', 'A 1/16 root opening is added to the V-groove. What changes?'),
-            options: [
-              'The weld is now stronger',
-              'The plates are placed 1/16" apart at the root before welding',
-              'The bevel angle drops to 1/16 of 60°',
-              '1/16" of root reinforcement is required on the back side of the joint'
-            ],
-            correct: 1,
+            options: ['The weld is now stronger', 'The bevel angle drops to 1/16 of 60°', '1/16" of root reinforcement is required on the back side of the joint', 'The plates are placed 1/16" apart at the root before welding'],
+            correct: 3,
             explain: 'Root opening = gap between the two plates at the root of the joint before welding starts. 1/16" is typical to allow full root penetration.'
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '○' },
             prompt: __alloT('stem.weldlab.what_does_the_circle_at_the_junction_t', 'What does the circle at the junction tell the welder?'),
-            options: [
-              'Weld a circle of metal 1/4 thick around the base as a reinforcing collar',
-              'This is a circular weld pattern',
-              'Weld extends completely around the joint (weld-all-around)',
-              'Use a round electrode'
-            ],
-            correct: 2,
+            options: ['Weld extends completely around the joint (weld-all-around)', 'Weld a circle of metal 1/4 thick around the base as a reinforcing collar', 'This is a circular weld pattern', 'Use a round electrode'],
+            correct: 0,
             explain: 'Open circle ○ at the reference-line/arrow junction = weld-all-around. Common for pipe-to-plate, post base, gusset attachments.'
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: '', junction: '●' },
             prompt: __alloT('stem.weldlab.what_does_the_filled_black_flag_at_the', 'What does the filled (black) flag at the junction tell the welder?'),
-            options: [
-              'This weld must be inspected before next operation',
-              'This weld is made in the field (not in the shop)',
-              'This is a black-coated electrode weld',
-              'Welder must sign off on this weld'
-            ],
+            options: ['This weld must be inspected before next operation', 'This weld is made in the field (not in the shop)', 'This is a black-coated electrode weld', 'Welder must sign off on this weld'],
             correct: 1,
             explain: 'Filled flag = field weld. Tells fabrication shop NOT to make this weld — it gets done at the install site. Affects equipment + procedure choice.'
           },
           {
             viz: { other: '⌵ 60°', arrow: '⌵ 60°', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_mean_5', 'What does this symbol mean?'),
-            options: [
-              'Single V-groove with a 120° included angle on the arrow side',
-              'Double V-groove (V from both sides) with 60° angle each',
-              'Two separate 60° beads',
-              'A 60° bevel from arrow side only'
-            ],
-            correct: 1,
+            options: ['Single V-groove with a 120° included angle on the arrow side', 'Two separate 60° beads', 'Double V-groove (V from both sides) with 60° angle each', 'A 60° bevel from arrow side only'],
+            correct: 2,
             explain: 'V-groove on BOTH sides of the line = double-V groove. Used on thick plate where single-V would need too much filler. Each side beveled to 60°.'
           },
           {
             viz: { other: '', arrow: '▲ 1/4', tail: 'GTAW · WPS-22', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_the_tail_gtaw_wps_22_specify', 'What does the tail "GTAW · WPS-22" specify?'),
-            options: [
-              'A 22-second welding time',
-              'Use TIG (GTAW) process per Welding Procedure Specification #22',
-              'The weld is graded GT-22 quality',
-              'Travel speed of 22 inches per minute using a gas-tungsten (GTAW) torch'
-            ],
-            correct: 1,
+            options: ['A 22-second welding time', 'The weld is graded GT-22 quality', 'Travel speed of 22 inches per minute using a gas-tungsten (GTAW) torch', 'Use TIG (GTAW) process per Welding Procedure Specification #22'],
+            correct: 3,
             explain: 'The tail of a weld symbol references documents. GTAW = the process. WPS-22 = a specific written procedure that defines exact parameters (volts, amps, gas, technique).'
           },
           {
             viz: { other: '', arrow: '⌶ 1/4', tail: '', junction: '' },
             prompt: __alloT('stem.weldlab.what_does_this_symbol_bevel_angle_only', 'What does this symbol (bevel angle only on arrow plate) mean?'),
-            options: [
-              'A 1/4 fillet weld',
-              'A bevel-groove weld — only the arrow-side plate is beveled, 1/4 groove depth',
-              'A J-groove weld, 1/4 root',
-              'A square-groove weld with a 1/4 root opening and no bevel preparation on either plate'
-            ],
-            correct: 1,
+            options: ['A bevel-groove weld — only the arrow-side plate is beveled, 1/4 groove depth', 'A 1/4 fillet weld', 'A J-groove weld, 1/4 root', 'A square-groove weld with a 1/4 root opening and no bevel preparation on either plate'],
+            correct: 0,
             explain: 'Half-V shape (⌶) = bevel groove. Only ONE plate is prepared (beveled); the other stays square. Used when only one piece can be machined easily — common for plate-to-pipe.'
           }
         ];
@@ -9602,7 +10051,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               ),
               h('div', { className: 'text-base font-bold text-slate-900' }, curQ.prompt),
               renderSymbolViz(curQ.viz),
-              h('div', { className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.choose_the_meaning', 'Choose the meaning') },
+              h('div', { onKeyDown: radioGroupKeys, className: 'space-y-2', role: 'radiogroup', 'aria-label': __alloT('stem.weldlab.choose_the_meaning', 'Choose the meaning') },
                 curQ.options.map(function(opt, i) {
                   var picked = (mbQPicked === i);
                   var isCorrect = (i === curQ.correct);

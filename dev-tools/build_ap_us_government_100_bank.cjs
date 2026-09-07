@@ -7,6 +7,7 @@
 
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { distractorFeedbackFor } = require('./ap_us_government_distractor_feedback/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_government_foundation_pilot.json');
@@ -534,12 +535,19 @@ function buildItem(spec, index, objectiveCatalog) {
   for (let choiceIndex = 0; choiceIndex < 4; choiceIndex += 1) {
     choices[choiceIndex] = choiceIndex === answerIndex ? spec.answer : baseChoices[1 + distractorIndex++];
   }
-  const choiceRationales = choices.map((choice) => choice === spec.answer
-    ? spec.rationale
-    : 'This choice is not the best answer because it does not match the constitutional principle, institutional process, or evidence identified in the question.');
+  const itemId = 'ap-usg-u' + spec.unit + '-' + String(index + 1).padStart(3, '0');
+  // Every distractor carries its own explanation, authored per item in
+  // ap_us_government_distractor_feedback/. A missing entry fails the build
+  // rather than falling back to a generic sentence.
+  const choiceRationales = choices.map((choice) => {
+    if (choice === spec.answer) return spec.rationale;
+    const feedback = distractorFeedbackFor(itemId, choice);
+    assert(feedback, 'Missing distractor feedback for ' + itemId + ': ' + choice);
+    return feedback;
+  });
   const practiceId = 'C' + spec.skillId.split('.')[0];
   const item = {
-    id: 'ap-usg-u' + spec.unit + '-' + String(index + 1).padStart(3, '0'),
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -1260,6 +1268,7 @@ function buildPack(library) {
       stimulusGroupsIncluded: false,
       constructedResponseIncluded: false,
       frqWorkshopsIncluded: true,
+      optionLevelFeedback: 'authored-per-distractor',
       handsFreeContentCompatible: true,
       limitations: [
         'This foundation pilot is not a complete AP U.S. Government and Politics exam simulation and does not reproduce the official digital exam experience.',

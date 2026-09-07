@@ -149,6 +149,21 @@
       },
       "dominantSharePercent": 25
     },
+    "testWiseness": {
+      "keyedItemCount": 600,
+      "keyCycleSharePercent": 100,
+      "keyLongestSharePercent": 78.7,
+      "keyLongerByQuarterSharePercent": 30.8,
+      "distractorRationaleCount": 1800,
+      "distinctDistractorRationaleCount": 1800,
+      "repeatedDistractorRationaleSharePercent": 0.1,
+      "largestSharedChoiceSet": 1,
+      "advisories": [
+        "answer-key-position-cycle",
+        "key-length-cue"
+      ],
+      "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
+    },
     "library": {
       "chapters": 9,
       "sections": 27,
@@ -194,8 +209,8 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_us_history_foundation_pilot.json",
-      "byteLength": 3056024,
-      "sha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308"
+      "byteLength": 2838782,
+      "sha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f"
     },
     "learningLibrary": {
       "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
@@ -302,6 +317,12 @@
         "status": "pass",
         "findingCount": 0,
         "meaning": "Every item has a rationale and four option-level feedback records."
+      },
+      {
+        "check": "feedback-specificity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Every distractor carries its own authored explanation: three distinct notes per item, none a generic placeholder, none a copy of the key rationale."
       },
       {
         "check": "source-and-provenance",
@@ -459,8 +480,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308",
-      "deploySha256": "55b730d7292474613e9ac7a8e3bde9b1e74fc0280608bdb7eb44cf8115c22308",
+      "sourceSha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f",
+      "deploySha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f",
       "note": "Source and deployment bytes are identical."
     },
     {

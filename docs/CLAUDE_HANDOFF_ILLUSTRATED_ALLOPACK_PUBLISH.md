@@ -35,7 +35,8 @@ There are many unrelated local and concurrent changes, including extensive promo
   path: allopacks/illustrated/water_cycle_grade6.allopack.json
   license: CC-BY-4.0
   Credit explicitly says AI-generated illustrations / educator review pending.
-  Preserve the existing water_cycle entry (different grade 2–3 lesson, CC0, catalog/approved/water_cycle.json).
+  SUPERSEDED 2026-09-07: the grade 2–3 water_cycle seed lesson was retired from the catalog and
+  catalog/approved/water_cycle.json deleted. The catalog now lists the six illustrated editions only.
 - view_glossary_source.jsx, view_glossary_module.js,
   desktop/web-app/public/view_glossary_module.js
   Added getGlossaryImageAlt and connected descriptions to the glossary table and both flashcard image tags. Previously all three rendered alt="" role="presentation".

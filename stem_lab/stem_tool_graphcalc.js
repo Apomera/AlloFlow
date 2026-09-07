@@ -900,9 +900,9 @@
 
             // Center — Canvas
             h('div', { className: 'graphcalc-main-panel', style: { flex: 1, display: 'flex', flexDirection: 'column', position: 'relative' } },
-              h('canvas', { ref: canvasRef, role: 'img', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default', touchAction: d.traceMode ? 'none' : 'auto' },
+              h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'graphcalc-canvas-desc', 'aria-label': __alloT('stem.graphcalc.interactive_graphing_calculator_visual', 'Interactive graphing calculator visualization'), style: { width: '100%', flex: 1, background: 'var(--allo-stem-canvas, #0f172a)', cursor: d.traceMode ? 'crosshair' : 'default', touchAction: d.traceMode ? 'none' : 'auto' },
                 onPointerDown: function(e) { if (!d.traceMode) return; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} updateTraceFromPointer(e); },
-                onPointerMove: function(e) { if (!d.traceMode || (e.pointerType === 'mouse' && e.buttons !== 1)) return; updateTraceFromPointer(e); } }),
+                onPointerMove: function(e) { if (!d.traceMode || (e.pointerType === 'mouse' && e.buttons !== 1)) return; updateTraceFromPointer(e); } }), h('p', { id: 'graphcalc-canvas-desc', className: 'sr-only' }, __alloT('stem.graphcalc.a11y_canvas_static_description', 'The graph is drawn as a picture. Turn on Trace mode and use the Trace x slider to read each point of the curve aloud as a number.')),
               d.traceMode ? h('div', { style: { padding: '8px 12px', background: gcCard, borderTop: '1px solid ' + gcBorder } },
                 h('label', { htmlFor: 'graphcalc-trace-x', style: { display: 'flex', alignItems: 'center', gap: '8px', color: gcText, fontSize: '11px', fontWeight: 700 } },
                   h('span', null, __alloT('stem.graphcalc.trace_x', 'Trace x')),

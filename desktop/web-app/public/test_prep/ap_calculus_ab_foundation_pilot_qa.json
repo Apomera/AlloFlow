@@ -109,6 +109,20 @@
       },
       "dominantSharePercent": 25
     },
+    "testWiseness": {
+      "keyedItemCount": 160,
+      "keyCycleSharePercent": 100,
+      "keyLongestSharePercent": 27.5,
+      "keyLongerByQuarterSharePercent": 18.1,
+      "distractorRationaleCount": 480,
+      "distinctDistractorRationaleCount": 40,
+      "repeatedDistractorRationaleSharePercent": 2.5,
+      "largestSharedChoiceSet": 1,
+      "advisories": [
+        "answer-key-position-cycle"
+      ],
+      "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
+    },
     "library": {
       "chapters": 8,
       "sections": 24,

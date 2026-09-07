@@ -152,6 +152,20 @@ window.StemLab = window.StemLab || {
     context.fillRect(-1, -1, 2, 2); context.restore();
   }
 
+  // Bake a soft luminosity envelope into additive streams without changing their paths.
+  function galaxyTaperStream(THREE, geometry, pointCount, phase) {
+    var colors = new Float32Array(pointCount * 3);
+    for (var i = 0; i < pointCount; i++) {
+      var t = i / Math.max(1, pointCount - 1);
+      var envelope = i === 0 || i === pointCount - 1 ? 0 : Math.pow(Math.sin(t * Math.PI), 0.65);
+      var variation = 0.72 + 0.18 * Math.sin(t * 14 + phase) + 0.1 * Math.cos(t * 39 + phase * 1.3);
+      var light = envelope * variation;
+      colors[i * 3] = colors[i * 3 + 1] = colors[i * 3 + 2] = light;
+    }
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    return geometry;
+  }
+
   // One cached photosphere texture is shared by the 2-D stellar stages.
   // Grain is generated at startup rather than allocating gradients every frame.
   var galaxyPhotosphereTexture = null;
@@ -4200,9 +4214,11 @@ if (!window._galaxyHasLoadedOnce) {
               // Resolved globular clusters occupy the old stellar halo.
               var clusterCv = document.createElement('canvas'); clusterCv.setAttribute('aria-hidden', 'true'); clusterCv.width = 128; clusterCv.height = 128;
               var clusterCtx = upscaleGalaxyCanvas(clusterCv, clusterCv.getContext('2d')); clusterCtx.translate(64, 64);
-              var clusterHalo = clusterCtx.createRadialGradient(0, 0, 0, 0, 0, 62); clusterHalo.addColorStop(0, 'rgba(255,249,220,0.94)'); clusterHalo.addColorStop(0.2, 'rgba(254,215,170,0.38)'); clusterHalo.addColorStop(0.58, 'rgba(191,219,254,0.1)'); clusterHalo.addColorStop(1, 'rgba(0,0,0,0)'); clusterCtx.fillStyle = clusterHalo; clusterCtx.fillRect(-64, -64, 128, 128);
+              var clusterHalo = clusterCtx.createRadialGradient(0, 0, 0, 0, 0, 62); clusterHalo.addColorStop(0, 'rgba(255,249,220,0.82)'); clusterHalo.addColorStop(0.2, 'rgba(254,215,170,0.3)'); clusterHalo.addColorStop(0.58, 'rgba(191,219,254,0.1)'); clusterHalo.addColorStop(1, 'rgba(0,0,0,0)'); clusterCtx.fillStyle = clusterHalo; clusterCtx.fillRect(-64, -64, 128, 128);
+              galaxyCloudGrain(clusterCtx, clusterCv, 911, 0.28);
               for (var clusterStar = 0; clusterStar < 110; clusterStar++) { var clusterAngle = Math.random() * Math.PI * 2, clusterRadius = Math.pow(Math.random(), 1.9) * 55; clusterCtx.fillStyle = clusterStar % 5 === 0 ? 'rgba(191,219,254,0.72)' : clusterStar % 3 === 0 ? 'rgba(253,230,138,0.68)' : 'rgba(255,255,255,0.58)'; clusterCtx.beginPath(); clusterCtx.arc(Math.cos(clusterAngle) * clusterRadius, Math.sin(clusterAngle) * clusterRadius, 0.45 + Math.random() * 1.15, 0, Math.PI * 2); clusterCtx.fill(); }
-              var clusterTex = tuneGalaxyTexture(new THREE.CanvasTexture(clusterCv));
+              galaxyFeatherCloud(clusterCtx, clusterCv, 0.66);
+              var clusterTex = tuneGalaxyTexture(new THREE.CanvasTexture(clusterCv)); clusterTex.name = 'galaxyGlobularCluster';
 
               var fineStarCv = document.createElement('canvas'); fineStarCv.setAttribute('aria-hidden', 'true'); fineStarCv.width = 48; fineStarCv.height = 48;
               var fineStarCtx = upscaleGalaxyCanvas(fineStarCv, fineStarCv.getContext('2d'));
@@ -4308,9 +4324,22 @@ if (!window._galaxyHasLoadedOnce) {
               // At close range, selected associations resolve into faint tidal
               // coronas and individually luminous members rather than larger dots.
               var resolvedClusterCount = Math.min(openCenters.length, resolvedQuality === 'cinematic' ? 48 : resolvedQuality === 'high' ? 30 : 18);
+              // Shared annular light fades across the corona instead of a solid strip.
+              var clusterCoronaTexture = null;
+              if (resolvedClusterCount) {
+                var coronaCanvas = document.createElement('canvas'); coronaCanvas.setAttribute('aria-hidden', 'true'); coronaCanvas.width = coronaCanvas.height = 128;
+                var coronaContext = coronaCanvas.getContext('2d');
+                var coronaGlow = coronaContext.createRadialGradient(64, 64, 0, 64, 64, 64);
+                coronaGlow.addColorStop(0, 'rgba(255,255,255,0)'); coronaGlow.addColorStop(0.72, 'rgba(255,255,255,0)');
+                coronaGlow.addColorStop(0.79, 'rgba(255,255,255,0.35)'); coronaGlow.addColorStop(0.86, 'rgba(255,255,255,0.9)');
+                coronaGlow.addColorStop(0.94, 'rgba(255,255,255,0.25)'); coronaGlow.addColorStop(0.98, 'rgba(255,255,255,0)');
+                coronaContext.fillStyle = coronaGlow; coronaContext.fillRect(0, 0, 128, 128);
+                galaxyCloudGrain(coronaContext, coronaCanvas, 947, 0.3);
+                clusterCoronaTexture = tuneGalaxyTexture(new THREE.CanvasTexture(coronaCanvas)); clusterCoronaTexture.name = 'galaxyClusterCorona';
+              }
               for (var resolvedClusterIndex = 0; resolvedClusterIndex < resolvedClusterCount; resolvedClusterIndex++) {
                 var resolvedCenter = openCenters[Math.floor(resolvedClusterIndex * openCenters.length / resolvedClusterCount)], coronaRadius = 0.014 + (resolvedClusterIndex % 5) * 0.0025;
-                var coronaMaterial = new THREE.MeshBasicMaterial({ color: resolvedClusterIndex % 5 === 0 ? 0xf9a8d4 : resolvedClusterIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); coronaMaterial.userData = { baseOpacity: 0.09 + (resolvedClusterIndex % 4) * 0.025, phase: resolvedClusterIndex * 0.74 };
+                var coronaMaterial = new THREE.MeshBasicMaterial({ map: clusterCoronaTexture, color: resolvedClusterIndex % 5 === 0 ? 0xf9a8d4 : resolvedClusterIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide }); coronaMaterial.userData = { baseOpacity: 0.09 + (resolvedClusterIndex % 4) * 0.025, phase: resolvedClusterIndex * 0.74 };
                 var coronaMesh = new THREE.Mesh(new THREE.RingGeometry(coronaRadius * 0.72, coronaRadius, resolvedQuality === 'cinematic' ? 72 : 48, 1, resolvedClusterIndex * 0.47, Math.PI * (1.25 + resolvedClusterIndex % 3 * 0.18)), coronaMaterial); coronaMesh.position.set(resolvedCenter.x, resolvedCenter.y, resolvedCenter.z); coronaMesh.rotation.x = Math.PI * 0.5; coronaMesh.rotation.z = resolvedClusterIndex * 0.31; coronaMesh.userData = { baseScale: 1, phase: resolvedClusterIndex * 0.74, drift: (resolvedClusterIndex % 2 ? -1 : 1) * 0.00016 }; coronaMesh.renderOrder = 5; resolvedClusterGroup.add(coronaMesh); resolvedClusterCoronas.push(coronaMesh);
                 var resolvedMemberCount = resolvedQuality === 'cinematic' ? 7 : resolvedQuality === 'high' ? 5 : 4;
                 for (var resolvedMemberIndex = 0; resolvedMemberIndex < resolvedMemberCount; resolvedMemberIndex++) { var memberMaterial = new THREE.SpriteMaterial({ map: fineStarTex, color: resolvedMemberIndex % 5 === 0 ? 0xf9a8d4 : resolvedMemberIndex % 3 === 0 ? 0xfde68a : 0xbfdbfe, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); var memberSprite = new THREE.Sprite(memberMaterial), memberAngle = resolvedMemberIndex / resolvedMemberCount * Math.PI * 2 + resolvedClusterIndex, memberRadius = coronaRadius * (0.18 + Math.random() * 0.58), memberScale = 0.0045 + Math.random() * 0.005; memberSprite.position.set(resolvedCenter.x + Math.cos(memberAngle) * memberRadius, resolvedCenter.y + (Math.random() - 0.5) * coronaRadius * 0.22, resolvedCenter.z + Math.sin(memberAngle) * memberRadius); memberSprite.scale.set(memberScale, memberScale, 1); memberSprite.userData = { baseOpacity: 0.24 + Math.random() * 0.32, baseScale: memberScale, phase: resolvedClusterIndex * 0.8 + resolvedMemberIndex * 1.1 }; memberSprite.renderOrder = 6; resolvedClusterGroup.add(memberSprite); resolvedClusterMembers.push(memberSprite); }
@@ -4329,8 +4358,8 @@ if (!window._galaxyHasLoadedOnce) {
                     var clusterTailT = clusterTailStep / clusterTailSegments, clusterTailAlong = clusterTailDirection * clusterTailExtent * clusterTailT, clusterTailBend = clusterTailDirection * Math.sin(clusterTailT * Math.PI) * clusterTailExtent * 0.16 + Math.sin(clusterTailT * Math.PI * 2 + clusterTailIndex) * clusterTailExtent * 0.045;
                     clusterTailPoints.push(new THREE.Vector3(clusterTailCenter.x + Math.cos(clusterTailTangentAngle) * clusterTailAlong + Math.cos(clusterTailRadialAngle) * clusterTailBend, clusterTailCenter.y + Math.sin(clusterTailT * Math.PI + clusterTailIndex) * clusterTailExtent * 0.045, clusterTailCenter.z + Math.sin(clusterTailTangentAngle) * clusterTailAlong + Math.sin(clusterTailRadialAngle) * clusterTailBend));
                   }
-                  var clusterTailMaterial = new THREE.LineBasicMaterial({ color: clusterTailIndex % 5 === 0 ? 0xf9a8d4 : clusterTailIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); clusterTailMaterial.userData = { baseOpacity: 0.038 + (clusterTailIndex % 4) * 0.012, phase: clusterTailIndex * 0.79 + clusterTailSideIndex * Math.PI };
-                  var clusterTailLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(clusterTailPoints), clusterTailMaterial); clusterTailLine.renderOrder = 6; clusterDissolutionTailGroup.add(clusterTailLine); clusterTidalTailMaterials.push(clusterTailMaterial);
+                  var clusterTailMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: clusterTailIndex % 5 === 0 ? 0xf9a8d4 : clusterTailIndex % 3 === 0 ? 0xfde68a : 0x93c5fd, transparent: true, opacity: 0, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); clusterTailMaterial.userData = { baseOpacity: 0.038 + (clusterTailIndex % 4) * 0.012, phase: clusterTailIndex * 0.79 + clusterTailSideIndex * Math.PI };
+                  var clusterTailLine = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(clusterTailPoints), clusterTailPoints.length, clusterTailIndex * 0.79 + clusterTailSideIndex * Math.PI), clusterTailMaterial); clusterTailLine.renderOrder = 6; clusterDissolutionTailGroup.add(clusterTailLine); clusterTidalTailMaterials.push(clusterTailMaterial);
                 }
               }
               var escapedMembersPerCluster = resolvedQuality === 'cinematic' ? 12 : resolvedQuality === 'high' ? 8 : 5, clusterTailPointCount = clusterTailCount * escapedMembersPerCluster, escapedMemberPositions = new Float32Array(clusterTailPointCount * 3), escapedMemberColors = new Float32Array(clusterTailPointCount * 3);
@@ -4589,8 +4618,8 @@ if (!window._galaxyHasLoadedOnce) {
                   var tidalFraction = tp / tidalSegments; var tidalAngle = -0.6 + tidalFraction * (2.1 + ts * 0.18) + ts * 0.92; var tidalRadius = 0.96 + ts * 0.14 + 0.12 * Math.sin(tidalFraction * Math.PI);
                   tidalPoints.push(new THREE.Vector3(Math.cos(tidalAngle) * tidalRadius, (ts - 2) * 0.065 + Math.sin(tidalFraction * Math.PI * 2) * 0.038, Math.sin(tidalAngle) * tidalRadius * 0.88));
                 }
-                var tidalGeo = new THREE.BufferGeometry().setFromPoints(tidalPoints);
-                var tidalMat = new THREE.LineBasicMaterial({ color: ts % 2 ? 0xc4b5fd : 0x93c5fd, transparent: true, opacity: 0.045 + ts * 0.009, depthWrite: false, blending: THREE.AdditiveBlending });
+                var tidalGeo = galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(tidalPoints), tidalPoints.length, ts * 1.17);
+                var tidalMat = new THREE.LineBasicMaterial({ vertexColors: true, color: ts % 2 ? 0xc4b5fd : 0x93c5fd, transparent: true, opacity: 0.045 + ts * 0.009, depthWrite: false, blending: THREE.AdditiveBlending });
                 tidalMat.userData = { baseOpacity: tidalMat.opacity, phase: ts * 1.17 };
                 var tidalLine = new THREE.Line(tidalGeo, tidalMat); tidalLine.userData = { drift: (ts % 2 ? -1 : 1) * (0.00005 + ts * 0.000012) }; satelliteGroup.add(tidalLine); tidalStreamMats.push(tidalMat);
               }
@@ -4604,8 +4633,8 @@ if (!window._galaxyHasLoadedOnce) {
               for (var haloShell = 0; haloShell < haloShellCount; haloShell++) {
                 var haloPoints = [], haloStart = Math.random() * Math.PI * 2, haloSpan = 1.4 + Math.random() * 3.2, haloRadius = 1.02 + Math.pow(Math.random(), 0.82) * 0.76;
                 for (var haloStep = 0; haloStep <= haloSegments; haloStep++) { var haloT = haloStep / haloSegments, haloAngle = haloStart + haloT * haloSpan, haloRipple = 1 + Math.sin(haloT * Math.PI * (2 + haloShell % 4) + haloShell) * 0.026; haloPoints.push(new THREE.Vector3(Math.cos(haloAngle) * haloRadius * haloRipple, Math.sin(haloAngle * (1.15 + haloShell % 3 * 0.18) + haloShell) * (0.08 + haloShell % 5 * 0.026), Math.sin(haloAngle) * haloRadius * haloRipple * (0.72 + haloShell % 4 * 0.055))); }
-                var haloMaterial = new THREE.LineBasicMaterial({ color: haloShell % 5 === 0 ? 0xfde68a : haloShell % 3 === 0 ? 0xc4b5fd : 0x93c5fd, transparent: true, opacity: 0.018 + Math.random() * 0.032, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); haloMaterial.userData = { baseOpacity: haloMaterial.opacity, phase: haloShell * 0.91 };
-                var haloLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(haloPoints), haloMaterial); haloLine.rotation.x = (Math.random() - 0.5) * 0.72; haloLine.rotation.z = (Math.random() - 0.5) * 0.4; haloLine.userData = { drift: (haloShell % 2 ? -1 : 1) * (0.000008 + haloShell * 0.000001), phase: haloShell * 0.7 }; haloLine.renderOrder = 0; stellarHaloShellGroup.add(haloLine); haloShellMaterials.push(haloMaterial); haloShellObjects.push(haloLine);
+                var haloMaterial = new THREE.LineBasicMaterial({ vertexColors: true, color: haloShell % 5 === 0 ? 0xfde68a : haloShell % 3 === 0 ? 0xc4b5fd : 0x93c5fd, transparent: true, opacity: 0.018 + Math.random() * 0.032, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending }); haloMaterial.userData = { baseOpacity: haloMaterial.opacity, phase: haloShell * 0.91 };
+                var haloLine = new THREE.Line(galaxyTaperStream(THREE, new THREE.BufferGeometry().setFromPoints(haloPoints), haloPoints.length, haloShell * 0.91), haloMaterial); haloLine.rotation.x = (Math.random() - 0.5) * 0.72; haloLine.rotation.z = (Math.random() - 0.5) * 0.4; haloLine.userData = { drift: (haloShell % 2 ? -1 : 1) * (0.000008 + haloShell * 0.000001), phase: haloShell * 0.7 }; haloLine.renderOrder = 0; stellarHaloShellGroup.add(haloLine); haloShellMaterials.push(haloMaterial); haloShellObjects.push(haloLine);
               }
             })();
             // Morphology signatures ensure each classification carries its own

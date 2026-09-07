@@ -255,7 +255,10 @@ describe('Test Prep Hub render flow', () => {
       await mount({ callTTS, addToast });
       await clickButton('Open practice pack');
       const pack = Hub.listPacks().find((candidate) => candidate.id === 'workplace-safety-foundations-demo');
-      const expectedText = Hub.questionSpeechText(pack.items[0], 0, pack.items.length);
+      // Choices are read in the order shown on screen, which varies per session.
+      const shownChoices = Array.from(host.querySelectorAll('input[type="radio"]')).map((radio) => radio.closest('label').textContent.replace(/^[A-D].s*/, ''));
+      expect(shownChoices.slice().sort()).toEqual(pack.items[0].choices.slice().sort());
+      const expectedText = Hub.questionSpeechText(Object.assign({}, pack.items[0], { choices: shownChoices }), 0, pack.items.length);
 
       expect(findButton('Read question').getAttribute('aria-pressed')).toBe('false');
       await clickButton('Read question');
@@ -497,8 +500,11 @@ describe('Test Prep Hub render flow', () => {
 
     for (let index = 0; index < pack.items.length; index += 1) {
       const item = pack.items[index];
-      const radios = Array.from(host.querySelectorAll('input[type="radio"]'));
-      await act(async () => { radios[item.answerIndex].click(); });
+      // Choices render in a per-session order, so pick the key by its text, not its stored position.
+      const keyText = item.choices[item.answerIndex];
+      const keyRadio = Array.from(host.querySelectorAll('input[type="radio"]')).find((radio) => radio.closest('label').textContent.includes(keyText));
+      expect(keyRadio, 'radio for key of item ' + item.id).toBeTruthy();
+      await act(async () => { keyRadio.click(); });
       await clickButton('Check answer');
       expect(host.textContent).toContain('Correct');
       await clickButton(index === pack.items.length - 1 ? 'Finish practice' : 'Next question');

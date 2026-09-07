@@ -5,6 +5,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { distractorFeedbackFor } = require('./ap_us_history_distractor_feedback/index.cjs');
 const extensionSpecs = require('./ap_us_history_extension_specs.cjs');
 
 const root = path.resolve(__dirname, '..');
@@ -97,11 +98,18 @@ function makeItem(pack, spec, extensionIndex) {
   const skillId = normalizedSkillId(spec, extensionIndex);
   const sourceUrl = spec.sourceUrl || unit.url;
   const references = [...new Set([CED_URL, CLARIFICATIONS_URL, sourceUrl])];
-  const choiceRationales = choices.map((choice) => choice === spec.answer
-    ? `This is the best answer because ${spec.rationale}`
-    : 'This choice does not fit the evidence or historical relationship in the question. It confuses the period development with a different claim or overstates what the evidence establishes.');
+  const itemId = `apush-foundation-${String(extensionIndex + 1).padStart(3, '0')}`;
+  // Every distractor carries its own explanation, authored per item in
+  // ap_us_history_distractor_feedback/. A missing entry fails the build rather
+  // than falling back to a generic sentence.
+  const choiceRationales = choices.map((choice) => {
+    if (choice === spec.answer) return `This is the best answer because ${spec.rationale}`;
+    const feedback = distractorFeedbackFor(itemId, choice);
+    assert(feedback, `Missing distractor feedback for ${itemId}: ${choice}`);
+    return feedback;
+  });
   return {
-    id: `apush-foundation-${String(extensionIndex + 1).padStart(3, '0')}`,
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',

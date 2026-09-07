@@ -6,6 +6,7 @@
 
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { distractorFeedbackFor } = require('./ap_statistics_distractor_feedback/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_statistics_foundation_pilot.json');
@@ -526,8 +527,18 @@ function makeItem(spec, index) {
   const objective = objectiveFor(spec);
   const answerIndex = index % 4;
   const choices = rotateChoices(spec.answer, spec.distractors, answerIndex);
+  const itemId = PACK_ID + '-item-' + String(index + 1).padStart(3, '0');
+  // Every distractor carries its own explanation, authored per item in
+  // ap_statistics_distractor_feedback/. A missing entry fails the build rather
+  // than falling back to a generic sentence.
+  const choiceRationales = choices.map((choice, choiceIndex) => {
+    if (choiceIndex === answerIndex) return 'Best answer. ' + spec.rationale;
+    const feedback = distractorFeedbackFor(itemId, choice);
+    if (!feedback) throw new Error('Missing distractor feedback for ' + itemId + ': ' + choice);
+    return feedback;
+  });
   return {
-    id: PACK_ID + '-item-' + String(index + 1).padStart(3, '0'),
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -545,9 +556,7 @@ function makeItem(spec, index) {
     choices,
     answerIndex,
     rationale: spec.rationale,
-    choiceRationales: choices.map((choice, choiceIndex) => choiceIndex === answerIndex
-      ? 'Best answer. ' + spec.rationale
-      : 'This choice does not match the statistical definition, calculation, or scope required by the prompt.'),
+    choiceRationales,
     references: [CED_URL, COURSE_URL, OPENSTAX_URL],
     sourceDetails: sourceDetails(),
     provenance: {
@@ -1319,6 +1328,7 @@ function buildPack(library, objectiveCatalog) {
       stimulusGroupsIncluded: false,
       constructedResponseIncluded: false,
       frqWorkshopsIncluded: true,
+      optionLevelFeedback: 'authored-per-distractor',
       handsFreeContentCompatible: true,
       limitations: [
         'This foundation pilot is not a complete AP Statistics exam simulation and does not reproduce the official digital exam experience.',

@@ -244,6 +244,11 @@ for (const item of items) {
   requireCondition(choices.length === 4 && new Set(choices).size === 4 && normalizedChoices.every((choice) => choice.length >= 8), 'one-best-answer', item.id + ' must have four distinct substantive choices.', record);
   requireCondition(Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex < 4, 'one-best-answer', item.id + ' has an invalid answer index.', record);
   requireCondition(hasText(item.rationale, 30) && Array.isArray(item.choiceRationales) && item.choiceRationales.length === 4 && item.choiceRationales.every((value) => hasText(value, 30)), 'substantive-feedback', item.id + ' must have item and option-level feedback.', record);
+  // Option-level feedback must be specific to each distractor: no shared
+  // boilerplate sentence, no repeat of the key's rationale, and no two
+  // distractors explained by the same text.
+  const distractorNotes = Array.isArray(item.choiceRationales) ? item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((value) => normalizeText(value)) : [];
+  requireCondition(distractorNotes.length === 3 && new Set(distractorNotes).size === 3 && !distractorNotes.includes(normalizeText(item.rationale)) && distractorNotes.every((note) => !/not the best answer because it does not match/i.test(note)), 'feedback-specificity', item.id + ' must explain each distractor with its own specific feedback.', record);
   requireCondition(Array.isArray(item.references) && item.references.includes(CED_URL) && item.references.every(validHttpsUrl), 'source-and-provenance', item.id + ' must include the official CED and valid public references.', record);
   requireCondition(Array.isArray(item.sourceDetails) && item.sourceDetails.length >= 2 && item.sourceDetails.every((source) => hasText(source.title) && hasText(source.organization) && validHttpsUrl(source.url)), 'source-and-provenance', item.id + ' must include source details.', record);
   requireCondition(item.provenance === 'native-original' && item.officialItem === false && item.releaseEligible === false && item.rights?.secureContentUsed === false && item.rights?.copiedOfficialQuestion === false, 'rights-boundary', item.id + ' must remain original and unreleased.', record);

@@ -56,6 +56,81 @@ window.StemLab = window.StemLab || {
   function sfxPhyCollide() { phyTone(150,0.1,"sawtooth",0.08); }
   function sfxPhyTick() { phyTone(600,0.03,"sine",0.04); }
 
+  // ── Shared projectile integrator ──
+  // ONE derivation of the flight, used by the canvas loop, the drag-aware
+  // landing prediction, and the Target Mode calculation helper, so the
+  // number the student is told to aim for is the number the sim produces.
+  //
+  // Drag model: quadratic, a_drag = PHYS_DRAG_K · |v| · v / m. The per-step
+  // loss is therefore K·|v|·v·dt/m — proportional to dt, so slow-motion and
+  // frame stepping do not change the physics, and heavier balls really do
+  // carry further through air (the only way the Mass slider can teach).
+  // K was tuned so a 1 kg ball at 25 m/s loses ~17% of its range and the
+  // optimum angle visibly drops below 45° at higher speeds (~42° at 50 m/s).
+  var PHYS_DT = 0.035;        // seconds of flight per simulation step
+  var PHYS_DRAG_K = 0.004;    // quadratic drag coefficient, per kg
+  function physStep(b, dt) {
+    if (b.drag > 0) {
+      var spd = Math.sqrt(b.mVx * b.mVx + b.mVy * b.mVy);
+      var dragA = b.drag * spd / (b.mass || 1);
+      b.mVx -= dragA * b.mVx * dt;
+      b.mVy -= dragA * b.mVy * dt;
+    }
+    b.mVy -= b.grav * dt;
+    b.mX += b.mVx * dt;
+    b.mY += b.mVy * dt;
+    b.t = (b.t || 0) + dt;
+  }
+  function physSimulate(angle, vel, grav, dragOn, mass) {
+    var rad = angle * Math.PI / 180;
+    var b = { mX: 0, mY: 0, mVx: vel * Math.cos(rad), mVy: vel * Math.sin(rad), grav: grav, drag: dragOn ? PHYS_DRAG_K : 0, mass: mass || 1, t: 0 };
+    var maxH = 0, apexT = 0, steps = 0;
+    while (steps < 20000) {
+      var prevY = b.mY, prevVy = b.mVy;
+      physStep(b, PHYS_DT);
+      steps++;
+      if (b.mY > maxH) { maxH = b.mY; }
+      if (prevVy > 0 && b.mVy <= 0) apexT = b.t;
+      if (b.mY <= 0 && steps > 1) {
+        // Same ground interpolation as the canvas loop (prev = y - vy·dt).
+        var frac = (prevY > 0 && prevY !== b.mY) ? prevY / (prevY - b.mY) : 1;
+        if (frac < 0) frac = 0; if (frac > 1) frac = 1;
+        return { range: b.mX - b.mVx * PHYS_DT * (1 - frac), maxH: maxH, time: b.t - PHYS_DT * (1 - frac), apexT: apexT };
+      }
+    }
+    return { range: b.mX, maxH: maxH, time: b.t, apexT: apexT };
+  }
+  // Velocity that lands at range R for a fixed angle (bisection; range is
+  // monotonic in v for a fixed angle). Returns null if unreachable ≤ 200 m/s.
+  function physSolveVelocity(angle, R, grav, dragOn, mass) {
+    var lo = 0.5, hi = 200;
+    if (physSimulate(angle, hi, grav, dragOn, mass).range < R) return null;
+    for (var i = 0; i < 40; i++) {
+      var mid = (lo + hi) / 2;
+      if (physSimulate(angle, mid, grav, dragOn, mass).range < R) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+  // Lowest angle that lands at range R for a fixed velocity (scan then
+  // bisect on the rising side of R(θ)). Returns null if unreachable.
+  function physSolveAngle(vel, R, grav, dragOn, mass) {
+    var best = null, bestA = null;
+    for (var a = 1; a <= 89; a++) {
+      var r = physSimulate(a, vel, grav, dragOn, mass).range;
+      if (best == null || r > best) { best = r; bestA = a; }
+    }
+    if (best == null || best < R) return null;
+    var lo = 1, hi = bestA;
+    for (var i = 0; i < 30; i++) {
+      var mid = (lo + hi) / 2;
+      if (physSimulate(mid, vel, grav, dragOn, mass).range < R) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+  try {
+    window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, step: physStep, simulate: physSimulate, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle };
+  } catch (e) {}
+
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
     if (document.getElementById('allo-live-physics')) return;
@@ -78,7 +153,10 @@ window.StemLab = window.StemLab || {
     color: 'sky',
     category: 'science',
     questHooks: [
-      { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetScore || 0) >= 3; }, progress: function(d) { return (d.targetScore || 0) + '/3 targets'; } },
+      // targetsHit counts crates destroyed in Target Mode plus Challenge tiers
+      // completed. (It used to compare targetScore, which is XP \u2014 15 per
+      // round \u2014 so the quest fired after a single crate.)
+      { id: 'hit_3_targets', label: 'Hit 3 targets in target practice', icon: '\uD83C\uDFAF', check: function(d) { return (d.targetsHit || 0) >= 3; }, progress: function(d) { return (d.targetsHit || 0) + '/3 targets'; } },
       { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
       { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } },
       { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } }
@@ -160,6 +238,28 @@ window.StemLab = window.StemLab || {
 const d = labToolData.physics;
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+          // Functional increment: safe from setTimeout chains (symmetry demo,
+          // landing callbacks) where a captured `d` would be stale.
+          const bump = (key, delta) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: (prev.physics[key] || 0) + (delta == null ? 1 : delta) } }));
+          // Every launch goes through here so the Launches metric, the
+          // "recommended next move" ladder and the launch_10 quest all count.
+          function fireLaunch(cv) {
+            cv = cv || (typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null);
+            if (!cv || !cv._launch) return false;
+            bump('launchCount', 1);
+            sfxPhyLaunch();
+            cv._launch();
+            return true;
+          }
+          // Grade band drives the Learn panel and the Myths bank alike.
+          var physGradeLc = (gradeLevel || '5th Grade').toLowerCase();
+          var physBand = /9th|10|11|12|high/.test(physGradeLc) ? '9-12' : /6th|7th|8th/.test(physGradeLc) ? '6-8' : '3-5';
+          // Tier challenges (completion is checked on landing in _onAnyLand).
+          var TIER_CHALLENGES = [
+            { tier: 1, label: '🥇 ' + __alloT('stem.physics.challenge_tier_1', 'Tier 1'), desc: __alloT('stem.physics.challenge_desc_1', 'Hit the 50m flag'), target: 50, tol: 10, reward: 10, req: '' },
+            { tier: 2, label: '🥈 ' + __alloT('stem.physics.challenge_tier_2', 'Tier 2'), desc: __alloT('stem.physics.challenge_desc_2', 'Hit 100m with Air Drag ON'), target: 100, tol: 12, reward: 20, req: 'airResist' },
+            { tier: 3, label: '🥉 ' + __alloT('stem.physics.challenge_tier_3', 'Tier 3'), desc: __alloT('stem.physics.challenge_desc_3', 'Hit 200m on Mars'), target: 200, tol: 15, reward: 35, req: 'mars' }
+          ];
           // ═══ TARGET DESTRUCTION MODE — Constraint Engine ═══
           var TARGET_LEVELS = [
             { round: 1,  targets: [{x:80, y:0}],   constraint: {type:'fixedAngle', value:45},  gravity: 9.8, drag: false, label: __alloT('stem.physics.target_cadet_1', 'Cadet 1'), desc: __alloT('stem.physics.target_r1_desc', 'Angle locked at 45°. Calculate velocity to hit 80m.'), xp: 15, tol: 10 },
@@ -171,7 +271,8 @@ const d = labToolData.physics;
             { round: 7,  targets: [{x:90, y:0}],   constraint: {type:'fixedAngle', value:35},  gravity: 9.8, drag: true, label: __alloT('stem.physics.target_sniper_1', 'Sniper 1'), desc: __alloT('stem.physics.target_r7_desc', 'Air drag ON! Angle locked at 35°. Compensate!'), xp: 40, tol: 15 },
             { round: 8,  targets: [{x:200, y:0}],  constraint: {type:'fixedVelocity', value:45}, gravity: 3.7, drag: false, label: __alloT('stem.physics.target_sniper_2', 'Sniper 2'), desc: __alloT('stem.physics.target_r8_desc', 'Mars gravity. Velocity locked at 45 m/s. Hit 200m.'), xp: 40, tol: 15 },
             { round: 9,  targets: [{x:70, y:0}, {x:140, y:0}, {x:220, y:0}], constraint: {type:'fixedAngle', value:42}, gravity: 9.8, drag: false, label: __alloT('stem.physics.target_sniper_3', 'Sniper 3'), desc: __alloT('stem.physics.target_r9_desc', 'Triple targets! Same angle, adjust velocity each shot.'), xp: 50, tol: 10 },
-            { round: 10, targets: [{x:130, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: __alloT('stem.physics.target_ace', 'Ace'), desc: __alloT('stem.physics.target_r10_desc', 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.'), xp: 60, tol: 12 },
+            // 38 m/s through air tops out near 103 m (1 kg), so the old 130 m crate was unreachable.
+            { round: 10, targets: [{x:85, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: __alloT('stem.physics.target_ace', 'Ace'), desc: __alloT('stem.physics.target_r10_desc', 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.'), xp: 60, tol: 12 },
           ];
 
           function startTargetRound(roundNum) {
@@ -185,6 +286,9 @@ const d = labToolData.physics;
             upd('targetFeedback', null);
             upd('targetAttempts', 0);
             upd('targetShowScaffold', false);
+            // Remember the student's own world so End can put it back
+            // (rounds switch to Moon/Mars gravity and toggle drag).
+            if (!d.targetMode || !d.targetPrev) upd('targetPrev', { gravity: d.gravity, airResist: !!d.airResist });
             // Apply level conditions
             upd('gravity', level.gravity);
             upd('airResist', level.drag);
@@ -197,10 +301,17 @@ const d = labToolData.physics;
             if (addToast) addToast('\u{1F3AF} ' + level.label + ': ' + level.desc, 'info');
           }
 
+          function endTargetMode() {
+            upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false);
+            var prev = d.targetPrev;
+            if (prev) { upd('gravity', prev.gravity); upd('airResist', !!prev.airResist); upd('targetPrev', null); }
+          }
+
           function checkTargetHit(landingX) {
             if (!d.targetMode || !d.targetList) return;
-            var tgts = d.targetList.slice();
+            var tgts = d.targetList.map(function(t) { return Object.assign({}, t); });
             var hitAny = false;
+            var newlyHit = 0;
             var closestDist = Infinity;
             for (var ti = 0; ti < tgts.length; ti++) {
               if (tgts[ti].destroyed) continue;
@@ -209,29 +320,32 @@ const d = labToolData.physics;
               if (dist <= tgts[ti].radius) {
                 tgts[ti].destroyed = true;
                 hitAny = true;
+                newlyHit++;
               }
             }
             upd('targetList', tgts);
             upd('targetAttempts', (d.targetAttempts || 0) + 1);
+            if (newlyHit > 0) bump('targetsHit', newlyHit);
             var allDestroyed = tgts.every(function(t) { return t.destroyed; });
             if (hitAny && allDestroyed) {
               // Round complete!
               var levelData = TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)];
               upd('targetScore', (d.targetScore || 0) + levelData.xp);
-              upd('targetFeedback', { type: 'success', msg: '\u2705 All targets destroyed! +' + levelData.xp + ' XP' });
+              upd('targetFeedback', { type: 'success', msg: '\u2705 ' + __alloT('stem.physics.fb_all_destroyed', 'All targets destroyed!') + ' +' + levelData.xp + ' XP' });
               if (awardStemXP) awardStemXP('targetMode', levelData.xp, 'Target Mode Round ' + d.targetRound);
               if (stemCelebrate) stemCelebrate();
-              if (addToast) addToast('\u{1F4A5} Round ' + d.targetRound + ' complete! +' + levelData.xp + ' XP', 'success');
+              if (addToast) addToast('\u{1F4A5} ' + __alloT('stem.physics.round_prefix', 'Round ') + d.targetRound + ' ' + __alloT('stem.physics.toast_round_complete', 'complete!') + ' +' + levelData.xp + ' XP', 'success');
             } else if (hitAny) {
-              upd('targetFeedback', { type: 'partial', msg: '\u{1F4A5} Hit! ' + tgts.filter(function(t){return !t.destroyed;}).length + ' target(s) remaining.' });
-              if (addToast) addToast('\u{1F4A5} Target hit! Keep going!', 'success');
+              var remaining = tgts.filter(function(t){return !t.destroyed;}).length;
+              upd('targetFeedback', { type: 'partial', msg: '\u{1F4A5} ' + __alloT('stem.physics.fb_hit_prefix', 'Hit! ') + remaining + ' ' + __alloT('stem.physics.fb_targets_remaining', 'target(s) remaining.') });
+              if (addToast) addToast('\u{1F4A5} ' + __alloT('stem.physics.toast_target_hit', 'Target hit! Keep going!'), 'success');
             } else {
-              var missMsg = '\u274C Missed by ' + closestDist.toFixed(1) + 'm';
+              var missMsg = '\u274C ' + __alloT('stem.physics.fb_missed_by', 'Missed by ') + closestDist.toFixed(1) + 'm';
               upd('targetFeedback', { type: 'miss', msg: missMsg });
               if ((d.targetAttempts || 0) >= 2 && !d.targetShowScaffold) {
                 upd('targetShowScaffold', true);
               }
-              phyTone(200, 0.12, 'sawtooth', 0.05); if (addToast) addToast(missMsg + ' — try again!', 'warning');
+              phyTone(200, 0.12, 'sawtooth', 0.05); if (addToast) addToast(missMsg + ' — ' + __alloT('stem.physics.toast_try_again', 'try again!'), 'warning');
             }
           }
 
@@ -242,14 +356,30 @@ const d = labToolData.physics;
             if (!tgt) return null;
             var R = tgt.x;
             var g = d.gravity;
+            var dragOn = !!d.airResist;
+            var mass = parseFloat(d.mass) || 1;
+            var unreachable = __alloT('stem.physics.scaffold_unreachable', 'Target unreachable at this velocity');
             if (d.targetConstraint.type === 'fixedAngle') {
               var theta = d.targetConstraint.value * Math.PI / 180;
+              if (dragOn) {
+                // No closed form once drag is on: the same integrator that
+                // flies the ball solves for the launch speed instead.
+                var vd = physSolveVelocity(d.targetConstraint.value, R, g, true, mass);
+                return { param: 'velocity', value: vd, equation: __alloT('stem.physics.scaffold_drag_equation', 'Drag ON: no formula \u2014 solved by simulation'), steps: __alloT('stem.physics.scaffold_drag_steps_v', 'Ideal (no drag) would be ') + Math.sqrt(R * g / Math.sin(2 * theta)).toFixed(1) + ' m/s; ' + __alloT('stem.physics.scaffold_drag_steps_sim', 'through air the sim needs about ') + (vd == null ? '?' : vd.toFixed(1) + ' m/s') };
+              }
               var v = Math.sqrt(R * g / Math.sin(2 * theta));
               return { param: 'velocity', value: v, equation: 'v = \u221A(R\u00B7g / sin(2\u03B8))', steps: 'v = \u221A(' + R + ' \u00D7 ' + g + ' / sin(2\u00D7' + d.targetConstraint.value + '\u00B0)) = ' + v.toFixed(1) + ' m/s' };
             } else if (d.targetConstraint.type === 'fixedVelocity') {
               var v2 = d.targetConstraint.value;
+              if (dragOn) {
+                var ad = physSolveAngle(v2, R, g, true, mass);
+                if (ad == null) return { param: 'angle', value: null, equation: unreachable, steps: '' };
+                var sinIdeal = R * g / (v2 * v2);
+                var idealTxt = sinIdeal > 1 ? '\u2014' : (Math.asin(sinIdeal) / 2 * 180 / Math.PI).toFixed(1) + '\u00B0';
+                return { param: 'angle', value: ad, equation: __alloT('stem.physics.scaffold_drag_equation', 'Drag ON: no formula \u2014 solved by simulation'), steps: __alloT('stem.physics.scaffold_drag_steps_v', 'Ideal (no drag) would be ') + idealTxt + '; ' + __alloT('stem.physics.scaffold_drag_steps_sim', 'through air the sim needs about ') + ad.toFixed(1) + '\u00B0' };
+              }
               var sinVal = R * g / (v2 * v2);
-              if (sinVal > 1) return { param: 'angle', value: null, equation: 'Target unreachable at this velocity', steps: '' };
+              if (sinVal > 1) return { param: 'angle', value: null, equation: unreachable, steps: '' };
               var theta2 = Math.asin(sinVal) / 2 * 180 / Math.PI;
               return { param: 'angle', value: theta2, equation: '\u03B8 = \u00BD arcsin(R\u00B7g / v\u00B2)', steps: '\u03B8 = \u00BD arcsin(' + R + ' \u00D7 ' + g + ' / ' + v2 + '\u00B2) = ' + theta2.toFixed(1) + '\u00B0' };
             }
@@ -290,8 +420,49 @@ const d = labToolData.physics;
             //   bullseye (within 5%) → +25 XP, streak++
             //   close    (within 15%) → +10 XP, streak++
             //   miss     (worse)      → +0 XP, streak reset to 0
-            canvasEl._onAnyLand = function(actualMX) {
+            canvasEl._onAnyLand = function(actualMX, summary) {
               setTimeout(function() {
+                // Measured results of the flight that just ended, for the
+                // "Last flight" strip (measured vs formula, drag cost).
+                if (summary) {
+                  upd('lastFlight', summary);
+                  if (summary.drag && !d.dragTried) upd('dragTried', true);
+                  // Append to the experiment log. Functional update: several
+                  // landings can queue inside setTimeout chains (symmetry demo
+                  // fires two flights), and a captured `d.runLog` would drop one.
+                  setLabToolData(function (prev) {
+                    var log = (prev.physics.runLog || []).concat([{
+                      n: (prev.physics.runLog || []).length + 1,
+                      angle: summary.angle, vel: summary.vel, grav: summary.grav,
+                      drag: !!summary.drag, mass: summary.mass,
+                      range: summary.range, maxH: summary.maxH, time: summary.time
+                    }]).slice(-8);
+                    return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { runLog: log }) });
+                  });
+                }
+                // Tier challenge completion (50 m flag / 100 m through air /
+                // 200 m on Mars). Nothing checked these before, so a tier
+                // could be started but never finished.
+                if (d.challengeActive && d.challengeTier) {
+                  var ch = TIER_CHALLENGES[d.challengeTier - 1];
+                  if (ch) {
+                    var reqOk = ch.req === 'airResist' ? !!d.airResist : ch.req === 'mars' ? Math.abs(parseFloat(d.gravity) - 3.7) < 0.05 : true;
+                    var missBy = Math.abs(actualMX - ch.target);
+                    if (reqOk && missBy <= ch.tol) {
+                      upd('challenge' + ch.tier + 'Done', true);
+                      upd('challengeActive', false);
+                      upd('challengeFeedback', { tier: ch.tier, type: 'success', msg: '✅ ' + ch.desc + ' — ' + __alloT('stem.physics.fb_challenge_done', 'done!') + ' +' + ch.reward + ' XP' });
+                      bump('targetsHit', 1);
+                      if (awardStemXP) awardStemXP('physicsChallenge', ch.reward, 'Physics challenge tier ' + ch.tier);
+                      if (stemCelebrate) stemCelebrate();
+                      if (addToast) addToast('🏆 ' + ch.desc + ' — ' + __alloT('stem.physics.fb_challenge_done', 'done!') + ' +' + ch.reward + ' XP', 'success');
+                    } else {
+                      upd('challengeFeedback', { tier: ch.tier, type: 'miss', msg: reqOk
+                        ? '❌ ' + __alloT('stem.physics.fb_missed_by', 'Missed by ') + missBy.toFixed(1) + 'm'
+                        : '⚠️ ' + __alloT('stem.physics.fb_challenge_req', 'Set the condition the challenge asks for first (air drag on, or Mars gravity).') });
+                    }
+                  }
+                }
                 var predicted = d.lastPredictionRange;
                 if (predicted == null || !isFinite(predicted)) return;
                 var err = Math.abs(actualMX - predicted);
@@ -313,6 +484,33 @@ const d = labToolData.physics;
               }, 0);
             };
 
+            // Canvas-drawn strings, rebound every render so the draw loop
+            // (captured once at init) always paints the current language.
+            canvasEl._L = {
+              predicted: __alloT('stem.physics.cv_predicted_r', 'predicted R = '),
+              predictedDrag: __alloT('stem.physics.cv_predicted_r_drag', 'predicted R (with drag) = '),
+              noDragIdeal: __alloT('stem.physics.cv_no_drag_ideal', 'no-drag ideal'),
+              apex: __alloT('stem.physics.cv_apex', 'apex'),
+              apexCap: '▲ ' + __alloT('stem.physics.cv_apex_cap', 'APEX'),
+              energy: __alloT('stem.physics.cv_energy', 'Energy'),
+              energyConserved: __alloT('stem.physics.cv_energy_conserved', 'Energy (KE + PE conserved)'),
+              ke: __alloT('stem.physics.cv_ke', 'KE'),
+              pe: __alloT('stem.physics.cv_pe', 'PE'),
+              dragLoss: __alloT('stem.physics.cv_drag_loss', 'Drag'),
+              slow: __alloT('stem.physics.cv_slow', 'SLOW'),
+              fast: __alloT('stem.physics.cv_fast', 'FAST'),
+              dragOn: __alloT('stem.physics.cv_drag_on', 'Drag ON'),
+              shots: __alloT('stem.physics.cv_shots', 'Shots: '),
+              narrLaunchFirst: __alloT('stem.physics.narr_launch_first', 'Projectile launched at {angle} degrees with a velocity of {vel} meters per second. Gravity is {grav} meters per second squared.'),
+              narrLaunchDrag: __alloT('stem.physics.narr_launch_drag', ' Air resistance is on.'),
+              narrLaunchRepeat: __alloT('stem.physics.narr_launch_repeat', 'Launched. Angle: {angle} degrees, velocity: {vel} meters per second.'),
+              narrLaunchTerse: __alloT('stem.physics.narr_launch_terse', 'Launched: {angle}°, {vel} m/s'),
+              narrLandFirst: __alloT('stem.physics.narr_land_first', 'Projectile landed at {range} meters after {time} seconds. Maximum height was {maxH} meters. Try changing the angle or velocity to see how the trajectory changes.'),
+              narrLandRepeat: __alloT('stem.physics.narr_land_repeat', 'Landed at {range} meters. Max height: {maxH} meters.'),
+              narrLandTerse: __alloT('stem.physics.narr_land_terse', '{range} meters, height {maxH} meters')
+            };
+            canvasEl._fill = function (tpl, vals) { return String(tpl).replace(/\{(\w+)\}/g, function (m, k) { return vals[k] != null ? vals[k] : m; }); };
+
             if (canvasEl._physInit) {
 
               if (!canvasEl._physAnimActive && canvasEl._drawFunc) {
@@ -330,12 +528,12 @@ const d = labToolData.physics;
             }
 
             canvasEl._physInit = true;
-            if (typeof canvasA11yDesc === 'function') canvasA11yDesc(canvasEl, 'Physics projectile simulator canvas. Cannon on left fires projectiles across a landscape with target flags at 50m, 100m, 200m, 300m. Shows trajectory trail, velocity vectors, and impact particles.');
+            if (typeof canvasA11yDesc === 'function') canvasA11yDesc(canvasEl, __alloT('stem.physics.a11y_canvas_desc', 'Physics projectile simulator canvas. Cannon on left fires projectiles across a landscape with target flags at 50m, 100m, 200m, 300m. Shows trajectory trail, velocity vectors, and impact particles.'));
             // Canvas Narration: tool init
             if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'init', {
-              first: 'Physics Simulator loaded. Cannon on the left fires projectiles. Adjust angle and velocity with sliders, then press Launch. Target flags at 50, 100, 200 and 300 meters.',
-              repeat: 'Physics Simulator ready. Adjust angle and velocity, then launch.',
-              terse: 'Physics Simulator ready.'
+              first: __alloT('stem.physics.narr_init_first', 'Physics Simulator loaded. Cannon on the left fires projectiles. Adjust angle and velocity with sliders, then press Launch. Target flags at 50, 100, 200 and 300 meters.'),
+              repeat: __alloT('stem.physics.narr_init_repeat', 'Physics Simulator ready. Adjust angle and velocity, then launch.'),
+              terse: __alloT('stem.physics.narr_init_terse', 'Physics Simulator ready.')
             });
 
             canvasEl._physAnimActive = true;
@@ -441,7 +639,9 @@ const d = labToolData.physics;
 
               var grav = parseFloat(canvasEl.dataset.gravity || '9.8');
 
-              var drag = canvasEl.dataset.airResist === 'true' ? 0.002 : 0;
+              var drag = canvasEl.dataset.airResist === 'true' ? PHYS_DRAG_K : 0;
+
+              var mass = parseFloat(canvasEl.dataset.mass) || 1;
 
               var rad = angle * Math.PI / 180;
 
@@ -483,7 +683,11 @@ const d = labToolData.physics;
 
                 mVx: vel * Math.cos(rad), mVy: vel * Math.sin(rad),
 
-                grav: grav, drag: drag, speed: vel
+                grav: grav, drag: drag, speed: vel,
+
+                // Launch-time mass and energy: the energy bar measures drag
+                // loss against THIS, not against wherever the sliders sit now.
+                mass: mass, t: 0, E0: 0.5 * mass * vel * vel
 
               };
 
@@ -521,10 +725,12 @@ const d = labToolData.physics;
               canvasEl._impactParticles = impactParticles;
 
               // Canvas Narration: launch event
+              var _Ll = canvasEl._L || {}, _fill = canvasEl._fill || function (s) { return s; };
+              var _lv = { angle: angle, vel: vel, grav: grav };
               if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'launch', {
-                first: 'Projectile launched at ' + angle + ' degrees with a velocity of ' + vel + ' meters per second. Gravity is ' + grav + ' meters per second squared.' + (drag > 0 ? ' Air resistance is on.' : ''),
-                repeat: 'Launched. Angle: ' + angle + ' degrees, velocity: ' + vel + ' meters per second.',
-                terse: 'Launched: ' + angle + '°, ' + vel + ' m/s'
+                first: _fill(_Ll.narrLaunchFirst, _lv) + (drag > 0 ? _Ll.narrLaunchDrag : ''),
+                repeat: _fill(_Ll.narrLaunchRepeat, _lv),
+                terse: _fill(_Ll.narrLaunchTerse, _lv)
               }, { debounce: 500 });
 
             }
@@ -808,7 +1014,12 @@ const d = labToolData.physics;
                 var _pVel = parseFloat(canvasEl.dataset.velocity || '25');
                 var _pGrav = parseFloat(canvasEl.dataset.gravity || '9.8');
                 var _pRad = _pAng * Math.PI / 180;
-                var _predR = (_pVel * _pVel * Math.sin(2 * _pRad)) / _pGrav;
+                var _pDrag = canvasEl.dataset.airResist === 'true';
+                // Through air there is no closed form: run the shared
+                // integrator so the pin lands where the ball actually will.
+                var _predR = _pDrag
+                  ? physSimulate(_pAng, _pVel, _pGrav, true, parseFloat(canvasEl.dataset.mass) || 1).range
+                  : (_pVel * _pVel * Math.sin(2 * _pRad)) / _pGrav;
                 if (_predR > 0 && isFinite(_predR)) {
                   var _predX = mToScreenX(_predR) * dpr;
                   if (_predX > 30 * dpr && _predX < cW - 10 * dpr) {
@@ -830,7 +1041,7 @@ const d = labToolData.physics;
                     // Label
                     ctx.font = 'bold ' + (4.5 * dpr) + 'px sans-serif';
                     ctx.textAlign = 'center';
-                    var _predLbl = 'predicted R = ' + _predR.toFixed(1) + 'm';
+                    var _predLbl = (_pDrag ? ((canvasEl._L || {}).predictedDrag || 'predicted R (with drag) = ') : ((canvasEl._L || {}).predicted || 'predicted R = ')) + _predR.toFixed(1) + 'm';
                     var _predLblW = ctx.measureText(_predLbl).width;
                     ctx.fillStyle = 'rgba(15,23,42,0.78)';
                     ctx.fillRect(_predX - _predLblW / 2 - 3 * dpr, groundY - 44 * dpr, _predLblW + 6 * dpr, 8 * dpr);
@@ -885,7 +1096,7 @@ const d = labToolData.physics;
                   ctx.font = 'italic ' + (4 * dpr) + 'px sans-serif';
                   ctx.textAlign = 'left';
                   ctx.fillStyle = 'rgba(15,23,42,0.78)';
-                  var _gLbl = 'no-drag ideal';
+                  var _gLbl = (canvasEl._L || {}).noDragIdeal || 'no-drag ideal';
                   var _gLblW = ctx.measureText(_gLbl).width;
                   ctx.fillRect(_gMidSX + 4 * dpr, _gMidSY - 10 * dpr, _gLblW + 6 * dpr, 7 * dpr);
                   ctx.fillStyle = 'rgba(255,255,255,0.85)';
@@ -1030,7 +1241,7 @@ const d = labToolData.physics;
                     ctx.fillStyle = 'rgba(255,255,255,0.4)';
                     ctx.font = (4 * dpr) + 'px sans-serif';
                     ctx.textAlign = 'center';
-                    ctx.fillText('apex', apexSX, apexSY - 6 * dpr);
+                    ctx.fillText((canvasEl._L || {}).apex || 'apex', apexSX, apexSY - 6 * dpr);
                   }
 
                   ctx.restore();
@@ -1064,7 +1275,7 @@ const d = labToolData.physics;
                 ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif';
                 ctx.textAlign = 'left';
                 var _apLines = [
-                  '▲ APEX',
+                  (canvasEl._L || {}).apexCap || '▲ APEX',
                   'H = ' + _ap.mY.toFixed(1) + ' m',
                   't = ' + _ap.tSec.toFixed(2) + ' s',
                   'Vy = 0  (Vx = ' + _ap.vx.toFixed(1) + ' m/s)'
@@ -1089,42 +1300,26 @@ const d = labToolData.physics;
 
               if (ball && launched) {
 
-                // Air resistance (applied in m/s)
-
-                if (ball.drag > 0) {
-
-                  var spd = Math.sqrt(ball.mVx * ball.mVx + ball.mVy * ball.mVy);
-
-                  ball.mVx -= ball.drag * ball.mVx * spd * 50;
-
-                  ball.mVy -= ball.drag * ball.mVy * spd * 50;
-
-                }
-
-                // Apex detection: capture the moment vertical velocity flips
-                // sign (positive → non-positive) and snapshot the world-space
-                // position + flight time + Vx for an on-canvas annotation.
-                // Done BEFORE the gravity-velocity update so we catch the
-                // zero-crossing on the frame it happens.
+                // One physics step per frame through the shared integrator
+                // (drag ∝ v²·dt/m, then gravity). A paused frame (dt = 0)
+                // renders but does not integrate, so drag cannot drain the
+                // velocity while the student inspects the vectors, and the
+                // trail gets no duplicate points.
                 var _prevVy = ball.mVy;
-
-                ball.mVy -= ball.grav * dt;
-
-                ball.mX += ball.mVx * dt;
-
-                ball.mY += ball.mVy * dt;
+                var _prevMY = ball.mY;
+                if (dt > 0) physStep(ball, dt);
 
                 ball.speed = Math.sqrt(ball.mVx * ball.mVx + ball.mVy * ball.mVy);
 
-                if (_prevVy > 0 && ball.mVy <= 0 && !canvasEl._apex) {
-                  // Approximate apex time as current trail length × dt; uses
-                  // base dt so slow-motion / pause don't distort the value.
-                  var _tApex = trails.length > 0 ? trails[trails.length - 1].length * DT_BASE : 0;
+                // Apex detection: the frame vertical velocity flips sign.
+                // ball.t is true flight time, so slow-motion and stepping
+                // report the same apex time as a real-time flight.
+                if (dt > 0 && _prevVy > 0 && ball.mVy <= 0 && !canvasEl._apex) {
                   canvasEl._apex = {
                     mX: ball.mX,
                     mY: ball.mY,
                     vx: ball.mVx,
-                    tSec: _tApex,
+                    tSec: ball.t || 0,
                     fadeAt: tick + 90 // ~3 seconds at 30fps before fading out
                   };
                 }
@@ -1158,7 +1353,7 @@ const d = labToolData.physics;
                   }
                 }
 
-                if (trails.length > 0) trails[trails.length - 1].push({ mX: ball.mX, mY: ball.mY, mVx: ball.mVx, mVy: ball.mVy });
+                if (dt > 0 && trails.length > 0) trails[trails.length - 1].push({ mX: ball.mX, mY: ball.mY, mVx: ball.mVx, mVy: ball.mVy, t: ball.t || 0 });
 
                 // Convert to screen CSS-px for rendering
 
@@ -1299,7 +1494,7 @@ const d = labToolData.physics;
                   ctx.lineTo(bx, vyEndY * dpr); ctx.stroke();
                   ctx.setLineDash([]);
                   ctx.fillStyle = '#a855f7';
-                  ctx.fillText('Vy=' + Math.abs(ball.mVy).toFixed(1), bx + 16 * dpr, ((ballScreenY + vyEndY * (1/dpr)) / 2) * dpr);
+                  ctx.fillText('Vy=' + Math.abs(ball.mVy).toFixed(1), bx + 16 * dpr, ((ballScreenY + vyEndY) / 2) * dpr);
 
                   // Acceleration vector (gravity arrow, red, pointing down)
                   var gArrowLen = Math.min(ball.grav * 1.5, 25);
@@ -1342,7 +1537,7 @@ const d = labToolData.physics;
                 if (ball.mY <= 0) {
 
                   // Interpolate exact ground intersection for precise hit detection
-                  var prevMY = ball.mY - ball.mVy * dt + ball.grav * dt; // reconstruct prev mY
+                  var prevMY = _prevMY; // height before this frame's step
                   var frac = (prevMY > 0 && prevMY !== ball.mY) ? prevMY / (prevMY - ball.mY) : 1;
                   if (frac < 0) frac = 0; if (frac > 1) frac = 1;
                   var exactLandX = ball.mX - ball.mVx * dt * (1 - frac);
@@ -1364,11 +1559,15 @@ const d = labToolData.physics;
 
                   }
 
+                  sfxPhyCollide();
+
                   // Canvas Narration: landing event
+                  var _Ld = canvasEl._L || {}, _fillD = canvasEl._fill || function (s) { return s; };
+                  var _lvD = { range: exactLandX.toFixed(1), maxH: _landMaxH.toFixed(1), time: (ball.t || 0).toFixed(2) };
                   if (typeof canvasNarrate === 'function') canvasNarrate('physics', 'landing', {
-                    first: 'Projectile landed at ' + exactLandX.toFixed(1) + ' meters. Maximum height was ' + _landMaxH.toFixed(1) + ' meters. Try changing the angle or velocity to see how the trajectory changes.',
-                    repeat: 'Landed at ' + exactLandX.toFixed(1) + ' meters. Max height: ' + _landMaxH.toFixed(1) + ' meters.',
-                    terse: exactLandX.toFixed(0) + ' meters, height ' + _landMaxH.toFixed(0) + ' meters'
+                    first: _fillD(_Ld.narrLandFirst, _lvD),
+                    repeat: _fillD(_Ld.narrLandRepeat, _lvD),
+                    terse: _fillD(_Ld.narrLandTerse, { range: exactLandX.toFixed(0), maxH: _landMaxH.toFixed(0) })
                   }, { debounce: 500 });
 
                   // ── Target Mode: check hit ──
@@ -1376,9 +1575,16 @@ const d = labToolData.physics;
                     // Dispatch target hit check (deferred to avoid re-render during draw)
                     if (canvasEl._onTargetLand) canvasEl._onTargetLand(exactLandX);
                   }
-                  // Predict-then-launch: always fire (callback no-ops if no
-                  // prediction was set). Deferred via setTimeout in callback.
-                  if (canvasEl._onAnyLand) canvasEl._onAnyLand(exactLandX);
+                  // Predict-then-launch + last-flight summary: always fire
+                  // (the estimate part no-ops if no prediction was set).
+                  // Deferred via setTimeout in callback.
+                  var _trL = trails.length > 0 ? trails[trails.length - 1] : null;
+                  if (canvasEl._onAnyLand) canvasEl._onAnyLand(exactLandX, {
+                    range: exactLandX, maxH: _landMaxH, time: ball.t || 0,
+                    apexT: canvasEl._apex ? canvasEl._apex.tSec : null,
+                    angle: _trL ? _trL.angle : null, vel: _trL ? _trL.velocity : null, grav: ball.grav,
+                    drag: ball.drag > 0, mass: ball.mass || 1
+                  });
 
                   // Spawn enhanced explosion particles (in screen-px space)
 
@@ -1746,7 +1952,7 @@ const d = labToolData.physics;
 
                 ctx.fillStyle = '#f97316'; ctx.font = 'bold ' + (5.5 * dpr) + 'px sans-serif';
 
-                ctx.fillText('\uD83C\uDF2C\uFE0F Drag ON', 10 * dpr, 42 * dpr);
+                ctx.fillText('\uD83C\uDF2C\uFE0F ' + ((canvasEl._L || {}).dragOn || 'Drag ON'), 10 * dpr, 42 * dpr);
                 // Wind direction indicator arrow
                 var windArrowX = 120 * dpr, windArrowY = 38 * dpr;
                 ctx.strokeStyle = '#f97316'; ctx.lineWidth = 1.5 * dpr;
@@ -1765,17 +1971,20 @@ const d = labToolData.physics;
 
               ctx.fillStyle = 'rgba(148,163,184,0.6)'; ctx.font = (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'right';
 
-              ctx.fillText('Shots: ' + trails.length, (hudX + hudW - 6 * dpr) / dpr * dpr, 42 * dpr);
+              ctx.fillText(((canvasEl._L || {}).shots || 'Shots: ') + trails.length, (hudX + hudW - 6 * dpr) / dpr * dpr, 42 * dpr);
 
               ctx.restore();
 
               // ── Energy bar (KE vs PE vs Drag Loss) ──
               if (ball && canvasEl.dataset.showEnergy === 'true') {
-                var mass = parseFloat(canvasEl.dataset.mass || 1);
-                var dragOn = canvasEl.dataset.airResist === 'true';
+                var _Le = canvasEl._L || {};
+                // Launch-time mass and energy, so moving a slider mid-flight
+                // cannot invent a phantom drag loss or overflow the bar.
+                var mass = ball.mass || parseFloat(canvasEl.dataset.mass || 1);
+                var dragOn = ball.drag > 0;
                 var KE = 0.5 * mass * ball.speed * ball.speed;
                 var PE = mass * ball.grav * Math.max(0, ball.mY);
-                var totalE = 0.5 * mass * (parseFloat(canvasEl.dataset.velocity || 25)) * (parseFloat(canvasEl.dataset.velocity || 25));
+                var totalE = ball.E0 || (0.5 * mass * (parseFloat(canvasEl.dataset.velocity || 25)) * (parseFloat(canvasEl.dataset.velocity || 25)));
                 // With NO drag, mechanical energy is conserved: KE + PE = totalE throughout the flight.
                 // Only attribute a red "Drag" segment when drag is actually ON — otherwise tiny Euler-
                 // integration drift used to render as a phantom red loss. Clamp totalE up to KE+PE so
@@ -1788,7 +1997,7 @@ const d = labToolData.physics;
                 ctx.fillStyle = 'rgba(15,23,42,0.7)';
                 ctx.fillRect(ebX - 4 * dpr, ebY - 14 * dpr, ebW + 8 * dpr, ebH + 28 * dpr);
                 ctx.font = 'bold ' + (5 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillStyle = '#94a3b8'; ctx.fillText(dragOn ? 'Energy' : 'Energy (KE + PE conserved)', ebX, ebY - 4 * dpr);
+                ctx.fillStyle = '#94a3b8'; ctx.fillText(dragOn ? (_Le.energy || 'Energy') : (_Le.energyConserved || 'Energy (KE + PE conserved)'), ebX, ebY - 4 * dpr);
                 // Stacked bar
                 var keW = totalE > 0 ? (KE / totalE) * ebW : 0;
                 var peW = totalE > 0 ? (PE / totalE) * ebW : 0;
@@ -1798,9 +2007,9 @@ const d = labToolData.physics;
                 ctx.fillStyle = '#ef4444'; ctx.fillRect(ebX + keW + peW, ebY, dlW, ebH); // Drag red
                 // Labels
                 ctx.font = (4 * dpr) + 'px sans-serif'; ctx.textAlign = 'left';
-                ctx.fillStyle = '#93c5fd'; ctx.fillText('KE ' + KE.toFixed(0) + 'J', ebX, ebY + ebH + 10 * dpr);
-                ctx.fillStyle = '#86efac'; ctx.fillText('PE ' + PE.toFixed(0) + 'J', ebX + 46 * dpr, ebY + ebH + 10 * dpr);
-                if (dragLoss > 1) { ctx.fillStyle = '#fca5a5'; ctx.fillText('Drag ' + dragLoss.toFixed(0) + 'J', ebX + 92 * dpr, ebY + ebH + 10 * dpr); }
+                ctx.fillStyle = '#93c5fd'; ctx.fillText((_Le.ke || 'KE') + ' ' + KE.toFixed(0) + 'J', ebX, ebY + ebH + 10 * dpr);
+                ctx.fillStyle = '#86efac'; ctx.fillText((_Le.pe || 'PE') + ' ' + PE.toFixed(0) + 'J', ebX + 46 * dpr, ebY + ebH + 10 * dpr);
+                if (dragLoss > 1) { ctx.fillStyle = '#fca5a5'; ctx.fillText((_Le.dragLoss || 'Drag') + ' ' + dragLoss.toFixed(0) + 'J', ebX + 92 * dpr, ebY + ebH + 10 * dpr); }
               }
 
               // ── Trail color legend (glassmorphic) ──
@@ -1833,7 +2042,8 @@ const d = labToolData.physics;
 
               ctx.font = (5 * dpr) + 'px sans-serif';
 
-              ctx.fillStyle = '#22c55e'; ctx.textAlign = 'left'; ctx.fillText('SLOW', legX + 4 * dpr, legY + 14 * dpr);
+              var _Lg = canvasEl._L || {};
+              ctx.fillStyle = '#22c55e'; ctx.textAlign = 'left'; ctx.fillText(_Lg.slow || 'SLOW', legX + 4 * dpr, legY + 14 * dpr);
 
               var lgw = 36 * dpr;
 
@@ -1847,7 +2057,7 @@ const d = labToolData.physics;
 
               ctx.fillRect(lgx, legY + 9 * dpr, lgw, 4 * dpr);
 
-              ctx.fillStyle = '#ef4444'; ctx.textAlign = 'right'; ctx.fillText('FAST', legX + legW - 4 * dpr, legY + 14 * dpr);
+              ctx.fillStyle = '#ef4444'; ctx.textAlign = 'right'; ctx.fillText(_Lg.fast || 'FAST', legX + legW - 4 * dpr, legY + 14 * dpr);
 
               ctx.restore();
 
@@ -1967,7 +2177,98 @@ const d = labToolData.physics;
               ? __alloT('stem.physics.next_turn_on_vectors', 'Turn on vectors or energy and explain what changes during flight.')
               : d.targetMode
                 ? __alloT('stem.physics.next_one_controlled_change', 'Use one controlled change to improve your next target attempt.')
-                : __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.');
+                : !d.dragTried
+                  ? __alloT('stem.physics.next_try_drag', 'Turn on Air Drag and launch again: the dashed ghost is the no-drag path, and the Last flight strip shows what drag cost.')
+                  : __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.');
+
+          // Live refresh: the Data and Motion panels read the canvas trail at
+          // render time, so during a flight they froze until the next state
+          // change. While a panel is open AND a ball is in flight, nudge a
+          // re-render a few times a second (the ref re-init path already runs
+          // on every slider drag mid-flight, so this is a known-safe cycle).
+          (function () {
+            if (typeof document === 'undefined' || !(d.showFlightData || d.showGraphs)) return;
+            var cv = document.getElementById('physicsCanvas');
+            if (!cv || !cv._launched || cv._liveTimer) return;
+            cv._liveTimer = setTimeout(function () {
+              cv._liveTimer = null;
+              if (cv.isConnected) bump('liveTick', 1);
+            }, 250);
+          })();
+
+          // ── Controlled-variable checker for the experiment log ──
+          // Names every launch setting that differs from the previous run.
+          // Zero changes = a repeat trial; exactly one = a fair test; more than
+          // one = the comparison cannot attribute the result to any single
+          // cause. That judgement is the whole point of the log.
+          var RUN_VARS = [
+            { k: 'angle', label: __alloT('stem.physics.var_angle', 'angle') },
+            { k: 'vel', label: __alloT('stem.physics.var_velocity', 'velocity') },
+            { k: 'grav', label: __alloT('stem.physics.var_gravity', 'gravity') },
+            { k: 'drag', label: __alloT('stem.physics.var_drag', 'air drag') },
+            { k: 'mass', label: __alloT('stem.physics.var_mass', 'mass') }
+          ];
+          function physRunChanges(prev, cur) {
+            if (!prev) return null;
+            var out = [];
+            RUN_VARS.forEach(function (v) {
+              var a = prev[v.k], b = cur[v.k];
+              if (typeof a === 'boolean' || typeof b === 'boolean') { if (!!a !== !!b) out.push(v.label); return; }
+              if (a == null || b == null) return;
+              if (Math.abs(parseFloat(a) - parseFloat(b)) > 1e-9) out.push(v.label);
+            });
+            return out;
+          }
+          function physRunLogCsv() {
+            var log = d.runLog || [];
+            if (!log.length) return null;
+            var lines = ['run,angle_deg,velocity_mps,gravity_mps2,air_drag,mass_kg,range_m,max_height_m,flight_time_s'];
+            log.forEach(function (r, i) {
+              lines.push([i + 1, r.angle, r.vel, r.grav, r.drag ? 'on' : 'off', r.mass, r.range.toFixed(2), r.maxH.toFixed(2), r.time.toFixed(3)].join(','));
+            });
+            return lines.join('\n');
+          }
+
+          // Flight data as CSV (every integrator point, not the sampled table)
+          // so students can paste a real run into a spreadsheet for a report.
+          function physFlightCsv() {
+            var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+            var trails = cv && cv._trails ? cv._trails : [];
+            var tr = trails.length > 0 ? trails[trails.length - 1] : null;
+            if (!tr || tr.length === 0) return null;
+            var lines = ['# angle_deg=' + tr.angle + ',velocity_mps=' + tr.velocity + ',gravity_mps2=' + tr.gravity + ',air_drag=' + (tr.drag ? 'on' : 'off') + ',mass_kg=' + (d.lastFlight && d.lastFlight.mass != null ? d.lastFlight.mass : (d.mass || 1))];
+            lines.push('t_s,x_m,y_m,vx_mps,vy_mps,speed_mps');
+            for (var i = 0; i < tr.length; i++) {
+              var p = tr[i];
+              var vx = p.mVx || 0, vy = p.mVy || 0;
+              lines.push([(p.t != null ? p.t : i * PHYS_DT).toFixed(3), p.mX.toFixed(2), Math.max(0, p.mY).toFixed(2), vx.toFixed(2), vy.toFixed(2), Math.sqrt(vx * vx + vy * vy).toFixed(2)].join(','));
+            }
+            return lines.join('\n');
+          }
+          function physCopyText(text) {
+            // Returns a promise resolving true on success. Modern clipboard
+            // first; execCommand fallback for sandboxed frames.
+            return new Promise(function (resolve) {
+              try {
+                if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+                  navigator.clipboard.writeText(text).then(function () { resolve(true); }, function () { resolve(physCopyFallback(text)); });
+                  return;
+                }
+              } catch (e) {}
+              resolve(physCopyFallback(text));
+            });
+          }
+          function physCopyFallback(text) {
+            try {
+              var ta = document.createElement('textarea');
+              ta.value = text; ta.setAttribute('readonly', '');
+              ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+              document.body.appendChild(ta); ta.select();
+              var ok = document.execCommand && document.execCommand('copy');
+              document.body.removeChild(ta);
+              return !!ok;
+            } catch (e) { return false; }
+          }
 
           return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme": isContrast ? "contrast" : (isDark ? "dark" : "light"), className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: themeSurface, color: themeInk, padding: '10px' } : { position: 'relative', background: themeSurface, color: themeInk } },
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
@@ -2082,13 +2383,15 @@ const d = labToolData.physics;
 
                 onKeyDown: function (e) {
 
-                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('angle', Math.min(90, (d.angle || 45) + 5)); }
+                  // Same clamps as the sliders (5–85°, 5–50 m/s) so the keyboard
+                  // cannot reach values the slider then cannot show.
+                  if (e.key === 'ArrowUp') { e.preventDefault(); upd('angle', Math.min(85, (d.angle || 45) + 5)); }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('angle', Math.max(0, (d.angle || 45) - 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); upd('angle', Math.max(5, (d.angle || 45) - 5)); }
 
-                  else if (e.key === 'ArrowRight') { e.preventDefault(); upd('velocity', Math.min(100, (d.velocity || 50) + 5)); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); upd('velocity', Math.min(50, (d.velocity || 25) + 5)); }
 
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); upd('velocity', Math.max(5, (d.velocity || 50) - 5)); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); upd('velocity', Math.max(5, (d.velocity || 25) - 5)); }
 
                   else if (e.key === ' ') {
 
@@ -2098,9 +2401,7 @@ const d = labToolData.physics;
                     upd('lastPredictionRange', isFinite(keyboardEstimate) ? keyboardEstimate : null);
                     upd('predictionResult', null);
 
-                    var cv = document.getElementById('physicsCanvas');
-
-                    if (cv && cv._launch) cv._launch();
+                    fireLaunch();
 
                   }
 
@@ -2126,16 +2427,14 @@ const d = labToolData.physics;
                   upd('lastPredictionRange', isFinite(pNum) ? pNum : null);
                   upd('predictionResult', null);
 
-                  var cv = document.getElementById('physicsCanvas');
-
-                  if (cv && cv._launch) cv._launch();
+                  fireLaunch();
 
                 }, className: "px-4 py-2 bg-gradient-to-r from-amber-700 to-orange-700 text-white font-bold rounded-xl text-sm hover:from-amber-700 hover:to-orange-700 shadow-md transition-all"
 
               }, "\uD83D\uDE80 " + __alloT('stem.physics.launch', 'Launch!')),
 
               // \u2500\u2500 Quantitative estimation challenge \u2500\u2500
-              React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1", "data-physics-estimation-challenge": "true", title: "Quantitative estimation challenge: closeness earns XP; inquiry reflections are never graded for matching." },
+              React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1", "data-physics-estimation-challenge": "true", title: __alloT('stem.physics.estimation_title_attr', 'Quantitative estimation challenge: closeness earns XP; inquiry reflections are never graded for matching.') },
                 React.createElement("label", { htmlFor: "physPredict", className: "text-[0.6875rem] font-bold text-fuchsia-700" }, "\uD83D\uDCCF " + __alloT('stem.physics.predict_landing', 'Estimate landing:')),
                 React.createElement("input", {
                   id: "physPredict",
@@ -2162,9 +2461,9 @@ const d = labToolData.physics;
                 role: "status",
                 "aria-live": "polite"
               },
-                (d.predictionResult.tier === 'bullseye' ? '\uD83C\uDFAF Bullseye! ' :
-                 d.predictionResult.tier === 'close' ? '\uD83D\uDD2E Close! ' : '\uD83D\uDCCF ') +
-                'Estimated ' + d.predictionResult.predicted.toFixed(1) + 'm, measured ' + d.predictionResult.actual.toFixed(1) + 'm (' + d.predictionResult.errPct.toFixed(0) + '% error)' +
+                (d.predictionResult.tier === 'bullseye' ? '\uD83C\uDFAF ' + __alloT('stem.physics.est_bullseye', 'Bullseye!') + ' ' :
+                 d.predictionResult.tier === 'close' ? '\uD83D\uDD2E ' + __alloT('stem.physics.est_close', 'Close!') + ' ' : '\uD83D\uDCCF ') +
+                __alloT('stem.physics.est_estimated', 'Estimated ') + d.predictionResult.predicted.toFixed(1) + 'm, ' + __alloT('stem.physics.est_measured', 'measured ') + d.predictionResult.actual.toFixed(1) + 'm (' + d.predictionResult.errPct.toFixed(0) + '% ' + __alloT('stem.physics.est_error', 'error') + ')' +
                 (d.predictionResult.xp ? ' +' + d.predictionResult.xp + ' XP' : '')
               ),
 
@@ -2222,8 +2521,16 @@ const d = labToolData.physics;
 
               React.createElement("button", { "aria-label": __alloT('stem.physics.aria_clear_trails', 'Clear all trajectory trails'),
                 onClick: function () {
+                  // Clear IN PLACE. The draw loop keeps its own references to
+                  // these arrays and writes them back to the element every
+                  // frame, so assigning fresh arrays here was undone on the
+                  // next frame and this button did nothing.
                   var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-                  if (cv) { cv._trails = []; cv._impactParticles = []; cv._landingMarkers = []; }
+                  if (cv) {
+                    ['_trails', '_impactParticles', '_landingMarkers'].forEach(function (k) { if (Array.isArray(cv[k])) cv[k].length = 0; else cv[k] = []; });
+                    cv._apex = null;
+                  }
+                  upd('lastFlight', null);
                 },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200"
               }, "\u{1F9F9} " + __alloT('stem.physics.clear_trails', 'Clear Trails')),
@@ -2278,27 +2585,30 @@ const d = labToolData.physics;
                   var grav = parseFloat(d.gravity);
                   if (!isFinite(ang) || !isFinite(vel) || !isFinite(grav)) return;
                   if (Math.abs(ang - 45) < 0.5) {
-                    if (addToast) addToast('45° is its own complement! Try 30° or 60° to see the symmetry.', 'warning');
+                    if (addToast) addToast(__alloT('stem.physics.toast_45_own_complement', '45° is its own complement! Try 30° or 60° to see the symmetry.'), 'warning');
                     return;
                   }
                   var compAng = Math.max(5, Math.min(85, 90 - ang));
                   upd('showOverlay', true);
-                  var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
-                  if (!cv || !cv._launch) return;
-                  cv._launch();
+                  // The chain waits in REAL time, so slow-motion must stretch
+                  // the waits or the second shot fires mid-flight. A paused
+                  // sim is resumed at 1× first (a demo cannot run paused).
+                  var _sp = d.simSpeed != null ? d.simSpeed : 1.0;
+                  if (_sp === 0) { upd('simSpeed', 1.0); _sp = 1.0; }
+                  var _stretch = 1 / _sp;
+                  if (!fireLaunch()) return;
                   var t1 = (2 * vel * Math.sin(ang * Math.PI / 180)) / grav;
                   setTimeout(function () {
                     upd('angle', compAng);
                     setTimeout(function () {
-                      var cv2 = document.getElementById('physicsCanvas');
-                      if (cv2 && cv2._launch) cv2._launch();
+                      fireLaunch();
                       var t2 = (2 * vel * Math.sin(compAng * Math.PI / 180)) / grav;
                       setTimeout(function () {
-                        if (addToast) addToast('\u{1F4A1} Same range! ' + ang + '° and ' + compAng + '° are complementary (sum to 90°) so they land at the same spot (without drag).', 'success');
+                        if (addToast) addToast('\u{1F4A1} ' + __alloT('stem.physics.toast_same_range', 'Same range!') + ' ' + ang + '° ' + __alloT('stem.physics.toast_and', 'and') + ' ' + compAng + '° ' + __alloT('stem.physics.toast_complementary', 'are complementary (sum to 90°) so they land at the same spot (without drag).'), 'success');
                         upd('angle', ang);
-                      }, (t2 * 1000) + 800);
+                      }, (t2 * 1000 * _stretch) + 800);
                     }, 120);
-                  }, (t1 * 1000) + 500);
+                  }, (t1 * 1000 * _stretch) + 500);
                 },
                 className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-50 text-amber-800 border border-amber-300 hover:bg-amber-100"
               }, "\u{1F500} " + __alloT('stem.physics.symmetry_demo', 'Symmetry Demo')),
@@ -2315,21 +2625,139 @@ const d = labToolData.physics;
 
             ),
 
+            // ── Last flight: measured results against the no-drag formula ──
+            // The formulas panel predicts; this strip MEASURES. Putting the two
+            // side by side is where drag stops being a slogan and becomes a
+            // number the student can explain (range lost, height lost).
+            d.lastFlight && isFinite(d.lastFlight.range) && (function () {
+              var lf = d.lastFlight;
+              var hasParams = lf.angle != null && lf.vel != null && lf.grav;
+              var rad = hasParams ? lf.angle * Math.PI / 180 : 0;
+              var idealR = hasParams ? (lf.vel * lf.vel * Math.sin(2 * rad)) / lf.grav : null;
+              var idealH = hasParams ? (lf.vel * lf.vel * Math.sin(rad) * Math.sin(rad)) / (2 * lf.grav) : null;
+              var idealT = hasParams ? (2 * lf.vel * Math.sin(rad)) / lf.grav : null;
+              var lossR = idealR != null ? idealR - lf.range : null;
+              var lossPct = idealR > 0 && lossR != null ? (lossR / idealR) * 100 : null;
+              var tile = function (key, label, value, sub, cls) {
+                return React.createElement("div", { key: key, className: "rounded-lg border px-2 py-1.5 text-center " + (cls || 'bg-white border-slate-200') },
+                  React.createElement("div", { className: "text-[0.625rem] font-bold uppercase tracking-wide text-slate-600" }, label),
+                  React.createElement("div", { className: "text-sm font-black text-slate-800" }, value),
+                  sub ? React.createElement("div", { className: "text-[0.625rem] text-slate-600" }, sub) : null
+                );
+              };
+              var vsLabel = idealR != null ? (__alloT('stem.physics.lf_formula_says', 'formula: ') + idealR.toFixed(1) + ' m') : null;
+              return React.createElement("section", { className: "mb-3 rounded-xl border border-sky-200 bg-sky-50 p-2", role: "status", "aria-label": __alloT('stem.physics.lf_aria', 'Last flight results') },
+                React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5 px-1" },
+                  React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider text-sky-800" }, "📐 " + __alloT('stem.physics.lf_title', 'Last flight') + (hasParams ? ' — ' + lf.angle + '°, ' + lf.vel + ' m/s, g=' + lf.grav + (lf.drag ? ', ' + __alloT('stem.physics.lf_drag_on', 'air drag on') + ', ' + lf.mass + ' kg' : '') : '')),
+                  React.createElement("span", { className: "text-[0.625rem] text-sky-700" }, lf.drag ? __alloT('stem.physics.lf_measured_vs_formula', 'measured vs no-drag formula') : __alloT('stem.physics.lf_measured', 'measured'))
+                ),
+                React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
+                  tile('r', __alloT('stem.physics.label_range', 'Range'), lf.range.toFixed(1) + ' m', vsLabel),
+                  tile('h', __alloT('stem.physics.label_max_height', 'Max Height'), lf.maxH.toFixed(1) + ' m', idealH != null ? __alloT('stem.physics.lf_formula_says', 'formula: ') + idealH.toFixed(1) + ' m' : null),
+                  tile('t', __alloT('stem.physics.label_flight_time', 'Flight Time'), lf.time.toFixed(2) + ' s', idealT != null ? __alloT('stem.physics.lf_formula_says', 'formula: ') + idealT.toFixed(2) + ' s' : null),
+                  lf.drag && lossR != null
+                    ? tile('d', __alloT('stem.physics.lf_drag_cost', 'Drag cost'), lossR.toFixed(1) + ' m', lossPct != null ? lossPct.toFixed(0) + '% ' + __alloT('stem.physics.lf_of_range', 'of the range') : null, 'bg-orange-50 border-orange-300')
+                    : tile('d', __alloT('stem.physics.lf_vs_formula', 'vs formula'), lossR != null ? (lossR >= 0 ? '−' : '+') + Math.abs(lossR).toFixed(1) + ' m' : '—', __alloT('stem.physics.lf_no_drag_note', 'no drag: should match'))
+                )
+              );
+            })(),
+
+            // ── Experiment log: every launch, and whether it was a fair test ──
+            // The tool keeps telling students to "change only one variable".
+            // This is where that instruction becomes checkable: each row names
+            // what changed since the run above it and says outright when a
+            // comparison confounds two changes at once.
+            (d.runLog || []).length > 0 && (function () {
+              var log = d.runLog;
+              var oneVarRuns = 0;
+              log.forEach(function (r, i) { if (i > 0 && (physRunChanges(log[i - 1], r) || []).length === 1) oneVarRuns++; });
+              return React.createElement("section", { className: "mb-3 rounded-xl border border-indigo-200 bg-indigo-50 p-3 overflow-x-auto", "data-physics-run-log": "true" },
+                React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" },
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-indigo-800 uppercase tracking-wider" },
+                    "🧪 " + __alloT('stem.physics.runlog_title', 'Experiment log') + " (" + log.length + ")"),
+                  React.createElement("div", { className: "flex gap-1.5" },
+                    React.createElement("button", {
+                      type: "button",
+                      "aria-label": __alloT('stem.physics.aria_copy_runlog', 'Copy the experiment log as CSV for a spreadsheet'),
+                      onClick: function () {
+                        var csv = physRunLogCsv();
+                        if (!csv) return;
+                        physCopyText(csv).then(function (ok) {
+                          var msg = ok ? __alloT('stem.physics.toast_runlog_copied', 'Experiment log copied as CSV.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
+                          if (addToast) addToast((ok ? '📋 ' : '⚠️ ') + msg, ok ? 'success' : 'warning');
+                          if (typeof announceToSR === 'function') announceToSR(msg);
+                        });
+                      },
+                      className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-indigo-800 border border-indigo-300 hover:bg-indigo-100"
+                    }, "📋 " + __alloT('stem.physics.copy_csv', 'Copy CSV')),
+                    React.createElement("button", {
+                      type: "button",
+                      "aria-label": __alloT('stem.physics.aria_clear_runlog', 'Clear the experiment log'),
+                      onClick: function () { upd('runLog', []); },
+                      className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100"
+                    }, "🧹 " + __alloT('stem.physics.runlog_clear', 'Clear log'))
+                  )
+                ),
+                React.createElement("table", { className: "w-full text-[0.6875rem]" },
+                  React.createElement("caption", { className: "sr-only" }, __alloT('stem.physics.runlog_caption', 'Experiment log: launch settings, measured range, and which variable changed between runs')),
+                  React.createElement("thead", null,
+                    React.createElement("tr", { className: "border-b-2 border-indigo-300 text-indigo-900" },
+                      [
+                        __alloT('stem.physics.runlog_col_run', '#'),
+                        __alloT('stem.physics.slider_angle', 'Angle (°)'),
+                        __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'),
+                        __alloT('stem.physics.slider_gravity', 'Gravity (m/s²)'),
+                        __alloT('stem.physics.var_drag', 'air drag'),
+                        __alloT('stem.physics.slider_mass', 'Mass (kg)'),
+                        __alloT('stem.physics.runlog_col_measured', 'Measured range'),
+                        __alloT('stem.physics.runlog_col_changed', 'Changed since previous')
+                      ].map(function (c, i) {
+                        return React.createElement("th", { key: 'rh' + i, scope: "col", className: "px-2 py-1 text-left font-bold" }, c);
+                      })
+                    )
+                  ),
+                  React.createElement("tbody", null, log.map(function (r, i) {
+                    var changes = physRunChanges(i > 0 ? log[i - 1] : null, r);
+                    var verdict;
+                    if (changes == null) verdict = { text: __alloT('stem.physics.runlog_first', 'first run — the baseline'), cls: 'text-slate-600' };
+                    else if (changes.length === 0) verdict = { text: '🔁 ' + __alloT('stem.physics.runlog_repeat', 'nothing changed — a repeat trial'), cls: 'text-slate-700' };
+                    else if (changes.length === 1) verdict = { text: '✅ ' + changes[0] + ' — ' + __alloT('stem.physics.runlog_fair', 'a fair test'), cls: 'text-emerald-800 font-bold' };
+                    else verdict = { text: '⚠️ ' + changes.join(', ') + ' — ' + __alloT('stem.physics.runlog_confounded', 'more than one change, so the result cannot be pinned on any single variable'), cls: 'text-amber-900 font-bold' };
+                    return React.createElement("tr", { key: 'rr' + i, className: "border-b border-indigo-100" },
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, i + 1),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.angle),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.vel),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.grav),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.drag ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.mass),
+                      React.createElement("td", { className: "px-2 py-0.5 font-mono font-bold text-indigo-900" }, r.range.toFixed(1) + ' m'),
+                      React.createElement("td", { className: "px-2 py-0.5 " + verdict.cls }, verdict.text)
+                    );
+                  }))
+                ),
+                log.length > 1 && React.createElement("p", { className: "mt-2 text-[0.625rem] text-indigo-900" },
+                  oneVarRuns > 0
+                    ? '🔬 ' + oneVarRuns + ' ' + __alloT('stem.physics.runlog_fair_count', 'of your comparisons changed exactly one variable. Those are the ones you can draw a conclusion from.')
+                    : '🔬 ' + __alloT('stem.physics.runlog_none_fair', 'No comparison yet changed exactly one variable. Repeat a run and move a single slider to make one.')
+                )
+              );
+            })(),
+
             d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": __alloT('stem.physics.a11y_range_estimation_comparison_and_reflection', 'Range estimation comparison and reflection') },
               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 React.createElement("div", null,
-                  React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Quantitative estimation challenge"),
-                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, "Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.")
+                  React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, __alloT('stem.physics.est_section_title', 'Quantitative estimation challenge')),
+                  React.createElement("p", { className: "mt-1 text-[0.6875rem] leading-relaxed text-slate-700" }, __alloT('stem.physics.est_section_blurb', 'Closeness earns estimation XP here because numerical calibration is the skill. Your reflection earns completion credit regardless of the error.'))
                 ),
-                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% error")
+                React.createElement("span", { className: "rounded-full bg-white px-2 py-1 text-[0.625rem] font-black text-fuchsia-800" }, d.predictionResult.errPct.toFixed(0) + "% " + __alloT('stem.physics.est_error', 'error'))
               ),
               React.createElement("fieldset", { className: "mt-2" },
-                React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, "How did the measured result affect your estimate?"),
+                React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_legend', 'How did the measured result affect your estimate?')),
                 React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": __alloT('stem.physics.a11y_how_the_measured_range_affected_the_estimate', 'How the measured range affected the estimate') },
                   [
-                    { id: 'supported', label: 'It supported my method' },
-                    { id: 'revised', label: 'I would revise my method' },
-                    { id: 'uncertain', label: 'I need another controlled trial' }
+                    { id: 'supported', label: __alloT('stem.physics.est_opt_supported', 'It supported my method') },
+                    { id: 'revised', label: __alloT('stem.physics.est_opt_revised', 'I would revise my method') },
+                    { id: 'uncertain', label: __alloT('stem.physics.est_opt_uncertain', 'I need another controlled trial') }
                   ].map(function(option) {
                     var selectedRevision = d.predictionResult.revision === option.id;
                     return React.createElement("label", { key: option.id, className: "flex cursor-pointer gap-1.5 rounded-lg border p-2 text-[0.625rem] font-bold " + (selectedRevision ? "border-fuchsia-500 bg-white text-fuchsia-950" : "border-fuchsia-200 bg-white/60 text-slate-700") },
@@ -2339,13 +2767,13 @@ const d = labToolData.physics;
                   })
                 )
               ),
-              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[0.625rem] font-black text-fuchsia-900" }, "What will you keep or change next time?"),
-              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: "The measured range and percent error show... Next time I will...", className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
+              React.createElement("label", { htmlFor: "physics-estimation-reason", className: "mt-2 block text-[0.625rem] font-black text-fuchsia-900" }, __alloT('stem.physics.est_reason_label', 'What will you keep or change next time?')),
+              React.createElement("textarea", { id: "physics-estimation-reason", rows: 2, maxLength: 400, value: d.predictionResult.reason || '', onChange: function(e) { upd('predictionResult', Object.assign({}, d.predictionResult, { reason: e.target.value.slice(0, 400), reflectionComplete: false })); }, placeholder: __alloT('stem.physics.est_reason_placeholder', 'The measured range and percent error show... Next time I will...'), className: "mt-1 w-full rounded-lg border border-fuchsia-500 bg-white p-2 text-[0.6875rem] text-slate-800" }),
               React.createElement("button", { type: "button", disabled: !d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete, "aria-disabled": d.predictionResult.revision && String(d.predictionResult.reason || '').trim().length >= 12 && !d.predictionResult.reflectionComplete ? "false" : "true", onClick: function() {
                 if (!d.predictionResult.revision || String(d.predictionResult.reason || '').trim().length < 12 || d.predictionResult.reflectionComplete) return;
                 upd('predictionResult', Object.assign({}, d.predictionResult, { reflectionComplete: true }));
                 if (awardStemXP) awardStemXP('estimate_reflection', 5, 'Reflected on range evidence');
-              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? "Reflection saved" : "Save estimation reflection")
+              }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? __alloT('stem.physics.est_reflection_saved', 'Reflection saved') : __alloT('stem.physics.est_save_reflection', 'Save estimation reflection'))
             ),
 
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
@@ -2464,7 +2892,9 @@ const d = labToolData.physics;
               var nSamples = Math.min(30, pts.length);
               for (var si = 0; si < nSamples; si++) {
                 var pi = Math.floor((si / Math.max(1, nSamples - 1)) * (pts.length - 1));
-                samples.push({ t: pi * 0.035, vx: pts[pi].mVx || 0, vy: pts[pi].mVy || 0 });
+                // Each point carries its own flight time, so slow-motion and
+                // stepped flights plot on the same axis as real-time ones.
+                samples.push({ t: pts[pi].t != null ? pts[pi].t : pi * PHYS_DT, vx: pts[pi].mVx || 0, vy: pts[pi].mVy || 0 });
               }
               var tMax = samples[samples.length - 1].t || 1;
               var vxAbs = 0, vyMax = 0, vyMin = 0;
@@ -2576,7 +3006,7 @@ const d = labToolData.physics;
                   };
                   return React.createElement("div", { className: "bg-white rounded-lg p-2 border border-teal-100 mt-2" },
                     React.createElement("p", { className: "text-[0.625rem] font-bold text-amber-700 mb-1" },
-                      "R vs θ — range across all angles at v=" + vel + " m/s, g=" + grav + " m/s²"
+                      __alloT('stem.physics.range_vs_angle_title', 'R vs θ — range across all angles at') + " v=" + vel + " m/s, g=" + grav + " m/s²"
                     ),
                     React.createElement("svg", { viewBox: "0 0 " + rW + " " + rH, width: "100%", height: rH, role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_graph', 'Range as a function of launch angle, peaking at 45 degrees') },
                       // Y/X axes
@@ -2602,12 +3032,12 @@ const d = labToolData.physics;
                       lbl2(rPL + rIW / 2, rH - 2, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'), '#94a3b8', 8, 'middle'),
                       // Current-angle callout
                       React.createElement('text', { x: Math.min(rW - rPR - 4, curSX + 8), y: Math.max(rPT + 10, curSY - 6), fontSize: 9, fill: '#0e7490', fontWeight: 'bold', textAnchor: 'start', fontFamily: 'monospace' },
-                        'you: ' + ang + '° → R=' + curR.toFixed(1) + 'm'
+                        __alloT('stem.physics.range_vs_angle_you', 'you:') + ' ' + ang + '° → R=' + curR.toFixed(1) + 'm'
                       )
                     ),
                     React.createElement("p", { className: "text-[0.625rem] text-amber-700 mt-1 italic" },
                       d.airResist
-                        ? __alloT('stem.physics.sweep_note_drag', 'With drag, the actual optimum is lower than 45° (~38-42°). This chart is no-drag.')
+                        ? __alloT('stem.physics.sweep_note_drag', 'With drag the real optimum sits below 45°, and the faster the launch the lower it drops (about 42° at 50 m/s for a 1 kg ball). This chart is no-drag.')
                         : __alloT('stem.physics.sweep_note_nodrag', 'Range peaks at exactly 45° without drag. Complementary angles (e.g. 30° and 60°) hit the same R.')
                     )
                   );
@@ -2616,64 +3046,81 @@ const d = labToolData.physics;
             })(),
 
             // ── Learn Panel (Newton's Laws & Projectile Motion) ──
-            d.showLearn && React.createElement("div", { className: "bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3 animate-in fade-in duration-200" },
-              React.createElement("h4", { className: "text-sm font-bold text-emerald-800 mb-2" }, "\uD83D\uDCD6 " + __alloT('stem.physics.physics_concepts', 'Physics Concepts')),
-              React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" },
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-blue-600" }, "\uD83D\uDE80 " + __alloT('stem.physics.concept_projectile_label', 'Projectile Motion: ')),
-                  __alloT('stem.physics.concept_projectile_body', 'An object launched into the air follows a parabolic path. Horizontal velocity (Vx) stays constant while vertical velocity (Vy) changes due to gravity. Enable Vectors to see!')
+            // Grade-banded like the Myths panel: 3-5 sees the concrete cards,
+            // 6-8 adds Newton's 2nd law and energy, 9-12 adds drag. A toggle
+            // shows everything for a student who wants to read ahead.
+            d.showLearn && (function () {
+              var bandRank = { '3-5': 0, '6-8': 1, '9-12': 2 };
+              var myRank = bandRank[physBand] || 0;
+              var card = function (band, key, labelCls, label, body, isMyth) {
+                return { band: band, key: key, node: React.createElement("div", { key: key, className: isMyth ? "rounded-lg p-2 border border-amber-300 bg-amber-100/70" : "bg-white rounded-lg p-2 border border-emerald-100" },
+                  React.createElement("span", { className: "font-bold " + labelCls }, label),
+                  body
+                ) };
+              };
+              var cards = [
+                card('3-5', 'projectile', 'text-blue-600', '🚀 ' + __alloT('stem.physics.concept_projectile_label', 'Projectile Motion: '), __alloT('stem.physics.concept_projectile_body', 'An object launched into the air follows a parabolic path. Horizontal velocity (Vx) stays constant while vertical velocity (Vy) changes due to gravity. Enable Vectors to see!')),
+                card('6-8', 'newton2', 'text-red-600', '🌍 ' + __alloT('stem.physics.concept_newton2_label', "Newton's 2nd Law: "), __alloT('stem.physics.concept_newton2_body', 'F = ma. The only force on a projectile (ignoring drag) is gravity: a = g downward. This creates the curved trajectory.')),
+                card('3-5', 'optimal', 'text-amber-600', '🎯 ' + __alloT('stem.physics.concept_optimal_label', 'Optimal Angle: '), __alloT('stem.physics.concept_optimal_body', 'Without air resistance, 45° gives maximum range. With drag the best angle drops below 45° — the faster the launch, the lower it goes (about 42° at 50 m/s). Try it!')),
+                card('6-8', 'energy', 'text-purple-600', '⚡ ' + __alloT('stem.physics.concept_energy_label', 'Energy Conservation: '), __alloT('stem.physics.concept_energy_body', 'Kinetic Energy (KE = ½mv²) converts to Potential Energy (PE = mgh) and back. Enable the Energy bar to watch this live!')),
+                card('9-12', 'air', 'text-orange-600', '🌬️ ' + __alloT('stem.physics.concept_air_label', 'Air Resistance: '), __alloT('stem.physics.concept_air_body', 'Drag force opposes motion and increases with speed (F_drag ∝ v²). It shortens range, lowers max height, and makes the trajectory asymmetric.')),
+                card('3-5', 'gravity', 'text-sky-700', '🌑 ' + __alloT('stem.physics.concept_gravity_label', 'Gravity Varies: '), __alloT('stem.physics.concept_gravity_body', 'Different planets have different gravitational pull. Moon (1.6 m/s²) lets projectiles fly 6x farther than Earth (9.8 m/s²)! Try Jupiter for a challenge.')),
+                card('3-5', 'myth1', 'text-amber-700', '⚠ ' + __alloT('stem.physics.myth1_label', 'Myth: “A moving object needs a forward push.” '), __alloT('stem.physics.myth1_body', "Watch Vx — it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law)."), true),
+                card('3-5', 'myth2', 'text-amber-700', '⚠ ' + __alloT('stem.physics.myth2_label', 'Myth: “Heavier objects fall faster.” '), __alloT('stem.physics.myth2_body', 'Drag the Mass slider with air drag OFF — the trajectory does NOT change; every mass falls with the same g. Only with air drag ON does a heavier ball fly farther, because the same air push slows a big mass less.'), true),
+                card('6-8', 'myth3', 'text-amber-700', '⚠ ' + __alloT('stem.physics.myth3_label', 'Myth: “Velocity points where the force points.” '), __alloT('stem.physics.myth3_body', "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion — it doesn't have to point along it."), true)
+              ];
+              var shown = cards.filter(function (c) { return d.learnShowAll || (bandRank[c.band] || 0) <= myRank; });
+              var hidden = cards.length - shown.length;
+              return React.createElement("div", { className: "bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3 animate-in fade-in duration-200" },
+                React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                  React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "📖 " + __alloT('stem.physics.physics_concepts', 'Physics Concepts')),
+                  (hidden > 0 || d.learnShowAll) && React.createElement("button", {
+                    type: "button",
+                    "aria-pressed": !!d.learnShowAll,
+                    onClick: function () { upd('learnShowAll', !d.learnShowAll); },
+                    className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold border " + (d.learnShowAll ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100')
+                  }, d.learnShowAll ? __alloT('stem.physics.learn_show_my_level', 'Show my level') : __alloT('stem.physics.learn_show_all', 'Show all concepts') + ' (+' + hidden + ')')
                 ),
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-red-600" }, "\uD83C\uDF0D " + __alloT('stem.physics.concept_newton2_label', "Newton's 2nd Law: ")),
-                  __alloT('stem.physics.concept_newton2_body', 'F = ma. The only force on a projectile (ignoring drag) is gravity: a = g downward. This creates the curved trajectory.')
-                ),
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-amber-600" }, "\uD83C\uDFAF " + __alloT('stem.physics.concept_optimal_label', 'Optimal Angle: ')),
-                  __alloT('stem.physics.concept_optimal_body', 'Without air resistance, 45\u00B0 gives maximum range. With drag, the optimal angle shifts lower (~38-42\u00B0). Try it!')
-                ),
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-purple-600" }, "\u26A1 " + __alloT('stem.physics.concept_energy_label', 'Energy Conservation: ')),
-                  __alloT('stem.physics.concept_energy_body', 'Kinetic Energy (KE = \u00BDmv\u00B2) converts to Potential Energy (PE = mgh) and back. Enable the Energy bar to watch this live!')
-                ),
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-orange-600" }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.concept_air_label', 'Air Resistance: ')),
-                  __alloT('stem.physics.concept_air_body', 'Drag force opposes motion and increases with speed (F_drag \u221D v\u00B2). It shortens range, lowers max height, and makes the trajectory asymmetric.')
-                ),
-                React.createElement("div", { className: "bg-white rounded-lg p-2 border border-emerald-100" },
-                  React.createElement("span", { className: "font-bold text-sky-700" }, "\uD83C\uDF11 " + __alloT('stem.physics.concept_gravity_label', 'Gravity Varies: ')),
-                  __alloT('stem.physics.concept_gravity_body', 'Different planets have different gravitational pull. Moon (1.6 m/s\u00B2) lets projectiles fly 6x farther than Earth (9.8 m/s\u00B2)! Try Jupiter for a challenge.')
-                ),
-                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70 mt-1" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth1_label', 'Myth: \u201CA moving object needs a forward push.\u201D ')),
-                  __alloT('stem.physics.myth1_body', "Watch Vx \u2014 it never changes, and the Vectors view shows NO horizontal arrow. With no sideways force, the object keeps moving sideways on its own (Newton's 1st Law).")
-                ),
-                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth2_label', 'Myth: \u201CHeavier objects fall faster.\u201D ')),
-                  __alloT('stem.physics.myth2_body', 'Drag the Mass slider \u2014 the trajectory does NOT change. In a vacuum every mass falls with the same g; mass only scales the energy bar, never the path.')
-                ),
-                React.createElement("div", { className: "rounded-lg p-2 border border-amber-300 bg-amber-100/70" },
-                  React.createElement("span", { className: "font-bold text-amber-700" }, "\u26A0 " + __alloT('stem.physics.myth3_label', 'Myth: \u201CVelocity points where the force points.\u201D ')),
-                  __alloT('stem.physics.myth3_body', "At the very top of the arc the velocity is purely horizontal, yet gravity still points straight DOWN. A force changes motion \u2014 it doesn't have to point along it.")
-                )
-              )
-            ),
+                React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" }, shown.map(function (c) { return c.node; }))
+              );
+            })(),
 
             // ── Real-Time Flight Data Table ──
             d.showFlightData && React.createElement("div", { className: "bg-cyan-50 rounded-xl border border-cyan-200 p-3 mb-3 overflow-x-auto animate-in fade-in duration-200" },
-              React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCCA " + __alloT('stem.physics.flight_data_title', 'Flight Data')),
+              React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-cyan-700 uppercase tracking-wider" }, "\uD83D\uDCCA " + __alloT('stem.physics.flight_data_title', 'Flight Data')),
+                React.createElement("button", {
+                  type: "button",
+                  "aria-label": __alloT('stem.physics.aria_copy_csv', 'Copy the flight data as CSV for a spreadsheet'),
+                  onClick: function () {
+                    var csv = physFlightCsv();
+                    if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
+                    physCopyText(csv).then(function (ok) {
+                      var msg = ok ? __alloT('stem.physics.toast_csv_copied', 'Flight data copied as CSV. Paste it into a spreadsheet.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
+                      if (addToast) addToast((ok ? '\uD83D\uDCCB ' : '\u26A0\uFE0F ') + msg, ok ? 'success' : 'warning');
+                      if (typeof announceToSR === 'function') announceToSR(msg);
+                    });
+                  },
+                  className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
+                }, "\uD83D\uDCCB " + __alloT('stem.physics.copy_csv', 'Copy CSV'))
+              ),
               (function() {
                 var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
                 var trails = cv && cv._trails ? cv._trails : [];
                 var lastTrail = trails.length > 0 ? trails[trails.length - 1] : [];
-                if (lastTrail.length === 0) return // cyan-700: this sits on a fixed bg-cyan-50 panel, and cyan-400 measured
+                // cyan-700: this sits on a fixed bg-cyan-50 panel, and cyan-400 measured
                 // 1.74:1 there. The file's other cyan inks are already 700/800.
-                React.createElement("p", { className: "text-xs text-cyan-700 italic" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
+                // (Keep `return` and its expression on ONE line: a comment between
+                // them once triggered semicolon insertion and this hint went dead.)
+                if (lastTrail.length === 0) {
+                  return React.createElement("p", { className: "text-xs text-cyan-700 italic" }, __alloT('stem.physics.launch_to_see_flight_data', 'Launch a projectile to see flight data'));
+                }
                 // Sample ~10 evenly spaced points
                 var step = Math.max(1, Math.floor(lastTrail.length / 10));
                 var rows = [];
                 for (var ri = 0; ri < lastTrail.length; ri += step) {
                   var pt = lastTrail[ri];
-                  var t_sec = ri * 0.035;
+                  var t_sec = pt.t != null ? pt.t : ri * PHYS_DT;
                   rows.push(React.createElement("tr", { key: ri, className: "border-b border-cyan-100 hover:bg-cyan-100 transition-colors" },
                     React.createElement("td", { className: "px-2 py-0.5 font-mono text-cyan-800" }, t_sec.toFixed(2)),
                     React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, pt.mX.toFixed(1)),
@@ -2726,7 +3173,7 @@ const d = labToolData.physics;
                         className: "px-3 py-1 bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-800 transition-all"
                       }, "\u{1F504} " + __alloT('stem.physics.retry', 'Retry')),
                       React.createElement("button", { "aria-label": __alloT('stem.physics.end', 'End'),
-                        onClick: function() { upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false); },
+                        onClick: endTargetMode,
                         className: "px-3 py-1 bg-slate-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-slate-500 transition-all"
                       }, "\u2716 " + __alloT('stem.physics.end', 'End'))
                     )
@@ -2800,20 +3247,18 @@ const d = labToolData.physics;
             React.createElement("div", { className: "bg-gradient-to-r from-violet-50 to-pink-50 rounded-xl border border-violet-200 p-3 mb-3" },
               React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFC6 " + __alloT('stem.physics.challenges_title', 'Challenges')),
               React.createElement("div", { className: "grid grid-cols-3 gap-2" },
-                [
-                  { tier: 1, label: '\uD83E\uDD47 ' + __alloT('stem.physics.challenge_tier_1', 'Tier 1'), desc: __alloT('stem.physics.challenge_desc_1', 'Hit the 50m flag'), target: 50, tol: 10, reward: 10, req: '' },
-                  { tier: 2, label: '\uD83E\uDD48 ' + __alloT('stem.physics.challenge_tier_2', 'Tier 2'), desc: __alloT('stem.physics.challenge_desc_2', 'Hit 100m with Air Drag ON'), target: 100, tol: 12, reward: 20, req: 'airResist' },
-                  { tier: 3, label: '\uD83E\uDD49 ' + __alloT('stem.physics.challenge_tier_3', 'Tier 3'), desc: __alloT('stem.physics.challenge_desc_3', 'Hit 200m on Mars'), target: 200, tol: 15, reward: 35, req: 'mars' }
-                ].map(function(ch) {
-                  var active = d.challengeTier === ch.tier;
+                TIER_CHALLENGES.map(function(ch) {
+                  var active = d.challengeTier === ch.tier && d.challengeActive;
                   var completed = d['challenge' + ch.tier + 'Done'];
                   return React.createElement("button", { key: ch.tier,
+                    "aria-pressed": !!active,
                     onClick: function() {
                       upd('challengeTier', ch.tier);
                       upd('challengeActive', true);
+                      upd('challengeFeedback', null);
                       if (ch.req === 'airResist') upd('airResist', true);
                       if (ch.req === 'mars') upd('gravity', 3.7);
-                      addToast('\uD83C\uDFC6 ' + ch.desc + ' — fire away!', 'info');
+                      addToast('\uD83C\uDFC6 ' + ch.desc + ' — ' + __alloT('stem.physics.toast_fire_away', 'fire away!'), 'info');
                     },
                     className: "p-2 rounded-lg text-center transition-all border-2 " +
                       (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-600')
@@ -2823,7 +3268,11 @@ const d = labToolData.physics;
                     React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 mt-1" }, '+' + ch.reward + ' XP')
                   );
                 })
-              )
+              ),
+              d.challengeFeedback && React.createElement("p", {
+                role: "status",
+                className: "mt-2 px-3 py-1.5 rounded-lg text-xs font-bold " + (d.challengeFeedback.type === 'success' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300')
+              }, d.challengeFeedback.msg)
             ),
 
             // ── Kinematic Equations ──
@@ -2979,8 +3428,8 @@ const d = labToolData.physics;
                         if (!isCorrect) {
                           var qRatio = opt / d.quizAnswer;
                           var qSin = Math.sin(2 * d.quizAngle * Math.PI / 180);
-                          var qDiag = 'Walk it through: R = v²·sin(2θ)/g = ' + d.quizVel + '² × ' + qSin.toFixed(2) + ' / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m. Your pick was ' + (qRatio > 1 ? qRatio.toFixed(1) + '× too far' : 'only ' + (qRatio * 100).toFixed(0) + '% of the true range') + '. Remember the biggest lever: velocity enters SQUARED — small speed changes move the landing a lot.';
-                          var qWorld = { '1.6': 'Moon gravity is ~6× weaker than Earth’s, so everything flies ~6× farther.', '3.7': 'Mars gravity is ~2.6× weaker than Earth’s — ranges stretch accordingly.', '24.8': 'Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.' }[String(d.quizGrav)];
+                          var qDiag = __alloT('stem.physics.quiz_diag_walk', 'Walk it through: R = v²·sin(2θ)/g = ') + d.quizVel + '² × ' + qSin.toFixed(2) + ' / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m. ' + __alloT('stem.physics.quiz_diag_pick_was', 'Your pick was ') + (qRatio > 1 ? qRatio.toFixed(1) + '× ' + __alloT('stem.physics.quiz_diag_too_far', 'too far') : __alloT('stem.physics.quiz_diag_only', 'only ') + (qRatio * 100).toFixed(0) + '% ' + __alloT('stem.physics.quiz_diag_of_true', 'of the true range')) + '. ' + __alloT('stem.physics.quiz_diag_lever', 'Remember the biggest lever: velocity enters SQUARED — small speed changes move the landing a lot.');
+                          var qWorld = { '1.6': __alloT('stem.physics.quiz_world_moon', 'Moon gravity is ~6× weaker than Earth’s, so everything flies ~6× farther.'), '3.7': __alloT('stem.physics.quiz_world_mars', 'Mars gravity is ~2.6× weaker than Earth’s — ranges stretch accordingly.'), '24.8': __alloT('stem.physics.quiz_world_jupiter', 'Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.') }[String(d.quizGrav)];
                           if (qWorld) qDiag += ' ' + qWorld;
                           upd('quizDiag', qDiag);
                         } else {
@@ -3033,7 +3482,7 @@ const d = labToolData.physics;
                 { s: __alloT('stem.physics.myth68_2_s', 'A ball fired horizontally and a ball dropped from the same height hit the ground at the same time.'), t: true, why: __alloT('stem.physics.myth68_2_why', 'Horizontal and vertical motion are independent. Both balls fall with the same gravity from the same height, so they land together.'), tryIt: __alloT('stem.physics.myth68_2_tryit', 'Fire at a very low angle and compare the flight time with a steep, short lob from the same height.') }
               ]);
               var MYTHS_912 = MYTHS_68.concat([
-                { s: __alloT('stem.physics.myth912_1_s', 'With air resistance ON, 45\u00B0 is still the best angle.'), t: false, why: __alloT('stem.physics.myth912_1_why', 'Drag punishes long, high flights \u2014 it bleeds v\u00B2 the whole way. The optimum drops to roughly 30\u201340\u00B0 depending on speed.'), tryIt: __alloT('stem.physics.myth912_1_tryit', 'Toggle air resistance on and sweep the angle slider \u2014 watch where the landing marker actually peaks.') }
+                { s: __alloT('stem.physics.myth912_1_s', 'With air resistance ON, 45\u00B0 is still the best angle.'), t: false, why: __alloT('stem.physics.myth912_1_why', 'Drag punishes long, high flights \u2014 it bleeds v\u00B2 the whole way. The optimum slips below 45\u00B0, and the faster the launch the lower it goes (about 42\u00B0 at 50 m/s for a 1 kg ball).'), tryIt: __alloT('stem.physics.myth912_1_tryit', 'Toggle air resistance on and sweep the angle slider \u2014 watch where the landing marker actually peaks.') }
               ]);
               var mythBank = mythBand === '9-12' ? MYTHS_912 : mythBand === '6-8' ? MYTHS_68 : MYTHS_35;
               var myth = d.physMyth || null;
@@ -3065,7 +3514,7 @@ const d = labToolData.physics;
                             awardStemXP('physicsMyth', 5, 'Myth busted');
                             if (typeof stemBeep === 'function') stemBeep(784, 0.12);
                           } else if (typeof stemBeep === 'function') stemBeep(220, 0.15);
-                          if (typeof announceToSR === 'function') announceToSR((right ? 'Correct. ' : 'Not quite. ') + (myth.t ? 'True. ' : 'False. ') + myth.why);
+                          if (typeof announceToSR === 'function') announceToSR((right ? __alloT('stem.physics.sr_correct', 'Correct.') : __alloT('stem.physics.sr_not_quite', 'Not quite.')) + ' ' + (myth.t ? __alloT('stem.physics.true_period', 'TRUE.') : __alloT('stem.physics.false_period', 'FALSE.')) + ' ' + myth.why);
                         },
                         className: "px-3 py-2 rounded-lg text-xs font-bold border-2 bg-white text-slate-700 border-violet-200 hover:border-violet-400 hover:bg-violet-50 transition-all"
                       }, val ? '\u2705 ' + __alloT('stem.physics.true_cap', 'True') : '\u274C ' + __alloT('stem.physics.false_cap', 'False'));
@@ -3081,7 +3530,7 @@ const d = labToolData.physics;
               );
             })(),
 
-            React.createElement("button", { "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 Snapshot saved!', 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot')),
+            React.createElement("button", { "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.physics.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full hover:from-indigo-600 hover:to-purple-600 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot')),
 
             // === H7b'' inquiry widget: gravity-angle explorer ===
             (function() {
@@ -3218,6 +3667,10 @@ const d = labToolData.physics;
                   + 'Launch angle: ' + (d.angle || 45) + '\u00B0. Initial velocity: ' + (d.velocity || 25) + ' m/s. Gravity: ' + (d.gravity || 9.8) + ' m/s\u00B2. Air resistance: ' + (d.airResist ? 'on' : 'off') + '. '
                   + 'In 3 short sentences: (1) What the projectile will do. (2) Which variable most affects the range (and why). (3) One real-world analogy at this setting. '
                   + 'No markdown, no bullets, no headings. Plain prose.';
+                // Answer in the learner's interface language, not the prompt's.
+                var _uiLang = '';
+                try { _uiLang = (document.documentElement.getAttribute('lang') || '').trim(); } catch (e) {}
+                if (_uiLang && !/^en(-|$)/i.test(_uiLang)) prompt += ' Write the entire answer in the language with BCP-47 code "' + _uiLang + '".';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
                   upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
                   if (typeof announceToSR === 'function') announceToSR(__alloT('stem.physics.sr_explanation_ready', 'Explanation ready.'));

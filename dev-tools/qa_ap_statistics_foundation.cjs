@@ -41,6 +41,14 @@ for (const item of pack.items || []) {
   if (!Array.isArray(item.choices) || item.choices.length !== 4) findings.push({ code: 'choice-count', itemId: item.id });
   if (item.answerIndex < 0 || item.answerIndex > 3) findings.push({ code: 'answer-index', itemId: item.id });
   else answerCounts[item.answerIndex] += 1;
+  // Option-level feedback must be specific to each distractor: three distinct
+  // notes, none a generic placeholder, none a copy of the key's rationale.
+  {
+    const notes = Array.isArray(item.choiceRationales) ? item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((value) => String(value || '').replace(/\s+/g, ' ').trim()) : [];
+    const keyNote = String(item.rationale || '').replace(/\s+/g, ' ').trim();
+    const specific = notes.length === 3 && new Set(notes).size === 3 && notes.every((note) => note.length >= 30 && note !== keyNote && !/does not match the statistical definition, calculation, or scope/i.test(note));
+    if (!specific) findings.push({ code: 'feedback-specificity', itemId: item.id });
+  }
 }
 
 const unitCounts = Object.fromEntries((pack.domains || []).map((domain) => [domain.id, (pack.items || []).filter((item) => item.domainId === domain.id).length]));

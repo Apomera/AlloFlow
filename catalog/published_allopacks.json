@@ -14,5 +14,65 @@
     "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
     "license": "CC-BY-4.0",
     "submitted_at": "2026-09-04T00:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/materials_grade2.allopack.json",
+    "slug": "materials_grade2_illustrated",
+    "tags": [
+      "materials",
+      "illustrated",
+      "ngss",
+      "ccss"
+    ],
+    "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+    "submitted_at": "2026-09-05T23:50:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/forces_motion_grade3.allopack.json",
+    "slug": "forces_motion_grade3_illustrated",
+    "tags": [
+      "forces-motion",
+      "illustrated",
+      "ngss",
+      "ccss"
+    ],
+    "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+    "submitted_at": "2026-09-05T13:20:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/plant_needs_grade3.allopack.json",
+    "slug": "plant_needs_grade3_illustrated",
+    "tags": [
+      "plant-needs",
+      "illustrated",
+      "ngss",
+      "ccss"
+    ],
+    "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+    "submitted_at": "2026-07-21T18:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/states_of_matter_grade4.allopack.json",
+    "slug": "states_of_matter_grade4_illustrated",
+    "tags": [
+      "states-of-matter",
+      "illustrated",
+      "ngss",
+      "ccss"
+    ],
+    "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+    "submitted_at": "2026-07-21T09:00:00.000Z"
+  },
+  {
+    "path": "allopacks/illustrated/weather_vs_climate_grade5.allopack.json",
+    "slug": "weather_vs_climate_grade5_illustrated",
+    "tags": [
+      "weather-vs-climate",
+      "illustrated",
+      "ngss",
+      "ccss"
+    ],
+    "credit": "AlloFlow flagship; AI-generated illustrations, educator review pending",
+    "submitted_at": "2026-07-20T02:00:00.000Z"
   }
 ]

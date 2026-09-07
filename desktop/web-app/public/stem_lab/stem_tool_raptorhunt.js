@@ -11410,7 +11410,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         ].join('\n');
         function surfaceVertexShader(shader) {
           shader.vertexShader = 'varying vec3 vRhWorld;\n' + shader.vertexShader;
-          shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n vRhWorld=(modelMatrix*vec4(transformed,1.0)).xyz;');
+          shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n vec4 rhSurfacePosition=vec4(transformed,1.0);\n #ifdef USE_INSTANCING\n rhSurfacePosition=instanceMatrix*rhSurfacePosition;\n #endif\n vRhWorld=(modelMatrix*rhSurfacePosition).xyz;');
         }
         function detailLandscapeMaterial(material, rock) {
           if(rock) material.extensions=Object.assign({},material.extensions,{derivatives:true});
@@ -12142,7 +12142,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                                species.biome === 'boreal-forest' ? 0x064e3b :
                                species.biome === 'forest' ? 0x365c38 : 0x38563b;
         // Alpha-tested branch cards retain needle/leaf silhouettes and cast matching shadows.
-        // Three crossed planes provide volume at a fraction of the old solid-crown triangle cost.
+        // Curved bough panels retain depth while sharing each forest type's instanced draw.
         function canopyTexture(broadleaf) {
           var canvas=document.createElement('canvas');canvas.width=canvas.height=512;
           var context=canvas.getContext('2d');
@@ -12155,14 +12155,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               context.beginPath();context.ellipse(x,y,3+sceneryRandom()*7,2+sceneryRandom()*5,a,0,Math.PI*2);context.fill();
             }
           } else {
-            context.strokeStyle='#666';context.lineWidth=5;context.beginPath();context.moveTo(256,35);context.lineTo(256,482);context.stroke();
-            for(var tier=0;tier<24;tier++) {
-              var y=45+tier*18, reach=12+tier*8.8;
+            context.strokeStyle='#666';context.lineWidth=5;context.beginPath();context.moveTo(256,62);context.lineTo(256,468);context.stroke();
+            for(var tier=0;tier<13;tier++) {
+              // Each crown layer is a spray of boughs, not another miniature tree.
+              var y=72+tier*28, reach=210*Math.pow(Math.sin((tier+1)/14*Math.PI),0.65)*(0.84+0.13*Math.sin(tier*2.4));
               [-1,1].forEach(function(side) {
-                var tipY=y+20+sceneryRandom()*22;
-                context.strokeStyle='#aaa';context.lineWidth=2.5;context.beginPath();context.moveTo(256,y);context.quadraticCurveTo(256+side*reach*0.6,y+8,256+side*reach,tipY);context.stroke();
-                for(var needle=0;needle<reach*2.8;needle++) {
-                  var u=sceneryRandom(),nx=256+side*reach*u,ny=y+(tipY-y)*u;
+                var branchReach=reach*(0.82+sceneryRandom()*0.26),tipY=y+14+sceneryRandom()*24;
+                context.strokeStyle='#aaa';context.lineWidth=2.5;context.beginPath();context.moveTo(256,y);context.quadraticCurveTo(256+side*branchReach*0.6,y+8,256+side*branchReach,tipY);context.stroke();
+                for(var needle=0;needle<branchReach*2.2;needle++) {
+                  var u=sceneryRandom();
+                  if(u>0.2&&Math.sin(u*19+tier*2.4+side)>0.86)continue;
+                  var nx=256+side*branchReach*u,ny=y+(tipY-y)*u;
                   var length=5+sceneryRandom()*16,shade=Math.floor(160+sceneryRandom()*95);
                   context.strokeStyle='rgb('+shade+','+shade+','+shade+')';context.lineWidth=1.4+sceneryRandom()*1.4;
                   context.beginPath();context.moveTo(nx,ny);context.lineTo(nx+side*(3+sceneryRandom()*9),ny-length*(sceneryRandom()>0.3 ? 1 : -0.5));context.stroke();
@@ -12175,16 +12178,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         function canopyCards(broadleaf) {
           var positions=[],uvs=[],indices=[],normals=[];
-          function addCard(points) {
+          function addCard(points,u0,u1) {
             var base=positions.length/3;
             points.forEach(function(p){positions.push(p[0],p[1],p[2]);var n=new THREE.Vector3(p[0]*0.6,0.85+p[1]*0.35,p[2]*0.6).normalize();normals.push(n.x,n.y,n.z);});
-            uvs.push(0,0,1,0,1,1,0,1);indices.push(base,base+1,base+2,base,base+2,base+3);
+            u0=u0===undefined?0:u0;u1=u1===undefined?1:u1;
+            uvs.push(u0,0,u1,0,u1,1,u0,1);indices.push(base,base+1,base+2,base,base+2,base+3);
           }
           for(var card=0;card<3;card++) {
             var angle=card*Math.PI/3,c=Math.cos(angle),sn=Math.sin(angle);
-            addCard([[-c,-0.5,-sn],[c,-0.5,sn],[c,0.5,sn],[-c,0.5,-sn]]);
+            if(broadleaf) addCard([[-c,-0.5,-sn],[c,-0.5,sn],[c,0.5,sn],[-c,0.5,-sn]]);
+            else {
+              function boughPoint(x,top) {
+                var bow=(1-x*x)*0.24;
+                return [c*x-sn*bow,top?0.5-Math.abs(x)*0.08:-0.5+Math.abs(x)*0.18,sn*x+c*bow];
+              }
+              for(var panel=0;panel<4;panel++) {
+                var a=-1+panel*0.5,b=a+0.5;
+                addCard([boughPoint(a,false),boughPoint(b,false),boughPoint(b,true),boughPoint(a,true)],panel/4,(panel+1)/4);
+              }
+            }
           }
-          if(broadleaf) addCard([[-0.9,-0.08,-0.9],[0.9,0.08,-0.9],[0.9,0.16,0.9],[-0.9,0,0.9]]);
+          addCard([[-0.9,-0.08,-0.9],[0.9,0.08,-0.9],[0.9,0.16,0.9],[-0.9,0,0.9]]);
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
           geometry.setAttribute('uv',new THREE.Float32BufferAttribute(uvs,2));geometry.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));geometry.setIndex(indices);return geometry;
         }
@@ -12194,22 +12208,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (!batch.length) return;
           var foliageMaterial = new THREE.MeshStandardMaterial({ color: foliageBaseColor, map: typeIndex === 1 ? leafCanopy : needleCanopy, alphaTest: 0.32, side: THREE.DoubleSide, roughness: 0.95 });
           foliageMaterial.color.convertSRGBToLinear().lerp(new THREE.Color(0x6f8150).convertSRGBToLinear(),0.24);
-          var crownLayers = graphicsQuality === 'low' ? 2 : 3;
+          var crownLayers = graphicsQuality === 'low' ? 3 : graphicsQuality === 'high' ? 5 : 4;
           var foliageInstances = new THREE.InstancedMesh(foliageGeometries[typeIndex], foliageMaterial, batch.length * crownLayers);
           foliageInstances.name = 'instanced-forest-foliage-' + typeIndex;
           batch.forEach(function(tree, instanceIndex) {
             var foliageHeight = tree.height * (typeIndex === 0 ? 0.75 : typeIndex === 1 ? 0.55 : 0.85);
-            var foliageRadius = tree.height * (typeIndex === 0 ? 0.22 : typeIndex === 1 ? 0.32 : 0.14);
+            var foliageRadius = tree.height * (typeIndex === 0 ? 0.28 : typeIndex === 1 ? 0.35 : 0.18);
             treeDummy.position.set(tree.x, tree.y + tree.height * 0.55 + foliageHeight * 0.45, tree.z);
             treeDummy.scale.set(foliageRadius, foliageHeight, foliageRadius);
             treeDummy.rotation.set(0, (instanceIndex < originalTreeCounts[typeIndex] ? Math.random() : sceneryRandom()) * Math.PI * 2, 0);
             treeDummy.updateMatrix();
             for (var crownLayer = 0; crownLayer < crownLayers; crownLayer++) {
-              var taper = 1 - crownLayer * 0.22;
+              var taper = 1 - crownLayer / (crownLayers - 1) * 0.65;
               treeDummy.position.set(tree.x + (typeIndex === 1 ? Math.sin(crownLayer * 2.4) * foliageRadius * 0.42 : 0),
-                tree.y + tree.height * 0.49 + foliageHeight * (0.15 + crownLayer * 0.25),
+                tree.y + tree.height * 0.49 + foliageHeight * (0.12 + crownLayer / (crownLayers - 1) * 0.68),
                 tree.z + (typeIndex === 1 ? Math.cos(crownLayer * 2.4) * foliageRadius * 0.42 : 0));
-              treeDummy.scale.set(foliageRadius * taper, foliageHeight * 0.66, foliageRadius * taper);
+              treeDummy.scale.set(foliageRadius * taper, foliageHeight * 0.60, foliageRadius * taper);
               treeDummy.updateMatrix();
               var crownIndex = instanceIndex * crownLayers + crownLayer;
               foliageInstances.setMatrixAt(crownIndex, treeDummy.matrix);
@@ -12260,6 +12274,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var groundCoverCount = graphicsQuality === 'high' ? 360 : graphicsQuality === 'low' ? 100 : 240;
         var groundRockMaterial = new THREE.MeshStandardMaterial({ color: 0x79736b, roughness: 1, flatShading: true });
         groundRockMaterial.color.convertSRGBToLinear();
+        detailLandscapeMaterial(groundRockMaterial,true);
         var groundRocks = new THREE.InstancedMesh(new THREE.DodecahedronGeometry(1, 0), groundRockMaterial, groundCoverCount);
         groundRocks.name = 'raptor-ground-rocks';
         var scrubMaterial = new THREE.MeshStandardMaterial({ color: species.biome === 'tundra' ? 0xb5bca1 : 0x65744b, map: leafCanopy, alphaTest: 0.36, side: THREE.DoubleSide, roughness: 1 });
@@ -12280,38 +12295,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           coverDummy.position.x += coverSize * 2;
           coverDummy.position.y = terrainHeightAt(coverDummy.position.x, coverZ) + coverSize * 0.28;
           coverDummy.scale.set(coverSize * 1.1, coverSize * 0.66, coverSize);
+          coverDummy.rotation.set(0,coverIndex*1.7,0);
           coverDummy.updateMatrix(); groundScrub.setMatrixAt(coverPlaced, coverDummy.matrix);
           coverPlaced++;
         }
         groundRocks.count = groundScrub.count = coverPlaced;
         scene.add(groundRocks); scene.add(groundScrub);
-        var grassInstanceCount = species.biome==='tundra' ? 0 : graphicsQuality==='high' ? 11000 : graphicsQuality==='low' ? 1200 : 6000;
+        function createMeadowClumpGeometry(bladeCount) {
+          var positions=[],colors=[],indices=[];
+          var rootColor=new THREE.Color(0x35472c).convertSRGBToLinear(),tipColor=new THREE.Color(0xaaa16b).convertSRGBToLinear(),bladeColor=new THREE.Color();
+          for(var blade=0;blade<bladeCount;blade++) {
+            var angle=blade*2.399963,spread=Math.sqrt((blade+0.5)/bladeCount)*1.05;
+            var x=Math.cos(angle)*spread,z=Math.sin(angle)*spread;
+            var height=0.65+(Math.sin(blade*17.3)*0.5+0.5)*0.85,width=0.06+(blade%3)*0.015;
+            var bend=0.16+(blade%4)*0.075,base=positions.length/3;
+            // Three sections carry a curved silhouette and a darker root, not a flat card.
+            for(var section=0;section<=3;section++) {
+              var t=section/3,half=width*(1-t)*0.5;
+              var cx=x+Math.cos(angle)*bend*t*t,cz=z+Math.sin(angle)*bend*t*t;
+              bladeColor.copy(rootColor).lerp(tipColor,t*0.78);
+              for(var side=-1;side<=1;side+=2){positions.push(cx-Math.sin(angle)*half*side,height*t,cz+Math.cos(angle)*half*side);colors.push(bladeColor.r,bladeColor.g,bladeColor.b);}
+            }
+            indices.push(base,base+1,base+2,base+1,base+3,base+2,base+2,base+3,base+4,base+3,base+5,base+4,base+4,base+5,base+6);
+          }
+          var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
+        }
+        var grassInstanceCount = species.biome==='tundra' ? 0 : graphicsQuality==='high' ? 2800 : graphicsQuality==='low' ? 700 : 1600;
+        var grassPlaced=0;
         if(grassInstanceCount) {
-          var grassGeometry=new THREE.BufferGeometry();
-          grassGeometry.setAttribute('position',new THREE.Float32BufferAttribute([-0.12,0,0,0.12,0,0,0.07,0.95,0.06,0,0,-0.12,0,0,0.12,-0.05,0.72,0.08],3));
-          grassGeometry.computeVertexNormals();
-          var grassMaterial=new THREE.MeshStandardMaterial({color:new THREE.Color(0x68764b).convertSRGBToLinear(),roughness:1,side:THREE.DoubleSide});
+          var grassGeometry=createMeadowClumpGeometry(graphicsQuality==='low'?7:graphicsQuality==='high'?13:10);
+          var grassMaterial=new THREE.MeshStandardMaterial({color:0xffffff,vertexColors:true,roughness:1,side:THREE.DoubleSide});
           grassMaterial.onBeforeCompile=function(shader) {
             shader.uniforms.rhGrassTime=waterAppearance.time;
             shader.vertexShader='uniform float rhGrassTime;\n'+shader.vertexShader;
-            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\n transformed.x+=sin(rhGrassTime*1.4+instanceMatrix[3].x*0.12+instanceMatrix[3].z*0.08)*position.y*position.y*0.10;');
+            shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>', [
+              '#include <begin_vertex>',
+              'vec3 clumpWorld=(modelMatrix*instanceMatrix*vec4(0.0,0.0,0.0,1.0)).xyz;',
+              'float grassFade=1.0-smoothstep(105.0,180.0,distance(cameraPosition,clumpWorld));',
+              'float gust=sin(rhGrassTime*1.4+clumpWorld.x*0.12+clumpWorld.z*0.08);',
+              'transformed.x+=(gust*0.13+sin(rhGrassTime*2.3+position.x*3.0)*0.035)*position.y*position.y;',
+              'transformed.z+=gust*position.y*position.y*0.06;',
+              'transformed*=grassFade;'
+            ].join('\n'));
           };
-          grassMaterial.customProgramCacheKey=function(){return 'raptor-meadow-v1';};
+          grassMaterial.customProgramCacheKey=function(){return 'raptor-meadow-v2';};
           var grassMesh=new THREE.InstancedMesh(grassGeometry,grassMaterial,grassInstanceCount);
           grassMesh.name='raptor-meadow-grass';grassMesh.receiveShadow=true;
-          var grassPlaced=0;
+          var meadowUp=new THREE.Vector3(0,1,0),meadowNormal=new THREE.Vector3(),meadowTilt=new THREE.Quaternion();
           for(var blade=0;blade<grassInstanceCount;blade++) {
-            var gx=(sceneryRandom()-0.5)*720,gz=(sceneryRandom()-0.5)*720;
-            if(species.biome==='lake'&&Math.hypot(gx,gz)<118)continue;
-            var gy=terrainHeightAt(gx,gz);
-            if(Math.abs(terrainHeightAt(gx+2,gz)-gy)>2)continue;
-            coverDummy.position.set(gx,gy-0.02,gz);
-            var bladeScale=0.5+sceneryRandom()*0.9;
+            // Shared patch centers produce small meadows with open space between them.
+            var patch=Math.floor(blade/28),patchAngle=sceneryRandom()*Math.PI*2,patchRadius=Math.sqrt(sceneryRandom())*22;
+            var patchX=Math.sin(patch*127.1+2.7)*43758.5453,patchZ=Math.sin(patch*311.7+1.2)*24634.6345;
+            var centralMeadow=patch%3===0;
+            var gx=((patchX-Math.floor(patchX))*2-1)*(centralMeadow?95:326)+Math.cos(patchAngle)*patchRadius;
+            var gz=((patchZ-Math.floor(patchZ))*2-1)*(centralMeadow?180:326)+Math.sin(patchAngle)*patchRadius;
+            if(species.biome==='lake'&&Math.hypot(gx,gz)<121)continue;
+            var gy=terrainHeightAt(gx,gz),slopeX=(terrainHeightAt(gx+1,gz)-terrainHeightAt(gx-1,gz))*0.5,slopeZ=(terrainHeightAt(gx,gz+1)-terrainHeightAt(gx,gz-1))*0.5;
+            if(Math.hypot(slopeX,slopeZ)>0.65)continue;
+            coverDummy.position.set(gx,gy-0.06,gz);
+            var bladeScale=0.8+sceneryRandom()*0.7;
             coverDummy.scale.set(bladeScale,bladeScale,bladeScale);
-            coverDummy.rotation.set(0,sceneryRandom()*Math.PI*2,0);coverDummy.updateMatrix();
+            coverDummy.rotation.set(0,sceneryRandom()*Math.PI*2,0);
+            meadowNormal.set(-slopeX,1,-slopeZ).normalize();meadowTilt.setFromUnitVectors(meadowUp,meadowNormal);coverDummy.quaternion.premultiply(meadowTilt);coverDummy.updateMatrix();
             grassMesh.setMatrixAt(grassPlaced,coverDummy.matrix);
-            grassMesh.setColorAt(grassPlaced,new THREE.Color(0.72+sceneryRandom()*0.28,0.8+sceneryRandom()*0.2,0.7+sceneryRandom()*0.25));
-            grassPlaced++;
+            var shade=0.78+sceneryRandom()*0.24;grassMesh.setColorAt(grassPlaced,new THREE.Color(shade,shade,shade*0.95));grassPlaced++;
           }
           grassMesh.count=grassPlaced;scene.add(grassMesh);
         }
@@ -12527,7 +12574,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Body surfaces tile the atlas finely; wing vanes keep the one-to-one mapping.
         var bodyPlumageTex = plumageTex.clone();
         bodyPlumageTex.wrapS = bodyPlumageTex.wrapT = THREE.RepeatWrapping;
-        bodyPlumageTex.repeat.set(4, 3);
+        bodyPlumageTex.repeat.set(1.75, 1.5);
         bodyPlumageTex.needsUpdate = true;
         var wingPlumageTex = plumageTex.clone();
         wingPlumageTex.wrapS = wingPlumageTex.wrapT = THREE.RepeatWrapping;
@@ -12538,7 +12585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var breastColor = plumageProfile.breast;
         var raptorFieldMarkIds = [];
         // Body — elongated using stretched sphere (more bird-like than capsule)
-        var bodyGeo = new THREE.SphereGeometry(0.35, 16, 12);
+        var bodyGeo = new THREE.SphereGeometry(0.35, graphicsQuality==='low'?16:28, graphicsQuality==='low'?12:20);
         bodyGeo.scale(0.7, 0.7, 1.8);  // stretch along z = flight direction
         // How bright this bird is. A snowy owl and a great horned owl are at opposite
         // ends of this, and which one is flying decides how hard it is to pick out.
@@ -12564,7 +12611,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         headGroup.position.set(0, 0.06, 0.62);
         raptorGroup.add(headGroup);
         var head = new THREE.Mesh(
-          new THREE.SphereGeometry(0.22, 14, 10),
+          new THREE.SphereGeometry(0.22, graphicsQuality==='low'?14:24, graphicsQuality==='low'?10:16),
           new THREE.MeshStandardMaterial({ color: plumageProfile.head, roughness: 0.75 })
         );
         head.name = 'raptor-head';
@@ -12627,11 +12674,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                    plumageProfile.markKind === 'golden-nape' ||
                    plumageProfile.markKind === 'kestrel-blue-wing') {
           var crownPatch = new THREE.Mesh(
-            new THREE.SphereGeometry(0.224, 12, 8),
+            new THREE.SphereGeometry(0.224, 24, 12, 0, Math.PI*2, 0, Math.PI*0.46),
             new THREE.MeshStandardMaterial({ color: plumageProfile.mark, roughness: 0.82 })
           );
-          crownPatch.scale.set(1.01, 0.34, 0.82);
-          crownPatch.position.set(0, 0.13, -0.03);
+          crownPatch.material.map=bodyPlumageTex;
+          crownPatch.scale.set(1.005, 1, 1.005);
+          crownPatch.position.set(0, 0, 0);
           crownPatch.name = 'field-mark-' + plumageProfile.markKind;
           crownPatch.userData.raptorFieldMarkId = plumageProfile.markKind;
           headGroup.add(crownPatch);
@@ -15356,6 +15404,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             lakeSurfaceVertices: lake ? lake.geometry.attributes.position.count : 0,
             softShadows: renderer.shadowMap.enabled,
             forestTreeCount: trunkCount,
+            boughPanelVertices: foliageGeometries[0].attributes.position.count,
+            meadowClumpCount: grassPlaced,
+            terrainClearance: raptor.y-terrainHeightAt(raptor.x,raptor.z),
+            meadowBladeCount: grassInstanceCount ? grassGeometry.attributes.position.count/8 : 0,
             fixedLandmarks: true,
             sceneryTime: waterAppearance.time.value,
             scenicView: canvasEl.parentElement.dataset.raptorScenicView === 'true',

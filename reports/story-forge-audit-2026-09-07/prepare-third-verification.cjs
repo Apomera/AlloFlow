@@ -1,0 +1,31 @@
+const fs=require('fs');
+const mirror='desktop/web-app/public/ui_strings.js';const data=JSON.parse(fs.readFileSync(mirror,'utf8'));const source=JSON.parse(fs.readFileSync('ui_strings.js','utf8'));for(const key of ['rating_1','rating_2','rating_3','rating_4','rating_5','rating_instructions'])data.storyforge_updates[key]=source.storyforge_updates[key];fs.writeFileSync(mirror,JSON.stringify(data,null,2)+'\n');
+let script=fs.readFileSync('reports/story-forge-audit-2026-09-07/verify-second-pass.cjs','utf8');script=script.slice(0,script.indexOf(" await page.locator('#sf-title').fill"));script=script.replace("path.join(__dirname,'second-pass')","path.join(__dirname,'third-pass')");
+script+=`
+ await page.locator('#sf-title').fill('Keyboard and review checks');
+ await openMenu();await page.locator('[data-sf-checkpoint-name]').focus();await page.keyboard.press('Escape');
+ assert.equal(await page.locator('[data-sf-project-menu]').getAttribute('open'),null);
+ assert.equal(await page.locator('[data-sf-project-menu-trigger]').evaluate(e=>e===document.activeElement),true);
+ assert.equal(await page.locator('#sf-title').count(),1);
+ await openMenu();await page.locator('#sf-title').click();assert.equal(await page.locator('[data-sf-project-menu]').getAttribute('open'),null);
+ await openMenu();await page.locator('#sf-title').focus();assert.equal(await page.locator('[data-sf-project-menu]').getAttribute('open'),null);
+ await go('write');await editors().first().fill('Maya built a bridge with her friend. They worked together and crossed the river.');await go('review');
+ await page.getByRole('button',{name:'More review tools',exact:true}).click();
+ for(const name of ['Senses Check','Mentor Match','Show vs Tell','Character Arcs','Dialogue Tune-Up'])assert.equal(await page.getByRole('button',{name:new RegExp(name)}).isDisabled(),true);
+ const ratings=page.locator('[data-sf-self-rating]');assert.ok(await ratings.count()>0);assert.equal(await ratings.first().inputValue(),'3');
+ await ratings.first().selectOption('4');assert.equal(await ratings.first().inputValue(),'4');
+ await page.setViewportSize({width:390,height:844});
+ const bounds=await ratings.evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return {x:r.x,width:r.width,height:r.height}}));assert.ok(bounds.every(r=>r.x>=0&&r.x+r.width<=390&&r.height>=44));
+ await page.screenshot({animations:'disabled',path:path.join(out,'review-mobile.png')});
+ await page.addScriptTag({path:path.resolve('node_modules/axe-core/axe.min.js')});
+ const accessibility=await page.evaluate(async()=>{const r=await axe.run(document.querySelector('.sf-modal-root'),{runOnly:{type:'tag',values:['wcag2a','wcag2aa']}});return r.violations.map(v=>({id:v.id,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));});
+ assert.deepEqual(accessibility,[]);
+ await page.getByRole('button',{name:'Submit Self-Assessment',exact:true}).click();
+ assert.equal(await page.locator('#sf-mobile-step option[value="design"]').isDisabled(),false);
+ assert.deepEqual(errors,[]);
+ fs.writeFileSync(path.join(out,'browser-results.json'),JSON.stringify({menuEscapeReturnsFocus:true,outsideClickDismisses:true,focusOutsideDismisses:true,unavailableAiDisabled:true,ratingsKeyboardAccessible:true,reviewProgression:true,accessibility,errors},null,2));
+ console.log(JSON.stringify({success:true,accessibility,errors}));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e);process.exitCode=1});
+`;
+fs.writeFileSync('reports/story-forge-audit-2026-09-07/verify-third-pass.cjs',script);

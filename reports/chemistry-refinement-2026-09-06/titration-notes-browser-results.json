@@ -1,0 +1,140 @@
+{
+  "checks": [
+    "Measured addition raises flask level and lowers burette meniscus; reduced motion stays still.",
+    "Dedicated flask and burette views retain readings; additions work while inspecting the flask.",
+    "Front, side, and keyboard orbit visibly change the real WebGL camera.",
+    "Notes persist beyond the addition timer; card A/B buttons update selections and signed differences; a real CSV download preserves quoted multiline notes and pH units.",
+    "Custom additions reject invalid volumes, deliver exactly 2.5 mL, save displayed readings, compare B minus A, and preserve records after reset.",
+    "Switching to the diagram disposes 3D and preserves the experiment; returning restores the same readings.",
+    "Live curve updates with additions and resets for a new setup, uses redox units, and toggles without recreating WebGL.",
+    "Notes persist across presets and 2D/3D; CSV includes redox volts and neutralizes formula-like notes.",
+    "Notebook and dispenser work in 2D, retain readings across presets, reject cross-setup comparison, show redox voltage differences, and clear only the notebook.",
+    "Bench addition controls share the experiment state; animation ends; polyprotic refills and redox potential use the correct readings.",
+    "Context loss reveals the usable 2D apparatus."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "width": 1200,
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "focus": "Full apparatus",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "focus": "Flask close-up",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "focus": "Burette close-up",
+      "overflow": false,
+      "violations": []
+    }
+  ],
+  "initial": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 762,
+      "h": 580
+    },
+    "objects": 78,
+    "focus": "apparatus",
+    "reading": 0,
+    "delivered": 0,
+    "fillFraction": 0.3333333333333333,
+    "liquidSurface": 0.4617158626401806,
+    "meniscus": 6.24,
+    "color": "rgba(200,220,255,0.25)",
+    "animating": false
+  },
+  "endpoint": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 762,
+      "h": 580
+    },
+    "objects": 78,
+    "focus": "apparatus",
+    "reading": 26,
+    "delivered": 26,
+    "fillFraction": 0.68,
+    "liquidSurface": 0.8785874873636701,
+    "meniscus": 4.6176,
+    "color": "#ec4899",
+    "animating": false
+  },
+  "refill": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 318,
+      "h": 390
+    },
+    "objects": 78,
+    "focus": "flask",
+    "reading": 25,
+    "delivered": 75,
+    "fillFraction": 0.9523809523809523,
+    "liquidSurface": 1.531968492360424,
+    "meniscus": 4.68,
+    "color": "#ec4899",
+    "animating": false
+  },
+  "redox": {
+    "state": "ready",
+    "contextLost": false,
+    "canvas": {
+      "w": 318,
+      "h": 390
+    },
+    "objects": 78,
+    "focus": "flask",
+    "reading": 0,
+    "delivered": 0,
+    "fillFraction": 0.6756756756756757,
+    "liquidSurface": 0.8719288863764678,
+    "meniscus": 6.24,
+    "color": "rgba(214,240,226,0.200)",
+    "animating": false
+  }
+}

@@ -763,6 +763,7 @@ function normalizeTestPrepItem(item, index, domainIds) {
     choices,
     choiceRationales,
     answerIndex,
+    choicePresentation: input.choicePresentation === 'fixed' ? 'fixed' : '',
     rationale: String(input.rationale || '').trim().slice(0, 4000),
     references,
     sourceDetails,
@@ -837,6 +838,7 @@ function normalizeTestPrepPack(pack) {
       [input.examMode || input.blueprint && input.blueprint.examModeReference])
       .map((mode) => String(mode || '').trim().slice(0, 80)).filter(Boolean))),
     id: testPrepSlug(input.id || input.title, 'exam-pack'),
+    choicePresentation: input.choicePresentation === 'fixed' ? 'fixed' : 'shuffled',
     title: String(input.title || '').trim().slice(0, 180),
     shortTitle: String(input.shortTitle || input.title || '').trim().slice(0, 100),
     description: String(input.description || '').trim().slice(0, 800),
@@ -1997,6 +1999,75 @@ function testPrepSeededShuffle(items, seed) {
   return output;
 }
 
+
+// Choice presentation. Twenty-two of the thirty-two shipped packs store their
+// answer keys in a strict A, B, C, D, A, B... cycle in file order, and the
+// diagnostic banks serve items in file order, so a learner who noticed the
+// pattern could key a whole bank without reading it. The Hub therefore shows
+// each item's choices in a per-session order and maps the learner's pick back
+// to the stored index before anything is recorded. Order is held fixed when a
+// pack or item asks for it, when the choices are numeric (kept ascending, as
+// on paper forms), when a choice refers to another choice, or when any
+// rationale names a lettered option.
+const TEST_PREP_CHOICE_ORDER_LOCK = /all of the above|none of the above|\bboth\s+\S+\s+and\s+\S+|\b(?:I|II|III|IV)\s+(?:only|and)\b|\b[A-D] and [A-D]\b|\b(?:options?|choices?|answers?|alternatives?)\s*\(?[A-D]\)?\b/i;
+const TEST_PREP_LETTER_REFERENCE = /\b(?:[Oo]ptions?|[Cc]hoices?|[Aa]nswers?|[Aa]lternatives?)\s*\(?[A-D]\)?\b|\(\s*[A-D]\s*\)|\b[A-D]\s+(?:is|are)\s+(?:incorrect|wrong|correct|right|the best)\b/;
+const TEST_PREP_NUMERIC_CHOICE = /^[$€£]?[-−+]?\d[\d.,\/]*(?:\s*(?:[×x*]\s*10\s*\^?\s*[-−]?\d+|e[-−]?\d+))?\s*[%°]?\s*[a-zA-Zµ°²³\/·]{0,12}$/;
+
+function testPrepChoiceOrderLocked(item) {
+  if (!item || typeof item !== 'object') return true;
+  if (item.choicePresentation === 'fixed') return true;
+  const choices = Array.isArray(item.choices) ? item.choices : [];
+  if (choices.length < 3) return true;
+  if (choices.every((choice) => TEST_PREP_NUMERIC_CHOICE.test(String(choice).trim()))) return true;
+  if (choices.some((choice) => TEST_PREP_CHOICE_ORDER_LOCK.test(String(choice)))) return true;
+  const rationaleText = [item.rationale].concat(Array.isArray(item.choiceRationales) ? item.choiceRationales : []).join(' ');
+  if (TEST_PREP_LETTER_REFERENCE.test(rationaleText)) return true;
+  return false;
+}
+
+// Returns the item as the learner should see it: choices, choiceRationales and
+// answerIndex in display order, plus choiceOrder (display position -> stored
+// index). An empty seed, or a locked item, yields the stored order.
+function testPrepPresentItem(item, seed) {
+  if (!item || typeof item !== 'object' || !Array.isArray(item.choices)) return item;
+  const identity = item.choices.map((_, index) => index);
+  const locked = !seed || testPrepChoiceOrderLocked(item);
+  const choiceOrder = locked ? identity : testPrepSeededShuffle(identity, String(seed) + ':' + String(item.id || ''));
+  const unchanged = choiceOrder.every((value, index) => value === index);
+  if (unchanged) return Object.assign({}, item, { choiceOrder, sourceAnswerIndex: item.answerIndex, choicePresentation: locked ? 'fixed' : 'shuffled' });
+  const choiceRationales = Array.isArray(item.choiceRationales) && item.choiceRationales.length === item.choices.length
+    ? choiceOrder.map((index) => item.choiceRationales[index])
+    : item.choiceRationales;
+  return Object.assign({}, item, {
+    choices: choiceOrder.map((index) => item.choices[index]),
+    choiceRationales,
+    answerIndex: choiceOrder.indexOf(item.answerIndex),
+    choiceOrder,
+    sourceAnswerIndex: item.answerIndex,
+    choicePresentation: 'shuffled',
+  });
+}
+
+// Maps a display-order selection back to the stored choice index. Everything
+// recorded about an attempt stays in the stored index space so scoring,
+// evidence, and progress never depend on how one session happened to order
+// the options.
+function testPrepSourceChoiceIndex(item, displayIndex) {
+  if (displayIndex == null) return displayIndex;
+  const index = Number(displayIndex);
+  const order = item && Array.isArray(item.choiceOrder) ? item.choiceOrder : null;
+  return order && Number.isInteger(index) && index >= 0 && index < order.length ? order[index] : index;
+}
+
+// Some packs carry one generic sentence for every distractor. Showing it three
+// times reads as a defect; showing it once is honest about what the pack has.
+function testPrepDistractorRationalesIdentical(item) {
+  if (!item || !Array.isArray(item.choiceRationales) || !Array.isArray(item.choices)) return false;
+  if (item.choiceRationales.length !== item.choices.length) return false;
+  const others = item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((text) => String(text || '').replace(/\s+/g, ' ').trim());
+  return others.length > 1 && others.every((text) => text === others[0]);
+}
+
 function testPrepNormalizeDifficultyIds(value) {
   return Array.from(new Set((Array.isArray(value) ? value : [])
     .slice(0, 12)
@@ -2802,11 +2873,15 @@ function testPrepFeedbackSpeechText(item, selectedChoice, promptMode, detail) {
     const otherNotes = [];
     let noteCharacters = 0;
     let omittedNotes = 0;
+    const spokenBodies = new Set([selectedRaw]);
     choiceRationales.forEach((rationale, index) => {
       if (index === supportedIndex || index === selectedIndex) return;
       const body = brief
         ? testPrepSpeechExcerpt(rationale, 240)
         : String(rationale || '').replace(/\s+/g, ' ').trim();
+      // A pack that repeats one sentence for every distractor is read once.
+      if (spokenBodies.has(body)) return;
+      spokenBodies.add(body);
       const note = 'Option ' + String.fromCharCode(65 + index) + '. ' + body;
       if (otherNotes.length >= noteLimit || noteCharacters + note.length > characterLimit) {
         omittedNotes += 1;
@@ -3974,6 +4049,8 @@ function TestPrepHub(props) {
   const [, setCatalogRegistryRevision] = React.useState(0);
   const [questionIndex, setQuestionIndex] = React.useState(0);
   const [selectedChoice, setSelectedChoice] = React.useState(null);
+  // New seed per practice set, so each session shows its own choice order.
+  const [practiceSeed, setPracticeSeed] = React.useState('');
   const [checked, setChecked] = React.useState(false);
   const [answers, setAnswers] = React.useState({});
   const [confidence, setConfidence] = React.useState({});
@@ -4177,7 +4254,9 @@ function TestPrepHub(props) {
   const practiceItems = selectedPack && activeItemIds.length ? activeItemIds.map((id) => itemLookup.get(id)).filter(Boolean) : (selectedPack ? selectedPack.items : []);
   const activeBatchSize = !selectedPack ? 100 : (practiceMode === 'diagnostic' || practiceMode === 'guided-review') ? Math.max(1, practiceItems.length) : practiceMode === 'standard' ? selectedPack.batchSize : Math.max(selectedPack.batchSize, practiceItems.length + 1);
   const activePack = selectedPack ? Object.assign({}, selectedPack, { items: practiceItems, batchSize: activeBatchSize }) : null;
-  const currentItem = practiceStarted && activePack && activePack.items[questionIndex];
+  const sourceCurrentItem = practiceStarted && activePack && activePack.items[questionIndex];
+  const currentItemSeed = selectedPack && selectedPack.choicePresentation === 'fixed' ? '' : practiceSeed;
+  const currentItem = React.useMemo(() => testPrepPresentItem(sourceCurrentItem, currentItemSeed), [sourceCurrentItem, currentItemSeed]);
   currentItemIdRef.current = currentItem ? currentItem.id : '';
   const currentBatch = activePack ? testPrepBatchMeta(activePack, questionIndex) : null;
   const currentSection = selectedPack && selectedPack.sections[Math.floor(sourceStartIndex / Math.max(1, selectedPack.batchSize))] || null;
@@ -4748,6 +4827,7 @@ function TestPrepHub(props) {
     cancelTestPrepClarification(false);
     disableHandsFree();
     setQuestionIndex(0);
+    setPracticeSeed(Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8));
     setSelectedChoice(null);
     setChecked(false);
     setAnswers({});
@@ -6325,13 +6405,13 @@ function TestPrepHub(props) {
   }
   function checkAnswer() {
     if (!currentItem || selectedChoice == null) return;
-    setAnswers((previous) => Object.assign({}, previous, { [currentItem.id]: selectedChoice }));
+    setAnswers((previous) => Object.assign({}, previous, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) }));
     setChecked(true);
   }
 
   function advanceSimulation() {
     if (!currentItem || selectedChoice == null || !activePack) return;
-    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: selectedChoice });
+    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) });
     setAnswers(finalAnswers);
     if (questionIndex >= activePack.items.length - 1) {
       finishPractice(false, finalAnswers);
@@ -6344,7 +6424,7 @@ function TestPrepHub(props) {
 
   function advance() {
     if (!currentItem || !checked || !currentBatch || !activePack) return;
-    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: selectedChoice });
+    const finalAnswers = Object.assign({}, answers, { [currentItem.id]: testPrepSourceChoiceIndex(currentItem, selectedChoice) });
     setAnswers(finalAnswers);
     const reachedBatchEnd = questionIndex + 1 >= currentBatch.endIndex;
     if (activePack.items.length >= currentBatch.batchSize && reachedBatchEnd) {
@@ -6826,14 +6906,14 @@ function TestPrepHub(props) {
                       {currentItem.choiceRationales.length === currentItem.choices.length && (
                         <div className="mt-3 rounded-lg border border-slate-300 bg-white/70 p-3 text-sm text-slate-800">
                           <p className="font-black text-slate-900">Why the other options do not fit</p>
-                          <ul className="mt-2 space-y-3">
+                          {testPrepDistractorRationalesIdentical(currentItem) ? <p className="mt-2 leading-relaxed" data-test-prep-distractor-note="shared">{currentItem.choiceRationales[(currentItem.answerIndex + 1) % currentItem.choices.length]}</p> : <ul className="mt-2 space-y-3">
                             {currentItem.choices.map((choice, index) => index === currentItem.answerIndex ? null : (
                               <li key={currentItem.id + '-rationale-' + index} className={selectedChoice === index ? 'rounded-lg border border-rose-300 bg-rose-50 p-2' : ''}>
                                 <p className="flex flex-wrap items-center gap-2 font-bold"><span>{String.fromCharCode(65 + index)}. {choice}</span>{selectedChoice === index && <span className="rounded-full bg-rose-700 px-2 py-0.5 text-xs font-black text-white">Your answer</span>}</p>
                                 <p className="mt-0.5 leading-relaxed">{currentItem.choiceRationales[index]}</p>
                               </li>
                             ))}
-                          </ul>
+                          </ul>}
                         </div>
                       )}
                       {!!currentItem.references.length && (

@@ -1,0 +1,4 @@
+﻿"Reading","Setup ID","Reagents","Titrant volume (mL)","pH","Potential (V)","Indicator","Simulation observation","Student note"
+"1","sa_sb","HCl (0.1 M) + NaOH (0.1 M)","26","11.29","","Phenolphthalein","Past endpoint","Pink, then ""clear""
+Check the endpoint carefully."
+"2","sa_sb","HCl (0.1 M) + NaOH (0.1 M)","28.5","11.82","","Phenolphthalein","Past endpoint",""

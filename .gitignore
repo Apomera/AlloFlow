@@ -271,3 +271,14 @@ desktop/mcp/runtime/node_modules/
 # EPUBCheck distribution (35 MB): materialised by desktop/mcp/fetch_epubcheck.cjs and verified
 # against the committed desktop/mcp/vendor/manifest.json hashes; never stored in git.
 desktop/mcp/vendor/epubcheck/
+
+# Per-session tool dumps: never tracked (0 files in git history as of 2026-09-07),
+# but a tree-wide `git add -A` sweep for a deploy would bake ~113 MB of them into
+# history permanently. Durable evidence belongs in reports/, which IS tracked.
+.codex-artifacts/
+dev-tools/canvas_text_out/
+dev-tools/lum_out/
+dev-tools/sn_out/
+
+# Python bytecode caches (tts-server + test helpers).
+__pycache__/

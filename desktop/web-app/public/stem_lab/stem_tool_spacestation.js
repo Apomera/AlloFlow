@@ -393,7 +393,19 @@
   function issLandDiscPath(cx, cy, r, lat0, lon0) {
     var key = [cx, cy, r, lat0, lon0].join('|');
     if (_issLandDisc[key]) return _issLandDisc[key];
-    var step = Math.max(1, r / 46);
+    // Sampling pitch, in the disc's own units. The old r/46 held the sample
+    // count CONSTANT at ~92 across the disc however large it was drawn, so the
+    // Orbit Lab's r=68 planet resolved the coastlines at ~3 CSS pixels per
+    // sample and Africa rendered as a staircase of visible blocks. Tie the
+    // pitch to the source data instead: the mask is 720x360, i.e. half a
+    // degree, and orthographically 180 degrees span 2r, so r/180 is the point
+    // where finer sampling stops buying anything. r/130 sits just inside that
+    // (~0.7 degrees), which lands under one CSS pixel at every size these
+    // discs are drawn and costs one cached pass.
+    var step = Math.max(0.3, r / 130);
+    // The +0.3 seam overlap was sized for a ~1.5-unit cell; at this pitch it
+    // would fatten every landmass by half a cell, so it scales with the pitch.
+    var seam = step * 0.34;
     var p0 = lat0 * Math.PI / 180, sp = Math.sin(p0), cp = Math.cos(p0);
     var parts = [];
     for (var y = -r + step / 2; y < r; y += step) {
@@ -408,7 +420,7 @@
           land = issIsLand(lat, lon);
         }
         if (land && open == null) open = x;
-        else if (!land && open != null) { parts.push('M' + (cx + open - step / 2).toFixed(1) + ' ' + (cy + y - step / 2).toFixed(1) + 'h' + (x - open + 0.3).toFixed(1) + 'v' + (step + 0.3).toFixed(1) + 'h-' + (x - open + 0.3).toFixed(1) + 'z'); open = null; }
+        else if (!land && open != null) { parts.push('M' + (cx + open - step / 2).toFixed(2) + ' ' + (cy + y - step / 2).toFixed(2) + 'h' + (x - open + seam).toFixed(2) + 'v' + (step + seam).toFixed(2) + 'h-' + (x - open + seam).toFixed(2) + 'z'); open = null; }
       }
     }
     var d = parts.join('');
@@ -5830,9 +5842,16 @@
           ctx2.fillStyle = stopMargin >= 8 ? '#86efac' : '#fca5a5'; ctx2.fillText('BRAKING DISTANCE ' + stopDistance.toFixed(1) + ' M // ' + (stopMargin >= 0 ? 'STOP MARGIN +' : 'NO STOP MARGIN ') + stopMargin.toFixed(1) + ' M', Wc - 12, 34); ctx2.textAlign = 'left';
           // Closing-rate tape: green is the soft-capture envelope, while the
           // needle reports total relative speed (lateral motion counts too).
-          ctx2.fillStyle = '#94a3b8'; ctx2.font = '700 7px ui-monospace, monospace'; ctx2.fillText('TOTAL RATE  0', 500, 48); ctx2.textAlign = 'right'; ctx2.fillText('2 M/S', 628, 48); ctx2.textAlign = 'left';
-          ctx2.fillStyle = '#16372b'; ctx2.fillRect(500, 53, 38, 5); ctx2.fillStyle = '#543619'; ctx2.fillRect(538, 53, 90, 5); ctx2.strokeStyle = '#64748b'; ctx2.strokeRect(500.5, 53.5, 127, 4);
-          var speedNeedleX = 500 + Math.min(2, speed) / 2 * 128; ctx2.strokeStyle = '#f8fafc'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(speedNeedleX, 50); ctx2.lineTo(speedNeedleX, 61); ctx2.stroke();
+          // Anchored to the station, not the canvas edge: at 500-628 the tape
+          // ran straight through the upper solar array (ox+1..ox+25, oy-137..
+          // oy-96 = y 43-84 on the 640x360 field), so the one instrument that
+          // decides capture was drawn over the hardware. Its right edge now
+          // stops 14 units short of the array, and the corridor's upper edge is
+          // ~100 units below this row, so nothing else is under it.
+          var tapeR = ox - 14, tapeL = tapeR - 128;
+          ctx2.fillStyle = '#94a3b8'; ctx2.font = '700 7px ui-monospace, monospace'; ctx2.fillText('TOTAL RATE  0', tapeL, 48); ctx2.textAlign = 'right'; ctx2.fillText('2 M/S', tapeR, 48); ctx2.textAlign = 'left';
+          ctx2.fillStyle = '#16372b'; ctx2.fillRect(tapeL, 53, 38, 5); ctx2.fillStyle = '#543619'; ctx2.fillRect(tapeL + 38, 53, 90, 5); ctx2.strokeStyle = '#64748b'; ctx2.strokeRect(tapeL + .5, 53.5, 127, 4);
+          var speedNeedleX = tapeL + Math.min(2, speed) / 2 * 128; ctx2.strokeStyle = '#f8fafc'; ctx2.lineWidth = 1.5; ctx2.beginPath(); ctx2.moveTo(speedNeedleX, 50); ctx2.lineTo(speedNeedleX, 61); ctx2.stroke();
           // Adaptive final-approach inset preserves precision near contact while
           // the main field continues to show the complete rendezvous geometry.
           if (range < 60 && !st.over) {
@@ -7833,8 +7852,30 @@
               h('text', { x: 306, y: 102, textAnchor: 'middle', fill: '#f8fafc', fontSize: 7.5, fontWeight: 900 }, incidentState === 'contained' ? 'ISOLATED' : 'LOW P'),
               h('rect', { x: 472, y: 48, width: 92, height: 102, rx: 5, fill: '#273548', stroke: '#94a3b8', strokeWidth: 2 }),
               [0,1,2,3].map(function (i) { return h('line', { key: i, x1: 482 + i * 22, y1: 55, x2: 482 + i * 22, y2: 143, stroke: '#38bdf8', strokeWidth: 3, opacity: incidentState === 'contained' ? .82 : .36 }); }),
-              h('path', { d: 'M194 79 H279 M333 79 H472', fill: 'none', stroke: incidentState === 'contained' ? '#64748b' : '#f97316', strokeWidth: 5, strokeDasharray: incidentState === 'contained' ? '8 5' : 'none' }),
-              h('path', { d: 'M472 120 H333 M279 120 H194', fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: incidentState === 'contained' ? .8 : .42 }),
+              // The loop's whole point is that heat travels OUT to the radiator
+              // and cooled fluid comes BACK, but both runs were plain bars and
+              // the only thing separating outbound from return was hue — the
+              // colour-alone encoding this tool rules out everywhere else. The
+              // pipes are painted after the hardware, so a head at the box edge
+              // reads as flow entering it and needs no gap. Marker fill has to
+              // track each pipe's own stroke, hence a marker per direction.
+              (function () {
+                var hotStroke = incidentState === 'contained' ? '#64748b' : '#f97316';
+                return h('g', null,
+                  h('defs', null,
+                    // A marker with no viewBox scales by stroke width, and these
+                    // pipes are the thickest in the tool (5 and 4), so the shared
+                    // 7-wide head came out ~35 units — half the length of the
+                    // 85-unit run it sat on. 4.5 keeps it a head, not a wedge.
+                    h('marker', { id: 'iss-cooling-hot-arrow', markerWidth: 4.5, markerHeight: 4.5, refX: 3.8, refY: 2.25, orient: 'auto' }, h('path', { d: 'M0 0 L4.5 2.25 L0 4.5 Z', fill: hotStroke })),
+                    h('marker', { id: 'iss-cooling-cool-arrow', markerWidth: 5, markerHeight: 5, refX: 4.2, refY: 2.5, orient: 'auto' }, h('path', { d: 'M0 0 L5 2.5 L0 5 Z', fill: '#38bdf8' }))),
+                  [[194, 279], [333, 472]].map(function (leg, li) {
+                    return h('path', { key: 'hot' + li, d: 'M' + leg[0] + ' 79 H' + leg[1], fill: 'none', stroke: hotStroke, strokeWidth: 5, strokeDasharray: incidentState === 'contained' ? '8 5' : 'none', markerEnd: 'url(#iss-cooling-hot-arrow)' });
+                  }),
+                  [[472, 333], [279, 194]].map(function (leg, li) {
+                    return h('path', { key: 'cool' + li, d: 'M' + leg[0] + ' 120 H' + leg[1], fill: 'none', stroke: '#38bdf8', strokeWidth: 4, opacity: incidentState === 'contained' ? .8 : .42, markerEnd: 'url(#iss-cooling-cool-arrow)' });
+                  }));
+              })(),
               h('text', { x: 518, y: 164, textAnchor: 'middle', fill: '#7dd3fc', fontSize: 7.5, fontWeight: 850 }, 'RADIATOR'));
             if (sid === 'co2') return h('g', null,
               moduleBody(50, 540, 'CABIN AIR VOLUME', { x: 52, y: 60 }),
@@ -7845,7 +7886,14 @@
               h('rect', { x: 457, y: 65, width: 82, height: 68, rx: 8, fill: '#183c31', stroke: '#4ade80', strokeWidth: 2 }),
               h('text', { x: 498, y: 96, textAnchor: 'middle', fill: '#bbf7d0', fontSize: 8, fontWeight: 900 }, 'SCRUBBER'),
               h('text', { x: 498, y: 111, textAnchor: 'middle', fill: '#86efac', fontSize: 7 }, 'RUNNING'),
-              h('path', { d: 'M205 99 H305 M387 99 H447', fill: 'none', stroke: incidentState === 'contained' ? '#4ade80' : '#fbbf24', strokeWidth: 4, strokeDasharray: incidentState === 'contained' ? 'none' : '5 6', markerEnd: 'url(#iss-emergency-flow-arrow)' }),
+              // Two subpaths in one `d` get ONE arrowhead — marker-end decorates
+              // a path's last vertex only — so cabin->inlet ran bare while
+              // inlet->scrubber was arrowed, in the one diagram whose lesson is
+              // which direction the air stops flowing. Both legs stop ~10 units
+              // short of the box they point at, which is where the head fits.
+              [[205, 305], [387, 447]].map(function (leg, li) {
+                return h('path', { key: 'co2flow' + li, d: 'M' + leg[0] + ' 99 H' + leg[1], fill: 'none', stroke: incidentState === 'contained' ? '#4ade80' : '#fbbf24', strokeWidth: 4, strokeDasharray: incidentState === 'contained' ? 'none' : '5 6', markerEnd: 'url(#iss-emergency-flow-arrow)' });
+              }),
               incidentState === 'contained' ? null : h('path', { d: 'M326 82 L366 116 M366 82 L326 116', stroke: '#f87171', strokeWidth: 3 }));
             return h('g', null,
               moduleBody(45, 230, 'NODE A'), moduleBody(365, 210, 'SUSPECT VOLUME'),
@@ -8151,7 +8199,19 @@
         }
         return h('div', { className: 'iss-learning-visual iss-day-orbit', 'data-iss-day-light-phase': inSunlight ? 'sunlight' : 'eclipse' },
           h('svg', { viewBox: '0 0 640 150', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_orbital_day_cycle_display_for_reference_orbit_o', 'Orbital day-cycle display for {value1}, {value2}. Reference orbit {value3} of 16 is in {value4}, with the next transition in about {value5} minutes.'), { value1: slot.h, value2: slot.label, value3: orbitNumber, value4: phaseLabel.toLowerCase(), value5: Math.max(1, Math.round(minutesToTransition)) })},
-            h('defs', null, h('linearGradient', { id: 'iss-day-bg', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#030712' }), h('stop', { offset: '49%', stopColor: '#091a31' }), h('stop', { offset: '100%', stopColor: '#2b1d0d' })), h('radialGradient', { id: 'iss-day-earth', cx: '38%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' }))),
+            h('defs', null, h('linearGradient', { id: 'iss-day-bg', x1: '0', y1: '0', x2: '1', y2: '0' }, h('stop', { offset: '0%', stopColor: '#030712' }), h('stop', { offset: '49%', stopColor: '#091a31' }), h('stop', { offset: '100%', stopColor: '#2b1d0d' })), h('radialGradient', { id: 'iss-day-earth', cx: '38%', cy: '28%' }, h('stop', { offset: '0%', stopColor: '#67c8ff' }), h('stop', { offset: '100%', stopColor: '#0b3567' })),
+              // Terminator. The night side used to be a hard-edged half-disc,
+              // which split the planet down the middle with a razor-straight
+              // line — the one edge a real terminator never has, and the more
+              // obvious now that the coastlines under it are legible. Same
+              // darkening, laid on as a gradient across the disc's own width
+              // so the shadow softens over ~15 degrees of longitude.
+              h('linearGradient', { id: 'iss-day-terminator', gradientUnits: 'userSpaceOnUse', x1: 257, y1: 0, x2: 383, y2: 0 },
+                h('stop', { offset: '0%', stopColor: '#020617', stopOpacity: .78 }),
+                h('stop', { offset: '38%', stopColor: '#020617', stopOpacity: .72 }),
+                h('stop', { offset: '50%', stopColor: '#020617', stopOpacity: .42 }),
+                h('stop', { offset: '62%', stopColor: '#020617', stopOpacity: .06 }),
+                h('stop', { offset: '100%', stopColor: '#020617', stopOpacity: 0 }))),
             h('rect', { width: 640, height: 150, fill: 'url(#iss-day-bg)' }),
             h('text', { x: 20, y: 12, fill: '#94a3b8', fontSize: 8, fontWeight: 850, letterSpacing: 1.1 }, 'ORBIT-CYCLE RIBBON // 24 H GMT'),
             Array.from({ length: 16 }).map(function (_, i) { var x = 32 + i * 36; var selected = i + 1 === orbitNumber; return h('g', { key: i }, h('rect', { x: x, y: 18, width: 34 * sunlightFraction, height: 5, rx: 2, fill: '#fbbf24', opacity: selected ? .95 : .42 }), h('rect', { x: x + 34 * sunlightFraction, y: 18, width: 34 * (1 - sunlightFraction), height: 5, rx: 2, fill: '#6366f1', opacity: selected ? .95 : .42 }), selected ? h('rect', { x: x - 2, y: 15, width: 38, height: 11, rx: 4, fill: 'none', stroke: '#f8fafc', strokeWidth: 1.3 }) : null); }),
@@ -8161,11 +8221,25 @@
             h('path', { d: orbitArcPath(sunlightFraction, 1), fill: 'none', stroke: '#818cf8', strokeWidth: 2.5 }),
             h('circle', { cx: 320, cy: 131, r: 63, fill: 'url(#iss-day-earth)', stroke: '#7dd3fc', strokeWidth: 1.4 }),
             h('path', { className: 'iss-earth-disc-land', fill: '#5fae78', opacity: .8, d: issLandDiscPath(320, 131, 63, 22, 12) }),
-            h('path', { d: 'M320 68 A63 63 0 0 0 320 194 Z', fill: '#020617', opacity: .66 }),
+            h('circle', { cx: 320, cy: 131, r: 63, fill: 'url(#iss-day-terminator)' }),
             h('g', { className: 'iss-day-marker', transform: 'translate(' + sx.toFixed(1) + ',' + sy.toFixed(1) + ')' }, h('rect', { x: -18, y: -4, width: 36, height: 8, rx: 4, fill: '#e2e8f0' }), h('rect', { x: -31, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('rect', { x: 20, y: -7, width: 11, height: 14, fill: '#c58a20', stroke: '#fbbf24' }), h('circle', { r: 3, fill: '#38bdf8' })),
             h('text', { x: 20, y: 50, fill: '#7dd3fc', fontSize: 10, fontWeight: 850, letterSpacing: 1.4 }, 'CREW DAY // GMT ' + slot.h),
             h('text', { x: 20, y: 67, fill: '#f8fafc', fontSize: 12, fontWeight: 900 }, slot.label.toUpperCase()),
-            h('text', { x: 620, y: 137, textAnchor: 'end', fill: inSunlight ? '#fde68a' : '#c7d2fe', fontSize: 8.5, fontWeight: 850 }, 'ORBIT ' + orbitNumber + ' / 16 // ' + phaseLabel + ' // ' + transitionLabel)),
+            // The orbit ellipse (cx 320, cy 94, rx 226, ry 56) crosses y=137 at
+            // x=175 and x=465, and this readout runs back to about x=426 — so
+            // the ellipse was drawn straight through the words. There is no row
+            // in this box the ellipse misses, so the readout gets a plate, the
+            // same treatment the assembly numbers use where the limb runs under
+            // them. Width from the string rather than fixed: the eclipse and
+            // sunlight variants differ by several characters and translations
+            // run longer still.
+            (function () {
+              var readout = 'ORBIT ' + orbitNumber + ' / 16 // ' + phaseLabel + ' // ' + transitionLabel;
+              var plateW = Math.min(340, readout.length * 8.5 * 0.6 + 18);
+              return h('g', null,
+                h('rect', { x: 622 - plateW, y: 126, width: plateW, height: 17, rx: 8, fill: 'rgba(3,7,18,.86)', stroke: 'rgba(148,163,184,.28)' }),
+                h('text', { x: 613, y: 138, textAnchor: 'end', fill: inSunlight ? '#fde68a' : '#c7d2fe', fontSize: 8.5, fontWeight: 850 }, readout));
+            })()),
           renderCrewDayTimeline(slot, index),
           h('div', { className: 'iss-visual-caption' }, h('span', null, 'The clock, not sunlight, organizes crew life.'), h('span', null, 'ORBIT ' + orbitNumber + ' / 16 · ' + phaseLabel + ' · ' + transitionLabel)));
       }      function renderDay() {
@@ -8225,12 +8299,23 @@
           h('svg', { viewBox: '0 0 640 156', role: 'img', 'aria-label': aria },
             h('defs', null,
               h('linearGradient', { id: 'iss-coupling-bg-' + sys.id, x1: '0', y1: '0', x2: '1', y2: '1' }, h('stop', { offset: '0%', stopColor: '#050b18' }), h('stop', { offset: '100%', stopColor: '#0b1d31' })),
-              h('filter', { id: 'iss-coupling-glow-' + sys.id, x: '-40%', y: '-40%', width: '180%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' })))),
+              h('filter', { id: 'iss-coupling-glow-' + sys.id, x: '-40%', y: '-40%', width: '180%', height: '180%' }, h('feGaussianBlur', { stdDeviation: 4, result: 'blur' }), h('feMerge', null, h('feMergeNode', { in: 'blur' }), h('feMergeNode', { in: 'SourceGraphic' }))),
+              h('marker', { id: 'iss-coupling-arrow-' + sys.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: sys.color }))),
             h('rect', { width: 640, height: 156, fill: 'url(#iss-coupling-bg-' + sys.id + ')' }),
             h('path', { d: 'M0 31 H640 M0 132 H640', stroke: '#334155', strokeWidth: 1, opacity: .55 }),
             h('text', { x: 22, y: 20, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.35 }, 'STATION COUPLING // INPUTS → FUNCTION → OUTPUTS'),
             h('text', { x: 618, y: 20, textAnchor: 'end', fill: sys.color, fontSize: 8.5, fontWeight: 900 }, sys.id.toUpperCase() + ' LINKED'),
-            h('path', { className: 'iss-coupling-pipe', d: 'M158 62 C205 62 202 78 251 78 M158 108 C205 108 202 88 251 88 M389 78 C438 78 435 62 482 62 M389 88 C438 88 435 108 482 108', fill: 'none', stroke: sys.color, strokeWidth: 2, opacity: .68 }),
+            // The panel is titled "INPUTS → FUNCTION → OUTPUTS" but the pipes
+            // carried no arrows, so the direction was asserted in the heading
+            // and absent from the drawing. One path per pipe (marker-end only
+            // decorates a path's LAST vertex, so four subpaths in one `d` can
+            // only ever show one head), each stopping ~6 units short of the box
+            // it points at — the centre node and the output boxes are painted
+            // after this line, so a head drawn at the old endpoints would have
+            // been occluded exactly like the flow diagram's were.
+            [['M158 62 C205 62 202 78 245 78'], ['M158 108 C205 108 202 88 245 88'], ['M389 78 C438 78 435 62 476 62'], ['M389 88 C438 88 435 108 476 108']].map(function (pipe, pi) {
+              return h('path', { key: 'pipe' + pi, className: 'iss-coupling-pipe', d: pipe[0], fill: 'none', stroke: sys.color, strokeWidth: 2, opacity: .68, markerEnd: 'url(#iss-coupling-arrow-' + sys.id + ')' });
+            }),
             endpoint(32, 47, coupling.upstream[0], 'in', 0),
             endpoint(32, 93, coupling.upstream[1], 'in', 1),
             h('g', { transform: 'translate(251,50)' },
@@ -8267,8 +8352,22 @@
             h('rect', { width: 640, height: flow.loop ? 178 : 142, fill: '#050b18' }),
             [44, 118, 201, 292, 387, 492, 573].map(function (x, i) { return h('circle', { key: 'star' + i, cx: x, cy: 22 + (i % 3) * 9, r: i % 2 ? 1 : 1.4, fill: i % 3 ? '#64748b' : '#bae6fd', opacity: .7 }); }),
             h('text', { x: 24, y: 25, fill: sys.color, fontSize: 10, fontWeight: 800, letterSpacing: 1.4 }, 'SYSTEM FLOW // ' + sys.id.toUpperCase()),
-            h('path', { className: 'iss-flow-path', d: 'M 88 84 H 552', fill: 'none', stroke: sys.color, strokeWidth: 2.5, opacity: selectedStep ? .3 : .8, markerEnd: 'url(#' + markerId + ')' }),
-            flow.loop ? h('path', { className: 'iss-flow-path', d: 'M 552 111 C 552 156, 88 156, 88 111', fill: 'none', stroke: sys.color, strokeWidth: 1.5, opacity: .42, markerEnd: 'url(#' + markerId + ')' }) : null,
+            // ★Both arrowheads used to be drawn UNDER the node boxes. The chain
+            // was one line `M 88 84 H 552` and the boxes (x 28+i*155, w 118,
+            // y 52..115) are painted after it, so only the three gaps showed —
+            // and the arrowhead at x=552 sat inside the last box. The loop's
+            // head at (88,111) was likewise inside the first box. A process
+            // diagram whose every arrow is occluded states no direction at all,
+            // and for the four `loop: true` systems direction IS the lesson.
+            // One segment per gap now carries its own head, in clear space.
+            [[146, 183], [301, 338], [456, 493]].map(function (gap, gi) {
+              return h('path', { key: 'chain' + gi, className: 'iss-flow-path', d: 'M ' + (gap[0] + 2) + ' 84 H ' + (gap[1] - 2), fill: 'none', stroke: sys.color, strokeWidth: 2.5, opacity: selectedStep ? .3 : .8, markerEnd: 'url(#' + markerId + ')' });
+            }),
+            // 118 rather than 111: the boxes end at y=115, so the return arc now
+            // leaves and arrives just below them and its head is visible under
+            // the first node. The curve still peaks at y≈146, clear of the
+            // loop label's 160-166 band.
+            flow.loop ? h('path', { className: 'iss-flow-path', d: 'M 552 118 C 552 156, 88 156, 88 118', fill: 'none', stroke: sys.color, strokeWidth: 1.5, opacity: .42, markerEnd: 'url(#' + markerId + ')' }) : null,
             flow.nodes.map(function (node, i) {
               var x = 28 + i * 155;
               var stageFocused = selectedStep === i + 1;
@@ -8292,6 +8391,19 @@
         var referenceScale = (referenceAlt - 200) / 1800;
         var referenceRx = 194 + referenceScale * 46;
         var referenceRy = 73 + referenceScale * 24;
+        // The legend promises a dashed 420 km reference beside the solid
+        // current orbit, but the linear map above spreads 1800 km over 46
+        // units, so 380 vs 420 km differed by ONE unit and the reference sat
+        // entirely under the 2.4-wide current stroke — invisible across the
+        // whole crewed-LEO band the slider starts in. Add a fixed 7-unit gap
+        // in the true direction (higher orbit = larger ellipse) on top of the
+        // linear term; the caption already says the diagram exaggerates
+        // altitude, and this is exactly that.
+        if (orbitAlt !== referenceAlt) {
+          var apart = orbitAlt > referenceAlt ? 1 : -1;
+          orbitRx = referenceRx + apart * (7 + Math.abs(orbitRx - referenceRx));
+          orbitRy = referenceRy + apart * (3.5 + Math.abs(orbitRy - referenceRy));
+        }
         // Same single orbit implementation as everything else — this block used
         // to re-derive v and T from its own copies of GM and Earth's radius.
         var _refOrbit = issOrbit(referenceAlt);
@@ -8685,41 +8797,65 @@
       function renderAssemblyGrowthProfile(step, thresholds, powerByMilestone) {
         var majorSeries = TIMELINE.map(function (_, i) { return MODULES.filter(function (m) { return (thresholds[m.id] == null ? 6 : thresholds[m.id]) <= i; }).length; });
         var volumeSeries = TIMELINE.map(function (_, i) { return Math.round(MODULES.filter(function (m) { return m.id !== 'truss' && (thresholds[m.id] == null ? 6 : thresholds[m.id]) <= i; }).length / 12 * 916); });
+        // Each row keeps its own zero baseline and its own full-scale max, so
+        // the three are honestly comparable as FRACTIONS of what the finished
+        // station has. The band was 19 units tall inside a 33-unit row, which
+        // rendered a 6.7x growth in available power as a line you could mistake
+        // for flat — the one quantity the panel exists to show. AMP now uses
+        // most of a taller row, and each trace carries a filled area: at this
+        // aspect ratio the mass under the curve is what reads, not the slope.
+        var AMP = 32;
         var rows = [
-          { label: 'MAJOR ELEMENTS', values: majorSeries, max: 13, color: '#38bdf8', suffix: '', y: 55 },
-          { label: 'PRESSURIZED VOLUME', values: volumeSeries, max: 916, color: '#34d399', suffix: ' m³', y: 88 },
-          { label: 'AVAILABLE POWER', values: powerByMilestone, max: 120, color: '#fbbf24', suffix: ' kW', y: 121 }
+          { label: 'MAJOR ELEMENTS', values: majorSeries, max: 13, color: '#38bdf8', suffix: '', y: 66 },
+          { label: 'PRESSURIZED VOLUME', values: volumeSeries, max: 916, color: '#34d399', suffix: ' m³', y: 108 },
+          { label: 'AVAILABLE POWER', values: powerByMilestone, max: 120, color: '#fbbf24', suffix: ' kW', y: 150 }
         ];
         var x0 = 148, x1 = 612, span = x1 - x0;
         function xAt(i) { return x0 + i / (TIMELINE.length - 1) * span; }
+        function yAt(row, value) { return row.y - Math.max(0, Math.min(1, value / row.max)) * AMP; }
         function pathFor(row) {
           return row.values.map(function (value, i) {
-            var y = row.y - Math.max(0, Math.min(1, value / row.max)) * 19;
-            return (i ? 'L' : 'M') + xAt(i).toFixed(1) + ' ' + y.toFixed(1);
+            return (i ? 'L' : 'M') + xAt(i).toFixed(1) + ' ' + yAt(row, value).toFixed(1);
           }).join(' ');
+        }
+        function areaFor(row) {
+          return pathFor(row) + ' L' + x1.toFixed(1) + ' ' + row.y + ' L' + x0.toFixed(1) + ' ' + row.y + ' Z';
         }
         var selectedX = xAt(step);
         var currentValues = rows.map(function (row) { return row.values[step] + row.suffix; });
         return h('div', { className: 'iss-assembly-growth', 'data-iss-assembly-growth': step },
-          h('svg', { viewBox: '0 0 640 148', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_station_growth_profile_at_pressurized_volume_av', 'Station growth profile at {value1}. {value2} {value3}, pressurized volume {value4}, available power {value5}.'), { value1: TIMELINE[step].y, value2: rows[0].label.toLowerCase(), value3: currentValues[0], value4: currentValues[1], value5: currentValues[2] })},
-            h('rect', { width: 640, height: 148, fill: '#07101d' }),
+          h('svg', { viewBox: '0 0 640 186', role: 'img', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_station_growth_profile_at_pressurized_volume_av', 'Station growth profile at {value1}. {value2} {value3}, pressurized volume {value4}, available power {value5}.'), { value1: TIMELINE[step].y, value2: rows[0].label.toLowerCase(), value3: currentValues[0], value4: currentValues[1], value5: currentValues[2] })},
+            h('defs', null, rows.map(function (row) {
+              return h('linearGradient', { key: row.label, id: 'iss-growth-' + row.label.split(' ')[0].toLowerCase(), x1: '0', y1: '0', x2: '0', y2: '1' },
+                h('stop', { offset: '0%', stopColor: row.color, stopOpacity: .34 }),
+                h('stop', { offset: '100%', stopColor: row.color, stopOpacity: .04 }));
+            })),
+            h('rect', { width: 640, height: 186, fill: '#07101d' }),
             h('text', { x: 20, y: 19, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.25 }, 'ASSEMBLY GROWTH PROFILE // SHARED MILESTONE AXIS'),
-            [0, 3, 6, 9, 12].map(function (i) { return h('line', { key: 'grid' + i, x1: xAt(i), y1: 30, x2: xAt(i), y2: 128, stroke: '#334155', strokeWidth: 1, opacity: i === 0 || i === 12 ? .7 : .35 }); }),
-            h('line', { x1: selectedX, y1: 28, x2: selectedX, y2: 130, stroke: '#e2e8f0', strokeWidth: 1.2, strokeDasharray: '3 3', opacity: .8 }),
+            [0, 3, 6, 9, 12].map(function (i) { return h('line', { key: 'grid' + i, x1: xAt(i), y1: 30, x2: xAt(i), y2: 156, stroke: '#334155', strokeWidth: 1, opacity: i === 0 || i === 12 ? .7 : .35 }); }),
+            h('line', { x1: selectedX, y1: 28, x2: selectedX, y2: 158, stroke: '#e2e8f0', strokeWidth: 1.2, strokeDasharray: '3 3', opacity: .8 }),
             h('text', { x: 618, y: 19, textAnchor: 'end', fill: '#f8fafc', fontSize: 8, fontWeight: 900, letterSpacing: .5 }, 'SELECTED // ' + TIMELINE[step].y),
             rows.map(function (row, rowIndex) {
-              var selectedY = row.y - Math.max(0, Math.min(1, row.values[step] / row.max)) * 19;
+              var selectedY = yAt(row, row.values[step]);
               return h('g', { key: row.label },
-                h('text', { x: 20, y: row.y - 9, fill: '#94a3b8', fontSize: 7.5, fontWeight: 850, letterSpacing: .55 }, row.label),
-                h('text', { x: 20, y: row.y + 5, fill: '#e2e8f0', fontSize: 10.5, fontWeight: 900 }, currentValues[rowIndex]),
+                h('text', { x: 20, y: row.y - 15, fill: '#94a3b8', fontSize: 7.5, fontWeight: 850, letterSpacing: .55 }, row.label),
+                h('text', { x: 20, y: row.y - 1, fill: '#e2e8f0', fontSize: 10.5, fontWeight: 900 }, currentValues[rowIndex]),
+                // The row's full-scale value, so the height of the band means
+                // something concrete rather than "some fraction of something".
+                // Left edge, not right: every series ENDS at its maximum, so a
+                // right-anchored ceiling label sits exactly under the final
+                // marker. The 1998 end of each trace is near zero, so the
+                // top-left corner of the band is the one part always empty.
+                h('text', { x: x0 + 4, y: row.y - AMP - 3, fill: row.color, fontSize: 6.5, fontWeight: 850, letterSpacing: .5, opacity: .75 }, row.max + row.suffix),
                 h('line', { x1: x0, y1: row.y, x2: x1, y2: row.y, stroke: '#334155', strokeWidth: 1 }),
+                h('path', { d: areaFor(row), fill: 'url(#iss-growth-' + row.label.split(' ')[0].toLowerCase() + ')', stroke: 'none' }),
                 h('path', { d: pathFor(row), fill: 'none', stroke: row.color, strokeWidth: 2.2, strokeLinejoin: 'round', strokeLinecap: 'round' }),
-                row.values.map(function (value, i) { var py = row.y - Math.max(0, Math.min(1, value / row.max)) * 19; return h('circle', { key: i, cx: xAt(i), cy: py, r: i === step ? 4 : 1.7, fill: i === step ? '#07101d' : row.color, stroke: row.color, strokeWidth: i === step ? 2.4 : .7 }); }),
+                row.values.map(function (value, i) { return h('circle', { key: i, cx: xAt(i), cy: yAt(row, value), r: i === step ? 4 : 1.7, fill: i === step ? '#07101d' : row.color, stroke: row.color, strokeWidth: i === step ? 2.4 : .7 }); }),
                 h('circle', { cx: selectedX, cy: selectedY, r: 1.6, fill: '#f8fafc' }));
             }),
-            h('text', { x: x0, y: 141, fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[0].y),
-            h('text', { x: xAt(6), y: 141, textAnchor: 'middle', fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[6].y),
-            h('text', { x: x1, y: 141, textAnchor: 'end', fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[12].y)));
+            h('text', { x: x0, y: 172, fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[0].y),
+            h('text', { x: xAt(6), y: 172, textAnchor: 'middle', fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[6].y),
+            h('text', { x: x1, y: 172, textAnchor: 'end', fill: '#64748b', fontSize: 7.5, fontWeight: 800 }, TIMELINE[12].y)));
       }
       function renderAssemblyVisual() {
         var step = Math.max(0, Math.min(TIMELINE.length - 1, Number(d.assemblyIdx == null ? 11 : d.assemblyIdx)));
@@ -8766,12 +8902,36 @@
             // physically RELOCATED to the end of the port truss in 2007, so it
             // moves here too.
             h('g', { opacity: step === TIMELINE.length - 1 ? .42 : 1 }, arrayWings.map(function (wing) {
+              // Each entry is a wing PAIR and the readout beside it counts
+              // WINGS ("8 / 8"), so it has to be drawn as two blankets on a
+              // shared mast rather than one slab — otherwise the picture shows
+              // four of the eight things the number is counting. The cell grid
+              // is the same treatment the coupled-systems glyph gives its
+              // arrays, so the two views of the same hardware now match.
               return h('g', { key: wing.id, 'data-iss-array-wing': wing.id },
-                h('rect', { x: wing.x - 24, y: wing.y, width: 48, height: 34, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }),
-                [1, 2, 3].map(function (line) {
-                  return h('line', { key: line, x1: wing.x - 24, y1: wing.y + line * 8.5, x2: wing.x + 24, y2: wing.y + line * 8.5, stroke: '#fde68a', strokeWidth: .5 });
+                [-24, 2].map(function (bx) {
+                  return h('g', { key: bx },
+                    h('rect', { x: wing.x + bx, y: wing.y, width: 22, height: 34, rx: 1.5, fill: '#a86e16', stroke: '#fbbf24', strokeWidth: 1 }),
+                    // Photovoltaic blanket cells: a real 2 x 4 grid reads as a
+                    // panel at this size, where three hairlines read as a stripe.
+                    [1, 2, 3].map(function (line) {
+                      return h('line', { key: 'h' + line, x1: wing.x + bx, y1: wing.y + line * 8.5, x2: wing.x + bx + 22, y2: wing.y + line * 8.5, stroke: '#fde68a', strokeWidth: .55, opacity: .85 });
+                    }),
+                    h('line', { x1: wing.x + bx + 11, y1: wing.y, x2: wing.x + bx + 11, y2: wing.y + 34, stroke: '#fde68a', strokeWidth: .55, opacity: .85 }),
+                    // Sun-facing sheen, so the blankets read as tilted surfaces
+                    // rather than flat chips — the sheen-over-solid idiom the
+                    // module hulls in this same drawing already use.
+                    h('rect', { x: wing.x + bx, y: wing.y, width: 22, height: 12, rx: 1.5, fill: '#fef3c7', opacity: .16 }));
                 }),
-                h('text', { x: wing.x, y: wing.y - 4, textAnchor: 'middle', fill: '#fde68a', fontSize: 7, fontWeight: 850, letterSpacing: .6 }, wing.label));
+                // The mast the pair unfurls from, plus its rotary joint.
+                h('line', { x1: wing.x, y1: wing.y - 2, x2: wing.x, y2: wing.y + 36, stroke: '#cbd5e1', strokeWidth: 1.6 }),
+                h('circle', { cx: wing.x, cy: wing.y + 17, r: 2.6, fill: '#0f172a', stroke: '#cbd5e1', strokeWidth: 1 }),
+                // The lower pair sits directly under the truss bar (y 100-108),
+                // which left only 8 units of clear space above it — and the
+                // deorbit arrow crosses that same gap at S6. Label the lower
+                // row underneath instead; the space below them is empty until
+                // the readout plates at y 196.
+                h('text', { x: wing.x, y: wing.y >= 100 ? wing.y + 45 : wing.y - 5, textAnchor: 'middle', fill: '#fde68a', fontSize: 7, fontWeight: 850, letterSpacing: .6 }, wing.label));
             })),
             visible.filter(function (m) { return m.id !== 'truss'; }).map(function (m) {
               var x = 320 + m.pos[0] * 34, y = 106 + m.pos[2] * 12;

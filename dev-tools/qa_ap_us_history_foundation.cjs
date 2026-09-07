@@ -232,6 +232,11 @@ for (const item of items) {
   requireCondition(Array.isArray(item.choices) && item.choices.length === 4 && new Set(item.choices).size === 4, 'one-best-answer', `${item.id} must have four distinct choices.`, record);
   requireCondition(Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex < 4, 'one-best-answer', `${item.id} must have a valid answer index.`, record);
   requireCondition(hasText(item.rationale, 30) && Array.isArray(item.choiceRationales) && item.choiceRationales.length === 4 && item.choiceRationales.every((value) => hasText(value, 30)), 'substantive-feedback', `${item.id} must have item and option-level feedback.`, record);
+  // Option-level feedback must be specific to each distractor: no shared
+  // boilerplate sentence, no repeat of the key's rationale, and no two
+  // distractors explained by the same text.
+  const distractorNotes = Array.isArray(item.choiceRationales) ? item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((value) => String(value || '').replace(/\s+/g, ' ').trim()) : [];
+  requireCondition(distractorNotes.length === 3 && new Set(distractorNotes).size === 3 && !distractorNotes.includes(String(item.rationale || '').replace(/\s+/g, ' ').trim()) && distractorNotes.every((note) => note.length >= 30 && !/does not fit the evidence or historical relationship/i.test(note)), 'feedback-specificity', `${item.id} must explain each distractor with its own specific feedback.`, record);
   requireCondition(Array.isArray(item.references) && item.references.includes(CED_URL) && item.references.every(validHttpsUrl), 'source-and-provenance', `${item.id} must include the official CED link and valid HTTPS references.`, record);
   requireCondition(Array.isArray(item.sourceDetails) && item.sourceDetails.length >= 2 && item.sourceDetails.every((source) => hasText(source.title) && hasText(source.organization) && validHttpsUrl(source.url)), 'source-and-provenance', `${item.id} must include source details.`, record);
   requireCondition(item.provenance === 'native-original' && item.officialItem === false && item.releaseEligible === false, 'rights-boundary', `${item.id} must remain independently authored and unreleased.`, record);
@@ -300,6 +305,7 @@ const signalDefinitions = [
   ['answer-key-balance', 'Answer positions follow the declared 150/150/150/150 structural distribution; this is not psychometric evidence.'],
   ['one-best-answer', 'Every item and chapter check has one prompt, four distinct options, and a valid key.'],
   ['substantive-feedback', 'Every item has a rationale and four option-level feedback records.'],
+  ['feedback-specificity', 'Every distractor carries its own authored explanation: three distinct notes per item, none a generic placeholder, none a copy of the key rationale.'],
   ['source-and-provenance', 'Public framework and factual-reference links plus independent-original provenance declarations are complete.'],
   ['rights-boundary', 'Automated QA confirms only that restricted-content and release flags remain closed; it is not independent rights clearance.'],
   ['accessibility-boundary', 'Automated QA confirms text/reading-order declarations and a still-pending independent accessibility gate.'],

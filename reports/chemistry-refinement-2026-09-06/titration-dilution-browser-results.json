@@ -1,0 +1,47 @@
+{
+  "checks": [
+    "Real WebGL shows the correct stock fraction; keyboard orbit changes the image; marker visibility is controllable.",
+    "The real target slider updates 3D; final-volume changes retain conservation; 2D levels use the same ratio and switching views preserves calculator data.",
+    "All calculator extremes stay finite, equal concentrations produce equal fill heights, and context loss exposes the 2D comparison.",
+    "Tab changes and unmount remove the renderer; returning to the calculator restores its data."
+  ],
+  "errors": [],
+  "scans": [
+    {
+      "width": 1200,
+      "view": "3D vessels",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 1200,
+      "view": "2D comparison",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "3D vessels",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 360,
+      "view": "2D comparison",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "3D vessels",
+      "overflow": false,
+      "violations": []
+    },
+    {
+      "width": 320,
+      "view": "2D comparison",
+      "overflow": false,
+      "violations": []
+    }
+  ]
+}

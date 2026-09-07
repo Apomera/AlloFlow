@@ -196,6 +196,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
   }
 
   // The gate that matters more than any of the above.
+  // ── Practice-window scoring ──────────────────────────────────────────────
+  // The Practice tab used to score its 30-second window by averaging over the
+  // span between the FIRST and the LAST tap. A learner who compressed well for
+  // eight seconds and then stopped for twenty-two still read "110 bpm, in
+  // range" and earned the badge, because the twenty-two seconds of nothing were
+  // outside the span being measured. Interruptions are the half that kills:
+  // AHA asks for a chest compression fraction of at least 60% and for pauses
+  // under 10 seconds, and a bystander's real failure mode is stopping, not
+  // pushing at 96 bpm.
+  //
+  // Rate and consistency are delegated to analyzeCprTiming so the Practice tab
+  // and the 3D coach return ONE verdict from ONE derivation; what is added here
+  // is the pair of numbers neither of them had — the longest hands-off pause
+  // and the compression fraction.
+  //
+  // ★ Steadiness has to be scored too, because a MEDIAN can sit in the band
+  // while not one compression did. Alternating 400 ms / 700 ms over the full
+  // window reads as 109 bpm with a 99% compression fraction and no pause — and
+  // 0% of those intervals were inside 100–120. Consistency (dispersion) is the
+  // right measure here rather than in-band share: a learner holding a steady
+  // 100 bpm sits on the band edge, so half their jitter falls outside it
+  // (in-range 68%) while their consistency is 92. The alternator scores 35.
+  var CPR_PRACTICE_SPEC = {
+    windowSec: 30,
+    maxPauseMs: 10000,     // AHA: keep any interruption under 10 seconds
+    warnPauseMs: 5000,     // the on-screen hands-off warning fires earlier
+    minFractionPct: 60,    // AHA: chest compression fraction at or above 60%
+    minConsistencyPct: 60, // below this the rate is an average, not a rhythm
+    minCompressions: 10    // below this there is no rhythm to judge
+  };
+
+  // Pure: no clock, no DOM. `endMs` is the end of the window being scored —
+  // "now" while the run is live, start + 30s once it has finished.
+  function analyzeCprPractice(taps, startMs, endMs) {
+    var list = (taps || []).filter(function (t) {
+      return typeof t === 'number' && isFinite(t);
+    }).slice().sort(function (a, b) { return a - b; });
+    var windowMs = Math.max(0, (endMs || 0) - (startMs || 0));
+    var intervals = [];
+    for (var i = 1; i < list.length; i++) intervals.push(list[i] - list[i - 1]);
+    var timing = analyzeCprTiming(intervals);
+
+    // Hands-off gaps are measured against the WHOLE window, not the tap span:
+    // the silence before the first compression and the silence after the last
+    // one are interruptions too, and they are exactly the two a span average
+    // erases.
+    var gaps = intervals.slice();
+    if (windowMs > 0) {
+      gaps.push(list.length ? Math.max(0, list[0] - startMs) : windowMs);
+      if (list.length) gaps.push(Math.max(0, (startMs + windowMs) - list[list.length - 1]));
+    }
+    var longestPauseMs = gaps.reduce(function (m, g) { return g > m ? g : m; }, 0);
+
+    // Compression fraction: the share of the window covered by intervals short
+    // enough to still count as continuous compressions.
+    var covered = 0;
+    for (var j = 0; j < intervals.length; j++) {
+      if (intervals[j] <= CPR_PRACTICE_SPEC.maxPauseMs) covered += intervals[j];
+    }
+    var fractionPct = windowMs > 0 ? Math.round(Math.min(100, (covered / windowMs) * 100)) : 0;
+
+    var enough = list.length >= CPR_PRACTICE_SPEC.minCompressions;
+    var rateOk = timing.medianBpm >= CPR_COACH_SPEC.minBpm && timing.medianBpm <= CPR_COACH_SPEC.maxBpm;
+    var pauseOk = longestPauseMs < CPR_PRACTICE_SPEC.maxPauseMs;
+    var fractionOk = fractionPct >= CPR_PRACTICE_SPEC.minFractionPct;
+    // A single interval has zero spread, so consistency reads 100 after two
+    // taps. Do not call a rhythm steady before there is a rhythm.
+    var steadyOk = enough && timing.consistencyPct >= CPR_PRACTICE_SPEC.minConsistencyPct;
+    return {
+      medianBpm: timing.medianBpm,
+      inRangePct: timing.inRangePct,
+      consistencyPct: timing.consistencyPct,
+      compressions: list.length,
+      longestPauseMs: longestPauseMs,
+      fractionPct: fractionPct,
+      rateOk: rateOk,
+      pauseOk: pauseOk,
+      fractionOk: fractionOk,
+      steadyOk: steadyOk,
+      steadyKnown: enough,
+      passed: rateOk && pauseOk && fractionOk && steadyOk && enough
+    };
+  }
+
   var BREATHING_GATE = [
     { id: 'notbreathing', label: 'Not breathing, or only occasional gasps', action: 'cpr', correct: true,
       why: 'Those irregular gasps are called agonal breathing and they are a sign of cardiac arrest, not of recovery. People lose lives because a bystander saw gasping and assumed breathing. Not breathing normally means: call 911 (or send someone), get an AED, start compressions.' },
@@ -1703,6 +1787,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       }, []);
 
       // Drive the metronome only while the CPR & AED module is open AND the
+      // Create-or-resume, called from the audio toggle (a real user gesture,
+      // which is what the autoplay policy actually requires) and again from each
+      // tick as a cheap safety net. Returns a RUNNING context or null; callers
+      // must not assume a context they were handed is audible.
+      function frEnsureAudio() {
+        try {
+          if (!audioCtxRef.current) {
+            var AC = window.AudioContext || window.webkitAudioContext;
+            if (!AC) return null;
+            audioCtxRef.current = new AC();
+          }
+          var ac = audioCtxRef.current;
+          if (ac.state === 'suspended' && typeof ac.resume === 'function') {
+            audioCtxRef.resumeAskedAt = Date.now();
+            ac.resume();
+          }
+          return ac;
+        } catch (e) { return null; }
+      }
+
       // user is on its metronome/practice sub-view. Tearing down on view or
       // sub-view change prevents background audio.
       useEffect(function() {
@@ -1715,12 +1819,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           setBeat(function(b) { return b + 1; });
           if (audioOn) {
             try {
-              if (!audioCtxRef.current) {
-                var AC = window.AudioContext || window.webkitAudioContext;
-                if (AC) audioCtxRef.current = new AC();
-              }
-              var ac = audioCtxRef.current;
-              if (ac) {
+              var ac = frEnsureAudio();
+              if (ac && ac.state === 'running') {
                 var osc = ac.createOscillator();
                 var gain = ac.createGain();
                 osc.frequency.value = 880;
@@ -2409,7 +2509,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             'aria-controls': 'firstresponse-cpr-panel-' + id,
             'aria-selected': active ? 'true' : 'false',
             tabIndex: active ? 0 : -1,
-            'aria-label': label + (active ? ' (current)' : ''),
+            'aria-label': label + (active ? __alloT('stem.firstresponse.sr_current_suffix', ' (current)') : ''),
             onKeyDown: function(e) { cprTabKeyDown(e, CPR_TAB_IDS.indexOf(id)); },
             onClick: function() { upd('cprView', id); frAnnounce(label); },
             style: btn({
@@ -2428,8 +2528,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
                 h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.for_untrained_bystanders', 'For untrained bystanders')),
                 __alloT('stem.firstresponse.hands_only_cpr_no_breaths_is_what_aha_', ': hands-only CPR (no breaths) is what AHA recommends for adults who collapse suddenly. It works.')),
+
+              h('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: 'rgba(220,38,38,0.10)', border: '1px solid ' + T.accent } },
+                h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.firstresponse.gate_title', '🫁 Before you push: is this cardiac arrest?')),
+                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                  __alloT('stem.firstresponse.gate_intro', 'Shake them and shout. If they do not respond, spend no more than ten seconds looking at the chest and deciding this one thing:')),
+                h('ul', { style: { margin: '0 0 6px 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.gate_not_breathing', 'Not breathing, or only occasional gasps → CPR. ')),
+                    __alloT('stem.firstresponse.gate_agonal_why', 'Those irregular gasps are called agonal breathing, and they are a sign of cardiac arrest, not of recovery. People lose lives because a bystander saw gasping and assumed breathing. Gasping counts as not breathing.')),
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.gate_breathing', 'Breathing normally, but will not wake up → recovery position. ')),
+                    __alloT('stem.firstresponse.gate_breathing_why', 'Their heart is beating. Compressions on someone who is breathing cause real injury and help nothing. Roll them onto their side, keep watching, and start CPR if the breathing stops or turns to gasping.'))),
+                h('button', { 'data-fr-focusable': true,
+                  'aria-label': __alloT('stem.firstresponse.open_3d_breathing_gate', 'Open the 3D breathing gate and practise telling normal breathing from agonal gasping'),
+                  onClick: function() { updMulti({ view: 'body3d', b3dTab: 'gate' }); markVisited('body3d'); frAnnounce(__alloT('stem.firstresponse.sr_3d_breathing_gate', 'Body position in 3D, breathing gate.')); },
+                  style: btn({ padding: '6px 12px', fontSize: 12 })
+                }, __alloT('stem.firstresponse.see_the_difference_in_3d', '🫁 See the difference in 3D'))),
+
+              h('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: 'rgba(245,158,11,0.12)', border: '1px solid ' + T.warn } },
+                h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.firstresponse.hands_only_exception_title', '⚠️ When compressions alone are not enough')),
+                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                  __alloT('stem.firstresponse.hands_only_exception_why', 'Hands-only works for an adult who drops in front of you because their blood is still carrying oxygen — it has just stopped moving. That is not the situation when the arrest was caused by not being able to breathe:')),
+                h('ul', { style: { margin: '0 0 6px 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
+                  h('li', null, __alloT('stem.firstresponse.hands_only_exception_kids', 'Infants and children')),
+                  h('li', null, __alloT('stem.firstresponse.hands_only_exception_drowning', 'Drowning')),
+                  h('li', null, __alloT('stem.firstresponse.hands_only_exception_choking', 'Choking')),
+                  h('li', null, __alloT('stem.firstresponse.hands_only_exception_overdose', 'Drug or opioid overdose'))),
+                h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                  __alloT('stem.firstresponse.hands_only_exception_what', 'There the blood has run out of oxygen, so moving it around achieves less. If you are willing and able, open the airway and give '),
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hands_only_exception_ratio', '30 compressions to 2 breaths')),
+                  __alloT('stem.firstresponse.hands_only_exception_infant', ', watching for the chest to rise. An infant\'s head goes to a neutral “sniffing” position, NOT tilted back like an adult\'s — their windpipe is soft and short, and over-extending the neck kinks it shut.')),
+                h('p', { style: { margin: 0, color: T.text, fontSize: 12, lineHeight: 1.55 } },
+                  h('strong', null, __alloT('stem.firstresponse.hands_only_exception_fallback', 'If you cannot or will not give breaths, push anyway.')),
+                  __alloT('stem.firstresponse.hands_only_exception_fallback_why', ' Compressions alone are far better than nothing. Standing there deciding is the only option that is certain to help no one.')),
+                h('button', { 'data-fr-focusable': true,
+                  'aria-label': __alloT('stem.firstresponse.open_3d_breath_coach', 'Open the 3D coach and practise the 30 to 2 compression and breath cycle'),
+                  onClick: function() { updMulti({ view: 'body3d', b3dTab: 'coach' }); markVisited('body3d'); frAnnounce(__alloT('stem.firstresponse.sr_3d_breath_coach', 'Body position in 3D, guided compression and breath cycle.')); },
+                  style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 })
+                }, __alloT('stem.firstresponse.practise_30_to_2_in_3d', '🫀 Practise 30:2 in 3D'))),
+
+              h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 12, fontWeight: 600 } },
+                __alloT('stem.firstresponse.for_an_adult_who_collapsed', 'For an adult who collapsed in front of you:')),
               h('ol', { style: { margin: '0 0 0 18px', color: T.muted, fontSize: 13, lineHeight: 1.7 } },
-                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.check', 'Check')), __alloT('stem.firstresponse.shake_shout_no_response_not_breathing_', ' — shake & shout. No response? Not breathing normally?')),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.check', 'Check')), __alloT('stem.firstresponse.shake_shout_gate_v2', ' — shake & shout. No response, and not breathing normally (gasping counts as not breathing)?')),
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.call_911_2', 'Call 911')), __alloT('stem.firstresponse.or_have_someone_else_call_send_another', ' (or have someone else call). Send another person for an AED.')),
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.push_hard_push_fast', 'Push hard, push fast')), __alloT('stem.firstresponse.center_of_chest', ' — center of chest, '),
                   h('span', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.2_inches_deep', '2 inches deep')), __alloT('stem.firstresponse.at', ', at '),
@@ -2452,7 +2594,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
                 'aria-label': __alloT('stem.firstresponse.open_cpr_rhythm_metronome', 'Open CPR rhythm metronome'),
-                onClick: function() { upd('cprView', 'metronome'); frAnnounce('Metronome'); },
+                onClick: function() { upd('cprView', 'metronome'); frAnnounce(__alloT('stem.firstresponse.cpr_tab_metronome', 'Metronome')); },
                 style: btnPrimary()
               }, __alloT('stem.firstresponse.metronome_100_120_bpm', '🥁 Metronome (100–120 bpm)')),
               h('button', { 'data-fr-focusable': true,
@@ -2469,18 +2611,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           );
         }
 
-        function pulseScale() {
-          // Respect prefers-reduced-motion (WCAG 2.3.3): hold scale at 1.0
-          // so the heart doesn't pulse for users who opt out of motion.
-          var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (reduce) return 1;
-          // Phase: 0 = start of beat, 1 = next beat. Scale 1.0 → 1.25 → 1.0.
-          var intervalMs = 60000 / bpm;
-          var phase = (Date.now() % intervalMs) / intervalMs;
-          // Quick attack, slow release feels more like a heartbeat than pure sin.
-          var amp = phase < 0.2 ? (phase / 0.2) : (1 - (phase - 0.2) / 0.8);
-          return 1 + 0.25 * amp;
-        }
+        // Audio can be on and still inaudible: a browser that blocked the
+        // context leaves it "suspended". Read it rather than assume, so the UI
+        // can admit the failure instead of showing a speaker icon over silence.
+        var audioBlocked = audioOn && !!audioCtxRef.current
+          && audioCtxRef.current.state !== 'running'
+          && (Date.now() - (audioCtxRef.resumeAskedAt || 0)) > 1200;
 
         function cprMetronome() {
           // Visible counter doubles as a re-render trigger; reading `beat` here
@@ -2524,28 +2660,41 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 })
               ),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 10 } },
-                h('label', { htmlFor: 'fr-bpm-slider', style: { fontSize: 12, color: T.muted } }, 'BPM:'),
+                h('label', { htmlFor: 'fr-bpm-slider', style: { fontSize: 12, color: T.muted } }, __alloT('stem.firstresponse.bpm_label', 'BPM:')),
                 h('input', { id: 'fr-bpm-slider', type: 'range', min: 100, max: 120, step: 1, value: bpm,
-                  'aria-label': 'Beats per minute, currently ' + bpm,
+                  'aria-label': __alloT('stem.firstresponse.sr_beats_per_minute_currently', 'Beats per minute, currently {n}').replace('{n}', bpm),
                   onChange: function(e) { upd('cprBpm', parseInt(e.target.value, 10)); },
                   style: { width: 200 }, 'data-fr-focusable': true })
               ),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 h('button', { 'data-fr-focusable': true,
                   'aria-pressed': audioOn ? 'true' : 'false',
-                  'aria-label': audioOn ? 'Audio on, click to mute' : 'Audio off, click to enable',
-                  onClick: function() { upd('cprAudio', !audioOn); frAnnounce(audioOn ? 'Audio off' : 'Audio on'); },
+                  'aria-label': audioOn
+                    ? __alloT('stem.firstresponse.sr_audio_on_click_to_mute', 'Audio on, click to mute')
+                    : __alloT('stem.firstresponse.sr_audio_off_click_to_enable', 'Audio off, click to enable'),
+                  onClick: function() {
+                    if (!audioOn) frEnsureAudio();
+                    upd('cprAudio', !audioOn);
+                    frAnnounce(audioOn ? __alloT('stem.firstresponse.sr_audio_off', 'Audio off') : __alloT('stem.firstresponse.sr_audio_on', 'Audio on'));
+                  },
                   style: btn({ padding: '6px 12px', fontSize: 12, background: audioOn ? '#1e3a8a' : T.card, color: audioOn ? '#dbeafe' : T.text })
-                }, audioOn ? '🔊 Audio on' : '🔇 Audio off'),
+                }, audioOn ? __alloT('stem.firstresponse.audio_on', '🔊 Audio on') : __alloT('stem.firstresponse.audio_off', '🔇 Audio off')),
                 h('button', { 'data-fr-focusable': true,
                   'aria-label': __alloT('stem.firstresponse.reset_bpm_to_110', 'Reset bpm to 110'),
                   onClick: function() { upd('cprBpm', 110); },
                   style: btn({ padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.reset_to_110', 'Reset to 110'))
-              )
+              ),
+              audioBlocked && h('div', { role: 'status', style: {
+                marginTop: 10, padding: '8px 10px', borderRadius: 8,
+                background: 'rgba(245,158,11,0.14)', border: '1px solid ' + T.warn,
+                color: T.text, fontSize: 12, lineHeight: 1.5, textAlign: 'left'
+              } },
+                h('strong', null, __alloT('stem.firstresponse.audio_blocked_title', 'Your browser is holding the sound. ')),
+                __alloT('stem.firstresponse.audio_blocked_body', 'Press the audio button once more to let it through. The pulsing heart and the row of dots keep the same beat in the meantime.'))
             ),
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
-              h('strong', { style: { color: T.text } }, 'Tip:'),
+              h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.tip_label', 'Tip:')),
               ' ',
               h('em', null, __alloT('stem.firstresponse.stayin_alive', 'Stayin’ Alive')),
               __alloT('stem.firstresponse.is_104_bpm', ' is ~104 bpm. '),
@@ -2557,28 +2706,69 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         }
 
         function cprPractice() {
-          // Compute current avg bpm if running
+          // Rhythm is the easy half. This window also scores the half that
+          // actually decides survival — how long the learner's hands were OFF
+          // the chest — via the shared analyzeCprPractice(). See its comment.
           var nowMs = Date.now();
-          var elapsedSec = practiceRunning ? Math.min(30, (nowMs - practiceStart) / 1000) : 0;
+          var windowMs = CPR_PRACTICE_SPEC.windowSec * 1000;
+          var elapsedSec = practiceRunning ? Math.min(CPR_PRACTICE_SPEC.windowSec, (nowMs - practiceStart) / 1000) : 0;
           var taps = practiceTaps || [];
-          var currentBpm = (taps.length >= 2 && elapsedSec > 0)
-            ? Math.round(60 * (taps.length - 1) / Math.max(0.1, (taps[taps.length - 1] - taps[0]) / 1000))
+          var done = practiceRunning && (nowMs - practiceStart) >= windowMs;
+          // While the run is live the window ends "now"; once it is over the
+          // window is the full 30 s, so a learner who quits at second 8 is
+          // scored against 30 s of patient, not 8 s of themselves.
+          var live = analyzeCprPractice(taps, practiceStart, done ? practiceStart + windowMs : nowMs);
+          // Seconds since the last compression — the number a rescuer should be
+          // watching, shown live rather than only in the debrief.
+          var handsOffMs = practiceRunning
+            ? (taps.length ? nowMs - taps[taps.length - 1] : nowMs - practiceStart)
             : 0;
-          var inRange = currentBpm >= 100 && currentBpm <= 120;
-          var done = practiceRunning && elapsedSec >= 30;
-          // Auto-finalize when 30 seconds elapsed
+
+          function recordResult(stats, partial, secs) {
+            return {
+              rate: stats.medianBpm,
+              fractionPct: stats.fractionPct,
+              longestPauseMs: stats.longestPauseMs,
+              compressions: stats.compressions,
+              consistencyPct: stats.consistencyPct,
+              rateOk: stats.rateOk,
+              pauseOk: stats.pauseOk,
+              fractionOk: stats.fractionOk,
+              steadyOk: stats.steadyOk,
+              passed: stats.passed,
+              partial: !!partial,
+              durationSec: Math.round(secs),
+              dateISO: new Date().toISOString()
+            };
+          }
+          // A run that met every criterion always beats one that did not; among
+          // equals, the closest to the middle of the target band wins.
+          function betterRun(prev, next) {
+            if (!prev) return next;
+            if (next.passed !== prev.passed) return next.passed ? next : prev;
+            return Math.abs(next.rate - 110) < Math.abs(prev.rate - 110) ? next : prev;
+          }
+
+          // Auto-finalize when the 30 seconds are up.
           if (done) {
-            var finalBpm = currentBpm;
-            var nextBest = (!practiceBest || Math.abs(finalBpm - 110) < Math.abs(practiceBest.rate - 110))
-              ? { rate: finalBpm, durationSec: 30, dateISO: new Date().toISOString() }
-              : practiceBest;
-            updMulti({ cprPracticeRunning: false, cprPracticeBest: nextBest });
-            if (finalBpm >= 100 && finalBpm <= 120) awardBadge('cpr_rhythm', 'CPR Rhythm (kept 100–120 bpm for 30s)');
-            frAnnounceUrgent('Practice complete. Average: ' + finalBpm + ' beats per minute.');
+            var result = recordResult(live, false, CPR_PRACTICE_SPEC.windowSec);
+            updMulti({
+              cprPracticeRunning: false,
+              cprPracticeLast: result,
+              cprPracticeBest: betterRun(practiceBest, result)
+            });
+            // The badge now requires all three: rate in band, no interruption
+            // over 10 s, and at least 60% of the window spent compressing.
+            if (live.passed) awardBadge('cpr_rhythm', 'CPR Rhythm (steady 100–120 bpm, no pause over 10 s, 30 s window)');
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_practice_complete_summary',
+              'Practice complete. Rate {bpm} beats per minute. Longest hands-off pause {pause} seconds. Compressing {pct} percent of the window.')
+              .replace('{bpm}', live.medianBpm)
+              .replace('{pause}', (live.longestPauseMs / 1000).toFixed(1))
+              .replace('{pct}', live.fractionPct));
           }
 
           function startPractice() {
-            updMulti({ cprPracticeRunning: true, cprPracticeStart: Date.now(), cprPracticeTaps: [] });
+            updMulti({ cprPracticeRunning: true, cprPracticeStart: Date.now(), cprPracticeTaps: [], cprPracticeLast: null });
             frAnnounceUrgent(__alloT('stem.firstresponse.sr_begin_chest_compressions_now_30_second_timer_star', 'Begin chest compressions now. 30 second timer started.'));
           }
           function tapNow() {
@@ -2590,8 +2780,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             upd('cprPracticeTaps', nextTaps);
           }
           function stopPractice() {
-            updMulti({ cprPracticeRunning: false });
+            // Stopping early used to throw the run away in silence. It now
+            // scores what happened — against the full 30 s window, because
+            // stopping early IS the interruption being taught.
+            var secs = Math.max(0, (Date.now() - practiceStart) / 1000);
+            var partial = analyzeCprPractice(practiceTaps || [], practiceStart, practiceStart + windowMs);
+            var stopped = recordResult(partial, true, Math.min(CPR_PRACTICE_SPEC.windowSec, secs));
+            updMulti({
+              cprPracticeRunning: false,
+              cprPracticeLast: stopped,
+              cprPracticeBest: betterRun(practiceBest, stopped)
+            });
+            frAnnounceUrgent(__alloT('stem.firstresponse.sr_practice_stopped_early',
+              'Practice stopped after {n} seconds. In a real arrest the pause starts here — compressions restart only when someone else takes over.')
+              .replace('{n}', Math.round(secs)));
           }
+
+          // One readout tile per criterion, so a failing run says WHICH half
+          // failed — and says it in text, not only in hue.
+          var TILE_STATES = {
+            ok:      { color: T.ok,   glyph: '✓', word: __alloT('stem.firstresponse.tile_on_track', 'On track') },
+            warn:    { color: T.warn, glyph: '!', word: __alloT('stem.firstresponse.tile_needs_work', 'Needs work') },
+            unknown: { color: T.dim,  glyph: '·', word: __alloT('stem.firstresponse.tile_not_yet', 'Not enough yet') }
+          };
+          function statTile(label, value, state, note) {
+            var st = TILE_STATES[state] || TILE_STATES.unknown;
+            return h('div', { style: {
+              flex: '1 1 140px', minWidth: 140, padding: '8px 10px', borderRadius: 8,
+              background: T.cardAlt, border: '1px solid ' + st.color
+            } },
+              h('div', { style: { fontSize: 11, color: T.muted, marginBottom: 2 } }, label),
+              h('div', { style: { fontSize: 20, fontWeight: 800, color: st.color } },
+                h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, st.glyph),
+                value),
+              h('div', { style: { fontSize: 10, color: st.color, fontWeight: 600, marginTop: 2 } }, st.word),
+              note && h('div', { style: { fontSize: 10, color: T.dim, marginTop: 2, lineHeight: 1.4 } }, note)
+            );
+          }
+
+          var last = d.cprPracticeLast || null;
+          var handsOffWarn = practiceRunning && handsOffMs >= CPR_PRACTICE_SPEC.warnPauseMs;
 
           return h('div', null,
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
@@ -2600,10 +2828,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 __alloT('stem.firstresponse.tap_the_big_button_in_rhythm_like_you_', 'Tap the big button in rhythm — like you would push on someone’s chest. Aim for '),
                 h('strong', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.100_120_bpm_2', '100–120 bpm')),
                 __alloT('stem.firstresponse.the_metronome_above_gives_you_the_targ', '. The metronome above gives you the target sound/visual.')),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.and_keep_going', 'And keep going.')),
+                __alloT('stem.firstresponse.practice_scores_interruptions_too_v2', ' This window scores four things: your rate, how steady it is, your longest hands-off pause, and the share of the 30 seconds you spent compressing. Stopping to look around is the mistake that costs the most.')),
               h('div', { style: { textAlign: 'center', margin: '14px 0' } },
                 h('button', { 'data-fr-focusable': true,
-                  disabled: !practiceRunning,
-                  'aria-label': practiceRunning ? 'Tap to record a compression' : 'Practice not running. Press Start.',
+                  'aria-disabled': practiceRunning ? 'false' : 'true',
+                  'aria-label': practiceRunning
+                    ? __alloT('stem.firstresponse.sr_tap_to_record_a_compression', 'Tap to record a compression')
+                    : __alloT('stem.firstresponse.sr_practice_not_running_press_start', 'Practice not running. Press Start.'),
                   onClick: tapNow,
                   style: {
                     width: 180, height: 180, borderRadius: '50%',
@@ -2617,14 +2850,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   }
                 }, practiceRunning ? 'TAP' : '— off —')
               ),
+              practiceRunning && h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
+                statTile(__alloT('stem.firstresponse.stat_rate', 'Rate'), live.medianBpm + ' bpm',
+                  live.rateOk ? 'ok' : 'warn',
+                  __alloT('stem.firstresponse.stat_rate_note', 'Target 100–120')),
+                statTile(__alloT('stem.firstresponse.stat_hands_off', 'Hands off'), (handsOffMs / 1000).toFixed(1) + ' s',
+                  handsOffMs < CPR_PRACTICE_SPEC.warnPauseMs ? 'ok' : 'warn',
+                  __alloT('stem.firstresponse.stat_hands_off_note', 'Keep every pause under 10 s')),
+                statTile(__alloT('stem.firstresponse.stat_compressing', 'Compressing'), live.fractionPct + '%',
+                  live.fractionOk ? 'ok' : 'warn',
+                  __alloT('stem.firstresponse.stat_compressing_note', 'Share of the window, target 60%+')),
+                statTile(__alloT('stem.firstresponse.stat_steady', 'Steady'),
+                  live.steadyKnown ? live.consistencyPct + '%' : '—',
+                  live.steadyKnown ? (live.steadyOk ? 'ok' : 'warn') : 'unknown',
+                  __alloT('stem.firstresponse.stat_steady_note', 'An even beat, not an even average'))
+              ),
+              handsOffWarn && h('div', { role: 'status', style: {
+                padding: '8px 10px', borderRadius: 8, marginBottom: 10,
+                background: 'rgba(245,158,11,0.14)', border: '1px solid ' + T.warn, color: T.text, fontSize: 12, lineHeight: 1.5
+              } },
+                h('strong', null, __alloT('stem.firstresponse.hands_off_warning_v2', 'Hands off the chest. ')),
+                h('span', { 'aria-hidden': 'true' }, (handsOffMs / 1000).toFixed(0) + ' s. '),
+                __alloT('stem.firstresponse.hands_off_warning_why', 'Blood flow stops the moment you stop, and it takes several compressions to build the pressure back up. Push again now.')),
               h('div', { style: { textAlign: 'center', fontSize: 14, color: T.muted, marginBottom: 8 } },
                 practiceRunning
-                  ? h('span', null,
-                      h('strong', { style: { color: inRange ? T.ok : T.warn } }, currentBpm + ' bpm'),
-                      ' • ', Math.round(elapsedSec), __alloT('stem.firstresponse.s_30s_taps', 's / 30s • taps: '), taps.length)
+                  ? h('span', null, Math.round(elapsedSec), __alloT('stem.firstresponse.s_30s_taps', 's / 30s • taps: '), taps.length)
                   : (practiceBest
-                      ? h('span', null, 'Best: ', h('strong', { style: { color: T.text } }, practiceBest.rate + ' bpm'))
-                      : 'Press Start, then tap with the rhythm.')
+                      ? h('span', null, __alloT('stem.firstresponse.best_label', 'Best: '), h('strong', { style: { color: T.text } }, practiceBest.rate + ' bpm'),
+                          typeof practiceBest.fractionPct === 'number' ? h('span', null, ' • ', __alloT('stem.firstresponse.n_percent_compressing', '{n}% compressing').replace('{n}', practiceBest.fractionPct)) : null,
+                          practiceBest.passed ? h('span', { style: { color: T.ok } }, ' ✓') : null)
+                      : __alloT('stem.firstresponse.press_start_then_tap', 'Press Start, then tap with the rhythm.'))
               ),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 !practiceRunning && h('button', { 'data-fr-focusable': true,
@@ -2637,8 +2892,62 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 }, __alloT('stem.firstresponse.stop', '■ Stop'))
               )
             ),
+
+            // Debrief. Names the criterion that failed rather than a single
+            // pass/fail number, because "110 bpm" and "you stopped for 12
+            // seconds" are different lessons.
+            !practiceRunning && last && h('div', { style: {
+              padding: 14, borderRadius: 10, marginBottom: 14,
+              background: T.card, border: '1px solid ' + (last.passed ? T.ok : T.warn)
+            } },
+              h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } },
+                last.passed
+                  ? __alloT('stem.firstresponse.result_all_four', '✅ All four: rate, steadiness, pauses, and compression time')
+                  : __alloT('stem.firstresponse.result_what_to_fix', '🔎 What to fix next run')),
+              last.partial && h('p', { style: { margin: '0 0 8px', fontSize: 12, color: T.warn, lineHeight: 1.5 } },
+                __alloT('stem.firstresponse.result_stopped_early', 'You stopped early. This run is still scored against the full 30 seconds — because in a real arrest, stopping does not stop the clock.')),
+              h('ul', { style: { margin: '0 0 0 18px', padding: 0, color: T.muted, fontSize: 12, lineHeight: 1.7 } },
+                h('li', null,
+                  h('strong', { style: { color: last.rateOk ? T.ok : T.warn } }, last.rateOk ? '✓ ' : '✗ '),
+                  __alloT('stem.firstresponse.result_rate_label', 'Rate: '),
+                  h('strong', { style: { color: T.text } }, last.rate + ' bpm'),
+                  last.rateOk
+                    ? __alloT('stem.firstresponse.result_rate_ok', ' — inside the 100–120 band.')
+                    : (last.rate < 100
+                        ? __alloT('stem.firstresponse.result_rate_slow', ' — under 100. Too slow to move enough blood; find the beat on the Metronome tab first.')
+                        : __alloT('stem.firstresponse.result_rate_fast', ' — over 120. Faster is not better: the chest never refills between compressions.'))),
+                h('li', null,
+                  h('strong', { style: { color: last.steadyOk ? T.ok : T.warn } }, last.steadyOk ? '✓ ' : '✗ '),
+                  __alloT('stem.firstresponse.result_steady_label', 'Steadiness: '),
+                  h('strong', { style: { color: T.text } }, last.consistencyPct + '%'),
+                  last.steadyOk
+                    ? __alloT('stem.firstresponse.result_steady_ok', ' — an even beat, which is what a rate in the band is supposed to mean.')
+                    : __alloT('stem.firstresponse.result_steady_bad', ' — too uneven. Rushing then coasting can average out to a healthy number while almost none of your compressions were actually in the band. Follow the metronome rather than counting.')),
+                h('li', null,
+                  h('strong', { style: { color: last.pauseOk ? T.ok : T.warn } }, last.pauseOk ? '✓ ' : '✗ '),
+                  __alloT('stem.firstresponse.result_pause_label', 'Longest hands-off pause: '),
+                  h('strong', { style: { color: T.text } }, (last.longestPauseMs / 1000).toFixed(1) + ' s'),
+                  last.pauseOk
+                    ? __alloT('stem.firstresponse.result_pause_ok', ' — under the 10-second limit.')
+                    : __alloT('stem.firstresponse.result_pause_bad', ' — over 10 seconds. Pauses are for swapping rescuers or letting an AED analyze, and nothing else.')),
+                h('li', null,
+                  h('strong', { style: { color: last.fractionOk ? T.ok : T.warn } }, last.fractionOk ? '✓ ' : '✗ '),
+                  __alloT('stem.firstresponse.result_fraction_label', 'Compressing: '),
+                  h('strong', { style: { color: T.text } }, last.fractionPct + '%'),
+                  __alloT('stem.firstresponse.result_fraction_of_window', ' of the window'),
+                  last.fractionOk
+                    ? __alloT('stem.firstresponse.result_fraction_ok', ' — at or above the 60% target.')
+                    : __alloT('stem.firstresponse.result_fraction_bad', ' — below the 60% target. This is the number that separates a rescuer who kept going from one who kept starting over.')),
+                h('li', null,
+                  __alloT('stem.firstresponse.result_compressions_label', 'Compressions recorded: '),
+                  h('strong', { style: { color: T.text } }, last.compressions))
+              ),
+              h('div', { style: { marginTop: 10, fontSize: 11, color: T.dim, fontStyle: 'italic', lineHeight: 1.5 } },
+                __alloT('stem.firstresponse.result_source_v2', 'Rate, pause and compression-fraction targets come from the 2025 AHA Guidelines for CPR & ECC: 100–120 compressions per minute, interruptions under 10 seconds, chest compression fraction of at least 60%. Steadiness is this tool’s own check that your rate is a rhythm rather than an average, not a published guideline number.'))
+            ),
+
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
-              __alloT('stem.firstresponse.you_re_practicing_rhythm_only_depth_2_', 'You’re practicing rhythm only — depth (2 inches on an adult) and chest recoil also matter, and you can’t practice those on a screen. Get hands-on at '),
+              __alloT('stem.firstresponse.you_re_practicing_rhythm_and_continuity', 'You’re practicing rhythm and continuity only — depth (about 2 inches on an adult) and full chest recoil also matter, and you can’t practice those on a screen. Get hands-on at '),
               h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'redcross.org'),
               '.')
           );
@@ -2654,7 +2963,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               tip: __alloT('stem.firstresponse.open_the_case_press_the_green_power_bu', 'Open the case. Press the green/power button. The AED starts giving voice prompts immediately. Visual prompts on the screen mirror them for deaf/HoH rescuers.') },
             { icon: '👕', title: __alloT('stem.firstresponse.step_2_expose_the_chest', 'Step 2 — Expose the chest'),
               say: '"Apply pads to bare chest."',
-              tip: __alloT('stem.firstresponse.cut_or_tear_off_the_shirt_if_chest_is_', 'Cut or tear off the shirt. If chest is wet — wipe dry. If hairy — most AEDs include a razor in the case. Remove medication patches. The pads go skin-to-skin.') },
+              tip: __alloT('stem.firstresponse.cut_or_tear_off_the_shirt_v2', 'Cut or tear off the shirt. If the chest is wet — sweat, rain, pool water — wipe it dry, because water spreads the current across the skin instead of through the chest. If it is very hairy, most AED cases include a razor. Peel off any medication patches and wipe the area. If you see or feel a hard lump under the skin near the collarbone — an implanted pacemaker or defibrillator — put the pad an inch or so to the side of it, never straight on top. The pads go skin-to-skin.') },
             { icon: '📍', title: __alloT('stem.firstresponse.step_3_place_the_pads', 'Step 3 — Place the pads'),
               say: '"Place one pad on upper-right chest, one on lower-left side."',
               tip: __alloT('stem.firstresponse.the_pads_have_a_picture_showing_where_', 'The pads have a picture showing where they go. Adult: upper-right + lower-left ribs. Child <8 or <55 lbs: use child pads if available, or place one on chest and one on the back.') },
@@ -2669,10 +2978,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               tip: __alloT('stem.firstresponse.whether_shock_or_no_shock_the_aed_will', 'Whether shock or no shock — the AED will tell you to do CPR for 2 minutes, then it re-analyzes. Do not remove the pads. Keep going until EMS arrives.') }
           ];
 
+          // Step 5 is the only DECISION in the walkthrough, and "no shock
+          // advised" is the prompt bystanders most often misread as "he is
+          // fine, stop". Advancing past it without picking a branch would let a
+          // learner finish the walkthrough having seen neither outcome.
+          var branchNeeded = aedStep === 4 && !aedShockBranch;
+
           function next() {
+            if (branchNeeded) {
+              frAnnounceUrgent(__alloT('stem.firstresponse.sr_pick_a_branch_first', 'Pick what the AED said — shock advised, or no shock advised — before continuing.'));
+              return;
+            }
             if (aedStep < STEPS.length - 1) {
               upd('aedStep', aedStep + 1);
-              frAnnounceUrgent('Step ' + (aedStep + 2) + ': ' + STEPS[aedStep + 1].title);
+              frAnnounceUrgent(__alloT('stem.firstresponse.sr_step_n', 'Step {n}: ').replace('{n}', aedStep + 2) + STEPS[aedStep + 1].title);
             } else {
               awardBadge('aed_walkthrough', 'AED Operator (walked the steps)');
               upd('aedStep', 0);
@@ -2710,19 +3029,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   onClick: function() { upd('aedShockBranch', 'noshock'); frAnnounce(__alloT('stem.firstresponse.sr_no_shock_advised_branch', 'No shock advised branch.')); },
                   style: btn({ background: aedShockBranch === 'noshock' ? '#064e3b' : T.card, color: aedShockBranch === 'noshock' ? '#d1fae5' : T.text, padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.no_shock_advised', '🚫 "No shock advised"'))
-              )
+              ),
+              aedStep === 4 && aedShockBranch === 'shock' && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(220,38,38,0.12)', border: '1px solid ' + T.danger, color: T.text, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', null, __alloT('stem.firstresponse.aed_branch_shock_title', 'Shout "CLEAR!", check that nobody is touching them, then press the flashing button. ')),
+                __alloT('stem.firstresponse.aed_branch_shock_body', 'The instant the shock is delivered, go straight back to compressions — do not wait to see whether it worked. The heart is empty right after a shock, and compressions are what fill it.')),
+              aedStep === 4 && aedShockBranch === 'noshock' && h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(245,158,11,0.14)', border: '1px solid ' + T.warn, color: T.text, fontSize: 12, lineHeight: 1.55 } },
+                h('strong', null, __alloT('stem.firstresponse.aed_branch_noshock_title', '"No shock advised" does not mean they are fine. ')),
+                __alloT('stem.firstresponse.aed_branch_noshock_body', 'It means the rhythm is not one a shock can fix. If they are still unresponsive and not breathing normally, resume compressions immediately and leave the pads on — the AED will re-analyze in two minutes. Both branches end the same way: keep pushing.')),
+              aedStep === 4 && !aedShockBranch && h('p', { style: { marginTop: 10, marginBottom: 0, fontSize: 12, color: T.warn, lineHeight: 1.5 } },
+                __alloT('stem.firstresponse.aed_pick_branch_hint', 'Pick what the AED said to continue. Both branches matter — one of them is the one people get wrong.'))
             ),
             h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 12, color: T.dim } },
-                __alloT('stem.firstresponse.step', 'Step '), (aedStep + 1), ' of ', STEPS.length),
+                __alloT('stem.firstresponse.step', 'Step '), (aedStep + 1), __alloT('stem.firstresponse.of_separator', ' of '), STEPS.length),
               h('div', { style: { display: 'flex', gap: 6 } },
                 aedStep > 0 && h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.previous_step', 'Previous step'), onClick: prev, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.back', '← Back')),
                 h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.reset_to_first_step', 'Reset to first step'), onClick: reset, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.reset', 'Reset')),
                 h('button', { 'data-fr-focusable': true,
-                  'aria-label': aedStep < STEPS.length - 1 ? 'Next step' : 'Finish walkthrough',
+                  'aria-label': branchNeeded
+                    ? __alloT('stem.firstresponse.sr_next_blocked_pick_a_branch', 'Next step, unavailable until you pick shock advised or no shock advised')
+                    : (aedStep < STEPS.length - 1
+                        ? __alloT('stem.firstresponse.sr_next_step', 'Next step')
+                        : __alloT('stem.firstresponse.sr_finish_walkthrough', 'Finish walkthrough')),
+                  'aria-disabled': branchNeeded ? 'true' : 'false',
                   onClick: next,
-                  style: btnPrimary({ padding: '6px 14px', fontSize: 12 })
-                }, aedStep < STEPS.length - 1 ? 'Next →' : 'Finish ✓')
+                  style: btnPrimary({ padding: '6px 14px', fontSize: 12, opacity: branchNeeded ? 0.5 : 1, cursor: branchNeeded ? 'not-allowed' : 'pointer' })
+                }, aedStep < STEPS.length - 1 ? __alloT('stem.firstresponse.next_arrow', 'Next →') : __alloT('stem.firstresponse.finish_check', 'Finish ✓'))
               )
             )
           );
@@ -2733,10 +3065,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           emergencyBanner(),
           h('div', { role: 'tablist', 'aria-label': __alloT('stem.firstresponse.cpr_aed_sections', 'CPR + AED sections'),
             style: { display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 } },
-            tabBtn('overview', 'Overview'),
-            tabBtn('metronome', 'Metronome'),
-            tabBtn('practice', 'Practice'),
-            tabBtn('aed', 'AED walkthrough')
+            tabBtn('overview', __alloT('stem.firstresponse.cpr_tab_overview', 'Overview')),
+            tabBtn('metronome', __alloT('stem.firstresponse.cpr_tab_metronome', 'Metronome')),
+            tabBtn('practice', __alloT('stem.firstresponse.cpr_tab_practice', 'Practice')),
+            tabBtn('aed', __alloT('stem.firstresponse.cpr_tab_aed', 'AED walkthrough'))
           ),
           h('div', { role: 'tabpanel',
             id: 'firstresponse-cpr-panel-' + cprView,
@@ -5717,10 +6049,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                         color: '#fff', fontSize: 20, fontWeight: 950, cursor: 'pointer', boxShadow: '0 14px 34px rgba(220,38,38,.34)' }
                     }, session.phase === 'resume' ? 'RESUME' : (session.mode === 'scenario' ? 'PRESS + RELEASE' : 'PRESS')),
                     session.phase === 'breaths' && session.breathCount < CPR_COACH_SPEC.breathsPerCycle && h('button', {
-                      disabled: !breathReady,
+                      'aria-disabled': breathReady ? 'false' : 'true',
                       onClick: recordCoachBreath,
                       'aria-label': 'Give simulated breath ' + (session.breathCount + 1) + ' of 2',
                       style: btn({ width: '100%', padding: 14, textAlign: 'center', fontSize: 16,
+                        cursor: breathReady ? 'pointer' : 'not-allowed',
                         opacity: breathReady ? 1 : 0.55, background: '#075985', color: '#fff', border: '2px solid #38bdf8' })
                     }, breathReady ? 'Give breath ' + (session.breathCount + 1) : 'Let the chest fall...'),
                     inBreathPhase && h('div', { style: { marginTop: 6, fontSize: 11, color: T.dim, textAlign: 'center', lineHeight: 1.5 } },

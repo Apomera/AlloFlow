@@ -72,9 +72,12 @@ describe('illustrated water cycle accessibility and portability',()=>{
   const restored=JSON.parse(JSON.stringify(pack));
   expect(restored.history).toEqual(pack.history);
  });
- it('keeps the original catalog entry and adds a distinct grade-six pilot',()=>{
+ it('publishes the grade-six pilot and no longer lists the retired grade 2-3 lesson',()=>{
   const catalog=read('catalog/index.json');
-  expect(catalog.entries.find(e=>e.slug==='water_cycle').path).toBe('catalog/approved/water_cycle.json');
+  // The text-only grade 2-3 seed lesson was retired from the catalog in favour of the
+  // illustrated editions; catalog/approved/water_cycle.json is gone, so an entry for it
+  // would be a 404 for every teacher who clicked it.
+  expect(catalog.entries.find(e=>e.slug==='water_cycle')).toBeUndefined();
   expect(catalog.entries.find(e=>e.slug==='water_cycle_grade6_illustrated').path).toBe('allopacks/illustrated/water_cycle_grade6.allopack.json');
  });
 });

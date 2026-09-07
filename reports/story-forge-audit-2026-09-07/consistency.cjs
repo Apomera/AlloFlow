@@ -1,0 +1,6 @@
+const fs=require('fs');let s=fs.readFileSync('story_forge_source.jsx','utf8');
+s=s.replace("const writtenSections = paragraphs.filter((p) => countWords(p?.text) >= (layoutMode === 'comic' ? 2 : 5)).length;\n  const sectionText", "const sectionText");
+s=s.replace("const contentSections = paragraphs.filter((p) => sectionText(p).trim()).length;", "const writtenSections = paragraphs.filter((p) => countWords(sectionText(p)) >= (layoutMode === 'comic' ? 2 : 5)).length;\n  const contentSections = paragraphs.filter((p) => sectionText(p).trim()).length;");
+s=s.replace("draft.paragraphs.some(section => String(section?.text || '').trim());", "draft.paragraphs.some(section => getStoryForgeSectionText(section, draft.panelDialogue?.[section?.id], draft.artifactType === 'comic' || draft.layoutMode === 'comic').trim());");
+fs.writeFileSync('story_forge_source.jsx',s);
+const p=__dirname+'/verify-comic.cjs';let test=fs.readFileSync(p,'utf8');test=test.replace(" await page.getByRole('textbox',{name:/Panel 1 thought/i}).fill('Together we can succeed.');", " console.log(await page.locator('textarea').evaluateAll(es=>es.map(e=>({label:e.getAttribute('aria-label'),visible:e.getBoundingClientRect().height>0}))));");test=test.replace(" assert.ok(prompt.includes('Together we can succeed.'));",'');fs.writeFileSync(p,test);

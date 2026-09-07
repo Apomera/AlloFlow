@@ -589,7 +589,8 @@
           h('button', { type: 'button', onClick: useController('reset'), className: 'min-h-[40px] rounded-lg border border-slate-600 px-3 text-xs font-bold text-white' }, 'Reset')
         )
       ),
-      h('canvas', { ref: canvasRef, role: 'img', className: 'block h-[360px] w-full rounded-xl bg-[#07111f]', 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') })
+      h('canvas', { ref: canvasRef, role: 'img', 'data-a11y-static': 'true', 'aria-describedby': 'printlab-preview-desc', className: 'block h-[360px] w-full rounded-xl bg-[#07111f]', 'aria-label': __alloT('stem.printlab.a11y_interactive_preview_of_the_current_model_a_comp', 'Interactive preview of the current model. A complete text report is available in the Preflight tab.') }),
+      h('p', { id: 'printlab-preview-desc', className: 'sr-only' }, __alloT('stem.printlab.a11y_preview_static_description', 'This preview is a still picture of the model. Use the rotate, zoom and reset buttons above it to change the view; the Preflight tab holds the full text report of dimensions and printability checks.'))
     );
   }
 

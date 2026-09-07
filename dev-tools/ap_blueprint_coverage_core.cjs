@@ -181,6 +181,53 @@ function buildApBlueprintCoverage(input) {
   const unresolvedCount = Object.keys(unresolved).reduce((sum, key) => sum + unresolved[key], 0);
 
   const gaps = [];
+
+  // Test-wiseness cues: things a learner could exploit without knowing the
+  // content. Reported as advisories, not gaps, because the Hub neutralises the
+  // position cue at render time (per-session choice order) and the others are
+  // authoring backlog rather than structural holes.
+  const keyed = items.filter((item) => Array.isArray(asRecord(item).choices) && Number.isInteger(asRecord(item).answerIndex));
+  let cycleSteps = 0;
+  for (let index = 1; index < keyed.length; index += 1) {
+    const previous = keyed[index - 1];
+    const current = keyed[index];
+    if (current.answerIndex === (previous.answerIndex + 1) % Math.max(1, current.choices.length)) cycleSteps += 1;
+  }
+  const keyCycleSharePercent = keyed.length > 1 ? Math.round(cycleSteps / (keyed.length - 1) * 1000) / 10 : null;
+  let keyLongest = 0;
+  let keyLongerByQuarter = 0;
+  keyed.forEach((item) => {
+    const lengths = item.choices.map((choice) => String(choice || '').length);
+    const keyLength = lengths[item.answerIndex];
+    const others = lengths.filter((_, index) => index !== item.answerIndex);
+    const longestOther = others.length ? Math.max.apply(null, others) : 0;
+    if (keyLength > longestOther) keyLongest += 1;
+    if (keyLength >= longestOther * 1.25 && keyLength > longestOther) keyLongerByQuarter += 1;
+  });
+  const keyLongestSharePercent = keyed.length ? Math.round(keyLongest / keyed.length * 1000) / 10 : null;
+  const keyLongerByQuarterSharePercent = keyed.length ? Math.round(keyLongerByQuarter / keyed.length * 1000) / 10 : null;
+  const distractorRationaleCounts = {};
+  let distractorRationaleTotal = 0;
+  keyed.forEach((item) => {
+    const rationales = asArray(item.choiceRationales);
+    if (rationales.length !== item.choices.length) return;
+    rationales.forEach((text, index) => {
+      if (index === item.answerIndex) return;
+      const key = String(text || '').replace(/\s+/g, ' ').trim();
+      distractorRationaleCounts[key] = (distractorRationaleCounts[key] || 0) + 1;
+      distractorRationaleTotal += 1;
+    });
+  });
+  const distractorRationaleTopCount = Object.values(distractorRationaleCounts).reduce((max, count) => Math.max(max, count), 0);
+  const repeatedDistractorRationaleSharePercent = distractorRationaleTotal ? Math.round(distractorRationaleTopCount / distractorRationaleTotal * 1000) / 10 : null;
+  const choiceSetCounts = countBy(keyed.map((item) => item.choices.map((choice) => String(choice || '').toLowerCase().trim()).sort().join('|')));
+  const largestSharedChoiceSet = Object.values(choiceSetCounts).reduce((max, count) => Math.max(max, count), 0);
+  const advisories = [];
+  if (keyCycleSharePercent != null && keyCycleSharePercent >= 60) advisories.push('answer-key-position-cycle');
+  if (keyLongerByQuarterSharePercent != null && keyLongerByQuarterSharePercent >= 25) advisories.push('key-length-cue');
+  if (repeatedDistractorRationaleSharePercent != null && repeatedDistractorRationaleSharePercent >= 50) advisories.push('distractor-rationales-repeated');
+  if (largestSharedChoiceSet >= 10) advisories.push('shared-choice-sets');
+
   if (unresolvedCount) gaps.push('unresolved-cross-references');
   if (!declared) gaps.push('topic-universe-not-declared');
   if (topicsMissing.length) gaps.push('declared-topics-without-items');
@@ -219,6 +266,18 @@ function buildApBlueprintCoverage(input) {
       keyedItemCount,
       counts: answerCounts,
       dominantSharePercent: dominantAnswerShare,
+    },
+    testWiseness: {
+      keyedItemCount: keyed.length,
+      keyCycleSharePercent,
+      keyLongestSharePercent,
+      keyLongerByQuarterSharePercent,
+      distractorRationaleCount: distractorRationaleTotal,
+      distinctDistractorRationaleCount: Object.keys(distractorRationaleCounts).length,
+      repeatedDistractorRationaleSharePercent,
+      largestSharedChoiceSet,
+      advisories,
+      note: 'Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog.',
     },
     library: layerCounts,
     emptyLibraryLayers: emptyLayers,

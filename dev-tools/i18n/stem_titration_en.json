@@ -503,5 +503,22 @@
   "bench_save_reading": "Save reading",
   "bench_notebook_cleared": "Notebook cleared.",
   "bench_clear_notebook": "Clear notebook",
-  "bench_record_preview": "Current reading:"
+  "bench_record_preview": "Current reading:",
+  "bench_download_csv": "Download CSV",
+  "bench_notes_help": "Add your observations below each saved reading. Notes save as you type and are included in the CSV download.",
+  "bench_use_a": "Use as A",
+  "bench_use_b": "Use as B",
+  "bench_student_note": "Your observation",
+  "dilution_stock_aliquot": "Stock aliquot",
+  "dilution_final_solution": "Final solution",
+  "dilution_visual_title": "Dilution in 3D",
+  "dilution_visual_intro": "Compare the measured stock aliquot on the left with the final solution on the right. Adjust the calculator above to update the view.",
+  "dilution_view_options": "Dilution view options",
+  "dilution_3d": "3D vessels",
+  "dilution_2d": "2D comparison",
+  "dilution_markers": "Solute markers",
+  "dilution_fallback": "3D is unavailable. The 2D comparison and calculator remain available.",
+  "dilution_camera": "Dilution camera controls",
+  "dilution_solute_constant": "Same amount of solute in both views:",
+  "dilution_visual_note": "Gold markers represent equal portions of solute, not individual atoms. Their size changes to fit shallow liquid; compare their count. Vessel dimensions and colors are illustrative. Use the numerical readings and the preparation procedure below. Mouse drag or arrow keys rotate; +/− zoom; 0 resets. Touch swipes scroll the page."
 }

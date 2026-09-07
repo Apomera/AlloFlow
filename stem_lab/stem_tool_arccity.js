@@ -1385,12 +1385,15 @@
       // success-celebration elements are invisible / un-transformed unless the
       // (reduced-motion-gated) animation reveals them — so reduced-motion is calm.
       '#allo-arccity-root .arccity-burst,#allo-arccity-root .arccity-sparks,#allo-arccity-root .arccity-shock,#allo-arccity-root .arccity-pop{transform-box:fill-box;transform-origin:center;opacity:0;}' +
+      '#allo-arccity-root .arccity-flash{opacity:0;pointer-events:none;}' +
       '#allo-arccity-root .arccity-ember{transform-box:fill-box;transform-origin:center;opacity:0;}' +
       '#allo-arccity-root .arccity-node-lit{transform-box:fill-box;transform-origin:center;}' +
       '@keyframes arccityPulse{0%,100%{opacity:1;}50%{opacity:.5;}}' +
       '@keyframes arccityBurst{0%{transform:scale(.3);opacity:.9;}100%{transform:scale(2.7);opacity:0;}}' +
       '@keyframes arccityShock{0%{transform:scale(.4);opacity:.6;}100%{transform:scale(4.2);opacity:0;}}' +
+      '@keyframes arccityFlash{0%{opacity:.22;}100%{opacity:0;}}' +
       '@keyframes arccityHalo{0%,100%{opacity:.28;}50%{opacity:.12;}}' +
+      '@keyframes arccityStar{0%,100%{opacity:.5;}50%{opacity:.15;}}' +
       '@keyframes arccitySparks{0%{transform:scale(.4);opacity:.95;}100%{transform:scale(1.9);opacity:0;}}' +
       '@keyframes arccityEmber{0%{transform:translateY(0) scale(1);opacity:.9;}100%{transform:translateY(-32px) scale(.3);opacity:0;}}' +
       // node power-on punch (squash → overshoot → settle) the instant it lights
@@ -1415,12 +1418,14 @@
       '#allo-arccity-root .arccity-node-unlit{animation:arccityPulse 1.8s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-node-lit{animation:arccityNodePop .5s cubic-bezier(.34,1.56,.64,1);}' +
       '#allo-arccity-root .arccity-burst{animation:arccityBurst .65s ease-out forwards;}' +
+      '#allo-arccity-root .arccity-flash{animation:arccityFlash .5s ease-out forwards;}' +
       '#allo-arccity-root .arccity-shock{animation:arccityShock .6s ease-out forwards;}' +
       '#allo-arccity-root .arccity-sparks{animation:arccitySparks .55s ease-out forwards;}' +
       '#allo-arccity-root .arccity-ember{animation:arccityEmber .8s ease-out forwards;}' +
       '#allo-arccity-root .arccity-pop{animation:arccityPop 1.1s ease-out forwards;}' +
       '#allo-arccity-root .arccity-gate-lit{animation:arccityGateLit .5s ease-out;}' +
       '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
+      '#allo-arccity-root .arccity-star{animation:arccityStar 3.4s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
       '#allo-arccity-root .arccity-ghost-remainder{animation:arccityGhostFlow 1.4s linear infinite;}' +
       '#allo-arccity-root .arccity-beam-head{animation:arccityHeadIn .25s ease-out both;}' +
@@ -1543,19 +1548,7 @@
     }
   }
 
-  function disposeArcBattle3D(pack) {
-    if (!pack) return;
-    try {
-      pack.scene.traverse(function (obj) {
-        if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
-        if (obj.material) {
-          if (Array.isArray(obj.material)) obj.material.forEach(function (m) { if (m && m.dispose) m.dispose(); });
-          else if (obj.material.dispose) obj.material.dispose();
-        }
-      });
-      if (pack.renderer) { pack.renderer.dispose(); if (pack.renderer.forceContextLoss) pack.renderer.forceContextLoss(); }
-    } catch (e) { }
-  }
+  function disposeArcBattle3D(pack) { arcDisposePack(pack); }
 
   function syncArcBattle3D(pack, rawBattle) {
     if (!pack || !pack.THREE) return;
@@ -1570,6 +1563,7 @@
         relay.material.emissive.set(online ? color : '#000000');
         relay.material.emissiveIntensity = online ? 0.8 : 0;
         relay.material.opacity = online ? 1 : 0.38;
+        if (relay.userData.halo) relay.userData.halo.material.opacity = online ? 0.55 : 0.08;
       }
     }
     clearArcBattle3DGroup(pack.trailGroup);
@@ -1583,6 +1577,9 @@
         pts.push(new THREE.Vector3(gx, Math.max(0.03, pt.y * 0.52), [-3, 0, 3][laneNo]));
       }
       if (pts.length < 2) return;
+      // The live preview and the selected replay are solid, bright beams: draw them as
+      // glowing tubes (history and denied paths stay as thin dashed lines).
+      if (!dashed && opacity >= 0.9) { var tube = arcTube(THREE, pts, 0.06, color, 1); if (tube) { pack.trailGroup.add(tube); return pts; } }
       var geo = new THREE.BufferGeometry().setFromPoints(pts);
       var mat = dashed
         ? new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: 0.25, gapSize: 0.16 })
@@ -1625,7 +1622,7 @@
         pack.trailGroup.add(impactMarker);
       }
     }
-    pack.renderer.render(pack.scene, pack.camera);
+    arcRenderPack(pack);
   }
 
   function ArcCityBattle3D(props) {
@@ -1655,10 +1652,14 @@
         var ground = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshPhongMaterial({ color: 0x090d20, shininess: 25 }));
         ground.rotation.x = -Math.PI / 2; ground.position.y = -0.04; scene.add(ground);
         var grid = new THREE.GridHelper(12, 24, 0x22d3ee, 0x24304b); grid.scale.z = 0.72; scene.add(grid);
+        scene.add(arcStarField(THREE, 21, 380, 60));
+        scene.add(arcHorizonGlow(THREE, 0x22d3ee, 90, 5, -17));
         var laneZ = [-3, 0, 3];
         for (var li = 0; li < 3; li++) {
           var laneGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5.4, 0.03, laneZ[li]), new THREE.Vector3(5.4, 0.03, laneZ[li])]);
           scene.add(new THREE.Line(laneGeo, new THREE.LineBasicMaterial({ color: arenaConfig.lanes[li].color, transparent: true, opacity: 0.28 })));
+          var laneGlow = new THREE.Mesh(new THREE.PlaneGeometry(11, 1.1), new THREE.MeshBasicMaterial({ color: arenaConfig.lanes[li].color, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false }));
+          laneGlow.rotation.x = -Math.PI / 2; laneGlow.position.set(0, 0.01, laneZ[li]); scene.add(laneGlow);
         }
         var relays = [[], []];
         for (var defender = 0; defender < 2; defender++) {
@@ -1669,6 +1670,7 @@
             var relay = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 14), relayMat);
             relay.position.set(rx, Math.max(0.28, relayLevel.node.y * 0.52), laneZ[laneNo]);
             scene.add(relay); relays[defender][laneNo] = relay;
+            var relayHalo = arcHaloSprite(THREE, arenaConfig.lanes[laneNo].color, 1.6, 0.55); relayHalo.position.copy(relay.position); scene.add(relayHalo); relay.userData.halo = relayHalo;
           }
         }
         // Mirror each selected arena's wall and gate markers into both firing directions.
@@ -1693,17 +1695,22 @@
           });
         }
         var trailGroup = new THREE.Group(); scene.add(trailGroup);
-        var pack = { THREE: THREE, scene: scene, camera: camera, renderer: renderer, relays: relays, trailGroup: trailGroup };
+        // Neon skyline behind the far lane (decorative; the lanes, relays and beams are untouched).
+        var arenaGround = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshPhongMaterial({ color: 0x06091a, shininess: 10 }));
+        arenaGround.rotation.x = -Math.PI / 2; arenaGround.position.y = -0.08; scene.add(arenaGround);
+        scene.add(arcBuildCity(THREE, 77, [arenaConfig.lanes[0].color, arenaConfig.lanes[1].color, arenaConfig.lanes[2].color], { count: 28, spread: 9, xShift: -4, zNear: -7, zFar: -14 }));
+        var pack = { THREE: THREE, scene: scene, camera: camera, renderer: renderer, relays: relays, trailGroup: trailGroup, disposed: false };
         packRef.current = pack;
         function resize() {
           if (disposed || !canvas.parentElement) return;
           var width = Math.max(280, canvas.parentElement.clientWidth || 640), height = Math.max(220, Math.min(380, width * 0.52));
-          renderer.setSize(width, height, false); camera.aspect = width / height; camera.updateProjectionMatrix();
-          renderer.render(scene, camera);
+          arcResizePack(pack, width, height);
+          arcRenderPack(pack);
         }
         resize();
         if (window.ResizeObserver) { resizeObserver = new window.ResizeObserver(resize); resizeObserver.observe(canvas.parentElement); }
         syncArcBattle3D(pack, props.battle);
+        arcAttachBloom(pack, { threshold: 0.6, strength: 0.8, radius: 0.35 }, function () { resize(); });
         setStatus('ready');
       }).catch(function () { if (!disposed) setStatus('unavailable'); });
       return function () {
@@ -1717,6 +1724,577 @@
       h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220 } }),
       status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, color: '#e2e8f0', background: 'rgba(5,7,18,0.88)', textAlign: 'center', fontSize: 12 } }, status === 'unavailable' ? '3D unavailable. Continue in the complete tactical view below.' : 'Loading the optional 3D arena…') : null,
       h('div', { style: { padding: '6px 10px', color: '#cbd5e1', fontSize: 11 } }, 'Visual 3D projection — match rules and controls remain in the tactical view below.'));
+  }
+
+  // ── Shared Three.js helpers for the optional 3D views (the Play "City view" and
+  // the Circuit Clash arena). Everything here is sighted-only decoration: the SVG
+  // boards stay the accessible, authoritative surfaces, and nothing in this block
+  // adjudicates a shot or owns match state. Every GPU-facing call is try/caught so
+  // a failing addon or a lost context can never take the tool down. ──────────
+  var ARC_POSTFX_URLS = [
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/CopyShader.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/shaders/LuminosityHighPassShader.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/EffectComposer.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/RenderPass.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/ShaderPass.js',
+    'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/postprocessing/UnrealBloomPass.js'
+  ];
+  var _arcPostFXPromise = null;
+  function arcPostFXReady() { return !!(window.THREE && window.THREE.EffectComposer && window.THREE.RenderPass && window.THREE.UnrealBloomPass); }
+  // The r128 example addons depend on each other in order, so they load one at a
+  // time; the shared promise means the Play view and the arena never double-load.
+  function arcLoadPostFX() {
+    if (arcPostFXReady()) return Promise.resolve(true);
+    if (_arcPostFXPromise) return _arcPostFXPromise;
+    _arcPostFXPromise = new Promise(function (resolve) {
+      var i = 0;
+      (function next() {
+        if (i >= ARC_POSTFX_URLS.length) { resolve(arcPostFXReady()); return; }
+        try {
+          var s = document.createElement('script'); s.src = ARC_POSTFX_URLS[i]; s.async = false;
+          s.onload = function () { i++; next(); }; s.onerror = function () { i++; next(); };
+          document.head.appendChild(s);
+        } catch (e) { resolve(false); }
+      })();
+    });
+    return _arcPostFXPromise;
+  }
+  function arcReducedMotion() { try { return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+  function arcLowPower() { return arcReducedMotion() || (!!navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4); }
+
+  // Guarded bloom (the house pattern): plain render until the addons arrive, every
+  // op try/caught with fallback to plain render, kill-switch
+  // window.AlloPostFXEnabled === false, half-res + gentler strength on low power.
+  function arcAttachBloom(pack, opts, onReady) {
+    opts = opts || {};
+    pack.composer = null;
+    if (window.AlloPostFXEnabled === false) return;
+    arcLoadPostFX().then(function (ok) {
+      if (!ok || pack.disposed) return;
+      try {
+        var T = window.THREE, lp = arcLowPower(), rs = lp ? 0.5 : 1;
+        var size = new T.Vector2(); pack.renderer.getSize(size);
+        var cc = new T.EffectComposer(pack.renderer);
+        cc.addPass(new T.RenderPass(pack.scene, pack.camera));
+        var bloom = new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(size.x * rs)), Math.max(1, Math.round(size.y * rs))), (opts.strength || 0.9) * (lp ? 0.7 : 1), opts.radius || 0.4, opts.threshold || 0.72);
+        cc.addPass(bloom);
+        pack.composer = cc;
+        if (onReady) onReady();
+      } catch (e) { pack.composer = null; }
+    });
+  }
+  function arcRenderPack(pack) {
+    if (!pack || pack.disposed) return;
+    if (pack.composer) {
+      try { pack.composer.render(); return; } catch (e) { pack.composer = null; }
+    }
+    try { pack.renderer.render(pack.scene, pack.camera); } catch (e) { }
+  }
+  function arcResizePack(pack, width, height) {
+    try {
+      pack.renderer.setSize(width, height, false);
+      pack.camera.aspect = width / height; pack.camera.updateProjectionMatrix();
+      if (pack.composer) pack.composer.setSize(width, height);
+    } catch (e) { }
+  }
+  function arcDisposeObject(obj) {
+    if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+    if (obj.material) {
+      if (Array.isArray(obj.material)) obj.material.forEach(function (m) { if (m && m.dispose) m.dispose(); });
+      else if (obj.material.dispose) obj.material.dispose();
+    }
+  }
+  function arcClearGroup(group) {
+    if (!group) return;
+    while (group.children.length) {
+      var child = group.children.pop();
+      if (child.traverse) child.traverse(arcDisposeObject); else arcDisposeObject(child);
+    }
+  }
+  function arcDisposePack(pack) {
+    if (!pack) return;
+    pack.disposed = true;
+    try { if (pack.raf) cancelAnimationFrame(pack.raf); } catch (e) { }
+    try {
+      if (pack.composer) { (pack.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); if (pack.composer.dispose) pack.composer.dispose(); pack.composer = null; }
+      pack.scene.traverse(arcDisposeObject);
+      // Force the context loss BEFORE dispose(): dispose() alone does not release a
+      // WebGL context, and a Chromebook allows only a handful of live ones.
+      if (pack.renderer) { if (pack.renderer.forceContextLoss) pack.renderer.forceContextLoss(); pack.renderer.dispose(); }
+    } catch (e) { }
+  }
+  // Deterministic PRNG so the skyline is the same city on every visit.
+  function arcSeededRandom(seed) {
+    var s = seed >>> 0;
+    return function () { s = (s + 0x6D2B79F5) >>> 0; var t = s; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+  }
+  // A neon skyline: dark slabs with glowing edge-lines and a scatter of lit windows,
+  // standing in a band BEHIND the play plane (negative z) so it frames the action
+  // without ever crossing the beam. Under bloom the edges read as light tubes.
+  function arcBuildCity(THREE, seed, accents, opts) {
+    opts = opts || {};
+    var rnd = arcSeededRandom(seed), group = new THREE.Group();
+    var count = opts.count || 26, spread = opts.spread || 11, zNear = opts.zNear != null ? opts.zNear : -4.5, zFar = opts.zFar != null ? opts.zFar : -11, xShift = opts.xShift || 0;
+    var slabMat = new THREE.MeshPhongMaterial({ color: 0x0b1226, emissive: 0x05091a, shininess: 8 });
+    var winGeo = new THREE.PlaneGeometry(0.14, 0.22);
+    var windowMats = accents.map(function (c) { return new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: 0.85 }); });
+    var edgeMats = accents.map(function (c) { return new THREE.LineBasicMaterial({ color: c, transparent: true, opacity: 0.5 }); });
+    var windows = 0;
+    for (var i = 0; i < count; i++) {
+      var w = 0.5 + rnd() * 1.1, d = 0.5 + rnd() * 1.1, hgt = 0.8 + Math.pow(rnd(), 1.6) * 6.5;
+      var x = (rnd() * 2 - 1) * spread + xShift, z = zFar + rnd() * (zNear - zFar);
+      var geo = new THREE.BoxGeometry(w, hgt, d);
+      var slab = new THREE.Mesh(geo, slabMat); slab.position.set(x, hgt / 2, z); group.add(slab);
+      var ai = Math.floor(rnd() * accents.length);
+      var edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMats[ai]); edges.position.copy(slab.position); group.add(edges);
+      // Lit windows on the camera-facing face (capped so the draw-call count stays small).
+      var rows = Math.max(1, Math.floor(hgt / 0.55)), cols = Math.max(1, Math.floor(w / 0.32));
+      for (var r = 0; r < rows; r++) {
+        for (var c = 0; c < cols; c++) {
+          if (rnd() > 0.26 || windows >= 140) continue;
+          var win = new THREE.Mesh(winGeo, windowMats[Math.floor(rnd() * windowMats.length)]);
+          win.position.set(x - w / 2 + 0.16 + c * 0.32, 0.3 + r * 0.55, z + d / 2 + 0.01);
+          group.add(win); windows++; group.userData.windows = group.userData.windows || []; group.userData.windows.push(win);
+        }
+      }
+    }
+    return group;
+  }
+  // Soft radial glow texture (cached): halos, motes and the horizon share it.
+  var _arcGlowTex = null;
+  function arcGlowTexture(THREE) {
+    if (_arcGlowTex) return _arcGlowTex;
+    try {
+      var c = document.createElement('canvas'); c.width = c.height = 128;
+      var g = c.getContext('2d'), grad = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+      grad.addColorStop(0, '#ffffff'); grad.addColorStop(0.35, '#737373'); grad.addColorStop(1, '#000000');
+      g.fillStyle = '#000000'; g.fillRect(0, 0, 128, 128); g.fillStyle = grad; g.fillRect(0, 0, 128, 128);
+      _arcGlowTex = new THREE.CanvasTexture(c);
+    } catch (e) { _arcGlowTex = null; }
+    return _arcGlowTex;
+  }
+  function arcHaloSprite(THREE, color, size, opacity) {
+    var tex = arcGlowTexture(THREE);
+    var mat = new THREE.SpriteMaterial({ map: tex || null, color: color, transparent: true, opacity: opacity, blending: THREE.AdditiveBlending, depthWrite: false });
+    var sp = new THREE.Sprite(mat); sp.scale.set(size, size, 1);
+    return sp;
+  }
+  // A dome of stars (additive points) so the sky is not a flat fill.
+  function arcStarField(THREE, seed, count, radius) {
+    var rnd = arcSeededRandom(seed), pos = new Float32Array(count * 3);
+    for (var i = 0; i < count; i++) {
+      var a = rnd() * Math.PI * 2, e = Math.asin(0.08 + rnd() * 0.9), r = radius * (0.85 + rnd() * 0.15);
+      pos[i * 3] = Math.cos(a) * Math.cos(e) * r; pos[i * 3 + 1] = Math.sin(e) * r; pos[i * 3 + 2] = Math.sin(a) * Math.cos(e) * r;
+    }
+    var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var mat = new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.22, map: arcGlowTexture(THREE) || null, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true });
+    var pts = new THREE.Points(geo, mat); pts.frustumCulled = false;
+    return pts;
+  }
+  // A horizon glow: a tall additive plane behind the skyline, bright at the ground.
+  function arcHorizonGlow(THREE, color, width, height, z) {
+    var tex = null;
+    try {
+      var c = document.createElement('canvas'); c.width = 4; c.height = 128;
+      var g = c.getContext('2d'), grad = g.createLinearGradient(0, 0, 0, 128);
+      grad.addColorStop(0, '#000000'); grad.addColorStop(0.55, '#141414'); grad.addColorStop(0.85, '#6a6a6a'); grad.addColorStop(1, '#ffffff');
+      g.fillStyle = '#000000'; g.fillRect(0, 0, 4, 128); g.fillStyle = grad; g.fillRect(0, 0, 4, 128); tex = new THREE.CanvasTexture(c);
+    } catch (e) { }
+    if (!tex) return new THREE.Group(); // no 2D canvas here: skip the glow rather than paint a slab
+    var mesh = new THREE.Mesh(new THREE.PlaneGeometry(width, height), new THREE.MeshBasicMaterial({ map: tex, color: color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+    mesh.position.set(0, height / 2, z);
+    return mesh;
+  }
+  // Drifting motes: a little life in the air, only when motion is welcome.
+  function arcMotes(THREE, count, box) {
+    var pos = new Float32Array(count * 3), vel = [];
+    for (var i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() * 2 - 1) * box.x; pos[i * 3 + 1] = Math.random() * box.y; pos[i * 3 + 2] = (Math.random() * 2 - 1) * box.z;
+      vel.push({ x: (Math.random() - 0.5) * 0.12, y: 0.08 + Math.random() * 0.16, z: (Math.random() - 0.5) * 0.12 });
+    }
+    var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: 0x9ae6ff, size: 0.16, map: arcGlowTexture(THREE) || null, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }));
+    pts.userData.vel = vel; pts.userData.box = box; pts.frustumCulled = false;
+    return pts;
+  }
+  function arcStepMotes(pts, dt) {
+    var arr = pts.geometry.attributes.position.array, vel = pts.userData.vel, box = pts.userData.box;
+    for (var i = 0; i < vel.length; i++) {
+      arr[i * 3] += vel[i].x * dt; arr[i * 3 + 1] += vel[i].y * dt; arr[i * 3 + 2] += vel[i].z * dt;
+      if (arr[i * 3 + 1] > box.y) { arr[i * 3 + 1] = 0; arr[i * 3] = (Math.random() * 2 - 1) * box.x; arr[i * 3 + 2] = (Math.random() * 2 - 1) * box.z; }
+    }
+    pts.geometry.attributes.position.needsUpdate = true;
+  }
+  // A glowing tube through a point list (MeshBasic = unlit, so it blooms cleanly).
+  function arcTube(THREE, pts, radius, color, opacity) {
+    if (!pts || pts.length < 2) return null;
+    try {
+      var curve = new THREE.CatmullRomCurve3(pts, false, 'centripetal');
+      var segs = Math.min(240, Math.max(8, pts.length * 2));
+      var geo = new THREE.TubeGeometry(curve, segs, radius, 6, false);
+      var mat = new THREE.MeshBasicMaterial({ color: color, transparent: opacity < 1, opacity: opacity });
+      return new THREE.Mesh(geo, mat);
+    } catch (e) { return null; }
+  }
+  function arcDashedLine(THREE, pts, color, opacity, dash, gap) {
+    if (!pts || pts.length < 2) return null;
+    var geo = new THREE.BufferGeometry().setFromPoints(pts);
+    var line = new THREE.Line(geo, new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: dash || 0.22, gapSize: gap || 0.14 }));
+    if (line.computeLineDistances) line.computeLineDistances();
+    return line;
+  }
+
+  // ── Play "City view": the board's level geometry and the same sampled beam,
+  // projected into a neon city. World x runs across 12 scene units, world y is
+  // height, and the play plane sits at z = 0 with the skyline behind it. ──────
+  var ARC_3D_W = 12, ARC_3D_H = 5.4;
+  // The city's district colour follows the function family, so each level's 3D
+  // view has its own sky (a purely visual cue; the board's tested palette is untouched).
+  var ARC_FAMILY_TINT = { line: '#22d3ee', parabola: '#a78bfa', absval: '#f472b6', sine: '#34d399', exp: '#fbbf24', log: '#fb923c', poly: '#60a5fa' };
+  function arcFamilyTint(scene3d) { return scene3d.isMatch ? '#c084fc' : (ARC_FAMILY_TINT[scene3d.family] || '#22d3ee'); }
+  function arcScenePoint(THREE, world, x, y, z) {
+    return new THREE.Vector3((x - world.x0) / (world.x1 - world.x0) * ARC_3D_W - ARC_3D_W / 2, Math.max(0.02, (y - world.y0) / (world.y1 - world.y0) * ARC_3D_H), z || 0);
+  }
+  // Contiguous runs of on-window samples (a curve that leaves the window and comes
+  // back becomes two tubes rather than one bridged across the gap).
+  function arcCurveRuns(THREE, world, samples, fromX, toX) {
+    var runs = [], run = [];
+    for (var i = 0; i < samples.length; i++) {
+      var s = samples[i];
+      var ok = isFinite(s.y) && !(fromX != null && s.x < fromX - 1e-4) && !(toX != null && s.x > toX + 1e-4) && s.y >= world.y0 - 0.6 && s.y <= world.y1 + 0.6;
+      if (ok) run.push(arcScenePoint(THREE, world, s.x, s.y, 0));
+      else if (run.length) { runs.push(run); run = []; }
+    }
+    if (run.length) runs.push(run);
+    return runs.filter(function (r) { return r.length >= 2; });
+  }
+  function arcBuildPlay3D(THREE, canvas, scene3d) {
+    var PAL3 = arcPalette('dark'), world = scene3d.world;
+    var scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05070f);
+    scene.fog = new THREE.Fog(0x05070f, 18, 42);
+    var camera = new THREE.PerspectiveCamera(46, 2, 0.1, 120);
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+    if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
+    scene.add(new THREE.HemisphereLight(0x8fd6ff, 0x0b0618, 0.7));
+    var key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(5, 10, 8); scene.add(key);
+    scene.add(arcStarField(THREE, 9, 420, 60));
+    var tint = arcFamilyTint(scene3d);
+    scene.add(arcHorizonGlow(THREE, tint, 90, 5.5, -15.5));
+    var motes = (!scene3d.calm && !arcLowPower()) ? arcMotes(THREE, 90, { x: 8, y: 6.5, z: 4 }) : null;
+    if (motes) scene.add(motes);
+    var headLight = new THREE.PointLight(PAL3.accent, 0, 6); scene.add(headLight);
+    // Ground, the lit "street" the beam flies over, and the vertical graph grid the
+    // SVG board also draws (so the 3D view reads as the same coordinate space).
+    var ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshPhongMaterial({ color: 0x070a16, shininess: 30, transparent: true, opacity: 0.86 }));
+    ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; scene.add(ground);
+    var street = new THREE.Mesh(new THREE.PlaneGeometry(ARC_3D_W + 1.2, 1.1), new THREE.MeshBasicMaterial({ color: tint, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false }));
+    street.rotation.x = -Math.PI / 2; street.position.y = 0; scene.add(street);
+    var floorGrid = new THREE.GridHelper(ARC_3D_W, Math.round(world.x1 - world.x0), 0x1c3a4a, 0x14213a);
+    floorGrid.position.set(0, 0.005, -2.5); floorGrid.scale.z = 0.7; scene.add(floorGrid);
+    var gridPts = [];
+    for (var gx = Math.ceil(world.x0); gx <= world.x1; gx++) { gridPts.push(arcScenePoint(THREE, world, gx, world.y0, -0.03), arcScenePoint(THREE, world, gx, world.y1, -0.03)); }
+    for (var gy = Math.ceil(world.y0); gy <= world.y1; gy++) { gridPts.push(arcScenePoint(THREE, world, world.x0, gy, -0.03), arcScenePoint(THREE, world, world.x1, gy, -0.03)); }
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(gridPts), new THREE.LineBasicMaterial({ color: PAL3.accent, transparent: true, opacity: 0.13 })));
+    // Gates: two glowing posts leave the aperture as a lit slot between two lips.
+    var gateParts = [];
+    (scene3d.gates || []).forEach(function (g) {
+      var lo = arcScenePoint(THREE, world, g.x, g.lo, 0), hi = arcScenePoint(THREE, world, g.x, g.hi, 0), top = ARC_3D_H + 0.35;
+      var mat = new THREE.MeshBasicMaterial({ color: PAL3.gate, transparent: true, opacity: 0.78 });
+      var postLo = new THREE.Mesh(new THREE.BoxGeometry(0.16, Math.max(0.05, lo.y), 0.42), mat); postLo.position.set(lo.x, lo.y / 2, 0);
+      var postHi = new THREE.Mesh(new THREE.BoxGeometry(0.16, Math.max(0.05, top - hi.y), 0.42), mat); postHi.position.set(hi.x, (top + hi.y) / 2, 0);
+      var lipLo = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), mat); lipLo.position.set(lo.x, lo.y, 0);
+      var lipHi = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), mat); lipHi.position.set(hi.x, hi.y, 0);
+      var slot = new THREE.Mesh(new THREE.BoxGeometry(0.06, Math.max(0.02, hi.y - lo.y), 0.36), new THREE.MeshBasicMaterial({ color: PAL3.gate, transparent: true, opacity: 0.12 })); slot.position.set(lo.x, (lo.y + hi.y) / 2, 0);
+      scene.add(postLo, postHi, lipLo, lipHi, slot); gateParts.push(mat);
+      var gateEdgeMat = new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35 });
+      [postLo, postHi].forEach(function (post) { var e = new THREE.LineSegments(new THREE.EdgesGeometry(post.geometry), gateEdgeMat); e.position.copy(post.position); scene.add(e); });
+    });
+    (scene3d.walls || []).forEach(function (w) {
+      var topPt = arcScenePoint(THREE, world, w.x, w.height, 0), hgt = Math.max(0.1, topPt.y);
+      var wall = new THREE.Mesh(new THREE.BoxGeometry(0.26, hgt, 0.75), new THREE.MeshPhongMaterial({ color: 0x64748b, emissive: 0x1e293b, shininess: 40 }));
+      wall.position.set(topPt.x, hgt / 2, 0); scene.add(wall);
+      var wallEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wall.geometry), new THREE.LineBasicMaterial({ color: PAL3.wall, transparent: true, opacity: 0.6 })); wallEdges.position.copy(wall.position); scene.add(wallEdges);
+      var parapet = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.85), new THREE.MeshBasicMaterial({ color: PAL3.wall })); parapet.position.set(topPt.x, hgt, 0); scene.add(parapet);
+    });
+    var nodeMesh = null, nodeRing = null, nodeLight = null, nodeHalo = null;
+    if (!scene3d.isMatch && scene3d.node) {
+      var np = arcScenePoint(THREE, world, scene3d.node.x, scene3d.node.y, 0);
+      var nr = Math.max(0.2, scene3d.node.r * ARC_3D_W / (world.x1 - world.x0));
+      nodeMesh = new THREE.Mesh(new THREE.SphereGeometry(nr, 22, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(PAL3.nodeOff).multiplyScalar(0.72) }));
+      nodeMesh.position.copy(np); scene.add(nodeMesh);
+      nodeRing = new THREE.Mesh(new THREE.TorusGeometry(nr * 1.9, 0.03, 8, 40), new THREE.MeshBasicMaterial({ color: PAL3.nodeOff, transparent: true, opacity: 0.55 }));
+      nodeRing.position.copy(np); nodeRing.rotation.x = Math.PI / 2; scene.add(nodeRing);
+      nodeLight = new THREE.PointLight(PAL3.nodeOff, 0.9, 7); nodeLight.position.copy(np); nodeLight.position.z = 1.2; scene.add(nodeLight);
+      nodeHalo = arcHaloSprite(THREE, PAL3.nodeOff, nr * 7, 0.5); nodeHalo.position.copy(np); nodeHalo.userData.base = nr * 7; scene.add(nodeHalo);
+    }
+    var city = arcBuildCity(THREE, 2026, [PAL3.accent, PAL3.gate, PAL3.nodeOff, '#f472b6'], { count: 30, spread: 13, zNear: -4.2, zFar: -12 }); scene.add(city);
+    var reflect = new THREE.Group();
+    city.children.forEach(function (ch) {
+      if (!ch.isLineSegments) return;
+      var m = ch.clone(); m.material = ch.material.clone(); m.material.opacity = 0.16; m.position.y = -ch.position.y - 0.02; m.scale.y = -1; reflect.add(m);
+    });
+    scene.add(reflect);
+    var dyn = new THREE.Group(); scene.add(dyn);
+    var fx = new THREE.Group(); scene.add(fx);
+    return {
+      THREE: THREE, scene: scene, camera: camera, renderer: renderer, canvas: canvas, PAL: PAL3, world: world,
+      dyn: dyn, fx: fx, gateMats: gateParts, nodeMesh: nodeMesh, nodeRing: nodeRing, nodeLight: nodeLight, nodeHalo: nodeHalo, motes: motes, headLight: headLight, city: city, sparks: null, nextTwinkle: 0,
+      cam: { theta: 0.3, phi: 0.3, r: 12.5, ty: 1.4, baseTheta: 0.3 }, dirty: true, visible: true, lastLitShots: -1
+    };
+  }
+  function arcPlaceCamera(pack) {
+    var c = pack.cam;
+    var r = c.r + (c.rOffset || 0);
+    pack.camera.position.set(r * Math.sin(c.theta) * Math.cos(c.phi), r * Math.sin(c.phi) + c.ty, r * Math.cos(c.theta) * Math.cos(c.phi));
+    pack.camera.lookAt(c.lookX || 0, c.ty + (c.lookY || 0), 0);
+  }
+  function arcSyncPlay3D(pack, scene3d) {
+    if (!pack || pack.disposed) return;
+    var THREE = pack.THREE, PAL3 = pack.PAL, world = pack.world, reduce = arcReducedMotion();
+    var lit = !!scene3d.lit, litColor = lit ? PAL3.nodeOn : PAL3.nodeOff;
+    if (pack.nodeMesh) {
+      pack.nodeMesh.material.color.set(litColor).multiplyScalar(0.72); pack.nodeRing.material.color.set(litColor);
+      if (pack.nodeLight) pack.nodeLight.color.set(litColor);
+      if (pack.nodeHalo) { pack.nodeHalo.material.color.set(litColor); pack.nodeHalo.material.opacity = lit ? 0.8 : 0.5; }
+    }
+    if (pack.headLight) pack.headLight.intensity = 0;
+    pack.gateMats.forEach(function (m) { m.color.set(lit ? PAL3.nodeOn : PAL3.gate); });
+    arcClearGroup(pack.dyn);
+    // Ghost target (Transformations world) and the live preview: only when the
+    // board shows them — the same anti-fishing gate as the SVG, never looser.
+    if (scene3d.ghost && scene3d.showPreview) {
+      arcCurveRuns(THREE, world, scene3d.ghost).forEach(function (run) { var l = arcDashedLine(THREE, run, PAL3.gate, 0.75, 0.42, 0.22); if (l) pack.dyn.add(l); var gt = arcTube(THREE, run, 0.05, PAL3.gate, 0.28); if (gt) pack.dyn.add(gt); });
+    }
+    if (!scene3d.fired && scene3d.showPreview && scene3d.samples.length) {
+      arcCurveRuns(THREE, world, scene3d.samples).forEach(function (run) { var l = arcDashedLine(THREE, run, '#e2e8f0', 0.6, 0.2, 0.16); if (l) pack.dyn.add(l); var pt = arcTube(THREE, run, 0.035, PAL3.accent, 0.3); if (pt) pack.dyn.add(pt); });
+    }
+    pack.beamAnim = null;
+    if (scene3d.fired && scene3d.samples.length) {
+      var beamColor = scene3d.hit ? PAL3.nodeOn : PAL3.accent, killX = scene3d.killX;
+      var tubes = [], total = 0, allPts = [];
+      arcCurveRuns(THREE, world, scene3d.samples, null, killX).forEach(function (run) {
+        var tube = arcTube(THREE, run, 0.075, beamColor, 1);
+        if (!tube) return;
+        pack.dyn.add(tube); tubes.push(tube); total += run.length;
+        var core = arcTube(THREE, run, 0.03, '#ffffff', 0.85);
+        if (core) { pack.dyn.add(core); tubes.push(core); }
+        // Ground glow: the beam's light on the street beneath it (a flat additive ribbon).
+        var floor = arcTube(THREE, run.map(function (p) { return new THREE.Vector3(p.x, 0.015, p.z); }), 0.16, beamColor, 0.22);
+        if (floor) { floor.material.blending = THREE.AdditiveBlending; floor.material.depthWrite = false; pack.dyn.add(floor); tubes.push(floor); }
+        allPts = allPts.concat(run);
+      });
+      if (killX != null) {
+        arcCurveRuns(THREE, world, scene3d.samples, killX, null).forEach(function (run) { var l = arcDashedLine(THREE, run, PAL3.accent, 0.3, 0.3, 0.26); if (l) pack.dyn.add(l); });
+        if (scene3d.killedAt) {
+          var kp = arcScenePoint(THREE, world, scene3d.killedAt.x, scene3d.killedAt.y, 0);
+          var kill = new THREE.Mesh(new THREE.SphereGeometry(0.14, 12, 10), new THREE.MeshBasicMaterial({ color: PAL3.danger })); kill.position.copy(kp); pack.dyn.add(kill);
+          var killHalo = arcHaloSprite(THREE, PAL3.danger, 1.4, 0.7); killHalo.position.copy(kp); pack.dyn.add(killHalo);
+          if (!reduce && scene3d.shots !== pack.lastBlockShots) { pack.lastBlockShots = scene3d.shots; pack.pendingImpact = { at: kp.clone(), color: PAL3.danger }; }
+        }
+      }
+      var last = null;
+      for (var i = 0; i < scene3d.samples.length; i++) { var s = scene3d.samples[i]; if (!isFinite(s.y) || (killX != null && s.x > killX + 1e-4) || s.y < world.y0 - 0.6 || s.y > world.y1 + 0.6) continue; last = s; }
+      if (last) {
+        var head = new THREE.Mesh(new THREE.SphereGeometry(0.13, 12, 10), new THREE.MeshBasicMaterial({ color: '#ffffff' }));
+        head.position.copy(arcScenePoint(THREE, world, last.x, last.y, 0)); pack.dyn.add(head);
+      }
+      // Draw-on: the tube grows along the beam over ~half a second (instant under
+      // reduced motion), and the node fires a burst the first time this shot lands.
+      if (pack.headLight && allPts.length) { pack.headLight.color.set(beamColor); pack.headLight.intensity = 1.1; pack.headLight.position.copy(allPts[allPts.length - 1]); pack.headLight.position.z = 0.6; }
+      if (!reduce && tubes.length) {
+        tubes.forEach(function (tb) { if (tb.geometry.index) tb.geometry.setDrawRange(0, 0); });
+        pack.beamAnim = { start: 0, tubes: tubes, ms: 520, path: allPts };
+        arcSpawnSparks(pack, beamColor);
+      }
+      if (pack.pendingHit && !pack.beamAnim) { pack.pendingHit = false; arcSpawnBurst(pack); pack.punch = { start: 0, ms: 420 }; }
+      if (scene3d.hit && scene3d.shots !== pack.lastLitShots) {
+        pack.lastLitShots = scene3d.shots;
+        if (!reduce && pack.nodeMesh) { pack.pendingImpact = null; pack.pendingHit = true; }
+      }
+    }
+    pack.calm = !!scene3d.calm;
+    pack.lit = lit;
+    pack.dirty = true;
+  }
+  function arcSpawnBurst(pack, originOpt, colorOpt, countOpt) {
+    var THREE = pack.THREE, n = countOpt || 56, pos = new Float32Array(n * 3), vel = [];
+    var origin = originOpt || pack.nodeMesh.position, color = colorOpt || pack.PAL.nodeOn;
+    for (var i = 0; i < n; i++) {
+      pos[i * 3] = origin.x; pos[i * 3 + 1] = origin.y; pos[i * 3 + 2] = origin.z;
+      var a = Math.random() * Math.PI * 2, b = (Math.random() - 0.5) * Math.PI, sp = 2.2 + Math.random() * 2.6;
+      vel.push(new THREE.Vector3(Math.cos(a) * Math.cos(b) * sp, Math.sin(b) * sp + 1.2, Math.sin(a) * Math.cos(b) * sp));
+    }
+    var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: color, size: 0.14, map: arcGlowTexture(THREE) || null, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false }));
+    var ring = new THREE.Mesh(new THREE.TorusGeometry(0.3, 0.05, 8, 40), new THREE.MeshBasicMaterial({ color: color, transparent: true, opacity: 0.9 }));
+    ring.position.copy(origin);
+    arcClearGroup(pack.fx); pack.fx.add(pts, ring);
+    pack.burst = { start: 0, pts: pts, vel: vel, ring: ring, ms: 900 };
+    if (!originOpt) pack.pop = { start: 0, ms: 420 };
+  }
+  // Sparks that trail the beam tip while it draws on: a small recycled pool.
+  function arcSpawnSparks(pack, color) {
+    var THREE = pack.THREE, n = 48, pos = new Float32Array(n * 3);
+    var geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    var pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: color, size: 0.12, map: arcGlowTexture(THREE) || null, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }));
+    pts.frustumCulled = false;
+    var parts = [];
+    for (var i = 0; i < n; i++) { pos[i * 3 + 1] = -50; parts.push({ ttl: 0, vx: 0, vy: 0, vz: 0 }); }
+    pts.userData.parts = parts; pts.userData.next = 0;
+    if (pack.sparks) { pack.scene.remove(pack.sparks); arcDisposeObject(pack.sparks); }
+    pack.sparks = pts; pack.scene.add(pts);
+  }
+  function arcStepSparks(pack, tip, emitting, dt) {
+    var pts = pack.sparks; if (!pts) return false;
+    var arr = pts.geometry.attributes.position.array, parts = pts.userData.parts, alive = false;
+    if (emitting && tip) {
+      for (var k = 0; k < 3; k++) {
+        var idx = pts.userData.next; pts.userData.next = (idx + 1) % parts.length;
+        parts[idx].ttl = 0.5 + Math.random() * 0.4; parts[idx].vx = (Math.random() - 0.5) * 1.6; parts[idx].vy = 0.6 + Math.random() * 1.4; parts[idx].vz = (Math.random() - 0.5) * 1.6;
+        arr[idx * 3] = tip.x; arr[idx * 3 + 1] = tip.y; arr[idx * 3 + 2] = tip.z;
+      }
+    }
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].ttl <= 0) continue;
+      parts[i].ttl -= dt; parts[i].vy -= 4 * dt;
+      arr[i * 3] += parts[i].vx * dt; arr[i * 3 + 1] += parts[i].vy * dt; arr[i * 3 + 2] += parts[i].vz * dt;
+      if (parts[i].ttl <= 0) arr[i * 3 + 1] = -50; else alive = true;
+    }
+    pts.geometry.attributes.position.needsUpdate = true;
+    return alive || emitting;
+  }
+  function arcStepPlay3D(pack, now) {
+    var motion = false;
+    if (pack.beamAnim) {
+      var ba = pack.beamAnim; if (!ba.start) ba.start = now;
+      var p = Math.min(1, (now - ba.start) / ba.ms), eased = 1 - Math.pow(1 - p, 3);
+      ba.tubes.forEach(function (tb) { if (tb.geometry.index) tb.geometry.setDrawRange(0, Math.floor(eased * tb.geometry.index.count)); });
+      var tip = null;
+      if (ba.path && ba.path.length) { tip = ba.path[Math.min(ba.path.length - 1, Math.floor(eased * (ba.path.length - 1)))]; if (pack.headLight) { pack.headLight.position.set(tip.x, tip.y, 0.6); pack.headLight.intensity = 1.1 + 1.4 * (1 - p); } }
+      arcStepSparks(pack, tip, true, 0.016);
+      if (tip) { pack.cam.lookTX = tip.x * 0.3; pack.cam.lookTY = (tip.y - pack.cam.ty) * 0.3; }
+      if (p >= 1) {
+        pack.beamAnim = null;
+        if (pack.pendingImpact) { arcSpawnBurst(pack, pack.pendingImpact.at, pack.pendingImpact.color, 36); pack.pendingImpact = null; }
+        if (pack.pendingHit) { pack.pendingHit = false; arcSpawnBurst(pack); pack.punch = { start: 0, ms: 420 }; }
+      }
+      motion = true;
+    }
+    if (pack.burst) {
+      var b = pack.burst; if (!b.start) b.start = now;
+      var q = Math.min(1, (now - b.start) / b.ms), dt = 0.016;
+      var arr = b.pts.geometry.attributes.position.array;
+      for (var i = 0; i < b.vel.length; i++) {
+        b.vel[i].y -= 6.5 * dt;
+        arr[i * 3] += b.vel[i].x * dt; arr[i * 3 + 1] += b.vel[i].y * dt; arr[i * 3 + 2] += b.vel[i].z * dt;
+      }
+      b.pts.geometry.attributes.position.needsUpdate = true;
+      b.pts.material.opacity = 1 - q;
+      b.ring.scale.setScalar(1 + q * 7); b.ring.material.opacity = 0.9 * (1 - q);
+      if (q >= 1) { arcClearGroup(pack.fx); pack.burst = null; }
+      motion = true;
+    }
+    if (pack.pop && pack.nodeMesh) {
+      var pp = pack.pop; if (!pp.start) pp.start = now;
+      var r = Math.min(1, (now - pp.start) / pp.ms);
+      var sc = r < 0.55 ? 0.55 + (1.28 - 0.55) * (r / 0.55) : 1.28 - 0.28 * ((r - 0.55) / 0.45);
+      pack.nodeMesh.scale.setScalar(sc);
+      if (r >= 1) { pack.nodeMesh.scale.setScalar(1); pack.pop = null; }
+      motion = true;
+    }
+    if (!pack.beamAnim && pack.sparks && arcStepSparks(pack, null, false, 0.016)) motion = true;
+    if (!pack.beamAnim) { pack.cam.lookTX = 0; pack.cam.lookTY = 0; }
+    var lx = pack.cam.lookX || 0, ly = pack.cam.lookY || 0, tx = pack.cam.lookTX || 0, ty2 = pack.cam.lookTY || 0;
+    if (Math.abs(lx - tx) > 0.002 || Math.abs(ly - ty2) > 0.002) { pack.cam.lookX = lx + (tx - lx) * 0.1; pack.cam.lookY = ly + (ty2 - ly) * 0.1; motion = true; }
+    var punchOffset = 0;
+    if (pack.punch) {
+      var pu = pack.punch; if (!pu.start) pu.start = now;
+      var pq = Math.min(1, (now - pu.start) / pu.ms);
+      punchOffset = -0.55 * Math.sin(pq * Math.PI);
+      if (pq >= 1) pack.punch = null;
+      motion = true;
+    }
+    pack.cam.rOffset = punchOffset;
+    var idle = !pack.calm && !pack.dragging && !arcLowPower();
+    if (idle) {
+      pack.cam.theta = pack.cam.baseTheta + Math.sin(now * 0.00022) * 0.09;
+      if (pack.nodeRing) { pack.nodeRing.rotation.z = now * 0.0006; pack.nodeRing.scale.setScalar(1 + (pack.lit ? 0.06 : 0.03) * Math.sin(now * 0.003)); }
+      if (pack.nodeHalo) { var hs = 1 + 0.08 * Math.sin(now * 0.0024); pack.nodeHalo.scale.set(pack.nodeHalo.userData.base * hs, pack.nodeHalo.userData.base * hs, 1); }
+      if (pack.motes) arcStepMotes(pack.motes, 0.016);
+      // A window somewhere flips every ~350ms: the city is inhabited.
+      if (pack.city && pack.city.userData.windows && now > pack.nextTwinkle) {
+        pack.nextTwinkle = now + 350;
+        var wins = pack.city.userData.windows, wi = Math.floor(Math.random() * wins.length);
+        wins[wi].visible = !wins[wi].visible;
+      }
+      motion = true;
+    }
+    return motion;
+  }
+
+  function ArcCityPlay3D(props) {
+    var React = props.React, h = React.createElement;
+    var canvasRef = React.useRef(null), packRef = React.useRef(null), sceneRef = React.useRef(props.scene);
+    sceneRef.current = props.scene;
+    var statusHook = React.useState('loading'), status = statusHook[0], setStatus = statusHook[1];
+    React.useEffect(function () {
+      var disposed = false, resizeObserver = null, io = null, canvas = canvasRef.current;
+      if (!canvas || !window.StemLab || typeof window.StemLab.ensureThree !== 'function') { setStatus('unavailable'); return function () { }; }
+      var handlers = [];
+      function on(el, ev, fn, opts) { el.addEventListener(ev, fn, opts); handlers.push([el, ev, fn, opts]); }
+      window.StemLab.ensureThree({ orbit: false, failMessage: 'The 3D engine could not load. The board above is the complete game.' }).then(function (THREE) {
+        if (disposed || !canvas) return;
+        var pack = arcBuildPlay3D(THREE, canvas, sceneRef.current);
+        packRef.current = pack;
+        function resize() {
+          if (disposed || !canvas.parentElement) return;
+          var width = Math.max(280, canvas.parentElement.clientWidth || 640), height = Math.max(220, Math.min(360, Math.round(width * 0.5)));
+          arcResizePack(pack, width, height); pack.dirty = true;
+        }
+        resize();
+        if (window.ResizeObserver) { resizeObserver = new window.ResizeObserver(resize); resizeObserver.observe(canvas.parentElement); }
+        if (window.IntersectionObserver) { io = new window.IntersectionObserver(function (entries) { pack.visible = entries.some(function (e) { return e.isIntersecting; }); }); io.observe(canvas); }
+        // Drag to orbit (horizontal drag only, so a vertical touch drag still scrolls
+        // the page); double-click returns to the default view.
+        var drag = null;
+        on(canvas, 'pointerdown', function (e) { drag = { x: e.clientX, y: e.clientY, theta: pack.cam.baseTheta, phi: pack.cam.phi }; pack.dragging = true; try { canvas.setPointerCapture(e.pointerId); } catch (err) { } });
+        on(canvas, 'pointermove', function (e) {
+          if (!drag) return;
+          pack.cam.baseTheta = drag.theta - (e.clientX - drag.x) * 0.006; pack.cam.theta = pack.cam.baseTheta;
+          pack.cam.phi = Math.max(0.1, Math.min(1.15, drag.phi + (e.clientY - drag.y) * 0.004)); pack.dirty = true;
+        });
+        function endDrag(e) { if (!drag) return; drag = null; pack.dragging = false; try { canvas.releasePointerCapture(e.pointerId); } catch (err) { } }
+        on(canvas, 'pointerup', endDrag); on(canvas, 'pointercancel', endDrag);
+        on(canvas, 'dblclick', function () { pack.cam.baseTheta = 0.3; pack.cam.theta = 0.3; pack.cam.phi = 0.3; pack.dirty = true; });
+        arcSyncPlay3D(pack, sceneRef.current);
+        arcAttachBloom(pack, { threshold: 0.66, strength: 0.8, radius: 0.4 }, function () { resize(); });
+        function frame(now) {
+          if (pack.disposed) return;
+          pack.raf = requestAnimationFrame(frame);
+          if (document.hidden || !canvas.isConnected || !pack.visible) return;
+          var motion = arcStepPlay3D(pack, now);
+          if (motion || pack.dirty) { arcPlaceCamera(pack); arcRenderPack(pack); pack.dirty = false; }
+        }
+        pack.raf = requestAnimationFrame(frame);
+        setStatus('ready');
+      }).catch(function () { if (!disposed) setStatus('unavailable'); });
+      return function () {
+        disposed = true;
+        handlers.forEach(function (hd) { try { hd[0].removeEventListener(hd[1], hd[2], hd[3]); } catch (e) { } });
+        if (resizeObserver) resizeObserver.disconnect();
+        if (io) io.disconnect();
+        arcDisposePack(packRef.current); packRef.current = null;
+      };
+    }, []);
+    React.useEffect(function () { if (packRef.current) arcSyncPlay3D(packRef.current, props.scene); }, [props.sig]);
+    return h('div', { className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f' } },
+      h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, touchAction: 'pan-y', cursor: 'grab' } }),
+      status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, color: '#e2e8f0', background: 'rgba(5,7,15,0.88)', textAlign: 'center', fontSize: 12 } }, status === 'unavailable' ? props.unavailableText : props.loadingText) : null,
+      h('div', { style: { padding: '6px 10px', color: '#cbd5e1', fontSize: 11, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'space-between' } },
+        h('span', { key: 'cap' }, props.captionText),
+        h('span', { key: 'hint', 'aria-hidden': 'true', style: { opacity: 0.75 } }, props.orbitHintText)));
   }
 
   // ══════════════════════════════════════════════════════════════════════
@@ -2184,6 +2762,14 @@
           });
           announceArc(ctx, S.battle3d ? '3D arena hidden. The tactical view remains active.' : '3D arena requested. The tactical view remains active below it.');
         }
+        function toggleCity3D() {
+          if (typeof setToolData !== 'function') return;
+          setToolData(function (prev) {
+            var cur = migrateArcState((prev && prev._arccity) || S);
+            return Object.assign({}, prev, { _arccity: Object.assign({}, cur, { city3d: !cur.city3d }) });
+          });
+          announceArc(ctx, S.city3d ? t('arccity.city3d_off_sr', '3D city view hidden.') : t('arccity.city3d_on_sr', '3D city view shown below the board. The board and sliders stay the controls.'));
+        }
         function toggleExport() {
           if (typeof setToolData !== 'function') return;
           setToolData(function (prev) {
@@ -2293,7 +2879,29 @@
         // aria-hidden, low-opacity so it never competes with the grid/gameplay above).
         if (THEME === 'dark' && !calm) {
           var bld = [[0, 46, 26], [42, 30, 40], [78, 60, 20], [104, 40, 34], [150, 34, 52], [198, 54, 24], [228, 30, 44], [264, 64, 18], [296, 38, 36], [344, 30, 50], [390, 56, 22], [422, 34, 40], [462, 48, 30], [506, 30, 46], [542, 62, 20], [578, 36, 38], [612, 28, 48]];
-          bld.forEach(function (b, i) { backdropEls.push(h('rect', { key: 'bld' + i, x: b[0], y: H - b[2], width: b[1] - 2, height: b[2], fill: '#0d1530', opacity: 0.55, 'aria-hidden': 'true' })); });
+          // A deterministic star field above the skyline (twinkle is opt-in motion).
+          var starEls = [];
+          for (var si = 0; si < 34; si++) {
+            starEls.push(h('circle', { key: 'star' + si, cx: (si * 97 + 13) % W, cy: (si * 53) % Math.round(H * 0.45) + 8, r: si % 3 === 0 ? 1.3 : 0.8, fill: '#e2e8f0', opacity: 0.5, className: 'arccity-star', style: { animationDelay: ((si % 7) * 0.45) + 's' } }));
+          }
+          backdropEls.push(h('g', { key: 'stars', 'aria-hidden': 'true' }, starEls));
+          bld.forEach(function (b, i) {
+            backdropEls.push(h('rect', { key: 'bld' + i, x: b[0], y: H - b[2], width: b[1] - 2, height: b[2], fill: '#0d1530', opacity: 0.55, 'aria-hidden': 'true' }));
+            // Lit windows: a fixed pattern per building, in the board's own accent colours.
+            var winEls = [];
+            for (var wr = 0; wr < Math.floor(b[2] / 9); wr++) {
+              for (var wc = 0; wc < Math.floor((b[1] - 2) / 8); wc++) {
+                if ((i * 7 + wr * 3 + wc * 5) % 4 !== 0) continue;
+                winEls.push(h('rect', { key: 'w' + wr + '-' + wc, x: b[0] + 3 + wc * 8, y: H - b[2] + 4 + wr * 9, width: 3, height: 4, fill: (wc + wr) % 3 === 0 ? GATE : BEAM, opacity: 0.32 }));
+              }
+            }
+            if (winEls.length) backdropEls.push(h('g', { key: 'bw' + i, 'aria-hidden': 'true' }, winEls));
+          });
+        }
+
+        if (THEME === 'light' && !calm) {
+          var bldL = [[0, 46, 26], [42, 30, 40], [78, 60, 20], [104, 40, 34], [150, 34, 52], [198, 54, 24], [228, 30, 44], [264, 64, 18], [296, 38, 36], [344, 30, 50], [390, 56, 22], [422, 34, 40], [462, 48, 30], [506, 30, 46], [542, 62, 20], [578, 36, 38], [612, 28, 48]];
+          backdropEls.push(h('g', { key: 'skyline-light', 'aria-hidden': 'true' }, bldL.map(function (b, i) { return h('rect', { key: 'bl' + i, x: b[0], y: H - b[2], width: b[1] - 2, height: b[2], fill: '#334155', opacity: 0.07 }); })));
         }
 
         var gridEls = [];
@@ -2377,8 +2985,10 @@
             return h('line', { key: 'ntk' + ti, x1: ncx + Math.cos(rad) * r0, y1: ncy + Math.sin(rad) * r0, x2: ncx + Math.cos(rad) * r1, y2: ncy + Math.sin(rad) * r1, stroke: NODE_OFF, strokeWidth: 2, strokeLinecap: 'round', opacity: 0.55 });
           })));
         }
+        var nodeCoreEls = (!isMatch && !calm) ? [h('circle', { key: 'nodecore', cx: ncx - nodeR * 0.3, cy: ncy - nodeR * 0.3, r: Math.max(1.5, nodeR * 0.28), fill: '#ffffff', opacity: lit ? 0.55 : 0.3, 'aria-hidden': 'true' })] : [];
         var sk = ls.shots || 0; // celebration els key off the shot count → replay on every hit
         var nodeBurstEls = (S.fired && res.result === 'hit') ? [
+          h('rect', { key: 'flash-' + sk, x: 0, y: 0, width: W, height: H, fill: NODE_ON, className: 'arccity-flash', 'aria-hidden': 'true' }),
           h('circle', { key: 'shock-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 4, className: 'arccity-shock', 'aria-hidden': 'true' }),
           h('circle', { key: 'burst-' + sk, cx: ncx, cy: ncy, r: nodeR, fill: 'none', stroke: NODE_ON, strokeWidth: 3, className: 'arccity-burst', 'aria-hidden': 'true' }),
           // sparks: 8 short rays bursting outward
@@ -2466,7 +3076,9 @@
             var remStr = ptsStr(function (pt) { return pt.x >= killX - 0.0001; });
             if (remStr) overlay.push(h('polyline', { key: 'beam-remainder', points: remStr, fill: 'none', stroke: BEAM, strokeWidth: 2, strokeDasharray: '5 7', strokeLinecap: 'round', opacity: 0.38, className: 'arccity-ghost-remainder', 'aria-hidden': 'true' }));
           }
-          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: ptsStr(function (pt) { return pt.x <= killX + 0.0001; }), fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: GLOW, pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
+          var beamPts = ptsStr(function (pt) { return pt.x <= killX + 0.0001; });
+          overlay.push(h('polyline', { key: 'beam-' + (ls.shots || 0), ref: beamRef, points: beamPts, fill: 'none', stroke: res.result === 'hit' ? NODE_ON : BEAM, strokeWidth: 3.5, strokeLinecap: 'round', filter: GLOW, pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw' }));
+          if (THEME === 'dark' && !calm) overlay.push(h('polyline', { key: 'beamcore-' + (ls.shots || 0), points: beamPts, fill: 'none', stroke: '#ffffff', strokeWidth: 1.3, strokeLinecap: 'round', opacity: 0.7, pathLength: 100, strokeDasharray: 100, className: 'arccity-beam-draw', 'aria-hidden': 'true' }));
           // Bright head riding the beam (positioned each frame by beamRef; the static
           // fallback here is the far end of the drawn path).
           var headPt = null;
@@ -2685,7 +3297,34 @@
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
           role: 'img', 'aria-label': describeBoard(level),
           style: { display: 'block', maxHeight: '58vh', background: 'transparent', borderRadius: 12, border: '1px solid ' + GRID, overflow: 'hidden', touchAction: 'none' }
-        }, [].concat([defs], backdropEls, gridEls, axisEls, structureEls, obstacleEls, ghostEls, ghostCurveEls, trailEls, previewEls, overlay, analysisEls, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeBurstEls, handleEls));
+        }, [].concat([defs], backdropEls, gridEls, axisEls, structureEls, obstacleEls, ghostEls, ghostCurveEls, trailEls, previewEls, overlay, analysisEls, mathEls, nodeGlowEls, (nodeEl ? [nodeEl] : []), nodeCoreEls, nodeBurstEls, handleEls));
+
+        // ── Optional 3D City view (a visual peer of the SVG board — never on the solve
+        // path). It receives plain data the board already computed: the curve goes in
+        // ONLY when the board shows it, so the hidden-preview gate is exactly as strict.
+        var city3dEl = null;
+        if (S.city3d && svg) {
+          var curveVisible = showPreview || !!S.fired;
+          var ghost3d = (isMatch && level.ghost && showPreview) ? sampleCurve(level, normalizeForMatch(level.family, Object.assign({}, level.ghost.params))) : null;
+          var scene3d = {
+            levelId: level.id, family: level.family, isMatch: isMatch,
+            world: { x0: wx0, x1: wx1, y0: wy0, y1: wy1 },
+            gates: level.gates || [], walls: level.walls || [], node: level.node,
+            samples: curveVisible ? samples : [], ghost: ghost3d,
+            fired: !!S.fired, hit: !!(S.fired && res.result === 'hit'), lit: !!lit, shots: sk,
+            killX: (S.fired && res.killedAt) ? res.killedAt.x : null,
+            killedAt: (S.fired && res.killedAt) ? { x: res.killedAt.x, y: res.killedAt.y } : null,
+            showPreview: !!showPreview, calm: calm
+          };
+          city3dEl = h(ArcCityPlay3D, {
+            key: 'city3d-' + level.id, React: React, scene: scene3d,
+            sig: [level.id, tier, S.fired ? 1 : 0, res.result, sk, showPreview ? 1 : 0, lit ? 1 : 0, calm ? 1 : 0, JSON.stringify(P)].join('|'),
+            loadingText: t('arccity.city3d_loading', 'Loading the 3D city view\u2026'),
+            unavailableText: t('arccity.city3d_unavailable', '3D view unavailable here. The board above is the complete game.'),
+            captionText: t('arccity.city3d_caption', '3D city view \u2014 a projection of the board above. Aim and fire on the board and sliders.'),
+            orbitHintText: t('arccity.city3d_orbit', 'Drag to orbit \u00b7 double-click to reset')
+          });
+        }
 
         // ── Level progression bar ──
         // Literal t() keys (never a computed key, so the translation-key checker can
@@ -2837,7 +3476,7 @@
 
         var paramRows = level.paramOrder.map(function (n) { return paramRow(n); });
 
-        var fireBtnStyle = { flex: 1, padding: '12px 14px', borderRadius: 10, border: 'none', background: BEAM, color: PAL.btnText, fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: '0 2px 10px rgba(0,0,0,0.18)' };
+        var fireBtnStyle = { flex: 1, padding: '12px 14px', borderRadius: 10, border: 'none', background: THEME === 'dark' && !calm ? 'linear-gradient(135deg, #67e8f9 0%, ' + BEAM + ' 55%, #06b6d4 100%)' : BEAM, color: PAL.btnText, fontWeight: 800, fontSize: 15, cursor: 'pointer', boxShadow: THEME === 'dark' && !calm ? '0 2px 10px rgba(0,0,0,0.3), 0 0 18px rgba(34,211,238,0.45)' : '0 2px 10px rgba(0,0,0,0.18)' };
         var resetBtnStyle = { padding: '12px 14px', borderRadius: 10, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontWeight: 700, fontSize: 14, cursor: 'pointer' };
 
         var resultText = S.fired ? describeResult(level, res, ls.shots || 0) : describeBoard(level);
@@ -2953,7 +3592,12 @@
               key: 'calm', type: 'button', 'aria-pressed': calm ? 'true' : 'false',
               'aria-label': calm ? t('arccity.calm_aria_on', 'Calm board is on — turn the city backdrop and glow back on') : t('arccity.calm_aria_off', 'Calm board — turn off the city backdrop, glow and idle motion'),
               onClick: toggleCalm, style: Object.assign({}, resetBtnStyle, calm ? { borderColor: BEAM, background: 'rgba(34,211,238,0.12)' } : null)
-            }, calm ? '🌙' : '🌇')),
+            }, calm ? '🌙' : '🌇'),
+            h('button', {
+              key: 'city3d', type: 'button', 'aria-pressed': S.city3d ? 'true' : 'false',
+              'aria-label': S.city3d ? t('arccity.city3d_aria_on', '3D city view is on — hide it') : t('arccity.city3d_aria_off', 'Show the 3D city view below the board'),
+              onClick: toggleCity3D, style: Object.assign({}, resetBtnStyle, S.city3d ? { borderColor: BEAM, background: 'rgba(34,211,238,0.12)' } : null)
+            }, '🏙️')),
           h('div', { key: 'keyhint', style: { marginTop: 6, fontSize: 11, color: INK, opacity: 0.7, display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' } },
             h('span', { key: 'kt' }, t('arccity.key_hint', 'Keys: F fire · R reset · H hint · arrows nudge the focused control')),
             h('button', {
@@ -3507,7 +4151,7 @@
               // also the DOM/tab order — so nothing about keyboard or SR play changes).
               : h('div', { key: 'game' }, introCard, levelBar, progressBar, gauntletBanner,
                 h('div', { key: 'playgrid', className: 'arc-play-grid' },
-                  h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), svg, boardLegend),
+                  h('div', { key: 'boardcol', className: 'arc-board-col' }, (gauntlet ? gauntletTierLock : tierBar), svg, city3dEl, boardLegend),
                   h('div', { key: 'ctlcol', className: 'arc-ctl-col' }, controls, gauntletNav, badgeStrip)))));
 
         // ── Tool-scoped shortcuts (§8.1). Bound to the root element rather than to

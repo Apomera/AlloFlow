@@ -8,6 +8,7 @@
 
 const path = require('node:path');
 const { writeGeneratedFile } = require('./write_generated_file.cjs');
+const { distractorFeedbackFor } = require('./ap_us_history_distractor_feedback/index.cjs');
 
 const root = path.resolve(__dirname, '..');
 const packPath = path.join(root, 'test_prep', 'ap_us_history_foundation_pilot.json');
@@ -367,11 +368,18 @@ function makeItem(spec, index) {
   const choices = rotateChoices(spec.answer, spec.distractors, index % 4);
   const answerIndex = choices.indexOf(spec.answer);
   const references = [...new Set([CED_URL, CLARIFICATIONS_URL, spec.sourceUrl || unit.sourceUrl])];
-  const choiceRationales = choices.map((choice) => choice === spec.answer
-    ? `This is the best answer because ${spec.rationale}`
-    : `This choice does not fit the evidence or historical relationship in the question. It confuses the period’s development with a different claim or overstates what the evidence establishes.`);
+  const itemId = `apush-foundation-${String(index + 1).padStart(3, '0')}`;
+  // Every distractor carries its own explanation, authored per item in
+  // ap_us_history_distractor_feedback/. A missing entry fails the build rather
+  // than falling back to a generic sentence.
+  const choiceRationales = choices.map((choice) => {
+    if (choice === spec.answer) return `This is the best answer because ${spec.rationale}`;
+    const feedback = distractorFeedbackFor(itemId, choice);
+    assert(feedback, `Missing distractor feedback for ${itemId}: ${choice}`);
+    return feedback;
+  });
   return {
-    id: `apush-foundation-${String(index + 1).padStart(3, '0')}`,
+    id: itemId,
     templateVersion: 1,
     itemSchemaVersion: 2,
     type: 'single-choice',
@@ -767,7 +775,7 @@ function main() {
     nativeQaUrl: qaUrl,
     transitionNotice: 'The target public exam year is intentionally unset. Reverify the current CED, clarifications, exam mode, timing, 2027 AP History updates, policies, and public-use boundaries before any release.',
     disclaimer: 'Independent, unofficial AP U.S. History preparation material for internal development only. Not affiliated with, endorsed by, or authored by College Board. AP and Advanced Placement are trademarks of College Board. All questions, answer options, explanations, feedback, chapters, and workshops are independently authored; no secure AP Classroom, Question Bank, Progress Check, practice-exam, teacher-only content, released question, or official rubric was used or reproduced. Practice results are not official AP scores, score predictions, psychometric estimates, or determinations of college credit or placement.',
-    capabilities: { currentEngineSchemaVersion: 1, itemSchemaVersion: 2, currentEngineCompatible: true, responseTypes: ['single-choice'], stimulusGroupsIncluded: false, constructedResponseIncluded: false, frqWorkshopsIncluded: true, handsFreeContentCompatible: true, limitations: ['This foundation pilot uses text-first single-choice records and does not reproduce AP U.S. History source-set stimuli, maps, images, or digital response UI.', 'The separate SAQ-, DBQ-, and LEQ-style workshops use original synthetic scenarios and planning self-checks; the current engine does not score constructed responses.', 'No official-score or readiness inference is supported.'] },
+    capabilities: { currentEngineSchemaVersion: 1, itemSchemaVersion: 2, currentEngineCompatible: true, responseTypes: ['single-choice'], stimulusGroupsIncluded: false, constructedResponseIncluded: false, frqWorkshopsIncluded: true, optionLevelFeedback: 'authored-per-distractor', handsFreeContentCompatible: true, limitations: ['This foundation pilot uses text-first single-choice records and does not reproduce AP U.S. History source-set stimuli, maps, images, or digital response UI.', 'The separate SAQ-, DBQ-, and LEQ-style workshops use original synthetic scenarios and planning self-checks; the current engine does not score constructed responses.', 'No official-score or readiness inference is supported.'] },
     blueprint: { academicYearReference: '2026-27', cedEffectiveLabel: 'Fall 2026', cedFrameworkVersion: 'V.1', examFormatReferenceYear: 2026, targetExamYear: null, examModeReference: 'fully-digital', officialSectionOne: '55 multiple-choice questions in 55 minutes; 40% of the 2026 official exam score', officialSectionTwo: '3 short-answer questions in 40 minutes; 20% of the 2026 official exam score', officialSectionThree: '1 document-based question and 1 long-essay question in 100 minutes; 40% of the 2026 official exam score', pilotAlignment: '50-item internal foundation: five items each in Units 1, 2, and 9; six items each in Units 3-8; nine period chapters; representative topics and all six historical-thinking skills. This is not full topic coverage or an official exam form.', lastVerifiedAt: VERIFIED_AT, sourceDigest: 'pending-build-generation', learningObjectiveCatalogVersion: 'internal-remediation-v1', learningObjectiveCatalog: objectiveCatalog, representativeTopicCoverageOnly: true, examUpdateNote: 'College Board announces AP History exam updates beginning with the May 2027 administration. Reverify task wording, timing, and policy before release.' },
     rightsPolicy: { authoringBasis: 'Independent original wording informed by public blueprint metadata and factual sources.', secureCollegeBoardContentUsed: false, copiedOrRephrasedCollegeBoardQuestions: false, publicSourceUse: 'Blueprint alignment, factual verification, and links only; no source prose, figures, official prompts, or rubrics are reproduced.', status: 'pending-independent-rights-review' },
     releaseGates: { internalStructuralValidation: `passed-${VERIFIED_AT}`, independentRightsReview: 'pending', independentAccessibilityReview: 'pending', apUsHistorySubjectExpertReview: 'pending', productionValidation: 'pending', fieldTesting: 'not-started', psychometricCalibration: 'not-started', cedAndPolicyReverification: 'required-before-release', releaseEligible: false },

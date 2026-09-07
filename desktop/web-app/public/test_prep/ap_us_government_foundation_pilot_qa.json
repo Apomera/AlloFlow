@@ -100,6 +100,21 @@
       },
       "dominantSharePercent": 25
     },
+    "testWiseness": {
+      "keyedItemCount": 260,
+      "keyCycleSharePercent": 100,
+      "keyLongestSharePercent": 81.2,
+      "keyLongerByQuarterSharePercent": 63.1,
+      "distractorRationaleCount": 780,
+      "distinctDistractorRationaleCount": 780,
+      "repeatedDistractorRationaleSharePercent": 0.1,
+      "largestSharedChoiceSet": 1,
+      "advisories": [
+        "answer-key-position-cycle",
+        "key-length-cue"
+      ],
+      "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
+    },
     "library": {
       "chapters": 5,
       "sections": 15,
@@ -298,8 +313,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "1fecef6d4d815f65c6befece50d932afd69b9d4d756467872f89773f5649a368",
-      "deploySha256": "1fecef6d4d815f65c6befece50d932afd69b9d4d756467872f89773f5649a368",
+      "sourceSha256": "a4df84ba5b6887df5f340098d4e45ce41429e766c23df89647eded74cf0b51f7",
+      "deploySha256": "a4df84ba5b6887df5f340098d4e45ce41429e766c23df89647eded74cf0b51f7",
       "note": "Source and deployment bytes are identical."
     },
     {

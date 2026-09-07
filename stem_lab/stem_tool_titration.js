@@ -1660,11 +1660,22 @@ function titrationBenchNotebook(raw) {
   return (Array.isArray(raw)?raw:[]).filter(function(r){
     if(!r||!Number.isSafeInteger(r.id)||r.id<1||r.id>1000000000||ids[r.id]||typeof r.preset!=='string'||typeof r.setup!=='string'||(r.axis!=='pH'&&r.axis!=='E')||typeof r.volume!=='number'||!isFinite(r.volume)||r.volume<0||r.volume>150||typeof r.value!=='number'||!isFinite(r.value))return false;
     ids[r.id]=true;return true;
-  }).slice(0,40).map(function(r){return {id:r.id,preset:r.preset.slice(0,80),setup:r.setup.slice(0,240),axis:r.axis,volume:r.volume,value:r.value,observation:typeof r.observation==='string'?r.observation.slice(0,240):'',indicator:typeof r.indicator==='string'?r.indicator.slice(0,120):''};});
+  }).slice(0,40).map(function(r){return {id:r.id,preset:r.preset.slice(0,80),setup:r.setup.slice(0,240),axis:r.axis,volume:r.volume,value:r.value,observation:typeof r.observation==='string'?r.observation.slice(0,240):'',indicator:typeof r.indicator==='string'?r.indicator.slice(0,120):'',note:typeof r.note==='string'?r.note.slice(0,500):''};});
 }
 function titrationBenchCompare(a,b) {
   if(!a||!b||a.id===b.id||a.preset!==b.preset||a.axis!==b.axis)return null;
   return {volume:Number((b.volume-a.volume).toFixed(1)),response:Number((b.value-a.value).toFixed(a.axis==='E'?3:2)),axis:a.axis};
+}
+// Quote every cell and keep student text literal when opened in a spreadsheet.
+function titrationBenchCSV(raw) {
+  function cell(value) {
+    var text=String(value);
+    if(typeof value==='string' && /^[\s]*[=+@-]/.test(text))text="'"+text;
+    return '"'+text.replace(/"/g,'""')+'"';
+  }
+  var rows=[['Reading','Setup ID','Reagents','Titrant volume (mL)','pH','Potential (V)','Indicator','Simulation observation','Student note']];
+  titrationBenchNotebook(raw).forEach(function(r){rows.push([r.id,r.preset,r.setup,r.volume,r.axis==='pH'?r.value:'',r.axis==='E'?r.value:'',r.indicator,r.observation,r.note]);});
+  return '\uFEFF'+rows.map(function(row){return row.map(cell).join(',');}).join('\r\n')+'\r\n';
 }
 function TitrationBenchTools(props) {
   var React=props.React,h=React.createElement,t=props.t,id=React.useId();
@@ -1684,6 +1695,9 @@ function TitrationBenchTools(props) {
     props.onRecords(records.concat([Object.assign({},props.current,{id:nextId})]));
     setFeedback(t('stem.titration.bench_reading_saved','Reading saved to the notebook.')+' #'+nextId);
   }
+  function mark(which,recordId){
+    setSelected(function(previous){var next=Object.assign({},previous);next[which]=String(recordId);return next;});
+  }
   function selection(which,label){return h('div',null,
     h('label',{htmlFor:id+'-'+which},label),
     h('select',{id:id+'-'+which,value:which==='a'?(a?String(a.id):''):(b?String(b.id):''),onChange:function(e){var next=Object.assign({},selected);next[which]=e.target.value;setSelected(next);}},
@@ -1691,7 +1705,7 @@ function TitrationBenchTools(props) {
       records.map(function(r){return h('option',{key:r.id,value:String(r.id)},'#'+r.id+' · '+r.volume.toFixed(1)+' mL · '+response(r)+' · '+r.setup);})
     )
   );}
-  var css='.titr-bench-tools{padding:16px;border-top:1px solid #52657a;background:#0b1d2d}.titr-bench-tools h4{font-size:16px;font-weight:800;color:#e2edf8;margin:0 0 12px}.titr-bench-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-bench-tool-card{border:1px solid #52657a;border-radius:13px;padding:14px;min-width:0;background:#102538}.titr-bench-tool-card h5{font-size:14px;font-weight:800;margin:0 0 10px;color:#a5f3fc}.titr-bench-tools label{display:block;font-size:12px;font-weight:700;color:#e2edf8;margin:8px 0 5px}.titr-bench-tools input,.titr-bench-tools select{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;border:1px solid #8193a7;border-radius:8px;background:#071422;color:#ecf5fc;padding:8px;font-size:13px}.titr-bench-tools :is(input,select):focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-bench-tools .titr-immersive-switches{margin-top:12px}.titr-bench-tools p{margin:8px 0 0}.titr-bench-tools .titr-tool-error{color:#fecaca}.titr-notebook{margin-top:12px}.titr-notebook ol{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;max-height:330px;overflow:auto}.titr-notebook li{border:1px solid #52657a;border-radius:10px;padding:12px;min-width:0;background:#071422;overflow-wrap:anywhere}.titr-notebook li strong{color:#a5f3fc;font-size:13px}.titr-notebook-readout{font-size:16px!important;font-weight:800;color:#ecfeff!important}.titr-comparison-result{margin-top:12px;padding:10px;border-left:3px solid #67e8f9;background:#071422;border-radius:6px}.titr-comparison-result strong{color:#ecfeff}@media(max-width:600px){.titr-bench-tool-grid{grid-template-columns:minmax(0,1fr)}.titr-notebook ol{grid-template-columns:minmax(0,1fr)}}';
+  var css='.titr-bench-tools{padding:16px;border-top:1px solid #52657a;background:#0b1d2d}.titr-bench-tools h4{font-size:16px;font-weight:800;color:#e2edf8;margin:0 0 12px}.titr-bench-tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.titr-bench-tool-card{border:1px solid #52657a;border-radius:13px;padding:14px;min-width:0;background:#102538}.titr-bench-tool-card h5{font-size:14px;font-weight:800;margin:0 0 10px;color:#a5f3fc}.titr-bench-tools label{display:block;font-size:12px;font-weight:700;color:#e2edf8;margin:8px 0 5px}.titr-bench-tools textarea{resize:vertical;min-height:78px;line-height:1.5}.titr-bench-tools input,.titr-bench-tools select,.titr-bench-tools textarea{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;border:1px solid #8193a7;border-radius:8px;background:#071422;color:#ecf5fc;padding:8px;font-size:13px}.titr-bench-tools :is(input,select,textarea):focus-visible{outline:3px solid #facc15;outline-offset:2px}.titr-bench-tools .titr-immersive-switches{margin-top:12px}.titr-bench-tools p{margin:8px 0 0}.titr-bench-tools .titr-tool-error{color:#fecaca}.titr-notebook{margin-top:12px}.titr-notebook ol{list-style:none;padding:0;margin:12px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;max-height:520px;overflow:auto}.titr-notebook li{border:1px solid #52657a;border-radius:10px;padding:12px;min-width:0;background:#071422;overflow-wrap:anywhere}.titr-notebook li[data-selected=true]{border-color:#67e8f9;box-shadow:inset 3px 0 #67e8f9}.titr-bench-tools a.titr-immersive-button{display:inline-flex;align-items:center;box-sizing:border-box;text-decoration:none}.titr-notebook .titr-note-count{font-variant-numeric:tabular-nums;text-align:right}.titr-notebook li strong{color:#a5f3fc;font-size:13px}.titr-notebook-readout{font-size:16px!important;font-weight:800;color:#ecfeff!important}.titr-comparison-result{margin-top:12px;padding:10px;border-left:3px solid #67e8f9;background:#071422;border-radius:6px}.titr-comparison-result strong{color:#ecfeff}@media(max-width:600px){.titr-bench-tool-grid{grid-template-columns:minmax(0,1fr)}.titr-notebook ol{grid-template-columns:minmax(0,1fr)}}';
   return h('section',{className:'titr-bench-tools','data-titration-bench-tools':true,'aria-label':t('stem.titration.bench_tools','Bench tools')},
     h('style',null,css),h('h4',null,t('stem.titration.bench_tools','Bench tools')),
     h('div',{className:'titr-bench-tool-grid'},
@@ -1706,8 +1720,8 @@ function TitrationBenchTools(props) {
       h('section',{className:'titr-bench-tool-card','aria-label':t('stem.titration.bench_compare','Compare readings')},
         h('h5',null,t('stem.titration.bench_compare','Compare readings')),
         selection('a',t('stem.titration.bench_reading_a','Reading A')),selection('b',t('stem.titration.bench_reading_b','Reading B')),
-        comparison?h('div',{className:'titr-comparison-result','data-titration-comparison':true},
-          h('p',null,t('stem.titration.bench_difference','Difference (B − A)')),
+        comparison?h('div',{className:'titr-comparison-result','data-titration-comparison':true,role:'status'},
+          h('p',null,t('stem.titration.bench_difference','Difference (B − A)')+' · #'+b.id+' − #'+a.id),
           h('p',null,h('strong',null,'Δ mL: '+signed(comparison.volume,1))),
           h('p',null,h('strong',null,(comparison.axis==='E'?'Δ E: ':'Δ pH: ')+signed(comparison.response,comparison.axis==='E'?3:2)+(comparison.axis==='E'?' V':'')))
         ):h('p',null,t('stem.titration.bench_compare_help','Save and choose two different readings from the same titration setup and signal type.'))
@@ -1720,15 +1734,90 @@ function TitrationBenchTools(props) {
       h('p',null,t('stem.titration.bench_notebook_help','Save displayed simulation readings to compare later. Readings stay in the notebook when you change setups; up to 40 can be kept.')),
       h('div',{className:'titr-immersive-switches'},
         h('button',{type:'button',className:'titr-immersive-button',disabled:records.length>=40,onClick:record},t('stem.titration.bench_save_reading','Save reading')),
+        records.length>0 && h('a',{className:'titr-immersive-button',href:'data:text/csv;charset=utf-8,'+encodeURIComponent(titrationBenchCSV(records)),download:'alloflow-titration-notebook.csv'},t('stem.titration.bench_download_csv','Download CSV')),
         h('button',{type:'button',className:'titr-immersive-button',disabled:records.length===0,onClick:function(){props.onRecords([]);setSelected({a:null,b:null});setFeedback(t('stem.titration.bench_notebook_cleared','Notebook cleared.'));}},t('stem.titration.bench_clear_notebook','Clear notebook'))
       ),
+      h('p',{id:id+'-note-help'},t('stem.titration.bench_notes_help','Add your observations below each saved reading. Notes save as you type and are included in the CSV download.')),
       h('p',{role:'status'},feedback),
-      records.length>0 && h('ol',null,records.map(function(r){return h('li',{key:r.id},
+      records.length>0 && h('ol',null,records.map(function(r){return h('li',{key:r.id,'data-reading-id':r.id,'data-selected':String(r.id)===aId||String(r.id)===bId},
         h('strong',null,'#'+r.id+' · '+r.setup),
         h('p',{className:'titr-notebook-readout'},r.volume.toFixed(1)+' mL · '+response(r)),
-        h('p',null,r.indicator),h('p',null,r.observation)
+        h('p',null,r.indicator),h('p',null,r.observation),
+        h('div',{className:'titr-immersive-switches'},['a','b'].map(function(which){var chosen=String(r.id)===(which==='a'?aId:bId);return h('button',{key:which,type:'button',className:'titr-immersive-button','aria-pressed':chosen,'aria-label':(which==='a'?t('stem.titration.bench_use_a','Use as A'):t('stem.titration.bench_use_b','Use as B'))+' · #'+r.id,onClick:function(){mark(which,r.id);}},(chosen?'✓ ':'')+(which==='a'?t('stem.titration.bench_use_a','Use as A'):t('stem.titration.bench_use_b','Use as B')));})),
+        h('label',{htmlFor:id+'-note-'+r.id},t('stem.titration.bench_student_note','Your observation')+' · #'+r.id),
+        h('textarea',{id:id+'-note-'+r.id,value:r.note,maxLength:500,rows:2,'aria-describedby':id+'-note-help',onChange:function(e){var note=e.target.value.slice(0,500);props.onRecords(records.map(function(entry){return entry.id===r.id?Object.assign({},entry,{note:note}):entry;}));}}),
+        h('p',{className:'titr-note-count'},r.note.length+'/500')
       );}))
     )
+  );
+}
+
+function buildTitrationDilutionScene(THREE,S,m) {
+  var ratio=Math.max(0.000001,Math.min(1,m.fraction));
+  function mesh(name,geometry,material,x,y,z){var o=new THREE.Mesh(geometry,material);o.name=name;o.position.set(x,y,z);S.model.add(o);return o;}
+  var glass=new THREE.MeshPhongMaterial({color:0xbce7ff,transparent:true,opacity:0.17,side:THREE.DoubleSide,depthWrite:false,shininess:100});
+  var edge=new THREE.MeshStandardMaterial({color:0xbce7ff,metalness:0.25,roughness:0.28});
+  var liquid=new THREE.MeshPhongMaterial({color:0x22d3ee,transparent:true,opacity:0.22,depthWrite:false,shininess:90});
+  var solute=new THREE.MeshStandardMaterial({color:0xfbbf24,emissive:0x513000,roughness:0.3,metalness:0.05});
+  mesh('dilution-bench',new THREE.BoxGeometry(6.3,0.14,2.5),new THREE.MeshStandardMaterial({color:0x183149,roughness:0.65}),0,-0.08,0);
+  [ratio,1].forEach(function(fraction,index){
+    var x=index===0?-1.65:1.65,h=2*fraction,base=0.13,prefix=index===0?'stock':'final';
+    mesh(prefix+'-vessel',new THREE.CylinderGeometry(0.82,0.82,2.35,48,1,true),glass,x,base+1.175,0);
+    mesh(prefix+'-base',new THREE.CylinderGeometry(0.82,0.82,0.06,48),glass,x,base,0);
+    var rim=mesh(prefix+'-rim',new THREE.TorusGeometry(0.82,0.028,8,64),edge,x,base+2.35,0);rim.rotation.x=Math.PI/2;
+    mesh(prefix+'-liquid',new THREE.CylinderGeometry(0.79,0.79,h,48),liquid,x,base+h/2,0);
+    var meniscus=mesh(prefix+'-surface',new THREE.TorusGeometry(0.78,0.018,8,64),edge,x,base+h,0);meniscus.rotation.x=Math.PI/2;
+    for(var tick=1;tick<=4;tick++)mesh(prefix+'-tick-'+tick,new THREE.BoxGeometry(0.15,0.018,0.025),edge,x+0.38,base+tick*0.5,0.72);
+    var radius=Math.min(0.068,h*0.09),particleGeometry=new THREE.SphereGeometry(radius,12,8);
+    for(var i=0;i<18;i++){
+      var angle=i*2.39996323,radial=0.22+0.34*((i*7)%11)/10;
+      var packet=mesh(prefix+'-solute-'+i,particleGeometry,solute,x+Math.cos(angle)*radial,base+h*(0.12+0.76*(i+0.5)/18),Math.sin(angle)*radial);
+      packet.visible=m.markers!==false;
+    }
+  });
+  S.target=new THREE.Vector3(0,1.15,0);S.half=new THREE.Vector3(3.2,1.45,1.3);
+  S.dilution={fraction:ratio,stockMl:m.stockMl,finalMl:m.finalMl,markers:m.markers!==false,solutePackets:18};
+}
+function TitrationDilutionView(props) {
+  var React=props.React,h=React.createElement,t=props.t;
+  var host=React.useRef(null),viewer=React.useRef(null),drag=React.useRef(null);
+  var viewState=React.useState('3d'),view=viewState[0],setView=viewState[1];
+  var statusState=React.useState('idle'),status=statusState[0],setStatus=statusState[1];
+  var markerState=React.useState(true),markers=markerState[0],setMarkers=markerState[1];
+  var cameraState=React.useState({rotY:15,rotX:16,zoom:1}),camera=cameraState[0],setCamera=cameraState[1];
+  var fraction=props.stockMl/props.finalMl;
+  React.useEffect(function(){
+    if(view!=='3d')return;
+    if(!window.StemLab||!window.StemLab.makeOrbitViewer){setStatus('failed');return;}
+    var api=window.StemLab.makeOrbitViewer({attr:'data-titration-dilution-gl',clearColor:0x071422,fov:38,fitSlack:1.03,build:buildTitrationDilutionScene,
+      lights:function(THREE,scene){scene.add(new THREE.HemisphereLight(0xe6f8ff,0x203349,1));var key=new THREE.DirectionalLight(0xffffff,0.9);key.position.set(2,5,4);scene.add(key);},
+      debug:function(S){return S.dilution||{};}});
+    viewer.current=api;api.onStatusChange(setStatus);api.attach(host.current);host.current.__dilutionViewer=api;
+    return function(){api.onStatusChange(null);api.dispose();viewer.current=null;};
+  },[view]);
+  React.useEffect(function(){if(viewer.current)viewer.current.push(Object.assign({},camera,{fraction:fraction,stockMl:props.stockMl,finalMl:props.finalMl,markers:markers,static:true,sig:JSON.stringify([fraction,props.stockMl,props.finalMl,markers])}));},[fraction,props.stockMl,props.finalMl,markers,camera,status,view]);
+  function rotate(y,x){setCamera(function(c){return {rotY:Math.max(-60,Math.min(60,c.rotY+y)),rotX:Math.max(0,Math.min(55,c.rotX+x)),zoom:c.zoom};});}
+  function zoom(delta){setCamera(function(c){return Object.assign({},c,{zoom:Math.max(0.7,Math.min(1.5,c.zoom+delta))});});}
+  function reset(){setCamera({rotY:15,rotX:16,zoom:1});}
+  function button(label,onClick,pressed){return h('button',{type:'button',onClick:onClick,'aria-pressed':pressed},label);}
+  var stockLabel=t('stem.titration.dilution_stock_aliquot','Stock aliquot'),finalLabel=t('stem.titration.dilution_final_solution','Final solution');
+  var description=stockLabel+': '+props.stockMl.toFixed(2)+' mL, '+props.stockC.toFixed(2)+' M. '+finalLabel+': '+props.finalMl.toFixed(0)+' mL, '+props.finalC.toFixed(3)+' M.';
+  var css='.titr-dilution-view{background:#0b1d2d;border:1px solid #60758a;border-radius:16px;overflow:hidden;color:#e2edf8}.titr-dilution-view h4{font-size:17px;font-weight:800;color:#e2edf8;margin:0}.titr-dilution-view p{font-size:12px;line-height:1.6;color:#d0e0ef;margin:6px 0 0}.titr-dilution-head,.titr-dilution-controls,.titr-dilution-caption{padding:14px 16px}.titr-dilution-controls{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #52657a}.titr-dilution-view button{min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid #8297ac;background:#16334a;color:#edf7ff;font-size:12px;font-weight:700}.titr-dilution-view button[aria-pressed=true]{background:#a5f3fc;color:#083344}.titr-dilution-view :is(button,[tabindex]):focus-visible{outline:3px solid #facc15;outline-offset:-3px}.titr-dilution-stage{height:clamp(300px,40vw,440px);position:relative;touch-action:pan-y;cursor:grab}.titr-dilution-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#52657a;border-top:1px solid #52657a}.titr-dilution-readings>div{padding:14px;background:#102538;min-width:0}.titr-dilution-readings strong{display:block;font-size:13px;color:#a5f3fc}.titr-dilution-readings b{display:block;font-size:20px;color:#ecfeff;font-variant-numeric:tabular-nums}.titr-dilution-constant{padding:14px 16px;background:#163b3f;border-top:1px solid #60758a;font-size:14px;color:#d1fae5}.titr-dilution-diagram{display:flex;justify-content:space-around;gap:20px;padding:25px 12px;background:#071422}.titr-dilution-vessel{height:180px;width:90px;position:relative;border:2px solid #bce7ff;border-top:0;border-radius:0 0 12px 12px;overflow:hidden}.titr-dilution-fill{position:absolute;bottom:0;width:100%;background:#146779;border-top:2px solid #bce7ff}.titr-dilution-dot{position:absolute;width:5px;height:5px;background:#fbbf24;border-radius:50%}@media(max-width:480px){.titr-dilution-readings{grid-template-columns:minmax(0,1fr)}}';
+  return h('section',{className:'titr-dilution-view','data-titration-dilution':true,'aria-label':t('stem.titration.dilution_visual_title','Dilution in 3D')},
+    h('style',null,css),h('div',{className:'titr-dilution-head'},h('h4',null,t('stem.titration.dilution_visual_title','Dilution in 3D')),h('p',null,t('stem.titration.dilution_visual_intro','Compare the measured stock aliquot on the left with the final solution on the right. Adjust the calculator above to update the view.'))),
+    h('div',{className:'titr-dilution-controls',role:'group','aria-label':t('stem.titration.dilution_view_options','Dilution view options')},button(t('stem.titration.dilution_3d','3D vessels'),function(){setView('3d');},view==='3d'),button(t('stem.titration.dilution_2d','2D comparison'),function(){setView('diagram');},view==='diagram'),button(t('stem.titration.dilution_markers','Solute markers'),function(){setMarkers(!markers);},markers)),
+    view==='3d' && h('div',{ref:host,className:'titr-dilution-stage',role:'img',tabIndex:0,'aria-label':description,'aria-keyshortcuts':'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',style:status==='failed'?{display:'none'}:undefined,
+      onKeyDown:function(e){var handled=true;if(e.key==='ArrowLeft')rotate(-10,0);else if(e.key==='ArrowRight')rotate(10,0);else if(e.key==='ArrowUp')rotate(0,8);else if(e.key==='ArrowDown')rotate(0,-8);else if(e.key==='+')zoom(0.1);else if(e.key==='-')zoom(-0.1);else if(e.key==='0')reset();else handled=false;if(handled)e.preventDefault();},
+      onPointerDown:function(e){if(e.pointerType==='touch'||e.button!==0)return;drag.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);},onPointerMove:function(e){if(!drag.current)return;rotate((e.clientX-drag.current.x)*0.4,(e.clientY-drag.current.y)*0.25);drag.current={x:e.clientX,y:e.clientY};},onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}}),
+    (view==='diagram'||status!=='ready') && h('div',{className:'titr-dilution-diagram',role:'img','aria-label':description},[fraction,1].map(function(f,index){
+      var dots=markers&&Array.from({length:18},function(_,i){return h('span',{key:i,className:'titr-dilution-dot',style:{left:(15+(i*37)%70)+'%',bottom:(10+i*4.2)+'%',transform:'translate(-50%,50%) scale('+Math.min(1,f*18)+')'}});});
+      return h('div',{key:index,className:'titr-dilution-vessel'},h('div',{className:'titr-dilution-fill',style:{height:(Math.max(0,Math.min(1,f))*85)+'%'}},dots));
+    })),
+    view==='3d'&&status==='failed'&&h('p',{className:'titr-dilution-caption',role:'status'},t('stem.titration.dilution_fallback','3D is unavailable. The 2D comparison and calculator remain available.')),
+    view==='3d'&&status==='ready'&&h('div',{className:'titr-dilution-controls',role:'group','aria-label':t('stem.titration.dilution_camera','Dilution camera controls')},button(t('stem.titration.bench_orbit_left','Rotate left'),function(){rotate(-15,0);}),button(t('stem.titration.bench_orbit_right','Rotate right'),function(){rotate(15,0);}),button(t('stem.titration.bench_zoom_in','Zoom in'),function(){zoom(0.1);}),button(t('stem.titration.bench_zoom_out','Zoom out'),function(){zoom(-0.1);}),button(t('stem.titration.bench_reset','Reset view'),reset)),
+    h('div',{className:'titr-dilution-readings'},[[stockLabel,props.stockMl.toFixed(2),props.stockC.toFixed(2)],[finalLabel,props.finalMl.toFixed(0),props.finalC.toFixed(3)]].map(function(r){return h('div',{key:r[0]},h('strong',null,r[0]),h('b',null,r[1]+' mL'),h('p',null,r[2]+' M'));})),
+    h('div',{className:'titr-dilution-constant'},h('strong',null,t('stem.titration.dilution_solute_constant','Same amount of solute in both views:')+' '+(props.finalC*props.finalMl/1000).toExponential(2)+' mol')),
+    h('p',{className:'titr-dilution-caption'},t('stem.titration.dilution_visual_note','Gold markers represent equal portions of solute, not individual atoms. Their size changes to fit shallow liquid; compare their count. Vessel dimensions and colors are illustrative. Use the numerical readings and the preparation procedure below. Mouse drag or arrow keys rotate; +/− zoom; 0 resets. Touch swipes scroll the page.'))
   );
 }
 
@@ -5949,6 +6038,8 @@ return React.createElement("div", {
     dilutionTargetAdjusted && React.createElement("div", { role: "status", "aria-live": "polite", className: "rounded-lg border border-amber-700/50 bg-amber-950/30 p-3 text-xs text-amber-200" },
       "The requested target concentration exceeded the stock, so it was limited to " + dilutionC2.toFixed(3) + " M. A dilution cannot be more concentrated than its stock solution."
     ),
+
+    React.createElement(TitrationDilutionView,{React:React,t:__alloT,stockMl:dilutionStockMl,finalMl:molarityCalcV1,stockC:molarityCalcC1,finalC:dilutionC2}),
 
     // Dilution procedure
     React.createElement("div", { className: "rounded-xl p-4 border border-slate-700 bg-slate-800/40" },

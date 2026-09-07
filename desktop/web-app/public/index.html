@@ -74,7 +74,7 @@
       visibility: hidden !important;
     }
   </style>
-  <link rel="preload" as="image" href="%PUBLIC_URL%/rainbow-book.jpg" fetchpriority="high" />
+  <!-- The React splash embeds its small rainbow image; no network image preload is needed. -->
   <link rel="preload" as="font" type="font/woff2" href="%PUBLIC_URL%/fonts/Inter-latin.woff2" crossorigin />
   <script>
     // Register service worker to cache assets and bypass QUIC protocol issues

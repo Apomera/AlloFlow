@@ -70,3 +70,24 @@ Validation: focused unit run 170 passed with the same two pre-existing failures;
 - Target detail uses three additional meshes on the active ring, with existing objects reused across courses; no per-frame geometry is allocated for these effects. Browser draw-call checks remain below 150 in the checked scenes. Physical-device frame rates have not been profiled.
 
 Validation: all eight local browser checks passed, including the full five-ring course, replay, pause/resume, steering onset/settling, reduced motion, narrow HUD fit, and existing cliff/lake/night scenes. Focused unit checks remain 170 passed with the same two existing label/translation failures. Final previews are `scratch/raptor-flight-review/flight-trail.png` and `scratch/raptor-flight-review/flight-trail-narrow.png`.
+
+## Fuller meadow and forest scenery
+
+- Replaced isolated two-triangle grass blades with curved tufts, shaded from dark roots to lighter tips. Tufts form small patches, align with sampled terrain slopes, and avoid steep ground and the lake interior.
+- Detail scales to 7/10/13 blades per tuft for low/balanced/high quality. Instance caps are 700/1,600/2,800 to account for the richer geometry; meadow patches favor the central valley while remaining anchored in the world. Grass remains one instanced draw and adds no per-frame geometry allocation. Distance tapering between 105 and 180 metres reduces distant visual noise; it does not eliminate GPU vertex processing.
+- Tree crowns use fuller overlapping layers and broader silhouettes. Shrubs now remain upright beside rocks. Ground rocks use the existing procedural surface shader, with world coordinates corrected for instanced meshes so their detail follows their actual location.
+- Grass sway shares the existing pause-aware scenery clock and freezes under reduced motion. Flight physics, input controls, scoring, and camera behavior are unchanged.
+
+Focused unit checks: 172 passed, including two new tuft-geometry checks for planting-plane roots, tapered curves, finite normals, valid indices, and nondegenerate triangles. The same two existing label/translation assertions remain failing. Both simulator copies match and JavaScript syntax passes. Hardware frame rates have not been profiled.
+
+Browser verification: all eight scenery, continuity, and practice-course cases passed. The cliff case was repeated successfully after the final meadow placement and instance-budget adjustment, including a closer-to-ground capture. Final previews: `scratch/raptor-flight-review/cinematic-meadow.png` and `scratch/raptor-flight-review/cinematic-cliffs.png`. Changes remain local and have not been deployed.
+
+## Organic boughs and bird surface refinement
+
+- Conifer crown layers now use irregular sprays of needle-covered branches instead of repeating a complete triangular tree texture. Curved panels and overhead bough surfaces give the foliage more depth and break up straight silhouette edges. The forest retains its existing instanced draw calls.
+- Broadleaf panels retain their original layout. New geometry checks verify the conifer panels meet without position or UV gaps, stay within their crown envelope, have unit normals, and contain no degenerate rendered triangles.
+- Balanced and high graphics use smoother body/head meshes. Crown markings follow the head surface as a shallow spherical cap, and the body feather texture repeats less often so its detail reads more clearly. Species colors, field-mark identifiers, flight physics, and camera behavior are preserved.
+
+Unit verification: 173 unique checks passed across the initial run and targeted reruns; the same two existing label/translation assertions remain failing. The initial fork-worker run was interrupted, skipped geometry/control cases, and failed an unchanged stylesheet fixture. All eight geometry/stylesheet checks and all three control checks subsequently passed in targeted runs using threads. This was not a clean single-run unit result. Source copies are byte-identical and syntax/patch checks pass. Hardware frame rates were not profiled.
+
+Visual verification: all three browser cases passed (balanced cliff/peregrine, high lake/eagle, low narrow night/owl with reduced motion). The final close-up, lake, and night captures were visually reviewed. Checks include active curved-bough geometry, bird framing, scene errors, pause, scenic controls, and the existing draw-call bound. Preview: `scratch/raptor-flight-review/cinematic-meadow.png`. Changes are saved locally and have not been deployed.
