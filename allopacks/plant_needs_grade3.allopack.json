@@ -18,7 +18,7 @@
       "title": "Help a Seed Grow",
       "timestamp": "2026-07-21T18:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Take the quiz — say each answer out loud first.\n6. Lock the ideas in with **Remember What a Plant Needs** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Windowsill Test** — use what you learned on a real problem, and mark every guess as a guess.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
+        "body": "**Due:** (your teacher will tell you)\n\nA seed looks like a tiny dead pebble. It is not. It is alive and waiting, and if you give it four things, it will grow into a whole plant.\n\n1. Read **The Quiet Life of a Seed**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **What a Plant Needs** chart.\n4. Sort the cards in **Need or Not?**\n5. Practise explaining with **Plant Frames**, then check yourself against the rubric.\n6. Take the quiz — say each answer out loud first.\n7. Lock the ideas in with **Remember What a Plant Needs** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Windowsill Test** — use what you learned on a real problem, and mark every guess as a guess.\n\nYour goal this week: watch a real plant or seed and notice what it does. Plants are slow, but they are always working. 🌱",
         "objectives": [
           {
             "id": "pl-goal-matching",
@@ -314,6 +314,37 @@
         ]
       },
       "meta": "2 buckets • 9 cards • silly ones make them think"
+    },
+    {
+      "id": "pl-frames",
+      "type": "sentence-frames",
+      "title": "Plant Frames",
+      "timestamp": "2026-07-21T18:00:05.500Z",
+      "meta": "6 frames • say them out loud before writing • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "A seed wakes up when it gets ____ and ____."
+          },
+          {
+            "text": "The ____ grows down to drink water and hold the plant still, and the ____ grows up toward the light."
+          },
+          {
+            "text": "Leaves catch ____ and use it to make the plant's own ____."
+          },
+          {
+            "text": "A plant takes in ____ from the air and gives back ____, which we breathe."
+          },
+          {
+            "text": "My seed did not grow because it was missing ____, so next time I will ____."
+          },
+          {
+            "text": "After ____ days I noticed my plant ____, which tells me ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Plant Scientist |\n|---|---|---|---|\n| Naming the need | Says the plant needs \"stuff\" | Names one or two of the four needs | Names all four needs and what each one does |\n| Plant words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including root and stem |\n| Evidence from watching | No observation | One observation from a real plant | An observation with a day count and what it shows |"
+      }
     },
     {
       "id": "pl-quiz",

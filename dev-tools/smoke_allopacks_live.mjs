@@ -58,6 +58,12 @@ for (const slug of slugs) {
   const page = await ctx.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
+  // A render error caught by an error boundary never reaches pageerror; React reports it through
+  // console.error instead. Keep the recent ones so a Component Error can be reported WITH its cause,
+  // not just its existence. Verified 2026-09-06: two FLAKY runs on the same pack told us nothing but
+  // "Component Error", which is why the race is still undiagnosed.
+  const consoleErrors = [];
+  page.on('console', (m) => { if (m.type() === 'error') { consoleErrors.push(m.text().replace(/\s+/g, ' ').slice(0, 300)); if (consoleErrors.length > 12) consoleErrors.shift(); } });
   const fail = (why) => { results.push({ slug, ok: false, why }); console.log('FAIL  ' + slug.padEnd(36) + why); };
   // Tolerant: if a launch step is already past (or the shell changes), carry on rather than die.
   const step = async (fn) => { try { await fn(); } catch (_) {} };
@@ -113,7 +119,19 @@ for (const slug of slugs) {
           const text = main ? main.innerText.replace(/\s+/g, ' ').trim() : '';
           return { err: /Component Error/i.test(document.body.innerText), len: text.length };
         });
-        if (state.err) broken.push(title + ' (Component Error)');
+        if (state.err) {
+          // Grab the boundary's own fallback text and the most recent console errors at the moment
+          // of failure, so the FLAKY/FAIL line carries a cause a person can act on.
+          const fallback = await page.evaluate(() => {
+            const el = [...document.querySelectorAll('*')].find((x) => x.children.length === 0 && /Component Error/i.test(x.textContent || ''));
+            const box = el && (el.closest('[role="alert"]') || el.parentElement);
+            return box ? (box.innerText || '').replace(/\s+/g, ' ').slice(0, 300) : '';
+          });
+          const recent = consoleErrors.filter((e) => !/Download the React DevTools|ReactDOM.render is no longer/.test(e)).slice(-3);
+          console.log('      cause  ' + title + ': fallback="' + fallback + '"');
+          for (const e of recent) console.log('      console ' + e);
+          broken.push(title + ' (Component Error)');
+        }
         else if (state.len < 40) broken.push(title + ' (rendered ' + state.len + ' chars)');
       }
       // The ONE assertion here that is allowed a retry, against the rule stated at the top. A

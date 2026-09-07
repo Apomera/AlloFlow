@@ -18,7 +18,7 @@
       "title": "Find Your Way",
       "timestamp": "2026-09-05T22:30:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nA map is not a photograph. Somebody decided what to draw and what to leave out. This week you learn to read a map, and to notice the choices behind it.\n\n1. Read **Every Map Leaves Something Out**.\n2. Learn the words in **Map Words**, then win the **Crossword** and the **Memory** game.\n3. Keep the **Parts of a Map** chart where you can see it.\n4. Sort the cards in **On the Map or Not?**\n5. Take **Map Check**.\n6. Lock it in with **Remember the Map Parts**.\n7. Read **Map Questions Kids Ask** when you get curious.\n8. Finish with **Design: A Map of Somewhere You Know**.\n\nYour job this week: find a real map somewhere — a bus stop, a mall, a park sign — and see which parts it has. 🗺️",
+        "body": "**Due:** (your teacher will tell you)\n\nA map is not a photograph. Somebody decided what to draw and what to leave out. This week you learn to read a map, and to notice the choices behind it.\n\n1. Read **Every Map Leaves Something Out**.\n2. Learn the words in **Map Words**, then win the **Crossword** and the **Memory** game.\n3. Keep the **Parts of a Map** chart where you can see it.\n4. Sort the cards in **On the Map or Not?**\n5. Practise explaining with **Map Frames**, then check yourself against the rubric.\n6. Take **Map Check**.\n7. Lock it in with **Remember the Map Parts**.\n8. Read **Map Questions Kids Ask** when you get curious.\n9. Finish with **Design: A Map of Somewhere You Know**.\n\nYour job this week: find a real map somewhere — a bus stop, a mall, a park sign — and see which parts it has. 🗺️",
         "objectives": [
           {
             "id": "mk-goal-crossword",
@@ -320,6 +320,37 @@
         ]
       },
       "meta": "2 buckets • 9 cards • the left-out ones are all real and all unhelpful"
+    },
+    {
+      "id": "mk-frames",
+      "type": "sentence-frames",
+      "title": "Map Frames",
+      "timestamp": "2026-09-05T22:30:06.500Z",
+      "meta": "6 frames • say them out loud before writing • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "On this map, the ____ stands for ____, and I know because the ____ told me."
+          },
+          {
+            "text": "The ____ rose shows that north is toward the ____ of this map."
+          },
+          {
+            "text": "Using the ____, I can tell the distance from ____ to ____ is about ____."
+          },
+          {
+            "text": "A ____ is the line that shows where one place ends and the next begins."
+          },
+          {
+            "text": "This map shows ____ but leaves out ____, probably because ____."
+          },
+          {
+            "text": "The mapmaker chose ____ as a landmark because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Map Reader |\n|---|---|---|---|\n| Reading the parts | Points at the map | Uses the key or compass correctly | Uses key, compass and scale together to answer a question |\n| Map words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including symbol and key |\n| Noticing the choices | Treats the map as a photo | Names one thing left out | Names what was left out and gives a likely reason |"
+      }
     },
     {
       "id": "mk-quiz",

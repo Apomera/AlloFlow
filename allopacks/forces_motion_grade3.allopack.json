@@ -19,7 +19,7 @@
       "timestamp": "2026-09-05T13:20:00.000Z",
       "meta": "3rd Grade • Homework mission • 3 auto-checking goals",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nEvery time something starts moving, stops, or turns, a push or a pull did it. Today you learn to spot the push or pull every single time.\n\n1. Read **The Invisible Push**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **Push, Pull, Stop** chart.\n4. Sort the cards in **Balanced or Unbalanced?**\n5. Take the quiz. Question 3 is about a ball that rolls and stops.\n6. Lock the ideas in with **Remember the Invisible Push** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Ramp Race** — change one thing, and write down your guess first.\n\nThis week, catch one thing moving and say out loud what pushed or pulled it. 🛼",
+        "body": "**Due:** (your teacher will tell you)\n\nEvery time something starts moving, stops, or turns, a push or a pull did it. Today you learn to spot the push or pull every single time.\n\n1. Read **The Invisible Push**.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Look at the **Push, Pull, Stop** chart.\n4. Sort the cards in **Balanced or Unbalanced?**\n5. Practise explaining with **Force Detective Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is about a ball that rolls and stops.\n7. Lock the ideas in with **Remember the Invisible Push** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Ramp Race** — change one thing, and write down your guess first.\n\nThis week, catch one thing moving and say out loud what pushed or pulled it. 🛼",
         "objectives": [
           {
             "id": "fm-goal-match",
@@ -316,6 +316,37 @@
             "categoryId": "fm-bal"
           }
         ]
+      }
+    },
+    {
+      "id": "fm-frames",
+      "type": "sentence-frames",
+      "title": "Force Detective Frames",
+      "timestamp": "2026-09-05T13:26:00.500Z",
+      "meta": "6 frames • say them out loud before writing • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "The ____ started to move because of a ____ (push or pull) from ____."
+          },
+          {
+            "text": "The ball slowed down and stopped because of ____, the rubbing between the ____ and the ____."
+          },
+          {
+            "text": "On a smooth floor there is ____ friction, so the ball rolls ____."
+          },
+          {
+            "text": "When I let go of the ____, ____ pulled it toward the ground."
+          },
+          {
+            "text": "The forces on the ____ were ____ (balanced or unbalanced), and I know because it ____."
+          },
+          {
+            "text": "I predict that if I ____, the ____ will ____, because ____."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Force Detective |\n|---|---|---|---|\n| Naming the force | Says something moved | Names a push or a pull | Names the push or pull AND what it came from |\n| Force words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including friction or gravity |\n| Predicting | Guesses with no reason | Predicts and gives a reason | Predicts, gives a reason from the reading, and says how to test it |"
       }
     },
     {

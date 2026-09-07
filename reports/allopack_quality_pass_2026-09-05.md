@@ -684,6 +684,23 @@ Two axis defects were found this week. The gate catches one kind: plate tectonic
 ### Yield on the existing catalog
 
 Ten findings, all real, none previously flagged: four stale metas (Ancient Egypt claimed 370 words over 317; Making Ten claimed 230 over 197) and six quizzes where one option was never correct — five of them option D. All ten are fixed. Gates: 0 flags on 45 packs. Tests: 455 green.
+## Thirtieth pass: the thin packs, and making the race diagnosable
+
+### Five nine-resource packs gain sentence frames
+
+Nine packs carried only the nine-resource core while seventeen others shipped sentence frames with a rubric. Five of the nine are grade 3 to 6 science and geography, where explaining-with-a-frame is precisely the move the rest of the catalog makes: `forces_motion_grade3`, `plant_needs_grade3`, `map_skills_grade3`, `states_of_matter_grade4`, `magnetism_grade6`. Each now has six frames and a three-by-three rubric, and a new step in its directions so the resource is actually reached.
+
+The rule for writing them: **a frame may only restate a claim its own reading already makes.** A frame that teaches something the reading does not is a second, unverified lesson riding on the first one's credibility. The sets were drafted from excerpts, so every claim was then checked against the full reading — the seed needing water and warmth, the fourth need being air with oxygen given back, condensation on contact with something cooler, a halved magnet yielding two complete magnets, an electromagnet that switches off. All supported. The four grade 1 and 2 packs were left at nine resources; frames at that level want a different shape and a separate pass.
+
+The new directions gate from the twenty-ninth pass earned its keep immediately: each inserted step names the new frames title in bold, and the audit confirmed every one resolves to a real resource.
+
+### A Component Error now reports its cause
+
+The live smoke test could say that a resource showed a Component Error and nothing about why. Two FLAKY runs on the grade 8 pack proved the race exists and told us nothing else, which is why it is still undiagnosed. A render error caught by an error boundary never reaches `pageerror` — React reports it through `console.error` — so the script now keeps the recent console errors and, on a failure, prints the boundary's own fallback text plus the last three, filtered of React's own noise.
+
+Then the grade 8 pack was run twice more to catch one. **It did not race either time.** So the instrumentation is in place and has not yet fired on a real occurrence; the next FLAKY line will carry a cause, and until it does this is a capability claim rather than a verified one. The five enriched packs load clean; the pack with the STEM Lab line was chosen for the live check so the gate's allowlist was exercised as well.
+
+Catalog: 45 packs, 22 of them now with sentence frames, 0 audit flags, 455 tests green.
 ## Files
 
 - Packs: `allopacks/*.allopack.json` (21 edited, 5 new), `allopacks/{moon_phases_grade6,forces_motion_grade3,point_of_view_grade4,day_night_sky_grade1,story_retell_grade2}.IMAGES.md`

@@ -18,7 +18,7 @@
       "title": "Same Stuff, Different Rules",
       "timestamp": "2026-07-21T09:00:00.000Z",
       "data": {
-        "body": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Take the quiz. Question 3 is the one that catches almost everybody.\n6. Lock the ideas in with **Remember the Dance Floor** — study the example aid, then make one your own.\n7. Finish with **Investigation: The Disappearing Puddle** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
+        "body": "**Due:** (your teacher will tell you)\n\nIce, water, and steam look like three different things. They are the exact same stuff. The only difference is how fast the tiny pieces are moving.\n\n1. Read **The Dance Floor** — the whole lesson is in that one comparison.\n2. Learn the words in the **Glossary**, then win the **Matching** game.\n3. Keep the **Three States** chart nearby.\n4. Sort the cards in **Solid, Liquid, or Gas?**\n5. Practise explaining with **Matter Frames**, then check yourself against the rubric.\n6. Take the quiz. Question 3 is the one that catches almost everybody.\n7. Lock the ideas in with **Remember the Dance Floor** — study the example aid, then make one your own.\n8. Finish with **Investigation: The Disappearing Puddle** — use what you learned on a real problem, and mark every guess as a guess.\n\nOne thing to watch for all lesson: nothing is created or destroyed when matter changes state. It only rearranges. ❄️💧☁️",
         "objectives": [
           {
             "id": "sm-goal-matching",
@@ -363,6 +363,37 @@
         ]
       },
       "meta": "3 states • 9 items • sand and honey start arguments"
+    },
+    {
+      "id": "sm-frames",
+      "type": "sentence-frames",
+      "title": "Matter Frames",
+      "timestamp": "2026-07-21T09:00:05.500Z",
+      "meta": "6 frames • say them out loud before writing • rubric included",
+      "data": {
+        "mode": "list",
+        "items": [
+          {
+            "text": "In a ____, the particles are ____, which is why it ____."
+          },
+          {
+            "text": "When ice ____, its particles gain ____ and start to slide past each other."
+          },
+          {
+            "text": "The puddle disappeared because the water ____ into a ____; it did not vanish."
+          },
+          {
+            "text": "Water vapour ____ into drops when it touches something ____."
+          },
+          {
+            "text": "When water ____ into ice, the amount of matter ____, because nothing is created or destroyed."
+          },
+          {
+            "text": "I can tell ____ is a liquid because it ____ but its ____ stays the same."
+          }
+        ],
+        "rubric": "| Criteria | 1 — Starting | 3 — Getting There | 5 — Particle Thinker |\n|---|---|---|---|\n| Particle picture | Describes what it looks like | Says how the particles move in one state | Explains a change of state by what the particles do |\n| Matter words | Everyday words only | Uses 1-2 glossary words correctly | Uses 3+ glossary words correctly, including melt, evaporate or condense |\n| Nothing created or destroyed | Says the water \"went away\" | Says it changed state | Says where it went and that the amount of matter stayed the same |"
+      }
     },
     {
       "id": "sm-quiz",
