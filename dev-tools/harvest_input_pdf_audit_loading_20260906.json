@@ -1,0 +1,23 @@
+{
+  "pdf_audit.loading.title": "Checking your document…",
+  "pdf_audit.loading.subtitle2": "Several accessibility checks are reading every page (5 AI review passes + an automated rule scan).",
+  "pdf_audit.loading.for_size": "For a file this size:",
+  "pdf_audit.loading.est_fast": "usually 15–30 seconds",
+  "pdf_audit.loading.est_med": "usually 30–90 seconds",
+  "pdf_audit.loading.est_slow": "usually 2–5 minutes",
+  "pdf_audit.loading.est_vslow": "usually 5–10 minutes — this is a big file",
+  "pdf_audit.loading.elapsed": "elapsed",
+  "pdf_audit.loading.safe_to_wait": "it’s safe to keep waiting; nothing is stuck.",
+  "pdf_audit.loading.progress_aria": "Audit in progress",
+  "pdf_audit.loading.stage_prepare": "Preparing the document…",
+  "pdf_audit.loading.stage_structure": "Reading the PDF structure (tags, headings)…",
+  "pdf_audit.loading.stage_slices": "Large document — auditing in page slices…",
+  "pdf_audit.loading.stage_auditors_n": "AI review passes: {done} of {total} back",
+  "pdf_audit.loading.stage_retry": "Re-running a review pass that did not return…",
+  "pdf_audit.loading.stage_escalate": "Scores disagree — adding more review passes…",
+  "pdf_audit.loading.stage_baseline_text": "Extracting text for the automated rule scan…",
+  "pdf_audit.loading.stage_baseline": "Running the automated rule scans (axe-core, Equal Access)…",
+  "pdf_audit.loading.stage_finalize": "Finalizing the score…",
+  "pdf_audit.loading.on_this_step": "on this step",
+  "pdf_audit.loading.stalled": "No progress for {minutes} minutes on this step. The AI service may be throttling, or a network call may have stalled. You can keep waiting, or close this window (✕) and run the audit again."
+}

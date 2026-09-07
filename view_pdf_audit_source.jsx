@@ -6388,6 +6388,8 @@ function PdfAuditView(props) {
     const _accept = (detail) => !!(detail && detail.stage
       && (detail.documentEpoch == null || !Number.isInteger(pdfDocumentEpoch) || detail.documentEpoch === pdfDocumentEpoch));
     const onStage = (ev) => { const detail = ev && ev.detail; if (_accept(detail)) setAuditStage(detail); };
+    // A new document epoch (same modal instance) must not inherit the previous document's step.
+    setAuditStage(null);
     try { if (_accept(window.__alloAuditStage)) setAuditStage(window.__alloAuditStage); } catch (_) {}
     window.addEventListener('alloflow:audit-progress', onStage);
     return () => window.removeEventListener('alloflow:audit-progress', onStage);
@@ -6418,6 +6420,20 @@ function PdfAuditView(props) {
         {_onStep >= 5 && <span className="font-normal text-slate-500" aria-hidden="true"> ({_onStep}s {t('pdf_audit.loading.on_this_step') || 'on this step'})</span>}
       </p>
     );
+  };
+  // (2026-09-06) The wait copy promised "nothing is stuck" unconditionally, which is exactly the
+  // claim the stranded-spinner bug broke. The promise is now conditional on progress: a step that
+  // has not advanced in 3 minutes (or no step at all after 10, for an older pipeline) says so and
+  // names the way out. A stalled step is still a legitimate state during Canvas throttling, so the
+  // copy offers waiting as well as retrying.
+  const _AUDIT_STALL_AFTER_SEC = 180;
+  const _auditStall = () => {
+    if (!pdfAuditLoading) return null;
+    if (auditStage && auditStage.at) {
+      const onStep = Math.round((Date.now() - auditStage.at) / 1000);
+      return onStep >= _AUDIT_STALL_AFTER_SEC ? { minutes: Math.floor(onStep / 60), stage: auditStage.stage } : null;
+    }
+    return auditElapsedSec >= 600 ? { minutes: Math.floor(auditElapsedSec / 60), stage: null } : null;
   };
   // Pre-flight pageCount (2026-06-12): every triage opener writes only
   // {_choosing, fileName, fileSize}, but the ENTIRE pre-flight panel —
@@ -8647,6 +8663,14 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     const _oneClickDocumentIsCurrent = () => Number.isInteger(_oneClickDocumentEpoch)
                       && (typeof isPdfDocumentIntakeCurrent === 'function'
                         ? isPdfDocumentIntakeCurrent(_oneClickDocumentEpoch) : _oneClickDocumentEpoch === pdfDocumentEpoch);
+                    // (2026-09-06) Every early return below used to be silent: a document-epoch change
+                    // mid-run dropped the finished audit with no trace, and the 09-04 report had to be
+                    // diagnosed blind. Run Audit already logs its drop; Make Accessible gets the same line.
+                    const _oneClickDropped = (where) => {
+                      if (_oneClickDocumentIsCurrent()) return false;
+                      _auditGateLog('one-click ' + where + ' DROPPED - document intake epoch went stale mid-run (the finished work belongs to a document that is no longer selected)', { docEpoch: _oneClickDocumentEpoch, where });
+                      return true;
+                    };
                     _oneClickRemediationBusyRef.current = true;
                     setOneClickRemediationBusy(true);
                     // Records that the click was ACCEPTED. Without this line a rejected click and a
@@ -8702,28 +8726,28 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                     try {
                       _audit = await runPdfAccessibilityAudit(pendingPdfBase64, { fileName: pendingPdfFile?.name, mimeType: _inputMimeType, skipCache: pdfDiagnosticFreshRun });
                     } catch (auditErr) {
-                      if (!_oneClickDocumentIsCurrent()) return;
+                      if (_oneClickDropped('audit error')) return;
                       _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
                       addToast((t('toasts.audit_error_stopped') || 'The accessibility audit failed, so remediation was not started. Retry the audit and try again.') + (auditErr?.message ? ' ' + auditErr.message : ''), 'error');
                       return;
                     }
                     if (!_audit) {
-                      if (!_oneClickDocumentIsCurrent()) return;
+                      if (_oneClickDropped('empty audit')) return;
                       _restoreVisibleAuditAfterFailure(_auditChooserSnapshot);
                       addToast(t('toasts.audit_error_stopped') || 'The accessibility audit did not complete, so remediation was not started. Retry the audit and try again.', 'error');
                       return;
                     }
-                    if (!_oneClickDocumentIsCurrent()) return;
+                    if (_oneClickDropped('audit result')) return;
                     _settleVisibleAuditRun(_visibleRun, _audit, 'ONE-CLICK');
                     if (!_viewAuditCanStartRemediation(_audit)) {
-                      if (!_oneClickDocumentIsCurrent()) return;
+                      if (_oneClickDropped('failed audit')) return;
                       addToast(t('toasts.audit_error_stopped') || 'The accessibility audit could not complete, so remediation was not started. Use Retry Audit to try again.', 'error');
                       return;
                     }
                     // Cosmetic settle only — the fix no longer depends on audit STATE (it gets auditResult below).
-                    if (!_oneClickDocumentIsCurrent()) return;
+                    if (_oneClickDropped('before remediation')) return;
                     await new Promise((res) => setTimeout(res, 250));
-                    if (!_oneClickDocumentIsCurrent()) return;
+                    if (_oneClickDropped('before remediation')) return;
                     addToast(t('toasts.make_accessible_fixing') || '✨ Audit done — remediating automatically (no clicks needed)…', 'info');
                     // ── Hands-off auto-retry (2026-06-18) ──
                     // "Make Accessible" IS the unattended path, so don't stop at a single bail: (1) if the
@@ -9841,12 +9865,18 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                   const _kb = pendingPdfFile && pendingPdfFile.size ? Math.round(pendingPdfFile.size / 1024) : (pendingPdfBase64 ? Math.round(pendingPdfBase64.length * 0.75 / 1024) : 0);
                   const _est = _kb < 200 ? (t('pdf_audit.loading.est_fast') || 'usually 15–30 seconds') : _kb < 1000 ? (t('pdf_audit.loading.est_med') || 'usually 30–90 seconds') : _kb < 5000 ? (t('pdf_audit.loading.est_slow') || 'usually 2–5 minutes') : (t('pdf_audit.loading.est_vslow') || 'usually 5–10 minutes — this is a big file');
                   const _mm = Math.floor(auditElapsedSec / 60), _ss = auditElapsedSec % 60;
+                  const _stall = _auditStall();
                   return (
                     <div>
                       <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle2') || 'Several accessibility checks are reading every page (5 AI review passes + an automated rule scan).'}</p>
                       <p className="text-sm font-bold text-slate-700 mt-1">{(t('pdf_audit.loading.for_size') || 'For a file this size:')} {_est}</p>
-                      <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'} — {t('pdf_audit.loading.safe_to_wait') || 'it’s safe to keep waiting; nothing is stuck.'}</p>
+                      <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'}{_stall ? '' : ' — ' + (t('pdf_audit.loading.safe_to_wait') || 'it’s safe to keep waiting; nothing is stuck.')}</p>
                       {_auditStageLine()}
+                      {_stall && (
+                        <p className="text-xs text-amber-900 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-3 mx-auto max-w-md" data-audit-stalled={_stall.minutes}>
+                          {t('pdf_audit.loading.stalled', { minutes: _stall.minutes }) || ('No progress for ' + _stall.minutes + ' minutes on this step. The AI service may be throttling, or a network call may have stalled. You can keep waiting, or close this window (✕) and run the audit again.')}
+                        </p>
+                      )}
                     </div>
                   );
                 })()}

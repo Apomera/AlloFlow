@@ -77,7 +77,7 @@ describe('PDF audit modal releases its own loading flag when its run returns', (
       // One-click settles only for a still-current document, and before the remediation gate
       // so a failed audit renders "Audit Unavailable" instead of a spinner.
       const oneClick = between(src, 'ONE-CLICK started', '_viewAuditCanStartRemediation(_audit)');
-      expect(oneClick).toMatch(/if \(!_oneClickDocumentIsCurrent\(\)\) return;\s*_settleVisibleAuditRun\(_visibleRun, _audit/);
+      expect(oneClick).toMatch(/if \(_oneClickDropped\(["']audit result["']\)\) return;\s*_settleVisibleAuditRun\(_visibleRun, _audit/);
     }
   });
 
@@ -197,6 +197,19 @@ describe('PDF audit names its current step while the spinner is up', () => {
       // Wired into the loading branch, right under the elapsed counter (the progressbar follows).
       const loadingBranch = between(src, 'pdf_audit.loading.safe_to_wait', 'pdf_audit.loading.progress_aria');
       expect(loadingBranch).toContain('_auditStageLine()');
+      // "nothing is stuck" is now conditional on progress, and a stalled step names the way out.
+      expect(loadingBranch).toContain('data-audit-stalled');
+      expect(src).toMatch(/_stall \? (null|'') : /);
+      expect(src).toContain('const _AUDIT_STALL_AFTER_SEC = 180;');
+    }
+  });
+
+  it('logs every one-click drop instead of returning silently, like Run Audit always did', () => {
+    for (const src of [view, viewSource]) {
+      expect(src.match(/_oneClickDropped\(['"]/g).length).toBeGreaterThanOrEqual(6);
+      expect(src).toMatch(/one-click ['"] \+ where \+ ['"] DROPPED/);
+      const auditPhase = between(src, 'ONE-CLICK started', 'const _HANDSOFF_MAX');
+      expect(auditPhase).not.toContain('if (!_oneClickDocumentIsCurrent()) return;');
     }
   });
 
@@ -250,6 +263,30 @@ describe('PDF audit names its current step while the spinner is up', () => {
       const clock = el.querySelector('[aria-hidden="true"]');
       expect(clock).not.toBeNull();
       expect(clock.textContent).toMatch(/1[12]s on this step/);
+    });
+
+    it('calls a step stalled after three minutes without progress, or ten minutes with no step at all', () => {
+      const stallBody = new Function('React', 'useState', 'useEffect', 't', 'pdfAuditLoading', 'pdfDocumentEpoch', 'auditElapsedSec', stageSlice + '\nreturn _auditStall();');
+      function StallProbe(props) {
+        const r = stallBody(React, React.useState, React.useEffect, t, props.pdfAuditLoading, props.pdfDocumentEpoch, props.auditElapsedSec || 0);
+        return React.createElement('span', { 'data-stall': r ? String(r.minutes) : 'none' });
+      }
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const root = createRoot(container);
+      roots.push(root);
+      const read = () => container.querySelector('[data-stall]').getAttribute('data-stall');
+      act(() => root.render(React.createElement(StallProbe, { pdfAuditLoading: true, pdfDocumentEpoch: 1, auditElapsedSec: 30 })));
+      expect(read()).toBe('none');
+      emit({ stage: 'auditors', label: 'x', documentEpoch: 1, done: 0, total: 3, at: Date.now() - 200000 });
+      expect(read()).toBe('3');
+      emit({ stage: 'auditors', label: 'x', documentEpoch: 1, done: 1, total: 3, at: Date.now() });
+      expect(read()).toBe('none');
+      // An older pipeline publishes no stages: fall back to the plain elapsed clock.
+      act(() => root.render(React.createElement(StallProbe, { pdfAuditLoading: true, pdfDocumentEpoch: 2, auditElapsedSec: 700 })));
+      expect(read()).toBe('11');
+      act(() => root.render(React.createElement(StallProbe, { pdfAuditLoading: false, pdfDocumentEpoch: 2, auditElapsedSec: 700 })));
+      expect(read()).toBe('none');
     });
 
     it('hydrates from the last published stage on mount and clears when loading ends', () => {
