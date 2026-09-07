@@ -221,7 +221,8 @@ describe('Adventure Mode runtime regressions', () => {
     await handleAdventureTextSubmit(null, deps);
 
     expect(pendingUpdate.scene.text).toContain('data stream error');
-    expect(pendingUpdate.scene.options).toHaveLength(4);
+    expect(pendingUpdate.scene.options).toEqual([]); // Written-response mode stays open, including recovery.
+    expect(pendingUpdate.isTerminalTurn).toBe(false);
     expect(pendingUpdate.choiceSource).toBe('freetext');
     expect(addToast).toHaveBeenCalledWith('toasts.auto_repair_fallback', 'warning');
   });

@@ -1204,6 +1204,10 @@ function AdventurePanel(props) {
   if (!expandedTools || !expandedTools.includes('adventure')) return null;
   const adventurePermissions = studentProjectSettings.adventurePermissions || {};
   const lockAllAdventureSettings = !isTeacherMode && !!adventurePermissions.lockAllSettings;
+  const learningText = (key, fallback) => { const value = t('adventure.learning_settings.' + key); return value && value !== 'adventure.learning_settings.' + key ? value : fallback; };
+  const episodeLimit = Object.prototype.hasOwnProperty.call(adventureState, 'episodeTurnLimit') ? adventureState.episodeTurnLimit : (adventureState.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(adventureState.climaxMinTurns) || 20)));
+  const difficultyDetails = { Story: 'Half energy loss; 1.5× XP. Reasoning expectations follow the lesson.', Normal: 'Standard energy loss and XP. Reasoning expectations follow the lesson.', Hard: '1.5× energy loss; 0.75× XP. Success thresholds stay the same.', Hardcore: '2.5× energy loss; 0.5× XP. Success thresholds stay the same.' };
+
   return (
               <div className="animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200">
                 <div className="p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3">
@@ -1267,10 +1271,7 @@ function AdventurePanel(props) {
                                     <option value="Hardcore">{t('adventure.diff_hardcore_option')}</option>
                                 </select>
                                 <p className="text-[11px] text-slate-600 mt-1">
-                                    {adventureDifficulty === 'Story' ? t('adventure.diff_story_desc') :
-                                     adventureDifficulty === 'Hard' ? t('adventure.diff_hard_desc') :
-                                     adventureDifficulty === 'Hardcore' ? t('adventure.diff_hardcore_desc') :
-                                     t('adventure.diff_normal_desc')}
+                                    {learningText('difficulty_' + adventureDifficulty, difficultyDetails[adventureDifficulty] || difficultyDetails.Normal)}
                                 </p>
                             </div>
                             <div data-help-key="adventure_language">
@@ -1288,18 +1289,18 @@ function AdventurePanel(props) {
                                                 {t('adventure.lang_options.only_suffix', { lang })}
                                             </option>
                                             <option value={`${lang} + English`}>
-                                                {t('adventure.lang_options.plus_english', { lang })}
+                                                {lang + ' · ' + learningText('with_translation', 'with translation')}
                                             </option>
                                         </React.Fragment>
                                     ))}
                                     {selectedLanguages.length > 1 && (
                                         <option value="All + English">
-                                            {t('adventure.lang_options.all_plus_english', { langs: selectedLanguages.join(', ') })}
+                                            {selectedLanguages.join(', ') + ' · ' + learningText('with_translation', 'with translation')}
                                         </option>
                                     )}
                                 </select>
                                 <p className="text-[11px] text-slate-600 mt-1">
-                                {t('adventure.language_help')}
+                                {learningText('translation_hint', 'Story language follows this control; the translation language follows Universal Settings.')}
                                 </p>
                             </div>
                             <ResourceCustomInstructions helpKey="adventure_custom_instructions" t={t}
@@ -1655,26 +1656,33 @@ function AdventurePanel(props) {
                                         </span>
                                     )}
                                 </div>
-                                <div className="flex items-center gap-2" data-help-key="adventure_auto_climax">
-                                    <input aria-label={t('common.toggle_enable_auto_climax_false')}
-                                        id="enableAutoClimax"
+                                <div className="space-y-2">
+                                    <label htmlFor="sidebar-adventure-episode-length" className="block text-xs font-bold text-slate-800">{learningText('length', 'Episode length')}</label>
+                                    <select id="sidebar-adventure-episode-length" value={episodeLimit == null ? 'open' : String(episodeLimit)} disabled={lockAllAdventureSettings} onChange={event => { const value = event.target.value; setAdventureState(previous => ({ ...previous, episodeTurnLimit: value === 'open' ? null : Number(value) })); }} className="min-h-11 w-full rounded-lg border border-purple-700 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2">
+                                    <option value="6">{learningText('short', 'Short · 6 decisions')}</option><option value="12">{learningText('standard', 'Standard · 12 decisions')}</option><option value="20">{learningText('long', 'Long · 20 decisions')}</option>
+                                    {episodeLimit != null && ![6, 12, 20].includes(Number(episodeLimit)) && <option value={String(episodeLimit)}>{episodeLimit} {learningText('decisions', 'decisions')}</option>}
+                                    <option value="open">{learningText('open', 'Open-ended')}</option></select>
+                                    <p className="text-xs leading-relaxed text-slate-700">{learningText('finale_hint', 'A set episode ends at its chosen length, with or without a final challenge. In open-ended play, the automatic finale waits for the minimum round and sufficient story progress.')}</p>
+                                    </div>
+                                    <div className="flex items-center gap-2" data-help-key="adventure_auto_climax">
+                                    <input aria-label={learningText('finale', 'Include a final challenge')}
+                                        id="enableAutoClimax" disabled={lockAllAdventureSettings}
                                         type="checkbox"
                                         checked={adventureState.enableAutoClimax || false}
                                         onChange={(e) => setAdventureState(prev => ({ ...prev, enableAutoClimax: e.target.checked }))}
                                         className="w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
                                     />
                                     <label htmlFor="enableAutoClimax" className="text-xs font-medium text-slate-700 cursor-pointer select-none">
-                                        {t('adventure.climax.enable_label')}
+                                        {learningText('finale', 'Include a final challenge')}
                                     </label>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <label className="text-xs text-slate-600 font-medium">{t('adventure.climax.min_rounds_label')}</label>
-                                    <input aria-label={t('common.enter_adventure_state')}
-                                        type="number"
+                                    <label className="text-xs text-slate-600 font-medium">{learningText('earliest_finale', 'Earliest finale round (open-ended)')}</label>
+                                    <input aria-label={learningText('earliest_finale', 'Earliest finale round (open-ended)')} disabled={episodeLimit !== null || lockAllAdventureSettings} type="number"
                                         min="3"
                                         max="50"
                                         value={adventureState.climaxMinTurns || 20}
-                                        onChange={(e) => setAdventureState(prev => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(e.target.value) || 20) }))}
+                                        onChange={(e) => { const value = Math.max(3, Math.min(50, Number(e.target.value) || 20)); setAdventureState(prev => ({ ...prev, climaxMinTurns: value })); }}
                                         className="w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 font-bold text-purple-900"
                                     />
                                 </div>

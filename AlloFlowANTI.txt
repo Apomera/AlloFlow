@@ -52379,6 +52379,7 @@ ${_alloActivityContext(activity)}
                 )}
                 {activeView === 'adventure' && window.AlloModules && window.AlloModules.AdventureView && React.createElement(window.AlloModules.AdventureView, {
                     adventureState, t, globalPoints, soundEnabled, activeView,
+                    setAdventureState, currentUiLanguage, translationMode, resolveTranslationPolicy, isSocialStoryMode, socialStoryFocus, setIsSocialStoryMode, setSocialStoryFocus, factionResourceMode, setFactionResourceMode,
                     prewarmAdventureAudio, handleAdventureHint,
                     showLedger, isProcessing, adventureImageSize, adventureAutoRead,
                     adventureTypingPaceEnabled, adventureFluencyEnabled,

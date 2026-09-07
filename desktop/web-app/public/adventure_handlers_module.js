@@ -12,6 +12,82 @@ if (window.AlloModules && window.AlloModules.AdventureHandlersModule) { console.
 // console.error before re-throwing — Phase E learned that swallowed
 // errors masquerade as a generic "Sorry" toast and are murder to debug.
 
+
+const getAdventurePacing = (state = {}) => {
+    const bounded = value => Math.max(3, Math.min(50, Math.round(Number(value) || 20)));
+    // Old saves keep their previous duration until the learner explicitly edits it.
+    const explicit = Object.prototype.hasOwnProperty.call(state, 'episodeTurnLimit');
+    const limit = explicit ? (state.episodeTurnLimit == null ? null : bounded(state.episodeTurnLimit))
+        : (state.enableAutoClimax ? null : bounded(state.climaxMinTurns));
+    const turn = Math.max(1, Number(state.turnCount) || 1);
+    return { limit, isFinalTurn: limit !== null && turn >= limit,
+        prepareFinalChallenge: !!state.enableAutoClimax && !state.climax?.isActive && limit !== null && turn === limit - 1 };
+};
+
+const buildAdventureModeInstruction = (deps, opening = false) => {
+    const state = deps.adventureState || {};
+    const count = Math.max(2, Math.min(6, Math.round(Number(state.choiceCount) || 6)));
+    const parts = [
+        'LEARNING: Use the supplied lesson evidence. Treat simulation quantities as scenario estimates, not measured or scientifically validated values.',
+        'Reading difficulty follows the audience setting. Game difficulty changes energy costs and XP, not the accuracy of a learner\'s ideas.',
+        deps.adventureFreeResponseEnabled
+            ? 'Offer a specific decision to write or dictate. Invite a short explanation; accept concise, relevant responses.'
+            : 'This choice count overrides earlier option quotas: provide ' + count + ' meaningful choices. Include plausible tradeoffs and different approaches; do not force an obviously harmful or absurd distractor. Keep options brief.'
+    ];
+    if (deps.isAdventureStoryMode) parts.push('PEACEFUL MODE applies to every scene, including the opening and finale: use exploration, mysteries, negotiation or puzzles; avoid combat, intense danger, frightening imagery and urgent/chase sound cues.');
+    if (deps.isSocialStoryMode) parts.push('SOCIAL PRACTICE: Focus on ' + String(deps.socialStoryFocus || 'perspective-taking').slice(0, 300) + '. Recognize boundaries, asking for help, different interpretations and more than one reasonable response. Offer repair and trying again without shaming. Do not assume agreement, eye contact or compliance is the goal.');
+    if (deps.adventureInputMode === 'debate') parts.push('EVIDENCE DEBATE: Assess source evidence, the link between claim and evidence, and engagement with a counterargument. Reward justified revisions, clarifying questions and thoughtful concessions. Changing position with evidence is not giving up; do not reset the debate for that. Never require flattery or agreement. Add "reasoningFeedback": {"evidence":"one specific observation", "reasoning":"one specific observation", "counterpoint":"one next step"} to each turn JSON; use plain text, at most 280 characters per field. Debate momentum follows strategy quality, never the chance die.');
+    if (deps.adventureInputMode === 'system') {
+        if (deps.enableFactionResources === false) parts.push('RESOURCE TRACKING IS OFF: return no systemStateUpdate or systemResourceUpdate. Describe consequences in words.');
+        else if (deps.factionResourceMode === 'manual') parts.push('MANUAL RESOURCES: Use only these educator-defined variables; preserve names, units and starting values. Never create, rename or replace a variable: ' + JSON.stringify((state.systemResources || []).slice(0, 24).map(r => ({name:r.name,quantity:r.quantity,unit:r.unit}))) + '. Updates are deltas; zero means no change.');
+        else parts.push('AI RESOURCES: Use at most 4 stable, relevant variables. Preserve their units. Updates are deltas; zero means no change. Percentages stay between 0 and 100; other counts have no arbitrary 100 cap.');
+        parts.push('SYSTEMS THINKING: Explain the immediate consequence, a possible delayed effect and a tradeoff. Add "systemForecast": {"immediate":"what this decision changes now", "delayed":"a conditional forecast, not an already-applied change", "tradeoff":"who or what benefits and what it costs"} to turn JSON, at most 360 characters per field. State uncertainty. Delayed effects are predictions, not scheduled numerical changes.');
+    }
+    if (opening) return '\n' + parts.join('\n');
+    const pacing = getAdventurePacing(state);
+    if (pacing.prepareFinalChallenge) parts.push('PACING: Resolve this decision, then introduce one final application challenge suited to what the learner has practiced. It is the next and last decision of this episode.');
+    if (pacing.isFinalTurn) parts.push('FINAL EPISODE TURN: Resolve the learner\'s decision and end with a satisfying conclusion plus one short reflection prompt. Return scene.options: []. Do not introduce a new obstacle or require another action. This ending instruction overrides all ongoing-story instructions.');
+    return '\n' + parts.join('\n');
+};
+
+const normalizeAdventureScene = (scene, deps) => {
+    if (!scene || typeof scene !== 'object') return;
+    const count = Math.max(2, Math.min(6, Math.round(Number(deps.adventureState?.choiceCount) || 6)));
+    if (Array.isArray(scene.options)) scene.options = deps.adventureFreeResponseEnabled ? [] : scene.options.slice(0, count);
+    if (deps.isAdventureStoryMode && scene.soundParams && typeof scene.soundParams === 'object') {
+        scene.soundParams = { ...scene.soundParams, atmosphere: 'Calm', intensity: Math.min(0.35, Math.max(0, Number(scene.soundParams.intensity) || 0.2)), motion: 'Still' };
+    }
+};
+
+const normalizeAdventureTurn = (data, deps, chanceRoll, rollModifier) => {
+    const clamp = (value, low, high, fallback) => { const n = Number(value); return Number.isFinite(n) ? Math.max(low, Math.min(high, Math.round(n))) : fallback; };
+    const previousRoll = data.rollDetails && typeof data.rollDetails === 'object' ? data.rollDetails : {};
+    if (deps.adventureChanceMode) {
+        const strategyRating = clamp(previousRoll.strategyRating, 1, 20, 10);
+        // The app owns the die. Never accept a replacement die or sum from the model.
+        data.rollDetails = { ...previousRoll, strategyRating, d20: chanceRoll, total: chanceRoll + rollModifier + strategyRating };
+    }
+    if (deps.adventureInputMode === 'debate') {
+        const rating = clamp(deps.adventureChanceMode ? data.rollDetails.strategyRating : previousRoll.total ?? previousRoll.d20, 1, 20, 10);
+        data.debateMomentumChange = rating >= 18 ? 15 : rating >= 14 ? 10 : rating >= 10 ? 5 : rating >= 6 ? -5 : -15;
+    }
+    const pacing = getAdventurePacing(deps.adventureState);
+    data.isTerminalTurn = pacing.isFinalTurn;
+    data.prepareFinalChallenge = pacing.prepareFinalChallenge;
+    data.systemResourcePolicy = { enabled: deps.adventureInputMode === 'system' && deps.enableFactionResources !== false, mode: deps.factionResourceMode === 'manual' ? 'manual' : 'ai' };
+    if (data.isTerminalTurn && data.scene) data.scene.options = [];
+    if (deps.isAdventureStoryMode) {
+        const sound = data.soundParams || data.scene?.soundParams;
+        if (sound && typeof sound === 'object') {
+            const gentle = { ...sound, atmosphere: 'Calm', intensity: Math.min(0.35, Math.max(0, Number(sound.intensity) || 0.2)), motion: 'Still' };
+            data.soundParams = gentle;
+            if (data.scene) data.scene.soundParams = gentle;
+        }
+    }
+    normalizeAdventureScene(data.scene, deps);
+    return data;
+};
+
 const getAssistedKnowledgeContext = (state) => {
   const learned = Array.isArray(state?.assistedKnowledge)
     ? state.assistedKnowledge.map(entry => String(entry || '').trim()).filter(Boolean).slice(-8)
@@ -356,7 +432,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               - Each character MUST have a unique, detailed visual description (hair, clothing, build, distinguishing features) for image generation consistency.` : ''}
           `;
       }
-      const result = await callGemini(prompt, true);
+      const result = await callGemini(prompt + buildAdventureModeInstruction(deps, true), true);
       let sceneData;
       try {
           sceneData = JSON.parse(cleanJson(result));
@@ -397,15 +473,19 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           addToast(`Obtained: ${names}`, "success");
       }
       let initialSystemResources = [];
-      if (sceneData.systemStateUpdate && sceneData.systemStateUpdate.add) {
+      if (adventureInputMode === 'system' && enableFactionResources !== false && factionResourceMode === 'manual') {
+          initialSystemResources = (adventureState.systemResources || []).slice(0, 24).map(resource => ({ ...resource }));
+      } else if (enableFactionResources !== false && adventureInputMode === 'system' && sceneData.systemStateUpdate && sceneData.systemStateUpdate.add) {
           const rawAdd = sceneData.systemStateUpdate.add;
           const resourcesToAdd = Array.isArray(rawAdd) ? rawAdd : [rawAdd];
-          resourcesToAdd.forEach(res => {
+          resourcesToAdd.filter(res => res && typeof res.name === 'string' && res.name.trim()
+              && (typeof res.quantity === 'number' || (typeof res.quantity === 'string' && res.quantity.trim()))
+              && Number.isFinite(Number(res.quantity))).slice(0, 4).forEach(res => {
                initialSystemResources.push({
                   id: Date.now() + Math.random(),
-                  name: res.name,
+                  name: res.name.trim().slice(0, 80),
                   icon: res.icon || '📊',
-                  quantity: res.quantity || 1,
+                  quantity: /^(%|percent|percentage)$/i.test(res.unit || '') ? Math.max(0, Math.min(100, Number(res.quantity) || 0)) : Math.max(0, Number(res.quantity) || 0),
                   type: res.type || 'strategic',
                   unit: res.unit || ''
                });
@@ -413,6 +493,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
           const resNames = initialSystemResources.map(r => `${r.name} (${r.quantity}${r.unit})`).join(', ');
           addToast(`Initial State: ${resNames}`, "success");
       }
+      normalizeAdventureScene(sceneData, deps);
       let sceneCharacters = [];
       if (adventureConsistentCharacters) {
           if (Array.isArray(sceneData.characters) && sceneData.characters.length > 0) {
@@ -495,6 +576,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
         loadingStage: sceneCharacters.length > 0 ? 'Preparing cast review…' : 'Painting scene art…',
         inventory: [...prev.inventory, ...initialInventory],
         systemResources: initialSystemResources,
+        systemResourcePolicy: { enabled: adventureInputMode === 'system' && enableFactionResources !== false, mode: factionResourceMode === 'manual' ? 'manual' : 'ai' },
         voiceMap: sceneData.voices || {},
         characters: sceneCharacters,
         isReviewingCharacters: sceneCharacters.length > 0,
@@ -530,6 +612,12 @@ Opening scene: ${sceneText.substring(0, 1200)}
                   gold: initialGold,
                   inventory: initialInventory,
                   systemResources: initialSystemResources,
+                   systemResourcePolicy: { enabled: adventureInputMode === 'system' && enableFactionResources !== false, mode: factionResourceMode === 'manual' ? 'manual' : 'ai' },
+                   episodeTurnLimit: getAdventurePacing(adventureState).limit,
+                   enableAutoClimax: !!adventureState.enableAutoClimax,
+                   climaxMinTurns: adventureState.climaxMinTurns,
+                   choiceCount: adventureState.choiceCount || 6,
+                   learningProfile: adventureState.learningProfile || null,
                   voiceMap: sceneData.voices || {},
                   turnCount: 1,
                   isGameOver: false,
@@ -723,8 +811,7 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
           const sourceText = (analysisItem && analysisItem.data && analysisItem.data.originalText)
               ? analysisItem.data.originalText
               : inputText;
-          const maxTurns = adventureState.climaxMinTurns || 20;
-          const isLastTurn = !adventureState.enableAutoClimax && adventureState.turnCount >= maxTurns;
+          const isLastTurn = getAdventurePacing(adventureState).isFinalTurn;
           const turnsSinceLastDrop = adventureState.turnCount - (adventureState.lastKeyItemTurn || 0);
           const currentInventoryNames = adventureState.inventory.map(i => i.name).join(', ');
           const glossLanguage = adventureGlossLanguage(deps);
@@ -782,9 +869,9 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                4. Return "d20": ${chanceRoll} and "total": [Calculated Sum] in the JSON.`
             : `SYSTEM: DETERMINISTIC MODE. Analyze action quality. Assign a Performance Score on a d20 scale (1-20).
                - 1-5: Critical Failure
-               - 6-10: Failure/Partial
-               - 11-15: Success
-               - 16-20: Critical Success
+               - 6-11: Partial
+               - 12-17: Success
+               - 18-20: Critical Success
                CRITICAL: You MUST set "d20" and "total" in the JSON to this 1-20 score. Do NOT use a 1-5 star rating.`;
           const toneInstruction = isAdventureStoryMode
               ? "TONE: Story Time Mode (Family Friendly). Continue with exploration, mystery, and puzzles. Avoid combat or intense danger."
@@ -1013,7 +1100,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
                 }
               `;
           }
-          const result = await callGemini(prompt, true);
+          const result = await callGemini(prompt + buildAdventureModeInstruction(deps), true);
           let data;
           try {
               data = await resilientJsonParse(result);
@@ -1046,15 +1133,12 @@ Do NOT force all characters into every scene — let the narrative decide natura
           if (isNaN(xpVal)) xpVal = 0;
           data.xpAwarded = xpVal;
           data.xpChange = xpVal;
-          data.isTerminalTurn = !!isLastTurn;
+          normalizeAdventureTurn(data, deps, chanceRoll, rollModifier);
           let roll;
           if (adventureChanceMode) {
               roll = parseInt(data.rollDetails?.d20 || data.rollDetails?.total || chanceRoll || 10, 10);
           } else {
               roll = parseInt(data.rollDetails?.total || data.rollDetails?.d20 || 10, 10);
-          }
-          if (adventureChanceMode && roll > 2 && roll < 19 && (roll % 5 === 0)) {
-             roll += Math.floor(Math.random() * 3) - 1;
           }
           roll = Math.max(1, Math.min(20, isNaN(roll) ? 10 : roll));
       setDiceResult(roll);
@@ -1127,8 +1211,7 @@ const handleAdventureChoice = async (choice, deps) => {
       pendingChoice: normalizedChoice,
     }));
     try {
-      const maxTurns = adventureState.climaxMinTurns || 20;
-      const isLastTurn = !adventureState.enableAutoClimax && adventureState.turnCount >= maxTurns;
+      const isLastTurn = getAdventurePacing(adventureState).isFinalTurn;
       const turnsSinceLastDrop = adventureState.turnCount - (adventureState.lastKeyItemTurn || 0);
       const keyTerms = getAdventureGlossaryTerms(history, adventureLanguageMode);
       const analysisItem = history.slice().reverse().find(h => h && h.type === 'analysis');
@@ -1179,9 +1262,9 @@ const handleAdventureChoice = async (choice, deps) => {
            4. Return "d20": ${chanceRoll} and "total": [Calculated Sum] in the JSON.`
         : `SYSTEM: DETERMINISTIC MODE. Analyze action quality. Assign a Performance Score on a d20 scale (1-20).
            - 1-5: Critical Failure
-           - 6-10: Failure/Partial
-           - 11-15: Success
-           - 16-20: Critical Success
+           - 6-11: Partial
+           - 12-17: Success
+           - 18-20: Critical Success
            CRITICAL: You MUST set "d20" and "total" in the JSON to this 1-20 score. Do NOT use a 1-5 star rating.`;
       const taggingInstruction = `
         OUTCOME TAGGING (CRITICAL):
@@ -1333,7 +1416,7 @@ const handleAdventureChoice = async (choice, deps) => {
           }
         }
       `;
-      const result = await callGemini(prompt, true);
+      const result = await callGemini(prompt + buildAdventureModeInstruction(deps), true);
       let data;
       try {
           data = await resilientJsonParse(result);
@@ -1370,67 +1453,17 @@ const handleAdventureChoice = async (choice, deps) => {
           warnLog('[Adventure] AI returned climaxResult=' + data.climaxResult + ' but climax is not active — ignoring');
           delete data.climaxResult;
       }
-      if (data.climaxResult === 'victory' && adventureState.climax?.isActive) {
-          const victoryHistory = [
-              ...adventureState.history,
-              { type: 'scene', text: adventureState.currentScene.text },
-              { type: 'choice', text: normalizedChoice, source: 'option' },
-              { type: 'feedback', text: data.feedback }
-          ];
-          generateNarrativeLedger(victoryHistory);
-          addToast(t('adventure.status_messages.log_updated'), "info");
-          setAdventureState(prev => ({
-              ...prev,
-              isGameOver: true,
-              history: [...prev.history, { type: 'feedback', text: data.feedback }],
-              currentScene: data.scene, pendingChoice: null,
-              climax: { ...prev.climax, isActive: false, masteryScore: 100 },
-              isLoading: false
-          }));
-          playAdventureEventSound('critical_success');
-          addToast(t('adventure.climax.toast_victory'), "success");
-          setShowGlobalLevelUp(true);
-          return;
-      } else if (data.climaxResult === 'failure' && adventureState.climax?.isActive) {
-          const failureHistory = [
-              ...adventureState.history,
-              { type: 'scene', text: adventureState.currentScene.text },
-              { type: 'choice', text: normalizedChoice, source: 'option' },
-              { type: 'feedback', text: data.feedback }
-          ];
-          generateNarrativeLedger(failureHistory);
-          addToast(t('adventure.status_messages.log_updated'), "info");
-          setAdventureState(prev => ({
-              ...prev,
-              history: [...prev.history, { type: 'feedback', text: data.feedback }],
-              currentScene: data.scene, pendingChoice: null,
-              energy: Math.max(0, prev.energy - 20),
-              climax: {
-                  ...prev.climax,
-                  isActive: false,
-                  masteryScore: 50,
-                  attempts: (prev.climax.attempts || 0) + 1
-              },
-              isLoading: false
-          }));
-          playAdventureEventSound('failure');
-          addToast(t('adventure.climax.toast_failure'), "error");
-          return;
-      }
       let xpVal = data.xpAwarded !== undefined ? data.xpAwarded : (data.xpChange || 0);
       xpVal = parseInt(xpVal, 10);
       if (isNaN(xpVal)) xpVal = 0;
       data.xpAwarded = xpVal;
       data.xpChange = xpVal;
-      data.isTerminalTurn = !!isLastTurn;
+      normalizeAdventureTurn(data, deps, chanceRoll, rollModifier);
       let roll;
       if (adventureChanceMode) {
           roll = parseInt(data.rollDetails?.d20 || data.rollDetails?.total || chanceRoll || 10, 10);
       } else {
           roll = parseInt(data.rollDetails?.total || data.rollDetails?.d20 || 10, 10);
-      }
-      if (adventureChanceMode && roll > 2 && roll < 19 && (roll % 5 === 0)) {
-         roll += Math.floor(Math.random() * 3) - 1;
       }
       roll = Math.max(1, Math.min(20, isNaN(roll) ? 10 : roll));
       setDiceResult(roll);
@@ -1781,6 +1814,10 @@ window.AlloModules.AdventureHandlers = {
   handleAdventureChoice,
   handleGuidingHand,
   handleAdventureHint,
+  getAdventurePacing,
+  adventureGlossLanguage,
+  buildAdventureModeInstruction,
+  normalizeAdventureTurn,
   scheduleAdventureEstablishingShot,
   cancelAdventureEstablishingShot,
 };

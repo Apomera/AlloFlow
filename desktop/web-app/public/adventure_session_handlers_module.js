@@ -20,6 +20,50 @@ const CLIMAX_OUTCOME_DELTAS = { strategic_success: 10, partial_success: -5, neut
 // like a neutral turn (3-band assessment, same wave).
 const HIDDEN_MASTERY_DELTAS = { strategic_success: 8, partial_success: 3, neutral: -2, misconception: -8 };
 
+
+const applyAdventureSystemUpdate = (previous, update, policy = { enabled: true, mode: 'ai' }) => {
+    const resources = Array.isArray(previous) ? previous : [];
+    if (policy.enabled === false) return resources.map(r => ({ ...r }));
+    const nameOf = value => typeof value === 'string' ? value.trim().slice(0, 80) : '';
+    const numeric = value => (typeof value === 'number' || (typeof value === 'string' && value.trim() !== '')) && Number.isFinite(Number(value));
+    const bounded = (resource, quantity) => {
+        const percentage = /^(%|percent|percentage)$/i.test(resource.unit || '');
+        const minimum = percentage ? 0 : numeric(resource.min) ? Number(resource.min) : 0;
+        const maximum = percentage ? 100 : numeric(resource.max) && Number(resource.max) >= minimum ? Number(resource.max) : Infinity;
+        return Math.max(minimum, Math.min(maximum, quantity));
+    };
+    const result = [];
+    for (const item of resources.slice(0, 24)) {
+        if (!item || !nameOf(item.name) || result.some(r => r.name === nameOf(item.name))) continue;
+        const resource = { ...item, name: nameOf(item.name), unit: typeof item.unit === 'string' ? item.unit.trim().slice(0, 30) : '' };
+        resource.quantity = bounded(resource, numeric(item.quantity) ? Number(item.quantity) : 0);
+        result.push(resource);
+    }
+    if (!update || typeof update !== 'object') return result;
+    const apply = (items, direction) => {
+        (Array.isArray(items) ? items : items ? [items] : []).slice(0, 24).forEach(item => {
+            if (!item || typeof item !== 'object') return;
+            const name = nameOf(item.name);
+            if (!name) return;
+            const quantity = item.quantity === undefined ? 1 : numeric(item.quantity) ? Number(item.quantity) : NaN;
+            if (!Number.isFinite(quantity)) return;
+            const existing = result.find(r => r.name === name);
+            if (existing) existing.quantity = bounded(existing, existing.quantity + direction * quantity);
+            else if (direction > 0 && policy.mode !== 'manual' && result.length < 24) {
+                const resource = { id: Date.now() + Math.random(), name,
+                    unit: typeof item.unit === 'string' ? item.unit.trim().slice(0, 30) : '',
+                    icon: typeof item.icon === 'string' ? item.icon.slice(0, 12) : '📊',
+                    type: ['strategic', 'critical', 'consumable', 'currency'].includes(item.type) ? item.type : 'strategic' };
+                resource.quantity = bounded(resource, quantity);
+                result.push(resource);
+            }
+        });
+    };
+    apply(update.add, 1);
+    apply(update.remove, -1);
+    return result;
+};
+
 // Capture committed story state, including the special climax branches. Model
 // proposals are not receipts: clamping, level-ups and terminal turns can alter them.
 const recordAdventureConsequence = (previous, next, data, mode) => {
@@ -57,7 +101,12 @@ const recordAdventureConsequence = (previous, next, data, mode) => {
     });
     const tag = data.outcomeType || data.rollDetails?.outcomeType;
     const roll = data.rollDetails;
+    const sourceFeedback = mode.inputMode === 'debate' ? data.reasoningFeedback : mode.inputMode === 'system' ? data.systemForecast : null;
+    const fields = mode.inputMode === 'debate' ? ['evidence', 'reasoning', 'counterpoint'] : ['immediate', 'delayed', 'tradeoff'];
+    const learningFeedback = sourceFeedback && typeof sourceFeedback === 'object' ? Object.fromEntries(fields.map(key => [key, text(sourceFeedback[key], 360)]).filter(([, value]) => value)) : {};
     const consequence = {
+        mode: mode.inputMode,
+        learningFeedback,
         version: 1,
         choice: text(previous.pendingChoice || data.pendingChoice, 1200),
         reasoning: ['strategic_success', 'partial_success', 'misconception'].includes(tag) ? tag : 'neutral',
@@ -158,7 +207,10 @@ const handleDiceRollComplete = (deps) => {
           }
           let newEnergy = Math.min(100, Math.max(0, currentEnergy + energyDelta));
           const safeEnergyDelta = energyDelta;
-          const momentumChange = parseInt(data.debateMomentumChange, 10) || 0;
+          const reasoningRating = Number(adventureChanceMode ? data.rollDetails?.strategyRating : data.rollDetails?.total ?? data.rollDetails?.d20);
+          const momentumChange = adventureInputMode === 'debate' && Number.isFinite(reasoningRating)
+              ? (reasoningRating >= 18 ? 15 : reasoningRating >= 14 ? 10 : reasoningRating >= 10 ? 5 : reasoningRating >= 6 ? -5 : -15)
+              : parseInt(data.debateMomentumChange, 10) || 0;
           let currentMomentum = (typeof prev.debateMomentum === 'number') ? prev.debateMomentum : 50;
           let newMomentum = Math.min(100, Math.max(0, currentMomentum + momentumChange));
           let nextDebatePhase = prev.debatePhase || 'setup';
@@ -262,53 +314,9 @@ const handleDiceRollComplete = (deps) => {
                   newInventory = newInventory.filter(i => !itemsToRemove.includes(i.name));
               }
           }
-          let newSystemResources = [...(prev.systemResources || [])];
-          const stateUpdate = data.systemStateUpdate || data.systemResourceUpdate;
-          if (stateUpdate) {
-              if (stateUpdate.add) {
-                  const statesToAdd = Array.isArray(stateUpdate.add)
-                      ? stateUpdate.add
-                      : [stateUpdate.add];
-                  statesToAdd.forEach(state => {
-                      const existingIdx = newSystemResources.findIndex(r => r.name === state.name);
-                      if (existingIdx >= 0) {
-                          newSystemResources[existingIdx] = {
-                              ...newSystemResources[existingIdx],
-                              quantity: (newSystemResources[existingIdx].quantity || 0) + (state.quantity || 1)
-                          };
-                      } else {
-                          newSystemResources.push({
-                              id: Date.now() + Math.random(),
-                              name: state.name,
-                              icon: state.icon || '📊',
-                              quantity: state.quantity || 1,
-                              type: state.type || 'strategic',
-                              unit: state.unit || '',
-                          });
-                      }
-                  });
-              }
-              if (stateUpdate.remove) {
-                  const statesToRemove = Array.isArray(stateUpdate.remove)
-                      ? stateUpdate.remove
-                      : [stateUpdate.remove];
-                  statesToRemove.forEach(state => {
-                      const existingIdx = newSystemResources.findIndex(r => r.name === state.name);
-                      if (existingIdx >= 0) {
-                          const newQuantity = newSystemResources[existingIdx].quantity - (state.quantity || 1);
-                          if (newQuantity <= 0) {
-                              newSystemResources.splice(existingIdx, 1);
-                          } else {
-                              newSystemResources[existingIdx] = {
-                                  ...newSystemResources[existingIdx],
-                                  quantity: newQuantity
-                              };
-                          }
-                      }
-                  });
-              }
-          }
-          const nextTurn = prev.turnCount + 1;
+          const systemPolicy = data.systemResourcePolicy || prev.systemResourcePolicy || { enabled: true, mode: 'ai' };
+          const newSystemResources = applyAdventureSystemUpdate(prev.systemResources, data.systemStateUpdate || data.systemResourceUpdate, systemPolicy);
+          const nextTurn = (Number(prev.turnCount) || 1) + 1;
           const updatedVoices = { ...prev.voiceMap, ...data.voices };
           let feedbackText = `${data.feedback || data.evaluation}`;
           let aiMasteryScore = data.masteryScore;
@@ -347,8 +355,8 @@ const handleDiceRollComplete = (deps) => {
           const shouldTriggerClimax = adventureGoal === "Narrative Climax"
                                       && !currentClimaxState.isActive
                                       && autoTrigger
-                                      && hiddenMastery >= 80
-                                      && nextTurn >= minTurns;
+                                      && !data.isTerminalTurn
+                                      && (data.prepareFinalChallenge || ((!Object.prototype.hasOwnProperty.call(prev, 'episodeTurnLimit') || prev.episodeTurnLimit == null) && hiddenMastery >= 80 && nextTurn >= minTurns));
           const finalMasteryScore = shouldTriggerClimax ? 50 : (currentClimaxState.isActive ? aiMasteryScore : hiddenMastery);
           let finalResult = null;
           if (currentClimaxState.isActive) {
@@ -421,6 +429,7 @@ const handleDiceRollComplete = (deps) => {
               return recordAdventureConsequence(prev, {
                   ...prev,
                   isGameOver: true,
+                  turnCount: nextTurn,
                   history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
                   currentScene: data.scene, pendingChoice: null,
                   climax: { ...updatedClimax, isActive: false, masteryScore: 100 },
@@ -446,6 +455,8 @@ const handleDiceRollComplete = (deps) => {
                   history: [...prev.history, { type: 'feedback', text: data.feedback, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
                   currentScene: data.scene, pendingChoice: null,
                   energy: Math.max(0, prev.energy - 20),
+                  isGameOver: !!data.isTerminalTurn,
+                  turnCount: nextTurn,
                   climax: {
                       ...updatedClimax,
                       isActive: false,
@@ -577,8 +588,9 @@ const handleDiceRollComplete = (deps) => {
               debateMomentum: newMomentum,
               debateTopic: data.newTopic || prev.debateTopic,
               debatePhase: nextDebatePhase,
-              climax: updatedClimax,
-              stats: newStats
+              climax: data.isTerminalTurn ? { ...updatedClimax, isActive: false } : updatedClimax,
+              stats: newStats,
+              systemResourcePolicy: systemPolicy
           }, data, { chanceMode: adventureChanceMode, inputMode: adventureInputMode });
       });
       setShowDice(false);
@@ -923,6 +935,7 @@ const generateNarrativeLedger = async (currentHistory, deps) => {
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.AdventureSessionHandlers = {
+  applyAdventureSystemUpdate,
   handleDiceRollComplete,
   generateAdventureImage,
   generateNarrativeLedger,

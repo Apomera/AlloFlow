@@ -66,7 +66,166 @@
   var X = _lazyIcon('X');
   var Zap = _lazyIcon('Zap');
 
-  function AdventureConsequenceCard({
+  function adventureSettingsText(t, key, fallback) {
+  const value = t('adventure.learning_settings.' + key);
+  return value && value !== 'adventure.learning_settings.' + key ? value : fallback;
+}
+function AdventureLearningProfiles(props) {
+  const {
+    adventureState: state,
+    t,
+    setAdventureState
+  } = props;
+  if (!props.isTeacherMode || typeof setAdventureState !== 'function') return null;
+  const profiles = [{
+    id: 'guided',
+    title: 'Guided Story',
+    detail: '6 decisions · 3 choices · peaceful exploration',
+    mode: 'choice',
+    free: false,
+    peaceful: true,
+    social: false,
+    difficulty: 'Story',
+    turns: 6,
+    choices: 3
+  }, {
+    id: 'debate',
+    title: 'Evidence Debate',
+    detail: '6 decisions · write or dictate · compare evidence',
+    mode: 'debate',
+    free: true,
+    peaceful: true,
+    social: false,
+    difficulty: 'Normal',
+    turns: 6,
+    choices: 3
+  }, {
+    id: 'systems',
+    title: 'Systems Challenge',
+    detail: '12 decisions · 4 choices · resource tradeoffs',
+    mode: 'system',
+    free: false,
+    peaceful: true,
+    social: false,
+    difficulty: 'Normal',
+    turns: 12,
+    choices: 4
+  }, {
+    id: 'social',
+    title: 'Social Practice',
+    detail: '6 decisions · 4 choices · perspectives and repair',
+    mode: 'choice',
+    free: false,
+    peaceful: true,
+    social: true,
+    difficulty: 'Story',
+    turns: 6,
+    choices: 4
+  }];
+  const apply = profile => {
+    if (state.isLoading || state.currentScene) return;
+    props.setAdventureInputMode(profile.mode);
+    props.setAdventureDifficulty(profile.difficulty);
+    props.setAdventureFreeResponseEnabled(profile.free);
+    props.setAdventureChanceMode(false);
+    props.setIsAdventureStoryMode(profile.peaceful);
+    props.setIsSocialStoryMode(profile.social);
+    props.setEnableFactionResources(profile.mode === 'system');
+    if (profile.mode === 'system') props.setFactionResourceMode('ai');
+    setAdventureState(previous => ({
+      ...previous,
+      episodeTurnLimit: profile.turns,
+      enableAutoClimax: true,
+      choiceCount: profile.choices,
+      learningProfile: profile.id
+    }));
+  };
+  return /*#__PURE__*/React.createElement("section", {
+    "aria-label": adventureSettingsText(t, 'profiles', 'Learning profiles'),
+    className: "mb-5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-4"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-sm text-indigo-950"
+  }, adventureSettingsText(t, 'profiles', 'Learning profiles')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700 mt-1 mb-3"
+  }, adventureSettingsText(t, 'profiles_hint', 'Choose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.')), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
+  }, profiles.map(profile => {
+    const active = state.learningProfile === profile.id && props.adventureInputMode === profile.mode && props.adventureFreeResponseEnabled === profile.free && props.adventureDifficulty === profile.difficulty && !props.adventureChanceMode && props.isAdventureStoryMode === profile.peaceful && props.isSocialStoryMode === profile.social && state.episodeTurnLimit === profile.turns && state.enableAutoClimax && state.choiceCount === profile.choices && !!props.enableFactionResources === (profile.mode === 'system');
+    return /*#__PURE__*/React.createElement("button", {
+      type: "button",
+      key: profile.id,
+      "aria-pressed": !!active,
+      disabled: state.isLoading || !!state.currentScene,
+      onClick: () => apply(profile),
+      className: `min-h-16 rounded-xl border-2 p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 ${active ? 'border-indigo-600 bg-indigo-100 text-indigo-950' : 'border-slate-200 bg-white text-slate-800 hover:border-indigo-400'}`
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-sm font-bold"
+    }, adventureSettingsText(t, 'profile_' + profile.id, profile.title)), /*#__PURE__*/React.createElement("span", {
+      className: "block mt-1 text-xs leading-relaxed"
+    }, adventureSettingsText(t, 'profile_' + profile.id + '_detail', profile.detail)));
+  })));
+}
+function AdventureEpisodeSettings({
+  state,
+  onChange,
+  t,
+  locked = false,
+  id = 'adventure-episode-length'
+}) {
+  const legacy = state.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(state.climaxMinTurns) || 20));
+  const limit = Object.prototype.hasOwnProperty.call(state, 'episodeTurnLimit') ? state.episodeTurnLimit : legacy;
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3 mb-4"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: id,
+    className: "block text-xs font-bold text-cyan-950 mb-1"
+  }, adventureSettingsText(t, 'length', 'Episode length')), /*#__PURE__*/React.createElement("select", {
+    id: id,
+    value: limit == null ? 'open' : String(limit),
+    disabled: locked || typeof onChange !== 'function',
+    onChange: event => {
+      const value = event.target.value;
+      onChange(previous => ({
+        ...previous,
+        episodeTurnLimit: value === 'open' ? null : Number(value)
+      }));
+    },
+    className: "min-h-11 w-full rounded-lg border border-cyan-700 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-800 focus-visible:ring-offset-2 disabled:opacity-60"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: "6"
+  }, adventureSettingsText(t, 'short', 'Short · 6 decisions')), /*#__PURE__*/React.createElement("option", {
+    value: "12"
+  }, adventureSettingsText(t, 'standard', 'Standard · 12 decisions')), /*#__PURE__*/React.createElement("option", {
+    value: "20"
+  }, adventureSettingsText(t, 'long', 'Long · 20 decisions')), limit != null && ![6, 12, 20].includes(Number(limit)) && /*#__PURE__*/React.createElement("option", {
+    value: String(limit)
+  }, limit, " ", adventureSettingsText(t, 'decisions', 'decisions')), /*#__PURE__*/React.createElement("option", {
+    value: "open"
+  }, adventureSettingsText(t, 'open', 'Open-ended'))), /*#__PURE__*/React.createElement("label", {
+    htmlFor: id + '-choices',
+    className: "block text-xs font-bold text-cyan-950 mt-3 mb-1"
+  }, adventureSettingsText(t, 'choices', 'Choices per decision')), /*#__PURE__*/React.createElement("select", {
+    id: id + '-choices',
+    value: state.choiceCount || 6,
+    disabled: locked || typeof onChange !== 'function',
+    onChange: event => {
+      const value = Number(event.target.value);
+      onChange(previous => ({
+        ...previous,
+        choiceCount: value
+      }));
+    },
+    className: "min-h-11 w-full rounded-lg border border-cyan-700 bg-white px-3 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-cyan-800 focus-visible:ring-offset-2"
+  }, [2, 3, 4, 5, 6].map(count => /*#__PURE__*/React.createElement("option", {
+    key: count,
+    value: count
+  }, count))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-slate-700 mt-1"
+  }, adventureSettingsText(t, 'choices_hint', 'Applies when suggested choices are enabled. Written responses stay open.')), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs leading-relaxed text-slate-700 mt-2"
+  }, adventureSettingsText(t, 'length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')));
+}
+function AdventureConsequenceCard({
   consequence,
   t,
   immersive = false
@@ -119,7 +278,7 @@
     className: "text-xs"
   }, label('no_changes', 'No tracked values changed this turn.'))), /*#__PURE__*/React.createElement("p", {
     className: `text-xs leading-relaxed ${immersive ? 'text-slate-300' : 'text-slate-600'}`
-  }, label('ai_note', 'Strategy feedback is AI guidance, not a grade.'), consequence.chanceMode && /*#__PURE__*/React.createElement(React.Fragment, null, " ", Number.isFinite(consequence.chanceRoll) && /*#__PURE__*/React.createElement("strong", null, label('die', 'Chance die'), ": ", consequence.chanceRoll, "/20. "), label('chance_note', 'Chance can change the story result without changing the quality of your reasoning.'))), (consequence.choice || concepts.length > 0) && /*#__PURE__*/React.createElement("details", {
+  }, label('ai_note', 'Strategy feedback is AI guidance, not a grade.'), consequence.chanceMode && /*#__PURE__*/React.createElement(React.Fragment, null, " ", Number.isFinite(consequence.chanceRoll) && /*#__PURE__*/React.createElement("strong", null, label('die', 'Chance die'), ": ", consequence.chanceRoll, "/20. "), label('chance_note', 'Chance can change the story result without changing the quality of your reasoning.'))), (consequence.choice || concepts.length > 0 || consequence.learningFeedback) && /*#__PURE__*/React.createElement("details", {
     className: `border-t pt-2 ${immersive ? 'border-white/20' : 'border-slate-200'}`
   }, /*#__PURE__*/React.createElement("summary", {
     className: `cursor-pointer text-xs font-semibold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${immersive ? 'focus-visible:outline-cyan-300' : 'focus-visible:outline-teal-800'}`
@@ -127,7 +286,21 @@
     className: "text-sm mt-2 whitespace-pre-wrap"
   }, consequence.choice.slice(0, 1200)), concepts.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-xs mt-2"
-  }, /*#__PURE__*/React.createElement("strong", null, label('concepts', 'Concepts to check'), ": "), concepts.join(' · ')), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("strong", null, label('concepts', 'Concepts to check'), ": "), concepts.join(' · ')), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 space-y-2"
+  }, Object.entries(consequence.learningFeedback || {}).filter(([key, value]) => ['evidence', 'reasoning', 'counterpoint', 'immediate', 'delayed', 'tradeoff'].includes(key) && typeof value === 'string').map(([key, value]) => /*#__PURE__*/React.createElement("p", {
+    key: key,
+    className: "text-xs leading-relaxed"
+  }, /*#__PURE__*/React.createElement("strong", null, label('feedback_' + key, {
+    evidence: 'Evidence',
+    reasoning: 'Reasoning',
+    counterpoint: 'Counterargument / next step',
+    immediate: 'Immediate effect',
+    delayed: 'Possible delayed effect',
+    tradeoff: 'Tradeoff'
+  }[key]), ": "), value.slice(0, 360)))), consequence.mode === 'system' && /*#__PURE__*/React.createElement("p", {
+    className: "text-xs mt-2"
+  }, label('forecast_note', 'AI scenario estimates. Delayed effects are predictions, not scheduled changes; check the lesson evidence.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs mt-2"
   }, label('next', 'Which part of your reasoning would you keep or change next time?'))));
 }
@@ -580,6 +753,9 @@ function AdventureFluencyPractice(props) {
 function AdventureView(props) {
   // State (object-bundle)
   var adventureState = props.adventureState;
+  var setAdventureState = props.setAdventureState;
+  var episodeLimit = Object.prototype.hasOwnProperty.call(adventureState, 'episodeTurnLimit') ? adventureState.episodeTurnLimit : adventureState.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(adventureState.climaxMinTurns) || 20));
+  var glossLanguage = window.AlloModules?.AdventureHandlers?.adventureGlossLanguage?.(props) || 'English';
   // State reads
   var t = props.t;
   var globalPoints = props.globalPoints;
@@ -1223,7 +1399,12 @@ function AdventureView(props) {
     className: "text-white text-sm font-medium"
   }, t('adventure.setup_subtitle')))), /*#__PURE__*/React.createElement("div", {
     className: "p-4 sm:p-6"
-  }, /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement(AdventureLearningProfiles, props), /*#__PURE__*/React.createElement(AdventureEpisodeSettings, {
+    state: adventureState,
+    onChange: setAdventureState,
+    t: t,
+    locked: !isTeacherMode && !!studentProjectSettings.adventurePermissions?.lockAllSettings
+  }), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"
   }, /*#__PURE__*/React.createElement("div", {
     role: "group",
@@ -1274,7 +1455,14 @@ function AdventureView(props) {
     value: "Hard"
   }, t('adventure.diff_hard_option')), /*#__PURE__*/React.createElement("option", {
     value: "Hardcore"
-  }, t('adventure.diff_hardcore_option')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+  }, t('adventure.diff_hardcore_option'))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-xs leading-relaxed text-slate-700"
+  }, adventureSettingsText(t, 'difficulty_' + adventureDifficulty, {
+    Story: 'Half energy loss; 1.5× XP.',
+    Normal: 'Standard energy loss and XP.',
+    Hard: '1.5× energy loss; 0.75× XP.',
+    Hardcore: '2.5× energy loss; 0.5× XP.'
+  }[adventureDifficulty] || ''), " ", adventureSettingsText(t, 'difficulty_scope', 'Lesson reasoning and success thresholds stay the same.'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "adventure-setup-language",
     className: "block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between"
   }, t('adventure.language_label'), !isTeacherMode && (!studentProjectSettings.adventurePermissions?.allowLanguageSwitch || studentProjectSettings.adventurePermissions?.lockAllSettings) && /*#__PURE__*/React.createElement(Lock, {
@@ -1298,13 +1486,9 @@ function AdventureView(props) {
     lang
   })), /*#__PURE__*/React.createElement("option", {
     value: `${lang} + English`
-  }, t('adventure.lang_options.plus_english', {
-    lang
-  })))), selectedLanguages.length > 1 && /*#__PURE__*/React.createElement("option", {
+  }, lang + ' + ' + glossLanguage))), selectedLanguages.length > 1 && /*#__PURE__*/React.createElement("option", {
     value: "All + English"
-  }, t('adventure.lang_options.all_plus_english', {
-    langs: selectedLanguages.join(', ')
-  }))))), /*#__PURE__*/React.createElement("div", {
+  }, selectedLanguages.join(', ') + ' + ' + glossLanguage)))), /*#__PURE__*/React.createElement("div", {
     role: "group",
     "aria-labelledby": "adventure-setup-modifiers-heading",
     className: "space-y-4"
@@ -1475,23 +1659,25 @@ function AdventureView(props) {
     onChange: e => handleSetEnableAutoClimax(e.target.checked),
     disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
     className: "w-5 h-5 shrink-0 text-indigo-600 border-slate-400 rounded focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed"
-  }), t('adventure.climax.enable_label'))), /*#__PURE__*/React.createElement("div", {
+  }), adventureSettingsText(t, 'finale', 'Include a final challenge'))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: "adventure-setup-climax-min-turns",
     className: "text-[11px] text-slate-700 font-bold uppercase"
-  }, t('adventure.climax.min_rounds_label')), /*#__PURE__*/React.createElement("input", {
+  }, adventureSettingsText(t, 'earliest_finale', 'Earliest finale round (open-ended)')), /*#__PURE__*/React.createElement("input", {
     id: "adventure-setup-climax-min-turns",
+    "aria-describedby": "adventure-finale-hint",
     type: "number",
     min: "3",
     max: "50",
     value: adventureState.climaxMinTurns || 20,
-    onChange: e => handleSetClimaxMinTurns(e.target.value),
-    disabled: !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
+    onChange: e => handleSetClimaxMinTurns(Math.max(3, Math.min(50, Number(e.target.value) || 20))),
+    disabled: episodeLimit !== null || !isTeacherMode && studentProjectSettings.adventurePermissions?.lockAllSettings,
     className: "w-16 min-h-11 text-xs border border-indigo-600 rounded p-2 text-center focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 outline-none font-bold text-indigo-900 bg-white"
   })), /*#__PURE__*/React.createElement("p", {
-    className: "text-[11px] text-slate-600 mt-2 leading-snug"
-  }, t('adventure.climax.setup_hint') || "Recommended: adds a final challenge that tests what the story taught. The Mission Debrief's Story Performance comes from how it goes — without it, adventures run in infinite mode.")), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
+    id: "adventure-finale-hint",
+    className: "text-xs text-slate-700 mt-2 leading-relaxed"
+  }, adventureSettingsText(t, 'finale_hint', 'A set episode ends at its chosen length, with or without a final challenge. In open-ended play, the automatic finale waits for the minimum round and sufficient story progress.'))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("label", {
     htmlFor: "adventure-setup-custom-instructions",
     className: "block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between"
   }, /*#__PURE__*/React.createElement("span", null, t('input.custom_instructions'), " ", /*#__PURE__*/React.createElement("span", {
@@ -2499,5 +2685,7 @@ function AdventureView(props) {
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AdventureView = AdventureView;
+  window.AlloModules.AdventureLearningProfiles = AdventureLearningProfiles;
+  window.AlloModules.AdventureEpisodeSettings = AdventureEpisodeSettings;
   window.AlloModules.ViewAdventureModule = true;
 })();

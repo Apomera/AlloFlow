@@ -105,6 +105,8 @@ const moduleSrc = `/**
 
   window.AlloModules = window.AlloModules || {};
   window.AlloModules.AdventureView = AdventureView;
+  window.AlloModules.AdventureLearningProfiles = AdventureLearningProfiles;
+  window.AlloModules.AdventureEpisodeSettings = AdventureEpisodeSettings;
   window.AlloModules.ViewAdventureModule = true;
 })();
 `;

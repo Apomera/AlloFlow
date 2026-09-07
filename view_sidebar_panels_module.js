@@ -969,6 +969,12 @@ function AdventurePanel(props) {
   if (!expandedTools || !expandedTools.includes("adventure")) return null;
   const adventurePermissions = studentProjectSettings.adventurePermissions || {};
   const lockAllAdventureSettings = !isTeacherMode && !!adventurePermissions.lockAllSettings;
+  const learningText = (key, fallback) => {
+    const value = t("adventure.learning_settings." + key);
+    return value && value !== "adventure.learning_settings." + key ? value : fallback;
+  };
+  const episodeLimit = Object.prototype.hasOwnProperty.call(adventureState, "episodeTurnLimit") ? adventureState.episodeTurnLimit : adventureState.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(adventureState.climaxMinTurns) || 20));
+  const difficultyDetails = { Story: "Half energy loss; 1.5\xD7 XP. Reasoning expectations follow the lesson.", Normal: "Standard energy loss and XP. Reasoning expectations follow the lesson.", Hard: "1.5\xD7 energy loss; 0.75\xD7 XP. Success thresholds stay the same.", Hardcore: "2.5\xD7 energy loss; 0.5\xD7 XP. Success thresholds stay the same." };
   return /* @__PURE__ */ React.createElement("div", { className: "animate-in motion-reduce:animate-none slide-in-from-top-2 duration-200" }, /* @__PURE__ */ React.createElement("div", { className: "p-3 border-b border-slate-100 bg-purple-50/50 flex flex-col gap-3" }, hasSavedAdventure && /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1014,7 +1020,7 @@ function AdventurePanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Normal" }, t("adventure.diff_normal_option")),
     /* @__PURE__ */ React.createElement("option", { value: "Hard" }, t("adventure.diff_hard_option")),
     /* @__PURE__ */ React.createElement("option", { value: "Hardcore" }, t("adventure.diff_hardcore_option"))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, adventureDifficulty === "Story" ? t("adventure.diff_story_desc") : adventureDifficulty === "Hard" ? t("adventure.diff_hard_desc") : adventureDifficulty === "Hardcore" ? t("adventure.diff_hardcore_desc") : t("adventure.diff_normal_desc"))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_language" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("adventure.language_label")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, learningText("difficulty_" + adventureDifficulty, difficultyDetails[adventureDifficulty] || difficultyDetails.Normal))), /* @__PURE__ */ React.createElement("div", { "data-help-key": "adventure_language" }, /* @__PURE__ */ React.createElement("label", { className: "block text-xs text-slate-600 mb-1 font-medium" }, t("adventure.language_label")), /* @__PURE__ */ React.createElement(
     "select",
     {
       "aria-label": t("common.selection"),
@@ -1025,9 +1031,9 @@ function AdventurePanel(props) {
       className: "w-full text-sm border-slate-300 rounded-md shadow-sm focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-shadow motion-reduce:transition-none duration-300 p-1"
     },
     /* @__PURE__ */ React.createElement("option", { value: "English" }, t("adventure.lang_options.english_only")),
-    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement(React.Fragment, { key: lang }, /* @__PURE__ */ React.createElement("option", { value: lang }, t("adventure.lang_options.only_suffix", { lang })), /* @__PURE__ */ React.createElement("option", { value: `${lang} + English` }, t("adventure.lang_options.plus_english", { lang })))),
-    selectedLanguages.length > 1 && /* @__PURE__ */ React.createElement("option", { value: "All + English" }, t("adventure.lang_options.all_plus_english", { langs: selectedLanguages.join(", ") }))
-  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, t("adventure.language_help"))), /* @__PURE__ */ React.createElement(
+    selectedLanguages.map((lang) => /* @__PURE__ */ React.createElement(React.Fragment, { key: lang }, /* @__PURE__ */ React.createElement("option", { value: lang }, t("adventure.lang_options.only_suffix", { lang })), /* @__PURE__ */ React.createElement("option", { value: `${lang} + English` }, lang + " \xB7 " + learningText("with_translation", "with translation")))),
+    selectedLanguages.length > 1 && /* @__PURE__ */ React.createElement("option", { value: "All + English" }, selectedLanguages.join(", ") + " \xB7 " + learningText("with_translation", "with translation"))
+  ), /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 mt-1" }, learningText("translation_hint", "Story language follows this control; the translation language follows Universal Settings."))), /* @__PURE__ */ React.createElement(
     ResourceCustomInstructions,
     {
       helpKey: "adventure_custom_instructions",
@@ -1288,25 +1294,33 @@ function AdventurePanel(props) {
       })),
       className: "w-4 h-4 text-amber-600 border-slate-300 rounded focus:ring-amber-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "allowCloudImageStorage", className: "text-xs font-bold text-amber-800 cursor-pointer select-none flex flex-col gap-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 14, className: "text-amber-600" }), " ", t("adventure.allow_cloud_storage_label")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.allow_cloud_storage_desc")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal text-amber-700 bg-amber-200/50 px-1 rounded mt-0.5" }, "\u26A0\uFE0F ", t("adventure.ferpa_warning")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-lg border border-purple-100 shadow-sm space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-purple-100 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-purple-800 uppercase tracking-widest flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Flag, { size: 12 }), " ", t("adventure.climax.settings_header")), adventureState.climax?.isActive && /* @__PURE__ */ React.createElement("span", { className: "bg-red-100 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 animate-pulse motion-reduce:animate-none" }, t("adventure.climax.status_active"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "adventure_auto_climax" }, /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "allowCloudImageStorage", className: "text-xs font-bold text-amber-800 cursor-pointer select-none flex flex-col gap-0.5" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CloudOff, { size: 14, className: "text-amber-600" }), " ", t("adventure.allow_cloud_storage_label")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal opacity-70" }, t("adventure.allow_cloud_storage_desc")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-normal text-amber-700 bg-amber-200/50 px-1 rounded mt-0.5" }, "\u26A0\uFE0F ", t("adventure.ferpa_warning")))), /* @__PURE__ */ React.createElement("div", { className: "bg-white p-3 rounded-lg border border-purple-100 shadow-sm space-y-3" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between border-b border-purple-100 pb-2" }, /* @__PURE__ */ React.createElement("h4", { className: "text-xs font-bold text-purple-800 uppercase tracking-widest flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Flag, { size: 12 }), " ", t("adventure.climax.settings_header")), adventureState.climax?.isActive && /* @__PURE__ */ React.createElement("span", { className: "bg-red-100 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 animate-pulse motion-reduce:animate-none" }, t("adventure.climax.status_active"))), /* @__PURE__ */ React.createElement("div", { className: "space-y-2" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "sidebar-adventure-episode-length", className: "block text-xs font-bold text-slate-800" }, learningText("length", "Episode length")), /* @__PURE__ */ React.createElement("select", { id: "sidebar-adventure-episode-length", value: episodeLimit == null ? "open" : String(episodeLimit), disabled: lockAllAdventureSettings, onChange: (event) => {
+    const value = event.target.value;
+    setAdventureState((previous) => ({ ...previous, episodeTurnLimit: value === "open" ? null : Number(value) }));
+  }, className: "min-h-11 w-full rounded-lg border border-purple-700 bg-white px-2 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("option", { value: "6" }, learningText("short", "Short \xB7 6 decisions")), /* @__PURE__ */ React.createElement("option", { value: "12" }, learningText("standard", "Standard \xB7 12 decisions")), /* @__PURE__ */ React.createElement("option", { value: "20" }, learningText("long", "Long \xB7 20 decisions")), episodeLimit != null && ![6, 12, 20].includes(Number(episodeLimit)) && /* @__PURE__ */ React.createElement("option", { value: String(episodeLimit) }, episodeLimit, " ", learningText("decisions", "decisions")), /* @__PURE__ */ React.createElement("option", { value: "open" }, learningText("open", "Open-ended"))), /* @__PURE__ */ React.createElement("p", { className: "text-xs leading-relaxed text-slate-700" }, learningText("finale_hint", "A set episode ends at its chosen length, with or without a final challenge. In open-ended play, the automatic finale waits for the minimum round and sufficient story progress."))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2", "data-help-key": "adventure_auto_climax" }, /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.toggle_enable_auto_climax_false"),
+      "aria-label": learningText("finale", "Include a final challenge"),
       id: "enableAutoClimax",
+      disabled: lockAllAdventureSettings,
       type: "checkbox",
       checked: adventureState.enableAutoClimax || false,
       onChange: (e) => setAdventureState((prev) => ({ ...prev, enableAutoClimax: e.target.checked })),
       className: "w-4 h-4 text-purple-600 border-slate-300 rounded focus:ring-purple-500 cursor-pointer"
     }
-  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "enableAutoClimax", className: "text-xs font-medium text-slate-700 cursor-pointer select-none" }, t("adventure.climax.enable_label"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-medium" }, t("adventure.climax.min_rounds_label")), /* @__PURE__ */ React.createElement(
+  ), /* @__PURE__ */ React.createElement("label", { htmlFor: "enableAutoClimax", className: "text-xs font-medium text-slate-700 cursor-pointer select-none" }, learningText("finale", "Include a final challenge"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-medium" }, learningText("earliest_finale", "Earliest finale round (open-ended)")), /* @__PURE__ */ React.createElement(
     "input",
     {
-      "aria-label": t("common.enter_adventure_state"),
+      "aria-label": learningText("earliest_finale", "Earliest finale round (open-ended)"),
+      disabled: episodeLimit !== null || lockAllAdventureSettings,
       type: "number",
       min: "3",
       max: "50",
       value: adventureState.climaxMinTurns || 20,
-      onChange: (e) => setAdventureState((prev) => ({ ...prev, climaxMinTurns: Math.max(1, parseInt(e.target.value) || 20) })),
+      onChange: (e) => {
+        const value = Math.max(3, Math.min(50, Number(e.target.value) || 20));
+        setAdventureState((prev) => ({ ...prev, climaxMinTurns: value }));
+      },
       className: "w-14 text-xs border border-purple-600 rounded p-1 text-center focus:ring-purple-500 font-bold text-purple-900"
     }
   )), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded border border-slate-100 flex flex-col gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-[11px] text-slate-600" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_turns")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.turnCount >= (adventureState.climaxMinTurns || 20) ? "text-green-600" : "text-slate-600"}` }, adventureState.turnCount, "/", adventureState.climaxMinTurns || 20)), /* @__PURE__ */ React.createElement("div", { className: "h-full w-px bg-slate-200" }), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col items-center" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.climax.status_mastery")), /* @__PURE__ */ React.createElement("span", { className: `font-bold ${adventureState.climax?.masteryScore >= 80 ? "text-green-600" : "text-slate-600"}` }, adventureState.climax?.masteryScore || 0, "/80"))), /* @__PURE__ */ React.createElement(
