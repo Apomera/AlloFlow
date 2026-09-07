@@ -9804,7 +9804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       var onStrongFill = isDark || isContrast ? '#000000' : '#ffffff';
 
       var view = d.view || 'menu';
-      var setView = function(v) { upd('view', v); arAnnounce('Now showing: ' + v); };
+      var setView = function(v) { upd('view', v); arAnnounce(__alloFill(__alloT('stem.autorepair.sr_now_showing', 'Now showing: {value1}'), { value1: v })); };
 
       var badges = d.badges || {};
       var awardBadge = function(id, label) {
@@ -9813,7 +9813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         newBadges[id] = { label: label, when: Date.now() };
         upd('badges', newBadges);
         addToast('🏅 ' + label);
-        arAnnounce('Badge earned: ' + label);
+        arAnnounce(__alloFill(__alloT('stem.autorepair.sr_badge_earned', 'Badge earned: {value1}'), { value1: label }));
       };
 
       // ── Reusable styled buttons (border-amber-600 = WCAG 1.4.11 pass) ──
@@ -11472,7 +11472,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
           function reviewRepairStep(step) {
             if (step.n <= progress.done) {
-              arAnnounce('Step ' + step.n + ' was already reviewed.');
+              arAnnounce(__alloFill(__alloT('stem.autorepair.sr_step_was_already_reviewed', 'Step {value1} was already reviewed.'), { value1: step.n }));
               return;
             }
             if (!safetyStatus.complete) {
@@ -11480,7 +11480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               return;
             }
             if (step.n !== progress.next) {
-              arAnnounce('Review step ' + progress.next + ' before step ' + step.n + '.');
+              arAnnounce(__alloFill(__alloT('stem.autorepair.sr_review_step_before_step', 'Review step {value1} before step {value2}.'), { value1: progress.next, value2: step.n }));
               return;
             }
             var nv = Object.assign({}, viewedForThis);
@@ -11710,7 +11710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                 'aria-label': s.name,
                 onClick: function() {
                   updMulti({ repairPicked: s.id, repairSafetyFor: s.id, repairSafetyChecks: {} });
-                  arAnnounce('Opened ' + s.name + '. Complete the safety check before reviewing steps.');
+                  arAnnounce(__alloFill(__alloT('stem.autorepair.sr_opened_complete_the_safety_check_before_reviewing', 'Opened {value1}. Complete the safety check before reviewing steps.'), { value1: s.name }));
                 },
                 style: { textAlign: 'left', padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, color: T.text, cursor: 'pointer' } },
                 h('div', { style: { fontSize: 28, marginBottom: 4 } }, s.icon),
@@ -12341,7 +12341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function pickTree(id) {
           updMulti({ treeId: id, treeNode: 'root', treePath: [] });
-          arAnnounce('Starting decision tree: ' + DECISION_TREES[id].name);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_starting_decision_tree', 'Starting decision tree: {value1}'), { value1: DECISION_TREES[id].name }));
         }
         function selectChoice(choice) {
           var newPath = path.concat([{ from: nodeId, choice: choice.label }]);
@@ -14388,7 +14388,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         }
         function selectFirstCarWeek(weekNumber) {
           upd('firstCarWeek', weekNumber);
-          arAnnounce('Week ' + weekNumber + ' selected: ' + FIRST_CAR_PLAN[weekNumber - 1].title + '.');
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_week_selected', 'Week {value1} selected: {value2}.'), { value1: weekNumber, value2: FIRST_CAR_PLAN[weekNumber - 1].title }));
         }
         function toggleFirstCarTask(entry) {
           var wasDone = entryIsDone(entry);
@@ -14667,7 +14667,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function pickLab(id) {
           updMulti({ labId: id, labStep: 0, labAnswers: {} });
           var picked = window.StemLab && window.StemLab.findById ? window.StemLab.findById(LAB_SCENARIOS, id) : null;
-          arAnnounce('Starting scenario: ' + (picked ? picked.name : id));
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_starting_scenario', 'Starting scenario: {value1}'), { value1: (picked ? picked.name : id) }));
           labFocusSoon('[data-ar-lab-question]');
         }
         function reset() {
@@ -16842,7 +16842,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
 
         function requestDelete(entry) {
           upd('logPendingDelete', entry.id);
-          arAnnounce('Confirm deletion of ' + entry.service + '.');
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_confirm_deletion_of', 'Confirm deletion of {value1}.'), { value1: entry.service }));
         }
 
         function cancelDelete() {
@@ -18826,7 +18826,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         function selectStep(n) {
           upd('walkFocus', n);
           var selected = WALK_AROUND_STEPS[n - 1];
-          arAnnounce('Step ' + n + ' selected: ' + selected.area + '.');
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_step_selected', 'Step {value1} selected: {value2}.'), { value1: n, value2: selected.area }));
         }
 
         function recordOutcome(shouldFlag) {
@@ -18857,7 +18857,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           delete nextChecked[focusN];
           delete nextFlags[focusN];
           updMulti({ walkChecked: nextChecked, walkFlags: nextFlags, walkFocus: focusN });
-          arAnnounce('Step ' + focusN + ' marked not yet inspected.');
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_step_marked_not_yet_inspected', 'Step {value1} marked not yet inspected.'), { value1: focusN }));
         }
 
         function resetWalk() {
@@ -19066,7 +19066,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           else if (k === '-' || k === '_') V.zoom(0.4);
           else if ((k === 'f' || k === 'F') && cfg.selected) {
             V.focus(cfg.selected);
-            arAnnounce('Focused the 3D view on ' + (cfg.selectedLabel || cfg.selected));
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_focused_the_3d_view_on', 'Focused the 3D view on {value1}'), { value1: (cfg.selectedLabel || cfg.selected) }));
           }
           else if (k === '0') { V.reset(); arAnnounce(__alloT('stem.autorepair.sr_view_reset', 'View reset')); }
           else handled = false;
@@ -19118,7 +19118,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             '◎ Focus',
             function () {
               V.focus(cfg.selected);
-              arAnnounce('Focused the 3D view on ' + (cfg.selectedLabel || cfg.selected));
+              arAnnounce(__alloFill(__alloT('stem.autorepair.sr_focused_the_3d_view_on', 'Focused the 3D view on {value1}'), { value1: (cfg.selectedLabel || cfg.selected) }));
             },
             'focus-selected'
           ),
@@ -19418,7 +19418,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
                     rbMeterFeedback: null, rbActiveTest: null,
                     rbPhase: 'diagnose', rbVerifyChoice: null,
                     rbVerifyResult: null, rbPendingGrade: null
-                  }); arAnnounce('Case opened: ' + c.title); },
+                  }); arAnnounce(__alloFill(__alloT('stem.autorepair.sr_case_opened', 'Case opened: {value1}'), { value1: c.title })); },
                   style: { textAlign: 'left', padding: 13, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + (rec && rec.verdict === 'correct' ? T.good : T.border), color: T.text, cursor: 'pointer' } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 22 } }, c.icon),
@@ -19505,7 +19505,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var next = violations.concat([text]);
           upd('rbViolations', next);
           addToast('⚠️ Safety violation recorded');
-          arAnnounce('Safety violation: ' + text);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_safety_violation', 'Safety violation: {value1}'), { value1: text }));
           return next;
         }
 
@@ -19529,7 +19529,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           }
           if (!f) {
             updMulti(patch);
-            arAnnounce('Nothing relevant to this complaint on the ' + pid);
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_nothing_relevant_to_this_complaint_on_the', 'Nothing relevant to this complaint on the {value1}'), { value1: pid }));
             return;
           }
           // Hands near a spinning belt / a hot pressurized cap is a real
@@ -19540,7 +19540,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           var nf = Object.assign({}, found); nf['p:' + pid] = true;
           patch.rbFound = nf;
           updMulti(patch);
-          arAnnounce('Inspected ' + pid + '. ' + f.text);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_inspected', 'Inspected {value1}. {value2}'), { value1: pid, value2: f.text }));
         }
 
         function runTest(t) {
@@ -19620,7 +19620,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           }
           if (error) {
             upd('rbMeterFeedback', error);
-            arAnnounce('Meter setup needs correction. ' + error);
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_meter_setup_needs_correction', 'Meter setup needs correction. {value1}'), { value1: error }));
             return;
           }
           var nextFound = Object.assign({}, found);
@@ -19631,8 +19631,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             rbActiveTest: meterTest.id
           });
           if (UH3D.focus) UH3D.focus('battery');
-          arAnnounce('Reading settled: ' + expected.reading + ' ' + expected.unit +
-            '. Reference: ' + expected.reference + '. ' + expected.interpretation);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_reading_settled_reference', 'Reading settled: {value1} {value2}. Reference: {value3}. {value4}'), { value1: expected.reading, value2: expected.unit, value3: expected.reference, value4: expected.interpretation }));
         }
 
         var costs = RB_COSTS[kase.id] || {};
@@ -19672,7 +19671,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               rbMeterFeedback: null,
               rbActiveTest: null
             });
-            arAnnounce('Diagnosis accepted: ' + choice.label + '. Grade pending. Prove the repair before release.');
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_diagnosis_accepted_grade_pending_prove_the_repair', 'Diagnosis accepted: {value1}. Grade pending. Prove the repair before release.'), { value1: choice.label }));
             if (typeof requestAnimationFrame === 'function' && typeof document !== 'undefined') {
               requestAnimationFrame(function () {
                 var verificationHeading = document.getElementById('ar-repair-verify-title');
@@ -19698,7 +19697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             rbVerifyResult: null,
             rbPendingGrade: null
           });
-          arAnnounce('Committed: ' + choice.label + '. Grade ' + grade);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_committed_grade', 'Committed: {value1}. Grade {value2}'), { value1: choice.label, value2: grade }));
         }
 
         function selectVerificationPlan(planId) {
@@ -19730,7 +19729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               adequate: false,
               feedback: selectedPlan.feedback
             });
-            arAnnounce('Verification incomplete. ' + selectedPlan.feedback);
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_verification_incomplete', 'Verification incomplete. {value1}'), { value1: selectedPlan.feedback }));
             return;
           }
           var correct = correctChoice();
@@ -20485,7 +20484,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             var nv = violations.indexOf(hz.id) === -1 ? violations.concat([hz.id]) : violations;
             updMulti({ tcViolations: nv, tcLast: { kind: 'hazard', id: hz.id } });
             addToast('☠️ ' + hz.label);
-            arAnnounce('Safety violation. ' + hz.why);
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_safety_violation_2', 'Safety violation. {value1}'), { value1: hz.why }));
             return;
           }
           var st = stepById(id);
@@ -20498,14 +20497,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             }
             var nd = doneIds.concat([id]);
             updMulti({ tcDone: nd, tcLast: { kind: 'ok', id: id } });
-            arAnnounce('Correct. ' + st.label + '. ' + st.why);
+            arAnnounce(__alloFill(__alloT('stem.autorepair.sr_correct', 'Correct. {value1}. {value2}'), { value1: st.label, value2: st.why }));
             if (nd.length >= TIRE_STEPS.length && violations.length === 0 && wrong === 0) {
               awardBadge('tyre-change-clean', __alloT('stem.autorepair.roadside_ready', 'Roadside Ready'));
             }
             return;
           }
           updMulti({ tcWrong: wrong + 1, tcLast: { kind: 'early', id: id } });
-          arAnnounce('Not yet. ' + st.tooEarly);
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_not_yet', 'Not yet. {value1}'), { value1: st.tooEarly }));
         }
 
 
@@ -20546,7 +20545,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             tcLugOrder: result.sequence,
             tcLugLast: { kind: 'correct', lug: lugIndex, expected: result.expected }
           });
-          arAnnounce('Lug ' + (lugIndex + 1) + ' snug. Cross the center for the next lug.');
+          arAnnounce(__alloFill(__alloT('stem.autorepair.sr_lug_snug_cross_the_center_for_the_next_lug', 'Lug {value1} snug. Cross the center for the next lug.'), { value1: (lugIndex + 1) }));
         }
         // Only TIRE3D is mounted in this view; UH3D was torn down by its own
         // ref callback when the under-hood container unmounted.

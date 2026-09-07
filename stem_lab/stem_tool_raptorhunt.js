@@ -8499,7 +8499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       });
       function seedCustomControls(fromId) {
         setRH({ customControlKeys: Object.assign({}, raptorControlScheme(fromId).keys), controlScheme: 'custom' });
-        rhAnnounce('Custom controls reset to ' + raptorControlScheme(fromId).label);
+        rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_custom_controls_reset_to', 'Custom controls reset to {value1}'), { value1: raptorControlScheme(fromId).label }));
       }
       function setRH(patch) {
         ctx.setToolData(function(prev) {
@@ -8561,7 +8561,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         if (tutorialStep >= HUNT_TUTORIAL.length - 1) finishHuntTutorial();
         else {
           setTutorialStep(tutorialStep + 1);
-          rhAnnounce('Tutorial step complete. ' + HUNT_TUTORIAL[tutorialStep + 1].title);
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_tutorial_step_complete', 'Tutorial step complete. {value1}'), { value1: HUNT_TUTORIAL[tutorialStep + 1].title }));
         }
       }, [flightSession && flightSession.speciesId, tutorialStep, simUI.tutorialSignals]);
       function sendHuntCommand(action, value) {
@@ -9377,7 +9377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                           selectedSpecies: run.speciesId || selectedSpecies,
                           flightSession: null
                         });
-                        rhAnnounce('Loaded ' + missionName + ' setup');
+                        rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_loaded_setup', 'Loaded {value1} setup'), { value1: missionName }));
                       },
                       'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_review_setup', 'Review {value1} {value2} setup'), { value1: speciesName, value2: missionName })}, 'Review')
                   );
@@ -10847,7 +10847,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             onChange: function(event) {
                               var nextQuality = event.target.value;
                               setRH({ graphicsQuality: nextQuality });
-                              rhAnnounce('Graphics quality set to ' + nextQuality);
+                              rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_graphics_quality_set_to', 'Graphics quality set to {value1}'), { value1: nextQuality }));
                             }
                           },
                             h('option', { value: 'low' }, 'Low'),
@@ -15275,7 +15275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             energyEventLog.push({ msg: '✓ ' + catchFeedback, t: now, color: '#34d399' });
             recordFlightEvent('catch', 'Catch secured', caught.data.label + ' · +' + Math.round(caloriesGained) + ' kcal');
             beginStrikeFeedback('hit', catchFeedback, now);
-            rhAnnounce('Strike! ' + catchFeedback);
+            rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
             playSpeciesCall('strike');
             queueTimer(function() { playSpeciesCall('screech'); }, 200);
             if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
@@ -15301,7 +15301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             beginStrikeFeedback('miss', missMessage, now);
             energyEventLog.push({ msg: '× MISS - ' + missMessage, t: now, color: '#fdba74' });
             recordFlightEvent('miss', 'Strike missed', missMessage);
-            rhAnnounce('Miss. ' + missMessage);
+            rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss', 'Miss. {value1}'), { value1: missMessage }));
             setRH(function(prev) {
               var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
               var nextStats = { catches: stats.catches, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
@@ -19201,7 +19201,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('button', {
                   onClick: function() {
                     setQuiz({ started: true, missedReviewMode: true, ix: 0, score: 0, selected: -1, answered: false });
-                    rhAnnounce('Reviewing ' + quizState.missedIds.length + ' missed questions');
+                    rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_reviewing_missed_questions', 'Reviewing {value1} missed questions'), { value1: quizState.missedIds.length }));
                   },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700',
                   'aria-label': __alloT('stem.raptorhunt.review_missed_questions_only', 'Review missed questions only')
@@ -19210,7 +19210,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ),
             // Start button
             h('button', {
-              onClick: function() { setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce('Quiz started · ' + total + ' questions'); },
+              onClick: function() { setQuiz({ started: true, missedReviewMode: false, ix: 0, score: 0, selected: -1, answered: false }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_quiz_started_questions', 'Quiz started · {value1} questions'), { value1: total })); },
               className: 'w-full px-5 py-4 rounded-xl text-base font-bold bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-lg hover:from-amber-700 hover:to-orange-700 transition-all',
               'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_start_quiz_with_questions', 'Start quiz with {value1} questions'), { value1: total })}, '▶ Start ' + total + '-question quiz')
           );
@@ -19587,7 +19587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       rhAnnounce(__alloT('stem.raptorhunt.sr_strike_within_detection_radius', 'Strike! Within detection radius.'));
                       if (st.awardXP) st.awardXP(3, 'Owl Hearing Lab: strike');
                     } else {
-                      rhAnnounce('Miss. Distance from mouse: ' + (dist * 100).toFixed(0) + ' percent of canvas.');
+                      rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_miss_distance_from_mouse_percent_of_canvas', 'Miss. Distance from mouse: {value1} percent of canvas.'), { value1: (dist * 100).toFixed(0) }));
                     }
                   };
                   canvasEl.addEventListener('click', function(e) {
@@ -21193,7 +21193,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 var colorMap = { slate: 'amber', amber: 'amber', orange: 'orange', red: 'red' };
                 return h('button', {
                   key: p.id,
-                  onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce('Zoom set to ' + p.label + ': ' + p.zoom + 'x'); },
+                  onClick: function() { setAV({ zoom: p.zoom }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_zoom_set_to_x', 'Zoom set to {value1}: {value2}x'), { value1: p.label, value2: p.zoom })); },
                   className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (active
                     ? 'bg-gradient-to-r from-amber-700 to-orange-700 text-white shadow-md ring-2 ring-amber-400/50'
                     : 'transition-colors bg-slate-800/50 text-amber-200 hover:bg-slate-700/50 hover:text-amber-100 active:scale-[0.97]'),
@@ -21748,7 +21748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 { label: 'Owl', mass: 1.45, wingspan: 1.4, wingArea: 0.40 }
               ].map(function(p) {
                 return h('button', { key: p.label,
-                  onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce('Loaded ' + p.label + ' dimensions'); },
+                  onClick: function() { setPR({ mass: p.mass, wingspan: p.wingspan, wingArea: p.wingArea }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_loaded_dimensions', 'Loaded {value1} dimensions'), { value1: p.label })); },
                   className: 'transition-colors px-3 py-1 rounded-lg text-xs font-bold bg-slate-800 text-amber-200 hover:bg-slate-700 hover:text-amber-100 active:scale-[0.97]',
                   'aria-label': __alloFill(__alloT('stem.raptorhunt.a11y_load_dimensions', 'Load {value1} dimensions'), { value1: p.label })}, p.label);
               })
@@ -25609,13 +25609,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function selectCase(index) {
           setRH({ caseIdx: index });
-          rhAnnounce('Field case ' + (index + 1) + ' opened');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_field_case_opened', 'Field case {value1} opened'), { value1: (index + 1) }));
         }
 
         function revealNextClue() {
           if (clueCount >= c.clues.length) return;
           updateMap('mysteryClues', clueMap, clueCount + 1);
-          rhAnnounce('Evidence clue ' + (clueCount + 1) + ' revealed');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_evidence_clue_revealed', 'Evidence clue {value1} revealed'), { value1: (clueCount + 1) }));
         }
 
         function chooseSuspect(index) {
@@ -25648,7 +25648,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function nextCase() {
           var nextIndex = (caseIdx + 1) % MYSTERY_CASES.cases.length;
           setRH({ caseIdx: nextIndex });
-          rhAnnounce('Field case ' + (nextIndex + 1) + ' opened');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_field_case_opened', 'Field case {value1} opened'), { value1: (nextIndex + 1) }));
         }
 
         function answerState(index) {
@@ -26299,7 +26299,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('div', { className: 'rh-world-compare-select' },
                 h('select', {
                   value: compareIdx,
-                  onChange: function(event) { setRH({ worldTourCompareIdx: Number(event.target.value) }); rhAnnounce('Comparison station changed to ' + WORLD_TOUR.destinations[Number(event.target.value)].name); },
+                  onChange: function(event) { setRH({ worldTourCompareIdx: Number(event.target.value) }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_comparison_station_changed_to', 'Comparison station changed to {value1}'), { value1: WORLD_TOUR.destinations[Number(event.target.value)].name })); },
                   'aria-label': __alloT('stem.raptorhunt.a11y_comparison_expedition_station', 'Comparison expedition station')
                 }, WORLD_TOUR.destinations.map(function(destination, i) {
                   return i === wtIdx ? null : h('option', { key: WORLD_TOUR_VISUALS[i].kind, value: i }, destination.name);
@@ -26368,7 +26368,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 key: i,
                 type: 'button',
                 className: 'rh-world-dispatch-tab',
-                onClick: function() { setRH({ worldTourDispatchIdx: i }); rhAnnounce('Dispatch case ' + (i + 1) + ' opened'); },
+                onClick: function() { setRH({ worldTourDispatchIdx: i }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_dispatch_case_opened', 'Dispatch case {value1} opened'), { value1: (i + 1) })); },
                 role: 'tab',
                 'aria-selected': dispatchIdx === i,
                 'data-world-dispatch-case': i
@@ -26750,7 +26750,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               h('span', null, profile.code + ' ↔ ' + compareProfile.code)
             ),
             h('div', { className: 'rh-threat-compare-select' },
-              h('select', { value: compareIdx, onChange: function(event) { var i = Number(event.target.value); setRH({ threatCompareIdx: i }); rhAnnounce('Comparison changed to ' + THREATS_DB.threats[i].threat); }, 'aria-label': __alloT('stem.raptorhunt.a11y_comparison_threat', 'Comparison threat') }, THREATS_DB.threats.map(function(item, i) { return i === threatIdx ? null : h('option', { key: THREAT_VISUALS[i].id, value: i }, item.threat); })),
+              h('select', { value: compareIdx, onChange: function(event) { var i = Number(event.target.value); setRH({ threatCompareIdx: i }); rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_comparison_changed_to', 'Comparison changed to {value1}'), { value1: THREATS_DB.threats[i].threat })); }, 'aria-label': __alloT('stem.raptorhunt.a11y_comparison_threat', 'Comparison threat') }, THREATS_DB.threats.map(function(item, i) { return i === threatIdx ? null : h('option', { key: THREAT_VISUALS[i].id, value: i }, item.threat); })),
               h('div', { className: 'rh-threat-compare-badge' }, profile.category === compareProfile.category ? 'Shared system' : 'Cross-system pair')
             ),
             h('div', { className: 'rh-threat-compare-grid' },
@@ -28850,7 +28850,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function setCompare(i) {
           setRH({ agePlumageCompareIdx: i });
-          rhAnnounce('Comparison changed to ' + AGE_PLUMAGE.species[i].species);
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_comparison_changed_to', 'Comparison changed to {value1}'), { value1: AGE_PLUMAGE.species[i].species }));
         }
 
         function setGuess(i) {
@@ -29069,7 +29069,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function setFocus(i) {
           setRH({ moltFocus: i });
-          rhAnnounce('Primary P' + (i + 1) + ' selected');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_primary_p_selected', 'Primary P{value1} selected'), { value1: (i + 1) }));
         }
 
         function setMonth(i) {
@@ -29301,7 +29301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function setFocus(i) {
           setRH({ wingFormulaFocus: i });
-          rhAnnounce('Primary P' + (i + 1) + ' selected for measurement');
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_primary_p_selected_for_measurement', 'Primary P{value1} selected for measurement'), { value1: (i + 1) }));
         }
 
         function setLength(value) {
@@ -29317,7 +29317,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function setComparison(i) {
           setRH({ wingFormulaCompareIdx: i });
-          rhAnnounce('Comparison changed to ' + WING_FORMULA.species[i].species);
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_comparison_changed_to', 'Comparison changed to {value1}'), { value1: WING_FORMULA.species[i].species }));
         }
 
         function setGuess(i) {
@@ -29798,7 +29798,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function setIllIdx(i) {
           setRH({ illustrationIdx: i });
-          rhAnnounce('Field plate ' + (i + 1) + ' opened: ' + ILLUSTRATIONS.images[i].title);
+          rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_field_plate_opened', 'Field plate {value1} opened: {value2}'), { value1: (i + 1), value2: ILLUSTRATIONS.images[i].title }));
         }
 
         function setIllustrationFilter(filterName) {
