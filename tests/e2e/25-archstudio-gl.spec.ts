@@ -984,17 +984,18 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
   test('recovers and redraws after a WebGL context loss', async ({ page }) => {
-    await mount3d(page, { blocks: tower() });
+    await mount3d(page, { blocks: tower(), showDesign: true, designTab: 'region' });
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.regionSelection)).toBe(true);
     const supportsLoss = await page.evaluate(() => {
       const canvas = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
-      const gl = canvas?.getContext('webgl') || canvas?.getContext('experimental-webgl');
+      const gl = canvas?.getContext('webgl2') || canvas?.getContext('webgl') || canvas?.getContext('experimental-webgl');
       return !!gl?.getExtension('WEBGL_lose_context');
     });
     test.skip(!supportsLoss, 'WEBGL_lose_context is unavailable in this browser');
 
     await page.evaluate(() => {
       const canvas = document.querySelector('canvas[data-arch-gl="true"]') as HTMLCanvasElement;
-      const gl = (canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext;
+      const gl = (canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('experimental-webgl')) as WebGLRenderingContext;
       const ext = gl.getExtension('WEBGL_lose_context')!;
       ext.loseContext();
       setTimeout(() => ext.restoreContext(), 120);
@@ -1003,12 +1004,282 @@ test.describe('Architecture Studio — real WebGL', () => {
     await expect.poll(() => page.evaluate(() => (window as any).__gl()?.state), { timeout: 5_000 }).toBe('ready');
     await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount), { timeout: 5_000 }).toBe(tower().length);
     expect((await page.evaluate(() => (window as any).__gl())).contextLost).toBe(false);
+    expect((await page.evaluate(() => (window as any).__gl())).regionSelection).toBe(true);
   });
 
   test('tears the renderer down on unmount', async ({ page }) => {
-    await mount3d(page, { blocks: tower() });
+    await mount3d(page, { blocks: tower(), showDesign: true, designTab: 'region' });
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.regionSelection)).toBe(true);
     await page.evaluate(() => (window as any).__destroy());
     await page.waitForTimeout(400);
     expect(await page.evaluate(() => (window as any).__gl().state)).toBe('idle');
   });
+
+  test('design workbench builds a room, copies a region, and undoes whole operations', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await mount3d(page, { blocks: [], showDesign: true, soundEnabled: false });
+    const panel = page.locator('[data-arch-design="true"]');
+    await expect(panel.getByRole('img')).toBeVisible();
+    await expect(panel).toContainText('84 blocks');
+    await panel.getByLabel('Building material', { exact: true }).selectOption('brick');
+    await panel.getByRole('button', { name: 'Add to build', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(84);
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().undoStack.length)).toBe(1);
+    await expect(panel.locator('[data-arch-design-notice]')).toContainText('Added 84 blocks');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('Design added.');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeDisabled();
+    await panel.getByRole('button', { name: 'Region edits', exact: true }).click();
+    await expect(panel.locator('[data-arch-region-count]')).toHaveText('84 blocks selected');
+    await panel.getByRole('button', { name: 'Copy region', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(168);
+    const state = await page.evaluate(() => (window as any).__bucket());
+    expect(state.designRegion.minX).toBe(7);
+    expect(state.undoStack).toHaveLength(2);
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.regionSelection)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('design-workbench-desktop.png'), fullPage: true });
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(84);
+    await expect(panel.locator('[data-arch-design-notice]')).toHaveCount(0);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(0);
+    await page.getByRole('button', { name: /Redo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(84);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('design workbench validates dimensions, collisions, and floor region editing', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), showDesign: true, designTab: 'region', soundEnabled: false });
+    const panel = page.locator('[data-arch-design="true"]');
+    await panel.getByRole('button', { name: 'Current floor', exact: true }).click();
+    await expect(panel.locator('[data-arch-region-count]')).toHaveText('5 blocks selected');
+    await panel.getByLabel('Operation', { exact: true }).selectOption('move');
+    await panel.getByLabel('Offset X', { exact: true }).fill('0');
+    await panel.getByLabel('Offset Y', { exact: true }).fill('-1');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('outside');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeDisabled();
+    await panel.getByLabel('Operation', { exact: true }).selectOption('paint');
+    await panel.getByLabel('Building material', { exact: true }).selectOption('wood');
+    await panel.getByRole('button', { name: 'Paint region', exact: true }).click();
+    const state = await page.evaluate(() => (window as any).__bucket());
+    expect(state.blocks.filter((b: any) => b.y === 0).every((b: any) => b.material === 'wood')).toBe(true);
+    expect(state.blocks.filter((b: any) => b.y > 0).every((b: any) => b.material === 'brick')).toBe(true);
+    await panel.getByRole('button', { name: 'Builder', exact: true }).click();
+    await panel.getByLabel('Width (X)', { exact: true }).fill('');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeDisabled();
+    await panel.getByLabel('Width (X)', { exact: true }).fill('8');
+    await expect(panel.locator('[data-arch-design-warning]')).toContainText('occupied cells');
+    await panel.getByLabel('Origin X', { exact: true }).fill('-12');
+    await expect(panel.locator('[data-arch-design-apply]')).toBeEnabled();
+  });
+
+  test('design workbench remains usable on a phone and returns focus on close', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount3d(page, { blocks: [], showDesign: true, soundEnabled: false });
+    const panel = page.locator('[data-arch-design="true"]');
+    await panel.getByLabel('Width (X)', { exact: true }).fill('4');
+    await panel.getByLabel('Depth (Z)', { exact: true }).fill('4');
+    await panel.getByLabel('Building material', { exact: true }).selectOption('wood');
+    await panel.getByRole('button', { name: 'Add to build', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(52);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('design-workbench-phone.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Close design workbench', exact: true }).click();
+    await expect(page.locator('#arch-design-toggle')).toBeFocused();
+    await expect(panel).toHaveCount(0);
+    await page.locator('#arch-design-toggle').press('Enter');
+    await expect(panel).toBeVisible();
+  });
+
+  test('design workbench rechecks stale clicks and protects replay', async ({ page }) => {
+    await mount3d(page, { blocks: [], showDesign: true, soundEnabled: false });
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio.blocks = [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }];
+      (document.querySelector('[data-arch-design-apply]') as HTMLButtonElement).click();
+    });
+    await expect(page.locator('[data-arch-design-notice]')).toContainText('occupied cells');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio = Object.assign({}, w.__toolData.archStudio, { showReplay: true, undoStack: [[]] });
+      (document.querySelector('#arch-design-toggle') as HTMLButtonElement).click();
+    });
+    await page.locator('#arch-design-toggle').click();
+    await expect(page.locator('[data-arch-design-apply]')).toBeDisabled();
+    await expect(page.locator('[data-arch-design-warning]')).toContainText('replay');
+  });
+
+  test('project workflow downloads, previews, opens, and undoes project details', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 850 });
+    await mount3d(page, { blocks: tower(), showProject: true, projectName: 'Library 図書館', projectNotes: 'Original notes\nLight & air', soundEnabled: false });
+    const panel = page.locator('[data-arch-project]');
+    const downloaded = page.waitForEvent('download');
+    await panel.getByRole('button', { name: 'Download project', exact: true }).click();
+    const download = await downloaded;
+    expect(download.suggestedFilename()).toBe('Library 図書館.archstudio.json');
+    const downloadedPath = await download.path();
+    expect(downloadedPath).toBeTruthy();
+    const data = JSON.parse(await readFile(downloadedPath!, 'utf8'));
+    expect(data.project).toEqual({ name: 'Library 図書館', notes: 'Original notes\nLight & air' });
+    expect(data.blocks).toHaveLength(13);
+    expect(Object.keys(data).sort()).toEqual(['blocks', 'format', 'project', 'version']);
+
+    const incoming = { ...data, project: { name: 'Courtyard', notes: 'Leave a route through the middle.' }, blocks: data.blocks.slice(0, 2) };
+    await panel.getByLabel('Preview a project file', { exact: true }).setInputFiles({
+      name: 'courtyard.archstudio.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(incoming)),
+    });
+    await expect(panel.locator('[data-arch-project-import]')).toContainText('Courtyard');
+    await expect(panel.locator('[data-arch-project-plan]')).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    await page.screenshot({ path: testInfo.outputPath('project-file-preview-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Apply import', exact: true }).click();
+    await expect(panel.getByLabel('Project name', { exact: true })).toHaveValue('Courtyard');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(2);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect(panel.getByLabel('Project name', { exact: true })).toHaveValue('Library 図書館');
+    await expect(panel.getByLabel('Design notes', { exact: true })).toHaveValue('Original notes\nLight & air');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(13);
+    await page.getByRole('button', { name: /Redo/ }).first().click();
+    await expect(panel.getByLabel('Project name', { exact: true })).toHaveValue('Courtyard');
+    await expect(panel.getByLabel('Design notes', { exact: true })).toHaveValue(incoming.project.notes);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('project workflow saves named revisions, merges components, compares, and restores', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), showProject: true, projectName: 'Campus', projectNotes: 'First version', soundEnabled: false });
+    const panel = page.locator('[data-arch-project]');
+    await panel.getByRole('button', { name: 'Save snapshot', exact: true }).click();
+    await expect(panel.locator('[data-arch-project-save-status]')).toContainText('Matches');
+    const firstId = await page.evaluate(() => (window as any).__bucket().projectSavedId);
+    await panel.getByLabel('Design notes', { exact: true }).fill('Added a separate entrance');
+    await expect(panel.locator('[data-arch-project-save-status]')).toContainText('not been saved');
+    const component = { format: 'alloflow.architecture-studio', version: 1, project: { name: 'Entrance', notes: 'Do not replace the campus notes' },
+      blocks: [{ x: 0, y: 0, z: 0, shape: 'door', material: 'wood', color: '#92400e', rotation: 90 }] };
+    await panel.getByLabel('Preview a project file', { exact: true }).setInputFiles({ name: 'entrance.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(component)) });
+    await expect(panel.locator('[data-arch-project-import]')).toBeVisible();
+    await panel.getByLabel('Import action', { exact: true }).selectOption('merge');
+    await expect(panel.locator('[data-arch-project-apply]')).toBeDisabled();
+    await expect(panel.locator('[data-arch-project-import-warning]')).toContainText('overlap');
+    await panel.getByLabel('Import offset X', { exact: true }).fill('8');
+    await panel.getByRole('button', { name: 'Apply import', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(14);
+    await expect(panel.getByLabel('Project name', { exact: true })).toHaveValue('Campus');
+    await expect(panel.getByLabel('Design notes', { exact: true })).toHaveValue('Added a separate entrance');
+    await expect(panel.locator('[data-arch-project-comparison]')).toContainText('Added: 1');
+    await expect(panel.locator('[data-arch-project-comparison]')).toContainText('Unchanged: 13');
+    await panel.getByRole('button', { name: 'Save snapshot', exact: true }).click();
+    const secondId = await page.evaluate(() => (window as any).__bucket().projectSavedId);
+    expect(secondId).not.toBe(firstId);
+    const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_archstudio_builds') || '[]'));
+    expect(saved).toHaveLength(2);
+    expect(saved[0]).toMatchObject({ name: 'Campus', notes: 'First version', blockCount: 13 });
+    expect(saved[1]).toMatchObject({ name: 'Campus', notes: 'Added a separate entrance', blockCount: 14 });
+    await panel.getByLabel('Compare with saved revision', { exact: true }).selectOption(firstId);
+    await panel.getByRole('button', { name: 'Restore this snapshot', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(13);
+    await expect(panel.getByLabel('Design notes', { exact: true })).toHaveValue('First version');
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(14);
+    await expect(panel.getByLabel('Design notes', { exact: true })).toHaveValue('Added a separate entrance');
+    await expect(panel.locator('[data-arch-project-save-status]')).toContainText('Matches');
+  });
+
+  test('project workflow rejects bad files and revalidates stale merge previews', async ({ page }) => {
+    await mount3d(page, { blocks: [], showProject: true, soundEnabled: false });
+    const panel = page.locator('[data-arch-project]');
+    const input = panel.getByLabel('Preview a project file', { exact: true });
+    await input.setInputFiles({ name: 'invalid.json', mimeType: 'application/json', buffer: Buffer.from('{broken') });
+    await expect(panel.getByRole('alert')).toContainText('not valid JSON');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks || [])).toEqual([]);
+    const incoming = { format: 'alloflow.architecture-studio', version: 1, project: { name: '<script>not executable</script>', notes: 'Preview only' },
+      blocks: [{ x: 2, y: 0, z: 0, shape: 'block', material: 'stone', color: '#94a3b8', rotation: 0 }] };
+    await input.setInputFiles({ name: 'valid.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(incoming)) });
+    await expect(panel.locator('[data-arch-project-import]')).toContainText('<script>not executable</script>');
+    expect(await panel.locator('script').count()).toBe(0);
+    await panel.getByLabel('Import action', { exact: true }).selectOption('merge');
+    await expect(panel.locator('[data-arch-project-apply]')).toBeEnabled();
+    await page.evaluate((blocks) => {
+      (window as any).__toolData.archStudio.blocks = blocks;
+      (document.querySelector('[data-arch-project-apply]') as HTMLButtonElement).click();
+    }, incoming.blocks);
+    await expect(panel.getByRole('alert')).toContainText('overlap');
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await input.setInputFiles({ name: 'too-large.json', mimeType: 'application/json', buffer: Buffer.alloc(2 * 1024 * 1024 + 1, ' ') });
+    await expect(panel.getByRole('alert')).toContainText('smaller than 2 MB');
+    await expect(panel.locator('[data-arch-project-import]')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+  });
+
+  test('project workflow stays accessible on a phone and protects replay frames', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const historical = [{ x: 0, y: 0, z: 0, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 }];
+    await mount3d(page, { blocks: tower(), showProject: true, showReplay: true, replayStep: 0, soundEnabled: false,
+      projectName: 'Current project', projectNotes: 'Current notes', undoStack: [{ kind: 'arch-project-frame', blocks: historical, projectName: 'Earlier project', projectNotes: 'Earlier notes' }] });
+    const panel = page.locator('[data-arch-project]');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(1);
+    await expect(panel.getByLabel('Project name', { exact: true })).toBeDisabled();
+    await expect(panel.getByLabel('Preview a project file', { exact: true })).toBeDisabled();
+    await page.locator('.arch-studio-feature-strip').getByRole('button', { name: /Replay/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(13);
+    await panel.getByLabel('Project name', { exact: true }).fill('Phone project');
+    await panel.getByLabel('Design notes', { exact: true }).fill('Designed on a small screen');
+    await panel.getByRole('button', { name: 'Save snapshot', exact: true }).click();
+    await expect(panel.locator('[data-arch-project-save-status]')).toContainText('Matches');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('project-revisions-phone.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Close project panel', exact: true }).click();
+    await expect(page.locator('#arch-project-toggle')).toBeFocused();
+    await page.locator('#arch-project-toggle').press('Enter');
+    await expect(panel).toBeVisible();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+  test('project workflow cancels file reads and ignores out-of-order results', async ({ page }) => {
+    await mount3d(page, { blocks: [], showProject: true, soundEnabled: false });
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__pendingProjectReads = [];
+      w.FileReader = class {
+        result: string | null = null;
+        aborted = false;
+        onload: (() => void) | null = null;
+        onerror: (() => void) | null = null;
+        readAsText() { w.__pendingProjectReads.push(this); }
+        abort() { this.aborted = true; }
+      };
+    });
+    const panel = page.locator('[data-arch-project]');
+    const input = panel.getByLabel('Preview a project file', { exact: true });
+    const file = (name: string) => ({ name: name + '.json', mimeType: 'application/json', buffer: Buffer.from('{}') });
+    const project = (name: string) => JSON.stringify({
+      format: 'alloflow.architecture-studio', version: 1, project: { name, notes: '' }, blocks: [],
+    });
+    await input.setInputFiles(file('First'));
+    await expect(panel.getByRole('status', { name: '' }).filter({ hasText: 'Reading project file' })).toBeVisible();
+    await input.setInputFiles(file('Second'));
+    expect(await page.evaluate(() => (window as any).__pendingProjectReads[0].aborted)).toBe(true);
+    await page.evaluate(({ first, second }) => {
+      const reads = (window as any).__pendingProjectReads;
+      reads[1].result = second; reads[1].onload();
+      reads[0].result = first; reads[0].onload();
+    }, { first: project('First'), second: project('Second') });
+    await expect(panel.locator('[data-arch-project-import]')).toContainText('Second');
+    expect(await page.evaluate(() => (window as any).__bucket().projectImport.project.name)).toBe('Second');
+
+    await input.setInputFiles(file('Canceled'));
+    await expect(panel.getByRole('status', { name: '' }).filter({ hasText: 'Reading project file' })).toBeVisible();
+    await panel.getByRole('button', { name: 'Close project panel', exact: true }).click();
+    expect(await page.evaluate(() => (window as any).__pendingProjectReads[2].aborted)).toBe(true);
+    await page.evaluate((data) => {
+      const canceled = (window as any).__pendingProjectReads[2];
+      canceled.result = data; canceled.onload();
+    }, project('Canceled'));
+    await page.locator('#arch-project-toggle').click();
+    await expect(panel).toBeVisible();
+    await expect(panel.getByText('Reading project file…', { exact: true })).toHaveCount(0);
+    await expect(panel.locator('[data-arch-project-import]')).toHaveCount(0);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
 });

@@ -101,6 +101,7 @@ function __alloAST(k, fb) {
         return {
           id: String(item.id || ('arch_saved_' + index)).slice(0, 100),
           name: String(item.name || 'Saved build').slice(0, 80),
+          notes: archProjectText(item.notes, 4000),
           blocks: savedBlocks,
           blockCount: savedBlocks.length,
           dims: String(item.dims || ''),
@@ -336,6 +337,7 @@ function __alloAST(k, fb) {
   // Keep ordinary in-memory builds referentially stable, while repairing data
   // restored from older/corrupt persistence before any analysis or rendering.
   function getArchRuntimeBlocks(input) {
+    if (input && input.kind === 'arch-project-frame' && Array.isArray(input.blocks)) input = input.blocks;
     if (!Array.isArray(input) || input.length > ARCH_MAX_BLOCKS) return sanitizeArchBlocks(input);
     var seen = {};
     for (var i = 0; i < input.length; i++) {
@@ -358,7 +360,7 @@ function __alloAST(k, fb) {
 
   function getArchHistoryStack(input) {
     if (!Array.isArray(input)) return [];
-    return input.filter(function (frame) { return Array.isArray(frame); }).slice(-50);
+    return input.filter(function (frame) { return Array.isArray(frame) || (frame && frame.kind === 'arch-project-frame' && Array.isArray(frame.blocks)); }).slice(-50);
   }
 
   function getArchDominantNormalStep(normal) {
@@ -475,7 +477,7 @@ function __alloAST(k, fb) {
     var T = null;
     var state = 'idle';
     var canvasEl = null, renderer = null, scene = null, camera = null;
-    var batch = null, groundMesh = null, groundGrid = null, previewMesh = null, selectionMesh = null;
+    var batch = null, groundMesh = null, groundGrid = null, previewMesh = null, selectionMesh = null, designRegionMesh = null;
     var customMeshes = [];
     var raycaster = null, pointer = null, latestBlocks = [], latestAllBlocks = [];
     var rafId = 0, capacity = 0, resizeObs = null;
@@ -538,6 +540,10 @@ function __alloAST(k, fb) {
     }
 
     function clearSelectionMesh() {
+      if (designRegionMesh) {
+        if (scene) scene.remove(designRegionMesh);
+        designRegionMesh.geometry.dispose(); designRegionMesh.material.dispose(); designRegionMesh = null;
+      }
       if (!selectionMesh) return;
       if (scene) scene.remove(selectionMesh);
       if (selectionMesh.geometry) selectionMesh.geometry.dispose();
@@ -728,6 +734,14 @@ function __alloAST(k, fb) {
         scene.add(selectionMesh);
       }
 
+      if (m.regionBounds) {
+        var rb = m.regionBounds;
+        var boxGeometry = new T.BoxGeometry(rb.maxX - rb.minX + 1.08, rb.maxY - rb.minY + 1.08, rb.maxZ - rb.minZ + 1.08);
+        var edges = new T.EdgesGeometry(boxGeometry); boxGeometry.dispose();
+        designRegionMesh = new T.LineSegments(edges, new T.LineBasicMaterial({ color: 0x38bdf8, depthTest: false, transparent: true, opacity: 0.95 }));
+        designRegionMesh.position.set((rb.minX + rb.maxX) / 2 - centre.x, (rb.minY + rb.maxY + 1) / 2, (rb.minZ + rb.maxZ) / 2 - centre.z);
+        designRegionMesh.renderOrder = 6; scene.add(designRegionMesh);
+      }
       buildPlacementGrid(minX, maxX, minZ, maxZ);
     }
 
@@ -904,6 +918,7 @@ function __alloAST(k, fb) {
           viewMode: pending && pending.blueprintView ? 'blueprint' : 'perspective',
           styleMode: pending && pending.styleMode ? pending.styleMode : 'architect',
           extent: extent,
+          regionSelection: !!designRegionMesh,
           canvas: canvasEl ? { w: canvasEl.clientWidth, h: canvasEl.clientHeight } : null,
           contextLost: gl ? gl.isContextLost() : null
         };
@@ -1281,7 +1296,7 @@ function __alloAST(k, fb) {
     var visible = Array.isArray(currentBlocks) ? currentBlocks : [];
     var replay = options.undoStack || [];
     if (options.showReplay && options.replayStep >= 0 && options.replayStep < replay.length) {
-      visible = replay[options.replayStep] || [];
+      visible = getArchRuntimeBlocks(replay[options.replayStep]);
     }
     if (options.viewLayer != null && options.viewLayer >= 0) {
       visible = visible.filter(function (b) { return b.y === options.viewLayer; });
@@ -1297,6 +1312,286 @@ function __alloAST(k, fb) {
     }
     return visible;
   }
+
+
+  // Pure, atomic design operations: reject a clipped room or partial move.
+  var ARCH_DESIGN_COST = { stone: 5, brick: 8, wood: 3, glass: 12, marble: 15, metal: 20 };
+  function archDesignInteger(value, min, max) {
+    if (value == null || typeof value === 'boolean' || (typeof value === 'string' && !value.trim())) return null;
+    var n = Number(value);
+    return isFinite(n) && Math.floor(n) === n && n >= min && n <= max ? n : null;
+  }
+  function archDesignBounds(list) {
+    if (!list.length) return null;
+    var b = { minX: 64, maxX: -64, minY: 31, maxY: 0, minZ: 64, maxZ: -64 };
+    list.forEach(function (c) {
+      b.minX = Math.min(b.minX, c.x); b.maxX = Math.max(b.maxX, c.x);
+      b.minY = Math.min(b.minY, c.y); b.maxY = Math.max(b.maxY, c.y);
+      b.minZ = Math.min(b.minZ, c.z); b.maxZ = Math.max(b.maxZ, c.z);
+    });
+    return b;
+  }
+  function archDesignRegion(raw) {
+    if (!raw || typeof raw !== 'object') return null;
+    var out = {};
+    var valid = ['X', 'Y', 'Z'].every(function (axis) {
+      var a = archDesignInteger(raw['min' + axis], axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64);
+      var b = archDesignInteger(raw['max' + axis], axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64);
+      if (a == null || b == null) return false;
+      out['min' + axis] = Math.min(a, b); out['max' + axis] = Math.max(a, b);
+      return true;
+    });
+    return valid ? out : null;
+  }
+  function archDesignSelection(list, raw) {
+    var b = archDesignRegion(raw);
+    return b ? list.filter(function (c) {
+      return c.x >= b.minX && c.x <= b.maxX && c.y >= b.minY && c.y <= b.maxY && c.z >= b.minZ && c.z <= b.maxZ;
+    }) : [];
+  }
+  function archDesignFailure(code, blocks, count) {
+    return { ok: false, code: code, blocks: blocks, count: count || 0 };
+  }
+  function generateArchDesign(spec) {
+    spec = spec || {};
+    var kind = spec.kind || 'room';
+    if (['room', 'wall', 'floor'].indexOf(kind) < 0) return archDesignFailure('invalid', []);
+    var x = archDesignInteger(spec.x, -64, 64), y = archDesignInteger(spec.y, 0, 31), z = archDesignInteger(spec.z, -64, 64);
+    var w = archDesignInteger(spec.width, kind === 'room' ? 3 : 1, 32);
+    var h = kind === 'floor' ? 1 : archDesignInteger(spec.height, kind === 'room' ? 2 : 1, 30);
+    var depth = kind === 'wall' ? 1 : archDesignInteger(spec.depth, kind === 'room' ? 3 : 1, 32);
+    if (x == null || y == null || z == null || w == null || h == null || depth == null) return archDesignFailure('invalid', []);
+    var cap = kind === 'room' && spec.ceiling === true;
+    var height = kind === 'room' ? h + 1 + (cap ? 1 : 0) : h;
+    if (x + w - 1 > 64 || z + depth - 1 > 64 || y + height - 1 > 31) return archDesignFailure('bounds', []);
+    var expected = kind === 'room' ? w * depth * (cap ? 2 : 1) + (2 * w + 2 * depth - 4) * h : w * depth * h;
+    if (expected > ARCH_MAX_BLOCKS) return archDesignFailure('capacity', [], expected);
+    var material = Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, spec.material) ? spec.material : 'stone';
+    var color = normalizeArchColor(spec.color, material), generated = [];
+    function add(cx, cy, cz, shape, mat, rotation) {
+      generated.push({ x: x + cx, y: y + cy, z: z + cz, shape: shape, material: mat || material,
+        color: mat ? normalizeArchColor(null, mat) : color, rotation: rotation || 0 });
+    }
+    for (var cy = 0; cy < height; cy++) for (var cz = 0; cz < depth; cz++) for (var cx = 0; cx < w; cx++) {
+      if (kind !== 'room') { add(cx, cy, cz, kind === 'floor' ? 'slab' : 'block'); continue; }
+      if (cy === 0) { add(cx, cy, cz, 'block'); continue; }
+      if (cap && cy === height - 1) { add(cx, cy, cz, 'slab'); continue; }
+      if (cx !== 0 && cx !== w - 1 && cz !== 0 && cz !== depth - 1) continue;
+      var doorColumn = spec.door === true && cz === 0 && cx === Math.floor(w / 2);
+      if (doorColumn && cy === 1) { add(cx, cy, cz, 'door', 'wood'); continue; }
+      var frontBack = (cz === 0 || cz === depth - 1) && cx > 0 && cx < w - 1 && cx % 2 === 1;
+      var side = (cx === 0 || cx === w - 1) && cz > 0 && cz < depth - 1 && cz % 2 === 1;
+      if (spec.windows === true && cy === 2 && !doorColumn && (frontBack || side)) add(cx, cy, cz, 'window', 'glass', side ? 90 : 0);
+      else add(cx, cy, cz, 'block');
+    }
+    return { ok: true, code: 'ready', blocks: generated, count: generated.length,
+      bounds: archDesignBounds(generated), interior: kind === 'room' ? (w - 2) * (depth - 2) : 0,
+      footprint: w * depth, cost: generated.reduce(function (n, b) { return n + ARCH_DESIGN_COST[b.material]; }, 0) };
+  }
+  function applyArchDesign(current, action) {
+    action = action || {};
+    var list = getArchRuntimeBlocks(current), kind = action.type;
+    var selected = kind === 'build' ? [] : archDesignSelection(list, action.region);
+    if (kind !== 'build' && !archDesignRegion(action.region)) return archDesignFailure('region', list);
+    if (kind !== 'build' && !selected.length) return archDesignFailure('empty', list);
+    var selectedKeys = {};
+    selected.forEach(function (b) { selectedKeys[archBlockKey(b)] = true; });
+    var candidates, remaining;
+    if (kind === 'build') {
+      var generated = generateArchDesign(action.spec);
+      if (!generated.ok) return archDesignFailure(generated.code, list, generated.count);
+      candidates = generated.blocks; remaining = list;
+    } else if (kind === 'delete') {
+      return { ok: true, code: 'deleted', count: selected.length, blocks: list.filter(function (b) { return !selectedKeys[archBlockKey(b)]; }), selection: null };
+    } else if (kind === 'paint') {
+      if (!Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, action.material)) return archDesignFailure('invalid', list);
+      var paintColor = normalizeArchColor(action.color, action.material), changed = 0;
+      var painted = list.map(function (b) {
+        if (!selectedKeys[archBlockKey(b)] || (b.material === action.material && normalizeArchColor(b.color, b.material) === paintColor)) return b;
+        changed++;
+        return Object.assign({}, b, { material: action.material, color: paintColor });
+      });
+      return changed ? { ok: true, code: 'painted', count: changed, blocks: painted, selection: archDesignBounds(selected) } : archDesignFailure('unchanged', list);
+    } else if (kind === 'move' || kind === 'duplicate' || kind === 'rotate') {
+      var dx = 0, dy = 0, dz = 0;
+      if (kind !== 'rotate') {
+        dx = archDesignInteger(action.dx, -128, 128); dy = archDesignInteger(action.dy, -31, 31); dz = archDesignInteger(action.dz, -128, 128);
+        if (dx == null || dy == null || dz == null) return archDesignFailure('invalid', list);
+        if (!dx && !dy && !dz) return archDesignFailure('unchanged', list);
+      }
+      var box = archDesignBounds(selected);
+      candidates = selected.map(function (b) {
+        return Object.assign({}, b, kind === 'rotate'
+          ? { x: box.minX + b.z - box.minZ, z: box.minZ + box.maxX - b.x, rotation: normalizeArchRotation((b.rotation || 0) + 90) }
+          : { x: b.x + dx, y: b.y + dy, z: b.z + dz });
+      });
+      remaining = kind === 'duplicate' ? list : list.filter(function (b) { return !selectedKeys[archBlockKey(b)]; });
+    } else return archDesignFailure('invalid', list);
+    if (remaining.length + candidates.length > ARCH_MAX_BLOCKS) return archDesignFailure('capacity', list);
+    var occupied = {}, conflicts = 0, invalid = false;
+    remaining.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+    candidates.forEach(function (b) {
+      if (b.x < -64 || b.x > 64 || b.z < -64 || b.z > 64 || b.y < 0 || b.y > 31) invalid = true;
+      if (occupied[archBlockKey(b)]) conflicts++;
+    });
+    if (invalid) return archDesignFailure('bounds', list);
+    if (conflicts) return archDesignFailure('collision', list, conflicts);
+    var next;
+    if (kind === 'move' || kind === 'rotate') {
+      var i = 0;
+      next = list.map(function (b) { return selectedKeys[archBlockKey(b)] ? candidates[i++] : b; });
+    } else next = remaining.concat(candidates);
+    return { ok: true, code: kind === 'build' ? 'built' : kind === 'duplicate' ? 'duplicated' : kind === 'move' ? 'moved' : 'rotated',
+      blocks: next, count: candidates.length, selection: archDesignBounds(candidates) };
+  }
+  function commitArchDesignState(state, action) {
+    state = state || {};
+    if (state.showReplay) return { state: state, result: archDesignFailure('replay', getArchRuntimeBlocks(state.blocks)) };
+    var result = applyArchDesign(state.blocks, action);
+    if (!result.ok) return { state: state, result: result };
+    var history = getArchHistoryStack(state.undoStack);
+    history.push(archProjectHistoryFrame(state));
+    var materials = Object.assign({}, state.materialsUsed || {}), styles = Object.assign({}, state.stylesUsed || {});
+    result.blocks.forEach(function (b) { materials[b.material] = true; });
+    styles[state.styleMode || 'architect'] = true;
+    return { result: result, state: Object.assign({}, state, getArchReplacementViewState(result.blocks, result.selection ? result.selection.minY : state.editLayer), {
+      blocks: result.blocks, undoStack: history.slice(-50), redoStack: [], materialsUsed: materials, stylesUsed: styles,
+      designRegion: result.selection || state.designRegion, designNotice: { code: result.code, count: result.count, signature: getArchBuildSignature(result.blocks) }
+    }) };
+  }
+  window.__alloArchDesign = { generate: generateArchDesign, apply: applyArchDesign, commit: commitArchDesignState,
+    bounds: archDesignBounds, region: archDesignRegion, select: archDesignSelection };
+
+
+  // Portable projects contain model data and notebook text, never executable UI state.
+  var ARCH_PROJECT_FORMAT = 'alloflow.architecture-studio';
+  var ARCH_PROJECT_FILE_LIMIT = 2 * 1024 * 1024;
+  function archProjectText(value, limit) {
+    return typeof value === 'string' ? value.slice(0, limit) : '';
+  }
+  function makeArchProject(state) {
+    state = state || {};
+    return { format: ARCH_PROJECT_FORMAT, version: 1,
+      project: { name: archProjectText(state.projectName, 80), notes: archProjectText(state.projectNotes, 4000) },
+      blocks: sanitizeArchBlocks(state.blocks) };
+  }
+  function parseArchProject(input) {
+    var data;
+    try {
+      if (typeof input === 'string' && input.length > ARCH_PROJECT_FILE_LIMIT) return { ok: false, code: 'size' };
+      data = typeof input === 'string' ? JSON.parse(input) : input;
+    } catch (_) { return { ok: false, code: 'json' }; }
+    if (!data || data.format !== ARCH_PROJECT_FORMAT || data.version !== 1) return { ok: false, code: 'format' };
+    if (!data.project || typeof data.project.name !== 'string' || typeof data.project.notes !== 'string'
+        || data.project.name.length > 80 || data.project.notes.length > 4000) return { ok: false, code: 'details' };
+    if (!Array.isArray(data.blocks) || data.blocks.length > ARCH_MAX_BLOCKS) return { ok: false, code: 'capacity' };
+    var seen = {};
+    for (var i = 0; i < data.blocks.length; i++) {
+      var b = data.blocks[i];
+      if (!b || typeof b !== 'object' || Array.isArray(b)) return { ok: false, code: 'blocks' };
+      if (['x', 'y', 'z'].some(function (k) { return typeof b[k] !== 'number' || !Number.isInteger(b[k]); })
+          || b.x < -64 || b.x > 64 || b.z < -64 || b.z > 64 || b.y < 0 || b.y > 31) return { ok: false, code: 'bounds' };
+      if (!Object.prototype.hasOwnProperty.call(ARCH_SHAPE_IDS, b.shape)
+          || !Object.prototype.hasOwnProperty.call(ARCH_MATERIAL_IDS, b.material)
+          || typeof b.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(b.color)
+          || !Number.isInteger(b.rotation) || b.rotation % 90 !== 0) return { ok: false, code: 'blocks' };
+      if (seen[archBlockKey(b)]) return { ok: false, code: 'duplicates' };
+      seen[archBlockKey(b)] = true;
+    }
+    return { ok: true, project: makeArchProject({ blocks: data.blocks, projectName: data.project.name, projectNotes: data.project.notes }) };
+  }
+  function archProjectHistoryFrame(state, force) {
+    var model = sanitizeArchBlocks(state.blocks);
+    return force || state.projectName || state.projectNotes
+      ? { kind: 'arch-project-frame', blocks: model, projectName: archProjectText(state.projectName, 80), projectNotes: archProjectText(state.projectNotes, 4000), projectSavedId: archProjectText(state.projectSavedId, 120) }
+      : model;
+  }
+  function archProjectFrameDetails(frame) {
+    return frame && frame.kind === 'arch-project-frame'
+      ? { projectName: archProjectText(frame.projectName, 80), projectNotes: archProjectText(frame.projectNotes, 4000), projectSavedId: archProjectText(frame.projectSavedId, 120) } : {};
+  }
+  function compareArchProjects(baseline, current) {
+    var a = {}, b = {}, result = { added: 0, removed: 0, changed: 0, unchanged: 0, costDelta: 0 };
+    sanitizeArchBlocks(baseline).forEach(function (cell) { a[archBlockKey(cell)] = cell; result.costDelta -= ARCH_DESIGN_COST[cell.material]; });
+    sanitizeArchBlocks(current).forEach(function (cell) {
+      var key = archBlockKey(cell); b[key] = cell; result.costDelta += ARCH_DESIGN_COST[cell.material];
+      if (!a[key]) result.added++;
+      else if (cell.shape !== a[key].shape || cell.material !== a[key].material || cell.color !== a[key].color || cell.rotation !== a[key].rotation) result.changed++;
+      else result.unchanged++;
+    });
+    Object.keys(a).forEach(function (key) { if (!b[key]) result.removed++; });
+    return result;
+  }
+  function previewArchProjectImport(state, incoming, mode, offset) {
+    state = state || {};
+    if (state.showReplay) return { ok: false, code: 'replay' };
+    var parsed = parseArchProject(incoming);
+    if (!parsed.ok) return parsed;
+    var project = parsed.project, current = getArchRuntimeBlocks(state.blocks), next = project.blocks;
+    if (mode === 'merge') {
+      offset = offset || {};
+      var dx = archDesignInteger(offset.dx, -128, 128), dy = archDesignInteger(offset.dy, -31, 31), dz = archDesignInteger(offset.dz, -128, 128);
+      if (dx == null || dy == null || dz == null) return { ok: false, code: 'offset' };
+      if (!next.length) return { ok: false, code: 'empty' };
+      if (current.length + next.length > ARCH_MAX_BLOCKS) return { ok: false, code: 'capacity' };
+      next = next.map(function (b) { return Object.assign({}, b, { x: b.x + dx, y: b.y + dy, z: b.z + dz }); });
+      if (next.some(function (b) { return b.x < -64 || b.x > 64 || b.z < -64 || b.z > 64 || b.y < 0 || b.y > 31; })) return { ok: false, code: 'bounds' };
+      var occupied = {};
+      current.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+      var conflicts = next.filter(function (b) { return occupied[archBlockKey(b)]; }).length;
+      if (conflicts) return { ok: false, code: 'collision', count: conflicts };
+      next = current.concat(next);
+    } else if (mode !== 'replace') return { ok: false, code: 'mode' };
+    var delta = compareArchProjects(current, next);
+    var sameDetails = mode === 'merge' || (archProjectText(state.projectName, 80) === project.project.name && archProjectText(state.projectNotes, 4000) === project.project.notes);
+    if (!delta.added && !delta.removed && !delta.changed && sameDetails) return { ok: false, code: 'unchanged' };
+    return { ok: true, blocks: next, project: project, delta: delta, importedCount: project.blocks.length };
+  }
+  function commitArchProjectImport(state, incoming, mode, offset) {
+    state = state || {};
+    var result = previewArchProjectImport(state, incoming, mode, offset);
+    if (!result.ok) return { state: state, result: result };
+    var history = getArchHistoryStack(state.undoStack); history.push(archProjectHistoryFrame(state, true));
+    var metadata = mode === 'replace' ? { projectName: result.project.project.name, projectNotes: result.project.project.notes, projectSavedId: '' } : {};
+    var materials = Object.assign({}, state.materialsUsed || {});
+    result.blocks.forEach(function (b) { materials[b.material] = true; });
+    return { result: result, state: Object.assign({}, state, getArchReplacementViewState(result.blocks, state.editLayer), metadata, {
+      blocks: result.blocks, undoStack: history.slice(-50), redoStack: [], materialsUsed: materials,
+      projectImport: null, projectFileError: '', projectImportNotice: mode === 'merge' ? 'merged' : 'opened', showProject: true
+    }) };
+  }
+  // A stable component owns file-reader cancellation; stale reads cannot replace a newer preview.
+  function ArchProjectFileInput(props) {
+    var React = props.React, latest = React.useRef(props), reader = React.useRef(null), sequence = React.useRef(0);
+    var reading = React.useState(false);
+    latest.current = props;
+    React.useEffect(function () { return function () { sequence.current++; if (reader.current) reader.current.abort(); }; }, []);
+    return React.createElement(React.Fragment, null,
+      React.createElement('input', { type: 'file', accept: '.archstudio.json,.json,application/json',
+        'aria-label': props.label, disabled: props.disabled, style: props.style,
+        onChange: function (event) {
+          var file = event.target.files && event.target.files[0], token = ++sequence.current;
+          event.target.value = '';
+          if (reader.current) reader.current.abort();
+          reading[1](false);
+          if (!file) return;
+          if (file.size > ARCH_PROJECT_FILE_LIMIT) { latest.current.onResult({ ok: false, code: 'size' }); return; }
+          latest.current.onLoading(); reading[1](true);
+          var next = new FileReader(); reader.current = next;
+          next.onload = function () {
+            if (token !== sequence.current) return;
+            reading[1](false); latest.current.onResult(parseArchProject(String(next.result)));
+          };
+          next.onerror = function () {
+            if (token !== sequence.current) return;
+            reading[1](false); latest.current.onResult({ ok: false, code: 'read' });
+          };
+          try { next.readAsText(file); } catch (_) { next.onerror(); }
+        } }),
+      reading[0] && React.createElement('span', { role: 'status', style: { display: 'block', marginTop: 5, color: '#cbd5e1', fontSize: 11 } }, props.readingLabel));
+  }
+  window.__alloArchProject = { create: makeArchProject, parse: parseArchProject, compare: compareArchProjects,
+    preview: previewArchProjectImport, commit: commitArchProjectImport, historyFrame: archProjectHistoryFrame, frameDetails: archProjectFrameDetails };
 
   function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
   try { window.__alloArchGL = ArchGL; } catch (e) {}
@@ -1549,6 +1844,8 @@ function __alloAST(k, fb) {
       + (showHeatmap ? '. Structural load heatmap is active' : '')
       + '. Use the camera controls to look around it.';
     var mainUse3d = archShow3d && editorView !== 'grid';
+    var designSelectionBounds = d.showDesign && d.designTab === 'region' && !showReplay
+      ? archDesignBounds(archDesignSelection(blocks, d.designRegion || { minX: 0, maxX: 5, minY: 0, maxY: 3, minZ: 0, maxZ: 4 })) : null;
     var archRenderBlocks = mainUse3d ? archDisplayBlocks.map(function (b) {
       return {
         x: b.x || 0, y: b.y || 0, z: b.z || 0,
@@ -1559,6 +1856,7 @@ function __alloAST(k, fb) {
     if (mainUse3d) {
       ArchGL.submit({
         blocks: archRenderBlocks,
+        regionBounds: designSelectionBounds,
         rotX: archRot.rotX, rotY: archRot.rotY, scale: archRot.scale || 1,
         blueprintView: blueprintView,
         styleMode: styleMode,
@@ -1571,7 +1869,7 @@ function __alloAST(k, fb) {
           return (b.x || 0) + ',' + (b.y || 0) + ',' + (b.z || 0) + ',' + (b.shape || 'block') + ','
             + (b.material || '') + ',' + (b.rotation || 0) + ',' + b.hex;
         }).join('|') + '|style:' + styleMode + '|heat:' + (showHeatmap ? 'on' : 'off')
-          + '|selected:' + selectedBlockKey
+          + '|selected:' + selectedBlockKey + '|region:' + JSON.stringify(designSelectionBounds)
       });
     }
     var archGlLive = archShow3d && ArchGL.isReady();
@@ -1749,14 +2047,14 @@ function __alloAST(k, fb) {
     // ══════════════════════════════════════════════════════════════
     var pushUndo = function (currentBlocks) {
       var stack = (undoStack || []).slice();
-      stack.push(JSON.parse(JSON.stringify(currentBlocks)));
+      stack.push(archProjectHistoryFrame(Object.assign({}, d, { blocks: currentBlocks })));
       if (stack.length > 50) stack = stack.slice(-50);
       return stack;
     };
 
     var pushUndoFromState = function (archState) {
       var stack = getArchHistoryStack(archState.undoStack);
-      stack.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(archState.blocks))));
+      stack.push(archProjectHistoryFrame(archState));
       return stack.length > 50 ? stack.slice(-50) : stack;
     };
 
@@ -1893,7 +2191,7 @@ function __alloAST(k, fb) {
             ? (next.length ? nearestArchOccupiedLayer(next, a.viewLayer) : -1)
             : a.viewLayer;
           var history = getArchHistoryStack(a.undoStack);
-          history.push(JSON.parse(JSON.stringify(current)));
+          history.push(archProjectHistoryFrame(a));
           if (history.length > 50) history = history.slice(-50);
           var materialsSeen = Object.assign({}, a.materialsUsed || {});
           var stylesSeen = Object.assign({}, a.stylesUsed || {});
@@ -2016,7 +2314,7 @@ function __alloAST(k, fb) {
             ? (fullAction.type === 'delete' ? (next.length ? nearestArchOccupiedLayer(next, a.viewLayer) : -1) : nextEditLayer)
             : a.viewLayer;
           var history = getArchHistoryStack(a.undoStack);
-          history.push(JSON.parse(JSON.stringify(current)));
+          history.push(archProjectHistoryFrame(a));
           if (history.length > 50) history = history.slice(-50);
           var materialsSeen = Object.assign({}, a.materialsUsed || {});
           var stylesSeen = Object.assign({}, a.stylesUsed || {});
@@ -2111,16 +2409,17 @@ function __alloAST(k, fb) {
         if (a.showReplay) return p;
         var stack = getArchHistoryStack(a.undoStack);
         if (!stack.length) return p;
-        var prev = getArchRuntimeBlocks(stack.pop());
+        var restoredFrame = stack.pop();
+        var prev = getArchRuntimeBlocks(restoredFrame);
         var redo = getArchHistoryStack(a.redoStack);
-        redo.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(a.blocks))));
+        redo.push(archProjectHistoryFrame(a, restoredFrame && restoredFrame.kind === 'arch-project-frame'));
         if (redo.length > 50) redo = redo.slice(-50);
         var restoredEditLayer = nearestArchOccupiedLayer(prev, a.editLayer != null ? a.editLayer : editLayer);
         var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(prev, a.viewLayer) : a.viewLayer;
         transaction.committed = true;
         transaction.count = prev ? prev.length : 0;
         return Object.assign({}, p, { archStudio: Object.assign({}, a, {
-          blocks: prev, undoStack: stack, redoStack: redo, selectedBlockKey: '',
+          ...archProjectFrameDetails(restoredFrame), blocks: prev, undoStack: stack, redoStack: redo, selectedBlockKey: '',
           editLayer: restoredEditLayer, viewLayer: restoredViewLayer,
           gridCursorX: null, gridCursorZ: null, quakeResult: null
         }) });
@@ -2142,16 +2441,17 @@ function __alloAST(k, fb) {
         if (a.showReplay) return p;
         var stack = getArchHistoryStack(a.redoStack);
         if (!stack.length) return p;
-        var next = getArchRuntimeBlocks(stack.pop());
+        var restoredFrame = stack.pop();
+        var next = getArchRuntimeBlocks(restoredFrame);
         var undo = getArchHistoryStack(a.undoStack);
-        undo.push(JSON.parse(JSON.stringify(getArchRuntimeBlocks(a.blocks))));
+        undo.push(archProjectHistoryFrame(a, restoredFrame && restoredFrame.kind === 'arch-project-frame'));
         if (undo.length > 50) undo = undo.slice(-50);
         var restoredEditLayer = nearestArchOccupiedLayer(next, a.editLayer != null ? a.editLayer : editLayer);
         var restoredViewLayer = a.viewLayer != null && a.viewLayer >= 0 ? nearestArchOccupiedLayer(next, a.viewLayer) : a.viewLayer;
         transaction.committed = true;
         transaction.count = next ? next.length : 0;
         return Object.assign({}, p, { archStudio: Object.assign({}, a, {
-          blocks: next, undoStack: undo, redoStack: stack, selectedBlockKey: '',
+          ...archProjectFrameDetails(restoredFrame), blocks: next, undoStack: undo, redoStack: stack, selectedBlockKey: '',
           editLayer: restoredEditLayer, viewLayer: restoredViewLayer,
           gridCursorX: null, gridCursorZ: null, quakeResult: null
         }) });
@@ -2187,22 +2487,23 @@ function __alloAST(k, fb) {
 
     var saveBuild = function () {
       if (blocks.length === 0) return;
-      var name = (styleMode === 'bricks' ? 'Brick Build' : 'Build') + ' #' + (galleryItems.length + 1);
+      var name = archProjectText(d.projectName, 80).trim() || (styleMode === 'bricks' ? 'Brick Build' : 'Build') + ' #' + (galleryItems.length + 1);
       var item = {
-        id: 'arch_' + Date.now(),
+        id: 'arch_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
         name: name,
+        notes: archProjectText(d.projectNotes, 4000),
         blocks: sanitizeArchBlocks(blocks),
         blockCount: blocks.length,
         dims: buildW + '\u00D7' + buildD + '\u00D7' + buildH,
         stability: analysis.stability,
         timestamp: Date.now()
       };
-      var updated = galleryItems.concat([item]);
+      var updated = loadGallery().concat([item]);
       if (!saveGallery(updated)) {
         if (ctx.addToast) ctx.addToast('\u26A0\uFE0F This browser could not save the build. Storage may be full or unavailable.', 'error');
         return;
       }
-      upd('_galleryRefresh', Date.now());
+      upd({ _galleryRefresh: Date.now(), projectSavedId: item.id, projectCompareId: item.id, projectName: name });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCBE Build saved: ' + name, 'success');
       if (soundEnabled) sfxSave();
       if (announceToSR) announceToSR('Build saved: ' + name + '. ' + blocks.length + ' blocks.');
@@ -2216,7 +2517,7 @@ function __alloAST(k, fb) {
         if (a.showReplay) return p;
         return Object.assign({}, p, { archStudio: Object.assign({}, a,
           getArchReplacementViewState(loadedBlocks, a.editLayer),
-          { blocks: loadedBlocks, undoStack: pushUndoFromState(a), redoStack: [] }) });
+          { blocks: loadedBlocks, undoStack: pushUndoFromState(a), redoStack: [], projectName: archProjectText(item.name, 80), projectNotes: archProjectText(item.notes, 4000), projectSavedId: item.id, projectImportNotice: '' }) });
       });
       if (ctx.addToast) ctx.addToast('\uD83D\uDCE5 Loaded: ' + item.name, 'info');
       if (soundEnabled) sfxLoad();
@@ -2224,7 +2525,7 @@ function __alloAST(k, fb) {
     };
 
     var deleteBuild = function (id) {
-      var updated = galleryItems.filter(function (g) { return g.id !== id; });
+      var updated = loadGallery().filter(function (g) { return g.id !== id; });
       if (!saveGallery(updated)) {
         if (ctx.addToast) ctx.addToast('\u26A0\uFE0F The saved build could not be removed from browser storage.', 'error');
         return;
@@ -3251,6 +3552,7 @@ function __alloAST(k, fb) {
         for (var gx = gridMinX; gx <= gridMaxX; gx++) {
           (function (x, z) {
             var b = layerMap[x + ',' + z];
+            var inDesignRegion = !!b && !!designSelectionBounds && b.x >= designSelectionBounds.minX && b.x <= designSelectionBounds.maxX && b.y >= designSelectionBounds.minY && b.y <= designSelectionBounds.maxY && b.z >= designSelectionBounds.minZ && b.z <= designSelectionBounds.maxZ;
             var isSelected = !!b && archBlockKey(b) === selectedBlockKey;
             var cellName = b ? (b.material || 'stone') + ' ' + (b.shape || 'block') : 'Empty cell';
             var action = showReplay ? 'read-only construction replay' : mode === 'place' ? 'place ' + activeShape : mode === 'erase' ? 'remove block' : mode === 'paint' ? 'paint block' : 'pick block properties';
@@ -3259,7 +3561,7 @@ function __alloAST(k, fb) {
               type: 'button',
               role: 'gridcell',
               tabIndex: x === cursorX && z === cursorZ ? 0 : -1,
-              'aria-selected': isSelected,
+              'aria-selected': isSelected || inDesignRegion,
               'aria-colindex': x - gridMinX + 1,
               'data-arch-grid-x': x,
               'data-arch-grid-z': z,
@@ -3275,7 +3577,7 @@ function __alloAST(k, fb) {
                 width: cellPx, height: cellPx, padding: 0,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 borderRadius: 5,
-                border: '2px solid ' + (isSelected ? '#fbbf24' : b ? 'rgba(255,255,255,.55)' : 'rgba(100,116,139,.42)'),
+                border: '2px solid ' + (isSelected ? '#fbbf24' : inDesignRegion ? '#38bdf8' : b ? 'rgba(255,255,255,.55)' : 'rgba(100,116,139,.42)'),
                 background: b ? (showHeatmap ? '#' + ('000000' + archHexFor(b).toString(16)).slice(-6) : (b.color || matColorLookup[b.material || 'stone'] || '#94a3b8')) : 'rgba(30,41,59,.72)',
                 color: b ? '#fff' : '#64748b',
                 fontSize: b ? Math.max(14, Math.floor(cellPx * 0.42)) : 13,
@@ -3311,6 +3613,7 @@ function __alloAST(k, fb) {
             'aria-label': 'Architecture build grid, floor ' + editLayer,
             'aria-describedby': 'arch-grid-help',
             'aria-readonly': showReplay,
+            'aria-multiselectable': !!designSelectionBounds,
             'aria-rowcount': rows,
             'aria-colcount': cols,
             style: {
@@ -3435,6 +3738,355 @@ function __alloAST(k, fb) {
       if (announceToSR) announceToSR(__alloAST('stem.archstudio.sr_view_reset_showing_the_entire_live_build', 'View reset. Showing the entire live build.'));
     };
 
+
+    // Design workbench uses the same block model as the hand editor and exports.
+    var showDesign = d.showDesign === true;
+    function designMessage(result) {
+      var messages = {
+        invalid: t('stem.archstudio.design_invalid', 'Enter whole numbers within the displayed limits.'),
+        bounds: t('stem.archstudio.design_bounds', 'This design extends outside X/Z -64 to 64 or Y 0 to 31. Adjust its origin or dimensions.'),
+        capacity: t('stem.archstudio.design_capacity', 'This operation exceeds the 4,096-block limit. Reduce the size or selection.'),
+        region: t('stem.archstudio.design_region_invalid', 'Enter valid coordinates for both corners of the region.'),
+        empty: t('stem.archstudio.design_empty', 'No blocks are inside this region. Select a floor or change the corners.'),
+        collision: t('stem.archstudio.design_collision', '{count} occupied cells conflict with this operation. Change the position or offset.'),
+        unchanged: t('stem.archstudio.design_unchanged', 'This operation would make no change.'),
+        replay: t('stem.archstudio.design_replay', 'Exit construction replay before editing the live build.'),
+        built: t('stem.archstudio.design_built', 'Added {count} blocks. Undo restores the previous build.'),
+        moved: t('stem.archstudio.design_moved', 'Moved {count} blocks. The region follows the selection.'),
+        duplicated: t('stem.archstudio.design_duplicated', 'Copied {count} blocks. The new copy is selected.'),
+        rotated: t('stem.archstudio.design_rotated', 'Rotated {count} blocks by 90 degrees.'),
+        painted: t('stem.archstudio.design_painted', 'Updated the material and color of {count} blocks.'),
+        deleted: t('stem.archstudio.design_deleted', 'Removed {count} blocks. Use Undo to restore them.')
+      };
+      return (messages[result.code] || '').replace('{count}', result.count || 0);
+    }
+    function commitDesign(action) {
+      var outcome = null;
+      function transform(p) {
+        var a = p.archStudio || {};
+        var tx = commitArchDesignState(a, action);
+        outcome = tx.result;
+        return Object.assign({}, p, { archStudio: Object.assign({}, tx.state, {
+          showDesign: true, designNotice: { code: tx.result.code, count: tx.result.count, signature: getArchBuildSignature(tx.state.blocks) }
+        }) });
+      }
+      if (typeof ctx.setToolData === 'function') ctx.setToolData(transform);
+      else upd(transform({ archStudio: d }).archStudio);
+      setTimeout(function () {
+        if (!outcome) return;
+        var message = designMessage(outcome);
+        if (announceToSR) announceToSR(message);
+        if (ctx.addToast) ctx.addToast(message, outcome.ok ? 'success' : 'info');
+        if (outcome.ok && soundEnabled) sfxPlace();
+      }, 0);
+    }
+    function renderDesignPanel() {
+      if (!showDesign) return null;
+      var tab = d.designTab === 'region' ? 'region' : 'build';
+      var currentNotice = d.designNotice && d.designNotice.signature === currentBuildSignature ? d.designNotice : null;
+      var spec = Object.assign({ kind: 'room', width: 6, depth: 5, height: 3, x: 0, y: 0, z: 0,
+        door: true, windows: true, ceiling: false }, d.designSpec || {}, { material: activeMaterial, color: activeColor });
+      var region = Object.assign({ minX: 0, maxX: 5, minY: 0, maxY: 3, minZ: 0, maxZ: 4 }, d.designRegion || {});
+      var offset = Object.assign({ dx: 7, dy: 0, dz: 0 }, d.designOffset || {});
+      var operation = ['move', 'duplicate', 'rotate', 'paint', 'delete'].indexOf(d.designOperation) >= 0 ? d.designOperation : 'duplicate';
+      var selected = archDesignSelection(blocks, region);
+      var selectedBounds = archDesignBounds(selected);
+      var generation = tab === 'build' ? generateArchDesign(spec) : null;
+      var action = tab === 'build' ? { type: 'build', spec: spec } : Object.assign({ type: operation,
+        region: region, material: activeMaterial, color: activeColor }, offset);
+      var preview = d.showReplay ? archDesignFailure('replay', blocks) : applyArchDesign(blocks, action);
+      var inputStyle = { width: '100%', minWidth: 0, minHeight: 32, borderRadius: 6, border: '1px solid #64748b',
+        background: '#0f172a', color: '#f1f5f9', padding: '5px 6px', fontSize: 12 };
+      var textStyle = { color: '#cbd5e1', fontSize: 11, lineHeight: 1.5, margin: '6px 0' };
+      var smallButton = { minHeight: 32, padding: '5px 7px', borderRadius: 7, border: '1px solid #64748b',
+        color: '#e2e8f0', background: '#1e293b', cursor: 'pointer', fontSize: 11 };
+      function field(label, key, data, bucket, min, max) {
+        var id = 'arch-design-' + bucket + '-' + key;
+        return el('label', { key: key, htmlFor: id, style: { display: 'block', minWidth: 0, color: '#cbd5e1', fontSize: 11 } },
+          el('span', { style: { display: 'block', marginBottom: 3 } }, label),
+          el('input', { id: id, type: 'number', min: min, max: max, step: 1, value: data[key],
+            'aria-label': label, onChange: function (ev) {
+              var patch = {}; patch[key] = ev.target.value;
+              upd({ [bucket]: Object.assign({}, data, patch), designNotice: null });
+            }, style: inputStyle }));
+      }
+      function setRegion(box) {
+        if (box) upd({ designRegion: box, designNotice: null });
+      }
+      var projectedCost = preview.ok ? preview.blocks.reduce(function (sum, b) { return sum + ARCH_DESIGN_COST[b.material]; }, 0) : totalCost;
+      var drawing = null;
+      if (generation && generation.ok) {
+        var cells = {}, occupied = {};
+        blocks.forEach(function (b) { occupied[archBlockKey(b)] = true; });
+        generation.blocks.forEach(function (b) {
+          var key = b.x + ',' + b.z, rank = b.shape === 'door' ? 4 : b.shape === 'window' ? 3 : b.y > Number(spec.y) && b.shape !== 'slab' ? 2 : 1;
+          if (!cells[key] || rank > cells[key].rank) cells[key] = { block: b, rank: rank, conflict: false };
+        });
+        generation.blocks.forEach(function (b) { if (occupied[archBlockKey(b)]) cells[b.x + ',' + b.z].conflict = true; });
+        var w = generation.bounds.maxX - generation.bounds.minX + 1;
+        var depth = generation.bounds.maxZ - generation.bounds.minZ + 1;
+        drawing = el('figure', { style: { margin: '10px 0', padding: 7, borderRadius: 8, background: '#0b1426', border: '1px solid #475569' } },
+          el('svg', { role: 'img', 'aria-label': t('stem.archstudio.design_plan_label', 'Proposed design, top view. Crosses mark occupied cells.'),
+            'data-arch-design-plan': 'true', viewBox: '-1 -1 ' + (w + 2) + ' ' + (depth + 2),
+            style: { width: '100%', height: 125, display: 'block' } },
+            Object.keys(cells).map(function (key) {
+              var cell = cells[key], b = cell.block, x = b.x - Number(spec.x), z = b.z - Number(spec.z);
+              return el('g', { key: key },
+                el('rect', { x: x + .05, y: z + .05, width: .9, height: .9, rx: .08,
+                  fill: cell.conflict ? '#7f1d1d' : cell.rank === 1 ? '#24354d' : b.color,
+                  stroke: cell.conflict ? '#fca5a5' : '#94a3b8', strokeWidth: .04 }),
+                cell.conflict && el('path', { d: 'M' + (x + .25) + ',' + (z + .25) + 'l.5,.5m0,-.5l-.5,.5', stroke: '#fecaca', strokeWidth: .09 }));
+            })),
+          el('figcaption', { style: textStyle }, spec.kind === 'room' && spec.door ? t('stem.archstudio.design_plan_caption', 'Top view • entrance on the minimum-Z wall') : t('stem.archstudio.design_top_view', 'Top view • X across, Z down')));
+      }
+      var buttonLabel = tab === 'build' ? t('stem.archstudio.design_add', 'Add to build') : ({
+        move: t('stem.archstudio.design_apply_move', 'Move region'), duplicate: t('stem.archstudio.design_apply_copy', 'Copy region'),
+        rotate: t('stem.archstudio.design_apply_rotate', 'Rotate region 90°'), paint: t('stem.archstudio.design_apply_paint', 'Paint region'),
+        delete: t('stem.archstudio.design_apply_delete', 'Delete region')
+      })[operation];
+      return el('section', { id: 'arch-design-panel', 'aria-labelledby': 'arch-design-heading', 'data-arch-design': 'true',
+        style: { padding: 10, borderRadius: 12, background: 'linear-gradient(145deg,#123045,#172239)', border: '1px solid #38bdf8' } },
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 8 } },
+          el('h3', { id: 'arch-design-heading', style: { margin: 0, flex: 1, fontSize: 13, color: '#e0f2fe' } }, t('stem.archstudio.design_title', 'Design workbench')),
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.design_close', 'Close design workbench'), onClick: function () {
+            upd('showDesign', false);
+            setTimeout(function () { var button = document.getElementById('arch-design-toggle'); if (button) button.focus(); }, 0);
+          }, style: smallButton }, '×')),
+        el('div', { role: 'group', 'aria-label': t('stem.archstudio.design_workflow', 'Design workflow'), style: { display: 'flex', gap: 5 } },
+          [['build', t('stem.archstudio.design_builder', 'Builder')], ['region', t('stem.archstudio.design_region', 'Region edits')]].map(function (item) {
+            return el('button', { key: item[0], type: 'button', 'aria-pressed': tab === item[0], onClick: function () { upd({ designTab: item[0], designNotice: null }); },
+              style: Object.assign({}, smallButton, { flex: 1, borderColor: tab === item[0] ? '#7dd3fc' : '#64748b', background: tab === item[0] ? '#164e63' : '#1e293b' }) }, item[1]);
+          })),
+        tab === 'build' ? el('div', null,
+          el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.design_structure', 'Structure'),
+            el('select', { 'aria-label': t('stem.archstudio.design_structure', 'Structure'), value: spec.kind, style: inputStyle,
+              onChange: function (ev) { upd({ designSpec: Object.assign({}, spec, { kind: ev.target.value }), designNotice: null }); } },
+              el('option', { value: 'room' }, t('stem.archstudio.design_room', 'Room shell')),
+              el('option', { value: 'wall' }, t('stem.archstudio.design_wall', 'Straight wall')),
+              el('option', { value: 'floor' }, t('stem.archstudio.design_floor', 'Floor slab')))),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
+            field(t('stem.archstudio.design_width', 'Width (X)'), 'width', spec, 'designSpec', spec.kind === 'room' ? 3 : 1, 32),
+            spec.kind !== 'wall' && field(t('stem.archstudio.design_depth', 'Depth (Z)'), 'depth', spec, 'designSpec', spec.kind === 'room' ? 3 : 1, 32),
+            spec.kind !== 'floor' && field(t('stem.archstudio.design_height', 'Wall height'), 'height', spec, 'designSpec', spec.kind === 'room' ? 2 : 1, 30)),
+          el('p', { style: textStyle }, t('stem.archstudio.design_origin', 'Origin • lower corner, in grid units')),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 5 } },
+            field(t('stem.archstudio.design_x', 'Origin X'), 'x', spec, 'designSpec', -64, 64),
+            field(t('stem.archstudio.design_y', 'Origin Y'), 'y', spec, 'designSpec', 0, 31),
+            field(t('stem.archstudio.design_z', 'Origin Z'), 'z', spec, 'designSpec', -64, 64)),
+          el('button', { type: 'button', style: Object.assign({}, smallButton, { marginTop: 7 }), onClick: function () {
+            upd({ designSpec: Object.assign({}, spec, { x: gridCursorX == null ? 0 : gridCursorX, y: editLayer, z: gridCursorZ == null ? 0 : gridCursorZ }), designNotice: null });
+          } }, t('stem.archstudio.design_cursor', 'Use floor-grid cursor')),
+          spec.kind === 'room' && el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 8 } },
+            [['door', t('stem.archstudio.design_door', 'Door')], ['windows', t('stem.archstudio.design_windows', 'Windows')], ['ceiling', t('stem.archstudio.design_ceiling', 'Ceiling')]].map(function (item) {
+              return el('label', { key: item[0], style: { display: 'flex', alignItems: 'center', gap: 4, color: '#e2e8f0', fontSize: 11, minHeight: 30 } },
+                el('input', { type: 'checkbox', checked: !!spec[item[0]], onChange: function (ev) {
+                  var patch = {}; patch[item[0]] = ev.target.checked; upd({ designSpec: Object.assign({}, spec, patch), designNotice: null });
+                } }), item[1]);
+            })),
+          drawing,
+          generation.ok && el('div', { style: Object.assign({}, textStyle, { padding: 7, borderRadius: 7, background: '#0f172a' }) },
+            el('strong', null, generation.count + ' ' + t('stem.archstudio.design_blocks', 'blocks') + ' · ' + generation.cost + ' ' + t('stem.archstudio.design_credits', 'credits')),
+            el('div', null, t('stem.archstudio.design_footprint', 'Footprint') + ': ' + generation.footprint + ' u²'),
+            spec.kind === 'room' && el('div', null, t('stem.archstudio.design_interior', 'Interior floor area') + ': ' + generation.interior + ' u²'),
+            el('div', null, t('stem.archstudio.design_model_height', 'Total height') + ': ' + (generation.bounds.maxY - generation.bounds.minY + 1) + ' u')),
+          el('p', { style: textStyle }, t('stem.archstudio.design_scale_note', 'Dimensions use grid units. Rooms include a solid base; wall height starts above it. Costs are studio credits.'))
+        ) : el('div', null,
+          el('p', { style: textStyle }, t('stem.archstudio.design_region_help', 'Select every block between two corners, including hidden layers and filtered materials.')),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 5, marginBottom: 8 } },
+            el('button', { type: 'button', disabled: !blocks.length, style: smallButton, onClick: function () { setRegion(archDesignBounds(blocks)); } }, t('stem.archstudio.design_all', 'Entire build')),
+            el('button', { type: 'button', disabled: !blocks.some(function (b) { return b.y === editLayer; }), style: smallButton,
+              onClick: function () { setRegion(archDesignBounds(blocks.filter(function (b) { return b.y === editLayer; }))); } }, t('stem.archstudio.design_current_floor', 'Current floor')),
+            el('button', { type: 'button', disabled: !selectedBlock, style: smallButton, onClick: function () { if (selectedBlock) setRegion(archDesignBounds([selectedBlock])); } }, t('stem.archstudio.design_picked', 'Picked block'))),
+          el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 6 } },
+            ['X', 'Y', 'Z'].map(function (axis) {
+              return el(React.Fragment, { key: axis },
+                field(t('stem.archstudio.design_from', 'From') + ' ' + axis, 'min' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64),
+                field(t('stem.archstudio.design_to', 'To') + ' ' + axis, 'max' + axis, region, 'designRegion', axis === 'Y' ? 0 : -64, axis === 'Y' ? 31 : 64));
+            })),
+          el('p', { 'data-arch-region-count': 'true', style: Object.assign({}, textStyle, { color: '#7dd3fc', fontWeight: 700 }) },
+            t('stem.archstudio.design_selected', '{count} blocks selected').replace('{count}', selected.length)),
+          el('p', { style: textStyle }, t('stem.archstudio.design_selection_hint', 'The cyan outline marks your region in 3D; selected floor-grid cells have cyan borders.')),
+          el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.design_operation', 'Operation'),
+            el('select', { 'aria-label': t('stem.archstudio.design_operation', 'Operation'), value: operation, style: inputStyle,
+              onChange: function (ev) { upd({ designOperation: ev.target.value, designNotice: null }); } },
+              [['duplicate', t('stem.archstudio.design_copy', 'Copy')], ['move', t('stem.archstudio.design_move', 'Move')],
+                ['rotate', t('stem.archstudio.design_rotate', 'Rotate 90°')], ['paint', t('stem.archstudio.design_paint', 'Paint')],
+                ['delete', t('stem.archstudio.design_delete', 'Delete')]].map(function (item) { return el('option', { key: item[0], value: item[0] }, item[1]); }))),
+          (operation === 'move' || operation === 'duplicate') && el('div', null,
+            el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 5 } },
+              field(t('stem.archstudio.design_offset_x', 'Offset X'), 'dx', offset, 'designOffset', -128, 128),
+              field(t('stem.archstudio.design_offset_y', 'Offset Y'), 'dy', offset, 'designOffset', -31, 31),
+              field(t('stem.archstudio.design_offset_z', 'Offset Z'), 'dz', offset, 'designOffset', -128, 128)),
+            el('button', { type: 'button', disabled: !selectedBounds, style: Object.assign({}, smallButton, { marginTop: 7 }), onClick: function () {
+              if (selectedBounds) upd({ designOffset: { dx: selectedBounds.maxX - selectedBounds.minX + 2, dy: 0, dz: 0 }, designNotice: null });
+            } }, t('stem.archstudio.design_beside', 'Set offset beside selection'))),
+          operation === 'rotate' && el('p', { style: textStyle }, t('stem.archstudio.design_rotation_note', 'Turns around Y and swaps width/depth, anchored at the selection’s minimum X/Z corner.')),
+          operation === 'delete' && el('p', { style: Object.assign({}, textStyle, { color: '#fecaca' }) }, t('stem.archstudio.design_delete_note', 'Removes the selected blocks from every included layer. This is one undo step.'))
+        ),
+        (tab === 'build' || operation === 'paint') && el('label', { style: Object.assign({}, textStyle, { display: 'block' }) },
+          t('stem.archstudio.design_material', 'Building material'),
+          el('select', { 'aria-label': t('stem.archstudio.design_material', 'Building material'), value: activeMaterial, style: inputStyle,
+            onChange: function (ev) { upd({ activeMaterial: ev.target.value, activeColor: normalizeArchColor(null, ev.target.value), designNotice: null }); } },
+            materials.map(function (m) { return el('option', { key: m.id, value: m.id }, m.label + ' · ' + m.cost); }))),
+        preview.ok && budgetEnabled && el('p', { style: Object.assign({}, textStyle, { color: projectedCost > budget ? '#fecaca' : '#a7f3d0' }) },
+          t('stem.archstudio.design_projected_budget', 'Build cost after edit: {cost} / {budget} credits').replace('{cost}', projectedCost).replace('{budget}', budget)),
+        !preview.ok && el('p', { 'data-arch-design-warning': 'true', style: Object.assign({}, textStyle, { color: '#fde68a' }) }, tab === 'build' && currentNotice && currentNotice.code === 'built' && preview.code === 'collision'
+          ? t('stem.archstudio.design_already_added', 'Design added. Change the origin to add another, or use Region edits to transform it.') : designMessage(preview)),
+        el('button', { type: 'button', 'data-arch-design-apply': 'true', disabled: !preview.ok, onClick: function () { commitDesign(action); },
+          style: { width: '100%', minHeight: 38, marginTop: 8, borderRadius: 8, border: '1px solid ' + (preview.ok ? '#7dd3fc' : '#64748b'),
+            background: preview.ok ? (operation === 'delete' && tab === 'region' ? '#991b1b' : '#075985') : '#334155',
+            color: '#f1f5f9', fontSize: 12, fontWeight: 750, cursor: preview.ok ? 'pointer' : 'default', opacity: preview.ok ? 1 : .7 } }, buttonLabel),
+        currentNotice && el('p', { role: 'status', 'aria-live': 'polite', 'data-arch-design-notice': 'true',
+          style: Object.assign({}, textStyle, { color: '#bae6fd' }) }, designMessage(currentNotice)));
+    }
+
+
+    var showProject = d.showProject === true;
+    function projectError(code, count) {
+      var messages = {
+        size: t('stem.archstudio.project_error_size', 'Choose a project file smaller than 2 MB.'),
+        json: t('stem.archstudio.project_error_json', 'This file is not valid JSON. Choose an Architecture Studio project file.'),
+        format: t('stem.archstudio.project_error_format', 'This is not a supported Architecture Studio project version.'),
+        details: t('stem.archstudio.project_error_details', 'Project names must be text up to 80 characters; notes can contain up to 4,000 characters.'),
+        capacity: t('stem.archstudio.project_error_capacity', 'The resulting model would exceed the 4,096-block limit.'),
+        blocks: t('stem.archstudio.project_error_blocks', 'A block has an invalid shape, material, color, or rotation. The file was not applied.'),
+        bounds: t('stem.archstudio.project_error_bounds', 'All blocks must fit within X/Z -64 to 64 and Y 0 to 31, using whole-number coordinates.'),
+        duplicates: t('stem.archstudio.project_error_duplicates', 'The file contains overlapping blocks. Resolve duplicate cells before importing it.'),
+        read: t('stem.archstudio.project_error_read', 'The file could not be read. Choose it again.'),
+        offset: t('stem.archstudio.project_error_offset', 'Enter whole-number offsets within the displayed limits.'),
+        collision: t('stem.archstudio.project_error_collision', '{count} imported cells overlap the current build. Change the offsets.'),
+        empty: t('stem.archstudio.project_error_empty', 'This project has no blocks to merge.'),
+        mode: t('stem.archstudio.project_error_mode', 'Choose whether to open the project or merge its model.'),
+        unchanged: t('stem.archstudio.project_error_unchanged', 'This project already matches the current model and details.'),
+        replay: t('stem.archstudio.project_error_replay', 'Return to the live build before applying a project.')
+      };
+      return (messages[code] || messages.read).replace('{count}', count || 0);
+    }
+    function downloadProject() {
+      var project = makeArchProject(d), url = null;
+      try {
+        var fileName = (project.project.name.trim() || 'architecture-project').replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-').slice(0, 80);
+        url = URL.createObjectURL(new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' }));
+        var link = document.createElement('a'); link.href = url; link.download = fileName + '.archstudio.json';
+        document.body.appendChild(link); link.click(); link.remove();
+        if (announceToSR) announceToSR(t('stem.archstudio.project_downloaded', 'Project file prepared for download.'));
+      } catch (_) {
+        if (ctx.addToast) ctx.addToast(t('stem.archstudio.project_download_error', 'The project file could not be downloaded. Try again.'), 'error');
+      } finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+    }
+    function applyProjectFile(mode, offset) {
+      var incoming = d.projectImport, result;
+      ctx.setToolData(function (p) {
+        var tx = commitArchProjectImport(p.archStudio || {}, incoming, mode, offset); result = tx.result;
+        return Object.assign({}, p, { archStudio: Object.assign({}, tx.state, {
+          projectFileError: tx.result.ok ? '' : tx.result.code, projectFileErrorCount: tx.result.count || 0
+        }) });
+      });
+      setTimeout(function () {
+        if (!result) return;
+        var message = result.ok ? (mode === 'merge' ? t('stem.archstudio.project_merged', 'Model merged. Undo restores the previous build.')
+          : t('stem.archstudio.project_opened', 'Project opened. Undo restores the previous model and project details.')) : projectError(result.code, result.count);
+        if (announceToSR) announceToSR(message);
+        if (ctx.addToast) ctx.addToast(message, result.ok ? 'success' : 'info');
+      }, 0);
+    }
+    function renderProjectPanel() {
+      if (!showProject) return null;
+      var textStyle = { margin: '7px 0', fontSize: 11, lineHeight: 1.5, color: '#cbd5e1' };
+      var controlStyle = { width: '100%', minWidth: 0, minHeight: 34, padding: '6px 7px', borderRadius: 7, border: '1px solid #64748b', background: '#0f172a', color: '#f1f5f9', fontSize: 12, boxSizing: 'border-box' };
+      var buttonStyle = { minHeight: 34, padding: '6px 8px', borderRadius: 7, border: '1px solid #818cf8', background: '#312e81', color: '#eef2ff', cursor: 'pointer', fontSize: 11 };
+      var candidate = d.projectImport && parseArchProject(d.projectImport);
+      var incoming = candidate && candidate.ok ? candidate.project : null;
+      var mode = d.projectImportMode === 'merge' ? 'merge' : 'replace';
+      var offset = Object.assign({ dx: 0, dy: 0, dz: 0 }, d.projectImportOffset || {});
+      var preview = incoming ? previewArchProjectImport(d, incoming, mode, offset) : null;
+      var baseline = galleryItems.find(function (item) { return item.id === d.projectCompareId; });
+      var saved = galleryItems.find(function (item) { return item.id === d.projectSavedId; });
+      var savedDelta = saved ? compareArchProjects(saved.blocks, blocks) : null;
+      var matchesSaved = savedDelta && !savedDelta.added && !savedDelta.removed && !savedDelta.changed
+        && saved.name === archProjectText(d.projectName, 80) && saved.notes === archProjectText(d.projectNotes, 4000);
+      function deltaSummary(delta) {
+        return el('div', { 'data-arch-project-delta': 'true', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: 5, margin: '8px 0' } },
+          [[t('stem.archstudio.project_added', 'Added'), delta.added], [t('stem.archstudio.project_removed', 'Removed'), delta.removed],
+            [t('stem.archstudio.project_changed', 'Changed'), delta.changed], [t('stem.archstudio.project_unchanged', 'Unchanged'), delta.unchanged]].map(function (item) {
+            return el('div', { key: item[0], style: { padding: 6, borderRadius: 6, background: '#0f172a', color: '#c7d2fe', fontSize: 11 } }, item[0] + ': ' + item[1]);
+          }),
+          el('div', { style: { gridColumn: '1 / -1', color: '#cbd5e1', fontSize: 11 } },
+            t('stem.archstudio.project_cost_delta', 'Cost change: {value} studio credits').replace('{value}', (delta.costDelta > 0 ? '+' : '') + delta.costDelta)));
+      }
+      function projectPlan(project) {
+        var bounds = archDesignBounds(project.blocks);
+        if (!bounds) return null;
+        var cells = {};
+        project.blocks.forEach(function (b) { var key = b.x + ',' + b.z; if (!cells[key] || cells[key].y < b.y) cells[key] = b; });
+        return el('svg', { role: 'img', 'aria-label': t('stem.archstudio.project_preview_plan', 'Imported project, top view'), 'data-arch-project-plan': 'true',
+          viewBox: '-1 -1 ' + (bounds.maxX - bounds.minX + 3) + ' ' + (bounds.maxZ - bounds.minZ + 3),
+          style: { display: 'block', width: '100%', height: 115, marginTop: 8, borderRadius: 7, background: '#0b1426' } },
+          Object.keys(cells).map(function (key) { var b = cells[key]; return el('rect', { key: key, x: b.x - bounds.minX + .04, y: b.z - bounds.minZ + .04, width: .92, height: .92, rx: .06, fill: b.color, stroke: '#94a3b8', strokeWidth: .04 }); }));
+      }
+      return el('section', { id: 'arch-project-panel', 'data-arch-project': 'true', 'aria-labelledby': 'arch-project-heading',
+        style: { padding: 10, borderRadius: 12, border: '1px solid #818cf8', background: 'linear-gradient(145deg,#29254d,#172239)' } },
+        el('div', { style: { display: 'flex', alignItems: 'center', gap: 6 } },
+          el('h3', { id: 'arch-project-heading', style: { margin: 0, flex: 1, fontSize: 13, color: '#e0e7ff' } }, t('stem.archstudio.project_title', 'Project & revisions')),
+          el('button', { type: 'button', 'aria-label': t('stem.archstudio.project_close', 'Close project panel'), style: buttonStyle, onClick: function () {
+            upd('showProject', false); setTimeout(function () { var toggle = document.getElementById('arch-project-toggle'); if (toggle) toggle.focus(); }, 0);
+          } }, '×')),
+        el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_name', 'Project name'),
+          el('input', { type: 'text', maxLength: 80, value: archProjectText(d.projectName, 80), disabled: showReplay,
+            'aria-label': t('stem.archstudio.project_name', 'Project name'), style: controlStyle,
+            onChange: function (event) { upd({ projectName: event.target.value, projectImportNotice: '' }); } })),
+        el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_notes', 'Design notes'),
+          el('textarea', { maxLength: 4000, rows: 3, value: archProjectText(d.projectNotes, 4000), disabled: showReplay,
+            'aria-label': t('stem.archstudio.project_notes', 'Design notes'), style: Object.assign({}, controlStyle, { resize: 'vertical' }),
+            onChange: function (event) { upd({ projectNotes: event.target.value, projectImportNotice: '' }); } })),
+        el('p', { 'data-arch-project-save-status': 'true', style: Object.assign({}, textStyle, { color: matchesSaved ? '#a7f3d0' : '#fde68a' }) },
+          matchesSaved ? t('stem.archstudio.project_saved', 'Matches your saved snapshot.') : t('stem.archstudio.project_unsaved', 'Changes have not been saved as a snapshot.')),
+        el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+          el('button', { type: 'button', disabled: !blocks.length, style: buttonStyle, onClick: saveBuild }, t('stem.archstudio.project_save', 'Save snapshot')),
+          el('button', { type: 'button', style: buttonStyle, onClick: downloadProject }, t('stem.archstudio.project_download', 'Download project'))),
+        el('p', { style: textStyle }, t('stem.archstudio.project_storage_note', 'Snapshots stay in this browser. Download a project file to keep a portable copy, including your notes.')),
+        el('hr', { style: { border: 0, borderTop: '1px solid #475569', margin: '12px 0' } }),
+        el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_choose_file', 'Preview a project file'),
+          el(ArchProjectFileInput, { React: React, label: t('stem.archstudio.project_choose_file', 'Preview a project file'),
+            disabled: showReplay, readingLabel: t('stem.archstudio.project_reading', 'Reading project file…'), style: Object.assign({}, controlStyle, { fontSize: 10, padding: 5 }),
+            onLoading: function () { upd({ projectImport: null, projectFileError: '', projectImportNotice: '' }); },
+            onResult: function (result) { upd({ projectImport: result.ok ? result.project : null, projectFileError: result.ok ? '' : result.code, projectFileErrorCount: 0 }); } })),
+        d.projectFileError && el('p', { role: 'alert', style: Object.assign({}, textStyle, { color: '#fecaca' }) }, projectError(d.projectFileError, d.projectFileErrorCount)),
+        incoming && el('div', { 'data-arch-project-import': 'true', style: { marginTop: 9, padding: 8, border: '1px solid #64748b', borderRadius: 8 } },
+          el('strong', { style: { color: '#e0e7ff', fontSize: 12, overflowWrap: 'anywhere' } }, incoming.project.name || t('stem.archstudio.project_untitled', 'Untitled project')),
+          el('p', { style: textStyle }, t('stem.archstudio.project_block_count', '{count} blocks in file').replace('{count}', incoming.blocks.length)),
+          incoming.project.notes && el('p', { style: Object.assign({}, textStyle, { whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', maxHeight: 100, overflowY: 'auto' }) }, incoming.project.notes),
+          projectPlan(incoming),
+          el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_import_mode', 'Import action'),
+            el('select', { value: mode, 'aria-label': t('stem.archstudio.project_import_mode', 'Import action'), style: controlStyle,
+              onChange: function (event) { upd({ projectImportMode: event.target.value, projectFileError: '' }); } },
+              el('option', { value: 'replace' }, t('stem.archstudio.project_replace', 'Open as current project')),
+              el('option', { value: 'merge' }, t('stem.archstudio.project_merge', 'Merge into current model')))),
+          mode === 'merge' && el('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 4 } },
+            ['x', 'y', 'z'].map(function (axis) { return el('label', { key: axis, style: textStyle }, axis.toUpperCase(),
+              el('input', { type: 'number', step: 1, min: axis === 'y' ? -31 : -128, max: axis === 'y' ? 31 : 128, value: offset['d' + axis],
+                'aria-label': t('stem.archstudio.project_import_offset', 'Import offset {axis}').replace('{axis}', axis.toUpperCase()), style: controlStyle,
+                onChange: function (event) { var patch = {}; patch['d' + axis] = event.target.value; upd({ projectImportOffset: Object.assign({}, offset, patch), projectFileError: '' }); } })); })),
+          el('p', { style: textStyle }, mode === 'merge' ? t('stem.archstudio.project_merge_note', 'Merge keeps your current project name and notes.')
+            : t('stem.archstudio.project_replace_note', 'Opening replaces the current model, name, and notes. You can undo this as one step.')),
+          preview && preview.ok && deltaSummary(preview.delta),
+          preview && !preview.ok && el('p', { 'data-arch-project-import-warning': 'true', style: Object.assign({}, textStyle, { color: '#fde68a' }) }, projectError(preview.code, preview.count)),
+          el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+            el('button', { type: 'button', 'data-arch-project-apply': 'true', disabled: !preview || !preview.ok, style: Object.assign({}, buttonStyle, { opacity: preview && preview.ok ? 1 : .6 }),
+              onClick: function () { applyProjectFile(mode, offset); } }, t('stem.archstudio.project_apply', 'Apply import')),
+            el('button', { type: 'button', style: buttonStyle, onClick: function () { upd({ projectImport: null, projectFileError: '', projectImportNotice: '' }); } }, t('stem.archstudio.project_cancel', 'Cancel preview')))),
+        el('hr', { style: { border: 0, borderTop: '1px solid #475569', margin: '12px 0' } }),
+        el('label', { style: Object.assign({}, textStyle, { display: 'block' }) }, t('stem.archstudio.project_compare', 'Compare with saved revision'),
+          el('select', { 'aria-label': t('stem.archstudio.project_compare', 'Compare with saved revision'), value: baseline ? baseline.id : '', style: controlStyle,
+            onChange: function (event) { upd('projectCompareId', event.target.value); } },
+            el('option', { value: '' }, t('stem.archstudio.project_choose_revision', 'Choose a snapshot…')),
+            galleryItems.slice().reverse().map(function (item) { return el('option', { key: item.id, value: item.id }, item.name + ' · ' + new Date(item.timestamp).toLocaleString()); }))),
+        baseline && el('div', { 'data-arch-project-comparison': 'true' }, deltaSummary(compareArchProjects(baseline.blocks, blocks)),
+          el('p', { style: textStyle }, t('stem.archstudio.project_compare_help', 'Changes compare the live build with this snapshot. Moved blocks count as removed and added cells.')),
+          el('button', { type: 'button', disabled: showReplay, style: buttonStyle, onClick: function () { loadBuild(baseline); } }, t('stem.archstudio.project_restore', 'Restore this snapshot')))
+      );
+    }
+
     return el('div', {
       key: 'archStudio',
       id: 'arch-studio-region',
@@ -3546,6 +4198,14 @@ function __alloAST(k, fb) {
           el('button', { type: 'button', onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { flex: '0 0 auto', background: !showReplay && blocks.length ? 'rgba(239,68,68,.14)' : 'rgba(71,85,105,.25)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.45)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDD1\uFE0F Clear')
         ),
         el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
+        el('button', { id: 'arch-design-toggle', type: 'button', 'aria-expanded': showDesign, 'aria-controls': showDesign ? 'arch-design-panel' : undefined,
+          onClick: function () { upd({ showDesign: !showDesign, showProject: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+            border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+        }, t('stem.archstudio.design_open', 'Design workbench')),
+        el('button', { id: 'arch-project-toggle', type: 'button', 'aria-expanded': showProject, 'aria-controls': showProject ? 'arch-project-panel' : undefined,
+          onClick: function () { upd({ showProject: !showProject, showDesign: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+            border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+        }, t('stem.archstudio.project_open_panel', 'Project & revisions')),
         // Toggle pills
         el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
           [{ id: 'architect', label: '\uD83C\uDFDB\uFE0F Architect', color: '#a5b4fc', bg: 'rgba(99,102,241,.24)' }, { id: 'bricks', label: '\uD83E\uDDF1 Bricks', color: '#fca5a5', bg: 'rgba(239,68,68,.22)' }].map(function (option) {
@@ -3593,6 +4253,9 @@ function __alloAST(k, fb) {
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
         el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+
+          renderProjectPanel(),
+          renderDesignPanel(),
 
           // Mode selector
           el('div', { className: 'arch-studio-mode-card' },
@@ -4355,6 +5018,9 @@ function __alloAST(k, fb) {
             el('div', { style: { fontSize: 14, fontWeight: 850, color: '#f8fafc' } }, blocks.length === 0 ? (mode === 'pick' ? 'Nothing to pick yet' : 'Start your first structure') : (showReplay ? 'No blocks at this replay step' : 'Nothing matches this view')),
             el('div', { style: { marginTop: 4, fontSize: 10, lineHeight: 1.5, color: '#94a3b8' } }, blocks.length === 0 ? (mode === 'pick' ? 'Switch to Place, then click the ground or use the floor grid.' : 'Click the ground to place a ' + activeShape + ', or begin precisely in the floor grid.') : (showReplay ? 'Move to another step or return to the live build.' : 'A layer, slice, or filter is hiding the live structure.')),
             el('div', { style: { display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: 6, marginTop: 11 } },
+              blocks.length === 0 && el('button', { type: 'button', onClick: function () { upd({ showDesign: true, designTab: 'build', showProject: false }); },
+                style: { padding: '7px 11px', borderRadius: 8, border: '1px solid #38bdf8', background: '#075985', color: '#e0f2fe', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
+              }, t('stem.archstudio.design_start', 'Design a room')),
               blocks.length === 0 && mode === 'pick' && el('button', { type: 'button', onClick: function () { upd('mode', 'place'); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #22c55e', background: 'rgba(34,197,94,.16)', color: '#86efac', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Switch to Place'),
               blocks.length === 0 && el('button', { type: 'button', onClick: openArchGridForKeyboard, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #2dd4bf', background: 'rgba(45,212,191,.16)', color: '#99f6e4', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Open Floor Grid'),
               blocks.length > 0 && showReplay && replayStep < replayFrames && el('button', { type: 'button', onClick: function () { stepReplay(1); }, style: { padding: '6px 10px', borderRadius: 8, border: '1px solid #fbbf24', background: 'rgba(251,191,36,.14)', color: '#fde68a', cursor: 'pointer', fontSize: 10, fontWeight: 800 } }, 'Next Step'),
