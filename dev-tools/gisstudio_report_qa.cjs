@@ -49,11 +49,37 @@ window.__contrastReport = function () {
     var alpha = top.a;
     return { r: top.r * alpha + bottom.r * (1 - alpha), g: top.g * alpha + bottom.g * (1 - alpha), b: top.b * alpha + bottom.b * (1 - alpha), a: 1 };
   }
-  function backgroundOf(element) {
+  function gradientStops(image) {
+    var stops = [];
+    var index = 0;
+    while (true) {
+      index = image.indexOf('rgb', index);
+      if (index < 0) break;
+      var close = image.indexOf(')', index);
+      if (close < 0) break;
+      var stop = parse(image.slice(index, close + 1));
+      if (stop) stops.push(stop);
+      index = close + 1;
+    }
+    return stops;
+  }
+  // Every colour a gradient background can put behind this text.
+  function backgroundsOf(element) {
     var node = element;
     var stack = [];
     while (node && node.nodeType === 1) {
-      var background = parse(getComputedStyle(node).backgroundColor);
+      var style = getComputedStyle(node);
+      if (style.backgroundImage && style.backgroundImage.indexOf('gradient') >= 0) {
+        var stops = gradientStops(style.backgroundImage);
+        if (stops.length) {
+          return stops.map(function (stop) {
+            var layered = { r: 255, g: 255, b: 255, a: 1 };
+            for (var j = stack.length - 1; j >= 0; j--) layered = blend(stack[j], layered);
+            return stop.a === 1 ? stop : blend(stop, layered);
+          });
+        }
+      }
+      var background = parse(style.backgroundColor);
       if (background && background.a > 0) {
         stack.push(background);
         if (background.a === 1) break;
@@ -62,8 +88,10 @@ window.__contrastReport = function () {
     }
     var result = { r: 255, g: 255, b: 255, a: 1 };
     for (var i = stack.length - 1; i >= 0; i--) result = blend(stack[i], result);
-    return result;
+    return [result];
   }
+
+  function backgroundOf(element) { return backgroundsOf(element)[0]; }
   var failures = [];
   var unresolved = 0;
   document.querySelectorAll('*').forEach(function (element) {
@@ -84,11 +112,13 @@ window.__contrastReport = function () {
     if (style.visibility === 'hidden' || style.display === 'none' || Number(style.opacity) < 0.15) return;
     var color = parse(style.color);
     if (!color) return;
-    var foreground = color.a < 1 ? blend(color, backgroundOf(element)) : color;
-    var background = backgroundOf(element);
-    var lighter = Math.max(luminance(foreground), luminance(background));
-    var darker = Math.min(luminance(foreground), luminance(background));
-    var ratio = (lighter + 0.05) / (darker + 0.05);
+    var backgrounds = backgroundsOf(element);
+    var foreground = color.a < 1 ? blend(color, backgrounds[0]) : color;
+    var ratio = Math.min.apply(null, backgrounds.map(function (background) {
+      var lighter = Math.max(luminance(foreground), luminance(background));
+      var darker = Math.min(luminance(foreground), luminance(background));
+      return (lighter + 0.05) / (darker + 0.05);
+    }));
     var size = parseFloat(style.fontSize) || 16;
     var bold = Number(style.fontWeight) >= 700;
     var large = size >= 24 || (bold && size >= 18.66);
@@ -97,7 +127,7 @@ window.__contrastReport = function () {
       failures.push({
         ratio: Math.round(ratio * 100) / 100, required: required,
         size: Math.round(size * 10) / 10, weight: style.fontWeight,
-        color: style.color, text: text.slice(0, 70)
+        color: style.color, backgrounds: backgrounds.length, text: text.slice(0, 70)
       });
     }
   });
@@ -163,7 +193,10 @@ window.__buildReports = function () {
   for (const code of scripts.concat(shell, CONTRAST_PROBE)) await page.addScriptTag({ content: code });
 
   // 1. Contrast across the studio's own workspaces.
-  const workspaces = ['map', 'import', 'composer', 'quality', 'missions', 'compare'];
+  const workspaces = [
+    'map', 'import', 'compare', 'missions', 'timeline', 'project', 'composer',
+    'remote', 'story', 'quality', 'planner', 'review', 'packet', 'projection'
+  ];
   for (const workspace of workspaces) {
     await page.evaluate((tab) => window.__mountGIS({ gisTab: tab, gisBasemap: 'none' }), workspace);
     await page.waitForTimeout(400);
