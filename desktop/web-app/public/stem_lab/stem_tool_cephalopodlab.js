@@ -1578,85 +1578,259 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 2 — FIELD GUIDE
       // ═══════════════════════════════════════════════════════
       function renderFieldGuide() {
+        // Field Guide = step one of the Hub's guided path ("Observe"). It now
+        // filters by group, browses prev/next, renders habitat/prey/tactic
+        // data as chips that carry their own meaning, asks an observation
+        // question BEFORE the notes, compares any two species side by side,
+        // and links onward into the sections that hold the deeper evidence.
         var selectedId = d.fieldGuideSpeciesId || 'commonOcto';
         var selected = SPECIES.find(function(s) { return s.id === selectedId; }) || SPECIES[0];
+        var GROUPS = [
+          { id: 'octopus', label: __alloT('stem.cephalopodlab.fg_group_octopus', 'Octopus'), color: '#a78bfa', emoji: '🐙' },
+          { id: 'squid', label: __alloT('stem.cephalopodlab.fg_group_squid', 'Squid'), color: '#38bdf8', emoji: '🦑' },
+          { id: 'cuttlefish', label: __alloT('stem.cephalopodlab.fg_group_cuttlefish', 'Cuttlefish'), color: '#fbbf24', emoji: '🦑' },
+          { id: 'nautilus', label: __alloT('stem.cephalopodlab.fg_group_nautilus', 'Nautilus'), color: '#86efac', emoji: '🐚' }
+        ];
+        var groupOf = function(gid) { return GROUPS.find(function(g) { return g.id === gid; }) || GROUPS[0]; };
+        var groupColor = function(s) { return groupOf(s.group).color; };
+        var filterGroup = d.fieldGuideGroup || 'all';
+        var visible = SPECIES.filter(function(s) { return filterGroup === 'all' || s.group === filterGroup; });
+        var selIdx = SPECIES.indexOf(selected);
+        var selectSpecies = function(s) { setCL({ fieldGuideSpeciesId: s.id }); awardXP(1); clAnnounce('Selected ' + s.name); };
+        var step = function(delta) { selectSpecies(SPECIES[(selIdx + delta + SPECIES.length) % SPECIES.length]); };
+        var byId = function(list, id) { return list.find(function(x) { return x.id === id; }); };
+        var lookupNames = function(list, ids) { return ids.map(function(id) { var x = byId(list, id); return x ? x.name : id; }); };
+
+        // Playable in the 3D Hunter Sim? (Field Guide ids vs SIM_SPECIES ids)
+        var SIM_ID = { commonOcto: 'commonOcto', blueRing: 'blueRinged', mimicOcto: 'mimicOcto', cuttlefish: 'cuttlefish', giantPac: 'giantPacific', dumbo: 'dumboOcto', vampireSquid: 'vampireSquid', bobtail: 'bobtailSquid', nautilus: 'nautilus', humboldt: 'humboldtSquid', coconut: 'coconutOcto' };
+        var playable = !!SIM_ID[selected.id];
+        var hasBodyPlan = selected.group === 'octopus' || selected.group === 'squid' || selected.group === 'cuttlefish';
+
+        var chip = function(key, color, emoji, text, title) {
+          return h('span', { key: key, title: title || undefined,
+            style: { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '4px 9px', borderRadius: 999, fontSize: 11, fontWeight: 700,
+              background: color + '1a', border: '1px solid ' + color + '66', color: '#e2e8f0', marginRight: 6, marginBottom: 6 } },
+            emoji ? h('span', { 'aria-hidden': 'true' }, emoji) : null, text);
+        };
+
+        // ── Picker with group filter + legend ──
+        var picker = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.pick_a_species', 'Pick a species')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.fg_filter_by_group', 'Filter by group'), style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+              [{ id: 'all', label: __alloT('stem.cephalopodlab.fg_group_all', 'All'), color: '#c7d2fe', emoji: null }].concat(GROUPS).map(function(g) {
+                var on = filterGroup === g.id;
+                var n = g.id === 'all' ? SPECIES.length : SPECIES.filter(function(s) { return s.group === g.id; }).length;
+                return h('button', { key: g.id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                  onClick: function() { setCL({ fieldGuideGroup: g.id }); },
+                  style: { padding: '5px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                    background: on ? g.color + '2a' : 'transparent', color: on ? g.color : '#cbd5e1',
+                    border: '1px solid ' + (on ? g.color : 'rgba(148,163,184,0.35)'), display: 'inline-flex', alignItems: 'center', gap: 5 } },
+                  g.emoji ? h('span', { 'aria-hidden': 'true' }, g.emoji) : null, g.label, h('span', { style: { opacity: 0.75, fontWeight: 600 } }, ' ' + n));
+              }))),
+          h('div', { style: { fontSize: 10.5, color: '#cbd5e1', marginBottom: 10 } },
+            __alloT('stem.cephalopodlab.fg_legend_hint', 'The coloured edge on each card is its group: ') +
+            GROUPS.map(function(g) { return g.label; }).join(' · ') + '.'),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 } },
+            visible.map(function(s) {
+              var active = s.id === selectedId;
+              return h('button', { key: s.id, type: 'button',
+                onClick: function() { selectSpecies(s); },
+                'aria-pressed': active ? 'true' : 'false',
+                style: {
+                  padding: '10px 12px', textAlign: 'left', fontFamily: 'inherit',
+                  background: active ? 'rgba(99,102,241,0.25)' : 'rgba(15,23,42,0.5)',
+                  color: active ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
+                  borderLeft: '3px solid ' + groupColor(s),
+                  borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer'
+                } },
+                h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
+                  h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, s.emoji),
+                  h('span', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, s.name)),
+                h('div', { style: { fontSize: 9, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.scientific));
+            })),
+          visible.length === 0 && h('div', { role: 'status', style: { fontSize: 11, color: '#cbd5e1', padding: '6px 0' } },
+            __alloT('stem.cephalopodlab.fg_no_species_in_group', 'No species in this group yet.')));
+
+        // ── Observation prompt (Observe before you read) ──
+        var firstHab = byId(HABITATS, selected.habitat[0]);
+        var observe = h('div', { style: { background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.35)', borderRadius: 10, padding: '11px 14px', marginBottom: 12 } },
+          h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } },
+            __alloT('stem.cephalopodlab.fg_observe_first', '👀 Observe first')),
+          h('div', { style: { fontSize: 12, color: '#e0f2fe', lineHeight: 1.55 } },
+            __alloT('stem.cephalopodlab.fg_observe_prompt_a', 'Before you read the notes: this animal hunts in ') +
+            lookupNames(HABITATS, selected.habitat).join(', ') +
+            __alloT('stem.cephalopodlab.fg_observe_prompt_b', ' and its listed tactics are ') +
+            lookupNames(TACTICS, selected.tactics).join(', ') + '. ' +
+            __alloT('stem.cephalopodlab.fg_observe_prompt_c', 'Which tactic would work best in ') + (firstHab ? firstHab.name : lookupNames(HABITATS, selected.habitat)[0]) +
+            __alloT('stem.cephalopodlab.fg_observe_prompt_d', ', and what would it cost the animal? Decide, then read on and check yourself.')));
+
+        // ── Stat bars ──
+        var bars = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
+          [
+            { lbl: '🧠 Behavioral flexibility', val: selected.intelligence, max: 10, color: '#a78bfa' },
+            { lbl: '🎨 Camouflage versatility', val: selected.camouflageRank, max: 10, color: '#fbbf24' },
+            { lbl: '🚀 Burst-swimming profile', val: selected.jetSpeed, max: 10, color: '#38bdf8' }
+          ].map(function(stat, i) {
+            return h('div', { key: i, role: 'meter', 'aria-label': stat.lbl + ', relative teaching profile ' + stat.val + ' of ' + stat.max, 'aria-valuemin': 0, 'aria-valuemax': stat.max, 'aria-valuenow': stat.val, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8 } },
+              h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
+                h('span', null, stat.lbl),
+                h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: stat.color } }, stat.val + ' / ' + stat.max)),
+              h('div', { style: { height: 8, background: 'rgba(100,116,139,0.2)', borderRadius: 4, overflow: 'hidden' } },
+                h('div', { style: { height: '100%', width: (stat.val / stat.max * 100) + '%', background: stat.color } })));
+          }));
+
+        // ── Habitat / prey / tactics as chips that carry their data ──
+        var facts = h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12, marginBottom: 14 } },
+          h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #86efac', padding: '10px 12px', borderRadius: 8 } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🏠 ' + __alloT('stem.cephalopodlab.fg_habitat', 'Habitat')),
+            h('div', null, selected.habitat.map(function(id) { var x = byId(HABITATS, id); return chip(id, '#86efac', x ? x.emoji : null, x ? x.name : id, x ? x.description : null); }))),
+          h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fbbf24', padding: '10px 12px', borderRadius: 8 } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🍽️ ' + __alloT('stem.cephalopodlab.fg_prey', 'Prey')),
+            h('div', null, selected.prey.map(function(id) {
+              var x = byId(PREY, id);
+              var diff = x ? __alloT('stem.cephalopodlab.fg_difficulty', 'difficulty') + ' ' + x.difficulty + '/10' : null;
+              return chip(id, '#fbbf24', x ? x.emoji : null, (x ? x.name : id) + (x ? ' · ' + x.difficulty + '/10' : ''), x ? (x.description + (diff ? ' (' + diff + ')' : '')) : null);
+            })),
+            h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, __alloT('stem.cephalopodlab.fg_prey_difficulty_note', 'The number is how hard it is to catch in the Hunter Sim, 1 easy to 10 hard.'))),
+          h('div', { style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid #fb923c', padding: '10px 12px', borderRadius: 8 } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fb923c', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '⚔️ ' + __alloT('stem.cephalopodlab.fg_best_tactics', 'Best tactics')),
+            h('div', null, selected.tactics.map(function(id) { var x = byId(TACTICS, id); return chip(id, '#fb923c', x ? x.emoji : null, x ? x.name : id, x ? (x.description + (x.requires ? ' Needs: ' + x.requires + '.' : '')) : null); }))));
+
+        // ── How a <group> takes each prey (uses PREY.tipsByCephalopod) ──
+        var tips = selected.prey.map(function(id) {
+          var x = byId(PREY, id);
+          var tip = x && x.tipsByCephalopod ? x.tipsByCephalopod[selected.group] : null;
+          return x && tip ? { prey: x, tip: tip } : null;
+        }).filter(Boolean);
+        var tipsBlock = tips.length ? h('details', { style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(251,191,36,0.3)', borderRadius: 8, padding: '8px 12px', marginBottom: 12 } },
+          h('summary', { style: { cursor: 'pointer', fontSize: 12, fontWeight: 800, color: '#fde68a' } },
+            '🎯 ' + groupOf(selected.group).label + __alloT('stem.cephalopodlab.fg_how_it_takes_prey', ': how it takes each prey')),
+          h('ul', { style: { margin: '8px 0 2px', padding: '0 0 0 18px', fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.6 } },
+            tips.map(function(t) { return h('li', { key: t.prey.id }, h('b', null, t.prey.emoji + ' ' + t.prey.name + ': '), t.tip); }))) : null;
+
+        // ── Compare with another species ──
+        var compareId = d.fieldGuideCompareId || '';
+        var other = compareId ? SPECIES.find(function(s) { return s.id === compareId && s.id !== selected.id; }) : null;
+        var overlap = function(a, b, list) {
+          var shared = a.filter(function(x) { return b.indexOf(x) !== -1; });
+          var onlyA = a.filter(function(x) { return b.indexOf(x) === -1; });
+          var onlyB = b.filter(function(x) { return a.indexOf(x) === -1; });
+          return { shared: lookupNames(list, shared), onlyA: lookupNames(list, onlyA), onlyB: lookupNames(list, onlyB) };
+        };
+        var cmpRow = function(label, va, vb, key) {
+          return h('tr', { key: key },
+            h('th', { scope: 'row', style: { textAlign: 'left', padding: '6px 8px', fontSize: 11, color: '#c7d2fe', fontWeight: 800, verticalAlign: 'top', whiteSpace: 'nowrap' } }, label),
+            h('td', { style: { padding: '6px 8px', fontSize: 11.5, color: '#e2e8f0', verticalAlign: 'top', lineHeight: 1.5 } }, va),
+            h('td', { style: { padding: '6px 8px', fontSize: 11.5, color: '#e2e8f0', verticalAlign: 'top', lineHeight: 1.5 } }, vb));
+        };
+        var barCell = function(v, color) {
+          return h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 6 } },
+            h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 60, height: 6, borderRadius: 3, background: 'rgba(100,116,139,0.25)', overflow: 'hidden' } },
+              h('span', { style: { display: 'block', width: (v * 10) + '%', height: '100%', background: color } })),
+            h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', fontSize: 11 } }, v + '/10'));
+        };
+        var compareBlock = h('div', { style: { background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(167,139,250,0.3)', borderRadius: 10, padding: '12px 14px', marginBottom: 12 } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: other ? 10 : 0 } },
+            h('label', { htmlFor: 'cl-fg-compare', style: { fontSize: 12, fontWeight: 800, color: '#c7d2fe' } },
+              __alloT('stem.cephalopodlab.fg_compare_with', '⚖️ Compare ') + selected.name + __alloT('stem.cephalopodlab.fg_compare_with_b', ' with')),
+            h('select', { id: 'cl-fg-compare', value: other ? other.id : '', onChange: function(e) { setCL({ fieldGuideCompareId: e.target.value || null }); if (e.target.value) awardXP(2); },
+              style: { padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.5)', background: 'rgba(15,23,42,0.8)', color: '#f1f5f9', fontSize: 12, fontFamily: 'inherit' } },
+              h('option', { value: '' }, __alloT('stem.cephalopodlab.fg_compare_none', 'choose a species…')),
+              SPECIES.filter(function(s) { return s.id !== selected.id; }).map(function(s) { return h('option', { key: s.id, value: s.id }, s.emoji + ' ' + s.name); })),
+            !other && h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.fg_compare_hint', 'Contrast is how differences become visible.'))),
+          other && (function() {
+            var hab = overlap(selected.habitat, other.habitat, HABITATS);
+            var prey = overlap(selected.prey, other.prey, PREY);
+            var tac = overlap(selected.tactics, other.tactics, TACTICS);
+            var fmt = function(o, side) { var only = side === 'a' ? o.onlyA : o.onlyB; return (only.length ? __alloT('stem.cephalopodlab.fg_only', 'Only this one: ') + only.join(', ') : __alloT('stem.cephalopodlab.fg_nothing_unique', 'Nothing unique')) + (o.shared.length ? ' · ' + __alloT('stem.cephalopodlab.fg_shared', 'shared: ') + o.shared.join(', ') : ''); };
+            return h('div', { style: { overflowX: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 520 } },
+                h('caption', { style: { captionSide: 'top', textAlign: 'left', fontSize: 10.5, color: '#cbd5e1', paddingBottom: 6 } },
+                  __alloT('stem.cephalopodlab.fg_compare_caption', 'Side-by-side profile. Bars are relative teaching profiles inside this lab, not measurements.')),
+                h('thead', null, h('tr', null,
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.fg_trait', 'Trait')),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 12, color: groupColor(selected), fontWeight: 900 } }, selected.emoji + ' ' + selected.name),
+                  h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 12, color: groupColor(other), fontWeight: 900 } }, other.emoji + ' ' + other.name))),
+                h('tbody', null,
+                  cmpRow(__alloT('stem.cephalopodlab.fg_group', 'Group'), groupOf(selected.group).label, groupOf(other.group).label, 'g'),
+                  cmpRow('🧠 ' + __alloT('stem.cephalopodlab.fg_flexibility', 'Behavioral flexibility'), barCell(selected.intelligence, '#a78bfa'), barCell(other.intelligence, '#a78bfa'), 'i'),
+                  cmpRow('🎨 ' + __alloT('stem.cephalopodlab.fg_camouflage', 'Camouflage versatility'), barCell(selected.camouflageRank, '#fbbf24'), barCell(other.camouflageRank, '#fbbf24'), 'c'),
+                  cmpRow('🚀 ' + __alloT('stem.cephalopodlab.fg_burst', 'Burst-swimming profile'), barCell(selected.jetSpeed, '#38bdf8'), barCell(other.jetSpeed, '#38bdf8'), 'j'),
+                  cmpRow(__alloT('stem.cephalopodlab.fg_size', 'Size'), selected.size, other.size, 's'),
+                  cmpRow(__alloT('stem.cephalopodlab.fg_lifespan', 'Lifespan'), selected.lifespan, other.lifespan, 'l'),
+                  cmpRow('🏠 ' + __alloT('stem.cephalopodlab.fg_habitat', 'Habitat'), fmt(hab, 'a'), fmt(hab, 'b'), 'h'),
+                  cmpRow('🍽️ ' + __alloT('stem.cephalopodlab.fg_prey', 'Prey'), fmt(prey, 'a'), fmt(prey, 'b'), 'p'),
+                  cmpRow('⚔️ ' + __alloT('stem.cephalopodlab.fg_best_tactics', 'Best tactics'), fmt(tac, 'a'), fmt(tac, 'b'), 't'),
+                  cmpRow(__alloT('stem.cephalopodlab.fg_conservation', 'Conservation'), selected.conservation, other.conservation, 'k'))),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 } },
+                h('button', { type: 'button', onClick: function() { setCL({ fieldGuideSpeciesId: other.id, fieldGuideCompareId: selected.id }); clAnnounce('Swapped to ' + other.name); },
+                  style: { fontSize: 11, fontWeight: 800, padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(167,139,250,0.5)', background: 'rgba(99,102,241,0.15)', color: '#c7d2fe', cursor: 'pointer', fontFamily: 'inherit' } },
+                  __alloT('stem.cephalopodlab.fg_swap', '⇄ Swap sides')),
+                h('button', { type: 'button', onClick: function() { setCL({ fieldGuideCompareId: null }); },
+                  style: { fontSize: 11, fontWeight: 800, padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(148,163,184,0.4)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontFamily: 'inherit' } },
+                  __alloT('stem.cephalopodlab.fg_close_compare', 'Close comparison'))));
+          })());
+
+        // ── Onward links into the sections that hold the evidence ──
+        var linkBtn = function(key, label, onClick, color) {
+          return h('button', { key: key, type: 'button', onClick: onClick,
+            style: { fontSize: 11, fontWeight: 800, padding: '7px 11px', borderRadius: 8, border: '1px solid ' + color + '77', background: color + '18', color: '#e2e8f0', cursor: 'pointer', fontFamily: 'inherit' } }, label);
+        };
+        var onward = h('div', { style: { marginTop: 4 } },
+          h('div', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+            __alloT('stem.cephalopodlab.fg_go_further', 'Go further with this species')),
+          h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } }, [
+            hasBodyPlan ? linkBtn('anat', '🧠 ' + __alloT('stem.cephalopodlab.fg_link_body_plan', 'See the body plan in 3D'), function() { setCL({ anatBody: selected.group }); setSection('anatomy'); awardXP(2); }, '#86efac') : null,
+            playable ? linkBtn('hunt', '🎯 ' + __alloT('stem.cephalopodlab.fg_link_hunt', 'Hunt as this species'), function() { setSection('hunt'); awardXP(2); clAnnounce('Opened the Hunter Sim. Pick ' + selected.name + ' in the lobby.'); }, '#fbbf24') : null,
+            linkBtn('camo', '🎨 ' + __alloT('stem.cephalopodlab.fg_link_camo', 'Try its camouflage'), function() { setSection('camo'); awardXP(2); }, '#f472b6'),
+            linkBtn('iucn', '🌿 ' + __alloT('stem.cephalopodlab.fg_link_iucn', 'Conservation status'), function() { setSection('conservationStatus'); awardXP(2); }, '#34d399'),
+            linkBtn('db', '🐙 ' + __alloT('stem.cephalopodlab.fg_link_species_db', 'Species database'), function() { setSection('speciesDB'); awardXP(2); }, '#a78bfa')
+          ]));
+
+        // ── Detail card ──
+        var detail = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
+            h('span', { 'aria-hidden': 'true', style: { fontSize: 40, lineHeight: 1 } }, selected.emoji),
+            h('div', { style: { flex: 1, minWidth: 240 } },
+              h('div', { style: { fontSize: 20, fontWeight: 900, color: '#c7d2fe', letterSpacing: '-0.01em' } }, selected.name),
+              h('div', { style: { fontSize: 12, color: '#a78bfa', fontStyle: 'italic', marginTop: 2 } }, selected.scientific),
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } },
+                h('b', null, 'Group: '), h('span', { style: { color: groupColor(selected), fontWeight: 800 } }, groupOf(selected.group).label), ' • ',
+                h('b', null, 'Size: '), selected.size, ' • ',
+                h('b', null, 'Lifespan: '), selected.lifespan)),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.fg_browse_species', 'Browse species'), style: { display: 'flex', alignItems: 'center', gap: 6 } },
+              h('button', { type: 'button', onClick: function() { step(-1); }, 'aria-label': __alloT('stem.cephalopodlab.fg_previous_species', 'Previous species'),
+                style: { width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '‹'),
+              h('span', { style: { fontSize: 10.5, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' } }, (selIdx + 1) + ' / ' + SPECIES.length),
+              h('button', { type: 'button', onClick: function() { step(1); }, 'aria-label': __alloT('stem.cephalopodlab.fg_next_species', 'Next species'),
+                style: { width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '›'))),
+          observe,
+          h('div', { role: 'note', style: { background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.28)', borderRadius: 8, padding: '9px 11px', marginBottom: 10, color: '#bae6fd', fontSize: 10.5, lineHeight: 1.5 } },
+            h('b', null, __alloT('stem.cephalopodlab.relative_teaching_profiles', 'Relative teaching profiles: ')),
+            __alloT('stem.cephalopodlab.profile_scores_not_standardized_measurements', 'These bars tune comparisons inside this lab; they are not standardized scientific measurements. Cognition especially depends on the task, context, age, and evidence available for each species.')),
+          bars,
+          facts,
+          tipsBlock,
+          // The weird thing
+          h('div', { style: { background: 'rgba(167,139,250,0.1)', borderLeft: '4px solid #a78bfa', padding: '12px 14px', borderRadius: 8, marginBottom: 12 } },
+            h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } },
+              __alloT('stem.cephalopodlab.the_thing_biologists_love_about_this_o', '🤯 The thing biologists love about this one')),
+            h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + selected.weird + '"')),
+          // Notes paragraph
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, marginBottom: 10 } }, selected.notes),
+          // Conservation
+          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 12 } },
+            h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Conservation: '), selected.conservation),
+          compareBlock,
+          onward);
+
         return h('div', null,
           panelHeader('📖 Species Field Guide',
             SPECIES.length + ' cephalopod species. Select one to examine its biology, hunting style, and evidence-based natural-history profile.'),
-
-          // Species grid (compact)
-          h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.pick_a_species', 'Pick a species')),
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 8 } },
-              SPECIES.map(function(s) {
-                var active = s.id === selectedId;
-                var groupColor = s.group === 'octopus' ? '#a78bfa' : s.group === 'squid' ? '#38bdf8' : s.group === 'cuttlefish' ? '#fbbf24' : '#86efac';
-                return h('button', { key: s.id, type: 'button',
-                  onClick: function() { setCL({ fieldGuideSpeciesId: s.id }); awardXP(1); clAnnounce('Selected ' + s.name); },
-                  'aria-pressed': active ? 'true' : 'false',
-                  style: {
-                    padding: '10px 12px', textAlign: 'left',
-                    background: active ? 'rgba(99,102,241,0.25)' : 'rgba(15,23,42,0.5)',
-                    color: active ? '#c7d2fe' : '#cbd5e1',
-                    border: '1px solid ' + (active ? 'rgba(167,139,250,0.6)' : 'rgba(100,116,139,0.3)'),
-                    borderLeft: '3px solid ' + groupColor,
-                    borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: 'pointer'
-                  } },
-                  h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
-                    h('span', { 'aria-hidden': 'true', style: { fontSize: 16 } }, s.emoji),
-                    h('span', { style: { fontWeight: 800, fontSize: 12, color: active ? '#fde68a' : '#e2e8f0' } }, s.name)),
-                  h('div', { style: { fontSize: 9, fontStyle: 'italic', color: 'var(--allo-stem-text-soft, #94a3b8)' } }, s.scientific));
-              }))),
-
-          // Selected species detail
-          h('div', { style: cardStyle() },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
-              h('span', { 'aria-hidden': 'true', style: { fontSize: 40, lineHeight: 1 } }, selected.emoji),
-              h('div', { style: { flex: 1, minWidth: 240 } },
-                h('div', { style: { fontSize: 20, fontWeight: 900, color: '#c7d2fe', letterSpacing: '-0.01em' } }, selected.name),
-                h('div', { style: { fontSize: 12, color: '#a78bfa', fontStyle: 'italic', marginTop: 2 } }, selected.scientific),
-                h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } },
-                  h('b', null, 'Group: '), selected.group, ' • ',
-                  h('b', null, 'Size: '), selected.size, ' • ',
-                  h('b', null, 'Lifespan: '), selected.lifespan))),
-            h('div', { role: 'note', style: { background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.28)', borderRadius: 8, padding: '9px 11px', marginBottom: 10, color: '#bae6fd', fontSize: 10.5, lineHeight: 1.5 } },
-              h('b', null, __alloT('stem.cephalopodlab.relative_teaching_profiles', 'Relative teaching profiles: ')),
-              __alloT('stem.cephalopodlab.profile_scores_not_standardized_measurements', 'These bars tune comparisons inside this lab; they are not standardized scientific measurements. Cognition especially depends on the task, context, age, and evidence available for each species.')),
-            // Stat bars
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 14 } },
-              [
-                { lbl: '🧠 Behavioral flexibility', val: selected.intelligence, max: 10, color: '#a78bfa' },
-                { lbl: '🎨 Camouflage versatility', val: selected.camouflageRank, max: 10, color: '#fbbf24' },
-                { lbl: '🚀 Burst-swimming profile', val: selected.jetSpeed, max: 10, color: '#38bdf8' }
-              ].map(function(stat, i) {
-                return h('div', { key: i, role: 'meter', 'aria-label': stat.lbl + ', relative teaching profile ' + stat.val + ' of ' + stat.max, 'aria-valuemin': 0, 'aria-valuemax': stat.max, 'aria-valuenow': stat.val, style: { background: 'rgba(15,23,42,0.5)', padding: '10px 12px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 11, fontWeight: 700, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6, display: 'flex', justifyContent: 'space-between' } },
-                    h('span', null, stat.lbl),
-                    h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: stat.color } }, stat.val + ' / ' + stat.max)),
-                  h('div', { style: { height: 8, background: 'rgba(100,116,139,0.2)', borderRadius: 4, overflow: 'hidden' } },
-                    h('div', { style: { height: '100%', width: (stat.val / stat.max * 100) + '%', background: stat.color } })));
-              })),
-            // Habitat + prey + tactics
-            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12, marginBottom: 14 } },
-              [
-                { lbl: '🏠 Habitat', val: selected.habitat.map(function(hid) { var ha = HABITATS.find(function(x) { return x.id === hid; }); return ha ? ha.name : hid; }).join(' · '), color: '#86efac' },
-                { lbl: '🍽️ Prey', val: selected.prey.map(function(pid) { var pr = PREY.find(function(x) { return x.id === pid; }); return pr ? pr.name : pid; }).join(' · '), color: '#fbbf24' },
-                { lbl: '⚔️ Best tactics', val: selected.tactics.map(function(tid) { var ta = TACTICS.find(function(x) { return x.id === tid; }); return ta ? ta.name : tid; }).join(' · '), color: '#fb923c' }
-              ].map(function(b, i) {
-                return h('div', { key: i, style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + b.color, padding: '10px 12px', borderRadius: 8 } },
-                  h('div', { style: { fontSize: 10, fontWeight: 800, color: b.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } }, b.lbl),
-                  h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, b.val));
-              })),
-            // The weird thing
-            h('div', { style: { background: 'rgba(167,139,250,0.1)', borderLeft: '4px solid #a78bfa', padding: '12px 14px', borderRadius: 8, marginBottom: 12 } },
-              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 } },
-                __alloT('stem.cephalopodlab.the_thing_biologists_love_about_this_o', '🤯 The thing biologists love about this one')),
-              h('div', { style: { fontSize: 13, color: '#e9d5ff', lineHeight: 1.6, fontStyle: 'italic' } }, '"' + selected.weird + '"')),
-            // Notes paragraph
-            h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, marginBottom: 10 } }, selected.notes),
-            // Conservation
-            h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
-              h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Conservation: '), selected.conservation))
+          picker,
+          detail
         );
       }
 

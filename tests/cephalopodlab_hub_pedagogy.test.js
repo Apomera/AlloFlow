@@ -100,3 +100,77 @@ describe('Cephalopod Lab Hub', () => {
     expect(root.getAttribute('style')).toMatch(/--allo-stem-text-soft:\s*#94a3b8/);
   });
 });
+
+// ── Field Guide (guided-path step 1) ──
+function renderField(data = {}) {
+  const container = document.createElement('div');
+  container.innerHTML = renderTool('cephalopodLab', {
+    cephalopodLab: { activeSection: 'field', fieldGuideSpeciesId: 'mimicOcto', ...data },
+  });
+  return container;
+}
+
+describe('Cephalopod Lab Field Guide', () => {
+  it('filters the picker by group and shows the count on every filter chip', () => {
+    const all = renderField();
+    const allCards = all.querySelectorAll('button[aria-pressed]');
+    const filtered = renderField({ fieldGuideGroup: 'squid' });
+    const squidCards = Array.from(filtered.querySelectorAll('button[aria-pressed]'))
+      .filter((b) => /^(?!All|Octopus|Squid|Cuttlefish|Nautilus)/.test(b.textContent.trim()));
+    expect(squidCards.length).toBeGreaterThan(0);
+    expect(squidCards.length).toBeLessThan(allCards.length);
+    const chips = Array.from(filtered.querySelectorAll('[role="group"][aria-label="Filter by group"] button'));
+    expect(chips).toHaveLength(5);
+    expect(chips.every((c) => /\d+$/.test(c.textContent.trim()))).toBe(true);
+    expect(chips.find((c) => /Squid\s+\d+$/.test(c.textContent.trim())).getAttribute('aria-pressed')).toBe('true');
+  });
+
+  it('asks an observation question built from the species data before the notes', () => {
+    const c = renderField();
+    const text = c.textContent;
+    const observeAt = text.indexOf('Observe first');
+    const notesAt = text.indexOf('Discovered 1998 off Sulawesi');
+    expect(observeAt).toBeGreaterThan(-1);
+    expect(notesAt).toBeGreaterThan(observeAt);
+    expect(text).toMatch(/hunts in Sandy Bottom, Estuary \/ Muck/);
+    expect(text).toMatch(/tactics are Mimicry, Ambush/);
+  });
+
+  it('renders prey chips with their sim difficulty and prev/next browsing', () => {
+    const c = renderField();
+    expect(c.textContent).toMatch(/Crab · 3\/10/);
+    expect(c.querySelector('button[aria-label="Previous species"]')).not.toBeNull();
+    expect(c.querySelector('button[aria-label="Next species"]')).not.toBeNull();
+    expect(c.textContent).toMatch(/2 \/ 15/);
+  });
+
+  it('shows the comparison table only when a second species is chosen, with labelled select and captioned table', () => {
+    const closed = renderField();
+    expect(closed.querySelector('table')).toBeNull();
+    const select = closed.querySelector('select#cl-fg-compare');
+    expect(select).not.toBeNull();
+    expect(closed.querySelector('label[for="cl-fg-compare"]')).not.toBeNull();
+    // the selected species is never offered as its own comparison partner
+    expect(Array.from(select.options).some((o) => o.value === 'mimicOcto')).toBe(false);
+
+    const open = renderField({ fieldGuideCompareId: 'cuttlefish' });
+    const table = open.querySelector('table');
+    expect(table).not.toBeNull();
+    expect(table.querySelector('caption')).not.toBeNull();
+    expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(3);
+    expect(table.querySelectorAll('tbody th[scope="row"]').length).toBeGreaterThanOrEqual(9);
+    expect(open.textContent).toMatch(/Only this one: Polychaete Worm/);
+    expect(open.textContent).toMatch(/shared: Crab, Small Fish/);
+  });
+
+  it('offers onward links that depend on the species: body plan for coleoids, hunt only for playable ones', () => {
+    const mimic = renderField();
+    const labels = (c) => Array.from(c.querySelectorAll('button')).map((b) => b.textContent.trim());
+    expect(labels(mimic).some((t) => /See the body plan in 3D/.test(t))).toBe(true);
+    expect(labels(mimic).some((t) => /Hunt as this species/.test(t))).toBe(true);
+    const nautilus = renderField({ fieldGuideSpeciesId: 'nautilus' });
+    expect(labels(nautilus).some((t) => /See the body plan in 3D/.test(t))).toBe(false);
+    const dayOcto = renderField({ fieldGuideSpeciesId: 'dayOcto' });
+    expect(labels(dayOcto).some((t) => /Hunt as this species/.test(t))).toBe(false);
+  });
+});
