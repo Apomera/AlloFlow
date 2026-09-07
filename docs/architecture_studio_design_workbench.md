@@ -47,6 +47,28 @@ Choose **Compare with saved revision** to see added, removed, changed, and uncha
 
 Replay keeps project-editing controls disabled. Legacy block-only history frames continue to render, while newer project frames retain their associated details.
 
+## Drawing desk
+
+Open **Drawing desk** in the feature toolbar. It replaces the work area with a drawing workspace; **Return to build** or Escape restores the previous 3D/grid view and returns focus to the toolbar.
+
+Choose a floor plan, front elevation, right elevation, or cut section. The floor selector lists the number of blocks at every Y level, including empty floors. A plan is an exact floor slice, so a roof does not conceal the floor below it. Front elevations show the nearest cells from negative Z; right elevations look from positive X. A section contains only cells at the selected Z coordinate. The red line in the plan marks the section through the center of that Z row.
+
+All views use the complete live model and its overall extents, including cells hidden by 3D filters. During replay, the desk explicitly states that it shows the live model. Opening drawings does not change geometry, undo history, replay, or filters. Elevations extend to the Y=0 ground datum, including beneath floating blocks.
+
+### Dimensions and measurements
+
+Dimensions describe the outer edges of the occupied grid envelope. A cell at X=0 occupies the interval from 0 through 1; a span of cells from X=-2 through X=2 therefore has width 5. Floor plans use X/Z axes; elevations and sections use X/Y or Z/Y. Dimensions use grid units.
+
+Enable **Measure a span** and click two points, or enter start and end coordinates. Pointer picks snap to half a grid unit. The panel shows the straight-line distance and signed changes on each axis. Out-of-frame or incomplete coordinates show feedback and disable sheet download until corrected. Reset restores a diagonal across the view's extents. Changing views, floor, section, or model clears the active measurement so it cannot be mistaken for a measurement of a different drawing.
+
+### Drawing sheet
+
+**Download drawing sheet** creates a standalone SVG with the selected floor plan, front and right elevations, and selected cut section. It includes the project name, model dimensions, material counts, and a bounded excerpt of the design notes. Full notes remain in the portable project file. The current measurement is included on its active view.
+
+Each drawing fits its own frame; views are not presented at a shared paper scale. The grid and dimension toggles also apply to the download. Text is escaped as SVG content, and the export has no scripts or external resources.
+
+Drawings represent occupied grid cells rather than detailed curved or sloped geometry. Use the existing STL/Print Lab workflow for shape geometry.
+
 ## Implementation and boundaries
 
 The window.__alloArchDesign test API exposes pure generation, region selection, edit validation, and state transactions. Mutation handlers revalidate against the latest state. Failed edits leave blocks and history unchanged; construction replay stays read-only.
@@ -59,7 +81,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all eight Architecture Studio unit suites passed (172 tests). Nine focused Chromium workbench/project workflows passed, including local downloads, named snapshots, revision restore, imports, stale-state validation, cancellation, replay, and phone use. The new cancellation check initially referenced the wrong state field; the corrected assertion passed in an isolated artifact directory. The earlier context-loss and renderer-teardown checks also passed. Desktop and phone screenshots were visually reviewed.
+Results: all nine Architecture Studio unit suites passed (208 tests). Thirteen focused Chromium design, project, and drawing workflows passed, covering authoring, undo, project files and revisions, canceled reads, exact drawing slices, measurements, SVG downloads, replay/view preservation, and phone use. Two drawing browser cases were rerun successfully after the final desktop sizing refinement. Desktop and phone screenshots and a standalone exported drawing sheet were visually reviewed.
 
 No deployment or push was performed.
 

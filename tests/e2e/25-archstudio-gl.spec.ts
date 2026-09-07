@@ -1282,4 +1282,138 @@ test.describe('Architecture Studio — real WebGL', () => {
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
+  test('drawing desk shows floor slices, elevations, sections, and downloads a project sheet', async ({ page }, testInfo) => {
+    const blocks = [
+      { x: -2, y: 0, z: -1, shape: 'door', material: 'wood', color: '#92400e', rotation: 90 },
+      { x: 0, y: 0, z: 1, shape: 'block', material: 'wood', color: '#92400e', rotation: 0 },
+      { x: -2, y: 2, z: -1, shape: 'roof', material: 'stone', color: '#94a3b8', rotation: 0 },
+      { x: 0, y: 2, z: 1, shape: 'roof', material: 'stone', color: '#94a3b8', rotation: 0 },
+    ];
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await mount3d(page, { blocks, projectName: 'Courtyard 図書館', projectNotes: 'Keep <doors> open & shaded.', soundEnabled: false });
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    await expect(desk.getByRole('img', { name: 'Floor plan · Y=0', exact: true })).toBeVisible();
+    await expect(desk.locator('[data-drawing-cell]')).toHaveCount(2);
+    await expect(desk.locator('[data-block="-2,0,-1"]')).toHaveAttribute('fill', '#92400e');
+    await desk.getByLabel('Plan floor (Y)', { exact: true }).selectOption('1');
+    await expect(desk.getByRole('img')).toContainText('No blocks on this floor or section.');
+    await desk.getByLabel('Plan floor (Y)', { exact: true }).selectOption('2');
+    await expect(desk.locator('[data-block="-2,2,-1"]')).toHaveAttribute('fill', '#94a3b8');
+    await desk.getByLabel('Drawing view', { exact: true }).selectOption('front');
+    await expect(desk.locator('[data-drawing-cell]')).toHaveCount(4);
+    await desk.getByLabel('Drawing view', { exact: true }).selectOption('right');
+    await expect(desk.getByRole('img')).toHaveAttribute('aria-label', 'Right elevation');
+    await desk.getByLabel('Drawing view', { exact: true }).selectOption('section');
+    await desk.getByLabel('Section position (Z)', { exact: true }).fill('-1');
+    await expect(desk.locator('[data-drawing-cell]')).toHaveCount(2);
+    await expect(desk.getByRole('img')).toHaveAttribute('aria-label', 'Cut section · Z=-1');
+    const drawingBox = await desk.getByRole('img').boundingBox();
+    const deskBox = await desk.boundingBox();
+    expect(drawingBox!.y + drawingBox!.height).toBeLessThanOrEqual(deskBox!.y + deskBox!.height);
+    await page.screenshot({ path: testInfo.outputPath('drawing-desk-desktop.png'), fullPage: true });
+    const downloadEvent = page.waitForEvent('download');
+    await desk.getByRole('button', { name: 'Download drawing sheet', exact: true }).click();
+    const download = await downloadEvent;
+    expect(download.suggestedFilename()).toBe('Courtyard 図書館.drawings.svg');
+    const svg = await readFile((await download.path())!, 'utf8');
+    expect(svg).toContain('Floor plan · Y=2');
+    expect(svg).toContain('Cut section · Z=-1');
+    expect(svg).toContain('Keep &lt;doors&gt; open &amp; shaded.');
+    const summary = await page.evaluate((svg) => {
+      const xml = new DOMParser().parseFromString(svg, 'image/svg+xml');
+      return { views: xml.querySelectorAll('svg').length, invalid: xml.querySelectorAll('parsererror,script,foreignObject').length };
+    }, svg);
+    expect(summary).toEqual({ views: 5, invalid: 0 });
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await desk.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect(page.locator('#arch-drawings-toggle')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.state)).toBe('ready');
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(4);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('drawing desk measures with pointer and keyboard controls and validates inputs', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await mount3d(page, { blocks: [
+      { x: 0, y: 0, z: 0, shape: 'block', material: 'wood' },
+      { x: 3, y: 0, z: 4, shape: 'block', material: 'stone' },
+    ], soundEnabled: false });
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    await desk.getByLabel('Measure a span', { exact: true }).check();
+    await desk.locator('[data-drawing-cell="0,0"]').click();
+    await desk.locator('[data-drawing-cell="3,4"]').click();
+    await expect(desk.getByLabel('Start X', { exact: true })).toHaveValue('0.5');
+    await expect(desk.getByLabel('End Z', { exact: true })).toHaveValue('4.5');
+    await expect(desk.locator('[data-arch-drawing-measure]')).toContainText('Distance: 5 grid units');
+    await desk.getByLabel('Start X', { exact: true }).fill('0');
+    await desk.getByLabel('Start Z', { exact: true }).fill('0');
+    await desk.getByLabel('End X', { exact: true }).fill('3');
+    await desk.getByLabel('End Z', { exact: true }).fill('4');
+    await expect(desk.locator('[data-arch-drawing-measure]')).toContainText('X: 3 · Z: 4');
+    await expect(desk.locator('[data-drawing-measurement]')).toHaveCount(1);
+    await desk.getByLabel('End X', { exact: true }).fill('999');
+    await expect(desk.getByRole('alert')).toContainText('inside the drawing extents');
+    await expect(desk.getByRole('button', { name: 'Download drawing sheet', exact: true })).toBeDisabled();
+    await expect(desk.locator('[data-drawing-measurement]')).toHaveCount(0);
+    await desk.getByRole('button', { name: 'Reset measurement', exact: true }).click();
+    await desk.getByLabel('Show dimensions', { exact: true }).uncheck();
+    await expect(desk.locator('[data-drawing-dimensions]')).toHaveCount(0);
+    await desk.getByLabel('Drawing view', { exact: true }).selectOption('front');
+    await expect(desk.getByLabel('Measure a span', { exact: true })).not.toBeChecked();
+    await desk.getByLabel('Section position (Z)', { exact: true }).fill('');
+    await expect(desk.getByRole('alert')).toContainText('whole-number section');
+    await expect(desk.getByRole('button', { name: 'Download drawing sheet', exact: true })).toBeDisabled();
+    await desk.getByLabel('Section position (Z)', { exact: true }).fill('-1');
+    await expect(desk.getByRole('button', { name: 'Download drawing sheet', exact: true })).toBeEnabled();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('drawing desk makes live-model scope explicit during filtered replay and preserves the view', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), showReplay: true, replayStep: 0,
+      undoStack: [[{ x: 0, y: 0, z: 0, shape: 'block', material: 'wood' }]], filterMaterial: 'wood', viewLayer: 0 });
+    const before = await page.evaluate(() => (window as any).__bucket());
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    await expect(desk.getByRole('status')).toContainText('Replay is active');
+    await expect(desk.locator('[data-arch-drawing-summary]')).toContainText('13 blocks in the live model');
+    await expect(desk.locator('[data-drawing-cell]')).toHaveCount(5);
+    await desk.getByLabel('Drawing view', { exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(desk).toHaveCount(0);
+    await expect(page.locator('#arch-drawings-toggle')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.state)).toBe('ready');
+    const after = await page.evaluate(() => (window as any).__bucket());
+    expect(after.blocks).toEqual(before.blocks);
+    expect(after.undoStack).toEqual(before.undoStack);
+    expect(after.showReplay).toBe(true);
+    expect(after.filterMaterial).toBe('wood');
+    expect(after.viewLayer).toBe(0);
+  });
+
+  test('drawing desk works on a phone, handles empty builds, and refreshes after edits', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await mount3d(page, { blocks: [], projectName: 'Phone drawing', soundEnabled: false });
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    await expect(desk.getByRole('button', { name: 'Download drawing sheet', exact: true })).toBeDisabled();
+    await expect(desk.getByRole('img')).toContainText('Add blocks to create drawings.');
+    await page.locator('#arch-design-toggle').click();
+    const design = page.locator('[data-arch-design]');
+    await design.getByRole('button', { name: 'Add to build', exact: true }).click();
+    await page.locator('#arch-drawings-toggle').click();
+    await expect(desk.locator('[data-arch-drawing-summary]')).toContainText('84 blocks in the live model');
+    await desk.getByLabel('Plan floor (Y)', { exact: true }).selectOption('1');
+    await expect(desk.locator('[data-arch-drawing-summary]')).toContainText('18 visible cells');
+    await desk.locator('[data-arch-drawing-preview]').scrollIntoViewIfNeeded();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.screenshot({ path: testInfo.outputPath('drawing-desk-phone.png'), fullPage: true });
+    await desk.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(84);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
 });

@@ -1593,6 +1593,179 @@ function __alloAST(k, fb) {
   window.__alloArchProject = { create: makeArchProject, parse: parseArchProject, compare: compareArchProjects,
     preview: previewArchProjectImport, commit: commitArchProjectImport, historyFrame: archProjectHistoryFrame, frameDetails: archProjectFrameDetails };
 
+
+  // Orthographic drawings use occupied grid cells; every view has explicit axes.
+  var ARCH_DRAWING_LABELS = {
+    title: 'Drawing desk', close: 'Return to build', plan: 'Floor plan', front: 'Front elevation',
+    right: 'Right elevation', section: 'Cut section', view: 'Drawing view', floor: 'Plan floor (Y)',
+    cut: 'Section position (Z)', dimensions: 'Show dimensions', grid: 'Show grid', measure: 'Measure a span',
+    measure_help: 'Pick two points in the drawing, or enter their coordinates. Measurements use grid units.',
+    start: 'Start {axis}', end: 'End {axis}', distance: 'Distance: {value} grid units',
+    delta: '{u}: {du} · {v}: {dv}', invalid_measure: 'Enter coordinates inside the drawing extents.',
+    next_start: 'Next pick sets the start point.', next_end: 'Next pick sets the end point.',
+    reset_measure: 'Reset measurement', download: 'Download drawing sheet', downloaded: 'Drawing sheet downloaded.',
+    download_error: 'The drawing sheet could not be downloaded. Try again.', untitled: 'Untitled project',
+    live: 'Drawings use the complete live model, including blocks hidden by 3D filters.',
+    replay: 'Replay is active. Drawings and exports show the complete live model.',
+    cell_note: 'Views show occupied grid cells. Curved and sloped shapes are represented by their cells.',
+    empty: 'Add blocks to create drawings.', empty_slice: 'No blocks on this floor or section.',
+    visible: '{count} visible cells', full_model: '{count} blocks in the live model',
+    extents: '{u}: {minU} to {maxU} · {v}: {minV} to {maxV}', units: 'Dimensions in grid units',
+    materials: 'Materials in the live model', notes: 'Design notes excerpt', notes_more: 'Full notes are in the project file.',
+    sheet: 'Project drawing sheet', sheet_help: 'The sheet includes this floor, both elevations, and this cut section. Measurements appear on the active view.',
+    ground: 'Ground Y=0', cut_line: 'Section Z={value}', across: '{axis} →', up: '{axis} ↑',
+    sheet_views: 'Each view fits its frame independently.', invalid_cut: 'Enter a whole-number section position from -64 to 64.', surface: 'Drawing preview', floor_blocks: 'Y={value} · {count} blocks'
+  };
+  function archDrawingProjection(input, options) {
+    options = options || {};
+    var blocks = sanitizeArchBlocks(input), bounds = archDesignBounds(blocks);
+    var kind = ['plan', 'front', 'right', 'section'].indexOf(options.view) >= 0 ? options.view : 'plan';
+    var floor = archDesignInteger(options.floor, 0, 31), cut = archDesignInteger(options.cut, -64, 64);
+    if (floor == null) floor = 0;
+    if (cut == null) cut = 0;
+    var box = bounds || { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 };
+    var uAxis = kind === 'right' ? 'Z' : 'X', vAxis = kind === 'plan' ? 'Z' : 'Y';
+    var minU = uAxis === 'X' ? box.minX : box.minZ, maxU = (uAxis === 'X' ? box.maxX : box.maxZ) + 1;
+    var minV = kind === 'plan' ? box.minZ : 0, maxV = (kind === 'plan' ? box.maxZ : box.maxY) + 1;
+    var occupied = {}, floors = {};
+    blocks.forEach(function (b) {
+      floors[b.y] = (floors[b.y] || 0) + 1;
+      if ((kind === 'plan' && b.y !== floor) || (kind === 'section' && b.z !== cut)) return;
+      var u = uAxis === 'X' ? b.x : b.z, v = vAxis === 'Z' ? b.z : b.y, key = u + ',' + v;
+      var previous = occupied[key];
+      if (!previous || (kind === 'front' && b.z < previous.block.z) || (kind === 'right' && b.x > previous.block.x)) {
+        occupied[key] = { u: u, v: v, block: b };
+      }
+    });
+    return { kind: kind, floor: floor, cut: cut, uAxis: uAxis, vAxis: vAxis,
+      minU: minU, maxU: maxU, minV: minV, maxV: maxV, width: maxU - minU, height: maxV - minV,
+      cells: Object.keys(occupied).map(function (key) { return occupied[key]; }).sort(function (a, b) { return a.v - b.v || a.u - b.u; }),
+      floors: Object.keys(floors).map(function (y) { return { y: Number(y), count: floors[y] }; }).sort(function (a, b) { return a.y - b.y; }),
+      total: blocks.length, bounds: bounds };
+  }
+  function archDrawingMeasurement(projection, value) {
+    if (!projection || !value) return null;
+    var coords = ['u1', 'v1', 'u2', 'v2'].map(function (key) {
+      return typeof value[key] === 'number' || (typeof value[key] === 'string' && value[key].trim() !== '') ? Number(value[key]) : NaN;
+    });
+    if (!coords.every(Number.isFinite)) return null;
+    if ([coords[0], coords[2]].some(function (n) { return n < projection.minU || n > projection.maxU; })
+        || [coords[1], coords[3]].some(function (n) { return n < projection.minV || n > projection.maxV; })) return null;
+    return { u1: coords[0], v1: coords[1], u2: coords[2], v2: coords[3],
+      du: coords[2] - coords[0], dv: coords[3] - coords[1], distance: Math.hypot(coords[2] - coords[0], coords[3] - coords[1]) };
+  }
+  function archDrawingNumber(value) { return String(Math.round(value * 1000) / 1000); }
+  function archDrawingEscape(value) {
+    return String(value == null ? '' : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&apos;' }[c];
+    });
+  }
+  function archDrawingLayout(projection, width, height) {
+    var cell = Math.min((width - 112) / projection.width, (height - 108) / projection.height);
+    return { cell: cell, x: (width - projection.width * cell) / 2, y: (height - projection.height * cell) / 2 + 3 };
+  }
+  function archDrawingPick(projection, width, height, x, y) {
+    var layout = archDrawingLayout(projection, width, height);
+    var u = projection.minU + (x - layout.x) / layout.cell;
+    var v = projection.kind === 'plan' ? projection.minV + (y - layout.y) / layout.cell : projection.maxV - (y - layout.y) / layout.cell;
+    if (u < projection.minU || u > projection.maxU || v < projection.minV || v > projection.maxV) return null;
+    return { u: Math.round(u * 2) / 2, v: Math.round(v * 2) / 2 };
+  }
+  function archDrawingTitle(projection, labels) {
+    return labels[projection.kind] + (projection.kind === 'plan' ? ' · Y=' + projection.floor : projection.kind === 'section' ? ' · Z=' + projection.cut : '');
+  }
+  function archDrawingSvg(projection, options) {
+    options = options || {};
+    var labels = Object.assign({}, ARCH_DRAWING_LABELS, options.labels || {}), esc = archDrawingEscape;
+    var width = options.width || 720, height = options.height || 480, p = projection;
+    var layout = archDrawingLayout(p, width, height), c = layout.cell, x = layout.x, y = layout.y;
+    var right = x + p.width * c, bottom = y + p.height * c;
+    function px(u) { return x + (u - p.minU) * c; }
+    function py(v) { return y + (p.kind === 'plan' ? v - p.minV : p.maxV - v) * c; }
+    function textAt(tx, ty, value, size, anchor, color) {
+      return '<text pointer-events="none" x="' + tx + '" y="' + ty + '" font-size="' + (size || 12) + '" text-anchor="' + (anchor || 'middle') + '" fill="' + (color || '#0f172a') + '">' + esc(value) + '</text>';
+    }
+    function line(x1, y1, x2, y2, extra) {
+      return '<line pointer-events="none" x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" ' + (extra || 'stroke="#64748b"') + '/>';
+    }
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + width + ' ' + height + '" width="' + width + '" height="' + height + '" role="img" aria-label="' + esc(archDrawingTitle(p, labels)) + '" font-family="Arial,Helvetica,sans-serif">';
+    svg += '<title>' + esc(archDrawingTitle(p, labels)) + '</title><desc>' + esc(labels.units + '. ' + labels.cell_note) + '</desc>';
+    svg += '<rect width="' + width + '" height="' + height + '" fill="#ffffff"/>';
+    svg += textAt(20, 24, archDrawingTitle(p, labels), 16, 'start');
+    svg += '<rect x="' + x + '" y="' + y + '" width="' + p.width * c + '" height="' + p.height * c + '" fill="#f1f5f9" stroke="#cbd5e1"/>';
+    if (options.grid !== false) {
+      for (var u = 0; u <= p.width; u++) svg += line(x + u * c, y, x + u * c, bottom, 'stroke="#cbd5e1" stroke-width=".6"');
+      for (var v = 0; v <= p.height; v++) svg += line(x, y + v * c, right, y + v * c, 'stroke="#cbd5e1" stroke-width=".6"');
+    }
+    p.cells.forEach(function (cell) {
+      var bx = px(cell.u), by = p.kind === 'plan' ? py(cell.v) : py(cell.v + 1);
+      svg += '<rect data-drawing-cell="' + cell.u + ',' + cell.v + '" data-block="' + archBlockKey(cell.block) + '" x="' + bx + '" y="' + by + '" width="' + c + '" height="' + c + '" fill="' + cell.block.color + '" stroke="#334155" stroke-width=".8"><title>'
+        + esc(cell.block.shape + ' · ' + cell.block.material + ' · X=' + cell.block.x + ', Y=' + cell.block.y + ', Z=' + cell.block.z) + '</title></rect>';
+    });
+    if (!p.cells.length) svg += textAt(width / 2, height / 2, p.total ? labels.empty_slice : labels.empty, 14);
+    if (p.kind !== 'plan') {
+      svg += line(x - 5, bottom, right + 5, bottom, 'stroke="#334155" stroke-width="2"');
+      svg += textAt(right, bottom + 15, labels.ground, 10, 'end');
+    } else if (p.cut >= p.minV && p.cut < p.maxV) {
+      var sectionY = py(p.cut + 0.5);
+      svg += line(x, sectionY, right, sectionY, 'stroke="#be123c" stroke-width="1.5" stroke-dasharray="7 4" data-drawing-cut="true"');
+      svg += textAt(right, Math.max(y + 12, sectionY - 5), labels.cut_line.replace('{value}', p.cut), 10, 'end', '#9f1239');
+    }
+    if (options.dimensions !== false && p.total) {
+      svg += '<g pointer-events="none" data-drawing-dimensions="true">';
+      svg += line(x, bottom + 28, right, bottom + 28) + line(x, bottom + 21, x, bottom + 34) + line(right, bottom + 21, right, bottom + 34);
+      svg += textAt((x + right) / 2, bottom + 24, p.width + ' u', 12);
+      svg += line(x - 22, y, x - 22, bottom) + line(x - 28, y, x - 16, y) + line(x - 28, bottom, x - 16, bottom);
+      svg += '<text transform="translate(' + (x - 28) + ' ' + ((y + bottom) / 2) + ') rotate(-90)" text-anchor="middle" font-size="12" fill="#0f172a">' + p.height + ' u</text></g>';
+    }
+    var measure = archDrawingMeasurement(p, options.measurement);
+    if (measure) {
+      svg += '<g pointer-events="none" data-drawing-measurement="true">';
+      svg += line(px(measure.u1), py(measure.v1), px(measure.u2), py(measure.v2), 'stroke="#be123c" stroke-width="2.5" stroke-dasharray="5 3"');
+      [[measure.u1, measure.v1], [measure.u2, measure.v2]].forEach(function (point) {
+        svg += '<circle cx="' + px(point[0]) + '" cy="' + py(point[1]) + '" r="4" fill="#be123c" stroke="white" stroke-width="1.5"/>';
+      });
+      svg += '<rect x="' + (width - 280) + '" y="8" width="265" height="22" rx="4" fill="#fff1f2"/>';
+      svg += textAt(width - 22, 23, labels.distance.replace('{value}', archDrawingNumber(measure.distance)), 12, 'end', '#9f1239') + '</g>';
+    }
+    svg += textAt(18, height - 10, labels.across.replace('{axis}', p.uAxis) + ' · ' + (p.kind === 'plan' ? p.vAxis + ' ↓' : labels.up.replace('{axis}', p.vAxis)), 11, 'start');
+    svg += textAt(width - 18, height - 10, p.uAxis + ' [' + p.minU + ', ' + p.maxU + '] · ' + p.vAxis + ' [' + p.minV + ', ' + p.maxV + ']', 11, 'end');
+    return svg + '</svg>';
+  }
+  function archDrawingSheet(state, options) {
+    state = state || {}; options = options || {};
+    var labels = Object.assign({}, ARCH_DRAWING_LABELS, options.labels || {}), esc = archDrawingEscape;
+    var blocks = sanitizeArchBlocks(state.blocks), box = archDesignBounds(blocks);
+    if (!blocks.length) return null;
+    var notes = archProjectText(state.projectNotes, 4000).replace(/\s+/g, ' ').trim(), noteLines = [], characters = Array.from(notes);
+    while (characters.length && noteLines.length < 5) noteLines.push(characters.splice(0, 95).join(''));
+    if (characters.length) noteLines[noteLines.length - 1] += '…';
+    var height = noteLines.length ? 950 + noteLines.length * 16 : 900;
+    var name = archProjectText(state.projectName, 80).trim() || labels.untitled;
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="' + height + '" viewBox="0 0 1120 ' + height + '" role="img" aria-label="' + esc(labels.sheet + ' · ' + name) + '" font-family="Arial,Helvetica,sans-serif">';
+    svg += '<title>' + esc(labels.sheet + ' · ' + name) + '</title><rect width="1120" height="' + height + '" fill="#fff"/>';
+    svg += '<text x="30" y="36" font-size="' + Math.min(24, 1040 / Array.from(name).length) + '" fill="#0f172a">' + esc(name) + '</text>';
+    svg += '<text x="30" y="60" font-size="12" fill="#475569">' + esc(labels.sheet + ' · ' + labels.full_model.replace('{count}', blocks.length) + ' · ' + (box.maxX - box.minX + 1) + ' × ' + (box.maxZ - box.minZ + 1) + ' × ' + (box.maxY + 1) + ' u') + '</text>';
+    svg += '<text x="30" y="80" font-size="11" fill="#475569">' + esc(labels.units + '. ' + labels.sheet_views) + '</text>';
+    ['plan', 'front', 'right', 'section'].forEach(function (kind, index) {
+      var p = archDrawingProjection(blocks, Object.assign({}, options, { view: kind }));
+      var drawing = archDrawingSvg(p, Object.assign({}, options, { width: 520, height: 350, measurement: kind === options.view ? options.measurement : null }));
+      svg += '<g transform="translate(' + (25 + index % 2 * 550) + ' ' + (100 + Math.floor(index / 2) * 370) + ')">' + drawing + '</g>';
+    });
+    var counts = {};
+    blocks.forEach(function (b) { counts[b.material] = (counts[b.material] || 0) + 1; });
+    svg += '<text x="30" y="856" font-size="11" fill="#334155">' + esc(labels.materials + ': ' + Object.keys(counts).sort().map(function (key) { return key + ' × ' + counts[key]; }).join(' · ')) + '</text>';
+    svg += '<text x="30" y="876" font-size="11" fill="#475569">' + esc(labels.cell_note) + '</text>';
+    if (noteLines.length) {
+      svg += '<text x="30" y="900" font-size="12" font-weight="bold" fill="#0f172a">' + esc(labels.notes) + '</text>';
+      noteLines.forEach(function (line, i) { svg += '<text x="30" y="' + (918 + i * 16) + '" font-size="11" fill="#334155">' + esc(line) + '</text>'; });
+      svg += '<text x="30" y="' + (920 + noteLines.length * 16) + '" font-size="10" fill="#64748b">' + esc(labels.notes_more) + '</text>';
+    }
+    return svg + '</svg>';
+  }
+  window.__alloArchDrawing = { project: archDrawingProjection, measure: archDrawingMeasurement, pick: archDrawingPick,
+    layout: archDrawingLayout, svg: archDrawingSvg, sheet: archDrawingSheet, labels: ARCH_DRAWING_LABELS };
+
   function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
   try { window.__alloArchGL = ArchGL; } catch (e) {}
   try { window.__alloArchEditBlocks = applyArchEdit; } catch (e) {}
@@ -3941,6 +4114,123 @@ function __alloAST(k, fb) {
     }
 
 
+
+    var showDrawings = d.showDrawings === true;
+    function drawingText(key, values) {
+      var value = t('stem.archstudio.drawing_' + key, ARCH_DRAWING_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { value = value.replace('{' + name + '}', values[name]); });
+      return value;
+    }
+    function closeDrawings() {
+      upd('showDrawings', false);
+      setTimeout(function () { var button = document.getElementById('arch-drawings-toggle'); if (button) button.focus(); }, 0);
+    }
+    function renderDrawingDesk() {
+      var options = { view: d.drawingView, floor: d.drawingFloor == null ? editLayer : d.drawingFloor, cut: d.drawingCut,
+        dimensions: d.drawingDimensions !== false, grid: d.drawingGrid !== false };
+      var cutValid = d.drawingCut == null || archDesignInteger(d.drawingCut, -64, 64) != null;
+      var projection = archDrawingProjection(blocks, options);
+      options.view = projection.kind; options.floor = projection.floor; options.cut = projection.cut;
+      var scope = currentBuildSignature + '|' + projection.kind + '|' + projection.floor + '|' + projection.cut;
+      var measuring = d.drawingMeasureEnabled === true && d.drawingMeasureScope === scope;
+      var values = measuring && d.drawingMeasure || { u1: projection.minU, v1: projection.minV, u2: projection.maxU, v2: projection.maxV };
+      var measurement = measuring ? archDrawingMeasurement(projection, values) : null;
+      var labels = {};
+      Object.keys(ARCH_DRAWING_LABELS).forEach(function (key) { labels[key] = drawingText(key); });
+      options.labels = labels; options.measurement = measurement;
+      var textStyle = { margin: '8px 0', color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 };
+      var controlStyle = { width: '100%', minWidth: 0, minHeight: 36, padding: '7px 8px', border: '1px solid #64748b', borderRadius: 7,
+        background: '#0f172a', color: '#f8fafc', fontSize: 13 };
+      var buttonStyle = { minHeight: 36, padding: '7px 10px', border: '1px solid #2dd4bf', borderRadius: 7, background: '#134e4a', color: '#ccfbf1', cursor: 'pointer', fontSize: 12, fontWeight: 700 };
+      function setView(patch) { upd(Object.assign({ drawingMeasureEnabled: false, drawingPickEnd: false }, patch)); }
+      function setMeasure(patch) { upd({ drawingMeasure: Object.assign({}, values, patch), drawingMeasureScope: scope, drawingMeasureEnabled: true }); }
+      function numberControl(label, key, min, max) {
+        return el('label', { key: key, style: { display: 'block', color: '#cbd5e1', fontSize: 11 } }, label,
+          el('input', { type: 'number', min: min, max: max, step: 0.5, value: values[key], style: Object.assign({}, controlStyle, { marginTop: 4 }),
+            onChange: function (event) { var patch = {}; patch[key] = event.target.value; setMeasure(patch); } }));
+      }
+      function pickPoint(event) {
+        if (!measuring) return;
+        var svg = event.target.closest && event.target.closest('svg');
+        if (!svg || !svg.getScreenCTM()) return;
+        var point = svg.createSVGPoint(); point.x = event.clientX; point.y = event.clientY;
+        point = point.matrixTransform(svg.getScreenCTM().inverse());
+        var picked = archDrawingPick(projection, 720, 480, point.x, point.y);
+        if (!picked) return;
+        var patch = d.drawingPickEnd ? { u2: picked.u, v2: picked.v } : { u1: picked.u, v1: picked.v };
+        upd({ drawingMeasure: Object.assign({}, values, patch), drawingMeasureScope: scope, drawingMeasureEnabled: true, drawingPickEnd: !d.drawingPickEnd });
+      }
+      function downloadSheet() {
+        var svg = archDrawingSheet(d, options), url = null;
+        if (!svg) return;
+        try {
+          var name = (archProjectText(d.projectName, 80).trim() || 'architecture-project').replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-');
+          url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+          var link = document.createElement('a'); link.href = url; link.download = name + '.drawings.svg';
+          document.body.appendChild(link); link.click(); link.remove();
+          if (announceToSR) announceToSR(drawingText('downloaded'));
+        } catch (_) { if (ctx.addToast) ctx.addToast(drawingText('download_error'), 'error'); }
+        finally { if (url) setTimeout(function () { URL.revokeObjectURL(url); }, 1000); }
+      }
+      return el('section', { id: 'arch-drawings-desk', 'data-arch-drawings': 'true', 'aria-labelledby': 'arch-drawings-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape') { event.stopPropagation(); closeDrawings(); } },
+        style: { flex: 1, minHeight: 0, overflow: 'auto', padding: 16, background: '#0f172a' } },
+        el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginBottom: 14 } },
+          el('div', null, el('h2', { id: 'arch-drawings-heading', style: { margin: '0 0 5px', fontSize: 18, color: '#f0fdfa' } }, drawingText('title')),
+            el('p', { style: Object.assign({}, textStyle, { margin: 0, overflowWrap: 'anywhere' }) }, archProjectText(d.projectName, 80).trim() || drawingText('untitled'))),
+          el('button', { type: 'button', onClick: closeDrawings, style: Object.assign({}, buttonStyle, { flexShrink: 0 }) }, drawingText('close'))),
+        el('div', { className: 'arch-drawings-layout', style: { display: 'grid', gridTemplateColumns: '230px minmax(0, 1fr)', gap: 16, alignItems: 'start' } },
+          el('div', { style: { padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#1e293b', minWidth: 0 } },
+            el('label', { style: { display: 'block', color: '#e2e8f0', fontSize: 12 } }, drawingText('view'),
+              el('select', { 'aria-label': drawingText('view'), value: projection.kind, style: Object.assign({}, controlStyle, { margin: '5px 0 12px' }), onChange: function (event) { setView({ drawingView: event.target.value }); } },
+                ['plan', 'front', 'right', 'section'].map(function (kind) { return el('option', { key: kind, value: kind }, drawingText(kind)); }))),
+            el('label', { style: { display: 'block', color: '#e2e8f0', fontSize: 12 } }, drawingText('floor'),
+              el('select', { 'aria-label': drawingText('floor'), value: projection.floor, style: Object.assign({}, controlStyle, { margin: '5px 0 12px' }), onChange: function (event) { setView({ drawingFloor: Number(event.target.value) }); } },
+                Array.from({ length: 32 }, function (_, y) {
+                  var floor = projection.floors.find(function (f) { return f.y === y; });
+                  return el('option', { key: y, value: y }, drawingText('floor_blocks', { value: y, count: floor ? floor.count : 0 }));
+                }))),
+            el('label', { style: { display: 'block', color: '#e2e8f0', fontSize: 12 } }, drawingText('cut'),
+              el('input', { type: 'number', min: -64, max: 64, step: 1, value: d.drawingCut == null ? 0 : d.drawingCut,
+                style: Object.assign({}, controlStyle, { margin: '5px 0 10px' }),
+                onChange: function (event) { setView({ drawingCut: event.target.value }); } })),
+            !cutValid && el('p', { role: 'alert', style: Object.assign({}, textStyle, { color: '#fecaca' }) }, drawingText('invalid_cut')),
+            ['dimensions', 'grid', 'measure'].map(function (key) {
+              var checked = key === 'measure' ? measuring : options[key];
+              return el('label', { key: key, style: { display: 'flex', alignItems: 'center', gap: 8, minHeight: 34, fontSize: 12, color: '#f1f5f9' } },
+                el('input', { type: 'checkbox', checked: checked, disabled: key === 'measure' && !blocks.length, onChange: function (event) {
+                  if (key === 'measure') upd({ drawingMeasureEnabled: event.target.checked, drawingMeasureScope: scope, drawingMeasure: values, drawingPickEnd: false });
+                  else upd(key === 'grid' ? 'drawingGrid' : 'drawingDimensions', event.target.checked);
+                } }), drawingText(key));
+            }),
+            measuring && el('div', { style: { marginTop: 8, paddingTop: 8, borderTop: '1px solid #64748b' } },
+              el('p', { style: textStyle }, drawingText('measure_help')),
+              el('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 } },
+                numberControl(drawingText('start', { axis: projection.uAxis }), 'u1', projection.minU, projection.maxU),
+                numberControl(drawingText('start', { axis: projection.vAxis }), 'v1', projection.minV, projection.maxV),
+                numberControl(drawingText('end', { axis: projection.uAxis }), 'u2', projection.minU, projection.maxU),
+                numberControl(drawingText('end', { axis: projection.vAxis }), 'v2', projection.minV, projection.maxV)),
+              el('div', { role: measurement ? 'status' : 'alert', 'data-arch-drawing-measure': 'true', style: Object.assign({}, textStyle, { color: measurement ? '#99f6e4' : '#fecaca' }) },
+                measurement ? drawingText('distance', { value: archDrawingNumber(measurement.distance) }) : drawingText('invalid_measure'),
+                measurement && el('div', null, drawingText('delta', { u: projection.uAxis, du: archDrawingNumber(measurement.du), v: projection.vAxis, dv: archDrawingNumber(measurement.dv) }))),
+              el('p', { style: textStyle }, drawingText(d.drawingPickEnd ? 'next_end' : 'next_start')),
+              el('button', { type: 'button', style: buttonStyle, onClick: function () {
+                upd({ drawingMeasure: { u1: projection.minU, v1: projection.minV, u2: projection.maxU, v2: projection.maxV }, drawingMeasureScope: scope, drawingPickEnd: false });
+              } }, drawingText('reset_measure'))),
+            el('button', { type: 'button', style: Object.assign({}, buttonStyle, { width: '100%', marginTop: 14 }), disabled: !blocks.length || !cutValid || (measuring && !measurement), onClick: downloadSheet }, drawingText('download')),
+            el('p', { style: textStyle }, drawingText('sheet_help'))),
+          el('div', { style: { minWidth: 0 } },
+            el('p', { role: showReplay ? 'status' : undefined, style: Object.assign({}, textStyle, { marginTop: 0, color: showReplay ? '#fde68a' : '#cbd5e1' }) }, drawingText(showReplay ? 'replay' : 'live')),
+            el('div', { className: 'arch-drawing-preview', 'data-arch-drawing-preview': 'true', onClick: pickPoint,
+              style: { overflow: 'hidden', border: '1px solid #94a3b8', borderRadius: 10, background: '#fff', cursor: measuring ? 'crosshair' : 'default' },
+              dangerouslySetInnerHTML: { __html: cutValid ? archDrawingSvg(projection, options) : '' } }),
+            el('div', { 'data-arch-drawing-summary': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: '8px 18px', marginTop: 12, fontSize: 12, color: '#e2e8f0' } },
+              el('strong', null, drawingText('visible', { count: projection.cells.length })),
+              el('span', null, drawingText('full_model', { count: blocks.length })),
+              el('span', null, drawingText('extents', { u: projection.uAxis, minU: projection.minU, maxU: projection.maxU, v: projection.vAxis, minV: projection.minV, maxV: projection.maxV }))),
+            el('p', { style: textStyle }, drawingText('units') + '. ' + drawingText('cell_note')))));
+    }
+
     var showProject = d.showProject === true;
     function projectError(code, count) {
       var messages = {
@@ -4118,6 +4408,9 @@ function __alloAST(k, fb) {
         + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
         + '--arch-glow:rgba(56,189,248,.18);--arch-shadow:0 18px 44px rgba(2,6,23,.34);}'
         + '#arch-studio-region,#arch-studio-region *{box-sizing:border-box;}'
+        + '#arch-studio-region .arch-drawing-preview>svg{display:block;width:100%;height:auto;max-height:360px;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-drawings-layout{grid-template-columns:1fr!important;}}'
+        + '#arch-studio-region select:focus-visible{outline:2px solid #38bdf8;outline-offset:2px;}'
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -4199,11 +4492,12 @@ function __alloAST(k, fb) {
         ),
         el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
         el('button', { id: 'arch-design-toggle', type: 'button', 'aria-expanded': showDesign, 'aria-controls': showDesign ? 'arch-design-panel' : undefined,
-          onClick: function () { upd({ showDesign: !showDesign, showProject: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showDesign: !showDesign, showProject: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.design_open', 'Design workbench')),
+        el('button', { id: 'arch-drawings-toggle', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
         el('button', { id: 'arch-project-toggle', type: 'button', 'aria-expanded': showProject, 'aria-controls': showProject ? 'arch-project-panel' : undefined,
-          onClick: function () { upd({ showProject: !showProject, showDesign: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showProject: !showProject, showDesign: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.project_open_panel', 'Project & revisions')),
         // Toggle pills
@@ -4247,7 +4541,7 @@ function __alloAST(k, fb) {
       ),
 
       // ── Main content: sidebar + viewport ──
-      el('div', { className: 'arch-studio-main', style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' } },
+      showDrawings ? renderDrawingDesk() : el('div', { className: 'arch-studio-main', style: { display: 'flex', flex: 1, minHeight: 0, overflow: 'hidden' } },
 
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
