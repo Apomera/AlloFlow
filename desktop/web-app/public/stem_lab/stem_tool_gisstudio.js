@@ -3812,7 +3812,7 @@
       var effectiveModel = sourceModel;
       var formatters = createGISFormatters(localeOptions || sourceModel);
       effectiveModel = Object.assign({}, sourceModel, { formatters: formatters });
-      if (hasLocale && !sourceModel.generated) {
+      if (!sourceModel.generated) {
         effectiveModel.generated = formatters.dateTime(new Date());
       }
       return localizeGISReportDocument(builder(effectiveModel), effectiveModel, localeOptions);
@@ -6040,7 +6040,7 @@
                 h('fieldset', { style: { border: 0, padding: 0, margin: '0 0 13px' } },
                   h('legend', { style: { color: '#67e8f9', fontWeight: 800, fontSize: 11, marginBottom: 7 } }, 'DATA SOURCE'),
                   h('label', { style: { display: 'block', fontSize: 12, marginBottom: 6 } }, h('input', { type: 'radio', name: 'gis-source', checked: !imported, onChange: function () { resetDatasetDerivedState(); setSource('sample'); } }), ' Sample / region pack'),
-                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#68849a' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { resetDatasetDerivedState(); setSource('import'); } }), ' My CSV')),
+                  h('label', { style: { display: 'block', fontSize: 12, color: importedRows.length ? '#dbeafe' : '#7d97ab' } }, h('input', { type: 'radio', name: 'gis-source', checked: imported, disabled: !importedRows.length, onChange: function () { resetDatasetDerivedState(); setSource('import'); } }), ' My CSV')),
                 !imported && h('div', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('label', { style: { display: 'grid', gap: 5 } },
                     h('span', { style: { fontWeight: 700 } }, 'Sample region pack'),

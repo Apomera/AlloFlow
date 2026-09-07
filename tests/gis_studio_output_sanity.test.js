@@ -185,6 +185,26 @@ describe('GIS Studio output sanity', () => {
     }
   });
 
+  it('stamps every exported document with when it was generated', () => {
+    // Two builders defaulted the timestamp and two did not, so a map package or
+    // evidence report exported without a locale headed itself "Generated ."
+    const rows = [{ name: 'West End', lat: 43.65, lon: -70.27, value: 2400, geometry: 'Point' }];
+    const reports = {
+      evidence: tool.testing.buildEvidenceReport({ left: { label: 'Households', rows }, right: { label: 'Trees', rows } }),
+      composer: tool.testing.buildMapComposerReport({ rows, title: 'Portland households', altText: 'x'.repeat(50) }),
+      story: tool.testing.buildStoryMapReport({ rows, story: { title: 'A study', slides: [] } }),
+      packet: tool.testing.buildInvestigationPacketReport({ rows, storyMap: { title: 'A study', slides: [] } })
+    };
+    for (const [name, html] of Object.entries(reports)) {
+      expect(html, name + ' has an empty generated stamp').not.toMatch(/Generated\s*[.<]/);
+      expect(html, name + ' should name a year').toMatch(/Generated[^<]*20\d\d/);
+    }
+
+    // A caller-supplied stamp still wins, and a locale still formats it.
+    const fixed = tool.testing.buildEvidenceReport({ left: { label: 'L', rows }, right: { label: 'R', rows }, generated: 'Fixed stamp' });
+    expect(fixed).toContain('Generated Fixed stamp');
+  });
+
   it('says so when a pack has only one attribute to compare', () => {
     const single = packState({
       label: 'Otago towns',
