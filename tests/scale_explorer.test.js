@@ -281,13 +281,20 @@ describe('Scale Explorer camera cost', () => {
     const stepBody = src.slice(src.indexOf('function step()'), src.indexOf('// ── Drawing'));
     expect(stepBody, 'step() must not call setExp directly').not.toMatch(/setExp\(/);
     expect(stepBody).toMatch(/paintReadout\(\);/);
-    expect(src).toMatch(/function settleExp\(v\) \{ setExp\(v\); paintReadout\(\); \}/);
+    // Pin the invariant, not the spelling: the settle path is the only place
+    // that touches React state, and it repaints once when it does.
+    const settle = src.slice(src.indexOf('function settleExp('), src.indexOf('function step()'));
+    expect(settle).toMatch(/setExp\(v\)/);
+    expect(settle).toMatch(/paintReadout\(\)/);
   });
 
   it('keeps the continuously-updating readout out of a live region', () => {
     // It changes every frame. As role="status" it queued an announcement per
     // frame, on top of the one-per-decade announcement that already exists.
-    const readout = src.slice(src.indexOf("h('p', { id: descId"), src.indexOf("h('p', { id: descId") + 200);
+    // Only this element's own props, so a legitimately-live sibling (the
+    // end-of-ladder notice) cannot be mistaken for it.
+    const at = src.indexOf("h('p', { id: descId");
+    const readout = src.slice(at, src.indexOf('}, viewLine)', at));
     expect(readout, 'the readout must not be a live region').not.toMatch(/role: 'status'/);
     expect(readout).toMatch(/ref: readoutRef/);
     // ...and the decade announcement is still the screen-reader path.
@@ -325,5 +332,42 @@ describe('Scale Explorer guided journey', () => {
   it('exposes its state to assistive tech as a toggle', () => {
     expect(src).toMatch(/'aria-pressed': journey !== 0 \? 'true' : 'false'/);
     expect(src).toMatch(/journey_pause/);
+  });
+});
+
+describe('Scale Explorer keeps the panel honest', () => {
+  // A sweep of all 44 decades showed the "In focus" card stuck on whatever was
+  // last picked — describing a person while the camera sat at the observable
+  // universe. The card claims to show what is in focus, so it has to.
+  it('follows the camera, but only when the nearest object changes', () => {
+    expect(src).toMatch(/var near = nearestItem\(expRef\.current\);/);
+    expect(src).toMatch(/if \(near && near\.id !== nearestRef\.current\)/);
+    // Guarded on the nearest CHANGING, so this costs a render per object passed
+    // rather than one per frame.
+    expect(src).toMatch(/nearestRef\.current = near\.id;/);
+  });
+
+  it('does not flicker through everything it passes on the way to a pick', () => {
+    // flyTo declares an intent; tracking stands down until the camera settles.
+    expect(src).toMatch(/intentRef\.current = item\.id;/);
+    expect(src).toMatch(/if \(!intentRef\.current\)/);
+    expect(src).toMatch(/function settleExp\(v\) \{ intentRef\.current = null;/);
+  });
+
+  it('explains the empty space past the ends instead of looking broken', () => {
+    // Zooming out past the largest object gave pure void with no word about it.
+    expect(src).toMatch(/edge_big/);
+    expect(src).toMatch(/edge_small/);
+    expect(src).toMatch(/exp > log10\(biggest\.size\) \+ 0\.55/);
+    expect(src).toMatch(/exp < log10\(smallest\.size\) - 0\.55/);
+  });
+
+  it('names a length in units a person can picture, at every scale', () => {
+    // A sweep produced "4218 times the Earth-Sun distance" and, after a careless
+    // fix, "420787623458 light years". Both are numbers nobody can hold.
+    const start = src.indexOf('function humanLength');
+    const body = src.slice(start, src.indexOf('function round2'));
+    expect(body).toMatch(/a >= 9\.461e15\) return bigCount/);
+    expect(body).toMatch(/a >= 1e14\) return round2/);
   });
 });

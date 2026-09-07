@@ -205,7 +205,10 @@
   // A length in words, in the unit a person would actually use at that scale.
   function humanLength(m) {
     var a = Math.abs(m);
+    // A light year and up gets word-scaled ("93 billion light years"); the
+    // stretch below that still reads best in light years, but as a fraction.
     if (a >= 9.461e15) return bigCount(m / 9.461e15) + ' light years';
+    if (a >= 1e14) return round2(m / 9.461e15) + ' light years';
     if (a >= 1.496e11) return bigCount(m / 1.496e11) + ' times the Earth–Sun distance';
     if (a >= 1000) return bigCount(m / 1000) + ' km';
     if (a >= 1) return round2(m) + ' m';
@@ -297,6 +300,8 @@
       var expRef = React.useRef(log10(HUMAN));
       var rafRef = React.useRef(0);
       var lastDecadeRef = React.useRef(Math.round(log10(HUMAN)));
+      var nearestRef = React.useRef('human');
+      var intentRef = React.useRef(null);
       var speakTokenRef = React.useRef(0);
       var speakTimerRef = React.useRef(null);
       var descId = React.useMemo(function () { return 'sx-desc-' + Math.random().toString(36).slice(2, 8); }, []);
@@ -344,7 +349,7 @@
       }
       // React state catches up once, at rest, so anything that renders from exp
       // stays correct without paying for the frames in between.
-      function settleExp(v) { setExp(v); paintReadout(); }
+      function settleExp(v) { intentRef.current = null; setExp(v); paintReadout(); }
       function step() {
         rafRef.current = 0;
         var cur = expRef.current, target = targetRef.current;
@@ -359,6 +364,16 @@
       // One announcement per power of ten crossed, never one per frame: a live
       // region fed a running number talks over everything else the user does.
       function afterMove() {
+        // Keep the panel honest: it says "in focus", so it has to be what is
+        // actually in the middle of the view. Guarded on the nearest item
+        // changing, so this costs a render per object passed, not per frame.
+        if (!intentRef.current) {
+          var near = nearestItem(expRef.current);
+          if (near && near.id !== nearestRef.current) {
+            nearestRef.current = near.id;
+            setFocusId(near.id);
+          }
+        }
         var d = Math.round(expRef.current);
         if (d === lastDecadeRef.current) return;
         lastDecadeRef.current = d;
@@ -404,6 +419,8 @@
       }
       function flyTo(item, opts) {
         stopJourney();
+        intentRef.current = item.id;
+        nearestRef.current = item.id;
         setFocusId(item.id);
         goTo(log10(item.size), opts);
       }
@@ -661,6 +678,18 @@
           { len: humanLength(Math.pow(10, e)), p: powerLabel(Math.round(e)) });
       }
       var viewLine = viewLineFor(exp);
+      // Past the ends of the ladder there is nothing to draw. That is not a bug
+      // and it is not nothing: it is the edge of what is known, or the edge of
+      // what "how wide is it?" still means. Say which.
+      var biggest = sorted[0], smallest = sorted[sorted.length - 1];
+      var edge = null;
+      if (exp > log10(biggest.size) + 0.55) {
+        edge = S('edge_big', 'You have zoomed out past everything. {name} is the largest thing here, because it is the largest thing anyone can see.',
+          { name: itemText(biggest, 'name') });
+      } else if (exp < log10(smallest.size) - 0.55) {
+        edge = S('edge_small', 'You have zoomed in past everything. Below about the size of {name}, asking how wide something is stops having a clear answer.',
+          { name: lowerArticle(itemText(smallest, 'name')) });
+      }
 
       function itemOptions() {
         return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + humanLength(i.size)); });
@@ -693,6 +722,7 @@
                 style: { display: 'block', width: '100%', height: '100%', outlineOffset: '-3px' } })
             ),
             h('p', { id: descId, ref: readoutRef, style: { margin: 0, fontSize: '0.8125rem', color: P.text, fontWeight: 600 } }, viewLine),
+            edge ? h('p', { role: 'status', style: Object.assign({}, card, { margin: 0, borderColor: P.accent, fontSize: '0.78125rem' }) }, '🛑 ' + edge) : null,
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),

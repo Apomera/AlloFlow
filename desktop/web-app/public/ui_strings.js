@@ -12635,6 +12635,8 @@
       "dim_long": "long",
       "dim_tall": "tall",
       "dim_wide_at_the_base": "wide at the base",
+      "edge_big": "You have zoomed out past everything. {name} is the largest thing here, because it is the largest thing anyone can see.",
+      "edge_small": "You have zoomed in past everything. Below about the size of {name}, asking how wide something is stops having a clear answer.",
       "est_close": "Close — within a power of ten or so.",
       "est_go": "Lock in my estimate",
       "est_heading": "Estimate first",
