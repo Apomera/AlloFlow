@@ -17747,9 +17747,64 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         };
         var caseId = d.intelSelectedCase || 'otto';
         var c = CASES[caseId];
+
+        // ── What kind of evidence is each case? ────────────────────────
+        // Animal-cognition claims are exactly where a vivid story gets
+        // mistaken for a result, so the tier for each case is taken from
+        // what that case's own entry says about where it came from:
+        // "aquarium" reports and a single escape are incidents; Heidi is one
+        // filmed animal; the mirror test is a real paradigm whose cephalopod
+        // results are not clean; Finn et al. 2009 and the Wang lab papers are
+        // peer-reviewed; the Cambridge Declaration is a position statement.
+        var EV_TIERS = [
+          { id: 'incident', rank: 1, color: '#fb7185', label: __alloT('stem.cephalopodlab.intel_tier_incident', 'Single incident, reported afterwards'),
+            weight: __alloT('stem.cephalopodlab.intel_tier_incident_weight', 'Can raise a question. Cannot settle one: no controls, one animal, and the story is told after the fact.') },
+          { id: 'observation', rank: 2, color: '#fbbf24', label: __alloT('stem.cephalopodlab.intel_tier_observation', 'One animal, recorded'),
+            weight: __alloT('stem.cephalopodlab.intel_tier_observation_weight', 'The recording is real. What it means is an interpretation, and other readings of the same footage exist.') },
+          { id: 'contested', rank: 3, color: '#38bdf8', label: __alloT('stem.cephalopodlab.intel_tier_contested', 'Real test, result not clean'),
+            weight: __alloT('stem.cephalopodlab.intel_tier_contested_weight', 'An established method applied to cephalopods, where the outcome does not resolve the question either way.') },
+          { id: 'study', rank: 4, color: '#86efac', label: __alloT('stem.cephalopodlab.intel_tier_study', 'Peer-reviewed study'),
+            weight: __alloT('stem.cephalopodlab.intel_tier_study_weight', 'Collected, reviewed and published so other researchers can check it. The strongest single item on this list.') },
+          { id: 'synthesis', rank: 5, color: '#a78bfa', label: __alloT('stem.cephalopodlab.intel_tier_synthesis', 'Expert position statement'),
+            weight: __alloT('stem.cephalopodlab.intel_tier_synthesis_weight', 'Summarises many studies rather than adding data. It reports where specialists stand, which is not the same as proof.') }
+        ];
+        var CASE_TIER = { otto: 'incident', inky: 'incident', heidi: 'observation', mirror: 'contested', coconut: 'study', opticgland: 'study', consciousness: 'synthesis' };
+        var tierOf = function(id) { var t = CASE_TIER[id]; return EV_TIERS.filter(function(x) { return x.id === t; })[0] || EV_TIERS[0]; };
+        var curTier = tierOf(caseId);
+        var evidenceLadder = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.intel_ladder_title', '⚖️ Famous is not the same as well-evidenced')),
+            h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.intel_ladder_hint', 'Pick a case from any rung'))),
+          h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6, marginBottom: 12 } },
+            __alloT('stem.cephalopodlab.intel_ladder_intro', 'The two most famous stories here sit on the bottom rung, and the strongest evidence is the least famous. That is worth noticing before you decide what any of it proves. Weak evidence is not worthless — an incident is often what makes someone design the study — it just cannot carry the conclusion on its own.')),
+          h('ol', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column-reverse', gap: 8 } },
+            EV_TIERS.map(function(t) {
+              var members = Object.keys(CASES).filter(function(id) { return CASE_TIER[id] === t.id; });
+              var here = t.id === curTier.id;
+              return h('li', { key: t.id,
+                style: { display: 'flex', gap: 12, alignItems: 'flex-start', padding: '10px 12px', borderRadius: 10,
+                  background: here ? t.color + '18' : 'rgba(15,23,42,0.5)',
+                  border: '1px solid ' + (here ? t.color : 'rgba(148,163,184,0.25)'), borderLeft: '4px solid ' + t.color } },
+                h('span', { 'aria-hidden': 'true', style: { fontSize: 11, fontWeight: 900, color: t.color, fontFamily: 'ui-monospace, Menlo, monospace', paddingTop: 2, minWidth: 16 } }, String(t.rank)),
+                h('div', { style: { flex: 1, minWidth: 0 } },
+                  h('div', { style: { fontSize: 12.5, fontWeight: 800, color: t.color, marginBottom: 3 } }, t.label),
+                  h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginBottom: 7 } }, t.weight),
+                  h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                    members.map(function(id) {
+                      var on = id === caseId;
+                      return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
+                        onClick: function() { setCL({ intelSelectedCase: id }); awardXP(1); clAnnounce(CASES[id].name + ' selected. Evidence type: ' + t.label); },
+                        style: { padding: '5px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                          background: on ? t.color + '2e' : 'transparent', color: on ? t.color : '#cbd5e1',
+                          border: '1px solid ' + (on ? t.color : 'rgba(148,163,184,0.4)') } },
+                        h('span', { 'aria-hidden': 'true', style: { marginRight: 5 } }, CASES[id].emoji), CASES[id].name);
+                    }))));
+            })));
         return h('div', null,
           panelHeader('💡 Intelligence Lab',
             'Seven case studies that built our current understanding of cephalopod cognition. Each is a documented research finding or famous individual that changed how biologists think about non-human minds.'),
+
+          evidenceLadder,
 
           // Case picker
           h('div', { style: cardStyle() },
@@ -17778,8 +17833,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('span', { 'aria-hidden': 'true', style: { fontSize: 36, lineHeight: 1 } }, c.emoji),
               h('div', { style: { flex: 1, minWidth: 220 } },
                 h('div', { style: { fontSize: 20, fontWeight: 900, color: c.color, letterSpacing: '-0.01em' } }, c.name),
-                h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, c.species + ' · ' + c.where))),
-            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75, marginBottom: 14 } }, c.story),
+                h('div', { style: { fontSize: 11, color: '#a78bfa', marginTop: 2 } }, c.species + ' · ' + c.where),
+                h('div', { style: { display: 'inline-flex', alignItems: 'center', gap: 6, marginTop: 8, padding: '4px 10px', borderRadius: 999,
+                    background: curTier.color + '1f', border: '1px solid ' + curTier.color + '88' } },
+                  h('span', { style: { fontSize: 10, fontWeight: 900, color: curTier.color, textTransform: 'uppercase', letterSpacing: '0.06em' } },
+                    __alloT('stem.cephalopodlab.intel_evidence_badge', 'Evidence: ') + curTier.label)))),
+            h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.75, marginBottom: 12 } }, c.story),
+            h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.6, marginBottom: 14, padding: '9px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.55)', border: '1px dashed ' + curTier.color + '77' } },
+              h('b', { style: { color: curTier.color } }, __alloT('stem.cephalopodlab.intel_what_it_can_show', 'What this kind of evidence can show: ')), curTier.weight),
             h('div', { style: { background: c.color + '15', borderLeft: '3px solid ' + c.color,
               padding: '12px 14px', borderRadius: 6 } },
               h('div', { style: { fontSize: 10, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },

@@ -496,3 +496,52 @@ describe('Cephalopod Lab Life Cycle flow', () => {
     expect(fills).not.toContain('#d946ef');
   });
 });
+
+// ── Intelligence Lab evidence ladder ──
+describe('Cephalopod Lab Intelligence Lab evidence ladder', () => {
+  const renderIntel = (caseId) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'intel', intelSelectedCase: caseId } });
+    return c;
+  };
+
+  it('sorts every case onto a rung, strongest at the top of the list order', () => {
+    const c = renderIntel('otto');
+    const rungs = Array.from(c.querySelectorAll('ol li'));
+    expect(rungs).toHaveLength(5);
+    // the DOM order is weakest-first; the column is reversed for display
+    expect(rungs[0].textContent).toMatch(/Single incident, reported afterwards/);
+    expect(rungs[4].textContent).toMatch(/Expert position statement/);
+    // every one of the seven cases appears on exactly one rung
+    const chips = rungs.flatMap((r) => Array.from(r.querySelectorAll('button')));
+    expect(chips).toHaveLength(7);
+  });
+
+  it('places the two most famous anecdotes on the weakest rung and the papers on the strongest', () => {
+    const rungOf = (name) => {
+      const c = renderIntel('otto');
+      const li = Array.from(c.querySelectorAll('ol li')).find((r) => Array.from(r.querySelectorAll('button')).some((b) => b.textContent.includes(name)));
+      return li ? li.textContent : '';
+    };
+    expect(rungOf('Otto')).toMatch(/Single incident/);
+    expect(rungOf('Inky')).toMatch(/Single incident/);
+    expect(rungOf('Heidi')).toMatch(/One animal, recorded/);
+    expect(rungOf('Coconut Octopus tool use')).toMatch(/Peer-reviewed study/);
+    expect(rungOf('Optic Gland')).toMatch(/Peer-reviewed study/);
+    expect(rungOf('Mirror self-recognition')).toMatch(/Real test, result not clean/);
+    expect(rungOf('The consciousness question')).toMatch(/Expert position statement/);
+  });
+
+  it('badges the open case with its evidence type and says what that type can support', () => {
+    const anecdote = renderIntel('inky');
+    expect(anecdote.textContent).toMatch(/Evidence: Single incident, reported afterwards/);
+    expect(anecdote.textContent).toMatch(/What this kind of evidence can show: Can raise a question\. Cannot settle one/);
+    const study = renderIntel('opticgland');
+    expect(study.textContent).toMatch(/Evidence: Peer-reviewed study/);
+    expect(study.textContent).toMatch(/other researchers can check it/);
+  });
+
+  it('says plainly that weak evidence still has a job, so the ladder is not a dismissal', () => {
+    expect(renderIntel('otto').textContent).toMatch(/Weak evidence is not worthless/);
+  });
+});
