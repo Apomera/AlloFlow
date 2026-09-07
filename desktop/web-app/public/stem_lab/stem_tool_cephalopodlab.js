@@ -10958,7 +10958,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     sp.specialAbility === 'venomousBite' ? h('span', { style: { color: '#22d3ee' } }, __alloT('stem.cephalopodlab.venom_bite', '💀 venom bite')) : null,
                     sp.specialAbility === 'mimicry' ? h('span', { style: { color: '#fbbf24' } }, __alloT('stem.cephalopodlab.mimicry_hold_m', '🎭 mimicry (hold M)')) : null,
                     sp.specialAbility === 'passingCloud' ? h('span', { style: { color: '#34d399' } }, __alloT('stem.cephalopodlab.hypnotic_cloud_hold_h', '🌀 hypnotic cloud (hold H)')) : null,
-                    sp.specialAbility === 'massiveStrike' ? h('span', { style: { color: '#dc2626' } }, __alloT('stem.cephalopodlab.massive_strike', '💪 massive strike')) : null,
+                    sp.specialAbility === 'massiveStrike' ? h('span', { style: { color: clReadableInk('#dc2626') } }, __alloT('stem.cephalopodlab.massive_strike', '💪 massive strike')) : null,
                     sp.specialAbility === 'finPropulsion' ? h('span', { style: { color: '#60a5fa' } }, __alloT('stem.cephalopodlab.fin_propulsion_free_jet', '🪼 fin propulsion (free jet)')) : null,
                     sp.specialAbility === 'burglarAlarm' ? h('span', { style: { color: '#a78bfa' } }, __alloT('stem.cephalopodlab.burglar_alarm_b', '⚡ burglar alarm (B)')) : null,
                     sp.specialAbility === 'counterIllumination' ? h('span', { style: { color: '#fbbf24' } }, __alloT('stem.cephalopodlab.counter_illum_auto_at_night', '✨ counter-illum (auto at night)')) : null,
@@ -17836,7 +17836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontSize: 12, lineHeight: 1.7 } },
               h('p', { style: { margin: '0 0 10px 0' } },
                 __alloT('stem.cephalopodlab.cephalopods_have', 'Cephalopods have '),
-                h('b', { style: { color: '#dc2626' } }, __alloT('stem.cephalopodlab.three_hearts_2', 'three hearts')),
+                h('b', { style: { color: clReadableInk('#dc2626') } }, __alloT('stem.cephalopodlab.three_hearts_2', 'three hearts')),
                 __alloT('stem.cephalopodlab.two_branchial_hearts_one_per_gill_and_', ' — two branchial hearts (one per gill) and one systemic heart that pumps blood to the body. Here\'s the weird part: '),
                 h('b', { style: { color: '#fde68a' } }, __alloT('stem.cephalopodlab.the_systemic_heart_stops_beating_durin', 'the systemic heart STOPS BEATING during sustained jet swimming')),
                 __alloT('stem.cephalopodlab.blood_circulation_pauses', '. Blood circulation pauses.')),
@@ -17933,7 +17933,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                       return h('button', { key: id, type: 'button', 'aria-pressed': on ? 'true' : 'false',
                         onClick: function() { setCL({ intelSelectedCase: id }); awardXP(1); clAnnounce(CASES[id].name + ' selected. Evidence type: ' + t.label); },
                         style: { padding: '5px 10px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
-                          background: on ? t.color + '2e' : 'transparent', color: on ? t.color : '#cbd5e1',
+                          background: on ? t.color + '14' : 'transparent', color: on ? clReadableInk(t.color) : '#cbd5e1',
                           border: '1px solid ' + (on ? t.color : 'rgba(148,163,184,0.4)') } },
                         h('span', { 'aria-hidden': 'true', style: { marginRight: 5 } }, CASES[id].emoji), CASES[id].name);
                     }))));
@@ -18307,7 +18307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                           h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.4 } }, dim.description)),
                         ANIMALS.map(function(a) {
                           var rating = dim.ratings[a.id];
-                          var starColor = rating === 3 ? '#fbbf24' : rating === 2 ? '#86efac' : rating === 1 ? '#94a3b8' : '#475569';
+                          var starColor = rating === 3 ? '#fbbf24' : rating === 2 ? '#86efac' : rating === 1 ? '#cbd5e1' : clReadableInk('#475569');
                           return h('td', { key: a.id,
                             style: { padding: '12px 8px', textAlign: 'center', verticalAlign: 'top', background: RATING_TINT[rating] || RATING_TINT[0] } },
                             h('div', { style: { fontSize: 14, color: starColor, letterSpacing: '0.05em', fontFamily: 'ui-monospace, Menlo, monospace' } },
@@ -19980,7 +19980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var detail = h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + accent }) },
           h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
             h('div', null,
-              h('div', { style: { fontSize: 18, fontWeight: 900, color: accent } }, s.stage),
+              h('div', { style: { fontSize: 18, fontWeight: 900, color: clReadableInk(accent) } }, s.stage),
               h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)),
             h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.life_browse', 'Browse life stages'), style: { display: 'flex', alignItems: 'center', gap: 6 } },
               h('button', { type: 'button', 'aria-label': __alloT('stem.cephalopodlab.life_prev', 'Previous life stage'), onClick: function() { pickStage(stages[(selIdx + stages.length - 1) % stages.length]); },
