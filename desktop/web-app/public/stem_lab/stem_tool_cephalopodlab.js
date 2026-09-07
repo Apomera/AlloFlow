@@ -768,6 +768,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       camoSquint: false,                   // predator's-eye blurred comparison
       // Body Plan state
       anatomyRegion: 'central-brain',      // currently highlighted region id
+      // Sections added 2026-09-07. Every read site already falls back, but the
+      // default state is the contract for what this tool stores, so list them.
+      hubCheckAnswers: {},                 // Hub fact-or-metaphor picks: id -> 'fact' | 'metaphor'
+      fieldGuideGroup: 'all',              // Field Guide picker filter
+      fieldGuideCompareId: null,           // Field Guide second species for the compare table
+      skinCell: 'chromatophore',           // Skin Anatomy selected cell type
+      skinDrive: 0,                        // Skin Anatomy chromatophore muscle drive 0-100
+      lifeStage: 'egg',                    // Life Cycle selected stage
       // Through Time state
       timeView: 'timeline',                // 'timeline' | 'fossils' | 'extinctions' | 'body-evolution'
       timeEraId: 'ordovician',
@@ -19680,14 +19688,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 16f — LIFE CYCLE (mating, brooding, senescence)
       // ═══════════════════════════════════════════════════════
       function renderLifeCycle() {
+        // Eight stages that were printed as eight stacked cards, in a section
+        // whose whole point is that this is a SEQUENCE which ends. Two things
+        // were invisible in that list and are drawn here, both taken from the
+        // section's own text: the path forks by sex after mating (brooding is
+        // "(female only)"; senescence is "1-4 weeks after eggs hatch, or after
+        // mating in males"), and it terminates — semelparity means the loop
+        // back to Egg belongs to the next generation, not to this animal.
         var stages = Object.keys(LIFE_CYCLE);
+        var sel = d.lifeStage && LIFE_CYCLE[d.lifeStage] ? d.lifeStage : stages[0];
+        var pickStage = function(k) { setCL({ lifeStage: k }); awardXP(1); clAnnounce(LIFE_CYCLE[k].stage + ' selected.'); };
+        // Sequential ramp: one hue, light at the start of life to dark at its end.
+        // The ramp darkens toward the end of life, and the last three steps must
+        // stay dark enough for white ink: #ec4899/#d946ef measured 3.45:1 and
+        // carried both the node label and the chip.
+        var RAMP = { egg: '#fef3c7', paralarva: '#fde68a', juvenile: '#fcd34d', subadult: '#fbbf24', adult: '#f59e0b', mating: '#be185d', brooding: '#a21caf', senescence: '#9f1239' };
+        var inkOn = function(k) { return (k === 'senescence' || k === 'brooding' || k === 'mating') ? '#ffffff' : '#451a03'; };
+        var NODES = {
+          egg:        { x: 20,  y: 52,  w: 140, h: 44 },
+          paralarva:  { x: 180, y: 52,  w: 140, h: 44 },
+          juvenile:   { x: 340, y: 52,  w: 140, h: 44 },
+          subadult:   { x: 500, y: 52,  w: 140, h: 44 },
+          adult:      { x: 20,  y: 170, w: 140, h: 44 },
+          mating:     { x: 180, y: 170, w: 140, h: 44 },
+          brooding:   { x: 350, y: 126, w: 140, h: 40 },
+          senescence: { x: 510, y: 170, w: 130, h: 44 }
+        };
+        var arrow = function(key, x1, y1, x2, y2, dash, color) {
+          return h('path', { key: key, d: 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2, stroke: color || 'rgba(203,213,225,0.7)', strokeWidth: 2, fill: 'none',
+            strokeDasharray: dash || undefined, markerEnd: 'url(#clLifeArrow)' });
+        };
+        var flowSummary = __alloT('stem.cephalopodlab.life_flow_summary', 'Life cycle flow: egg, paralarva, juvenile, subadult, adult, mating. After mating the path forks — females brood, males go straight to senescence — and both end in death. The return arrow to Egg is the next generation, not the same animal. Currently selected: ') + LIFE_CYCLE[sel].stage + '.';
+        var flow = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.life_flow_title', '🔄 One life, start to finish')),
+            h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.life_flow_hint', 'Pick a stage to read it below'))),
+          h('div', { style: { background: 'linear-gradient(180deg, #101a33 0%, #0a1122 100%)', borderRadius: 12, border: '1px solid rgba(251,191,36,0.28)', overflow: 'hidden' } },
+            h('svg', { viewBox: '0 0 680 300', width: '100%', height: 290, role: 'img', 'aria-label': flowSummary, style: { display: 'block' } },
+              h('defs', null,
+                h('marker', { id: 'clLifeArrow', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
+                  h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: 'rgba(203,213,225,0.85)' }))),
+              // straight run through row one, then down the right edge into row two
+              arrow('a1', 160, 74, 178, 74), arrow('a2', 320, 74, 338, 74), arrow('a3', 480, 74, 498, 74),
+              h('path', { d: 'M570 96 L570 110 L90 110 L90 168', stroke: 'rgba(203,213,225,0.7)', strokeWidth: 2, fill: 'none', markerEnd: 'url(#clLifeArrow)' }),
+              arrow('a4', 160, 192, 178, 192),
+              // the fork: females brood, males do not
+              h('path', { d: 'M320 184 L334 184 L334 146 L346 146', stroke: '#d946ef', strokeWidth: 2, fill: 'none', markerEnd: 'url(#clLifeArrow)' }),
+              h('path', { d: 'M320 202 L420 202 L420 192 L506 192', stroke: '#38bdf8', strokeWidth: 2, fill: 'none', markerEnd: 'url(#clLifeArrow)' }),
+              h('path', { d: 'M490 146 L560 146 L560 168', stroke: '#d946ef', strokeWidth: 2, fill: 'none', markerEnd: 'url(#clLifeArrow)' }),
+              h('text', { x: 330, y: 222, fontSize: 10, fontWeight: 800, fill: '#7dd3fc' }, __alloT('stem.cephalopodlab.life_fork_male', '♂ males skip brooding — senescence follows mating')),
+              // the end of the line
+              h('path', { d: 'M575 214 L575 240', stroke: '#fb7185', strokeWidth: 2, fill: 'none', markerEnd: 'url(#clLifeArrow)' }),
+              h('text', { x: 640, y: 262, textAnchor: 'end', fontSize: 11, fontWeight: 900, fill: '#fb7185' }, __alloT('stem.cephalopodlab.life_end', 'death — one reproduction, then the line ends')),
+              // next generation: dashed, and explicitly NOT this animal
+              h('path', { d: 'M352 130 C 300 44, 150 34, 88 48', stroke: 'rgba(134,239,172,0.75)', strokeWidth: 1.6, fill: 'none', strokeDasharray: '5 4', markerEnd: 'url(#clLifeArrow)' }),
+              h('text', { x: 236, y: 26, textAnchor: 'middle', fontSize: 9.5, fontWeight: 800, fill: '#86efac' }, __alloT('stem.cephalopodlab.life_next_gen', 'eggs hatch → the NEXT generation, not this animal')),
+              // the stage nodes
+              stages.map(function(k) {
+                var n = NODES[k]; if (!n) return null;
+                var on = sel === k;
+                return h('g', { key: k, onClick: function() { pickStage(k); }, style: { cursor: 'pointer' } },
+                  h('rect', { x: n.x, y: n.y, width: n.w, height: n.h, rx: 8, fill: RAMP[k] || '#fbbf24',
+                    stroke: on ? '#ffffff' : 'rgba(15,23,42,0.5)', strokeWidth: on ? 3 : 1 }),
+                  h('text', { x: n.x + n.w / 2, y: n.y + 20, textAnchor: 'middle', fontSize: 11.5, fontWeight: 900, fill: inkOn(k) }, LIFE_CYCLE[k].stage),
+                  h('text', { x: n.x + n.w / 2, y: n.y + 34, textAnchor: 'middle', fontSize: 8.5, fill: inkOn(k), opacity: 0.85 },
+                    String(LIFE_CYCLE[k].duration).split('(')[0].split(';')[0].trim().slice(0, 26)));
+              }))),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.life_pick_stage', 'Pick a life stage'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
+            stages.map(function(k) {
+              var on = sel === k;
+              return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function() { pickStage(k); },
+                style: { padding: '6px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                  background: on ? (RAMP[k] || '#fbbf24') : 'transparent', color: on ? inkOn(k) : '#cbd5e1',
+                  border: '1px solid ' + (on ? (RAMP[k] || '#fbbf24') : 'rgba(148,163,184,0.35)') } }, LIFE_CYCLE[k].stage);
+            })));
+
+        var s = LIFE_CYCLE[sel];
+        var selIdx = stages.indexOf(sel);
+        var accent = RAMP[sel] || '#fbbf24';
+        var detail = h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + accent }) },
+          h('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
+            h('div', null,
+              h('div', { style: { fontSize: 18, fontWeight: 900, color: accent } }, s.stage),
+              h('div', { style: { fontSize: 11, color: '#86efac', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, '⏱ ' + s.duration)),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.life_browse', 'Browse life stages'), style: { display: 'flex', alignItems: 'center', gap: 6 } },
+              h('button', { type: 'button', 'aria-label': __alloT('stem.cephalopodlab.life_prev', 'Previous life stage'), onClick: function() { pickStage(stages[(selIdx + stages.length - 1) % stages.length]); },
+                style: { width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '‹'),
+              h('span', { style: { fontSize: 10.5, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' } }, (selIdx + 1) + ' / ' + stages.length),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.cephalopodlab.life_next', 'Next life stage'), onClick: function() { pickStage(stages[(selIdx + 1) % stages.length]); },
+                style: { width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '›'))),
+          h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, s.description),
+          h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 10 } },
+            h('span', { style: { fontWeight: 700 } }, __alloT('stem.cephalopodlab.sim_mechanic', '🎮 Sim mechanic: ')), s.simMechanics),
+          h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 8 } }, '💡 ' + s.fact),
+          s.citations && s.citations.length ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' } },
+            'Sources: ' + s.citations.join(' | ')) : null);
+
         return h('div', null,
           panelHeader('🥚 Cephalopod Life Cycle',
             'From egg to senescence — the full life history of an octopus, with real biology + future sim mechanics for each stage. Most cephalopods are semelparous: one reproductive event, then death.'),
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.why_this_matters_3', '⏳ Why this matters')),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-              __alloT('stem.cephalopodlab.octopus_lifespans_are_short_1_2_years_', 'Octopus lifespans are SHORT — 1-2 years for most species, with the FINAL phase being a dramatic genetically programmed self-destruct after reproduction. Understanding this cycle is the key to '),
+              __alloT('stem.cephalopodlab.octopus_lifespans_are_short_1_2_years_', 'Octopus lifespans are SHORT — 1-2 years for most species, with the FINAL phase being a dramatic genetically programmed self-destruct after reproduction. This is '),
               h('b', { style: { color: '#c7d2fe' } }, __alloT('stem.cephalopodlab.why_octopuses_can_t_be_domesticated_li', 'why octopuses can\'t be domesticated like dogs')),
               __alloT('stem.cephalopodlab.they_die_too_fast_to_transmit_culture_', ' (they die too fast to transmit culture across generations), '),
               h('b', { style: { color: '#c7d2fe' } }, __alloT('stem.cephalopodlab.why_aquaculture_is_hard', 'why aquaculture is hard')),
@@ -19696,23 +19799,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.for_understanding_senescence_biology_i', ' for understanding senescence biology in general.')
             )
           ),
-          stages.map(function(skey) {
-            var s = LIFE_CYCLE[skey];
-            return h('div', { key: skey, style: cardStyle() },
-              h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 8 } },
-                h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, s.stage),
-                h('span', { style: { fontSize: 10, color: '#86efac', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.3)', padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, '⏱ ' + s.duration)
-              ),
-              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7, marginBottom: 10 } }, s.description),
-              h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 10 } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.cephalopodlab.sim_mechanic', '🎮 Sim mechanic: ')), s.simMechanics
-              ),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'italic', lineHeight: 1.6, marginBottom: 8 } }, '💡 ' + s.fact),
-              s.citations && s.citations.length ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' } },
-                'Sources: ' + s.citations.join(' | ')
-              ) : null
-            );
-          }),
+          flow,
+          detail,
           h('div', { style: cardStyle() },
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.courtship_displays_by_species', '💃 Courtship displays (by species)')),
             h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginBottom: 12, lineHeight: 1.5 } }, __alloT('stem.cephalopodlab.cephalopod_courtship_is_famously_visua', 'Cephalopod courtship is famously visual — chromatophore-driven body displays that vary dramatically across species. Some species have male "sneaker" tactics (small males mimicking female coloration to infiltrate guarded harems).')),

@@ -450,3 +450,49 @@ describe('Cephalopod Lab bacterial symbiosis cycle', () => {
     expect(c.textContent).toMatch(/Schematic of the phases described below, not plotted measurements/);
   });
 });
+
+// ── Life Cycle flow ──
+describe('Cephalopod Lab Life Cycle flow', () => {
+  const renderLife = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'lifecycle', ...data } });
+    return c;
+  };
+  const flow = (c) => c.querySelector('svg[aria-label^="Life cycle flow"]');
+
+  it('says in its summary that the path forks by sex and then ends', () => {
+    const label = flow(renderLife()).getAttribute('aria-label');
+    expect(label).toMatch(/females brood, males go straight to senescence/);
+    expect(label).toMatch(/return arrow to Egg is the next generation, not the same animal/);
+    expect(label).toMatch(/Currently selected: Egg\.$/);
+    expect(flow(renderLife({ lifeStage: 'brooding' })).getAttribute('aria-label')).toMatch(/Currently selected: Brooding \(female only\)\.$/);
+  });
+
+  it('draws every stage as a selectable node and shows one record at a time', () => {
+    const c = renderLife({ lifeStage: 'senescence' });
+    const chips = Array.from(c.querySelectorAll('[role="group"][aria-label="Pick a life stage"] button'));
+    expect(chips).toHaveLength(8);
+    expect(chips.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    expect(c.textContent).toMatch(/8 \/ 8/);
+    // the open record is senescence, not the whole list
+    expect(c.textContent).toMatch(/1-4 weeks after eggs hatch/);
+    expect(c.textContent).not.toMatch(/50,000-500,000 eggs/);
+  });
+
+  it('states the semelparity terminus and marks the return arrow as the next generation', () => {
+    const c = renderLife();
+    expect(c.textContent).toMatch(/death — one reproduction, then the line ends/);
+    expect(c.textContent).toMatch(/eggs hatch → the NEXT generation, not this animal/);
+    expect(c.textContent).toMatch(/males skip brooding/);
+  });
+
+  it('keeps white node ink on ramp steps dark enough to read', () => {
+    const c = renderLife();
+    const fills = Array.from(flow(c).querySelectorAll('rect[rx="8"]')).map((r) => r.getAttribute('fill'));
+    // the three late stages carry white text, so they must not be the light ramp steps
+    expect(fills).toContain('#be185d');
+    expect(fills).toContain('#a21caf');
+    expect(fills).toContain('#9f1239');
+    expect(fills).not.toContain('#d946ef');
+  });
+});

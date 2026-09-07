@@ -75,7 +75,7 @@ describe('Cephalopod Lab SVG alternatives', () => {
     );
   });
 
-  it('classifies all eleven SVG declarations as informative or decorative', () => {
+  it('classifies all twelve SVG declarations as informative or decorative', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const declarations = [];
 
@@ -87,7 +87,7 @@ describe('Cephalopod Lab SVG alternatives', () => {
       }
     });
 
-    expect(declarations).toHaveLength(11);
+    expect(declarations).toHaveLength(12);
     for (const context of declarations) {
       const decorative = /aria-hidden/.test(context);
       const informative = /role:\s*['"]img['"]/.test(context) &&
