@@ -183,12 +183,32 @@ describe('GIS Studio - custom region packs', () => {
     expect(renderTool('gisStudio', { gisTab: 'import', gisCustomRegionPacks: [pack], gisRegionPack: pack.id })).not.toContain('Load official Maine ecoregions');
   });
 
-  it('explains that custom packs have no guided missions instead of showing Maine prompts', () => {
+  it('generates pack-scoped inquiry missions from a custom pack instead of showing Maine prompts', () => {
     const tool = loadTool(TOOL, 'gisStudio');
     const pack = tool.testing.serializeGISRegionPack(samplePack());
     const html = renderTool('gisStudio', { gisTab: 'missions', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
-    expect(html).toContain('This region pack does not include guided missions.');
+    expect(html).toContain('OTAGO REGION, NEW ZEALAND INQUIRY SERIES');
+    expect(html).toContain('Population and Elevation');
+    expect(html).toContain('km service radius');
+    expect(html).toContain('Highest and lowest Population');
+    expect(html).not.toContain('This region pack does not include guided missions.');
     expect(html).not.toContain('MAINE INQUIRY SERIES');
+    expect(html).toContain('Switch to the Maine sample missions');
+  });
+
+  it('builds generated missions from the metrics and extent of any pack', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const two = tool.testing.generateRegionMissions(tool.testing.normalizeGISRegionPack(samplePack()));
+    expect(two.map((mission) => mission.id)).toEqual(['custom-otago-towns:compare', 'custom-otago-towns:buffer', 'custom-otago-towns:extremes']);
+    expect(two[0]).toMatchObject({ kind: 'compare', workspace: 'compare', compareLeft: 'point:population', compareRight: 'point:elevation' });
+    expect(two[1]).toMatchObject({ kind: 'buffer', workspace: 'map', metric: 'population', radiusKm: 50 });
+    expect(two[2].evidencePrompt).toContain('(people)');
+    expect(two.every((mission) => mission.steps.length === 4 && mission.practices.length && mission.teacherNote && mission.duration)).toBe(true);
+    const one = tool.testing.generateRegionMissions(tool.testing.normalizeGISRegionPack(samplePack({ metrics: [{ id: 'population', label: 'Population' }] })));
+    expect(one.map((mission) => mission.kind)).toEqual(['buffer', 'extremes']);
+    const maine = tool.testing.regionPacks.find((item) => item.id === 'maine');
+    expect(tool.testing.generateRegionMissions(maine)[1].radiusKm).toBe(100);
+    expect(tool.testing.generateRegionMissions(null)).toEqual([]);
   });
 
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {

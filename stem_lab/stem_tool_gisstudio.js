@@ -1501,6 +1501,75 @@
     }
   ];
 
+  // Packs without a hand-authored mission series still get guided inquiry:
+  // three missions built from the pack's own metrics and extent. Ids are
+  // pack-scoped so progress never leaks between regions.
+  function generateRegionMissions(pack) {
+    if (!pack || !Array.isArray(pack.records) || !pack.records.length) return [];
+    var metrics = regionMetrics(pack);
+    var first = metrics[0], second = metrics[1] || null;
+    var scope = String(pack.scope || pack.label || 'this region');
+    var viewport = dataViewport(pack.records, { center: [0, 0], zoom: 2 });
+    var diagonalKm = haversineKm({ lat: viewport.bounds.south, lon: viewport.bounds.west }, { lat: viewport.bounds.north, lon: viewport.bounds.east });
+    var radiusKm = Math.max(1, niceScaleKilometers(Math.max(1, diagonalKm / 4)));
+    var placeWord = pack.records.length === 1 ? 'place' : 'places';
+    var missions = [];
+    if (second) {
+      missions.push({
+        id: pack.id + ':compare', kind: 'compare', generated: true,
+        title: first.label + ' and ' + second.label,
+        duration: '20-30 minutes',
+        question: 'How do the ' + first.label + ' and ' + second.label + ' patterns compare across the ' + pack.records.length + ' mapped ' + placeWord + ' in ' + scope + '?',
+        workspace: 'compare',
+        evidencePrompt: 'Make one comparison claim. Cite at least two named places, one from each map, and name one limitation of the values in this pack.',
+        teacherNote: 'Two synchronized maps invite students to confuse correlation with cause. Ask what else varies between the places, and whether ' + pack.records.length + ' reference points can represent ' + scope + '.',
+        practices: ['Spatial pattern comparison', 'Evidence-based argument', 'Data limitations and scale'],
+        steps: [
+          { id: 'setup', label: 'Prepare the synchronized ' + first.label + ' and ' + second.label + ' maps.' },
+          { id: 'pattern', label: 'Identify one similarity and one difference between the two patterns.' },
+          { id: 'evidence', label: 'Record evidence from at least two named places.' },
+          { id: 'limits', label: 'Explain why the maps cannot prove what caused the pattern.' }
+        ],
+        compareLeft: 'point:' + (first.field || first.id), compareRight: 'point:' + (second.field || second.id)
+      });
+    }
+    missions.push({
+      id: pack.id + ':buffer', kind: 'buffer', generated: true,
+      title: radiusKm + ' km service radius',
+      duration: '20-30 minutes',
+      question: 'Which mapped ' + placeWord + ' in ' + scope + ' fall within a hypothetical ' + radiusKm + ' km straight-line radius of a center you choose?',
+      workspace: 'map',
+      evidencePrompt: 'State which places are inside the buffer and their ' + first.label + ' values, then explain why a circular straight-line buffer is not the same as travel time or equitable access.',
+      teacherNote: 'The ' + radiusKm + ' km radius is scaled to the extent of this pack, not to any real service standard. Students should say what radius would make sense for a real question and why.',
+      practices: ['GIS proximity analysis', 'Model assumptions and limitations', 'Quantitative spatial reasoning'],
+      steps: [
+        { id: 'setup', label: 'Prepare a ' + radiusKm + ' km radius-buffer analysis on ' + first.label + '.' },
+        { id: 'place', label: 'Place the center and inspect the selected point rows.' },
+        { id: 'evidence', label: 'Summarize the selected count and selected attribute values.' },
+        { id: 'limits', label: 'Contrast straight-line proximity with real transportation access.' }
+      ],
+      metric: first.id, radiusKm: radiusKm
+    });
+    missions.push({
+      id: pack.id + ':extremes', kind: 'extremes', generated: true,
+      title: 'Highest and lowest ' + first.label,
+      duration: '15-25 minutes',
+      question: 'Where are the highest and lowest ' + first.label + ' values in ' + scope + ', and what is near each of them?',
+      workspace: 'map',
+      evidencePrompt: 'Name the highest and lowest places with their values' + (first.unit ? ' (' + first.unit + ')' : '') + ', describe where each sits on the map, and say what the pack does not tell you about them.',
+      teacherNote: 'Sorting the table twin is the accessible route to the same evidence as scanning the map. Push students from "where" to "why might that be" without letting them claim causes the data cannot support.',
+      practices: ['Table and map as equivalent evidence', 'Describing spatial distribution', 'Questioning data provenance'],
+      steps: [
+        { id: 'setup', label: 'Open the map with ' + first.label + ' as the thematic attribute and sort the table by value.' },
+        { id: 'pattern', label: 'Locate the highest and lowest places on the map or in the table.' },
+        { id: 'evidence', label: 'Record both places, their values, and what surrounds them.' },
+        { id: 'limits', label: 'Name one thing about these places the pack cannot show.' }
+      ],
+      metric: first.id
+    });
+    return missions;
+  }
+
   function missionCompletion(mission, progress) {
     var steps = mission && Array.isArray(mission.steps) ? mission.steps : [];
     var state = progress || {};
@@ -3337,6 +3406,7 @@
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS, regionPacks: GIS_REGION_PACKS,
+      generateRegionMissions: generateRegionMissions,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
       calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
       normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
@@ -3435,7 +3505,25 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
-        packLimitNote: t('stem.gisstudio.pack.limit_note', 'Up to 12 packs, 250 places, and 8 attributes each. Custom packs have no guided missions or official layers; the guided Maine series stays available from the built-in packs.'),
+        packQuickLink: t('stem.gisstudio.pack.quick_link', 'Load a different region\u2026'),
+        packCoverageSummary: t('stem.gisstudio.pack.coverage_summary', 'Coverage notes (optional)'),
+        packCoverageIntro: t('stem.gisstudio.pack.coverage_intro', 'Say which areas these points represent and which they leave out. The coverage lens shows these notes beside the map so nobody mistakes a sample for the whole region.'),
+        packRepresented: t('stem.gisstudio.pack.represented', 'Represented areas (comma separated)'),
+        packGaps: t('stem.gisstudio.pack.gaps', 'Known gaps (comma separated)'),
+        packCoverageNote: t('stem.gisstudio.pack.coverage_note', 'Coverage note'),
+        packPreviewHeading: t('stem.gisstudio.pack.preview_heading', 'Review before using'),
+        packPreviewCaption: t('stem.gisstudio.pack.preview_caption', 'First rows of the region pack'),
+        packPreviewName: t('stem.gisstudio.pack.preview_name', 'Place'),
+        packPreviewLat: t('stem.gisstudio.pack.preview_lat', 'Latitude'),
+        packPreviewLon: t('stem.gisstudio.pack.preview_lon', 'Longitude'),
+        packPreviewHint: t('stem.gisstudio.pack.preview_hint', 'Adjust the pack name, area, and coverage notes above, then use the pack. Nothing is mapped until you confirm.'),
+        packUseThis: t('stem.gisstudio.pack.use_this', 'Use this pack'),
+        packCancelPreview: t('stem.gisstudio.pack.cancel_preview', 'Discard preview'),
+        packRowsSkippedShort: t('stem.gisstudio.pack.rows_skipped_short', 'rows skipped'),
+        packRowsTruncated: t('stem.gisstudio.pack.rows_truncated', 'rows beyond the 250-place cap were dropped'),
+        packRow: t('stem.gisstudio.pack.row', 'Row'),
+        generatedMissionsNote: t('stem.gisstudio.missions.generated_note', 'These missions were built from the attributes and extent of the active region pack. The workspace, radius, and attribute names come from your data.'),
+        packLimitNote: t('stem.gisstudio.pack.limit_note', 'Up to 12 packs, 250 places, and 8 attributes each. Every pack gets generated inquiry missions; the hand-authored Maine series and official layers stay with the built-in packs.'),
         csvConvention: t('stem.gisstudio.csv.convention', 'CSV number and separator convention'),
         csvAuto: t('stem.gisstudio.csv.auto', 'Auto-detect'),
         csvCommaDot: t('stem.gisstudio.csv.comma_dot', 'Comma separator + decimal point'),
@@ -3534,9 +3622,10 @@
         var s3 = React.useState('sample'), source = s3[0], setSource = s3[1];
         var regionPackState = React.useState(initial.gisRegionPack || 'maine'), regionPackId = regionPackState[0], setRegionPackId = regionPackState[1];
         var customRegionPacksState = React.useState(function () { return normalizeGISRegionPackList(initial.gisCustomRegionPacks); }), customRegionPacks = customRegionPacksState[0], setCustomRegionPacks = customRegionPacksState[1];
-        var packFormState = React.useState({ label: '', scope: '', metricLabel: '', metricUnit: '' }), packForm = packFormState[0], setPackForm = packFormState[1];
+        var packFormState = React.useState({ label: '', scope: '', metricLabel: '', metricUnit: '', represented: '', gaps: '', note: '' }), packForm = packFormState[0], setPackForm = packFormState[1];
         var packErrorState = React.useState(''), packError = packErrorState[0], setPackError = packErrorState[1];
         var packStatusState = React.useState(''), packStatus = packStatusState[0], setPackStatus = packStatusState[1];
+        var packPreviewState = React.useState(null), packPreview = packPreviewState[0], setPackPreview = packPreviewState[1];
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
         var s5 = React.useState(EXAMPLE), csv = s5[0], setCSV = s5[1];
@@ -3768,7 +3857,9 @@
         var leftSeries = comparisonSeries(leftChoice);
         var rightSeries = comparisonSeries(rightChoice);
         var activeMissionIds = activeRegionPack.modules && Array.isArray(activeRegionPack.modules.missions) ? activeRegionPack.modules.missions : [];
-        var availableMissions = GIS_MISSIONS.filter(function (mission) { return activeMissionIds.indexOf(mission.id) >= 0; });
+        var availableMissions = activeMissionIds.length
+          ? GIS_MISSIONS.filter(function (mission) { return activeMissionIds.indexOf(mission.id) >= 0; })
+          : generateRegionMissions(activeRegionPack);
         var activeMission = availableMissions.filter(function (mission) { return mission.id === activeMissionId; })[0] || availableMissions[0] || GIS_MISSIONS[0];
         var activeMissionProgress = missionProgress[activeMission.id] || {};
         var activeMissionCompletion = missionCompletion(activeMission, activeMissionProgress);
@@ -4829,6 +4920,13 @@
           setPackForm(Object.assign({}, packForm, (function () { var patch = {}; patch[key] = value; return patch; })()));
         }
 
+        function packCoverageFromForm() {
+          function list(text) { return String(text || '').split(/[;,\n]/).map(function (item) { return item.trim(); }).filter(Boolean); }
+          var represented = list(packForm.represented), gaps = list(packForm.gaps), note = String(packForm.note || '').trim();
+          if (!represented.length && !gaps.length && !note) return undefined;
+          return { represented: represented, gaps: gaps, note: note, level: represented.length ? represented.length + ' named ' + (represented.length === 1 ? 'area' : 'areas') + ' represented' : '' };
+        }
+
         function storeCustomRegionPacks(nextPacks) {
           setCustomRegionPacks(nextPacks);
           persist('gisCustomRegionPacks', nextPacks.map(serializeGISRegionPack));
@@ -4877,8 +4975,15 @@
           reader.onload = function () {
             try {
               var result = importRegionPackText(String(reader.result || ''), file.name);
-              var note = result.rejectedRows ? result.rejectedRows + ' ' + __alloT('stem.gisstudio.pack.rows_skipped', 'rows were skipped for missing names, coordinates, or values.') : '';
-              adoptRegionPack(result.pack, note);
+              setPackPreview({ pack: result.pack, rejectedRows: result.rejectedRows || 0, rejected: result.rejected || [], truncatedRows: result.truncatedRows || 0, fileName: file.name });
+              setPackForm(Object.assign({}, packForm, {
+                label: result.pack.label, scope: result.pack.scope,
+                represented: result.pack.coverage.represented.join(', '), gaps: result.pack.coverage.gaps.join(', '),
+                note: /^Coverage was described by/.test(result.pack.coverage.note) ? '' : result.pack.coverage.note
+              }));
+              setPackError('');
+              setPackStatus('');
+              announce(__alloT('stem.gisstudio.sr_region_pack_previewed', 'Region pack previewed. Review the places and attributes, then choose Use this pack.') + ' ' + result.pack.label);
             } catch (problem) {
               setPackError(problem.message);
               announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
@@ -4889,6 +4994,32 @@
           reader.readAsText(file);
         }
 
+        function confirmRegionPackPreview() {
+          if (!packPreview) return;
+          try {
+            var source = serializeGISRegionPack(packPreview.pack);
+            var coverage = packCoverageFromForm();
+            var nextLabel = packForm.label.trim() || source.label;
+            var nextScope = packForm.scope.trim();
+            if (!nextScope || nextScope === source.label) nextScope = nextLabel;
+            var merged = Object.assign({}, source, { label: nextLabel, scope: nextScope, coverage: coverage || source.coverage });
+            // A renamed pack gets an id from its new name so the selector, missions, and progress all follow the name the learner chose.
+            if (nextLabel !== source.label) delete merged.id;
+            var pack = normalizeGISRegionPack(merged, { existingIds: customRegionPacks.map(function (item) { return item.id; }), allowExistingId: true });
+            var note = packPreview.rejectedRows ? packPreview.rejectedRows + ' ' + __alloT('stem.gisstudio.pack.rows_skipped', 'rows were skipped for missing names, coordinates, or values.') : '';
+            if (adoptRegionPack(pack, note)) setPackPreview(null);
+          } catch (problem) {
+            setPackError(problem.message);
+            announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
+          }
+        }
+
+        function cancelRegionPackPreview() {
+          setPackPreview(null);
+          setPackError('');
+          announce(__alloT('stem.gisstudio.sr_region_pack_preview_cancelled', 'Region pack preview discarded.'));
+        }
+
         function saveMappedRowsAsPack() {
           if (!importedRows.length) { setPackError(gisText.packSaveMappedHint); return; }
           try {
@@ -4897,6 +5028,7 @@
               scope: packForm.scope.trim(),
               metricLabel: packForm.metricLabel.trim(),
               metricUnit: packForm.metricUnit.trim(),
+              coverage: packCoverageFromForm(),
               sourceNote: provenance.source,
               existingIds: customRegionPacks.map(function (item) { return item.id; }),
               allowExistingId: true
@@ -5321,7 +5453,8 @@
                         h('optgroup', { key: 'built-in', label: gisText.regionBuiltInGroup }, GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); }))
                       ]
                       : GIS_REGION_PACKS.map(function (pack) { return h('option', { key: pack.id, value: pack.id }, localizedRegionLabel(pack)); })),
-                  h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote)),
+                  h('span', { id: 'gis-region-pack-note', style: { color: '#9fb6c5', fontSize: 10, lineHeight: 1.45 } }, activeRegionPack.description + ' ' + activeRegionPack.sourceNote),
+                  h('button', { type: 'button', onClick: function () { go('import'); }, style: Object.assign({}, control, { cursor: 'pointer', justifySelf: 'start' }) }, gisText.packQuickLink)),
                 h('details', {
                   open: !imported && activeRegionPack.id === 'global',
                   style: { margin: '0 0 13px', padding: 10, border: '1px solid #2d5868', borderRadius: 8, background: '#081d29' }
@@ -5540,6 +5673,36 @@
         }
 
 
+        function regionPackPreviewPanel() {
+          var pack = packPreview.pack;
+          var previewMetrics = pack.metrics;
+          return h('section', { 'aria-labelledby': 'gis-region-pack-preview-heading', style: { marginTop: 12, padding: 12, border: '1px solid #22d3ee', borderRadius: 10, background: '#081d29' } },
+            h('h3', { id: 'gis-region-pack-preview-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 14 } }, gisText.packPreviewHeading + ': ' + (packForm.label.trim() || pack.label)),
+            h('p', { role: 'status', style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } },
+              pack.records.length + ' ' + gisText.packPlaces + ' \u00B7 ' + previewMetrics.map(function (metric) { return metric.label + (metric.unit ? ' (' + metric.unit + ')' : ''); }).join(', ') +
+              (packPreview.rejectedRows ? ' \u00B7 ' + packPreview.rejectedRows + ' ' + gisText.packRowsSkippedShort : '') +
+              (packPreview.truncatedRows ? ' \u00B7 ' + packPreview.truncatedRows + ' ' + gisText.packRowsTruncated : '')),
+            packPreview.rejected.length > 0 && h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, color: '#fde68a', fontSize: 11 } },
+              packPreview.rejected.slice(0, 5).map(function (item) { return h('li', { key: 'rejected-' + item.row }, gisText.packRow + ' ' + item.row + (item.name ? ' (' + item.name + ')' : '') + ': ' + item.reason); })),
+            h('div', { style: { overflowX: 'auto', maxHeight: 240, overflowY: 'auto' } },
+              h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
+                h('caption', { style: { textAlign: 'left', color: '#a7c7d8', paddingBottom: 7 } }, gisText.packPreviewCaption),
+                h('thead', null, h('tr', null, [gisText.packPreviewName, gisText.packPreviewLat, gisText.packPreviewLon].concat(previewMetrics.map(function (metric) { return metric.label; })).map(function (heading, index) {
+                  return h('th', { key: 'pack-preview-head-' + index, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82' } }, heading);
+                }))),
+                h('tbody', null, pack.records.slice(0, 8).map(function (record, index) {
+                  return h('tr', { key: 'pack-preview-row-' + index },
+                    h('th', { scope: 'row', style: { textAlign: 'left', padding: 7, color: '#fff', borderBottom: '1px solid #1e4154' } }, record.name),
+                    h('td', { style: { padding: 7, color: '#cfe8f3', borderBottom: '1px solid #1e4154' } }, display.coordinate(record.lat, 3, 'lat')),
+                    h('td', { style: { padding: 7, color: '#cfe8f3', borderBottom: '1px solid #1e4154' } }, display.coordinate(record.lon, 3, 'lon')),
+                    previewMetrics.map(function (metric) { return h('td', { key: metric.id, style: { padding: 7, color: '#e6fffb', borderBottom: '1px solid #1e4154' } }, display.number(record[metric.field], metric.maximumFractionDigits)); }));
+                })))),
+            h('p', { style: { margin: '8px 0', color: '#9fb6c5', fontSize: 11, lineHeight: 1.45 } }, gisText.packPreviewHint),
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
+              h('button', { type: 'button', onClick: confirmRegionPackPreview, style: primary }, gisText.packUseThis),
+              h('button', { type: 'button', onClick: cancelRegionPackPreview, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.packCancelPreview)));
+        }
+
         function regionPackPanel() {
           var canSaveMapped = importedRows.length > 0;
           var fieldLabel = { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 };
@@ -5556,6 +5719,16 @@
                 h('input', { type: 'text', value: packForm.metricLabel, maxLength: 80, placeholder: gisText.importedValue, onChange: function (event) { updatePackForm('metricLabel', event.target.value); }, style: control })),
               h('label', { style: fieldLabel }, gisText.packMetricUnit,
                 h('input', { type: 'text', value: packForm.metricUnit, maxLength: 40, onChange: function (event) { updatePackForm('metricUnit', event.target.value); }, style: control }))),
+            h('details', { style: { margin: '0 0 12px', padding: 10, border: '1px solid #2d5868', borderRadius: 8, background: '#081d29' } },
+              h('summary', { style: { cursor: 'pointer', color: '#67e8f9', fontWeight: 800, fontSize: 11 } }, gisText.packCoverageSummary),
+              h('p', { style: { margin: '8px 0', color: '#9fb6c5', fontSize: 11, lineHeight: 1.45 } }, gisText.packCoverageIntro),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(200px,1fr))', gap: 10 } },
+                h('label', { style: fieldLabel }, gisText.packRepresented,
+                  h('input', { type: 'text', value: packForm.represented, maxLength: 600, onChange: function (event) { updatePackForm('represented', event.target.value); }, style: control })),
+                h('label', { style: fieldLabel }, gisText.packGaps,
+                  h('input', { type: 'text', value: packForm.gaps, maxLength: 600, onChange: function (event) { updatePackForm('gaps', event.target.value); }, style: control })),
+                h('label', { style: fieldLabel }, gisText.packCoverageNote,
+                  h('input', { type: 'text', value: packForm.note, maxLength: 500, onChange: function (event) { updatePackForm('note', event.target.value); }, style: control })))),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
               h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.packChooseFile,
                 h('input', { type: 'file', accept: '.json,.csv,.gispack.json,application/json,text/csv', onChange: readRegionPackFile, style: { display: 'block', marginTop: 7 } })),
@@ -5564,6 +5737,7 @@
             !canSaveMapped && h('p', { id: 'gis-region-pack-save-hint', style: { margin: '8px 0 0', color: '#9fb6c5', fontSize: 11 } }, gisText.packSaveMappedHint),
             packError && h('p', { role: 'alert', style: { background: '#7f1d1d', color: '#fecaca', padding: 9, borderRadius: 8, marginTop: 10 } }, packError),
             packStatus && h('p', { role: 'status', style: { margin: '10px 0 0', color: '#86efac', fontSize: 12 } }, packStatus),
+            packPreview && regionPackPreviewPanel(),
             h('h3', { style: { color: '#67e8f9', fontSize: 12, margin: '14px 0 6px' } }, gisText.packListHeading),
             customRegionPacks.length
               ? h('ul', { style: { listStyle: 'none', margin: 0, padding: 0, display: 'grid', gap: 8 } }, customRegionPacks.map(function (pack) {
@@ -5804,7 +5978,7 @@
           setTimeFocusYear(restoredTime.years.indexOf(Number(settings.timeFocusYear)) >= 0 ? Number(settings.timeFocusYear) : restoredTime.years[restoredTime.years.length - 1]);
           setComparisonObservation(String(work.comparisonObservation || ''));
           setImageryNote(String(work.imageryNote || ''));
-          setActiveMissionId(GIS_MISSIONS.some(function (mission) { return mission.id === work.activeMissionId; }) ? work.activeMissionId : GIS_MISSIONS[0].id);
+          setActiveMissionId(typeof work.activeMissionId === 'string' && work.activeMissionId ? work.activeMissionId.slice(0, 120) : GIS_MISSIONS[0].id);
           setMissionProgress(work.missionProgress && typeof work.missionProgress === 'object' ? work.missionProgress : {});
           setMissionResponses(work.missionResponses && typeof work.missionResponses === 'object' ? work.missionResponses : {});
           setTimeObservation(String(work.timeObservation || ''));
@@ -6047,8 +6221,8 @@
           setMissionProgress(next);
           persist('gisMissionProgress', next);
           persist('gisMissionStarted', true);
-          var mission = GIS_MISSIONS.filter(function (item) { return item.id === missionId; })[0];
-          if (missionCompletion(mission, next[missionId]).percent === 100) persist('gisMissionCompleted', true);
+          var mission = availableMissions.filter(function (item) { return item.id === missionId; })[0] || GIS_MISSIONS.filter(function (item) { return item.id === missionId; })[0];
+          if (mission && missionCompletion(mission, next[missionId]).percent === 100) persist('gisMissionCompleted', true);
         }
 
         function saveMissionResponse(missionId, value) {
@@ -6069,7 +6243,31 @@
           setAnalysisSelectionSource('none');
           setAnalysisHistory([]);
           setAnalysisFuture([]);
-          if (mission.id === 'coast-connectivity') {
+          if (mission.kind === 'compare') {
+            setCompareLeft(mission.compareLeft);
+            setCompareRight(mission.compareRight);
+            setCompareLeftBasemap(compareLeftBasemap === 'none' ? 'none' : 'street');
+            setCompareRightBasemap(compareRightBasemap === 'none' ? 'none' : 'satellite');
+            setTab('compare');
+            persist('gisTab', 'compare');
+            persist('gisCompared', true);
+          } else if (mission.kind === 'buffer') {
+            setMetric(mission.metric);
+            setAnalysisMode('buffer');
+            setBufferRadiusKm(Math.max(1, Math.min(500, Number(mission.radiusKm) || 25)));
+            setLayers(function (previous) { return Object.assign({}, previous, { points: true }); });
+            setTab('map');
+            persist('gisTab', 'map');
+            persist('gisMetric', mission.metric);
+          } else if (mission.kind === 'extremes') {
+            setMetric(mission.metric);
+            setAnalysisMode('distance');
+            setTableSort('value-desc');
+            setLayers(function (previous) { return Object.assign({}, previous, { points: true }); });
+            setTab('map');
+            persist('gisTab', 'map');
+            persist('gisMetric', mission.metric);
+          } else if (mission.id === 'coast-connectivity') {
             setCompareLeft('point:density');
             setCompareRight('point:access');
             setCompareLeftBasemap('street');
@@ -7296,6 +7494,9 @@
               h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, (activeRegionPack.id === 'maine' ? 'MAINE' : String(activeRegionPack.scope || activeRegionPack.label || 'REGION').toUpperCase()) + ' INQUIRY SERIES'),
               h('h2', { id: 'gis-missions-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, gisText.missionHeading),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, 'Choose a question, prepare the right GIS workspace, gather evidence from the map or its table twin, and document what the data can and cannot support.'),
+              activeMission.generated && h('p', { role: 'note', style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, gisText.generatedMissionsNote),
+              activeRegionPack.id !== 'maine' && h('p', { style: { margin: '8px 0 0', color: '#9fb6c5', fontSize: 11, lineHeight: 1.5 } }, gisText.switchMaineNotice + ' ',
+                h('button', { type: 'button', onClick: function () { setActiveMissionId(GIS_MISSIONS[0].id); persist('gisActiveMission', GIS_MISSIONS[0].id); changeRegionPack('maine'); }, style: Object.assign({}, control, { cursor: 'pointer', padding: '4px 8px', fontSize: 11 }) }, gisText.switchMaine)),
               h('div', { role: 'tablist', 'aria-label': activeRegionPack.id === 'maine' ? gisText.maineMissions : gisText.missions, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(210px,1fr))', gap: 9, marginTop: 13 } },
                 availableMissions.map(function (mission) {
                   var active = mission.id === activeMission.id;

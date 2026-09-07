@@ -13026,7 +13026,8 @@
         "maine": "Maine missions",
         "none": "This region pack does not include guided missions.",
         "switch_maine": "Switch to the Maine sample missions",
-        "switch_notice": "The Maine sample curriculum is separate from your current region pack."
+        "switch_notice": "The Maine sample curriculum is separate from your current region pack.",
+        "generated_note": "These missions were built from the attributes and extent of the active region pack. The workspace, radius, and attribute names come from your data."
       },
       "import": {
         "point_kicker": "POINT DATA",
@@ -13116,13 +13117,32 @@
         "too_large": "Choose a region pack smaller than 2 MB.",
         "rows_skipped": "rows were skipped for missing names, coordinates, or values.",
         "unreadable": "That file could not be read.",
-        "status_removed": "Removed region pack"
+        "status_removed": "Removed region pack",
+        "quick_link": "Load a different region…",
+        "coverage_summary": "Coverage notes (optional)",
+        "coverage_intro": "Say which areas these points represent and which they leave out. The coverage lens shows these notes beside the map so nobody mistakes a sample for the whole region.",
+        "represented": "Represented areas (comma separated)",
+        "gaps": "Known gaps (comma separated)",
+        "coverage_note": "Coverage note",
+        "preview_heading": "Review before using",
+        "preview_caption": "First rows of the region pack",
+        "preview_name": "Place",
+        "preview_lat": "Latitude",
+        "preview_lon": "Longitude",
+        "preview_hint": "Adjust the pack name, area, and coverage notes above, then use the pack. Nothing is mapped until you confirm.",
+        "use_this": "Use this pack",
+        "cancel_preview": "Discard preview",
+        "rows_skipped_short": "rows skipped",
+        "rows_truncated": "rows beyond the 250-place cap were dropped",
+        "row": "Row"
       },
       "sr_region_pack_loaded": "Region pack loaded and mapped.",
       "sr_region_pack_error": "Region pack error.",
       "sr_region_pack_removed": "Region pack removed.",
       "sr_region_pack_downloaded": "Region pack downloaded.",
-      "sr_region_pack_template_downloaded": "Region pack template downloaded."
+      "sr_region_pack_template_downloaded": "Region pack template downloaded.",
+      "sr_region_pack_previewed": "Region pack previewed. Review the places and attributes, then choose Use this pack.",
+      "sr_region_pack_preview_cancelled": "Region pack preview discarded."
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",

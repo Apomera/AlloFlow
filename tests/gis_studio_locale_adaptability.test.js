@@ -204,10 +204,13 @@ describe('GIS Studio locale adaptability foundations', function () {
     expect(root.getAttribute('dir')).toBe('rtl');
   });
 
-  it('shows an explicit global no-missions state while preserving the default Maine mission series', function () {
+  it('generates a global mission series from the pack metrics while preserving the default Maine mission series', function () {
     const globalMissions = renderTool('gisStudio', { gisTab: 'missions', gisRegionPack: 'global' });
     expect(globalMissions).toContain('Guided GIS missions');
-    expect(globalMissions).toContain('This region pack does not include guided missions.');
+    expect(globalMissions).toContain('GLOBAL INQUIRY SERIES');
+    expect(globalMissions).toContain('Population density and Broadband access index');
+    expect(globalMissions).toContain('These missions were built from the attributes and extent of the active region pack.');
+    expect(globalMissions).not.toContain('This region pack does not include guided missions.');
     expect(globalMissions).toContain('The Maine sample curriculum is separate from your current region pack.');
     expect(globalMissions).toContain('Switch to the Maine sample missions');
     expect(globalMissions).not.toContain('MAINE INQUIRY SERIES');
