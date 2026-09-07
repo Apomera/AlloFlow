@@ -61,3 +61,52 @@ describe('Cephalopod Lab repeated facts agree with each other', () => {
     expect(readFileSync(DEPLOY, 'utf8')).toBe(src);
   });
 });
+
+describe('Cephalopod Lab species datasets do not contradict each other', () => {
+  // SPECIES (field guide) and CONSERVATION_STATUS are keyed differently
+  // (giantPac vs giantPacific, blueRing vs blueRinged ...), so they are matched
+  // on the scientific name — the one field both datasets agree on.
+  const fgSeg = src.slice(src.indexOf('  var SPECIES = ['), src.indexOf('var HABITATS'));
+  const species = Array.from(fgSeg.matchAll(/\{ id: '([A-Za-z]+)', name: '([^']*)', scientific: '([^']*)'[\s\S]*?conservation: '([^']*)'/g))
+    .map((m) => ({ id: m[1], name: m[2], sci: m[3], cons: m[4] }));
+  const csStart = src.indexOf('var CONSERVATION_STATUS = {');
+  const records = Array.from(src.slice(csStart, csStart + 20000).matchAll(/\n {8}([A-Za-z]+): \{\n\s*species: '([^']*)',\n\s*iucn: '([^']*)'/g))
+    .map((m) => ({ key: m[1], species: m[2], iucn: m[3] }));
+
+  it('reads both datasets', () => {
+    expect(species.length).toBe(15);
+    expect(records.length).toBe(12);
+  });
+
+  it('never presents a non-IUCN word as an IUCN category', () => {
+    // "Threatened" is not a Red List category and CITES is a trade listing, not
+    // a status. The nautilus entry used to conflate the two.
+    const VALID = /Least Concern|Near Threatened|Vulnerable|Endangered|Critically Endangered|Data Deficient|Not Evaluated|Not (formally )?assessed/;
+    species.forEach((sp) => {
+      if (/\bThreatened\b/.test(sp.cons)) {
+        // only allowed as part of "Near Threatened"
+        expect(sp.cons).toMatch(/Near Threatened/);
+      }
+      if (/IUCN/.test(sp.cons)) expect(sp.cons).toMatch(VALID);
+    });
+  });
+
+  it('agrees with the IUCN record wherever a species has one', () => {
+    const findRecord = (sp) => {
+      const genus = sp.sci.split(' ')[0];
+      return records.find((r) => r.species.indexOf(sp.sci) === 0)
+        || records.find((r) => genus && r.species.indexOf(genus + ' spp.') === 0)
+        || null;
+    };
+    const matched = species.map((sp) => ({ sp, rec: findRecord(sp) })).filter((x) => x.rec);
+    // most of the guide should resolve to a record; if this drops, the two
+    // datasets have drifted apart again
+    expect(matched.length).toBeGreaterThanOrEqual(11);
+    matched.forEach(({ sp, rec }) => {
+      const head = rec.iucn.split(' ')[0];
+      if (head === 'Least') expect(sp.cons).toMatch(/Least Concern/);
+      if (head === 'Not') expect(sp.cons).toMatch(/Not (formally )?(assessed|Evaluated)/i);
+      if (head === 'Vulnerable') expect(sp.cons).toMatch(/Vulnerable/);
+    });
+  });
+});

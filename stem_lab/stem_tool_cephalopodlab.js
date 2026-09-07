@@ -456,7 +456,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       habitat: ['deep'], prey: ['copepod', 'isopod', 'worm'],
       tactics: ['filter-feed', 'pounce'],
       weird: 'Lives 1,000-7,000 m deep — deepest of any octopus. The "ears" are fins used to glide rather than swim.',
-      conservation: 'Data Deficient (rarely encountered)',
+      conservation: 'Not Evaluated by the IUCN; rarely encountered',
       notes: 'Named for the Disney elephant due to ear-like fins. Doesn\'t produce ink — at those depths there\'s nothing to escape from visually. Slow-living + slow-metabolizing — opposite of shallow-water octopuses. Found in the Mariana Trench area.' },
     { id: 'cuttlefish', name: 'Common Cuttlefish', scientific: 'Sepia officinalis', emoji: '🦑', group: 'cuttlefish',
       intelligence: 8, camouflageRank: 10, jetSpeed: 4,
@@ -488,7 +488,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       habitat: ['deep-reef'], prey: ['carrion', 'molting crustacean', 'shrimp'],
       tactics: ['scavenge', 'slow-stalk'],
       weird: '"Living fossil" — body plan essentially unchanged for 500 million years. Has 90 tentacles (no suckers, sticky pads instead).',
-      conservation: 'Threatened (CITES Appendix II); shell trade is the main pressure',
+      conservation: 'CITES Appendix II since 2017 (a trade control, not an IUCN category); IUCN varies by species, Vulnerable to Endangered. Shell trade is the main pressure',
       notes: 'The only living cephalopod with an external shell. Uses the chambered shell for buoyancy by pumping gas in/out. Pinhole eyes (no lens) means very poor vision compared to other cephalopods — they hunt mostly by smell. Mostly scavenger. Despite the dramatic difference, evolutionary studies show nautilids share ancestor with octopus + squid ~500M years ago.' },
     { id: 'giantSquid', name: 'Giant Squid', scientific: 'Architeuthis dux', emoji: '🦑', group: 'squid',
       intelligence: 6, camouflageRank: 5, jetSpeed: 7,
@@ -520,7 +520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       habitat: ['reef', 'sandy'], prey: ['shrimp', 'small fish'],
       tactics: ['ambush', 'counter-illumination'],
       weird: 'Hosts a SYMBIOTIC bacterial culture (Vibrio fischeri) in a special light organ. The bacteria produce light that matches moonlight, hiding the squid\'s shadow from below.',
-      conservation: 'Least Concern; major laboratory model organism',
+      conservation: 'Not Evaluated by the IUCN; major laboratory model organism',
       notes: 'The classic symbiosis research model. Each squid hatches sterile, then recruits Vibrio fischeri from seawater into a specialized light organ within hours. The bacteria produce light at moonlight-equivalent brightness; the squid uses this to erase its silhouette against the moonlit surface (counter-illumination). Every dawn, the squid expels 95% of the bacterial population, then the remaining 5% repopulate during the day. This is one of the cleanest models of beneficial symbiosis in animals — Margaret McFall-Ngai\'s lab at U Hawaii has built decades of foundational work here.' },
     { id: 'dayOcto', name: 'Day Octopus', scientific: 'Octopus cyanea', emoji: '🐙', group: 'octopus',
       intelligence: 8, camouflageRank: 10, jetSpeed: 5,
@@ -1834,8 +1834,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           // Notes paragraph
           h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.7, marginBottom: 10 } }, selected.notes),
           // Conservation
-          h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 12 } },
-            h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)' } }, 'Conservation: '), selected.conservation),
+          (function() {
+            // CONSERVATION_STATUS is keyed differently from SPECIES (giantPacific
+            // vs giantPac, blueRinged vs blueRing ...), so match on the name that
+            // both datasets actually agree on: the scientific one.
+            var sci = String(selected.scientific || '');
+            var genus = sci.split(' ')[0];
+            var rec = null;
+            Object.keys(CONSERVATION_STATUS).forEach(function(k) {
+              if (rec) return;
+              var candidate = String(CONSERVATION_STATUS[k].species || '');
+              if (candidate.indexOf(sci) === 0) { rec = CONSERVATION_STATUS[k]; return; }
+              if (genus && candidate.indexOf(genus + ' spp.') === 0) rec = CONSERVATION_STATUS[k];
+            });
+            var iucn = rec ? String(rec.iucn) : null;
+            var iucnColor = !iucn ? '#94a3b8'
+              : iucn.indexOf('Least Concern') === 0 ? '#86efac'
+              : iucn.indexOf('Vulnerable') === 0 ? '#fb923c'
+              : iucn.indexOf('Endangered') === 0 ? '#fca5a5'
+              : iucn.indexOf('Not Evaluated') === 0 ? '#94a3b8' : '#a78bfa';
+            return h('div', { style: { marginBottom: 12, padding: '9px 12px', borderRadius: 8, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(148,163,184,0.25)' } },
+              h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } },
+                h('b', { style: { color: 'var(--allo-stem-text, #cbd5e1)', fontStyle: 'normal' } }, 'Conservation: '), selected.conservation),
+              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 6, display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' } },
+                h('span', { style: { fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: 9.5 } },
+                  __alloT('stem.cephalopodlab.fg_iucn_record', 'IUCN record in this lab')),
+                iucn
+                  ? h('span', { style: { fontWeight: 800, color: iucnColor, padding: '2px 9px', borderRadius: 999, background: iucnColor + '1f', border: '1px solid ' + iucnColor + '66' } }, iucn)
+                  : h('span', { style: { color: '#94a3b8' } }, __alloT('stem.cephalopodlab.fg_no_iucn_record', 'no per-species record in this lab'))));
+          })(),
           compareBlock,
           onward);
 
@@ -20199,7 +20226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('br', null),
               h('span', { style: { color: '#ef4444', fontWeight: 700 } }, 'CR '), __alloT('stem.cephalopodlab.critically_endangered_extremely_high_r', 'Critically Endangered — extremely high risk'),
               h('br', null),
-              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'NE '), __alloT('stem.cephalopodlab.not_evaluated_assessment_never_done_of', 'Not Evaluated — assessment never done (often = data deficient)')
+              h('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'NE '), __alloT('stem.cephalopodlab.not_evaluated_assessment_never_done_of', 'Not Evaluated — no assessment has been made (different from Data Deficient, which means assessed but with too little information to categorise)')
             )
           ),
           keys.map(function(k) {
