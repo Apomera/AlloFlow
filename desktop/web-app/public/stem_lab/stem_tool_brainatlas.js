@@ -9629,7 +9629,9 @@ var d = labToolData.brainAtlas || {};
             var opts = [];
             for (var k = 1; k <= 3; k++) opts.push(STIM_SCENARIOS[(idx + k) % STIM_SCENARIOS.length].target);
             opts.push(sc.target);
-            var rot = idx % 4; opts = opts.slice(rot).concat(opts.slice(0, rot));
+            // a real shuffle, not a rotation by the case number: the rotation put
+            // the answer in a slot that was a pure function of which case this was
+            opts = brainAtlasShuffle(opts);
             upd('patientOpts', opts); upd('patientCorrect', sc.target); upd('patientGuess', null);
             upd('patientLoading', true); upd('patientText', '');
             var prompt = 'You are roleplaying a calm, cooperative patient in an awake brain-surgery TEACHING simulation for students. The surgeon just gently stimulated one spot, and the real effect you feel is: "' + effect + '". In 1 to 2 short sentences, IN CHARACTER as the patient, say out loud what you suddenly notice or do. Do NOT name any brain region, lobe, or medical term, and do NOT explain the science. Keep it calm, friendly, and suitable for children. Plain prose only.';

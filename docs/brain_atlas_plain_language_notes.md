@@ -328,3 +328,11 @@ The four options are now shuffled once per round with the same Fisher-Yates help
 
 The tests do not need to know which option is the answer. The defect was that any option had a fixed slot for a given round, so what is pinned is that none does: over sixty fresh rounds at each of four round numbers, every option turns up in at least three different slots. The stability tests check the other half, that the order survives re-renders and a wrong pick and changes when the round does.
 
+## The Patient Simulator had the same key
+
+September 6, 2026. One panel over from the Find It challenge, the Stimulation Lab's Patient Simulator built its four region options with the correct one last and then rotated the list by the case number modulo four. The answer's slot therefore ran last, third, second, first, and repeated. After four cases a learner had the pattern without reading a single patient response.
+
+The options are already stored once per case, so a real shuffle at build time is enough; nothing reorders under the learner afterwards. Because the correct region is held in the tool's state, the test can say the property directly: for each of four case numbers, over sixty fresh cases, the answer turns up in at least three different slots. The set of four regions offered per case is unchanged.
+
+Worth recording, not changed: the three distractors for case N are the answers to cases N+1, N+2 and N+3. A learner who finishes case N has just been shown the next three answers as wrong options. That is a content decision about how the scenario pool is drawn, so it is written down here rather than altered.
+
