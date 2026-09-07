@@ -288,45 +288,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       '@keyframes fl-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }',
       '.fl-pulse { animation: fl-pulse 1.6s ease-in-out infinite; }',
       '.fl-sim-canvas:focus-visible { outline: 4px solid #fbbf24; outline-offset: -4px; }',
-      '.fl-sim-stage { position: relative; overflow: hidden; border-radius: 0 0 8px 8px; background: #06131f; }',
-      // Height lives here rather than inline so the fullscreen and theater rules
-      // below can take it over. The old fixed 460px left the scene squeezed under
-      // four floating panels on every screen size.
-      '.fl-sim-canvas { display: block; width: 100%; height: clamp(380px, 62vh, 720px); background: #9bc4d8; }',
-      // Bottom-LEFT, not centred. Centred, the control pad sat squarely on top
-      // of the boat in every follow view — the one thing the student is meant
-      // to be watching.
-      '.fl-sim-touch { position: absolute; z-index: 20; left: 10px; bottom: 118px; display: flex; gap: 6px; padding: 6px; border-radius: 8px; background: rgba(2,6,23,0.78); border: 1px solid rgba(125,211,252,0.28); }',
-      // --fl-bar-h is measured from the real control bar. It was a hard-coded
-      // 58px, and the bar wraps to two rows as soon as the stage is narrow or
-      // expanded — which put every floating panel underneath the buttons.
-      '.fl-nav-cue { position: absolute; z-index: 18; top: calc(var(--fl-bar-h, 48px) + 10px); left: 50%; transform: translateX(-50%); width: min(300px, 34%); min-width: 208px; pointer-events: none; }',
-      // While a radar plot is running the cue holds a real instrument, not a
-      // 50-pixel thumbnail, so it needs the width to show it.
-      '.fl-nav-cue.fl-nav-cue-radar { width: min(360px, 42%); min-width: 250px; }',
-      // Current camera rig, drawn on the scene itself. Switching views was already
-      // wired up, but with no on-canvas confirmation and two rigs that framed the
-      // hull badly it read as a control that did nothing.
-      '.fl-view-badge { position: absolute; z-index: 19; right: 10px; bottom: 118px; padding: 4px 9px; border-radius: 999px; font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: #e0f2fe; background: rgba(3,18,31,0.82); border: 1px solid rgba(125,211,252,0.4); pointer-events: none; }',
-      '@media (max-width: 760px) { .fl-sim-stage { display: grid; overflow: visible; } .fl-sim-stage .fl-sim-canvas { height: 330px !important; } .fl-sim-instruments, .fl-sim-mission, .fl-sim-log, .fl-sim-touch, .fl-nav-cue { position: static !important; width: auto !important; min-width: 0 !important; max-width: none !important; margin: 8px 8px 0 !important; transform: none !important; } .fl-sim-touch { justify-self: stretch; justify-content: center; flex-wrap: wrap; } }',
-      // ── Expanded stage. LAST in the sheet on purpose: the phone media query
-      // above also uses !important, and an expanded stage on a small screen has
-      // to beat it. Two paths, because the Fullscreen API is refused outright in
-      // a cross-origin iframe without allow="fullscreen" — which is exactly how
-      // the Canvas host embeds this tool. `.fl-theater` is the in-page fallback,
-      // laid out identically, so the control is never dead.
-      '.fl-sim-stage:fullscreen { display: flex !important; flex-direction: column; overflow: hidden !important; border-radius: 0; background: #04101b; }',
-      '.fl-sim-stage.fl-theater { display: flex !important; flex-direction: column; overflow: hidden !important; border-radius: 0; background: #04101b; position: fixed !important; inset: 0; z-index: 2147483000; }',
-      '.fl-sim-stage:fullscreen .fl-sim-canvas, .fl-sim-stage.fl-theater .fl-sim-canvas { flex: 1 1 auto; height: auto !important; min-height: 0; }',
-      '.fl-sim-stage:fullscreen .fl-sim-bar, .fl-sim-stage.fl-theater .fl-sim-bar { flex: 0 0 auto; border-radius: 0; }',
-      // The phone rule un-floats the HUD panels into document flow; inside an
-      // expanded stage there is room to float them again, and stacking them
-      // would push the scene off the bottom of the screen.
-      '.fl-sim-stage:fullscreen .fl-sim-instruments, .fl-sim-stage.fl-theater .fl-sim-instruments { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; left: 10px; width: 158px !important; margin: 0 !important; }',
-      '.fl-sim-stage:fullscreen .fl-sim-mission, .fl-sim-stage.fl-theater .fl-sim-mission { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; right: 10px; max-width: 260px !important; margin: 0 !important; }',
-      '.fl-sim-stage:fullscreen .fl-sim-log, .fl-sim-stage.fl-theater .fl-sim-log { position: absolute !important; bottom: 10px; left: 10px; right: 10px; margin: 0 !important; }',
-      '.fl-sim-stage:fullscreen .fl-sim-touch, .fl-sim-stage.fl-theater .fl-sim-touch { position: absolute !important; left: 10px !important; bottom: 124px; transform: none !important; margin: 0 !important; }',
-      '.fl-sim-stage:fullscreen .fl-nav-cue, .fl-sim-stage.fl-theater .fl-nav-cue { position: absolute !important; top: calc(var(--fl-bar-h, 48px) + 10px) !important; left: 50% !important; transform: translateX(-50%) !important; margin: 0 !important; width: min(320px, 30%) !important; }'
+      // Keep the harbor, instrument rails, controls, and log in distinct layout areas.
+      ".fl-fisherlab-root { container-type: inline-size; }",
+      ".fl-fisherlab-root:has(.fl-theater) { container-type: normal; }",
+      ".fl-large-text .fl-sim-instruments div, .fl-large-text .fl-sim-mission div { font-size:14px !important; line-height:1.5 !important; }",
+      ".fl-sim-stage { position:relative; display:grid; grid-template-columns:180px minmax(0,1fr) 220px; grid-template-rows:auto clamp(420px,65vh,720px) auto auto; grid-template-areas:\"bar bar bar\" \"instruments scene mission\" \"controls controls controls\" \"log log log\"; gap:10px; overflow:hidden; border:1px solid #24475b; border-radius:12px; background:linear-gradient(145deg,#0b2233,#04121e); }",
+      ".fl-sim-bar { grid-area:bar; margin:0; border-radius:0 !important; }",
+      ".fl-sim-canvas { grid-area:scene; display:block; width:100%; height:100% !important; min-width:0; min-height:0; border-radius:10px; background:#9bc4d8; }",
+      ".fl-sim-stage .fl-sim-instruments, .fl-sim-stage .fl-sim-mission { position:relative !important; top:auto !important; left:auto !important; right:auto !important; width:auto !important; min-width:0; max-width:none !important; margin:0; height:100%; box-sizing:border-box; overflow:auto; font-size:12px !important; line-height:1.5; box-shadow:none !important; background:linear-gradient(180deg,#0c2538,#071827) !important; border:1px solid #24475b; }",
+      ".fl-sim-instruments { grid-area:instruments; } .fl-sim-mission { grid-area:mission; }",
+      ".fl-sim-stage .fl-sim-touch { grid-area:controls; position:relative; left:auto; bottom:auto; z-index:20; display:flex; flex-wrap:wrap; justify-content:center; gap:8px; padding:10px; margin:0 10px; border-radius:10px; background:#0a2133; border:1px solid #31586f; }",
+      ".fl-sim-touch button { min-width:44px; min-height:44px !important; }",
+      ".fl-sim-stage .fl-sim-log { grid-area:log; position:relative !important; inset:auto !important; margin:0 10px 10px; min-width:0; border:1px solid #24475b; }",
+      ".fl-nav-cue { grid-area:scene; position:relative; z-index:18; top:auto; left:auto; transform:none; justify-self:center; align-self:start; margin:10px; width:min(320px,85%); min-width:0; pointer-events:none; }",
+      ".fl-nav-cue.fl-nav-cue-radar { width:min(360px,90%); }",
+      ".fl-view-badge { grid-area:scene; position:relative; z-index:19; justify-self:end; align-self:end; margin:10px; padding:5px 10px; border-radius:999px; font-size:11px; font-weight:800; color:#e0f2fe; background:#03121f; border:1px solid #56819a; pointer-events:none; }",
+      ".fl-sim-stage:fullscreen, .fl-sim-stage.fl-theater { display:grid !important; grid-template-rows:auto minmax(240px,1fr) auto auto; height:100dvh; overflow:auto; border-radius:0; background:#04101b; }",
+      ".fl-sim-stage.fl-theater { position:fixed !important; inset:0; z-index:2147483000; }",
+      "@media(max-width:900px) { .fl-sim-stage, .fl-sim-stage:fullscreen, .fl-sim-stage.fl-theater { grid-template-columns:minmax(0,1fr); grid-template-rows:auto 330px auto auto auto auto auto; grid-template-areas:\"bar\" \"scene\" \"cue\" \"controls\" \"instruments\" \"mission\" \"log\"; } .fl-nav-cue, .fl-nav-cue.fl-nav-cue-radar { grid-area:cue; width:auto; justify-self:stretch; margin:0 10px; } .fl-sim-stage .fl-sim-instruments, .fl-sim-stage .fl-sim-mission { margin:0 10px; height:auto; } .fl-helm-readings { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 12px !important; } }",
+      "@container(max-width:900px) { .fl-sim-stage:not(:fullscreen):not(.fl-theater) { grid-template-columns:minmax(0,1fr); grid-template-rows:auto 330px auto auto auto auto auto; grid-template-areas:\"bar\" \"scene\" \"cue\" \"controls\" \"instruments\" \"mission\" \"log\"; } .fl-sim-stage:not(:fullscreen):not(.fl-theater) .fl-nav-cue { grid-area:cue; width:auto; justify-self:stretch; margin:0 10px; } .fl-sim-stage:not(:fullscreen):not(.fl-theater) .fl-sim-instruments, .fl-sim-stage:not(:fullscreen):not(.fl-theater) .fl-sim-mission { margin:0 10px; height:auto; } .fl-sim-stage:not(:fullscreen):not(.fl-theater) .fl-helm-readings { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px 12px !important; } }",
+      "@media(prefers-reduced-motion:reduce) { .fl-sim-instruments svg { transition:none !important; } }"
     ].join('\n');
     document.head.appendChild(s);
   })();
@@ -20043,6 +20024,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
       var textStyle = { color: '#cbd5e1', fontSize: 12, lineHeight: 1.6 };
       var prediction = seaPrediction && seaPrediction.seaState === sea.id ? seaPrediction.choice : null;
       var experiment = prediction ? getCoreNorthboundExperiment(sea.id, prediction) : null;
+      function motionVectorFigure() {
+        if (!experiment) return null;
+        var radians = experiment.bearing * Math.PI / 180, scale = 36;
+        var bx = 120 + Math.sin(radians) * experiment.speed * scale;
+        var by = 175 - Math.cos(radians) * experiment.speed * scale;
+        var drift = getCoreSeaMotion({ seaState: sea.id, speed: 0 }).driftX;
+        var gx = bx + drift * scale;
+        function vector(x1, y1, x2, y2, color, dashed) {
+          return h('g', null,
+            h('line', { x1:x1, y1:y1, x2:x2, y2:y2, stroke:color, strokeWidth:dashed ? 2.5 : 4, strokeDasharray:dashed ? '6 4' : undefined }),
+            h('path', { d:'M 0 0 L -4 9 L 4 9 Z', fill:color, transform:'translate(' + x2 + ' ' + y2 + ') rotate(' + (Math.atan2(x2-x1,y1-y2)*180/Math.PI) + ')' }));
+        }
+        return h('figure', { 'data-sea-vector-figure': true, style:{ margin:'12px 0', padding:10, border:'1px solid #31586f', borderRadius:10, background:'radial-gradient(ellipse at top,#12394a,#061a29)', maxWidth:360 } },
+          h('svg', { viewBox:'0 0 240 205', width:240, height:205, 'aria-hidden':'true', style:{ display:'block', maxWidth:'100%', margin:'0 auto' } },
+            [40,85,130,175].map(function(y) { return h('line',{key:y,x1:35,y1:y,x2:205,y2:y,stroke:'#24475b',strokeWidth:1}); }),
+            h('line',{x1:120,y1:22,x2:120,y2:183,stroke:'#94a3b8',strokeWidth:1,strokeDasharray:'2 5'}),
+            h('text',{x:120,y:15,textAnchor:'middle',fill:'#e0f2fe',fontSize:12},'N · target track'),
+            vector(120,175,bx,by,'#7dd3fc',false),
+            drift ? vector(bx,by,gx,by,'#5eead4',false) : null,
+            vector(120,175,gx,by,'#fbbf24',true),
+            h('circle',{cx:120,cy:175,r:5,fill:'#f0fdfa'}),
+            h('text',{x:120,y:199,textAnchor:'middle',fill:'#cbd5e1',fontSize:12},'Start')),
+          h('figcaption',{style:textStyle},'Blue: boat through water. Teal: wind drift, added at the blue tip. Dashed gold: combined travel. All arrows use the same time and distance scale.'),
+          h('p',{style:Object.assign({},textStyle,{margin:'6px 0 0'})},'Wind adds ' + drift.toFixed(2) + ' kt eastward. Combined speed: ' + experiment.groundSpeed.toFixed(2) + ' kt.'));
+      }
       function arrow(bearing, color, dashed, length) {
         if (bearing === null) return null;
         return h('g', { transform: 'rotate(' + bearing + ' 60 60)' },
@@ -20083,6 +20089,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               h('div', null,
                 h('b', { style: { color: experiment.correct ? '#99f6e4' : '#fde68a' } }, experiment.correct ? 'Your prediction balances the motion.' : 'Follow the drift and try again.'),
                 h('p', { style: { margin: '6px 0' } }, 'Model preview: bow ' + (Math.round(experiment.bearing) % 360) + '° → track ' + (Math.round(experiment.course) % 360) + '°. ' + (sea.windKnots ? 'A small westward part of the boat’s motion can balance the eastward wind drift.' : 'With no wind drift, pointing due north gives a northbound track.')),
+                motionVectorFigure(),
                 h('p', { style: { margin: '6px 0 0' } }, 'Try it in Guided mode: compare heading and track at a steady through-water speed. This preview does not steer the boat; wave resistance can change the speed you achieve.')) : 'Choose a direction to reveal the model preview.')),
           h('p', { style: textStyle }, h('a', { href: 'https://gnome.orr.noaa.gov/doc/faq.html', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NOAA: leeway'), ' · ', h('a', { href: 'https://www.weather.gov/marine/wavedetail', target: '_blank', rel: 'noopener noreferrer', style: { color: '#99f6e4' } }, 'NWS: waves and swell'))));
     }
@@ -21206,7 +21213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                 // Heading index pointer
                 h('div', { style: { position: 'absolute', top: -3, left: 'calc(50% - 5px)', width: 0, height: 0, borderLeft: '5px solid transparent', borderRight: '5px solid transparent', borderBottom: '6px solid #ef4444', zIndex: 11 } })
               ),
-              h('div', { style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
+              h('div', { className: 'fl-helm-readings', style: { borderTop: '1px solid rgba(56,189,248,0.2)', paddingTop: 6, display: 'flex', flexDirection: 'column', gap: 3 } },
                 h('div', null, 'Speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#86efac' } }, (hud.speed || 0).toFixed(1) + ' kt')),
                 h('div', null, 'Safe speed: ', h('b', { style: { color: hud.unsafeSpeed ? '#fb923c' : '#bae6fd' } }, (hud.safeSpeed == null ? 8 : hud.safeSpeed).toFixed(1) + ' kt')),
                 h('div', null, 'Heading: ', h('b', { style: { color: '#bae6fd' } }, headingToCompass(hud.heading))),
@@ -21237,7 +21244,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
 
             // Mission progress
             h('div', { className: 'fl-sim-mission', style: { position: 'absolute', top: 'calc(var(--fl-bar-h, 48px) + 10px)', right: 10, background: 'rgba(8,18,32,0.75)', padding: '8px 12px', borderRadius: 8, fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', maxWidth: 220, zIndex: 10 } },
-              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a' } }, (hud.stewardshipScore || 0) + ' pts')),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: 10, fontWeight: 800, color: '#bae6fd', marginBottom: 5 } }, h('span', null, mission.title), h('span', { style: { color: '#fde68a', whiteSpace: 'nowrap' } }, (hud.stewardshipScore || 0) + ' pts')),
               h('div', { style: { height: 5, borderRadius: 4, overflow: 'hidden', background: 'rgba(148,163,184,0.22)', marginBottom: 6 } }, h('div', { style: { width: missionProgressPct + '%', height: '100%', background: 'linear-gradient(90deg,#22c55e,#38bdf8)', transition: 'width 0.25s ease' } })),
               h('div', { style: { fontSize: 10 } }, (hud.passedRedNun ? '✓ ' : '○ ') + buoyageCheck.objectiveLabel),
               h('div', { style: { fontSize: 10, color: hud.trafficManeuverReviewed || (hud.trafficDecisionMade && !hud.trafficDecisionCorrect) ? '#fdba74' : 'inherit' } }, hud.trafficManeuverComplete ? (hud.trafficManeuverReviewed ? '△ ' + hud.trafficManeuverLabel + ' reviewed' : '✓ ' + hud.trafficManeuverLabel) : hud.trafficDecisionMade ? (trafficIsRestricted ? '○ Slow + horn + avoid port' : trafficIsStandOn ? '○ Hold course + speed for 5 s' : '○ Slow + alter 15° starboard') : '○ Resolve crossing traffic'),
