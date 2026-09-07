@@ -6,6 +6,7 @@
 // tool's existing state. These tests pin the INVARIANTS (what state produces
 // what affordance), not the copy, so a wording pass will not red them.
 import { beforeEach, describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import {
   loadTool,
   renderTool,
@@ -172,5 +173,96 @@ describe('Cephalopod Lab Field Guide', () => {
     expect(labels(nautilus).some((t) => /See the body plan in 3D/.test(t))).toBe(false);
     const dayOcto = renderField({ fieldGuideSpeciesId: 'dayOcto' });
     expect(labels(dayOcto).some((t) => /Hunt as this species/.test(t))).toBe(false);
+  });
+});
+
+// ── Camouflage Lab (guided-path step 3) ──
+function renderCamo(data = {}) {
+  const container = document.createElement('div');
+  container.innerHTML = renderTool('cephalopodLab', {
+    cephalopodLab: { activeSection: 'camo', ...data },
+  });
+  return container;
+}
+
+describe('Cephalopod Lab Camouflage Lab', () => {
+  it('hides the target slider numbers by default and reveals them on request', () => {
+    const hidden = renderCamo({ camoScene: 'sand' });
+    expect(hidden.textContent).toMatch(/Settings hidden/);
+    expect(hidden.textContent).not.toMatch(/C:30 I:10 L:70/);
+    const shown = renderCamo({ camoScene: 'sand', camoRevealTarget: true });
+    expect(shown.textContent).toMatch(/C:30 I:10 L:70/);
+  });
+
+  it('coaches the furthest-off layers in words, with direction, and goes quiet when close', () => {
+    // sand target: chro 30, irid 10, leuc 70
+    const far = renderCamo({ camoScene: 'sand', camoChromatophore: 90, camoIridophore: 10, camoLeucophore: 10, camoPattern: 'uniform' });
+    const items = Array.from(far.querySelectorAll('ul[aria-label="Layer coaching"] li')).map((li) => li.textContent);
+    expect(items).toHaveLength(2);
+    expect(items[0]).toMatch(/^Chromatophores too much pigment/);
+    expect(items[1]).toMatch(/^Leucophores too dim/);
+    expect(far.textContent).not.toMatch(/\b30\b.*\b10\b.*\b70\b/);
+    const close = renderCamo({ camoScene: 'sand', camoChromatophore: 32, camoIridophore: 12, camoLeucophore: 68, camoPattern: 'uniform' });
+    expect(close.querySelector('ul[aria-label="Layer coaching"]')).toBeNull();
+  });
+
+  it('shows the predator-eye view only when toggled and tracks the four-scene challenge from camoBest', () => {
+    const off = renderCamo();
+    expect(off.textContent).not.toMatch(/Can you still find the animal/);
+    const on = renderCamo({ camoSquint: true, camoBest: { sand: 91, kelp: 62 } });
+    expect(on.textContent).toMatch(/Can you still find the animal/);
+    expect(on.textContent).toMatch(/1 \/ 4 done/);
+    const sand = on.querySelector('button[aria-label^="Sandy bottom: best 91"]');
+    expect(sand.getAttribute('aria-label')).toMatch(/invisible$/);
+    const kelp = on.querySelector('button[aria-label^="Kelp forest: best 62"]');
+    expect(kelp.getAttribute('aria-label')).not.toMatch(/invisible$/);
+  });
+});
+
+// ── Quiz (guided-path step 5) ──
+function renderQuiz(data = {}) {
+  const container = document.createElement('div');
+  container.innerHTML = renderTool('cephalopodLab', {
+    cephalopodLab: { activeSection: 'quiz', ...data },
+  });
+  return container;
+}
+
+describe('Cephalopod Lab Quiz', () => {
+  it('renders one progress dot per question with state labels and marks the current one', () => {
+    const c = renderQuiz({ quizIdx: 2, quizAnswers: { q1_anatomy_class: 0 } });
+    const dots = Array.from(c.querySelectorAll('[role="group"][aria-label="Quiz progress"] button'));
+    expect(dots).toHaveLength(40);
+    expect(dots.filter((b) => /: unanswered$/.test(b.getAttribute('aria-label')))).toHaveLength(39);
+    expect(dots[0].getAttribute('aria-label')).toMatch(/: (correct|incorrect)$/);
+    expect(dots[2].getAttribute('aria-current')).toBe('true');
+    expect(c.textContent).toMatch(/1 \/ 40 answered/);
+  });
+
+  it('offers a revisit link to the teaching section only after the question is answered', () => {
+    const before = renderQuiz({ quizIdx: 0 });
+    expect(before.textContent).not.toMatch(/This is taught in/);
+    const after = renderQuiz({ quizIdx: 0, quizAnswers: { q1_anatomy_class: 0 } });
+    expect(after.textContent).toMatch(/This is taught in Body plan & physiology/);
+    expect(Array.from(after.querySelectorAll('button')).some((b) => /^Revisit Body Plan/.test(b.textContent.trim()))).toBe(true);
+  });
+
+  it('recap groups results by area, weakest first, with a captioned table and a retake-missed button', () => {
+    const src = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+    const seg = src.slice(src.indexOf('var QUIZ_QUESTIONS = ['), src.indexOf('\n      ];', src.indexOf('var QUIZ_QUESTIONS = [')));
+    const ids = Array.from(seg.matchAll(/id: '([a-z0-9_]+)'/g)).map((m) => m[1]);
+    expect(ids).toHaveLength(40);
+    const answers = {};
+    ids.forEach((id) => { answers[id] = 0; });
+    const c = renderQuiz({ quizShowAll: true, quizAnswers: answers });
+    const table = c.querySelector('table');
+    expect(table.querySelector('caption')).not.toBeNull();
+    expect(table.querySelectorAll('thead th[scope="col"]')).toHaveLength(3);
+    const rows = Array.from(table.querySelectorAll('tbody tr'));
+    expect(rows.length).toBeGreaterThanOrEqual(5);
+    const pcts = rows.map((r) => { const m = r.textContent.match(/(\d+) \/ (\d+)/); return Number(m[1]) / Number(m[2]); });
+    for (let i = 1; i < pcts.length; i++) expect(pcts[i]).toBeGreaterThanOrEqual(pcts[i - 1]);
+    expect(c.textContent).toMatch(/Retake the \d+ missed/);
+    expect(c.querySelector('svg[role="img"][aria-label^="Score "]')).not.toBeNull();
   });
 });

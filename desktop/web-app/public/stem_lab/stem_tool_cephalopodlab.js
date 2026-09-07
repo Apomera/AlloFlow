@@ -763,6 +763,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       camoIridophore: 30,                  // 0-100 (structural iridescence intensity)
       camoLeucophore: 30,                  // 0-100 (white reflector intensity)
       camoPattern: 'uniform',              // 'uniform' | 'mottled' | 'disruptive' | 'deimatic'
+      camoBest: {},                        // sceneId -> best match % (Camouflage Lab challenge)
+      camoRevealTarget: false,             // target slider numbers hidden by default
+      camoSquint: false,                   // predator's-eye blurred comparison
       // Body Plan state
       anatomyRegion: 'central-brain',      // currently highlighted region id
       // Through Time state
@@ -15879,6 +15882,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
         var avgDiff = (chroDiff + iridDiff + leucDiff) / 3;
         var patternMatch = pattern === target.pattern;
         var matchScore = Math.round(Math.max(0, 100 - avgDiff * 1.4) * (patternMatch ? 1 : 0.6));
+        // Pure form of the score so event handlers can record a per-scene best
+        // without waiting for the next render.
+        function camoMatchFor(c, i, l, p, t) {
+          var ad = (Math.abs(c - t.chro) + Math.abs(i - t.irid) + Math.abs(l - t.leuc)) / 3;
+          return Math.round(Math.max(0, 100 - ad * 1.4) * (p === t.pattern ? 1 : 0.6));
+        }
+        var camoBest = d.camoBest || {};
+        function camoPatchWithBest(patch) {
+          var nc = patch.camoChromatophore != null ? patch.camoChromatophore : chro;
+          var ni = patch.camoIridophore != null ? patch.camoIridophore : irid;
+          var nl = patch.camoLeucophore != null ? patch.camoLeucophore : leuc;
+          var np = patch.camoPattern || pattern;
+          var sc = camoMatchFor(nc, ni, nl, np, target);
+          if (sc > (camoBest[scene] || 0)) {
+            var nb = Object.assign({}, camoBest); nb[scene] = sc; patch.camoBest = nb;
+            if (sc >= 85 && (camoBest[scene] || 0) < 85) { awardXP(5); clAnnounce('Invisible in ' + current.name + '. Best match ' + sc + ' percent.'); }
+          }
+          return patch;
+        }
+        var revealTarget = !!d.camoRevealTarget;
+        var squint = !!d.camoSquint;
+        // Coaching: which layer is furthest off, and in which direction. Words,
+        // not numbers, so the student still has to look at the patch.
+        var coaching = (function() {
+          var rows = [
+            { key: 'chro', diff: chro - target.chro, abs: chroDiff, name: __alloT('stem.cephalopodlab.camo_coach_chromatophore', 'Chromatophores'),
+              high: __alloT('stem.cephalopodlab.camo_coach_chro_high', 'too much pigment: the body reads darker and redder than the scene. Relax the sacs.'),
+              low: __alloT('stem.cephalopodlab.camo_coach_chro_low', 'too little pigment: the body is paler than the scene. Expand the sacs.') },
+            { key: 'irid', diff: irid - target.irid, abs: iridDiff, name: __alloT('stem.cephalopodlab.camo_coach_iridophore', 'Iridophores'),
+              high: __alloT('stem.cephalopodlab.camo_coach_irid_high', 'too much sheen: structural colour is flashing where the scene is matte.'),
+              low: __alloT('stem.cephalopodlab.camo_coach_irid_low', 'not enough sheen: the scene has shimmer the skin is not returning.') },
+            { key: 'leuc', diff: leuc - target.leuc, abs: leucDiff, name: __alloT('stem.cephalopodlab.camo_coach_leucophore', 'Leucophores'),
+              high: __alloT('stem.cephalopodlab.camo_coach_leuc_high', 'too bright: white reflectors are washing the body out against a darker scene.'),
+              low: __alloT('stem.cephalopodlab.camo_coach_leuc_low', 'too dim: the scene is brighter than the body. More white reflection.') }
+          ].filter(function(r) { return r.abs >= 12; }).sort(function(a, b) { return b.abs - a.abs; });
+          return rows.map(function(r) { return { name: r.name, text: r.diff > 0 ? r.high : r.low, big: r.abs >= 30 }; });
+        })();
         var verdict = matchScore >= 85 ? { color: '#86efac', label: __alloT('stem.cephalopodlab.invisible_exceptional_match', 'Invisible — exceptional match.') } :
                       matchScore >= 70 ? { color: '#fbbf24', label: __alloT('stem.cephalopodlab.close_a_predator_might_miss_you', 'Close. A predator might miss you.') } :
                       matchScore >= 50 ? { color: '#fb923c', label: __alloT('stem.cephalopodlab.visible_silhouette_risky', 'Visible silhouette — risky.') } :
@@ -15961,7 +16001,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.the_three_skin_layers', '🔬 The three skin layers')),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 } },
               [
-                { name: __alloT('stem.cephalopodlab.chromatophore_2', 'Chromatophore'), emoji: '🔴', color: '#dc2626',
+                { name: __alloT('stem.cephalopodlab.chromatophore_2', 'Chromatophore'), emoji: '🔴', color: '#dc2626', ink: '#fca5a5',
                   function: 'Pigment sac (red/yellow/black) surrounded by radial muscles. Muscles contract → sac expands → color shows. ~200 per square mm of skin.',
                   speed: 'Fastest layer — visible color change in ~70 ms.' },
                 { name: __alloT('stem.cephalopodlab.iridophore_2', 'Iridophore'), emoji: '🌈', color: '#a78bfa',
@@ -15975,7 +16015,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   style: { background: 'rgba(15,23,42,0.5)', borderLeft: '3px solid ' + layer.color, padding: '12px 14px', borderRadius: 8 } },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 } },
                     h('span', { style: { fontSize: 22 }, 'aria-hidden': 'true' }, layer.emoji),
-                    h('div', { style: { fontSize: 13, fontWeight: 800, color: layer.color } }, layer.name)),
+                    h('div', { style: { fontSize: 13, fontWeight: 800, color: layer.ink || layer.color } }, layer.name)),
                   h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.55, marginBottom: 4 } }, layer.function),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, fontStyle: 'italic' } },
                     h('b', null, '⏱️ '), layer.speed));
@@ -16006,8 +16046,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, '🎯 Target — ' + current.name),
                 renderSkinPatch(target.chro, target.irid, target.leuc, target.pattern, current.bg),
-                h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
-                  'C:' + target.chro + ' I:' + target.irid + ' L:' + target.leuc + ' · ' + target.pattern),
+                revealTarget ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontFamily: 'ui-monospace, Menlo, monospace' } },
+                  'C:' + target.chro + ' I:' + target.irid + ' L:' + target.leuc + ' · ' + target.pattern)
+                : h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 6, fontStyle: 'italic' } },
+                  __alloT('stem.cephalopodlab.camo_target_hidden', 'Settings hidden: match the picture, not the numbers.')),
                 h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 6, lineHeight: 1.55, fontStyle: 'italic' } }, current.desc)),
               h('div', null,
                 h('div', { style: { fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } }, __alloT('stem.cephalopodlab.your_skin', '🐙 Your skin')),
@@ -16029,7 +16071,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('span', null, lbl),
                   h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: sliderColor } }, val + ' / 100')),
                 h('input', { type: 'range', min: 0, max: 100, step: 1, value: val,
-                  onChange: function(e) { var p = {}; p[key] = parseInt(e.target.value, 10); setCL(p); },
+                  onChange: function(e) { var p = {}; p[key] = parseInt(e.target.value, 10); setCL(camoPatchWithBest(p)); },
                   'aria-label': lbl,
                   style: { width: '100%', accentColor: sliderColor } }));
             }),
@@ -16042,7 +16084,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   var active = pattern === p;
                   var labels = { uniform: 'Uniform', mottled: 'Mottled', disruptive: 'Disruptive (stripes)', deimatic: 'Deimatic (startle)' };
                   return h('button', { key: p,
-                    onClick: function() { setCL({ camoPattern: p }); },
+                    onClick: function() { setCL(camoPatchWithBest({ camoPattern: p })); },
                     'aria-pressed': active ? 'true' : 'false',
                     style: { padding: '6px 12px',
                       background: active ? 'rgba(167,139,250,0.3)' : 'rgba(15,23,42,0.5)',
@@ -16059,7 +16101,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                 matchScore + '% match'),
               h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.55 } }, verdict.label),
               !patternMatch ? h('div', { style: { fontSize: 11, color: '#fb923c', marginTop: 6, lineHeight: 1.55 } },
-                '💡 Pattern mismatch — target wants "' + target.pattern + '", you\'re showing "' + pattern + '". Pattern matters as much as color.') : null)),
+                '💡 Pattern mismatch — target wants "' + target.pattern + '", you\'re showing "' + pattern + '". Pattern matters as much as color.') : null,
+              coaching.length ? h('ul', { 'aria-label': __alloT('stem.cephalopodlab.camo_coaching_label', 'Layer coaching'), style: { margin: '8px 0 0', padding: '0 0 0 18px', fontSize: 11, color: '#e2e8f0', lineHeight: 1.6 } },
+                coaching.map(function(c, i) { return h('li', { key: i }, h('b', { style: { color: c.big ? '#fca5a5' : '#fde68a' } }, c.name + ' '), c.text); }))
+              : matchScore >= 85 ? null : h('div', { style: { fontSize: 11, color: '#a7f3d0', marginTop: 8 } },
+                __alloT('stem.cephalopodlab.camo_coach_close', 'All three layers are close. Fine-tune by eye, or check the pattern.'))),
+
+            // Controls row: reveal + predator's eye
+            h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 } },
+              h('button', { type: 'button', 'aria-pressed': squint ? 'true' : 'false', onClick: function() { setCL({ camoSquint: !squint }); },
+                style: { padding: '7px 12px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                  background: squint ? 'rgba(56,189,248,0.2)' : 'transparent', color: squint ? '#7dd3fc' : '#cbd5e1', border: '1px solid ' + (squint ? '#38bdf8' : 'rgba(148,163,184,0.4)') } },
+                __alloT('stem.cephalopodlab.camo_predators_eye', "🦈 Predator's eye (5 m away)")),
+              h('button', { type: 'button', 'aria-pressed': revealTarget ? 'true' : 'false', onClick: function() { setCL({ camoRevealTarget: !revealTarget }); },
+                style: { padding: '7px 12px', borderRadius: 8, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                  background: revealTarget ? 'rgba(251,191,36,0.15)' : 'transparent', color: revealTarget ? '#fde68a' : '#cbd5e1', border: '1px solid ' + (revealTarget ? '#fbbf24' : 'rgba(148,163,184,0.4)') } },
+                revealTarget ? __alloT('stem.cephalopodlab.camo_hide_target', '🙈 Hide target settings') : __alloT('stem.cephalopodlab.camo_reveal_target', '🔢 Reveal target settings'))),
+            squint && h('div', { style: { marginTop: 12, padding: '12px 14px', borderRadius: 10, background: 'rgba(2,6,23,0.55)', border: '1px solid rgba(56,189,248,0.35)' } },
+              h('div', { style: { fontSize: 10, fontWeight: 800, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                __alloT('stem.cephalopodlab.camo_squint_title', "🦈 Predator's eye")),
+              h('div', { style: { fontSize: 11, color: '#e0f2fe', lineHeight: 1.5, marginBottom: 10 } },
+                __alloT('stem.cephalopodlab.camo_squint_intro', 'Camouflage is judged from a distance by an eye that blurs fine detail. Can you still find the animal in each patch?')),
+              h('div', { style: { display: 'flex', gap: 18, flexWrap: 'wrap', alignItems: 'flex-end' } },
+                h('div', null,
+                  h('div', { style: { fontSize: 9.5, color: '#94a3b8', marginBottom: 4 } }, __alloT('stem.cephalopodlab.camo_squint_target', 'Target')),
+                  h('div', { style: { filter: 'blur(2.5px) saturate(0.8)', transform: 'scale(0.6)', transformOrigin: 'left bottom', width: 120, height: 78 } }, renderSkinPatch(target.chro, target.irid, target.leuc, target.pattern, current.bg))),
+                h('div', null,
+                  h('div', { style: { fontSize: 9.5, color: '#94a3b8', marginBottom: 4 } }, __alloT('stem.cephalopodlab.your_skin', '🐙 Your skin')),
+                  h('div', { style: { filter: 'blur(2.5px) saturate(0.8)', transform: 'scale(0.6)', transformOrigin: 'left bottom', width: 120, height: 78 } }, renderSkinPatch(chro, irid, leuc, pattern, current.bg))))),
+
+            // Four-scene challenge
+            h('div', { style: { marginTop: 14, padding: '10px 12px', borderRadius: 10, background: 'rgba(15,23,42,0.5)', border: '1px solid rgba(134,239,172,0.3)' } },
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 8 } },
+                h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac' } }, __alloT('stem.cephalopodlab.camo_challenge_title', '🏅 Challenge: go invisible in all four scenes (85% or better)')),
+                h('div', { role: 'status', style: { fontSize: 10.5, color: '#cbd5e1' } },
+                  Object.keys(SCENES).filter(function(k) { return (camoBest[k] || 0) >= 85; }).length + ' / ' + Object.keys(SCENES).length + ' ' + __alloT('stem.cephalopodlab.camo_challenge_done', 'done'))),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 } },
+                Object.keys(SCENES).map(function(k) {
+                  var s = SCENES[k]; var b = camoBest[k] || 0; var ok = b >= 85;
+                  return h('button', { key: k, type: 'button', onClick: function() { setCL({ camoScene: k }); }, 'aria-label': s.name + ': best ' + b + ' percent' + (ok ? ', invisible' : ''),
+                    style: { textAlign: 'left', padding: '8px 10px', borderRadius: 8, cursor: 'pointer', fontFamily: 'inherit', background: ok ? 'rgba(16,185,129,0.12)' : 'rgba(2,6,23,0.4)', border: '1px solid ' + (ok ? 'rgba(52,211,153,0.6)' : 'rgba(148,163,184,0.25)'), color: '#e2e8f0' } },
+                    h('div', { style: { fontSize: 11, fontWeight: 800, display: 'flex', justifyContent: 'space-between' } }, h('span', null, h('span', { 'aria-hidden': 'true' }, s.emoji + ' '), s.name), h('span', { 'aria-hidden': 'true', style: { color: ok ? '#6ee7b7' : '#94a3b8' } }, ok ? '✓' : '')),
+                    h('div', { style: { fontSize: 10, color: '#cbd5e1', marginTop: 2 } }, b ? __alloT('stem.cephalopodlab.camo_best', 'best ') + b + '%' : __alloT('stem.cephalopodlab.camo_not_tried', 'not tried yet')));
+                })))),
 
           // Pattern reference card
           h('div', { style: cardStyle() },
@@ -18971,38 +19055,142 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // explanations. Tracks score in localStorage. Designed for
       // self-paced student review or in-class formative check.
       function renderQuiz() {
-        var qIdx = d.quizIdx || 0;
+        // Quiz = the Hub path's "Check" step. Every question already explains
+        // every option; what was missing was ORIENTATION (where am I in 40
+        // questions, how am I doing) and a way BACK to the teaching: each
+        // question's domain maps to the section that holds the evidence, and
+        // the recap groups results by area so the student knows what to revisit.
+        var qIdx = Math.min(Math.max(0, d.quizIdx || 0), QUIZ_QUESTIONS.length - 1);
         var answered = d.quizAnswers || {};
         var showAll = d.quizShowAll || false;
         var q = QUIZ_QUESTIONS[qIdx];
         var selectedIdx = answered[q.id];
-        var allAnswered = QUIZ_QUESTIONS.every(function(qq) { return answered[qq.id] !== undefined; });
-        var correctCount = QUIZ_QUESTIONS.filter(function(qq) {
-          var a = answered[qq.id];
-          return a !== undefined && qq.options[a].correct;
-        }).length;
+        var answeredCount = QUIZ_QUESTIONS.filter(function(qq) { return answered[qq.id] !== undefined; }).length;
+        var allAnswered = answeredCount === QUIZ_QUESTIONS.length;
+        var isCorrect = function(qq) { var a = answered[qq.id]; return a !== undefined && !!qq.options[a] && qq.options[a].correct; };
+        var correctCount = QUIZ_QUESTIONS.filter(isCorrect).length;
+
+        // Domain labels are granular and inconsistent; fold them into areas that
+        // each map to ONE section of this lab.
+        var AREAS = [
+          { id: 'anatomy', section: 'anatomy', label: __alloT('stem.cephalopodlab.quiz_area_body', 'Body plan & physiology'), re: /anatomy|classification|physiolog|cellular|molecular|endocrin/i },
+          { id: 'camo', section: 'skin', label: __alloT('stem.cephalopodlab.quiz_area_camo', 'Camouflage & senses'), re: /camouflage|chromatophore|vision|sensory|polariz|defense/i },
+          { id: 'mind', section: 'intel', label: __alloT('stem.cephalopodlab.quiz_area_mind', 'Intelligence & behaviour'), re: /cognition|intelligence|behavior|tool use/i },
+          { id: 'life', section: 'lifecycle', label: __alloT('stem.cephalopodlab.quiz_area_life', 'Life cycle'), re: /life history|reproduction|senescence/i },
+          { id: 'evo', section: 'time', label: __alloT('stem.cephalopodlab.quiz_area_evo', 'Evolution'), re: /evolution|biodiversity/i },
+          { id: 'eco', section: 'conservation', label: __alloT('stem.cephalopodlab.quiz_area_eco', 'Ecology & conservation'), re: /ecolog|environment|climate|conservation|deep sea|earth science|microbiology/i },
+          { id: 'ethics', section: 'dilemmas', label: __alloT('stem.cephalopodlab.quiz_area_ethics', 'Ethics & welfare'), re: /ethic|welfare|sentience/i },
+          { id: 'physics', section: 'jet', label: __alloT('stem.cephalopodlab.quiz_area_physics', 'Jet propulsion & energetics'), re: /physic|energetic/i },
+          { id: 'methods', section: 'methods', label: __alloT('stem.cephalopodlab.quiz_area_methods', 'Research methods'), re: /science practice|biomimicry/i }
+        ];
+        var areaOf = function(qq) {
+          for (var i = 0; i < AREAS.length; i++) { if (AREAS[i].re.test(qq.domain || '')) return AREAS[i]; }
+          return AREAS[0];
+        };
+        var sectionLabel = function(sec) {
+          var found = null;
+          TAB_GROUPS.forEach(function(g) { g.tabs.forEach(function(t) { if (t.id === sec) found = t; }); });
+          return found ? found.label : sec;
+        };
+        var revisitBtn = function(area, key) {
+          return h('button', { key: key, type: 'button', onClick: function() { setSection(area.section); awardXP(1); },
+            style: { fontSize: 10.5, fontWeight: 800, padding: '5px 9px', borderRadius: 6, border: '1px solid rgba(167,139,250,0.5)', background: 'rgba(99,102,241,0.15)', color: '#c7d2fe', cursor: 'pointer', fontFamily: 'inherit', whiteSpace: 'nowrap' } },
+            __alloT('stem.cephalopodlab.quiz_revisit', 'Revisit') + ' ' + sectionLabel(area.section) + ' →');
+        };
+
+        // Progress strip: one dot per question, colour + glyph + label, jumps.
+        var dots = h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.quiz_progress_label', 'Quiz progress'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 12 } },
+          QUIZ_QUESTIONS.map(function(qq, i) {
+            var a = answered[qq.id];
+            var st = a === undefined ? 'open' : isCorrect(qq) ? 'right' : 'wrong';
+            var cur = i === qIdx;
+            var col = st === 'right' ? '#34d399' : st === 'wrong' ? '#fb7185' : 'rgba(148,163,184,0.35)';
+            var stLabel = st === 'right' ? __alloT('stem.cephalopodlab.quiz_dot_correct', 'correct') : st === 'wrong' ? __alloT('stem.cephalopodlab.quiz_dot_incorrect', 'incorrect') : __alloT('stem.cephalopodlab.quiz_dot_unanswered', 'unanswered');
+            return h('button', { key: qq.id, type: 'button', 'aria-label': __alloT('stem.cephalopodlab.quiz_question_word', 'Question') + ' ' + (i + 1) + ': ' + stLabel, 'aria-current': cur ? 'true' : undefined,
+              onClick: function() { setCL({ quizIdx: i, quizShowAll: false }); },
+              style: { width: 22, height: 22, borderRadius: 6, padding: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 10, fontWeight: 800,
+                background: st === 'open' ? 'rgba(15,23,42,0.6)' : col + '33', color: st === 'open' ? '#94a3b8' : col,
+                border: cur ? '2px solid #c7d2fe' : '1px solid ' + col } },
+              st === 'right' ? '✓' : st === 'wrong' ? '✗' : String(i + 1));
+          }));
+
+        var scoreLine = h('div', { role: 'status', style: { display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: 11, color: '#cbd5e1', marginBottom: 10 } },
+          h('span', null, h('b', { style: { color: '#e2e8f0' } }, answeredCount + ' / ' + QUIZ_QUESTIONS.length), ' ' + __alloT('stem.cephalopodlab.quiz_answered', 'answered')),
+          answeredCount > 0 && h('span', null, h('b', { style: { color: '#6ee7b7' } }, correctCount + ' / ' + answeredCount), ' ' + __alloT('stem.cephalopodlab.quiz_correct_so_far', 'correct so far')));
+
         if (showAll) {
-          // Score-recap view
+          // ── Score recap, grouped by area, weakest first ──
+          var areaRows = AREAS.map(function(a) {
+            var qs = QUIZ_QUESTIONS.filter(function(qq) { return areaOf(qq) === a; });
+            var right = qs.filter(isCorrect).length;
+            return { area: a, total: qs.length, right: right, pct: qs.length ? right / qs.length : 1 };
+          }).filter(function(r) { return r.total > 0; }).sort(function(x, y) { return x.pct - y.pct || y.total - x.total; });
+          var missed = QUIZ_QUESTIONS.filter(function(qq) { return answered[qq.id] !== undefined && !isCorrect(qq); });
+          var retakeMissed = function() {
+            var keep = {};
+            QUIZ_QUESTIONS.forEach(function(qq) { if (isCorrect(qq)) keep[qq.id] = answered[qq.id]; });
+            var first = QUIZ_QUESTIONS.findIndex(function(qq) { return keep[qq.id] === undefined; });
+            setCL({ quizAnswers: keep, quizIdx: Math.max(0, first), quizShowAll: false });
+            clAnnounce('Retaking ' + missed.length + ' missed question' + (missed.length === 1 ? '' : 's'));
+          };
+          var pctAll = Math.round((correctCount / QUIZ_QUESTIONS.length) * 100);
+          var recapVerdict = pctAll >= 90 ? __alloT('stem.cephalopodlab.quiz_verdict_high', 'Excellent. You can explain this lab to someone else.') :
+                             pctAll >= 70 ? __alloT('stem.cephalopodlab.quiz_verdict_mid', 'Solid. Revisit the weakest area below, then retake the missed ones.') :
+                             __alloT('stem.cephalopodlab.quiz_verdict_low', 'Good start. Work through the areas below from the top, one section at a time.');
           return h('div', null,
             h('button', {
+              type: 'button',
               onClick: function() { setCL({ quizShowAll: false }); },
-              style: { background: 'transparent', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, marginBottom: 12 },
+              style: { background: 'transparent', color: '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, padding: '6px 12px', cursor: 'pointer', fontSize: 12, fontWeight: 700, marginBottom: 12, fontFamily: 'inherit' },
               'aria-label': __alloT('stem.cephalopodlab.back_to_question_view', 'Back to question view'),
             }, __alloT('stem.cephalopodlab.back_to_questions', '◀ Back to questions')),
             panelHeader('📊 Quiz Recap', 'Your answers + the full explanation for each question. Use this for reflection or share with your teacher.'),
             h('div', { style: cardStyle() },
-              h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, 'Score: ' + correctCount + ' / ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 4 } }, ((correctCount / QUIZ_QUESTIONS.length) * 100).toFixed(0) + '%'),
-              h('button', {
-                onClick: function() { setCL({ quizAnswers: {}, quizIdx: 0, quizShowAll: false }); },
-                style: { marginTop: 12, padding: '8px 16px', background: '#a78bfa', color: '#1c1410', border: 'none', borderRadius: 6, fontWeight: 800, cursor: 'pointer', fontSize: 12 },
-              }, __alloT('stem.cephalopodlab.retake', '↻ Retake'))
-            ),
+              h('div', { style: { display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' } },
+                h('div', { style: { position: 'relative', width: 84, height: 84, flexShrink: 0 } },
+                  h('svg', { viewBox: '0 0 84 84', width: 84, height: 84, role: 'img', 'aria-label': __alloT('stem.cephalopodlab.quiz_score_ring_label', 'Score') + ' ' + pctAll + '%' },
+                    h('circle', { cx: 42, cy: 42, r: 36, fill: 'none', stroke: 'rgba(148,163,184,0.25)', strokeWidth: 8 }),
+                    h('circle', { cx: 42, cy: 42, r: 36, fill: 'none', stroke: pctAll >= 90 ? '#34d399' : pctAll >= 70 ? '#fbbf24' : '#fb7185', strokeWidth: 8, strokeLinecap: 'round',
+                      strokeDasharray: (2 * Math.PI * 36).toFixed(1), strokeDashoffset: ((1 - pctAll / 100) * 2 * Math.PI * 36).toFixed(1), transform: 'rotate(-90 42 42)' }),
+                    h('text', { x: 42, y: 47, textAnchor: 'middle', fontSize: 18, fontWeight: 900, fill: '#f1f5f9' }, pctAll + '%'))),
+                h('div', { style: { flex: '1 1 240px' } },
+                  h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe' } }, 'Score: ' + correctCount + ' / ' + QUIZ_QUESTIONS.length),
+                  h('div', { style: { fontSize: 12, color: '#e2e8f0', marginTop: 4, lineHeight: 1.5 } }, recapVerdict),
+                  h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 10 } },
+                    missed.length ? h('button', { type: 'button', onClick: retakeMissed,
+                      style: { padding: '8px 14px', background: '#fbbf24', color: '#1c1410', border: 'none', borderRadius: 6, fontWeight: 800, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' } },
+                      __alloT('stem.cephalopodlab.quiz_retake_missed', '↻ Retake the ') + missed.length + __alloT('stem.cephalopodlab.quiz_retake_missed_b', ' missed')) : null,
+                    h('button', { type: 'button',
+                      onClick: function() { setCL({ quizAnswers: {}, quizIdx: 0, quizShowAll: false }); },
+                      style: { padding: '8px 16px', background: '#a78bfa', color: '#1c1410', border: 'none', borderRadius: 6, fontWeight: 800, cursor: 'pointer', fontSize: 12, fontFamily: 'inherit' },
+                    }, __alloT('stem.cephalopodlab.retake', '↻ Retake')))))),
+            h('div', { style: cardStyle() },
+              h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.quiz_by_area', '🧭 By area, weakest first')),
+              h('div', { style: { overflowX: 'auto' } },
+                h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 420 } },
+                  h('caption', { style: { captionSide: 'top', textAlign: 'left', fontSize: 10.5, color: '#cbd5e1', paddingBottom: 6 } },
+                    __alloT('stem.cephalopodlab.quiz_by_area_caption', 'Questions grouped by the section of this lab that teaches them. Start revising at the top.')),
+                  h('thead', null, h('tr', null,
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.quiz_col_area', 'Area')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.quiz_col_score', 'Score')),
+                    h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.quiz_col_next', 'Where to look')))),
+                  h('tbody', null, areaRows.map(function(r) {
+                    var col = r.pct >= 0.9 ? '#34d399' : r.pct >= 0.6 ? '#fbbf24' : '#fb7185';
+                    return h('tr', { key: r.area.id },
+                      h('th', { scope: 'row', style: { textAlign: 'left', padding: '7px 8px', fontSize: 12, color: '#e2e8f0', fontWeight: 800 } }, r.area.label),
+                      h('td', { style: { padding: '7px 8px' } },
+                        h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8 } },
+                          h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 90, height: 6, borderRadius: 3, background: 'rgba(148,163,184,0.25)', overflow: 'hidden' } },
+                            h('span', { style: { display: 'block', width: (r.pct * 100) + '%', height: '100%', background: col } })),
+                          h('span', { style: { fontSize: 11.5, color: '#e2e8f0', fontVariantNumeric: 'tabular-nums' } }, r.right + ' / ' + r.total))),
+                      h('td', { style: { padding: '7px 8px' } }, r.pct < 1 ? revisitBtn(r.area, 'r' + r.area.id) : h('span', { style: { fontSize: 11, color: '#6ee7b7', fontWeight: 700 } }, '✓ ' + __alloT('stem.cephalopodlab.quiz_area_clear', 'all correct'))));
+                  }))))),
             QUIZ_QUESTIONS.map(function(qq, idx) {
               var aIdx = answered[qq.id];
               var was = aIdx !== undefined ? qq.options[aIdx] : null;
+              var area = areaOf(qq);
               return h('div', { key: qq.id, style: cardStyle() },
-                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6 } },
+                h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, gap: 8, flexWrap: 'wrap' } },
                   h('div', { style: { fontSize: 11, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.08em' } }, 'Q' + (idx + 1) + ' • ' + qq.domain),
                   was ? h('span', { style: { fontSize: 14, color: was.correct ? '#86efac' : '#fca5a5', fontWeight: 800 } }, was.correct ? '✓' : '✗') : null
                 ),
@@ -19020,56 +19208,71 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     opt.text,
                     h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 4 } }, opt.explanation)
                   );
-                })
+                }),
+                was && !was.correct ? h('div', { style: { marginTop: 4 } }, revisitBtn(area, 'q' + qq.id)) : null
               );
             })
           );
         }
+
+        var curArea = areaOf(q);
+        var diffColor = q.difficulty === 'beginner' ? '#86efac' : q.difficulty === 'advanced' ? '#fb7185' : '#fbbf24';
         return h('div', null,
           panelHeader('✏️ Cephalopod Quiz',
             'Self-paced NGSS-aligned multiple-choice — each question has an explanation for every answer, not just the right one. ' + QUIZ_QUESTIONS.length + ' questions across anatomy, ecology, evolution, ethics.'),
           h('div', { style: cardStyle() },
-            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 } },
+            dots,
+            scoreLine,
+            h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10, gap: 8, flexWrap: 'wrap' } },
               h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 700 } }, 'Question ' + (qIdx + 1) + ' of ' + QUIZ_QUESTIONS.length),
-              h('div', { style: { fontSize: 11, color: '#86efac', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em' } }, q.domain + ' • ' + q.difficulty)
-            ),
-            h('div', { style: { fontSize: 11, color: '#a78bfa', marginBottom: 8 } }, 'Standard: ' + q.standard),
+              h('div', { style: { display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' } },
+                h('span', { style: { fontSize: 10, fontWeight: 800, color: '#86efac', textTransform: 'uppercase', letterSpacing: '0.08em' } }, q.domain),
+                h('span', { style: { fontSize: 9.5, fontWeight: 800, padding: '2px 8px', borderRadius: 999, background: diffColor + '22', border: '1px solid ' + diffColor + '66', color: diffColor, textTransform: 'uppercase', letterSpacing: '0.06em' } }, q.difficulty),
+                h('span', { style: { fontSize: 10, color: '#a78bfa' } }, 'Standard: ' + q.standard))),
             h('div', { style: { fontSize: 17, fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 16, lineHeight: 1.5 } }, q.question),
             q.options.map(function(opt, oi) {
               var picked = oi === selectedIdx;
-              var bg = selectedIdx === undefined ? 'rgba(15,23,42,0.4)'
+              var locked = selectedIdx !== undefined;
+              var bg = !locked ? 'rgba(15,23,42,0.4)'
                 : picked && opt.correct ? 'rgba(34,197,94,0.15)'
                 : picked && !opt.correct ? 'rgba(239,68,68,0.15)'
                 : opt.correct ? 'rgba(34,197,94,0.08)'
                 : 'rgba(15,23,42,0.4)';
               var border = picked ? '2px solid #a78bfa' : '1px solid rgba(167,139,250,0.25)';
-              return h('button', { key: oi,
+              return h('button', { key: oi, type: 'button',
+                'aria-pressed': picked ? 'true' : 'false',
+                'aria-disabled': locked && !picked ? 'true' : undefined,
                 onClick: function() {
-                  if (selectedIdx !== undefined) return; // locked once answered
+                  if (locked) return; // locked once answered
                   var nx = Object.assign({}, answered);
                   nx[q.id] = oi;
                   setCL({ quizAnswers: nx });
+                  awardXP(opt.correct ? 3 : 1);
+                  clAnnounce((opt.correct ? 'Correct. ' : 'Not quite. ') + opt.explanation);
                 },
-                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: bg, border: border, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, cursor: selectedIdx === undefined ? 'pointer' : 'default', lineHeight: 1.5, fontFamily: 'inherit' },
+                style: { display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', marginBottom: 8, borderRadius: 8, background: bg, border: border, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 13, cursor: locked ? 'default' : 'pointer', fontFamily: 'inherit', lineHeight: 1.5 }
               },
                 h('div', { style: { fontWeight: 600 } }, opt.text),
-                selectedIdx !== undefined ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 6, lineHeight: 1.6 } },
+                locked ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 6, lineHeight: 1.6 } },
                   opt.correct ? '✓ ' : '✗ ', opt.explanation) : null
               );
             }),
-            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14 } },
-              h('button', {
+            selectedIdx !== undefined && h('div', { style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginTop: 4, padding: '8px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.25)' } },
+              h('span', { style: { fontSize: 11, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.quiz_taught_in', 'This is taught in') + ' ' + curArea.label + '.'),
+              revisitBtn(curArea, 'cur')),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', marginTop: 14, gap: 8, flexWrap: 'wrap' } },
+              h('button', { type: 'button',
                 onClick: function() { setCL({ quizIdx: Math.max(0, qIdx - 1) }); },
                 disabled: qIdx === 0,
-                style: { padding: '8px 16px', background: 'transparent', color: qIdx === 0 ? '#475569' : '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, cursor: qIdx === 0 ? 'default' : 'pointer', fontSize: 12, fontWeight: 700 },
+                style: { padding: '8px 16px', background: 'transparent', color: qIdx === 0 ? '#64748b' : '#a78bfa', border: '1px solid rgba(167,139,250,0.4)', borderRadius: 6, cursor: qIdx === 0 ? 'default' : 'pointer', fontSize: 12, fontWeight: 700, fontFamily: 'inherit' },
               }, __alloT('stem.cephalopodlab.prev', '◀ Prev')),
-              qIdx === QUIZ_QUESTIONS.length - 1 && allAnswered ? h('button', {
+              allAnswered ? h('button', { type: 'button',
                 onClick: function() { setCL({ quizShowAll: true }); },
-                style: { padding: '8px 16px', background: '#86efac', color: '#1c1410', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 800 },
-              }, __alloT('stem.cephalopodlab.see_score', '📊 See score')) : h('button', {
+                style: { padding: '8px 16px', background: '#86efac', color: '#1c1410', border: 'none', borderRadius: 6, cursor: 'pointer', fontSize: 12, fontWeight: 800, fontFamily: 'inherit' },
+              }, __alloT('stem.cephalopodlab.see_score', '📊 See score')) : h('button', { type: 'button',
                 onClick: function() { setCL({ quizIdx: Math.min(QUIZ_QUESTIONS.length - 1, qIdx + 1) }); },
                 disabled: qIdx === QUIZ_QUESTIONS.length - 1,
-                style: { padding: '8px 16px', background: qIdx === QUIZ_QUESTIONS.length - 1 ? 'rgba(167,139,250,0.3)' : '#a78bfa', color: qIdx === QUIZ_QUESTIONS.length - 1 ? '#94a3b8' : '#1c1410', border: 'none', borderRadius: 6, cursor: qIdx === QUIZ_QUESTIONS.length - 1 ? 'default' : 'pointer', fontSize: 12, fontWeight: 800 },
+                style: { padding: '8px 16px', background: qIdx === QUIZ_QUESTIONS.length - 1 ? 'rgba(167,139,250,0.3)' : '#a78bfa', color: qIdx === QUIZ_QUESTIONS.length - 1 ? '#cbd5e1' : '#1c1410', border: 'none', borderRadius: 6, cursor: qIdx === QUIZ_QUESTIONS.length - 1 ? 'default' : 'pointer', fontSize: 12, fontWeight: 800, fontFamily: 'inherit' },
               }, __alloT('stem.cephalopodlab.next', 'Next ▶'))
             )
           )

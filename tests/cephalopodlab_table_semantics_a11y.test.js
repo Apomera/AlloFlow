@@ -71,11 +71,11 @@ describe('Cephalopod Lab table semantics', () => {
     expectCompleteTableSemantics(renderSection('taxonomy'));
   });
 
-  it('keeps all six table declarations captioned in source', () => {
+  it('keeps all seven table declarations captioned in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('table'/g)).toHaveLength(6);
-    expect(source.match(/h\('caption'/g)).toHaveLength(6);
+    expect(source.match(/h\('table'/g)).toHaveLength(7);
+    expect(source.match(/h\('caption'/g)).toHaveLength(7);
     expect(source).toContain("scope: 'col'");
     expect(source).toContain("scope: 'row'");
   });
