@@ -90,6 +90,16 @@ Placing and breaking is the core activity, so the preview and the debris are wha
 
 Worth recording, because it nearly cost a wrong fix: the preview looked enormous in a first diagnostic capture, spanning much of the frame. Its bounding box was exactly one cell. The camera in that probe simply stood 1.5 units away, and a unit cube at that range fills a 75-degree view. Tinting it settled it. A second probe froze a material property the frame loop writes, which threw inside the loop; the tool caught it, stopped the loop and showed its recovery panel, which is the designed behaviour working.
 
+## Round 10 (same day): the measurement overlay
+
+Pressing M on a structure is the pedagogical core: layer glows reveal bottom to top, then L, W and H lines and labels build up in sequence, then the volume and its bounding box. The mechanics were sound. Two things were not.
+
+**Labels were washed out.** The dimension label sprites were painted in sRGB and never tagged, so the dark pill and the coloured L, W and H text were gamma-encoded twice and reached the screen as a faded pastel, the same defect the character labels had before round 6. They are now tagged sRGB, the pill is denser, and the coloured text carries a light outline so red, green and blue stay legible over any block colour or glow layer.
+
+**The placement ghost competed with the measurement.** The preview cell sits in front of whatever the crosshair touches, which during a measurement is the measured structure itself, so a large translucent box stood between the student and the layer glows. While dimension lines are on screen the ghost now keeps only a faint outline and the hover glow drops to a third, and both return to full strength the moment the measurement clears.
+
+Captures: `before-box-measure.png` and `after-box2-measure.png` on the same 3 by 2 by 2 brick box, plus `before-measure.png` where the crosshair caught the floor and the tool correctly measured all 29 by 29 by 1 of it.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -103,3 +113,5 @@ Round 7 run of the same spec: **14 passed, 2 failed, 1 flaky** in 17.8 minutes, 
 Round 8 run of the same spec: **17 passed, 0 failed, 0 flaky** in 8.0 minutes on a quiet machine, with no retries. This also retroactively clears the round 7 report above: the same tests that timed out under the competing suite all pass here.
 
 Round 9 run of the same spec: **17 passed, 0 failed, 0 flaky** in 7.2 minutes, no retries.
+
+Round 10 run of the same spec: **17 passed, 0 failed, 0 flaky** in 4.4 minutes on a quiet machine, no retries. The five tests covering the ghost, building and teardown had already passed 5/5 under load.

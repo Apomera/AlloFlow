@@ -342,6 +342,25 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('part.rotation.x += part.userData._spin.x * dt;');
   });
 
+  it('draws dimension labels colour-true and outlined', () => {
+    // the pill and coloured text were gamma-encoded twice and read as faded pastel,
+    // the same defect the character labels had before they were tagged sRGB
+    const label = src.slice(src.indexOf('function makeDimLabel'), src.indexOf('function showDimLines'));
+    expect(label).toContain('dimTex.encoding = THREE.sRGBEncoding');
+    expect(label).toContain('cx.strokeText(text, 128, 52);');
+    expect(label).toContain('cx.fillText(text, 128, 52);');
+    expect(label).not.toContain('new THREE.CanvasTexture(c), transparent: true, depthTest: false');
+  });
+
+  it('lets the placement ghost step aside while a measurement is on screen', () => {
+    // the preview sat in front of the measured structure competing with the
+    // layer glows and dimension lines a student is meant to read
+    expect(src).toContain('var measuring = engine._dimLines && engine._dimLines.length > 0;');
+    expect(src).toContain('engine._ghostMesh.material.opacity = measuring ? 0.03 :');
+    expect(src).toContain('engine._ghostEdges.material.opacity = measuring ? 0.22 :');
+    expect(src).toContain("* (engine._dimLines && engine._dimLines.length > 0 ? 0.35 : 1)");
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

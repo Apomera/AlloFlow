@@ -4524,7 +4524,7 @@
           var cx = c.getContext('2d');
           cx.clearRect(0, 0, 256, 96);
           // Rounded pill background with subtle color-matched border
-          cx.fillStyle = 'rgba(15,23,42,0.88)';
+          cx.fillStyle = 'rgba(15,23,42,0.94)';
           if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 8, 240, 80, 20); cx.fill(); } else { cx.fillRect(8, 8, 240, 80); }
           if (cx.roundRect) {
             cx.strokeStyle = color || '#ffffff';
@@ -4533,12 +4533,18 @@
           }
           // Text with subtle shadow for contrast at distance
           cx.shadowColor = 'rgba(0,0,0,0.5)'; cx.shadowBlur = 6;
-          cx.fillStyle = color || '#fff';
           cx.font = 'bold 42px "SF Mono", "Consolas", monospace';
           cx.textAlign = 'center'; cx.textBaseline = 'middle';
+          cx.lineJoin = 'round'; cx.lineWidth = 5; cx.strokeStyle = 'rgba(255,255,255,0.35)';
+          cx.strokeText(text, 128, 52);
+          cx.fillStyle = color || '#fff';
           cx.fillText(text, 128, 52);
           cx.shadowBlur = 0;
-          var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true, depthTest: false }));
+          // Painted in sRGB; untagged, the pill and the coloured text reached the
+          // screen gamma-encoded twice and read as a faded pastel.
+          var dimTex = new THREE.CanvasTexture(c);
+          if (typeof THREE.sRGBEncoding !== 'undefined') dimTex.encoding = THREE.sRGBEncoding;
+          var spr = new THREE.Sprite(new THREE.SpriteMaterial({ map: dimTex, transparent: true, depthTest: false }));
           spr.scale.set(1.6, 0.6, 1);
           return spr;
         }
@@ -5791,7 +5797,7 @@
               engine._hoverGlowMesh.position.set(hp.x + 0.5, hp.y + 0.5, hp.z + 0.5);
               engine._hoverGlowMesh.visible = true;
               engine._hoverGlowMesh.material.color.setHex(isProtected ? 0xff4444 : 0xffffff);
-              engine._hoverGlowMesh.material.opacity = engine._rmHover ? 0.1 : (isProtected ? 0.08 : (0.09 + Math.sin(pulseT * 6) * 0.05));
+              engine._hoverGlowMesh.material.opacity = (engine._rmHover ? 0.1 : (isProtected ? 0.08 : (0.09 + Math.sin(pulseT * 6) * 0.05))) * (engine._dimLines && engine._dimLines.length > 0 ? 0.35 : 1);
             } catch (e) {}
           } else {
             if (engine._highlightMesh) engine._highlightMesh.visible = false;
@@ -5842,8 +5848,11 @@
             // reads as "alive" without distracting from the block it's snapping to.
             var ghostT = engine.clock.getElapsedTime();
             var ghostPulse = 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
-            engine._ghostMesh.material.opacity = 0.12 + ghostPulse * 0.14;
-            if (engine._ghostEdges) engine._ghostEdges.material.opacity = 0.55 + ghostPulse * 0.3;
+            // A measurement on screen owns the student's attention: the preview
+            // keeps a faint outline so the build target is not lost, and no fill.
+            var measuring = engine._dimLines && engine._dimLines.length > 0;
+            engine._ghostMesh.material.opacity = measuring ? 0.03 : 0.12 + ghostPulse * 0.14;
+            if (engine._ghostEdges) engine._ghostEdges.material.opacity = measuring ? 0.22 : 0.55 + ghostPulse * 0.3;
             var ghostScale = 1 + ghostPulse * 0.02;
             engine._ghostMesh.scale.set(ghostScale, ghostScale, ghostScale);
           } else {
