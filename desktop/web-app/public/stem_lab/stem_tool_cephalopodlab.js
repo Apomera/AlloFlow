@@ -409,6 +409,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   //   habitat (array), prey (array), tactics (array of best-suited)
   //   weird (one striking fact), conservation (IUCN status or proxy)
   //   notes (paragraph)
+  // ─── Canonical species join ──────────────────────────────────────
+  // The same fifteen animals appear in three datasets under two different key
+  // conventions: SPECIES (this list) uses short ids, while SPECIES_DEEP_DIVES
+  // and CONSERVATION_STATUS use longer ones. Nothing joined them, which is how
+  // four conservation statuses drifted apart without anyone noticing. Anything
+  // that needs a species' record in another dataset goes through this map.
+  var SPECIES_RECORD_ID = {
+    commonOcto: 'commonOcto',
+    mimicOcto: 'mimicOcto',
+    giantPac: 'giantPacific',
+    blueRing: 'blueRinged',
+    coconut: 'coconutOcto',
+    dumbo: 'dumboOcto',
+    cuttlefish: 'cuttlefish',
+    humboldt: 'humboldtSquid',
+    vampireSquid: 'vampireSquid',
+    nautilus: 'nautilus',
+    bobtail: 'bobtailSquid'
+    // giantSquid, colossal, firefly and dayOcto have no deep-dive or
+    // conservation record in this lab; the Field Guide says so rather than
+    // guessing.
+  };
+
   var SPECIES = [
     { id: 'commonOcto', name: 'Common Octopus', scientific: 'Octopus vulgaris', emoji: '🐙', group: 'octopus',
       intelligence: 9, camouflageRank: 9, jetSpeed: 5,
@@ -1799,6 +1822,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             playable ? linkBtn('hunt', '🎯 ' + __alloT('stem.cephalopodlab.fg_link_hunt', 'Hunt as this species'), function() { setSection('hunt'); awardXP(2); clAnnounce('Opened the Hunter Sim. Pick ' + selected.name + ' in the lobby.'); }, '#fbbf24') : null,
             linkBtn('camo', '🎨 ' + __alloT('stem.cephalopodlab.fg_link_camo', 'Try its camouflage'), function() { setSection('camo'); awardXP(2); }, '#f472b6'),
             linkBtn('iucn', '🌿 ' + __alloT('stem.cephalopodlab.fg_link_iucn', 'Conservation status'), function() { setSection('conservationStatus'); awardXP(2); }, '#34d399'),
+            SPECIES_DEEP_DIVES[SPECIES_RECORD_ID[selected.id]]
+              ? linkBtn('dive', '🔍 ' + __alloT('stem.cephalopodlab.fg_link_deep_dive', 'Full deep dive on this species'), function() { setCL({ deepDiveId: SPECIES_RECORD_ID[selected.id] }); setSection('deepDive'); awardXP(2); clAnnounce('Opened the deep dive for ' + selected.name); }, '#22d3ee')
+              : null,
             linkBtn('db', '🐙 ' + __alloT('stem.cephalopodlab.fg_link_species_db', 'Species database'), function() { setSection('speciesDB'); awardXP(2); }, '#a78bfa')
           ]));
 
@@ -1840,13 +1866,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             // both datasets actually agree on: the scientific one.
             var sci = String(selected.scientific || '');
             var genus = sci.split(' ')[0];
-            var rec = null;
-            Object.keys(CONSERVATION_STATUS).forEach(function(k) {
-              if (rec) return;
-              var candidate = String(CONSERVATION_STATUS[k].species || '');
-              if (candidate.indexOf(sci) === 0) { rec = CONSERVATION_STATUS[k]; return; }
-              if (genus && candidate.indexOf(genus + ' spp.') === 0) rec = CONSERVATION_STATUS[k];
-            });
+            var rec = CONSERVATION_STATUS[SPECIES_RECORD_ID[selected.id]] || null;
+            if (!rec) {
+              Object.keys(CONSERVATION_STATUS).forEach(function(k) {
+                if (rec) return;
+                var candidate = String(CONSERVATION_STATUS[k].species || '');
+                if (candidate.indexOf(sci) === 0) { rec = CONSERVATION_STATUS[k]; return; }
+                if (genus && candidate.indexOf(genus + ' spp.') === 0) rec = CONSERVATION_STATUS[k];
+              });
+            }
             var iucn = rec ? String(rec.iucn) : null;
             var iucnColor = !iucn ? '#94a3b8'
               : iucn.indexOf('Least Concern') === 0 ? '#86efac'

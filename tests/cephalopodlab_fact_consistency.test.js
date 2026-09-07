@@ -110,3 +110,36 @@ describe('Cephalopod Lab species datasets do not contradict each other', () => {
     });
   });
 });
+
+describe('Cephalopod Lab species join', () => {
+  const aliasSeg = src.slice(src.indexOf('var SPECIES_RECORD_ID = {'), src.indexOf('  var SPECIES = ['));
+  const alias = Object.fromEntries(Array.from(aliasSeg.matchAll(/\n\s{4}([A-Za-z]+): '([A-Za-z]+)'/g)).map((m) => [m[1], m[2]]));
+  const fgSeg = src.slice(src.indexOf('  var SPECIES = ['), src.indexOf('var HABITATS'));
+  const fgIds = Array.from(fgSeg.matchAll(/\{ id: '([A-Za-z]+)', name: '/g)).map((m) => m[1]);
+  const ddSeg = src.slice(src.indexOf('var SPECIES_DEEP_DIVES = {'), src.indexOf('var CONSERVATION_STATUS'));
+  const ddKeys = Array.from(ddSeg.matchAll(/\n {8}([A-Za-z]+): \{\n\s*species: /g)).map((m) => m[1]);
+  const csSeg = src.slice(src.indexOf('var CONSERVATION_STATUS = {'), src.indexOf('var CONSERVATION_STATUS = {') + 20000);
+  const csKeys = Array.from(csSeg.matchAll(/\n {8}([A-Za-z]+): \{\n\s*species: /g)).map((m) => m[1]);
+
+  it('maps only real field-guide species', () => {
+    expect(Object.keys(alias).length).toBeGreaterThanOrEqual(11);
+    Object.keys(alias).forEach((fgId) => expect(fgIds).toContain(fgId));
+  });
+
+  it('every mapped target exists in both of the datasets it joins', () => {
+    Object.values(alias).forEach((recordId) => {
+      expect(ddKeys, 'deep dive missing ' + recordId).toContain(recordId);
+      expect(csKeys, 'conservation record missing ' + recordId).toContain(recordId);
+    });
+  });
+
+  it('does not silently drop a species that has a record under another key', () => {
+    // an unmapped field-guide species must genuinely have no record, otherwise
+    // the join is incomplete and the two datasets can drift again
+    const unmapped = fgIds.filter((id) => !alias[id]);
+    unmapped.forEach((id) => {
+      expect(ddKeys, id + ' has a deep dive but no alias').not.toContain(id);
+      expect(csKeys, id + ' has a conservation record but no alias').not.toContain(id);
+    });
+  });
+});
