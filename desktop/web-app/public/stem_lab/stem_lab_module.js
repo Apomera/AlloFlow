@@ -5348,6 +5348,11 @@
                 color: 'emerald', ready: true
               },
               {
+                id: 'fieldJourneys', icon: '🌿', label: 'Field Journeys (Pilot)',
+                desc: 'Try a story-led Watershed or Grove campaign. Explore the landscape, make decisions, and keep a field journal. Optional pilot with separate saves.',
+                color: 'emerald', ready: true
+              },
+              {
                 id: 'fireEcology', icon: '\uD83D\uDD25', label: t('stem.fireecology.fire_ecology_indigenous_stewardship') || 'Fire Ecology & Indigenous Stewardship',
                 desc: t('stem.tools_menu.explore_65_000_years_of_indigenous') || 'Explore 65,000+ years of Indigenous fire knowledge, fire-adapted ecosystems, prescribed burn planning, and forest management science. Centers Aboriginal Australian, Karuk, Martu, Plains Nations, and more.',
                 color: 'orange', ready: true
@@ -7372,6 +7377,7 @@
             // from this map caused the fallback at line ~4489 to return
             // null, so the user saw a blank tile content area.
             stewardshipHub: true,
+            fieldJourneys: true,
             llmLiteracy: true,
             assessmentLiteracy: true,
             parentingLab: true,

@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "campaignId": "grove",
+  "runId": "264e38fb-2ea3-4e39-87bd-f95918b4eec2",
+  "seed": "FIELD-01",
+  "config": {
+    "mode": "deck"
+  },
+  "commands": [
+    "offspring",
+    "offspring",
+    "offspring",
+    "offspring",
+    "offspring",
+    "offspring",
+    "offspring",
+    "offspring"
+  ],
+  "notes": [
+    {
+      "revision": 1,
+      "text": "I saw new arrivals, but none are established yet."
+    }
+  ],
+  "createdAt": "2026-09-07T03:58:47.919Z",
+  "journal": [
+    {
+      "title": "Year 1 · A gentle growing year",
+      "text": "Steady moisture gives the grove a chance to grow and save food.",
+      "detail": "6 reproductive attempts · 0 trees lost · 6 living trees"
+    },
+    {
+      "title": "Year 2 · Rain returns",
+      "text": "More soil moisture helps water reach the leaves. Sheltered patches still receive less light.",
+      "detail": "6 reproductive attempts · 0 trees lost · 8 living trees"
+    },
+    {
+      "title": "Year 3 · A dry growing season",
+      "text": "Dry soil restricts water access. Closed stomata also restrict carbon uptake.",
+      "detail": "6 reproductive attempts · 0 trees lost · 10 living trees"
+    },
+    {
+      "title": "Year 4 · Rain returns",
+      "text": "More soil moisture helps water reach the leaves. Sheltered patches still receive less light.",
+      "detail": "6 reproductive attempts · 0 trees lost · 12 living trees"
+    },
+    {
+      "title": "Year 5 · A dry growing season",
+      "text": "Dry soil restricts water access. Closed stomata also restrict carbon uptake.",
+      "detail": "6 reproductive attempts · 1 trees lost · 13 living trees"
+    },
+    {
+      "title": "Year 6 · A gentle growing year",
+      "text": "Steady moisture gives the grove a chance to grow and save food.",
+      "detail": "7 reproductive attempts · 0 trees lost · 14 living trees"
+    },
+    {
+      "title": "Year 7 · A gentle growing year",
+      "text": "Steady moisture gives the grove a chance to grow and save food.",
+      "detail": "7 reproductive attempts · 0 trees lost · 15 living trees"
+    },
+    {
+      "title": "Year 8 · A gentle growing year",
+      "text": "Steady moisture gives the grove a chance to grow and save food.",
+      "detail": "6 reproductive attempts · 0 trees lost · 16 living trees"
+    }
+  ]
+}

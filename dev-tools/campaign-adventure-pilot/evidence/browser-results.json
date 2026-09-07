@@ -1,0 +1,34 @@
+{
+  "base": "http://127.0.0.1:50188",
+  "checkedAt": "2026-09-07T03:58:39.511Z",
+  "historicalPreservation": {
+    "status": "baseline drift; behavior checks only",
+    "message": "Protected files differ from pilot baseline: adventure_session_handlers_module.js, adventure_session_handlers_source.jsx, desktop/web-app/public/adventure_session_handlers_module.js, desktop/web-app/public/view_adventure_module.js, view_adventure_module.js, view_adventure_source.jsx"
+  },
+  "checks": [
+    "Watershed: fieldwork, annual result, reload and exact resume",
+    "Narrator outage and malformed response: authored scene remains playable; no state changes",
+    "Watershed: complete ten years; replay creates a separate saved branch",
+    "Grove: complete eight years, field note, exact resume and downloadable journal",
+    "Late narration cannot leak into a different run",
+    "Unmodified Adventure soundscape starts and stops",
+    "Phone: no horizontal overflow in either campaign; keyboard map selection and decision; home/desktop/phone axe checks",
+    "Optional prose is text-only and cannot change state; note drafts survive inspecting the map",
+    "Storage failure preserves the playable in-memory run and shows a recovery message",
+    "Original save sentinels unchanged; no external requests or browser errors"
+  ],
+  "errors": [],
+  "screenshots": [
+    "field-station.png",
+    "watershed-review.png",
+    "grove-journey.png",
+    "grove-phone.png",
+    "watershed-phone.png"
+  ],
+  "axeHome": [],
+  "axeGrovePhone": [],
+  "axeDesktop": [],
+  "axePhone": [],
+  "protectedFilesStableDuringRun": 25,
+  "ok": true
+}

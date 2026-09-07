@@ -1,0 +1,2 @@
+# Preserve exact upstream whitespace in the generated source bridge.
+watershed-source.mjs linguist-generated=true whitespace=-blank-at-eol

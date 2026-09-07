@@ -14366,6 +14366,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_pets.js',
         'stem_lab/stem_tool_fireecology.js',
         'stem_lab/stem_tool_stewardship.js',
+        'stem_lab/stem_tool_fieldjourneys.js',
         'stem_lab/stem_tool_lifeskills.js',
         'stem_lab/stem_tool_spacecolony.js',
         'stem_lab/stem_tool_spacestation.js',
@@ -14599,6 +14600,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           renewablesLab: 'stem_lab/stem_tool_renewables.js',
           rockCycle: 'stem_lab/stem_tool_rocks.js',
           stewardshipHub: 'stem_lab/stem_tool_stewardship.js',
+          fieldJourneys: 'stem_lab/stem_tool_fieldjourneys.js',
           titrationLab: 'stem_lab/stem_tool_titration.js'
         };
 
@@ -14728,6 +14730,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // are resolved recursively and serially, so opening one tile never
           // triggers the full STEM manifest or races a consumer ahead of its data.
           var stemModuleDependencies = {
+            'stem_lab/stem_tool_fieldjourneys.js': ['stem_lab/stem_tool_treelab.js'],
             'stem_lab/stem_tool_cellatlas.js': ['stem_lab/stem_data_cellatlas_muraro.js'],
             'stem_lab/stem_tool_dataplot.js': ['data_kernel_loader.js'],
             'stem_lab/stem_tool_statslab.js': ['data_kernel_loader.js'],

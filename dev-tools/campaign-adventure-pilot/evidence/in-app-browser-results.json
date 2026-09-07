@@ -1,0 +1,41 @@
+{
+  "checkedAt": "2026-09-07T03:56:05.336Z",
+  "base": "http://127.0.0.1:3000",
+  "checks": [
+    "Opened the real AlloFlow app through Learning Tools → STEAM Lab → Field Journeys; native DOM inside its existing tool window",
+    "Watershed fieldwork, year evidence and note persist after closing/reopening; sound starts off on the new mount",
+    "Grove campaign runs through the same native tool renderer and writes its own run",
+    "Desktop and 390px phone accessibility checks pass; keyboard enters the journey and native Back returns to the catalog",
+    "Reload retains pilot saves and leaves the seeded existing Adventure/audio save values unchanged",
+    "All 25 protected source/build files remained byte-identical during in-app verification"
+  ],
+  "bootErrors": [],
+  "pilotErrors": [],
+  "screenshots": [
+    "in-app-menu.png",
+    "in-app-field-station.png",
+    "in-app-watershed.png",
+    "in-app-grove.png",
+    "in-app-phone.png"
+  ],
+  "historicalPreservation": {
+    "status": "drift in separate Adventure task",
+    "message": "Protected files differ from pilot baseline: adventure_session_handlers_module.js, adventure_session_handlers_source.jsx, desktop/web-app/public/adventure_session_handlers_module.js, desktop/web-app/public/view_adventure_module.js, view_adventure_module.js, view_adventure_source.jsx"
+  },
+  "groveActions": [
+    {
+      "id": "roots",
+      "label": "Build rootsImprove future water access. Less food goes to offspring."
+    },
+    {
+      "id": "reserve",
+      "label": "Keep reservesSave food for difficult years. Grow and reproduce more slowly."
+    },
+    {
+      "id": "offspring",
+      "label": "Invest in offspringSpend reproductive savings on seeds or shoots. Less new food is stored."
+    }
+  ],
+  "axeDesktop": [],
+  "axePhone": []
+}

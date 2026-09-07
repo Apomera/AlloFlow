@@ -7,6 +7,7 @@
  *
  * Usage:
  *   node build.js --mode=dev     Load modules from local paths (for npm start)
+ *   node build.js --mode=dev --shell-only  Regenerate app sources without copying unrelated assets
  *   node build.js --mode=prod    Load modules from CDN with auto-detected git hash
  *   node build.js --mode=prod --hash=abc1234   Use a specific hash
  *   node build.js --copy-student-shell        Publish the compiled app at public/app/
@@ -1415,6 +1416,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_pets.js',
     'stem_lab/stem_tool_fireecology.js',
     'stem_lab/stem_tool_stewardship.js',
+    'stem_lab/stem_tool_fieldjourneys.js',
     'stem_lab/stem_tool_moonmission.js',
     'stem_lab/stem_tool_beehive.js',
     'stem_lab/stem_tool_spacecolony.js',
@@ -2498,6 +2500,11 @@ if (dryRun) {
     }
 
     // NOTE: SW stamping moved to postbuild.js (runs AFTER CRA build copies public/sw.js → build/sw.js)
+
+    if (hasFlag('shell-only')) {
+        console.log('📄 Shell-only build complete; module copies unchanged.');
+        process.exit(0);
+    }
 
     // ── Auto-copy module files to desktop/web-app/public/ ──
     const PUBLIC_DIR = path.join(ROOT, 'desktop/web-app', 'public');

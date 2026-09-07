@@ -1,0 +1,30 @@
+{
+  "capturedAt": "2026-09-07T02:52:10.179Z",
+  "files": {
+    "_build_adventure_handlers_module.js": "02ff32865f97b216e0236299409052cfe1abb9766bf8243cc72c801b554f1c49",
+    "_build_adventure_module.js": "6d255de647661b7fbf3a17fe1c7d0099f8c9e2f7dfc0cdbbd64b496b455dab53",
+    "_build_adventure_session_handlers_module.js": "0fe5dcf156b643946fa1629bf07c27603ba11308371bb191f917599c69f0011a",
+    "_build_view_adventure_module.js": "06f5ada3afe1bf931b8636df9699f575ffbb70f3a9d3eec07162b918c847b59a",
+    "_build_view_student_save_adventure_module.js": "c910842783dd8076ffb4034afc87fae0901e117e3ea7fc68e0a4a751c9c2cf66",
+    "adventure_handlers_module.js": "5f317f9c38fffdf353e13749a16f587f06716956ee81f1a4ad08efe758731b6e",
+    "adventure_handlers_source.jsx": "42223520cbd9f681eb6c8cec6d50e7c63882040b8f11525e5675032ec1ecd9d1",
+    "adventure_module.js": "d9266ae20bea98be70623643cfe49fbbc5a77536c1b008daeec7d5b0b33e2dae",
+    "adventure_session_handlers_module.js": "e3da40c6cd061adc73072ecf7a8ec3b74ab4b0a08ff1104c31800a0763024efd",
+    "adventure_session_handlers_source.jsx": "f8e63cf8661cf148be04e1826c747d78054b5adad53f7f91bb3354595834a5af",
+    "adventure_source.jsx": "f815f272ce67d84726169068cec708e625f1640071c3f0a425e3e9c94cdce885",
+    "desktop/web-app/public/adventure_handlers_module.js": "5f317f9c38fffdf353e13749a16f587f06716956ee81f1a4ad08efe758731b6e",
+    "desktop/web-app/public/adventure_module.js": "d9266ae20bea98be70623643cfe49fbbc5a77536c1b008daeec7d5b0b33e2dae",
+    "desktop/web-app/public/adventure_session_handlers_module.js": "e3da40c6cd061adc73072ecf7a8ec3b74ab4b0a08ff1104c31800a0763024efd",
+    "desktop/web-app/public/stem_lab/stem_tool_treelab.js": "295bd016caf5651ddb300ad72075d361294c986257e1cd4b1e5ff2555d785bde",
+    "desktop/web-app/public/stem_lab/stem_tool_watercycle.js": "8994f7e735887b88ff24aa97b81a53078e38851f0831a1089d9a5e053e140663",
+    "desktop/web-app/public/view_adventure_module.js": "40fc3296ec8319ffd0db5b9af94a159723bcc8b916333ece9dc80d24f5bfdf64",
+    "desktop/web-app/public/view_student_save_adventure_module.js": "888ff3fbf6ede593915390f1ac54dd2cdf2dcf58c9e4eea74f824b779a35ccdc",
+    "desktop/web-app/src/adventure_source.jsx": "f815f272ce67d84726169068cec708e625f1640071c3f0a425e3e9c94cdce885",
+    "stem_lab/stem_tool_treelab.js": "295bd016caf5651ddb300ad72075d361294c986257e1cd4b1e5ff2555d785bde",
+    "stem_lab/stem_tool_watercycle.js": "8994f7e735887b88ff24aa97b81a53078e38851f0831a1089d9a5e053e140663",
+    "view_adventure_module.js": "40fc3296ec8319ffd0db5b9af94a159723bcc8b916333ece9dc80d24f5bfdf64",
+    "view_adventure_source.jsx": "baa20bc9168238a3bedd7ebc5e85cd179beb3481442d2357425f64d12b2b94a9",
+    "view_student_save_adventure_module.js": "888ff3fbf6ede593915390f1ac54dd2cdf2dcf58c9e4eea74f824b779a35ccdc",
+    "view_student_save_adventure_source.jsx": "68555d5db02e3c376b3ddc56644f4acdadf626a00f76654829cd6cba19a19dac"
+  }
+}

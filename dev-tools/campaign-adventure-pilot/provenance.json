@@ -1,0 +1,120 @@
+{
+  "source": "stem_lab/stem_tool_watercycle.js",
+  "declarations": [
+    {
+      "name": "MAINE_WATERSHED_COMPONENTS",
+      "line": 646,
+      "sha256": "1cdd061001440a04cc1fa5650a413277adec69faab22eb46497ff7d3dc435619"
+    },
+    {
+      "name": "wcWatershedCopy",
+      "line": 696,
+      "sha256": "48aecf282d28072eb48cca17931c55eb40e88b06044cca9adf236844266f55ab"
+    },
+    {
+      "name": "localizeWatershedComponents",
+      "line": 757,
+      "sha256": "e3c0b6036d7cc4e127bf2b139f32c9f5d54589223df1886bc31af7d0573b51f0"
+    },
+    {
+      "name": "STEWARD_TECHNIQUES",
+      "line": 770,
+      "sha256": "bb13f34341243b1f51b30bc8c1f0cfc072ab44952bcbd4a222afa2824ae27512"
+    },
+    {
+      "name": "STEWARD_EVENTS",
+      "line": 783,
+      "sha256": "f4e5aebd977a7e993e84347e833a9898974e37a9c943e714e92768f515020090"
+    },
+    {
+      "name": "_wcById",
+      "line": 801,
+      "sha256": "5971f10accca4f8e6fda3245d8b551efaeee8b9fca7b616ed884ef535e98640a"
+    },
+    {
+      "name": "STEWARD_FEEDBACK_RULES",
+      "line": 802,
+      "sha256": "30c8a1edae8147df33915f0afebc9a45b71cb205ccd88067aabbc5d61be65680"
+    },
+    {
+      "name": "STEWARD_CASCADE_HINTS",
+      "line": 814,
+      "sha256": "182352d7e1105abd2608280498c95eee1ec36f54259712ca1e91c6be64075038"
+    },
+    {
+      "name": "STEWARD_DIFFICULTIES",
+      "line": 829,
+      "sha256": "dc013ea546ea4caaaf994c2ef6a3cf89769a3b7485fd6e02adad589a2e19dc21"
+    },
+    {
+      "name": "wcStewardCopy",
+      "line": 838,
+      "sha256": "524e4fe068234d3310b666c5d1d668d597def5bbd1f43a7855f5aa53442e2bf7"
+    },
+    {
+      "name": "applyStewardCopy",
+      "line": 905,
+      "sha256": "73b36099c7f0824fcb0a2a476a46a4b157609841addd1969b908d75debaf9f1e"
+    },
+    {
+      "name": "defaultStewardState",
+      "line": 936,
+      "sha256": "9ea9115a493ced473146e2d9b63a015a52cbcf73b2a4ce0fc3abeca54de86610"
+    },
+    {
+      "name": "_wcT",
+      "line": 964,
+      "sha256": "293da9688fce970d618f5a91a7b0e53f2dcbc2421bb8f1ef9102f62d44420156"
+    },
+    {
+      "name": "_wcLocalizedCache",
+      "line": 965,
+      "sha256": "4f6b70e092328360b2ee8a8da2e2d7028f9cd8064369e244e2c705321ee4e901"
+    },
+    {
+      "name": "_wcLocalizedFor",
+      "line": 966,
+      "sha256": "4f6a0f3d6956c23e90184b5842de885f46615ae7cfb343c62e75170ee0f97a12"
+    },
+    {
+      "name": "watershedComponents",
+      "line": 968,
+      "sha256": "f849135da8151e7bb03a3dbe61391e84f1de82f8a4318bdecf46d9c1822f48b6"
+    },
+    {
+      "name": "getWatershedComponent",
+      "line": 977,
+      "sha256": "fca9c1f5ca4a7ac6beced78e29fbd93bc857214bb85ad7588305df389ac7387c"
+    },
+    {
+      "name": "stewardRng",
+      "line": 983,
+      "sha256": "58513c2e33d6bc54fe54b8b572120af9b14d1c446a9b5abb396112a2c2d2f0be"
+    },
+    {
+      "name": "stewardClamp",
+      "line": 1660,
+      "sha256": "b7d88e92780096999af8bd2b8213586ae296998326c03cc706e7b644e9694933"
+    },
+    {
+      "name": "startStewardCampaign",
+      "line": 4632,
+      "sha256": "779159882935a7449c42b23020d022062b6c96841ef0fd2f979b7981b1e46a73"
+    },
+    {
+      "name": "applyStewardTech",
+      "line": 4649,
+      "sha256": "b26186416d365d96ca05533ec109c97c8bb5caa5e8a852ee30394e2e33efd74f"
+    },
+    {
+      "name": "endStewardYear",
+      "line": 4672,
+      "sha256": "5aea8d0c319052e8259264a13b12ce79ff0a3208d0f0ecfd6d14af53bc876782"
+    },
+    {
+      "name": "advanceFromStewardReview",
+      "line": 4730,
+      "sha256": "15d229dfc001cb0f843519e6215a48176a918be98826005475c9f3d71b08d770"
+    }
+  ]
+}
