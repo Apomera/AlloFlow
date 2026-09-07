@@ -182,3 +182,26 @@ describe('Cephalopod Lab data accents stay readable as text', () => {
     expect(src).toMatch(/var GROUND = \[16, 24, 45\];/);
   });
 });
+
+describe('Cephalopod Lab entry headings never use a raw data colour', () => {
+  // Culture myths, art works and dishes each carry an identity colour. Two of
+  // them (#0c4a6e, #dc2626) measured 1.87:1 and 3.63:1 when used as the entry
+  // heading on this tool's dark card — invisible to axe because the root is a
+  // gradient. Every such heading goes through the ink helper now.
+  it('routes culture entry names through the ink helper', () => {
+    expect(src).not.toMatch(/fontWeight: 800, color: m\.color \}/);
+    expect(src).not.toMatch(/fontWeight: 800, color: a\.color \}/);
+    expect(src).toMatch(/fontWeight: 800, color: clReadableInk\(m\.color\)/);
+    expect(src).toMatch(/fontWeight: 800, color: clReadableInk\(a\.color\)/);
+  });
+
+  it('does not hardcode slate-500 as body text on the dark ground', () => {
+    // #64748b measured ~3.68:1 here; the tool pins its own soft ink to #94a3b8
+    const asText = Array.from(src.matchAll(/color: '#64748b'/g));
+    // the only remaining uses are disabled-control states, not prose
+    asText.forEach((m) => {
+      const around = src.slice(Math.max(0, m.index - 160), m.index + 60);
+      expect(around).toMatch(/disabled|qIdx === 0|active \?/);
+    });
+  });
+});
