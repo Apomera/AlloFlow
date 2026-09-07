@@ -1499,3 +1499,42 @@ describe('Siege Field wave 29: destruction with collision', () => {
     expect(scene).not.toContain('debrisStart');
   });
 });
+
+describe('Siege Field wave 30: why walls fall', () => {
+  it('counts the blocks the stone knocked out apart from the ones that merely fell', () => {
+    const src = source();
+    expect(src).toContain('if (debrisStart) debrisStart.pieces.forEach(function (p) { if (p.kicked) knocked++; else fellLoose++; });');
+    expect(src).toContain("__alloT('stem.machinelab.fell_3', ' more came down because their support was gone.')");
+    expect(src).toContain("__alloT('stem.machinelab.fell_y3', ' more fell because nothing was holding them up.')");
+    // The old undifferentiated line is gone.
+    expect(src).not.toContain("'stem.machinelab.blocks_down'");
+  });
+
+  it('settles the debris before the message is written, so the message can count it', () => {
+    const src = source();
+    const settle = src.indexOf('var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;');
+    const message = src.indexOf("msg = __alloT('stem.machinelab.struck', 'Struck the ') + res.material +");
+    expect(settle).toBeGreaterThan(0);
+    expect(settle).toBeLessThan(message);
+  });
+
+  it('carries the debris into the slow-motion replay and slows the collapse with the flight', () => {
+    const src = source();
+    expect(src).toContain('replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS, debris: lf.debris || null }');
+    expect(src).toContain("var debrisRate = (data.flight && data.flight.replay) ? Math.max(1, data.flight.rate || 3) : 1;");
+    expect(src).toContain('var want = Math.min(_machineMath.DEBRIS_SECONDS, (now - S.debrisT0) / 1000 / debrisRate);');
+  });
+
+  it('tints the knocked-out blocks in the heap and leaves the fallen ones the wall own colour', () => {
+    const src = source();
+    expect(src).toContain('var kicked = it.p ? it.p.kicked : (it.rest[7] === 1);');
+    expect(src).toContain('if (kicked && !contrast) rc.multiplyScalar(0.72);');
+  });
+
+  it('puffs dust once where each block first lands, from a fixed pool', () => {
+    const src = source();
+    expect(src).toContain('if (S.landPuffs && p.landedT != null && !p.puffed) {');
+    expect(src).toContain('var pu = S.landPuffs[S.puffNext++ % S.landPuffs.length];');
+    expect(src).toContain('pp2.material.opacity = 0.6 * (1 - page) * (1 - page);');
+  });
+});

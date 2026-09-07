@@ -110,3 +110,27 @@ describe('Machine Lab debris: what a breached block does next', () => {
     expect(M.debrisSettle(null)).toBeNull();
   });
 });
+
+describe('Machine Lab debris: knocked out versus fallen, and when each lands', () => {
+  it('marks the struck cell and its neighbours as kicked and everything else as fallen', () => {
+    const { res, start } = breach('curtain', 4, 1);
+    for (const p of start.pieces) {
+      const near = Math.abs(p.col - res.col) <= 1 && Math.abs(p.row - res.row) <= 1;
+      expect(p.kicked).toBe(near);
+    }
+    expect(start.pieces.some((p) => p.kicked)).toBe(true);
+  });
+
+  it('records the moment each piece first meets the ground, and keeps the flag in the heap', () => {
+    const { start } = breach('curtain', 4, 0);
+    const sim = { pieces: start.pieces.map((p) => Object.assign({}, p)), span: start.span, midCol: start.midCol, standing: start.standing, g: start.g, t: 0 };
+    for (let i = 0; i < 480; i++) if (M.debrisStep(sim, M.DEBRIS_DT)) break;
+    const landed = sim.pieces.filter((p) => p.landedT != null);
+    expect(landed.length).toBeGreaterThan(0);
+    for (const p of landed) { expect(p.landedT).toBeGreaterThan(0); expect(p.landedT).toBeLessThan(M.DEBRIS_SECONDS); }
+    const out = M.debrisSettle(start);
+    for (const key of Object.keys(out.rest)) expect([0, 1]).toContain(out.rest[key][7]);
+    const kickedInHeap = Object.keys(out.rest).filter((k) => out.rest[k][7] === 1).length;
+    expect(kickedInHeap).toBe(start.pieces.filter((p) => p.kicked).length);
+  });
+});

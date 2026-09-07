@@ -183,6 +183,25 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 30 (2026-09-06) — why walls fall
+
+The debris model knows which blocks the stone knocked out and which fell because nothing held
+them up. That difference is the history lesson the manual already states — engines rarely
+knocked a wall down; they took away what held it up — and it was invisible in the field.
+
+- **The feedback counts the two.** "The stone knocked out 3; 9 more came down because their
+  support was gone." For young readers: "The stone knocked out 3 blocks, and 9 more fell
+  because nothing was holding them up." The debris is now settled *before* the message is
+  written, so the message can count it; the old undifferentiated "Blocks came down" is gone.
+- **The heap shows the two.** Knocked-out blocks carry the scorch of the blow (their colour
+  darkened by 0.72); the ones that merely fell keep the wall's own colour. The model keeps the
+  flag per piece and stores it as the eighth number of each rest entry.
+- **Dust where each block lands.** The model records each piece's first contact with the
+  ground; the replay pops a ring of dust there, once per piece, from a pool of ten.
+- **The slow-motion replay slows the collapse.** The replay's flight now carries the debris
+  start, and the field steps the simulation at the replay's rate, so the support giving way can
+  actually be watched instead of happening in a blink.
+
 ### Wave 29 (2026-09-06) — destruction with collision (P5, first cut)
 
 Breached blocks used to teleport, over a one-second ease with a sine hop, to a hashed spot on

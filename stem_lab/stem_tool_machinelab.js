@@ -887,7 +887,11 @@ window.StemLab = window.StemLab || {
           vz: kick + (near ? 0 : (h3 - 0.5) * 0.4),
           rx: 0, ry: 0, rz: 0,
           wx: (h3 - 0.5) * 4, wy: (h1 - 0.5) * 2, wz: (h2 - 0.5) * 4,
-          rest: false
+          rest: false,
+          // Knocked out by the stone, or fallen because its support went:
+          // the whole point of the exercise, so the model keeps it.
+          kicked: near,
+          landedT: null
         });
       });
       if (!pieces.length) return null;
@@ -933,6 +937,7 @@ window.StemLab = window.StemLab || {
         // The ground, with the footing in it.
         var floor = groundAt(p.x, p.z) + r;
         if (p.y < floor) {
+          if (p.landedT == null && p.vy < -0.6) p.landedT = sim.t;
           p.y = floor;
           if (p.vy < 0) p.vy = -p.vy * 0.22;
           p.vx *= 0.82; p.vz *= 0.82;
@@ -1005,7 +1010,8 @@ window.StemLab = window.StemLab || {
         rest[p.key] = [
           Math.round(p.x * 1000) / 1000, Math.round(p.y * 1000) / 1000, Math.round(p.z * 1000) / 1000,
           Math.round(p.rx * 1000) / 1000, Math.round(p.ry * 1000) / 1000, Math.round(p.rz * 1000) / 1000,
-          Math.round(p.s * 1000) / 1000
+          Math.round(p.s * 1000) / 1000,
+          p.kicked ? 1 : 0
         ];
       });
       return { rest: rest, seconds: settledAt != null ? settledAt : sim.t, settled: settledAt != null };
@@ -3841,6 +3847,22 @@ window.StemLab = window.StemLab || {
       }
       S.rainRings = rings;
     }
+    // Dust where a falling block lands: a pool of rings the debris replay pops
+    // at each piece's first contact with the ground.
+    if (!contrast) {
+      var puffs = [];
+      for (var pf = 0; pf < 10; pf++) {
+        var puff = new THREE.Mesh(new THREE.RingGeometry(0.3, 0.55, 14), new THREE.MeshBasicMaterial({
+          color: 0xd9cdb4, transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide
+        }));
+        puff.rotation.x = -Math.PI / 2;
+        puff.visible = false;
+        S.model.add(puff);
+        puffs.push(puff);
+      }
+      S.landPuffs = puffs;
+      S.puffNext = 0;
+    }
 
     // ── Trees and rocks ──
     if (!contrast && typeof THREE.InstancedMesh === 'function') {
@@ -4955,7 +4977,10 @@ window.StemLab = window.StemLab || {
         };
       }
       if (S.debrisSim && !S.debrisSim.done) {
-        var want = Math.min(_machineMath.DEBRIS_SECONDS, (now - S.debrisT0) / 1000);
+        // A slow-motion replay slows the collapse by the same factor as the
+        // flight, so the support giving way can actually be watched.
+        var debrisRate = (data.flight && data.flight.replay) ? Math.max(1, data.flight.rate || 3) : 1;
+        var want = Math.min(_machineMath.DEBRIS_SECONDS, (now - S.debrisT0) / 1000 / debrisRate);
         var guard = 0;
         while (S.debrisSim.t < want && guard++ < 600) {
           if (_machineMath.debrisStep(S.debrisSim, _machineMath.DEBRIS_DT)) { S.debrisSim.done = true; break; }
@@ -4964,7 +4989,29 @@ window.StemLab = window.StemLab || {
       }
       var live = {};
       if (S.debrisSim && !S.debrisSim.done) {
-        S.debrisSim.pieces.forEach(function (p) { live[p.key] = p; });
+        S.debrisSim.pieces.forEach(function (p) {
+          live[p.key] = p;
+          // First contact with the ground: a puff, once per piece.
+          if (S.landPuffs && p.landedT != null && !p.puffed) {
+            p.puffed = true;
+            var pu = S.landPuffs[S.puffNext++ % S.landPuffs.length];
+            pu.position.set(p.x, 0.1, p.z);
+            pu.scale.setScalar(0.6);
+            pu.material.opacity = 0.6;
+            pu.visible = true;
+            pu.userData.t0 = now;
+          }
+        });
+      }
+      if (S.landPuffs) {
+        for (var pk2 = 0; pk2 < S.landPuffs.length; pk2++) {
+          var pp2 = S.landPuffs[pk2];
+          if (!pp2.visible) continue;
+          var page = (now - (pp2.userData.t0 || now)) / 550;
+          if (page >= 1) { pp2.visible = false; continue; }
+          pp2.scale.setScalar(0.6 + page * 2.2);
+          pp2.material.opacity = 0.6 * (1 - page) * (1 - page);
+        }
       }
       var tumbleK = (S.tumbleT0 != null && !red) ? Math.max(0, Math.min(1, (now - S.tumbleT0) / 1100)) : 1;
       var tumbleEase = tumbleK * tumbleK * (3 - 2 * tumbleK);
@@ -5019,6 +5066,11 @@ window.StemLab = window.StemLab || {
             rd.updateMatrix();
             rm.setMatrixAt(rn, rd.matrix);
             rc.setHex(colourFor(it.b));
+            // Knocked-out blocks carry the scorch of the blow; the ones that
+            // merely fell are the wall's own colour, so the two can be told
+            // apart in the heap as well as in the sentence.
+            var kicked = it.p ? it.p.kicked : (it.rest[7] === 1);
+            if (kicked && !contrast) rc.multiplyScalar(0.72);
             rm.setColorAt(rn, rc);
             rn++;
           }
@@ -8496,7 +8548,7 @@ window.StemLab = window.StemLab || {
         var secs = Math.max(2.5, (lf.seconds || 1.4) * REPLAY_RATE);
         updMulti({
           siegeFlightId: rid,
-          siegeFlight: { id: rid, path: lf.path, seconds: secs, before: lf.before, outcome: lf.outcome, replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS }
+          siegeFlight: { id: rid, path: lf.path, seconds: secs, before: lf.before, outcome: lf.outcome, replay: true, rate: REPLAY_RATE, windup: WINDUP_SECS, debris: lf.debris || null }
         });
         clearFlightLater(rid, secs + WINDUP_SECS);
         announceToSR(__alloT('stem.machinelab.sr_replay', 'Replaying the last shot in slow motion.'));
@@ -8693,6 +8745,15 @@ window.StemLab = window.StemLab || {
         // the animation is a measurement.
         var playSecs = Math.max(0.9, Math.min(4.5, flightSecs));
         var nowBreached = _machineMath.isBreached(res.blocks);
+        // The debris: started from the blocks this shot set loose, run to rest
+        // now, in the model, so the heap is decided once and reproducibly. The
+        // field replays the same steps for the animation and lands on the same
+        // heap by construction. Settled before the message, because the message
+        // says how many the stone knocked out and how many just fell.
+        var debrisStart = _machineMath.debrisStart(blocks, res.blocks, res, { gravity: d.gravity });
+        var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;
+        var knocked = 0, fellLoose = 0;
+        if (debrisStart) debrisStart.pieces.forEach(function (p) { if (p.kicked) knocked++; else fellLoose++; });
         var msg;
         if (res.outcome === 'over') {
           msg = __alloT('stem.machinelab.went_over', 'Over the top. Lower the release angle or take some energy out.');
@@ -8707,20 +8768,26 @@ window.StemLab = window.StemLab || {
             __alloT('stem.machinelab.struck2', ' at course ') + (res.row + 1) +
             __alloT('stem.machinelab.struck3', ', delivering ') + fmt(res.ke, 0) +
             __alloT('stem.machinelab.struck4', ' J.') +
-            (res.newlyBreached > 0
-              ? __alloT('stem.machinelab.blocks_down', ' Blocks came down.') : '');
+            // Which blocks the stone took, and which the wall dropped on its
+            // own. Engines rarely knocked a wall down; they took away what held
+            // it up. Said in numbers here, and in the manual as history.
+            (knocked + fellLoose > 0
+              ? (young
+                ? ' ' + __alloT('stem.machinelab.fell_y1', 'The stone knocked out ') + knocked +
+                  (fellLoose > 0
+                    ? __alloT('stem.machinelab.fell_y2', ' blocks, and ') + fellLoose + __alloT('stem.machinelab.fell_y3', ' more fell because nothing was holding them up.')
+                    : __alloT('stem.machinelab.fell_y4', ' blocks.'))
+                : ' ' + __alloT('stem.machinelab.fell_1', 'The stone knocked out ') + knocked +
+                  (fellLoose > 0
+                    ? __alloT('stem.machinelab.fell_2', '; ') + fellLoose + __alloT('stem.machinelab.fell_3', ' more came down because their support was gone.')
+                    : '.'))
+              : '');
         }
         var hitGuess = judgeGuess(res.outcome === 'hit' ? 'hit' : (res.outcome === 'over' ? 'over' : 'wide'));
         msg += hitGuess.line;
         // Only a shot that went LONG closes the far side of the bracket. A wide
         // shot missed sideways and says nothing about range; a hit ends the
         // question. Both leave the bracket exactly as it was.
-        // The debris: started from the blocks this shot set loose, run to rest
-        // now, in the model, so the heap is decided once and reproducibly. The
-        // field replays the same steps for the animation and lands on the same
-        // heap by construction.
-        var debrisStart = _machineMath.debrisStart(blocks, res.blocks, res, { gravity: d.gravity });
-        var debrisRest = debrisStart ? _machineMath.debrisSettle(debrisStart) : null;
         var hitSetup = shotSetup();
         var hitDiff = diffShot(d.lastShotSetup, hitSetup);
         var hitNote = hitDiff.text;
