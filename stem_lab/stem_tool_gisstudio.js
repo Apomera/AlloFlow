@@ -3865,6 +3865,8 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        compareSingleLabel: t('stem.gisstudio.compare.single_label', 'One attribute only:'),
+        compareSingleNote: t('stem.gisstudio.compare.single_note', '{pack} carries only {attribute}, so both maps show the same layer and there is no contrast to read. Add another numeric column to the pack, map a GeoJSON layer to compare against, or switch to a pack with more attributes.'),
         packBudgetExceeded: t('stem.gisstudio.pack.budget_exceeded', 'These boundaries need {incoming} kB and your packs already use {used} kB of the {budget} kB the studio keeps on this device. Remove a pack with boundaries, or load this one without them.'),
         autosaveOk: t('stem.gisstudio.autosave.ok', 'Autosaved locally at {time}.'),
         autosaveWithoutBoundaries: t('stem.gisstudio.autosave.without_boundaries', 'Autosaved locally at {time}, without the region pack boundaries. Download a project file to keep them.'),
@@ -4236,6 +4238,7 @@
         }
         var leftChoice = validChoice(compareLeft, 0);
         var rightChoice = validChoice(compareRight, 1);
+        var comparisonHasContrast = comparisonChoices.length > 1 && leftChoice !== rightChoice;
         var leftSeries = comparisonSeries(leftChoice);
         var rightSeries = comparisonSeries(rightChoice);
         var activeMissionIds = activeRegionPack.modules && Array.isArray(activeRegionPack.modules.missions) ? activeRegionPack.modules.missions : [];
@@ -7305,6 +7308,7 @@
 
         function comparisonView() {
           var leftStats = seriesStats(leftSeries), rightStats = seriesStats(rightSeries);
+          var singleAttribute = comparisonChoices.length < 2;
           function sideControls(side, choice, setChoice, base, setBase) {
             return h('fieldset', { style: Object.assign({}, panel, { margin: 0 }) },
               h('legend', { style: { color: '#67e8f9', fontWeight: 900, padding: '0 5px' } }, side + ' map'),
@@ -7322,6 +7326,9 @@
               h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, 'SAME PLACE • DIFFERENT LENS'),
               h('h2', { id: 'gis-compare-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 19 } }, 'Synchronized map comparison'),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.5 } }, 'Change either layer or basemap. Pan and zoom one map; the other follows so scale and extent stay comparable.'),
+              singleAttribute && h('p', { role: 'status', style: { margin: '10px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.compareSingleLabel + ' '),
+                gisFillTemplate(gisText.compareSingleNote, { pack: activeRegionPack.label, attribute: comparisonChoices[0] ? comparisonChoices[0].label : '' })),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(250px,1fr))', gap: 10, marginTop: 12 } },
                 sideControls('Left', leftChoice, setCompareLeft, compareLeftBasemap, setCompareLeftBasemap),
                 sideControls('Right', rightChoice, setCompareRight, compareRightBasemap, setCompareRightBasemap))),
