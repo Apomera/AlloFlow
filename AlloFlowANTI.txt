@@ -18915,6 +18915,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           setIsStudentLinkMode(false);
           setIsIndependentMode(true);
           setShowStudentEntry(false);
+          // Self-study is mostly adults (adult education, licensure prep). Lift the
+          // untouched K-12 default; the Quick Start wizard that follows still asks,
+          // and a value the learner already set is left alone.
+          setGradeLevel(prev => (prev === '5th Grade' ? 'College' : prev));
           addToast(t('toasts.mode_independent_enabled'), "success");
           setIsAdventureStoryMode(false);
       } else {
@@ -51005,7 +51009,7 @@ ${_alloActivityContext(activity)}
             </section>
           )}
           {guidedMode && guidedModeConfigReady && <GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedCreatedHistoryIds} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedCreatedHistoryIds)} createGuidedHomeworkShare={createGuidedHomeworkShare} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!latestStudentPreviewShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={guidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} />}
-          {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} />}
+          {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
           {isTeacherMode && activeSidebarTab === 'create' && (
           <CDNModuleGate moduleKey="SidebarPanels.SourceInputShellView" loaderName="__alloEnsureSidebarPanels" size="inline" displayName="Source input" t={t}>
   {(View) => React.createElement(View, {
@@ -51711,7 +51715,7 @@ ${_alloActivityContext(activity)}
                   {t('common.ready') || 'Workspace ready'}
                 </p>
                 <h2 className="mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">{t('tools.source') || 'Source Material'}</h2>
-                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{t('input.empty_desc')}</p>
+                <p className="mt-3 max-w-xl text-sm leading-relaxed text-slate-600 sm:text-base">{isIndependentMode ? t('input.empty_desc_independent') : t('input.empty_desc')}</p>
                 {isTeacherMode && !guidedMode && (
                   <div className="mt-8 w-full max-w-2xl">
                     <button
@@ -53010,7 +53014,10 @@ ${_alloActivityContext(activity)}
       <FabStack activeView={activeView} addToast={addToast} focusMode={focusMode} generatedContent={generatedContent} handleSetIsSyntaxGameToTrue={handleSetIsSyntaxGameToTrue} handleSetShowStudyTimerModalToTrue={handleSetShowStudyTimerModalToTrue} handleToggleFocusMode={handleToggleFocusMode} handleToggleIsFabExpanded={handleToggleIsFabExpanded} handleToggleReadingRuler={handleToggleReadingRuler} handleToggleShowSocraticChat={handleToggleShowSocraticChat} handleToggleVisualSupports={handleToggleVisualSupports} interactionMode={interactionMode} isCompareMode={isCompareMode} isDictationMode={isDictationMode} dictationStatus={dictationStatus} isFabExpanded={isFabExpanded} isFluencyMode={isFluencyMode} isLineFocusMode={isLineFocusMode} isStudyTimerRunning={isStudyTimerRunning} isTeacherMode={isTeacherMode} readingRuler={readingRuler} runTour={runTour} setFocusedParagraphIndex={setFocusedParagraphIndex} setInteractionMode={setInteractionMode} setIsCompareMode={setIsCompareMode} setIsDictationMode={setIsDictationMode} setIsFluencyMode={setIsFluencyMode} setIsLineFocusMode={setIsLineFocusMode} setRevisionData={setRevisionData} setSelectionMenu={setSelectionMenu} showSocraticChat={showSocraticChat} showVisualSupports={showVisualSupports} stopPlayback={stopPlayback} studentProjectSettings={studentProjectSettings} studentAiFeaturesHidden={studentAiFeaturesHidden} t={t} />
       </>
       )}
-      {activeView === 'dashboard' && isTeacherMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
+      {/* Independent Learner runs with isTeacherMode true but gets the learner
+          progress view: the grading dashboard is a drop zone for other people's
+          student files, which means nothing to someone studying alone. */}
+      {activeView === 'dashboard' && isTeacherMode && !isIndependentMode && (<ErrorBoundary fallbackMessage="The teacher dashboard encountered an error. Please close and reopen.">
           <TeacherDashboard
               onClose={handleCloseDashboard}
               dashboardData={dashboardData}
@@ -53026,7 +53033,7 @@ ${_alloActivityContext(activity)}
           />
       </ErrorBoundary>
       )}
-      {activeView === 'dashboard' && !isTeacherMode && (
+      {activeView === 'dashboard' && (!isTeacherMode || isIndependentMode) && (
           <LearnerProgressView
               globalPoints={globalPoints}
               globalLevel={globalLevel}

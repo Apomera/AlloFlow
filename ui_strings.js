@@ -3402,6 +3402,7 @@
     "collapse_tooltip": "Collapse all cards",
     "ai_guide": "AI Guide & Assistant",
     "ai_guide_sub": "Pedagogy, Navigation & Auto-Setup",
+    "ai_guide_sub_independent": "Study coach, navigation & setup",
     "ai_guide_welcome": "Hi! I'm your AI Guide. I can help with UDL strategies, navigate the app for you, or auto-setup your lesson settings. Just ask!",
     "tool_analysis": "Analyze Source Material",
     "tool_glossary": "Glossary",
@@ -3515,6 +3516,7 @@
     "error_optimization_timeout": "Optimization timed out. Showing raw citations.",
     "empty_title": "Select a tool on the left to begin",
     "empty_desc": "Configure your settings and generate diverse entry points for your curriculum.",
+    "empty_desc_independent": "Paste or generate something you want to learn, then build a study guide, glossary, practice, and audio at your own pace.",
     "tone_options": {
       "informative": "Informative / Textbook",
       "narrative": "Engaging Narrative",

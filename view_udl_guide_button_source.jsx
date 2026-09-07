@@ -10,10 +10,12 @@
  *   handleToggleShowUDLGuide — toggle handler
  *   showUDLGuide             — current state for chevron + style
  *   t                        — translation function
+ *   subtitle                 — optional; overrides sidebar.ai_guide_sub (Independent Learner
+ *                              gets a study-coach line instead of "Pedagogy")
  *
  * Icons (from window globals): MessageSquare, ChevronDown, ArrowRight
  */
-function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t }) {
+function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t, subtitle }) {
   const noop = () => null;
   const MessageSquare = window.MessageSquare || (window.AlloIcons && window.AlloIcons.MessageSquare) || noop;
   const ChevronDown = window.ChevronDown || noop;
@@ -33,7 +35,7 @@ function UDLGuideButton({ handleToggleShowUDLGuide, showUDLGuide, t }) {
         </div>
         <div className="text-left">
           <div className="font-bold text-sm">{t('sidebar.ai_guide')}</div>
-          <div className={`text-xs ${showUDLGuide ? 'text-indigo-200' : 'text-slate-600'}`}>{t('sidebar.ai_guide_sub')}</div>
+          <div className={`text-xs ${showUDLGuide ? 'text-indigo-200' : 'text-slate-600'}`}>{subtitle || t('sidebar.ai_guide_sub')}</div>
         </div>
       </div>
       {showUDLGuide ? <ChevronDown size={20}/> : <ArrowRight size={20} className="opacity-50 group-hover:opacity-100 transition-opacity"/>}

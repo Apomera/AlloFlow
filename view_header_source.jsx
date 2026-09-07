@@ -662,11 +662,16 @@ function HeaderBar(props) {
   // lets all modes in). Wording only; which dashboard renders is unchanged
   // (switching a parent to the student dashboard is an unverified behavior
   // change — W3's call, left alone).
+  // Independent Learner (2026-09-06): runs with isTeacherMode true but is a
+  // learner, so the button names the learner progress view the host now
+  // renders for it, not the grading dashboard.
   const dashboardNavLabel = isParentMode
     ? (t('parent_mode.dashboard_title') || t('dashboard.title_parent') || 'Family Dashboard')
-    : isTeacherMode
-      ? (t('dashboard.title') || 'Dashboard')
-      : (t('common.progress') || 'My Learning Progress');
+    : isIndependentMode
+      ? (t('common.progress') || 'My Learning Progress')
+      : isTeacherMode
+        ? (t('dashboard.title') || 'Dashboard')
+        : (t('common.progress') || 'My Learning Progress');
   const parentProgressLabel = isParentMode
     ? (t('parent_mode.progress_label') || t('common.assessment_center') || 'Child Progress')
     : (t('common.assessment_center') || 'Assessment Center');
@@ -833,7 +838,10 @@ function HeaderBar(props) {
                       <span className="hidden 2xl:inline text-xs font-bold">{t('header.nav_learn') || 'Learn'}</span>
                     </button>
                   )}
-                  {isTeacherMode && (
+                  {/* Not for Independent Learners: a self-study learner has no use for
+                      BehaviorLens, Assessment Center or Report Writer, and on a shell with
+                      no access code the hub opens with one click. */}
+                  {isTeacherMode && !isIndependentMode && (
                     <button type="button"
                       onClick={() => {
                         if (APP_CONFIG._cfg_validation_key) { setPendingRole('educator_hub'); setIsGateOpen(true); }
@@ -1793,7 +1801,7 @@ function HeaderBar(props) {
                           <span className="hidden lg:inline">{t('header.nav_ai') || 'AI'}</span>
                         </button>
                         )}
-                        {isTeacherMode && (
+                        {isTeacherMode && !isIndependentMode && (
                         <button type="button"
                           onClick={() => {
                             if (APP_CONFIG._cfg_validation_key) {

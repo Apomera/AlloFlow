@@ -636,7 +636,7 @@ function HeaderBar(props) {
   };
   const piiWarningText = t("header.pii_warning");
   const compactRoleLabel = isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
-  const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
+  const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isIndependentMode ? t("common.progress") || "My Learning Progress" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
   const screeningLiveActive = Boolean(screenerSession && screenerSession.status !== "complete" && !isParentMode && !isIndependentMode);
   const headerAnalyticsLabel = screeningLiveActive ? (t("header.screening_live") || "Screening") + " \xB7 " + Math.max(0, (screenerSession.subtests || []).length - (screenerSession.currentIndex || 0)) + " " + (t("header.screening_left") || "left") : parentProgressLabel;
@@ -718,7 +718,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(BookOpen, { size: 18, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden 2xl:inline text-xs font-bold" }, t("header.nav_learn") || "Learn")
-  ), isTeacherMode && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1490,7 +1490,7 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Unplug, { size: 14, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden lg:inline" }, t("header.nav_ai") || "AI")
-  ), isTeacherMode && /* @__PURE__ */ React.createElement(
+  ), isTeacherMode && !isIndependentMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
