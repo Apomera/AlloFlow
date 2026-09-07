@@ -16431,7 +16431,12 @@
       "runlog_law_and_range": "et la portée a bougé de ",
       "runlog_law_scales": "la portée varie comme ",
       "runlog_law_squared": "au carré : double la vitesse et la portée quadruple à peu près",
-      "runlog_law_inverse": "inverse : divise la gravité par deux et la portée double à peu près"
+      "runlog_law_inverse": "inverse : divise la gravité par deux et la portée double à peu près",
+      "next_go_estimate": "Aller à la case d'estimation",
+      "next_show_vectors": "Activer les vecteurs",
+      "next_go_sliders": "Aller aux commandes",
+      "next_turn_on_drag": "Activer la résistance de l'air",
+      "next_go_log": "Aller au journal d'expériences"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aléatoire : ",

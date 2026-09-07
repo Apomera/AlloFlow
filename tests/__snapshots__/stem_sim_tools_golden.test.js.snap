@@ -275,13 +275,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for moonM
 
 exports[`science-sim + studio render goldens > renders + pins a digest for physics [mount] 1`] = `
 {
-  "buttons": 36,
+  "buttons": 37,
   "canvases": 1,
   "inputs": 9,
-  "lengthBucket": 104,
+  "lengthBucket": 105,
   "paths": 0,
   "selects": 0,
-  "sha": "babfbcc726b01097",
+  "sha": "8019cf397abbde4a",
   "svgs": 0,
 }
 `;

@@ -2202,15 +2202,50 @@ const d = labToolData.physics;
             { target: 200, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_reach_200m', 'Reach 200m range'), tolerance: 12 },
 
           ];
-          var physicsNext = (d.launchCount || 0) === 0
-            ? __alloT('stem.physics.next_predict_then_launch', 'Estimate the range, then launch once and compare the measured result.')
+          // The recommendation names an action; with ~19 panels on the page a
+          // student should not have to hunt for where that action lives. Each
+          // step carries a `do` that performs or reveals it, so the guidance is
+          // operable rather than decorative. Every action is something the
+          // student could do by hand — nothing here launches or scores for them.
+          function physScrollTo(sel) {
+            try {
+              var el = document.querySelector(sel);
+              if (!el) return;
+              if (el.scrollIntoView) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              var focusTarget = el.matches('input, button, textarea, select') ? el : el.querySelector('input, button, textarea, select');
+              if (focusTarget && focusTarget.focus) focusTarget.focus({ preventScroll: true });
+            } catch (e) {}
+          }
+          var physicsNextStep = (d.launchCount || 0) === 0
+            ? {
+                text: __alloT('stem.physics.next_predict_then_launch', 'Estimate the range, then launch once and compare the measured result.'),
+                cta: __alloT('stem.physics.next_go_estimate', 'Go to the estimate box'),
+                run: function () { physScrollTo('#physPredict'); }
+              }
             : !d.showVectors && !d.showEnergy
-              ? __alloT('stem.physics.next_turn_on_vectors', 'Turn on vectors or energy and explain what changes during flight.')
+              ? {
+                  text: __alloT('stem.physics.next_turn_on_vectors', 'Turn on vectors or energy and explain what changes during flight.'),
+                  cta: __alloT('stem.physics.next_show_vectors', 'Turn on vectors'),
+                  run: function () { upd('showVectors', true); }
+                }
               : d.targetMode
-                ? __alloT('stem.physics.next_one_controlled_change', 'Use one controlled change to improve your next target attempt.')
+                ? {
+                    text: __alloT('stem.physics.next_one_controlled_change', 'Use one controlled change to improve your next target attempt.'),
+                    cta: __alloT('stem.physics.next_go_sliders', 'Go to the controls'),
+                    run: function () { physScrollTo('[data-physics-sliders]'); }
+                  }
                 : !d.dragTried
-                  ? __alloT('stem.physics.next_try_drag', 'Turn on Air Drag and launch again: the dashed ghost is the no-drag path, and the Last flight strip shows what drag cost.')
-                  : __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.');
+                  ? {
+                      text: __alloT('stem.physics.next_try_drag', 'Turn on Air Drag and launch again: the dashed ghost is the no-drag path, and the Last flight strip shows what drag cost.'),
+                      cta: __alloT('stem.physics.next_turn_on_drag', 'Turn on air drag'),
+                      run: function () { upd('airResist', true); }
+                    }
+                  : {
+                      text: __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.'),
+                      cta: __alloT('stem.physics.next_go_log', 'Go to the experiment log'),
+                      run: function () { physScrollTo('[data-physics-run-log]'); }
+                    };
+          var physicsNext = physicsNextStep.text;
 
           // Live refresh: the Data and Motion panels read the canvas trail at
           // render time, so during a flight they froze until the next state
@@ -2351,7 +2386,13 @@ const d = labToolData.physics;
                     React.createElement("p", { className: "mt-1 max-w-2xl text-sm leading-6 text-cyan-100" }, __alloT('stem.physics.tool_intro_blurb', 'Investigate how launch conditions shape motion, then support each claim with trajectory evidence.')),
                     React.createElement("div", { className: "mt-3 rounded-xl border border-white/15 bg-white/10 p-3" },
                       React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-[0.16em] text-cyan-200" }, __alloT('stem.physics.recommended_next_move', 'Recommended next move')),
-                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext)
+                      React.createElement("p", { className: "mt-1 text-sm font-semibold text-white" }, physicsNext),
+                      React.createElement("button", {
+                        type: "button",
+                        "data-physics-next-cta": "true",
+                        onClick: physicsNextStep.run,
+                        className: "mt-2 rounded-lg border border-cyan-300/50 bg-cyan-300/15 px-2.5 py-1 text-[0.6875rem] font-bold text-cyan-50 transition hover:bg-cyan-300/25 focus:outline-none focus:ring-2 focus:ring-cyan-300"
+                      }, physicsNextStep.cta + " →")
                     )
                   ),
                   React.createElement("div", { className: "grid grid-cols-3 gap-2 lg:w-[22rem]" },
@@ -2726,7 +2767,7 @@ const d = labToolData.physics;
               }, className: "mt-2 rounded-lg bg-fuchsia-700 px-3 py-2 text-[0.625rem] font-black text-white disabled:cursor-not-allowed disabled:opacity-45" }, d.predictionResult.reflectionComplete ? __alloT('stem.physics.est_reflection_saved', 'Reflection saved') : __alloT('stem.physics.est_save_reflection', 'Save estimation reflection'))
             ),
 
-            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3" },
+            React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3", "data-physics-sliders": "true" },
 
               [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }].map(function (s) {
                 var isLocked = d.targetMode && d.targetConstraint && (

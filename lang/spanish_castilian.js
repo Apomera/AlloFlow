@@ -16819,7 +16819,12 @@
       "runlog_law_and_range": "y el alcance varió ",
       "runlog_law_scales": "el alcance escala como ",
       "runlog_law_squared": "al cuadrado: si duplicas la velocidad, el alcance se cuadruplica aproximadamente",
-      "runlog_law_inverse": "inverso: si reduces la gravedad a la mitad, el alcance se duplica aproximadamente"
+      "runlog_law_inverse": "inverso: si reduces la gravedad a la mitad, el alcance se duplica aproximadamente",
+      "next_go_estimate": "Ir a la casilla de estimación",
+      "next_show_vectors": "Activar los vectores",
+      "next_go_sliders": "Ir a los controles",
+      "next_turn_on_drag": "Activar la resistencia del aire",
+      "next_go_log": "Ir al registro de experimentos"
     },
     "chem_balance": {
       "ud83cudfb2_random": "🎲 Aleatorio: ",

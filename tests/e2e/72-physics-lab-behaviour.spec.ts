@@ -193,6 +193,39 @@ test('does not narrate the running simulation through a live region', async ({ p
   expect(result.hits).toBeLessThanOrEqual(3);
 });
 
+test('the recommended next move actually performs the step it names', async ({ page }) => {
+  // The header tells a student what to do next. With ~19 panels on the page,
+  // naming an action without pointing at it leaves them hunting, so the
+  // recommendation carries a control that performs or reveals it. Each branch
+  // must do what its own label says.
+  await mountPhysics(page);
+  const cta = page.locator('[data-physics-next-cta]');
+  const ctaText = () => cta.innerText();
+
+  // 1. No launches yet -> send them to the estimate box.
+  expect(await ctaText()).toContain('Go to the estimate box');
+  await cta.click();
+  expect(await page.evaluate(() => document.activeElement?.id)).toBe('physPredict');
+
+  // 2. After a launch, with neither overlay on -> turn vectors on.
+  await setState(page, { angle: 45, velocity: 25, gravity: 9.8, airResist: false, showVectors: false, showEnergy: false });
+  await launchAndLand(page);
+  expect(await ctaText()).toContain('Turn on vectors');
+  await cta.click();
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => (window as any).__toolData.physics.showVectors)).toBe(true);
+
+  // 3. Vectors on, drag never tried -> turn air drag on.
+  expect(await ctaText()).toContain('Turn on air drag');
+  await cta.click();
+  await page.waitForTimeout(200);
+  expect(await page.evaluate(() => (window as any).__toolData.physics.airResist)).toBe(true);
+
+  // 4. Once drag has flown, the advice moves on to controlled comparison.
+  await launchAndLand(page);
+  expect(await ctaText()).toContain('Go to the experiment log');
+});
+
 test('a fair test of velocity derives the squared law from the student own runs', async ({ page }) => {
   // R = v^2 sin(2t)/g, so two runs differing ONLY in velocity give
   // ln(R2/R1)/ln(v2/v1) ~ 2. The log reports that exponent, which turns the
