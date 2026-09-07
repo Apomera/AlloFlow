@@ -8,6 +8,10 @@
 //   2. an entry in _pluginOnlyTools              — missing ⇒ the tile opens BLANK
 //                                                  (stewardshipHub, cellularLab, arccity)
 //   3. its file in the ANTI stemToolModules list — missing ⇒ nothing ever registers
+//   4. its file in the build.js desktop bundle    — missing ⇒ works online, breaks
+//                                                   OFFLINE, which is the only case
+//                                                   that build exists for
+//                                                   (scaleExplorer, Sep 2026)
 //
 // check_stem_tile_catalog covers (1) and stem_plugin_fallback_allowlist covers (2).
 // Nothing tied them together, and (3) was uncovered. This closes that, so the next
@@ -71,7 +75,7 @@ const MODULE_COPIES = ['stem_lab/stem_lab_module.js', 'desktop/web-app/public/st
 // registering a tool while this gate stayed green.
 const ANTI_COPIES = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt'];
 
-describe('STEM tool reachability — all three wiring points agree', () => {
+describe('STEM tool reachability — all four wiring points agree', () => {
   const exempt = exemptIds();
   const registered = registeredTools();
   const ids = [...registered.keys()].filter((id) => !exempt.has(id)).sort();
@@ -102,6 +106,16 @@ describe('STEM tool reachability — all three wiring points agree', () => {
       const seg = block(read(rel), /var stemToolModules = \[([\s\S]*?)\];/, 'stemToolModules in ' + rel);
       expect(files.filter((f) => seg.indexOf(f) === -1), rel + ' — tool files that never load').toEqual([]);
     }
+  });
+
+  it('every tool file is in the desktop bundle list, so an offline classroom gets it', () => {
+    // build.js names what the desktop build packages locally, so live classroom
+    // activities do not depend on the public CDN. A tool missing here is the
+    // quiet kind of broken: fine online, absent exactly where it was needed.
+    const files = [...new Set(ids.map((id) => registered.get(id)))].sort();
+    const src = read('build.js');
+    const listed = (f) => src.includes("'stem_lab/" + f + "'") || src.includes('"stem_lab/' + f + '"');
+    expect(files.filter((f) => !listed(f)), 'build.js — the desktop build would not package these').toEqual([]);
   });
 
   it('the two ANTI copies carry the same loader list', () => {
