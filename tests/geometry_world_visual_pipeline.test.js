@@ -97,6 +97,79 @@ describe('geometryWorldVertexAo', () => {
   });
 });
 
+describe('geometryWorldSunVector', () => {
+  let sunVec;
+  beforeAll(() => { sunVec = window.StemLab.GeometryWorldSunVector; if (typeof sunVec !== 'function') throw new Error('GeometryWorldSunVector not exposed'); });
+
+  it('always returns a unit vector', () => {
+    for (const el of [-20, 0, 9, 45, 58, 90]) for (const az of [-180, -105, 0, 45, 100, 210, 359]) {
+      const v = sunVec(el, az);
+      expect(Math.hypot(v.x, v.y, v.z)).toBeCloseTo(1, 12);
+    }
+  });
+
+  it('puts the sun overhead at 90 degrees and on the horizon at 0', () => {
+    const up = sunVec(90, 137);
+    expect(up.y).toBeCloseTo(1, 12);
+    expect(Math.hypot(up.x, up.z)).toBeCloseTo(0, 12);
+    expect(sunVec(0, 0).y).toBeCloseTo(0, 12);
+  });
+
+  it('measures azimuth clockwise from +z, so 0 looks along +z and 90 along +x', () => {
+    const north = sunVec(0, 0), east = sunVec(0, 90);
+    expect(north.z).toBeCloseTo(1, 12);
+    expect(north.x).toBeCloseTo(0, 12);
+    expect(east.x).toBeCloseTo(1, 12);
+    expect(east.z).toBeCloseTo(0, 12);
+  });
+
+  it('keeps the day preset on the same bearing as the sun this world always had', () => {
+    // The old fixed light sat at (20, 40, 20): due south-east, x === z.
+    const day = sunVec(58, 45);
+    expect(day.x).toBeCloseTo(day.z, 12);
+    expect(day.x).toBeGreaterThan(0);
+    expect(day.y).toBeGreaterThan(0.8); // high sun, short shadows
+  });
+
+  it('drops the sun toward the horizon for the raking presets', () => {
+    // shadow length scales with 1/tan(elevation): sunset must rake far longer than noon
+    const noon = sunVec(58, 45).y, dusk = sunVec(9, -105).y;
+    expect(dusk).toBeLessThan(noon);
+    expect(dusk).toBeGreaterThan(0); // still above the horizon, so shadows have a direction
+    expect(dusk).toBeLessThan(0.2);
+  });
+});
+
+describe('geometryWorldLerpAngle', () => {
+  let lerpAngle;
+  beforeAll(() => { lerpAngle = window.StemLab.GeometryWorldLerpAngle; if (typeof lerpAngle !== 'function') throw new Error('GeometryWorldLerpAngle not exposed'); });
+
+  const wrap = (a) => ((a % 360) + 360) % 360;
+
+  it('returns the endpoints unchanged', () => {
+    expect(lerpAngle(100, -105, 0)).toBe(100);
+    expect(wrap(lerpAngle(100, -105, 1))).toBeCloseTo(wrap(-105), 9);
+  });
+
+  it('crosses the 0/360 seam the short way', () => {
+    expect(wrap(lerpAngle(350, 10, 0.5))).toBeCloseTo(0, 9);
+    expect(wrap(lerpAngle(10, 350, 0.5))).toBeCloseTo(0, 9);
+  });
+
+  it('never travels more than 180 degrees', () => {
+    for (const [a, b] of [[100, -105], [-150, 45], [0, 179], [0, 181], [45, 62]]) {
+      const travelled = Math.abs(lerpAngle(a, b, 1) - a);
+      expect(travelled).toBeLessThanOrEqual(180 + 1e-9);
+    }
+  });
+
+  it('swings sunrise to sunset through the far side rather than back across noon', () => {
+    // sunrise az 100 -> sunset az -105 is +155 the short way, not -205
+    expect(lerpAngle(100, -105, 1)).toBeCloseTo(255, 9);
+    expect(lerpAngle(100, -105, 0.5)).toBeCloseTo(177.5, 9);
+  });
+});
+
 describe('colour pipeline source contract', () => {
   const src = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
   const pub = readFileSync('desktop/web-app/public/stem_lab/stem_tool_geometryworld.js', 'utf8');
@@ -124,6 +197,30 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain("if (type === 'glass' || type === 'diamond' || type === 'gold' || type === 'water' || type === 'ice') {");
     expect(src).toContain('mat.userData.gwReflective = true;');
     expect(src).not.toContain('engine.scene.environment = rt.texture');
+  });
+
+  it('gives every time-of-day preset its own sun position', () => {
+    // A preset without sunEl/sunAz would silently fall back to noon, so the sky
+    // would recolour while the shadows stayed put — the defect this pass fixed.
+    const presets = src.slice(src.indexOf('var ENV_PRESETS = {'), src.indexOf('// Centralized display profiles'));
+    for (const key of ['day', 'sunrise', 'sunset', 'night', 'golden']) {
+      const line = presets.split('\n').find((l) => l.trim().startsWith(key + ':'));
+      expect(line, key).toBeTruthy();
+      expect(line, key).toMatch(/sunEl: -?[\d.]+/);
+      expect(line, key).toMatch(/sunAz: -?[\d.]+/);
+    }
+  });
+
+  it('lets the shadow volume travel with the player instead of sitting on the origin', () => {
+    // The box is 60 wide but lessons lay ground out to x = 50, so a fixed box left
+    // everything past x = 30 with no shadow at all.
+    expect(src).toContain('sun.target = engine._sunTarget;');
+    expect(src).toContain('engine.scene.add(engine._sunTarget);');
+    expect(src).toContain('engine._sunTarget.position.set(stx, 0, stz)');
+    // snapped to whole shadow-map texels, or the shadows crawl as the player walks
+    expect(src).toContain('Math.round(engine.camera.position.x / texel) * texel');
+    // and far enough that a 9-degree sun still clears the world
+    expect(src).toMatch(/sun\.shadow\.camera\.near = 0\.5; sun\.shadow\.camera\.far = 2[0-9]{2};/);
   });
 
   it('keeps bloom above what a lit surface or a white label can reach', () => {

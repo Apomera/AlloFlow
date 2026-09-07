@@ -207,11 +207,11 @@
   var ENV_PRESETS = {
     // sun: light colour (sRGB floats). hemi: hemisphere light intensity, the
     // sky-from-above fill that keeps a voxel world from going flat at low sun.
-    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.05, ambientIntensity: 0.5, hemi: 0.4, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
-    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sun: [1.0, 0.72, 0.45], sunIntensity: 0.85, ambientIntensity: 0.34, hemi: 0.3, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
-    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sun: [1.0, 0.58, 0.32], sunIntensity: 0.8, ambientIntensity: 0.3, hemi: 0.26, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
-    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sun: [0.55, 0.65, 1.0], sunIntensity: 0.22, ambientIntensity: 0.1, hemi: 0.12, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
-    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sun: [1.0, 0.85, 0.5], sunIntensity: 1.0, ambientIntensity: 0.4, hemi: 0.34, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
+    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.05, ambientIntensity: 0.5, hemi: 0.4, sunEl: 58, sunAz: 45, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sun: [1.0, 0.72, 0.45], sunIntensity: 0.85, ambientIntensity: 0.34, hemi: 0.3, sunEl: 10, sunAz: 100, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
+    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sun: [1.0, 0.58, 0.32], sunIntensity: 0.8, ambientIntensity: 0.3, hemi: 0.26, sunEl: 9, sunAz: -105, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
+    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sun: [0.55, 0.65, 1.0], sunIntensity: 0.22, ambientIntensity: 0.1, hemi: 0.12, sunEl: 44, sunAz: -150, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
+    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sun: [1.0, 0.85, 0.5], sunIntensity: 1.0, ambientIntensity: 0.4, hemi: 0.34, sunEl: 20, sunAz: 62, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
   };
 
   // Centralized display profiles keep the WebGL workload predictable and make
@@ -241,7 +241,8 @@
       fogNear: p.fogNear, fogFar: p.fogFar,
       sunIntensity: p.sunIntensity, ambientIntensity: p.ambientIntensity,
       cloudOpacity: p.cloudOpacity,
-      sun: (p.sun || [1.0, 0.96, 0.88]).slice(), hemi: p.hemi != null ? p.hemi : 0.4
+      sun: (p.sun || [1.0, 0.96, 0.88]).slice(), hemi: p.hemi != null ? p.hemi : 0.4,
+      sunEl: p.sunEl != null ? p.sunEl : 58, sunAz: p.sunAz != null ? p.sunAz : 45
     };
     // Snapshot where the fade starts, so each frame can set the eased position
     // exactly. The old update moved every value 10% of the remaining distance
@@ -258,7 +259,8 @@
       ambientIntensity: ambient ? ambient.intensity : p.ambientIntensity,
       cloudOpacity: engine._cloudPlane ? engine._cloudPlane.material.opacity : p.cloudOpacity,
       sun: engine.sun && engine.sun.color ? [engine.sun.color.r, engine.sun.color.g, engine.sun.color.b] : (p.sun || [1.0, 0.96, 0.88]).slice(),
-      hemi: engine._hemi ? engine._hemi.intensity : (p.hemi != null ? p.hemi : 0.4)
+      hemi: engine._hemi ? engine._hemi.intensity : (p.hemi != null ? p.hemi : 0.4),
+      sunEl: engine._sunAngles ? engine._sunAngles.el : 58, sunAz: engine._sunAngles ? engine._sunAngles.az : 45
     };
     engine._envTransition = 0; // 0 to 1 over ~1.4 seconds
     engine._envDone = false;
@@ -309,6 +311,10 @@
       if (engine.sun) {
         engine.sun.intensity = mix(start.sunIntensity, tgt.sunIntensity);
         if (engine.sun.color && start.sun && tgt.sun) engine.sun.color.setRGB(mix(start.sun[0], tgt.sun[0]), mix(start.sun[1], tgt.sun[1]), mix(start.sun[2], tgt.sun[2]));
+      }
+      if (engine._sunAngles && start.sunEl != null && tgt.sunEl != null) {
+        engine._sunAngles.el = mix(start.sunEl, tgt.sunEl);
+        engine._sunAngles.az = geometryWorldLerpAngle(start.sunAz, tgt.sunAz, ease);
       }
       if (engine._hemi) {
         if (start.hemi != null && tgt.hemi != null) engine._hemi.intensity = mix(start.hemi, tgt.hemi);
@@ -373,6 +379,24 @@
     return GEOMETRY_WORLD_AO_LEVELS[occ];
   }
   window.StemLab.GeometryWorldVertexAo = geometryWorldVertexAo;
+
+  // Unit vector pointing at the sun. Elevation is degrees above the horizon,
+  // azimuth degrees clockwise from +z (so 0 looks along +z, 90 along +x). The
+  // light, the visible disc and the shadow direction all read from this one
+  // function, so they cannot drift apart. Pure, pinned without WebGL.
+  function geometryWorldSunVector(elevationDeg, azimuthDeg) {
+    var el = (elevationDeg || 0) * Math.PI / 180, az = (azimuthDeg || 0) * Math.PI / 180;
+    var ce = Math.cos(el);
+    return { x: ce * Math.sin(az), y: Math.sin(el), z: ce * Math.cos(az) };
+  }
+  // Interpolate two bearings the short way round, so a dawn-to-dusk fade swings
+  // the sun across the sky it is nearest to instead of spinning the long way.
+  function geometryWorldLerpAngle(a, b, t) {
+    var d = ((((b - a) % 360) + 540) % 360) - 180;
+    return a + d * t;
+  }
+  window.StemLab.GeometryWorldSunVector = geometryWorldSunVector;
+  window.StemLab.GeometryWorldLerpAngle = geometryWorldLerpAngle;
 
   // ── Block Types ──
   var BLOCK_TYPES = [
@@ -3360,11 +3384,26 @@
         // Lighting — warm, balanced, voxel-world style
         engine.scene.add(new THREE.AmbientLight(0xffffff, 0.42));
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
-        sun.position.set(20, 40, 20);
+        // Where the sun stands is now a function of the time of day (engine._sunAngles,
+        // driven by the preset cross-fade and applied every frame), so shadows rake at
+        // sunrise and shorten at noon instead of pointing the same way all day.
+        engine._sunAngles = { el: 58, az: 45 };
+        engine._sunDistance = 120;
+        var sun0 = geometryWorldSunVector(58, 45);
+        sun.position.set(sun0.x * 120, sun0.y * 120, sun0.z * 120);
         sun.castShadow = true;
+        // The shadow volume rides with the player. It used to be a fixed 60x60 box
+        // around the origin, so in the larger lessons (ground out to x = 50) every
+        // block past x = 30 cast no shadow at all. The target must be IN the scene
+        // for three to pick up its world matrix.
+        engine._sunTarget = new THREE.Object3D();
+        engine.scene.add(engine._sunTarget);
+        sun.target = engine._sunTarget;
         var shadowRes = isMobile ? 1024 : 2048; // Lower shadow quality on mobile
         sun.shadow.mapSize.set(shadowRes, shadowRes);
-        sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 100;
+        // Far enough that a 9-degree sun, 120 units out and only 19 units up, still
+        // has the whole world in front of its near plane.
+        sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 260;
         sun.shadow.camera.left = -30; sun.shadow.camera.right = 30;
         sun.shadow.camera.top = 30; sun.shadow.camera.bottom = -30;
         sun.shadow.bias = -0.0005;
@@ -3740,6 +3779,21 @@
           _procTexCache[key] = tex;
           return tex;
         }
+        // Warm halo for a torch: one shared additive sprite texture, scaled and
+        // faded per torch by the same flicker that drives its light.
+        function makeTorchGlowTexture() {
+          if (_procTexCache.torchGlow) return _procTexCache.torchGlow;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var g2 = c.getContext('2d');
+          var gr = g2.createRadialGradient(32, 32, 0, 32, 32, 32);
+          gr.addColorStop(0, 'rgba(255,220,150,0.85)');
+          gr.addColorStop(0.35, 'rgba(255,170,60,0.35)');
+          gr.addColorStop(1, 'rgba(255,140,20,0)');
+          g2.fillStyle = gr; g2.fillRect(0, 0, 64, 64);
+          var tex = new THREE.CanvasTexture(c);
+          _procTexCache.torchGlow = tex;
+          return tex;
+        }
         function makeBrickTexture() {
           if (_procTexCache.brick) return _procTexCache.brick;
           var c = document.createElement('canvas'); c.width = 64; c.height = 64;
@@ -4050,6 +4104,11 @@
             tLight.castShadow = false; // perf: no shadow from torch lights
             engine.scene.add(tLight);
             mesh.userData._torchLight = tLight;
+            var tGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: makeTorchGlowTexture(), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: 0.75 }));
+            tGlow.scale.set(2.2, 2.2, 1);
+            tGlow.position.set(x + 0.5, y + 0.72, z + 0.5);
+            engine.scene.add(tGlow);
+            mesh.userData._torchGlow = tGlow;
           }
         };
 
@@ -4075,6 +4134,7 @@
             var removedRotation = mesh.userData.rotation || 0;
             // Clean up torch light
             if (mesh.userData._torchLight) { engine.scene.remove(mesh.userData._torchLight); mesh.userData._torchLight.dispose(); }
+            if (mesh.userData._torchGlow) { engine.scene.remove(mesh.userData._torchGlow); try { mesh.userData._torchGlow.material.dispose(); } catch (e) {} mesh.userData._torchGlow = null; }
             // Spawn break particles
             var bColor = mesh.material.color ? mesh.material.color.getHex() : 0x808080;
             spawnBreakParticles(engine, x + 0.5, y + 0.5, z + 0.5, bColor);
@@ -6392,6 +6452,11 @@
                 // Torch: flicker the point light intensity
                 var tp = wm.userData.gridPos;
                 wm.userData._torchLight.intensity = 1.0 + Math.sin(wt * 8 + tp.x * 2.3) * 0.3 + Math.sin(wt * 13 + tp.z * 3.1) * 0.15;
+                if (wm.userData._torchGlow) {
+                  var gf = 1 + Math.sin(wt * 8 + tp.x * 2.3) * 0.12 + Math.sin(wt * 13 + tp.z * 3.1) * 0.06;
+                  wm.userData._torchGlow.scale.set(2.2 * gf, 2.2 * gf, 1);
+                  wm.userData._torchGlow.material.opacity = 0.62 + (gf - 1) * 1.1;
+                }
                 wm.material.emissiveIntensity = 0.7 + Math.sin(wt * 6 + tp.x) * 0.25;
               }
             }
@@ -6480,20 +6545,36 @@
           }
           // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
           // "run off" into a strange corner when the player explores a large world.
-          if (engine._moonSprite && engine.camera) {
-            engine._moonSprite.position.set(engine.camera.position.x - 38, 40, engine.camera.position.z - 34);
-            var sunI = engine.sun ? engine.sun.intensity : 1;
-            engine._moonSprite.material.opacity = Math.max(0, Math.min(1, (0.45 - sunI) / 0.25));
-            if (engine._sunSprite) engine._sunSprite.material.opacity = Math.max(0.1, Math.min(1, (sunI - 0.15) / 0.6));
+          // ── Sun, shadow volume and the two sky discs, from one direction ──
+          if (engine.sun && engine.camera && engine._sunAngles) {
+            var sdir = geometryWorldSunVector(engine._sunAngles.el, engine._sunAngles.az);
+            var sd = engine._sunDistance || 120;
+            // Snap the travelling shadow box to whole shadow-map texels, or the
+            // shadows crawl and shimmer as the player walks.
+            var scam = engine.sun.shadow.camera;
+            var texel = (scam.right - scam.left) / (engine.sun.shadow.mapSize.x || 2048);
+            var stx = Math.round(engine.camera.position.x / texel) * texel;
+            var stz = Math.round(engine.camera.position.z / texel) * texel;
+            if (engine._sunTarget) { engine._sunTarget.position.set(stx, 0, stz); engine._sunTarget.updateMatrixWorld(); }
+            engine.sun.position.set(stx + sdir.x * sd, sdir.y * sd, stz + sdir.z * sd);
+            var sunI = engine.sun.intensity;
+            // Both discs hang in the sky at the sun's own bearing: the sun where the
+            // light comes from, the moon opposite it and always above the horizon.
+            if (engine._sunSprite) {
+              engine._sunSprite.position.set(engine.camera.position.x + sdir.x * 90, Math.max(6, sdir.y * 90), engine.camera.position.z + sdir.z * 90);
+              engine._sunSprite.material.opacity = Math.max(0, Math.min(1, (sunI - 0.15) / 0.6));
+            }
+            if (engine._moonSprite) {
+              var mel = Math.max(0.4, Math.abs(sdir.y));
+              var mlen = Math.sqrt(sdir.x * sdir.x + sdir.z * sdir.z) || 1;
+              var mfl = Math.sqrt(Math.max(0, 1 - mel * mel)) / mlen;
+              engine._moonSprite.position.set(engine.camera.position.x - sdir.x * mfl * 90, mel * 90, engine.camera.position.z - sdir.z * mfl * 90);
+              engine._moonSprite.material.opacity = Math.max(0, Math.min(1, (0.45 - sunI) / 0.25));
+            }
           }
           // Water ripple: the shared normal map drifts, every water block shares it.
           if (engine._ambientMotionEnabled !== false && engine._procTexCache && engine._procTexCache.waterNormal) {
             engine._procTexCache.waterNormal.offset.x += dt * 0.035; engine._procTexCache.waterNormal.offset.y += dt * 0.02;
-          }
-          if (engine._sunSprite && engine.camera) {
-            engine._sunSprite.position.x = engine.camera.position.x + 40;
-            engine._sunSprite.position.y = 45;
-            engine._sunSprite.position.z = engine.camera.position.z + 40;
           }
 
           if (engine.composer && engine._postFxEnabled !== false) { try { engine.composer.render(); } catch (e) { engine.composer = null; engine.renderer.render(engine.scene, engine.camera); } }
@@ -7001,6 +7082,7 @@
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
           if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
           if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
+          if (engine._sunTarget) { engine.scene.remove(engine._sunTarget); engine._sunTarget = null; }
           if (engine._moonSprite) { engine.scene.remove(engine._moonSprite); try { engine._moonSprite.material.map.dispose(); engine._moonSprite.material.dispose(); } catch (e) {} engine._moonSprite = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }

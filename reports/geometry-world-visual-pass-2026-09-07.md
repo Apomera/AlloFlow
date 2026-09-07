@@ -52,6 +52,18 @@ Geometry World is the first-person voxel builder (`stem_lab/stem_tool_geometrywo
 
 Probe results (`scratch/geometry-world-visuals-2026-09-07/probe-round6.mjs`): grass cube atlas 64x128 with top-face v in [0.5, 1] and side v in [0, 0.5]; water normal map present and drifting; ice normal map present; moon opacity 0 by day. Zero page errors.
 
+## Round 7 (same day): the sun travels, and its shadows follow the player
+
+**The sun moves with the time of day.** The light sat at a fixed point regardless of the preset, so switching to sunset recoloured the sky while every shadow kept pointing the same way and stayed the same length. Each preset now carries a sun elevation and azimuth, interpolated across the 1.4 s cross-fade (azimuth the short way round). Noon keeps the bearing this world always had; golden hour rakes at 20 degrees and sunset at 9, where a three-block tower throws a shadow roughly nineteen blocks long.
+
+**Sun and moon hang where the light comes from.** Both discs are placed from the same direction vector as the light, the sun at its own bearing and the moon opposite it and always above the horizon. At sunset the disc now sits low on the horizon in frame, which it never did before.
+
+**Shadows reach the whole lesson.** The shadow volume was a fixed 60-unit box centred on the origin, but lessons lay ground out to x = 50, so every block past x = 30 cast no shadow at all. The volume now travels with the player, snapped to whole shadow-map texels so the shadows do not crawl as they walk, with the light far enough out that a 9-degree sun still clears the world.
+
+**Torches glow.** Each torch carries a warm additive halo that pulses on the same flicker as its light.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round7.mjs`): elevation measured back from the light position matches the preset in every case (day 58, sunrise 10.8, night 44); the shadow target tracked the player out to x = 44, outside the old box; the sun disc drops from y 76 at noon to y 17 at sunrise; moon opacity 0 by day and 0.92 at night; the torch halo is in the scene and flickering. Zero page errors. Same tower, same camera, three times of day: `after7-shadows-day.png`, `-golden.png`, `-sunset.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -59,3 +71,5 @@ Probe results (`scratch/geometry-world-visuals-2026-09-07/probe-round6.mjs`): gr
 Round 5 run of the same spec: **14 passed, 3 flaky (passed on retry)** in 14.7 minutes while another session had a browser suite running (13 Chromium processes alive before the run). The three, "starting a lesson leaves ONE canvas", "W walks the player forward" and "slab or wedge preflight", were then re-run unchanged twice each with retries off: **6 passed** in 2.1 minutes. The flakes were load, not the code.
 
 Round 6 run of the same spec: **16 passed, 1 failed**. The failure was the sprite census pin "the sun is the only sprite a character-free world carries"; the moon is now a second permanent sky sprite, so the pin moved to two with the reason inline, and the test passed on re-run (12.8 s, retries off). No other test changed.
+
+Round 7 run of the same spec: **14 passed, 2 failed, 1 flaky** in 17.8 minutes, against a usual 6 to 10, with 15 Chromium processes from another session competing for the machine. Both failures were mount timeouts waiting for the canvas, not assertion failures, and neither test touches anything this round changed. Re-run unchanged with retries off on a quieter machine: "rotating a wedge keeps it in its own cell" passed 1/1 and "Q actually changes the shape of the block that gets placed" passed 3/3. A clean full-spec run was not possible while the other suite held the machine, so this is reported as measured rather than as a green run.
