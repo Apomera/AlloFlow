@@ -140,7 +140,12 @@
     zoom_announced: "Zoom {z} times.",
     fit_announced: "Showing the whole image.",
     pin_removed_sr: "Pin {n} removed.",
-    pin_remove: "Remove pin {n}"
+    pin_remove: "Remove pin {n}",
+    read_aloud: "Read this aloud",
+    read_aloud_busy: "Speaking…",
+    read_aloud_stop: "Stop reading",
+    read_aloud_failed: "Read-aloud is not available right now.",
+    read_prompt: "Read the question aloud"
   };
   // Inline-only strings.
   var INL = {
@@ -413,6 +418,7 @@
       var _busy = React.useState(false); var busy = _busy[0], setBusy = _busy[1];
       var _copied = React.useState(''); var copied = _copied[0], setCopied = _copied[1];
       var _showDesc = React.useState(false); var showDesc = _showDesc[0], setShowDesc = _showDesc[1];
+      var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
       var descId = React.useMemo(function () { return 'zg-desc-' + Math.random().toString(36).slice(2, 8); }, []);
       var _customUrl = React.useState(''); var customUrl = _customUrl[0], setCustomUrl = _customUrl[1];
       var _customErr = React.useState(''); var customErr = _customErr[0], setCustomErr = _customErr[1];
@@ -508,6 +514,25 @@
       function focusViewer() {
         var c = osdCanvasRef.current; if (c && typeof c.focus === 'function') { try { c.focus(); } catch (_) {} }
       }
+      // Read-aloud through the house player. { force: true } is the sanctioned
+      // bypass of the header mute for an action the student explicitly asked for;
+      // nothing here ever speaks on its own.
+      function speak(key, text) {
+        if (typeof ctx.callTTS !== 'function' || !text) return;
+        if (speaking) return;
+        setSpeaking(key);
+        Promise.resolve(ctx.callTTS(String(text), null, null, { force: true }))
+          .then(function (url) { setSpeaking(''); if (!url) say(W('read_aloud_failed')); })
+          .catch(function () { setSpeaking(''); say(W('read_aloud_failed')); });
+      }
+      function speakBtn(key, text, label) {
+        if (typeof ctx.callTTS !== 'function' || !text) return null;
+        var busy = speaking === key;
+        return h('button', { type: 'button', onClick: function () { speak(key, text); }, disabled: busy,
+          'aria-label': label || W('read_aloud'), title: label || W('read_aloud'),
+          style: Object.assign({}, btnBase, { padding: '4px 8px', fontSize: '0.6875rem' }, busy ? { opacity: 0.6, cursor: 'progress' } : null) },
+          busy ? '🔊 ' + W('read_aloud_busy') : '🔊');
+      }
       function snapshotForCoach() {
         try {
           var v = viewerRef.current; var it = currentRef.current;
@@ -545,7 +570,7 @@
             var resolved = {};
             Object.keys(manifest).forEach(function (k) { resolved[k] = t('stem.zoomGallery.' + k, manifest[k]); });
             var notes = ((ctx.toolData && ctx.toolData._zoomGallery && ctx.toolData._zoomGallery.notes) || {});
-            try { if (ev.source) ev.source.postMessage({ type: 'alloczoom-ready', ai: aiOn, strings: resolved, notes: notes }, '*'); } catch (_) {}
+            try { if (ev.source) ev.source.postMessage({ type: 'alloczoom-ready', ai: aiOn, tts: typeof ctx.callTTS === 'function', strings: resolved, notes: notes }, '*'); } catch (_) {}
             setPopupState('open');
             return;
           }
@@ -554,6 +579,16 @@
           if (data.type === 'alloczoom-coached') { bumpSlice('coachCount'); return; }
           if (data.type === 'alloczoom-imgopened') { bumpSlice('openedCount'); return; }
           if (data.type === 'alloczoom-notes') { if (data.notes && typeof data.notes === 'object') replaceNotes(data.notes); return; }
+          if (data.type === 'alloczoom-speak') {
+            // The pop-out has no host of its own; it asks us to read aloud.
+            var back = ev.source || _win.current;
+            var reply = function (ok) { try { if (back) back.postMessage({ type: 'alloczoom-speak-result', id: data.id, ok: !!ok }, '*'); } catch (_) {} };
+            if (typeof ctx.callTTS !== 'function' || !data.text) { reply(false); return; }
+            Promise.resolve(ctx.callTTS(String(data.text).slice(0, 4000), null, null, { force: true }))
+              .then(function (url) { reply(!!url); })
+              .catch(function () { reply(false); });
+            return;
+          }
           if (data.type !== 'alloczoom-ai-request' || !data.id) return;
           var replyTo = ev.source || _win.current;
           var respond = function (payload) {
@@ -596,7 +631,9 @@
             v = OSD({
               element: el,
               prefixUrl: OSD_BASE + 'images/',
-              showNavigator: true,
+              // The navigator inset sits where the credit chip sits, and on a phone
+              // it eats a third of an already small stage.
+              showNavigator: (el.clientWidth || 0) >= 480,
               navigatorPosition: 'BOTTOM_RIGHT',
               // OpenSeadragon's own zoom cluster renders as focusable <div>s with no
               // accessible name, so a keyboard user tabs into four anonymous stops.
@@ -814,7 +851,10 @@
         var body;
         if (step === 'notice') {
           body = [
-            h('div', { key: 'q', style: card }, '🔍 ' + imgText(current, 'notice')),
+            h('div', { key: 'q', style: card },
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start' } },
+                h('span', { style: { flex: '1 1 auto' } }, '🔍 ' + imgText(current, 'notice')),
+                speakBtn('notice', imgText(current, 'notice'), W('read_prompt')))),
             h('textarea', { key: 'ta', value: mem.notice, 'aria-label': W('notice_label'), placeholder: W('notice_placeholder'), style: ta,
               onChange: function (e) { setNote(current.id, { notice: e.target.value }); } }),
             pinsText(mem) ? h('div', { key: 'pins', style: { fontSize: '0.75rem', color: P.dim, lineHeight: 1.5, whiteSpace: 'pre-wrap' } }, h('b', null, W('pins_heading')), '\n' + pinsText(mem)) : null,
@@ -822,7 +862,10 @@
           ];
         } else if (step === 'wonder') {
           body = [
-            h('div', { key: 'q', style: card }, '💭 ' + imgText(current, 'wonder')),
+            h('div', { key: 'q', style: card },
+              h('div', { style: { display: 'flex', gap: 8, alignItems: 'flex-start' } },
+                h('span', { style: { flex: '1 1 auto' } }, '💭 ' + imgText(current, 'wonder')),
+                speakBtn('wonder', imgText(current, 'wonder'), W('read_prompt')))),
             h('textarea', { key: 'ta', value: mem.wonder, 'aria-label': W('wonder_label'), placeholder: W('wonder_placeholder'), style: ta,
               onChange: function (e) { setNote(current.id, { wonder: e.target.value }); } }),
             (mem.notice || '').trim() ? h('div', { key: 'rem', style: Object.assign({}, card, { borderColor: P.accent, whiteSpace: 'pre-wrap', fontSize: '0.78125rem' }) }, h('b', { style: { color: P.accent } }, W('you_noticed')), '\n' + mem.notice) : null,
@@ -836,7 +879,9 @@
               h('b', { style: { color: P.accent } }, W('you_noticed')), '\n' + mem.notice,
               (mem.wonder || '').trim() ? ['\n\n', h('b', { key: 'w', style: { color: P.accent } }, W('you_wondered')), '\n' + mem.wonder] : null,
               pinsText(mem) ? '\n\n' + pinsText(mem) : null) : null,
-            mem.feedback ? h('div', { key: 'fb', role: 'status', style: Object.assign({}, card, { borderColor: P.accent, whiteSpace: 'pre-wrap' }) }, mem.feedback) : null,
+            mem.feedback ? h('div', { key: 'fb', role: 'status', style: Object.assign({}, card, { borderColor: P.accent, whiteSpace: 'pre-wrap' }) },
+              mem.feedback,
+              speakBtn('feedback', mem.feedback) ? h('div', { style: { marginTop: 8 } }, speakBtn('feedback', mem.feedback)) : null) : null,
             h('div', { key: 'row', style: { display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' } },
               h('button', { type: 'button', style: btnBase, onClick: copyNotes }, copied || W('copy_notes')),
               h('span', { style: { fontSize: '0.65625rem', color: P.dim } }, I('notes_saved')))
@@ -897,7 +942,7 @@
             current && imgState === 'open' ? h('div', { 'aria-hidden': 'true', style: Object.assign({}, chipBox, { position: 'absolute', top: 48, right: 8, zIndex: 6, fontSize: '0.6875rem', padding: '3px 8px' }) }, W('zoom_readout', { z: zoomX })) : null,
             stageMsg ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: P.chipFg, fontSize: '0.8125rem', zIndex: 3, textAlign: 'center', padding: 20, pointerEvents: 'none' } }, stageMsg) : null,
             current && imgState === 'open' ? h('div', { style: Object.assign({}, chipBox, { position: 'absolute', bottom: 8, left: 8, right: 8, zIndex: 6, fontSize: '0.65625rem', padding: '4px 9px', lineHeight: 1.35, pointerEvents: 'none' }) },
-              '📷 ' + current.credit + ' · ', h('a', { href: current.link, target: '_blank', rel: 'noopener noreferrer', style: { color: P.chipLink, textDecoration: 'underline', pointerEvents: 'auto' } }, W('source_record'))) : null
+              '📷 ' + current.credit + ' · ', h('a', { href: current.link, target: '_blank', rel: 'noopener noreferrer', style: { color: P.chipLink, textDecoration: 'underline', pointerEvents: 'auto', display: 'inline-block', padding: '5px 2px' } }, W('source_record'))) : null
           ),
           // Coach
           h('aside', { 'aria-label': W('coach_aria'), style: { flex: '0 1 300px', minWidth: 240, background: P.panel, border: '1px solid ' + P.line, borderRadius: 12, padding: 12, display: 'flex', flexDirection: 'column', gap: 8 } },
@@ -911,7 +956,8 @@
                 (showDesc ? '▾ ' : '▸ ') + (showDesc ? W('describe_hide') : W('describe_show'))),
               h('div', { id: descId, hidden: !showDesc, style: Object.assign({}, card, { marginTop: 6, fontSize: '0.78125rem' }) },
                 h('p', { style: { margin: '0 0 6px', fontSize: '0.6875rem', color: P.dim, lineHeight: 1.45 } }, W('describe_intro')),
-                h('p', { style: { margin: 0 } }, imgText(current, 'describe')))) : null,
+                h('p', { style: { margin: 0 } }, imgText(current, 'describe')),
+                speakBtn('describe', imgText(current, 'describe')) ? h('div', { style: { marginTop: 8 } }, speakBtn('describe', imgText(current, 'describe'))) : null)) : null,
             h('p', { style: { margin: 'auto 0 0', fontSize: '0.65625rem', color: P.dim, lineHeight: 1.45 } }, I('inline_hint'))
           )
         ),

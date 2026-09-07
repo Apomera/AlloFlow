@@ -148,7 +148,8 @@
   .custom input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 0.8125rem; margin-bottom: 8px; }
   .custom .err { color: var(--warn); font-size: 0.71875rem; margin-top: 6px; }
   .credit-line { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 6; font-size: 0.65625rem; color: var(--chip-fg); background: var(--chip); border: 1px solid var(--chip-line); border-radius: 8px; padding: 4px 9px; line-height: 1.35; }
-  .credit-line a { color: var(--chip-link); text-decoration: underline; }
+  .credit-line a { color: var(--chip-link); text-decoration: underline; display: inline-block; padding: 5px 2px; }
+  button.sec.speak { margin-top: 8px; padding: 4px 8px; font-size: 0.6875rem; }
   .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; display: flex; gap: 6px; }
   /* Chips float over the photograph, so they carry an opaque ground: over an
      arbitrary image a translucent chip has no computable contrast ratio. */
@@ -312,7 +313,12 @@
     zoom_announced: "Zoom {z} times.",
     fit_announced: "Showing the whole image.",
     pin_removed_sr: "Pin {n} removed.",
-    pin_remove: "Remove pin {n}"
+    pin_remove: "Remove pin {n}",
+    read_aloud: "Read this aloud",
+    read_aloud_busy: "Speaking…",
+    read_aloud_stop: "Stop reading",
+    read_aloud_failed: "Read-aloud is not available right now.",
+    read_prompt: "Read the question aloud"
   };
 
   // ── Curated openly-licensed images ──────────────────────────────────
@@ -502,6 +508,8 @@
 
   // ── Opener bridge ────────────────────────────────────────────────────
   var pending = {};
+  var pendingSpeak = {};
+  var speakingKey = '';
   function toOpener(payload) {
     try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
     return false;
@@ -515,7 +523,7 @@
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
     if (data.type === 'alloczoom-ready') {
-      openerOk = true; aiAvailable = Boolean(data.ai);
+      openerOk = true; aiAvailable = Boolean(data.ai); ttsAvailable = Boolean(data.tts);
       if (data.notes && typeof data.notes === 'object') {
         Object.keys(data.notes).forEach(function (id) {
           var n = data.notes[id] || {};
@@ -526,10 +534,39 @@
       applyStrings(data.strings);
       return;
     }
+    if (data.type === 'alloczoom-speak-result' && data.id && pendingSpeak[data.id]) {
+      var se = pendingSpeak[data.id]; delete pendingSpeak[data.id]; clearTimeout(se.timer); se.done(!!data.ok);
+      return;
+    }
     if (data.type === 'alloczoom-ai-response' && data.id && pending[data.id]) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });
+  // The pop-out has no host of its own, so read-aloud goes back over the bridge
+  // to the AlloFlow window, the same way the coach does.
+  var ttsAvailable = false;
+  function speak(key, text) {
+    if (!ttsAvailable || !text || speakingKey) return;
+    speakingKey = key; renderCoach(); renderDescribe();
+    var id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    var done = function (ok) {
+      if (speakingKey !== key) return;
+      speakingKey = ''; renderCoach(); renderDescribe();
+      if (!ok) announce(STR.read_aloud_failed);
+    };
+    pendingSpeak[id] = { timer: setTimeout(function () { delete pendingSpeak[id]; done(false); }, 30000), done: done };
+    if (!toOpener({ type: 'alloczoom-speak', id: id, text: String(text).slice(0, 4000) })) {
+      clearTimeout(pendingSpeak[id].timer); delete pendingSpeak[id]; done(false);
+    }
+  }
+  function speakBtn(key, text, label) {
+    if (!ttsAvailable || !text) return null;
+    var busy = speakingKey === key;
+    var b = el('button', { class: 'sec speak', type: 'button', 'aria-label': label || STR.read_aloud, title: label || STR.read_aloud }, busy ? '🔊 ' + STR.read_aloud_busy : '🔊');
+    if (busy) b.disabled = true;
+    b.addEventListener('click', function () { speak(key, text); });
+    return b;
+  }
   function askAi(item, mem) {
     var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
     var shot = snapshotForCoach();
@@ -601,7 +638,9 @@
     if (mem.wonder.trim()) tabs.wonder.classList.add('done'); else tabs.wonder.classList.remove('done');
 
     if (step === 'notice') {
-      coachBody.appendChild(el('div', { class: 'qcard' }, '🔍 ' + imgStr(current, 'notice')));
+      var nq = el('div', { class: 'qcard' }, '🔍 ' + imgStr(current, 'notice'));
+      var nb = speakBtn('notice', imgStr(current, 'notice'), STR.read_prompt); if (nb) { nq.appendChild(document.createElement('br')); nq.appendChild(nb); }
+      coachBody.appendChild(nq);
       var ta = el('textarea', { id: 'noticeText', 'aria-label': STR.notice_label, placeholder: STR.notice_placeholder });
       ta.value = mem.notice;
       ta.addEventListener('input', function () { mem.notice = ta.value; syncNotes(); });
@@ -615,7 +654,9 @@
       });
       coachBody.appendChild(toWonder);
     } else if (step === 'wonder') {
-      coachBody.appendChild(el('div', { class: 'qcard' }, '💭 ' + imgStr(current, 'wonder')));
+      var wq = el('div', { class: 'qcard' }, '💭 ' + imgStr(current, 'wonder'));
+      var wb = speakBtn('wonder', imgStr(current, 'wonder'), STR.read_prompt); if (wb) { wq.appendChild(document.createElement('br')); wq.appendChild(wb); }
+      coachBody.appendChild(wq);
       var ta2 = el('textarea', { id: 'wonderText', 'aria-label': STR.wonder_label, placeholder: STR.wonder_placeholder });
       ta2.value = mem.wonder;
       ta2.addEventListener('input', function () { mem.wonder = ta2.value; syncNotes(); });
@@ -651,7 +692,11 @@
         var pt2 = pinsText(mem); if (pt2) rem2.appendChild(document.createTextNode('\n\n' + pt2));
         coachBody.appendChild(rem2);
       }
-      if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+      if (mem.feedback) {
+        var fb = el('div', { class: 'feedback' }, mem.feedback);
+        var fbb = speakBtn('feedback', mem.feedback); if (fbb) { fb.appendChild(document.createElement('br')); fb.appendChild(fbb); }
+        coachBody.appendChild(fb);
+      }
       var row = el('div', { class: 'row' });
       var cp = el('button', { class: 'sec', type: 'button' }, STR.copy_notes);
       cp.addEventListener('click', function () { copyNotes(cp); });
@@ -670,7 +715,9 @@
     viewer = window.OpenSeadragon({
       element: osdEl,
       prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/',
-      showNavigator: true,
+      // The navigator inset sits where the credit chip sits, and on a phone it
+      // eats a third of an already small stage.
+      showNavigator: (osdEl.clientWidth || 0) >= 480,
       navigatorPosition: 'BOTTOM_RIGHT',
       // OpenSeadragon's own zoom cluster renders as focusable <div>s with no
       // accessible name. We draw labelled buttons instead (see .stagectl).
@@ -790,6 +837,8 @@
     if (!current) { describeWrap.style.display = 'none'; return; }
     describeWrap.style.display = 'block';
     describeText.textContent = imgStr(current, 'describe') || '';
+    var oldBtn = describeBody.querySelector('.speak'); if (oldBtn) oldBtn.remove();
+    var db = speakBtn('describe', imgStr(current, 'describe')); if (db) describeBody.appendChild(db);
     describeBtn.textContent = describeBody.hidden ? STR.describe_show : STR.describe_hide;
     try {
       if (osdCanvas) {

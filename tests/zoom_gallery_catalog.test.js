@@ -266,3 +266,40 @@ describe('Zoom Gallery accessibility contract', () => {
     expect(toolSrc).toMatch(/say\(W\('zoom_announced'/);
   });
 });
+
+describe('Zoom Gallery read-aloud', () => {
+  it('routes through the house player and only for an explicit user action', () => {
+    // ctx.callTTS respects the header mute unless { force: true }, which is the
+    // sanctioned bypass for a button the student pressed. Nothing here ever
+    // speaks on its own, so there is no autoplay to mute.
+    expect(toolSrc).toMatch(/ctx\.callTTS\(String\(text\), null, null, \{ force: true \}\)/);
+    expect(toolSrc).not.toMatch(/callTTS\([^)]*\)\s*;\s*\/\/ *auto/);
+  });
+
+  it('hides the controls entirely when the host offers no speech', () => {
+    // A dead button is worse than no button.
+    expect(toolSrc).toMatch(/if \(typeof ctx\.callTTS !== 'function' \|\| !text\) return null;/);
+    expect(popupSrc).toMatch(/if \(!ttsAvailable \|\| !text\) return null;/);
+  });
+
+  it('tells the student when speech fails instead of doing nothing', () => {
+    expect(toolWin.read_aloud_failed).toBeTruthy();
+    expect(toolSrc).toMatch(/say\(W\('read_aloud_failed'\)\)/);
+    expect(popupSrc).toMatch(/announce\(STR\.read_aloud_failed\)/);
+  });
+
+  it('gives the pop-out speech through the opener, since it has no host', () => {
+    expect(popupSrc).toMatch(/type: 'alloczoom-speak'/);
+    expect(toolSrc).toMatch(/data\.type === 'alloczoom-speak'/);
+    expect(toolSrc).toMatch(/type: 'alloczoom-speak-result'/);
+    // and the opener advertises the capability on the handshake
+    expect(toolSrc).toMatch(/tts: typeof ctx\.callTTS === 'function'/);
+    expect(popupSrc).toMatch(/ttsAvailable = Boolean\(data\.tts\)/);
+  });
+
+  it('drops the navigator inset on a phone-sized stage', () => {
+    // It sits exactly where the credit chip sits and eats a third of a small stage.
+    expect(toolSrc).toMatch(/showNavigator: \(el\.clientWidth \|\| 0\) >= 480/);
+    expect(popupSrc).toMatch(/showNavigator: \(osdEl\.clientWidth \|\| 0\) >= 480/);
+  });
+});
