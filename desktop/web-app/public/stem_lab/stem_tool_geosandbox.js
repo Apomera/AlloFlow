@@ -93,6 +93,18 @@ window.StemLab = window.StemLab || {
       '#allo-geo-sandbox [class~="text-slate-600"], #allo-geo-sandbox [class~="text-slate-500"], #allo-geo-sandbox [class~="text-slate-400"] { color: #cbd5e1 !important; }',
       '#allo-geo-sandbox [class*="text-"][class*="/50"], #allo-geo-sandbox [class*="text-"][class*="/60"], #allo-geo-sandbox [class*="text-"][class*="/70"], #allo-geo-sandbox [class*="text-"][class*="/80"] { color: #e2e8f0 !important; }',
       '#allo-geo-sandbox input::placeholder, #allo-geo-sandbox textarea::placeholder { color: #cbd5e1 !important; opacity: 1 !important; }',
+      '#allo-geo-sandbox .geo-triad { position:absolute; left:14px; top:58px; width:64px; height:64px; z-index:4; pointer-events:none; overflow:visible; }',
+      '#allo-geo-sandbox .geo-triad .geo-triad-ring { fill:rgba(15,32,53,0.62); stroke:rgba(62,86,113,0.55); stroke-width:1; }',
+      '#allo-geo-sandbox .geo-triad line { stroke-width:2.4; stroke-linecap:round; }',
+      '#allo-geo-sandbox .geo-triad text { font:700 9px system-ui, sans-serif; text-anchor:middle; dominant-baseline:central; fill:#eaf2fc; paint-order:stroke; stroke:#0f2035; stroke-width:2.5px; }',
+      '#allo-geo-sandbox .geo-triad [data-axis="x"] line { stroke:#f87171; } #allo-geo-sandbox .geo-triad [data-axis="y"] line { stroke:#4ade80; } #allo-geo-sandbox .geo-triad [data-axis="z"] line { stroke:#60a5fa; }',
+      '#allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad .geo-triad-ring { fill:rgba(255,255,255,0.72); stroke:#94a3b8; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad text { fill:#1e293b; stroke:#ffffff; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="x"] line { stroke:#dc2626; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="y"] line { stroke:#16a34a; } #allo-geo-sandbox .geo-viewport[data-background=paper] .geo-triad [data-axis="z"] line { stroke:#2563eb; }',
+      '#allo-geo-sandbox #geo-sandbox-canvas[data-geo-hover="1"] { cursor:pointer !important; }',
+      '#allo-geo-sandbox .geo-viewport::before { content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:radial-gradient(ellipse at 50% 42%, transparent 55%, rgba(2,6,23,0.30) 100%); }',
+      '#allo-geo-sandbox .geo-viewport[data-background=paper]::before { background:radial-gradient(ellipse at 50% 42%, transparent 60%, rgba(30,41,59,0.10) 100%); }',
+      '.theme-contrast #allo-geo-sandbox .geo-viewport::before, #allo-geo-sandbox.theme-contrast .geo-viewport::before { display:none; }',
+      '@media (forced-colors: active) { #allo-geo-sandbox .geo-viewport::before, #allo-geo-sandbox .geo-triad { display:none; } }',
+      '@media (max-width: 760px) { #allo-geo-sandbox .geo-triad { width:46px; height:46px; left:8px; top:52px; } }',
       '#allo-geo-sandbox [class*="border-slate-700"], #allo-geo-sandbox [class*="border-slate-600"], #allo-geo-sandbox [class*="border-"][class*="/20"], #allo-geo-sandbox [class*="border-"][class*="/30"], #allo-geo-sandbox [class*="border-"][class*="/40"] { border-color: #94a3b8 !important; }',
       '#allo-geo-sandbox .opacity-50 { opacity: 0.92 !important; }',
       '#allo-geo-sandbox input[type="range"] { min-height: 24px; touch-action: pan-y; }',
@@ -213,6 +225,21 @@ window.StemLab = window.StemLab || {
     scene.add(rim);
     // Ground
     var grid = new THREE.GridHelper(20,20,0x526681,0x273950); grid.name='geo-floor-grid'; if(grid.material){grid.material.transparent=true;grid.material.opacity=.55;} scene.add(grid);
+    // Origin cross — the X and Z lines through (0,0,0) read brighter than the rest
+    // of the grid, so a student can see where the construction is anchored and
+    // which way it faces. They are CHILDREN of the grid so "Show grid" hides them
+    // too. Neutral slate on purpose: tests/e2e/19-geosandbox-gl.spec.ts isolates
+    // solids from scene furniture with "r > g", so floor furniture must stay g >= r.
+    var originLines = [];
+    try {
+      [[[-10, 0.002, 0], [10, 0.002, 0]], [[0, 0.002, -10], [0, 0.002, 10]]].forEach(function(pts) {
+        var lg = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3().fromArray(pts[0]), new THREE.Vector3().fromArray(pts[1])]);
+        var ln = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0x7f97b5, transparent: true, opacity: 0.5, depthWrite: false }));
+        ln.name = 'geo-origin-line'; ln.renderOrder = 1;
+        grid.add(ln); originLines.push(ln);
+      });
+    } catch (e) {}
+    grid.userData.geoOriginLines = originLines;
     // Shadow catcher — invisible plane that only shows the soft shadow.
     // depthWrite:false is load-bearing. ShadowMaterial sets transparent=true but
     // inherits depthWrite=true, so this 40x40 catcher wrote depth across the whole
@@ -229,6 +256,14 @@ window.StemLab = window.StemLab || {
     shadowPlane.position.y = 0.001;
     shadowPlane.receiveShadow = true;
     scene.add(shadowPlane);
+    // Paper (light) backgrounds need darker floor furniture and a lighter shadow;
+    // the React effect calls this whenever the background preference changes.
+    function setSceneTheme(isLight) {
+      try {
+        originLines.forEach(function(ln) { if (ln.material && ln.material.color) { ln.material.color.setHex(isLight ? 0x64748b : 0x7f97b5); ln.material.opacity = isLight ? 0.7 : 0.5; } });
+        if (shadowPlane.material) shadowPlane.material.opacity = isLight ? 0.2 : 0.32;
+      } catch (e) {}
+    }
     // WebXR rig: while presenting, the headset drives the camera's LOCAL pose, so
     // the camera lives in a rig we seat in front of the model. At identity (the 2D
     // default) this is transform-neutral — OrbitControls keeps writing world-space
@@ -301,6 +336,70 @@ window.StemLab = window.StemLab || {
         return mag > 0.0001 ? { x: dx / mag, y: dy / mag } : fallback;
       } catch (err) { return fallback; }
     }
+    // ── Hover affordance: a selectable object under a resting pointer flags the
+    //    canvas (CSS turns the cursor into a pointer) and gets a faint emissive
+    //    lift, so "click a shape in the 3D view" is discoverable before the first
+    //    click. Throttled to ~25 Hz. The lift is undone only if nothing else
+    //    (selection, sculpt preview) rewrote the emissive in the meantime, so it
+    //    can never clobber a highlight that another code path owns. ──
+    var _hover = { obj: null, mats: [], at: 0 };
+    var HOVER_HEX = 0x38bdf8, HOVER_INT = 0.22;
+    function _geoHoverClear() {
+      _hover.mats.forEach(function(rec) {
+        var m = rec.m;
+        try {
+          if (m && m.emissive && m.emissive.getHex && m.emissive.getHex() === HOVER_HEX && m.emissiveIntensity === HOVER_INT) {
+            m.emissive.setHex(rec.hex); m.emissiveIntensity = rec.intensity;
+          }
+        } catch (err) {}
+      });
+      _hover.mats = []; _hover.obj = null;
+      try { renderer.domElement.removeAttribute('data-geo-hover'); } catch (err) {}
+    }
+    function _geoHoverApply(node) {
+      _hover.obj = node;
+      try { renderer.domElement.setAttribute('data-geo-hover', '1'); } catch (err) {}
+      try {
+        node.traverse(function(o) {
+          if (!o || !o.isMesh || !o.material) return;
+          if (o.userData && (o.userData.isGeoOutline || o.userData.isGeoSculptHandle)) return;
+          var mats = Array.isArray(o.material) ? o.material : [o.material];
+          mats.forEach(function(m) {
+            if (!m || !m.emissive || !m.emissive.getHex) return;
+            _hover.mats.push({ m: m, hex: m.emissive.getHex(), intensity: m.emissiveIntensity == null ? 1 : m.emissiveIntensity });
+            m.emissive.setHex(HOVER_HEX); m.emissiveIntensity = HOVER_INT;
+          });
+        });
+      } catch (err) {}
+    }
+    function _geoHoverAt(e) {
+      var now = Date.now(); if (now - _hover.at < 40) return; _hover.at = now;
+      var gs = window._geoScene, hoverMode = window._geoActiveMode, group = null, key = null;
+      if (hoverMode === 'stretch') { group = gs && gs.constructionGroup; key = 'objId'; }
+      else if (hoverMode === 'sculpt') { group = gs && gs.sculptGroup; key = 'prim3dPartIndex'; }
+      if (!group || !group.children || !group.children.length) { if (_hover.obj) _geoHoverClear(); return; }
+      var rect = renderer.domElement.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      _pickV2.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      _pickV2.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+      var target = null;
+      try {
+        _pickRay.setFromCamera(_pickV2, camera);
+        var hits = _pickRay.intersectObjects(group.children, true);
+        for (var i = 0; i < hits.length && !target; i++) {
+          var node = hits[i].object;
+          while (node && node !== group) {
+            if (node.userData && (node.userData[key] != null || node.userData.isGeoSculptHandle)) { target = node; break; }
+            node = node.parent;
+          }
+        }
+      } catch (err) { target = null; }
+      if (target === _hover.obj) return;
+      _geoHoverClear();
+      if (!target) return;
+      if (target.userData && target.userData.isGeoSculptHandle) { _hover.obj = target; try { renderer.domElement.setAttribute('data-geo-hover', '1'); } catch (err) {} }
+      else _geoHoverApply(target);
+    }
     function _geoPickDown(e) {
       _pick.down = true; _pick.moved = false; _pick.x = e.clientX; _pick.y = e.clientY; _pick.handle = null;
       var handle = _geoHandleAtPointer(e);
@@ -326,6 +425,7 @@ window.StemLab = window.StemLab || {
         e.preventDefault(); return;
       }
       if (_pick.down && (Math.abs(e.clientX - _pick.x) + Math.abs(e.clientY - _pick.y)) > 6) _pick.moved = true;
+      else if (!_pick.down) _geoHoverAt(e);
     }
     function _geoPickUp(e) {
       var wasDown = _pick.down, activeHandle = _pick.handle, handleMoved = _pick.moved;
@@ -394,6 +494,7 @@ window.StemLab = window.StemLab || {
     renderer.domElement.addEventListener('pointerdown', _geoPickDown);
     renderer.domElement.addEventListener('pointermove', _geoPickMove);
     renderer.domElement.addEventListener('pointerup', _geoPickUp);
+    renderer.domElement.addEventListener('pointerleave', function() { if (_hover.obj) _geoHoverClear(); });
     renderer.domElement.addEventListener('pointercancel', function() { _pick.down=false; _pick.handle=null; if(controls)controls.enabled=true; if(window._geoEndSculptDrag)window._geoEndSculptDrag(); });
     // Animate
     var animId;
@@ -407,6 +508,7 @@ window.StemLab = window.StemLab || {
       animId = requestAnimationFrame(animate);
       renderer._geoAnimId = animId; // live handle — cleanupScene must cancel the CURRENT frame, not the stale first-frame id captured in the returned object
       if (controls) controls.update();
+      if (window._geoTriadUpdate) { try { window._geoTriadUpdate(camera); } catch (e) {} }
       var _ac=renderer._alloComposer; if(_ac){ try{ _ac.render(); }catch(e){ renderer._alloComposer=null; renderer.render(scene, camera); } } else { renderer.render(scene, camera); }
     };
     animate();
@@ -568,7 +670,7 @@ window.StemLab = window.StemLab || {
           return session;
         });
     }
-    return { scene: scene, grid: grid, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR, setVrCaption: _geoSetVrCaption, setVrStatus: _geoSetVrStatus };
+    return { scene: scene, grid: grid, camera: camera, renderer: renderer, controls: controls, animId: animId, mesh: null, xrRig: xrRig, enterVR: enterVR, setVrCaption: _geoSetVrCaption, setVrStatus: _geoSetVrStatus, setSceneTheme: setSceneTheme };
   }
 
   function updateMesh(gs, shapeType, dims, shapeColor, wireframe, opacity) {
@@ -633,6 +735,7 @@ window.StemLab = window.StemLab || {
     if (window._geoSrTimer) { clearTimeout(window._geoSrTimer); window._geoSrTimer = null; }
     if (window._geoFocusAnim) { cancelAnimationFrame(window._geoFocusAnim); window._geoFocusAnim = null; }
     window._geoActiveMode = null;
+    window._geoTriadUpdate = null;
     if (window._geoScene) {
       cancelAnimationFrame((window._geoScene.renderer && window._geoScene.renderer._geoAnimId) || window._geoScene.animId);
       // End any live VR session and stop the XR frame loop before disposing the GL.
@@ -1997,6 +2100,34 @@ window.StemLab = window.StemLab || {
   //    the logic is unit-testable; targets factor into whole-number side lengths
   //    so there is always a clean stretch path to the answer. ──
   var GEO_BUILD_KINDS = ['length', 'area', 'volume'];
+  // Camera-space direction of each world axis, for the on-screen orientation
+  // triad. q is the camera's world quaternion {x,y,z,w}; rotating a world vector
+  // by its conjugate lands it in camera space, where +x is screen right, +y is
+  // screen up, and +z points out of the screen at the viewer (three.js cameras
+  // look down their local -z). depth > 0 therefore means "this axis points at
+  // me". Pure, so the projection can be pinned without WebGL.
+  function geoProjectAxes(q) {
+    var qx = -(q && q.x || 0), qy = -(q && q.y || 0), qz = -(q && q.z || 0), qw = (q && q.w != null) ? q.w : 1;
+    var n = Math.sqrt(qx * qx + qy * qy + qz * qz + qw * qw) || 1;
+    qx /= n; qy /= n; qz /= n; qw /= n;
+    function rot(v) {
+      // v' = v + 2 * cross(qv, cross(qv, v) + w * v)
+      var ix = qw * v[0] + qy * v[2] - qz * v[1];
+      var iy = qw * v[1] + qz * v[0] - qx * v[2];
+      var iz = qw * v[2] + qx * v[1] - qy * v[0];
+      var iw = -qx * v[0] - qy * v[1] - qz * v[2];
+      return [
+        ix * qw + iw * -qx + iy * -qz - iz * -qy,
+        iy * qw + iw * -qy + iz * -qx - ix * -qz,
+        iz * qw + iw * -qz + ix * -qy - iy * -qx
+      ];
+    }
+    return [['x', [1, 0, 0]], ['y', [0, 1, 0]], ['z', [0, 0, 1]]].map(function(a) {
+      var r = rot(a[1]);
+      return { axis: a[0], x: r[0], y: r[1], depth: r[2] };
+    });
+  }
+
   function _geoSeededRand(seed) {
     var s = (seed >>> 0) || 1;
     return function () { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; };
@@ -2775,6 +2906,7 @@ window.StemLab = window.StemLab || {
   // Expose the pure stretch-math + challenge seams for unit tests (no DOM/GL).
   try {
     window.StemLab.geoPure = {
+      geoProjectAxes: geoProjectAxes,
       objectVolume: objectVolume,
       geoPrismSurfaceArea: geoPrismSurfaceArea,
       stretchPoint: stretchPoint, stretchSegment: stretchSegment, stretchRect: stretchRect,
@@ -3020,6 +3152,27 @@ window.StemLab = window.StemLab || {
       var placeX = gd.placeX != null ? gd.placeX : 0;
       var placeZ = gd.placeZ != null ? gd.placeZ : 0;
       var placeY = gd.placeY != null ? gd.placeY : 0;       // height above the grid; 0 = on the floor
+      // Orientation triad: the frame loop calls window._geoTriadUpdate(camera)
+      // and this writes the projected X/Y/Z directions straight into the SVG,
+      // bypassing React so it costs no re-render per frame.
+      var triadRef = React.useRef(null);
+      React.useEffect(function() {
+        window._geoTriadUpdate = function(camera) {
+          var svg = triadRef.current; if (!svg || !camera || !camera.quaternion) return;
+          var q = camera.quaternion;
+          if (svg._geoLastQ && svg._geoLastQ[0] === q.x && svg._geoLastQ[1] === q.y && svg._geoLastQ[2] === q.z && svg._geoLastQ[3] === q.w) return;
+          svg._geoLastQ = [q.x, q.y, q.z, q.w];
+          if (!svg._geoAxes) { svg._geoAxes = {}; ['x', 'y', 'z'].forEach(function(ax) { svg._geoAxes[ax] = svg.querySelector('g[data-axis="' + ax + '"]'); }); }
+          geoProjectAxes({ x: q.x, y: q.y, z: q.z, w: q.w }).forEach(function(a) {
+            var g = svg._geoAxes[a.axis]; if (!g) return;
+            var line = g.firstChild, text = g.lastChild;
+            if (line) { line.setAttribute('x2', (a.x * 21).toFixed(1)); line.setAttribute('y2', (-a.y * 21).toFixed(1)); }
+            if (text) { text.setAttribute('x', (a.x * 27).toFixed(1)); text.setAttribute('y', (-a.y * 27).toFixed(1)); }
+            g.style.opacity = a.depth < -0.15 ? '0.45' : '1';
+          });
+        };
+        return function() { window._geoTriadUpdate = null; };
+      }, []);
       var resizeSnapRef = React.useRef(null);               // one undo snapshot per resize interaction
       // ── AI Sculpt (v3, reuses window.AlloModules.Prim3D) ──
       var sculptRecipe = geoNormalizeSculpt(gd.sculptRecipe);
@@ -4109,8 +4262,33 @@ window.StemLab = window.StemLab || {
         var center = gs.controls ? gs.controls.target.clone() : new window.THREE.Vector3(0,1,0);
         var distance = Math.max(4, gs.camera.position.distanceTo(center));
         var vectors = {front:[0,0,1],side:[1,0,0],top:[0,1,0.001],iso:[1,0.75,1]};
-        gs.camera.position.copy(center).add(new window.THREE.Vector3().fromArray(vectors[view] || vectors.iso).normalize().multiplyScalar(distance));
-        gs.camera.lookAt(center); if(gs.controls)gs.controls.update();
+        var endPosition = center.clone().add(new window.THREE.Vector3().fromArray(vectors[view] || vectors.iso).normalize().multiplyScalar(distance));
+        // Glide to the preset so the student sees HOW the view changed (which way
+        // the solid turned) instead of a cut. The camera swings around the target
+        // on the sphere, never through the solid. Reduced motion keeps the cut.
+        var reduced = !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        if (window._geoFocusAnim) { cancelAnimationFrame(window._geoFocusAnim); window._geoFocusAnim = null; }
+        var duration = reduced ? 0 : 380;
+        if (!duration || typeof requestAnimationFrame !== 'function') {
+          gs.camera.position.copy(endPosition); gs.camera.lookAt(center); if(gs.controls)gs.controls.update();
+          return;
+        }
+        var startDir = gs.camera.position.clone().sub(center), startLen = startDir.length(), startTime = null;
+        var endDir = endPosition.clone().sub(center), endLen = endDir.length();
+        startDir.normalize(); endDir.normalize();
+        function frame(now) {
+          if (!window._geoScene || window._geoScene !== gs || !gs.renderer || !gs.renderer.domElement.isConnected) return;
+          if (startTime == null) startTime = now;
+          var p = Math.min(1, (now - startTime) / duration);
+          var eased = 1 - Math.pow(1 - p, 3);
+          var dir = startDir.clone().lerp(endDir, eased);
+          if (dir.lengthSq() < 1e-6) dir.copy(endDir); else dir.normalize();
+          gs.camera.position.copy(center).add(dir.multiplyScalar(startLen + (endLen - startLen) * eased));
+          gs.camera.lookAt(center);
+          if (gs.controls) gs.controls.update();
+          window._geoFocusAnim = p < 1 ? requestAnimationFrame(frame) : null;
+        }
+        window._geoFocusAnim = requestAnimationFrame(frame);
       }
       function sculptLabel(key, fallback) { return t('stem.geosandbox.studio_' + key, fallback); }
       var sculptPanel = ['parts','edit','project'].indexOf(gd.sculptPanel) >= 0 ? gd.sculptPanel : 'parts';
@@ -4633,6 +4811,7 @@ window.StemLab = window.StemLab || {
         } catch(e) {}
         themeBg = gd.canvasBackground === 'paper' ? '#e9eef4' : gd.canvasBackground === 'midnight' ? '#080f1e' : '#122034';
         if(window._geoScene.grid)window._geoScene.grid.visible=gd.showGrid!==false;
+        if (typeof window._geoScene.setSceneTheme === 'function') window._geoScene.setSceneTheme(gd.canvasBackground === 'paper');
         if (window._geoScene && window._geoScene.scene) {
           if (window._geoScene.scene.background && window._geoScene.scene.background.isColor) {
             window._geoScene.scene.background.setStyle(themeBg);
@@ -6235,6 +6414,13 @@ h('button', {
             !gd.challengeMode && showCanvasMeasures && mode === 'single' && h('div',{className:'geo-measure-strip'},h('span',null,t('stem.geosandbox.volume_2','Volume'),h('strong',null,m.vol.toFixed(2)+' '+unitDef.short+'³')),h('span',null,t('stem.geosandbox.surface_area','Surface area'),h('strong',null,m.sa.toFixed(2)+' '+unitDef.short+'²')),h('button',{type:'button',onClick:function(){openWorkspacePanel('learn',true);}},t('stem.geosandbox.studio_see_math','Explore the math'))),
             // Camera presets are available to pointer, touch and keyboard users.
             h('div',{className:'geo-camera-bar',role:'group','aria-label':t('stem.geosandbox.workbench_camera','Camera views')},h('button',{type:'button',onClick:fitCurrentGeometry},t('stem.geosandbox.workbench_fit','Fit')),['front','side','top','iso'].map(function(view){return h('button',{key:view,type:'button',onClick:function(){setCameraView(view);},'aria-label':t('stem.geosandbox.workbench_view_'+view,view+' view')},t('stem.geosandbox.workbench_'+view,view));})),
+            // Orientation triad: which way is X, Y, Z right now. Decorative for AT
+            // (the camera bar and arrow keys are the controls); mirrors the sculpt
+            // handle colours so the two cues agree.
+            !webglError && h('svg', { className: 'geo-triad', viewBox: '-32 -32 64 64', 'aria-hidden': 'true', focusable: 'false', ref: triadRef },
+              h('circle', { cx: 0, cy: 0, r: 30, className: 'geo-triad-ring' }),
+              ['z', 'x', 'y'].map(function(ax) { return h('g', { key: ax, 'data-axis': ax }, h('line', { x1: 0, y1: 0, x2: 0, y2: 0 }), h('text', { x: 0, y: 0 }, ax.toUpperCase())); })
+            ),
             // Controls hint overlay
             showNavigationHints && h('div', { className: 'absolute bottom-2 right-2 text-[0.6875rem] text-slate-300 bg-slate-900/80 px-2 py-1 rounded-md' },
               h('span', { className: 'geo-hint-desktop' }, t('stem.geosandbox.drag_rotate_scroll_zoom_right_click_pa', '\uD83D\uDDB1\uFE0F Drag: rotate \u2022 Scroll: zoom \u2022 Right-click: pan')),
