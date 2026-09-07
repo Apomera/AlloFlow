@@ -35,7 +35,7 @@ function classes(node) {
 
 function additionMotionNodes(root) {
   return [...root.querySelectorAll('[style]')].filter((node) =>
-    /(?:titrationDrip|bubbleRise|stirSpin)/.test(node.getAttribute('style') || ''));
+    /(?:titrationDrip|bubbleRise|stirSpin|titrationBloom)/.test(node.getAttribute('style') || ''));
 }
 
 function parseColor(value) {
@@ -313,5 +313,40 @@ describe('notebook persistence during addition feedback', () => {
       expect(labs[0].querySelector('.titr-notebook li').textContent).toContain('5.0 mL');
       expect(labs[1].querySelectorAll('.titr-notebook li')).toHaveLength(0);
     } finally { vi.useRealTimers(); }
+  });
+});
+
+// The endpoint bloom — the transient swirl of colour where a drop lands — exists in
+// BOTH flasks: the 3D bench and this 2D panel, which is what a device without WebGL is
+// left with. It has to be driven by ONE derivation, or the two views teach different
+// titrations to different students.
+describe('Endpoint bloom in the 2D flask', () => {
+  const bloom = (root) => [...root.querySelectorAll('ellipse')]
+    .find((node) => /titrationBloom/.test(node.getAttribute('style') || ''));
+
+  it('appears only while an addition is in flight', () => {
+    expect(bloom(renderState({ volumeAdded: 8, _prevVolume: 8 }))).toBeUndefined();
+    expect(bloom(renderState({ volumeAdded: 8, _prevVolume: 7.5 }))).toBeDefined();
+  });
+
+  it('is suppressed with the rest of the motion when reduced motion is on', () => {
+    expect(bloom(renderState({ volumeAdded: 8, _prevVolume: 7.5, titrationReduceMotion: true })))
+      .toBeUndefined();
+  });
+
+  it('takes the indicator endpoint colour, not the colour the flask is now', () => {
+    const node = bloom(renderState({ volumeAdded: 8, _prevVolume: 7.5, indicator: 'bromothymolBlue' }));
+    expect(node.getAttribute('fill')).toBe('#3b82f6');
+  });
+
+  it('lingers longer near equivalence than far from it', () => {
+    const duration = (volume) => Number(/titrationBloom (\d+)ms/
+      .exec(bloom(renderState({ volumeAdded: volume, _prevVolume: volume - 0.5 })).getAttribute('style'))[1]);
+    expect(duration(25)).toBeGreaterThan(duration(8) * 2);
+  });
+
+  it('drives the 3D bench from the same two values', () => {
+    expect(SOURCE).toContain('flashColor: endpointBloomColor, flashHold: endpointBloomHold');
+    expect((SOURCE.match(/var endpointBloomHold =/g) || []).length).toBe(1);
   });
 });

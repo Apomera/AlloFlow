@@ -2789,6 +2789,14 @@ var currentY = yAxis.at(volumeAdded);
 var redoxF = isPotentiometric ? redoxFraction(volumeAdded) : 0;
 
 var currentColor = isPotentiometric ? getRedoxFlaskColor(redoxF) : getFlaskColor(currentPH);
+// The endpoint bloom: the transient swirl of colour where a drop lands. Its colour is
+// what the indicator turns where the titrant is locally in excess — not the colour the
+// bulk solution happens to be — and it lingers longer the nearer the addition is to
+// equivalence, which is the cue students are told to watch for. Derived once here and
+// used by BOTH the 3D bench and the 2D flask.
+var endpointBloomColor = isPotentiometric ? '#a855f7' : indicator.colorHigh;
+var endpointBloomHold = Math.max(0, Math.min(1, 1 - Math.abs(volumeAdded - Veq) / Math.max(1, Veq * 0.12)));
+var endpointBloomMs = Math.round(420 + endpointBloomHold * 900);
 
 // The flask colour doubles as the colour of the big numeric readout — but a flask tint
 // is chosen to look like a liquid, not to be read as text on a dark card. Measured in a
@@ -4327,10 +4335,7 @@ return React.createElement("div", {
     currentReading: {preset:presetId,setup:preset.acidName+' + '+preset.baseName,axis:yAxis.mode,value:Number(yAxis.readout(currentY)),volume:Number(volumeAdded.toFixed(1)),observation:indicatorStatus,indicator:isPotentiometric?'KMnO₄':indicator.label},
     curve: { points: curveData, volume: volumeAdded, value: currentY, maxVolume: curveMaxVol, equivalence: Veq, min: yAxis.min, max: yAxis.max, tick: yAxis.tick, label: yAxis.label, readout: yAxis.speech(currentY), description: volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus },
     model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0,
-      // The bloom is the colour the indicator turns where the titrant is locally in
-      // excess, not the colour the bulk solution happens to be right now.
-      flashColor: isPotentiometric ? '#a855f7' : indicator.colorHigh,
-      flashHold: Math.max(0, Math.min(1, 1 - Math.abs(volumeAdded - Veq) / Math.max(1, Veq * 0.12))) },
+      flashColor: endpointBloomColor, flashHold: endpointBloomHold },
     description: __alloT('stem.titration.burette_flask', 'BURETTE & FLASK') + '. ' + volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus,
     readings: [
       [__alloT('stem.titration.titrant_volume', 'TITRANT VOLUME:'), volumeAdded.toFixed(1) + ' mL'],
@@ -4439,7 +4444,8 @@ return React.createElement("div", {
         React.createElement("style", null,
           '@keyframes titrationDrip { 0% { opacity:1; transform:translateY(0); } 70% { opacity:1; transform:translateY(12px); } 100% { opacity:0; transform:translateY(16px) scale(1.5); } } ' +
           '@keyframes stirSpin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } ' +
-          '@keyframes bubbleRise { 0% { opacity:0.7; transform: translateY(0) scale(1); } 100% { opacity:0; transform: translateY(-20px) scale(0.3); } }'
+          '@keyframes bubbleRise { 0% { opacity:0.7; transform: translateY(0) scale(1); } 100% { opacity:0; transform: translateY(-20px) scale(0.3); } } ' +
+          '@keyframes titrationBloom { 0% { opacity:0; transform:scale(0.35); } 18% { opacity:0.85; transform:scale(0.8); } 100% { opacity:0; transform:scale(2.3); } }'
         ),
 
 
@@ -4509,6 +4515,17 @@ return React.createElement("div", {
             cx: (buretteW + 40) / 2, cy: 77, rx: 8, ry: 2.5,
             fill: '#1e293b', stroke: 'rgba(255,255,255,0.2)', strokeWidth: '0.5',
             style: { animation: additionAnimating ? 'stirSpin 0.5s 1 ease-out' : 'none' }
+          }),
+
+          // The same bloom the 3D bench shows, so a device without WebGL is not taught a
+          // different titration. transform-box/transform-origin because an SVG element
+          // otherwise scales about the ROOT origin and the bloom flies off the flask.
+          additionAnimating && React.createElement("ellipse", {
+            cx: (buretteW + 40) / 2, cy: Number(flaskSurfaceY) + 7, rx: 11, ry: 5,
+            fill: endpointBloomColor,
+            style: { animation: 'titrationBloom ' + endpointBloomMs + 'ms ease-out both',
+              transformBox: 'fill-box', transformOrigin: 'center',
+              filter: 'blur(1.5px)', mixBlendMode: 'screen' }
           }),
 
           // Bubbles at drip entry point
@@ -5255,12 +5272,53 @@ return React.createElement("div", {
     // whether or not WebGL is available, and it is what a screen-reader user's
     // description is written against.
     var elevation = (function () {
-      var W = 260, H = 150, mx = 96, my = 78;           // meniscus at (mx,my)
-      var scaleX = mx + 26, eyeX = 236;
-      var eyeY = my - gEyeCm * 2.2;
+      var W = 300, H = 190, mx = 100, my = 84;          // meniscus at (mx,my)
+      var scaleX = mx + 26, eyeX = 268;
+      var eyeY = my - gEyeCm * 2.4;
       var crossY = my + (eyeY - my) * ((scaleX - mx) / (eyeX - mx));
+      // Marks on the scale, so it reads as a burette rather than a bare line. They
+      // are deliberately UNNUMBERED: only the two crossings carry a millilitre value,
+      // because only those two are quantities the model actually computed.
+      var rungs = [];
+      for (var ry = 18; ry < H - 12; ry += 9) {
+        var major = Math.round((ry - 18) / 9) % 4 === 0;
+        rungs.push(React.createElement('line', { key: 'r' + ry, x1: scaleX - (major ? 9 : 5), y1: ry,
+          x2: scaleX, y2: ry, stroke: 'rgba(203,213,225,0.55)', strokeWidth: 1 }));
+      }
+      // The two readings are the point of the whole diagram, so give them numbers
+      // instead of the words 'true' and 'you read' — which were the only untranslated
+      // English left in this picture, and said less.
+      var gap = crossY - my, apart = Math.abs(gap) >= 15;
+      var valueLabel = function (y, value, fill, key) {
+        return React.createElement('text', { key: key, x: mx - 34, y: y + 4, fill: fill,
+          fontSize: 11, fontWeight: 'bold', textAnchor: 'end' }, value.toFixed(2));
+      };
+      // The honest problem with a self-consistent side elevation: at 12 cm the sight
+      // line crosses the scale about four pixels off true, which is invisible. Rather
+      // than quietly exaggerate the geometry — the thing the note under the 3D view
+      // explicitly promises not to do — magnify the crossing in a labelled detail
+      // circle, the way a technical drawing would, and print the factor.
+      var detail = (function () {
+        if (eyeLevel || !isFinite(gap) || Math.abs(gap) < 0.05) return null;
+        var cx = 46, cy = 136, r = 29;
+        // Chosen so the magnified mark still LANDS inside the circle: rounding to a
+        // nice factor first pushed it outside the rim, which read as a stray bar.
+        var k = Math.max(2, Math.min(8, Math.floor((r - 8) / Math.abs(gap))));
+        var far = cy + k * gap;
+        return React.createElement('g', { key: 'detail' },
+          React.createElement('line', { x1: mx - 24, y1: my + gap / 2, x2: cx + r * 0.78, y2: cy - r * 0.62,
+            stroke: 'rgba(148,163,184,0.6)', strokeWidth: 1, strokeDasharray: '3,3' }),
+          React.createElement('circle', { cx: cx, cy: cy, r: r, fill: 'rgba(15,32,48,0.92)',
+            stroke: 'rgba(148,163,184,0.7)', strokeWidth: 1 }),
+          React.createElement('line', { x1: cx, y1: cy - r + 4, x2: cx, y2: cy + r - 4,
+            stroke: 'rgba(203,213,225,0.6)', strokeWidth: 1 }),
+          React.createElement('line', { x1: cx - 17, y1: cy, x2: cx + 17, y2: cy, stroke: '#4ade80', strokeWidth: 3 }),
+          React.createElement('line', { x1: cx - 14, y1: far, x2: cx + 14, y2: far, stroke: '#fbbf24', strokeWidth: 3 }),
+          React.createElement('text', { x: cx, y: H - 4, fill: '#94a3b8', fontSize: 10,
+            fontWeight: 'bold', textAnchor: 'middle' }, '\u00D7' + k));
+      })();
       return React.createElement("svg", {
-        viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '160px' },
+        viewBox: '0 0 ' + W + ' ' + H, className: "w-full", style: { maxHeight: '200px' },
         // Every clause is a key. Splicing a raw 'above'/'below' into an otherwise
         // translated sentence is the half-translated failure this repo guards against
         // elsewhere, and a screen reader reads the result aloud verbatim.
@@ -5275,15 +5333,30 @@ return React.createElement("div", {
       },
         React.createElement("rect", { x: mx - 22, y: 8, width: 48, height: H - 16, fill: 'rgba(147,197,253,0.10)', stroke: 'rgba(147,197,253,0.45)' }),
         React.createElement("line", { x1: scaleX, y1: 8, x2: scaleX, y2: H - 8, stroke: '#cbd5e1', strokeWidth: 1.5 }),
+        rungs,
         React.createElement("rect", { x: mx - 21, y: my, width: 46, height: H - 8 - my, fill: 'rgba(56,189,248,0.35)' }),
         React.createElement("line", { x1: mx - 21, y1: my, x2: mx + 25, y2: my, stroke: '#22d3ee', strokeWidth: 2 }),
         React.createElement("line", { x1: mx, y1: my, x2: eyeX, y2: my, stroke: '#4ade80', strokeWidth: 1, strokeDasharray: '3,3', opacity: 0.65 }),
         React.createElement("line", { x1: mx, y1: my, x2: eyeX, y2: eyeY, stroke: eyeLevel ? '#4ade80' : '#fbbf24', strokeWidth: 1.6 }),
-        React.createElement("circle", { cx: eyeX, cy: eyeY, r: 6, fill: '#f1f5f9' }),
+        // An actual eye rather than a white dot: the sight line has to read as coming
+        // out of something that looks, which is the whole mechanism being taught.
+        React.createElement("ellipse", { cx: eyeX, cy: eyeY, rx: 12, ry: 7.5, fill: '#f1f5f9', stroke: '#94a3b8', strokeWidth: 1 }),
+        React.createElement("circle", { cx: eyeX - 4, cy: eyeY, r: 4.6, fill: '#1e3a5f' }),
+        React.createElement("circle", { cx: eyeX - 4, cy: eyeY, r: 2.1, fill: '#0b1120' }),
+        React.createElement("circle", { cx: eyeX - 5.6, cy: eyeY - 1.6, r: 1.1, fill: '#f8fafc' }),
         React.createElement("line", { x1: scaleX - 12, y1: my, x2: scaleX + 12, y2: my, stroke: '#4ade80', strokeWidth: 3 }),
         !eyeLevel && React.createElement("line", { x1: scaleX - 12, y1: crossY, x2: scaleX + 12, y2: crossY, stroke: '#fbbf24', strokeWidth: 3 }),
-        React.createElement("text", { x: 6, y: my + 4, fill: '#4ade80', fontSize: '9', fontWeight: 'bold' }, 'true'),
-        !eyeLevel && React.createElement("text", { x: 6, y: crossY + 4, fill: '#fbbf24', fontSize: '9', fontWeight: 'bold' }, 'you read')
+        // The error is the gap between those two marks, so draw it as the gap and put
+        // the number on it — the panel already states the value, but only in prose.
+        detail,
+        // The size of the mistake, on the picture that shows where it comes from. Not
+        // gated on the marks being far apart: a small gap is exactly when the number
+        // is the only thing carrying it.
+        !eyeLevel && React.createElement("text", { key: 'err', x: scaleX + 14, y: my + gap / 2 + (gap >= 0 ? 14 : -8),
+          fill: '#fbbf24', fontSize: 10, fontWeight: 'bold' },
+          (parErr >= 0 ? '+' : '\u2212') + Math.abs(parErr).toFixed(3)),
+        valueLabel(my, gFinalTrue, '#4ade80', 'vt'),
+        !eyeLevel && valueLabel(apart ? crossY : crossY + (gap >= 0 ? 15 : -15), gFinalRecorded, '#fbbf24', 'vr')
       );
     })();
 
