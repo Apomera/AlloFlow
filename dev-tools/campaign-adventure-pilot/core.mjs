@@ -1,4 +1,5 @@
 // Scenario transport and persistence. No access to the main app's stores or session.
+import {validateResponses} from './response-records.mjs';
 export const PREFIX = 'alloflow-campaign-pilot:v1:';
 const MAX_COMMANDS = 500;
 const copy = x => JSON.parse(JSON.stringify(x));
@@ -31,14 +32,16 @@ export function dispatch(adapter, run, actionId, expectedRevision = run.commands
   return next;
 }
 export function validateRun(adapter, raw) {
-  if(!raw||raw.version!==1||raw.campaignId!==adapter.id||!/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId||''))throw new Error('Unrecognized pilot save.');
+  if(!raw||![1,2].includes(raw.version)||raw.campaignId!==adapter.id||!/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId||''))throw new Error('Unrecognized pilot save.');
   if(typeof raw.seed!=='string'||!raw.seed.trim()||raw.seed.length>32)throw new Error('Invalid saved world seed.');
   if(!Array.isArray(raw.commands)||raw.commands.length>MAX_COMMANDS||raw.commands.some(c=>typeof c!=='string'||c.length>120))throw new Error('Invalid saved decisions.');
   if(!Array.isArray(raw.notes)||raw.notes.length>100||raw.notes.some(n=>!n||!Number.isInteger(n.revision)||n.revision<0||n.revision>raw.commands.length||typeof n.text!=='string'||n.text.length>1200))throw new Error('Invalid saved field notes.');
   if(typeof raw.createdAt!=='string'||!Number.isFinite(Date.parse(raw.createdAt)))throw new Error('Invalid saved date.');
   // Adapters reject unknown model versions/configuration rather than silently changing them.
-  const run={version:1,campaignId:raw.campaignId,runId:raw.runId,seed:raw.seed,
+  const run={version:raw.version,campaignId:raw.campaignId,runId:raw.runId,seed:raw.seed,
     config:copy(raw.config),commands:raw.commands.slice(),notes:copy(raw.notes),createdAt:raw.createdAt};
+  if(raw.version===2)run.responses=validateResponses(raw.responses,run.commands);
+  else if(raw.responses!==undefined)throw Error('Written responses require save version 2.');
   materialize(adapter,run);
   return run;
 }
@@ -49,10 +52,11 @@ export function saveRun(storage,run){
     if(existing){
       let old;
       try{old=JSON.parse(existing);}catch{return {ok:false,message:'The existing saved journey needs recovery and was left untouched. Download this journey to keep your work.'};}
-      if(old.version!==1||old.campaignId!==run.campaignId||old.runId!==run.runId||old.seed!==run.seed||
+      if(![1,2].includes(old.version)||(old.version===2&&run.version!==2)||old.campaignId!==run.campaignId||old.runId!==run.runId||old.seed!==run.seed||
         !Array.isArray(old.commands)||!Array.isArray(old.notes)||
         old.commands.some((id,i)=>run.commands[i]!==id)||
-        old.notes.some((note,i)=>JSON.stringify(run.notes[i])!==JSON.stringify(note))){
+        old.notes.some((note,i)=>JSON.stringify(run.notes[i])!==JSON.stringify(note))||
+        (old.version===2&&(!Array.isArray(old.responses)||old.responses.some((r,i)=>JSON.stringify(run.responses?.[i])!==JSON.stringify(r))))){
         return {ok:false,message:'Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version.'};
       }
     }
@@ -75,7 +79,7 @@ export function listRuns(storage,adapters){
   const result=[];
   for(let i=0;i<storage.length;i++){
     const key=storage.key(i);
-    if(!key?.startsWith(PREFIX))continue;
+    if(!key||!adapters.some(a=>key.startsWith(PREFIX+a.id+':')))continue;
     try{const run=readRun(storage,key,adapters);result.push({key,run});}
     catch(error){result.push({key,error:'Saved journey needs recovery; original data retained.'});}
   }
@@ -89,7 +93,8 @@ export function addNote(run,text) {
 export function forkRun(run,revision,runId=globalThis.crypto.randomUUID()){
   if(!Number.isInteger(revision)||revision<0||revision>run.commands.length)throw new Error('Invalid replay point.');
   return {...copy(run),runId,createdAt:new Date().toISOString(),
-    commands:run.commands.slice(0,revision),notes:run.notes.filter(n=>n.revision<=revision)};
+    commands:run.commands.slice(0,revision),notes:run.notes.filter(n=>n.revision<=revision),
+    ...(run.version===2?{responses:(run.responses||[]).filter(r=>r.revision<=revision)}:{})};
 }
 // An optional narrator receives a detached scene, never an engine or a mutable run.
 // Returned prose is displayed as text. It has no authority over actions or metrics.

@@ -1987,12 +1987,14 @@
     });
   }
 
-  // dev-tools/campaign-adventure-pilot/in-app.mjs
-  window.StemLab.registerTool("fieldJourneys", {
-    icon: "\u{1F33F}",
-    label: "Field Journeys (Pilot)",
-    category: "Ecology & Environment",
+  // dev-tools/campaign-adventure-pilot/sel-app.mjs
+  window.SelHub.registerTool("practiceJourneys", {
+    icon: "\u{1F5FA}\uFE0F",
+    label: "Practice Journeys (Pilot)",
+    category: "relationship-skills",
+    recommendedRange: "5-12",
     lightBackground: true,
-    render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
+    desc: "Practice a group project through four connected encounters. Use choices, your own words, or both.",
+    render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "sel" })
   });
 })();

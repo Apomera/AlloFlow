@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-09-07T05:08:22.941Z",
+  "checks": [
+    "Optional Watershed launch and return; Both default; written action confirmation; choices and writing in one run; drafts survive map and format changes",
+    "Written Watershed response survives native close/reopen; Grove also supports mixed response formats",
+    "SEL mixes written and choice responses; replay retains both branches in the hub session; journal export preserves wording; related Advocacy Practice opens normally",
+    "SEL honors temporary-session policy after reload; importing a downloaded journal restores choices and words as a new run; no SEL written responses in browser storage; desktop/phone axe and keyboard checks pass"
+  ],
+  "errors": [],
+  "screenshots": [
+    "responses-watershed.png",
+    "responses-sel.png",
+    "responses-sel-phone.png"
+  ],
+  "axeSELDesktop": [],
+  "axeSELPhone": [],
+  "ok": true
+}

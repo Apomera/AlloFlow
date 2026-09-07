@@ -1,4 +1,4 @@
-// Generated Field Journeys pilot. Run dev-tools/campaign-adventure-pilot/build-in-app.cjs.
+// Generated journey pilot. Run dev-tools/campaign-adventure-pilot/build-in-app.cjs.
 (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -14,6 +14,29 @@
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: true });
   };
+
+  // dev-tools/campaign-adventure-pilot/response-records.mjs
+  function responseText(value) {
+    if (typeof value !== "string" || !value.trim() || value.trim().length > 1200) throw Error("Write a response of 1 to 1,200 characters.");
+    return value.trim();
+  }
+  function validateResponses(raw, commands) {
+    if (!Array.isArray(raw) || raw.length > 100) throw Error("Invalid saved written responses.");
+    let prior = 0, total = 0;
+    const responses = raw.map((r) => {
+      if (!r || !Number.isInteger(r.revision) || r.revision <= prior || r.revision > commands.length || r.actionId !== commands[r.revision - 1]) throw Error("Written response does not match its saved decision.");
+      const text = responseText(r.text);
+      prior = r.revision;
+      total += text.length;
+      return { revision: r.revision, actionId: r.actionId, text };
+    });
+    if (total > 36e3) throw Error("This journey has reached its written-response limit. Download the journal or continue using choices.");
+    return responses;
+  }
+  var init_response_records = __esm({
+    "dev-tools/campaign-adventure-pilot/response-records.mjs"() {
+    }
+  });
 
   // dev-tools/campaign-adventure-pilot/core.mjs
   var core_exports = {};
@@ -68,13 +91,13 @@
     return next;
   }
   function validateRun(adapter, raw) {
-    if (!raw || raw.version !== 1 || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
+    if (!raw || ![1, 2].includes(raw.version) || raw.campaignId !== adapter.id || !/^[a-zA-Z0-9-]{1,64}$/.test(raw.runId || "")) throw new Error("Unrecognized pilot save.");
     if (typeof raw.seed !== "string" || !raw.seed.trim() || raw.seed.length > 32) throw new Error("Invalid saved world seed.");
     if (!Array.isArray(raw.commands) || raw.commands.length > MAX_COMMANDS || raw.commands.some((c) => typeof c !== "string" || c.length > 120)) throw new Error("Invalid saved decisions.");
     if (!Array.isArray(raw.notes) || raw.notes.length > 100 || raw.notes.some((n) => !n || !Number.isInteger(n.revision) || n.revision < 0 || n.revision > raw.commands.length || typeof n.text !== "string" || n.text.length > 1200)) throw new Error("Invalid saved field notes.");
     if (typeof raw.createdAt !== "string" || !Number.isFinite(Date.parse(raw.createdAt))) throw new Error("Invalid saved date.");
     const run = {
-      version: 1,
+      version: raw.version,
       campaignId: raw.campaignId,
       runId: raw.runId,
       seed: raw.seed,
@@ -83,6 +106,8 @@
       notes: copy(raw.notes),
       createdAt: raw.createdAt
     };
+    if (raw.version === 2) run.responses = validateResponses(raw.responses, run.commands);
+    else if (raw.responses !== void 0) throw Error("Written responses require save version 2.");
     materialize(adapter, run);
     return run;
   }
@@ -99,7 +124,7 @@
         } catch {
           return { ok: false, message: "The existing saved journey needs recovery and was left untouched. Download this journey to keep your work." };
         }
-        if (old.version !== 1 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note))) {
+        if (![1, 2].includes(old.version) || old.version === 2 && run.version !== 2 || old.campaignId !== run.campaignId || old.runId !== run.runId || old.seed !== run.seed || !Array.isArray(old.commands) || !Array.isArray(old.notes) || old.commands.some((id, i) => run.commands[i] !== id) || old.notes.some((note, i) => JSON.stringify(run.notes[i]) !== JSON.stringify(note)) || old.version === 2 && (!Array.isArray(old.responses) || old.responses.some((r, i) => JSON.stringify(run.responses?.[i]) !== JSON.stringify(r)))) {
           return { ok: false, message: "Another version of this journey is already saved. It was left untouched. Download your journal before reopening the saved version." };
         }
       }
@@ -124,7 +149,7 @@
     const result = [];
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i);
-      if (!key?.startsWith(PREFIX)) continue;
+      if (!key || !adapters.some((a) => key.startsWith(PREFIX + a.id + ":"))) continue;
       try {
         const run = readRun(storage, key, adapters);
         result.push({ key, run });
@@ -146,7 +171,8 @@
       runId,
       createdAt: (/* @__PURE__ */ new Date()).toISOString(),
       commands: run.commands.slice(0, revision),
-      notes: run.notes.filter((n) => n.revision <= revision)
+      notes: run.notes.filter((n) => n.revision <= revision),
+      ...run.version === 2 ? { responses: (run.responses || []).filter((r) => r.revision <= revision) } : {}
     };
   }
   async function narrate(scene, provider, { timeoutMs = 1800, signal } = {}) {
@@ -184,6 +210,7 @@
   var PREFIX, MAX_COMMANDS, copy;
   var init_core = __esm({
     "dev-tools/campaign-adventure-pilot/core.mjs"() {
+      init_response_records();
       PREFIX = "alloflow-campaign-pilot:v1:";
       MAX_COMMANDS = 500;
       copy = (x) => JSON.parse(JSON.stringify(x));
@@ -816,6 +843,7 @@
           id: "tech:" + tech.id + ":" + (target || "all"),
           label: tech.name,
           location: target || "all",
+          responseTerms: tech.id === "bufferPlant" ? ["plant", "plant trees", "buffer", "riparian"] : [],
           cost: tech.hours,
           disabled: tech.hours > model.hoursLeft,
           hint: (target ? water.components.find((c) => c.id === target).name : "Watershed-wide") + " \xB7 " + tech.hours + " hours",
@@ -903,6 +931,7 @@
           id: p.id,
           label: p.name,
           hint: p.copy,
+          responseTerms: p.id === "roots" ? ["root", "roots", "water access"] : p.id === "reserve" ? ["reserve", "reserves", "save food", "store", "save energy"] : ["seed", "seeds", "offspring", "reproduce", "reproduction"],
           tradeoff: p.id === "offspring" ? "Oak disperses acorns; aspen uses root suckers." : "One annual update; no reproductive attempts with this priority."
         }));
       },
@@ -1029,6 +1058,39 @@
     return shell;
   }
 
+  // dev-tools/campaign-adventure-pilot/responses.mjs
+  init_response_records();
+  init_core();
+  var normalize = (text) => text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+  function reviewResponse(adapter, run, value, { location } = {}) {
+    const text = responseText(value), model = materialize(adapter, run), view = adapter.view(model);
+    const actions = adapter.actions(model).filter((a) => !a.disabled && (!location || !a.location || a.location === "all" || a.location === location));
+    const input = " " + normalize(text) + " ";
+    const scored = actions.map((action) => {
+      const terms = action.responseTerms || [];
+      const label = normalize(action.label).split(" ").filter((w) => w.length > 3);
+      const score = terms.reduce((n, term) => n + (input.includes(" " + normalize(term) + " ") ? 4 : 0), 0) + label.reduce((n, w) => n + (input.includes(" " + w + " ") ? 1 : 0), 0);
+      return { ...action, score, locationName: action.location === "all" ? "Across the watershed" : view.locations.find((l) => l.id === action.location)?.name || "" };
+    }).sort((a, b) => b.score - a.score);
+    const best = scored[0], suggested = best && best.score > 0 && (!scored[1] || best.score > scored[1].score) ? best.id : null;
+    return {
+      text,
+      revision: run.commands.length,
+      runId: run.runId,
+      actions: scored,
+      suggested,
+      message: suggested ? "Check that this action matches what you mean. You can change it before continuing." : "Choose the available action that best fits your response. Your wording will stay in the journal."
+    };
+  }
+  function dispatchResponse(adapter, run, proposal, actionId) {
+    if (proposal.runId !== run.runId || proposal.revision !== run.commands.length) throw Error("The scene changed. Review your response again.");
+    if (!proposal.actions.some((a) => a.id === actionId && !a.disabled)) throw Error("Choose an available action for this response.");
+    const next = dispatch(adapter, run, actionId, proposal.revision);
+    next.version = 2;
+    next.responses = validateResponses([...run.responses || [], { revision: next.commands.length, actionId, text: responseText(proposal.text) }], next.commands);
+    return next;
+  }
+
   // dev-tools/campaign-adventure-pilot/app.mjs
   function mountFieldJourneys(root, options = {}) {
     const $ = (id) => root.querySelector("#" + id);
@@ -1044,8 +1106,12 @@
       b.addEventListener("click", fn);
       return b;
     };
-    const clone = (x) => JSON.parse(JSON.stringify(x));
-    const noteDrafts = /* @__PURE__ */ new Map();
+    const clone2 = (x) => JSON.parse(JSON.stringify(x));
+    const noteDrafts = /* @__PURE__ */ new Map(), responseDrafts = /* @__PURE__ */ new Map();
+    let responseMode = "both", proposal = null;
+    const isSEL = options.hub === "sel";
+    const authoredStatus = isSEL ? "Authored practice scene \xB7 possible responses" : "Authored scene \xB7 grounded in the simulation";
+    let entryCampaign = options.initialCampaign || null;
     let adapters = [], run = null, adapter = null, view = null, selected = null, provider = null, narratorRequest = null, narratorSerial = 0;
     let notice = "", warning = false, storage = null, sound = false, audioContext = null, audioNodes = [], audioGain = null;
     let destroyed = false, soundSerial = 0, reading = null;
@@ -1072,7 +1138,7 @@
       }
       const result = saveRun(storage, run);
       if (!result.ok) message(result.message, true);
-      else message("Journey saved on this device.");
+      else message(options.sessionOnly ? "Journey kept for this open SEL session. Download the journal to keep it afterward." : "Journey saved on this device.");
       return result.ok;
     }
     function cancelNarration() {
@@ -1101,7 +1167,7 @@
     }
     async function playSound() {
       stopSound();
-      if (!sound || !view || document.hidden || destroyed) return;
+      if (!sound || !view || !view.sound || document.hidden || destroyed) return;
       const serial = soundSerial;
       try {
         if (options.ensureSound) await options.ensureSound();
@@ -1163,7 +1229,7 @@
       const revision = run.commands.length;
       narratorRequest = new AbortController();
       const status = $("narration-status"), extra = $("optional-text");
-      if (status) status.textContent = provider ? "Authored scene ready. Checking optional narration\u2026" : "Authored scene \xB7 grounded in the simulation";
+      if (status) status.textContent = provider ? "Authored scene ready. Checking optional narration\u2026" : authoredStatus;
       if (extra) {
         extra.hidden = true;
         extra.textContent = "";
@@ -1171,7 +1237,7 @@
       const result = await narrate(view, provider, { signal: narratorRequest.signal });
       if (serial !== narratorSerial || run?.runId !== capturedRun || run.commands.length !== revision) return;
       const current = $("narration-status");
-      if (current) current.textContent = result.status === "fallback" ? "Optional narration unavailable. The authored scene remains playable." : result.status === "optional" ? "Authored scene with optional narration" : "Authored scene \xB7 grounded in the simulation";
+      if (current) current.textContent = result.status === "fallback" ? "Optional narration unavailable. The authored scene remains playable." : result.status === "optional" ? "Authored scene with optional narration" : authoredStatus;
       if (result.status === "fallback") announce("Optional narration unavailable. You can continue with the authored scene.");
       if (result.status === "optional" && $("optional-text")) {
         $("optional-text").textContent = result.text;
@@ -1187,7 +1253,7 @@
     }
     function downloadJournal() {
       const model = materialize(adapter, run);
-      const payload = { ...clone(run), journal: adapter.view(model).receipts };
+      const payload = { ...clone2(run), journal: adapter.view(model).receipts };
       const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
       const url = URL.createObjectURL(blob), a = el("a");
       a.href = url;
@@ -1199,6 +1265,7 @@
       cancelNarration();
       stopReading();
       stopSound();
+      proposal = null;
       run = next;
       adapter = adapters.find((a) => a.id === run.campaignId);
       selected = adapter.id === "watershed" ? "forestBuffer" : "0";
@@ -1231,21 +1298,33 @@
       run = null;
       adapter = null;
       view = null;
+      proposal = null;
       renderHome();
       main.focus();
     }
     function renderHome() {
       main.replaceChildren();
-      if (options.embedded) main.append(el("p", "embedded-label", "FIELD JOURNEYS \xB7 OPTIONAL PILOT"));
+      if (options.embedded) main.append(el("p", "embedded-label", isSEL ? "PRACTICE JOURNEYS \xB7 OPTIONAL PILOT" : "FIELD JOURNEYS \xB7 OPTIONAL PILOT"));
       const intro = el("section", "intro");
-      intro.append(el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"), el("h1", "", "Small choices.\nLiving worlds."), el("p", "", "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation."));
+      intro.append(el("p", "eyebrow", "EXPLORE \xB7 CHOOSE \xB7 RETURN"), el("h1", "", isSEL ? "A place for\nyour voice." : "Small choices.\nLiving worlds."), el("p", "", isSEL ? "Practice asking for support through four connected encounters. Choose a response, write your own, or use both." : "Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation."));
       main.append(intro, makeNotice());
-      const cards = el("div", "campaign-grid");
-      adapters.forEach((a) => {
+      if (entryCampaign) {
+        const entry = el("div", "entry-note");
+        entry.append(el("p", "", "Start a separate journey or resume one below. Your original campaign stays where you left it."), button("Show all journeys", () => {
+          entryCampaign = null;
+          renderHome();
+          main.focus();
+        }));
+        if (options.returnToSource) entry.append(button("Return to Watershed tool", options.returnToSource));
+        main.append(entry);
+      }
+      const visibleAdapters = entryCampaign ? adapters.filter((a) => a.id === entryCampaign) : adapters;
+      const cards = el("div", "campaign-grid" + (visibleAdapters.length === 1 ? " single-campaign" : ""));
+      visibleAdapters.forEach((a) => {
         const card = el("section", "campaign-card"), art = el("div", "card-art");
         art.setAttribute("aria-hidden", "true");
         const v = a.view(a.start("FIELD-01", {}));
-        const map = landscape(v, () => {
+        const map = a.kind === "sel" ? encounterArt(v) : landscape(v, () => {
         }, "");
         map.querySelectorAll("button").forEach((b) => b.remove());
         art.append(map);
@@ -1258,14 +1337,14 @@
         seed.maxLength = 32;
         seed.spellcheck = false;
         seedLabel.append(seed);
-        body.append(seedLabel);
+        if (a.kind !== "sel") body.append(seedLabel);
         body.append(button("Begin " + a.label, () => startJourney(a, seed.value), "primary"));
         card.append(art, body);
         cards.append(card);
       });
       main.append(cards);
       const saved = el("section", "saved");
-      saved.append(el("h2", "", "Your saved journeys"));
+      saved.append(el("h2", "", options.sessionOnly ? "Journeys in this session" : "Your saved journeys"));
       try {
         const records = storage ? listRuns(storage, adapters) : [];
         if (!records.length) saved.append(el("p", "status-line", "Your journeys will appear here after you begin."));
@@ -1274,7 +1353,7 @@
           if (item.run) {
             const a = adapters.find((a2) => a2.id === item.run.campaignId);
             const v = a.view(materialize(a, item.run));
-            text.append(el("h3", "", a.label + " \xB7 " + item.run.seed), el("p", "", v.period + " \xB7 " + item.run.commands.length + " decisions \xB7 " + new Date(item.run.createdAt).toLocaleDateString()));
+            text.append(el("h3", "", a.label + (a.kind === "sel" ? "" : " \xB7 " + item.run.seed)), el("p", "", v.period + " \xB7 " + item.run.commands.length + " decisions \xB7 " + new Date(item.run.createdAt).toLocaleDateString()));
             row.append(text, button("Resume " + a.label, () => resumeJourney(item.key)));
           } else {
             text.append(el("h3", "", "Journey needs recovery"), el("p", "", item.error));
@@ -1313,10 +1392,147 @@
       main.append(tools);
       renderPilotDetails();
     }
+    function renderResponses(decisions, actions) {
+      if (view.ended) return;
+      const modeLabel = el("label", "response-mode", "Response format");
+      const mode = el("select");
+      mode.id = "response-mode";
+      for (const [value, label] of [["both", "Both"], ["choices", "Choices"], ["write", "Write a response"]]) {
+        const option = el("option", "", label);
+        option.value = value;
+        option.selected = value === responseMode;
+        mode.append(option);
+      }
+      mode.addEventListener("change", () => {
+        responseMode = mode.value;
+        try {
+          storage?.setItem("alloflow-journey-input:v1", responseMode);
+        } catch {
+        }
+        renderJourney();
+        $("response-mode").focus();
+      });
+      modeLabel.append(mode);
+      decisions.append(modeLabel);
+      if (responseMode !== "write") {
+        const choices = el("div", "choice-responses");
+        choices.setAttribute("aria-label", "Available choices");
+        let allLabel = false;
+        actions.forEach((action) => {
+          if (action.location === "all" && !allLabel) {
+            choices.append(el("p", "action-group", "Across the watershed"));
+            allLabel = true;
+          }
+          const revision = run.commands.length;
+          const b = button("", () => choose(action.id, revision), "action" + (!action.location ? " primary" : ""));
+          b.dataset.action = action.id;
+          b.disabled = !!action.disabled;
+          const title = el("span", "action-title");
+          title.append(el("span", "", action.label));
+          if (action.cost != null) title.append(el("span", "action-cost", action.cost + "h" + (action.disabled ? " \xB7 unavailable" : "")));
+          b.append(title, el("span", "action-hint", action.location ? action.tradeoff : action.hint));
+          choices.append(b);
+        });
+        decisions.append(choices);
+      }
+      if (responseMode !== "choices") {
+        const form = el("section", "written-response");
+        const label = el("label", "", "Write what you would do or say");
+        label.htmlFor = "written-response";
+        const input = el("textarea");
+        input.id = "written-response";
+        input.maxLength = 1200;
+        input.rows = 4;
+        input.placeholder = adapter.kind === "sel" ? "Use your own words. A short sentence is enough." : "Describe your next action. A short sentence is enough.";
+        const draftKey = run.runId + ":" + run.commands.length;
+        input.value = responseDrafts.get(draftKey) || "";
+        const review = el("div", "response-review");
+        review.id = "response-review";
+        input.addEventListener("input", () => {
+          responseDrafts.set(draftKey, input.value);
+          proposal = null;
+          review.replaceChildren();
+        });
+        form.append(label, input, el("p", "status-line", "Your confirmed response stays in your journal. Review the action before it runs."));
+        const showReview = () => {
+          review.replaceChildren();
+          if (!proposal) return;
+          review.append(el("p", "", proposal.message));
+          const actionLabel = el("label", "", "Action to try"), select = el("select");
+          select.id = "response-action";
+          const empty = el("option", "", "Choose an action\u2026");
+          empty.value = "";
+          select.append(empty);
+          proposal.actions.forEach((a) => {
+            const option = el("option", "", a.label + (a.locationName ? " \xB7 " + a.locationName : "") + (a.cost != null ? " \xB7 " + a.cost + "h" : ""));
+            option.value = a.id;
+            select.append(option);
+          });
+          select.value = proposal.suggested || "";
+          actionLabel.append(select);
+          review.append(actionLabel);
+          const hint = el("p", "status-line");
+          const explain = () => {
+            const a = proposal?.actions.find((x) => x.id === select.value);
+            hint.textContent = a ? a.tradeoff || a.hint || "" : "";
+          };
+          select.addEventListener("change", explain);
+          explain();
+          review.append(hint);
+          const captured = proposal;
+          review.append(button("Confirm response and continue", () => {
+            try {
+              if (proposal !== captured) throw Error("Review your edited response again.");
+              run = dispatchResponse(adapter, run, captured, select.value);
+              responseDrafts.delete(draftKey);
+              proposal = null;
+              persist();
+              stopReading();
+              renderJourney(true);
+              announce("Written response recorded. " + view.period + ". " + view.title);
+            } catch (error) {
+              message(error.message, true);
+            }
+          }, "primary"));
+        };
+        form.append(button("Review my response", () => {
+          try {
+            proposal = reviewResponse(adapter, run, input.value, { location: adapter.id === "watershed" ? selected : void 0 });
+            showReview();
+            $("response-action").focus();
+            announce(proposal.message);
+          } catch (error) {
+            message(error.message, true);
+            input.focus();
+          }
+        }), review);
+        if (proposal?.runId === run.runId && proposal.revision === run.commands.length) showReview();
+        decisions.append(form);
+      }
+    }
+    function encounterArt(v) {
+      const art = el("div", "encounter-art");
+      art.append(el("span", "encounter-symbol", "\u2726"), el("p", "eyebrow", "PRACTICE \xB7 PAUSE \xB7 TRY AGAIN"), el("p", "", v.setting || "A place for your voice"));
+      return art;
+    }
+    function renderEncounter(left) {
+      const panel = el("section", "encounter-panel");
+      panel.append(encounterArt(view), el("h2", "", "Who is here"));
+      const people = el("ul");
+      view.people.forEach((p) => people.append(el("li", "", p)));
+      panel.append(people, el("p", "status-line", "You can pause or leave at any time."));
+      left.append(panel);
+      if (view.feedback) {
+        const feedback = el("section", "encounter-feedback");
+        feedback.append(el("h3", "", view.feedback.title), el("p", "", view.feedback.body), el("p", "", view.feedback.reflection));
+        left.append(feedback);
+      }
+    }
     function choose(id, revision) {
       try {
         const next = dispatch(adapter, run, id, revision);
         run = next;
+        proposal = null;
         persist();
         stopReading();
         renderJourney(true);
@@ -1327,16 +1543,17 @@
     }
     function selectLocation(id) {
       selected = id;
+      proposal = null;
       renderJourney(false);
       root.querySelector('[data-location="' + id + '"]')?.focus();
     }
     function renderJourney(focus = false) {
       const model = materialize(adapter, run);
       view = adapter.view(model);
-      if (!view.locations.some((l) => l.id === selected)) selected = view.locations[0].id;
+      if (view.locations.length && !view.locations.some((l) => l.id === selected)) selected = view.locations[0].id;
       main.replaceChildren();
       const heading = el("div", "journey-heading"), titles = el("div");
-      titles.append(button("\u2190 Field station", returnHome, "quiet"), el("p", "eyebrow", adapter.eyebrow), el("h1", "", adapter.title));
+      titles.append(button(isSEL ? "\u2190 Practice journeys" : "\u2190 Field station", returnHome, "quiet"), el("p", "eyebrow", adapter.eyebrow), el("h1", "", adapter.title));
       const tools = el("div", "header-actions");
       const soundButton = button(sound ? "Sound on" : "Sound off", () => {
         sound = !sound;
@@ -1345,32 +1562,38 @@
         soundButton.setAttribute("aria-pressed", String(sound));
       });
       soundButton.setAttribute("aria-pressed", String(sound));
-      tools.append(soundButton, button("Download journal", downloadJournal));
+      if (view.sound) tools.append(soundButton);
+      tools.append(button("Download journal", downloadJournal));
       heading.append(titles, tools);
       main.append(heading, makeNotice());
       const journey = el("div", "journey"), left = el("section"), right = el("section");
-      left.setAttribute("aria-label", "Landscape and model state");
+      left.setAttribute("aria-label", isSEL ? "People and possible responses" : "Landscape and model state");
       right.setAttribute("aria-label", "Scene and decisions");
-      const map = landscape(view, selectLocation, selected);
-      map.querySelectorAll("button").forEach((b, i) => b.dataset.location = view.locations[i].id);
-      left.append(map);
-      const caption = el("div", "map-caption");
-      caption.append(el("span", "", adapter.id === "watershed" ? "Choose a reach to plan fieldwork." : "Choose a patch to inspect the grove."), el("span", "", run.seed));
-      left.append(caption);
-      const location = view.locations.find((l) => l.id === selected), info = el("div", "location-info");
-      info.append(el("h3", "", location.name));
-      const locationText = location.description + (adapter.id === "grove" ? ". " + location.value + " living trees here. " + (location.gap ? "A storm has opened the canopy." : "") + (location.trees.some((t) => t.descendant) ? " Smaller trees show descendants." : "") : "");
-      info.append(el("p", "", locationText));
-      left.append(info);
-      const metrics = el("div", "metrics");
-      metrics.setAttribute("aria-label", "Current model values");
-      view.metrics.forEach((m) => {
-        const metric = el("div", "metric"), value = el("span", "metric-value", m.value);
-        value.append(el("small", "", m.unit));
-        metric.append(value, el("span", "metric-label", m.label));
-        metrics.append(metric);
-      });
-      left.append(metrics);
+      let location;
+      if (view.kind === "sel") renderEncounter(left);
+      else {
+        const map = landscape(view, selectLocation, selected);
+        map.querySelectorAll("button").forEach((b, i) => b.dataset.location = view.locations[i].id);
+        left.append(map);
+        const caption = el("div", "map-caption");
+        caption.append(el("span", "", adapter.id === "watershed" ? "Choose a reach to plan fieldwork." : "Choose a patch to inspect the grove."), el("span", "", run.seed));
+        left.append(caption);
+        location = view.locations.find((l) => l.id === selected);
+        const info = el("div", "location-info");
+        info.append(el("h3", "", location.name));
+        const locationText = location.description + (adapter.id === "grove" ? ". " + location.value + " living trees here. " + (location.gap ? "A storm has opened the canopy." : "") + (location.trees.some((t) => t.descendant) ? " Smaller trees show descendants." : "") : "");
+        info.append(el("p", "", locationText));
+        left.append(info);
+        const metrics = el("div", "metrics");
+        metrics.setAttribute("aria-label", "Current model values");
+        view.metrics.forEach((m) => {
+          const metric = el("div", "metric"), value = el("span", "metric-value", m.value);
+          value.append(el("small", "", m.unit));
+          metric.append(value, el("span", "metric-label", m.label));
+          metrics.append(metric);
+        });
+        left.append(metrics);
+      }
       const support = el("details");
       support.append(el("summary", "", "Help me reason through this"), el("p", "", view.support));
       left.append(support);
@@ -1391,11 +1614,11 @@
       state.id = "narration-status";
       scene.append(title, body, extra, state);
       const progressRow = el("div", "progress-row");
-      progressRow.append(el("span", "", view.period), el("span", "", view.progress + " / " + view.total + " years observed"));
+      progressRow.append(el("span", "", view.period), el("span", "", view.progress + " / " + view.total + " " + (view.progressLabel || "years observed")));
       const progress = el("progress");
       progress.max = view.total;
       progress.value = view.progress;
-      progress.setAttribute("aria-label", "Years observed");
+      progress.setAttribute("aria-label", view.progressLabel || "Years observed");
       scene.append(progressRow, progress);
       right.append(scene);
       const decisions = el("section", "decisions");
@@ -1405,23 +1628,13 @@
         actions = actions.filter((a) => a.location === selected || a.location === "all" || !a.location);
         decisions.append(el("p", "action-group", "Fieldwork \xB7 " + location.name));
       }
-      let allLabel = false;
-      actions.forEach((action) => {
-        if (action.location === "all" && !allLabel) {
-          decisions.append(el("p", "action-group", "Across the watershed"));
-          allLabel = true;
+      renderResponses(decisions, actions);
+      if (view.ended) {
+        decisions.append(el("p", "", adapter.disclosure));
+        if (isSEL && options.openRelatedTool) {
+          decisions.append(button("Continue in Advocacy Practice", () => options.openRelatedTool("advocacy")), button("Open Self-Advocacy Studio", () => options.openRelatedTool("selfAdvocacy")));
         }
-        const revision = run.commands.length;
-        const safeButton = button("", () => choose(action.id, revision), "action" + (!action.location ? " primary" : ""));
-        safeButton.dataset.action = action.id;
-        safeButton.disabled = !!action.disabled;
-        const label = el("span", "action-title");
-        label.append(el("span", "", action.label));
-        if (action.cost != null) label.append(el("span", "action-cost", action.cost + "h" + (action.disabled ? " \xB7 unavailable" : "")));
-        safeButton.append(label, el("span", "action-hint", action.location ? action.tradeoff : action.hint));
-        decisions.append(safeButton);
-      });
-      if (view.ended) decisions.append(el("p", "", adapter.disclosure));
+      }
       right.append(decisions);
       if (view.evidence.length) {
         const evidence = el("section", "evidence");
@@ -1455,12 +1668,12 @@
     }
     function renderJournal() {
       const journal = el("section", "journal"), history = el("div"), notes = el("div", "notes");
-      history.append(el("h2", "", "The field journal"));
+      history.append(el("h2", "", isSEL ? "Your practice journal" : "The field journal"));
       const receipts = el("div", "receipts");
       receipts.tabIndex = 0;
       receipts.setAttribute("role", "region");
-      receipts.setAttribute("aria-label", "Recorded annual evidence");
-      if (!view.receipts.length) receipts.append(el("p", "status-line", "Observe your first year to record its event and consequences."));
+      receipts.setAttribute("aria-label", isSEL ? "Recorded practice encounters" : "Recorded annual evidence");
+      if (!view.receipts.length) receipts.append(el("p", "status-line", isSEL ? "Try a response to record the encounter here." : "Observe your first year to record its event and consequences."));
       for (const record of view.receipts) {
         const item = el("article", "receipt");
         item.append(el("h3", "", record.title), el("p", "", record.text), el("p", "", record.detail));
@@ -1468,7 +1681,7 @@
       }
       history.append(receipts);
       if (run.commands.length) {
-        history.append(button("Replay the latest year", () => {
+        history.append(button(view.replayLabel || "Replay the latest year", () => {
           let revision = run.commands.length - 1;
           if (adapter.id === "watershed") {
             const lastEnd = run.commands.lastIndexOf("end-year");
@@ -1503,6 +1716,11 @@
           message(error.message, true);
         }
       }));
+      for (const response of run.responses || []) {
+        const entry = el("div", "written-record");
+        entry.append(el("h3", "", "Your words \xB7 decision " + response.revision), el("p", "note", response.text));
+        notes.append(entry);
+      }
       for (const note of run.notes) notes.append(el("p", "note", note.text));
       journal.append(history, notes);
       main.append(journal);
@@ -1510,10 +1728,10 @@
     function renderPilotDetails() {
       const details = el("details", "pilot-details");
       details.append(
-        el("summary", "", options.embedded ? "About Field Journeys" : "About this pilot and its isolation checks"),
-        el("p", "", options.embedded ? "Explore two campaigns using the existing simulations. Journeys save on this device and can be downloaded. Your regular adventures and campaigns keep their own saves." : "This is a separate development host. It reads the existing Tree Life Lab engine and Adventure soundscape code unchanged. The watershed bridge copies exact source functions at build time. No app account, cloud session, API key, or regular campaign save is connected."),
-        el("p", "", options.embedded ? "Scenes describe results from the simulation. This pilot uses authored narration and does not require an AI connection." : "The visible scenes are authored from model results. Optional narration is an extension point only: no live AI provider is configured. These local checks simulate failure without making a network request."),
-        el("p", "", adapter ? adapter.disclosure : "Both campaigns use educational models. Their indices and scenario assumptions are not real-world forecasts.")
+        el("summary", "", options.embedded ? isSEL ? "About Practice Journeys" : "About Field Journeys" : "About this pilot and its isolation checks"),
+        el("p", "", options.embedded ? isSEL ? "Practice a fictional group project. Several responses can work. This journey stays in the current SEL session. Download the journal to keep it after closing or reloading this tab." : "Explore two campaigns using the existing simulations. Journeys save on this device and can be downloaded. Your regular adventures and campaigns keep their own saves." : "This is a separate development host. It reads the existing Tree Life Lab engine and Adventure soundscape code unchanged. The watershed bridge copies exact source functions at build time. No app account, cloud session, API key, or regular campaign save is connected."),
+        el("p", "", options.embedded ? isSEL ? "Characters\u2019 replies are authored possibilities. Written responses are kept with the action you confirm; they are not graded or sent to an AI service." : "Scenes describe results from the simulation. Written responses are kept with the action you confirm. This pilot does not require an AI connection." : "The visible scenes are authored from model results. Optional narration is an extension point only: no live AI provider is configured. These local checks simulate failure without making a network request."),
+        el("p", "", adapter ? adapter.disclosure : isSEL ? "You can speak, write or use a communication tool. No personal disclosure is required." : "Both campaigns use educational models. Their indices and scenario assumptions are not real-world forecasts.")
       );
       if (run && !options.embedded) {
         details.append(
@@ -1550,13 +1768,17 @@
       });
       audioContext = null;
       noteDrafts.clear();
+      responseDrafts.clear();
+      proposal = null;
       document.removeEventListener("visibilitychange", visibility);
       window.removeEventListener("pagehide", destroy);
     }
     try {
-      adapters = createAdapters(window.__alloTreeLabEngine);
+      adapters = options.adapters || createAdapters(window.__alloTreeLabEngine);
       try {
-        storage = window.localStorage;
+        storage = options.storage || window.localStorage;
+        const savedMode = storage.getItem("alloflow-journey-input:v1");
+        if (["both", "choices", "write"].includes(savedMode)) responseMode = savedMode;
       } catch {
         storage = null;
       }
@@ -1566,16 +1788,135 @@
     } catch (error) {
       main.replaceChildren(el("h1", "", "The field station could not open"), el("p", "", error.message), el("p", "", "Your existing adventures and campaign saves have not been changed."));
     }
-    return Object.freeze({ snapshot: () => run ? clone({ run, view }) : null, setNarrator: (fn) => {
+    return Object.freeze({ snapshot: () => run ? clone2({ run, view }) : null, setNarrator: (fn) => {
       provider = fn;
       refreshNarration();
     }, showHome: returnHome, destroy });
   }
 
   // dev-tools/campaign-adventure-pilot/styles.css
-  var styles_default = ':root{color-scheme:light;--ink:#193d32;--muted:#58675d;--paper:#f6f4eb;--line:#d5dacb;--accent:#2d6150;--warm:#a05c2b;font-family:Inter,"Segoe UI",system-ui,sans-serif;font-size:16px;background:var(--paper);color:var(--ink)}\n*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:not-allowed}a{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #925221;outline-offset:4px}\nbutton{min-height:44px;border-radius:8px;border:1px solid var(--line);background:#fffef8;color:var(--ink);padding:10px 16px}button:hover:not(:disabled){background:#e6eddf}button.primary{background:var(--ink);color:#fffef2;border-color:var(--ink)}button.primary:hover:not(:disabled){background:#2c5948}button:disabled{color:#687066;background:#ecece3;border-style:dashed}button.quiet{border-color:transparent;background:transparent;padding-left:0}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.skip{position:absolute;left:20px;top:-100px;z-index:100;padding:14px;background:white}.skip:focus{top:10px}\n.masthead{max-width:1320px;margin:auto;padding:25px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line)}.brand{text-decoration:none;font-size:12px;font-weight:800;letter-spacing:1.8px;display:flex;align-items:center;gap:14px}.brand>span:first-child{font-size:27px;letter-spacing:0}.brand-light{font-weight:500;color:var(--muted)}.preview{font-size:10px;font-weight:700;letter-spacing:1.6px;border:1px solid #bccbb7;border-radius:30px;padding:7px 12px;white-space:nowrap}\nmain{max-width:1252px;margin:auto;padding:42px 0 20px;min-height:70vh}h1,h2,h3,p{margin-top:0}h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:400}h1{font-size:clamp(34px,4vw,56px);line-height:1.05;letter-spacing:-1.4px;margin-bottom:17px}h2{font-size:32px;line-height:1.1;letter-spacing:-.5px}h3{font-size:16px}p{line-height:1.65}.eyebrow{font-size:10px;font-weight:750;letter-spacing:2px;margin:0 0 15px;color:var(--muted)}.intro{max-width:670px;margin:15px 0 35px}.intro>p:last-child{font-size:18px;color:var(--muted);max-width:580px}\n.campaign-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.campaign-card{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#fffdf5}.card-art{height:165px;overflow:hidden;position:relative}.card-art .landscape{border:0;border-radius:0;width:100%;height:210px;aspect-ratio:auto;margin-top:-20px}.card-art button{display:none}.card-body{padding:30px}.card-body h2{font-size:33px;max-width:360px;margin-bottom:16px}.card-body>p:not(.eyebrow){color:var(--muted);min-height:77px}.seed-label{font-size:12px;display:flex;align-items:center;gap:12px;margin:15px 0}.seed-label input{min-width:0;width:150px;border:1px solid var(--line);background:#f8f8ef;padding:10px;border-radius:6px;color:var(--ink)}.saved{margin-top:32px;border-top:1px solid var(--line);padding-top:24px}.save-row{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.save-row p{margin:0;font-size:13px;color:var(--muted)}\n.journey-heading{display:flex;justify-content:space-between;gap:24px;align-items:end;margin:4px 0 30px}.journey-heading h1{font-size:42px;max-width:720px}.journey-heading .eyebrow{margin-bottom:10px}.journey-heading p{margin-bottom:0}.header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.header-actions button{font-size:12px}.journey{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,1fr);gap:36px;align-items:start}.landscape{position:relative;border:1px solid #c6d4bd;border-radius:13px;overflow:hidden;aspect-ratio:640/455;background:#dfe8d3}.landscape svg{width:100%;height:100%;display:block}.map-location{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:7px 9px;background:#fffef0ed;border:1px solid #a6bca4;box-shadow:0 3px 7px #23493412;font-size:11px;white-space:nowrap;border-radius:6px}.map-location strong{font-size:13px;border-left:1px solid #c6ceba;padding-left:7px}.map-location[aria-pressed=true]{border:2px solid #204d3c;background:#214c3e;color:#fffef4;box-shadow:0 0 0 3px #fffce6}.map-location[aria-pressed=true]:hover{background:#2c5948;color:white}.grove .map-location{font-size:9px;padding:6px;min-height:35px}.grove .map-location strong{font-size:12px}.map-caption{margin:10px 0 20px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:12px}.location-info{padding:17px 19px;border-left:3px solid #90ac78;background:#e9edde;border-radius:0 8px 8px 0;min-height:123px}.location-info h3{margin-bottom:8px}.location-info p{margin:0;font-size:13px;line-height:1.6;color:#425749}\n.metrics{display:grid;grid-template-columns:repeat(4,1fr);margin:24px 0;gap:12px}.metric{padding-right:8px;border-right:1px solid var(--line)}.metric:last-child{border-right:0}.metric-value{font-size:27px;font-family:Georgia,serif;display:block}.metric-value small{font:10px Inter,"Segoe UI",sans-serif;margin-left:4px}.metric-label{font-size:11px;color:var(--muted);display:block;margin-top:6px}\n.scene{background:#fffef7;border:1px solid #dcdfcf;border-radius:12px;padding:27px 29px}.scene-meta{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.scene-meta .eyebrow{margin:0;color:#6c654f}.scene-meta button{font-size:11px;padding:6px 10px;min-height:36px}.scene h2{font-size:33px;margin-bottom:17px}.scene-body{font-size:15px;color:#405449;line-height:1.8;margin:0}.optional-narration{border-left:2px solid #b8c7a9;padding-left:12px;margin-top:16px;font-size:13px}.optional-narration .eyebrow{margin-bottom:8px}.progress-row{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin:22px 0 8px;color:var(--muted)}progress{width:100%;height:5px;accent-color:var(--accent);display:block;border:0;border-radius:5px;overflow:hidden}progress::-webkit-progress-bar{background:#e0e4d6}progress::-webkit-progress-value{background:var(--accent)}.decisions{margin-top:26px}.decisions h3{font-family:Georgia,serif;font-size:24px;font-weight:400;margin:0 0 16px}.action{display:block;text-align:left;width:100%;padding:14px 16px;margin:0 0 10px;border-radius:9px;background:#fdfdf4}.action-title{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:650}.action-hint{display:block;font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px}.action-cost{font-size:11px;font-weight:500;white-space:nowrap}.action.primary .action-hint{color:#e1ebdb}.action:disabled .action-hint{color:#687066}.action-group{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:19px 0 9px}\n.evidence{margin-top:24px}.evidence h3{margin-bottom:12px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px 7px;vertical-align:top}th{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}td:first-child{padding-left:0}.number{font-variant-numeric:tabular-nums;white-space:nowrap}\ndetails{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}summary{font-size:13px;cursor:pointer;min-height:35px;line-height:1.5;padding:5px 0}details p{font-size:13px;color:var(--muted)}.journal{margin-top:35px;padding-top:28px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:36px}.journal h2{font-size:30px}.receipts{max-height:330px;overflow:auto;padding-right:10px;scrollbar-width:thin}.receipt{padding:0 0 17px 17px;margin:0 0 17px;border-left:2px solid #a8bf91}.receipt h3{font-size:13px;margin-bottom:6px}.receipt p{font-size:12px;margin:0;color:var(--muted)}.notes textarea{display:block;resize:vertical;width:100%;min-height:100px;border:1px solid var(--line);border-radius:8px;background:#fffef8;padding:14px;line-height:1.5;font-size:14px;margin:10px 0}.notes label{font-size:13px;color:var(--muted)}.notes .note{margin:16px 0;border-left:2px solid #b3c7a2;padding-left:12px;font-size:13px;white-space:pre-wrap}.notice{padding:12px 15px;background:#e5edda;border:1px solid #b8cba6;border-radius:7px;font-size:13px;margin:15px 0;line-height:1.5}.notice.warning{background:#fbf0d9;border-color:#d7bd8c;color:#6c4a19}.notice[hidden]{display:none}.pilot-details{margin-top:32px}.pilot-details button{font-size:12px;margin:0 10px 10px 0}.pilot-details p{max-width:800px}.status-line{font-size:11px;color:var(--muted);min-height:17px}.footer-tools{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}footer{max-width:1252px;margin:30px auto;padding:22px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.7}footer span{font-size:11px}.boot{padding:50px 0}\n@media(min-width:1400px){main{padding-top:55px}}@media(max-width:1330px){main,footer{margin-left:34px;margin-right:34px}}@media(max-width:900px){.journey{gap:22px;grid-template-columns:1fr 1fr}.scene{padding:22px}.map-location{font-size:9px;padding:5px}.grove .map-location span{max-width:55px;white-space:normal}.metrics{gap:7px}.metric-value{font-size:23px}.journey-heading h1{font-size:35px}}\n@media(max-width:720px){.masthead{padding:17px 20px}.brand{font-size:10px;gap:8px;letter-spacing:1px}.brand-light{display:none}.preview{font-size:9px;padding:6px 9px}main{margin:0 20px;padding-top:30px}.intro{margin:0 0 25px}.intro>p:last-child{font-size:16px}.campaign-grid{grid-template-columns:1fr;gap:22px}.card-body{padding:24px}.card-body>p{min-height:0}.journey-heading{display:block;margin-bottom:23px}.journey-heading h1{font-size:35px}.header-actions{margin-top:13px;gap:13px}.journey{grid-template-columns:1fr;gap:22px}.scene{padding:22px}.scene h2{font-size:29px}.scene-body{font-size:15px}.map-location{font-size:10px}.grove .map-location{font-size:9px;min-height:44px}.grove .map-location span{max-width:69px;white-space:normal}.location-info{min-height:0}.metrics{margin-bottom:0}.journal{grid-template-columns:1fr;gap:24px}.save-row{align-items:start}.save-row button{padding:9px;font-size:12px}footer{margin:25px 20px}.metric-value{font-size:26px}.status-line{line-height:1.6}.map-caption{font-size:10px}.campaign-card h2{font-size:32px}}\n@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}@media(forced-colors:active){button{border:1px solid ButtonText}.map-location[aria-pressed=true]{outline:3px solid Highlight}.landscape{border:1px solid CanvasText}.metric-value{color:CanvasText}}@media print{.masthead,.header-actions,.decisions,.pilot-details,button,textarea,.notes label,footer{display:none!important}main{margin:0}.journey,.journal{display:block}.landscape{max-width:550px}.receipts{max-height:none;overflow:visible}.scene{break-inside:avoid}}\n';
+  var styles_default = ':root{color-scheme:light;--ink:#193d32;--muted:#58675d;--paper:#f6f4eb;--line:#d5dacb;--accent:#2d6150;--warm:#a05c2b;font-family:Inter,"Segoe UI",system-ui,sans-serif;font-size:16px;background:var(--paper);color:var(--ink)}\n*{box-sizing:border-box}body{margin:0}button,input,textarea,select{font:inherit}button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}button{cursor:pointer}button:disabled{cursor:not-allowed}a{color:inherit}button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #925221;outline-offset:4px}\nbutton{min-height:44px;border-radius:8px;border:1px solid var(--line);background:#fffef8;color:var(--ink);padding:10px 16px}button:hover:not(:disabled){background:#e6eddf}button.primary{background:var(--ink);color:#fffef2;border-color:var(--ink)}button.primary:hover:not(:disabled){background:#2c5948}button:disabled{color:#687066;background:#ecece3;border-style:dashed}button.quiet{border-color:transparent;background:transparent;padding-left:0}.sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.skip{position:absolute;left:20px;top:-100px;z-index:100;padding:14px;background:white}.skip:focus{top:10px}\n.masthead{max-width:1320px;margin:auto;padding:25px 34px;display:flex;align-items:center;justify-content:space-between;gap:16px;border-bottom:1px solid var(--line)}.brand{text-decoration:none;font-size:12px;font-weight:800;letter-spacing:1.8px;display:flex;align-items:center;gap:14px}.brand>span:first-child{font-size:27px;letter-spacing:0}.brand-light{font-weight:500;color:var(--muted)}.preview{font-size:10px;font-weight:700;letter-spacing:1.6px;border:1px solid #bccbb7;border-radius:30px;padding:7px 12px;white-space:nowrap}\nmain{max-width:1252px;margin:auto;padding:42px 0 20px;min-height:70vh}h1,h2,h3,p{margin-top:0}h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:400}h1{font-size:clamp(34px,4vw,56px);line-height:1.05;letter-spacing:-1.4px;margin-bottom:17px}h2{font-size:32px;line-height:1.1;letter-spacing:-.5px}h3{font-size:16px}p{line-height:1.65}.eyebrow{font-size:10px;font-weight:750;letter-spacing:2px;margin:0 0 15px;color:var(--muted)}.intro{max-width:670px;margin:15px 0 35px}.intro>p:last-child{font-size:18px;color:var(--muted);max-width:580px}\n.campaign-grid{display:grid;grid-template-columns:1fr 1fr;gap:28px}.campaign-card{border:1px solid var(--line);border-radius:15px;overflow:hidden;background:#fffdf5}.card-art{height:165px;overflow:hidden;position:relative}.card-art .landscape{border:0;border-radius:0;width:100%;height:210px;aspect-ratio:auto;margin-top:-20px}.card-art button{display:none}.card-body{padding:30px}.card-body h2{font-size:33px;max-width:360px;margin-bottom:16px}.card-body>p:not(.eyebrow){color:var(--muted);min-height:77px}.seed-label{font-size:12px;display:flex;align-items:center;gap:12px;margin:15px 0}.seed-label input{min-width:0;width:150px;border:1px solid var(--line);background:#f8f8ef;padding:10px;border-radius:6px;color:var(--ink)}.saved{margin-top:32px;border-top:1px solid var(--line);padding-top:24px}.save-row{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.save-row p{margin:0;font-size:13px;color:var(--muted)}\n.journey-heading{display:flex;justify-content:space-between;gap:24px;align-items:end;margin:4px 0 30px}.journey-heading h1{font-size:42px;max-width:720px}.journey-heading .eyebrow{margin-bottom:10px}.journey-heading p{margin-bottom:0}.header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.header-actions button{font-size:12px}.journey{display:grid;grid-template-columns:minmax(0,1.14fr) minmax(0,1fr);gap:36px;align-items:start}.landscape{position:relative;border:1px solid #c6d4bd;border-radius:13px;overflow:hidden;aspect-ratio:640/455;background:#dfe8d3}.landscape svg{width:100%;height:100%;display:block}.map-location{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:7px;min-height:44px;padding:7px 9px;background:#fffef0ed;border:1px solid #a6bca4;box-shadow:0 3px 7px #23493412;font-size:11px;white-space:nowrap;border-radius:6px}.map-location strong{font-size:13px;border-left:1px solid #c6ceba;padding-left:7px}.map-location[aria-pressed=true]{border:2px solid #204d3c;background:#214c3e;color:#fffef4;box-shadow:0 0 0 3px #fffce6}.map-location[aria-pressed=true]:hover{background:#2c5948;color:white}.grove .map-location{font-size:9px;padding:6px;min-height:35px}.grove .map-location strong{font-size:12px}.map-caption{margin:10px 0 20px;font-size:11px;color:var(--muted);display:flex;justify-content:space-between;gap:12px}.location-info{padding:17px 19px;border-left:3px solid #90ac78;background:#e9edde;border-radius:0 8px 8px 0;min-height:123px}.location-info h3{margin-bottom:8px}.location-info p{margin:0;font-size:13px;line-height:1.6;color:#425749}\n.metrics{display:grid;grid-template-columns:repeat(4,1fr);margin:24px 0;gap:12px}.metric{padding-right:8px;border-right:1px solid var(--line)}.metric:last-child{border-right:0}.metric-value{font-size:27px;font-family:Georgia,serif;display:block}.metric-value small{font:10px Inter,"Segoe UI",sans-serif;margin-left:4px}.metric-label{font-size:11px;color:var(--muted);display:block;margin-top:6px}\n.scene{background:#fffef7;border:1px solid #dcdfcf;border-radius:12px;padding:27px 29px}.scene-meta{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}.scene-meta .eyebrow{margin:0;color:#6c654f}.scene-meta button{font-size:11px;padding:6px 10px;min-height:36px}.scene h2{font-size:33px;margin-bottom:17px}.scene-body{font-size:15px;color:#405449;line-height:1.8;margin:0}.optional-narration{border-left:2px solid #b8c7a9;padding-left:12px;margin-top:16px;font-size:13px}.optional-narration .eyebrow{margin-bottom:8px}.progress-row{display:flex;justify-content:space-between;gap:10px;font-size:11px;margin:22px 0 8px;color:var(--muted)}progress{width:100%;height:5px;accent-color:var(--accent);display:block;border:0;border-radius:5px;overflow:hidden}progress::-webkit-progress-bar{background:#e0e4d6}progress::-webkit-progress-value{background:var(--accent)}.decisions{margin-top:26px}.decisions h3{font-family:Georgia,serif;font-size:24px;font-weight:400;margin:0 0 16px}.action{display:block;text-align:left;width:100%;padding:14px 16px;margin:0 0 10px;border-radius:9px;background:#fdfdf4}.action-title{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:650}.action-hint{display:block;font-size:12px;line-height:1.5;color:var(--muted);margin-top:5px}.action-cost{font-size:11px;font-weight:500;white-space:nowrap}.action.primary .action-hint{color:#e1ebdb}.action:disabled .action-hint{color:#687066}.action-group{font-size:10px;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);margin:19px 0 9px}\n.evidence{margin-top:24px}.evidence h3{margin-bottom:12px}table{border-collapse:collapse;width:100%;font-size:12px}th,td{text-align:left;border-bottom:1px solid var(--line);padding:10px 7px;vertical-align:top}th{font-size:10px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}td:first-child{padding-left:0}.number{font-variant-numeric:tabular-nums;white-space:nowrap}\ndetails{margin-top:20px;border-top:1px solid var(--line);padding-top:16px}summary{font-size:13px;cursor:pointer;min-height:35px;line-height:1.5;padding:5px 0}details p{font-size:13px;color:var(--muted)}.journal{margin-top:35px;padding-top:28px;border-top:1px solid var(--line);display:grid;grid-template-columns:1fr 1fr;gap:36px}.journal h2{font-size:30px}.receipts{max-height:330px;overflow:auto;padding-right:10px;scrollbar-width:thin}.receipt{padding:0 0 17px 17px;margin:0 0 17px;border-left:2px solid #a8bf91}.receipt h3{font-size:13px;margin-bottom:6px}.receipt p{font-size:12px;margin:0;color:var(--muted)}.notes textarea{display:block;resize:vertical;width:100%;min-height:100px;border:1px solid var(--line);border-radius:8px;background:#fffef8;padding:14px;line-height:1.5;font-size:14px;margin:10px 0}.notes label{font-size:13px;color:var(--muted)}.notes .note{margin:16px 0;border-left:2px solid #b3c7a2;padding-left:12px;font-size:13px;white-space:pre-wrap}.notice{padding:12px 15px;background:#e5edda;border:1px solid #b8cba6;border-radius:7px;font-size:13px;margin:15px 0;line-height:1.5}.notice.warning{background:#fbf0d9;border-color:#d7bd8c;color:#6c4a19}.notice[hidden]{display:none}.pilot-details{margin-top:32px}.pilot-details button{font-size:12px;margin:0 10px 10px 0}.pilot-details p{max-width:800px}.status-line{font-size:11px;color:var(--muted);min-height:17px}.footer-tools{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}footer{max-width:1252px;margin:30px auto;padding:22px 0;border-top:1px solid var(--line);font-size:12px;color:var(--muted);line-height:1.7}footer span{font-size:11px}.boot{padding:50px 0}\n@media(min-width:1400px){main{padding-top:55px}}@media(max-width:1330px){main,footer{margin-left:34px;margin-right:34px}}@media(max-width:900px){.journey{gap:22px;grid-template-columns:1fr 1fr}.scene{padding:22px}.map-location{font-size:9px;padding:5px}.grove .map-location span{max-width:55px;white-space:normal}.metrics{gap:7px}.metric-value{font-size:23px}.journey-heading h1{font-size:35px}}\n@media(max-width:720px){.masthead{padding:17px 20px}.brand{font-size:10px;gap:8px;letter-spacing:1px}.brand-light{display:none}.preview{font-size:9px;padding:6px 9px}main{margin:0 20px;padding-top:30px}.intro{margin:0 0 25px}.intro>p:last-child{font-size:16px}.campaign-grid{grid-template-columns:1fr;gap:22px}.card-body{padding:24px}.card-body>p{min-height:0}.journey-heading{display:block;margin-bottom:23px}.journey-heading h1{font-size:35px}.header-actions{margin-top:13px;gap:13px}.journey{grid-template-columns:1fr;gap:22px}.scene{padding:22px}.scene h2{font-size:29px}.scene-body{font-size:15px}.map-location{font-size:10px}.grove .map-location{font-size:9px;min-height:44px}.grove .map-location span{max-width:69px;white-space:normal}.location-info{min-height:0}.metrics{margin-bottom:0}.journal{grid-template-columns:1fr;gap:24px}.save-row{align-items:start}.save-row button{padding:9px;font-size:12px}footer{margin:25px 20px}.metric-value{font-size:26px}.status-line{line-height:1.6}.map-caption{font-size:10px}.campaign-card h2{font-size:32px}}\n@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}@media(forced-colors:active){button{border:1px solid ButtonText}.map-location[aria-pressed=true]{outline:3px solid Highlight}.landscape{border:1px solid CanvasText}.metric-value{color:CanvasText}}@media print{.masthead,.header-actions,.decisions,.pilot-details,button,textarea,.notes label,footer{display:none!important}main{margin:0}.journey,.journal{display:block}.landscape{max-width:550px}.receipts{max-height:none;overflow:visible}.scene{break-inside:avoid}}\n\n.response-mode{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;margin:0 0 18px}\n.response-mode select,.response-review select{max-width:100%;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:8px;background:#fffef8;color:var(--ink)}\n.written-response{border:1px solid var(--line);border-radius:10px;padding:18px;margin-top:20px;background:#fffef8}\n.written-response>label,.response-review label{display:block;font-size:13px;font-weight:650;line-height:1.5}\n.written-response textarea{display:block;resize:vertical;box-sizing:border-box;width:100%;min-height:115px;padding:12px;margin:10px 0;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);line-height:1.6}\n.response-review:not(:empty){margin-top:18px;border-top:1px solid var(--line);padding-top:16px}\n.response-review select{display:block;width:100%;margin:8px 0}.response-review p{font-size:13px}\n.response-review button{width:100%;white-space:normal}.written-record{margin-top:20px}.written-record h3{font-size:12px;margin-bottom:6px}\n.entry-note{padding:18px;margin-bottom:22px;border:1px solid var(--line);border-radius:10px}.entry-note p{font-size:13px}.entry-note button{margin-right:10px}\n.single-campaign{grid-template-columns:minmax(0,1fr);max-width:760px}\n.encounter-art{min-height:165px;padding:28px;background:linear-gradient(135deg,#dcebe1,#eae3f4);color:#284c40;display:flex;flex-direction:column;justify-content:center}\n.encounter-art p{margin:0;font-size:22px;font-family:Georgia,serif}.encounter-art .eyebrow{font:10px "Segoe UI",sans-serif;margin:10px 0}\n.encounter-symbol{font-size:40px;line-height:1}.encounter-panel{overflow:hidden;border:1px solid var(--line);border-radius:12px;background:#fffef8}\n.encounter-panel h2{font-size:27px;margin:24px 24px 12px}.encounter-panel ul{padding:0 24px 0 44px;font-size:14px;line-height:1.8}.encounter-panel>.status-line{margin:20px 24px}\n.encounter-feedback{border-left:3px solid #90ac78;background:#e9edde;padding:20px;margin-top:24px;border-radius:0 8px 8px 0}.encounter-feedback p{font-size:14px}.encounter-feedback p:last-child{margin:0}\n@media(max-width:720px){.response-mode{align-items:start;flex-direction:column}.response-mode select{width:100%}.written-response{padding:14px}}\n';
 
-  // dev-tools/campaign-adventure-pilot/in-app.mjs
+  // dev-tools/campaign-adventure-pilot/sel-adapter.mjs
+  var chapters = [
+    {
+      title: "Make room for your way of working",
+      setting: "Monday \xB7 Planning table",
+      body: "You, Morgan and Sam are making a class presentation. Ideas are coming quickly, and the group is about to choose roles. You want a way to contribute that works for you.",
+      prompt: "How would you like to join the plan?",
+      actions: [
+        { id: "written-plan", label: "Ask for a written plan", hint: "\u201CCould we write down the jobs before choosing?\u201D", responseTerms: ["write", "written", "list", "on paper", "text", "type"], reply: "Sam starts a shared list. Morgan asks which part you would like to take.", reflection: "A written plan gives everyone something to return to. You can request it without explaining personal information." },
+        { id: "talk-it-through", label: "Ask to talk through the roles", hint: "\u201CCould we go around and hear what each person wants to do?\u201D", responseTerms: ["talk", "turns", "discuss", "listen", "speak"], reply: "Morgan suggests taking turns. The group hears each person\u2019s preferred role.", reflection: "A turn-taking plan can make room for different ideas. Listening can look different for different people." },
+        { id: "thinking-time", label: "Ask for a little thinking time", hint: "\u201CI need a minute to decide. Can you come back to me?\u201D", responseTerms: ["minute", "time", "pause", "think", "break"], reply: "The group looks at examples while you consider the roles, then checks back with you.", reflection: "Taking time can be part of participating. You do not have to answer immediately to have a useful contribution." }
+      ]
+    },
+    {
+      title: "Ask for the support you need",
+      setting: "Tuesday \xB7 Working session",
+      body: "The classroom is busy and several groups are talking. You are finding it hard to keep track of the next step. You can try a different way of working or ask someone to help.",
+      prompt: "What support would you like to try?",
+      actions: [
+        { id: "quiet-space", label: "Request a quieter place to work", hint: "\u201CCould I work at the nearby quiet table and check in afterward?\u201D", responseTerms: ["quiet", "noise", "loud", "space", "nearby"], reply: "The teacher points out a quieter table. You arrange a time to check in with the group.", reflection: "Changing the environment is one option. In another classroom, you might need to discuss which spaces are available." },
+        { id: "written-checkin", label: "Request the next step in writing", hint: "\u201CCould you put the next step in our shared notes?\u201D", responseTerms: ["write", "written", "notes", "text", "list", "instructions"], reply: "Sam adds the next step to the notes and asks whether you want to check it together.", reflection: "You can ask for information in a format you can use. A request can be spoken, written or shared through a communication tool." },
+        { id: "adult-support", label: "Ask a trusted adult to help clarify", hint: "\u201CCould you help us work out what comes next?\u201D", responseTerms: ["teacher", "adult", "help", "clarify", "support"], reply: "The teacher helps the group divide the next task into smaller steps.", reflection: "Asking for support is a valid action. You can say what would help without sharing a diagnosis or other private information." }
+      ]
+    },
+    {
+      title: "Respond to a change in the plan",
+      setting: "Wednesday \xB7 A new request",
+      body: "Morgan asks, \u201CCould you present my slides too?\u201D That would add work to the role you agreed on. You can discuss the request, set a limit or get support.",
+      prompt: "How would you respond?",
+      actions: [
+        { id: "keep-boundary", label: "Keep your agreed role and offer to plan together", hint: "\u201CI can do my section. Let\u2019s work out another plan for yours.\u201D", responseTerms: ["no", "cannot", "can t", "my part", "my section", "boundary", "limit", "own"], reply: "Morgan asks Sam about sharing the remaining slides. The group revisits the work that is still needed.", reflection: "You can set a limit without solving everything for someone else. This scene shows one possible response, not a guaranteed reaction." },
+        { id: "adjust-plan", label: "Negotiate a smaller change", hint: "\u201CI could take one slide if we adjust the rest of the work.\u201D", responseTerms: ["one slide", "share", "split", "adjust", "negotiate", "trade"], reply: "The group writes down a smaller change and checks that everyone understands the new roles.", reflection: "A revised agreement can work when you choose it freely and the workload is clear." },
+        { id: "ask-mediator", label: "Ask the teacher to help revisit the workload", hint: "\u201CCould we check this plan with the teacher?\u201D", responseTerms: ["teacher", "adult", "help", "support"], reply: "The teacher helps everyone compare the remaining work with the available time.", reflection: "You can involve support when a conversation is difficult. This practice does not require you to handle every disagreement alone." }
+      ]
+    },
+    {
+      title: "Follow up on what worked",
+      setting: "Friday \xB7 Looking ahead",
+      body: "The presentation is finished. Before another group project, you have a chance to keep a useful support, revise it or ask someone to help you plan.",
+      prompt: "What would you carry into the next project?",
+      actions: [
+        { id: "keep-support", label: "Keep a support that helped", hint: "Name what helped and ask to use it next time.", responseTerms: ["keep", "again", "worked", "same", "next time"], reply: "You note a support you would like to request again and when you would bring it up.", reflection: "A useful next step names what helped and when you want to use it." },
+        { id: "revise-support", label: "Try a different support next time", hint: "Name one part you would change and a possible alternative.", responseTerms: ["change", "different", "revise", "instead", "try"], reply: "You write one change to try and a way to check whether it helps.", reflection: "Revising a plan is part of learning what works for you. You can change your mind." },
+        { id: "plan-checkin", label: "Arrange a check-in with someone you trust", hint: "Prepare a question to discuss together.", responseTerms: ["check in", "checkin", "teacher", "adult", "help", "support", "talk"], reply: "You prepare a question and choose someone you could ask for a planning conversation.", reflection: "Support can continue after a task ends. You choose what to share in that conversation." }
+      ]
+    }
+  ];
+  var clone = (x) => JSON.parse(JSON.stringify(x));
+  var selfAdvocacyJourney = {
+    id: "self-advocacy",
+    kind: "sel",
+    title: "A place for your voice",
+    label: "Self-Advocacy Journey",
+    eyebrow: "WORKING TOGETHER \xB7 4 ENCOUNTERS",
+    intro: "Join a fictional group project, ask for support, discuss a change and decide what to try next. Respond with choices, your own words or both.",
+    disclosure: "A fictional practice story with several valid approaches. Characters\u2019 replies are authored possibilities, not predictions or a score of your social skills. You may pause or leave at any time.",
+    start(seed, config = {}) {
+      if (Object.keys(config).length) throw Error("Unsupported practice settings.");
+      return { chapter: 0, history: [] };
+    },
+    config: () => ({}),
+    actions(model) {
+      return model.chapter < chapters.length ? chapters[model.chapter].actions.map(({ id, label, hint, responseTerms }) => ({ id, label, hint, responseTerms })) : [];
+    },
+    step(model, id) {
+      const chapter = chapters[model.chapter], action = chapter?.actions.find((a) => a.id === id);
+      if (!action) throw Error("That response is unavailable here.");
+      return { chapter: model.chapter + 1, history: [...clone(model.history), { title: chapter.title, action: action.label, reply: action.reply, reflection: action.reflection }] };
+    },
+    view(model) {
+      const ended = model.chapter === chapters.length, chapter = chapters[Math.min(model.chapter, 3)], last = model.history.at(-1);
+      const connection = model.chapter > 0 && !ended ? " Earlier, you chose to " + model.history[0].action.toLowerCase() + ". You can keep that approach or try another." : "";
+      return {
+        campaignId: this.id,
+        kind: "sel",
+        title: ended ? "Your next conversation" : chapter.title,
+        body: ended ? "You practiced joining a plan, asking for support, responding to a change and following up. Look back at your choices and words. Which support would you want available in a real project?" : chapter.body + connection,
+        phase: ended ? "complete" : "encounter",
+        ended,
+        review: false,
+        progress: model.chapter,
+        total: 4,
+        period: ended ? "Practice journey complete" : "Encounter " + (model.chapter + 1) + " of 4",
+        progressLabel: "encounters explored",
+        replayLabel: "Replay the latest encounter",
+        prompt: ended ? "What would you keep, change or ask for?" : chapter.prompt,
+        setting: ended ? "Your practice notebook" : chapter.setting,
+        people: ["You \xB7 choose how to participate", "Morgan \xB7 project teammate", "Sam \xB7 project teammate", "Teacher \xB7 available for support"],
+        metrics: [],
+        locations: [],
+        evidence: [],
+        actions: this.actions(model),
+        receipts: model.history.map((r, i) => ({ title: "Encounter " + (i + 1) + " \xB7 " + r.title, text: "You tried: " + r.action + ". Possible response: " + r.reply, detail: r.reflection })),
+        feedback: last ? { title: "A possible response", body: last.reply, reflection: last.reflection } : null,
+        support: "There is more than one reasonable response. You can speak, write or use a communication tool. You do not need to disclose personal information, make eye contact or agree to extra work to participate.",
+        sound: null
+      };
+    }
+  };
+
+  // dev-tools/campaign-adventure-pilot/session-store.mjs
+  function createSessionStore(records = {}, onChange = () => {
+  }) {
+    const allowed = (key) => key === "alloflow-journey-input:v1" || key.startsWith("alloflow-campaign-pilot:v1:self-advocacy:");
+    const values = new Map(Object.entries(records && typeof records === "object" ? records : {}).filter(([k, v]) => allowed(k) && typeof v === "string"));
+    return {
+      get length() {
+        return values.size;
+      },
+      key: (index) => [...values.keys()][index] ?? null,
+      getItem: (key) => values.get(key) ?? null,
+      setItem(key, value) {
+        if (!allowed(key) || typeof value !== "string") throw Error("Unrecognized practice record.");
+        values.set(key, value);
+        onChange(Object.fromEntries(values));
+      }
+    };
+  }
+
+  // dev-tools/campaign-adventure-pilot/native-view.mjs
   var moduleUrl = document.currentScript?.src;
   async function ensureSound() {
     if (typeof window.AlloModules?.playGenerativeSoundscape === "function") return;
@@ -1588,7 +1929,7 @@
       check: () => typeof window.AlloModules?.playGenerativeSoundscape === "function"
     });
   }
-  function FieldJourneys({ ctx }) {
+  function JourneyHost({ ctx, kind = "stem" }) {
     const React = ctx.React, host = React.useRef(null);
     React.useEffect(() => {
       const root = host.current.shadowRoot || host.current.attachShadow({ mode: "open" });
@@ -1606,16 +1947,17 @@
         .grove .map-location span{max-width:58px;white-space:normal}
       }
       :host([data-theme="contrast"]){--ink:#fff;--muted:#eee;--paper:#000;--line:#aaa;--accent:#fff;color-scheme:dark}
-      :host([data-theme="contrast"]) :is(button,input,textarea,.scene,.campaign-card,.action,.location-info,.notice){background:#000;color:#fff;border-color:#fff}
+      :host([data-theme="contrast"]) :is(button,input,textarea,select,.scene,.campaign-card,.action,.location-info,.notice,.written-response,.encounter-panel,.encounter-feedback,.encounter-art){background:#000;color:#fff;border-color:#fff}
       :host([data-theme="contrast"]) :is(p,.scene-meta .eyebrow,.action-hint,.map-caption,.location-info p){color:#eee}
       :host([data-theme="contrast"]) button:focus-visible{outline-color:#ff0}
       :host([data-theme="contrast"]) .map-location{background:#000;color:#fff}
       :host([data-theme="contrast"]) .map-location[aria-pressed=true]{outline:3px solid #ff0}
+      @container(max-width:720px){.response-mode{align-items:start;flex-direction:column}.response-mode select{width:100%}}
     `;
       const main = document.createElement("main");
       main.id = "main";
       main.tabIndex = -1;
-      main.setAttribute("aria-label", "Field Journeys pilot");
+      main.setAttribute("aria-label", kind === "sel" ? "Practice Journeys pilot" : "Field Journeys pilot");
       const announcer = document.createElement("div");
       announcer.id = "announcer";
       announcer.className = "sr-only";
@@ -1623,24 +1965,34 @@
       announcer.setAttribute("aria-live", "polite");
       announcer.setAttribute("aria-atomic", "true");
       root.replaceChildren(style, main, announcer);
-      const journey = mountFieldJourneys(root, { embedded: true, ensureSound });
+      const protectTyping = (event) => {
+        const path = event.composedPath();
+        if (path.includes(root.host) && path.some((node) => node?.matches?.("input,textarea,select")) && !["Tab", "Escape"].includes(event.key)) event.stopPropagation();
+      };
+      window.addEventListener("keydown", protectTyping, true);
+      const sessionStore = kind === "sel" ? createSessionStore(ctx.toolData?.practiceJourneys?.records, (records) => ctx.update("practiceJourneys", "records", records)) : void 0;
+      const journey = mountFieldJourneys(root, { embedded: true, hub: kind, storage: sessionStore, sessionOnly: kind === "sel", ensureSound, adapters: kind === "sel" ? [selfAdvocacyJourney] : void 0, initialCampaign: kind === "stem" ? ctx.journeyEntry : null, returnToSource: ctx.journeyEntry ? () => ctx.setStemLabTool("waterCycle") : null, openRelatedTool: kind === "sel" ? ctx.setSelHubTool : null });
       return () => {
         journey.destroy();
+        window.removeEventListener("keydown", protectTyping, true);
         root.replaceChildren();
       };
     }, []);
     return React.createElement("div", {
       ref: host,
       "data-field-journeys": "true",
-      "data-theme": ctx.theme || "light",
+      "data-journey-hub": kind,
+      "data-theme": typeof ctx.theme === "string" ? ctx.theme : ctx.isContrast ? "contrast" : ctx.isDark ? "dark" : "light",
       style: { width: "100%", minWidth: 0 }
     });
   }
+
+  // dev-tools/campaign-adventure-pilot/in-app.mjs
   window.StemLab.registerTool("fieldJourneys", {
     icon: "\u{1F33F}",
     label: "Field Journeys (Pilot)",
     category: "Ecology & Environment",
     lightBackground: true,
-    render: (ctx) => ctx.React.createElement(FieldJourneys, { ctx })
+    render: (ctx) => ctx.React.createElement(JourneyHost, { ctx, kind: "stem" })
   });
 })();

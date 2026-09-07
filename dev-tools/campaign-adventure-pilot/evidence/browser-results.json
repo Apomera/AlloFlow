@@ -1,9 +1,9 @@
 {
-  "base": "http://127.0.0.1:50188",
-  "checkedAt": "2026-09-07T03:58:39.511Z",
+  "base": "http://127.0.0.1:53645",
+  "checkedAt": "2026-09-07T04:48:20.899Z",
   "historicalPreservation": {
     "status": "baseline drift; behavior checks only",
-    "message": "Protected files differ from pilot baseline: adventure_session_handlers_module.js, adventure_session_handlers_source.jsx, desktop/web-app/public/adventure_session_handlers_module.js, desktop/web-app/public/view_adventure_module.js, view_adventure_module.js, view_adventure_source.jsx"
+    "message": "Protected files differ from pilot baseline: _build_view_adventure_module.js, adventure_handlers_module.js, adventure_handlers_source.jsx, adventure_session_handlers_module.js, adventure_session_handlers_source.jsx, desktop/web-app/public/adventure_handlers_module.js, desktop/web-app/public/adventure_session_handlers_module.js, desktop/web-app/public/view_adventure_module.js, view_adventure_module.js, view_adventure_source.jsx"
   },
   "checks": [
     "Watershed: fieldwork, annual result, reload and exact resume",

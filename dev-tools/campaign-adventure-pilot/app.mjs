@@ -1,12 +1,17 @@
 import {createAdapters} from './adapters.mjs';
 import {makeRun,materialize,dispatch,saveRun,readRun,listRuns,addNote,forkRun,narrate,saveKey} from './core.mjs';
 import {landscape} from './scene-art.mjs';
+import {reviewResponse,dispatchResponse} from './responses.mjs';
 export function mountFieldJourneys(root,options={}){
 const $=id=>root.querySelector('#'+id);
 const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n;};
 const button=(label,fn,cls='')=>{const b=el('button',cls,label);b.type='button';b.addEventListener('click',fn);return b;};
 const clone=x=>JSON.parse(JSON.stringify(x));
-const noteDrafts=new Map();
+const noteDrafts=new Map(),responseDrafts=new Map();
+let responseMode='both',proposal=null;
+const isSEL=options.hub==='sel';
+const authoredStatus=isSEL?'Authored practice scene · possible responses':'Authored scene · grounded in the simulation';
+let entryCampaign=options.initialCampaign||null;
 let adapters=[],run=null,adapter=null,view=null,selected=null,provider=null,narratorRequest=null,narratorSerial=0;
 let notice='',warning=false,storage=null,sound=false,audioContext=null,audioNodes=[],audioGain=null;
 let destroyed=false,soundSerial=0,reading=null;
@@ -17,7 +22,7 @@ function persist(){
   if(!storage){message('Browser storage is unavailable. This run stays in memory; download your journal to keep it.',true);return false;}
   const result=saveRun(storage,run);
   if(!result.ok)message(result.message,true);
-  else message('Journey saved on this device.');
+  else message(options.sessionOnly?'Journey kept for this open SEL session. Download the journal to keep it afterward.':'Journey saved on this device.');
   return result.ok;
 }
 function cancelNarration(){narratorSerial++;narratorRequest?.abort();narratorRequest=null;}
@@ -27,7 +32,7 @@ function stopSound(){
   audioNodes=[];try{audioGain?.disconnect();}catch{}audioGain=null;
 }
 async function playSound(){
-  stopSound();if(!sound||!view||document.hidden||destroyed)return;
+  stopSound();if(!sound||!view||!view.sound||document.hidden||destroyed)return;
   const serial=soundSerial;
   try{
     if(options.ensureSound)await options.ensureSound();
@@ -52,12 +57,12 @@ async function refreshNarration(){
   const serial=narratorSerial;const capturedRun=run.runId;const revision=run.commands.length;
   narratorRequest=new AbortController();
   const status=$('narration-status'),extra=$('optional-text');
-  if(status)status.textContent=provider?'Authored scene ready. Checking optional narration…':'Authored scene · grounded in the simulation';
+  if(status)status.textContent=provider?'Authored scene ready. Checking optional narration…':authoredStatus;
   if(extra){extra.hidden=true;extra.textContent='';}
   const result=await narrate(view,provider,{signal:narratorRequest.signal});
   if(serial!==narratorSerial||run?.runId!==capturedRun||run.commands.length!==revision)return;
   const current=$('narration-status');
-  if(current)current.textContent=result.status==='fallback'?'Optional narration unavailable. The authored scene remains playable.':result.status==='optional'?'Authored scene with optional narration':'Authored scene · grounded in the simulation';
+  if(current)current.textContent=result.status==='fallback'?'Optional narration unavailable. The authored scene remains playable.':result.status==='optional'?'Authored scene with optional narration':authoredStatus;
   if(result.status==='fallback')announce('Optional narration unavailable. You can continue with the authored scene.');
   if(result.status==='optional'&&$('optional-text')){$('optional-text').textContent=result.text;$('optional-text').hidden=false;}
 }
@@ -69,7 +74,7 @@ function downloadJournal(){
   const url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='field-journey-'+run.campaignId+'-'+run.runId+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
 }
 function activate(next,focus=true){
-  cancelNarration();stopReading();stopSound();run=next;adapter=adapters.find(a=>a.id===run.campaignId);selected=adapter.id==='watershed'?'forestBuffer':'0';
+  cancelNarration();stopReading();stopSound();proposal=null;run=next;adapter=adapters.find(a=>a.id===run.campaignId);selected=adapter.id==='watershed'?'forestBuffer':'0';
   renderJourney(focus);
 }
 function startJourney(a,seed){
@@ -80,21 +85,23 @@ function resumeJourney(key){
   try{const next=readRun(storage,key,adapters);message('Saved journey resumed.');activate(next);}
   catch(error){message(error.message+' The stored data has not been changed.',true);}
 }
-function returnHome(){cancelNarration();stopReading();stopSound();run=null;adapter=null;view=null;renderHome();main.focus();}
+function returnHome(){cancelNarration();stopReading();stopSound();run=null;adapter=null;view=null;proposal=null;renderHome();main.focus();}
 function renderHome(){
   main.replaceChildren();
-  if(options.embedded)main.append(el('p','embedded-label','FIELD JOURNEYS · OPTIONAL PILOT'));
-  const intro=el('section','intro');intro.append(el('p','eyebrow','EXPLORE · CHOOSE · RETURN'),el('h1','','Small choices.\nLiving worlds.'),el('p','','Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation.'));
+  if(options.embedded)main.append(el('p','embedded-label',isSEL?'PRACTICE JOURNEYS · OPTIONAL PILOT':'FIELD JOURNEYS · OPTIONAL PILOT'));
+  const intro=el('section','intro');intro.append(el('p','eyebrow','EXPLORE · CHOOSE · RETURN'),el('h1','',isSEL?'A place for\nyour voice.':'Small choices.\nLiving worlds.'),el('p','',isSEL?'Practice asking for support through four connected encounters. Choose a response, write your own, or use both.':'Step into a place that changes with your decisions. Follow a river through ten years of restoration, or help a grove leave a next generation.'));
   main.append(intro,makeNotice());
-  const cards=el('div','campaign-grid');
-  adapters.forEach(a=>{
+  if(entryCampaign){const entry=el('div','entry-note');entry.append(el('p','','Start a separate journey or resume one below. Your original campaign stays where you left it.'),button('Show all journeys',()=>{entryCampaign=null;renderHome();main.focus();}));if(options.returnToSource)entry.append(button('Return to Watershed tool',options.returnToSource));main.append(entry);}
+  const visibleAdapters=entryCampaign?adapters.filter(a=>a.id===entryCampaign):adapters;
+  const cards=el('div','campaign-grid'+(visibleAdapters.length===1?' single-campaign':''));
+  visibleAdapters.forEach(a=>{
     const card=el('section','campaign-card'),art=el('div','card-art');art.setAttribute('aria-hidden','true');
-    const v=a.view(a.start('FIELD-01',{}));const map=landscape(v,()=>{},'');map.querySelectorAll('button').forEach(b=>b.remove());art.append(map);
+    const v=a.view(a.start('FIELD-01',{}));const map=a.kind==='sel'?encounterArt(v):landscape(v,()=>{},'');map.querySelectorAll('button').forEach(b=>b.remove());art.append(map);
     const body=el('div','card-body');body.append(el('p','eyebrow',a.eyebrow),el('h2','',a.title),el('p','',a.intro));
-    const seedLabel=el('label','seed-label','World seed');const seed=el('input');seed.id='seed-'+a.id;seed.value='FIELD-01';seed.maxLength=32;seed.spellcheck=false;seedLabel.append(seed);body.append(seedLabel);
+    const seedLabel=el('label','seed-label','World seed');const seed=el('input');seed.id='seed-'+a.id;seed.value='FIELD-01';seed.maxLength=32;seed.spellcheck=false;seedLabel.append(seed);if(a.kind!=='sel')body.append(seedLabel);
     body.append(button('Begin '+a.label,()=>startJourney(a,seed.value),'primary'));card.append(art,body);cards.append(card);
   });main.append(cards);
-  const saved=el('section','saved');saved.append(el('h2','','Your saved journeys'));
+  const saved=el('section','saved');saved.append(el('h2','',options.sessionOnly?'Journeys in this session':'Your saved journeys'));
   try {
     const records=storage?listRuns(storage,adapters):[];
     if(!records.length)saved.append(el('p','status-line','Your journeys will appear here after you begin.'));
@@ -102,7 +109,7 @@ function renderHome(){
       const row=el('div','save-row'),text=el('div');
       if(item.run){
         const a=adapters.find(a=>a.id===item.run.campaignId);const v=a.view(materialize(a,item.run));
-        text.append(el('h3','',a.label+' · '+item.run.seed),el('p','',v.period+' · '+item.run.commands.length+' decisions · '+new Date(item.run.createdAt).toLocaleDateString()));
+        text.append(el('h3','',a.label+(a.kind==='sel'?'':' · '+item.run.seed)),el('p','',v.period+' · '+item.run.commands.length+' decisions · '+new Date(item.run.createdAt).toLocaleDateString()));
         row.append(text,button('Resume '+a.label,()=>resumeJourney(item.key)));
       }else {text.append(el('h3','','Journey needs recovery'),el('p','',item.error));row.append(text);}
       saved.append(row);
@@ -124,40 +131,112 @@ function renderHome(){
   const tools=el('div','footer-tools');tools.append(button('Open a downloaded journey',()=>file.click()),file);main.append(tools);
   renderPilotDetails();
 }
+function renderResponses(decisions,actions){
+  if(view.ended)return;
+  const modeLabel=el('label','response-mode','Response format');
+  const mode=el('select');mode.id='response-mode';
+  for(const [value,label] of [['both','Both'],['choices','Choices'],['write','Write a response']]){
+    const option=el('option','',label);option.value=value;option.selected=value===responseMode;mode.append(option);
+  }
+  mode.addEventListener('change',()=>{
+    responseMode=mode.value;try{storage?.setItem('alloflow-journey-input:v1',responseMode);}catch{}
+    renderJourney();$('response-mode').focus();
+  });modeLabel.append(mode);decisions.append(modeLabel);
+  if(responseMode!=='write'){
+    const choices=el('div','choice-responses');choices.setAttribute('aria-label','Available choices');
+    let allLabel=false;
+    actions.forEach(action=>{
+      if(action.location==='all'&&!allLabel){choices.append(el('p','action-group','Across the watershed'));allLabel=true;}
+      const revision=run.commands.length;
+      const b=button('',()=>choose(action.id,revision),'action'+(!action.location?' primary':''));
+      b.dataset.action=action.id;b.disabled=!!action.disabled;
+      const title=el('span','action-title');title.append(el('span','',action.label));
+      if(action.cost!=null)title.append(el('span','action-cost',action.cost+'h'+(action.disabled?' · unavailable':'')));
+      b.append(title,el('span','action-hint',action.location?action.tradeoff:action.hint));choices.append(b);
+    });decisions.append(choices);
+  }
+  if(responseMode!=='choices'){
+    const form=el('section','written-response');
+    const label=el('label','','Write what you would do or say');label.htmlFor='written-response';
+    const input=el('textarea');input.id='written-response';input.maxLength=1200;input.rows=4;
+    input.placeholder=adapter.kind==='sel'?'Use your own words. A short sentence is enough.':'Describe your next action. A short sentence is enough.';
+    const draftKey=run.runId+':'+run.commands.length;input.value=responseDrafts.get(draftKey)||'';
+    const review=el('div','response-review');review.id='response-review';
+    input.addEventListener('input',()=>{responseDrafts.set(draftKey,input.value);proposal=null;review.replaceChildren();});
+    form.append(label,input,el('p','status-line','Your confirmed response stays in your journal. Review the action before it runs.'));
+    const showReview=()=>{
+      review.replaceChildren();if(!proposal)return;
+      review.append(el('p','',proposal.message));
+      const actionLabel=el('label','','Action to try'),select=el('select');select.id='response-action';
+      const empty=el('option','','Choose an action…');empty.value='';select.append(empty);
+      proposal.actions.forEach(a=>{const option=el('option','',a.label+(a.locationName?' · '+a.locationName:'')+(a.cost!=null?' · '+a.cost+'h':''));option.value=a.id;select.append(option);});
+      select.value=proposal.suggested||'';actionLabel.append(select);review.append(actionLabel);
+      const hint=el('p','status-line');const explain=()=>{const a=proposal?.actions.find(x=>x.id===select.value);hint.textContent=a?(a.tradeoff||a.hint||''):'';};select.addEventListener('change',explain);explain();review.append(hint);
+      const captured=proposal;
+      review.append(button('Confirm response and continue',()=>{
+        try{
+          if(proposal!==captured)throw Error('Review your edited response again.');
+          run=dispatchResponse(adapter,run,captured,select.value);responseDrafts.delete(draftKey);proposal=null;persist();stopReading();renderJourney(true);
+          announce('Written response recorded. '+view.period+'. '+view.title);
+        }catch(error){message(error.message,true);}
+      },'primary'));
+    };
+    form.append(button('Review my response',()=>{
+      try{proposal=reviewResponse(adapter,run,input.value,{location:adapter.id==='watershed'?selected:undefined});showReview();$('response-action').focus();announce(proposal.message);}
+      catch(error){message(error.message,true);input.focus();}
+    }),review);
+    if(proposal?.runId===run.runId&&proposal.revision===run.commands.length)showReview();
+    decisions.append(form);
+  }
+}
+function encounterArt(v){
+  const art=el('div','encounter-art');art.append(el('span','encounter-symbol','✦'),el('p','eyebrow','PRACTICE · PAUSE · TRY AGAIN'),el('p','',v.setting||'A place for your voice'));
+  return art;
+}
+function renderEncounter(left){
+  const panel=el('section','encounter-panel');panel.append(encounterArt(view),el('h2','','Who is here'));
+  const people=el('ul');view.people.forEach(p=>people.append(el('li','',p)));panel.append(people,el('p','status-line','You can pause or leave at any time.'));
+  left.append(panel);
+  if(view.feedback){const feedback=el('section','encounter-feedback');feedback.append(el('h3','',view.feedback.title),el('p','',view.feedback.body),el('p','',view.feedback.reflection));left.append(feedback);}
+}
 function choose(id,revision){
   try {
-    const next=dispatch(adapter,run,id,revision);run=next;persist();stopReading();renderJourney(true);
+    const next=dispatch(adapter,run,id,revision);run=next;proposal=null;persist();stopReading();renderJourney(true);
     announce(adapter.label+'. '+view.period+'. '+view.title+'. '+notice);
   }catch(error){message(error.message,true);}
 }
 function selectLocation(id){
-  selected=id;renderJourney(false);
+  selected=id;proposal=null;renderJourney(false);
   root.querySelector('[data-location="'+id+'"]')?.focus();
 }
 function renderJourney(focus=false){
   const model=materialize(adapter,run);view=adapter.view(model);
-  if(!view.locations.some(l=>l.id===selected))selected=view.locations[0].id;
+  if(view.locations.length&&!view.locations.some(l=>l.id===selected))selected=view.locations[0].id;
   main.replaceChildren();
   const heading=el('div','journey-heading'),titles=el('div');
-  titles.append(button('← Field station',returnHome,'quiet'),el('p','eyebrow',adapter.eyebrow),el('h1','',adapter.title));
+  titles.append(button(isSEL?'← Practice journeys':'← Field station',returnHome,'quiet'),el('p','eyebrow',adapter.eyebrow),el('h1','',adapter.title));
   const tools=el('div','header-actions');
   const soundButton=button(sound?'Sound on':'Sound off',()=>{sound=!sound;playSound();soundButton.textContent=sound?'Sound on':'Sound off';soundButton.setAttribute('aria-pressed',String(sound));});
   soundButton.setAttribute('aria-pressed',String(sound));
-  tools.append(soundButton,button('Download journal',downloadJournal));
+  if(view.sound)tools.append(soundButton);tools.append(button('Download journal',downloadJournal));
   heading.append(titles,tools);main.append(heading,makeNotice());
   const journey=el('div','journey'),left=el('section'),right=el('section');
-  left.setAttribute('aria-label','Landscape and model state');right.setAttribute('aria-label','Scene and decisions');
+  left.setAttribute('aria-label',isSEL?'People and possible responses':'Landscape and model state');right.setAttribute('aria-label','Scene and decisions');
+  let location;
+  if(view.kind==='sel')renderEncounter(left);
+  else {
   const map=landscape(view,selectLocation,selected);
   map.querySelectorAll('button').forEach((b,i)=>b.dataset.location=view.locations[i].id);
   left.append(map);
   const caption=el('div','map-caption');caption.append(el('span','',adapter.id==='watershed'?'Choose a reach to plan fieldwork.':'Choose a patch to inspect the grove.'),el('span','',run.seed));left.append(caption);
-  const location=view.locations.find(l=>l.id===selected),info=el('div','location-info');
+  location=view.locations.find(l=>l.id===selected);const info=el('div','location-info');
   info.append(el('h3','',location.name));
   const locationText=location.description+(adapter.id==='grove'?'. '+location.value+' living trees here. '+(location.gap?'A storm has opened the canopy.':'')+(location.trees.some(t=>t.descendant)?' Smaller trees show descendants.':''):'');
   info.append(el('p','',locationText));
   left.append(info);
   const metrics=el('div','metrics');metrics.setAttribute('aria-label','Current model values');
   view.metrics.forEach(m=>{const metric=el('div','metric'),value=el('span','metric-value',m.value);value.append(el('small','',m.unit));metric.append(value,el('span','metric-label',m.label));metrics.append(metric);});left.append(metrics);
+  }
   const support=el('details');support.append(el('summary','','Help me reason through this'),el('p','',view.support));left.append(support);
   const scene=el('section','scene');scene.setAttribute('aria-labelledby','scene-title');
   const meta=el('div','scene-meta');meta.append(el('p','eyebrow',view.ended?'FIELD NOTES · FINAL CHAPTER':'FIELD NOTES · '+view.period.toUpperCase()),button('Read aloud',readScene),button('Stop',stopReading));scene.append(meta);
@@ -166,27 +245,16 @@ function renderJourney(focus=false){
   const extra=el('p','optional-narration');extra.id='optional-text';extra.hidden=true;
   const state=el('p','status-line');state.id='narration-status';
   scene.append(title,body,extra,state);
-  const progressRow=el('div','progress-row');progressRow.append(el('span','',view.period),el('span','',view.progress+' / '+view.total+' years observed'));
-  const progress=el('progress');progress.max=view.total;progress.value=view.progress;progress.setAttribute('aria-label','Years observed');scene.append(progressRow,progress);right.append(scene);
+  const progressRow=el('div','progress-row');progressRow.append(el('span','',view.period),el('span','',view.progress+' / '+view.total+' '+(view.progressLabel||'years observed')));
+  const progress=el('progress');progress.max=view.total;progress.value=view.progress;progress.setAttribute('aria-label',view.progressLabel||'Years observed');scene.append(progressRow,progress);right.append(scene);
   const decisions=el('section','decisions');decisions.append(el('h3','',view.prompt));
   let actions=view.actions;
   if(adapter.id==='watershed'&&view.phase==='year'){
     actions=actions.filter(a=>a.location===selected||a.location==='all'||!a.location);
     decisions.append(el('p','action-group','Fieldwork · '+location.name));
   }
-  let allLabel=false;
-  actions.forEach(action=>{
-    if(action.location==='all'&&!allLabel){decisions.append(el('p','action-group','Across the watershed'));allLabel=true;}
-    // Capture revision now, not when a queued/double click eventually fires.
-    const revision=run.commands.length;
-    const safeButton=button('',()=>choose(action.id,revision),'action'+(!action.location?' primary':''));
-    safeButton.dataset.action=action.id;safeButton.disabled=!!action.disabled;
-    const label=el('span','action-title');label.append(el('span','',action.label));
-    if(action.cost!=null)label.append(el('span','action-cost',action.cost+'h'+(action.disabled?' · unavailable':'')));
-    safeButton.append(label,el('span','action-hint',action.location?action.tradeoff:action.hint));
-    decisions.append(safeButton);
-  });
-  if(view.ended)decisions.append(el('p','',adapter.disclosure));
+  renderResponses(decisions,actions);
+  if(view.ended){decisions.append(el('p','',adapter.disclosure));if(isSEL&&options.openRelatedTool){decisions.append(button('Continue in Advocacy Practice',()=>options.openRelatedTool('advocacy')),button('Open Self-Advocacy Studio',()=>options.openRelatedTool('selfAdvocacy')));}}
   right.append(decisions);
   if(view.evidence.length){
     const evidence=el('section','evidence');evidence.append(el('h3','',adapter.id==='watershed'?'After fieldwork → after the year':'What the last year recorded'));
@@ -200,12 +268,12 @@ function renderJourney(focus=false){
 }
 function renderJournal(){
   const journal=el('section','journal'),history=el('div'),notes=el('div','notes');
-  history.append(el('h2','','The field journal'));
-  const receipts=el('div','receipts');receipts.tabIndex=0;receipts.setAttribute('role','region');receipts.setAttribute('aria-label','Recorded annual evidence');
-  if(!view.receipts.length)receipts.append(el('p','status-line','Observe your first year to record its event and consequences.'));
+  history.append(el('h2','',isSEL?'Your practice journal':'The field journal'));
+  const receipts=el('div','receipts');receipts.tabIndex=0;receipts.setAttribute('role','region');receipts.setAttribute('aria-label',isSEL?'Recorded practice encounters':'Recorded annual evidence');
+  if(!view.receipts.length)receipts.append(el('p','status-line',isSEL?'Try a response to record the encounter here.':'Observe your first year to record its event and consequences.'));
   for(const record of view.receipts){const item=el('article','receipt');item.append(el('h3','',record.title),el('p','',record.text),el('p','',record.detail));receipts.append(item);}history.append(receipts);
   if(run.commands.length){
-    history.append(button('Replay the latest year',()=>{
+    history.append(button(view.replayLabel||'Replay the latest year',()=>{
       let revision=run.commands.length-1;
       if(adapter.id==='watershed'){
         const lastEnd=run.commands.lastIndexOf('end-year');
@@ -223,15 +291,16 @@ function renderJournal(){
   notes.append(label,input,button('Save field note',()=>{
     try{run=addNote(run,input.value);noteDrafts.delete(run.runId);persist();renderJourney();$('field-note').focus();}catch(error){message(error.message,true);}
   }));
+  for(const response of run.responses||[]){const entry=el('div','written-record');entry.append(el('h3','','Your words · decision '+response.revision),el('p','note',response.text));notes.append(entry);}
   for(const note of run.notes)notes.append(el('p','note',note.text));
   journal.append(history,notes);main.append(journal);
 }
 function renderPilotDetails(){
   const details=el('details','pilot-details');
-  details.append(el('summary','',options.embedded?'About Field Journeys':'About this pilot and its isolation checks'),
-    el('p','',options.embedded?'Explore two campaigns using the existing simulations. Journeys save on this device and can be downloaded. Your regular adventures and campaigns keep their own saves.':'This is a separate development host. It reads the existing Tree Life Lab engine and Adventure soundscape code unchanged. The watershed bridge copies exact source functions at build time. No app account, cloud session, API key, or regular campaign save is connected.'),
-    el('p','',options.embedded?'Scenes describe results from the simulation. This pilot uses authored narration and does not require an AI connection.':'The visible scenes are authored from model results. Optional narration is an extension point only: no live AI provider is configured. These local checks simulate failure without making a network request.'),
-    el('p','',adapter?adapter.disclosure:'Both campaigns use educational models. Their indices and scenario assumptions are not real-world forecasts.'));
+  details.append(el('summary','',options.embedded?(isSEL?'About Practice Journeys':'About Field Journeys'):'About this pilot and its isolation checks'),
+    el('p','',options.embedded?(isSEL?'Practice a fictional group project. Several responses can work. This journey stays in the current SEL session. Download the journal to keep it after closing or reloading this tab.':'Explore two campaigns using the existing simulations. Journeys save on this device and can be downloaded. Your regular adventures and campaigns keep their own saves.'):'This is a separate development host. It reads the existing Tree Life Lab engine and Adventure soundscape code unchanged. The watershed bridge copies exact source functions at build time. No app account, cloud session, API key, or regular campaign save is connected.'),
+    el('p','',options.embedded?(isSEL?'Characters’ replies are authored possibilities. Written responses are kept with the action you confirm; they are not graded or sent to an AI service.':'Scenes describe results from the simulation. Written responses are kept with the action you confirm. This pilot does not require an AI connection.'):'The visible scenes are authored from model results. Optional narration is an extension point only: no live AI provider is configured. These local checks simulate failure without making a network request.'),
+    el('p','',adapter?adapter.disclosure:isSEL?'You can speak, write or use a communication tool. No personal disclosure is required.':'Both campaigns use educational models. Their indices and scenario assumptions are not real-world forecasts.'));
   if(run&&!options.embedded){
     details.append(button('Simulate narrator outage',()=>{provider=()=>Promise.reject(new Error('Simulated outage'));refreshNarration();}),
       button('Simulate malformed narration',()=>{provider=()=>({systemStateUpdate:{quality:100}});refreshNarration();}),
@@ -242,12 +311,12 @@ function renderPilotDetails(){
 const visibility=()=>{if(document.hidden){stopSound();stopReading();}else playSound();};
 function destroy(){
   if(destroyed)return;destroyed=true;cancelNarration();sound=false;stopSound();stopReading();
-  audioContext?.close().catch(()=>{});audioContext=null;noteDrafts.clear();
+  audioContext?.close().catch(()=>{});audioContext=null;noteDrafts.clear();responseDrafts.clear();proposal=null;
   document.removeEventListener('visibilitychange',visibility);window.removeEventListener('pagehide',destroy);
 }
 try{
-  adapters=createAdapters(window.__alloTreeLabEngine);
-  try{storage=window.localStorage;}catch{storage=null;}
+  adapters=options.adapters||createAdapters(window.__alloTreeLabEngine);
+  try{storage=options.storage||window.localStorage;const savedMode=storage.getItem('alloflow-journey-input:v1');if(['both','choices','write'].includes(savedMode))responseMode=savedMode;}catch{storage=null;}
   renderHome();
   document.addEventListener('visibilitychange',visibility);window.addEventListener('pagehide',destroy);
 }catch(error){main.replaceChildren(el('h1','','The field station could not open'),el('p','',error.message),el('p','','Your existing adventures and campaign saves have not been changed.'));}

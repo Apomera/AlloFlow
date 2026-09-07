@@ -1,7 +1,7 @@
 {
   "version": 1,
   "campaignId": "grove",
-  "runId": "264e38fb-2ea3-4e39-87bd-f95918b4eec2",
+  "runId": "29fa15c5-ec1d-49e4-830c-48eb44341ab1",
   "seed": "FIELD-01",
   "config": {
     "mode": "deck"
@@ -22,7 +22,7 @@
       "text": "I saw new arrivals, but none are established yet."
     }
   ],
-  "createdAt": "2026-09-07T03:58:47.919Z",
+  "createdAt": "2026-09-07T04:48:26.225Z",
   "journal": [
     {
       "title": "Year 1 · A gentle growing year",

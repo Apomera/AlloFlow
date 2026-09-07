@@ -14506,6 +14506,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'sel_hub/sel_tool_upstander.js',
         'sel_hub/sel_tool_voicedetective.js',
         'sel_hub/sel_tool_sociallab.js',
+        'sel_hub/sel_tool_practicejourneys.js',
         'sel_hub/sel_tool_peersupport.js',
         'sel_hub/sel_tool_selfadvocacy.js',
         'sel_hub/sel_tool_execfunction.js',

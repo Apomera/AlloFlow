@@ -9,7 +9,7 @@ function createServer({testing = false} = {}) {
     ['/original/tree.js', path.join(root,'stem_lab/stem_tool_treelab.js')]
   ]);
   if(testing)mappings.set('/vendor/axe.js',require.resolve('axe-core'));
-  const allowed = new Set(['index.html','styles.css','standalone.mjs','app.mjs','core.mjs','adapters.mjs','watershed-source.mjs','scene-art.mjs']);
+  const allowed = new Set(['index.html','styles.css','responses.mjs','response-records.mjs','standalone.mjs','app.mjs','core.mjs','adapters.mjs','watershed-source.mjs','scene-art.mjs']);
   return http.createServer((req,res)=>{
     if(req.method !== 'GET' && req.method !== 'HEAD') {res.writeHead(405);res.end();return;}
     let pathname;

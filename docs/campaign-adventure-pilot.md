@@ -2,6 +2,45 @@
 
 Implemented locally September 6, 2026. Field Journeys is an optional **STEAM Lab tool** with Watershed Steward and Grove Journey campaigns. It renders inside AlloFlow's existing tool window and uses its normal Back button. Nothing is deployed.
 
+## Response formats and SEL practice (September 7 follow-up)
+
+All three pilot campaigns now support **Both**, **Choices**, and **Write a response**. Both is the initial default. Learners can change the format during a journey. Drafts survive format changes and map inspection within the mounted tool.
+
+- **Choices:** select a valid action directly.
+- **Write a response:** write up to 1,200 characters, use **Review my response**, inspect or change the proposed action, then **Confirm response and continue**.
+- **Both:** both entry methods are available in the same campaign.
+
+Reviewing text does not advance the model. The local matcher suggests an available action; unmatched or ambiguous text needs the learner to select an action. Watershed review names the selected reach and cost. Confirmation rechecks the current run, revision and action availability. It cannot invent actions, change model rules, or execute instructions contained in the response.
+
+Confirmed wording is kept with its action and decision number. These runs use save version 2; existing version 1 choice-only saves remain supported. Conflicting writes, response deletion and version downgrades are rejected. Replay retains the responses before the replay point and keeps the earlier branch intact. Written responses are not graded or sent to an AI service.
+
+### Where to open them
+
+- **STEAM Lab → Water Cycle:** use **Play Watershed as a Field Journey**. This host-level entry opens a separate Watershed journey without editing the Water Cycle source or converting its state. **Return to Watershed tool** returns to the existing tool.
+- **STEAM Lab → Field Journeys (Pilot):** Watershed and Grove remain available.
+- **SEL Hub → Practice Journeys (Pilot):** **A place for your voice**, a four-encounter Self-Advocacy Journey. It practices joining a project, requesting support, discussing a workload change and following up. The final screen connects to the existing Advocacy Practice and Self-Advocacy Studio tools.
+
+The SEL story offers several valid approaches and authored possible replies, with no empathy, compliance or personality score. It uses a dedicated encounter presentation within the same journal, response and replay interface. The original SEL tools remain intact.
+
+### Storage follows each hub
+
+STEM journeys continue saving on this device. **SEL practice follows the hub's temporary-session policy.** Its records live in the hub's React state, including while switching tools, and are not written to localStorage or sessionStorage. Download a journal before closing or reloading the tab; opening that download restores the decisions and written responses as a new practice run. The hub's normal export can also include its practice records.
+
+Confirmed responses are retained; an unconfirmed draft is only held by the currently mounted journey. The response format preference is stored with the corresponding STEM browser setting or SEL session.
+
+### Additional verification
+
+~~~powershell
+node node_modules/vitest/vitest.mjs run tests/campaign_journey_responses.test.js --maxWorkers=1 --testTimeout=60000
+node dev-tools/campaign-adventure-pilot/verify-responses-in-app.cjs
+~~~
+
+The response suite covers confirmed-action parity with the original simulation, mixed formats, unmatched and stale proposals, version 1/2 save compatibility, response conflicts and validation, branch preservation, separate libraries, session-only SEL storage, and every one of the 81 SEL paths. Browser evidence is recorded in evidence/response-browser-results.json with Watershed, SEL and phone screenshots.
+
+Latest follow-up results: **9/9 response tests passed**, all 81 SEL paths completed, and the real-app response walkthrough passed with no browser exceptions or axe findings in its desktop/phone SEL views. Complete standalone Watershed/Grove checks also passed. The 12 existing behavioral unit checks pass.
+
+The immutable historical preservation assertion still reports unrelated Adventure edits from the separate task. During this follow-up, its differences increased from six to ten files; the original baseline was retained. The pilot does not change those files. The original Watershed/Tree engines and Adventure soundscape utility remain unchanged by this work.
+
 ## Try it in the app
 
 From the repository root:

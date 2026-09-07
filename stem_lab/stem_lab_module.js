@@ -2196,6 +2196,7 @@
       if (!_stemTheme) _stemTheme = 'light';
       var isDark = _stemTheme === 'dark';
       var isContrast = _stemTheme === 'contrast';
+      var [_journeyEntry, _setJourneyEntry] = React.useState(null);
 
       // ── STEAM Lab Global Sound Effect Helper ──
       var _stemAudioCtx = null;
@@ -4780,6 +4781,16 @@
             className: "stem-active-tool-hint",
             style: { color: _pal.textMuted }
           }, "Esc or Alt+B returns to all tools"))),
+        stemLabTab === 'explore' && stemLabTool === 'waterCycle' && React.createElement('div', {
+          role: 'region', 'aria-label': 'Optional Watershed journey',
+          style: { padding: '10px 20px', background: _pal.bgAlt, color: _pal.text, borderBottom: '1px solid ' + _pal.border, flexShrink: 0 }
+        }, React.createElement('button', {
+          type: 'button', 'data-watershed-journey-launch': 'true',
+          onClick: function () { _setJourneyEntry('watershed'); _openStemTool('fieldJourneys'); },
+          style: { minHeight: 44, padding: '8px 14px', border: '1px solid ' + _pal.border, borderRadius: 8, color: _pal.text, background: _pal.bg }
+        }, 'Play Watershed as a Field Journey'), React.createElement('span', {
+          style: { display: 'inline-block', fontSize: 12, marginLeft: 12 }
+        }, 'Optional pilot · separate journey saves')),
         // ── Keyboard Help Panel ──
         _showKeyHelp && React.createElement("div", {
           role: "region", "aria-label": "Keyboard shortcuts",
@@ -7572,6 +7583,7 @@
             // for a learner who had asked the OS (or the app's own header toggle)
             // for less motion. Found via check_stem_ctx on 2026-09-06.
             reduceMotion: _reduceMotion,
+            journeyEntry: _journeyEntry,
             toolData: labToolData,
             setToolData: _safeSetLabToolData,
             update: function(toolId, key, val) {

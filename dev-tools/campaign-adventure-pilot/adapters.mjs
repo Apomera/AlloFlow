@@ -11,7 +11,7 @@ export function createAdapters(tree) {
     return water.techniques.filter(t=>t.id!=='rest').flatMap(tech=>{
       const targets=tech.appliesTo==='any'?[null]:tech.appliesTo;
       return targets.map(target=>({id:'tech:'+tech.id+':'+(target||'all'),label:tech.name,
-        location:target||'all',cost:tech.hours,disabled:tech.hours>model.hoursLeft,
+        location:target||'all',responseTerms:tech.id==='bufferPlant'?['plant','plant trees','buffer','riparian']:[],cost:tech.hours,disabled:tech.hours>model.hoursLeft,
         hint:(target?water.components.find(c=>c.id===target).name:'Watershed-wide')+' · '+tech.hours+' hours',
         tradeoff:Object.entries(tech.effects).map(([key,value])=>key+' '+delta(value)).join(' · ')}));
     }).concat([{id:'end-year',label:'Observe the year',hint:'Finish fieldwork. See the annual event and downstream effects.'}]);
@@ -74,7 +74,7 @@ export function createAdapters(tree) {
     config:model=>({mode:model.config.mode}),
     actions(model) {
       if(tree.groveSummary(model).ended)return [];
-      return tree.GROVE_PRIORITIES.map(p=>({id:p.id,label:p.name,hint:p.copy,
+      return tree.GROVE_PRIORITIES.map(p=>({id:p.id,label:p.name,hint:p.copy,responseTerms:p.id==='roots'?['root','roots','water access']:p.id==='reserve'?['reserve','reserves','save food','store','save energy']:['seed','seeds','offspring','reproduce','reproduction'],
         tradeoff:p.id==='offspring'?'Oak disperses acorns; aspen uses root suckers.':'One annual update; no reproductive attempts with this priority.'}));
     },
     step(model,id) {
