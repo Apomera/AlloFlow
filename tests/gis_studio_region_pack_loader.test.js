@@ -249,6 +249,52 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(await settle(() => !!host.querySelector('option[value="custom-otago"]'))).toBe(true);
   });
 
+  it('leaves pack boundaries behind when you switch to another region', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Otago wards',
+      metrics: [{ id: 'residents', label: 'Residents' }],
+      records: [{ name: 'Dunedin', lat: -45.87, lon: 170.5, residents: 130000 }, { name: 'Oamaru', lat: -45.1, lon: 170.97, residents: 14000 }],
+      boundaries: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { name: 'Harbour ward', index: 4 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -46], [170.9, -46], [170.9, -45.2], [170.2, -45.2], [170.2, -46]]] } }]
+      }
+    });
+    delete pack.id;
+    const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
+    const file = new File([JSON.stringify(pack)], 'otago.gispack.json', { type: 'application/json' });
+    Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+    await React.act(async function () {
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Review before using'))).toBe(true);
+    await click(findButton('Use this pack'));
+    expect(await settle(() => host.textContent.includes('Harbour ward'))).toBe(true);
+
+    // Switch back to a built-in region.
+    const select = host.querySelector('option[value="custom-otago-wards"]').closest('select');
+    const setter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+    await React.act(async function () {
+      setter.call(select, 'maine');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Maine counties'))).toBe(true);
+
+    // The New Zealand ward polygons must not still be sitting on the Maine map.
+    expect(host.textContent).not.toContain('Harbour ward');
+    expect(host.textContent).toContain('Cumberland');
+
+    // Switching back to the pack brings its own boundaries with it.
+    await React.act(async function () {
+      setter.call(select, 'custom-otago-wards');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Harbour ward'))).toBe(true);
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

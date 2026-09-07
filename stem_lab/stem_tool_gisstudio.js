@@ -4085,6 +4085,7 @@
         var packStatusState = React.useState(''), packStatus = packStatusState[0], setPackStatus = packStatusState[1];
         var packPreviewState = React.useState(null), packPreview = packPreviewState[0], setPackPreview = packPreviewState[1];
         var packTextState = React.useState(''), packText = packTextState[0], setPackText = packTextState[1];
+        var packBoundaryOwnerState = React.useState(''), packBoundaryOwner = packBoundaryOwnerState[0], setPackBoundaryOwner = packBoundaryOwnerState[1];
         var packIncludeBoundariesState = React.useState(true), packIncludeBoundaries = packIncludeBoundariesState[0], setPackIncludeBoundaries = packIncludeBoundariesState[1];
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
@@ -5256,8 +5257,9 @@
         }
 
 
-        function applyGeoJSON(parsed, sourceLabel, selection) {
+        function applyGeoJSON(parsed, sourceLabel, selection, ownerPackId) {
           selection = selection || {};
+          setPackBoundaryOwner(String(ownerPackId || ''));
           var metricKey = parsed.numericKeys.indexOf(selection.metric) >= 0 ? selection.metric : parsed.numericKeys[0];
           var availableProperties = inspectGISVectorLayer(parsed).propertyKeys;
           var firstProperties = parsed.data.features[0] && parsed.data.features[0].properties ? Object.keys(parsed.data.features[0].properties) : [];
@@ -5442,9 +5444,6 @@
           setPackStatus((replaced ? __alloT('stem.gisstudio.pack.status_replaced', 'Updated region pack') : __alloT('stem.gisstudio.pack.status_loaded', 'Loaded region pack')) + ': ' + pack.label + ' (' + pack.records.length + ' \u00D7 ' + pack.metrics.length + ')' + (note ? ' ' + note : ''));
           changeRegionPack(pack.id, pack);
           setTab('map');
-          if (pack.boundaries) {
-            try { applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(pack.boundaries)), { sourceFormat: 'geojson' }), pack.label, {}); } catch (boundaryProblem) { setGeoError(boundaryProblem.message); }
-          }
           announce(__alloT('stem.gisstudio.sr_region_pack_loaded', 'Region pack loaded and mapped.') + ' ' + pack.label);
           return true;
         }
@@ -5604,6 +5603,22 @@
           setAnalysisFuture([]);
           setAnalysisCopyStatus('');
           setProjectError('');
+          if (next.boundaries) {
+            try {
+              applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(next.boundaries)), { sourceFormat: 'geojson' }), next.label, {}, next.id);
+            } catch (boundaryProblem) { setGeoError(boundaryProblem.message); }
+          } else if (packBoundaryOwner && packBoundaryOwner !== next.id) {
+            // The polygons on the map belong to the region we are leaving.
+            setGeoData(null);
+            setGeoKeys([]);
+            setGeoMetric('');
+            setGeoNameKey(null);
+            setSelectedFeatureIndex(0);
+            setJoinGeoKey('');
+            setJoinPreview(null);
+            setGeoError('');
+            setPackBoundaryOwner('');
+          }
           persist('gisRegionPack', next.id);
           persist('gisSpatialAnalysis', false);
           announce(localizedRegionLabel(next) + ' loaded. ' + next.description + ' ' + next.sourceNote);
