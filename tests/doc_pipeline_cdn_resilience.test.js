@@ -32,7 +32,9 @@ const makeLoader = makeLoaderFactory();
 
 // Build a fake browser env. `goodUrls` are the URLs that "succeed" (flip the global ready)
 // the instant their <script> src is set. `startLoaded` simulates an already-present global.
-function env(goodUrls, startLoaded) {
+// `badUrls` report a failed load through the script's error event (what a CSP-blocked or
+// 404ing mirror does in a browser) instead of silently never defining the global.
+function env(goodUrls, startLoaded, badUrls = []) {
   let loaded = !!startLoaded;
   const win = {};
   const counters = { injected: 0 }; // <script> tags created — proof of whether a chain was re-polled
@@ -42,7 +44,11 @@ function env(goodUrls, startLoaded) {
     createElement: () => (counters.injected++, {
       setAttribute() {},
       _src: '',
-      set src(v) { this._src = v; if (goodUrls.includes(v)) loaded = true; },
+      set src(v) {
+        this._src = v;
+        if (goodUrls.includes(v)) loaded = true;
+        if (badUrls.includes(v)) setTimeout(() => { if (typeof this.onerror === 'function') this.onerror(new Error('blocked')); }, 0);
+      },
       get src() { return this._src; },
     }),
     head: { appendChild() {} },
@@ -105,6 +111,18 @@ describe('_loadCdnScript — resilient CDN loader', () => {
     expect(second).toBe(false);
     expect(e.counters.injected).toBe(injectedAfterFirst); // no new <script> tags: the chain was not re-polled
     expect(e.win.__alloflowCdnDown.pdfjs).toBeTypeOf('number'); // the outage stays visible meanwhile
+  });
+
+  it('fails over the instant a mirror reports an error instead of polling out its timeout', async () => {
+    // A CSP-blocked mirror (Gemini Canvas) errors within milliseconds; the loader used to sit
+    // the full poll on it anyway — 12s × 3 mirrors on every pdf.js call (2026-09-06).
+    const e = env(['https://c/lib.js'], false, ['https://a/lib.js', 'https://b/lib.js']);
+    const started = Date.now();
+    const ok = await e.load('pdfjs', ['https://a/lib.js', 'https://b/lib.js', 'https://c/lib.js'], e.isReady, { timeout: 5000 });
+    expect(ok).toBe(true);
+    expect(e.counters.injected).toBe(3); // every mirror was tried, in order
+    expect(Date.now() - started).toBeLessThan(1500); // two blocked mirrors cost milliseconds, not 10s
+    expect(e.win.__alloflowCdnDown).toBeUndefined();
   });
 
   it('short-circuits when the global is already present (no injection needed)', async () => {

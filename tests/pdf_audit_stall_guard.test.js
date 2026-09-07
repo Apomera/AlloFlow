@@ -1,6 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import React from '../desktop/web-app/node_modules/react/index.js';
+import { createRoot } from '../desktop/web-app/node_modules/react-dom/client.js';
+import { act } from '../desktop/web-app/node_modules/react-dom/test-utils.js';
 
 // Field report 2026-09-06 (Gemini Canvas, one-click "Make Accessible"): the audit finished but
 // the modal stayed on "Checking your document…" and never advanced. Reproduced in Chromium
@@ -150,5 +153,111 @@ describe('PDF audit modal releases its own loading flag when its run returns', (
       expect(state.loading).toBe(false);
       expect(state.result).toBe(failed);
     }
+  });
+});
+
+describe('PDF audit names its current step while the spinner is up', () => {
+  it('publishes a stage at every step of the run and clears it on finish', () => {
+    for (const src of [pipeline, pipelineSource]) {
+      const run = between(src, 'const runPdfAccessibilityAudit = async (base64Data, options) => {', '// ── PDF Batch Remediation Pipeline ──');
+      expect(run).toContain("window.dispatchEvent(new CustomEvent('alloflow:audit-progress', { detail }));");
+      // prepare, structure, slices, auditors, retry, escalate, baseline-text, baseline, finalize.
+      expect(run.match(/_publishAuditStage\(/g).length).toBeGreaterThanOrEqual(9);
+      for (const stage of ['prepare', 'structure', 'slices', 'auditors', 'retry', 'escalate', 'baseline-text', 'baseline', 'finalize']) {
+        expect(run, stage).toContain("_publishAuditStage('" + stage + "'");
+      }
+      // Only a run that still owns the UI may publish, and the finished run leaves nothing behind
+      // for the next modal to hydrate from.
+      expect(run).toContain('const _publishAuditStage = (stage, label, extra) => _publishAuditUi(() => {');
+      const finish = between(run, 'const _finishAuditUi = () => {', 'const _auditCancelled = () => ');
+      expect(finish).toContain('window.__alloAuditStage = null;');
+    }
+  });
+
+  it('fails a blocked CDN mirror over on its error event instead of polling out the timeout', () => {
+    for (const src of [pipeline, pipelineSource]) {
+      const loader = between(src, 'const _loadCdnScript = (label, urls, isReady, opts) => {', 'const ensurePdfLibLoaded = async () => {');
+      expect(loader).toContain('s.onerror = () => resolve(false);');
+      expect(loader).toContain('await Promise.race([_waitForGlobal(isReady, timeout), _scriptFailed])');
+    }
+  });
+
+  it('renders the stage under the spinner, keyed for translators, with the ticking clock hidden from the live region', () => {
+    for (const src of [view, viewSource]) {
+      const stageBlock = between(src, 'const [auditStage, setAuditStage] = useState(null);', 'const _auditStageLine = () => {');
+      expect(stageBlock).toMatch(/window\.addEventListener\(["']alloflow:audit-progress["'], onStage\)/);
+      expect(stageBlock).toMatch(/window\.removeEventListener\(["']alloflow:audit-progress["'], onStage\)/);
+      expect(stageBlock).toContain('setAuditStage(null)');
+      for (const key of ['stage_prepare', 'stage_structure', 'stage_slices', 'stage_retry', 'stage_escalate', 'stage_baseline_text', 'stage_baseline', 'stage_finalize']) {
+        expect(stageBlock, key).toMatch(new RegExp("t\\(['\"]pdf_audit\\.loading\\." + key + "['\"]\\)"));
+      }
+      const line = between(src, 'const _auditStageLine = () => {', 'if (!pdfAuditResult || !pdfAuditResult._choosing || pdfAuditResult.pageCount > 0) return;');
+      expect(line).toContain('data-audit-stage');
+      expect(line).toMatch(/aria-hidden/);
+      // Wired into the loading branch, right under the elapsed counter (the progressbar follows).
+      const loadingBranch = between(src, 'pdf_audit.loading.safe_to_wait', 'pdf_audit.loading.progress_aria');
+      expect(loadingBranch).toContain('_auditStageLine()');
+    }
+  });
+
+  describe('behaves', () => {
+    const roots = [];
+    globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+    afterEach(() => {
+      for (const root of roots.splice(0)) act(() => root.unmount());
+      document.body.innerHTML = '';
+      delete window.__alloAuditStage;
+    });
+    const stageSlice = (() => {
+      const start = view.indexOf('const [auditStage, setAuditStage] = useState(null);');
+      const end = view.indexOf('if (!pdfAuditResult || !pdfAuditResult._choosing || pdfAuditResult.pageCount > 0) return;', start);
+      let slice = view.slice(start, end);
+      slice = slice.slice(0, slice.lastIndexOf('useEffect(() => {'));
+      return slice;
+    })();
+    const body = new Function('React', 'useState', 'useEffect', 't', 'pdfAuditLoading', 'pdfDocumentEpoch', stageSlice + '\nreturn _auditStageLine();');
+    const t = () => '';
+    function Probe(props) { return body(React, React.useState, React.useEffect, t, props.pdfAuditLoading, props.pdfDocumentEpoch); }
+    const mount = (props) => {
+      const container = document.createElement('div');
+      document.body.appendChild(container);
+      const root = createRoot(container);
+      roots.push(root);
+      act(() => root.render(React.createElement(Probe, props)));
+      return { container, root };
+    };
+    const emit = (detail) => act(() => { window.dispatchEvent(new CustomEvent('alloflow:audit-progress', { detail })); });
+    const line = (c) => c.querySelector('[data-audit-stage]');
+
+    it('shows the pipeline label for this document and ignores another document\'s events', () => {
+      const { container } = mount({ pdfAuditLoading: true, pdfDocumentEpoch: 3 });
+      expect(line(container)).toBeNull();
+      emit({ stage: 'structure', label: 'Reading the PDF structure…', documentEpoch: 3, at: Date.now() });
+      expect(line(container).getAttribute('data-audit-stage')).toBe('structure');
+      expect(line(container).textContent).toContain('Reading the PDF structure');
+      emit({ stage: 'finalize', label: 'Someone else', documentEpoch: 4, at: Date.now() });
+      expect(line(container).getAttribute('data-audit-stage')).toBe('structure');
+      // An older pipeline that stamps no epoch is still accepted.
+      emit({ stage: 'baseline', label: 'Running the automated rule scans…', at: Date.now() });
+      expect(line(container).getAttribute('data-audit-stage')).toBe('baseline');
+    });
+
+    it('counts the review passes as they return and hides the per-step clock from screen readers', () => {
+      const { container } = mount({ pdfAuditLoading: true, pdfDocumentEpoch: 1 });
+      emit({ stage: 'auditors', label: 'x', documentEpoch: 1, done: 2, total: 3, at: Date.now() - 12000 });
+      const el = line(container);
+      expect(el.textContent).toContain('AI review passes: 2 of 3 back');
+      const clock = el.querySelector('[aria-hidden="true"]');
+      expect(clock).not.toBeNull();
+      expect(clock.textContent).toMatch(/1[12]s on this step/);
+    });
+
+    it('hydrates from the last published stage on mount and clears when loading ends', () => {
+      window.__alloAuditStage = { stage: 'prepare', label: 'Preparing the document…', documentEpoch: 7, at: Date.now() };
+      const { container, root } = mount({ pdfAuditLoading: true, pdfDocumentEpoch: 7 });
+      expect(line(container).getAttribute('data-audit-stage')).toBe('prepare');
+      act(() => root.render(React.createElement(Probe, { pdfAuditLoading: false, pdfDocumentEpoch: 7 })));
+      expect(line(container)).toBeNull();
+    });
   });
 });

@@ -6378,6 +6378,47 @@ function PdfAuditView(props) {
     const iv = setInterval(() => setAuditElapsedSec((s) => s + 1), 1000);
     return () => clearInterval(iv);
   }, [pdfAuditLoading]);
+  // (2026-09-06) Which step the audit is on, from the pipeline's alloflow:audit-progress events.
+  // One spinner for 15 seconds or 10 minutes made a stalled step look exactly like a slow one.
+  // Accepted for this document only (a null epoch means an older pipeline that does not stamp
+  // one); hydrated from window.__alloAuditStage so a remount mid-audit does not blank the line.
+  const [auditStage, setAuditStage] = useState(null);
+  useEffect(() => {
+    if (!pdfAuditLoading) { setAuditStage(null); return; }
+    const _accept = (detail) => !!(detail && detail.stage
+      && (detail.documentEpoch == null || !Number.isInteger(pdfDocumentEpoch) || detail.documentEpoch === pdfDocumentEpoch));
+    const onStage = (ev) => { const detail = ev && ev.detail; if (_accept(detail)) setAuditStage(detail); };
+    try { if (_accept(window.__alloAuditStage)) setAuditStage(window.__alloAuditStage); } catch (_) {}
+    window.addEventListener('alloflow:audit-progress', onStage);
+    return () => window.removeEventListener('alloflow:audit-progress', onStage);
+  }, [pdfAuditLoading, pdfDocumentEpoch]);
+  // Literal keys per stage so the translator sees them; the pipeline's English label is the fallback.
+  const _auditStageText = (stage) =>
+    stage === 'prepare' ? t('pdf_audit.loading.stage_prepare')
+    : stage === 'structure' ? t('pdf_audit.loading.stage_structure')
+    : stage === 'slices' ? t('pdf_audit.loading.stage_slices')
+    : stage === 'retry' ? t('pdf_audit.loading.stage_retry')
+    : stage === 'escalate' ? t('pdf_audit.loading.stage_escalate')
+    : stage === 'baseline-text' ? t('pdf_audit.loading.stage_baseline_text')
+    : stage === 'baseline' ? t('pdf_audit.loading.stage_baseline')
+    : stage === 'finalize' ? t('pdf_audit.loading.stage_finalize')
+    : '';
+  const _auditStageLine = () => {
+    if (!auditStage) return null;
+    let label = _auditStageText(auditStage.stage) || auditStage.label || '';
+    if (auditStage.stage === 'auditors' && Number.isFinite(auditStage.done) && Number.isFinite(auditStage.total)) {
+      label = (t('pdf_audit.loading.stage_auditors_n') || 'AI review passes: {done} of {total} back').replace('{done}', String(auditStage.done)).replace('{total}', String(auditStage.total));
+    }
+    const _onStep = auditStage.at ? Math.max(0, Math.round((Date.now() - auditStage.at) / 1000)) : 0;
+    return (
+      <p className="text-xs font-semibold text-indigo-700 mt-2" data-audit-stage={auditStage.stage}>
+        {label}
+        {/* The per-step seconds re-render every second; hidden from the live region so only
+            a stage CHANGE is announced, never the ticking clock. */}
+        {_onStep >= 5 && <span className="font-normal text-slate-500" aria-hidden="true"> ({_onStep}s {t('pdf_audit.loading.on_this_step') || 'on this step'})</span>}
+      </p>
+    );
+  };
   // Pre-flight pageCount (2026-06-12): every triage opener writes only
   // {_choosing, fileName, fileSize}, but the ENTIRE pre-flight panel —
   // time estimate, scanned-PDF warning, the Auto/Review/Expert mode picker —
@@ -9805,11 +9846,12 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                       <p className="text-sm text-slate-600">{t('pdf_audit.loading.subtitle2') || 'Several accessibility checks are reading every page (5 AI review passes + an automated rule scan).'}</p>
                       <p className="text-sm font-bold text-slate-700 mt-1">{(t('pdf_audit.loading.for_size') || 'For a file this size:')} {_est}</p>
                       <p className="text-xs text-slate-500 mt-1" aria-hidden="true">{_mm > 0 ? _mm + 'm ' : ''}{_ss}s {t('pdf_audit.loading.elapsed') || 'elapsed'} — {t('pdf_audit.loading.safe_to_wait') || 'it’s safe to keep waiting; nothing is stuck.'}</p>
+                      {_auditStageLine()}
                     </div>
                   );
                 })()}
-                {/* Indeterminate by design: the audit exposes no per-step progress signal,
-                    so a width-fill animation faking a percentage would be dishonest.
+                {/* Indeterminate by design: the audit names its current step (line above) but
+                    has no percentage, so a width-fill animation faking one would be dishonest.
                     Sweep + no aria-valuenow = ARIA indeterminate progressbar. */}
                 <div className="mt-4 w-56 h-2.5 bg-slate-200 rounded-full mx-auto overflow-hidden relative" role="progressbar" aria-label={t('pdf_audit.loading.progress_aria') || 'Audit in progress'}>
                   <div className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-indigo-500 via-purple-500 to-violet-500 rounded-full" style={{animation: 'auditSweep 1.4s ease-in-out infinite'}}></div>

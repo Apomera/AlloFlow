@@ -13222,13 +13222,19 @@ var createDocPipeline = function(deps) {
       // Another path may have already injected this script — wait for its global first.
       if (typeof document !== 'undefined' && document.querySelector('script[' + marker + ']') && await _waitForGlobal(isReady, timeout)) return true;
       for (let k = 0; k < list.length; k++) {
+        // (2026-09-06) A refused or failed request says so through the script's error event long
+        // before the readiness poll gives up — a mirror a CSP blocks (Gemini Canvas) errors within
+        // milliseconds, and the poll used to sit the full 12s on it anyway, three mirrors deep, on
+        // every call. The poll still governs a script that loads but never defines its global.
+        let _scriptFailed = null;
         try {
           const s = document.createElement('script');
+          _scriptFailed = new Promise((resolve) => { try { s.onerror = () => resolve(false); } catch (_) { /* the readiness poll still bounds it */ } });
           s.src = list[k];
           s.setAttribute(marker, 'true');
           document.head.appendChild(s);
         } catch (_) { continue; }
-        if (await _waitForGlobal(isReady, timeout)) return true; // poll for the real readiness signal (the global)
+        if (await Promise.race([_waitForGlobal(isReady, timeout), _scriptFailed])) return true; // the global is the real readiness signal; the error event is the fast negative
         try { warnLog('[CDN] ' + label + ' failed from ' + list[k] + (k < list.length - 1 ? ' — trying fallback' : '')); } catch (_) {}
       }
       try {
@@ -17604,10 +17610,23 @@ var createDocPipeline = function(deps) {
     };
     let _auditUiFinished = false;
     const _auditToast = (message, kind) => _publishAuditUi(() => { if (addToast) addToast(message, kind); });
+    // (2026-09-06) Stage readout for the loading screen. The audit was one indeterminate spinner
+    // for anything from 15 seconds to 10 minutes, so a stalled step looked exactly like a slow one
+    // (field: "the audit UI keeps running"). Each step names itself here; the modal shows the
+    // latest label and how long it has sat on it. Published only while this run owns the UI.
+    let _auditStageSeq = 0;
+    const _publishAuditStage = (stage, label, extra) => _publishAuditUi(() => {
+      if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function' || typeof CustomEvent !== 'function') return;
+      const _docEpoch = _auditHost && Number.isInteger(_auditHost.pdfDocumentEpoch) ? _auditHost.pdfDocumentEpoch : null;
+      const detail = Object.assign({ stage: String(stage || ''), label: String(label || ''), seq: ++_auditStageSeq, at: Date.now(), documentEpoch: _docEpoch }, extra || {});
+      try { window.__alloAuditStage = detail; } catch (_) {}
+      window.dispatchEvent(new CustomEvent('alloflow:audit-progress', { detail }));
+    });
     const _finishAuditUi = () => {
       if (_auditUiFinished) return true;
       if (!_publishAuditUi(() => setPdfAuditLoading(false))) return false;
       _auditUiFinished = true;
+      try { if (typeof window !== 'undefined') window.__alloAuditStage = null; } catch (_) {}
       if (_auditRunToken && typeof _auditHost.finishPdfAuditRun === 'function') _auditHost.finishPdfAuditRun(_auditRunToken);
       return true;
     };
@@ -17627,6 +17646,7 @@ var createDocPipeline = function(deps) {
     const _runFile = _run.file;
     const _runBase64 = _run.base64;
     _publishAuditUi(() => setPdfAuditLoading(true));
+    _publishAuditStage('prepare', 'Preparing the document…');
     // Estimate audit time based on data size (rough proxy for page count before we know it)
     const dataSizeKB = base64Data ? Math.round(base64Data.length * 0.75 / 1024) : 0;
     const estTime = dataSizeKB < 200 ? '15-30 seconds' : dataSizeKB < 1000 ? '30-90 seconds' : dataSizeKB < 5000 ? '2-5 minutes' : '5-10 minutes';
@@ -17899,6 +17919,7 @@ var createDocPipeline = function(deps) {
       const _auditInputLabel = _imageInputMime ? 'uploaded image as a one-page educational document' : 'PDF';
       let _structTree = { hasTags: false };
       if (!_imageInputMime) {
+        _publishAuditStage('structure', 'Reading the PDF structure (tags, headings)…');
         try { _structTree = await extractPdfStructTree(base64Data); } catch (_) { _structTree = { hasTags: false }; }
       }
       const _structTreeDirective = _structTree && _structTree.hasTags
@@ -18065,12 +18086,16 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         if (_auditUiCurrent()) {
         if (!_skipUi) addToast && addToast('📄 Large PDF — auditing in page slices…', 'info');
         }
+        _publishAuditStage('slices', 'Large document — auditing in page slices…');
         const _slicedFirst = await _auditPdfInSlices(base64Data, auditPrompt, _auditCancelled).catch((e) => { warnLog('[PDF Audit] Sliced audit failed: ' + (e && e.message)); return null; });
         if (_slicedFirst) { parsedAudits = [_slicedFirst]; _auditedViaSlices = true; }
       }
       if (!_auditedViaSlices) {
       if (_cancelAuditNow()) return null;
-      const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, _auditMimeType).catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; })));
+      let _auditorsBack = 0;
+      const _auditorStage = () => _publishAuditStage('auditors', 'AI review passes: ' + _auditorsBack + ' of ' + numAuditors + ' back', { done: _auditorsBack, total: numAuditors });
+      _auditorStage();
+      const auditResults = await Promise.all(auditVariants.map((p, i) => callGeminiVision(p, base64Data, _auditMimeType).catch(e => { console.warn(`[PDF Audit] Auditor ${i + 1} failed:`, e?.message); return null; }).then((r) => { _auditorsBack++; _auditorStage(); return r; })));
       parsedAudits = auditResults.filter(Boolean).map((r, i) => { try { return parseAudit(r); } catch(pe) { console.warn(`[PDF Audit] Parse auditor ${i + 1} failed:`, pe?.message, 'Raw:', r?.substring?.(0, 200)); return null; } }).filter(Boolean);
       if (_cancelAuditNow()) return null;
 
@@ -18080,6 +18105,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       while (!_auditCancelled() && parsedAudits.length < numAuditors && parsedAudits.length > 0 && retryRound < MAX_RETRY_ROUNDS) {
         retryRound++;
         const shortfall = numAuditors - parsedAudits.length;
+        _publishAuditStage('retry', 'Re-running ' + shortfall + ' review pass(es) that did not return (round ' + retryRound + ')…', { round: retryRound, shortfall });
         warnLog(`[PDF Audit] Round ${retryRound}: ${parsedAudits.length}/${numAuditors} completed. Retrying ${shortfall}...`);
         if (_auditUiCurrent()) {
         addToast && addToast(`Audit pass ${parsedAudits.length}/${numAuditors} — retrying ${shortfall} (round ${retryRound})...`, 'info');
@@ -18163,6 +18189,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // bounded by the variant pool — the 3-auditor start only sticks for well-behaved docs.
         const additionalCount = Math.min(Math.max(2, _auditorCap - parsedAudits.length), allVariants.length - parsedAudits.length);
         warnLog(`[PDF Audit] Adaptive: adding ${additionalCount} auditor(s) due to ${reason}`);
+        _publishAuditStage('escalate', 'Scores disagree — adding ' + additionalCount + ' more review pass(es)…', { added: additionalCount });
         if (_auditUiCurrent()) {
         addToast && addToast(`Adding ${additionalCount} extra audit(s) — ${reason}`, 'info');
         }
@@ -18491,6 +18518,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // Use the passed-in base64 when skipping UI (batch mode); otherwise the run-entry
         // snapshot (S1 — the bound var could be another call's document by now).
         const _base64ForBaseline = _skipUi ? base64Data : _runBase64;
+        _publishAuditStage('baseline-text', 'Extracting text for the automated rule scan…');
         const detBaseline = _imageInputMime ? null : await extractPdfTextDeterministic(_base64ForBaseline);
         if (_baselineAbandoned) return;
         const rawText = (detBaseline && detBaseline.fullText) || '';
@@ -18515,6 +18543,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
         // deterministic half is the MORE CONSERVATIVE — making the
         // before/after comparison two-engine on BOTH ends. EA fail-soft →
         // exactly the prior axe-only behavior.
+        _publishAuditStage('baseline', 'Running the automated rule scans (axe-core, Equal Access)…');
         const [baselineAxe, baselineEa] = await Promise.all([
           runAxeAudit(minimalHtml),
           runEqualAccessAudit(minimalHtml).catch(() => null),
@@ -18580,6 +18609,7 @@ For every issue, ruleId MUST be one of: document-language, document-title, docum
       // audits are still NOT cached (lower-fidelity than a whole-document pass — a later
       // un-throttled run should be free to earn the better whole-document score).
       triangulated.documentDigest = _runDocumentDigest;
+      _publishAuditStage('finalize', 'Finalizing the score…');
       triangulated._auditFinalized = true;
       if (_cacheKey && !_auditedViaSlices) { try { _writeAuditCache(_cacheKey, triangulated); } catch (_) {} }
       _publishAuditUi(() => setPdfAuditResult({ ...triangulated }));
