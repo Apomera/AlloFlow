@@ -2830,7 +2830,7 @@ const d = labToolData.physics;
                 );
               };
               var vsLabel = idealR != null ? (__alloT('stem.physics.lf_formula_says', 'formula: ') + idealR.toFixed(1) + ' m') : null;
-              return React.createElement("section", { className: "mb-3 rounded-xl border border-sky-200 bg-sky-50 p-2", role: "status", "aria-label": __alloT('stem.physics.lf_aria', 'Last flight results') },
+              return React.createElement("section", { className: "mb-3 rounded-xl border border-sky-200 bg-sky-50 p-2", "data-physics-last-flight": "true", role: "status", "aria-label": __alloT('stem.physics.lf_aria', 'Last flight results') },
                 React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1.5 px-1" },
                   React.createElement("span", { className: "text-[0.6875rem] font-bold uppercase tracking-wider text-sky-800" }, "📐 " + __alloT('stem.physics.lf_title', 'Last flight') + (hasParams ? ' — ' + lf.angle + '°, ' + lf.vel + ' m/s, g=' + lf.grav + (lf.drag ? ', ' + __alloT('stem.physics.lf_drag_on', 'air drag on') + ', ' + lf.mass + ' kg' : '') : '')),
                   React.createElement("span", { className: "text-[0.625rem] text-sky-700" }, lf.drag ? __alloT('stem.physics.lf_measured_vs_formula', 'measured vs no-drag formula') : __alloT('stem.physics.lf_measured', 'measured'))
