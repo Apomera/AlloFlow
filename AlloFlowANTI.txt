@@ -2861,6 +2861,50 @@ const _alloReadShellDeepLinkTool = () => {
     return null;
   }
 };
+// ResizeObserver loop guard. The browser reports "ResizeObserver loop completed with
+// undelivered notifications" whenever an observer callback changes layout in the same
+// frame it was notified — a canvas sized from its container inside the callback is
+// enough. AlloFlow's own error handlers already drop that message, but hosts that wrap
+// the page (Gemini Canvas prints it as "[GLOBAL] ResizeObserver loop …") log it before
+// our listeners run, so the only real fix is to stop the browser emitting it: deliver
+// every callback on the next animation frame, coalescing entries per observer.
+// Delivery is asynchronous by spec already, so a one-frame delay changes no tool's
+// behaviour; ~70 STEM tools own observers, so this is done once, here, for all of them.
+// Proved in Chromium (2026-09-07): a self-feeding observer logs the notice without this
+// block and stays silent with it, while still receiving its callbacks.
+if (typeof window !== 'undefined' && typeof window.ResizeObserver === 'function' && !window.__alloResizeObserverDeferred) {
+  window.__alloResizeObserverDeferred = true;
+  const __AlloNativeResizeObserver = window.ResizeObserver;
+  const __AlloDeferredResizeObserver = function (callback) {
+    if (typeof callback !== 'function') return new __AlloNativeResizeObserver(callback);
+    let pending = null;
+    let frame = 0;
+    const raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : (fn) => setTimeout(fn, 16);
+    const caf = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : clearTimeout;
+    const observer = new __AlloNativeResizeObserver((entries) => {
+      pending = entries;
+      if (frame) return;
+      frame = raf(() => {
+        frame = 0;
+        const batch = pending;
+        pending = null;
+        if (!batch) return;
+        try { callback(batch, observer); }
+        catch (err) { setTimeout(() => { throw err; }, 0); }
+      });
+    });
+    // A tool that disconnects on unmount must not get a late callback next frame.
+    const nativeDisconnect = observer.disconnect.bind(observer);
+    observer.disconnect = () => {
+      if (frame) { caf(frame); frame = 0; }
+      pending = null;
+      nativeDisconnect();
+    };
+    return observer;
+  };
+  __AlloDeferredResizeObserver.prototype = __AlloNativeResizeObserver.prototype;
+  window.ResizeObserver = __AlloDeferredResizeObserver;
+}
 // Uncaught errors and rejections never reached the ring buffer, so in Canvas — where
 // the console is unreachable — an exception that leaves click handlers unattached was
 // invisible. Record every one, and keep the FIRST separately: when an error is thrown
