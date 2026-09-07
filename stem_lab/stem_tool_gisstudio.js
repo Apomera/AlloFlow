@@ -224,6 +224,9 @@
 
   var GIS_CUSTOM_PACK_BOUNDARY_LIMIT = 500;
   var GIS_CUSTOM_PACK_BOUNDARY_BYTES = 1500000;
+  // A per-pack cap alone would still allow twelve packs of boundaries, far past
+  // what a browser will keep in local storage. The library shares one budget.
+  var GIS_CUSTOM_PACK_BOUNDARY_BUDGET = 4000000;
 
   function normalizeGISRegionPackBoundaries(value) {
     if (value == null || value === '') return null;
@@ -233,6 +236,28 @@
     if (!parsed.data.features.length) throw new Error('Region pack boundaries need at least one feature.');
     if (parsed.originalFeatureCount > GIS_CUSTOM_PACK_BOUNDARY_LIMIT) throw new Error('Region pack boundaries can hold at most ' + GIS_CUSTOM_PACK_BOUNDARY_LIMIT + ' features.');
     return parsed.data;
+  }
+
+  function regionPackBoundaryBytes(pack) {
+    if (!pack || !pack.boundaries) return 0;
+    try { return JSON.stringify(pack.boundaries).length; } catch (stringifyError) { return 0; }
+  }
+
+  function totalRegionPackBoundaryBytes(packs) {
+    return (Array.isArray(packs) ? packs : []).reduce(function (total, pack) { return total + regionPackBoundaryBytes(pack); }, 0);
+  }
+
+  function regionPackBoundaryBudget(existingPacks, candidate) {
+    var kept = (Array.isArray(existingPacks) ? existingPacks : []).filter(function (pack) {
+      return !candidate || pack.id !== candidate.id;
+    });
+    var used = totalRegionPackBoundaryBytes(kept);
+    var incoming = regionPackBoundaryBytes(candidate);
+    return {
+      used: used, incoming: incoming, total: used + incoming,
+      budget: GIS_CUSTOM_PACK_BOUNDARY_BUDGET,
+      withinBudget: used + incoming <= GIS_CUSTOM_PACK_BOUNDARY_BUDGET
+    };
   }
 
   function gisPackSlug(value, fallback) {
@@ -3061,6 +3086,46 @@
     };
   }
 
+  // Local storage is small and shared. Rather than lose the whole recovery
+  // draft when a project outgrows it, drop the heaviest parts in order and
+  // report which tier was actually written so the status can say so.
+  function gisDraftWithoutPackBoundaries(project) {
+    var data = Object.assign({}, project.data || {});
+    data.customRegionPacks = (data.customRegionPacks || []).map(function (pack) {
+      var copy = Object.assign({}, pack);
+      delete copy.boundaries;
+      return copy;
+    });
+    data.packBoundariesOmitted = true;
+    return Object.assign({}, project, { data: data });
+  }
+
+  function gisDraftWithoutPacks(project) {
+    var data = Object.assign({}, project.data || {});
+    delete data.customRegionPacks;
+    delete data.geoData;
+    data.packsOmitted = true;
+    return Object.assign({}, project, { data: data });
+  }
+
+  function writeGISDraft(storage, key, project) {
+    var tiers = [
+      { level: 'full', build: function () { return project; } },
+      { level: 'no-pack-boundaries', build: function () { return gisDraftWithoutPackBoundaries(project); } },
+      { level: 'no-packs', build: function () { return gisDraftWithoutPacks(project); } }
+    ];
+    var hasPacks = !!(project && project.data && (project.data.customRegionPacks || []).length);
+    for (var i = 0; i < tiers.length; i++) {
+      if (i > 0 && !hasPacks) break;
+      try {
+        storage.setItem(key, JSON.stringify(tiers[i].build()));
+        return { level: tiers[i].level, saved: true };
+      } catch (writeError) { /* try a smaller draft */ }
+    }
+    try { storage.removeItem(key); } catch (removeError) { /* nothing more to do */ }
+    return { level: 'none', saved: false };
+  }
+
   function createGISProject(payload, savedAt) {
     payload = payload || {};
     return {
@@ -3654,6 +3719,9 @@
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
       regionPackRows: regionPackRows, assessRegionPackPrivacy: assessRegionPackPrivacy,
+      regionPackBoundaryBytes: regionPackBoundaryBytes, totalRegionPackBoundaryBytes: totalRegionPackBoundaryBytes,
+      regionPackBoundaryBudget: regionPackBoundaryBudget, writeGISDraft: writeGISDraft,
+      gisDraftWithoutPackBoundaries: gisDraftWithoutPackBoundaries, gisDraftWithoutPacks: gisDraftWithoutPacks,
       roundRegionPackCoordinates: roundRegionPackCoordinates,
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
       auditMapComposition: auditMapComposition, buildMapComposerReport: buildMapComposerReport,
@@ -3740,6 +3808,13 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        packBudgetExceeded: t('stem.gisstudio.pack.budget_exceeded', 'These boundaries need {incoming} kB and your packs already use {used} kB of the {budget} kB the studio keeps on this device. Remove a pack with boundaries, or load this one without them.'),
+        autosaveOk: t('stem.gisstudio.autosave.ok', 'Autosaved locally at {time}.'),
+        autosaveWithoutBoundaries: t('stem.gisstudio.autosave.without_boundaries', 'Autosaved locally at {time}, without the region pack boundaries. Download a project file to keep them.'),
+        autosaveWithoutPacks: t('stem.gisstudio.autosave.without_packs', 'Autosaved locally at {time}, without the region packs or the polygon layer. Download a project file to keep them.'),
+        autosaveUnavailable: t('stem.gisstudio.autosave.unavailable', 'Local autosave is unavailable or the project is too large. Download a project file instead.'),
+        draftBoundariesOmitted: t('stem.gisstudio.autosave.draft_without_boundaries', 'It was saved without region pack boundaries.'),
+        draftPacksOmitted: t('stem.gisstudio.autosave.draft_without_packs', 'It was saved without region packs or the polygon layer.'),
         packPrivacyLabel: t('stem.gisstudio.pack.privacy_label', 'Check this before mapping:'),
         packPrivacyNote: t('stem.gisstudio.pack.privacy_note', '{precise} place(s) use 4 or more decimal places, which can identify a building, and {named} have identifier-like labels. Do not map student homes or other sensitive locations. Aggregate, blur, or suppress them first.'),
         packPrivacyExamples: t('stem.gisstudio.pack.privacy_examples', 'High precision:'),
@@ -4360,7 +4435,9 @@
             if (raw) {
               var draft = validateGISProject(JSON.parse(raw));
               setRecoveryDraft(draft);
-              setAutosaveStatus('A recoverable local draft is available from ' + (draft.savedAt || 'an earlier session') + '.');
+              var trimmed = draft.data && (draft.data.packBoundariesOmitted || draft.data.packsOmitted);
+              setAutosaveStatus('A recoverable local draft is available from ' + (draft.savedAt || 'an earlier session') + '.' +
+                (trimmed ? ' ' + (draft.data.packsOmitted ? gisText.draftPacksOmitted : gisText.draftBoundariesOmitted) : ''));
               return;
             }
           } catch (draftError) {
@@ -4375,10 +4452,19 @@
           var timer = window.setTimeout(function () {
             try {
               var draft = projectSnapshot();
-              window.localStorage.setItem(GIS_DRAFT_KEY, JSON.stringify(draft));
-              setAutosaveStatus('Autosaved locally at ' + display.dateTime(new Date(), { hour: 'numeric', minute: '2-digit', second: '2-digit' }) + '.');
+              var written = writeGISDraft(window.localStorage, GIS_DRAFT_KEY, draft);
+              var savedAt = display.dateTime(new Date(), { hour: 'numeric', minute: '2-digit', second: '2-digit' });
+              if (!written.saved) {
+                setAutosaveStatus(gisText.autosaveUnavailable);
+              } else if (written.level === 'no-pack-boundaries') {
+                setAutosaveStatus(gisFillTemplate(gisText.autosaveWithoutBoundaries, { time: savedAt }));
+              } else if (written.level === 'no-packs') {
+                setAutosaveStatus(gisFillTemplate(gisText.autosaveWithoutPacks, { time: savedAt }));
+              } else {
+                setAutosaveStatus(gisFillTemplate(gisText.autosaveOk, { time: savedAt }));
+              }
             } catch (saveError) {
-              setAutosaveStatus('Local autosave is unavailable or the project is too large. Download a project file instead.');
+              setAutosaveStatus(gisText.autosaveUnavailable);
             }
           }, 900);
           return function () { window.clearTimeout(timer); };
@@ -5190,11 +5276,28 @@
         function adoptRegionPack(pack, note) {
           var replaced = customRegionPacks.some(function (item) { return item.id === pack.id; });
           var remaining = customRegionPacks.filter(function (item) { return item.id !== pack.id; });
+          var budget = regionPackBoundaryBudget(customRegionPacks, pack);
+          if (!budget.withinBudget) {
+            setPackError(gisFillTemplate(gisText.packBudgetExceeded, {
+              incoming: Math.round(budget.incoming / 1000),
+              used: Math.round(budget.used / 1000),
+              budget: Math.round(budget.budget / 1000)
+            }));
+            return false;
+          }
           if (remaining.length >= GIS_CUSTOM_PACK_LIMIT) {
             setPackError(__alloT('stem.gisstudio.pack.limit_reached', 'Remove a region pack before loading another. The studio keeps up to 12 custom packs.'));
             return false;
           }
           storeCustomRegionPacks(remaining.concat([pack]));
+          setProvenance(function (previous) {
+            var next = Object.assign({}, previous);
+            if (!String(next.datasetTitle || '').trim()) next.datasetTitle = pack.label;
+            // The default source is a placeholder, so replacing it is right; replacing something the learner typed is not.
+            var currentSource = String(next.source || '').trim();
+            if (!currentSource || currentSource === 'Classroom learning data') next.source = pack.sourceNote;
+            return next;
+          });
           persist('gisRegionPackLoaded', true);
           setPackError('');
           setPackStatus((replaced ? __alloT('stem.gisstudio.pack.status_replaced', 'Updated region pack') : __alloT('stem.gisstudio.pack.status_loaded', 'Loaded region pack')) + ': ' + pack.label + ' (' + pack.records.length + ' \u00D7 ' + pack.metrics.length + ')' + (note ? ' ' + note : ''));

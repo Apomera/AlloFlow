@@ -409,6 +409,98 @@ describe('GIS Studio - custom region packs', () => {
     expect(clean).not.toContain('Privacy check before sharing.');
   });
 
+  it('shares one boundary budget across the whole pack library', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    function packWithBoundary(name, ringCount) {
+      const features = Array.from({ length: ringCount }, (_, i) => ({
+        type: 'Feature',
+        properties: { name: name + ' ' + i, index: i },
+        geometry: { type: 'Polygon', coordinates: [[[i / 100, 0], [i / 100 + 0.01, 0], [i / 100 + 0.01, 0.01], [i / 100, 0.01], [i / 100, 0]]] }
+      }));
+      return tool.testing.normalizeGISRegionPack(samplePack({
+        label: name,
+        boundaries: { type: 'FeatureCollection', features }
+      }), { allowExistingId: true });
+    }
+    const small = packWithBoundary('Small', 1);
+    const large = packWithBoundary('Large', 400);
+    expect(tool.testing.regionPackBoundaryBytes(small)).toBeGreaterThan(0);
+    expect(tool.testing.regionPackBoundaryBytes(tool.testing.normalizeGISRegionPack(samplePack()))).toBe(0);
+    expect(tool.testing.totalRegionPackBoundaryBytes([small, large]))
+      .toBe(tool.testing.regionPackBoundaryBytes(small) + tool.testing.regionPackBoundaryBytes(large));
+
+    const fits = tool.testing.regionPackBoundaryBudget([small], large);
+    expect(fits.withinBudget).toBe(true);
+    expect(fits.total).toBe(fits.used + fits.incoming);
+
+    // Re-loading the same pack replaces it rather than double-counting.
+    const replacing = tool.testing.regionPackBoundaryBudget([large], large);
+    expect(replacing.used).toBe(0);
+    expect(replacing.incoming).toBe(tool.testing.regionPackBoundaryBytes(large));
+
+    // A library already at the budget refuses more boundaries.
+    const huge = { id: 'custom-huge', boundaries: { filler: 'x'.repeat(3999000) } };
+    const overBudget = tool.testing.regionPackBoundaryBudget([huge], large);
+    expect(overBudget.withinBudget).toBe(false);
+    expect(overBudget.budget).toBe(4000000);
+  });
+
+  it('degrades the recovery draft in steps instead of losing it', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack({
+      boundaries: { type: 'FeatureCollection', features: [{ type: 'Feature', properties: { name: 'Ward', index: 1 }, geometry: { type: 'Polygon', coordinates: [[[0, 0], [1, 0], [1, 1], [0, 1], [0, 0]]] } }] }
+    }));
+    const project = tool.testing.createGISProject({
+      title: 'Otago study',
+      data: { importedRows: [], customRegionPacks: [pack], geoData: null }
+    }, '2026-09-07T00:00:00.000Z');
+
+    function storageThatAccepts(limit) {
+      return {
+        written: null,
+        setItem: function (key, value) {
+          if (value.length > limit) { const error = new Error('QuotaExceededError'); error.name = 'QuotaExceededError'; throw error; }
+          this.written = value;
+        },
+        removeItem: function () { this.written = null; }
+      };
+    }
+
+    const roomy = storageThatAccepts(Infinity);
+    expect(tool.testing.writeGISDraft(roomy, 'k', project)).toEqual({ level: 'full', saved: true });
+    expect(JSON.parse(roomy.written).data.customRegionPacks[0].boundaries.features).toHaveLength(1);
+
+    const full = JSON.stringify(project).length;
+    const withoutBoundaries = JSON.stringify(tool.testing.gisDraftWithoutPackBoundaries(project)).length;
+    const withoutPacks = JSON.stringify(tool.testing.gisDraftWithoutPacks(project)).length;
+    expect(withoutBoundaries).toBeLessThan(full);
+    expect(withoutPacks).toBeLessThan(withoutBoundaries);
+
+    const tight = storageThatAccepts(full - 1);
+    expect(tight.written).toBeNull();
+    expect(tool.testing.writeGISDraft(tight, 'k', project)).toEqual({ level: 'no-pack-boundaries', saved: true });
+    const trimmed = JSON.parse(tight.written);
+    expect(trimmed.data.customRegionPacks[0]).not.toHaveProperty('boundaries');
+    expect(trimmed.data.customRegionPacks[0].records).toHaveLength(3);
+    expect(trimmed.data.packBoundariesOmitted).toBe(true);
+    // A trimmed draft must still restore.
+    expect(tool.testing.validateGISProject(trimmed)).toBe(trimmed);
+
+    const tighter = storageThatAccepts(withoutBoundaries - 1);
+    expect(tool.testing.writeGISDraft(tighter, 'k', project)).toEqual({ level: 'no-packs', saved: true });
+    expect(JSON.parse(tighter.written).data.packsOmitted).toBe(true);
+    expect(JSON.parse(tighter.written).data).not.toHaveProperty('customRegionPacks');
+
+    const hopeless = storageThatAccepts(10);
+    hopeless.written = 'stale draft';
+    expect(tool.testing.writeGISDraft(hopeless, 'k', project)).toEqual({ level: 'none', saved: false });
+    expect(hopeless.written).toBeNull();
+
+    // Without packs there is nothing to trim, so a failure stays a failure.
+    const plain = tool.testing.createGISProject({ data: { importedRows: [] } });
+    expect(tool.testing.writeGISDraft(storageThatAccepts(5), 'k', plain)).toEqual({ level: 'none', saved: false });
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

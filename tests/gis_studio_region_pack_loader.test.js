@@ -195,6 +195,34 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(await settle(() => host.textContent.includes('Inside the boundaries'))).toBe(true);
   });
 
+  it('seeds provenance from the adopted pack and keeps what the learner typed', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+    const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Otago towns',
+      sourceNote: 'Stats NZ 2023 census, collected March 2023.',
+      metrics: [{ id: 'population', label: 'Population' }],
+      records: [{ name: 'Dunedin', lat: -45.87, lon: 170.5, population: 130000 }]
+    });
+    delete pack.id;
+    const file = new File([JSON.stringify(pack)], 'otago.gispack.json', { type: 'application/json' });
+    Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+    await React.act(async function () {
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Review before using'))).toBe(true);
+    await click(findButton('Use this pack'));
+    expect(await settle(() => !!host.querySelector('option[value="custom-otago-towns"]'))).toBe(true);
+
+    await click(findButton('Project'));
+    expect(await settle(() => host.textContent.includes('Data provenance manifest'))).toBe(true);
+    const title = findLabeledControl('Dataset title', 'input');
+    const source = findLabeledControl('Source', 'input');
+    expect(title.value).toBe('Otago towns');
+    expect(source.value).toBe('Stats NZ 2023 census, collected March 2023.');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
