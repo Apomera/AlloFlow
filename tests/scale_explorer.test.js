@@ -190,6 +190,13 @@ describe('Scale Explorer wiring', () => {
   it('keeps the desktop mirror byte-identical', () => {
     expect(read(MIRROR)).toBe(src);
   });
+
+  it('is in the desktop bundle list, so an offline classroom gets it too', () => {
+    // build.js names every stem tool the desktop build packages locally. A tool
+    // missing here still works online and fails only where the CDN is not
+    // reachable, which is exactly the case the desktop build exists for.
+    expect(read('build.js')).toContain("'stem_lab/stem_tool_scaleexplorer.js'");
+  });
 });
 
 describe('Scale Explorer strings in ui_strings.js (all four copies)', () => {

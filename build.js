@@ -1369,6 +1369,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_moleculeshelf.js',
     'stem_lab/stem_tool_particlelab3d.js',
     'stem_lab/stem_tool_zoomgallery.js',
+    'stem_lab/stem_tool_scaleexplorer.js',
     'stem_lab/stem_tool_probability.js',
     'stem_lab/stem_tool_calculus.js',
     'stem_lab/stem_tool_galaxy.js',
