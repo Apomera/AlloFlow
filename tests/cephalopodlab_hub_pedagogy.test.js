@@ -580,3 +580,53 @@ describe('Cephalopod Lab Camo Discovery', () => {
     expect(label).toMatch(/brightness 60 percent, hue 80 percent, coarseness 85 percent/);
   });
 });
+
+// ── Myth Busters predict-then-reveal ──
+describe('Cephalopod Lab Myth Busters', () => {
+  const renderMyths = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'misconceptions', ...data } });
+    return c;
+  };
+
+  it('hides every correction until the reader commits to a confidence rating', () => {
+    const fresh = renderMyths();
+    expect(fresh.textContent).not.toMatch(/Evidence-based correction/);
+    expect(fresh.textContent).toMatch(/how true does this sound to you\?/);
+    const groups = fresh.querySelectorAll('[role="group"][aria-labelledby^="cl-myth-claim-"]');
+    expect(groups).toHaveLength(12);
+    // five labelled confidence buttons per claim, so a rating is a real commitment
+    const scale = Array.from(groups[0].querySelectorAll('button'));
+    expect(scale).toHaveLength(5);
+    expect(scale[0].getAttribute('aria-label')).toBe('1 — Definitely false');
+    expect(scale[4].getAttribute('aria-label')).toBe('5 — Definitely true');
+  });
+
+  it('reveals only the rated claim, and reflects the rating back', () => {
+    const c = renderMyths({ mythConfidence: { 0: 5 } });
+    expect(c.textContent).toMatch(/You rated this 5 of 5 — it read as true, and it is not/);
+    expect(c.textContent).toMatch(/Most octopus species live 1-2 years/);
+    // the second claim stays hidden
+    expect(c.textContent).not.toMatch(/1 in 256 odds/);
+    const low = renderMyths({ mythConfidence: { 0: 2 } });
+    expect(low.textContent).toMatch(/You doubted this one \(2 of 5\)/);
+  });
+
+  it('tallies ratings and states the point: every claim on the page is wrong', () => {
+    const c = renderMyths({ mythConfidence: { 0: 5, 1: 2, 2: 4 } });
+    expect(c.textContent).toMatch(/3 \/ 12/);
+    expect(c.textContent).toMatch(/Every claim on this page is wrong or misleading/);
+    expect(c.textContent).toMatch(/You leaned towards believing 2 of them/);
+    const none = renderMyths({ mythConfidence: { 0: 1 } });
+    expect(none.textContent).toMatch(/did not lean towards believing any of them/);
+    expect(renderMyths().textContent).not.toMatch(/What your ratings say/);
+  });
+
+  it('keeps a teacher view that shows every correction without rating', () => {
+    const c = renderMyths({ mythRevealAll: true });
+    expect(c.textContent).toMatch(/Most octopus species live 1-2 years/);
+    expect(c.textContent).toMatch(/1 in 256 odds/);
+    expect(c.textContent).not.toMatch(/how true does this sound to you\?/);
+    expect(c.querySelector('button[aria-pressed="true"]').textContent).toMatch(/Hide corrections again/);
+  });
+});

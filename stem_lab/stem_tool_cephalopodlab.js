@@ -776,6 +776,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       skinCell: 'chromatophore',           // Skin Anatomy selected cell type
       skinDrive: 0,                        // Skin Anatomy chromatophore muscle drive 0-100
       lifeStage: 'egg',                    // Life Cycle selected stage
+      mythConfidence: {},                  // Myth Busters: claim index -> confidence 1-5
+      mythRevealAll: false,                // Myth Busters: teacher reference view
       // Through Time state
       timeView: 'timeline',                // 'timeline' | 'fossils' | 'extinctions' | 'body-evolution'
       timeEraId: 'ordovician',
@@ -20720,30 +20722,109 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 16z — MISCONCEPTIONS (media literacy)
       // ═══════════════════════════════════════════════════════
       function renderMisconceptions() {
+        // The "How to use this" card told teachers to show a myth, have students
+        // rate their confidence, THEN reveal the correction — and then the page
+        // printed all twelve corrections underneath, which makes that activity
+        // impossible to run. The rating step is now built in: a correction stays
+        // hidden until you commit to a confidence, and the tally afterwards is
+        // the actual lesson, because every claim on this page is wrong.
+        var conf = d.mythConfidence || {};
+        var revealAll = !!d.mythRevealAll;
+        var ratedKeys = Object.keys(conf);
+        var ratedCount = ratedKeys.length;
+        var convinced = ratedKeys.filter(function(k) { return conf[k] >= 4; }).length;
+        var doubted = ratedKeys.filter(function(k) { return conf[k] <= 2; }).length;
+        var setConf = function(idx, v) {
+          var next = Object.assign({}, conf); next[idx] = v;
+          setCL({ mythConfidence: next });
+          awardXP(v >= 4 ? 2 : 1);
+          clAnnounce('Rated ' + v + ' of 5. Correction revealed.');
+        };
+        var CONF_LABELS = [
+          __alloT('stem.cephalopodlab.myth_conf_1', 'Definitely false'),
+          __alloT('stem.cephalopodlab.myth_conf_2', 'Probably false'),
+          __alloT('stem.cephalopodlab.myth_conf_3', 'No idea'),
+          __alloT('stem.cephalopodlab.myth_conf_4', 'Probably true'),
+          __alloT('stem.cephalopodlab.myth_conf_5', 'Definitely true')
+        ];
+
+        var scoreboard = ratedCount > 0 ? h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.myth_tally_title', '📊 What your ratings say')),
+            h('button', { type: 'button', onClick: function() { setCL({ mythConfidence: {}, mythRevealAll: false }); clAnnounce('Ratings cleared.'); },
+              style: { fontSize: 10.5, fontWeight: 700, padding: '4px 9px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.4)', background: 'transparent', color: '#cbd5e1', cursor: 'pointer', fontFamily: 'inherit' } },
+              __alloT('stem.cephalopodlab.myth_reset', 'Clear ratings'))),
+          h('div', { role: 'status', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10, marginBottom: 10 } },
+            [
+              { v: ratedCount + ' / ' + MISCONCEPTIONS.length, l: __alloT('stem.cephalopodlab.myth_stat_rated', 'claims you rated'), c: '#a78bfa' },
+              { v: String(convinced), l: __alloT('stem.cephalopodlab.myth_stat_convinced', 'you leaned TRUE on'), c: '#fb7185' },
+              { v: String(doubted), l: __alloT('stem.cephalopodlab.myth_stat_doubted', 'you leaned FALSE on'), c: '#34d399' }
+            ].map(function(st, i) {
+              return h('div', { key: i, style: { display: 'flex', alignItems: 'center', gap: 10, padding: '9px 12px', borderRadius: 9, background: 'rgba(15,23,42,0.55)', border: '1px solid rgba(99,102,241,0.2)' } },
+                h('span', { 'aria-hidden': 'true', style: { width: 7, height: 30, borderRadius: 4, background: st.c, flexShrink: 0 } }),
+                h('div', null,
+                  h('div', { style: { fontSize: 17, fontWeight: 900, color: '#f1f5f9', fontVariantNumeric: 'tabular-nums' } }, st.v),
+                  h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, st.l)));
+            })),
+          h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.65 } },
+            h('b', { style: { color: '#fde68a' } }, __alloT('stem.cephalopodlab.myth_tally_key', 'Every claim on this page is wrong or misleading. ')),
+            convinced > 0
+              ? __alloT('stem.cephalopodlab.myth_tally_convinced', 'You leaned towards believing ') + convinced + __alloT('stem.cephalopodlab.myth_tally_convinced_b', ' of them. Those are the ones worth remembering — not because you were careless, but because they are the ones written convincingly enough to get past you.')
+              : __alloT('stem.cephalopodlab.myth_tally_clean', 'You did not lean towards believing any of them so far. Worth asking yourself the harder question: could you say WHY each one is wrong, or did you just distrust the page?'))) : null;
+
         return h('div', null,
           panelHeader('❌ Myth Busters: Cephalopod Misconceptions',
             'Common cephalopod claims you\'ll see online — and what the actual evidence-based correction is. A great resource for NGSS Practice 8 (evaluating information).'),
           h('div', { style: cardStyle() },
-            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.how_to_use_this', '🎯 How to use this')),
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+              h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.how_to_use_this', '🎯 How to use this')),
+              h('button', { type: 'button', 'aria-pressed': revealAll ? 'true' : 'false',
+                onClick: function() { setCL({ mythRevealAll: !revealAll }); clAnnounce(revealAll ? 'Corrections hidden again.' : 'All corrections shown.'); },
+                style: { fontSize: 11, fontWeight: 800, padding: '6px 11px', borderRadius: 7, cursor: 'pointer', fontFamily: 'inherit',
+                  background: revealAll ? 'rgba(167,139,250,0.22)' : 'transparent', color: revealAll ? '#c7d2fe' : '#cbd5e1',
+                  border: '1px solid ' + (revealAll ? 'rgba(167,139,250,0.7)' : 'rgba(148,163,184,0.4)') } },
+                revealAll ? __alloT('stem.cephalopodlab.myth_hide_all', '🙈 Hide corrections again') : __alloT('stem.cephalopodlab.myth_reveal_all', '📖 Show every correction (teacher view)'))),
             h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.7 } },
-              __alloT('stem.cephalopodlab.show_one_of_these_myths_to_students_be', 'Show one of these myths to students BEFORE introducing the science. Have them rate confidence (1-5) on the claim. Reveal the correction. Discuss: how could you have detected the myth? What kind of source would you trust?')
+              __alloT('stem.cephalopodlab.myth_how_to_use_built_in', 'Rate how true each claim sounds BEFORE the correction appears — that rating step is built into every card below, and a correction stays hidden until you commit to one. Afterwards, discuss: how could you have detected the myth? What kind of source would you trust? Teachers who want the plain reference list can show every correction at once.')
             )
           ),
+          scoreboard,
           MISCONCEPTIONS.map(function(m, idx) {
             var sevColor = m.severity.indexOf('Pseudoscience') >= 0 ? '#ef4444'
               : m.severity.indexOf('Sensationalized') >= 0 ? '#fb923c'
               : m.severity.indexOf('Common') >= 0 ? '#fbbf24'
               : '#a78bfa';
+            var rating = conf[idx];
+            var shown = revealAll || rating !== undefined;
+            var titleId = 'cl-myth-claim-' + idx;
             return h('div', { key: idx, style: cardStyle() },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 6, flexWrap: 'wrap', gap: 8 } },
-                h('div', { style: { fontSize: 14, fontWeight: 700, color: '#fca5a5', fontStyle: 'italic' } }, '"' + m.claim + '"'),
-                h('span', { style: { fontSize: 10, color: sevColor, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + sevColor, padding: '3px 9px', borderRadius: 9999, fontWeight: 700 } }, m.severity)
+                h('div', { id: titleId, style: { fontSize: 14, fontWeight: 700, color: '#fca5a5', fontStyle: 'italic' } }, '"' + m.claim + '"'),
+                shown ? h('span', { style: { fontSize: 10, color: sevColor, background: 'rgba(255,255,255,0.05)', border: '1px solid ' + sevColor, padding: '3px 9px', borderRadius: 9999, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em' } }, m.severity) : null
               ),
-              m.source ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, 'Source: ' + m.source) : null,
-              h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
+              !shown ? h('div', { style: { padding: '10px 12px', borderRadius: 9, background: 'rgba(15,23,42,0.55)', border: '1px dashed rgba(148,163,184,0.45)' } },
+                h('div', { style: { fontSize: 11.5, color: '#cbd5e1', marginBottom: 8 } },
+                  __alloT('stem.cephalopodlab.myth_rate_prompt', 'Before you read on — how true does this sound to you?')),
+                h('div', { role: 'group', 'aria-labelledby': titleId, style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
+                  [1, 2, 3, 4, 5].map(function(v) {
+                    return h('button', { key: v, type: 'button', onClick: function() { setConf(idx, v); },
+                      'aria-label': v + ' — ' + CONF_LABELS[v - 1],
+                      style: { padding: '6px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                        background: 'transparent', color: '#e2e8f0', border: '1px solid rgba(148,163,184,0.45)' } },
+                      h('span', { 'aria-hidden': 'true', style: { fontWeight: 900, marginRight: 6, color: '#c7d2fe' } }, String(v)),
+                      h('span', { 'aria-hidden': 'true' }, CONF_LABELS[v - 1]));
+                  }))) : null,
+              shown && rating !== undefined ? h('div', { style: { fontSize: 11.5, color: rating >= 4 ? '#fecdd3' : '#a7f3d0', marginBottom: 8 } },
+                rating >= 4
+                  ? __alloT('stem.cephalopodlab.myth_you_rated_high', '⚠️ You rated this ') + rating + __alloT('stem.cephalopodlab.myth_you_rated_high_b', ' of 5 — it read as true, and it is not.')
+                  : rating === 3
+                    ? __alloT('stem.cephalopodlab.myth_you_rated_mid', '➖ You were unsure (3 of 5). Read what actually settles it.')
+                    : __alloT('stem.cephalopodlab.myth_you_rated_low', '✓ You doubted this one (') + rating + __alloT('stem.cephalopodlab.myth_you_rated_low_b', ' of 5). Check whether your reason matches the real one.')) : null,
+              shown && m.source ? h('div', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginBottom: 8 } }, 'Source: ' + m.source) : null,
+              shown ? h('div', { style: { fontSize: 12, color: '#86efac', background: 'rgba(34,197,94,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 8 } },
                 h('span', { style: { fontWeight: 700 } }, __alloT('stem.cephalopodlab.evidence_based_correction', '✓ Evidence-based correction: ')), m.evidenceCorrection
-              ),
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + m.citation)
+              ) : null,
+              shown ? h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic' } }, '📜 ' + m.citation) : null
             );
           })
         );
