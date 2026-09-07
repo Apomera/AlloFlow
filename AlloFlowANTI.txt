@@ -2900,6 +2900,16 @@ if (typeof window !== 'undefined' && typeof window.ResizeObserver === 'function'
       pending = null;
       nativeDisconnect();
     };
+    // Native unobserve() drops the target's queued record too, so a deferred
+    // batch must not report an element the tool has stopped watching.
+    const nativeUnobserve = observer.unobserve.bind(observer);
+    observer.unobserve = (target) => {
+      if (pending) {
+        pending = pending.filter((entry) => entry.target !== target);
+        if (!pending.length) { if (frame) { caf(frame); frame = 0; } pending = null; }
+      }
+      nativeUnobserve(target);
+    };
     return observer;
   };
   __AlloDeferredResizeObserver.prototype = __AlloNativeResizeObserver.prototype;

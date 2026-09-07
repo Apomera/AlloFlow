@@ -30,6 +30,10 @@ describe('ResizeObserver loop guard in the bootloader', () => {
       // Defers via rAF, coalesces, and cancels a pending frame on disconnect.
       expect(src).toContain('frame = raf(() => {');
       expect(src).toContain("observer.disconnect = () => {");
+      // Native unobserve() drops that target's queued record; the wrapper must
+      // too, or a deferred batch reports an element the tool stopped watching.
+      expect(src).toContain('observer.unobserve = (target) => {');
+      expect(src).toContain('pending.filter((entry) => entry.target !== target)');
       expect(src).toContain('__AlloDeferredResizeObserver.prototype = __AlloNativeResizeObserver.prototype;');
       expect(src).toContain('window.ResizeObserver = __AlloDeferredResizeObserver;');
     });
