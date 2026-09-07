@@ -269,3 +269,28 @@ describe('Scale Explorer estimate-first loop', () => {
     expect(src).toMatch(/if \(e\.key === 'Enter'\) \{ e\.preventDefault\(\); lockInEstimate\(\); \}/);
   });
 });
+
+describe('Scale Explorer camera cost', () => {
+  // Measured, not assumed: one keypress used to cause 34 full React renders of a
+  // 345-node panel carrying a 53-row ladder and two 53-option selects. Free on a
+  // laptop, not free on a Chromebook.
+  it('does not push the animated exponent through React state every frame', () => {
+    expect(src).toMatch(/function paintReadout\(\)/);
+    expect(src).toMatch(/el\.textContent = viewLineFor\(expRef\.current\)/);
+    // The frame path paints; only the settle path touches state.
+    const stepBody = src.slice(src.indexOf('function step()'), src.indexOf('// ── Drawing'));
+    expect(stepBody, 'step() must not call setExp directly').not.toMatch(/setExp\(/);
+    expect(stepBody).toMatch(/paintReadout\(\);/);
+    expect(src).toMatch(/function settleExp\(v\) \{ setExp\(v\); paintReadout\(\); \}/);
+  });
+
+  it('keeps the continuously-updating readout out of a live region', () => {
+    // It changes every frame. As role="status" it queued an announcement per
+    // frame, on top of the one-per-decade announcement that already exists.
+    const readout = src.slice(src.indexOf("h('p', { id: descId"), src.indexOf("h('p', { id: descId") + 200);
+    expect(readout, 'the readout must not be a live region').not.toMatch(/role: 'status'/);
+    expect(readout).toMatch(/ref: readoutRef/);
+    // ...and the decade announcement is still the screen-reader path.
+    expect(src).toMatch(/say\(Math\.abs\(d\) <= 2/);
+  });
+});

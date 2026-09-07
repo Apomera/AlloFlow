@@ -270,6 +270,7 @@
       var _revealed = React.useState(false); var revealed = _revealed[0], setRevealed = _revealed[1];
 
       var canvasRef = React.useRef(null);
+      var readoutRef = React.useRef(null);
       var wrapRef = React.useRef(null);
       var targetRef = React.useRef(log10(HUMAN));
       var expRef = React.useRef(log10(HUMAN));
@@ -309,16 +310,27 @@
         opts = opts || {};
         var target = clamp(nextExp, MIN_EXP, MAX_EXP);
         targetRef.current = target;
-        if (reduceMotion || opts.instant) { expRef.current = target; setExp(target); draw(); afterMove(); return; }
+        if (reduceMotion || opts.instant) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
         if (!rafRef.current) rafRef.current = requestAnimationFrame(step);
       }
+      // Only the readout text changes while the camera is moving, so it is written
+      // straight to its node. Going through React state instead re-rendered the
+      // whole panel — a 53-row ladder and two 53-option selects — 34 times for a
+      // single keypress, which is free on a laptop and is not free on a Chromebook.
+      function paintReadout() {
+        var el = readoutRef.current;
+        if (el) el.textContent = viewLineFor(expRef.current);
+      }
+      // React state catches up once, at rest, so anything that renders from exp
+      // stays correct without paying for the frames in between.
+      function settleExp(v) { setExp(v); paintReadout(); }
       function step() {
         rafRef.current = 0;
         var cur = expRef.current, target = targetRef.current;
         var d = target - cur;
-        if (Math.abs(d) < 0.0015) { expRef.current = target; setExp(target); draw(); afterMove(); return; }
+        if (Math.abs(d) < 0.0015) { expRef.current = target; settleExp(target); draw(); afterMove(); return; }
         expRef.current = cur + d * 0.18;
-        setExp(expRef.current);
+        paintReadout();
         draw();
         afterMove();
         rafRef.current = requestAnimationFrame(step);
@@ -588,8 +600,11 @@
       var card = { background: P.panel2, border: '1px solid ' + P.line, borderRadius: 10, padding: '9px 11px', fontSize: '0.8125rem', lineHeight: 1.5, color: P.text };
       var sel = { background: P.bg, color: P.text, border: '1px solid ' + P.line, borderRadius: 8, padding: '6px 8px', fontSize: '0.8125rem', maxWidth: '100%' };
 
-      var curDecade = Math.round(exp);
-      var viewLine = S('view_line', 'You are looking at things about {len} across ({p}).', { len: humanLength(Math.pow(10, exp)), p: powerLabel(curDecade) });
+      function viewLineFor(e) {
+        return S('view_line', 'You are looking at things about {len} across ({p}).',
+          { len: humanLength(Math.pow(10, e)), p: powerLabel(Math.round(e)) });
+      }
+      var viewLine = viewLineFor(exp);
 
       function itemOptions() {
         return sorted.map(function (i) { return h('option', { key: i.id, value: i.id }, itemText(i, 'name') + ' — ' + humanLength(i.size)); });
@@ -621,7 +636,7 @@
                 onKeyDown: onCanvasKey, onWheel: onWheel,
                 style: { display: 'block', width: '100%', height: '100%', outlineOffset: '-3px' } })
             ),
-            h('p', { id: descId, role: 'status', style: { margin: 0, fontSize: '0.8125rem', color: P.text, fontWeight: 600 } }, viewLine),
+            h('p', { id: descId, ref: readoutRef, style: { margin: 0, fontSize: '0.8125rem', color: P.text, fontWeight: 600 } }, viewLine),
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),
