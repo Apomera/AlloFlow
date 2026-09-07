@@ -15901,7 +15901,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
           if (o.id === 'cooperate' && sp.id !== 'dayOcto') return false;
           return true;
         });
+        // Sky band: encounter progress mapped onto one day, dawn to night.
+        var dayT = Math.max(0, Math.min(1, done / 10));
+        var SKY = [
+          [0.00, [234, 120, 60], [49, 46, 129], __alloT('stem.cephalopodlab.day_phase_dawn', 'Dawn')],
+          [0.25, [96, 180, 235], [14, 116, 144], __alloT('stem.cephalopodlab.day_phase_morning', 'Morning')],
+          [0.45, [120, 175, 240], [2, 110, 170], __alloT('stem.cephalopodlab.day_phase_midday', 'Midday')],
+          [0.65, [240, 170, 96], [154, 52, 18], __alloT('stem.cephalopodlab.day_phase_afternoon', 'Afternoon')],
+          [0.82, [244, 114, 182], [76, 29, 149], __alloT('stem.cephalopodlab.day_phase_dusk', 'Dusk')],
+          [1.00, [30, 41, 59], [2, 6, 23], __alloT('stem.cephalopodlab.day_phase_night', 'Night')]
+        ];
+        var skyA = SKY[0], skyB = SKY[SKY.length - 1];
+        for (var si = 0; si < SKY.length - 1; si++) { if (dayT >= SKY[si][0] && dayT <= SKY[si + 1][0]) { skyA = SKY[si]; skyB = SKY[si + 1]; break; } }
+        var skyF = (skyB[0] === skyA[0]) ? 0 : (dayT - skyA[0]) / (skyB[0] - skyA[0]);
+        var mixC = function(a, b) { return 'rgb(' + a.map(function(v, i) { return Math.round(v + (b[i] - v) * skyF); }).join(',') + ')'; };
+        var skyTop = mixC(skyA[1], skyB[1]), skyBottom = mixC(skyA[2], skyB[2]);
+        var phaseLabel = skyF < 0.5 ? skyA[3] : skyB[3];
+        var isNight = dayT >= 0.82;
+        var orbX = 6 + dayT * 88;
+        var orbY = 62 - Math.sin(dayT * Math.PI) * 44;
+        var skyBand = h('div', { style: { position: 'relative', height: 92, borderRadius: 14, overflow: 'hidden', marginBottom: 14, background: 'linear-gradient(180deg, ' + skyTop + ' 0%, ' + skyBottom + ' 100%)', border: '1px solid rgba(255,255,255,0.15)' } },
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: orbX + '%', top: orbY, width: 26, height: 26, marginLeft: -13, borderRadius: '50%', background: isNight ? '#e2e8f0' : '#fde68a', boxShadow: isNight ? '0 0 18px rgba(226,232,240,0.6)' : '0 0 26px rgba(253,224,71,0.85)' } }),
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 30, background: 'linear-gradient(180deg, rgba(8,47,73,0) 0%, rgba(8,47,73,0.85) 100%)' } }),
+          h('div', { 'aria-hidden': 'true', style: { position: 'absolute', left: 18, bottom: 6, fontSize: 30, lineHeight: 1, filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.5))' } }, sp.emoji),
+          h('div', { style: { position: 'absolute', right: 12, top: 10, textAlign: 'right', padding: '6px 10px', borderRadius: 8, background: 'rgba(15,23,42,0.62)' } },
+            h('div', { style: { fontSize: 11, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#fff' } }, phaseLabel),
+            h('div', { style: { fontSize: 10.5, color: '#f1f5f9' } }, __alloT('stem.cephalopodlab.day_encounter_word', 'Encounter') + ' ' + (done + 1) + ' / 10')),
+          h('div', { role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 10, 'aria-valuenow': done, 'aria-label': __alloT('stem.cephalopodlab.day_progress_label', 'Day progress') + ': ' + phaseLabel,
+            style: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 4, background: 'rgba(255,255,255,0.15)' } },
+            h('div', { style: { width: (dayT * 100) + '%', height: '100%', background: '#fde68a' } })));
         return h('div', null,
+          skyBand,
           panelHeader(sp.emoji + ' ' + sp.name + ' — encounter ' + (done + 1) + ' of 10',
             'You\'re mid-day. Stats below show your current state. Survive all 10 encounters to complete the day.'),
 
@@ -17440,6 +17470,89 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                     style: { width: '100%', accentColor: slider.color } }),
                   h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)', marginTop: 4, lineHeight: 1.45, fontStyle: 'italic' } }, slider.hint));
               }))),
+
+          // Live schematic — the same numbers, as a picture. Plume length follows
+          // jet velocity, plume width follows siphon diameter, mantle pulse depth
+          // follows mantle volume. Nothing here is a new claim: it draws v, A, V.
+          (function() {
+            var reduced = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+            var isSquid = speciesId === 'humboldt';
+            var isCuttle = speciesId === 'cuttle';
+            var isNautilus = speciesId === 'nautilus';
+            var plumeLen = Math.min(230, 24 + vJet * 11);
+            var plumeW = Math.max(3, Math.min(30, dia * 0.55));
+            var pulseAmp = 0.06 + 0.16 * Math.min(1, vol / 1500);
+            var speedPct = Math.min(100, vJet / 30 * 100);
+            var topPct = Math.min(100, sp.topSpeed / 30 * 100);
+            var mantleRx = isSquid ? 78 : isCuttle ? 66 : isNautilus ? 34 : 52;
+            var mantleRy = isSquid ? 22 : isCuttle ? 30 : isNautilus ? 24 : 36;
+            var jetStyle = h('style', null,
+              '@keyframes clJetPulse { 0%, 100% { transform: scale(1, 1); } 45% { transform: scale(' + (1 - pulseAmp * 0.45).toFixed(3) + ', ' + (1 - pulseAmp).toFixed(3) + '); } }' +
+              '@keyframes clJetPlume { 0%, 20% { opacity: 0.25; transform: scaleX(0.35); } 45% { opacity: 0.95; transform: scaleX(1); } 85%, 100% { opacity: 0.25; transform: scaleX(1.05); } }' +
+              '@keyframes clJetBody { 0%, 30% { transform: translateX(0); } 55% { transform: translateX(-' + Math.min(40, 6 + accel * 3).toFixed(1) + 'px); } 100% { transform: translateX(0); } }' +
+              '.cl-jet-mantle { transform-origin: 300px 90px; animation: clJetPulse 1.6s ease-in-out infinite; }' +
+              '.cl-jet-plume { transform-origin: 356px 90px; animation: clJetPlume 1.6s ease-in-out infinite; }' +
+              '.cl-jet-body { animation: clJetBody 1.6s ease-in-out infinite; }' +
+              '@media (prefers-reduced-motion: reduce) { .cl-jet-mantle, .cl-jet-plume, .cl-jet-body { animation: none !important; } .cl-jet-plume { opacity: 0.8; } }');
+            var summary = sp.name + ': ' + __alloT('stem.cephalopodlab.jet_schematic_summary_a', 'jet velocity ') + vJet.toFixed(1) + ' m/s, ' +
+              __alloT('stem.cephalopodlab.jet_schematic_summary_b', 'documented top speed ') + sp.topSpeed + ' m/s, ' +
+              __alloT('stem.cephalopodlab.jet_schematic_summary_c', 'siphon ') + dia + ' mm, ' + __alloT('stem.cephalopodlab.jet_schematic_summary_d', 'mantle ') + vol + ' mL.';
+            return h('div', { style: cardStyle() },
+              jetStyle,
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+                h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.jet_live_schematic', '🎞️ Live jet: the numbers as a picture')),
+                h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.jet_live_hint', 'Plume length = jet velocity · plume width = siphon · squeeze depth = mantle volume'))),
+              h('div', { style: { background: 'linear-gradient(180deg, #0b3a5e, #072a45)', borderRadius: 12, border: '1px solid rgba(56,189,248,0.3)', overflow: 'hidden' } },
+                h('svg', { viewBox: '0 0 640 180', width: '100%', height: 180, role: 'img', 'aria-label': summary, style: { display: 'block' } },
+                  h('defs', null,
+                    h('linearGradient', { id: 'clJetPlumeGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
+                      h('stop', { offset: '0%', stopColor: '#e0f2fe', stopOpacity: 0.95 }),
+                      h('stop', { offset: '100%', stopColor: '#38bdf8', stopOpacity: 0 })),
+                    h('radialGradient', { id: 'clJetBodyGrad', cx: '40%', cy: '40%', r: '65%' },
+                      h('stop', { offset: '0%', stopColor: isNautilus ? '#fde68a' : '#f9a8d4' }),
+                      h('stop', { offset: '100%', stopColor: isNautilus ? '#b45309' : '#9d174d' }))),
+                  h('g', { className: reduced ? '' : 'cl-jet-body' },
+                    // arms / tentacles trail to the LEFT (animal moves left, water goes right)
+                    isNautilus ? null : [0, 1, 2, 3, 4].map(function(i) {
+                      var y0 = 74 + i * 8;
+                      var len = isSquid ? 60 : 110;
+                      return h('path', { key: 'arm' + i, d: 'M' + (300 - mantleRx + 10) + ' ' + y0 + ' q -' + (len * 0.5) + ' ' + ((i - 2) * 6) + ' -' + len + ' ' + ((i - 2) * 14), stroke: 'url(#clJetBodyGrad)', strokeWidth: isSquid ? 3 : 5, fill: 'none', strokeLinecap: 'round', opacity: 0.85 });
+                    }),
+                    isNautilus ? h('g', null,
+                      h('circle', { cx: 318, cy: 84, r: 50, fill: 'url(#clJetBodyGrad)', stroke: '#78350f', strokeWidth: 2 }),
+                      h('path', { d: 'M318 84 m-36 0 a36 36 0 1 1 72 0 a24 24 0 1 1 -48 0 a14 14 0 1 1 28 0', fill: 'none', stroke: 'rgba(120,53,15,0.7)', strokeWidth: 2.5 }),
+                      [0, 1, 2].map(function(i) { return h('path', { key: 'ns' + i, d: 'M318 34 A50 50 0 0 0 ' + (318 - 50 * Math.sin(0.9 + i * 0.6)) + ' ' + (84 - 50 * Math.cos(0.9 + i * 0.6)), stroke: 'rgba(120,53,15,0.55)', strokeWidth: 3, fill: 'none' }); })) : null,
+                    // mantle (pulses)
+                    h('ellipse', { className: 'cl-jet-mantle', cx: 300, cy: 90, rx: mantleRx, ry: mantleRy, fill: 'url(#clJetBodyGrad)', stroke: 'rgba(255,255,255,0.25)', strokeWidth: 1.5 }),
+                    isSquid || isCuttle ? h('path', { d: 'M' + (300 + mantleRx * 0.2) + ' ' + (90 - mantleRy) + ' q 40 -18 ' + (mantleRx * 0.8) + ' ' + (mantleRy * 0.6) + ' M' + (300 + mantleRx * 0.2) + ' ' + (90 + mantleRy) + ' q 40 18 ' + (mantleRx * 0.8) + ' -' + (mantleRy * 0.6), stroke: 'url(#clJetBodyGrad)', strokeWidth: 6, fill: 'none', strokeLinecap: 'round', opacity: 0.8 }) : null,
+                    // eye
+                    h('circle', { cx: 300 - mantleRx * 0.55, cy: 82, r: 6, fill: '#fef3c7' }),
+                    h('rect', { x: 300 - mantleRx * 0.55 - 4, y: 80, width: 8, height: 3, rx: 1.5, fill: '#1e1b4b' }),
+                    // siphon (nozzle) — width follows diameter
+                    h('rect', { x: 300 + mantleRx - 6, y: 90 - plumeW / 2, width: 22, height: plumeW, rx: plumeW / 2, fill: '#0f172a', stroke: '#7dd3fc', strokeWidth: 1.5 })),
+                  // plume (water) — to the RIGHT
+                  h('polygon', { className: 'cl-jet-plume', points: '356,' + (90 - plumeW / 2) + ' ' + (356 + plumeLen) + ',' + (90 - plumeW * 1.6) + ' ' + (356 + plumeLen) + ',' + (90 + plumeW * 1.6) + ' 356,' + (90 + plumeW / 2), fill: 'url(#clJetPlumeGrad)' }),
+                  // Newton's third law labels
+                  h('g', { fontSize: 11, fontWeight: 800, fill: '#e0f2fe' },
+                    h('text', { x: 356 + Math.min(plumeLen, 120), y: 40, textAnchor: 'middle' }, __alloT('stem.cephalopodlab.jet_label_water', 'water pushed out →')),
+                    h('text', { x: 300 - mantleRx - 20, y: 40, textAnchor: 'middle' }, __alloT('stem.cephalopodlab.jet_label_animal', '← animal pushed forward'))),
+                  h('text', { x: 356 + plumeLen / 2, y: 150, textAnchor: 'middle', fontSize: 11, fill: '#bae6fd', fontFamily: 'ui-monospace, Menlo, monospace' }, vJet.toFixed(1) + ' m/s'))),
+              // Sprint vs documented top speed
+              h('div', { style: { marginTop: 12 } },
+                h('div', { style: { fontSize: 10.5, fontWeight: 800, color: '#cbd5e1', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6 } },
+                  __alloT('stem.cephalopodlab.jet_vs_documented', 'Your jet vs the documented top speed (0–30 m/s scale)')),
+                [
+                  { label: __alloT('stem.cephalopodlab.jet_bar_yours', 'Jet exit velocity (your settings)'), pct: speedPct, val: vJet.toFixed(1) + ' m/s', color: '#fb923c' },
+                  { label: __alloT('stem.cephalopodlab.jet_bar_documented', 'Documented top speed') + ' · ' + sp.name, pct: topPct, val: sp.topSpeed + ' m/s', color: '#38bdf8' }
+                ].map(function(b, i) {
+                  return h('div', { key: i, role: 'meter', 'aria-valuemin': 0, 'aria-valuemax': 30, 'aria-valuenow': Math.round(b.pct * 0.3 * 10) / 10, 'aria-label': b.label + ' ' + b.val, style: { marginBottom: 6 } },
+                    h('div', { style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#e2e8f0', marginBottom: 3 } }, h('span', null, b.label), h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: b.color } }, b.val)),
+                    h('div', { style: { height: 8, borderRadius: 4, background: 'rgba(148,163,184,0.2)', overflow: 'hidden' } },
+                      h('div', { style: { width: b.pct + '%', height: '100%', background: b.color, transition: 'width 0.25s' } })));
+                }),
+                h('div', { style: { fontSize: 10.5, color: '#cbd5e1', marginTop: 4, lineHeight: 1.5 } },
+                  __alloT('stem.cephalopodlab.jet_bar_note', 'Exit velocity of the water is not the same as the animal\'s speed: the body is heavier than one pulse of water, drag rises with speed, and refilling the mantle costs time between pulses.'))));
+          })(),
 
           // Results panel — physics outputs
           h('div', { style: cardStyle() },

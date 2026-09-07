@@ -315,3 +315,49 @@ describe('Cephalopod Lab Evasion Sim strike lane', () => {
     expect(Array.from(done.querySelectorAll('button')).some((b) => /See result/.test(b.textContent))).toBe(true);
   });
 });
+
+// ── Jet Propulsion Lab live schematic + Day in the Life sky band ──
+describe('Cephalopod Lab Jet Lab schematic and Day sky band', () => {
+  const renderJet = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'jet', jetSpeciesId: 'humboldt', ...data } });
+    return c;
+  };
+  it('draws the jet from the computed numbers and names them for screen readers', () => {
+    const c = renderJet({ jetContractionKPa: 80, jetSiphonDiameter: 22, jetMantleVolume: 400 });
+    const svg = c.querySelector('svg[aria-label^="Humboldt Squid: jet velocity"]');
+    expect(svg).not.toBeNull();
+    expect(svg.getAttribute('aria-label')).toMatch(/documented top speed 25 m\/s, siphon 22 mm, mantle 400 mL/);
+    const plume = svg.querySelector('polygon.cl-jet-plume');
+    expect(plume).not.toBeNull();
+    // higher pressure -> faster jet -> longer plume
+    const lenOf = (el) => Number(el.getAttribute('points').split(' ')[1].split(',')[0]);
+    const slow = renderJet({ jetContractionKPa: 20 }).querySelector('polygon.cl-jet-plume');
+    expect(lenOf(plume)).toBeGreaterThan(lenOf(slow));
+    const meters = c.querySelectorAll('[role="meter"][aria-label*="m/s"]');
+    expect(meters).toHaveLength(2);
+    expect(c.querySelector('style').textContent).toMatch(/prefers-reduced-motion: reduce[^}]*cl-jet-mantle[^}]*animation: none/);
+  });
+  it('gives the nautilus a shell instead of arms', () => {
+    const c = renderJet({ jetSpeciesId: 'nautilus' });
+    const svg = c.querySelector('svg[aria-label^="Chambered Nautilus"]');
+    expect(svg.querySelectorAll('circle[r="50"]')).toHaveLength(1);
+    const humboldt = renderJet().querySelector('svg[aria-label^="Humboldt"]');
+    expect(humboldt.querySelectorAll('circle[r="50"]')).toHaveLength(0);
+  });
+
+  const renderDay = (done) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'day', dayActive: true, daySpeciesId: 'commonOcto', dayEncountersDone: done,
+      dayCurrentEncounter: { type: 'hunt', emoji: '🦀', title: 'Crab', detail: 'A crab.', options: [{ id: 'ambush', label: 'Ambush' }] } } });
+    return c;
+  };
+  it('maps encounter progress onto a dawn-to-night sky with a labelled progressbar', () => {
+    const labelAt = (n) => renderDay(n).querySelector('[role="progressbar"][aria-label^="Day progress"]').getAttribute('aria-label');
+    expect(labelAt(0)).toMatch(/Dawn$/);
+    expect(labelAt(4)).toMatch(/Midday$/);
+    expect(labelAt(8)).toMatch(/Dusk$/);
+    expect(labelAt(9)).toMatch(/(Dusk|Night)$/);
+    expect(renderDay(4).querySelector('[role="progressbar"][aria-label^="Day progress"]').getAttribute('aria-valuenow')).toBe('4');
+  });
+});
