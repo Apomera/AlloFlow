@@ -205,11 +205,13 @@
 
   // ── Environment Presets ──
   var ENV_PRESETS = {
-    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sunIntensity: 1.05, ambientIntensity: 0.52, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
-    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sunIntensity: 0.8, ambientIntensity: 0.38, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
-    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sunIntensity: 0.72, ambientIntensity: 0.34, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
-    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sunIntensity: 0.18, ambientIntensity: 0.22, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
-    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sunIntensity: 0.95, ambientIntensity: 0.44, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
+    // sun: light colour (sRGB floats). hemi: hemisphere light intensity, the
+    // sky-from-above fill that keeps a voxel world from going flat at low sun.
+    day:     { sky: [0.31, 0.66, 0.98], fog: [0.55, 0.79, 0.98], sun: [1.0, 0.96, 0.88], sunIntensity: 1.05, ambientIntensity: 0.5, hemi: 0.4, fogNear: 55, fogFar: 145, cloudOpacity: 0.5, label: '\u2600\uFE0F Day' },
+    sunrise: { sky: [1.0, 0.55, 0.32],  fog: [0.95, 0.62, 0.45], sun: [1.0, 0.72, 0.45], sunIntensity: 0.85, ambientIntensity: 0.34, hemi: 0.3, fogNear: 45, fogFar: 120, cloudOpacity: 0.6, label: '\uD83C\uDF05 Sunrise' },
+    sunset:  { sky: [0.94, 0.31, 0.16], fog: [0.86, 0.38, 0.26], sun: [1.0, 0.58, 0.32], sunIntensity: 0.8, ambientIntensity: 0.3, hemi: 0.26, fogNear: 42, fogFar: 112, cloudOpacity: 0.55, label: '\uD83C\uDF07 Sunset' },
+    night:   { sky: [0.07, 0.09, 0.28], fog: [0.08, 0.10, 0.26], sun: [0.55, 0.65, 1.0], sunIntensity: 0.22, ambientIntensity: 0.1, hemi: 0.12, fogNear: 32, fogFar: 95, cloudOpacity: 0.15, label: '\uD83C\uDF19 Night' },
+    golden:  { sky: [1.0, 0.82, 0.38],  fog: [0.98, 0.84, 0.52], sun: [1.0, 0.85, 0.5], sunIntensity: 1.0, ambientIntensity: 0.4, hemi: 0.34, fogNear: 50, fogFar: 130, cloudOpacity: 0.45, label: '\uD83C\uDF1F Golden' },
   };
 
   // Centralized display profiles keep the WebGL workload predictable and make
@@ -238,7 +240,8 @@
       sky: p.sky.slice(), fog: p.fog.slice(),
       fogNear: p.fogNear, fogFar: p.fogFar,
       sunIntensity: p.sunIntensity, ambientIntensity: p.ambientIntensity,
-      cloudOpacity: p.cloudOpacity
+      cloudOpacity: p.cloudOpacity,
+      sun: (p.sun || [1.0, 0.96, 0.88]).slice(), hemi: p.hemi != null ? p.hemi : 0.4
     };
     // Snapshot where the fade starts, so each frame can set the eased position
     // exactly. The old update moved every value 10% of the remaining distance
@@ -253,7 +256,9 @@
       fogNear: fog ? fog.near : p.fogNear, fogFar: fog ? fog.far : p.fogFar,
       sunIntensity: engine.sun ? engine.sun.intensity : p.sunIntensity,
       ambientIntensity: ambient ? ambient.intensity : p.ambientIntensity,
-      cloudOpacity: engine._cloudPlane ? engine._cloudPlane.material.opacity : p.cloudOpacity
+      cloudOpacity: engine._cloudPlane ? engine._cloudPlane.material.opacity : p.cloudOpacity,
+      sun: engine.sun && engine.sun.color ? [engine.sun.color.r, engine.sun.color.g, engine.sun.color.b] : (p.sun || [1.0, 0.96, 0.88]).slice(),
+      hemi: engine._hemi ? engine._hemi.intensity : (p.hemi != null ? p.hemi : 0.4)
     };
     engine._envTransition = 0; // 0 to 1 over ~1.4 seconds
     engine._envDone = false;
@@ -301,14 +306,43 @@
       engine.scene.fog.color.setRGB(mix(start.fog[0], tgt.fog[0]), mix(start.fog[1], tgt.fog[1]), mix(start.fog[2], tgt.fog[2]));
       engine.scene.fog.near = mix(start.fogNear, tgt.fogNear);
       engine.scene.fog.far = mix(start.fogFar, tgt.fogFar);
-      if (engine.sun) engine.sun.intensity = mix(start.sunIntensity, tgt.sunIntensity);
+      if (engine.sun) {
+        engine.sun.intensity = mix(start.sunIntensity, tgt.sunIntensity);
+        if (engine.sun.color && start.sun && tgt.sun) engine.sun.color.setRGB(mix(start.sun[0], tgt.sun[0]), mix(start.sun[1], tgt.sun[1]), mix(start.sun[2], tgt.sun[2]));
+      }
+      if (engine._hemi) {
+        if (start.hemi != null && tgt.hemi != null) engine._hemi.intensity = mix(start.hemi, tgt.hemi);
+        // Sky-from-above fill takes the sky colour it is standing under.
+        if (engine._hemi.color && engine.scene.background && engine.scene.background.isColor) engine._hemi.color.copy(engine.scene.background).lerp(engine._skyWhite || engine.scene.background, 0.35);
+      }
       engine.scene.children.forEach(function(c) {
         if (c.isAmbientLight) c.intensity = mix(start.ambientIntensity, tgt.ambientIntensity);
       });
       if (engine._cloudPlane) engine._cloudPlane.material.opacity = mix(start.cloudOpacity, tgt.cloudOpacity);
     }
-    if (t >= 1) engine._envDone = true;
+    if (t >= 1) { engine._envDone = true; if (typeof engine.refreshEnvironment === 'function') engine.refreshEnvironment(); }
   }
+
+  // Deterministic per-cell tint for grass so the ground reads as turf rather
+  // than one flat sheet: a tiny integer hash of (x, z) -> [0.965, 1.035]. Pure,
+  // stable across reloads (a lesson floor looks the same every visit), and small
+  // enough that the measurement checkerboard (x8%) still reads on top of it.
+  function geometryWorldGroundTint(x, z) {
+    var h = (Math.imul((x | 0) * 73856093, 1) ^ Math.imul((z | 0) * 19349663, 1)) >>> 0;
+    h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0;
+    h = (h ^ (h >>> 15)) >>> 0;
+    return 0.965 + (h % 1000) / 1000 * 0.07;
+  }
+  // sRGB hex -> linear-light Color. The renderer encodes its output as sRGB, so a
+  // hex fed in raw is gamma-encoded twice and reaches the display lighter and
+  // greyer than the palette swatch. Converting once here makes the world colour
+  // match the swatch the student picked.
+  function geometryWorldSrgbColor(THREE, hex) {
+    var c = new THREE.Color(hex);
+    if (typeof c.convertSRGBToLinear === 'function') c.convertSRGBToLinear();
+    return c;
+  }
+  window.StemLab.GeometryWorldGroundTint = geometryWorldGroundTint;
 
   // ── Block Types ──
   var BLOCK_TYPES = [
@@ -3287,14 +3321,14 @@
               c.addPass(new T.RenderPass(engine.scene, engine.camera));
               // high threshold + gentle strength: only the sun / bright highlights glow,
               // keeping the geometry legible (it's a math tool).
-              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(cw * res)), Math.max(1, Math.round(ch * res))), lowPower ? 0.5 : 0.8, 0.4, 0.85));
+              c.addPass(new T.UnrealBloomPass(new T.Vector2(Math.max(1, Math.round(cw * res)), Math.max(1, Math.round(ch * res))), lowPower ? 0.3 : 0.45, 0.35, 0.975));
               engine.composer = c;
             } catch (e) { engine.composer = null; }
           });
         })();
 
         // Lighting — warm, balanced, voxel-world style
-        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.45));
+        engine.scene.add(new THREE.AmbientLight(0xffffff, 0.42));
         var sun = new THREE.DirectionalLight(0xfff4e0, 1.0);
         sun.position.set(20, 40, 20);
         sun.castShadow = true;
@@ -3307,12 +3341,73 @@
         sun.shadow.normalBias = 0.02;
         engine.sun = sun;
         engine.scene.add(sun);
-        var hemi = new THREE.HemisphereLight(0x87CEEB, 0x4CAF50, 0.35);
+        var hemi = new THREE.HemisphereLight(0x9fd3f5, 0x3f6b3a, 0.4);
         engine.scene.add(hemi);
+        engine._hemi = hemi;
         // Soft rim light from behind for depth
         var rim = new THREE.DirectionalLight(0xc0d8ff, 0.25);
         rim.position.set(-15, 20, -15);
         engine.scene.add(rim);
+
+        // ── Image-based lighting ──
+        // Gold and diamond are metals (metalness 0.7 / 0.6) and a metal with
+        // nothing to reflect renders as a dark, dull slab, which is how they looked.
+        // Build a tiny six-face sky/horizon/ground cubemap from the scene's own
+        // colours, prefilter it (PMREM) and hand it to every Standard/Physical
+        // material through scene.environment. Refreshed whenever a time-of-day
+        // preset lands, so a sunset gilds the metals and night dims them.
+        engine.refreshEnvironment = function() {
+          try {
+            var T = window.THREE;
+            if (!T || !T.PMREMGenerator || !T.CubeTexture || !engine.renderer || engine._destroyed) return;
+            var bgC = engine.scene.background && engine.scene.background.isColor ? engine.scene.background : new T.Color(0x4FA8FA);
+            var fogC = engine.scene.fog ? engine.scene.fog.color : bgC;
+            var groundC = new T.Color(0x4a7a3c).lerp(fogC, 0.35);
+            var zenith = '#' + bgC.getHexString(), horizon = '#' + fogC.getHexString(), ground = '#' + groundC.getHexString();
+            var groundHz = '#' + groundC.clone().lerp(fogC, 0.5).getHexString();
+            var faces = [];
+            for (var fi = 0; fi < 6; fi++) {
+              var fc = document.createElement('canvas'); fc.width = 32; fc.height = 32;
+              var g2 = fc.getContext('2d');
+              if (fi === 2) { g2.fillStyle = zenith; g2.fillRect(0, 0, 32, 32); }
+              else if (fi === 3) { g2.fillStyle = ground; g2.fillRect(0, 0, 32, 32); }
+              else {
+                var gr = g2.createLinearGradient(0, 0, 0, 32);
+                gr.addColorStop(0, zenith); gr.addColorStop(0.48, horizon); gr.addColorStop(0.53, groundHz); gr.addColorStop(1, ground);
+                g2.fillStyle = gr; g2.fillRect(0, 0, 32, 32);
+                // A soft sun highlight on the +X and +Z faces (the sun sits at +40,+45,+40),
+                // so metals carry one bright lobe instead of a uniform sheen.
+                if (fi === 0 || fi === 4) {
+                  var sg = g2.createRadialGradient(20, 9, 0, 20, 9, 12);
+                  sg.addColorStop(0, 'rgba(255,250,235,0.85)'); sg.addColorStop(1, 'rgba(255,250,235,0)');
+                  g2.fillStyle = sg; g2.fillRect(0, 0, 32, 32);
+                }
+              }
+              faces.push(fc);
+            }
+            var cube = new T.CubeTexture(faces);
+            if (typeof T.sRGBEncoding !== 'undefined') cube.encoding = T.sRGBEncoding;
+            cube.needsUpdate = true;
+            var pmrem = new T.PMREMGenerator(engine.renderer);
+            var rt = pmrem.fromCubemap(cube);
+            var old = engine._envRT;
+            engine._envRT = rt;
+            engine.applyEnvironmentMap();
+            if (old) { try { old.dispose(); } catch (e) {} }
+            pmrem.dispose(); cube.dispose();
+          } catch (e) {}
+        };
+        // Only the materials flagged reflective (gold, diamond, glass, water, ice)
+        // take the map. Feeding it to every material through scene.environment
+        // lit the whole world a second time from the sky and blew the grass and the
+        // characters' faces out to white (measured, round 1 of this pass).
+        engine.applyEnvironmentMap = function() {
+          var tex = engine._envRT ? engine._envRT.texture : null;
+          var assign = function(m) { if (m && m.userData && m.userData.gwReflective && m.envMap !== tex) { m.envMap = tex; m.needsUpdate = true; } };
+          try { Object.keys(engine._matCache || {}).forEach(function(k) { assign(engine._matCache[k]); }); } catch (e) {}
+          try { Object.keys(engine.blocks || {}).forEach(function(k) { var mesh = engine.blocks[k]; if (mesh) (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).forEach(assign); }); } catch (e) {}
+        };
+        engine.refreshEnvironment();
 
         // ── Sky dome ──
         // The background was one flat colour, so the horizon had no haze band and
@@ -3329,7 +3424,13 @@
               topColor: { value: new THREE.Color(0x4FA8FA) },
               bottomColor: { value: new THREE.Color(0x8CC9FA) },
               offset: { value: 14.0 },
-              exponent: { value: 0.55 }
+              exponent: { value: 0.55 },
+              // Sun sits at camera + (40, 45, 40); the dome brightens toward it so the
+              // sky has a light source, not just a gradient. Colour and strength follow
+              // the fog colour and sun intensity each frame (animate loop).
+              sunDir: { value: new THREE.Vector3(40, 45, 40).normalize() },
+              sunColor: { value: new THREE.Color(0xfff4e0) },
+              sunGlow: { value: 1.0 }
             },
             vertexShader: [
               'varying vec3 vWorldPosition;',
@@ -3344,11 +3445,18 @@
               'uniform vec3 bottomColor;',
               'uniform float offset;',
               'uniform float exponent;',
+              'uniform vec3 sunDir;',
+              'uniform vec3 sunColor;',
+              'uniform float sunGlow;',
               'varying vec3 vWorldPosition;',
               'void main() {',
-              '  float h = normalize(vWorldPosition + vec3(0.0, offset, 0.0)).y;',
+              '  vec3 dir = normalize(vWorldPosition + vec3(0.0, offset, 0.0));',
+              '  float h = dir.y;',
               '  float t = pow(max(h, 0.0), exponent);',
-              '  gl_FragColor = vec4(mix(bottomColor, topColor, t), 1.0);',
+              '  vec3 col = mix(bottomColor, topColor, t);',
+              '  float s = max(dot(dir, sunDir), 0.0);',
+              '  col += sunColor * (pow(s, 64.0) * 0.55 + pow(s, 7.0) * 0.16) * sunGlow;',
+              '  gl_FragColor = vec4(col, 1.0);',
               '}'
             ].join('\n'),
             side: THREE.BackSide,
@@ -3359,6 +3467,7 @@
           skyDome.frustumCulled = false;
           engine.scene.add(skyDome);
           engine._skyDome = skyDome;
+          engine._skyWhite = new THREE.Color(1, 1, 1);
         })();
 
         // ── Sky atmosphere: sun disc + drifting clouds ──
@@ -3383,11 +3492,11 @@
           var cctx = cloudCanvas.getContext('2d');
           cctx.clearRect(0, 0, 512, 512);
           // Paint blotchy clouds
-          for (var ci = 0; ci < 40; ci++) {
+          for (var ci = 0; ci < 46; ci++) {
             var cx2 = Math.random() * 512, cy2 = Math.random() * 512;
             var cr = 30 + Math.random() * 60;
             var cgrad = cctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, cr);
-            cgrad.addColorStop(0, 'rgba(255,255,255,' + (0.25 + Math.random() * 0.2) + ')');
+            cgrad.addColorStop(0, 'rgba(255,255,255,' + (0.16 + Math.random() * 0.14) + ')');
             cgrad.addColorStop(1, 'rgba(255,255,255,0)');
             cctx.fillStyle = cgrad;
             cctx.fillRect(cx2 - cr, cy2 - cr, cr * 2, cr * 2);
@@ -3432,6 +3541,44 @@
 
         // ── Procedural textures ──
         var _procTexCache = {};
+        // Painted textures are authored in sRGB; tell three so they are not
+        // gamma-encoded a second time on output (which read as washed-out pastel).
+        function finishBlockTexture(tex) {
+          if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+          try { var cap = engine.renderer && engine.renderer.capabilities; if (cap && cap.getMaxAnisotropy) tex.anisotropy = Math.min(8, cap.getMaxAnisotropy()); } catch (e) {}
+          return tex;
+        }
+        function makeStoneTexture() {
+          if (_procTexCache.stone) return _procTexCache.stone;
+          var c = document.createElement('canvas'); c.width = 64; c.height = 64;
+          var ctx = c.getContext('2d');
+          ctx.fillStyle = '#8a8d90'; ctx.fillRect(0, 0, 64, 64);
+          // Mottled patches, then a few fracture lines: reads as rock, not plastic.
+          for (var i = 0; i < 26; i++) {
+            var px = Math.random() * 64, py = Math.random() * 64, pr = 4 + Math.random() * 9;
+            var pg = ctx.createRadialGradient(px, py, 0, px, py, pr);
+            var dark = Math.random() > 0.5;
+            pg.addColorStop(0, dark ? 'rgba(60,64,70,0.35)' : 'rgba(210,214,218,0.30)'); pg.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = pg; ctx.fillRect(px - pr, py - pr, pr * 2, pr * 2);
+          }
+          ctx.strokeStyle = 'rgba(50,54,60,0.28)'; ctx.lineWidth = 1;
+          for (var j = 0; j < 5; j++) {
+            var sx = Math.random() * 64, sy = Math.random() * 64;
+            ctx.beginPath(); ctx.moveTo(sx, sy);
+            ctx.lineTo(sx + (Math.random() - 0.5) * 22, sy + (Math.random() - 0.5) * 22);
+            ctx.lineTo(sx + (Math.random() - 0.5) * 30, sy + (Math.random() - 0.5) * 30);
+            ctx.stroke();
+          }
+          for (var n = 0; n < 140; n++) {
+            ctx.fillStyle = Math.random() > 0.5 ? 'rgba(0,0,0,0.07)' : 'rgba(255,255,255,0.06)';
+            ctx.fillRect(Math.random() * 64, Math.random() * 64, 1 + Math.random(), 1 + Math.random());
+          }
+          var tex = new THREE.CanvasTexture(c);
+          tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
+          _procTexCache.stone = tex;
+          return tex;
+        }
         function makeGrassTexture() {
           if (_procTexCache.grass) return _procTexCache.grass;
           var c = document.createElement('canvas'); c.width = 64; c.height = 64;
@@ -3452,6 +3599,7 @@
           }
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
           _procTexCache.grass = tex;
           return tex;
         }
@@ -3478,6 +3626,7 @@
           }
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
           _procTexCache.brick = tex;
           return tex;
         }
@@ -3508,6 +3657,7 @@
           }
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
           _procTexCache.wood = tex;
           return tex;
         }
@@ -3533,6 +3683,7 @@
           }
           var tex = new THREE.CanvasTexture(c);
           tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+          finishBlockTexture(tex);
           _procTexCache.sand = tex;
           return tex;
         }
@@ -3541,22 +3692,24 @@
         engine._matCache = {};
         function getBlockMaterial(type) {
           if (engine._matCache[type]) return engine._matCache[type].clone();
-          var color = getBlockColor(type);
+          var color = geometryWorldSrgbColor(THREE, getBlockColor(type));
           var mat;
           if (type === 'glass') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.0, transmission: 0.8, thickness: 0.2, side: THREE.DoubleSide });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.3, roughness: 0.05, metalness: 0.0, transmission: 0.8, thickness: 0.2, side: THREE.DoubleSide, envMapIntensity: 1.2 });
           } else if (type === 'diamond') {
-            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.15, metalness: 0.35, envMapIntensity: 1.2 });
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.14, metalness: 0.5, envMapIntensity: 1.2 });
           } else if (type === 'gold') {
-            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.2, metalness: 0.7 });
+            mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.32, metalness: 0.55, envMapIntensity: 0.9 });
           } else if (type === 'wood') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeWoodTexture(), roughness: 0.85, metalness: 0.0 });
           } else if (type === 'sand') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeSandTexture(), roughness: 0.95, metalness: 0.0 });
           } else if (type === 'water') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.45, roughness: 0.0, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.5, roughness: 0.02, metalness: 0.1, transmission: 0.6, thickness: 0.5, side: THREE.DoubleSide, envMapIntensity: 1.3 });
           } else if (type === 'ice') {
-            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.6, roughness: 0.05, metalness: 0.05, transmission: 0.5, thickness: 0.3 });
+            mat = new THREE.MeshPhysicalMaterial({ color: color, transparent: true, opacity: 0.62, roughness: 0.06, metalness: 0.05, transmission: 0.5, thickness: 0.3, envMapIntensity: 1.2 });
+          } else if (type === 'stone') {
+            mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeStoneTexture(), roughness: 0.9, metalness: 0.0 });
           } else if (type === 'brick') {
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeBrickTexture(), roughness: 0.85, metalness: 0.0 });
           } else if (type === 'lava') {
@@ -3567,6 +3720,10 @@
             mat = new THREE.MeshStandardMaterial({ color: 0xffffff, map: makeGrassTexture(), roughness: 0.8, metalness: 0.0 });
           } else {
             mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.7, metalness: 0.05 });
+          }
+          if (type === 'glass' || type === 'diamond' || type === 'gold' || type === 'water' || type === 'ice') {
+            mat.userData.gwReflective = true;
+            if (engine._envRT) mat.envMap = engine._envRT.texture;
           }
           engine._matCache[type] = mat;
           return mat.clone();
@@ -3672,6 +3829,7 @@
           // material is this block's own clone, and a student's grass block keeps
           // the palette colour.
           if (engine._measurementLayer === 'ground' && mat.color && ((x + z) & 1)) mat.color.multiplyScalar(0.92);
+          if (type === 'grass' && mat.color) mat.color.multiplyScalar(geometryWorldGroundTint(x, z));
           var mesh = new THREE.Mesh(geo, mat);
           // Position: cubes center at +0.5, half-slabs sit on the ground
           if (shapeId === 'halfB') {
@@ -3813,14 +3971,14 @@
           var npcColor = data.color || 0x7c3aed;
 
           // Body — slightly tapered cylinder for character feel
-          var bodyMat = new THREE.MeshStandardMaterial({ color: npcColor, roughness: 0.5, metalness: 0.1 });
+          var bodyMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, npcColor), roughness: 0.5, metalness: 0.1 });
           var body = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.32, 1.2, 12), bodyMat);
           body.position.set(data.position[0] + 0.5, data.position[1] + 0.6, data.position[2] + 0.5);
           body.castShadow = true;
           engine.scene.add(body);
 
           // Head — slightly larger with bevel feel
-          var headMat = new THREE.MeshStandardMaterial({ color: 0xFFDBB4, roughness: 0.6, metalness: 0.0 });
+          var headMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.6, metalness: 0.0 });
           var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), headMat);
           head.position.set(data.position[0] + 0.5, data.position[1] + 1.5, data.position[2] + 0.5);
           head.castShadow = true;
@@ -3837,13 +3995,18 @@
           head.add(eyeR);
 
           // Name label — cleaner with rounded background
-          var canvas2 = document.createElement('canvas'); canvas2.width = 256; canvas2.height = 64;
+          // Drawn at 2x so the name stays crisp when the student walks up to it.
+          var canvas2 = document.createElement('canvas'); canvas2.width = 512; canvas2.height = 128;
           var cx = canvas2.getContext('2d');
-          cx.clearRect(0, 0, 256, 64);
-          cx.fillStyle = 'rgba(15,23,42,0.8)';
-          if (cx.roundRect) { cx.beginPath(); cx.roundRect(8, 4, 240, 56, 12); cx.fill(); } else { cx.fillRect(8, 4, 240, 56); }
-          cx.fillStyle = '#fff'; cx.font = 'bold 22px sans-serif'; cx.textAlign = 'center'; cx.fillText(data.name, 128, 40);
-          var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(canvas2), transparent: true, depthTest: false }));
+          cx.clearRect(0, 0, 512, 128);
+          cx.fillStyle = 'rgba(15,23,42,0.82)';
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.fill(); } else { cx.fillRect(16, 8, 480, 112); }
+          cx.strokeStyle = 'rgba(255,255,255,0.22)'; cx.lineWidth = 3;
+          if (cx.roundRect) { cx.beginPath(); cx.roundRect(16, 8, 480, 112, 24); cx.stroke(); }
+          cx.fillStyle = '#f1f5f9'; cx.font = 'bold 44px sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText(data.name, 256, 66);
+          var labelTex = new THREE.CanvasTexture(canvas2);
+          if (typeof THREE.sRGBEncoding !== 'undefined') labelTex.encoding = THREE.sRGBEncoding;
+          var sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: labelTex, transparent: true, depthTest: false }));
           sprite.scale.set(2.2, 0.55, 1);
           sprite.position.set(data.position[0] + 0.5, data.position[1] + 2.1, data.position[2] + 0.5);
           engine.scene.add(sprite);
@@ -3880,9 +4043,11 @@
 
           // Eye whites — positioned at the head surface so pupils (z=0.27) sit nicely in front.
           // Slight inset gives the pupil a visible ring of white around it.
-          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          // Off-white (0.89 displayed) so the whites of the eyes stay under the bloom
+          // threshold; pure white lit up like two headlamps.
+          var eyeWhiteL = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
           eyeWhiteL.position.set(-0.1, 0.04, 0.255); head.add(eyeWhiteL);
-          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+          var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
           eyeWhiteR.position.set(0.1, 0.04, 0.255); head.add(eyeWhiteR);
 
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
@@ -3904,6 +4069,7 @@
           // Reset sky to daytime
           engine.scene.background.setRGB(0.53, 0.81, 0.92);
           engine.scene.fog.color.setRGB(0.53, 0.81, 0.92);
+          if (typeof engine.refreshEnvironment === 'function') engine.refreshEnvironment();
           engine.completionTriggered = false;
           engine.completionProgress = 0;
           engine.blocksPlaced = 0;
@@ -5825,15 +5991,19 @@
               npc._ring.scale.setScalar(1.0 + Math.sin(t * 3 + i) * 0.08);
               // Speech bubble preview — show first ~30 chars of dialogue when medium-close
               if (!npc._speechBubble && npc.data.dialogue) {
-                var sbCanvas = document.createElement('canvas'); sbCanvas.width = 256; sbCanvas.height = 64;
+                var sbCanvas = document.createElement('canvas'); sbCanvas.width = 512; sbCanvas.height = 128;
                 var sbx = sbCanvas.getContext('2d');
-                sbx.clearRect(0, 0, 256, 64);
-                sbx.fillStyle = 'rgba(15,23,42,0.85)';
-                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(4, 4, 248, 56, 10); sbx.fill(); } else { sbx.fillRect(4, 4, 248, 56); }
-                sbx.fillStyle = '#e2e8f0'; sbx.font = '14px sans-serif'; sbx.textAlign = 'center';
+                sbx.clearRect(0, 0, 512, 128);
+                sbx.fillStyle = 'rgba(15,23,42,0.86)';
+                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.fill(); } else { sbx.fillRect(8, 8, 496, 112); }
+                sbx.strokeStyle = 'rgba(255,255,255,0.18)'; sbx.lineWidth = 3;
+                if (sbx.roundRect) { sbx.beginPath(); sbx.roundRect(8, 8, 496, 112, 20); sbx.stroke(); }
+                sbx.fillStyle = '#e2e8f0'; sbx.font = '28px sans-serif'; sbx.textAlign = 'center'; sbx.textBaseline = 'middle';
                 var preview = npc.data.dialogue.length > 35 ? npc.data.dialogue.slice(0, 33) + '...' : npc.data.dialogue;
-                sbx.fillText(preview, 128, 38);
-                npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(sbCanvas), transparent: true, depthTest: false, opacity: 0 }));
+                sbx.fillText(preview, 256, 66);
+                var sbTex = new THREE.CanvasTexture(sbCanvas);
+                if (typeof THREE.sRGBEncoding !== 'undefined') sbTex.encoding = THREE.sRGBEncoding;
+                npc._speechBubble = new THREE.Sprite(new THREE.SpriteMaterial({ map: sbTex, transparent: true, depthTest: false, opacity: 0 }));
                 npc._speechBubble.scale.set(2.5, 0.6, 1);
                 npc._speechBubble.position.set(npc.data.position[0] + 0.5, npc.data.position[1] + 3.0, npc.data.position[2] + 0.5);
                 engine.scene.add(npc._speechBubble);
@@ -6096,6 +6266,10 @@
             // fresh load the two would match and the dome would be flat again.
             if (engine.scene.background && engine.scene.background.isColor) skyUniforms.topColor.value.copy(engine.scene.background).multiplyScalar(0.78);
             if (engine.scene.fog) skyUniforms.bottomColor.value.copy(engine.scene.fog.color);
+            if (skyUniforms.sunColor && engine._skyWhite) {
+              skyUniforms.sunColor.value.copy(engine.scene.fog ? engine.scene.fog.color : skyUniforms.bottomColor.value).lerp(engine._skyWhite, 0.6);
+              skyUniforms.sunGlow.value = engine.sun ? Math.max(0.12, Math.min(1, engine.sun.intensity / 1.2)) : 1;
+            }
           }
           // Keep sun sprite at a consistent sky direction relative to camera so it doesn't
           // "run off" into a strange corner when the player explores a large world.
@@ -6608,6 +6782,7 @@
           // Dispose ghost mesh + highlight mesh
           if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
+          if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows
