@@ -70,12 +70,125 @@
   const value = t('adventure.learning_settings.' + key);
   return value && value !== 'adventure.learning_settings.' + key ? value : fallback;
 }
+function adventureVisualTokens(theme = 'light', immersive = false) {
+  const contrast = theme === 'contrast';
+  const dark = contrast || immersive || theme === 'dark';
+  return {
+    '--av-ink': dark ? '#f8fafc' : '#0f172a',
+    '--av-muted': dark ? '#cbd5e1' : '#475569',
+    '--av-surface': contrast ? '#000000' : dark ? '#0f172a' : '#ffffff',
+    '--av-wash': contrast ? '#000000' : dark ? '#19263b' : '#f4f7fb',
+    '--av-line': contrast ? '#ffffff' : dark ? '#64748b' : '#cbd5e1',
+    '--av-accent': contrast ? '#fde047' : dark ? '#67e8f9' : '#115e59',
+    '--av-shadow': contrast ? 'none' : dark ? '0 16px 36px #02061740' : '0 12px 32px #1e3a5f12',
+    '--av-focus': contrast ? '#fde047' : dark ? '#67e8f9' : '#4338ca'
+  };
+}
+function AdventureProfileMark({
+  profile = 'guided',
+  className = ''
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 64 64",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "1.8",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    "aria-hidden": "true",
+    focusable: "false",
+    className: className
+  }, /*#__PURE__*/React.createElement("circle", {
+    cx: "32",
+    cy: "32",
+    r: "29",
+    fill: "currentColor",
+    fillOpacity: ".08",
+    stroke: "none"
+  }), profile === 'debate' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M10 15h29a5 5 0 0 1 5 5v14a5 5 0 0 1-5 5H22l-9 7v-7a5 5 0 0 1-5-5V20a5 5 0 0 1 2-5Z",
+    fill: "currentColor",
+    fillOpacity: ".08"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M29 43h14l9 6v-7a5 5 0 0 0 4-5V26a5 5 0 0 0-5-5M17 24h17M17 31h11"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "46",
+    cy: "13",
+    r: "2",
+    fill: "currentColor",
+    stroke: "none"
+  })) : profile === 'systems' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "M18 18h28v28H18Z",
+    strokeDasharray: "3 4"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "18",
+    cy: "18",
+    r: "5",
+    fill: "currentColor",
+    fillOpacity: ".18"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "46",
+    cy: "18",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "46",
+    cy: "46",
+    r: "5",
+    fill: "currentColor",
+    fillOpacity: ".18"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "18",
+    cy: "46",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M32 21c-3 5-8 9-8 14a8 8 0 0 0 16 0c0-5-5-9-8-14Z",
+    fill: "currentColor",
+    fillOpacity: ".1"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M28 36c0 2 1 3 3 3"
+  })) : profile === 'social' ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "21",
+    cy: "25",
+    r: "6"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "43",
+    cy: "25",
+    r: "6"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M9 48v-4a12 12 0 0 1 24 0v4M33 48v-4a12 12 0 0 1 22 0v4M26 13c4-4 8-4 12 0M30 13h-4V9"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "m26 46 6 5 7-6",
+    fill: "currentColor",
+    fillOpacity: ".1"
+  })) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("path", {
+    d: "m6 43 14-19 12 15 9-11 17 21",
+    fill: "currentColor",
+    fillOpacity: ".1"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M26 58c22-8 15-14 5-15s-10-6 1-11",
+    strokeDasharray: "3 3"
+  }), /*#__PURE__*/React.createElement("circle", {
+    cx: "43",
+    cy: "14",
+    r: "5"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M18 13v6M15 16h6"
+  })));
+}
 function AdventureLearningProfiles(props) {
   const {
     adventureState: state,
     t,
     setAdventureState
   } = props;
+  const dark = props.theme === 'dark' || props.theme === 'contrast';
+  const contrast = props.theme === 'contrast';
+  const accents = {
+    guided: ['#047857', '#a7f3d0', '#ecfdf5'],
+    debate: ['#0369a1', '#7dd3fc', '#f0f9ff'],
+    systems: ['#92400e', '#fcd34d', '#fffbeb'],
+    social: ['#6d28d9', '#c4b5fd', '#f5f3ff']
+  };
   if (!props.isTeacherMode || typeof setAdventureState !== 'function') return null;
   const profiles = [{
     id: 'guided',
@@ -142,27 +255,55 @@ function AdventureLearningProfiles(props) {
   };
   return /*#__PURE__*/React.createElement("section", {
     "aria-label": adventureSettingsText(t, 'profiles', 'Learning profiles'),
-    className: "mb-5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 via-white to-cyan-50 p-4"
+    style: adventureVisualTokens(props.theme),
+    className: "mb-5 rounded-3xl border border-[var(--av-line)] bg-[var(--av-surface)] p-4 sm:p-5 text-[var(--av-ink)] shadow-[var(--av-shadow)]"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "font-bold text-sm text-indigo-950"
+    className: "font-bold text-sm tracking-wide"
   }, adventureSettingsText(t, 'profiles', 'Learning profiles')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-700 mt-1 mb-3"
+    className: "text-xs text-[var(--av-muted)] leading-relaxed mt-1 mb-4 max-w-2xl"
   }, adventureSettingsText(t, 'profiles_hint', 'Choose a starting experience, then adjust the settings below. Your lesson, language and custom instructions stay in place.')), /*#__PURE__*/React.createElement("div", {
-    className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
+    className: "grid grid-cols-1 sm:grid-cols-2 gap-3"
   }, profiles.map(profile => {
     const active = state.learningProfile === profile.id && props.adventureInputMode === profile.mode && props.adventureFreeResponseEnabled === profile.free && props.adventureDifficulty === profile.difficulty && !props.adventureChanceMode && props.isAdventureStoryMode === profile.peaceful && props.isSocialStoryMode === profile.social && state.episodeTurnLimit === profile.turns && state.enableAutoClimax && state.choiceCount === profile.choices && !!props.enableFactionResources === (profile.mode === 'system');
+    const colors = accents[profile.id];
+    const accent = contrast ? '#fde047' : colors[dark ? 1 : 0];
     return /*#__PURE__*/React.createElement("button", {
       type: "button",
       key: profile.id,
       "aria-pressed": !!active,
       disabled: state.isLoading || !!state.currentScene,
       onClick: () => apply(profile),
-      className: `min-h-16 rounded-xl border-2 p-3 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 ${active ? 'border-indigo-600 bg-indigo-100 text-indigo-950' : 'border-slate-200 bg-white text-slate-800 hover:border-indigo-400'}`
+      style: {
+        '--av-profile': accent,
+        borderColor: active ? accent : undefined,
+        backgroundColor: active ? dark ? 'var(--av-wash)' : colors[2] : 'var(--av-surface)'
+      },
+      className: "group relative min-h-24 min-w-0 flex items-center gap-3 rounded-2xl border-2 border-[var(--av-line)] p-3 sm:p-4 text-left hover:border-[var(--av-profile)] hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 transition-[border-color,box-shadow] motion-reduce:transition-none disabled:opacity-50"
     }, /*#__PURE__*/React.createElement("span", {
-      className: "block text-sm font-bold"
+      style: {
+        color: accent
+      },
+      className: "shrink-0"
+    }, /*#__PURE__*/React.createElement(AdventureProfileMark, {
+      profile: profile.id,
+      className: "w-12 h-12 sm:w-14 sm:h-14"
+    })), /*#__PURE__*/React.createElement("span", {
+      className: "block min-w-0 pr-2"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "block text-sm font-bold leading-snug"
     }, adventureSettingsText(t, 'profile_' + profile.id, profile.title)), /*#__PURE__*/React.createElement("span", {
-      className: "block mt-1 text-xs leading-relaxed"
-    }, adventureSettingsText(t, 'profile_' + profile.id + '_detail', profile.detail)));
+      className: "block mt-1.5 text-xs leading-relaxed text-[var(--av-muted)]"
+    }, adventureSettingsText(t, 'profile_' + profile.id + '_detail', profile.detail))), active && /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 20 20",
+      "aria-hidden": "true",
+      focusable: "false",
+      className: "absolute right-2 top-2 h-4 w-4 text-[var(--av-profile)]",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2.5"
+    }, /*#__PURE__*/React.createElement("path", {
+      d: "m4 10 4 4 8-8"
+    })));
   })));
 }
 function AdventureEpisodeSettings({
@@ -170,15 +311,22 @@ function AdventureEpisodeSettings({
   onChange,
   t,
   locked = false,
-  id = 'adventure-episode-length'
+  id = 'adventure-episode-length',
+  theme = 'light'
 }) {
   const legacy = state.enableAutoClimax ? null : Math.max(3, Math.min(50, Number(state.climaxMinTurns) || 20));
   const limit = Object.prototype.hasOwnProperty.call(state, 'episodeTurnLimit') ? state.episodeTurnLimit : legacy;
+  const fieldClass = 'min-h-11 w-full rounded-xl border border-[var(--av-line)] bg-[var(--av-surface)] px-3 text-sm text-[var(--av-ink)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 disabled:opacity-60';
   return /*#__PURE__*/React.createElement("div", {
-    className: "rounded-xl border border-cyan-200 bg-cyan-50 p-3 mb-4"
+    style: adventureVisualTokens(theme),
+    className: "rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 mb-5 text-[var(--av-ink)]"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 sm:grid-cols-2 gap-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
   }, /*#__PURE__*/React.createElement("label", {
     htmlFor: id,
-    className: "block text-xs font-bold text-cyan-950 mb-1"
+    className: "block text-xs font-bold mb-2"
   }, adventureSettingsText(t, 'length', 'Episode length')), /*#__PURE__*/React.createElement("select", {
     id: id,
     value: limit == null ? 'open' : String(limit),
@@ -190,7 +338,7 @@ function AdventureEpisodeSettings({
         episodeTurnLimit: value === 'open' ? null : Number(value)
       }));
     },
-    className: "min-h-11 w-full rounded-lg border border-cyan-700 bg-white px-3 text-sm text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-800 focus-visible:ring-offset-2 disabled:opacity-60"
+    className: fieldClass
   }, /*#__PURE__*/React.createElement("option", {
     value: "6"
   }, adventureSettingsText(t, 'short', 'Short · 6 decisions')), /*#__PURE__*/React.createElement("option", {
@@ -201,9 +349,11 @@ function AdventureEpisodeSettings({
     value: String(limit)
   }, limit, " ", adventureSettingsText(t, 'decisions', 'decisions')), /*#__PURE__*/React.createElement("option", {
     value: "open"
-  }, adventureSettingsText(t, 'open', 'Open-ended'))), /*#__PURE__*/React.createElement("label", {
+  }, adventureSettingsText(t, 'open', 'Open-ended')))), /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("label", {
     htmlFor: id + '-choices',
-    className: "block text-xs font-bold text-cyan-950 mt-3 mb-1"
+    className: "block text-xs font-bold mb-2"
   }, adventureSettingsText(t, 'choices', 'Choices per decision')), /*#__PURE__*/React.createElement("select", {
     id: id + '-choices',
     value: state.choiceCount || 6,
@@ -215,20 +365,21 @@ function AdventureEpisodeSettings({
         choiceCount: value
       }));
     },
-    className: "min-h-11 w-full rounded-lg border border-cyan-700 bg-white px-3 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-cyan-800 focus-visible:ring-offset-2"
+    className: fieldClass
   }, [2, 3, 4, 5, 6].map(count => /*#__PURE__*/React.createElement("option", {
     key: count,
     value: count
   }, count))), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs text-slate-700 mt-1"
-  }, adventureSettingsText(t, 'choices_hint', 'Applies when suggested choices are enabled. Written responses stay open.')), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs leading-relaxed text-slate-700 mt-2"
+    className: "text-xs text-[var(--av-muted)] mt-2 leading-relaxed"
+  }, adventureSettingsText(t, 'choices_hint', 'Applies when suggested choices are enabled. Written responses stay open.')))), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs leading-relaxed text-[var(--av-muted)] mt-4 pt-3 border-t border-[var(--av-line)]"
   }, adventureSettingsText(t, 'length_hint', 'Length counts decisions, not minutes. The final challenge fits inside a set episode. Energy depletion can end a run earlier.')));
 }
 function AdventureConsequenceCard({
   consequence,
   t,
-  immersive = false
+  immersive = false,
+  theme = 'light'
 }) {
   if (!consequence || consequence.version !== 1) return null;
   var label = function (key, fallback) {
@@ -250,55 +401,65 @@ function AdventureConsequenceCard({
   }).slice(0, 6);
   return /*#__PURE__*/React.createElement("section", {
     "aria-label": label('title', 'Decision debrief'),
-    className: `not-italic rounded-xl border p-3 space-y-3 min-w-0 break-words ${immersive ? 'bg-slate-950/85 border-cyan-300/40 text-slate-100' : 'bg-white border-teal-200 text-slate-800'}`
+    style: adventureVisualTokens(theme, immersive),
+    className: "not-italic rounded-2xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] bg-[var(--av-surface)] p-4 space-y-4 min-w-0 break-words text-[var(--av-ink)] shadow-[var(--av-shadow)]"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("span", {
-    className: `text-[11px] uppercase tracking-wider font-bold ${immersive ? 'text-cyan-200' : 'text-teal-800'}`
+    className: `text-[11px] uppercase tracking-wider font-bold text-[var(--av-accent)]`
   }, label('title', 'Decision debrief')), /*#__PURE__*/React.createElement("span", {
-    className: `rounded-full px-2 py-1 text-xs font-semibold ${immersive ? 'bg-slate-800 text-white' : 'bg-teal-50 text-teal-900'}`
+    className: `rounded-full px-2 py-1 text-xs font-semibold bg-[var(--av-wash)] text-[var(--av-ink)] border border-[var(--av-line)]`
   }, label(rating[0], rating[1]))), typeof consequence.explanation === 'string' && consequence.explanation && /*#__PURE__*/React.createElement("p", {
     className: "text-sm leading-relaxed whitespace-pre-wrap"
   }, consequence.explanation.slice(0, 1800)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold mb-2"
+    className: "text-xs font-bold mb-3 text-[var(--av-muted)]"
   }, label('changes', 'Recorded story changes')), changes.length > 0 ? /*#__PURE__*/React.createElement("dl", {
     className: "grid grid-cols-1 sm:grid-cols-2 gap-2"
   }, changes.map(function (change, index) {
     return /*#__PURE__*/React.createElement("div", {
       key: index,
-      className: `rounded-lg border px-2.5 py-2 ${immersive ? 'border-white/20 bg-white/5' : 'border-slate-200 bg-slate-50'}`
+      className: "rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 py-3 min-w-0"
     }, /*#__PURE__*/React.createElement("dt", {
-      className: "text-xs"
+      className: "text-xs text-[var(--av-muted)] mb-1"
     }, typeof change.key === 'string' && (change.key.startsWith('resource:') || change.key.startsWith('inventory:')) ? String(change.label || '').slice(0, 80) : label('metric_' + change.key, String(change.label || '').slice(0, 80))), /*#__PURE__*/React.createElement("dd", {
-      className: "font-bold tabular-nums text-sm"
-    }, change.before, " ", /*#__PURE__*/React.createElement("span", {
+      className: "tabular-nums flex flex-wrap items-baseline gap-x-2 gap-y-1"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "text-sm text-[var(--av-muted)]"
+    }, change.before), /*#__PURE__*/React.createElement("span", {
+      className: "text-[var(--av-accent)]",
       "aria-label": label('to', 'to')
-    }, "→"), " ", change.after, change.unit ? ' ' + String(change.unit).slice(0, 30) : ''));
+    }, "→"), /*#__PURE__*/React.createElement("strong", {
+      className: "text-lg leading-tight"
+    }, change.after), change.unit && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-[var(--av-muted)]"
+    }, String(change.unit).slice(0, 30))));
   })) : /*#__PURE__*/React.createElement("p", {
     className: "text-xs"
   }, label('no_changes', 'No tracked values changed this turn.'))), /*#__PURE__*/React.createElement("p", {
-    className: `text-xs leading-relaxed ${immersive ? 'text-slate-300' : 'text-slate-600'}`
+    className: `text-xs leading-relaxed text-[var(--av-muted)]`
   }, label('ai_note', 'Strategy feedback is AI guidance, not a grade.'), consequence.chanceMode && /*#__PURE__*/React.createElement(React.Fragment, null, " ", Number.isFinite(consequence.chanceRoll) && /*#__PURE__*/React.createElement("strong", null, label('die', 'Chance die'), ": ", consequence.chanceRoll, "/20. "), label('chance_note', 'Chance can change the story result without changing the quality of your reasoning.'))), (consequence.choice || concepts.length > 0 || consequence.learningFeedback) && /*#__PURE__*/React.createElement("details", {
-    className: `border-t pt-2 ${immersive ? 'border-white/20' : 'border-slate-200'}`
+    className: `border-t pt-2 border-[var(--av-line)]`
   }, /*#__PURE__*/React.createElement("summary", {
-    className: `cursor-pointer text-xs font-semibold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${immersive ? 'focus-visible:outline-cyan-300' : 'focus-visible:outline-teal-800'}`
+    className: `cursor-pointer text-xs font-semibold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${immersive || theme === 'dark' || theme === 'contrast' ? 'focus-visible:outline-cyan-300' : 'focus-visible:outline-teal-800'}`
   }, label('reflect', 'Review your decision')), typeof consequence.choice === 'string' && /*#__PURE__*/React.createElement("p", {
-    className: "text-sm mt-2 whitespace-pre-wrap"
+    className: "text-sm mt-3 whitespace-pre-wrap border-l-2 border-[var(--av-accent)] pl-3 leading-relaxed"
   }, consequence.choice.slice(0, 1200)), concepts.length > 0 && /*#__PURE__*/React.createElement("p", {
     className: "text-xs mt-2"
   }, /*#__PURE__*/React.createElement("strong", null, label('concepts', 'Concepts to check'), ": "), concepts.join(' · ')), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 space-y-2"
+    className: "mt-4 grid grid-cols-1 gap-2"
   }, Object.entries(consequence.learningFeedback || {}).filter(([key, value]) => ['evidence', 'reasoning', 'counterpoint', 'immediate', 'delayed', 'tradeoff'].includes(key) && typeof value === 'string').map(([key, value]) => /*#__PURE__*/React.createElement("p", {
     key: key,
-    className: "text-xs leading-relaxed"
-  }, /*#__PURE__*/React.createElement("strong", null, label('feedback_' + key, {
+    className: "text-xs leading-relaxed rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3"
+  }, /*#__PURE__*/React.createElement("strong", {
+    className: "block mb-1"
+  }, label('feedback_' + key, {
     evidence: 'Evidence',
     reasoning: 'Reasoning',
     counterpoint: 'Counterargument / next step',
     immediate: 'Immediate effect',
     delayed: 'Possible delayed effect',
     tradeoff: 'Tradeoff'
-  }[key]), ": "), value.slice(0, 360)))), consequence.mode === 'system' && /*#__PURE__*/React.createElement("p", {
+  }[key]), ": "), /*#__PURE__*/React.createElement("span", null, value.slice(0, 360))))), consequence.mode === 'system' && /*#__PURE__*/React.createElement("p", {
     className: "text-xs mt-2"
   }, label('forecast_note', 'AI scenario estimates. Delayed effects are predictions, not scheduled changes; check the lesson evidence.')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs mt-2"
@@ -1387,22 +1548,23 @@ function AdventureView(props) {
     size: 20,
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("div", {
-    className: "bg-indigo-600 p-4 text-white flex justify-between items-center relative"
+    className: `p-5 sm:p-7 text-white flex justify-between items-center relative overflow-hidden ${theme === 'contrast' ? 'bg-black border-b-2 border-white' : 'bg-gradient-to-br from-indigo-950 via-indigo-900 to-teal-900'}`
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex-grow text-center px-12"
+    className: "flex-grow text-center px-8 sm:px-12 relative z-10"
   }, /*#__PURE__*/React.createElement("h2", {
     className: "text-xl sm:text-2xl font-black uppercase tracking-wide sm:tracking-widest flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(MapIcon, {
     size: 24,
     "aria-hidden": "true"
   }), " ", t('adventure.title')), /*#__PURE__*/React.createElement("p", {
-    className: "text-white text-sm font-medium"
+    className: "text-white text-sm font-medium mt-2 leading-relaxed"
   }, t('adventure.setup_subtitle')))), /*#__PURE__*/React.createElement("div", {
     className: "p-4 sm:p-6"
   }, /*#__PURE__*/React.createElement(AdventureLearningProfiles, props), /*#__PURE__*/React.createElement(AdventureEpisodeSettings, {
     state: adventureState,
     onChange: setAdventureState,
     t: t,
+    theme: theme,
     locked: !isTeacherMode && !!studentProjectSettings.adventurePermissions?.lockAllSettings
   }), /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"
@@ -1710,16 +1872,17 @@ function AdventureView(props) {
     key: i,
     className: `animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2 duration-500 ${entry.type === 'choice' ? 'flex justify-end' : 'flex justify-start'}`
   }, /*#__PURE__*/React.createElement("div", {
-    className: `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${entry.type === 'choice' ? 'bg-indigo-600 text-white rounded-br-none' : entry.type === 'feedback' ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs' : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'}`
+    className: entry.type === 'feedback' && entry.consequence?.version === 1 ? 'w-full max-w-4xl' : `max-w-[85%] rounded-2xl p-4 text-sm leading-relaxed shadow-sm ${entry.type === 'choice' ? 'bg-indigo-600 text-white rounded-br-none' : entry.type === 'feedback' ? 'bg-green-50 border border-green-200 text-green-800 italic text-xs' : 'bg-white text-slate-800 border border-slate-400 rounded-bl-none font-serif'}`
   }, entry.type === 'choice' && /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1"
-  }, t('adventure.you_chose')), entry.type === 'feedback' && /*#__PURE__*/React.createElement("span", {
+  }, t('adventure.you_chose')), entry.type === 'feedback' && entry.consequence?.version !== 1 && /*#__PURE__*/React.createElement("span", {
     className: "block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 10
   }), " ", t('adventure.analysis_label')), entry.type === 'feedback' && entry.consequence?.version === 1 ? /*#__PURE__*/React.createElement(AdventureConsequenceCard, {
     consequence: entry.consequence,
-    t: t
+    t: t,
+    theme: theme
   }) : renderFormattedText(entry.text, true, entry.type === 'choice')))), adventureState.pendingChoice && adventureState.isLoading && /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
@@ -1751,12 +1914,13 @@ function AdventureView(props) {
     "aria-labelledby": "adventure-current-scene-heading",
     className: "flex justify-start animate-in fade-in slide-in-from-bottom-4 duration-700 motion-reduce:animate-none"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "max-w-[90%] bg-white p-6 rounded-2xl rounded-bl-none border-l-4 border-l-yellow-400 shadow-md relative"
+    style: adventureVisualTokens(theme),
+    className: "w-full max-w-4xl bg-[var(--av-surface)] p-4 sm:p-6 rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] shadow-[var(--av-shadow)] relative min-w-0"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "flex justify-between items-center mb-2"
+    className: "flex flex-wrap justify-between items-center gap-3 mb-4"
   }, /*#__PURE__*/React.createElement("h4", {
     id: "adventure-current-scene-heading",
-    className: "text-xs font-bold text-yellow-700 uppercase tracking-wider flex items-center gap-1"
+    className: "text-xs font-bold text-[var(--av-accent)] uppercase tracking-wider flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Flag, {
     size: 12,
     "aria-hidden": "true"
@@ -1778,7 +1942,7 @@ function AdventureView(props) {
     onChange: e => setAdventureImageSize(Number(e.target.value)),
     className: "w-24 h-11 bg-yellow-200 rounded-lg cursor-pointer accent-yellow-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-700 focus-visible:ring-offset-2"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "mb-4 rounded-lg overflow-hidden bg-slate-100 border border-slate-400 shadow-inner relative group transition-all duration-300 motion-reduce:transition-none",
+    className: "mb-5 rounded-2xl overflow-hidden bg-[var(--av-wash)] border border-[var(--av-line)] shadow-inner relative group transition-all duration-300 motion-reduce:transition-none",
     style: {
       minHeight: adventureImageSize + 'px'
     }
@@ -1806,7 +1970,7 @@ function AdventureView(props) {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
-    className: "absolute inset-0 flex items-center justify-center text-slate-700 flex-col gap-2"
+    className: "absolute inset-0 flex items-center justify-center text-[var(--av-muted)] flex-col gap-2"
   }, adventureState.isImageLoading ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ImageIcon, {
     size: 24,
     className: "animate-pulse motion-reduce:animate-none",
@@ -1820,7 +1984,7 @@ function AdventureView(props) {
   }), /*#__PURE__*/React.createElement("p", {
     className: "text-sm font-bold"
   }, t('adventure.no_image'))))), /*#__PURE__*/React.createElement("div", {
-    className: "prose prose-sm text-slate-800 font-medium font-serif leading-relaxed max-w-none"
+    className: "prose prose-sm text-[var(--av-ink)] font-medium font-serif leading-relaxed max-w-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "space-y-4",
     onPointerEnter: () => {
@@ -1865,7 +2029,7 @@ function AdventureView(props) {
               handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
             }
           },
-          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-yellow-50'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`
+          className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-[var(--av-wash)]'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`
         }, formatInteractiveText(cleanText), " ");
       }));
     });
@@ -2353,6 +2517,7 @@ function AdventureView(props) {
       }, lastFeedback.consequence?.version === 1 ? /*#__PURE__*/React.createElement(AdventureConsequenceCard, {
         consequence: lastFeedback.consequence,
         t: t,
+        theme: theme,
         immersive: true
       }) : renderFormattedText(lastFeedback.text, false, true));
     }
