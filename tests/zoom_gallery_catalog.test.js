@@ -61,7 +61,7 @@ describe('Zoom Gallery catalog', () => {
   it('has at least 13 images with the required fields', () => {
     expect(toolImages.length).toBeGreaterThanOrEqual(13);
     for (const it of toolImages) {
-      for (const f of ['id', 'emoji', 'name', 'type', 'src', 'source', 'credit', 'link', 'meta', 'notice', 'wonder', 'width', 'height']) {
+      for (const f of ['id', 'emoji', 'name', 'type', 'src', 'source', 'credit', 'link', 'meta', 'notice', 'wonder', 'describe', 'width', 'height']) {
         expect(it[f], `${it.id}.${f}`).toBeTruthy();
       }
       expect(['iiif', 'image']).toContain(it.type);
@@ -72,12 +72,23 @@ describe('Zoom Gallery catalog', () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it('only cites openly licensed hosts (NASA public domain, Smithsonian CC0)', () => {
+  it('only cites openly licensed hosts (NASA public domain, Smithsonian CC0, Library of Congress)', () => {
     for (const it of toolImages) {
       const host = new URL(it.src).hostname;
-      expect(['images-assets.nasa.gov', 'ids.si.edu'], it.id + ' host').toContain(host);
-      if (host === 'ids.si.edu') expect(it.type).toBe('iiif');
+      expect(['images-assets.nasa.gov', 'ids.si.edu', 'tile.loc.gov'], it.id + ' host').toContain(host);
       if (host === 'images-assets.nasa.gov') expect(it.type).toBe('image');
+      else expect(it.type).toBe('iiif');
+    }
+  });
+
+  it('gives every image a real text alternative, not a restatement of the title', () => {
+    for (const it of toolImages) {
+      // The description is what a student who cannot see the image gets instead
+      // of the picture, so it has to describe rather than label.
+      expect(it.describe.length, it.id + ' describe too short').toBeGreaterThan(180);
+      expect(it.describe, it.id + ' describe repeats the name').not.toBe(it.name);
+      // It says what is there; it does not hand over the observation task.
+      expect(it.describe, it.id + ' describe poses the task').not.toMatch(/\bzoom in\b/i);
     }
   });
 
@@ -99,9 +110,23 @@ describe('Zoom Gallery catalog', () => {
     }
   });
 
-  it('keeps real deep zoom available: at least 5 IIIF pyramids, at least 4 NASA photos above 3000px', () => {
-    expect(toolImages.filter((i) => i.type === 'iiif').length).toBeGreaterThanOrEqual(5);
+  it('keeps real deep zoom available: at least 6 IIIF pyramids, at least 4 NASA photos above 3000px', () => {
+    expect(toolImages.filter((i) => i.type === 'iiif').length).toBeGreaterThanOrEqual(6);
     expect(toolImages.filter((i) => i.type === 'image' && Math.max(i.width, i.height) >= 3000).length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('reaches beyond spaceflight, so the tool is not a one-subject gallery', () => {
+    const space = toolImages.filter((i) => /NASA|NASM/.test(i.source));
+    expect(toolImages.length - space.length, 'non-spaceflight items').toBeGreaterThanOrEqual(4);
+  });
+
+  it('generates enough IIIF scale factors to fit the largest sheet in one tile', () => {
+    // A fixed [1,2,4,8,16] list leaves the 9904px Chicago map unable to zoom out
+    // to a single tile, so its top level never fits the frame.
+    for (const src of [toolSrc, popupSrc]) {
+      expect(src).toMatch(/scaleFactors: scaleFactorsFor\(item\.width, item\.height\)/);
+      expect(src).toMatch(/longest \/ f <= 512/);
+    }
   });
 
   it('is identical between the inline tool and the companion window', () => {
@@ -145,7 +170,7 @@ describe('Zoom Gallery strings in ui_strings.js (all four copies)', () => {
   for (const k of Object.keys(toolInl)) expected[k] = toolInl[k];
   for (const it of toolImages) {
     const base = 'img_' + it.id.replace(/-/g, '_') + '_';
-    expected[base + 'name'] = it.name; expected[base + 'meta'] = it.meta; expected[base + 'notice'] = it.notice; expected[base + 'wonder'] = it.wonder;
+    expected[base + 'name'] = it.name; expected[base + 'meta'] = it.meta; expected[base + 'notice'] = it.notice; expected[base + 'wonder'] = it.wonder; expected[base + 'describe'] = it.describe;
   }
   const sections = UI_STRINGS_COPIES.map((p) => {
     const json = JSON.parse(read(p));
@@ -173,5 +198,71 @@ describe('Zoom Gallery strings in ui_strings.js (all four copies)', () => {
     expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ key, WIN\[key\]\)/);
     expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ key, INL\[key\]\)/);
     expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ imgKey\(item, field\), item\[field\]\)/);
+  });
+});
+
+describe('Zoom Gallery accessibility contract', () => {
+  // These pin the defects an axe + keyboard audit found in v2.0. Every one of them
+  // passed the existing repo-wide gates, because none of those measure a canvas.
+  it('does not leave OpenSeadragon unlabelled controls in the tab order', () => {
+    for (const src of [toolSrc, popupSrc]) {
+      // OSD renders its zoom cluster as focusable divs with no accessible name.
+      expect(src).toMatch(/showNavigationControl: false/);
+    }
+    for (const key of ['zoom_in', 'zoom_out', 'zoom_fit']) expect(toolWin[key], key).toBeTruthy();
+    expect(toolSrc).toMatch(/'aria-label': W\('zoom_in'\)/);
+    expect(popupSrc).toMatch(/data-s-aria="zoom_in"/);
+  });
+
+  it('names the element that actually takes focus, with role application', () => {
+    // An aria-label on a bare div wrapper is ignored (aria-prohibited-attr); the
+    // label has to sit on OSD's own focusable canvas element.
+    expect(toolSrc).toMatch(/c\.setAttribute\('role', 'application'\)/);
+    expect(toolSrc).toMatch(/c\.setAttribute\('aria-describedby', descId\)/);
+    expect(popupSrc).toMatch(/osdCanvas\.setAttribute\('role', 'application'\)/);
+    expect(toolSrc).not.toMatch(/ref: stageRef, 'aria-label'/);
+  });
+
+  it('lets a keyboard user drop a pin, not just a mouse user', () => {
+    for (const src of [toolSrc, popupSrc]) {
+      expect(src).toMatch(/addEventListener\('keydown'/);
+      expect(src).toMatch(/e\.key !== 'Enter'/);
+      expect(src).toMatch(/addPinAtViewportPoint\(/);
+    }
+    expect(toolWin.pin_center).toBeTruthy();
+  });
+
+  it('uses a button fill that carries white text at AA', () => {
+    // #0ea5e9 behind white 700-weight 13px text measured 2.77:1 in v2.0.
+    expect(toolSrc).toMatch(/accentBtn: '#0369a1'/);
+    expect(toolSrc).toMatch(/background: P\.accentBtn, color: P\.accentFg/);
+    expect(popupSrc).not.toMatch(/--accent2: #0ea5e9/);
+  });
+
+  it('gives every slab that floats over the image an opaque ground', () => {
+    // Over an arbitrary photograph a translucent chip has no computable contrast
+    // ratio, and no guaranteed one either.
+    expect(toolSrc).not.toMatch(/rgba\(15,23,42,0\.8/);
+    expect(popupSrc).not.toMatch(/rgba\(15,23,42,0\.8/);
+    for (const key of ['chip', 'chipFg', 'chipLine', 'chipLink']) expect(toolSrc).toMatch(new RegExp(key + ':'));
+    expect(popupSrc).toMatch(/--chip: #0f172a/);
+  });
+
+  it('offers the image description in both surfaces and can translate it', () => {
+    expect(toolSrc).toMatch(/'aria-expanded': showDesc \? 'true' : 'false'/);
+    expect(toolSrc).toMatch(/imgText\(current, 'describe'\)/);
+    expect(popupSrc).toMatch(/id="describeBody"/);
+    expect(popupSrc).toMatch(/imgStr\(current, 'describe'\)/);
+    expect(popupSrc).toMatch(/out\[base \+ 'describe'\] = it\.describe/);
+    expect(toolSrc).toMatch(/out\[imgKey\(it, 'describe'\)\] = it\.describe/);
+  });
+
+  it('does not narrate the zoom level on every wheel tick', () => {
+    // A live region carrying a running metric talks over everything else. The
+    // readout stays silent; the explicit zoom buttons announce instead.
+    expect(popupSrc).toMatch(/id="zoomRead"[^>]*aria-hidden="true"/);
+    expect(popupSrc).not.toMatch(/id="zoomRead"[^>]*aria-live="polite"/);
+    expect(toolWin.zoom_announced).toBeTruthy();
+    expect(toolSrc).toMatch(/say\(W\('zoom_announced'/);
   });
 });
