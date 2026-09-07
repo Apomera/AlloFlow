@@ -314,6 +314,34 @@ describe('colour pipeline source contract', () => {
     expect(src).toMatch(/sun\.shadow\.camera\.near = 0\.5; sun\.shadow\.camera\.far = 2[0-9]{2};/);
   });
 
+  it('previews the placement cell with an outline rather than a triangulated mesh', () => {
+    // wireframe:true draws every triangle edge, so the cube preview carried a
+    // diagonal across each face and read as a blob instead of the cell being filled.
+    // strip line comments: the explanation of this very fix mentions wireframe
+    const code = (t) => t.split('\n').map((l) => l.replace(/\/\/.*$/, '')).join('\n');
+    const start = src.indexOf('// ── Placement ghost');
+    const ghost = code(src.slice(start, src.indexOf('// Position based on shape type', start)));
+    expect(ghost).not.toMatch(/wireframe:\s*true/);
+    expect(ghost).toContain('new THREE.EdgesGeometry(gGeo)');
+    expect(ghost).toContain('engine._ghostMesh.add(gEdges);');
+    // and no wireframe material is left anywhere a student can see one
+    expect(code(src)).not.toMatch(/wireframe:\s*true/);
+  });
+
+  it('disposes the ghost outline along with the ghost, at both call sites', () => {
+    // the outline is a child, so a flat geometry+material dispose would leak it
+    expect(src).toContain('function disposeGhost(mesh)');
+    expect(src).toContain('engine.scene.remove(engine._ghostMesh); disposeGhost(engine._ghostMesh);');
+    expect(src).toContain('engine._disposeGhost(engine._ghostMesh)');
+    // and no call site still disposes the ghost the flat way
+    expect(src).not.toMatch(/engine\._ghostMesh\.geometry\.dispose\(\)/);
+  });
+
+  it('tumbles break debris instead of sliding it through the air unrotated', () => {
+    expect(src).toContain('p.userData._spin = new THREE.Vector3(');
+    expect(src).toContain('part.rotation.x += part.userData._spin.x * dt;');
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

@@ -80,6 +80,16 @@ Professor Block and the others anchor every lesson, and they were still a tapere
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round8.mjs`): arms are body children hanging below their pivots and casting shadows; the mouth is on the head; all four characters blink and never at the same instant; arms swing over time and rise from 0.16 to 1.37 radians when celebrating; a lesson change leaves zero characters and disposes everything. Zero page errors.
 
+## Round 9 (same day): the build loop
+
+Placing and breaking is the core activity, so the preview and the debris are what a student looks at most.
+
+**The placement preview reads as a cell.** It was a mesh with `wireframe: true`, which draws every triangle edge, so the cube preview carried a diagonal across each face and read as a triangulated blob rather than the cell about to be filled. It is now a soft translucent fill carrying the volume plus an edge outline carrying the shape: twelve clean edges for a cube, and the true silhouette for the slabs and wedges. The outline pulses with the fill. Both are disposed by traversing, since the outline is a child and a flat dispose would have leaked it exactly as the character parts did.
+
+**Break debris tumbles.** Shards flew with their axes fixed, which reads as sprites sliding through the air. Each now carries a per-axis spin, so a broken block scatters as rubble. The probe confirms all ten shards get a spin and all ten rotate within 250 ms.
+
+Worth recording, because it nearly cost a wrong fix: the preview looked enormous in a first diagnostic capture, spanning much of the frame. Its bounding box was exactly one cell. The camera in that probe simply stood 1.5 units away, and a unit cube at that range fills a 75-degree view. Tinting it settled it. A second probe froze a material property the frame loop writes, which threw inside the loop; the tool caught it, stopped the loop and showed its recovery panel, which is the designed behaviour working.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -91,3 +101,5 @@ Round 6 run of the same spec: **16 passed, 1 failed**. The failure was the sprit
 Round 7 run of the same spec: **14 passed, 2 failed, 1 flaky** in 17.8 minutes, against a usual 6 to 10, with 15 Chromium processes from another session competing for the machine. Both failures were mount timeouts waiting for the canvas, not assertion failures, and neither test touches anything this round changed. Re-run unchanged with retries off on a quieter machine: "rotating a wedge keeps it in its own cell" passed 1/1 and "Q actually changes the shape of the block that gets placed" passed 3/3. A clean full-spec run was not possible while the other suite held the machine, so this is reported as measured rather than as a green run.
 
 Round 8 run of the same spec: **17 passed, 0 failed, 0 flaky** in 8.0 minutes on a quiet machine, with no retries. This also retroactively clears the round 7 report above: the same tests that timed out under the competing suite all pass here.
+
+Round 9 run of the same spec: **17 passed, 0 failed, 0 flaky** in 7.2 minutes, no retries.

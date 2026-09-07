@@ -4164,6 +4164,16 @@
 
         // Break particle system — small cubes scatter on block break
         engine._particles = [];
+        // The ghost owns an outline child, so both call sites dispose by traversing.
+        function disposeGhost(mesh) {
+          if (!mesh) return;
+          mesh.traverse(function(part) {
+            if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+            if (part.material && part.material.dispose) part.material.dispose();
+          });
+        }
+        engine._disposeGhost = disposeGhost;
+
         function spawnBreakParticles(eng, px, py, pz, color) {
           var THREE = window.THREE;
           if (!THREE) return;
@@ -4176,6 +4186,9 @@
             var p = new THREE.Mesh(geo, mat);
             p.position.set(px + (Math.random() - 0.5) * 0.6, py + (Math.random() - 0.5) * 0.6, pz + (Math.random() - 0.5) * 0.6);
             p.userData._vel = new THREE.Vector3((Math.random() - 0.5) * 4, 2 + Math.random() * 3.5, (Math.random() - 0.5) * 4);
+            // A shard that keeps its axes while it flies reads as a floating sprite;
+            // tumbling it reads as debris. Radians per second, per axis.
+            p.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9);
             p.userData._life = 0.55 + Math.random() * 0.4;
             p.userData._age = 0;
             eng.scene.add(p);
@@ -5785,7 +5798,7 @@
             if (engine._hoverGlowMesh) engine._hoverGlowMesh.visible = false;
           }
 
-          // ── Placement ghost — wireframe preview matching selected shape + rotation ──
+          // ── Placement ghost — soft fill + edge outline of the cell about to be filled ──
           if (hits.length > 0 && hits[0].object.userData.gridPos && hits[0].face) {
             var p2 = hits[0].object.userData.gridPos;
             var n2 = hits[0].face.normal;
@@ -5797,11 +5810,20 @@
             var curRot = _ps.blockRotation || 0;
             // Recreate ghost if shape or rotation changed
             if (!engine._ghostMesh || engine._ghostShapeId !== curShapeId || engine._ghostRot !== curRot) {
-              if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
+              if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); disposeGhost(engine._ghostMesh); }
               var gGeo = createShapeGeometry(curShapeId);
-              var gMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.15, wireframe: true, side: THREE.DoubleSide });
+              // wireframe:true draws every TRIANGLE edge, so a cube preview came with
+              // a diagonal across each face and read as a triangulated blob rather
+              // than the cell the block is about to fill. A soft fill carries the
+              // volume and an EdgesGeometry outline carries the shape: 12 clean edges
+              // for a cube, and the real silhouette for the slabs and wedges.
+              var gMat = new THREE.MeshBasicMaterial({ color: 0xa78bfa, transparent: true, opacity: 0.15, side: THREE.DoubleSide, depthWrite: false });
               engine._ghostMesh = new THREE.Mesh(gGeo, gMat);
               engine._ghostMesh.renderOrder = 999;
+              var gEdges = new THREE.LineSegments(new THREE.EdgesGeometry(gGeo), new THREE.LineBasicMaterial({ color: 0xc4b5fd, transparent: true, opacity: 0.75, depthWrite: false }));
+              gEdges.renderOrder = 1000;
+              engine._ghostMesh.add(gEdges);
+              engine._ghostEdges = gEdges;
               if (curRot > 0 && curShapeId !== 'cube') engine._ghostMesh.rotation.y = curRot * Math.PI / 2;
               engine.scene.add(engine._ghostMesh);
               engine._ghostShapeId = curShapeId;
@@ -5821,6 +5843,7 @@
             var ghostT = engine.clock.getElapsedTime();
             var ghostPulse = 0.5 + Math.sin(ghostT * 2.5) * 0.5; // 0..1
             engine._ghostMesh.material.opacity = 0.12 + ghostPulse * 0.14;
+            if (engine._ghostEdges) engine._ghostEdges.material.opacity = 0.55 + ghostPulse * 0.3;
             var ghostScale = 1 + ghostPulse * 0.02;
             engine._ghostMesh.scale.set(ghostScale, ghostScale, ghostScale);
           } else {
@@ -5915,6 +5938,11 @@
             part.position.x += part.userData._vel.x * dt;
             part.position.y += part.userData._vel.y * dt;
             part.position.z += part.userData._vel.z * dt;
+            if (part.userData._spin) {
+              part.rotation.x += part.userData._spin.x * dt;
+              part.rotation.y += part.userData._spin.y * dt;
+              part.rotation.z += part.userData._spin.z * dt;
+            }
             part.material.opacity = 1.0 - (part.userData._age / part.userData._life);
             part.scale.setScalar(1.0 - (part.userData._age / part.userData._life) * 0.5);
           }
@@ -7155,7 +7183,7 @@
           // Dispose particles
           if (engine._particles) engine._particles.forEach(function(p) { engine.scene.remove(p); p.geometry.dispose(); p.material.dispose(); });
           // Dispose ghost mesh + highlight mesh
-          if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
+          if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); if (engine._disposeGhost) engine._disposeGhost(engine._ghostMesh); engine._ghostEdges = null; }
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
           if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
           if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
