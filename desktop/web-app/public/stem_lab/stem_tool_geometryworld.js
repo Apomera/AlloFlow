@@ -6525,33 +6525,48 @@
             // Spawn floating congratulations message
             if (p > 0.8 && !engine.congratsCreated) {
               engine.congratsCreated = true;
-              var canvas2 = document.createElement('canvas'); canvas2.width = 512; canvas2.height = 256;
+              // Drawn at 2x on a dark card with an amber border, and tagged sRGB: the
+              // old sprite was bare text on nothing, untagged, and so read as faint
+              // pastel over whatever sky happened to be behind it.
+              var canvas2 = document.createElement('canvas'); canvas2.width = 1024; canvas2.height = 512;
               var cx2 = canvas2.getContext('2d');
-              cx2.fillStyle = 'rgba(0,0,0,0)';
-              cx2.clearRect(0, 0, 512, 256);
+              cx2.clearRect(0, 0, 1024, 512);
+              cx2.fillStyle = 'rgba(15,23,42,0.9)';
+              if (cx2.roundRect) { cx2.beginPath(); cx2.roundRect(24, 24, 976, 464, 40); cx2.fill(); } else { cx2.fillRect(24, 24, 976, 464); }
+              if (cx2.roundRect) { cx2.strokeStyle = '#fbbf24'; cx2.lineWidth = 6; cx2.beginPath(); cx2.roundRect(24, 24, 976, 464, 40); cx2.stroke(); }
+              cx2.textAlign = 'center'; cx2.textBaseline = 'middle';
               cx2.fillStyle = '#fbbf24';
-              cx2.font = 'bold 36px sans-serif';
-              cx2.textAlign = 'center';
-              cx2.fillText('\uD83C\uDFC6 Lesson Complete!', 256, 60);
-              cx2.fillStyle = '#e2e8f0';
-              cx2.font = '18px sans-serif';
-              cx2.fillText('Every block you placed made', 256, 110);
-              cx2.fillText('your brain stronger.', 256, 135);
-              cx2.fillStyle = '#4ade80';
-              cx2.font = 'italic 16px sans-serif';
-              cx2.fillText('You didn\'t just learn volume \u2014', 256, 175);
-              cx2.fillText('you practiced growing.', 256, 200);
+              cx2.font = 'bold 72px sans-serif';
+              cx2.fillText('\uD83C\uDFC6 Lesson Complete!', 512, 130);
+              cx2.fillStyle = '#f1f5f9';
+              cx2.font = '38px sans-serif';
+              cx2.fillText('Every block you placed made', 512, 230);
+              cx2.fillText('your brain stronger.', 512, 282);
+              cx2.fillStyle = '#86efac';
+              cx2.font = 'italic 34px sans-serif';
+              cx2.fillText('You didn\'t just learn volume \u2014', 512, 370);
+              cx2.fillText('you practiced growing.', 512, 420);
               var congTex = new THREE.CanvasTexture(canvas2);
-              var congSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: congTex, transparent: true, opacity: 0 }));
+              if (typeof THREE.sRGBEncoding !== 'undefined') congTex.encoding = THREE.sRGBEncoding;
+              var congSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: congTex, transparent: true, opacity: 0, depthTest: false }));
               congSprite.scale.set(8, 4, 1);
-              congSprite.position.set(10, 12, 10);
+              congSprite.renderOrder = 1001;
+              congSprite.position.copy(engine.camera.position);
               engine.scene.add(congSprite);
               engine.congratsSprite = congSprite;
             }
             if (engine.congratsSprite) {
               engine.congratsSprite.material.opacity = Math.min(1, engine.congratsSprite.material.opacity + dt * 0.5);
-              engine.congratsSprite.position.y = 12 + Math.sin(t * 0.5) * 0.5; // gentle float
-              engine.congratsSprite.lookAt(engine.camera.position); // always face player
+              // The card used to sit at a fixed (10, 12, 10) in the world: fine for a
+              // lesson built around the origin, invisible for one laid out at x = 40.
+              // It now hangs seven units ahead of wherever the player looks, a little
+              // above eye level, and bobs gently there.
+              var cfwd = engine.camera.getWorldDirection(new THREE.Vector3());
+              cfwd.y = 0; if (cfwd.lengthSq() < 1e-6) cfwd.set(0, 0, -1); cfwd.normalize();
+              engine.congratsSprite.position.set(
+                engine.camera.position.x + cfwd.x * 7,
+                engine.camera.position.y + 1.3 + Math.sin(t * 0.5) * 0.25,
+                engine.camera.position.z + cfwd.z * 7);
             }
           }
 
@@ -10203,14 +10218,16 @@
                               // Confetti burst from camera position
                               var camP = eng.camera.position;
                               var confettiColors = [0xfbbf24, 0x22c55e, 0x3b82f6, 0xef4444, 0xa78bfa, 0xf472b6, 0x06b6d4];
-                              for (var ci = 0; ci < 25; ci++) {
+                              for (var ci = 0; ci < 40; ci++) {
                                 try {
-                                  var cGeo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+                                  // Flat flakes, not cubes, so they catch the light as they turn.
+                                  var cGeo = new THREE.BoxGeometry(0.14, 0.02, 0.09);
                                   var cMat = new THREE.MeshBasicMaterial({ color: confettiColors[ci % confettiColors.length], transparent: true, opacity: 1 });
                                   var cMesh = new THREE.Mesh(cGeo, cMat);
                                   cMesh.position.set(camP.x + (Math.random() - 0.5) * 3, camP.y + Math.random() * 2, camP.z + (Math.random() - 0.5) * 3);
                                   cMesh.userData._age = 0; cMesh.userData._life = 2 + Math.random();
                                   cMesh.userData._vel = { x: (Math.random() - 0.5) * 4, y: 3 + Math.random() * 3, z: (Math.random() - 0.5) * 4 };
+                                  cMesh.userData._spin = new THREE.Vector3((Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10, (Math.random() - 0.5) * 10);
                                   eng.scene.add(cMesh); eng._particles.push(cMesh);
                                 } catch(e) {}
                               }

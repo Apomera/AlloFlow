@@ -375,6 +375,21 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('g.material.opacity = hidden ? 0.07 : 0.22;');
   });
 
+  it('puts the lesson-complete card in front of the player, not at a fixed world point', () => {
+    // the card sat at (10, 12, 10): visible for a lesson at the origin, off-screen
+    // for one laid out at x = 40
+    expect(src).not.toContain('congSprite.position.set(10, 12, 10);');
+    expect(src).toContain('var cfwd = engine.camera.getWorldDirection(new THREE.Vector3());');
+    expect(src).toContain('engine.camera.position.x + cfwd.x * 7,');
+    expect(src).toContain('congTex.encoding = THREE.sRGBEncoding');
+    expect(src).toContain("canvas2.width = 1024; canvas2.height = 512;");
+  });
+
+  it('spins the completion confetti so it flutters instead of sliding', () => {
+    expect(src).toContain('cMesh.userData._spin = new THREE.Vector3(');
+    expect(src).toContain('new THREE.BoxGeometry(0.14, 0.02, 0.09)');
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

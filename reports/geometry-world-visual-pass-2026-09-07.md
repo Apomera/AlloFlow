@@ -108,6 +108,18 @@ Each hidden block now leaves a faint edge outline at its own cell. The revealed 
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round11-layers.mjs`): a 3 by 3 by 3 measured and revealed through layer 1 gives 18 outlines, hidden glows at 0.07 and shown at 0.22; reset leaves 0 outlines with the top block visible again. Zero page errors. Captures: `before-layer1.png`, `after2-layer1.png`.
 
+## Round 12 (same day): the lesson-complete moment
+
+When the last question is answered the sky runs from day through golden hour to night, stars come out, confetti bursts and a "Lesson Complete" message floats up. Two things were wrong with the message and one with the confetti.
+
+**The message was pinned to a fixed point in the world**, (10, 12, 10). For a lesson built around the origin that is roughly overhead; for one laid out at x = 40 it is forty units away and never on screen, which the before capture shows: nothing. It now hangs seven units ahead of wherever the player is looking, a little above eye level, and bobs gently there.
+
+**It was bare text on nothing, untagged.** Drawn at 512 px with no backing and no sRGB tag, it read as faint pastel over whatever sky was behind it. It is now a 1024 px card on a dark ground with an amber border, tagged sRGB, rendered on top.
+
+**Confetti slid instead of fluttering.** Cubes flew with fixed axes; they are now flat flakes with a per-axis spin, forty of them, using the same tumble the break debris got in round 9.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round12-complete.mjs`): after triggering completion with the player standing at x = 40, the card sits 7 units ahead and 1.3 above the camera, 1024 px wide, sRGB-tagged, fading in. Zero page errors. Captures: `before-complete.png`, `after2-complete.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -125,3 +137,5 @@ Round 9 run of the same spec: **17 passed, 0 failed, 0 flaky** in 7.2 minutes, n
 Round 10 run of the same spec: **17 passed, 0 failed, 0 flaky** in 4.4 minutes on a quiet machine, no retries. The five tests covering the ghost, building and teardown had already passed 5/5 under load.
 
 Round 11 verification at commit time: 307 unit tests, and the five e2e tests covering lesson reset, building and teardown passed 5/5 with retries off under a competing browser suite. The full spec was queued for a quiet machine; its result is recorded below when it lands.
+
+Round 12 verification at commit time: 309 unit tests, and the four e2e tests covering lesson change, the sprite census and teardown passed 4/4 with retries off under a competing browser suite. The queued full spec will run against this tree.
