@@ -320,3 +320,11 @@ September 6, 2026. During guided pathway playback every auto-advance already ann
 
 The counter is still on screen; it just stops talking. Nothing is lost because the explicit announcement carries the step number and the label already. A test pins that the counter is not live and that the auto-advance still announces, and that no live region sits inside the timer-driven panel at all. Every other live region in the tool changes on a user action, a filter, a slider or a load, which is what live regions are for.
 
+## The Find It challenge telegraphed its answer
+
+September 6, 2026. The Find It in 3D challenge built its four accessible answer options with the correct one first and then rotated the list by the round number modulo four. So the answer sat in slot one on round one, slot four on round two, slot three on round three, slot two on round four, and then the cycle repeated, with the round number printed on screen above it. A learner who noticed could answer every round without looking at the model. That is not a skewed shuffle like the quiz had; it is a key.
+
+The four options are now shuffled once per round with the same Fisher-Yates helper the quiz uses, and the order is kept in the tool's state so the list holds still after a wrong pick and reshuffles only when the round advances. A stored order that does not match the round it claims to be for is thrown away rather than trusted. The distractor set itself is unchanged.
+
+The tests do not need to know which option is the answer. The defect was that any option had a fixed slot for a given round, so what is pinned is that none does: over sixty fresh rounds at each of four round numbers, every option turns up in at least three different slots. The stability tests check the other half, that the order survives re-renders and a wrong pick and changes when the round does.
+

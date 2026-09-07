@@ -8718,8 +8718,21 @@ var d = labToolData.brainAtlas || {};
           if (brain3DChallenge) {
             var challengeOptionOffsets = [0, 3, 6, 8];
             challengeOptionOffsets.forEach(function (offset) { brain3DChallengeOptions.push(BRAIN_3D_CHALLENGE_POOL[(brain3DChallengeRound + offset) % BRAIN_3D_CHALLENGE_POOL.length]); });
-            var challengeOptionRotation = brain3DChallengeRound % brain3DChallengeOptions.length;
-            brain3DChallengeOptions = brain3DChallengeOptions.slice(challengeOptionRotation).concat(brain3DChallengeOptions.slice(0, challengeOptionRotation));
+            // Shuffled once per round and kept in state so the list holds still
+            // after a wrong pick. The old rotation by round % 4 put the answer
+            // in a slot that was a pure function of the round number on screen.
+            var challengeOptionBase = brain3DChallengeOptions;
+            var challengeRoundKey = Number(brain3DChallengeRound) || 0;
+            var storedChallengeOrder = Array.isArray(d._brain3DChallengeOrder) && Number(d._brain3DChallengeOrderFor) === challengeRoundKey ? d._brain3DChallengeOrder : null;
+            var storedChallengeOrderValid = !!storedChallengeOrder && storedChallengeOrder.length === challengeOptionBase.length
+              && storedChallengeOrder.every(function (id) { return challengeOptionBase.some(function (option) { return option.id === id; }); });
+            if (storedChallengeOrderValid) {
+              brain3DChallengeOptions = storedChallengeOrder.map(function (id) { return challengeOptionBase.filter(function (option) { return option.id === id; })[0]; });
+            } else {
+              brain3DChallengeOptions = brainAtlasShuffle(challengeOptionBase);
+              upd('_brain3DChallengeOrder', brain3DChallengeOptions.map(function (option) { return option.id; }));
+              upd('_brain3DChallengeOrderFor', challengeRoundKey);
+            }
           }
 
           function brainAtlas3DChallengeMatches(challenge, structureKey) {
