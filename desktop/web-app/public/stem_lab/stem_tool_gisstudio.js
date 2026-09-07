@@ -3153,6 +3153,37 @@
     };
   }
 
+  // A custom pack carries real coordinates and real labels, so it gets the same
+  // privacy screening as an imported CSV. Without this a pack of home addresses
+  // would map, autosave, and export with no warning at all.
+  function regionPackRows(pack) {
+    if (!pack || !Array.isArray(pack.records)) return [];
+    var metrics = regionMetrics(pack);
+    var field = metrics[0] && (metrics[0].field || metrics[0].id);
+    return pack.records.map(function (record) {
+      return { name: record.name, lat: record.lat, lon: record.lon, value: field ? record[field] : null };
+    });
+  }
+
+  function assessRegionPackPrivacy(pack) {
+    return assessCoordinatePrivacy(regionPackRows(pack), []);
+  }
+
+  function roundRegionPackCoordinates(pack, digits) {
+    var normalized = normalizeGISRegionPack(pack, { allowExistingId: true });
+    var places = Math.max(0, Math.min(5, Number(digits) || 0));
+    var factor = Math.pow(10, places);
+    var records = normalized.records.map(function (record) {
+      return Object.assign({}, record, {
+        lat: Math.round(Number(record.lat) * factor) / factor,
+        lon: Math.round(Number(record.lon) * factor) / factor
+      });
+    });
+    return normalizeGISRegionPack(Object.assign(serializeGISRegionPack(normalized), {
+      records: records, revision: (Number(normalized.revision) || 1) + 1
+    }), { allowExistingId: true });
+  }
+
   function roundPointCoordinates(rows, digits) {
     var places = Math.max(0, Math.min(5, Number(digits) || 0));
     var factor = Math.pow(10, places);
@@ -3622,6 +3653,8 @@
       normalizeTeacherReview: normalizeTeacherReview, teacherReviewProgress: teacherReviewProgress, teacherRubric: GIS_TEACHER_RUBRIC, buildTeacherReviewReport: buildTeacherReviewReport,
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
+      regionPackRows: regionPackRows, assessRegionPackPrivacy: assessRegionPackPrivacy,
+      roundRegionPackCoordinates: roundRegionPackCoordinates,
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
       auditMapComposition: auditMapComposition, buildMapComposerReport: buildMapComposerReport,
       schematicProjection: schematicProjection, graticuleStep: graticuleStep,
@@ -3707,6 +3740,10 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        packPrivacyLabel: t('stem.gisstudio.pack.privacy_label', 'Check this before mapping:'),
+        packPrivacyNote: t('stem.gisstudio.pack.privacy_note', '{precise} place(s) use 4 or more decimal places, which can identify a building, and {named} have identifier-like labels. Do not map student homes or other sensitive locations. Aggregate, blur, or suppress them first.'),
+        packPrivacyExamples: t('stem.gisstudio.pack.privacy_examples', 'High precision:'),
+        packPrivacyRound: t('stem.gisstudio.pack.privacy_round', 'Round these coordinates to 2 decimal places'),
         packDerivedBoundaries: t('stem.gisstudio.pack.derived_boundaries', 'Built from a boundary layer. Each place is the representative point of one boundary, and the boundaries came along as the polygon layer.'),
         packDerivedPoints: t('stem.gisstudio.pack.derived_points', 'Built from the point features in this layer.'),
         timeMismatchLabel: t('stem.gisstudio.time.mismatch_label', 'Different region:'),
@@ -4091,7 +4128,10 @@
             temporalSorted[temporalSorted.length - 1].name + ' has the smallest change (' + display.number(temporalSorted[temporalSorted.length - 1].change, 1) +
             '). These are descriptive changes and do not establish causes.'
           : 'No complete location pairs are available for the selected years.';
-        var pointPrivacyAssessment = assessCoordinatePrivacy(importedRows, timeDataset.rows);
+        var activePackIsCustom = !!activeRegionPack.custom && !imported;
+        var activePackRows = activePackIsCustom ? regionPackRows(activeRegionPack) : [];
+        var reviewRows = importedRows.concat(activePackRows);
+        var pointPrivacyAssessment = assessCoordinatePrivacy(reviewRows, timeDataset.rows);
         var vectorPrivacyAssessment = inspectGISVectorLayer({ data: { type: 'FeatureCollection', features: geoFeatures }, numericKeys: geoKeys, nameKey: geoNameKey });
         var privacyAssessment = {
           total: pointPrivacyAssessment.total + vectorPrivacyAssessment.featureCount,
@@ -4133,7 +4173,7 @@
         var remoteAfterIndex = remoteIndexValue(remoteSelectedCell, 'after', remoteSensing.analysisIndex, remoteSensing.cloudMask);
         var remoteBeforeClass = classifySpectralPixel(remoteSelectedCell.beforeBands);
         var storyProgress = storyMapProgress(storyMap);
-        var qualityReview = buildDataQualityReview({ importedRows: importedRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
+        var qualityReview = buildDataQualityReview({ importedRows: reviewRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
         var inquiryProgress = inquiryPlanProgress(inquiryPlan);
         var teacherProgress = teacherReviewProgress(teacherReview);
         var remoteAfterClass = remoteSelectedCell.quality === 'cloud'
@@ -5754,7 +5794,7 @@
                   h('button', { type: 'button', onClick: retryLeaflet, style: Object.assign({}, control, { margin: '7px 6px 0 0', cursor: 'pointer' }) }, 'Try online basemap again'),
                   h('button', { type: 'button', onClick: function () { setBasemap('none'); persist('gisBasemap', 'none'); }, style: Object.assign({}, control, { marginTop: 7, cursor: 'pointer' }) }, 'Keep offline')),
                 (imported || geoFeatures.length > 0) && basemap !== 'none' && h('p', { role: 'status', style: { margin: '7px 2px 0', color: '#fde68a', fontSize: 10, lineHeight: 1.45 } }, 'Online basemap privacy: the tile service can infer the area being viewed. Choose "No basemap - offline schematic" before working with sensitive classroom locations.'),
-                (imported || geoFeatures.length > 0) && (privacyAssessment.highPrecision > 0 || privacyAssessment.identifierWarnings > 0) && h('aside', { role: 'alert', style: { marginTop: 8, padding: 10, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } },
+                (imported || activePackIsCustom || geoFeatures.length > 0) && (privacyAssessment.highPrecision > 0 || privacyAssessment.identifierWarnings > 0) && h('aside', { role: 'alert', style: { marginTop: 8, padding: 10, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } },
                   h('strong', null, 'Privacy check before sharing. '), privacyAssessment.highPrecision + ' mapped feature or point row' + (privacyAssessment.highPrecision === 1 ? '' : 's') + ' use highly precise coordinates and ' + privacyAssessment.identifierWarnings + ' have identifier-like labels. Review the Project privacy controls and round or aggregate sensitive locations.'),
                 imported && (importDiagnostics.invalidRows > 0 || importDiagnostics.truncatedRows > 0) && h('p', { role: 'status', style: { margin: '7px 2px 0', padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 6, background: '#2b2617', color: '#fde68a', fontSize: 11 } }, 'Import review: ' + importDiagnostics.invalidRows + ' row' + (importDiagnostics.invalidRows === 1 ? '' : 's') + ' skipped because coordinates or values were invalid.' + (importDiagnostics.truncatedRows > 0 ? ' ' + importDiagnostics.truncatedRows + ' additional valid row' + (importDiagnostics.truncatedRows === 1 ? '' : 's') + ' were not loaded; the 250-row limit applies.' : '')),
                 geoValues.length > 0 ? h('div', { role: 'list', 'aria-label': classification + ' choropleth legend for ' + geoMetric, style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', color: '#b7d2df', fontSize: 10 } },
@@ -5921,6 +5961,26 @@
               (packPreview.rejectedRows ? ' \u00B7 ' + packPreview.rejectedRows + ' ' + gisText.packRowsSkippedShort : '') +
               (packPreview.truncatedRows ? ' \u00B7 ' + packPreview.truncatedRows + ' ' + gisText.packRowsTruncated : '') +
               (pack.boundaries ? ' \u00B7 ' + pack.boundaries.features.length + ' ' + gisText.packBoundaryFeatures : '')),
+            (function () {
+              var risk = assessRegionPackPrivacy(pack);
+              if (!risk.highPrecision && !risk.identifierWarnings) return null;
+              return h('aside', { role: 'alert', style: { margin: '0 0 9px', padding: 10, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.packPrivacyLabel + ' '),
+                gisFillTemplate(gisText.packPrivacyNote, { precise: risk.highPrecision, named: risk.identifierWarnings }),
+                risk.highPrecisionNames.length > 0 && h('p', { style: { margin: '6px 0 0' } }, gisText.packPrivacyExamples + ' ' + risk.highPrecisionNames.slice(0, 6).join(', ')),
+                h('button', {
+                  type: 'button',
+                  onClick: function () {
+                    try {
+                      var rounded = roundRegionPackCoordinates(pack, 2);
+                      setPackPreview(Object.assign({}, packPreview, { pack: rounded }));
+                      setPackError('');
+                      announce(__alloT('stem.gisstudio.sr_region_pack_rounded', 'Region pack coordinates rounded to two decimal places.'));
+                    } catch (roundProblem) { setPackError(roundProblem.message); }
+                  },
+                  style: Object.assign({}, control, { marginTop: 8, cursor: 'pointer' })
+                }, gisText.packPrivacyRound));
+            })(),
             packPreview.derivedFrom === 'boundaries' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedBoundaries),
             packPreview.derivedFrom === 'points' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedPoints),
             packPreview.rejected.length > 0 && h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, color: '#fde68a', fontSize: 11 } },
@@ -6336,12 +6396,16 @@
 
         function roundPrivateCoordinates() {
           setImportedRows(roundPointCoordinates(importedRows, privacyDigits));
+          if (activePackIsCustom) {
+            var rounded = roundRegionPackCoordinates(activeRegionPack, privacyDigits);
+            storeCustomRegionPacks(customRegionPacks.map(function (item) { return item.id === rounded.id ? rounded : item; }));
+          }
           setTimeDataset(function (previous) {
             var rows = roundPointCoordinates(previous.rows || [], privacyDigits);
             return Object.assign({}, previous, { rows: rows });
           });
           setProjectError('');
-          announce('Imported and timeline point coordinates rounded to ' + privacyDigits + ' decimal places. GeoJSON boundaries were not changed.');
+          announce((activePackIsCustom ? 'Region pack, imported' : 'Imported') + ' and timeline point coordinates rounded to ' + privacyDigits + ' decimal places. GeoJSON boundaries were not changed.');
         }
 
         function loadTimeSeries() {

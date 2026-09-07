@@ -352,6 +352,63 @@ describe('GIS Studio - custom region packs', () => {
     expect(global).toContain('It does not describe Global regions (classroom sample).');
   });
 
+  it('screens a custom pack for precise coordinates and identifier-like names', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const risky = tool.testing.serializeGISRegionPack({
+      label: 'Class survey',
+      metrics: [{ id: 'reading', label: 'Reading' }],
+      records: [
+        { name: "Student A home", lat: 43.658291, lon: -70.256114, reading: 12 },
+        { name: 'Park', lat: 43.66, lon: -70.26, reading: 8 }
+      ]
+    });
+    const report = tool.testing.assessRegionPackPrivacy(risky);
+    expect(report.highPrecision).toBe(1);
+    expect(report.identifierWarnings).toBe(1);
+    expect(report.highPrecisionNames).toContain('Student A home');
+
+    const safe = tool.testing.assessRegionPackPrivacy(tool.testing.serializeGISRegionPack(samplePack()));
+    expect(safe.highPrecision).toBe(0);
+    expect(safe.identifierWarnings).toBe(0);
+    expect(tool.testing.assessRegionPackPrivacy(null).total).toBe(0);
+  });
+
+  it('warns about a risky pack in the preview, before anything is mapped', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const rounded = tool.testing.roundRegionPackCoordinates(tool.testing.serializeGISRegionPack({
+      label: 'Class survey',
+      metrics: [{ id: 'reading', label: 'Reading' }],
+      records: [{ name: 'Student A home', lat: 43.658291, lon: -70.256114, reading: 12 }]
+    }), 2);
+    expect(rounded.records[0].lat).toBe(43.66);
+    expect(rounded.records[0].lon).toBe(-70.26);
+    expect(rounded.records[0].name).toBe('Student A home');
+    expect(tool.testing.assessRegionPackPrivacy(rounded).highPrecision).toBe(0);
+  });
+
+  it('counts a mapped custom pack in the privacy check and the quality review', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const risky = tool.testing.serializeGISRegionPack({
+      label: 'Class survey',
+      metrics: [{ id: 'reading', label: 'Reading' }],
+      records: [
+        { name: 'Student A home', lat: 43.658291, lon: -70.256114, reading: 12 },
+        { name: 'Student B home', lat: 43.712345, lon: -70.301234, reading: 9 }
+      ]
+    });
+    const html = renderTool('gisStudio', { gisCustomRegionPacks: [risky], gisRegionPack: risky.id });
+    expect(html).toContain('Privacy check before sharing.');
+    expect(html).toContain('Student A home');
+
+    const review = renderTool('gisStudio', { gisTab: 'quality', gisCustomRegionPacks: [risky], gisRegionPack: risky.id });
+    expect(review).toContain('2 high-precision rows and 2 identifier-like labels need review.');
+    expect(review).toContain('Round or aggregate sensitive locations');
+
+    // A built-in sample pack must not raise a false alarm.
+    const clean = renderTool('gisStudio', {});
+    expect(clean).not.toContain('Privacy check before sharing.');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

@@ -13143,7 +13143,11 @@
         "pasted_label": "Pasted region",
         "paste_empty": "Paste region rows or a JSON pack first.",
         "derived_boundaries": "Built from a boundary layer. Each place is the representative point of one boundary, and the boundaries came along as the polygon layer.",
-        "derived_points": "Built from the point features in this layer."
+        "derived_points": "Built from the point features in this layer.",
+        "privacy_label": "Check this before mapping:",
+        "privacy_note": "{precise} place(s) use 4 or more decimal places, which can identify a building, and {named} have identifier-like labels. Do not map student homes or other sensitive locations. Aggregate, blur, or suppress them first.",
+        "privacy_examples": "High precision:",
+        "privacy_round": "Round these coordinates to 2 decimal places"
       },
       "sr_region_pack_loaded": "Region pack loaded and mapped.",
       "sr_region_pack_error": "Region pack error.",
@@ -13206,7 +13210,8 @@
       "time": {
         "mismatch_label": "Different region:",
         "mismatch_note": "This time series is the built-in Maine sample. It does not describe {pack}. Import a time-series CSV for your own region, or read the change results as a separate Maine dataset."
-      }
+      },
+      "sr_region_pack_rounded": "Region pack coordinates rounded to two decimal places."
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",
