@@ -3509,21 +3509,26 @@
     var selected = Array.isArray(model.selected) ? model.selected : [];
     var spatial = model.spatialAnalysis && typeof model.spatialAnalysis === 'object' ? model.spatialAnalysis : {};
     var coverage = model.coverage && typeof model.coverage === 'object' ? model.coverage : {};
+    var formatters = model.formatters;
     function number(value, digits) {
       if (value === null || value === undefined || value === '') return '\u2014';
-      return Number.isFinite(Number(value)) ? Number(value).toFixed(digits == null ? 2 : digits) : '\u2014';
+      if (!Number.isFinite(Number(value))) return '\u2014';
+      var places = digits == null ? 2 : digits;
+      // A report marked lang="de" or dir="rtl" should not print its numbers in
+      // English, and the same value must read the same on screen and in export.
+      return formatters ? formatters.number(value, { minimumFractionDigits: places, maximumFractionDigits: places }) : Number(value).toFixed(places);
     }
     function seriesSummary(series) {
       var values = (series.rows || []).map(function (row) { return Number(row.value); }).filter(Number.isFinite);
       if (!values.length) return 'No numeric values';
       var mean = values.reduce(function (sum, value) { return sum + value; }, 0) / values.length;
-      return values.length + ' records; range ' + Math.min.apply(Math, values) + ' to ' + Math.max.apply(Math, values) + '; mean ' + mean.toFixed(1);
+      return values.length + ' records; range ' + number(Math.min.apply(Math, values), 1) + ' to ' + number(Math.max.apply(Math, values), 1) + '; mean ' + number(mean, 1);
     }
     function table(series, side) {
       var rows = (series.rows || []).map(function (row) {
         return '<tr><th scope="row">' + escapeHTML(row.name) + '</th><td>' + escapeHTML(row.geometry || 'Point') +
           '</td><td>' + number(row.lat, 4) + '</td><td>' + number(row.lon, 4) + '</td><td>' +
-          escapeHTML(row.value == null ? 'No data' : row.value) + '</td></tr>';
+          escapeHTML(row.value == null || row.value === '' ? 'No data' : number(row.value)) + '</td></tr>';
       }).join('');
       return '<section><h2>' + escapeHTML(series.label || side + ' map') + '</h2><p><strong>Basemap:</strong> ' +
         escapeHTML(series.basemap || 'Not specified') + '. <strong>Legend:</strong> low values use teal; high values use rose. ' +
@@ -3670,19 +3675,23 @@
     return p < 0.2 ? '#0e7490' : p < 0.4 ? '#0891b2' : p < 0.6 ? '#65a30d' : p < 0.8 ? '#d97706' : '#be123c';
   }
 
-  function describe(records, metric, imported) {
+  // `coastal` is a field of the built-in Maine-style samples. A pack that does
+  // not carry it has no coastal split to report, and averaging an empty group
+  // printed 'Coastal average: NaN' on the main summary for every custom region.
+  function describe(records, metric, imported, format) {
+    var number = typeof format === 'function' ? format : function (value) { return Number(value).toFixed(1); };
     if (!records.length) return 'No mapped records are available.';
     var sorted = records.slice().sort(function (a, b) { return valueOf(b, metric, imported) - valueOf(a, metric, imported); });
     var mean = records.reduce(function (sum, record) { return sum + valueOf(record, metric, imported); }, 0) / records.length;
-    var result = sorted[0].name + ' is highest (' + valueOf(sorted[0], metric, imported) + '); ' +
-      sorted[sorted.length - 1].name + ' is lowest (' + valueOf(sorted[sorted.length - 1], metric, imported) +
-      '). The mean is ' + mean.toFixed(1) + '.';
-    if (!imported) {
-      var coast = records.filter(function (record) { return record.coastal; });
-      var inland = records.filter(function (record) { return !record.coastal; });
+    var result = sorted[0].name + ' is highest (' + number(valueOf(sorted[0], metric, imported)) + '); ' +
+      sorted[sorted.length - 1].name + ' is lowest (' + number(valueOf(sorted[sorted.length - 1], metric, imported)) +
+      '). The mean is ' + number(mean) + '.';
+    var coast = records.filter(function (record) { return record.coastal; });
+    var inland = records.filter(function (record) { return record.coastal === false; });
+    if (!imported && coast.length && inland.length) {
       var ca = coast.reduce(function (sum, record) { return sum + valueOf(record, metric, false); }, 0) / coast.length;
       var ia = inland.reduce(function (sum, record) { return sum + valueOf(record, metric, false); }, 0) / inland.length;
-      result += ' Coastal average: ' + ca.toFixed(1) + '; inland average: ' + ia.toFixed(1) +
+      result += ' Coastal average: ' + number(ca) + '; inland average: ' + number(ia) +
         '. This pattern suggests a question; it does not establish causation.';
     }
     return result;
@@ -3698,8 +3707,10 @@
       var sourceModel = model || {};
       var hasLocale = !!localeOptions || !!(sourceModel.localeOptions || sourceModel.locale || sourceModel.lang || sourceModel.dir);
       var effectiveModel = sourceModel;
+      var formatters = createGISFormatters(localeOptions || sourceModel);
+      effectiveModel = Object.assign({}, sourceModel, { formatters: formatters });
       if (hasLocale && !sourceModel.generated) {
-        effectiveModel = Object.assign({}, sourceModel, { generated: createGISFormatters(localeOptions || sourceModel).dateTime(new Date()) });
+        effectiveModel.generated = formatters.dateTime(new Date());
       }
       return localizeGISReportDocument(builder(effectiveModel), effectiveModel, localeOptions);
     };
@@ -4193,7 +4204,7 @@
         var legendBounds = geoValues.length ? [geoMin].concat(geoBreaks).concat([geoMax]) : [];
         var geoSummary = geoFeatures.length ? ' Polygon layer: ' + geoFeatures.length + ' features mapped by ' + geoMetric +
           ' using ' + classification + ' classes, ranging from ' + geoMin + ' to ' + geoMax + '.' : '';
-        var summary = describe(records, metric, imported) + geoSummary;
+        var summary = describe(records, metric, imported, function (value) { return display.number(value, 1); }) + geoSummary;
         var selectedGeoFeature = geoFeatures[selectedFeatureIndex] || null;
         var selectedGeometryType = selectedGeoFeature && selectedGeoFeature.geometry ? selectedGeoFeature.geometry.type : '';
         var measuredFeature = featureMeasurements(selectedGeoFeature);
@@ -5706,12 +5717,12 @@
             grat.lats.forEach(function (lat) {
               var a = proj.project(proj.bounds.minLon, lat), b = proj.project(proj.bounds.maxLon, lat);
               kids.push(h('line', { key: 'glat' + lat, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
-              kids.push(h('text', { key: 'glatT' + lat, x: 4, y: a.y - 3, fill: '#9fb6c5', fontSize: 9 }, lat.toFixed(2) + '°'));
+              kids.push(h('text', { key: 'glatT' + lat, x: 4, y: a.y - 3, fill: '#9fb6c5', fontSize: 9 }, graticuleLabel(lat, 'N', 'S', grat.latStep)));
             });
             grat.lons.forEach(function (lon) {
               var a = proj.project(lon, proj.bounds.minLat), b = proj.project(lon, proj.bounds.maxLat);
               kids.push(h('line', { key: 'glon' + lon, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#64748b', strokeWidth: 1, strokeDasharray: '4 4', opacity: 0.55 }));
-              kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 5, fill: '#9fb6c5', fontSize: 9 }, lon.toFixed(2) + '°'));
+              kids.push(h('text', { key: 'glonT' + lon, x: a.x + 3, y: SH - 5, fill: '#9fb6c5', fontSize: 9 }, graticuleLabel(lon, 'E', 'W', grat.lonStep)));
             });
           }
           polygonParts.forEach(function (item) {

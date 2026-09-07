@@ -1,8 +1,12 @@
 // GIS Studio custom region packs: any geography can be loaded as a pack (JSON
 // or CSV), used exactly like the built-in samples, saved in the project file,
 // and restored. These tests pin the pack contract and the UI that exposes it.
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+// The 14-tab label audit renders every workspace, which outruns the 5 s default
+// when the whole suite runs in parallel. Same reasoning as the mounted files.
+vi.setConfig({ testTimeout: 20000 });
 
 const TOOL = 'stem_lab/stem_tool_gisstudio.js';
 
@@ -611,6 +615,60 @@ describe('GIS Studio - custom region packs', () => {
     expect(tool.testing.graticuleDecimals(1)).toBe(0);
     expect(tool.testing.graticuleDecimals(30)).toBe(0);
     expect(tool.testing.graticuleDecimals(0)).toBe(2);
+  });
+
+  it('only reports a coastal split for packs that record one', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+    for (const tab of ['map', 'compare', 'quality', 'project', 'missions']) {
+      const html = renderTool('gisStudio', { gisTab: tab, gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+      expect(html, tab + ' shows a computed value that is not a number').not.toContain('NaN');
+    }
+    const custom = renderTool('gisStudio', { gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+    expect(custom).not.toContain('Coastal average');
+    expect(custom).toContain('is highest');
+
+    // The built-in samples do record a coast, so they keep the comparison.
+    const maine = renderTool('gisStudio', { gisBasemap: 'none' });
+    expect(maine).toContain('Coastal average');
+    expect(maine).not.toContain('NaN');
+  });
+
+  it('formats summary and report numbers through the active locale', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const rows = [
+      { name: 'A', lat: 1, lon: 1, value: 1234.56 },
+      { name: 'B', lat: 2, lon: 2, value: 2345.67 }
+    ];
+    const german = tool.testing.buildEvidenceReport(
+      { left: { label: 'Left', rows }, right: { label: 'Right', rows } },
+      { locale: 'de-DE' }
+    );
+    expect(german).toContain('lang="de-DE"');
+    expect(german).toContain('1.234,56');
+    expect(german).not.toContain('1234.56');
+
+    const english = tool.testing.buildEvidenceReport(
+      { left: { label: 'Left', rows }, right: { label: 'Right', rows } },
+      { locale: 'en-US' }
+    );
+    expect(english).toContain('1,234.56');
+
+    // Without a locale the report still builds and still shows the values.
+    const plain = tool.testing.buildEvidenceReport({ left: { label: 'Left', rows }, right: { label: 'Right', rows } });
+    expect(plain).toContain('1,234.56');
+  });
+
+  it('labels the schematic graticule the same way the live map does', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+    const html = renderTool('gisStudio', {
+      gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id,
+      gisLayers: { points: true, grid: true, polygons: true, coast: false }
+    });
+    // The schematic used a bare toFixed(2) label with no hemisphere; both grids
+    // now go through graticuleLabel.
+    expect(html).not.toMatch(/>-d+.dd°</);
   });
 
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
