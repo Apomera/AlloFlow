@@ -18,6 +18,59 @@ const CLIMAX_OUTCOME_DELTAS = { strategic_success: 10, partial_success: -5, neut
 // like a neutral turn (3-band assessment, same wave).
 const HIDDEN_MASTERY_DELTAS = { strategic_success: 8, partial_success: 3, neutral: -2, misconception: -8 };
 
+// Capture committed story state, including the special climax branches. Model
+// proposals are not receipts: clamping, level-ups and terminal turns can alter them.
+const recordAdventureConsequence = (previous, next, data, mode) => {
+    const text = (value, limit) => typeof value === 'string' ? value.trim().slice(0, limit) : '';
+    const changes = [];
+    const add = (key, label, before, after, unit = '') => {
+        if (typeof before !== 'number' || typeof after !== 'number'
+            || !Number.isFinite(before) || !Number.isFinite(after) || before === after) return;
+        changes.push({ key, label, before, after, unit: text(unit, 30) });
+    };
+    add('energy', 'Energy', previous.energy, next.energy);
+    add('gold', 'Gold', previous.gold, next.gold);
+    add('level', 'Level', previous.level, next.level);
+    // XP resets on a level-up; do not present that reset as a loss of learning.
+    if (previous.level === next.level) add('xp', 'XP', previous.xp, next.xp);
+    if (mode.inputMode === 'debate') add('momentum', 'Debate momentum', previous.debateMomentum, next.debateMomentum);
+    if (previous.climax?.isActive) add('climax', 'Climax progress', previous.climax.masteryScore, next.climax?.masteryScore);
+    const beforeResources = Array.isArray(previous.systemResources) ? previous.systemResources : [];
+    const afterResources = Array.isArray(next.systemResources) ? next.systemResources : [];
+    const names = [...new Set([...beforeResources, ...afterResources].map(r => r && r.name).filter(n => typeof n === 'string'))];
+    names.slice(0, 40).forEach(name => {
+        const before = beforeResources.find(r => r && r.name === name);
+        const after = afterResources.find(r => r && r.name === name);
+        add('resource:' + name, text(name, 80), before ? before.quantity : 0, after ? after.quantity : 0, after?.unit || before?.unit);
+    });
+    const itemCounts = (items) => (Array.isArray(items) ? items : []).reduce((counts, item) => {
+        const name = typeof item === 'string' ? item : item && item.name;
+        if (typeof name === 'string' && name.trim()) counts.set(name, (counts.get(name) || 0) + 1);
+        return counts;
+    }, new Map());
+    const beforeItems = itemCounts(previous.inventory);
+    const afterItems = itemCounts(next.inventory);
+    [...new Set([...beforeItems.keys(), ...afterItems.keys()])].slice(0, 40).forEach(name => {
+        add('inventory:' + name, text(name, 80), beforeItems.get(name) || 0, afterItems.get(name) || 0);
+    });
+    const tag = data.outcomeType || data.rollDetails?.outcomeType;
+    const roll = data.rollDetails;
+    const consequence = {
+        version: 1,
+        choice: text(previous.pendingChoice || data.pendingChoice, 1200),
+        reasoning: ['strategic_success', 'partial_success', 'misconception'].includes(tag) ? tag : 'neutral',
+        explanation: text(data.feedback || data.evaluation, 1800),
+        concepts: [...new Set((Array.isArray(data.conceptsUsed) ? data.conceptsUsed : []).map(c => text(c, 80)).filter(Boolean))].slice(0, 6),
+        chanceMode: !!mode.chanceMode,
+        ...(mode.chanceMode && roll && Number.isFinite(roll.d20) ? { chanceRoll: Math.max(1, Math.min(20, roll.d20)) } : {}),
+        changes: changes.slice(0, 12)
+    };
+    const history = next.history.slice();
+    const index = history.length - 1;
+    if (history[index]?.type === 'feedback') history[index] = { ...history[index], consequence };
+    return { ...next, history };
+};
+
 const handleDiceRollComplete = (deps) => {
   const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] handleDiceRollComplete fired"); } catch(_) {}
@@ -363,7 +416,7 @@ const handleDiceRollComplete = (deps) => {
                   setShowGlobalLevelUp(true);
                   try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
               }, 0);
-              return {
+              return recordAdventureConsequence(prev, {
                   ...prev,
                   isGameOver: true,
                   history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
@@ -372,7 +425,7 @@ const handleDiceRollComplete = (deps) => {
                   canStartSequel: true,
                   isLoading: false,
                   stats: newStats
-              };
+              }, data, { chanceMode: adventureChanceMode, inputMode: adventureInputMode });
           } else if (finalResult === 'failure') {
               // Same dedup as the victory path (2026-07-16): scene+choice are already
               // in prev.history from choice time.
@@ -386,7 +439,7 @@ const handleDiceRollComplete = (deps) => {
                   playAdventureEventSound('failure');
                   addToast(t('adventure.climax.toast_failure'), "error");
               }, 0);
-              return {
+              return recordAdventureConsequence(prev, {
                   ...prev,
                   history: [...prev.history, { type: 'feedback', text: data.feedback, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
                   currentScene: data.scene, pendingChoice: null,
@@ -399,7 +452,7 @@ const handleDiceRollComplete = (deps) => {
                   },
                   isLoading: false,
                   stats: newStats
-              };
+              }, data, { chanceMode: adventureChanceMode, inputMode: adventureInputMode });
           }
           setTimeout(() => {
               setAdventureEffects({
@@ -492,7 +545,7 @@ const handleDiceRollComplete = (deps) => {
                   addToast(t('adventure.save_reminder') || "💾 Consider saving your adventure progress!", "info");
               }
           }, 0);
-          return {
+          return recordAdventureConsequence(prev, {
               ...prev,
               history: [...prev.history, { type: 'feedback', text: feedbackText, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
               currentScene: { ...data.scene, charactersInScene: data.charactersInScene || [] }, pendingChoice: null,
@@ -524,7 +577,7 @@ const handleDiceRollComplete = (deps) => {
               debatePhase: nextDebatePhase,
               climax: updatedClimax,
               stats: newStats
-          };
+          }, data, { chanceMode: adventureChanceMode, inputMode: adventureInputMode });
       });
       setShowDice(false);
       setPendingAdventureUpdate(null);

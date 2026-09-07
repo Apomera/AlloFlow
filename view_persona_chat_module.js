@@ -48,7 +48,40 @@
   var X = _lazyIcon('X');
   var Zap = _lazyIcon('Zap');
 
-  function PersonaChatView(props) {
+  function PersonaEvidenceNote({
+  message,
+  source,
+  t
+}) {
+  var label = function (key, fallback) {
+    var value = t('persona.evidence.' + key);
+    return value && value !== 'persona.evidence.' + key ? value : fallback;
+  };
+  var api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
+  var saved = api && api.normalize(message.sourceEvidence);
+  var passage = saved && api.resolve(saved.quote, source, saved.excerptFingerprint);
+  if (!message.evidenceNote && !saved) return null;
+  return /*#__PURE__*/React.createElement("details", {
+    className: "mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer font-bold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800"
+  }, label('title', 'Evidence & simulation note')), message.evidenceNote && /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 leading-relaxed"
+  }, String(message.evidenceNote).slice(0, 600)), passage && /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 rounded-lg border border-teal-200 bg-white p-3 text-slate-800"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-bold text-teal-900"
+  }, label('matched', 'Matched lesson passage'), passage.topic ? ' · ' + passage.topic : ''), /*#__PURE__*/React.createElement("blockquote", {
+    className: "mt-2 border-l-2 border-teal-500 pl-3 leading-relaxed whitespace-pre-wrap break-words"
+  }, passage.hasBefore ? '…' : '', passage.before, /*#__PURE__*/React.createElement("mark", {
+    className: "bg-amber-100 text-slate-950"
+  }, passage.quote), passage.after, passage.hasAfter ? '…' : ''), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 leading-relaxed text-slate-600"
+  }, label('check', 'Text match confirmed. Does this passage support the reply? A match does not verify every claim.'))), saved && !passage && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 leading-relaxed"
+  }, label('unavailable', 'The saved passage could not be matched to this lesson. Check the original source before using this claim.')));
+}
+function PersonaChatView(props) {
   // State (object-bundle)
   var personaState = props.personaState;
   var generatedContent = props.generatedContent;
@@ -57,6 +90,10 @@
   // State reads (scalar/boolean)
   var theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
   var t = props.t;
+  var inquiryLabel = function (key, fallback) {
+    var value = t('persona.inquiry.' + key);
+    return value && value !== 'persona.inquiry.' + key ? value : fallback;
+  };
   var isPersonaFreeResponse = props.isPersonaFreeResponse;
   var showPersonaHints = props.showPersonaHints;
   var personaAutoRead = props.personaAutoRead;
@@ -596,6 +633,9 @@
       if (speakerName) normalized.speakerName = speakerName;
       if (translation) normalized.translation = translation;
       if (evidenceNote) normalized.evidenceNote = evidenceNote;
+      var evidenceApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
+      var sourceEvidence = message.role === 'model' && evidenceApi && evidenceApi.normalize(message.sourceEvidence);
+      if (sourceEvidence) normalized.sourceEvidence = sourceEvidence;
       list.push(normalized);
       return list;
     }, []);
@@ -726,7 +766,7 @@
         })];
       }),
       chatHistory: (personaState.chatHistory || []).slice(-80).map(function (message) {
-        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000)];
+        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
       }),
       earnedBadges: (personaState.earnedBadges || []).slice(0, 20),
       avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : ''
@@ -1286,9 +1326,7 @@
         "aria-hidden": "true"
       }), /*#__PURE__*/React.createElement("span", null, quest.text)), !quest.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
         className: "mt-1 block pl-4 text-[10px] font-bold opacity-70"
-      }, t('persona.rapport_requirement', {
-        difficulty: quest.difficulty
-      })));
+      }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty));
     })) : /*#__PURE__*/React.createElement("p", {
       className: "text-slate-500"
     }, t('persona.no_objectives'))), !char?.avatarUrl && typeof handleRetryPortraitGeneration === 'function' && /*#__PURE__*/React.createElement("button", {
@@ -1326,7 +1364,9 @@
   }, /*#__PURE__*/React.createElement("div", {
     role: "note",
     className: "mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900"
-  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), personaHiddenMessageCount > 0 && /*#__PURE__*/React.createElement("div", {
+  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), /*#__PURE__*/React.createElement("p", {
+    className: "mx-auto max-w-2xl text-center text-xs leading-relaxed text-slate-600 mt-1"
+  }, inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')), personaHiddenMessageCount > 0 && /*#__PURE__*/React.createElement("div", {
     role: "note",
     className: "mx-auto max-w-2xl rounded-xl border border-slate-300 bg-white px-4 py-2 text-center text-xs text-slate-600"
   }, t('persona.older_messages_hidden', {
@@ -1408,13 +1448,11 @@
       size: 12
     }))), /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-500 leading-relaxed italic"
-    }, msg.translation)), !isUser && msg.evidenceNote && /*#__PURE__*/React.createElement("details", {
-      className: "mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"
-    }, /*#__PURE__*/React.createElement("summary", {
-      className: "cursor-pointer font-bold"
-    }, t('persona.evidence_note') || 'Evidence & simulation note'), /*#__PURE__*/React.createElement("p", {
-      className: "mt-1 leading-relaxed"
-    }, msg.evidenceNote)), !isUser && /*#__PURE__*/React.createElement("span", {
+    }, msg.translation)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
+      message: msg,
+      source: generatedContent?.config?.personaSource,
+      t: t
+    }), !isUser && /*#__PURE__*/React.createElement("span", {
       className: "mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"
     }, /*#__PURE__*/React.createElement(Volume2, {
       size: 11
@@ -1816,7 +1854,7 @@
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
     size: 12
-  }), " ", t('persona.secrets_to_uncover')), /*#__PURE__*/React.createElement("div", {
+  }), " ", inquiryLabel('topics', 'Topics to explore')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, personaState.selectedCharacter.quests.map((quest, qIdx) => /*#__PURE__*/React.createElement("div", {
     key: qIdx,
@@ -1833,9 +1871,7 @@
     className: `font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`
   }, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
     className: "text-[11px] uppercase tracking-wider font-bold opacity-60"
-  }, t('persona.trust_requirement', {
-    difficulty: quest.difficulty
-  }))))))))), /*#__PURE__*/React.createElement("div", {
+  }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty)))))))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 flex flex-col h-full bg-white relative min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2050,7 +2086,9 @@
   }, /*#__PURE__*/React.createElement("div", {
     role: "note",
     className: "mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900"
-  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), (!personaState.chatHistory || personaState.chatHistory.length === 0) && /*#__PURE__*/React.createElement("div", {
+  }, t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'), /*#__PURE__*/React.createElement("p", {
+    className: "mx-auto max-w-2xl text-center text-xs leading-relaxed text-slate-600 mt-1"
+  }, inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')), (!personaState.chatHistory || personaState.chatHistory.length === 0) && /*#__PURE__*/React.createElement("div", {
     className: "mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200"
@@ -2150,13 +2188,11 @@
             title: t('common.click_to_read')
           }, formatInteractiveText(cleanText), " ");
         }));
-      }), !isUser && msg.evidenceNote && /*#__PURE__*/React.createElement("details", {
-        className: "mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"
-      }, /*#__PURE__*/React.createElement("summary", {
-        className: "cursor-pointer font-bold"
-      }, t('persona.evidence_note') || 'Evidence & simulation note'), /*#__PURE__*/React.createElement("p", {
-        className: "mt-1 leading-relaxed"
-      }, msg.evidenceNote)), translationText && /*#__PURE__*/React.createElement("div", {
+      }), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
+        message: msg,
+        source: generatedContent?.config?.personaSource,
+        t: t
+      }), translationText && /*#__PURE__*/React.createElement("div", {
         className: "mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2 mb-1"

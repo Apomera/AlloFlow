@@ -1339,7 +1339,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                                      </span>
                                      {!q.isCompleted && isLocked && (
                                          <span className="text-[11px] uppercase font-bold opacity-70 mt-1 block">
-                                             {t('persona.rapport_requirement', { difficulty: q.difficulty })}
+                                             {(() => { const value = t('persona.inquiry.bonus'); return value && value !== 'persona.inquiry.bonus' ? value : 'Optional story bonus at rapport'; })()} {q.difficulty}
                                          </span>
                                      )}
                                  </div>

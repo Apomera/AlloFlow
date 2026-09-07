@@ -495,3 +495,72 @@ describe('Persona persistence contracts', () => {
     expect(uiStrings).toContain('\"ai_feedback\"');
   });
 });
+
+describe('Persona inquiry and matched lesson passages', () => {
+  const excerpt = 'The engine could follow a sequence of operations. Ada described how symbols could be manipulated by rules. The lesson distinguishes calculation from interpretation.';
+  const quote = 'Ada described how symbols could be manipulated by rules.';
+  const character = { name: 'Ada', role: 'Mathematician', rapport: 0, accumulatedXP: 0, quests: [{ id: 'q1', text: 'Ask about symbols', difficulty: 80, isCompleted: false }] };
+  const make = (model, panel = false) => {
+    const second = { name: 'Charles', role: 'Inventor', rapport: 0, quests: [] };
+    const characters = panel ? [character, second] : [character];
+    return createHarness({
+      personaState: { mode: panel ? 'panel' : 'single', selectedCharacter: character, selectedCharacters: panel ? characters : [],
+        chatHistory: [], avatarUrl: null, suggestions: [], panelSuggestions: [], isLoading: false, harmonyScore: 10, earnedBadges: [] },
+      resource: { id: 'lesson-evidence-persona', type: 'persona', data: characters, config: { personaSource: { excerpt, topic: 'Symbolic reasoning' } } },
+      callGemini: model, callGeminiImageEdit: vi.fn()
+    });
+  };
+
+  it('preserves an answered lesson question and a matched quote while only the story bonus remains pending', async () => {
+    const model = vi.fn().mockResolvedValueOnce(JSON.stringify({
+      response: 'Symbols can be transformed by rules.', evidenceQuote: quote,
+      evidenceNote: 'Compare this explanation with the lesson.', rapportChange: 5, completedQuestId: 'q1'
+    })).mockResolvedValue('[]');
+    const harness = make(model);
+    await harness.api.handlePersonaChatSubmit('What evidence supports that? Could a modern computer do it differently?');
+    expect(harness.state.chatHistory.at(-1).text).toBe('Symbols can be transformed by rules.');
+    expect(harness.state.chatHistory.at(-1).sourceEvidence).toEqual({ quote, excerptFingerprint: expect.stringMatching(/^fnv1a-/) });
+    expect(harness.state.selectedCharacter.quests[0].isCompleted).toBe(false);
+    expect(harness.toasts.some(args => String(args[0]).includes('Lesson answers remain available'))).toBe(true);
+    const prompt = model.mock.calls[0][0];
+    expect(prompt).toContain('At EVERY rapport level, answer lesson questions');
+    expect(prompt).toContain('constructive disagreement');
+    expect(prompt).toContain('Do not penalize respectful comparisons with modern life');
+  });
+
+  it.each(['A fabricated quotation that never appeared in the lesson.', '', 'Ada', 'x'.repeat(501)])(
+    'does not attach an unmatched or invalid passage (%s)', async badQuote => {
+      const harness = make(vi.fn().mockResolvedValueOnce(JSON.stringify({ response: 'A reconstructed answer.', evidenceQuote: badQuote })).mockResolvedValue('[]'));
+      await harness.api.handlePersonaChatSubmit('Explain the engine.');
+      expect(harness.state.chatHistory.at(-1).sourceEvidence).toBeUndefined();
+      expect(harness.state.chatHistory.at(-1).evidenceNote).toContain('verify');
+    }
+  );
+
+  it('validates each panelist separately and retains passage metadata across the next turn', async () => {
+    const model = vi.fn().mockResolvedValueOnce(JSON.stringify({
+      dialogue: [{ speakerId: 'A', text: 'The symbolic interpretation matters.', evidenceQuote: quote },
+        { speakerId: 'B', text: 'I emphasize the mechanism.', evidenceQuote: 'This is a fabricated quotation for the mechanism.' }], updates: {}
+    })).mockResolvedValue('[]');
+    const harness = make(model, true);
+    await harness.api.handlePanelChatSubmit('Where does your evidence differ?');
+    expect(harness.state.chatHistory.find(m => m.speakerName === 'Ada').sourceEvidence.quote).toBe(quote);
+    expect(harness.state.chatHistory.find(m => m.speakerName === 'Charles').sourceEvidence).toBeUndefined();
+    expect(model.mock.calls[0][0]).toContain('do not force consensus');
+    model.mockResolvedValueOnce(JSON.stringify({ dialogue: [{ speakerId: 'A', text: 'Let us compare.' }], updates: {} }));
+    await harness.api.handlePanelChatSubmit('Compare those claims.');
+    expect(harness.state.chatHistory.find(m => m.speakerName === 'Ada').sourceEvidence.quote).toBe(quote);
+  });
+
+  it('rechecks saved passages against lesson changes and rejects the synthetic omission marker', () => {
+    const sandbox = { window: { AlloModules: {} }, console };
+    vm.runInNewContext(personaSource, sandbox);
+    const api = sandbox.window.AlloModules.PersonaEvidence;
+    const matched = api.resolve(quote, { excerpt, topic: 'Symbols' });
+    expect(matched.before).toContain('operations.');
+    expect(matched.after).toContain('The lesson');
+    expect(api.resolve(quote, { excerpt: excerpt + ' Changed.' }, matched.excerptFingerprint)).toBeNull();
+    expect(api.resolve('middle of lesson omitted for length', { excerpt: 'x'.repeat(8000) })).toBeNull();
+    expect(api.normalize({ quote, excerptFingerprint: matched.excerptFingerprint, url: 'https://invented.invalid' })).toEqual({ quote, excerptFingerprint: matched.excerptFingerprint });
+  });
+});

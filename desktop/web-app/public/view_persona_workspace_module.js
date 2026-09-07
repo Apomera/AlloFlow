@@ -224,7 +224,10 @@ function PersonaWorkspaceView({
           }),
           className: "w-full rounded-lg border border-slate-300 bg-white px-3 py-2 font-normal text-slate-900"
         }
-      )), /* @__PURE__ */ React.createElement("label", { className: "space-y-1 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, t("persona.quest_difficulty") || "Required rapport (0\u2013100)"), /* @__PURE__ */ React.createElement(
+      )), /* @__PURE__ */ React.createElement("label", { className: "space-y-1 text-xs font-bold text-slate-700" }, /* @__PURE__ */ React.createElement("span", null, (() => {
+        const value = t("persona.story_bonus_rapport");
+        return value && value !== "persona.story_bonus_rapport" ? value : "Story bonus rapport (0\u2013100)";
+      })()), /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "number",

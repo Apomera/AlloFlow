@@ -332,7 +332,7 @@ function PersonaWorkspaceView({
                                                         />
                                                     </label>
                                                     <label className="space-y-1 text-xs font-bold text-slate-700">
-                                                        <span>{t('persona.quest_difficulty') || 'Required rapport (0–100)'}</span>
+                                                        <span>{(() => { const value = t('persona.story_bonus_rapport'); return value && value !== 'persona.story_bonus_rapport' ? value : 'Story bonus rapport (0–100)'; })()}</span>
                                                         <input
                                                             type="number"
                                                             min={0}

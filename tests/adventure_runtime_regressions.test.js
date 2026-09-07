@@ -22,7 +22,7 @@ function loadMiscHandlers() {
   return new Function('window', miscSource + '\nreturn window.AlloModules.MiscHandlers;')(window);
 }
 
-function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions = [], terminal = false } = {}) {
+function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions = [], terminal = false, stateOverrides = {}, updateOverrides = {}, chanceMode = false } = {}) {
   const { handleDiceRollComplete } = loadSessionHandlers();
   let state = {
     currentScene: { text: 'Previous scene', options: ['Continue'] },
@@ -45,6 +45,7 @@ function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions 
     activeRollModifier: 0,
     activeGoldBuffTurns: 0,
     lastKeyItemTurn: 0,
+    ...stateOverrides,
   };
   const generateAdventureImage = vi.fn();
   const baseDeps = {
@@ -59,8 +60,9 @@ function resolveTurn({ freeResponse = false, inputMode = 'choice', sceneOptions 
       goldAwarded: 0,
       inventoryUpdate: null,
       isTerminalTurn: terminal,
+      ...updateOverrides,
     },
-    adventureChanceMode: false,
+    adventureChanceMode: chanceMode,
     adventureDifficulty: 'Normal',
     adventureInputMode: inputMode,
     adventureFreeResponseEnabled: freeResponse,
@@ -358,4 +360,52 @@ describe('Adventure Mode runtime regressions', () => {
     expect(result.stdout).toContain('Generated outputs are current');
     expect(after).toEqual(before);
   });
+});
+
+describe('Adventure decision receipts', () => {
+  it('records clamped resource and energy changes rather than proposed deltas', () => {
+    const { state } = resolveTurn({
+      sceneOptions: ['Continue'],
+      stateOverrides: { inventory: [{ name: 'Rope', id: 'rope-1' }], energy: 98, systemResources: [{ name: 'Reservoir', quantity: 5, unit: 'L' }] },
+      updateOverrides: { inventoryUpdate: { remove: 'Rope' }, energyChange: 20, systemStateUpdate: { add: { name: 'Reservoir', quantity: 2, unit: 'L' } }, outcomeType: 'strategic_success', conceptsUsed: ['Conservation'] }
+    });
+    const receipt = state.history.at(-1).consequence;
+    expect(receipt.choice).toBe('My answer');
+    expect(receipt.changes).toContainEqual({ key: 'energy', label: 'Energy', before: 98, after: 100, unit: '' });
+    expect(receipt.changes).toContainEqual({ key: 'resource:Reservoir', label: 'Reservoir', before: 5, after: 7, unit: 'L' });
+    expect(receipt.changes).toContainEqual({ key: 'inventory:Rope', label: 'Rope', before: 1, after: 0, unit: '' });
+    expect(receipt.concepts).toEqual(['Conservation']);
+    expect(JSON.parse(JSON.stringify(state)).history.at(-1).consequence).toEqual(receipt);
+  });
+
+  it('keeps sound reasoning separate from an unlucky story result', () => {
+    const { state } = resolveTurn({ sceneOptions: ['Continue'], chanceMode: true,
+      updateOverrides: { outcomeType: 'strategic_success', rollDetails: { d20: 1, total: 8, strategyRating: 7 } } });
+    const receipt = state.history.at(-1).consequence;
+    expect(receipt.reasoning).toBe('strategic_success');
+    expect(receipt.chanceRoll).toBe(1);
+    expect(receipt.changes.find(c => c.key === 'energy').after).toBeLessThan(100);
+  });
+
+  it('shows a new level without misreporting the XP reset as a loss', () => {
+    const { state } = resolveTurn({ sceneOptions: ['Continue'],
+      stateOverrides: { xp: 90, energy: 40 }, updateOverrides: { xpAwarded: 25 } });
+    const receipt = state.history.at(-1).consequence;
+    expect(receipt.changes).toContainEqual({ key: 'level', label: 'Level', before: 1, after: 2, unit: '' });
+    expect(receipt.changes.some(c => c.key === 'xp')).toBe(false);
+    expect(receipt.changes.find(c => c.key === 'energy').after).toBe(state.energy);
+  });
+
+  it.each([{ start: 95, score: 100, energy: 70 }, { start: 5, score: 0, energy: 50 }])(
+    'records actual climax state for score $score, without unapplied rewards', ({ start, score, energy }) => {
+      const { state } = resolveTurn({ sceneOptions: ['Continue'],
+        stateOverrides: { energy: 70, climax: { isActive: true, masteryScore: start, attempts: 0 } },
+        updateOverrides: { masteryScore: score, xpAwarded: 50, goldAwarded: 50, energyChange: 10 } });
+      const receipt = state.history.at(-1).consequence;
+      expect(state.energy).toBe(energy);
+      expect(receipt.changes.find(c => c.key === 'climax').after).toBe(score);
+      expect(receipt.changes.some(c => c.key === 'xp' || c.key === 'gold')).toBe(false);
+      expect(receipt.changes.find(c => c.key === 'energy')?.after ?? 70).toBe(energy);
+    }
+  );
 });

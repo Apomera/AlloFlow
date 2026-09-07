@@ -1,3 +1,21 @@
+function PersonaEvidenceNote({ message, source, t }) {
+  var label = function (key, fallback) { var value = t('persona.evidence.' + key); return value && value !== 'persona.evidence.' + key ? value : fallback; };
+  var api = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
+  var saved = api && api.normalize(message.sourceEvidence);
+  var passage = saved && api.resolve(saved.quote, source, saved.excerptFingerprint);
+  if (!message.evidenceNote && !saved) return null;
+  return <details className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900">
+    <summary className="cursor-pointer font-bold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-800">{label('title', 'Evidence & simulation note')}</summary>
+    {message.evidenceNote && <p className="mt-1 leading-relaxed">{String(message.evidenceNote).slice(0, 600)}</p>}
+    {passage && <div className="mt-3 rounded-lg border border-teal-200 bg-white p-3 text-slate-800">
+      <p className="font-bold text-teal-900">{label('matched', 'Matched lesson passage')}{passage.topic ? ' · ' + passage.topic : ''}</p>
+      <blockquote className="mt-2 border-l-2 border-teal-500 pl-3 leading-relaxed whitespace-pre-wrap break-words">{passage.hasBefore ? '…' : ''}{passage.before}<mark className="bg-amber-100 text-slate-950">{passage.quote}</mark>{passage.after}{passage.hasAfter ? '…' : ''}</blockquote>
+      <p className="mt-2 leading-relaxed text-slate-600">{label('check', 'Text match confirmed. Does this passage support the reply? A match does not verify every claim.')}</p>
+    </div>}
+    {saved && !passage && <p className="mt-2 leading-relaxed">{label('unavailable', 'The saved passage could not be matched to this lesson. Check the original source before using this claim.')}</p>}
+  </details>;
+}
+
 
 function PersonaChatView(props) {
   // State (object-bundle)
@@ -8,6 +26,7 @@ function PersonaChatView(props) {
   // State reads (scalar/boolean)
   var theme = ['light', 'dark', 'contrast'].includes(props.theme) ? props.theme : 'light';
   var t = props.t;
+  var inquiryLabel = function (key, fallback) { var value = t('persona.inquiry.' + key); return value && value !== 'persona.inquiry.' + key ? value : fallback; };
   var isPersonaFreeResponse = props.isPersonaFreeResponse;
   var showPersonaHints = props.showPersonaHints;
   var personaAutoRead = props.personaAutoRead;
@@ -526,6 +545,9 @@ function PersonaChatView(props) {
       if (speakerName) normalized.speakerName = speakerName;
       if (translation) normalized.translation = translation;
       if (evidenceNote) normalized.evidenceNote = evidenceNote;
+      var evidenceApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.PersonaEvidence;
+      var sourceEvidence = message.role === 'model' && evidenceApi && evidenceApi.normalize(message.sourceEvidence);
+      if (sourceEvidence) normalized.sourceEvidence = sourceEvidence;
       list.push(normalized);
       return list;
     }, []);
@@ -630,7 +652,7 @@ function PersonaChatView(props) {
         return [character && character.id, character && character.name, character && character.rapport, character && character.accumulatedXP, (character && character.quests || []).slice(0, 6).map(function (quest) { return [quest && quest.id, quest && quest.isCompleted]; })];
       }),
       chatHistory: (personaState.chatHistory || []).slice(-80).map(function (message) {
-        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000)];
+        return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
       }),
       earnedBadges: (personaState.earnedBadges || []).slice(0, 20),
       avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : ''
@@ -1113,7 +1135,7 @@ function PersonaChatView(props) {
                                                                                 : <span className="mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-indigo-400" aria-hidden="true" />}
                                                                         <span>{quest.text}</span>
                                                                     </span>
-                                                                    {!quest.isCompleted && isLocked && <span className="mt-1 block pl-4 text-[10px] font-bold opacity-70">{t('persona.rapport_requirement', { difficulty: quest.difficulty })}</span>}
+                                                                    {!quest.isCompleted && isLocked && <span className="mt-1 block pl-4 text-[10px] font-bold opacity-70">{inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}</span>}
                                                                 </li>
                                                             );
                                                         })}
@@ -1143,6 +1165,7 @@ function PersonaChatView(props) {
                             <div className="flex-1 flex flex-col bg-slate-50/50 relative min-w-0 md:min-w-[320px]">
                                 <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" ref={personaScrollRef} onScroll={(e) => { const el = e.currentTarget; personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120; }} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t("a11y.interview_conversation")}>
                                     <div role="note" className="mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'}</div>
+                      <p className="mx-auto max-w-2xl text-center text-xs leading-relaxed text-slate-600 mt-1">{inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')}</p>
                                     {personaHiddenMessageCount > 0 && (
                                         <div role="note" className="mx-auto max-w-2xl rounded-xl border border-slate-300 bg-white px-4 py-2 text-center text-xs text-slate-600">{t('persona.older_messages_hidden', { count: personaHiddenMessageCount })}</div>
                                     )}
@@ -1235,7 +1258,7 @@ function PersonaChatView(props) {
                                                             <p className="text-xs text-slate-500 leading-relaxed italic">{msg.translation}</p>
                                                         </div>
                                                     )}
-                                                    {!isUser && msg.evidenceNote && (<details className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"><summary className="cursor-pointer font-bold">{t('persona.evidence_note') || 'Evidence & simulation note'}</summary><p className="mt-1 leading-relaxed">{msg.evidenceNote}</p></details>)}
+                                                    {!isUser && <PersonaEvidenceNote message={msg} source={generatedContent?.config?.personaSource} t={t}/>}
                                                     {!isUser && <span className="mt-2 flex items-center gap-1 text-[11px] text-slate-600 opacity-70"><Volume2 size={11}/> {t('persona.click_sentence') || 'Click any sentence to listen'}</span>}
                                                  </div>
                                                  <span className={`text-[11px] mt-1 px-1 font-bold uppercase tracking-wider flex items-center gap-1 ${isMessagePlayingNow ? 'text-yellow-700' : 'text-slate-600'}`}>
@@ -1591,7 +1614,7 @@ function PersonaChatView(props) {
                      {personaState.selectedCharacter.quests && personaState.selectedCharacter.quests.length > 0 && (
                          <div className="w-full mt-6 text-left">
                              <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1">
-                                 <Search size={12}/> {t('persona.secrets_to_uncover')}
+                                 <Search size={12}/> {inquiryLabel('topics', 'Topics to explore')}
                              </h4>
                              <div className="space-y-2">
                                  {personaState.selectedCharacter.quests.map((quest, qIdx) => (
@@ -1606,7 +1629,7 @@ function PersonaChatView(props) {
                                                  </span>
                                                  {!quest.isCompleted && (
                                                      <span className="text-[11px] uppercase tracking-wider font-bold opacity-60">
-                                                         {t('persona.trust_requirement', { difficulty: quest.difficulty })}
+                                                         {inquiryLabel('bonus', 'Optional story bonus at rapport')} {quest.difficulty}
                                                      </span>
                                                  )}
                                              </div>
@@ -1806,6 +1829,7 @@ function PersonaChatView(props) {
                     )}
                     <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/30 custom-scrollbar" ref={personaScrollRef} onScroll={(e) => { const el = e.currentTarget; personaScrollRef.current.__alloStickToBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120; }} role="log" aria-live="polite" aria-atomic="false" aria-relevant="additions text" aria-label={t('a11y.interview_conversation') || 'Interview conversation with character'}>
                         <div role="note" className="mx-auto max-w-2xl rounded-xl border border-amber-200 bg-amber-50 px-4 py-2 text-center text-xs text-amber-900">{t('persona.simulation_disclaimer') || 'AI-generated historical simulation. Verify important claims with lesson evidence and trusted sources.'}</div>
+                      <p className="mx-auto max-w-2xl text-center text-xs leading-relaxed text-slate-600 mt-1">{inquiryLabel('access', 'Ask, question, or respectfully disagree. Lesson answers are available at every rapport level.')}</p>
                         {(!personaState.chatHistory || personaState.chatHistory.length === 0) && (
                             <div className="mx-auto my-10 max-w-md text-center rounded-2xl border border-dashed border-yellow-200 bg-white/80 px-6 py-8 shadow-sm">
                                 <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-yellow-50 text-yellow-600 border border-yellow-200">
@@ -1910,7 +1934,7 @@ function PersonaChatView(props) {
                                                              </p>
                                                          );
                                                      })}
-                                                     {!isUser && msg.evidenceNote && (<details className="mt-3 rounded-lg border border-amber-200 bg-amber-50/80 p-2 text-xs text-amber-900"><summary className="cursor-pointer font-bold">{t('persona.evidence_note') || 'Evidence & simulation note'}</summary><p className="mt-1 leading-relaxed">{msg.evidenceNote}</p></details>)}
+                                                     {!isUser && <PersonaEvidenceNote message={msg} source={generatedContent?.config?.personaSource} t={t}/>}
                                                      {translationText && (
                                                          <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
                                                              <div className="flex items-center gap-2 mb-1">

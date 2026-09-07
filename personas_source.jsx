@@ -10,6 +10,49 @@
 // call so they're always fresh. `window.callGemini` / `window.callGeminiImageEdit` are
 // accessed directly to avoid the closure-capture-of-fallback problem when module load
 // order differs from GeminiAPI module.
+// A literal passage match supports inspection, not automatic claim verification.
+// Recheck saved quotes against the current bound excerpt; never trust model metadata.
+const PersonaEvidence = (() => {
+    const excerptFor = (value) => {
+        const text = typeof value === 'string' ? value.trim() : '';
+        if (text.length <= 6000) return text;
+        const marker = '\n\n[... middle of lesson omitted for length ...]\n\n';
+        const available = 6000 - marker.length;
+        return text.slice(0, Math.ceil(available * 0.6)) + marker + text.slice(-Math.floor(available * 0.4));
+    };
+    const fingerprint = (text) => {
+        let hash = 2166136261;
+        for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+        return 'fnv1a-' + (hash >>> 0).toString(16).padStart(8, '0');
+    };
+    const normalize = (raw) => {
+        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+        const quote = typeof raw.quote === 'string' ? raw.quote.trim() : '';
+        if (quote.length < 20 || quote.length > 500 || !/^fnv1a-[0-9a-f]{8}$/.test(raw.excerptFingerprint || '')) return null;
+        return { quote, excerptFingerprint: raw.excerptFingerprint };
+    };
+    const resolve = (value, binding, expectedFingerprint) => {
+        const quote = typeof value === 'string' ? value.trim() : '';
+        if (quote.length < 20 || quote.length > 500 || !binding || typeof binding.excerpt !== 'string') return null;
+        const excerpt = excerptFor(binding.excerpt);
+        const excerptFingerprint = fingerprint(excerpt);
+        if (expectedFingerprint && expectedFingerprint !== excerptFingerprint) return null;
+        const index = excerpt.indexOf(quote);
+        const marker = '[... middle of lesson omitted for length ...]';
+        const omission = excerpt.indexOf(marker);
+        if (index < 0 || (omission >= 0 && index < omission + marker.length && index + quote.length > omission)) return null;
+        return {
+            quote, excerptFingerprint,
+            topic: typeof binding.topic === 'string' ? binding.topic.trim().slice(0, 300) : '',
+            before: excerpt.slice(Math.max(0, index - 140), index),
+            after: excerpt.slice(index + quote.length, index + quote.length + 140),
+            hasBefore: index > 140,
+            hasAfter: index + quote.length + 140 < excerpt.length
+        };
+    };
+    return { normalize, resolve };
+})();
+
 const createPersonas = (deps) => {
     const {
         liveRef,              // { current: { ...all React state + setters + component helpers } }
@@ -252,6 +295,8 @@ const createPersonas = (deps) => {
             if (typeof raw.evidenceNote === 'string' && raw.evidenceNote.trim()) {
                 message.evidenceNote = raw.evidenceNote.trim().slice(0, 600);
             }
+            const sourceEvidence = role === 'model' ? PersonaEvidence.normalize(raw.sourceEvidence) : null;
+            if (sourceEvidence) message.sourceEvidence = sourceEvidence;
             if (typeof raw.visualReaction === 'string' && raw.visualReaction.trim()) {
                 message.visualReaction = raw.visualReaction.trim().slice(0, 500);
             }
@@ -330,7 +375,8 @@ const createPersonas = (deps) => {
             speakerName: String(message && message.speakerName || '').slice(0, 120),
             text: String(message && message.text || '').slice(0, 2000),
             translation: String(message && message.translation || '').slice(0, 2000),
-            evidenceNote: String(message && message.evidenceNote || '').slice(0, 600)
+            evidenceNote: String(message && message.evidenceNote || '').slice(0, 600),
+            sourceEvidence: PersonaEvidence.normalize(message && message.sourceEvidence)
         }));
         const earlierMessages = normalizedMessages.slice(0, Math.max(0, normalizedMessages.length - 100));
         return fingerprintText(JSON.stringify({
@@ -1245,8 +1291,8 @@ const createPersonas = (deps) => {
               ${metadataBlock}
               Generate exactly 6 things the student could say next with different QUALITY TIERS:
               NEUTRAL (2): Clarifying or factual questions that keep the interview moving without deepening it
-              GOOD (2): Probing, open-ended questions that build on what the figure just said or invite reflection
-              POOR (2): Classroom-safe missteps - closed questions, off-topic tangents, or questions the figure already answered. Never include slurs, hate, threats, sexual content, identity attacks, harassment, or instructions for harm.
+              GOOD (2): Probing questions that build on evidence, seek clarification, compare interpretations, or respectfully challenge a claim
+              POOR (2): Classroom-safe missteps that ignore the reply or jump to an unsupported conclusion. Never classify a question as poor merely for being brief, factual, or asking for clarification. Never include slurs, hate, threats, sexual content, identity attacks, harassment, or instructions for harm.
               Make each a complete question or response the student could say.
               Write every option entirely in ${safeTargetLang}.
               Mix up the order so they are NOT grouped by quality.
@@ -1362,7 +1408,7 @@ const createPersonas = (deps) => {
               </UNTRUSTED_DEBATE_EXCHANGE>
               Generate exactly 6 student moderator responses with different QUALITY TIERS:
               NEUTRAL (2 responses): Clarifying questions or safe redirections that neither significantly help nor harm the discussion
-              GOOD (2 responses): Responses that build rapport, find common ground, or generate productive insight
+              GOOD (2 responses): Responses that compare evidence, clarify a real disagreement, find common ground, or respectfully challenge a claim
               POOR (2 responses): Classroom-safe conversational missteps that miss the point or mildly derail rapport. Never include slurs, hate, threats, sexual content, identity attacks, harassment, or instructions for harm.
               Make each response a complete sentence or question the student could say.
               Write every student response entirely in ${safeTargetLang}.
@@ -2037,19 +2083,22 @@ const createPersonas = (deps) => {
           ${promptData(userText, 2000)}
           </UNTRUSTED_STUDENT_MESSAGE>
           TASK 1: EVALUATE IMPACT
-          - Did the student please or offend Character A? (Rapport +/-)
-          - Did the student please or offend Character B? (Rapport +/-)
-          - Did the student help them find COMMON GROUND? (Harmony Score 0-100)
+          - For each character, reward respectful inquiry, clarifying questions, relevant evidence, and constructive disagreement (Rapport +/-). Never require flattery or agreement.
+          - Do not penalize respectful comparisons with modern life; explain historical differences.
+          - Harmony is a story measure of mutual understanding (0-100). Reward accurately explaining differences as well as finding common ground; do not force consensus.
           - Did the student satisfy any specific Quest Objectives?
           TASK 2: GENERATE DIALOGUE
           - Generate 1-2 turns of dialogue where they respond to the student and each other.
+          - Answer lesson questions at every rapport level. Rapport gates only optional story bonuses, never access to facts or evidence.
+          - When viewpoints differ, make one specific point of disagreement clear and invite the student to compare the evidence.
+          - For each reply, evidenceQuote may contain one exact, contiguous passage (20-500 characters) copied from UNTRUSTED_LESSON_EVIDENCE in its original language, or null if none supports the reply. Never paraphrase inside evidenceQuote.
           Return ONLY JSON:
           Language requirement: All character dialogue must be in ${safeTargetLang}.
           ${panelTranslationInstruction}
           {
               "dialogue": [
-                  { "speakerId": "A", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "nodding", "evidenceNote": "Source-based support or reconstruction warning" },
-                  { "speakerId": "B", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "frowning", "evidenceNote": "Source-based support or reconstruction warning" }
+                  { "speakerId": "A", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "nodding", "evidenceNote": "Source-based support or reconstruction warning", "evidenceQuote": "Exact lesson passage, or null" },
+                  { "speakerId": "B", "text": "...", "translation": "translation into the requested gloss language, or null", "visualReaction": "frowning", "evidenceNote": "Source-based support or reconstruction warning", "evidenceQuote": "Exact lesson passage, or null" }
               ],
               "updates": {
                   "charA": { "rapportChange": integer, "completedQuestId": "id_or_null" },
@@ -2080,6 +2129,7 @@ const createPersonas = (deps) => {
                 .filter(turn => turn && resolvePanelSpeaker(turn) && typeof turn.text === 'string' && turn.text.trim())
                 .slice(0, 4)
                 .map(turn => ({
+                    sourceEvidence: PersonaEvidence.normalize(PersonaEvidence.resolve(turn.evidenceQuote, sourceBinding)),
                     speaker: resolvePanelSpeaker(turn),
                     text: turn.text.trim().slice(0, 12000),
                     ...(typeof turn.translation === 'string' && turn.translation.trim() ? { translation: turn.translation.trim().slice(0, 12000) } : {}),
@@ -2150,7 +2200,7 @@ const createPersonas = (deps) => {
                     ...(typeof turn.translation === 'string' && turn.translation.trim() ? { translation: turn.translation.trim() } : {}),
                     speakerName: turn.speaker,
                     visualReaction: turn.visualReaction,
-                    evidenceNote: turn.evidenceNote
+                    evidenceNote: turn.evidenceNote, sourceEvidence: turn.sourceEvidence
                 }));
                 const newBadges = [...(prev.earnedBadges || [])];
                 if (newHarmony >= 50 && !newBadges.includes('harmonizer')) {
@@ -2191,7 +2241,7 @@ const createPersonas = (deps) => {
             });
             if (!isPersonaFreeResponse) {
                 const updatedHistory = normalizePersonaChatHistory([...historyContextForPrompt, { role: 'user', text: userText.trim() }, ...(data.dialogue || []).map(turn => ({
-                    role: 'model', text: turn.text, ...(turn.translation ? { translation: turn.translation } : {}), speakerName: turn.speaker, evidenceNote: turn.evidenceNote
+                    role: 'model', text: turn.text, ...(turn.translation ? { translation: turn.translation } : {}), speakerName: turn.speaker, evidenceNote: turn.evidenceNote, sourceEvidence: turn.sourceEvidence
                 }))]);
                 generatePanelFollowUps(updatedHistory, charA, charB);
             }
@@ -2372,22 +2422,25 @@ const createPersonas = (deps) => {
               --- SOCIAL MECHANICS ---
               Current Rapport (Trust): ${currentRapport}/100.
               BEHAVIOR RULES:
-              - If Rapport is < 30 (Suspicious): Be evasive, short, and guarded. Do NOT reveal personal secrets.
-              - If Rapport is 30-70 (Neutral): Be polite but formal. Answer factual questions, but deflect deep personal ones.
-              - If Rapport is > 70 (Trusted): Be open, vulnerable, and detailed. Share your inner thoughts.
+              - At EVERY rapport level, answer lesson questions and explain available evidence. Never withhold curriculum facts.
+              - Low rapport may make your tone formal or reserved about optional fictional personal stories. Clearly label reconstructed thoughts.
+              - Higher rapport may make the story warmer and more open. Rapport is a storytelling measure, not a judgment of the student.
               --- QUEST OBJECTIVES ---
-              The student is trying to uncover these facts:
-              ${activeQuests.length > 0 ? promptData(activeQuests.map(q => `- Quest ID ${q.id}: ${q.text} (Requires ${q.difficulty} Rapport)`).join('\n'), 3000) : "No active quests."}
+              The student is exploring these topics. Rapport thresholds unlock optional story bonuses; factual answers remain available:
+              ${activeQuests.length > 0 ? promptData(activeQuests.map(q => `- Quest ID ${q.id}: ${q.text} (Optional story bonus: ${q.difficulty} rapport)`).join('\n'), 3000) : "No active quests."}
               --- SETTINGS ---
               Target Audience: ${promptData(gradeLevel, 120)} students. Adapt vocabulary and complexity accordingly.
               ${langInstruction}
               EVALUATION TASK:
               1. Analyze the student's latest message.
-                 - If they are polite, empathetic, or demonstrate knowledge of your era, INCREASE Rapport.
-                 - If they are rude, pushy, or anachronistic (mentioning iPhones, etc.), DECREASE Rapport.
+                 - Reward respectful inquiry, relevant evidence, clarifying questions, and constructive disagreement. Never require flattery or agreement.
+                 - Do not penalize respectful comparisons with modern life; explain what differs across eras.
+                 - Reserve negative rapport for clearly disrespectful behavior, not language errors, brevity, uncertainty, or challenging a claim.
               2. Check if their question satisfies a Quest Objective.
-                 - IF they asked the right question AND Rapport >= Difficulty -> MARK COMPLETE and answer fully.
-                 - IF they asked the right question BUT Rapport < Difficulty -> MARK BLOCKED and give a hint (e.g., "I don't know you well enough to share that yet.").
+                 - Answer the lesson question fully using available evidence at ANY rapport.
+                 - IF the question meets the objective AND projected Rapport >= Difficulty -> MARK COMPLETE for the optional story bonus.
+                 - Otherwise leave the optional bonus pending; never refuse the factual answer or imply the student must earn access to knowledge.
+              3. evidenceQuote may contain one exact, contiguous passage (20-500 characters) copied from UNTRUSTED_LESSON_EVIDENCE in its original language, or null if none supports the response. Never paraphrase inside evidenceQuote.
               ${translationInstruction}
               Respond entirely in ${safeTargetLang}.
               <UNTRUSTED_CONVERSATION_HISTORY>
@@ -2403,8 +2456,9 @@ const createPersonas = (deps) => {
                   "visualReaction": "A concise visual description of your current action. This can be: 1. A facial expression (e.g., 'furrowed brow'). 2. A gesture (e.g., 'pointing at the horizon', 'shrugging', 'bowing'). 3. An interaction with an object (e.g., 'holding a map', 'examining a quill'). Keep it simple and visual.",
                   "rapportChange": integer (e.g., +5, -10),
                   "completedQuestId": "q1" (or null if none),
-                  "questBlockedReason": "string" (if they asked but rapport was too low),
-                  "evidenceNote": "Short source-based support, or say this is an AI reconstruction that should be verified"
+                  "questBlockedReason": "Optional story bonus pending, or null; the lesson answer is still available",
+                  "evidenceNote": "Short source-based support, or say this is an AI reconstruction that should be verified",
+                  "evidenceQuote": "Exact lesson passage, or null"
               }
             `;
             const resultRaw = await callPersonaModel(prompt, true, false, turnRequest, PERSONA_MODEL_TIMEOUTS.turn);
@@ -2440,7 +2494,8 @@ const createPersonas = (deps) => {
             const evidenceNote = typeof resultParsed.evidenceNote === 'string' && resultParsed.evidenceNote.trim()
                 ? resultParsed.evidenceNote.trim().slice(0, 600)
                 : translateOrFallback(t, 'persona.evidence_reconstruction_note', {}, 'AI simulation; verify important claims with lesson sources.');
-            const finalHistory = normalizePersonaChatHistory([...historyContextForPrompt, { role: 'user', text: textToSend.trim() }, { role: 'model', text: responseText, evidenceNote, ...(translationText ? { translation: translationText } : {}), ...(visualReaction ? { visualReaction } : {}) }]);
+            const sourceEvidence = PersonaEvidence.normalize(PersonaEvidence.resolve(resultParsed.evidenceQuote, sourceBinding));
+            const finalHistory = normalizePersonaChatHistory([...historyContextForPrompt, { role: 'user', text: textToSend.trim() }, { role: 'model', text: responseText, evidenceNote, ...(sourceEvidence ? { sourceEvidence } : {}), ...(translationText ? { translation: translationText } : {}), ...(visualReaction ? { visualReaction } : {}) }]);
             const delta = clampInteger(resultParsed.rapportChange, -20, 20);
             const newRapportPreview = Math.max(0, Math.min(100, currentRapport + delta));
             const requestedQuestId = resultParsed.completedQuestId == null ? null : String(resultParsed.completedQuestId);
@@ -2548,7 +2603,7 @@ const createPersonas = (deps) => {
                 }
             }
             if (resultParsed.questBlockedReason || questWasBlocked) {
-                addToast(t('persona.toasts.trust_too_low'), "warning");
+                addToast(translateOrFallback(t, 'persona.toasts.story_bonus_pending', {}, 'Optional story bonus pending. Lesson answers remain available at every rapport level.'), "info");
             }
             const suggestionCount = isPersonaFreeResponse ? 2 : 6;
             generatePersonaFollowUps(finalHistory, personaState.selectedCharacter, suggestionCount);
@@ -2955,6 +3010,7 @@ const createPersonas = (deps) => {
 // Registration shim — attach factory + trigger monolith's _upgradePersonas().
 if (typeof window !== 'undefined') {
     window.AlloModules = window.AlloModules || {};
+    window.AlloModules.PersonaEvidence = PersonaEvidence;
     window.AlloModules.createPersonas = createPersonas;
     window.AlloModules.Personas = true;
     console.log('[Personas] Factory registered');

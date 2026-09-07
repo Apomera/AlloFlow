@@ -1,3 +1,40 @@
+function AdventureConsequenceCard({ consequence, t, immersive = false }) {
+  if (!consequence || consequence.version !== 1) return null;
+  var label = function (key, fallback) { var value = t('adventure.debrief.' + key); return value && value !== 'adventure.debrief.' + key ? value : fallback; };
+  var ratings = { strategic_success: ['effective', 'Effective strategy'], partial_success: ['partial', 'Partly supported strategy'], misconception: ['revisit', 'Reasoning to revisit'], neutral: ['unrated', 'Strategy not rated'] };
+  var rating = ratings[consequence.reasoning] || ratings.neutral;
+  var changes = (Array.isArray(consequence.changes) ? consequence.changes : []).filter(function (c) { return c && Number.isFinite(c.before) && Number.isFinite(c.after); }).slice(0, 12);
+  var concepts = (Array.isArray(consequence.concepts) ? consequence.concepts : []).filter(function (c) { return typeof c === 'string'; }).slice(0, 6);
+  return (
+    <section aria-label={label('title', 'Decision debrief')} className={`not-italic rounded-xl border p-3 space-y-3 min-w-0 break-words ${immersive ? 'bg-slate-950/85 border-cyan-300/40 text-slate-100' : 'bg-white border-teal-200 text-slate-800'}`}>
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`text-[11px] uppercase tracking-wider font-bold ${immersive ? 'text-cyan-200' : 'text-teal-800'}`}>{label('title', 'Decision debrief')}</span>
+        <span className={`rounded-full px-2 py-1 text-xs font-semibold ${immersive ? 'bg-slate-800 text-white' : 'bg-teal-50 text-teal-900'}`}>{label(rating[0], rating[1])}</span>
+      </div>
+      {typeof consequence.explanation === 'string' && consequence.explanation && <p className="text-sm leading-relaxed whitespace-pre-wrap">{consequence.explanation.slice(0, 1800)}</p>}
+      <div>
+        <p className="text-xs font-bold mb-2">{label('changes', 'Recorded story changes')}</p>
+        {changes.length > 0 ? <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {changes.map(function (change, index) { return <div key={index} className={`rounded-lg border px-2.5 py-2 ${immersive ? 'border-white/20 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+            <dt className="text-xs">{typeof change.key === 'string' && (change.key.startsWith('resource:') || change.key.startsWith('inventory:')) ? String(change.label || '').slice(0, 80) : label('metric_' + change.key, String(change.label || '').slice(0, 80))}</dt>
+            <dd className="font-bold tabular-nums text-sm">{change.before} <span aria-label={label('to', 'to')}>→</span> {change.after}{change.unit ? ' ' + String(change.unit).slice(0, 30) : ''}</dd>
+          </div>; })}
+        </dl> : <p className="text-xs">{label('no_changes', 'No tracked values changed this turn.')}</p>}
+      </div>
+      <p className={`text-xs leading-relaxed ${immersive ? 'text-slate-300' : 'text-slate-600'}`}>
+        {label('ai_note', 'Strategy feedback is AI guidance, not a grade.')}
+        {consequence.chanceMode && <> {Number.isFinite(consequence.chanceRoll) && <strong>{label('die', 'Chance die')}: {consequence.chanceRoll}/20. </strong>}{label('chance_note', 'Chance can change the story result without changing the quality of your reasoning.')}</>}
+      </p>
+      {(consequence.choice || concepts.length > 0) && <details className={`border-t pt-2 ${immersive ? 'border-white/20' : 'border-slate-200'}`}>
+        <summary className={`cursor-pointer text-xs font-semibold min-h-8 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 ${immersive ? 'focus-visible:outline-cyan-300' : 'focus-visible:outline-teal-800'}`}>{label('reflect', 'Review your decision')}</summary>
+        {typeof consequence.choice === 'string' && <p className="text-sm mt-2 whitespace-pre-wrap">{consequence.choice.slice(0, 1200)}</p>}
+        {concepts.length > 0 && <p className="text-xs mt-2"><strong>{label('concepts', 'Concepts to check')}: </strong>{concepts.join(' · ')}</p>}
+        <p className="text-xs mt-2">{label('next', 'Which part of your reasoning would you keep or change next time?')}</p>
+      </details>}
+    </section>
+  );
+}
+
 
 function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
   var closeHandlerRef = React.useRef(onClose);
@@ -1249,7 +1286,7 @@ function AdventureView(props) {
                                     }`}>
                                         {entry.type === 'choice' && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1">{t('adventure.you_chose')}</span>}
                                         {entry.type === 'feedback' && <span className="block text-[11px] font-bold uppercase tracking-wider opacity-70 mb-1 flex items-center gap-1"><Sparkles size={10}/> {t('adventure.analysis_label')}</span>}
-                                        {renderFormattedText(entry.text, true, entry.type === 'choice')}
+                                        {entry.type === 'feedback' && entry.consequence?.version === 1 ? <AdventureConsequenceCard consequence={entry.consequence} t={t}/> : renderFormattedText(entry.text, true, entry.type === 'choice')}
                                     </div>
                                 </div>
                             ))}
@@ -1812,7 +1849,7 @@ function AdventureView(props) {
                                                     if (lastFeedback) {
                                                         return (
                                                             <div role="status" aria-live="polite" aria-atomic="true" className="text-yellow-300 text-sm mb-3 italic font-medium border-b border-white/20 pb-2">
-                                                                {renderFormattedText(lastFeedback.text, false, true)}
+                                                                {lastFeedback.consequence?.version === 1 ? <AdventureConsequenceCard consequence={lastFeedback.consequence} t={t} immersive/> : renderFormattedText(lastFeedback.text, false, true)}
                                                             </div>
                                                         );
                                                     }
