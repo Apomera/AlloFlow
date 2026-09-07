@@ -336,3 +336,13 @@ The options are already stored once per case, so a real shuffle at build time is
 
 Worth recording, not changed: the three distractors for case N are the answers to cases N+1, N+2 and N+3. A learner who finishes case N has just been shown the next three answers as wrong options. That is a content decision about how the scenario pool is drawn, so it is written down here rather than altered.
 
+## This week's additions, measured in every theme
+
+September 6, 2026. Brain Atlas read zero on the lab's contrast gate on September 4, before any of this week's work existed. None of it had been measured under the host cascade since: the progress tiles and their retry button, the saved-round clue and its hint, the representation row on the learning card, the plain cards and their checks, the reading-size changes, the neuromyths view, and the aria-disabled answer buttons.
+
+Measured today with the repo's own instrument, the host theme rules injected, in light, dark and high contrast, at 390, 760 and 1280 CSS pixels, across six driven states chosen to put each of those surfaces on screen: the expanded overview with a missed check, a midline region with no 3D counterpart, a plain card with its check open, the stimulation view with its treatment guide open, the neuromyths view, and quiz mode. Zero findings in every theme at every width.
+
+Two things make that zero worth believing. First, the tool's colour tokens all resolve to the host's palette variables, and the host defines every one of the nine names this tool uses in each theme block, so a control built from tokens inherits its theme values through the same path as the rest of the tool; the dark screenshot of the retry button confirms it. Second, the same run put the known-bad fixture through the gate and got exactly the one finding it is documented to produce, so the instrument was live, not silently blind.
+
+One trap for whoever runs this next: the gate is invoked by a relative path, and the shell's working directory drifts between calls in this environment. A run from the wrong directory exits cleanly and writes an empty file, which parses as no result rather than as an error. Start the command with an explicit cd.
+
