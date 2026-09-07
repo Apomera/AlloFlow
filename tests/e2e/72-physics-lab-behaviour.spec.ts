@@ -193,6 +193,46 @@ test('does not narrate the running simulation through a live region', async ({ p
   expect(result.hits).toBeLessThanOrEqual(3);
 });
 
+test('the symmetry demo fires both complementary angles and they land together', async ({ page }) => {
+  // The tool teaches that complementary angles share a range, and this button is
+  // how it shows that. It chains two launches on real-time setTimeouts, so it only
+  // works if launching is reachable from code AND simulated time tracks wall time —
+  // when the sim ran at 2x, every wait in the chain was twice as long as it needed
+  // to be. Nothing covered the demo end to end before.
+  await mountPhysics(page);
+  await setState(page, { angle: 30, velocity: 25, gravity: 9.8, mass: 1, airResist: false, simSpeed: 1 });
+
+  await page.getByRole('button', { name: /Symmetry demo/i }).click();
+
+  // Two flights of ~2.6s and ~4.4s plus the chain's own padding.
+  await page.waitForFunction(
+    () => ((document.getElementById('physicsCanvas') as any)?._trails || []).filter((t: any) => t.length > 2).length >= 2,
+    null,
+    { timeout: 60_000 },
+  );
+  await page.waitForFunction(
+    () => !(document.getElementById('physicsCanvas') as any)?._launched,
+    null,
+    { timeout: 60_000 },
+  );
+
+  const shots = await page.evaluate(() => {
+    const cv = document.getElementById('physicsCanvas') as any;
+    return (cv._trails || [])
+      .filter((t: any) => t.length > 2)
+      .slice(-2)
+      .map((t: any) => ({ angle: t.angle, vel: t.velocity, range: t[t.length - 1].mX }));
+  });
+
+  expect(shots.length).toBe(2);
+  expect(shots.map((s: any) => s.angle).sort((a: number, b: number) => a - b)).toEqual([30, 60]);
+  expect(shots[0].vel).toBe(shots[1].vel);            // same speed, only the angle differs
+  // The whole point: complementary angles land in the same place without drag.
+  expect(Math.abs(shots[0].range - shots[1].range)).toBeLessThan(1.5);
+  // And the overlay is turned on so both curves are actually visible.
+  expect(await page.evaluate(() => (window as any).__toolData.physics.showOverlay)).toBe(true);
+});
+
 test('counts launches and logs each run with a fair-test verdict', async ({ page }) => {
   await mountPhysics(page);
   await setState(page, { angle: 40, velocity: 30, gravity: 9.8, mass: 1, airResist: false });
