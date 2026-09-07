@@ -46,12 +46,12 @@ exports[`big STEM tool render goldens (default state) > renders + pins a digest 
 
 exports[`big STEM tool render goldens (default state) > renders + pins a digest for cephalopodLab 1`] = `
 {
-  "buttons": 17,
+  "buttons": 52,
   "inputs": 1,
-  "lengthBucket": 80,
+  "lengthBucket": 256,
   "selects": 0,
-  "sha": "c8bb0a804e5c4ec9",
-  "svgs": 0,
+  "sha": "ce4dd2504bd3f002",
+  "svgs": 1,
 }
 `;
 
