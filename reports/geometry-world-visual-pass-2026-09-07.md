@@ -64,6 +64,22 @@ Probe results (`scratch/geometry-world-visuals-2026-09-07/probe-round6.mjs`): gr
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round7.mjs`): elevation measured back from the light position matches the preset in every case (day 58, sunrise 10.8, night 44); the shadow target tracked the player out to x = 44, outside the old box; the sun disc drops from y 76 at noon to y 17 at sunrise; moon opacity 0 by day and 0.92 at night; the torch halo is in the scene and flickering. Zero page errors. Same tower, same camera, three times of day: `after7-shadows-day.png`, `-golden.png`, `-sunset.png`.
 
+## Round 8 (same day): the characters
+
+Professor Block and the others anchor every lesson, and they were still a tapered cylinder, a sphere and two dots, which read crude against the world around them.
+
+**Every character has been staring blankly, and no test could see it.** The pupil sphere sat at z 0.27 with radius 0.032 and the eye white at z 0.255 with radius 0.055. The centres are 0.015 apart, and 0.015 + 0.032 is less than 0.055, so the pupil was entirely inside the white sphere and could never be drawn. The comment above it claimed the opposite, so this was a fix that never landed. Both spheres were present and correctly parented in the scene graph, which is why nothing caught it. The pupil now stands 0.022 proud of the white, and the arithmetic that decides visibility is pinned: the pupil must break the white's front surface, must not be containable inside it at any radii, and both spheres must clear the skull.
+
+**Arms.** Each hangs from an Object3D pivot at the shoulder, so rotating it swings the arm from the shoulder rather than about its own middle. They are children of the body, so the existing turn-to-face and idle wander carry them for free. They swing out of phase with each other while walking, and go up when a character celebrates a right answer.
+
+**A mouth**, a flattened dark oval under the eyes: enough to read as a face across a lesson without giving the character an expression the dialogue has not earned.
+
+**Blinking.** Each character has its own period and offset from a seed, so a room full of them never blinks in unison. The rhythm is a pure function, pinned for range, rate, determinism and independence. Blinking and arm swing both stop under reduced motion and battery saver, where the existing bob is already still.
+
+**A leak fixed on the way.** Character teardown disposed a flat list of body, head and sprites. Eyes, mouth and arms are children, so their geometry and materials survived every lesson change. Disposal now traverses, which the probe confirms: twelve geometry disposals across four characters, exactly body plus two arms each.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round8.mjs`): arms are body children hanging below their pivots and casting shadows; the mouth is on the head; all four characters blink and never at the same instant; arms swing over time and rise from 0.16 to 1.37 radians when celebrating; a lesson change leaves zero characters and disposes everything. Zero page errors.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -73,3 +89,5 @@ Round 5 run of the same spec: **14 passed, 3 flaky (passed on retry)** in 14.7 m
 Round 6 run of the same spec: **16 passed, 1 failed**. The failure was the sprite census pin "the sun is the only sprite a character-free world carries"; the moon is now a second permanent sky sprite, so the pin moved to two with the reason inline, and the test passed on re-run (12.8 s, retries off). No other test changed.
 
 Round 7 run of the same spec: **14 passed, 2 failed, 1 flaky** in 17.8 minutes, against a usual 6 to 10, with 15 Chromium processes from another session competing for the machine. Both failures were mount timeouts waiting for the canvas, not assertion failures, and neither test touches anything this round changed. Re-run unchanged with retries off on a quieter machine: "rotating a wedge keeps it in its own cell" passed 1/1 and "Q actually changes the shape of the block that gets placed" passed 3/3. A clean full-spec run was not possible while the other suite held the machine, so this is reported as measured rather than as a green run.
+
+Round 8 run of the same spec: **17 passed, 0 failed, 0 flaky** in 8.0 minutes on a quiet machine, with no retries. This also retroactively clears the round 7 report above: the same tests that timed out under the competing suite all pass here.

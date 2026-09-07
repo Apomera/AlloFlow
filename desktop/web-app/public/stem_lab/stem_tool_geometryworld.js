@@ -395,6 +395,19 @@
     var d = ((((b - a) % 360) + 540) % 360) - 180;
     return a + d * t;
   }
+  // How open a character's eyes are at time t: 1 open, ~0.1 at the closed point of
+  // a blink. Each character gets its own period and offset from its seed, so a room
+  // full of them never blinks in unison. Pure, so the rhythm is pinned without WebGL.
+  function geometryWorldBlinkScale(t, seed) {
+    var h = Math.abs(Math.sin((seed || 0) * 12.9898) * 43758.5453);
+    var frac = h - Math.floor(h);
+    var period = 3.4 + frac * 2.6;
+    var phase = (t + frac * period) % period;
+    var BLINK = 0.14;
+    if (phase >= BLINK) return 1;
+    return 1 - Math.sin(Math.PI * (phase / BLINK)) * 0.9;
+  }
+  window.StemLab.GeometryWorldBlinkScale = geometryWorldBlinkScale;
   window.StemLab.GeometryWorldSunVector = geometryWorldSunVector;
   window.StemLab.GeometryWorldLerpAngle = geometryWorldLerpAngle;
 
@@ -4211,9 +4224,14 @@
             [n.body, n.head, n.label, n.prompt, n.qMark, n._speechBubble, n._ring].forEach(function(obj) {
               if (!obj) return;
               engine.scene.remove(obj);
-              if (obj.material && obj.material.map && obj.material.map.dispose) obj.material.map.dispose();
-              if (obj.material && obj.material.dispose) obj.material.dispose();
-              if (obj.geometry && obj.geometry.dispose) obj.geometry.dispose();
+              // Traverse, not just the object itself: eyes, mouth and arms are
+              // CHILDREN of the head and body, so a flat dispose left their geometry
+              // and materials on the GPU after every lesson change.
+              obj.traverse(function(part) {
+                if (part.material && part.material.map && part.material.map.dispose) part.material.map.dispose();
+                if (part.material && part.material.dispose) part.material.dispose();
+                if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+              });
             });
           });
           engine.npcs = [];
@@ -4230,6 +4248,28 @@
           body.castShadow = true;
           engine.scene.add(body);
 
+          // Arms. Each hangs from an Object3D pivot at the shoulder, so rotating it
+          // swings the arm from the shoulder; rotating the mesh itself would pivot
+          // about the middle of the arm and look like it was floating. They are
+          // children of the body, so the turn-to-face and idle wander carry them for
+          // free.
+          var armColor = geometryWorldSrgbColor(THREE, npcColor).multiplyScalar(0.82);
+          var armMat = new THREE.MeshStandardMaterial({ color: armColor, roughness: 0.55, metalness: 0.1 });
+          var arms = [];
+          [-1, 1].forEach(function(side) {
+            var pivot = new THREE.Object3D();
+            // The body is a cone: its radius at this height is about 0.266, so an arm
+            // at 0.28 was almost flush with the surface and read as a bump.
+            pivot.position.set(side * 0.31, 0.34, 0);
+            pivot.userData.armSide = side;
+            var arm = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.07, 0.46, 8), armMat);
+            arm.position.y = -0.23;
+            arm.castShadow = true;
+            pivot.add(arm);
+            body.add(pivot);
+            arms.push(pivot);
+          });
+
           // Head — slightly larger with bevel feel
           var headMat = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0xFFDBB4), roughness: 0.6, metalness: 0.0 });
           var head = new THREE.Mesh(new THREE.SphereGeometry(0.28, 16, 12), headMat);
@@ -4237,14 +4277,22 @@
           head.castShadow = true;
           engine.scene.add(head);
 
-          // Eyes — classic white-ring + pupil. Previously the white was BEHIND the pupil (z=0.22 vs 0.24)
-          // so it hid inside the head. Now white at the surface, pupil in front of it.
+          // Eyes — classic white ring with a pupil in front of it.
+          // Getting this right is pure arithmetic, and it was wrong twice. First the
+          // white sat BEHIND the pupil (z 0.22 vs 0.24) and hid inside the head. The
+          // fix moved the white forward to 0.255 but left the pupil at 0.27: centres
+          // 0.015 apart, and 0.015 + 0.032 < 0.055, so the pupil was swallowed WHOLE
+          // by the white sphere and every character stared out of two blank discs.
+          // The white's front surface is at 0.255 + 0.055 = 0.310, so the pupil centre
+          // must clear 0.310 - 0.032 = 0.278 before any of it is visible. 0.30 leaves
+          // it standing 0.022 proud of the white. Pinned in
+          // tests/geometry_world_visual_pipeline.test.js.
           var eyeMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
           var eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
-          eyeL.position.set(-0.1, 0.04, 0.27);
+          eyeL.position.set(-0.1, 0.04, 0.30);
           head.add(eyeL);
           var eyeR = new THREE.Mesh(new THREE.SphereGeometry(0.032, 8, 8), eyeMat);
-          eyeR.position.set(0.1, 0.04, 0.27);
+          eyeR.position.set(0.1, 0.04, 0.30);
           head.add(eyeR);
 
           // Name label — cleaner with rounded background
@@ -4303,9 +4351,18 @@
           var eyeWhiteR = new THREE.Mesh(new THREE.SphereGeometry(0.055, 8, 8), new THREE.MeshBasicMaterial({ color: 0xe2e8f0 }));
           eyeWhiteR.position.set(0.1, 0.04, 0.255); head.add(eyeWhiteR);
 
+          // Mouth — a flattened dark oval under the eyes. Enough to read as a face
+          // from across a lesson without giving the character an expression the
+          // dialogue has not earned.
+          var mouth = new THREE.Mesh(new THREE.SphereGeometry(0.05, 10, 6), new THREE.MeshBasicMaterial({ color: 0x40323a }));
+          mouth.position.set(0, -0.1, 0.255);
+          mouth.scale.set(1.5, 0.45, 0.5);
+          head.add(mouth);
+
           body.userData.isNPC = true; body.userData.npcIndex = engine.npcs.length;
           head.userData.isNPC = true; head.userData.npcIndex = engine.npcs.length;
-          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR, data: data });
+          engine.npcs.push({ body: body, head: head, label: sprite, prompt: promptSprite, qMark: qMarkSprite, eyeL: eyeL, eyeR: eyeR,
+            _arms: arms, _mouth: mouth, _eyeParts: [eyeL, eyeR, eyeWhiteL, eyeWhiteR], _blinkSeed: engine.npcs.length + 1, data: data });
         };
 
         engine.loadLesson = function(lesson) {
@@ -6151,6 +6208,26 @@
             npc.head.position.x = npc.body.position.x;
             npc.head.position.z = npc.body.position.z;
             npc.head.position.y = npc.data.position[1] + 1.7 + bobY;
+            // Blink, and let the arms swing with the walk. Both stop dead under
+            // reduced motion / battery saver, where the bob is already still.
+            if (engine._ambientMotionEnabled !== false) {
+              if (npc._eyeParts) {
+                var open = geometryWorldBlinkScale(t, npc._blinkSeed || (i + 1));
+                for (var ei = 0; ei < npc._eyeParts.length; ei++) npc._eyeParts[ei].scale.y = open;
+              }
+              if (npc._arms) {
+                var celebrating = npc._celebrateUntil && t < npc._celebrateUntil;
+                for (var ai = 0; ai < npc._arms.length; ai++) {
+                  var pv = npc._arms[ai], sideSign = pv.userData.armSide || 1;
+                  // Arms go up when a character celebrates a right answer, and
+                  // otherwise swing gently out of phase with each other.
+                  var wantZ = celebrating ? sideSign * 1.45 : sideSign * 0.22;
+                  var wantX = celebrating ? 0 : Math.sin(t * 2 + i + (sideSign > 0 ? Math.PI : 0)) * 0.2;
+                  pv.rotation.z += (wantZ - pv.rotation.z) * Math.min(1, dt * 6);
+                  pv.rotation.x += (wantX - pv.rotation.x) * Math.min(1, dt * 6);
+                }
+              }
+            }
             if (npc.label)  { npc.label.position.x  = npc.body.position.x; npc.label.position.z  = npc.body.position.z; npc.label.position.y  = npc.data.position[1] + 2.1 + bobY; }
             if (npc.prompt) { npc.prompt.position.x = npc.body.position.x; npc.prompt.position.z = npc.body.position.z; }
             if (npc.qMark)  { npc.qMark.position.x  = npc.body.position.x; npc.qMark.position.z  = npc.body.position.z; }

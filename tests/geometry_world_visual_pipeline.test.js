@@ -170,6 +170,97 @@ describe('geometryWorldLerpAngle', () => {
   });
 });
 
+describe('geometryWorldBlinkScale', () => {
+  let blink;
+  beforeAll(() => { blink = window.StemLab.GeometryWorldBlinkScale; if (typeof blink !== 'function') throw new Error('GeometryWorldBlinkScale not exposed'); });
+
+  const sample = (seed, step = 0.02, span = 14) => {
+    const out = [];
+    for (let t = 0; t < span; t += step) out.push(blink(t, seed));
+    return out;
+  };
+
+  it('stays within the open-to-closed band and never inverts the eye', () => {
+    for (const seed of [1, 2, 3, 4, 9]) for (const v of sample(seed)) {
+      expect(v).toBeGreaterThan(0);
+      expect(v).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it('is open almost all of the time', () => {
+    const s = sample(1);
+    const open = s.filter((v) => v === 1).length;
+    expect(open / s.length).toBeGreaterThan(0.9);
+  });
+
+  it('actually closes the eye, more than once, in a fourteen-second window', () => {
+    const s = sample(2);
+    expect(Math.min(...s)).toBeLessThan(0.2);
+    // count separate closures rather than frames below the threshold
+    let closures = 0;
+    for (let i = 1; i < s.length; i++) if (s[i] < 0.5 && s[i - 1] >= 0.5) closures++;
+    expect(closures).toBeGreaterThanOrEqual(2);
+  });
+
+  it('is deterministic, so a character blinks the same on every reload', () => {
+    for (const t of [0, 1.37, 5, 9.81]) expect(blink(t, 3)).toBe(blink(t, 3));
+  });
+
+  it('gives different characters different rhythms, so a room never blinks in unison', () => {
+    const first = (seed) => {
+      for (let t = 0; t < 14; t += 0.02) if (blink(t, seed) < 0.5) return Math.round(t * 50);
+      return -1;
+    };
+    const times = [1, 2, 3, 4].map(first);
+    expect(times.every((v) => v >= 0)).toBe(true);
+    expect(new Set(times).size).toBe(times.length);
+  });
+});
+
+describe('character face geometry', () => {
+  const src = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
+  const num = (re) => { const m = src.match(re); expect(m, String(re)).not.toBeNull(); return Number(m[1]); };
+
+  // Twice in this file's history the pupil ended up buried: first behind the eye
+  // white, then INSIDE it (centres 0.015 apart with radii 0.032 and 0.055, so the
+  // pupil never reached the surface and every character stared out of two blank
+  // discs). Neither showed up in any test, because both spheres were present and
+  // correct in the scene graph. Assert the arithmetic that decides visibility.
+  const pupilR = num(/var eyeL = new THREE\.Mesh\(new THREE\.SphereGeometry\(([\d.]+)/);
+  const pupilZ = num(/eyeL\.position\.set\(-0\.1, 0\.04, ([\d.]+)\)/);
+  const whiteR = num(/var eyeWhiteL = new THREE\.Mesh\(new THREE\.SphereGeometry\(([\d.]+)/);
+  const whiteZ = num(/eyeWhiteL\.position\.set\(-0\.1, 0\.04, ([\d.]+)\)/);
+  const headR = num(/var head = new THREE\.Mesh\(new THREE\.SphereGeometry\(([\d.]+)/);
+
+  it('stands the pupil proud of the eye white instead of inside it', () => {
+    expect(pupilZ + pupilR).toBeGreaterThan(whiteZ + whiteR);
+    // and not merely touching: it needs a visible cap
+    expect(pupilZ + pupilR - (whiteZ + whiteR)).toBeGreaterThan(0.01);
+  });
+
+  it('keeps the pupil from being swallowed however the spheres are sized', () => {
+    // the failure mode was containment: |centre gap| + pupilR < whiteR
+    expect(Math.abs(pupilZ - whiteZ) + pupilR).toBeGreaterThan(whiteR);
+  });
+
+  it('keeps both eye spheres in front of the face rather than sunk into the skull', () => {
+    expect(whiteZ + whiteR).toBeGreaterThan(headR);
+    expect(pupilZ + pupilR).toBeGreaterThan(headR);
+  });
+
+  it('hangs each arm from a shoulder pivot so it swings from the top', () => {
+    // rotating the arm mesh itself would pivot about the middle of the arm
+    expect(src).toContain('pivot.add(arm);');
+    expect(src).toContain('body.add(pivot);');
+    expect(src).toMatch(/arm\.position\.y = -0\.\d+;/);
+  });
+
+  it('disposes character children, not just the body and head', () => {
+    // eyes, mouth and arms are children; a flat dispose left them on the GPU
+    expect(src).toContain('obj.traverse(function(part) {');
+  });
+});
+
 describe('colour pipeline source contract', () => {
   const src = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
   const pub = readFileSync('desktop/web-app/public/stem_lab/stem_tool_geometryworld.js', 'utf8');
