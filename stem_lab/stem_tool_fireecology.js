@@ -3171,7 +3171,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
             renderCanvas(),
 
             // Comparison mode toggle
-            h('button', { 'aria-label': 'Toggle cultural-burn and suppression comparison',
+            h('button', { 'aria-label': __alloT('stem.fireecology.a11y_toggle_cultural_burn_and_suppression_comparison', 'Toggle cultural-burn and suppression comparison'),
               className: 'fireecology-compare-toggle',
               'aria-pressed': comparisonMode,
               onClick: function() { updMulti({ comparisonMode: !comparisonMode }); }
@@ -3379,7 +3379,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 return wideChart(h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img', 'data-fe-health-chart': String(n),
                   'aria-label': 'Forest health trend over ' + n + ' modeled steps. Latest year ' + last.year + ': biodiversity ' + Math.round(last.biodiversity) + ' of 100, fuel ' + Math.round(last.fuel) + ' tons per acre.' }, kids), 720);
               })(),
-              h('div', { className: 'fireecology-sim-legend', role: 'list', 'aria-label': 'Chart legend' },
+              h('div', { className: 'fireecology-sim-legend', role: 'list', 'aria-label': __alloT('stem.fireecology.a11y_chart_legend', 'Chart legend') },
                 h('span', { className: 'fireecology-sim-legend-item', role: 'listitem' },
                   h('span', { className: 'fireecology-sim-swatch', 'aria-hidden': true, style: { background: '#3b82f6' } }),
                   t('stem.fireecology.biodiversity', 'Biodiversity')
@@ -3422,7 +3422,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               'aria-labelledby': 'fireecology-event-log-title'
             },
               h('div', { id: 'fireecology-event-log-title', style: { fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 8, fontSize: 14 } }, t('stem.fireecology.event_log', 'Event Log')),
-              h('ol', { style: { margin: 0, paddingLeft: 20 }, 'aria-label': 'Simulation events' },
+              h('ol', { style: { margin: 0, paddingLeft: 20 }, 'aria-label': __alloT('stem.fireecology.a11y_simulation_events', 'Simulation events') },
                 s.eventLog.slice(-8).reverse().map(function(ev, ei) {
                   return h('li', { key: ei, style: { padding: '6px 0', borderBottom: '1px solid var(--allo-stem-border, #1e293b)', fontSize: 13, color: 'var(--allo-stem-text, #cbd5e1)' } },
                     h('span', { style: { color: tint('#f97316'), fontWeight: 600 } }, 'Year ' + ev.year + ': '),
@@ -3521,7 +3521,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               ) : h('div', { style: { marginTop: 6, fontSize: 12.5, color: '#fef3c7', lineHeight: 1.55 }, 'data-fe-burn-ranges': 'hidden' },
                 'The ideal ranges are hidden until your first evaluation. Set the four conditions from what you know about safe burning, predict the verdict, then evaluate.'),
               // Prediction first: the evaluation is only a lesson if there was a guess to compare it to.
-              h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': 'Predict the verdict before evaluating' },
+              h('div', { style: { marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }, role: 'group', 'aria-label': __alloT('stem.fireecology.a11y_predict_the_verdict_before_evaluating', 'Predict the verdict before evaluating') },
                 h('span', { style: { fontSize: 12, color: '#fde68a', fontWeight: 700 } }, 'My prediction:'),
                 ['GO', 'CAUTION', 'NO-GO'].map(function (pv) {
                   var on = d.burnPrediction === pv;
@@ -4047,7 +4047,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                 var names = SMOKE_ECOLOGY.strategies.map(function (st) { return st.name; });
                 var answered = ss.picked != null;
                 var correct = answered && ss.picked === cur.answer;
-                return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-seed-sort': ss.done ? 'done' : String(ss.i), role: 'group', 'aria-label': 'Which survival strategy is this?' },
+                return h('div', { style: { background: 'var(--allo-stem-canvas, #0f172a)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 12, padding: 14, marginBottom: 16 }, 'data-fe-seed-sort': ss.done ? 'done' : String(ss.i), role: 'group', 'aria-label': __alloT('stem.fireecology.a11y_which_survival_strategy_is_this', 'Which survival strategy is this?') },
                   h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' } },
                     h('div', { style: { fontWeight: 700, color: tint('#4ade80'), fontSize: 15 } }, '\uD83E\uDDE9 Which strategy is this?'),
                     h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ss.done ? 'Round complete \u00B7 ' + ss.score + ' / ' + CLUES.length : 'Clue ' + (ss.i + 1) + ' of ' + CLUES.length + ' \u00B7 ' + ss.score + ' right')),
@@ -4206,7 +4206,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
               }
               return e('div', { style: { marginTop: 16, borderRadius: 12, overflow: 'hidden', border: '1px solid var(--allo-stem-border, #334155)' }, 'data-fe-watershed-diagram': 'true' },
                 e('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', role: 'img',
-                  'aria-label': 'Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.' },
+                  'aria-label': __alloT('stem.fireecology.a11y_two_hillslopes_in_the_same_rainstorm_after_a_cu', 'Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.') },
                   slope(0, false).concat([e('rect', { key: 'gap', x: 370, y: 0, width: 20, height: H, fill: '#0f172a' })], slope(390, true))));
             })(),
 
@@ -5278,7 +5278,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fireEcology'))
                     aiReadLoading: false,
                     aiReadHistory: (m.aiReadHistory || []).concat([{ year: m.year, text: text }])
                   });
-                  if (announceToSR) announceToSR('AI Land Reading complete.');
+                  if (announceToSR) announceToSR(__alloT('stem.fireecology.sr_ai_land_reading_complete', 'AI Land Reading complete.'));
                 }).catch(function() {
                   setMosaic({ aiReadResponse: 'The AI reader is offline right now. Try again in a moment.', aiReadLoading: false });
                 });

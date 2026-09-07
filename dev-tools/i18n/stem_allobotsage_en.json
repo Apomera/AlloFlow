@@ -202,5 +202,13 @@
   "no_reflections_saved_yet_after_each_ex": "No reflections saved yet. After each expedition, write one thing you noticed or learned. Future you will thank present you.",
   "victory": "· ✅ victory",
   "fell": "· 💥 fell",
-  "loading_allobot_sage": "Loading AlloBot Sage..."
+  "loading_allobot_sage": "Loading AlloBot Sage...",
+  "sr_preset_save_cancelled": "Preset save cancelled.",
+  "sr_preset_kept": "Preset kept.",
+  "sr_rested_at_shrine_advancing": "Rested at shrine. Advancing.",
+  "sr_expedition_abandoned_returned_to_the_hub": "Expedition abandoned. Returned to the hub.",
+  "sr_expedition_continued": "Expedition continued.",
+  "sr_reflection_saved": "Reflection saved.",
+  "sr_marked_as_understood_next_question": "Marked as understood. Next question.",
+  "sr_still_tough_keeping_in_review_queue_next_question": "Still tough — keeping in review queue. Next question."
 }

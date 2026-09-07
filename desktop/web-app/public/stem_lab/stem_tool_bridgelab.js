@@ -1523,7 +1523,7 @@
                           upd({ autoDriving: next, vehiclePos: next ? 0 : d.vehiclePos });
                           if (next) {
                             playBridgeSound('drive');
-                            announceStatus('Vehicle starting automated drive across bridge span');
+                            announceStatus(__alloT('stem.bridgelab.sr_vehicle_starting_automated_drive_across_bridge_sp', 'Vehicle starting automated drive across bridge span'));
                           }
                         },
                         style: { padding: '5px 12px', borderRadius: 6, background: d.autoDriving ? '#dc2626' : '#10b981', border: 'none', color: '#ffffff', fontWeight: 700, fontSize: 11, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }
@@ -1796,7 +1796,7 @@
                     )
                   : h('div', null,
                       h('div', { style: { fontSize: 12, fontWeight: 700, color: '#86efac', marginBottom: 8 } }, '✓ ' + results.length + ' combinations pass. Top 5 by cost:'),
-                      h('div', { role: 'region', 'aria-label': 'Top bridge designs by cost', tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
+                      h('div', { role: 'region', 'aria-label': __alloT('stem.bridgelab.a11y_top_bridge_designs_by_cost', 'Top bridge designs by cost'), tabIndex: 0, style: { overflowX: 'auto', outlineOffset: 3 } },
                         h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 0 } },
                           h('thead', null, h('tr', null,
                             ['Rank', 'Material', 'Cross-section', 'SF yield', 'SF buckling', 'Mass', 'Cost (USD)'].map(function(c, i) {

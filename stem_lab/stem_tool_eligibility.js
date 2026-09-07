@@ -582,7 +582,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
       function printPrepGuide(event) {
         var focusTarget = event && event.currentTarget;
         setPrepStatus('Opening the print dialog.');
-        announceToSR('Opening the print dialog.');
+        announceToSR(__alloT('stem.elig.sr_opening_the_print_dialog', 'Opening the print dialog.'));
         var opened = printMeetingPrepText(prepText);
         if (!opened) finishPrepAction('Print is unavailable in this view.', 'error', focusTarget);
       }
@@ -621,7 +621,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
               h('p', { id: 'elig-mode-description', className: 'text-xs mt-1', style: { color: pal.muted } },
                 isBrief ? 'Quick Brief keeps the decision path, safeguards, meeting prep, and source trail in view.' : 'Detailed Guide adds framing, evidence, category text, IDEA details, and open-question cases.')
             ),
-            h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': 'Guide reading mode' },
+            h('div', { className: 'flex flex-wrap gap-2', role: 'group', 'aria-label': __alloT('stem.elig.a11y_guide_reading_mode', 'Guide reading mode') },
               h('button', {
                 type: 'button',
                 'aria-pressed': isBrief,
@@ -639,7 +639,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
             )
           )
         ),
-        h('nav', { className: 'flex flex-wrap gap-2 mb-5', 'aria-label': 'Guide sections' },
+        h('nav', { className: 'flex flex-wrap gap-2 mb-5', 'aria-label': __alloT('stem.elig.a11y_guide_sections', 'Guide sections') },
           (isBrief ? [
             ['#elig-process-title', 'Decision path'],
             ['#elig-documents-title', 'Documents and safeguards'],
@@ -748,7 +748,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('diagnosisEligi
             h('strong', null, 'Privacy and meaning: '),
             'Checked means included in this guide - not satisfied, compliant, or eligible. This tool does not request or save student names, diagnoses, notes, reports, or documents. Selections reset when this panel closes.'
           ),
-          h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'group', 'aria-label': 'Meeting-preparation selection controls' },
+          h('div', { className: 'flex flex-wrap gap-2 mb-3', role: 'group', 'aria-label': __alloT('stem.elig.a11y_meeting_preparation_selection_controls', 'Meeting-preparation selection controls') },
             h('button', {
               type: 'button',
               onClick: function() { setAllPrep(true); },

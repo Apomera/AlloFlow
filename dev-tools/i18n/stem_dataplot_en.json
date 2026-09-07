@@ -164,5 +164,6 @@
   "why_is_r_alone_never_enough_to_publish": "Why is r alone never enough to publish? What else should accompany it (CI, scatter, robustness check)?",
   "i_can_explain_why_this_combination_of_": "I can explain why this combination of n, noise, and outliers produces this divergence.",
   "explain_in_your_own_words": "Explain in your own words...",
-  "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty."
+  "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget - no score, no reveal, no answer dump. Synthetic data uses a deterministic seed from sliders, so the same slider position always reproduces the same draw. Real studies see one draw and have to reason about uncertainty.",
+  "a11y_local_analytical_sql_query": "Local analytical SQL query"
 }

@@ -260,5 +260,8 @@
   "thinking": "Thinking...",
   "re_explain": "Re-explain",
   "explain": "Explain",
-  "ai_empty_hint": "Click “Explain” for the AI tutor to describe what happens at the current angle, velocity, and gravity settings."
+  "ai_empty_hint": "Click “Explain” for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.",
+  "a11y_range_estimation_comparison_and_reflection": "Range estimation comparison and reflection",
+  "a11y_how_the_measured_range_affected_the_estimate": "How the measured range affected the estimate",
+  "sr_explanation_ready": "Explanation ready."
 }

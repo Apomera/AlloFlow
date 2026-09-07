@@ -97,5 +97,10 @@
   "what_does_negative_amplitude_do": "What does negative amplitude do?",
   "i_understand_explain_in_own_words": "I understand — explain in own words",
   "explain_how_each_parameter_shapes_a_si": "Explain how each parameter shapes a sine wave.",
-  "design_note_discrete_5_state_marker_no": "Design note: discrete 5-state marker; no wave score; no reveal — by design."
+  "design_note_discrete_5_state_marker_no": "Design note: discrete 5-state marker; no wave score; no reveal — by design.",
+  "a11y_function_investigation_pathway": "Function investigation pathway",
+  "a11y_function_families": "Function families",
+  "a11y_function_graph_showing_the_configured_curve": "Function graph showing the configured curve",
+  "sr_explanation_ready": "Explanation ready.",
+  "a11y_function_zoo_comparison_of_six_common_function": "Function Zoo comparison of six common function shapes"
 }

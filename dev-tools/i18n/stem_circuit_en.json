@@ -254,5 +254,9 @@
   "nav_world": "World electrification",
   "nav_careers": "Careers",
   "nav_poebulb": "Predict bulb",
-  "nav_faildx": "Why did it fail?"
+  "nav_faildx": "Why did it fail?",
+  "sr_circuit_cleared": "Circuit cleared.",
+  "sr_opening_circuit_shelf_advanced_simulator": "Opening Circuit Shelf advanced simulator.",
+  "a11y_voltage": "Voltage",
+  "a11y_resistance": "Resistance"
 }

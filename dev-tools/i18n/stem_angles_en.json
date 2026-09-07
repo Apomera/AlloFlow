@@ -689,5 +689,10 @@
   "angles_in_sports_2": "🏆 Angles in sports",
   "many_athletic_skills_depend_on_launch_": "Many athletic skills depend on launch angles. The classic \"45° is optimal\" is true only for projectiles launched + landing at the same height (without air resistance).",
   "angles_in_art_perspective": "🎨 Angles in art + perspective",
-  "angle_measuring_tools": "📏 Angle-measuring tools"
+  "angle_measuring_tools": "📏 Angle-measuring tools",
+  "a11y_angle_reasoning_pathway": "Angle reasoning pathway",
+  "a11y_svg": "SVG",
+  "a11y_second_angle_ray_handle": "Second angle ray handle",
+  "a11y_angle_ray_handle": "Angle ray handle",
+  "a11y_pin": "Pin"
 }

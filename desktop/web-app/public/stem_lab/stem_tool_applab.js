@@ -19325,10 +19325,10 @@ test('no a11y violations', async () => {
           }
           if (err && err.message === CANCEL_SIGNAL) {
             addToast && addToast('Generation cancelled.', 'info');
-            if (announceToSR) announceToSR('Generation cancelled');
+            if (announceToSR) announceToSR(__alloT('stem.applab.sr_generation_cancelled', 'Generation cancelled'));
           } else {
             addToast && addToast('Generation failed: ' + (err && err.message), 'error');
-            if (announceToSR) announceToSR('Generation failed');
+            if (announceToSR) announceToSR(__alloT('stem.applab.sr_generation_failed', 'Generation failed'));
           }
         }
         cancelRef.current = false;
@@ -19369,7 +19369,7 @@ test('no a11y violations', async () => {
             bump('enhanceCount');
             if (awardXP) awardXP('appLab', 10);
             addToast && addToast('App enhanced!', 'success');
-            if (announceToSR) announceToSR('App enhanced');
+            if (announceToSR) announceToSR(__alloT('stem.applab.sr_app_enhanced', 'App enhanced'));
           } else if (cleaned.length > 100) {
             addToast && addToast('The reply came back incomplete, so your app was left unchanged. Try a smaller change.', 'error');
           } else {
@@ -19521,7 +19521,7 @@ test('no a11y violations', async () => {
             bump('errorsFixed');
             if (awardXP) awardXP('appLab', 10);
             addToast && addToast('Applied a fix — watch the preview to see if the error is gone.', 'success');
-            if (announceToSR) announceToSR('Fix applied. Re-running the preview.');
+            if (announceToSR) announceToSR(__alloT('stem.applab.sr_fix_applied_re_running_the_preview', 'Fix applied. Re-running the preview.'));
           } else {
             addToast && addToast('The fix came back incomplete, so your app was left unchanged.', 'error');
           }

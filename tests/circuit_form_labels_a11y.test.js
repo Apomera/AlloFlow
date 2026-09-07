@@ -45,11 +45,11 @@ describe('Circuit Lab form labels', () => {
   });
 
   it('retains accessible names on every other form control', () => {
-    expect(source).toContain("'aria-label': __alloT('stem.circuit.aria_voltage_slider', 'Voltage slider')");
+    expect(source).toContain(`'aria-label': __alloT('stem.circuit.aria_voltage_slider', 'Voltage slider')`);
     expect(source).toContain("'aria-label': compLabel + ' resistance in ohms'");
     expect(source).toContain("'aria-label': compLabel + ' capacitance in microfarads'");
-    expect(source).toContain("type: 'range', 'aria-label': 'Voltage'");
-    expect(source).toContain("type: 'range', 'aria-label': 'Resistance'");
+    expect(source).toContain(`type: 'range', 'aria-label': __alloT('stem.circuit.a11y_voltage', 'Voltage')`);
+    expect(source).toContain(`type: 'range', 'aria-label': __alloT('stem.circuit.a11y_resistance', 'Resistance')`);
     expect(source).toContain("h('label', { style: { display: 'flex', alignItems: 'center'");
   });
 

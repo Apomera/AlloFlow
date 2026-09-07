@@ -13320,6 +13320,14 @@
       "checked_by_engine": "Checked by the math engine"
     },
     "allobotsage": {
+      "sr_preset_save_cancelled": "Preset save cancelled.",
+      "sr_preset_kept": "Preset kept.",
+      "sr_rested_at_shrine_advancing": "Rested at shrine. Advancing.",
+      "sr_expedition_abandoned_returned_to_the_hub": "Expedition abandoned. Returned to the hub.",
+      "sr_expedition_continued": "Expedition continued.",
+      "sr_reflection_saved": "Reflection saved.",
+      "sr_marked_as_understood_next_question": "Marked as understood. Next question.",
+      "sr_still_tough_keeping_in_review_queue_next_question": "Still tough — keeping in review queue. Next question.",
       "sage": "Sage",
       "master": "Master",
       "adept": "Adept",
@@ -14226,6 +14234,11 @@
       "hypothesis_input": "Homeostasis hypothesis"
     },
     "angles": {
+      "a11y_angle_reasoning_pathway": "Angle reasoning pathway",
+      "a11y_svg": "SVG",
+      "a11y_second_angle_ray_handle": "Second angle ray handle",
+      "a11y_angle_ray_handle": "Angle ray handle",
+      "a11y_pin": "Pin",
       "back_to_tools": "Back to tools",
       "angle_explorer": "📐 Angle Explorer",
       "sound_effects": "Sound effects",
@@ -14937,6 +14950,10 @@
       "angle_diagram": "Angle diagram showing the current tower or triangle measurements."
     },
     "applab": {
+      "sr_generation_cancelled": "Generation cancelled",
+      "sr_generation_failed": "Generation failed",
+      "sr_app_enhanced": "App enhanced",
+      "sr_fix_applied_re_running_the_preview": "Fix applied. Re-running the preview.",
       "architect": "Architect",
       "plans_the_app_structure_features_and_a": "Plans the app structure, features, and accessibility requirements before any code is written.",
       "builder": "Builder",
@@ -21958,6 +21975,11 @@
     },
     "back": "Back to tools",
     "bakingscience": {
+      "sr_stable_emulsion_great_mix": "Stable emulsion. Great mix.",
+      "sr_emulsion_broke_adjust_your_ratios": "Emulsion broke. Adjust your ratios.",
+      "sr_scenarios_reshuffled": "Scenarios reshuffled.",
+      "sr_returned_to_menu": "Returned to menu.",
+      "sr_explanation_ready": "Explanation ready.",
       "baking_soda_is_sodium_bicarbonate_nahc": "Baking soda is sodium bicarbonate (NaHCO₃). When it meets an acid, two things happen:",
       "the_acid_donates_a_proton_h_to_the_bic": "The acid donates a proton (H⁺) to the bicarbonate.",
       "this_makes_carbonic_acid_h_co_which_in": "This makes carbonic acid (H₂CO₃), which instantly falls apart into water and CO₂ gas.",
@@ -26917,6 +26939,8 @@
       "fm_scenario_12": "Patient with mild cognitive impairment cannot remember a 4-item shopping list 5 minutes later, gets lost in their own neighborhood, and has trouble learning new routes. Pre-clinical Alzheimer's suspected."
     },
     "bridgelab": {
+      "sr_vehicle_starting_automated_drive_across_bridge_sp": "Vehicle starting automated drive across bridge span",
+      "a11y_top_bridge_designs_by_cost": "Top bridge designs by cost",
       "initializing_bridge_lab": "🌉 Initializing Bridge Lab...",
       "stress_test": "Stress Test",
       "bridge_types": "Bridge Types",
@@ -31268,6 +31292,10 @@
       "subscript_why_summary": "Why can’t I just change the small numbers?"
     },
     "circuit": {
+      "sr_circuit_cleared": "Circuit cleared.",
+      "sr_opening_circuit_shelf_advanced_simulator": "Opening Circuit Shelf advanced simulator.",
+      "a11y_voltage": "Voltage",
+      "a11y_resistance": "Resistance",
       "u2705_challenge_complete_you_hit": "✅ Challenge complete! You hit ",
       "ud83cudfaf_target": "🎯 Target: ",
       "mode": "Mode",
@@ -34010,6 +34038,7 @@
       "credit": "CODAP is free and open source (MIT) from the Concord Consortium. The workspace loads from codap.concord.org, so the Data Lab needs internet; an offline School Box copy is on the roadmap."
     },
     "dataplot": {
+      "a11y_local_analytical_sql_query": "Local analytical SQL query",
       "estimate_the_r_for_this_scatter_plot": "Estimate the R² for this scatter plot",
       "back": "Back",
       "data_plotter": "📊 Data Plotter",
@@ -38676,6 +38705,13 @@
       "saved_during_lab_visits": "Saved during lab visits"
     },
     "fireecology": {
+      "sr_ai_land_reading_complete": "AI Land Reading complete.",
+      "a11y_toggle_cultural_burn_and_suppression_comparison": "Toggle cultural-burn and suppression comparison",
+      "a11y_chart_legend": "Chart legend",
+      "a11y_simulation_events": "Simulation events",
+      "a11y_predict_the_verdict_before_evaluating": "Predict the verdict before evaluating",
+      "a11y_which_survival_strategy_is_this": "Which survival strategy is this?",
+      "a11y_two_hillslopes_in_the_same_rainstorm_after_a_cu": "Two hillslopes in the same rainstorm. After a cultural burn the trees and roots stand, litter and open soil let the rain soak in, and the stream at the bottom runs clear. After a high-severity wildfire the trees are dead snags, a water-repellent layer sits under the surface, the rain runs off down the slope, and the stream is choked with ash and mud.",
       "indigenous_knowledge": "Indigenous Knowledge",
       "fire_ecosystems": "Fire Ecosystems",
       "forest_simulator": "Forest Simulator",
@@ -42061,6 +42097,11 @@
       "absolute": "Absolute"
     },
     "funcgrapher": {
+      "sr_explanation_ready": "Explanation ready.",
+      "a11y_function_investigation_pathway": "Function investigation pathway",
+      "a11y_function_families": "Function families",
+      "a11y_function_graph_showing_the_configured_curve": "Function graph showing the configured curve",
+      "a11y_function_zoo_comparison_of_six_common_function": "Function Zoo comparison of six common function shapes",
       "reflected_over_x_axis": "Reflected over x-axis",
       "square_root": "Square Root",
       "logarithm": "Logarithm",
@@ -44754,6 +44795,8 @@
       "trace_x_position": "Trace x position"
     },
     "inequality": {
+      "a11y_inequality_reasoning_pathway": "Inequality reasoning pathway",
+      "a11y_2d_inequality_graph": "2D inequality graph",
       "type_your_answer": "Type your answer...",
       "badge_first_solve_label": "First Solve",
       "badge_first_solve_desc": "Answer your first quiz correctly",
@@ -49357,6 +49400,15 @@
       "show_topic_library": "Show topic library"
     },
     "migration": {
+      "sr_perfect_v_formation_achieved_20_experience_points": "Perfect V formation achieved. 20 experience points awarded.",
+      "sr_auto_formed_v_formation": "Auto-formed V formation",
+      "sr_flock_scattered": "Flock scattered",
+      "sr_v_formation_formed_automatically": "V formation formed automatically",
+      "sr_birds_scattered_randomly": "Birds scattered randomly",
+      "sr_bird_rode_a_thermal_updraft_15_experience_points": "Bird rode a thermal updraft. 15 experience points awarded.",
+      "sr_all_objects_cleared": "All objects cleared",
+      "sr_bird_added_to_wind_field": "Bird added to wind field",
+      "sr_all_objects_and_birds_cleared": "All objects and birds cleared",
       "wind_currents": "Wind Currents",
       "migration_routes": "Migration Routes",
       "aerodynamics": "Aerodynamics",
@@ -50885,6 +50937,7 @@
       "gl_which_gas": "Which gas"
     },
     "money": {
+      "a11y_enter": "ENTER",
       "us_dollar": "US Dollar",
       "penny": "Penny",
       "nickel": "Nickel",
@@ -52150,6 +52203,7 @@
       "strategy_reflect": "Which smaller fact did you know already? Try another split and explain why the total stays the same."
     },
     "music": {
+      "a11y_mod_ratio": "Mod Ratio",
       "edm_lead": "EDM Lead",
       "big_festival_supersaw_lead": "Big festival supersaw lead",
       "fm_bell": "FM Bell",
@@ -53819,6 +53873,9 @@
     "off": "OFF",
     "on": "ON",
     "optics": {
+      "sr_the_wave_profile_csv_could_not_be_downloaded_in_t": "The wave profile CSV could not be downloaded in this environment.",
+      "sr_the_trial_csv_could_not_be_downloaded_in_this_env": "The trial CSV could not be downloaded in this environment.",
+      "sr_the_lab_note_could_not_be_downloaded_in_this_envi": "The lab note could not be downloaded in this environment.",
       "a11y_wavelength": "Wavelength",
       "a11y_aperture": "Aperture",
       "a11y_log_frequency": "log₁₀(frequency)",
@@ -54523,6 +54580,9 @@
       "nhu2083": "NH₃"
     },
     "physics": {
+      "sr_explanation_ready": "Explanation ready.",
+      "a11y_range_estimation_comparison_and_reflection": "Range estimation comparison and reflection",
+      "a11y_how_the_measured_range_affected_the_estimate": "How the measured range affected the estimate",
       "angle_u00b0": "Angle (°)",
       "velocity_ms": "Velocity (m/s)",
       "gravity_msu00b2": "Gravity (m/s²)",
@@ -69417,6 +69477,11 @@
       "wb_case_remaining": "still unnamed"
     },
     "schoolbehaviortoolkit": {
+      "a11y_pbis_three_tier_support_diagram_showing_univers": "PBIS three-tier support diagram showing universal, targeted, and intensive tiers",
+      "a11y_behavior_tier": "Behavior tier",
+      "a11y_intensity": "Intensity",
+      "a11y_function_confidence": "Function confidence",
+      "a11y_environment_stability": "Environment stability",
       "back_to_stem_lab": "Back to STEAM Lab",
       "school_behavior_toolkit": "School Behavior Toolkit",
       "12_sections_4_interactive": "12 sections · 4 interactive",
@@ -70128,6 +70193,12 @@
       "width": "Width"
     },
     "skatelab": {
+      "a11y_simulation_view": "Simulation view",
+      "a11y_simulation_stage": "Simulation stage",
+      "a11y_jump_to_a_motion_phase": "Jump to a motion phase",
+      "a11y_physics_controls": "Physics controls",
+      "a11y_experiment_type": "Experiment type",
+      "a11y_live_model_outputs": "Live model outputs",
       "coach_is_offline_try_again_in_a_moment": "(Coach is offline. Try again in a moment.)",
       "maxed_out_on_pumps_but_still_bailing_t": "Maxed out on pumps but still bailing. Try a smaller trick to learn how much air this setup actually gives you.",
       "at_max_speed_and_still_short_range_pea": "At max speed and still short. Range peaks at 45° on flat ground but ~30° works best when you need to land at the same height. Try 30°.",
@@ -73283,6 +73354,8 @@
       "two_sided_alpha": "Two-sided alpha"
     },
     "stewardship": {
+      "sr_opening_scenario": "Opening scenario",
+      "sr_scenario_started": "Scenario started",
       "stewardship_as_multi_generational_prac": "Stewardship as multi-generational practice",
       "cultural_mosaic_and_conservation_manag": "Cultural Mosaic and Conservation Manager are both multi-year stewardship campaigns where the moves you make in year 2 only pay off in year 7. Mosaic's coppice plantings, Conservation Manager's wolf-support building. The discipline is the same: invest in slow infrastructure before you need it. What other domains in your life reward this kind of patience?",
       "time_scales_of_stewardship": "Time scales of stewardship",
@@ -73465,6 +73538,11 @@
     },
     "surface_area": "Surface Area",
     "swimlab": {
+      "sr_consent_accepted_welcome_to_swimlab": "Consent accepted. Welcome to SwimLab.",
+      "sr_back_to_menu": "Back to menu",
+      "sr_question_reset_try_again": "Question reset. Try again.",
+      "sr_opening_cross_referenced_module": "Opening cross-referenced module",
+      "sr_opening_how_swimming_works": "Opening How Swimming Works",
       "emergency_reminder": "Emergency reminder",
       "in_a_real_emergency_call_911": "In a real emergency: call 911",
       "in_maine_you_can_text_911_this_tool_is": " — in Maine you can text 911. This tool is educational only and does not teach swimming.",
@@ -81104,6 +81182,8 @@
       "a11y_wheel_and_fire_sections": "Wheel and Fire sections"
     },
     "worldbuilder": {
+      "sr_character_portrait_generated_successfully": "Character portrait generated successfully.",
+      "sr_pasting_text_is_not_allowed_please_type_your_own": "Pasting text is not allowed. Please type your own writing.",
       "try_describing_what_it_looks_like_feel": "Try describing what it looks like, feels like, and what it's made of.",
       "try_describing_materials_scale_and_wha": "Try describing materials, scale, and what makes this building unique.",
       "shadow_wolf": "Shadow Wolf",
@@ -83502,6 +83582,10 @@
       "pond_img": "Pond simulation view"
     },
     "elig": {
+      "sr_opening_the_print_dialog": "Opening the print dialog.",
+      "a11y_guide_reading_mode": "Guide reading mode",
+      "a11y_guide_sections": "Guide sections",
+      "a11y_meeting_preparation_selection_controls": "Meeting-preparation selection controls",
       "back": "Back to tools",
       "cases": "What questions and evidence are still open?",
       "cases_sub": "Select every question you would carry into the team discussion, then reveal a suggested starting set. There is no eligibility score, and the suggestions are not exhaustive.",

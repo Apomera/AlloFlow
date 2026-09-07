@@ -2679,7 +2679,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('musicSynth')))
                 React.createElement("div", { className: "grid grid-cols-2 gap-3" },
                   React.createElement("div", null,
                     React.createElement("label", { className: "text-[0.6875rem] font-bold text-amber-700" }, "Mod Ratio: " + (d.fmRatio || 2) + ":1"),
-                    React.createElement("input", { 'aria-label': "Mod Ratio", type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
+                    React.createElement("input", { 'aria-label': __alloT('stem.music.a11y_mod_ratio', 'Mod Ratio'), type: "range", 'aria-valuetext': ((d.fmRatio || 2) + ' to 1 ratio'), min: "0.5", max: "8", step: "0.5", value: d.fmRatio || 2, onChange: function(e) { upd('fmRatio', parseFloat(e.target.value)); }, className: "w-full accent-amber-600" }),
                     React.createElement("div", { className: "flex justify-between text-[0.6875rem] text-amber-500" }, React.createElement("span", null, "Sub-harmonic"), React.createElement("span", null, __alloT('stem.music.bright', "Bright")))
                   ),
                   React.createElement("div", null,

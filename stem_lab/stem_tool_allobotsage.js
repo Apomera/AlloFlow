@@ -2480,7 +2480,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 }
               }
               var name = await requestPresetName();
-              if (name === null) { announceSR('Preset save cancelled.'); return; }
+              if (name === null) { announceSR(__alloT('stem.allobotsage.sr_preset_save_cancelled', 'Preset save cancelled.')); return; }
               name = (String(name).trim() || defaultName).slice(0, 24);
               sfxClick();
               updKey('loadoutPresets', presets.concat([{ name: name, spellIds: equippedLoadout.slice() }]));
@@ -2547,7 +2547,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                               return;
                             }
                             if (confirmed) { deletePreset(idx); announceSR('Deleted preset: ' + p.name); }
-                            else announceSR('Preset kept.');
+                            else announceSR(__alloT('stem.allobotsage.sr_preset_kept', 'Preset kept.'));
                           },
                           className: 'transition-colors text-[0.75rem] text-slate-400 hover:text-red-600 px-1 focus:ring-2 focus:ring-red-400 focus:outline-none rounded',
                           'aria-label': 'Delete preset ' + p.name
@@ -2978,7 +2978,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
           var entry = { text: '\u26E9\uFE0F Rested at the shrine (+' + healAmount + ' HP, +' + shrineEssence + ' essence).', kind: 'player' };
           // Announce and advance.
           mutateExp({ playerHp: newPlayerHp, log: (exp.log || []).concat([entry]) });
-          announceSR('Rested at shrine. Advancing.');
+          announceSR(__alloT('stem.allobotsage.sr_rested_at_shrine_advancing', 'Rested at shrine. Advancing.'));
           // Use advanceRoom so shrine "clear" counts toward roomsCleared + gives essence.
           setTimeout(function() {
             if (roomIndex < totalRooms - 1) {
@@ -3243,8 +3243,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                 if (confirmed) {
                   sfxClick();
                   updSage({ phase: 'hub', expedition: null });
-                  announceSR('Expedition abandoned. Returned to the hub.');
-                } else announceSR('Expedition continued.');
+                  announceSR(__alloT('stem.allobotsage.sr_expedition_abandoned_returned_to_the_hub', 'Expedition abandoned. Returned to the hub.'));
+                } else announceSR(__alloT('stem.allobotsage.sr_expedition_continued', 'Expedition continued.'));
               },
               className: 'transition-colors text-xs font-semibold text-slate-600 hover:text-slate-800 underline'
             }, t('stem.allobotsage.abandon', 'Abandon')),
@@ -3948,7 +3948,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
                   updKey('reflections', nextReflections);
                   ta.value = '';
                   addToast('📝 Reflection saved — view it any time in Your Progress', 'success');
-                  announceSR('Reflection saved.');
+                  announceSR(__alloT('stem.allobotsage.sr_reflection_saved', 'Reflection saved.'));
                 },
                 className: 'transition-colors px-4 py-1.5 rounded-lg text-[0.6875rem] font-bold text-white bg-sky-700 hover:bg-sky-800 focus:ring-2 focus:ring-sky-300 focus:outline-none'
               }, t('stem.allobotsage.save_reflection', 'Save reflection'))
@@ -4327,7 +4327,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             correctCount: (prev.correctCount || 0) + 1
           };
           updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
-          announceSR('Marked as understood. Next question.');
+          announceSR(__alloT('stem.allobotsage.sr_marked_as_understood_next_question', 'Marked as understood. Next question.'));
         }
         function stillTough() {
           if (!current) return;
@@ -4341,7 +4341,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('alloBotSage'))
             attempts: (prev.attempts || 0) + 1
           });
           updSage({ questionStats: nextStats, reviewIdx: reviewIdx + 1, reviewRevealed: false });
-          announceSR('Still tough — keeping in review queue. Next question.');
+          announceSR(__alloT('stem.allobotsage.sr_still_tough_keeping_in_review_queue_next_question', 'Still tough — keeping in review queue. Next question.'));
         }
         function exitReview() {
           sfxClick();

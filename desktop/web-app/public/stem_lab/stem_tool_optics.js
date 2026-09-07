@@ -5571,7 +5571,7 @@
       setTimeout(function() { try { URL.revokeObjectURL(href); } catch (e) {} }, 0);
       opAnnounce('Downloaded the ' + tab + ' screen profile and detector depth trail as CSV.');
     } catch (e) {
-      opAnnounce('The wave profile CSV could not be downloaded in this environment.');
+      opAnnounce(__alloT('stem.optics.sr_the_wave_profile_csv_could_not_be_downloaded_in_t', 'The wave profile CSV could not be downloaded in this environment.'));
     }
   }
   function _opticsModelComparison(tab, state) {
@@ -8764,7 +8764,7 @@
       setTimeout(function() { try { URL.revokeObjectURL(href); } catch (e) {} }, 0);
       opAnnounce('Downloaded ' + (trials || []).length + ' ' + tab + ' trials as CSV.');
     } catch (e) {
-      opAnnounce('The trial CSV could not be downloaded in this environment.');
+      opAnnounce(__alloT('stem.optics.sr_the_trial_csv_could_not_be_downloaded_in_this_env', 'The trial CSV could not be downloaded in this environment.'));
     }
   }
   function _renderOpticsTrialPlot(tab, trials, h) {
@@ -9012,7 +9012,7 @@
       setTimeout(function() { try { URL.revokeObjectURL(href); } catch (e) {} }, 0);
       opAnnounce('Downloaded ' + tab + ' lab note.');
     } catch (e) {
-      opAnnounce('The lab note could not be downloaded in this environment.');
+      opAnnounce(__alloT('stem.optics.sr_the_lab_note_could_not_be_downloaded_in_this_envi', 'The lab note could not be downloaded in this environment.'));
     }
   }
 

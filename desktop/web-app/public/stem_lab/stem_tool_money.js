@@ -2903,7 +2903,7 @@ window.StemLab = window.StemLab || {
                           className: "w-full pl-12 pr-4 py-4 bg-zinc-800 border-2 border-zinc-400 rounded-xl text-zinc-100 font-mono text-xl font-bold focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/30 transition-all shadow-inner"
                         })
                       ),
-                      React.createElement("button", { "aria-label": "ENTER", onClick: submitCashierAnswer, disabled: !crAnswer,
+                      React.createElement("button", { "aria-label": __alloT('stem.money.a11y_enter', 'ENTER'), onClick: submitCashierAnswer, disabled: !crAnswer,
                         className: "px-6 bg-emerald-700 text-white font-black rounded-xl hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-md text-lg active:scale-95"
                       }, "ENTER")
                     )

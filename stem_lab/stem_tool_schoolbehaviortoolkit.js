@@ -2587,7 +2587,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('p', { style: { margin: '0 0 8px', fontSize: 12, opacity: 0.85, lineHeight: 1.4 } }, __alloT('stem.schoolbehaviortoolkit.set_tier_observed_intensity_function_c', 'Set tier, observed intensity, function confidence, and environment stability, then observe how modeled plan readiness changes. The result updates live; record a hypothesis or pattern you notice.')),
           h('div', { style: { display: 'inline-block', padding: '4px 10px', borderRadius: 999, background: sm.color, color: '#000', fontSize: 12, fontWeight: 800, marginBottom: 6 } }, sm.label),
           h('p', { style: { margin: '0 0 10px', fontSize: 11, opacity: 0.8 } }, sm.desc),
-          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers', style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
+          h('svg', { width: '100%', height: 80, viewBox: '0 0 320 80', role: 'img', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_pbis_three_tier_support_diagram_showing_univers', 'PBIS three-tier support diagram showing universal, targeted, and intensive tiers'), style: { background: '#0a0a1a', borderRadius: 6, marginBottom: 10 } },
             [1, 2, 3].map(function(tier) {
               var x = 20 + (tier - 1) * 100;
               var w = 80;
@@ -2603,19 +2603,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('schoolBehavior
           h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px 12px', marginBottom: 10 } },
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.pbis_tier', 'PBIS Tier')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, 'Tier ' + iq.tier)),
-              h('input', { type: 'range', 'aria-label': 'Behavior tier', 'aria-valuetext': 'tier ' + iq.tier, min: 1, max: 3, step: 1, value: iq.tier, onChange: function(e) { setKey('tier', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_behavior_tier', 'Behavior tier'), 'aria-valuetext': 'tier ' + iq.tier, min: 1, max: 3, step: 1, value: iq.tier, onChange: function(e) { setKey('tier', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.behavior_intensity_1_10', 'Behavior intensity (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.intensity)),
-              h('input', { type: 'range', 'aria-label': 'Intensity', 'aria-valuetext': iq.intensity + ' of 10', min: 1, max: 10, step: 1, value: iq.intensity, onChange: function(e) { setKey('intensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_intensity', 'Intensity'), 'aria-valuetext': iq.intensity + ' of 10', min: 1, max: 10, step: 1, value: iq.intensity, onChange: function(e) { setKey('intensity', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.function_confidence_1_10', 'Function confidence (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.functionConfidence)),
-              h('input', { type: 'range', 'aria-label': 'Function confidence', 'aria-valuetext': iq.functionConfidence + ' of 10', min: 1, max: 10, step: 1, value: iq.functionConfidence, onChange: function(e) { setKey('functionConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_function_confidence', 'Function confidence'), 'aria-valuetext': iq.functionConfidence + ' of 10', min: 1, max: 10, step: 1, value: iq.functionConfidence, onChange: function(e) { setKey('functionConfidence', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             ),
             h('label', { style: { fontSize: 11 } },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', marginBottom: 2 } }, h('span', null, __alloT('stem.schoolbehaviortoolkit.environment_stability_1_10', 'Environment stability (1-10)')), h('span', { style: { color: sm.color, fontFamily: 'monospace', fontWeight: 700 } }, iq.environmentStability)),
-              h('input', { type: 'range', 'aria-label': 'Environment stability', 'aria-valuetext': iq.environmentStability + ' of 10', min: 1, max: 10, step: 1, value: iq.environmentStability, onChange: function(e) { setKey('environmentStability', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
+              h('input', { type: 'range', 'aria-label': __alloT('stem.schoolbehaviortoolkit.a11y_environment_stability', 'Environment stability'), 'aria-valuetext': iq.environmentStability + ' of 10', min: 1, max: 10, step: 1, value: iq.environmentStability, onChange: function(e) { setKey('environmentStability', parseInt(e.target.value, 10)); }, style: { width: '100%' } })
             )
           ),
           h('div', { style: { display: 'flex', gap: 8, marginBottom: 10 } },

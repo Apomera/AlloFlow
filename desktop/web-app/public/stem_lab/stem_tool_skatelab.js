@@ -4301,7 +4301,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'sk-kicker' }, __alloT('stem.skatelab.subtitle', 'Build a setup. Run the model. Explain the motion.'))
             )
           ),
-          h('div', { className: 'sk-view-switch', role: 'group', 'aria-label': 'Simulation view' },
+          h('div', { className: 'sk-view-switch', role: 'group', 'aria-label': __alloT('stem.skatelab.a11y_simulation_view', 'Simulation view') },
             h('button', {
               type: 'button',
               'aria-pressed': viewMode === '2d',
@@ -4318,7 +4318,7 @@ window.StemLab = window.StemLab || {
         ),
 
         h('div', { className: 'sk-workbench' },
-          h('section', { className: 'sk-stage', 'data-skatelab-run-focus': 'true', 'aria-label': 'Simulation stage' },
+          h('section', { className: 'sk-stage', 'data-skatelab-run-focus': 'true', 'aria-label': __alloT('stem.skatelab.a11y_simulation_stage', 'Simulation stage') },
             h('div', { className: 'sk-canvas-frame' },
               h('canvas', {
                 ref: canvasRef,
@@ -4473,7 +4473,7 @@ window.StemLab = window.StemLab || {
                 !predictionLocked && h('div', {
                   className: 'sk-phase-jumps',
                   role: 'group',
-                  'aria-label': 'Jump to a motion phase'
+                  'aria-label': __alloT('stem.skatelab.a11y_jump_to_a_motion_phase', 'Jump to a motion phase')
                 },
                   phaseEvents.map(function(event, index) {
                     return h('button', {
@@ -4510,8 +4510,8 @@ window.StemLab = window.StemLab || {
             )
           ),
 
-          h('aside', { className: 'sk-controls', 'aria-label': 'Physics controls' },
-            h('div', { className: 'sk-mode-tabs', role: 'tablist', 'aria-label': 'Experiment type' },
+          h('aside', { className: 'sk-controls', 'aria-label': __alloT('stem.skatelab.a11y_physics_controls', 'Physics controls') },
+            h('div', { className: 'sk-mode-tabs', role: 'tablist', 'aria-label': __alloT('stem.skatelab.a11y_experiment_type', 'Experiment type') },
               h('button', {
                 type: 'button',
                 id: 'sk-mode-tab-halfpipe',
@@ -4653,7 +4653,7 @@ window.StemLab = window.StemLab || {
           )
         ),
 
-        h('section', { className: 'sk-metrics', 'aria-label': 'Live model outputs' },
+        h('section', { className: 'sk-metrics', 'aria-label': __alloT('stem.skatelab.a11y_live_model_outputs', 'Live model outputs') },
           metricData.map(function(metric) {
             return h('div', { className: 'sk-metric', key: metric.label },
               h('span', { className: 'sk-metric-value' }, predictionLocked ? '—' : metric.value),

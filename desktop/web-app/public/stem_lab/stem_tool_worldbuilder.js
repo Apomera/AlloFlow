@@ -282,7 +282,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
               callGeminiImageEdit(refinePrompt, rawBase64, 400, 0.85).then(function(refined) {
                 updMulti({ characterPortrait: refined || imageUrl, characterPortraitLoading: false, characterAppearance: description });
                 sfxWbCreate(); if (addToast) addToast('🎨 Character portrait created!', 'success');
-                if (announceToSR) announceToSR('Character portrait generated successfully.');
+                if (announceToSR) announceToSR(__alloT('stem.worldbuilder.sr_character_portrait_generated_successfully', 'Character portrait generated successfully.'));
               }).catch(function() {
                 updMulti({ characterPortrait: imageUrl, characterPortraitLoading: false, characterAppearance: description });
                 if (addToast) addToast('🎨 Character portrait created!', 'success');
@@ -658,7 +658,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
           e.preventDefault();
           upd('pasteDetected', true);
           if (addToast) addToast('Pasting is disabled in World Builder — your writing must be your own! ✍️', 'info');
-          if (announceToSR) announceToSR('Pasting text is not allowed. Please type your own writing.');
+          if (announceToSR) announceToSR(__alloT('stem.worldbuilder.sr_pasting_text_is_not_allowed_please_type_your_own', 'Pasting text is not allowed. Please type your own writing.'));
           return;
         }
       };

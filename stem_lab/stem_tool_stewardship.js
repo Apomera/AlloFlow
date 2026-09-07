@@ -1576,7 +1576,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
       }
       function openScenario(scenarioId) {
         setHub({ playingScenario: scenarioId, launchedAny: true });
-        if (announceToSR) announceToSR('Opening scenario');
+        if (announceToSR) announceToSR(__alloT('stem.stewardship.sr_opening_scenario', 'Opening scenario'));
       }
       function closeScenario() { setHub({ playingScenario: null }); }
       function resetScenario(scenarioId) {
@@ -1592,7 +1592,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('stewardshipHub
         var initial = {};
         scenario.entities.forEach(function(ent) { initial[ent.id] = ent.init; });
         setScenarioState(scenario.id, { phase: 'playing', step: 0, entities: initial, decisionLog: [] });
-        if (announceToSR) announceToSR('Scenario started');
+        if (announceToSR) announceToSR(__alloT('stem.stewardship.sr_scenario_started', 'Scenario started'));
       }
       function chooseScenarioOption(scenario, decisionIndex, option) {
         var st = (hub && hub.scenarioStates && hub.scenarioStates[scenario.id]) || {};

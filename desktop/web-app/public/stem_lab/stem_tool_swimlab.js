@@ -386,7 +386,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               onClick: function() {
                 updMulti({ consentAccepted: true, consentDate: new Date().toISOString(), view: 'menu' });
                 awardBadge('swimlab_starter', 'SwimLab Starter');
-                wsAnnounce('Consent accepted. Welcome to SwimLab.');
+                wsAnnounce(__alloT('stem.swimlab.sr_consent_accepted_welcome_to_swimlab', 'Consent accepted. Welcome to SwimLab.'));
               },
               style: { padding: '12px 22px', borderRadius: 10, border: 'none', background: T.accent, color: '#0c2233', fontSize: 15, fontWeight: 700, cursor: 'pointer' }
             }, __alloT('stem.swimlab.i_understand_show_me_the_lab_2', 'I understand — show me the lab'))
@@ -404,7 +404,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
           h('button', {
             className: 'swimlab-no-print',
             'aria-label': __alloT('stem.swimlab.back_to_swimlab_menu', 'Back to SwimLab menu'),
-            onClick: function() { upd('view', 'menu'); wsAnnounce('Back to menu'); },
+            onClick: function() { upd('view', 'menu'); wsAnnounce(__alloT('stem.swimlab.sr_back_to_menu', 'Back to menu')); },
             style: btn({ padding: '6px 12px', fontSize: 12 })
           }, __alloT('stem.swimlab.menu', '← Menu')),
           h('h2', { style: { margin: 0, fontSize: 18, color: T.text, flex: 1 } }, title),
@@ -711,7 +711,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                 delete nr[qIdx];
                 delete nr[qIdx + '_pick'];
                 setResults(nr);
-                wsAnnounce('Question reset. Try again.');
+                wsAnnounce(__alloT('stem.swimlab.sr_question_reset_try_again', 'Question reset. Try again.'));
               },
               style: btn({ padding: '8px 14px', fontSize: 13 }) }, __alloT('stem.swimlab.try_again_2', '↺ Try again')),
             h('button', {
@@ -997,7 +997,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
             h('strong', { style: { color: T.ok } }, __alloT('stem.swimlab.key_takeaway', '🎯 Key takeaway: ')), opts.takeaway),
           opts.crossRef && h('div', { className: 'swimlab-no-print', style: { marginTop: 8, fontSize: 12, lineHeight: 1.5 } },
             h('button', {
-              onClick: function() { upd('view', opts.crossRef.id); markVisited(opts.crossRef.id); wsAnnounce('Opening cross-referenced module'); },
+              onClick: function() { upd('view', opts.crossRef.id); markVisited(opts.crossRef.id); wsAnnounce(__alloT('stem.swimlab.sr_opening_cross_referenced_module', 'Opening cross-referenced module')); },
               style: { background: 'none', border: 'none', padding: 0, color: T.accentHi, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }
             }, opts.crossRef.label)
           )
@@ -1377,7 +1377,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
               __alloT('stem.swimlab.when_you_fall_in_cold_water_the_worst_', 'When you fall in cold water, the worst thing is to try to swim immediately. Tilt your head back, fill your lungs, and float. Your gasp reflex will pass in 60 seconds or so. Then you can swim or signal. This single instruction has saved thousands of lives. '),
               h('button', {
                 className: 'swimlab-no-print',
-                onClick: function() { upd('view', 'howSwimming'); markVisited('howSwimming'); wsAnnounce('Opening How Swimming Works'); },
+                onClick: function() { upd('view', 'howSwimming'); markVisited('howSwimming'); wsAnnounce(__alloT('stem.swimlab.sr_opening_how_swimming_works', 'Opening How Swimming Works')); },
                 style: { background: 'none', border: 'none', padding: 0, color: T.accentHi, fontWeight: 700, cursor: 'pointer', textDecoration: 'underline', font: 'inherit' }
               }, __alloT('stem.swimlab.see_the_back_float_physics_in_how_swim', 'See the Back Float physics in How Swimming Works →'))
             )),
@@ -2372,7 +2372,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('swimLab'))) {
                   var nextPicks = Object.assign({}, picks);
                   delete nextPicks[st.idx];
                   upd('bigQuizState', Object.assign({}, st, { answered: false, lastChoice: null, picks: nextPicks }));
-                  wsAnnounce('Question reset. Try again.');
+                  wsAnnounce(__alloT('stem.swimlab.sr_question_reset_try_again', 'Question reset. Try again.'));
                 },
                 style: btn({ padding: '10px 16px', fontSize: 14 }) }, __alloT('stem.swimlab.try_again_3', '↺ Try again')),
               h('button', {

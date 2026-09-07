@@ -3564,7 +3564,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               if (celebrate) celebrate();
               if (awardXP) awardXP('migration', 20, 'Perfect V-formation');
               if (addToast) addToast('Perfect V-formation achieved! +20 XP', 'success');
-              if (announceToSR) announceToSR('Perfect V formation achieved. 20 experience points awarded.');
+              if (announceToSR) announceToSR(__alloT('stem.migration.sr_perfect_v_formation_achieved_20_experience_points', 'Perfect V formation achieved. 20 experience points awarded.'));
             }
           }
 
@@ -3683,10 +3683,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               onKeyDown: function(e) {
                 if (e.key === 'v' || e.key === 'V') {
                   birdsRef.current = makeVFormation(birdCount);
-                  if (announceToSR) announceToSR('Auto-formed V formation');
+                  if (announceToSR) announceToSR(__alloT('stem.migration.sr_auto_formed_v_formation', 'Auto-formed V formation'));
                 } else if (e.key === 's' || e.key === 'S') {
                   birdsRef.current = makeFlock(birdCount);
-                  if (announceToSR) announceToSR('Flock scattered');
+                  if (announceToSR) announceToSR(__alloT('stem.migration.sr_flock_scattered', 'Flock scattered'));
                 }
               },
               style: { width: '100%', cursor: 'grab', display: 'block' }
@@ -3701,7 +3701,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               onClick: function() {
                 birdsRef.current = makeVFormation(birdCount);
                 if (beep) beep(659, 0.12, 0.12);
-                if (announceToSR) announceToSR('V formation formed automatically');
+                if (announceToSR) announceToSR(__alloT('stem.migration.sr_v_formation_formed_automatically', 'V formation formed automatically'));
               }
             }, t('stem.migration.auto_form_v', '\uD83E\uDEBF Auto-Form V')),
             h('button', {
@@ -3710,7 +3710,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               onClick: function() {
                 birdsRef.current = makeFlock(birdCount);
                 if (beep) beep(880, 0.06, 0.08);
-                if (announceToSR) announceToSR('Birds scattered randomly');
+                if (announceToSR) announceToSR(__alloT('stem.migration.sr_birds_scattered_randomly', 'Birds scattered randomly'));
               }
             }, t('stem.migration.scatter', '\uD83C\uDF2A\uFE0F Scatter')),
 
@@ -4298,7 +4298,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                     if (celebrate) celebrate();
                     if (awardXP) awardXP('migration', 15, 'Rode a thermal updraft');
                     if (addToast) addToast('Thermal updraft ridden! +15 XP', 'success');
-                    if (announceToSR) announceToSR('Bird rode a thermal updraft. 15 experience points awarded.');
+                    if (announceToSR) announceToSR(__alloT('stem.migration.sr_bird_rode_a_thermal_updraft_15_experience_points', 'Bird rode a thermal updraft. 15 experience points awarded.'));
                   }
                 }
               }
@@ -4394,7 +4394,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 if (e.key === 'c' || e.key === 'C') {
                   objectsRef.current = [];
                   upd('windObjects', []);
-                  if (announceToSR) announceToSR('All objects cleared');
+                  if (announceToSR) announceToSR(__alloT('stem.migration.sr_all_objects_cleared', 'All objects cleared'));
                 }
               },
               style: { width: '100%', cursor: placingObj ? 'crosshair' : 'default', display: 'block' }
@@ -4425,7 +4425,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 wb.push({ x: 50, y: 100 + Math.random() * 150, vx: 0, vy: 0, phase: Math.random() * 6 });
                 windBirdsRef.current = wb;
                 if (beep) beep(880, 0.06, 0.08);
-                if (announceToSR) announceToSR('Bird added to wind field');
+                if (announceToSR) announceToSR(__alloT('stem.migration.sr_bird_added_to_wind_field', 'Bird added to wind field'));
               }
             }, t('stem.migration.add_bird', '\uD83D\uDC26 Add Bird')),
 
@@ -4437,7 +4437,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
                 windBirdsRef.current = [];
                 upd('windObjects', []);
                 if (beep) beep(880, 0.06, 0.08);
-                if (announceToSR) announceToSR('All objects and birds cleared');
+                if (announceToSR) announceToSR(__alloT('stem.migration.sr_all_objects_and_birds_cleared', 'All objects and birds cleared'));
               }
             }, t('stem.migration.clear_all', '\uD83D\uDDD1\uFE0F Clear All')),
 

@@ -669,7 +669,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Inequality reasoning pathway' },
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': __alloT('stem.inequality.a11y_inequality_reasoning_pathway', 'Inequality reasoning pathway') },
               [
                 { n: '1', title: 'Test', detail: 'Check values against the statement.' },
                 { n: '2', title: 'Represent', detail: 'Graph boundary and solution region.' },
@@ -911,7 +911,7 @@ window.StemLab = window.StemLab || {
             boundaryEls.push(h('circle', { key: 'testpt', cx: toGX(0), cy: toGY(0), r: 5, fill: originSat ? '#22c55e' : '#ef4444', stroke: '#fff', strokeWidth: 1.5 }));
             boundaryEls.push(h('text', { key: 'testlbl', x: toGX(0) + 8, y: toGY(0) - 6, fill: originSat ? '#16a34a' : '#dc2626', style: { fontSize: '9px', fontWeight: 'bold' } }, originSat ? '(0,0) ✓' : '(0,0) ✗'));
           }
-          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), style: { maxWidth: 420 }, role: 'img', 'aria-label': '2D inequality graph' },
+          return h('svg', { viewBox: '0 0 ' + W2 + ' ' + H2, className: 'w-full rounded-xl border-2 shadow-sm ' + (isDark ? 'bg-slate-900 border-fuchsia-800' : 'bg-white border-fuchsia-200'), style: { maxWidth: 420 }, role: 'img', 'aria-label': __alloT('stem.inequality.a11y_2d_inequality_graph', '2D inequality graph') },
             gridLines, axLabels, boundaryEls,
             h('text', { x: W2 - pad2 + 5, y: toGY(0) + 4, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'x'),
             h('text', { x: toGX(0) + 5, y: pad2 - 5, fill: isDark ? '#94a3b8' : '#475569', style: { fontSize: '11px', fontWeight: 'bold' } }, 'y'),

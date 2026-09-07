@@ -748,7 +748,7 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': 'Angle reasoning pathway' },
+            h('ol', { className: 'mt-4 grid gap-2 text-xs sm:grid-cols-3', 'aria-label': __alloT('stem.angles.a11y_angle_reasoning_pathway', 'Angle reasoning pathway') },
               [
                 { n: '1', title: 'Measure', detail: 'Align the vertex and read the scale.' },
                 { n: '2', title: 'Classify', detail: 'Name the angle by its measure.' },
@@ -786,7 +786,7 @@ window.StemLab = window.StemLab || {
               className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all'
             }, '\uD83D\uDCF8'),
             // SVG Export
-            h('button', { 'aria-label': 'SVG', onClick: exportSVG, className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all' },
+            h('button', { 'aria-label': __alloT('stem.angles.a11y_svg', 'SVG'), onClick: exportSVG, className: 'text-[0.6875rem] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 border border-slate-400 rounded-full px-2 py-0.5 transition-all' },
               t('stem.angles.svg', '\uD83D\uDCE5 SVG'))
           )
         ),
@@ -873,7 +873,7 @@ window.StemLab = window.StemLab || {
               showBisector && h('text', { x: bisEndX + 8, y: bisEndY - 4, className: 'text-[0.6875rem] fill-amber-500 font-bold select-none' }, (angleValue / 2).toFixed(1) + '\u00B0'),
               // Second ray
               showSecondRay && h('line', { x1: cx, y1: cy, x2: ray2EndX, y2: ray2EndY, stroke: '#06b6d4', strokeWidth: 2.5, strokeLinecap: 'round', strokeDasharray: '8,3' }),
-              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': 'Second angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
+              showSecondRay && h('circle', { cx: ray2EndX, cy: ray2EndY, r: rayHandleRadius, fill: '#06b6d4', fillOpacity: 0.15, stroke: '#06b6d4', strokeWidth: 1.5, className: 'cursor-grab', role: 'slider', tabIndex: 0, 'aria-label': __alloT('stem.angles.a11y_second_angle_ray_handle', 'Second angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': secondAngle, 'aria-valuetext': secondAngle + ' degrees', onMouseDown: handleDrag2, onTouchStart: handleTouchDrag2, onKeyDown: function(e) { handleAngleKey(e, secondAngle, function(next) { upd('secondAngle', next); }); } }),
               showSecondRay && h('text', { x: cx, y: cy + arcR + 22, textAnchor: 'middle', className: 'text-[0.6875rem] fill-cyan-600 font-bold select-none' }, '\u2220 Between: ' + angleBetween + '\u00B0'),
               // Arc
               angleValue > 0 && angleValue < 360 && h('path', {
@@ -887,7 +887,7 @@ window.StemLab = window.StemLab || {
                 estimateActive ? '?' : convertedAngle
               ),
               // Draggable handle
-              h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': 'Angle ray handle', 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
+              h('circle', { cx: rayEndX, cy: rayEndY, r: rayHandleRadius, fill: '#7c3aed', fillOpacity: 0.2, stroke: '#7c3aed', strokeWidth: 2, className: 'cursor-grab', role: 'slider', tabIndex: estimateActive ? -1 : 0, 'aria-label': __alloT('stem.angles.a11y_angle_ray_handle', 'Angle ray handle'), 'aria-keyshortcuts': 'ArrowLeft ArrowRight ArrowUp ArrowDown Home End', 'aria-valuemin': 0, 'aria-valuemax': 360, 'aria-valuenow': angleValue, 'aria-valuetext': convertedAngle, style: { filter: 'drop-shadow(0 2px 3px rgba(124,58,237,0.45))' }, onMouseDown: estimateActive ? undefined : handleDrag, onTouchStart: estimateActive ? undefined : handleTouchDrag, onKeyDown: estimateActive ? undefined : function(e) { handleAngleKey(e, angleValue, function(next) { setAngleValue(next); }, function() { setAngleFeedback(null); }); } }),
               // Center dot
               h('circle', { cx: cx, cy: cy, r: 4, fill: '#334155' }),
               // Vertex label
@@ -952,7 +952,7 @@ window.StemLab = window.StemLab || {
                 className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold transition-all outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-1 ' + (angleValue === a ? 'bg-purple-700 text-white shadow' : 'bg-purple-50 text-purple-600 hover:bg-purple-100 border border-purple-600')
               }, a + '\u00B0');
             }),
-            h('button', { 'aria-label': 'Pin', onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
+            h('button', { 'aria-label': __alloT('stem.angles.a11y_pin', 'Pin'), onClick: pinAngle, className: 'px-2 py-1 rounded-lg text-[0.6875rem] font-bold bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-600 transition-all', title: t('stem.angles.pin_this_angle_on_protractor', 'Pin this angle on protractor') }, t('stem.angles.pin', '\uD83D\uDCCC Pin'))
           ),
 
           // Pinned angles

@@ -544,7 +544,7 @@ window.StemLab = window.StemLab || {
                     })
                   )
                 ),
-                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": "Function investigation pathway" },
+                React.createElement("ol", { className: "mt-4 grid gap-2 text-xs sm:grid-cols-3", "aria-label": __alloT('stem.funcgrapher.a11y_function_investigation_pathway', 'Function investigation pathway') },
                   [
                     { n: '1', title: 'Choose', detail: 'Pick a function family.' },
                     { n: '2', title: 'Transform', detail: 'Adjust coefficients and trace.' },
@@ -563,7 +563,7 @@ window.StemLab = window.StemLab || {
 
             React.createElement("div", { className: "mb-3 rounded-xl border border-slate-200 bg-white p-2 shadow-sm" },
               React.createElement("p", { className: "mb-2 px-1 text-[0.625rem] font-black uppercase tracking-[0.16em] text-slate-500" }, "Choose a function family"),
-              React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": "Function families" },
+              React.createElement("div", { className: "grid grid-cols-2 gap-1.5 sm:grid-cols-3 lg:grid-cols-5", role: "group", "aria-label": __alloT('stem.funcgrapher.a11y_function_families', 'Function families') },
                 TYPES.map(function(tp) { return React.createElement("button", { key: tp.id, onClick: function() { setFnType(tp.id); },
                   className: "min-h-[2.5rem] min-w-0 whitespace-normal break-words px-2 py-2 rounded-lg text-xs font-bold transition-all focus:outline-none focus:ring-2 focus:ring-indigo-400 " + (d.type === tp.id ? 'bg-indigo-600 text-white shadow-md' : 'bg-slate-100 text-slate-700 hover:bg-indigo-50')
                 }, tp.emoji + " " + tp.label); })
@@ -572,7 +572,7 @@ window.StemLab = window.StemLab || {
 
             // SVG Graph
 
-            React.createElement("svg", { role: "img", "aria-label": "Function graph showing the configured curve", viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
+            React.createElement("svg", { role: "img", "aria-label": __alloT('stem.funcgrapher.a11y_function_graph_showing_the_configured_curve', 'Function graph showing the configured curve'), viewBox: "0 0 " + W + " " + H, className: "w-full rounded-xl border-2 shadow-sm " + (isDark ? "bg-slate-900 border-indigo-800" : "bg-white border-indigo-200"), style: { maxHeight: "340px" } },
 
               // Grid lines (rendered first, behind curves)
 
@@ -1454,7 +1454,7 @@ window.StemLab = window.StemLab || {
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
                   upd('aiTutorText', String(resp || '').trim()); upd('aiLoading', false);
-                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.funcgrapher.sr_explanation_ready', 'Explanation ready.'));
                 }).catch(function () {
                   upd('aiLoading', false); upd('aiError', 'Could not reach AI tutor. Try again in a moment.');
                 });
@@ -1497,7 +1497,7 @@ window.StemLab = window.StemLab || {
                 React.createElement('p', { id: 'funcgrapher-zoo-description', className: typeof srOnly === 'string' ? srOnly : 'sr-only', style: srOnly && typeof srOnly === 'object' ? srOnly : undefined }, 'Six coordinate plots compare common function shapes: linear is a straight rising line, quadratic is a U-shaped curve, cubic is an S-shaped curve, exponential rises increasingly quickly, logarithmic rises increasingly slowly, and sine repeats in a wave.'),
                 React.createElement('canvas', {
                   role: 'img',
-                  'aria-label': 'Function Zoo comparison of six common function shapes',
+                  'aria-label': __alloT('stem.funcgrapher.a11y_function_zoo_comparison_of_six_common_function', 'Function Zoo comparison of six common function shapes'),
                   'aria-describedby': 'funcgrapher-zoo-description',
                   'data-a11y-static': 'true',
                   ref: function(cvEl) {

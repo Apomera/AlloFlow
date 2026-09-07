@@ -2315,7 +2315,7 @@ const d = labToolData.physics;
 
             ),
 
-            d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": "Range estimation comparison and reflection" },
+            d.predictionResult && React.createElement("section", { className: "mb-3 rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3", "data-physics-estimation-reflection": "true", role: "region", "aria-label": __alloT('stem.physics.a11y_range_estimation_comparison_and_reflection', 'Range estimation comparison and reflection') },
               React.createElement("div", { className: "flex flex-wrap items-start justify-between gap-2" },
                 React.createElement("div", null,
                   React.createElement("h4", { className: "text-[0.6875rem] font-black uppercase tracking-wide text-fuchsia-800" }, "Quantitative estimation challenge"),
@@ -2325,7 +2325,7 @@ const d = labToolData.physics;
               ),
               React.createElement("fieldset", { className: "mt-2" },
                 React.createElement("legend", { className: "text-[0.625rem] font-black text-fuchsia-900" }, "How did the measured result affect your estimate?"),
-                React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": "How the measured range affected the estimate" },
+                React.createElement("div", { className: "mt-1 grid gap-1 sm:grid-cols-3", role: "radiogroup", "aria-label": __alloT('stem.physics.a11y_how_the_measured_range_affected_the_estimate', 'How the measured range affected the estimate') },
                   [
                     { id: 'supported', label: 'It supported my method' },
                     { id: 'revised', label: 'I would revise my method' },
@@ -3220,7 +3220,7 @@ const d = labToolData.physics;
                   + 'No markdown, no bullets, no headings. Plain prose.';
                 callGemini(prompt, false, false, 0.5).then(function (resp) {
                   upd('aiExplain', String(resp || '').trim()); upd('aiLoading', false);
-                  if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+                  if (typeof announceToSR === 'function') announceToSR(__alloT('stem.physics.sr_explanation_ready', 'Explanation ready.'));
                 }).catch(function () {
                   upd('aiLoading', false); upd('aiError', __alloT('stem.physics.ai_could_not_reach', 'Could not reach AI tutor. Try again in a moment.'));
                 });

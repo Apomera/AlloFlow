@@ -773,5 +773,14 @@
   "formation_status": "Formation status",
   "perfect_v_formed": "Perfect V formed",
   "formation_in_progress": "Formation in progress",
-  "routes_planned": "Routes planned"
+  "routes_planned": "Routes planned",
+  "sr_perfect_v_formation_achieved_20_experience_points": "Perfect V formation achieved. 20 experience points awarded.",
+  "sr_auto_formed_v_formation": "Auto-formed V formation",
+  "sr_flock_scattered": "Flock scattered",
+  "sr_v_formation_formed_automatically": "V formation formed automatically",
+  "sr_birds_scattered_randomly": "Birds scattered randomly",
+  "sr_bird_rode_a_thermal_updraft_15_experience_points": "Bird rode a thermal updraft. 15 experience points awarded.",
+  "sr_all_objects_cleared": "All objects cleared",
+  "sr_bird_added_to_wind_field": "Bird added to wind field",
+  "sr_all_objects_and_birds_cleared": "All objects and birds cleared"
 }

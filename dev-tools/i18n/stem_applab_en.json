@@ -324,5 +324,9 @@
   "i_can_explain_why_this_prompt_craft_pr": "I can explain why this prompt-craft profile yields this output variance.",
   "explanation_input": "Prompt variance explanation",
   "explain_in_your_own_words": "Explain in your own words...",
-  "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget — no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs."
+  "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget — no score, no reveal, no answer dump. Quality/brittleness indices are heuristics; real prompt engineering depends on model, temperature, system message, and task type. See OpenAI/Anthropic prompt-engineering docs.",
+  "sr_generation_cancelled": "Generation cancelled",
+  "sr_generation_failed": "Generation failed",
+  "sr_app_enhanced": "App enhanced",
+  "sr_fix_applied_re_running_the_preview": "Fix applied. Re-running the preview."
 }

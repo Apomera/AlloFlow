@@ -106,5 +106,7 @@
   "clear": "Clear",
   "legend_quiz": "Quiz",
   "legend_tips": "Tips",
-  "snapshot": "Snapshot"
+  "snapshot": "Snapshot",
+  "a11y_inequality_reasoning_pathway": "Inequality reasoning pathway",
+  "a11y_2d_inequality_graph": "2D inequality graph"
 }

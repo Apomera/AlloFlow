@@ -128,5 +128,8 @@
   "i_can_explain_why_this_n_n_combination": "I can explain why this n₁/n₂/θ combination yields this refraction state.",
   "explain_in_your_own_words": "Explain in your own words...",
   "inquiry_widget_no_score_no_reveal_no_a": "Inquiry widget — no score, no reveal, no answer dump. Dispersion model is illustrative (Cauchy-like first-order); real dispersion curves are material-specific (Sellmeier coefficients).",
-  "concept_locked_in": "Concept locked in"
+  "concept_locked_in": "Concept locked in",
+  "sr_the_wave_profile_csv_could_not_be_downloaded_in_t": "The wave profile CSV could not be downloaded in this environment.",
+  "sr_the_trial_csv_could_not_be_downloaded_in_this_env": "The trial CSV could not be downloaded in this environment.",
+  "sr_the_lab_note_could_not_be_downloaded_in_this_envi": "The lab note could not be downloaded in this environment."
 }

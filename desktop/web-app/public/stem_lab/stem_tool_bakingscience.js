@@ -851,11 +851,11 @@
               updExt({ emulsionsSolved: (ext.emulsionsSolved || 0) + 1 });
               awardXP && awardXP(15, 'Stabilized an emulsion');
               celebrate && celebrate();
-              announceToSR && announceToSR('Stable emulsion. Great mix.');
+              announceToSR && announceToSR(__alloT('stem.bakingscience.sr_stable_emulsion_great_mix', 'Stable emulsion. Great mix.'));
               addToast && addToast('\u2728 ' + tr('baking.emulsion.success_toast', 'Stable! Your ' + goal.label.toLowerCase() + ' holds together.', { name: goal.label.toLowerCase() }), 'success');
             } else {
               playBeep('fail');
-              announceToSR && announceToSR('Emulsion broke. Adjust your ratios.');
+              announceToSR && announceToSR(__alloT('stem.bakingscience.sr_emulsion_broke_adjust_your_ratios', 'Emulsion broke. Adjust your ratios.'));
               addToast && addToast(tr('baking.emulsion.not_quite', 'Not quite \u2014 try adjusting toward the target.'), 'info');
             }
           };
@@ -1424,7 +1424,7 @@
               var tmp = newOrder[i]; newOrder[i] = newOrder[j]; newOrder[j] = tmp;
             }
             updMulti({ diagOrder: newOrder, diagIdx: 0, diagSelected: null, diagRevealed: false });
-            announceToSR && announceToSR('Scenarios reshuffled.');
+            announceToSR && announceToSR(__alloT('stem.bakingscience.sr_scenarios_reshuffled', 'Scenarios reshuffled.'));
           };
 
           // Map a scenario tag to a colored accent and breadcrumb label
@@ -2118,7 +2118,7 @@
             if (subtool !== 'menu') {
               e.preventDefault();
               upd('subtool', 'menu');
-              if (typeof announceToSR === 'function') announceToSR('Returned to menu.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.bakingscience.sr_returned_to_menu', 'Returned to menu.'));
             }
           }
         }
@@ -2151,7 +2151,7 @@
               if (thisReqId !== window.__bakingAiReqId) return;
               upd('aiExplain', String(resp || '').trim());
               upd('aiLoading', false);
-              if (typeof announceToSR === 'function') announceToSR('Explanation ready.');
+              if (typeof announceToSR === 'function') announceToSR(__alloT('stem.bakingscience.sr_explanation_ready', 'Explanation ready.'));
             }).catch(function () {
               if (thisReqId !== window.__bakingAiReqId) return;
               upd('aiLoading', false);
