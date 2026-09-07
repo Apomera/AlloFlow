@@ -20090,54 +20090,212 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 16u — SKIN ANATOMY
       // ═══════════════════════════════════════════════════════
       function renderSkinAnatomy() {
+        // Cellular skin detail. This was five stacks of labelled prose with no
+        // picture at all — for the one topic in the lab that is fundamentally
+        // about SPATIAL ARRANGEMENT (which cell sits above which, and what each
+        // layer can and cannot do). Now: a clickable cross-section, one card at
+        // a time, and a live chromatophore that expands the way the text says.
+        // Every claim drawn here already lives in SKIN_ANATOMY; nothing new is
+        // asserted, and the depth order is the one the data implies (leucophores
+        // give "a white reference for the chromatophores above").
         var sks = Object.keys(SKIN_ANATOMY);
+        var sel = d.skinCell && SKIN_ANATOMY[d.skinCell] ? d.skinCell : 'chromatophore';
+        var drive = d.skinDrive != null ? d.skinDrive : 0;
+        var reduced = !!(typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+        var META = {
+          chromatophore: { color: '#f97316', role: __alloT('stem.cephalopodlab.skin_role_chromatophore', 'Pigment, actively stretched'), can: __alloT('stem.cephalopodlab.skin_can_chromatophore', 'browns, reds, yellows'), cannot: __alloT('stem.cephalopodlab.skin_cannot_chromatophore', 'blue or green') },
+          iridophore: { color: '#38bdf8', role: __alloT('stem.cephalopodlab.skin_role_iridophore', 'Structural colour, tunable'), can: __alloT('stem.cephalopodlab.skin_can_iridophore', 'blue, green, silver, gold'), cannot: __alloT('stem.cephalopodlab.skin_cannot_iridophore', 'browns') },
+          leucophore: { color: '#e2e8f0', role: __alloT('stem.cephalopodlab.skin_role_leucophore', 'Passive white scatter'), can: __alloT('stem.cephalopodlab.skin_can_leucophore', 'white only'), cannot: null },
+          papilla: { color: '#a78bfa', role: __alloT('stem.cephalopodlab.skin_role_papilla', 'Texture, not colour'), can: __alloT('stem.cephalopodlab.skin_can_papilla', '3D shape'), cannot: null },
+          photophore: { color: '#fde68a', role: __alloT('stem.cephalopodlab.skin_role_photophore', 'Makes its own light'), can: __alloT('stem.cephalopodlab.skin_can_photophore', 'emitted light'), cannot: null }
+        };
+        var metaOf = function(k) { return META[k] || { color: '#c7d2fe', role: '', can: '', cannot: null }; };
+        var pick = function(k) { setCL({ skinCell: k }); awardXP(1); clAnnounce(SKIN_ANATOMY[k].name + ' selected.'); };
+
+        // ── Cross-section: the three optical layers in depth order, a raised
+        // papilla, and the photophore drawn as a discrete ORGAN rather than a
+        // layer, because that is what the data calls it.
+        var LAYERS = [
+          { id: 'chromatophore', y: 62, hAttr: 34, label: __alloT('stem.cephalopodlab.skin_layer_chromatophore', 'Chromatophores — pigment sacs + radial muscles') },
+          { id: 'iridophore', y: 96, hAttr: 30, label: __alloT('stem.cephalopodlab.skin_layer_iridophore', 'Iridophores — stacked reflectin platelets') },
+          { id: 'leucophore', y: 126, hAttr: 28, label: __alloT('stem.cephalopodlab.skin_layer_leucophore', 'Leucophores — white scatterers') }
+        ];
+        var sectionSummary = __alloT('stem.cephalopodlab.skin_section_summary', 'Cross-section of cephalopod skin: chromatophores nearest the surface, iridophores beneath them, leucophores deepest, a dermal papilla raised by its ring of erector muscle, and a photophore light organ. Currently selected: ') + SKIN_ANATOMY[sel].name + '.';
+        var crossSection = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.skin_cross_section', '🔬 Cross-section: which cell sits where')),
+            h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.skin_cross_hint', 'Pick a layer to read its card below'))),
+          h('div', { style: { background: 'linear-gradient(180deg, #0b3a5e 0%, #08243c 34%, #0a1628 100%)', borderRadius: 12, border: '1px solid rgba(56,189,248,0.3)', overflow: 'hidden' } },
+            h('svg', { viewBox: '0 0 640 230', width: '100%', height: 230, role: 'img', 'aria-label': sectionSummary, style: { display: 'block' } },
+              h('defs', null,
+                h('linearGradient', { id: 'clSkinIrid', x1: 0, y1: 0, x2: 1, y2: 0 },
+                  h('stop', { offset: '0%', stopColor: '#38bdf8' }), h('stop', { offset: '45%', stopColor: '#34d399' }), h('stop', { offset: '100%', stopColor: '#c084fc' }))),
+              // water above the skin
+              h('text', { x: 30, y: 24, fontSize: 11, fontWeight: 800, fill: '#bae6fd' }, __alloT('stem.cephalopodlab.skin_label_water', '↑ seawater · light comes in')),
+              // layer bands (clickable)
+              LAYERS.map(function(L) {
+                var on = sel === L.id;
+                var m = metaOf(L.id);
+                return h('g', { key: L.id, onClick: function() { pick(L.id); }, style: { cursor: 'pointer' } },
+                  h('rect', { x: 30, y: L.y, width: 330, height: L.hAttr - 3, rx: 5,
+                    fill: L.id === 'leucophore' ? 'rgba(226,232,240,0.30)' : L.id === 'iridophore' ? 'url(#clSkinIrid)' : 'rgba(249,115,22,0.30)',
+                    opacity: on ? 1 : 0.62, stroke: on ? m.color : 'rgba(148,163,184,0.35)', strokeWidth: on ? 2.5 : 1 }),
+                  // texture inside each band, drawn to match what the cell IS
+                  L.id === 'chromatophore' ? [0, 1, 2, 3, 4, 5].map(function(i) {
+                    return h('circle', { key: 'c' + i, cx: 62 + i * 53, cy: L.y + 15, r: 9, fill: '#c2410c', stroke: '#fdba74', strokeWidth: 1.5 });
+                  }) : null,
+                  L.id === 'iridophore' ? [0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+                    return h('rect', { key: 'p' + i, x: 44 + i * 39, y: L.y + 6, width: 29, height: 3, rx: 1.5, fill: 'rgba(255,255,255,0.75)' });
+                  }) : null,
+                  L.id === 'iridophore' ? [0, 1, 2, 3, 4, 5, 6, 7].map(function(i) {
+                    return h('rect', { key: 'q' + i, x: 44 + i * 39, y: L.y + 15, width: 29, height: 3, rx: 1.5, fill: 'rgba(255,255,255,0.55)' });
+                  }) : null,
+                  L.id === 'leucophore' ? [0, 1, 2, 3, 4, 5, 6, 7, 8].map(function(i) {
+                    return h('circle', { key: 'l' + i, cx: 48 + i * 37, cy: L.y + 13, r: 6, fill: 'rgba(255,255,255,0.9)' });
+                  }) : null,
+                  h('text', { x: 452, y: L.y + 18, fontSize: 10.5, fontWeight: on ? 900 : 700, fill: on ? m.color : '#cbd5e1' }, SKIN_ANATOMY[L.id].name));
+              }),
+              // muscle / dermis below
+              h('rect', { x: 30, y: 154, width: 330, height: 22, rx: 4, fill: 'rgba(190,24,93,0.35)', stroke: 'rgba(244,114,182,0.4)' }),
+              h('text', { x: 452, y: 170, fontSize: 10.5, fill: '#f9a8d4' }, __alloT('stem.cephalopodlab.skin_label_muscle', 'muscle + dermis')),
+              // papilla: a raised 3D bump with its ring of erector muscle
+              h('g', { onClick: function() { pick('papilla'); }, style: { cursor: 'pointer' } },
+                h('path', { d: 'M96 62 q 34 -46 68 0 z', fill: 'rgba(167,139,250,0.55)', stroke: sel === 'papilla' ? '#a78bfa' : 'rgba(196,181,253,0.5)', strokeWidth: sel === 'papilla' ? 2.5 : 1.2 }),
+                h('path', { d: 'M104 165 q 26 -14 52 0', stroke: '#f472b6', strokeWidth: 3, fill: 'none' }),
+                h('text', { x: 172, y: 44, fontSize: 10, fontWeight: sel === 'papilla' ? 900 : 700, fill: sel === 'papilla' ? '#c4b5fd' : '#cbd5e1' }, __alloT('stem.cephalopodlab.skin_label_papilla', 'papilla'))),
+              // photophore: a discrete organ, not a layer
+              h('g', { onClick: function() { pick('photophore'); }, style: { cursor: 'pointer' }, transform: 'translate(398, 118)' },
+                h('circle', { cx: 0, cy: 0, r: 26, fill: 'rgba(253,230,138,0.16)', stroke: sel === 'photophore' ? '#fde68a' : 'rgba(253,230,138,0.45)', strokeWidth: sel === 'photophore' ? 2.5 : 1.2 }),
+                h('circle', { cx: 0, cy: 0, r: 11, fill: '#fde68a' }),
+                h('path', { d: 'M-20 14 a 24 24 0 0 1 40 0 z', fill: 'rgba(253,230,138,0.35)' }),
+                h('text', { x: 0, y: 46, textAnchor: 'middle', fontSize: 10, fontWeight: sel === 'photophore' ? 900 : 700, fill: sel === 'photophore' ? '#fde68a' : '#cbd5e1' }, __alloT('stem.cephalopodlab.skin_label_photophore', 'photophore'))),
+              h('text', { x: 30, y: 202, fontSize: 10.5, fill: '#94a3b8' }, __alloT('stem.cephalopodlab.skin_label_depth', 'deeper into the animal ↓'))),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.skin_pick_cell', 'Pick a skin cell type'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, padding: '10px 12px', borderTop: '1px solid rgba(56,189,248,0.2)' } },
+              sks.map(function(k) {
+                var on = sel === k; var m = metaOf(k);
+                return h('button', { key: k, type: 'button', 'aria-pressed': on ? 'true' : 'false', onClick: function() { pick(k); },
+                  style: { padding: '6px 11px', borderRadius: 999, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                    background: on ? m.color + '2a' : 'transparent', color: on ? m.color : '#cbd5e1',
+                    border: '1px solid ' + (on ? m.color : 'rgba(148,163,184,0.35)') } }, SKIN_ANATOMY[k].name);
+              }))));
+
+        // ── What each layer can and cannot do: the constraint that makes the
+        // stack necessary in the first place. Pulled straight from `colors`.
+        var canTable = h('div', { style: cardStyle() },
+          h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.skin_why_stack', '🎨 Why the stack exists: no single cell can do it all')),
+          h('div', { style: { overflowX: 'auto' } },
+            h('table', { style: { width: '100%', borderCollapse: 'collapse', minWidth: 460 } },
+              h('caption', { style: { captionSide: 'top', textAlign: 'left', fontSize: 10.5, color: '#cbd5e1', paddingBottom: 6 } },
+                __alloT('stem.cephalopodlab.skin_why_stack_caption', 'A camouflaging cephalopod combines layers because each cell type is limited on its own.')),
+              h('thead', null, h('tr', null,
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.skin_col_cell', 'Cell')),
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.skin_col_job', 'Job')),
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.skin_col_can', 'Produces')),
+                h('th', { scope: 'col', style: { textAlign: 'left', padding: '6px 8px', fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em' } }, __alloT('stem.cephalopodlab.skin_col_cannot', 'Cannot')))),
+              h('tbody', null, sks.map(function(k) {
+                var m = metaOf(k);
+                return h('tr', { key: k, style: { background: sel === k ? 'rgba(99,102,241,0.12)' : 'transparent' } },
+                  h('th', { scope: 'row', style: { textAlign: 'left', padding: '7px 8px', fontSize: 12, fontWeight: 800, color: m.color } },
+                    h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 9, height: 9, borderRadius: 2, background: m.color, marginRight: 7 } }), SKIN_ANATOMY[k].name),
+                  h('td', { style: { padding: '7px 8px', fontSize: 11.5, color: '#e2e8f0' } }, m.role),
+                  h('td', { style: { padding: '7px 8px', fontSize: 11.5, color: '#e2e8f0' } }, m.can),
+                  h('td', { style: { padding: '7px 8px', fontSize: 11.5, color: m.cannot ? '#fca5a5' : '#94a3b8' } }, m.cannot || '—'));
+              })))));
+
+        // ── Live chromatophore: the file says 15-25 radial muscle fibers stretch
+        // the sac to up to 15x its resting diameter in under 100 ms. Drive the
+        // muscles and watch the area — the point is that the pigment does not
+        // move, the sac is pulled open, which is why it is so fast.
+        // Geometry renders the card's OWN claim: up to 15x the resting DIAMETER.
+        var FIBERS = 20;                       // within the stated 15-25
+        var restR = 4, maxR = restR * 15;      // 15x resting diameter (60px), per SKIN_ANATOMY
+        var r = restR + (maxR - restR) * (drive / 100);
+        var growX = r / restR;
+        var chromaDemo = h('div', { style: cardStyle() },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+            h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.skin_chroma_demo', '⚡ Drive one chromatophore')),
+            h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.skin_chroma_hint', 'The pigment never moves. The muscles pull the sac open.'))),
+          h('div', { style: { display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'center' } },
+            h('svg', { viewBox: '0 0 200 200', width: 190, height: 190, role: 'img',
+                'aria-label': __alloT('stem.cephalopodlab.skin_chroma_label', 'One chromatophore at ') + drive + __alloT('stem.cephalopodlab.skin_chroma_label_b', ' percent muscle drive, pigment sac about ') + growX.toFixed(1) + '×' + __alloT('stem.cephalopodlab.skin_chroma_label_c', ' its resting diameter'),
+                style: { flexShrink: 0, background: 'rgba(15,23,42,0.6)', borderRadius: 12, border: '1px solid rgba(148,163,184,0.3)' } },
+              // radial muscle fibres, shortening as drive rises
+              (function() { var out = []; for (var i = 0; i < FIBERS; i++) {
+                var a = (i / FIBERS) * Math.PI * 2;
+                var inner = r + 2, outer = 92 - (drive / 100) * 6;
+                out.push(h('line', { key: 'f' + i, x1: 100 + Math.cos(a) * inner, y1: 100 + Math.sin(a) * inner, x2: 100 + Math.cos(a) * outer, y2: 100 + Math.sin(a) * outer,
+                  stroke: drive > 4 ? '#f472b6' : 'rgba(244,114,182,0.55)', strokeWidth: 1 + (drive / 100) * 1.6, strokeLinecap: 'round' }));
+              } return out; })(),
+              h('circle', { cx: 100, cy: 100, r: 94, fill: 'none', stroke: 'rgba(148,163,184,0.3)', strokeWidth: 1, strokeDasharray: '3 3' }),
+              h('circle', { cx: 100, cy: 100, r: r, fill: '#c2410c', stroke: '#fdba74', strokeWidth: 1.5, style: reduced ? undefined : { transition: 'r 0.12s linear' } }),
+              h('text', { x: 100, y: 194, textAnchor: 'middle', fontSize: 11, fill: '#cbd5e1', fontFamily: 'ui-monospace, Menlo, monospace' }, growX.toFixed(1) + '× ' + __alloT('stem.cephalopodlab.skin_resting_diameter', 'resting diameter'))),
+            h('div', { style: { flex: '1 1 260px', minWidth: 220 } },
+              h('label', { htmlFor: 'cl-skin-drive', style: { display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: '#cbd5e1', marginBottom: 4 } },
+                h('span', null, __alloT('stem.cephalopodlab.skin_drive_label', 'Motor-neuron drive to the radial muscles')),
+                h('span', { style: { fontFamily: 'ui-monospace, Menlo, monospace', color: '#f97316' } }, drive + ' / 100')),
+              h('input', { id: 'cl-skin-drive', type: 'range', min: 0, max: 100, step: 1, value: drive,
+                onChange: function(e) { setCL({ skinDrive: parseInt(e.target.value, 10) }); },
+                style: { width: '100%', accentColor: '#f97316' } }),
+              h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8, marginBottom: 8 } },
+                [{ v: 0, l: __alloT('stem.cephalopodlab.skin_preset_relaxed', 'Relaxed (pale)') }, { v: 55, l: __alloT('stem.cephalopodlab.skin_preset_mid', 'Half-expanded') }, { v: 100, l: __alloT('stem.cephalopodlab.skin_preset_full', 'Fully expanded (dark)') }].map(function(p) {
+                  return h('button', { key: p.v, type: 'button', 'aria-pressed': drive === p.v ? 'true' : 'false', onClick: function() { setCL({ skinDrive: p.v }); awardXP(1); },
+                    style: { padding: '5px 10px', borderRadius: 7, fontSize: 11, fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit',
+                      background: drive === p.v ? 'rgba(249,115,22,0.2)' : 'transparent', color: drive === p.v ? '#fdba74' : '#cbd5e1',
+                      border: '1px solid ' + (drive === p.v ? '#f97316' : 'rgba(148,163,184,0.35)') } }, p.l);
+                })),
+              h('ul', { style: { margin: 0, padding: '0 0 0 18px', fontSize: 11.5, color: '#e2e8f0', lineHeight: 1.65 } },
+                h('li', null, __alloT('stem.cephalopodlab.skin_fact_fibers', '15–25 radial muscle fibres per cell, each an independent cell under its own neural control.')),
+                h('li', null, __alloT('stem.cephalopodlab.skin_fact_stretch', 'Contracted together they stretch the sac to as much as 15× its resting diameter.')),
+                h('li', null, __alloT('stem.cephalopodlab.skin_fact_speed', 'Under 100 ms, because muscle does the work — no pigment has to be made or moved.')),
+                h('li', null, __alloT('stem.cephalopodlab.skin_fact_density', 'Cuttlefish carry about 250 of these per square millimetre of mantle skin.'))))));
+
+        // ── The selected cell's full record ──
+        var s = SKIN_ANATOMY[sel];
+        var meta = metaOf(sel);
+        var FIELDS = [
+          { k: 'structure', color: '#a78bfa', label: __alloT('stem.cephalopodlab.structure', '🧬 Structure: ') },
+          { k: 'colors', color: '#86efac', label: __alloT('stem.cephalopodlab.colors', '🎨 Colors: ') },
+          { k: 'control', color: '#fbbf24', label: __alloT('stem.cephalopodlab.control', '⚡ Control: ') },
+          { k: 'mechanism', color: '#22d3ee', label: __alloT('stem.cephalopodlab.mechanism', '⚙ Mechanism: ') },
+          { k: 'density', color: '#a78bfa', label: __alloT('stem.cephalopodlab.density', '📊 Density: ') },
+          { k: 'shapes', color: '#a78bfa', label: __alloT('stem.cephalopodlab.shapes', '📐 Shapes: ') },
+          { k: 'speed', color: '#fbbf24', label: __alloT('stem.cephalopodlab.speed', '⏱ Speed: ') },
+          { k: 'functions', color: '#86efac', label: __alloT('stem.cephalopodlab.functions', '🎯 Functions: ') },
+          { k: 'combined', color: '#fb923c', label: __alloT('stem.cephalopodlab.combined_effect', '🔗 Combined effect: ') },
+          { k: 'where', color: '#fbbf24', label: __alloT('stem.cephalopodlab.where_found', '📍 Where found: ') },
+          { k: 'evolution', color: '#fb923c', label: __alloT('stem.cephalopodlab.evolution', '🌱 Evolution: ') },
+          { k: 'discovery', color: '#22d3ee', label: __alloT('stem.cephalopodlab.discovery', '🔍 Discovery: ') }
+        ];
+        var selIdx = sks.indexOf(sel);
+        var detail = h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid ' + meta.color }) },
+          h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 8 } },
+            h('div', null,
+              h('div', { style: { fontSize: 18, fontWeight: 900, color: meta.color } }, s.name),
+              h('div', { style: { fontSize: 11, color: '#cbd5e1', marginTop: 2 } }, meta.role)),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.cephalopodlab.skin_browse', 'Browse skin cells'), style: { display: 'flex', alignItems: 'center', gap: 6 } },
+              h('button', { type: 'button', 'aria-label': __alloT('stem.cephalopodlab.skin_prev', 'Previous skin cell'), onClick: function() { pick(sks[(selIdx + sks.length - 1) % sks.length]); },
+                style: { width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '‹'),
+              h('span', { style: { fontSize: 10.5, color: '#cbd5e1', fontVariantNumeric: 'tabular-nums' } }, (selIdx + 1) + ' / ' + sks.length),
+              h('button', { type: 'button', 'aria-label': __alloT('stem.cephalopodlab.skin_next', 'Next skin cell'), onClick: function() { pick(sks[(selIdx + 1) % sks.length]); },
+                style: { width: 30, height: 30, borderRadius: 8, border: '1px solid rgba(148,163,184,0.4)', background: 'rgba(15,23,42,0.6)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800 } }, '›'))),
+          h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 10 } }, s.description),
+          FIELDS.filter(function(f) { return s[f.k]; }).map(function(f) {
+            return h('div', { key: f.k, style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: 6 } },
+              h('span', { style: { color: f.color, fontWeight: 700 } }, f.label), s[f.k]);
+          }),
+          h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } }, s.citation),
+          sel === 'chromatophore' || sel === 'iridophore' || sel === 'leucophore' ? h('button', { type: 'button', onClick: function() { setSection('camo'); awardXP(2); },
+            style: { marginTop: 10, fontSize: 11, fontWeight: 800, padding: '7px 11px', borderRadius: 8, border: '1px solid rgba(244,114,182,0.6)', background: 'rgba(244,114,182,0.14)', color: '#fbcfe8', cursor: 'pointer', fontFamily: 'inherit' } },
+            __alloT('stem.cephalopodlab.skin_to_camo', '🎨 Mix all three layers in the Camouflage Lab →')) : null);
+
         return h('div', null,
           panelHeader('🎨 Cephalopod Skin Anatomy (Cellular Detail)',
-            'How a color-changing skin actually works — at the level of individual cells. Chromatophores, iridophores, leucophores, papillae, photophores: each cell type does a different job, and together they make cephalopod skin the most expressive integumentary system in nature.'),
-          sks.map(function(skey) {
-            var s = SKIN_ANATOMY[skey];
-            return h('div', { key: skey, style: cardStyle() },
-              h('div', { style: { fontSize: 18, fontWeight: 800, color: '#c7d2fe', marginBottom: 6 } }, s.name),
-              h('div', { style: { fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.6, marginBottom: 8 } }, s.description),
-              s.structure ? h('div', { style: { fontSize: 12, color: '#a78bfa', background: 'rgba(167,139,250,0.08)', padding: '8px 12px', borderRadius: 6, lineHeight: 1.6, marginBottom: 6 } },
-                h('span', { style: { fontWeight: 700 } }, __alloT('stem.cephalopodlab.structure', '🧬 Structure: ')), s.structure
-              ) : null,
-              s.colors ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#86efac', fontWeight: 700 } }, __alloT('stem.cephalopodlab.colors', '🎨 Colors: ')), s.colors
-              ) : null,
-              s.control ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, __alloT('stem.cephalopodlab.control', '⚡ Control: ')), s.control
-              ) : null,
-              s.density ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, __alloT('stem.cephalopodlab.density', '📊 Density: ')), s.density
-              ) : null,
-              s.evolution ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#fb923c', fontWeight: 700 } }, __alloT('stem.cephalopodlab.evolution', '🌱 Evolution: ')), s.evolution
-              ) : null,
-              s.mechanism ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.cephalopodlab.mechanism', '⚙ Mechanism: ')), s.mechanism
-              ) : null,
-              s.functions ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#86efac', fontWeight: 700 } }, __alloT('stem.cephalopodlab.functions', '🎯 Functions: ')), s.functions
-              ) : null,
-              s.shapes ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#a78bfa', fontWeight: 700 } }, __alloT('stem.cephalopodlab.shapes', '📐 Shapes: ')), s.shapes
-              ) : null,
-              s.speed ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, __alloT('stem.cephalopodlab.speed', '⏱ Speed: ')), s.speed
-              ) : null,
-              s.combined ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#fb923c', fontWeight: 700 } }, __alloT('stem.cephalopodlab.combined_effect', '🔗 Combined effect: ')), s.combined
-              ) : null,
-              s.discovery ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#22d3ee', fontWeight: 700 } }, __alloT('stem.cephalopodlab.discovery', '🔍 Discovery: ')), s.discovery
-              ) : null,
-              s.where ? h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #cbd5e1)', marginBottom: 6 } },
-                h('span', { style: { color: '#fbbf24', fontWeight: 700 } }, __alloT('stem.cephalopodlab.where_found', '📍 Where found: ')), s.where
-              ) : null,
-              h('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', fontStyle: 'italic', marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' } }, '📜 ' + s.citation)
-            );
-          })
+            'How a color-changing skin actually works — at the level of individual cells. Chromatophores, iridophores, leucophores, papillae, photophores: each cell type does a different job, and camouflage is all of them working together.'),
+          crossSection,
+          canTable,
+          sel === 'chromatophore' ? chromaDemo : null,
+          detail,
+          sel !== 'chromatophore' ? chromaDemo : null
         );
       }
 

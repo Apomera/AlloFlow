@@ -361,3 +361,58 @@ describe('Cephalopod Lab Jet Lab schematic and Day sky band', () => {
     expect(renderDay(4).querySelector('[role="progressbar"][aria-label^="Day progress"]').getAttribute('aria-valuenow')).toBe('4');
   });
 });
+
+// ── Skin Anatomy cross-section + chromatophore demo ──
+describe('Cephalopod Lab Skin Anatomy', () => {
+  const renderSkin = (data = {}) => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'skin', ...data } });
+    return c;
+  };
+
+  it('draws a cross-section whose summary names the depth order and the selection', () => {
+    const c = renderSkin();
+    const svg = c.querySelector('svg[aria-label^="Cross-section of cephalopod skin"]');
+    expect(svg).not.toBeNull();
+    expect(svg.getAttribute('aria-label')).toMatch(/chromatophores nearest the surface, iridophores beneath them, leucophores deepest/);
+    expect(svg.getAttribute('aria-label')).toMatch(/Currently selected: Chromatophore\.$/);
+    expect(renderSkin({ skinCell: 'papilla' }).querySelector('svg[aria-label^="Cross-section"]').getAttribute('aria-label'))
+      .toMatch(/Currently selected: Dermal papilla\.$/);
+  });
+
+  it('offers every cell type as a pressed-state chip and shows one record at a time', () => {
+    const c = renderSkin({ skinCell: 'iridophore' });
+    const chips = Array.from(c.querySelectorAll('[role="group"][aria-label="Pick a skin cell type"] button'));
+    expect(chips).toHaveLength(5);
+    expect(chips.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    // the open record is the iridophore's, and no other cell's citation is on screen
+    expect(c.textContent).toMatch(/Crookes et al\., 2007/);
+    expect(c.textContent).not.toMatch(/Florey, 1969/);
+    expect(c.textContent).toMatch(/2 \/ 5/);
+  });
+
+  it('states what each layer cannot do, which is why the stack exists', () => {
+    const c = renderSkin();
+    const table = c.querySelector('table');
+    expect(table.querySelector('caption')).not.toBeNull();
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(5);
+    const chroma = Array.from(table.querySelectorAll('tbody tr')).find((r) => /^Chromatophore/.test(r.textContent));
+    expect(chroma.textContent).toMatch(/blue or green/);
+    const irid = Array.from(table.querySelectorAll('tbody tr')).find((r) => /^Iridophore/.test(r.textContent));
+    expect(irid.textContent).toMatch(/browns/);
+  });
+
+  it('expands the chromatophore sac with muscle drive, up to the 15x diameter the record claims', () => {
+    const radius = (c) => Number(c.querySelector('svg[aria-label^="One chromatophore at"] circle[fill="#c2410c"]').getAttribute('r'));
+    const rest = renderSkin({ skinDrive: 0 });
+    const full = renderSkin({ skinDrive: 100 });
+    expect(radius(full) / radius(rest)).toBeCloseTo(15, 1);
+    expect(full.textContent).toMatch(/15\.0× resting diameter/);
+    expect(full.querySelector('svg[aria-label^="One chromatophore at"]').getAttribute('aria-label')).toMatch(/100 percent muscle drive/);
+    // the drive slider is labelled, and the three presets are real buttons
+    expect(rest.querySelector('label[for="cl-skin-drive"]')).not.toBeNull();
+    const presets = Array.from(rest.querySelectorAll('button')).filter((b) => /Relaxed|Half-expanded|Fully expanded/.test(b.textContent));
+    expect(presets).toHaveLength(3);
+    expect(presets.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+  });
+});

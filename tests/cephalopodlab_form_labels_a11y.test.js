@@ -60,7 +60,7 @@ describe('Cephalopod Lab form-control accessibility', () => {
   it('keeps the complete form inventory and repaired names explicit in source', () => {
     const source = readFileSync(SOURCE, 'utf8');
 
-    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(22);
+    expect(source.match(/h\('(input|textarea|select)'/g)).toHaveLength(23);
     expect(source).toContain(
       "'aria-label': __alloT('stem.cephalopodlab.audio_volume', 'Audio volume')"
     );
