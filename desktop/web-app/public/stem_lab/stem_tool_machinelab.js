@@ -3015,12 +3015,19 @@ window.StemLab = window.StemLab || {
           var b = list[i];
           var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
           if (b.state === 'breached') {
-            var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
-            x += (r1 - 0.5) * 2.2;
-            // Forward, away from the machine: the impact carries it through.
-            z += (r2 - 0.5) * 2.6 + 1.1;
-            y = 0.22 + r3 * 0.5;
-            sc = 0.45 + r1 * 0.25;
+            // The heap the model settled, if this block has one: the same pile
+            // the Siege Field draws. The batch cannot rotate, so upright.
+            var restB = m.rubbleRest ? m.rubbleRest[b.col + '_' + b.row] : null;
+            if (restB) {
+              x = restB[0]; y = restB[1]; z = restB[2]; sc = restB[6];
+            } else {
+              var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
+              x += (r1 - 0.5) * 2.2;
+              // Forward, away from the machine: the impact carries it through.
+              z += (r2 - 0.5) * 2.6 + 1.1;
+              y = 0.22 + r3 * 0.5;
+              sc = 0.45 + r1 * 0.25;
+            }
           }
           S.wall.batch.set(n, x, y, z, sc, colourFor(b));
           n++;
@@ -3125,12 +3132,18 @@ window.StemLab = window.StemLab || {
         var b = list[i];
         var x = b.col - midCol, y = b.row + 0.5, z = 0, sc = 1;
         if (b.state === 'breached') {
-          // Fallen. Displaced into a heap at the foot of the wall, deterministically.
-          var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
-          x += (r1 - 0.5) * 2.2;
-          z += (r2 - 0.5) * 2.6 + 1.1;
-          y = 0.22 + r3 * 0.5;
-          sc = 0.45 + r1 * 0.25;
+          // Fallen. Where the model settled it if it has a record, else the
+          // deterministic heap at the foot of the wall as before.
+          var restT = data.rubbleRest ? data.rubbleRest[b.col + '_' + b.row] : null;
+          if (restT) {
+            x = restT[0]; y = restT[1]; z = restT[2]; sc = restT[6];
+          } else {
+            var r1 = hash01(b.col, b.row, 1), r2 = hash01(b.col, b.row, 2), r3 = hash01(b.col, b.row, 3);
+            x += (r1 - 0.5) * 2.2;
+            z += (r2 - 0.5) * 2.6 + 1.1;
+            y = 0.22 + r3 * 0.5;
+            sc = 0.45 + r1 * 0.25;
+          }
         }
         S.wall.batch.set(n, x, y, z, sc, colourFor(b));
         n++;
@@ -4054,13 +4067,17 @@ window.StemLab = window.StemLab || {
     // A block that has broken is not a cube any more. Each piece keeps its
     // own three aspects, from the hash, so the same block is the same shard
     // every time; contact in the model stays a sphere, so this is drawing only.
-    var rubbleAspect = function (b, salt) { return 0.72 + hash01(b.col, b.row, salt) * 0.5; };
+    var rubbleAspect = function (b, salt) { return 0.7 + hash01(b.col, b.row, salt) * 0.3; };
     // Rubble has its own mesh: the voxel batch pins every instance upright,
     // and a block that has fallen is not upright. Contrast keeps the batch
     // (its edge outlines cannot rotate), so it keeps the old heap too.
     if (!contrast && typeof THREE.InstancedMesh === 'function') {
       var rubbleMesh = new THREE.InstancedMesh(
-        new THREE.BoxGeometry(1, 1, 1),
+        // A dodecahedron of radius 0.5 sits INSIDE the unit sphere the model
+        // uses for contact, so with aspects kept at or under 1 two pieces the
+        // model holds apart can never be drawn through each other. A cube's
+        // corners reach 0.87 and clipped.
+        new THREE.DodecahedronGeometry(0.5, 0),
         new THREE.MeshLambertMaterial({ color: 0xffffff, map: tex.stone || null }),
         Math.max(8, blocks.length)
       );
@@ -8956,6 +8973,9 @@ window.StemLab = window.StemLab || {
           // Drawn instead of `blocks` until the stone lands: a wall that broke
           // while the stone was still halfway there would read as a cheat.
           prevBlocks: d.siegeFlight ? d.siegeFlight.before : null,
+          // Where the model settled every fallen block, so this bay and the
+          // Siege Field draw one heap and not two.
+          rubbleRest: d.rubbleRest || {},
           flight: d.siegeFlight || null,
           previewPath: preview && preview.path ? preview.path : null,
           standoff: d.standoff,

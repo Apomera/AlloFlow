@@ -1543,7 +1543,7 @@ describe('Siege Field wave 30: why walls fall', () => {
 describe('Siege Field wave 31: a cinematic finish', () => {
   it('draws each fallen block as its own shard, from the hash, with contact still a sphere', () => {
     const src = source();
-    expect(src).toContain('var rubbleAspect = function (b, salt) { return 0.72 + hash01(b.col, b.row, salt) * 0.5; };');
+    expect(src).toContain('var rubbleAspect = function (b, salt) { return 0.7 + hash01(b.col, b.row, salt) * 0.3; };');
     expect(src).toContain('rd.scale.set(it.p.s * rubbleAspect(it.b, 51), it.p.s * rubbleAspect(it.b, 52), it.p.s * rubbleAspect(it.b, 53));');
     expect(src).toContain('rd.scale.set(it.rest[6] * rubbleAspect(it.b, 51), it.rest[6] * rubbleAspect(it.b, 52), it.rest[6] * rubbleAspect(it.b, 53));');
     // The model's contact radius is untouched: aspects are drawing only.
@@ -1582,5 +1582,42 @@ describe('Siege Field wave 31: a cinematic finish', () => {
     expect(grade).toBeGreaterThan(0);
     expect(grade).toBeLessThan(hud);
     expect(html.slice(grade, grade + 400)).toContain('pointer-events:none');
+  });
+});
+
+describe('Siege Field wave 32: one heap, no clipping', () => {
+  it('draws a fallen block as a chunk inscribed in its own contact sphere', () => {
+    const src = source();
+    expect(src).toContain('new THREE.DodecahedronGeometry(0.5, 0),');
+    // Aspects never exceed 1, so the drawn chunk stays inside the sphere the
+    // model keeps apart from its neighbours.
+    expect(src).toContain('return 0.7 + hash01(b.col, b.row, salt) * 0.3;');
+    expect(src).not.toContain('new THREE.BoxGeometry(1, 1, 1),');
+  });
+
+  it('draws the settled heap in the Target Wall bay, on build and on every tick', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    expect(wall).toContain("var restB = m.rubbleRest ? m.rubbleRest[b.col + '_' + b.row] : null;");
+    expect(wall).toContain("var restT = data.rubbleRest ? data.rubbleRest[b.col + '_' + b.row] : null;");
+    expect(wall).toContain('x = restB[0]; y = restB[1]; z = restB[2]; sc = restB[6];');
+    expect(wall).toContain('x = restT[0]; y = restT[1]; z = restT[2]; sc = restT[6];');
+  });
+
+  it('still falls back to the hashed heap there for a wall with no record', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    expect((wall.match(/hash01\(b\.col, b\.row, 1\)/g) || []).length).toBe(2);
+  });
+
+  it('hands the Target Wall bay the same heap the Siege Field gets', () => {
+    const src = source();
+    expect((src.match(/rubbleRest: d\.rubbleRest \|\| \{\},/g) || []).length).toBe(2);
+  });
+
+  it('keeps the Target Wall scene builder out of the physics still', () => {
+    const src = source();
+    const wall = src.slice(src.indexOf('function buildSiegeScene('), src.indexOf('var SIEGE_GL ='));
+    for (const forbidden of ['applyDamage', 'debrisSettle', 'debrisStart', 'debrisStep']) expect(wall).not.toContain(forbidden);
   });
 });

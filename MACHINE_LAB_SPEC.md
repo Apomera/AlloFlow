@@ -183,6 +183,19 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 32 (2026-09-06) — one heap, no clipping
+
+- ★**Two bays, two heaps.** The Target Wall bay drew its own hashed heap while the Siege Field
+  drew the settled one, so the same wall state showed two different piles of rubble. The
+  Target Wall bay now draws the settled heap when a block has a record — upright, because its
+  voxel batch cannot rotate — on build and on every tick, and falls back to the hashed heap for
+  a wall with no record. Both bays are handed the same `rubbleRest`.
+- **No visual interpenetration.** A fallen block is drawn as a dodecahedron of radius 0.5,
+  which sits inside the unit sphere the model uses for contact; with the per-piece aspects kept
+  at or under 1 (0.7–1.0), two pieces the model holds apart can never be drawn through each
+  other. A cube's corners reached 0.87 and clipped. The chunks read as broken stone rather than
+  ashlar, which is the honest trade.
+
 ### Wave 31 (2026-09-06) — a cinematic finish
 
 - **Broken blocks are broken shapes.** Each fallen piece is drawn with its own three aspects
