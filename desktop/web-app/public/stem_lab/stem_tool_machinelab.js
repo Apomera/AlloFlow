@@ -4051,6 +4051,10 @@ window.StemLab = window.StemLab || {
       : null;
     if (batch) batch.addTo(S.model);
     S.wall = { batch: batch, contrast: contrast };
+    // A block that has broken is not a cube any more. Each piece keeps its
+    // own three aspects, from the hash, so the same block is the same shard
+    // every time; contact in the model stays a sphere, so this is drawing only.
+    var rubbleAspect = function (b, salt) { return 0.72 + hash01(b.col, b.row, salt) * 0.5; };
     // Rubble has its own mesh: the voxel batch pins every instance upright,
     // and a block that has fallen is not upright. Contrast keeps the batch
     // (its edge outlines cannot rotate), so it keeps the old heap too.
@@ -5057,11 +5061,11 @@ window.StemLab = window.StemLab || {
             if (it.p) {
               rd.position.set(it.p.x, it.p.y, it.p.z);
               rd.rotation.set(it.p.rx, it.p.ry, it.p.rz);
-              rd.scale.setScalar(it.p.s);
+              rd.scale.set(it.p.s * rubbleAspect(it.b, 51), it.p.s * rubbleAspect(it.b, 52), it.p.s * rubbleAspect(it.b, 53));
             } else {
               rd.position.set(it.rest[0], it.rest[1], it.rest[2]);
               rd.rotation.set(it.rest[3], it.rest[4], it.rest[5]);
-              rd.scale.setScalar(it.rest[6]);
+              rd.scale.set(it.rest[6] * rubbleAspect(it.b, 51), it.rest[6] * rubbleAspect(it.b, 52), it.rest[6] * rubbleAspect(it.b, 53));
             }
             rd.updateMatrix();
             rm.setMatrixAt(rn, rd.matrix);
@@ -5736,6 +5740,24 @@ window.StemLab = window.StemLab || {
   function sceneGlRef(nodeOrNull) { SCENE_GL.attach(nodeOrNull); }
   function sceneFsRef(nodeOrNull) { FS_HOSTS.scene = nodeOrNull; }
   var SCENE_DRAG = null;
+  // The signature of the valley last drawn, so a rebuild can be seen coming
+  // and dipped through rather than cut.
+  var SCENE_LAST_SIG = null;
+  // The look of each hour laid over the bay: a vignette that draws the eye
+  // in, and a wash the sky's own colour at its rim. CSS only, no GPU cost, and
+  // off in high contrast where nothing may sit between the learner and the
+  // picture.
+  var SCENE_GRADES = {
+    dawn:  { rim: 'rgba(246,183,140,0.30)', edge: 'rgba(30,20,40,0.42)' },
+    noon:  { rim: 'rgba(255,255,255,0.06)', edge: 'rgba(10,20,40,0.34)' },
+    dusk:  { rim: 'rgba(240,120,70,0.30)',  edge: 'rgba(30,10,30,0.46)' },
+    night: { rim: 'rgba(60,80,150,0.24)',   edge: 'rgba(0,0,12,0.58)' },
+    storm: { rim: 'rgba(120,130,150,0.24)', edge: 'rgba(15,20,30,0.50)' }
+  };
+  function sceneGradeCss(timeId) {
+    var g = SCENE_GRADES[timeId] || SCENE_GRADES.dusk;
+    return 'radial-gradient(ellipse at 50% 42%, rgba(0,0,0,0) 52%, ' + g.rim + ' 78%, ' + g.edge + ' 100%)';
+  }
 
   // ═══════════════════════════════════════════════════════════════════
   // DEFAULT STATE
@@ -9774,11 +9796,23 @@ window.StemLab = window.StemLab || {
           sum: __alloT('stem.machinelab.scene_total', 'total')
         };
 
-        SCENE_GL.push({
-          sig: [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0,
+        var sceneSig = [d.wallPreset || 'curtain', blocks.length, ext ? ext.cols : 0, ext ? ext.rows : 0,
                 machineId, Math.round(d.standoff), d.beamLong, d.beamShort, d.slingLength,
                 d.cwMass, d.cwDrop, d.torsionArmLength, d.torsionDraw, d.onagerSling,
-                d.projDiameter, timeId, isContrast].join('|'),
+                d.projDiameter, timeId, isContrast].join('|');
+        // A rebuild dips through dark rather than cutting. Not on first sight,
+        // not under reduced motion, and not in contrast, where the dip layer
+        // does not exist. The Web Animations API is guarded: without it the
+        // rebuild simply cuts, as it always did.
+        if (SCENE_LAST_SIG !== null && SCENE_LAST_SIG !== sceneSig && !reducedMotion && !isContrast) {
+          var dipEl = SCENE_HUD.dip;
+          if (dipEl && typeof dipEl.animate === 'function') {
+            try { dipEl.animate([{ opacity: 0.92 }, { opacity: 0 }], { duration: 520, easing: 'ease-out' }); } catch (e) {}
+          }
+        }
+        SCENE_LAST_SIG = sceneSig;
+        SCENE_GL.push({
+          sig: sceneSig,
           // Ambient life (banner, birds, fire) and the camera glide need frames;
           // with ambient off the field is render-on-demand like the other bays.
           static: !(d.siegeFlight || (ambient && !reducedMotion)),
@@ -9959,6 +9993,25 @@ window.StemLab = window.StemLab || {
                 cursor: 'grab', userSelect: 'none'
               }
             }, null),
+            // The grade: a vignette and the hour's wash, over the picture and
+            // under the HUD. Decoration only, so hidden from assistive tech and
+            // absent in high contrast.
+            !isContrast ? h('div', {
+              key: 'grade', 'aria-hidden': 'true', 'data-machinelab-grade': timeId,
+              style: {
+                position: 'absolute', top: 8, left: 8, right: 8, bottom: 8, borderRadius: 13,
+                pointerEvents: 'none', background: sceneGradeCss(timeId)
+              }
+            }) : null,
+            // The dip: opaque for an instant when the valley is rebuilt, then
+            // eased back to clear. Driven by the signature below, not by React.
+            !isContrast ? h('div', {
+              key: 'dip', 'aria-hidden': 'true', ref: sceneHudRef('dip'),
+              style: {
+                position: 'absolute', top: 8, left: 8, right: 8, bottom: 8, borderRadius: 13,
+                pointerEvents: 'none', background: '#05070d', opacity: 0
+              }
+            }) : null,
             h('div', {
               key: 'hud', 'aria-hidden': 'true',
               style: { position: 'absolute', top: 20, left: 20, right: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 10, flexWrap: 'wrap', pointerEvents: 'none' }

@@ -246,7 +246,8 @@ describe('Siege Field wave 2: replay, arc, wind, start card', () => {
     // The prediction rides on the push and is compared by signature in the
     // tick; it must NOT be in the scene sig, or every slider tick rebuilds the valley.
     expect(src).toContain("if (showArc && S.arc.sig !== data.previewSig) {");
-    const sig = src.match(/SCENE_GL\.push\(\{\n\s*sig: \[([^\]]*)\]/);
+    const sig = src.match(/var sceneSig = \[([^\]]*)\]/);
+    expect(src).toContain('sig: sceneSig,');
     expect(sig).toBeTruthy();
     expect(sig[1]).not.toContain('preview');
   });
@@ -1536,5 +1537,50 @@ describe('Siege Field wave 30: why walls fall', () => {
     expect(src).toContain('if (S.landPuffs && p.landedT != null && !p.puffed) {');
     expect(src).toContain('var pu = S.landPuffs[S.puffNext++ % S.landPuffs.length];');
     expect(src).toContain('pp2.material.opacity = 0.6 * (1 - page) * (1 - page);');
+  });
+});
+
+describe('Siege Field wave 31: a cinematic finish', () => {
+  it('draws each fallen block as its own shard, from the hash, with contact still a sphere', () => {
+    const src = source();
+    expect(src).toContain('var rubbleAspect = function (b, salt) { return 0.72 + hash01(b.col, b.row, salt) * 0.5; };');
+    expect(src).toContain('rd.scale.set(it.p.s * rubbleAspect(it.b, 51), it.p.s * rubbleAspect(it.b, 52), it.p.s * rubbleAspect(it.b, 53));');
+    expect(src).toContain('rd.scale.set(it.rest[6] * rubbleAspect(it.b, 51), it.rest[6] * rubbleAspect(it.b, 52), it.rest[6] * rubbleAspect(it.b, 53));');
+    // The model's contact radius is untouched: aspects are drawing only.
+    expect(src).toContain('var r = p.s * 0.5;');
+  });
+
+  it('lays a vignette and the hour own wash over the bay, hidden from assistive tech', () => {
+    for (const time of ['dawn', 'noon', 'dusk', 'night', 'storm']) {
+      const html = renderTool('machineLab', state({ sceneTime: time }));
+      expect(html, time).toContain('data-machinelab-grade="' + time + '"');
+      expect(html, time).toMatch(new RegExp('data-machinelab-grade="' + time + '"[^>]*aria-hidden="true"|aria-hidden="true"[^>]*data-machinelab-grade="' + time + '"'));
+      expect(html, time).toContain('radial-gradient(ellipse at 50% 42%');
+    }
+  });
+
+  it('puts nothing between the learner and the picture in high contrast', () => {
+    const html = renderTool('machineLab', { machineLab: { view: 'scene', bandOverride: 'g68' } }, { isContrast: true });
+    expect(html).not.toContain('data-machinelab-grade');
+    const src = source();
+    expect(src).toContain("if (SCENE_LAST_SIG !== null && SCENE_LAST_SIG !== sceneSig && !reducedMotion && !isContrast) {");
+  });
+
+  it('dips through dark on a rebuild, never on first sight and never under reduced motion', () => {
+    const src = source();
+    expect(src).toContain("if (dipEl && typeof dipEl.animate === 'function') {");
+    expect(src).toContain("dipEl.animate([{ opacity: 0.92 }, { opacity: 0 }], { duration: 520, easing: 'ease-out' });");
+    expect(src).toContain('SCENE_LAST_SIG = sceneSig;');
+    // The dip layer itself starts clear and takes no pointer events.
+    expect(src).toContain("pointerEvents: 'none', background: '#05070d', opacity: 0");
+  });
+
+  it('keeps the grade and the dip out of the HUD tree and off the pointer', () => {
+    const html = renderTool('machineLab', state());
+    const grade = html.indexOf('data-machinelab-grade');
+    const hud = html.indexOf('Downrange');
+    expect(grade).toBeGreaterThan(0);
+    expect(grade).toBeLessThan(hud);
+    expect(html.slice(grade, grade + 400)).toContain('pointer-events:none');
   });
 });

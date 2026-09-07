@@ -183,6 +183,21 @@ sits them over the hills.
   cracked blocks each tick (polygon offset against z-fighting), hidden otherwise.
 - **Torsion carriage**: axles, four wheels and two sills under the ballista/onager deck.
 
+### Wave 31 (2026-09-06) — a cinematic finish
+
+- **Broken blocks are broken shapes.** Each fallen piece is drawn with its own three aspects
+  (0.72–1.22 of its size, from the hash, so the same block is the same shard every time);
+  slabs and wedges instead of dice. Contact in the model is still a sphere: this is drawing only.
+- **A grade over the bay.** A CSS radial vignette with the hour's own wash at its rim — warm at
+  dawn and dusk, cold at night, grey in the storm, near-clear at noon — laid over the picture
+  and under the HUD, at zero GPU cost. Hidden from assistive technology, no pointer events,
+  and absent in high contrast, where nothing may sit between the learner and the picture.
+- **A rebuild dips through dark.** The valley is rebuilt on a new hour, target, engine or
+  standoff, and used to hard-cut. The scene signature is now compared before the push; when
+  it changes, a dark layer animates from 0.92 to clear over 520 ms via the Web Animations API
+  (guarded; without it the rebuild simply cuts). Never on first sight, never under reduced
+  motion, never in contrast.
+
 ### Wave 30 (2026-09-06) — why walls fall
 
 The debris model knows which blocks the stone knocked out and which fell because nothing held
