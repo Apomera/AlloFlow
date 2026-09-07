@@ -543,6 +543,76 @@ describe('GIS Studio - custom region packs', () => {
     expect(Array.from(host.querySelectorAll('button')).some((button) => button.textContent.includes('Load a different region'))).toBe(true);
   });
 
+  it('scales the map graticule to the region instead of a fixed 2-degree grid', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    function viewportFor(points) {
+      return tool.testing.dataViewport(points.map(([lat, lon]) => ({ lat, lon })), { center: [0, 0], zoom: 2 });
+    }
+
+    // A city-sized region: a 2-degree grid would draw nothing usable here.
+    const city = tool.testing.graticuleForViewport(viewportFor([[43.65, -70.27], [43.68, -70.24], [43.66, -70.30]]));
+    expect(city.latStep).toBeLessThanOrEqual(0.1);
+    expect(city.lats.length).toBeGreaterThanOrEqual(2);
+    expect(city.lons.length).toBeGreaterThanOrEqual(2);
+    expect(Math.min(...city.lats)).toBeGreaterThan(43.5);
+    expect(Math.max(...city.lats)).toBeLessThan(43.8);
+
+    // A whole-country region gets a coarse grid, not hundreds of lines.
+    const country = tool.testing.graticuleForViewport(viewportFor([[25, -125], [49, -67]]));
+    expect(country.latStep).toBeGreaterThanOrEqual(5);
+    expect(country.lats.length).toBeLessThanOrEqual(8);
+    expect(country.lons.length).toBeLessThanOrEqual(8);
+
+    // Both grids are one derivation, so the live map and the offline schematic agree.
+    const bounds = { minLat: country.south, maxLat: country.north, minLon: country.west, maxLon: country.east };
+    expect(tool.testing.graticuleLines(bounds).lats).toEqual(country.lats);
+    expect(tool.testing.graticuleLines(bounds).lons).toEqual(country.lons);
+
+    // The grid covers the data rather than a fixed patch around the centre.
+    expect(country.south).toBeLessThanOrEqual(25);
+    expect(country.north).toBeGreaterThanOrEqual(49);
+    expect(country.west).toBeLessThanOrEqual(-125);
+    expect(country.east).toBeGreaterThanOrEqual(-67);
+
+    // A single place still gets a readable grid instead of an empty one.
+    const single = tool.testing.graticuleForViewport(viewportFor([[-45.87, 170.5]]));
+    expect(single.lats.length).toBeGreaterThan(0);
+    expect(single.lons.length).toBeGreaterThan(0);
+
+    // Latitudes stay inside what a web map can draw.
+    const polar = tool.testing.graticuleForViewport(viewportFor([[-89, 0], [89, 10]]));
+    expect(polar.south).toBeGreaterThanOrEqual(-85);
+    expect(polar.north).toBeLessThanOrEqual(85);
+
+    expect(tool.testing.graticuleForViewport(null)).toMatchObject({ lats: [], lons: [] });
+  });
+
+  it('follows the data across the antimeridian and labels lines by hemisphere', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const points = [{ lat: -16, lon: 179.2 }, { lat: -18, lon: -179.5 }];
+    const viewport = tool.testing.dataViewport(points, { center: [0, 0], zoom: 2 });
+    const arc = tool.testing.minimalLongitudeArc(points.map((point) => point.lon));
+    const graticule = tool.testing.graticuleForViewport(viewport, arc);
+    // The span is about 1.3 degrees across the dateline, not the 359 you get by
+    // reading the raw minimum and maximum longitude.
+    expect(graticule.east - graticule.west).toBeLessThan(3);
+    expect(graticule.lons.length).toBeGreaterThan(0);
+
+    expect(tool.testing.graticuleLabel(43.66, 'N', 'S')).toBe('43.66° N');
+    expect(tool.testing.graticuleLabel(-70.2, 'E', 'W')).toBe('70.2° W');
+    expect(tool.testing.graticuleLabel(0, 'N', 'S')).toBe('0°');
+    expect(tool.testing.graticuleLabel(NaN, 'N', 'S')).toBe('');
+    // At a fine step the label keeps enough decimals to tell two lines apart.
+    expect(tool.testing.graticuleLabel(43.65, 'N', 'S', 0.05)).toBe('43.65° N');
+    expect(tool.testing.graticuleLabel(43.7, 'N', 'S', 0.05)).toBe('43.7° N');
+    expect(tool.testing.graticuleLabel(45, 'N', 'S', 5)).toBe('45° N');
+    expect(tool.testing.graticuleDecimals(0.05)).toBe(2);
+    expect(tool.testing.graticuleDecimals(0.25)).toBe(2);
+    expect(tool.testing.graticuleDecimals(1)).toBe(0);
+    expect(tool.testing.graticuleDecimals(30)).toBe(0);
+    expect(tool.testing.graticuleDecimals(0)).toBe(2);
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

@@ -3035,6 +3035,50 @@
     return { lats: lats, lons: lons, latStep: latStep, lonStep: lonStep };
   }
 
+  function graticuleForViewport(viewport, arc) {
+    var bounds = viewport && viewport.bounds;
+    if (!bounds) return { lats: [], lons: [], south: 0, north: 0, west: 0, east: 0, latStep: 0, lonStep: 0 };
+    var south = Number(bounds.south), north = Number(bounds.north);
+    var west = arc && Number.isFinite(arc.westUnwrapped) ? arc.westUnwrapped : Number(bounds.west);
+    var east = arc && Number.isFinite(arc.eastUnwrapped) ? arc.eastUnwrapped : Number(bounds.east);
+    if (![south, north, west, east].every(Number.isFinite)) return { lats: [], lons: [], south: 0, north: 0, west: 0, east: 0, latStep: 0, lonStep: 0 };
+    if (north < south) { var swapLat = south; south = north; north = swapLat; }
+    if (east < west) { var swapLon = west; west = east; east = swapLon; }
+    // A little margin so the grid reaches past the fitted data, and a floor so
+    // a single point still gets a readable grid rather than none.
+    var latPad = Math.max((north - south) * 0.15, 0.02);
+    var lonPad = Math.max((east - west) * 0.15, 0.02);
+    var padded = {
+      minLat: Math.max(-85, south - latPad), maxLat: Math.min(85, north + latPad),
+      minLon: west - lonPad, maxLon: east + lonPad
+    };
+    var lines = graticuleLines(padded);
+    return {
+      lats: lines.lats, lons: lines.lons, latStep: lines.latStep, lonStep: lines.lonStep,
+      south: padded.minLat, north: padded.maxLat, west: padded.minLon, east: padded.maxLon
+    };
+  }
+
+  // Precision has to follow the STEP, not the magnitude: at a 0.05 degree step,
+  // rounding 43.65 and 43.70 to one decimal labels two different lines '43.7'.
+  function graticuleDecimals(step) {
+    var numeric = Math.abs(Number(step));
+    if (!Number.isFinite(numeric) || numeric <= 0) return 2;
+    var text = String(numeric);
+    var dot = text.indexOf('.');
+    return dot < 0 ? 0 : Math.min(4, text.length - dot - 1);
+  }
+
+  function graticuleLabel(value, positive, negative, step) {
+    var numeric = Number(value);
+    if (!Number.isFinite(numeric)) return '';
+    var magnitude = Math.abs(numeric);
+    var text = magnitude.toFixed(arguments.length > 3 ? graticuleDecimals(step) : 2);
+    if (text.indexOf('.') >= 0) text = text.replace(/0+$/, '').replace(/\.$/, '');
+    if (Math.abs(numeric) < 1e-9) return '0\u00B0';
+    return text + '\u00B0 ' + (numeric > 0 ? positive : negative);
+  }
+
   // Outer rings only — holes are not filled separately in the schematic, and the
   // measurement functions above remain the authority on area.
   function featureOuterRings(feature) {
@@ -3726,7 +3770,9 @@
       normalizeMapComposition: normalizeMapComposition, suggestMapAltText: suggestMapAltText,
       auditMapComposition: auditMapComposition, buildMapComposerReport: buildMapComposerReport,
       schematicProjection: schematicProjection, graticuleStep: graticuleStep,
-      graticuleLines: graticuleLines, featureOuterRings: featureOuterRings, featureSchematicParts: featureSchematicParts
+      graticuleLines: graticuleLines, graticuleForViewport: graticuleForViewport, graticuleLabel: graticuleLabel,
+      graticuleDecimals: graticuleDecimals,
+      featureOuterRings: featureOuterRings, featureSchematicParts: featureSchematicParts
     },
     questHooks: [
       { id: 'import_data', label: 'Map your own coordinate data', icon: '\uD83D\uDCE5', check: function (d) { return !!d.gisImported; }, progress: function (d) { return d.gisImported ? 'Mapped' : 'Not yet'; } },
@@ -4552,13 +4598,16 @@
               }).bindTooltip('Coastal guide (schematic)').addTo(map);
             }
             if (layers.grid) {
-              var lat, lon;
-              for (lat = Math.floor((center[0] - 5) / 2) * 2; lat <= center[0] + 6; lat += 2) {
-                L.polyline([[lat, center[1] - 10], [lat, center[1] + 10]], { color: '#64748b', weight: 1, opacity: 0.55, dashArray: '4 4' }).addTo(map);
-              }
-              for (lon = Math.floor((center[1] - 10) / 2) * 2; lon <= center[1] + 10; lon += 2) {
-                L.polyline([[center[0] - 6, lon], [center[0] + 6, lon]], { color: '#64748b', weight: 1, opacity: 0.55, dashArray: '4 4' }).addTo(map);
-              }
+              var graticule = graticuleForViewport(viewport, mapArc);
+              var gridStyle = { color: '#64748b', weight: 1, opacity: 0.55, dashArray: '4 4' };
+              graticule.lats.forEach(function (gridLat) {
+                L.polyline([[gridLat, graticule.west], [gridLat, graticule.east]], gridStyle)
+                  .bindTooltip(graticuleLabel(gridLat, 'N', 'S', graticule.latStep)).addTo(map);
+              });
+              graticule.lons.forEach(function (gridLon) {
+                L.polyline([[graticule.south, gridLon], [graticule.north, gridLon]], gridStyle)
+                  .bindTooltip(graticuleLabel(gridLon, 'E', 'W', graticule.lonStep)).addTo(map);
+              });
             }
             var polygonLayer = null;
             if (layers.polygons && geoData && geoMetric) {
