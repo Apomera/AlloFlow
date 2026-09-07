@@ -295,6 +295,45 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(await settle(() => host.textContent.includes('Harbour ward'))).toBe(true);
   });
 
+  it('clears a value filter that belongs to the region you left', { timeout: 30000 }, async () => {
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Otago towns',
+      metrics: [{ id: 'rainfall', label: 'Rainfall' }],
+      records: [
+        { name: 'Dunedin', lat: -45.87, lon: 170.5, rainfall: 12 },
+        { name: 'Oamaru', lat: -45.1, lon: 170.97, rainfall: 20 }
+      ]
+    });
+    mountGIS({ gisBasemap: 'none', gisCustomRegionPacks: [pack] });
+
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    const minimum = findLabeledControl('Minimum', 'input[type="number"]');
+    expect(minimum).toBeTruthy();
+    await React.act(async function () {
+      setter.call(minimum, '100');
+      minimum.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    // Maine densities: a floor of 100 keeps only the densest counties.
+    expect(await settle(() => host.textContent.includes('of 16 mapped records shown'))).toBe(true);
+    expect(host.textContent).toContain('5 of 16 mapped records shown.');
+
+    const select = host.querySelector('option[value="custom-otago-towns"]').closest('select');
+    const selectSetter = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value').set;
+    await React.act(async function () {
+      selectSetter.call(select, 'custom-otago-towns');
+      select.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Otago towns'))).toBe(true);
+
+    // Rainfall runs 12 to 20, so a floor of 100 from the previous region would
+    // empty the table with no hint that a filter is doing it.
+    expect(host.textContent).toContain('2 of 2 mapped records shown.');
+    expect(host.textContent).toContain('Dunedin');
+    expect(findLabeledControl('Minimum', 'input[type="number"]').value).toBe('');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

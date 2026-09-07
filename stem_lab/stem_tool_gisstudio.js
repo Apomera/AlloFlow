@@ -5641,6 +5641,7 @@
           setAnalysisFuture([]);
           setAnalysisCopyStatus('');
           setProjectError('');
+          resetTableExplorer(true);
           if (next.boundaries) {
             try {
               applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(next.boundaries)), { sourceFormat: 'geojson' }), next.label, {}, next.id);
@@ -5748,15 +5749,22 @@
             } }), label);
         }
 
+        // Only the unit-bound controls: a different attribute is a different
+        // scale, but the place names have not changed.
+        function resetTableRange() {
+          setTableMinimum('');
+          setTableMaximum('');
+          setTableSelectedOnly(false);
+        }
+
+        function resetTableExplorer(quiet) {
+          setTableQuery('');
+          resetTableRange();
+          setTableSort('value-desc');
+          if (!quiet) announce(__alloT('stem.gisstudio.sr_data_explorer_controls_reset_all_mapped_records_a', 'Data Explorer controls reset. All mapped records are shown in the table.'));
+        }
+
         function tableTwin() {
-          function resetTableExplorer() {
-            setTableQuery('');
-            setTableMinimum('');
-            setTableMaximum('');
-            setTableSort('value-desc');
-            setTableSelectedOnly(false);
-            announce(__alloT('stem.gisstudio.sr_data_explorer_controls_reset_all_mapped_records_a', 'Data Explorer controls reset. All mapped records are shown in the table.'));
-          }
           var resultMessage = tableRangeInvalid
             ? 'Minimum value cannot be greater than maximum value.'
             : exploredRecords.length + ' of ' + records.length + ' mapped record' + (records.length === 1 ? '' : 's') + ' shown.';
@@ -6055,7 +6063,7 @@
                       : 'Street and satellite basemaps load Leaflet from unpkg.com and tiles from ' + (basemap === 'satellite' ? 'Esri' : 'OpenStreetMap') + '. Each pan or zoom tells that service which area you are viewing.')),
                 !imported && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 13 } },
                   h('span', { style: { fontWeight: 700 } }, 'Thematic attribute'),
-                  h('select', { value: metric, onChange: function (event) { setMetric(event.target.value); persist('gisMetric', event.target.value); }, style: control },
+                  h('select', { value: metric, onChange: function (event) { setMetric(event.target.value); resetTableRange(); persist('gisMetric', event.target.value); }, style: control },
                     regionMetrics(activeRegionPack).map(function (definition) { return h('option', { key: definition.id, value: definition.id }, localizedMetricLabel(definition)); }))),
                 geoKeys.length > 0 && h('label', { style: { display: 'grid', gap: 5, fontSize: 12, marginBottom: 10 } },
                   h('span', { style: { fontWeight: 700 } }, 'Choropleth attribute'),
