@@ -395,6 +395,56 @@ describe('ArchStudio accessibility parity', () => {
     }
   });
 
+  it('routes every structural-analysis label and tip through the translator', () => {
+    // The stability label and the coach tip are student-visible. They were the only strings in the
+    // analysis panel that never reached t(), so a translated UI still spoke English there.
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8');
+      const start = source.indexOf('// ── Structural Analysis Engine ──');
+      const end = source.indexOf('// ── Challenge System', start);
+      expect(start).toBeGreaterThan(-1);
+      expect(end).toBeGreaterThan(start);
+      const body = source.slice(start, end);
+      expect(body).not.toMatch(/stabilityLabel = '(Stable|Moderate|Unstable|N\/A)'/);
+      for (const key of ['stability_stable', 'stability_moderate', 'stability_unstable', 'tip_floating', 'tip_high_cog', 'tip_off_centre', 'tip_top_heavy', 'tip_great']) {
+        expect(body).toContain("t('stem.archstudio." + key + "'");
+      }
+      // The two tips that were not true of structures are gone for good.
+      expect(body).not.toContain('Try mirroring');
+      expect(body).not.toContain('structural variety');
+
+      // The coach-tip ladder shares the same slot and was equally untranslated. Every assignment
+      // must be an emoji prefix followed by a t() call -- never a bare English literal.
+      const ladderStart = source.indexOf('// ── Coach tips ──');
+      const ladderEnd = source.indexOf('// ── Render helpers ──', ladderStart);
+      expect(ladderStart).toBeGreaterThan(-1);
+      const ladder = source.slice(ladderStart, ladderEnd);
+      const assignments = ladder.match(/coachTip = [^;]+;/g) || [];
+      expect(assignments.length).toBeGreaterThanOrEqual(9);
+      for (const a of assignments) {
+        expect(a, a).toMatch(/^coachTip = (analysis\.tip|'\\u[0-9A-Fa-f]{4}(\\u[0-9A-Fa-f]{4})* ' \+ (challengeProgress\.challenge\.icon \+ ' ' \+ )?t\('stem\.archstudio\.)/);
+      }
+    }
+  });
+
+  it('releases the WebGL context on unmount, before disposing the renderer', () => {
+    // renderer.dispose() frees three.js objects but not the browser's GL context; browsers cap live
+    // contexts and evict the oldest, so a tool that never releases eventually blanks another 3D tool.
+    for (const file of files) {
+      const source = fs.readFileSync(file, 'utf8');
+      const start = source.indexOf('unmount: function () {');
+      const end = source.indexOf("state = 'idle';", start);
+      expect(start).toBeGreaterThan(-1);
+      const body = source.slice(start, end);
+      const loss = body.indexOf('renderer.forceContextLoss()');
+      const dispose = body.indexOf('renderer.dispose()');
+      expect(loss).toBeGreaterThan(-1);
+      expect(dispose).toBeGreaterThan(loss);
+      // and the recovery handlers come off first, so the forced loss cannot trigger a recovery
+      expect(body.indexOf('detachContextHandlers()')).toBeLessThan(loss);
+    }
+  });
+
   it('keeps the source and public bundles byte-identical', () => {
     const hashes = files.map((file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex'));
     expect(hashes[0]).toBe(hashes[1]);

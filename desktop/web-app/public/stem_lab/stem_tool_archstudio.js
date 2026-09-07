@@ -977,7 +977,15 @@ function __alloAST(k, fb) {
           clearCustomMeshes();
           if (groundMesh) { scene.remove(groundMesh); groundMesh.geometry.dispose(); groundMesh.material.dispose(); }
         }
-        if (renderer) { try { renderer.dispose(); } catch (e) {} }
+        if (renderer) {
+          // dispose() releases three.js objects but NOT the browser's GL context. Browsers cap live
+          // contexts (about 16) and evict the OLDEST, so a tool that never releases eventually
+          // blanks some other 3D tool on the page. The context handlers were detached above, so the
+          // forced loss cannot trip the recovery path, and React is removing this canvas element
+          // rather than reusing it, so a permanently lost context on it is harmless.
+          try { renderer.forceContextLoss(); } catch (e) {}
+          try { renderer.dispose(); } catch (e) {}
+        }
         batch = null; groundMesh = null; groundGrid = null; previewMesh = null; selectionMesh = null; customMeshes = [];
         renderer = scene = camera = null; canvasEl = null; pending = null;
         raycaster = pointer = null; latestBlocks = []; latestAllBlocks = [];
@@ -1611,6 +1619,7 @@ function __alloAST(k, fb) {
     // ══════════════════════════════════════════════════════════════
     var analysis = { cogX: 0, cogY: 0, cogZ: 0, stability: 0, stabilityLabel: 'N/A', stabilityEmoji: '\u2B1C',
       supportedPct: 100, unsupported: 0, materialCount: 0, symmetry: 0, totalWeight: 0, tip: '' };
+    analysis.stabilityLabel = t('stem.archstudio.stability_na', 'N/A');
 
     if (totalBlocks > 0) {
       var sumWX = 0, sumWY = 0, sumWZ = 0, sumW = 0;
@@ -1638,9 +1647,9 @@ function __alloAST(k, fb) {
       var floatPenalty = Math.round((floating / Math.max(1, totalBlocks)) * 40);
       analysis.stability = Math.max(0, Math.min(100, rawStability - floatPenalty));
 
-      if (analysis.stability >= 70) { analysis.stabilityLabel = 'Stable'; analysis.stabilityEmoji = '\uD83D\uDFE2'; }
-      else if (analysis.stability >= 40) { analysis.stabilityLabel = 'Moderate'; analysis.stabilityEmoji = '\uD83D\uDFE1'; }
-      else { analysis.stabilityLabel = 'Unstable'; analysis.stabilityEmoji = '\uD83D\uDD34'; }
+      if (analysis.stability >= 70) { analysis.stabilityLabel = t('stem.archstudio.stability_stable', 'Stable'); analysis.stabilityEmoji = '\uD83D\uDFE2'; }
+      else if (analysis.stability >= 40) { analysis.stabilityLabel = t('stem.archstudio.stability_moderate', 'Moderate'); analysis.stabilityEmoji = '\uD83D\uDFE1'; }
+      else { analysis.stabilityLabel = t('stem.archstudio.stability_unstable', 'Unstable'); analysis.stabilityEmoji = '\uD83D\uDD34'; }
 
       var midX = (minX + maxX) / 2;
       var leftCount = 0, mirroredCount = 0;
@@ -1650,16 +1659,27 @@ function __alloAST(k, fb) {
       });
       analysis.symmetry = leftCount > 0 ? Math.round((mirroredCount / leftCount) * 100) : 100;
 
+      // A tip in a panel called Structural Analysis has to be true of structures. Asymmetry is not
+      // a structural fault (most real buildings are asymmetric) and the number of materials used
+      // says nothing about strength, so those two tips are gone. In their place: two things the engine
+      // already computes and never surfaced -- how far the centre of gravity sits from the middle
+      // of the footprint (a structure tips toward its heavy side), and whether most of the weight
+      // sits in the upper half. Placeholders rather than concatenation so a translator can reorder.
+      var midZ = (minZ + maxZ) / 2;
+      var offX = Math.abs(parseFloat(analysis.cogX) - midX);
+      var offZ = Math.abs(parseFloat(analysis.cogZ) - midZ);
+      var offCentre = Math.max(offX / Math.max(0.5, buildW / 2), offZ / Math.max(0.5, buildD / 2));
+      var topHeavy = buildH >= 3 && cogHeight > (buildH - 1) / 2;
       if (floating > 0 && floating > totalBlocks * 0.3) {
-        analysis.tip = '\u26A0\uFE0F ' + floating + ' blocks are floating! Add supports below them.';
+        analysis.tip = '\u26A0\uFE0F ' + t('stem.archstudio.tip_floating', '{n} blocks are floating! Add supports below them.').replace('{n}', floating);
       } else if (analysis.stability < 40) {
-        analysis.tip = '\uD83C\uDFD7\uFE0F Center of gravity is high (' + analysis.cogY + '). Widen the base!';
-      } else if (analysis.symmetry < 50) {
-        analysis.tip = '\uD83C\uDFDB\uFE0F Asymmetric structure (symmetry: ' + analysis.symmetry + '%). Try mirroring!';
-      } else if (analysis.materialCount === 1) {
-        analysis.tip = '\uD83C\uDFA8 Mix materials for structural variety!';
+        analysis.tip = '\uD83C\uDFD7\uFE0F ' + t('stem.archstudio.tip_high_cog', 'Center of gravity is high ({y}). Widen the base!').replace('{y}', analysis.cogY);
+      } else if (offCentre > 0.35) {
+        analysis.tip = '\u2696\uFE0F ' + t('stem.archstudio.tip_off_centre', 'Center of gravity is {d} units off-centre. A structure tips toward its heavy side: add weight opposite it, or widen the base.').replace('{d}', Math.max(offX, offZ).toFixed(1));
+      } else if (topHeavy) {
+        analysis.tip = '\uD83E\uDDF1 ' + t('stem.archstudio.tip_top_heavy', 'Most of the weight sits in the upper half (center of gravity at y={y} of {h}). Put heavier materials low: metal weighs 13 times what wood does.').replace('{y}', analysis.cogY).replace('{h}', buildH);
       } else {
-        analysis.tip = '\u2705 Great structure! Stability: ' + analysis.stability + '%, Symmetry: ' + analysis.symmetry + '%';
+        analysis.tip = '\u2705 ' + t('stem.archstudio.tip_great', 'Great structure! Stability: {s}%, Symmetry: {y}%').replace('{s}', analysis.stability).replace('{y}', analysis.symmetry);
       }
     }
 
@@ -3114,25 +3134,25 @@ function __alloAST(k, fb) {
     // ── Coach tips ──
     var coachTip;
     if (justCompleted && challengeProgress) {
-      coachTip = '\uD83C\uDFC6 ' + challengeProgress.challenge.title + ' complete! ' + challengeProgress.challenge.fact;
+      coachTip = '\uD83C\uDFC6 ' + t('stem.archstudio.coach_challenge_done', '{title} complete! {fact}').replace('{title}', challengeProgress.challenge.title).replace('{fact}', challengeProgress.challenge.fact);
     } else if (challengeProgress && !challengeProgress.passed) {
-      coachTip = '\uD83C\uDFAF ' + challengeProgress.challenge.icon + ' ' + challengeProgress.challenge.desc + ' \u2014 keep building!';
+      coachTip = '\uD83C\uDFAF ' + challengeProgress.challenge.icon + ' ' + t('stem.archstudio.coach_keep_building', '{desc} \u2014 keep building!').replace('{desc}', challengeProgress.challenge.desc);
     } else if (overBudget) {
-      coachTip = '\uD83D\uDCB0 Over budget! Remove blocks or switch to cheaper materials. Wood (\uD83D\uDCB2' + matCostLookup.wood + ') is the cheapest material.';
+      coachTip = '\uD83D\uDCB0 ' + t('stem.archstudio.coach_over_budget', 'Over budget! Remove blocks or switch to cheaper materials. Wood (\uD83D\uDCB2{cost}) is the cheapest material.').replace('{cost}', matCostLookup.wood);
     } else if (showAnalysis && analysis.tip) {
       coachTip = analysis.tip;
     } else if (totalBlocks === 0) {
-      coachTip = '\uD83C\uDFD7\uFE0F Place your first block! Try \uD83C\uDFC6 Challenges or \uD83D\uDCC2 Templates to get started.';
+      coachTip = '\uD83C\uDFD7\uFE0F ' + t('stem.archstudio.coach_first_block', 'Place your first block! Try \uD83C\uDFC6 Challenges or \uD83D\uDCC2 Templates to get started.');
     } else if (totalBlocks < 5) {
-      coachTip = '\uD83D\uDCA1 Stack blocks upward by clicking faces. Try \uD83E\uDE9E Mirror to double your build!';
+      coachTip = '\uD83D\uDCA1 ' + t('stem.archstudio.coach_stack_up', 'Stack blocks upward by clicking faces. Try \uD83E\uDE9E Mirror to double your build!');
     } else if (totalBlocks < 15) {
-      coachTip = '\uD83C\uDFDB\uFE0F Add columns and arches for a classical look. Use \uD83D\uDCD0 Analysis to check stability!';
+      coachTip = '\uD83C\uDFDB\uFE0F ' + t('stem.archstudio.coach_columns_arches', 'Add columns and arches for a classical look. Use \uD83D\uDCD0 Analysis to check stability!');
     } else if (totalBlocks < 30) {
-      coachTip = '\uD83C\uDFE0 Mix materials for contrast! Use \uD83E\uDD16 AI Architect for personalized tips.';
+      coachTip = '\uD83C\uDFE0 ' + t('stem.archstudio.coach_mix_contrast', 'Mix materials for contrast! Use \uD83E\uDD16 AI Architect for personalized tips.');
     } else if (totalBlocks < 50) {
-      coachTip = '\uD83C\uDF09 The Colosseum had 80 arched entrances! Save your masterpiece with \uD83D\uDCBE Save.';
+      coachTip = '\uD83C\uDF09 ' + t('stem.archstudio.coach_colosseum', 'The Colosseum had 80 arched entrances! Save your masterpiece with \uD83D\uDCBE Save.');
     } else {
-      coachTip = '\uD83C\uDFF0 Legendary architect! Export your creation as STL for 3D printing!';
+      coachTip = '\uD83C\uDFF0 ' + t('stem.archstudio.coach_legendary', 'Legendary architect! Export your creation as STL for 3D printing!');
     }
 
     // ── Render helpers ──
