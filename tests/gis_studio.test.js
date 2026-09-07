@@ -455,7 +455,7 @@ describe('GIS Studio', () => {
   it('renders the swipe lab, spectral inspector, quality checks, and table twin', () => {
     loadTool('stem_lab/stem_tool_gisstudio.js', 'gisStudio');
     const html = renderTool('gisStudio', { gisTab: 'remote' });
-    for (const text of ['Remote Sensing Lab', 'Imagery and index controls', 'Before-and-after swipe comparison', 'Color infrared', 'NDVI vegetation index', 'Pixel spectral inspector', 'Change measurement', 'Interpretation quality check', 'Accessible raster-table twin', 'Maine change investigation', 'Download remote-sensing evidence report']) {
+    for (const text of ['Remote Sensing Lab', 'Imagery and index controls', 'Before-and-after swipe comparison', 'Color infrared', 'NDVI vegetation index', 'Pixel spectral inspector', 'Change measurement', 'Interpretation quality check', 'Accessible raster-table twin', 'Maine Forest Edge learning scene', 'Download remote-sensing evidence report']) {
       expect(html).toContain(text);
     }
     expect((html.match(/data-remote-pixel=/g) || []).length).toBe(36);

@@ -801,6 +801,30 @@ describe('GIS Studio - custom region packs', () => {
     expect(tidy).toContain('Harbour mouth');
   });
 
+  it('says which region the remote-sensing scene actually shows', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+
+    // On the Maine sample the scene matches the region, so nothing is claimed.
+    const maine = renderTool('gisStudio', { gisTab: 'remote', gisBasemap: 'none' });
+    expect(maine).not.toContain('Different region:');
+    expect(maine).toContain('Maine Forest Edge learning scene');
+
+    // Under any other region the workspace used to head the section "Maine
+    // change investigation", telling a learner in Otago that their
+    // investigation was about Maine.
+    const custom = renderTool('gisStudio', { gisTab: 'remote', gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+    expect(custom).toContain('Different region:');
+    expect(custom).toContain('It does not show Otago towns.');
+    expect(custom).not.toContain('Maine change investigation');
+    // The lab still runs, and the scene is still named for what it is.
+    expect(custom).toContain('Remote Sensing Lab');
+    expect(custom).toContain('Maine Forest Edge learning scene');
+
+    const global = renderTool('gisStudio', { gisTab: 'remote', gisBasemap: 'none', gisRegionPack: 'global' });
+    expect(global).toContain('It does not show Global regions (classroom sample).');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

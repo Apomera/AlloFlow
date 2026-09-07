@@ -3993,6 +3993,8 @@
         packPrivacyRound: t('stem.gisstudio.pack.privacy_round', 'Round these coordinates to 2 decimal places'),
         packDerivedBoundaries: t('stem.gisstudio.pack.derived_boundaries', 'Built from a boundary layer. Each place is the representative point of one boundary, and the boundaries came along as the polygon layer.'),
         packDerivedPoints: t('stem.gisstudio.pack.derived_points', 'Built from the point features in this layer.'),
+        remoteMismatchLabel: t('stem.gisstudio.remote.mismatch_label', 'Different region:'),
+        remoteMismatchNote: t('stem.gisstudio.remote.mismatch_note', 'This lab uses a fixed illustrative Maine scene so the spectral values stay teachable. It does not show {region}. Read the change results as a separate Maine example, not as evidence about your own region.'),
         timeMismatchLabel: t('stem.gisstudio.time.mismatch_label', 'Different region:'),
         timeMismatchNote: t('stem.gisstudio.time.mismatch_note', 'This time series is the built-in Maine sample. It does not describe {pack}. Import a time-series CSV for your own region, or read the change results as a separate Maine dataset.'),
         packPaste: t('stem.gisstudio.pack.paste', 'Or paste region rows (CSV) or a JSON pack'),
@@ -4417,6 +4419,7 @@
         var composerAudit = auditMapComposition(composerModel);
         var strayAnnotations = annotationsOutsideData(composerModel.rows, composer.annotations);
         var remoteScene = REMOTE_SCENE;
+        var remoteSceneMismatch = activeRegionPack.id !== 'maine' || imported;
         var remoteSummary = summarizeRemoteChange(remoteScene, remoteSensing.analysisIndex, remoteScene.resolutionMeters);
         var remoteSelectedCell = remoteScene.cells.filter(function (cell) { return cell.id === remoteSensing.selectedPixel; })[0] || remoteScene.cells[0];
         var remoteBeforeIndex = remoteIndexValue(remoteSelectedCell, 'before', remoteSensing.analysisIndex, true);
@@ -7560,6 +7563,9 @@
               h('h2', { id: 'gis-remote-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, 'Remote Sensing Lab'),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } },
                 'Compare matched-season multispectral scenes, inspect spectral signatures, mask clouds, calculate change area, and separate observations from causal explanations.'),
+              remoteSceneMismatch && h('p', { role: 'status', style: { margin: '10px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.remoteMismatchLabel + ' '),
+                gisFillTemplate(gisText.remoteMismatchNote, { region: imported ? gisText.importedValue : localizedRegionLabel(activeRegionPack) })),
               h('aside', { style: { marginTop: 10, padding: 10, borderLeft: '4px solid #38bdf8', borderRadius: 8, background: '#082f49', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } },
                 h('strong', null, 'Instructional-data notice: '), remoteScene.source)),
             h('section', { 'aria-labelledby': 'gis-remote-controls-heading', style: panel },
@@ -7716,7 +7722,7 @@
                       h('td', { style: { padding: 7, borderBottom: '1px solid #1e4154', color: cell.quality === 'cloud' ? '#fde68a' : '#86efac' } }, cell.quality === 'cloud' ? 'Cloud masked' : 'Clear'));
                   }))))),
             h('section', { 'aria-labelledby': 'gis-remote-evidence-heading', style: panel },
-              h('h2', { id: 'gis-remote-evidence-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, 'Maine change investigation'),
+              h('h2', { id: 'gis-remote-evidence-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, remoteScene.title),
               h('p', { style: { margin: '0 0 9px', color: '#cfe8f3', fontSize: 11, lineHeight: 1.5 } },
                 'Prompt: What changed between the two matched-season scenes? Cite at least two pixels or summary measures, explain what the selected index contributes, and name one limitation.'),
               h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, 'Evidence-based interpretation',

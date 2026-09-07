@@ -13403,7 +13403,11 @@
         "stray_remove": "Remove the callouts outside this region",
         "outside_tag": "outside this region"
       },
-      "sr_stray_annotations_removed": "{count} annotation(s) outside the mapped region removed."
+      "sr_stray_annotations_removed": "{count} annotation(s) outside the mapped region removed.",
+      "remote": {
+        "mismatch_label": "Different region:",
+        "mismatch_note": "This lab uses a fixed illustrative Maine scene so the spectral values stay teachable. It does not show {region}. Read the change results as a separate Maine example, not as evidence about your own region."
+      }
     },
     "a11yauditor": {
       "vision_audit_failed_the_file_may_be_to": "Vision audit failed. The file may be too large or unsupported.",
