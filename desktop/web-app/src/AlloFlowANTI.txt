@@ -14648,6 +14648,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         // window over Smithsonian CC0 (IIIF) + NASA public-domain images with a
         // Notice→Wonder coach; launcher + AI bridge in the tool.
         'stem_lab/stem_tool_zoomgallery.js',
+        // Sep 2026: Scale Explorer — one continuous zoom across ~42 powers of
+        // ten (observable universe → proton) on a true log axis, keyboard-driven
+        // with a scale-ladder list and a written description of every object.
+        'stem_lab/stem_tool_scaleexplorer.js',
       ];
       var selToolModules = [
         'sel_hub/sel_safety_layer.js', // load first so other SEL tools can hook the safety layer
