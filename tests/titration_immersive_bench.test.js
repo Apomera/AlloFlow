@@ -182,3 +182,80 @@ describe('3D dilution comparison',()=>{
     expect(s.tick).toBeUndefined();
   });
 });
+
+// The endpoint bloom — the transient swirl of indicator colour where a drop lands.
+// It is the moment the whole lab is built around, and before this it did not exist:
+// the solution stepped straight from colourless to uniformly pink. These pin the two
+// properties that make it teach something rather than merely decorate: it uses the
+// indicator's OWN endpoint colour rather than the bulk colour, and it lingers longer
+// the closer the addition is to equivalence.
+describe('Endpoint bloom',()=>{
+  const flash=(s)=>object(s,'titrant-flash');
+  it('stays out of an idle scene and of the burette close-up',()=>{
+    const idle=scene({fill:0.5});idle.tick(0);idle.tick(900);
+    expect(flash(idle).visible).toBe(false);
+    const burette=scene({fill:0.5,animating:true,focus:'burette'});burette.tick(0);burette.tick(900);
+    expect(flash(burette).visible).toBe(false);
+  });
+  it('blooms after the drop lands and fades back out',()=>{
+    const s=scene({fill:0.5,animating:true,flashColor:'#ec4899'});
+    s.tick(0);
+    s.tick(300);expect(flash(s).visible).toBe(false);
+    s.tick(700);expect(flash(s).visible).toBe(true);
+    const early=flash(s).material.opacity,earlyScale=flash(s).scale.x;
+    s.tick(900);
+    expect(flash(s).material.opacity).toBeLessThan(early);
+    expect(flash(s).scale.x).toBeGreaterThan(earlyScale);
+    s.tick(3000);expect(flash(s).visible).toBe(false);
+  });
+  it('takes the indicator endpoint colour, not the colour of the bulk solution',()=>{
+    const s=scene({fill:0.5,animating:true,color:'rgba(255,255,255,0.15)',flashColor:'#ec4899'});
+    expect(flash(s).material.color.getHexString()).toBe('ec4899');
+    expect(object(s,'flask-liquid').material.color.getHexString()).toBe('ffffff');
+  });
+  it('lingers longer the closer the addition is to equivalence',()=>{
+    const far=scene({fill:0.5,animating:true,flashHold:0});
+    const near=scene({fill:0.5,animating:true,flashHold:1});
+    far.tick(0);near.tick(0);
+    far.tick(1100);near.tick(1100);
+    expect(flash(far).visible).toBe(false);
+    expect(flash(near).visible).toBe(true);
+  });
+  it('cannot bloom in an empty flask',()=>{
+    const s=scene({fill:0,animating:true});s.tick(0);s.tick(800);
+    expect(flash(s).visible).toBe(false);
+  });
+});
+
+// The reference animation under the Titrate tab drew its S-curve as three straight
+// segments, computed twice, sitting directly beneath the tool's own real curve. These
+// pin the replacement against the chemistry its caption claims: 25.0 mL of 0.100 M HCl
+// taken to 50.0 mL with 0.100 M NaOH.
+const referencePH=new Function(
+  source.slice(source.indexOf('function titrationReferencePH('), source.indexOf('function titrFinite('))
+  +';return titrationReferencePH;')();
+describe('Reference curve',()=>{
+  it('starts, crosses and ends where 0.100 M strong acid against strong base does',()=>{
+    expect(referencePH(0)).toBeCloseTo(1.00,2);
+    expect(referencePH(0.5)).toBeCloseTo(7.00,2);
+    expect(referencePH(1)).toBeCloseTo(12.52,2);
+  });
+  it('rises monotonically and stays finite across the whole sweep',()=>{
+    let previous=-Infinity;
+    for(let i=0;i<=200;i++){
+      const value=referencePH(i/200);
+      expect(Number.isFinite(value)).toBe(true);
+      expect(value).toBeGreaterThan(previous);
+      previous=value;
+    }
+  });
+  it('is steep only around equivalence, which is what makes the shape teachable',()=>{
+    const slope=(a,b)=>(referencePH(b)-referencePH(a))/(b-a);
+    expect(slope(0.49,0.51)).toBeGreaterThan(20*slope(0.1,0.3));
+  });
+  it('clamps malformed progress instead of returning NaN',()=>{
+    expect(referencePH(NaN)).toBeCloseTo(1.00,2);
+    expect(referencePH(-5)).toBeCloseTo(1.00,2);
+    expect(referencePH(9)).toBeCloseTo(12.52,2);
+  });
+});

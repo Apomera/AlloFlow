@@ -1284,11 +1284,7 @@ function titrAnimCanvasRef(cvEl) {
               var t = reducedMotion ? 5 : (performance.now() - start) / 1000;
               if (paused && !reducedMotion) t = pausedT;
               var cyc = (t * 0.10) % 1; // 0 = no base added, 1 = excess base
-              // pH at this point: classic S-curve
-              var pH;
-              if (cyc < 0.45) pH = 2 + cyc * 4;
-              else if (cyc < 0.55) pH = 4 + (cyc - 0.45) * 80;
-              else pH = 12 - (1 - cyc) * 3;
+              var pH = titrationReferencePH(cyc);
               c2.fillStyle = '#020210';
               c2.fillRect(0, 0, W, H);
               // LEFT: beaker + burette
@@ -1296,54 +1292,88 @@ function titrAnimCanvasRef(cvEl) {
               var burX = lftW * 0.5;
               var burY = 20;
               var burH = 80;
-              // Burette
+              // Burette, draining from the top as titrant leaves it
               c2.fillStyle = '#7dd3fc';
-              c2.fillRect(burX - 6, burY, 12, burH * (1 - cyc));
+              c2.fillRect(burX - 6, burY + burH * cyc, 12, burH * (1 - cyc));
               c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 1.5;
               c2.strokeRect(burX - 6, burY, 12, burH);
+              c2.beginPath();
+              for (var gr = 1; gr < 10; gr++) {
+                var gy = burY + burH * gr / 10;
+                c2.moveTo(burX - 6, gy); c2.lineTo(burX - (gr % 5 === 0 ? 0 : 3), gy);
+              }
+              c2.lineWidth = 1; c2.strokeStyle = 'rgba(203,213,225,0.75)'; c2.stroke();
+              // Stopcock and the tapered delivery tip
+              c2.fillStyle = '#94a3b8';
+              c2.fillRect(burX - 9, burY + burH, 18, 5);
+              c2.beginPath();
+              c2.moveTo(burX - 4, burY + burH + 5);
+              c2.lineTo(burX + 4, burY + burH + 5);
+              c2.lineTo(burX + 1.5, burY + burH + 20);
+              c2.lineTo(burX - 1.5, burY + burH + 20);
+              c2.closePath();
+              c2.fillStyle = 'rgba(203,213,225,0.55)'; c2.fill();
               c2.font = '11px monospace'; c2.fillStyle = '#7dd3fc'; c2.textAlign = 'left';
-              c2.fillText('NaOH', burX + 10, burY + 12);
+              c2.fillText('NaOH', burX + 13, burY + 12);
               // Drip — glowing NaOH beads
               c2.save();
               c2.shadowColor = 'rgba(125,211,252,0.9)'; c2.shadowBlur = 6;
               for (var dr = 0; dr < 3; dr++) {
-                var drY = burY + burH + 10 + ((t * 50 + dr * 18) % 40);
+                var drY = burY + burH + 22 + ((t * 50 + dr * 18) % 34);
                 c2.fillStyle = '#7dd3fc';
                 c2.beginPath();
                 c2.arc(burX, drY, 2, 0, Math.PI * 2);
                 c2.fill();
               }
               c2.restore();
-              // Beaker
+              // Conical flask, matching the 3D bench rather than a plain rectangle
               var bkY = H * 0.55;
-              var bkW = 70;
-              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
-              c2.beginPath();
-              c2.moveTo(burX - bkW / 2, bkY);
-              c2.lineTo(burX - bkW / 2, bkY + 60);
-              c2.lineTo(burX + bkW / 2, bkY + 60);
-              c2.lineTo(burX + bkW / 2, bkY);
-              c2.stroke();
-              // Solution color shifts with pH (red\u2192clear\u2192pink for phenolphthalein)
-              var solColor;
-              if (pH < 8.3) solColor = 'rgba(252, 165, 165, 0.6)'; // colorless/pale
-              else solColor = 'rgba(217, 70, 239, 0.7)'; // pink past 8.3
+              var bkW = 70, neckW = 16, shoulder = 14, bkH = 60;
+              function flaskPath() {
+                c2.beginPath();
+                c2.moveTo(burX - neckW / 2, bkY);
+                c2.lineTo(burX - neckW / 2, bkY + shoulder);
+                c2.lineTo(burX - bkW / 2, bkY + bkH);
+                c2.lineTo(burX + bkW / 2, bkY + bkH);
+                c2.lineTo(burX + neckW / 2, bkY + shoulder);
+                c2.lineTo(burX + neckW / 2, bkY);
+              }
+              // Solution color shifts with pH (colorless \u2192 pink for phenolphthalein)
+              var solColor = pH < 8.3 ? 'rgba(252, 165, 165, 0.6)' : 'rgba(217, 70, 239, 0.7)';
+              var surfaceY = bkY + shoulder + 12;
+              c2.save();
+              flaskPath();
+              c2.clip();
               c2.fillStyle = solColor;
-              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 55);
-              // Liquid-surface sheen (depth highlight, not a color/pH change)
-              var solSheen = c2.createLinearGradient(0, bkY + 5, 0, bkY + 30);
-              solSheen.addColorStop(0, 'rgba(255,255,255,0.20)');
-              solSheen.addColorStop(1, 'rgba(255,255,255,0)');
-              c2.fillStyle = solSheen;
-              c2.fillRect(burX - bkW / 2 + 2, bkY + 5, bkW - 4, 25);
+              c2.fillRect(burX - bkW / 2, surfaceY, bkW, bkH);
+              // Depth, not a pH signal: the pool darkens away from the surface.
+              var solShade = c2.createLinearGradient(0, surfaceY, 0, bkY + bkH);
+              solShade.addColorStop(0, 'rgba(255,255,255,0.26)');
+              solShade.addColorStop(0.4, 'rgba(255,255,255,0)');
+              solShade.addColorStop(1, 'rgba(0,0,0,0.16)');
+              c2.fillStyle = solShade;
+              c2.fillRect(burX - bkW / 2, surfaceY, bkW, bkH);
+              c2.restore();
+              c2.strokeStyle = 'rgba(226,232,240,0.85)'; c2.lineWidth = 1;
+              c2.beginPath(); c2.moveTo(burX - bkW / 2 + 8, surfaceY); c2.lineTo(burX + bkW / 2 - 8, surfaceY); c2.stroke();
+              c2.strokeStyle = '#cbd5e1'; c2.lineWidth = 2;
+              flaskPath();
+              c2.stroke();
               c2.font = 'bold 11px sans-serif'; c2.fillStyle = '#cbd5e1'; c2.textAlign = 'center';
-              c2.fillText('HCl + indicator', burX, bkY + 75);
+              c2.fillText('HCl + indicator', burX, bkY + bkH + 15);
               // RIGHT: pH vs volume plot
               var plotX = lftW + 30, plotY = 20;
               var plotW = W - plotX - 20, plotH = H - 60;
               c2.fillStyle = 'rgba(255,255,255,0.04)';
               c2.fillRect(plotX, plotY, plotW, plotH);
               c2.strokeStyle = '#475569'; c2.lineWidth = 1; c2.strokeRect(plotX, plotY, plotW, plotH);
+              c2.strokeStyle = 'rgba(71,85,105,0.55)';
+              c2.beginPath();
+              for (var gl = 2; gl <= 12; gl += 2) {
+                var gy = plotY + (1 - gl / 14) * plotH;
+                c2.moveTo(plotX, gy); c2.lineTo(plotX + plotW, gy);
+              }
+              c2.stroke();
               c2.font = '11px monospace'; c2.fillStyle = '#94a3b8'; c2.textAlign = 'right';
               c2.fillText('14', plotX - 4, plotY + 8);
               c2.fillText('7', plotX - 4, plotY + plotH / 2);
@@ -1362,12 +1392,7 @@ function titrAnimCanvasRef(cvEl) {
               c2.strokeStyle = '#10b981'; c2.lineWidth = 2;
               c2.beginPath();
               for (var px = 0; px <= cyc * plotW; px++) {
-                var prog = px / plotW;
-                var pHere;
-                if (prog < 0.45) pHere = 2 + prog * 4;
-                else if (prog < 0.55) pHere = 4 + (prog - 0.45) * 80;
-                else pHere = 12 - (1 - prog) * 3;
-                var py = plotY + (1 - pHere / 14) * plotH;
+                var py = plotY + (1 - titrationReferencePH(px / plotW) / 14) * plotH;
                 if (px === 0) c2.moveTo(plotX + px, py);
                 else c2.lineTo(plotX + px, py);
               }
@@ -1398,6 +1423,18 @@ function titrAnimCanvasRef(cvEl) {
 // Persisted classroom state can outlive a release. Normalize it before any
 // calculation so a removed option, malformed trial, or stale result cannot crash the
 // lab or reveal the answer for a different unknown.
+function titrationReferencePH(progress) {
+  var p = Math.max(0, Math.min(1, Number(progress) || 0));
+  var v0 = 25, conc = 0.1, added = p * 50;
+  var excess = conc * added - conc * v0;      // mmol of OH- beyond the acid present
+  var total = v0 + added;
+  // Water's own contribution is what keeps a real curve finite at equivalence; without
+  // it this diverges to +/-Infinity exactly where the interesting part is.
+  var net = excess / total;
+  var hydro = (-net + Math.sqrt(net * net + 4e-14)) / 2;
+  return Math.max(0, Math.min(14, -Math.log10(Math.max(hydro, 1e-14))));
+}
+
 function titrFinite(raw, fallback, min, max) {
   var n = Number(raw);
   if (!isFinite(n)) n = Number(fallback);
@@ -1552,32 +1589,95 @@ function buildTitrationExperimentScene(THREE, S, m) {
   function tube(name, rt, rb, h, mat, x, y, z, open) { return mesh(name,new THREE.CylinderGeometry(rt,rb,h,40,1,!!open),mat,x,y,z); }
   function ring(name,r,mat,x,y,z) { var obj=mesh(name,new THREE.TorusGeometry(r,0.023,8,48),mat,x,y,z);obj.rotation.x=Math.PI/2;return obj; }
   var fx = 0.42;
+  // The apparatus used to float in flat clear colour with the bench slab ending in
+  // nothing, which reads as an unfinished render rather than a lab. The camera orbits
+  // and the model does not, so a backdrop PLANE would swing edge-on; a cyclorama
+  // cylinder is rotation-invariant. Vertex colours rather than a CanvasTexture,
+  // because this builder also runs under jsdom in the bench tests, where a 2D context
+  // does not exist. Named 'stage-' so the close-up frames exclude the room along with
+  // the rest of the bench.
+  function stage(name, geometry, mat, x, y, z) {
+    var obj = new THREE.Mesh(geometry, mat); obj.name = name; obj.position.set(x||0,y||0,z||0);
+    obj.renderOrder = -1; S.model.add(obj); return obj;
+  }
+  var cyc = new THREE.CylinderGeometry(30, 30, 46, 40, 12, true);
+  var cycPos = cyc.attributes.position, tint = new Float32Array(cycPos.count * 3);
+  var lowC = new THREE.Color(0x16344d), highC = new THREE.Color(0x04101c), mixC = new THREE.Color();
+  for (var vi = 0; vi < cycPos.count; vi++) {
+    // Cylinder positions are local and the mesh sits at the origin, so this is world
+    // height: the pool of light starts at bench level and is gone by the top of the stand.
+    var kk = Math.max(0, Math.min(1, (cycPos.getY(vi) + 1.2) / 13));
+    mixC.copy(lowC).lerp(highC, kk * kk);
+    tint[vi*3] = mixC.r; tint[vi*3+1] = mixC.g; tint[vi*3+2] = mixC.b;
+  }
+  cyc.setAttribute('color', new THREE.BufferAttribute(tint, 3));
+  stage('stage-cyclorama', cyc,
+    new THREE.MeshBasicMaterial({ vertexColors: true, side: THREE.BackSide, depthWrite: false }),
+    0, 0, 0);
+  stage('stage-floor', new THREE.CircleGeometry(30, 40),
+    new THREE.MeshBasicMaterial({ color: 0x0e2537, depthWrite: false }), 0, -0.95, 0)
+    .rotation.x = -Math.PI / 2;
   box('workbench',5.2,0.16,2.9,dark,0,-0.09,0);
+  // Contact shadows. Nothing here casts one, so the flask floated over the tile and
+  // the tile over the bench - the strongest 'it is not really there' cue in the whole
+  // render, and cheaper to answer with three unlit discs than with a shadow map.
+  function contact(name, radius, y, opacity, x, z) {
+    var disc = stage(name, new THREE.CircleGeometry(radius, 32),
+      new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: opacity, depthWrite: false }),
+      x, y, z);
+    disc.rotation.x = -Math.PI / 2; disc.scale.z = 0.96; return disc;
+  }
   box('bench-front-edge',5.2,0.035,0.035,steel,0,0,1.43);
-  box('stand-base',1.35,0.14,1.25,dark,-1.23,0.08,-0.18);
+  box('stand-base',1.35,0.14,1.25,dark,-1.23,0.06,-0.18);
+  contact('stage-shadow-stand',0.86,-0.004,0.34,-1.23,-0.18);
   tube('support-rod',0.055,0.055,6.45,steel,-1.4,3.35,-0.3);
   [4.3,5.8].forEach(function(y) {
     box('burette-clamp',1.82,0.085,0.12,steel,-0.49,y,-0.12);
     tube('clamp-collar',0.11,0.11,0.23,dark,-1.4,y,-0.3);
     ring('burette-collar',0.20,steel,fx,y,0);
   });
-  box('white-endpoint-tile',2.22,0.065,2.12,white,fx,0.07,0.08);
+  // Thicker and reseated: it spanned 0.038-0.103 between a bench top at -0.010 and a
+  // flask whose glass starts at 0.165, so it floated at both ends. Now its underside
+  // meets the bench and its face meets the foot of the flask.
+  box('white-endpoint-tile',2.22,0.175,2.12,white,fx,0.0775,0.08);
+  contact('stage-shadow-tile',1.42,-0.004,0.30,fx,0.08);
+  contact('stage-shadow-flask',1.02,0.168,0.40,fx,0);
   tube('flask-body',0.27,0.94,1.7,glass,fx,1.015,0,true);
   tube('flask-neck',0.27,0.27,0.47,glass,fx,2.1,0,true);
   ring('flask-rim',0.27,white,fx,2.335,0);
-  ring('flask-base',0.94,steel,fx,0.165,0);
+  // Was steel: a bright ring at the foot of the flask read as a second liquid
+  // surface, so the flask appeared to stand in a pool of spilled indicator.
+  ring('flask-base',0.94,dark,fx,0.165,0);
   var profile=titrationBenchLiquidProfile(m.fill);
   // Match the source color, including its transparency. Three r128 setStyle ignores rgba alpha.
   var rgba=/^rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)(?:\s*,\s*([\d.]+))?\s*\)$/.exec(m.color || '');
   var color=rgba ? 'rgb('+rgba[1]+','+rgba[2]+','+rgba[3]+')' : m.color || '#c8dcff';
   var alpha=rgba && rgba[4] !== undefined ? Number(rgba[4]) : 0.80;
   var solution=material(color,{transparent:true,opacity:Math.max(0.20,alpha),depthWrite:false,side:THREE.DoubleSide,shininess:100});
-  if(profile.height>0.0001) tube('flask-liquid',profile.radius,0.90,profile.height,solution,fx,0.18+profile.height/2,0);
+  // Open-ended: the closed bottom cap was lit as brightly as the meniscus above it,
+  // so the flask showed two equally convincing surfaces. A dedicated darker floor
+  // disc reads as liquid pooled on glass and leaves exactly one bright ellipse.
+  if(profile.height>0.0001) tube('flask-liquid',profile.radius,0.90,profile.height,solution,fx,0.18+profile.height/2,0,true);
+  var deep=new THREE.Color(color).multiplyScalar(0.45);
+  // Opacity follows the solution's own alpha: a colourless flask must not grow an
+  // opaque black pool just because the shading maths ran.
+  var liquidFloor=mesh('flask-liquid-floor',new THREE.CircleGeometry(0.89,36),
+    new THREE.MeshBasicMaterial({color:deep.getHex(),transparent:true,opacity:Math.min(0.85,0.20+alpha*0.65)}),fx,0.170,0);
+  liquidFloor.rotation.x=-Math.PI/2;liquidFloor.visible=profile.height>0.0001;
   var surface=tube('liquid-surface',profile.radius,profile.radius,0.014,material(color,{transparent:true,opacity:Math.max(0.35,alpha),depthWrite:false}),fx,0.18+profile.height,0);
   surface.visible=profile.height>0.0001;
-  var surfaceRim=ring('liquid-surface-rim',profile.radius,material(0xd5f4ff,{transparent:true,opacity:0.45,depthWrite:false}),fx,0.18+profile.height,0);
+  var surfaceRim=ring('liquid-surface-rim',profile.radius,material(0xd5f4ff,{transparent:true,opacity:0.28,depthWrite:false}),fx,0.18+profile.height,0);
   surfaceRim.scale.set(1,1,0.42);surfaceRim.visible=profile.height>0.0001;
-  var stir=box('stir-bar',0.49,0.075,0.105,white,fx,0.23,0);
+  // A back-facing shell just outside the glass lights only where the surface turns
+  // away from the camera, which is a cheap fresnel: it puts a rim back on the wall
+  // in FRONT of the liquid. Both meshes write no depth, so previously the solution
+  // had a hard edge against nothing and the flask stopped reading as glass at all.
+  var sheen=material(0xbfe9ff,{transparent:true,opacity:m.contrast?0.34:0.20,side:THREE.BackSide,depthWrite:false,blending:THREE.AdditiveBlending});
+  mesh('flask-glow',new THREE.CylinderGeometry(0.278,0.968,1.751,40,1,true),sheen,fx,1.015,0);
+  mesh('flask-glow-neck',new THREE.CylinderGeometry(0.278,0.278,0.484,32,1,true),sheen,fx,2.1,0);
+  // Seated on the flask floor and no longer pure white: at full brightness inside a
+  // pale solution it read as a scratch on the glass rather than a stir bar.
+  var stir=box('stir-bar',0.49,0.075,0.105,material(0xb7c6d6,{shininess:18}),fx,0.212,0);
   var bottom=3.12, length=3.12, top=bottom+length;
   tube('burette-glass',0.155,0.155,length,glass,fx,bottom+length/2,0,true);
   ring('burette-rim',0.155,white,fx,top,0);
@@ -1589,11 +1689,34 @@ function buildTitrationExperimentScene(THREE, S, m) {
   for(var mark=0;mark<=50;mark++) box('graduation-'+mark,mark%10===0?0.20:0.10,0.012,0.014,white,fx-0.04,top-mark/50*length,0.158);
   tube('stopcock-body',0.16,0.16,0.16,white,fx,3.00,0);
   var handle=box('stopcock-handle',0.62,0.075,0.09,material(0x22c8dc),fx,3.00,0.14);handle.rotation.z=m.animating?0:Math.PI/2;
-  tube('burette-tip',0.075,0.026,0.38,glass,fx,2.78,0);
-  var drop=mesh('titrant-drop',new THREE.SphereGeometry(0.052,16,12),titrant,fx,2.56,0);drop.scale.y=1.35;drop.visible=!!m.animating;
+  // Ended 0.26 short of the flask mouth, so every drop fell through open air past
+  // the OUTSIDE of the neck. Delivering with the tip inside the neck is the
+  // technique this lab teaches; the burette close-up frame below widened to match.
+  tube('burette-tip',0.075,0.026,0.72,glass,fx,2.61,0);
+  var drop=mesh('titrant-drop',new THREE.SphereGeometry(0.052,16,12),titrant,fx,2.20,0);drop.scale.y=1.35;drop.visible=!!m.animating;
+  // The transient bloom of colour where a drop lands, dying away as the swirl mixes
+  // it back in, is the moment this whole lab is about, and nothing modelled it: the
+  // solution simply stepped from colourless to uniformly pink. flashHold carries how
+  // close the addition is to equivalence and lengthens the fade, which is exactly
+  // the cue a student is told to watch for as the endpoint approaches.
+  var flashHold=Math.max(0,Math.min(1,Number(m.flashHold)||0));
+  var flashLife=340+flashHold*760;
+  var flash=mesh('titrant-flash',new THREE.SphereGeometry(0.30,20,14),
+    material(m.flashColor||color,{transparent:true,opacity:0,depthWrite:false,blending:THREE.AdditiveBlending}),
+    fx,0.18+profile.height,0);
+  flash.visible=false;
   // Animation is a brief cue for an addition, not a fluid-dynamics model or a drop counter.
   var started=null;
-  S.tick=function(now){ if(!m.animating)return; if(started===null)started=now;var elapsed=Math.max(0,now-started);var phase=Math.min(1,elapsed/650);drop.position.y=2.56-phase*(2.56-(0.18+profile.height));drop.visible=elapsed<650 && m.focus!=='burette';stir.rotation.y=Math.min(elapsed,700)*0.013; };
+  S.tick=function(now){ if(!m.animating)return; if(started===null)started=now;var elapsed=Math.max(0,now-started);var phase=Math.min(1,elapsed/650);drop.position.y=2.20-phase*(2.20-(0.18+profile.height));drop.visible=elapsed<650 && m.focus!=='burette';stir.rotation.y=Math.min(elapsed,700)*0.013;
+    var fe=elapsed-620;
+    if(fe>=0 && fe<flashLife && profile.height>0.0001 && m.focus!=='burette'){
+      var k=fe/flashLife, grow=0.55+k*1.85;
+      flash.visible=true;
+      flash.scale.set(grow,Math.min(grow,0.34+k*1.05),grow);
+      flash.material.opacity=0.8*(1-k)*(1-k);
+      flash.position.y=0.18+profile.height-Math.min(profile.height*0.6,k*0.46);
+    } else flash.visible=false;
+  };
   S.target=new THREE.Vector3(0,3.15,0);S.half=new THREE.Vector3(2.8,3.55,1.55);
   // Close-ups frame the selected apparatus, not an arbitrary zoom of the whole bench.
   // Hidden meshes remain owned by the shared viewer and are disposed with the scene.
@@ -1601,12 +1724,12 @@ function buildTitrationExperimentScene(THREE, S, m) {
   if(focus!=='apparatus'){
     S.model.children.forEach(function(obj){
       var belongs=focus==='flask'
-        ? /^(flask-|liquid-|stir-bar|white-endpoint-tile|burette-tip|titrant-drop)/.test(obj.name)
+        ? /^(flask-|liquid-|stir-bar|white-endpoint-tile|burette-tip|titrant-)/.test(obj.name)
         : /^(burette-(?!clamp)|graduation-|stopcock-)/.test(obj.name);
       obj.visible=obj.visible && belongs;
     });
     if(focus==='flask'){S.target.set(fx,1.50,0);S.half.set(1.18,1.65,1.18);}
-    else {S.target.set(fx,4.49,0);S.half.set(0.58,1.94,0.44);}
+    else {S.target.set(fx,4.35,0);S.half.set(0.58,2.14,0.44);}
   }
   S.experiment={focus:focus,reading:reading,delivered:m.delivered,fillFraction:profile.fraction,liquidSurface:0.18+profile.height,meniscus:bottom+liquidHeight,color:m.color,animating:!!m.animating};
 }
@@ -1802,16 +1925,25 @@ function TitrationDilutionView(props) {
   function button(label,onClick,pressed){return h('button',{type:'button',onClick:onClick,'aria-pressed':pressed},label);}
   var stockLabel=t('stem.titration.dilution_stock_aliquot','Stock aliquot'),finalLabel=t('stem.titration.dilution_final_solution','Final solution');
   var description=stockLabel+': '+props.stockMl.toFixed(2)+' mL, '+props.stockC.toFixed(2)+' M. '+finalLabel+': '+props.finalMl.toFixed(0)+' mL, '+props.finalC.toFixed(3)+' M.';
-  var css='.titr-dilution-view{background:#0b1d2d;border:1px solid #60758a;border-radius:16px;overflow:hidden;color:#e2edf8}.titr-dilution-view h4{font-size:17px;font-weight:800;color:#e2edf8;margin:0}.titr-dilution-view p{font-size:12px;line-height:1.6;color:#d0e0ef;margin:6px 0 0}.titr-dilution-head,.titr-dilution-controls,.titr-dilution-caption{padding:14px 16px}.titr-dilution-controls{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #52657a}.titr-dilution-view button{min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid #8297ac;background:#16334a;color:#edf7ff;font-size:12px;font-weight:700}.titr-dilution-view button[aria-pressed=true]{background:#a5f3fc;color:#083344}.titr-dilution-view :is(button,[tabindex]):focus-visible{outline:3px solid #facc15;outline-offset:-3px}.titr-dilution-stage{height:clamp(300px,40vw,440px);position:relative;touch-action:pan-y;cursor:grab}.titr-dilution-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#52657a;border-top:1px solid #52657a}.titr-dilution-readings>div{padding:14px;background:#102538;min-width:0}.titr-dilution-readings strong{display:block;font-size:13px;color:#a5f3fc}.titr-dilution-readings b{display:block;font-size:20px;color:#ecfeff;font-variant-numeric:tabular-nums}.titr-dilution-constant{padding:14px 16px;background:#163b3f;border-top:1px solid #60758a;font-size:14px;color:#d1fae5}.titr-dilution-diagram{display:flex;justify-content:space-around;gap:20px;padding:25px 12px;background:#071422}.titr-dilution-vessel{height:180px;width:90px;position:relative;border:2px solid #bce7ff;border-top:0;border-radius:0 0 12px 12px;overflow:hidden}.titr-dilution-fill{position:absolute;bottom:0;width:100%;background:#146779;border-top:2px solid #bce7ff}.titr-dilution-dot{position:absolute;width:5px;height:5px;background:#fbbf24;border-radius:50%}@media(max-width:480px){.titr-dilution-readings{grid-template-columns:minmax(0,1fr)}}';
+  var css='.titr-dilution-view{background:#0b1d2d;border:1px solid #60758a;border-radius:16px;overflow:hidden;color:#e2edf8}.titr-dilution-view h4{font-size:17px;font-weight:800;color:#e2edf8;margin:0}.titr-dilution-view p{font-size:12px;line-height:1.6;color:#d0e0ef;margin:6px 0 0}.titr-dilution-head,.titr-dilution-controls,.titr-dilution-caption{padding:14px 16px}.titr-dilution-controls{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid #52657a}.titr-dilution-view button{min-height:44px;padding:8px 12px;border-radius:8px;border:1px solid #8297ac;background:#16334a;color:#edf7ff;font-size:12px;font-weight:700}.titr-dilution-view button[aria-pressed=true]{background:#a5f3fc;color:#083344}.titr-dilution-view :is(button,[tabindex]):focus-visible{outline:3px solid #facc15;outline-offset:-3px}.titr-dilution-stage{height:clamp(300px,40vw,440px);position:relative;touch-action:pan-y;cursor:grab}.titr-dilution-readings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:#52657a;border-top:1px solid #52657a}.titr-dilution-readings>div{padding:14px;background:#102538;min-width:0}.titr-dilution-readings strong{display:block;font-size:13px;color:#a5f3fc}.titr-dilution-readings b{display:block;font-size:20px;color:#ecfeff;font-variant-numeric:tabular-nums}.titr-dilution-constant{padding:14px 16px;background:#163b3f;border-top:1px solid #60758a;font-size:14px;color:#d1fae5}.titr-dilution-diagram{display:flex;align-items:flex-end;justify-content:space-around;gap:20px;padding:25px 12px;background:#071422}.titr-dilution-cell{display:flex;flex-direction:column;align-items:center;gap:7px}.titr-dilution-cell figcaption{font-size:12px;font-weight:700;color:#cbd5e1;font-variant-numeric:tabular-nums}.titr-dilution-vessel{position:relative;border:2px solid #bce7ff;border-top:0;border-radius:0 0 12px 12px;overflow:hidden}.titr-dilution-fill{position:absolute;bottom:0;width:100%;background:#146779;border-top:2px solid #bce7ff}.titr-dilution-dot{position:absolute;width:5px;height:5px;margin:-2.5px 0 0 -2.5px;background:#fbbf24;border-radius:50%}@media(max-width:480px){.titr-dilution-readings{grid-template-columns:minmax(0,1fr)}}';
   return h('section',{className:'titr-dilution-view','data-titration-dilution':true,'aria-label':t('stem.titration.dilution_visual_title','Dilution in 3D')},
     h('style',null,css),h('div',{className:'titr-dilution-head'},h('h4',null,t('stem.titration.dilution_visual_title','Dilution in 3D')),h('p',null,t('stem.titration.dilution_visual_intro','Compare the measured stock aliquot on the left with the final solution on the right. Adjust the calculator above to update the view.'))),
     h('div',{className:'titr-dilution-controls',role:'group','aria-label':t('stem.titration.dilution_view_options','Dilution view options')},button(t('stem.titration.dilution_3d','3D vessels'),function(){setView('3d');},view==='3d'),button(t('stem.titration.dilution_2d','2D comparison'),function(){setView('diagram');},view==='diagram'),button(t('stem.titration.dilution_markers','Solute markers'),function(){setMarkers(!markers);},markers)),
     view==='3d' && h('div',{ref:host,className:'titr-dilution-stage',role:'img',tabIndex:0,'aria-label':description,'aria-keyshortcuts':'ArrowLeft ArrowRight ArrowUp ArrowDown + - 0',style:status==='failed'?{display:'none'}:undefined,
       onKeyDown:function(e){var handled=true;if(e.key==='ArrowLeft')rotate(-10,0);else if(e.key==='ArrowRight')rotate(10,0);else if(e.key==='ArrowUp')rotate(0,8);else if(e.key==='ArrowDown')rotate(0,-8);else if(e.key==='+')zoom(0.1);else if(e.key==='-')zoom(-0.1);else if(e.key==='0')reset();else handled=false;if(handled)e.preventDefault();},
       onPointerDown:function(e){if(e.pointerType==='touch'||e.button!==0)return;drag.current={x:e.clientX,y:e.clientY};e.currentTarget.setPointerCapture(e.pointerId);},onPointerMove:function(e){if(!drag.current)return;rotate((e.clientX-drag.current.x)*0.4,(e.clientY-drag.current.y)*0.25);drag.current={x:e.clientX,y:e.clientY};},onPointerUp:function(){drag.current=null;},onPointerCancel:function(){drag.current=null;},onLostPointerCapture:function(){drag.current=null;}}),
-    (view==='diagram'||status!=='ready') && h('div',{className:'titr-dilution-diagram',role:'img','aria-label':description},[fraction,1].map(function(f,index){
-      var dots=markers&&Array.from({length:18},function(_,i){return h('span',{key:i,className:'titr-dilution-dot',style:{left:(15+(i*37)%70)+'%',bottom:(10+i*4.2)+'%',transform:'translate(-50%,50%) scale('+Math.min(1,f*18)+')'}});});
-      return h('div',{key:index,className:'titr-dilution-vessel'},h('div',{className:'titr-dilution-fill',style:{height:(Math.max(0,Math.min(1,f))*85)+'%'}},dots));
+    (view==='diagram'||status!=='ready') && h('div',{className:'titr-dilution-diagram',role:'img','aria-label':description},[props.stockMl,props.finalMl].map(function(vol,index){
+      // Linear dimension by the cube root of volume, so the drawn vessel scales the way
+      // a real one does; floored so a 1000-fold dilution still leaves something to see.
+      var big=Math.max(props.stockMl,props.finalMl,1e-9);
+      var k=Math.max(0.3,Math.pow(Math.max(vol,0)/big,1/3));
+      var dots=markers&&Array.from({length:18},function(_,i){
+        return h('span',{key:i,className:'titr-dilution-dot',style:{left:(10+(i%6)*16)+'%',bottom:(12+Math.floor(i/6)*30)+'%'}});
+      });
+      return h('figure',{key:index,className:'titr-dilution-cell',style:{margin:0}},
+        h('div',{className:'titr-dilution-vessel',style:{height:Math.round(190*k)+'px',width:Math.round(96*k)+'px'}},
+          h('div',{className:'titr-dilution-fill',style:{height:'85%'}},dots)),
+        h('figcaption',null,(vol>=10?vol.toFixed(0):vol.toFixed(2))+' mL'));
     })),
     view==='3d'&&status==='failed'&&h('p',{className:'titr-dilution-caption',role:'status'},t('stem.titration.dilution_fallback','3D is unavailable. The 2D comparison and calculator remain available.')),
     view==='3d'&&status==='ready'&&h('div',{className:'titr-dilution-controls',role:'group','aria-label':t('stem.titration.dilution_camera','Dilution camera controls')},button(t('stem.titration.bench_orbit_left','Rotate left'),function(){rotate(-15,0);}),button(t('stem.titration.bench_orbit_right','Rotate right'),function(){rotate(15,0);}),button(t('stem.titration.bench_zoom_in','Zoom in'),function(){zoom(0.1);}),button(t('stem.titration.bench_zoom_out','Zoom out'),function(){zoom(-0.1);}),button(t('stem.titration.bench_reset','Reset view'),reset)),
@@ -2260,7 +2392,9 @@ var additionAnimating = !titrationReduceMotion &&
 var titrationAnimPaused = !!d.titrationAnimPaused;
 React.useEffect(function () {
   if (!additionAnimating) return;
-  var delay = titrationReduceMotion ? 0 : 850;
+  // 850 ms covered the falling drop and nothing after it, which left the endpoint
+  // bloom in the 3D bench no window to be seen in at all.
+  var delay = titrationReduceMotion ? 0 : 1750;
   var timer = setTimeout(function () {
     updMulti({ additionAnimating: false, _prevVolume: volumeAdded });
   }, delay);
@@ -4192,7 +4326,11 @@ return React.createElement("div", {
     onNotebook: function(records){upd('benchNotebook',records);},
     currentReading: {preset:presetId,setup:preset.acidName+' + '+preset.baseName,axis:yAxis.mode,value:Number(yAxis.readout(currentY)),volume:Number(volumeAdded.toFixed(1)),observation:indicatorStatus,indicator:isPotentiometric?'KMnO₄':indicator.label},
     curve: { points: curveData, volume: volumeAdded, value: currentY, maxVolume: curveMaxVol, equivalence: Veq, min: yAxis.min, max: yAxis.max, tick: yAxis.tick, label: yAxis.label, readout: yAxis.speech(currentY), description: volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus },
-    model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0 },
+    model: { reading: physicalBuretteReading, delivered: volumeAdded, fill: flaskFillFrac, color: currentColor, redox: isPotentiometric, contrast: !!ctx.isContrast, animating: additionAnimating, pulse: d.additionPulse || 0,
+      // The bloom is the colour the indicator turns where the titrant is locally in
+      // excess, not the colour the bulk solution happens to be right now.
+      flashColor: isPotentiometric ? '#a855f7' : indicator.colorHigh,
+      flashHold: Math.max(0, Math.min(1, 1 - Math.abs(volumeAdded - Veq) / Math.max(1, Veq * 0.12))) },
     description: __alloT('stem.titration.burette_flask', 'BURETTE & FLASK') + '. ' + volumeAdded.toFixed(1) + ' mL. ' + yAxis.speech(currentY) + '. ' + indicatorStatus,
     readings: [
       [__alloT('stem.titration.titrant_volume', 'TITRANT VOLUME:'), volumeAdded.toFixed(1) + ' mL'],
@@ -5838,9 +5976,40 @@ return React.createElement("div", {
             }
           }),
           !benchReady && React.createElement("div", {
-            style: { position: 'absolute', inset: 0, display: 'flex', alignItems: 'center',
-              justifyContent: 'center', color: '#94a3b8', fontSize: 11, textAlign: 'center', padding: 12 }
-          }, __alloT('stem.titration.bench_fallback', 'The 3D bench needs WebGL. The table below carries the same comparison.')),
+            style: { position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 6, padding: 10 }
+          },
+            (function () {
+              var gap = 12, marginX = 22, bodyPx = 132, baseY = 172;
+              var bores = GLASSWARE.reduce(function (sum, g) { return sum + g.boreMm; }, 0);
+              var scale = (560 - marginX * 2 - gap * (GLASSWARE.length - 1)) / bores;
+              var x = marginX, parts = [];
+              GLASSWARE.forEach(function (g) {
+                var w = g.boreMm * scale, on = g.id === benchSel;
+                // Floored at one pixel: the beaker's millilitre is 0.26 mm and would
+                // round away entirely, which would hide the very fact being taught.
+                var slice = Math.max(1, mlHeightMm(g.boreMm) * scale);
+                parts.push(React.createElement('g', { key: g.id },
+                  React.createElement('rect', { x: x, y: baseY - bodyPx, width: w, height: bodyPx,
+                    fill: on ? 'rgba(16,185,129,0.10)' : 'rgba(148,163,184,0.06)',
+                    stroke: on ? '#34d399' : '#7c8ea3', strokeWidth: on ? 2 : 1 }),
+                  React.createElement('rect', { x: x, y: baseY - slice, width: w, height: slice,
+                    fill: '#38bdf8', stroke: '#bae6fd', strokeWidth: 0.5 }),
+                  React.createElement('text', { x: x + w / 2, y: baseY + 15, fontSize: 11,
+                    textAnchor: 'middle', fill: on ? '#6ee7b7' : '#cbd5e1' }, g.boreMm + ' mm'),
+                  React.createElement('text', { x: x + w / 2, y: baseY + 29, fontSize: 10,
+                    textAnchor: 'middle', fill: '#94a3b8' }, mlHeightMm(g.boreMm).toFixed(2))));
+                x += w + gap;
+              });
+              return React.createElement('svg', { viewBox: '0 0 560 208', width: '100%',
+                preserveAspectRatio: 'xMidYMid meet', style: { maxHeight: '100%' }, role: 'img',
+                'aria-label': __alloT('stem.titration.bench_fallback', 'The 3D bench needs WebGL. The table below carries the same comparison.') },
+                React.createElement('line', { x1: 10, y1: baseY, x2: 550, y2: baseY, stroke: '#64748b', strokeWidth: 1 }),
+                parts);
+            })(),
+            React.createElement("span", { style: { color: '#94a3b8', fontSize: 11, textAlign: 'center' } },
+              __alloT('stem.titration.bench_fallback', 'The 3D bench needs WebGL. The table below carries the same comparison.'))
+          ),
           benchReady && React.createElement("div", {
             style: { position: 'absolute', left: 8, bottom: 6, fontSize: 10, color: '#94a3b8',
               pointerEvents: 'none', background: 'rgba(10,20,32,0.7)', padding: '3px 8px', borderRadius: 999 },
@@ -6157,14 +6326,14 @@ return React.createElement("div", {
     // Discrete outcome: good buffer (<1.0 unit shift), poor buffer (>=1.0 unit shift)
     var isGood = pHshift < 1.0;
     var outcomeMeta = isGood
-      ? { label: __alloT('stem.titration.good_buffer', '🛡️ GOOD BUFFER'), desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#059669', bg: '#ecfdf5', border: '#86efac' }
+      ? { label: __alloT('stem.titration.good_buffer', '🛡️ GOOD BUFFER'), desc: 'pH shifted only ' + pHshift.toFixed(2) + ' units after 20% more acid. Buffer is holding.', color: '#6ee7b7', bg: 'rgba(6,78,59,0.55)', border: 'rgba(16,185,129,0.55)', mark: '#34d399' }
       : { label: __alloT('stem.titration.poor_buffer', '💥 POOR BUFFER'),
           // Naming exhaustion matters: "overwhelmed" and "ran out of A⁻ entirely" are
           // different failures, and only the second one leaves free strong acid behind.
           desc: 'pH shifted ' + pHshift.toFixed(2) + ' units — ' + (bfRes.exhausted
             ? 'the A⁻ ran out completely, so the leftover strong acid now sets the pH. There is no buffer left.'
             : 'buffer overwhelmed. Use different conditions.'),
-          color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' };
+          color: '#fca5a5', bg: 'rgba(127,29,29,0.45)', border: 'rgba(248,113,113,0.55)', mark: '#f87171' };
     function logObs() {
       var obs = { pKa: parseFloat(pKa.toFixed(2)), ratio: parseFloat(bf.ratio.toFixed(2)), pH: parseFloat(pHcurrent.toFixed(2)), shift: parseFloat(pHshift.toFixed(2)), good: isGood };
       setBF({ log: (bf.log || []).concat([obs]).slice(-8) });
@@ -6175,8 +6344,53 @@ return React.createElement("div", {
         __alloT('stem.titration.three_sliders_weak_acid_strength_ka_bu', 'Two sliders you control — weak acid strength (Ka) and buffer ratio [A⁻]/[HA]; the starting pH below them is a readout, not a control. The simulation tells you whether the buffer HOLDS or FAILS after adding 20% more acid (discrete outcome — no numeric "buffer score"). Sweep the sliders. Log observations. Type what you discover about what makes a good buffer.')),
       React.createElement('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', className: 'mb-3 p-3 rounded-lg text-center', style: { background: outcomeMeta.bg, border: '2px solid ' + outcomeMeta.border } },
         React.createElement('div', { className: 'text-base font-black mb-1', style: { color: outcomeMeta.color } }, outcomeMeta.label),
-        React.createElement('div', { className: 'text-[0.6875rem] text-slate-700' }, outcomeMeta.desc)
+        React.createElement('div', { className: 'text-[0.6875rem] text-slate-200' }, outcomeMeta.desc)
       ),
+      (function () {
+        var X = function (p) { return 40 + (Math.max(0, Math.min(14, p)) / 14) * 480; };
+        var xBefore = X(pHcurrent), xAfter = X(pHafter), xKa = X(pKa);
+        // A good buffer barely moves, so the two readings sit almost on top of each
+        // other and their labels collided into unreadable overlap. Flank the bar
+        // instead: lower reading to the left of it, higher to the right, and fall back
+        // to stacking only when the pair is pinned against an end of the scale.
+        function label(x, other, value, fill, key) {
+          var left = x <= other, edge = left ? x - 11 < 44 : x + 11 > 516;
+          return React.createElement('text', {
+            key: key, x: edge ? x : (left ? x - 11 : x + 11), y: edge ? 30 : 48,
+            fill: fill, fontSize: 12, fontWeight: 'bold',
+            textAnchor: edge ? 'middle' : (left ? 'end' : 'start')
+          }, value.toFixed(2));
+        }
+        // Literal hex throughout: SVG presentation attributes do not resolve var().
+        var ticks = [];
+        for (var tp = 0; tp <= 14; tp += 2) {
+          ticks.push(React.createElement('g', { key: 'tk' + tp },
+            React.createElement('line', { x1: X(tp), y1: 66, x2: X(tp), y2: 72, stroke: '#64748b', strokeWidth: 1 }),
+            React.createElement('text', { x: X(tp), y: 86, fill: '#94a3b8', fontSize: 11, textAnchor: 'middle' }, String(tp))));
+        }
+        return React.createElement('svg', {
+          viewBox: '0 0 560 96', className: 'w-full h-auto mb-3', preserveAspectRatio: 'xMidYMid meet',
+          // Uncapped, a 560-unit viewBox stretched across the panel and blew the 11 px
+          // labels up to nearly 20 px.
+          style: { maxWidth: '640px', margin: '0 auto', display: 'block' },
+          role: 'img', 'aria-label': outcomeMeta.label + '. ' + outcomeMeta.desc
+        },
+          React.createElement('rect', { x: 0, y: 0, width: 560, height: 96, fill: '#0b2030', rx: 10 }),
+          React.createElement('rect', { x: X(pKa - 1), y: 20, width: Math.max(0, X(pKa + 1) - X(pKa - 1)), height: 46,
+            fill: '#0891b2', fillOpacity: 0.22, stroke: '#22d3ee', strokeOpacity: 0.45, strokeWidth: 1 }),
+          React.createElement('text', { x: xKa, y: 16, fill: '#67e8f9', fontSize: 11, textAnchor: 'middle' }, 'pKa \u00B1 1'),
+          React.createElement('line', { x1: xKa, y1: 20, x2: xKa, y2: 66, stroke: '#22d3ee', strokeWidth: 1.5, strokeDasharray: '4 3' }),
+          React.createElement('line', { x1: 40, y1: 66, x2: 520, y2: 66, stroke: '#94a3b8', strokeWidth: 1.5 }),
+          ticks,
+          React.createElement('text', { x: 8, y: 70, fill: '#cbd5e1', fontSize: 12, fontWeight: 'bold' }, 'pH'),
+          React.createElement('line', { x1: xBefore, y1: 44, x2: xAfter, y2: 44,
+            stroke: outcomeMeta.mark, strokeWidth: 5, strokeLinecap: 'round' }),
+          React.createElement('circle', { cx: xBefore, cy: 44, r: 7, fill: '#e2e8f0', stroke: '#0b2030', strokeWidth: 2 }),
+          React.createElement('circle', { cx: xAfter, cy: 44, r: 7, fill: outcomeMeta.mark, stroke: '#0b2030', strokeWidth: 2 }),
+          label(xBefore, xAfter, pHcurrent, '#e2e8f0', 'lb'),
+          label(xAfter, xBefore, pHafter, outcomeMeta.mark, 'la')
+        );
+      })(),
       React.createElement('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
         [
           { key: 'ka', label: __alloT('stem.titration.acid_strength_pka', 'Acid strength (pKa)'), val: pKa, displayVal: pKa.toFixed(2), min: 2, max: 12, step: 0.1, onChange: function(v) { setBF({ ka: Math.pow(10, -v) }); } },
