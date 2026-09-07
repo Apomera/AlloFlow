@@ -1,0 +1,12 @@
+{
+  "stem.archstudio.ux_workspaces": "Studio workspaces",
+  "stem.archstudio.ux_quick_actions": "Build history and saving",
+  "stem.archstudio.ux_zoom_in": "Zoom drawing in",
+  "stem.archstudio.ux_zoom_out": "Zoom drawing out",
+  "stem.archstudio.ux_fit": "Fit drawing",
+  "stem.archstudio.ux_zoom": "{value}% of fit",
+  "stem.archstudio.ux_viewport": "Drawing viewport",
+  "stem.archstudio.ux_zoom_help": "Focus the drawing to pan with arrow keys. Use + and − to zoom, and 0 to fit. Measurements can also be entered in the coordinate fields.",
+  "stem.archstudio.ux_display": "Drawing display controls",
+  "stem.archstudio.ux_summary": "Drawing summary"
+}

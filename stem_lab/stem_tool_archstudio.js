@@ -1766,6 +1766,83 @@ function __alloAST(k, fb) {
   window.__alloArchDrawing = { project: archDrawingProjection, measure: archDrawingMeasurement, pick: archDrawingPick,
     layout: archDrawingLayout, svg: archDrawingSvg, sheet: archDrawingSheet, labels: ARCH_DRAWING_LABELS };
 
+
+  var ARCH_UX_LABELS = {
+    workspaces: 'Studio workspaces', quick_actions: 'Build history and saving',
+    zoom_in: 'Zoom drawing in', zoom_out: 'Zoom drawing out', fit: 'Fit drawing',
+    zoom: '{value}% of fit', viewport: 'Drawing viewport',
+    zoom_help: 'Focus the drawing to pan with arrow keys. Use + and − to zoom, and 0 to fit. Measurements can also be entered in the coordinate fields.',
+    display: 'Drawing display controls', summary: 'Drawing summary'
+  };
+  function archDrawingZoom(value, direction) {
+    var current = Number(value);
+    if (!Number.isFinite(current)) current = 1;
+    return direction === 'fit' ? 1 : Math.max(1, Math.min(4, current + (direction === 'in' ? .5 : direction === 'out' ? -.5 : 0)));
+  }
+  function archDrawingFit(width, height, zoom) {
+    var w = Math.max(1, Number(width) || 1), h = Math.max(1, Number(height) || 1);
+    var scale = Math.min(w / 720, h / 480);
+    return { width: 720 * scale * archDrawingZoom(zoom), height: 480 * scale * archDrawingZoom(zoom) };
+  }
+  // The preview owns only view state. Its observer and event listener leave with it.
+  function ArchDrawingViewport(props) {
+    var React = props.React, el = React.createElement;
+    var node = React.useRef(null), zoomState = React.useState(1), zoom = zoomState[0];
+    var sizeState = React.useState({ width: 600, height: 300 }), size = sizeState[0], previousZoom = React.useRef(1);
+    React.useEffect(function () {
+      var surface = node.current, alive = true;
+      function measure() {
+        if (!surface || !alive) return;
+        var width = surface.clientWidth, height = surface.clientHeight;
+        sizeState[1](function (old) { return old.width === width && old.height === height ? old : { width: width, height: height }; });
+      }
+      measure();
+      var observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+      if (observer) observer.observe(surface);
+      else window.addEventListener('resize', measure);
+      return function () { alive = false; if (observer) observer.disconnect(); else window.removeEventListener('resize', measure); };
+    }, []);
+    React.useLayoutEffect(function () {
+      var surface = node.current;
+      if (!surface) return;
+      var ratio = zoom / previousZoom.current;
+      if (zoom === 1) { surface.scrollLeft = 0; surface.scrollTop = 0; }
+      else {
+        surface.scrollLeft = (surface.scrollLeft + surface.clientWidth / 2) * ratio - surface.clientWidth / 2;
+        surface.scrollTop = (surface.scrollTop + surface.clientHeight / 2) * ratio - surface.clientHeight / 2;
+      }
+      previousZoom.current = zoom;
+    }, [zoom]);
+    var fit = archDrawingFit(size.width, size.height, zoom);
+    function change(direction) { zoomState[1](function (old) { return archDrawingZoom(old, direction); }); }
+    function onKey(event) {
+      if (event.ctrlKey || event.metaKey || event.altKey) return;
+      var key = event.key, direction = key === '+' || key === '=' ? 'in' : key === '-' || key === '−' ? 'out' : key === '0' || key === 'Home' ? 'fit' : '';
+      if (direction) { event.preventDefault(); event.stopPropagation(); change(direction); return; }
+      var move = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[key];
+      if (move && node.current) {
+        event.preventDefault(); event.stopPropagation();
+        node.current.scrollLeft += move[0] * (event.shiftKey ? 120 : 40);
+        node.current.scrollTop += move[1] * (event.shiftKey ? 120 : 40);
+      }
+    }
+    var labels = props.labels;
+    return el('div', { className: 'arch-drawing-reader' },
+      el('div', { role: 'group', 'aria-label': labels.display, className: 'arch-drawing-zoom-controls' },
+        el('button', { type: 'button', disabled: zoom <= 1, 'aria-label': labels.zoom_out, onClick: function () { change('out'); } }, '−'),
+        el('button', { type: 'button', onClick: function () { change('fit'); } }, labels.fit),
+        el('button', { type: 'button', disabled: zoom >= 4, 'aria-label': labels.zoom_in, onClick: function () { change('in'); } }, '+'),
+        el('output', { 'aria-live': 'polite', 'data-arch-drawing-zoom': 'true' }, labels.zoom.replace('{value}', Math.round(zoom * 100)))),
+      el('div', { ref: node, role: 'region', tabIndex: 0, 'aria-label': labels.viewport, 'aria-describedby': 'arch-drawing-view-help',
+        'data-arch-drawing-viewport': 'true', className: 'arch-drawing-preview', 'data-arch-drawing-preview': 'true',
+        onKeyDown: onKey, onClick: props.onPick,
+        style: { cursor: props.measuring ? 'crosshair' : 'default' } },
+        el('div', { style: { width: Math.max(size.width, fit.width), height: Math.max(size.height, fit.height), display: 'grid', placeItems: 'center' } },
+          el('div', { style: { width: fit.width, height: fit.height }, dangerouslySetInnerHTML: { __html: props.svg } }))),
+      el('p', { id: 'arch-drawing-view-help', className: 'arch-drawing-reader-help' }, labels.zoom_help));
+  }
+  window.__alloArchUX = { zoom: archDrawingZoom, fit: archDrawingFit, labels: ARCH_UX_LABELS };
+
   function archGlRef(el) { if (el) ArchGL.mount(el); else ArchGL.unmount(); }
   try { window.__alloArchGL = ArchGL; } catch (e) {}
   try { window.__alloArchEditBlocks = applyArchEdit; } catch (e) {}
@@ -4116,6 +4193,7 @@ function __alloAST(k, fb) {
 
 
     var showDrawings = d.showDrawings === true;
+    function uxText(key) { return t('stem.archstudio.ux_' + key, ARCH_UX_LABELS[key]); }
     function drawingText(key, values) {
       var value = t('stem.archstudio.drawing_' + key, ARCH_DRAWING_LABELS[key]);
       Object.keys(values || {}).forEach(function (name) { value = value.replace('{' + name + '}', values[name]); });
@@ -4221,10 +4299,9 @@ function __alloAST(k, fb) {
             el('p', { style: textStyle }, drawingText('sheet_help'))),
           el('div', { style: { minWidth: 0 } },
             el('p', { role: showReplay ? 'status' : undefined, style: Object.assign({}, textStyle, { marginTop: 0, color: showReplay ? '#fde68a' : '#cbd5e1' }) }, drawingText(showReplay ? 'replay' : 'live')),
-            el('div', { className: 'arch-drawing-preview', 'data-arch-drawing-preview': 'true', onClick: pickPoint,
-              style: { overflow: 'hidden', border: '1px solid #94a3b8', borderRadius: 10, background: '#fff', cursor: measuring ? 'crosshair' : 'default' },
-              dangerouslySetInnerHTML: { __html: cutValid ? archDrawingSvg(projection, options) : '' } }),
-            el('div', { 'data-arch-drawing-summary': 'true', style: { display: 'flex', flexWrap: 'wrap', gap: '8px 18px', marginTop: 12, fontSize: 12, color: '#e2e8f0' } },
+            el(ArchDrawingViewport, { key: scope, React: React, svg: cutValid ? archDrawingSvg(projection, options) : '', onPick: pickPoint, measuring: measuring,
+              labels: Object.keys(ARCH_UX_LABELS).reduce(function (out, key) { out[key] = uxText(key); return out; }, {}) }),
+            el('div', { 'data-arch-drawing-summary': 'true', role: 'group', 'aria-label': uxText('summary'), style: { display: 'flex', flexWrap: 'wrap', gap: '8px 18px', marginTop: 12, fontSize: 12, color: '#e2e8f0' } },
               el('strong', null, drawingText('visible', { count: projection.cells.length })),
               el('span', null, drawingText('full_model', { count: blocks.length })),
               el('span', null, drawingText('extents', { u: projection.uAxis, minU: projection.minU, maxU: projection.maxU, v: projection.vAxis, minV: projection.minV, maxV: projection.maxV }))),
@@ -4408,7 +4485,7 @@ function __alloAST(k, fb) {
         + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#334155;'
         + '--arch-glow:rgba(56,189,248,.18);--arch-shadow:0 18px 44px rgba(2,6,23,.34);}'
         + '#arch-studio-region,#arch-studio-region *{box-sizing:border-box;}'
-        + '#arch-studio-region .arch-drawing-preview>svg{display:block;width:100%;height:auto;max-height:360px;}'
+
         + '@media(max-width:680px){#arch-studio-region .arch-drawings-layout{grid-template-columns:1fr!important;}}'
         + '#arch-studio-region select:focus-visible{outline:2px solid #38bdf8;outline-offset:2px;}'
         + '#arch-studio-region button{font-family:inherit;}'
@@ -4473,33 +4550,67 @@ function __alloAST(k, fb) {
         + '#arch-studio-region .arch-studio-viewport{min-height:380px!important;flex:none!important;}'
         + '#arch-studio-region .arch-studio-stage{min-height:300px;}'
         + '#arch-studio-region .arch-studio-inquiry{max-height:30vh;}'
-        + '}'),
+        + '}'
+
+        + '#arch-studio-region .arch-studio-title-row{flex-wrap:wrap!important;overflow:visible!important;justify-content:space-between;gap:8px;}'
+        + '#arch-studio-region .arch-studio-brand{display:flex;align-items:center;gap:8px;min-width:0;flex:1 1 auto!important;}'
+        + '#arch-studio-region .arch-studio-quick-actions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;}'
+        + '#arch-studio-region .arch-studio-quick-actions button{min-height:40px;font-size:12px!important;}'
+        + '#arch-studio-region .arch-studio-workspaces{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;padding:5px 0 2px;}'
+        + '#arch-studio-region .arch-workspace-button{min-width:0;min-height:44px;padding:8px!important;border-radius:9px!important;font-size:13px!important;line-height:1.25;white-space:normal;}'
+        + '#arch-studio-region .arch-workspace-button[aria-expanded=true]{box-shadow:inset 0 -3px 0 currentColor;}'
+        + '#arch-studio-region .arch-studio-feature-strip button{min-height:36px;color:#e2e8f0!important;}'
+        + '#arch-studio-region .arch-studio-feature-strip{padding-top:7px!important;border-top:1px solid #334155;}'
+        + '#arch-studio-region :is(button,input,select,textarea,[tabindex]):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px;}'
+        + '#arch-studio-region :is(input,select,textarea){font-family:inherit;}'
+        + '#arch-studio-region .arch-drawing-zoom-controls{display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:7px;background:#1e293b;border:1px solid #64748b;border-bottom:0;border-radius:10px 10px 0 0;}'
+        + '#arch-studio-region .arch-drawing-zoom-controls button{min-width:44px;min-height:40px;padding:6px 10px;border:1px solid #94a3b8;border-radius:7px;background:#0f172a;color:#f1f5f9;font-size:13px;cursor:pointer;}'
+        + '#arch-studio-region .arch-drawing-zoom-controls output{margin-left:auto;color:#e2e8f0;font-size:12px;padding:0 5px;}'
+        + '#arch-studio-region .arch-drawing-preview{height:clamp(220px,34vh,306px);overflow:auto;border:1px solid #94a3b8;border-radius:0 0 10px 10px;background:#f8fafc;overscroll-behavior:contain;scrollbar-width:thin;}'
+        + '#arch-studio-region .arch-drawing-preview svg{display:block;width:100%;height:100%;max-height:none;}'
+        + '#arch-studio-region .arch-drawing-reader-help{margin:8px 0;color:#cbd5e1;font-size:12px;line-height:1.5;}'
+        + '#arch-studio-region #arch-drawings-desk :is(input[type=number],select,button){min-height:40px;}'
+        + '#arch-studio-region #arch-drawings-desk input[type=checkbox]{width:18px;height:18px;accent-color:#2dd4bf;}'
+        + '#arch-studio-region #arch-drawings-desk label:has(input[type=checkbox]){min-height:40px!important;}'
+        + '#arch-studio-region [data-arch-drawing-summary]{padding:12px;border:1px solid #475569;border-radius:9px;background:#1e293b;}'
+        + '.theme-contrast #arch-studio-region .arch-studio-workspaces button,.theme-contrast #arch-studio-region .arch-drawing-zoom-controls button{background:#000!important;color:#ffff00!important;border-color:#ffff00!important;}'
+        + '.theme-contrast #arch-studio-region .arch-workspace-button[aria-expanded=true]{outline:2px solid #ffff00;outline-offset:-5px;}'
+        + '.theme-contrast #arch-studio-region :is(button,input,select,textarea,[tabindex]):focus-visible{outline-color:#00ff00;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-quick-actions{width:100%;}#arch-studio-region .arch-studio-quick-actions button,#arch-studio-region .arch-drawing-zoom-controls button{min-height:44px;}}'
+
+        ),
 
       // ── Header bar ──
       el('div', { className: 'arch-studio-header', style: { display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: 5, padding: '7px 10px 6px', background: 'linear-gradient(115deg,rgba(30,41,59,.98),rgba(15,23,42,.98) 52%,rgba(8,47,73,.82))', borderBottom: '1px solid var(--allo-stem-border, #334155)', boxShadow: '0 10px 28px rgba(2,6,23,.2)', flexShrink: 0 } },
-        el('div', { className: 'arch-studio-title-row', style: { display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, overflowX: 'auto', padding: '1px 1px 2px' } },
+        el('div', { className: 'arch-studio-title-row', style: { display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, minWidth: 0, overflowX: 'visible', padding: '1px 1px 2px' } },
+          el('div', { className: 'arch-studio-brand' },
           el('button', { type: 'button', onClick: function () { ctx.setStemLabTool(''); }, style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.45)', color: 'var(--allo-stem-text, #e2e8f0)', borderRadius: 8, padding: '6px 11px', cursor: 'pointer', fontSize: 12, fontWeight: 700 } }, '\u2190 Back'),
           el('span', { 'aria-hidden': 'true', style: { flex: '0 0 auto', display: 'grid', placeItems: 'center', width: 30, height: 30, borderRadius: 9, fontSize: 18, background: styleMode === 'bricks' ? 'rgba(239,68,68,.13)' : 'rgba(56,189,248,.12)', border: '1px solid ' + (styleMode === 'bricks' ? 'rgba(248,113,113,.35)' : 'rgba(56,189,248,.35)') } }, styleMode === 'bricks' ? '\uD83E\uDDF1' : '\uD83C\uDFD7\uFE0F'),
           el('div', { style: { minWidth: 0, whiteSpace: 'nowrap' } },
             el('div', { style: { fontWeight: 800, fontSize: 15, color: '#f8fafc', letterSpacing: .1 } }, styleMode === 'bricks' ? 'Brick Builder' : 'Architecture Studio'),
             el('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 1 } }, totalBlocks + ' blocks \u2022 ' + (blocks.length ? buildW + '\u00D7' + buildD + '\u00D7' + buildH : 'ready to design'))
+          )
           ),
-          el('div', { style: { flex: 1, minWidth: 8 } }),
+          el('div', { className: 'arch-studio-quick-actions', role: 'group', 'aria-label': uxText('quick_actions') },
+
           el('button', { type: 'button', onClick: doUndo, disabled: showReplay || !undoStack.length, title: showReplay ? 'Exit construction replay to undo' : t('stem.archstudio.undo_multi_level', 'Undo (multi-level)'), style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.4)', color: !showReplay && undoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && undoStack.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\u21A9 Undo' + (undoStack.length ? ' ' + undoStack.length : '')),
           el('button', { type: 'button', onClick: doRedo, disabled: showReplay || !redoStack.length, title: showReplay ? 'Exit construction replay to redo' : t('stem.archstudio.redo', 'Redo'), style: { flex: '0 0 auto', background: 'rgba(71,85,105,.42)', border: '1px solid rgba(100,116,139,.4)', color: !showReplay && redoStack.length ? '#e2e8f0' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && redoStack.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\u21AA Redo' + (redoStack.length ? ' ' + redoStack.length : '')),
           el('button', { type: 'button', onClick: saveBuild, disabled: !blocks.length, title: t('stem.archstudio.save_to_gallery', 'Save to gallery'), style: { flex: '0 0 auto', background: blocks.length ? 'rgba(34,197,94,.16)' : 'rgba(71,85,105,.25)', border: blocks.length ? '1px solid rgba(34,197,94,.55)' : '1px solid transparent', color: blocks.length ? '#86efac' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' } }, '\uD83D\uDCBE Save'),
           el('button', { type: 'button', onClick: clearAll, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to clear the build' : 'Clear the live build', style: { flex: '0 0 auto', background: !showReplay && blocks.length ? 'rgba(239,68,68,.14)' : 'rgba(71,85,105,.25)', border: !showReplay && blocks.length ? '1px solid rgba(239,68,68,.45)' : '1px solid transparent', color: !showReplay && blocks.length ? '#fca5a5' : '#475569', borderRadius: 8, padding: '5px 9px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 10, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDD1\uFE0F Clear')
+          )
         ),
-        el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
-        el('button', { id: 'arch-design-toggle', type: 'button', 'aria-expanded': showDesign, 'aria-controls': showDesign ? 'arch-design-panel' : undefined,
-          onClick: function () { upd({ showDesign: !showDesign, showProject: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+        el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
+        el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
+          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.design_open', 'Design workbench')),
-        el('button', { id: 'arch-drawings-toggle', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
-        el('button', { id: 'arch-project-toggle', type: 'button', 'aria-expanded': showProject, 'aria-controls': showProject ? 'arch-project-panel' : undefined,
-          onClick: function () { upd({ showProject: !showProject, showDesign: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+        el('button', { id: 'arch-drawings-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
+        el('button', { id: 'arch-project-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showProject && !showDrawings, 'aria-controls': showProject && !showDrawings ? 'arch-project-panel' : undefined,
+          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
-        }, t('stem.archstudio.project_open_panel', 'Project & revisions')),
+        }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
+        ),
+        !showDrawings && el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
         // Toggle pills
         el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
           [{ id: 'architect', label: '\uD83C\uDFDB\uFE0F Architect', color: '#a5b4fc', bg: 'rgba(99,102,241,.24)' }, { id: 'bricks', label: '\uD83E\uDDF1 Bricks', color: '#fca5a5', bg: 'rgba(239,68,68,.22)' }].map(function (option) {

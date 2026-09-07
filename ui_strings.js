@@ -16392,6 +16392,16 @@
       "crest_drag_onto_a_window": "crest — drag onto a window"
     },
     "archstudio": {
+      "ux_workspaces": "Studio workspaces",
+      "ux_quick_actions": "Build history and saving",
+      "ux_zoom_in": "Zoom drawing in",
+      "ux_zoom_out": "Zoom drawing out",
+      "ux_fit": "Fit drawing",
+      "ux_zoom": "{value}% of fit",
+      "ux_viewport": "Drawing viewport",
+      "ux_zoom_help": "Focus the drawing to pan with arrow keys. Use + and − to zoom, and 0 to fit. Measurements can also be entered in the coordinate fields.",
+      "ux_display": "Drawing display controls",
+      "ux_summary": "Drawing summary",
       "drawing_title": "Drawing desk",
       "drawing_close": "Return to build",
       "drawing_plan": "Floor plan",

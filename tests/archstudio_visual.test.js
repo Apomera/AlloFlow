@@ -99,7 +99,7 @@ for (const file of files) {
   const relativeFile = path.relative(process.cwd(), file);
 
   describe(`Architecture Studio visual hierarchy in ${relativeFile}`, () => {
-    it('renders a two-tier header with a scrollable feature toolbar', () => {
+    it('renders persistent workspaces and wrapping history actions above secondary tools', () => {
       resetStemLab();
       loadTool(file, 'archStudio');
       const host = asDom(renderTool('archStudio', { archStudio: { blocks: [], editorView: 'grid' } }));
@@ -110,7 +110,10 @@ for (const file of files) {
       expect(header).not.toBeNull();
       expect(titleRow?.parentElement).toBe(header);
       expect(featureStrip?.parentElement).toBe(header);
-      expect(titleRow?.style.overflowX).toBe('auto');
+      expect(titleRow?.style.overflowX).toBe('visible');
+      expect(titleRow?.style.flexWrap).toBe('wrap');
+      expect(header.querySelector('nav[aria-label="Studio workspaces"]').querySelectorAll('button')).toHaveLength(3);
+      expect(titleRow.querySelector('[aria-label="Build history and saving"]').querySelectorAll('button')).toHaveLength(4);
       expect(featureStrip?.style.overflowX).toBe('auto');
       expect(featureStrip?.getAttribute('role')).toBe('toolbar');
       expect(featureStrip?.getAttribute('aria-label')).toBe('Architecture Studio features and actions');

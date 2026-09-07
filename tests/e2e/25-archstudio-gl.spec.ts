@@ -1378,7 +1378,7 @@ test.describe('Architecture Studio — real WebGL', () => {
     const before = await page.evaluate(() => (window as any).__bucket());
     await page.locator('#arch-drawings-toggle').click();
     const desk = page.locator('[data-arch-drawings]');
-    await expect(desk.getByRole('status')).toContainText('Replay is active');
+    await expect(desk.getByRole('status').filter({ hasText: 'Replay is active' })).toContainText('Replay is active');
     await expect(desk.locator('[data-arch-drawing-summary]')).toContainText('13 blocks in the live model');
     await expect(desk.locator('[data-drawing-cell]')).toHaveCount(5);
     await desk.getByLabel('Drawing view', { exact: true }).focus();
@@ -1414,6 +1414,131 @@ test.describe('Architecture Studio — real WebGL', () => {
     await desk.getByRole('button', { name: 'Return to build', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).__gl()?.blockCount)).toBe(84);
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('usability refinement keeps workspaces and history actions reachable on a small phone', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 844 });
+    await mount3d(page, { blocks: tower(), showDesign: true, projectName: 'Phone studio', undoStack: [[]], soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif}' });
+    const nav = page.getByRole('navigation', { name: 'Studio workspaces', exact: true });
+    const history = page.getByRole('group', { name: 'Build history and saving', exact: true });
+    for (const button of [...await nav.getByRole('button').all(), ...await history.getByRole('button').all()]) {
+      const box = await button.boundingBox();
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+      expect(box!.x).toBeGreaterThanOrEqual(0);
+      expect(box!.x + box!.width).toBeLessThanOrEqual(320);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await nav.locator('#arch-drawings-toggle').click();
+    await expect(nav.locator('#arch-design-toggle')).toHaveAttribute('aria-expanded', 'false');
+    await expect(nav.locator('#arch-design-toggle')).not.toHaveAttribute('aria-controls');
+    await expect(page.locator('.arch-studio-feature-strip')).toHaveCount(0);
+    await nav.locator('#arch-project-toggle').click();
+    await expect(page.locator('[data-arch-project]')).toBeVisible();
+    await expect(page.getByLabel('Project name', { exact: true })).toHaveValue('Phone studio');
+    await history.getByRole('button', { name: /Save/ }).click();
+    expect(await page.evaluate(() => JSON.parse(localStorage.getItem('alloflow_archstudio_builds') || '[]').at(-1).name)).toBe('Phone studio');
+    await history.getByRole('button', { name: /Undo/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(0);
+    await history.getByRole('button', { name: /Redo/ }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    await page.screenshot({ path: testInfo.outputPath('studio-navigation-phone.png'), fullPage: true });
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('usability refinement zooms, pans, fits, and measures without changing geometry', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    const blocks = [{ x: 0, y: 0, z: 0, shape: 'block', material: 'wood' }, { x: 3, y: 0, z: 4, shape: 'block', material: 'stone' }];
+    await mount3d(page, { blocks, projectName: 'Drawing review', soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif}' });
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    const viewport = desk.getByRole('region', { name: 'Drawing viewport', exact: true });
+    await expect(desk.locator('[data-arch-drawing-zoom]')).toHaveText('100% of fit');
+    const fitted = await desk.getByRole('img').boundingBox();
+    const container = await viewport.boundingBox();
+    expect(fitted!.width).toBeLessThanOrEqual(container!.width);
+    expect(fitted!.height).toBeLessThanOrEqual(container!.height);
+    await viewport.focus();
+    const outline = await viewport.evaluate(el => getComputedStyle(el).outlineWidth);
+    expect(parseFloat(outline)).toBeGreaterThanOrEqual(2);
+    for (let i = 0; i < 6; i++) await viewport.press('+');
+    await expect(desk.locator('[data-arch-drawing-zoom]')).toHaveText('400% of fit');
+    await expect(desk.getByRole('button', { name: 'Zoom drawing in', exact: true })).toBeDisabled();
+    const beforePan = await viewport.evaluate(el => ({ x: el.scrollLeft, y: el.scrollTop }));
+    await viewport.press('ArrowRight');
+    await viewport.press('ArrowDown');
+    const afterPan = await viewport.evaluate(el => ({ x: el.scrollLeft, y: el.scrollTop }));
+    expect(afterPan.x).toBeGreaterThan(beforePan.x);
+    expect(afterPan.y).toBeGreaterThan(beforePan.y);
+    await viewport.press('0');
+    await expect(desk.locator('[data-arch-drawing-zoom]')).toHaveText('100% of fit');
+    expect(await viewport.evaluate(el => [el.scrollLeft, el.scrollTop])).toEqual([0, 0]);
+    await desk.getByLabel('Measure a span', { exact: true }).check();
+    await desk.getByRole('button', { name: 'Zoom drawing in', exact: true }).click();
+    await desk.getByRole('button', { name: 'Zoom drawing in', exact: true }).click();
+    await desk.locator('[data-drawing-cell="0,0"]').click();
+    await desk.locator('[data-drawing-cell="3,4"]').click();
+    await expect(desk.locator('[data-arch-drawing-measure]')).toContainText('Distance: 5 grid units');
+    await desk.getByRole('button', { name: 'Fit drawing', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('drawing-viewer-desktop.png'), fullPage: true });
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toEqual(blocks);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('usability refinement resets drawing zoom on view changes and releases observers', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), showProject: true, soundEnabled: false });
+    await page.evaluate(() => {
+      const w = window as any, Original = w.ResizeObserver;
+      w.__drawingObservers = [];
+      w.ResizeObserver = class extends Original {
+        target: Element | null = null;
+        disconnected = false;
+        constructor(callback: ResizeObserverCallback) { super(callback); w.__drawingObservers.push(this); }
+        observe(target: Element) { this.target = target; super.observe(target); }
+        disconnect() { this.disconnected = true; super.disconnect(); }
+      };
+    });
+    await page.locator('#arch-drawings-toggle').click();
+    const desk = page.locator('[data-arch-drawings]');
+    await desk.getByRole('button', { name: 'Zoom drawing in', exact: true }).click();
+    await expect(desk.locator('[data-arch-drawing-zoom]')).toHaveText('150% of fit');
+    await desk.getByLabel('Drawing view', { exact: true }).selectOption('front');
+    await expect(desk.locator('[data-arch-drawing-zoom]')).toHaveText('100% of fit');
+    await page.locator('#arch-project-toggle').click();
+    await expect(page.locator('[data-arch-project]')).toBeVisible();
+    const closed = await page.evaluate(() => (window as any).__drawingObservers
+      .filter((item: any) => item.target?.hasAttribute('data-arch-drawing-viewport')).map((item: any) => item.disconnected));
+    expect(closed.length).toBeGreaterThanOrEqual(2);
+    expect(closed.every(Boolean)).toBe(true);
+    await page.locator('#arch-drawings-toggle').click();
+    await desk.getByRole('region', { name: 'Drawing viewport', exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(desk).toHaveCount(0);
+    await expect(page.locator('#arch-drawings-toggle')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => (window as any).__gl()?.state)).toBe('ready');
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('usability refinement passes accessibility checks in light, dark, and contrast appearances', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await mount3d(page, { blocks: tower(), soundEnabled: false });
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const workspace of ['build', 'drawings']) {
+      if (workspace === 'drawings') await page.locator('#arch-drawings-toggle').click();
+      for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+        await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+        const violations = await page.evaluate(async () => {
+          const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), {
+            runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] },
+          });
+          return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+        });
+        expect(violations, workspace + ' / ' + theme).toEqual([]);
+      }
+    }
   });
 
 });

@@ -49,7 +49,7 @@ Replay keeps project-editing controls disabled. Legacy block-only history frames
 
 ## Drawing desk
 
-Open **Drawing desk** in the feature toolbar. It replaces the work area with a drawing workspace; **Return to build** or Escape restores the previous 3D/grid view and returns focus to the toolbar.
+Open **Drawing desk** in the workspace bar. It replaces the work area with a drawing workspace; **Return to build** or Escape restores the previous 3D/grid view and returns focus to the toolbar.
 
 Choose a floor plan, front elevation, right elevation, or cut section. The floor selector lists the number of blocks at every Y level, including empty floors. A plan is an exact floor slice, so a roof does not conceal the floor below it. Front elevations show the nearest cells from negative Z; right elevations look from positive X. A section contains only cells at the selected Z coordinate. The red line in the plan marks the section through the center of that Z row.
 
@@ -69,6 +69,16 @@ Each drawing fits its own frame; views are not presented at a shared paper scale
 
 Drawings represent occupied grid cells rather than detailed curved or sloped geometry. Use the existing STL/Print Lab workflow for shape geometry.
 
+## Navigation, zoom, and accessibility
+
+The workspace bar keeps **Design workbench**, **Drawing desk**, and **Project & revisions** visible together. On small screens, Undo, Redo, Save, and Clear wrap into a separate row with larger targets. Secondary building tools remain in their own horizontal toolbar and are hidden while using the drawing desk.
+
+The drawing preview now has **Zoom drawing in**, **Zoom drawing out**, and **Fit drawing** controls. Zoom runs from 100% through 400% of the fitted view; this is a viewing magnification, not a paper scale. Scroll the enlarged drawing, or focus its named viewport and use the arrow keys to pan. Shift plus an arrow pans farther. The + and − keys zoom, and 0 or Home restores fit. Browser shortcuts using Control or Command remain available.
+
+Changing the drawing view, floor, section, or model resets the viewer to fit. Zoom and panning do not alter the model, measurement values, project data, or exported sheet. Measurement picks remain accurate at every zoom level. The viewport responds to size changes and releases its resize observer when closed.
+
+Primary buttons expose expanded state only when their associated content exists. Returning from drawings restores the previous build view and focus. Visible focus outlines, named groups, larger drawing controls, and higher-contrast toolbar text support keyboard and screen-reader use. Automated accessibility checks cover the tested build and drawing states in light, dark, and high-contrast appearances; they do not replace evaluation of every possible tool state or assistive technology.
+
 ## Implementation and boundaries
 
 The window.__alloArchDesign test API exposes pure generation, region selection, edit validation, and state transactions. Mutation handlers revalidate against the latest state. Failed edits leave blocks and history unchanged; construction replay stays read-only.
@@ -81,7 +91,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all nine Architecture Studio unit suites passed (208 tests). Thirteen focused Chromium design, project, and drawing workflows passed, covering authoring, undo, project files and revisions, canceled reads, exact drawing slices, measurements, SVG downloads, replay/view preservation, and phone use. Two drawing browser cases were rerun successfully after the final desktop sizing refinement. Desktop and phone screenshots and a standalone exported drawing sheet were visually reviewed.
+Results: all ten Architecture Studio unit suites passed (231 tests). Seventeen focused Chromium design, project, drawing, and usability workflows passed. Coverage includes 320px reflow and touch targets, keyboard zoom/panning and focus, zoomed measurements, observer cleanup, project/replay preservation, and existing authoring/export behaviors. The replay assertion was narrowed to its notice after zoom added a second status announcement. Axe reported no violations for its selected WCAG 2 A/AA, 2.1 AA, and 2.2 AA tags in the tested build and drawing states across light, dark, and high-contrast appearances. Desktop and phone screenshots were visually reviewed.
 
 No deployment or push was performed.
 
