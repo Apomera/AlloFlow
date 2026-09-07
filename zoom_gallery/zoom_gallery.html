@@ -8,34 +8,45 @@
   AlloFlow Zoom Gallery — OpenSeadragon deep-zoom viewer + Notice-Wonder coach
   (companion window).
 
-  Opened by stem_lab/stem_tool_zoomgallery.js with window.open (the escape-hatch
-  pattern: a TOP-LEVEL browsing context, unaffected by Gemini Canvas's sandboxed
-  iframe).
+  Opened by stem_lab/stem_tool_zoomgallery.js with window.open. Since v2 the
+  STEAM Lab also mounts the same viewer INLINE; this window is the pop-out for a
+  second screen, a bigger view, or a host that blocks the inline library load.
 
-  The viewer is OpenSeadragon (openseadragon.github.io, BSD-3-Clause) — the
-  deep-zoom / pan viewer used by museums and archives worldwide. It loads as a
-  <script> library and mounts into a <div> (no iframe → no X-Frame-Options
-  problem), mirroring the Molecule Shelf's CDN-library pattern.
+  The viewer is OpenSeadragon (openseadragon.github.io, BSD-3-Clause). It loads
+  as a <script> library and mounts into a <div>.
 
   Every image is openly licensed:
     • Smithsonian Open Access items are served as IIIF tile pyramids (true deep
       zoom to the pixel) and are released CC0.
     • NASA images are public domain (NASA media guidelines) and shown in
       OpenSeadragon's single-image pan/zoom mode.
-  Sources + IDs are listed per item and in the About → Open-source credits.
 
-  The AlloFlow layer is a NOTICE → WONDER observation coach (the Molecule
-  Shelf's observing-tutor spirit — you don't "predict" a photograph, you look
-  closely). The student records what they notice while zooming and what they
-  wonder; only when the teacher has AI hints on does the opener AlloFlow window
-  relay a Socratic response that builds on their own observation. With AI off or
-  standalone, built-in observation prompts stand in. Nothing here is persisted;
-  notes live in this window only.
+  v2 (2026-09-07) — what changed and WHY:
+    • Nothing loaded before. images-assets.nasa.gov sends no CORS header, and
+      the viewer requested every image with crossOrigin=Anonymous, so the
+      browser refused all eight NASA photos. ids.si.edu serves TILES with
+      CORS but not info.json, so both Smithsonian items failed too. NASA
+      images now load without CORS (cors:false) and the IIIF sources are
+      described inline with known width/height — no info.json fetch.
+    • NASA sources moved to the full-resolution ~orig file where it is under
+      ~7 MB (Earthrise 3000², Bootprint 3930², Saturn 5001×5301, Cupola
+      4928×3280, Solar flare 4096²). The rest stay on ~large.
+    • Three new IIIF deep zooms: 1903 Wright Flyer (8451 px wide) and two of
+      Wilson Bentley's 1900s snowflake photomicrographs.
+    • Pins: drop numbered markers on the detail you are describing. Pin
+      positions (and, where the canvas is not CORS-tainted, a snapshot of the
+      current view) travel to the coach.
+    • Notes are sent to the opener as you type and restored when the window
+      reopens; "Copy notes" puts them on the clipboard.
+    • Strings: this file carries English; when opened from AlloFlow the
+      opener replies to alloczoom-hello with the same keys resolved through
+      its language packs (stem.zoomGallery.*), so the window follows the
+      app language.
+    • Quest fix: the "coach" step now counts with AI off too
+      (alloczoom-coached), so the quest is reachable without AI.
 
-  NOTE (2026-07-05): OpenSeadragon @5.0.1 + the curated IIIF/NASA asset URLs
-  were HEAD-verified (200) at build time but the full deep-zoom render needs a
-  browser smoke test to confirm before shipping. If the viewer fails to load,
-  the coach still works standalone.
+  The catalog below is DUPLICATED in stem_lab/stem_tool_zoomgallery.js
+  (the inline viewer). tests/zoom_gallery_catalog.test.js pins them equal.
 -->
 <script>
 (function () {
@@ -59,188 +70,314 @@
   :root {
     --bg: #0f172a; --panel: #1e293b; --panel2: #273449; --line: #334155;
     --text: #e2e8f0; --dim: #94a3b8; --accent: #38bdf8; --accent2: #0ea5e9; --ok: #4ade80; --warn: #fbbf24;
+    --heading: #bae6fd; --sel-bg: #0c4a6e; --sel-fg: #e0f2fe; --pin: #f59e0b;
   }
   :root[data-theme="light"] {
-    --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9; --stage: #e2e8f0;
-    --line: #64748b; --line2: #475569; --text: #0f172a; --dim: #475569;
-    --muted: #475569; --soft: #334155; --accent: #1d4ed8; --accent2: #4338ca;
-    --teal: #0f766e; --teal2: #115e59; --sky: #0369a1; --amber: #92400e;
-    --red: #b91c1c; --green: #047857; --violet: #6d28d9; --ok: #047857; --warn: #92400e;
+    --bg: #f8fafc; --panel: #ffffff; --panel2: #f1f5f9;
+    --line: #64748b; --text: #0f172a; --dim: #475569;
+    --accent: #1d4ed8; --accent2: #1d4ed8; --ok: #047857; --warn: #92400e;
+    --heading: #1e3a8a; --sel-bg: #dbeafe; --sel-fg: #1e3a8a; --pin: #b45309;
   }
   :root[data-theme="contrast"] {
-    --bg: #000000; --panel: #000000; --panel2: #0a0a0a; --stage: #000000;
-    --line: #fbbf24; --line2: #ffff00; --text: #ffffff; --dim: #ffffff;
-    --muted: #ffffff; --soft: #ffffff; --accent: #fbbf24; --accent2: #fbbf24;
-    --teal: #00ffff; --teal2: #00ffff; --sky: #00ffff; --amber: #ffff00;
-    --red: #ff6b6b; --green: #00ff66; --violet: #ffff00; --ok: #00ff66; --warn: #ffff00;
+    --bg: #000000; --panel: #000000; --panel2: #0a0a0a;
+    --line: #fbbf24; --text: #ffffff; --dim: #ffffff;
+    --accent: #fbbf24; --accent2: #fbbf24; --ok: #00ff66; --warn: #ffff00;
+    --heading: #ffffff; --sel-bg: #fbbf24; --sel-fg: #000000; --pin: #ffff00;
   }
   :root[data-theme="contrast"] * { box-shadow: none !important; text-shadow: none !important; }
   :root[data-theme="contrast"] button,
   :root[data-theme="contrast"] input,
   :root[data-theme="contrast"] select,
   :root[data-theme="contrast"] textarea { border-color: var(--line) !important; }
+  :root[data-theme="contrast"] button.go { background: var(--accent2); color: #000; }
   :focus-visible { outline: 3px solid var(--line); outline-offset: 2px; }
   @media (forced-colors: active) {
     button, input, select, textarea, a { forced-color-adjust: auto; }
   }
   * { box-sizing: border-box; }
   html, body { height: 100%; }
-  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 14px; display: flex; flex-direction: column; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: var(--bg); color: var(--text); font-size: 0.875rem; display: flex; flex-direction: column; }
   header { display: flex; align-items: center; gap: 10px; padding: 8px 14px; background: var(--panel); border-bottom: 1px solid var(--line); flex: 0 0 auto; flex-wrap: wrap; }
-  header h1 { font-size: 15px; margin: 0; font-weight: 700; }
-  header .sub { color: var(--dim); font-size: 11.5px; }
-  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 13px; max-width: 46vw; }
+  header h1 { font-size: 0.9375rem; margin: 0; font-weight: 700; }
+  header .sub { color: var(--dim); font-size: 0.71875rem; }
+  header select { margin-left: auto; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font-size: 0.8125rem; max-width: 46vw; }
   .wrap { flex: 1 1 auto; display: flex; min-height: 0; }
   .coach { flex: 0 0 330px; display: flex; flex-direction: column; background: var(--panel); border-right: 1px solid var(--line); min-width: 0; overflow-y: auto; }
-  .coach h2 { font-size: 12px; margin: 0; padding: 10px 12px 4px; color: #bae6fd; text-transform: uppercase; letter-spacing: 0.06em; }
-  .ai-state { padding: 0 12px 6px; font-size: 11.5px; color: var(--dim); }
+  .coach h2 { font-size: 0.75rem; margin: 0; padding: 10px 12px 4px; color: var(--heading); text-transform: uppercase; letter-spacing: 0.06em; }
+  .ai-state { padding: 0 12px 6px; font-size: 0.71875rem; color: var(--dim); }
   .ai-state .on { color: var(--ok); font-weight: 700; }
   .ai-state .off { color: var(--warn); font-weight: 700; }
   .steps { display: flex; gap: 4px; padding: 4px 12px 8px; }
-  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 11.5px; font-weight: 700; cursor: pointer; }
-  .steps button[aria-selected="true"] { background: #0c4a6e; color: #e0f2fe; border-color: var(--accent); }
+  .steps button { flex: 1; background: var(--panel2); color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 6px 4px; font-size: 0.71875rem; font-weight: 700; cursor: pointer; }
+  .steps button[aria-selected="true"] { background: var(--sel-bg); color: var(--sel-fg); border-color: var(--accent); }
   .steps button.done { color: var(--ok); }
+  .steps button[aria-selected="true"].done { color: var(--sel-fg); }
   .body { padding: 4px 12px 12px; display: flex; flex-direction: column; gap: 8px; }
-  .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; }
-  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical; }
-  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
-  button.go:disabled { background: #3f3f5a; color: #7d7da0; cursor: not-allowed; }
-  .locked { background: rgba(56, 189, 248, 0.10); border: 1px solid rgba(56, 189, 248, 0.35); border-radius: 10px; padding: 8px 11px; font-size: 12.5px; white-space: pre-wrap; }
+  .qcard { background: var(--panel2); border: 1px solid var(--line); border-radius: 10px; padding: 9px 11px; font-size: 0.8125rem; line-height: 1.5; }
+  textarea { width: 100%; min-height: 84px; background: var(--bg); border: 1px solid var(--line); color: var(--text); border-radius: 8px; padding: 8px 10px; font-size: 0.8125rem; font-family: inherit; resize: vertical; }
+  button.go { background: var(--accent2); color: #fff; border: none; border-radius: 8px; padding: 9px 14px; font-size: 0.8125rem; font-weight: 700; cursor: pointer; }
+  button.go:disabled { opacity: 0.55; cursor: not-allowed; }
+  button.sec { background: var(--panel2); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  button.sec[aria-pressed="true"] { border-color: var(--pin); color: var(--pin); }
+  .row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .locked { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 8px 11px; font-size: 0.78125rem; white-space: pre-wrap; }
   .locked b { color: var(--accent); }
-  .feedback { background: var(--panel2); border: 1px solid #0369a1; border-radius: 10px; padding: 9px 11px; font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
-  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 10.5px; color: #6b7aa8; line-height: 1.45; margin-top: auto; }
+  .feedback { background: var(--panel2); border: 1px solid var(--accent); border-radius: 10px; padding: 9px 11px; font-size: 0.8125rem; line-height: 1.5; white-space: pre-wrap; }
+  .pins { font-size: 0.75rem; color: var(--dim); line-height: 1.5; }
+  .privacy { padding: 8px 12px; border-top: 1px solid var(--line); font-size: 0.65625rem; color: var(--dim); line-height: 1.45; margin-top: auto; }
   .stage { flex: 1 1 auto; min-width: 0; background: #000; position: relative; }
   #osd { position: absolute; inset: 0; }
+  #osd.pinning { cursor: crosshair; }
+  .pin { width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: var(--pin); color: #000; font: 700 0.75rem/22px system-ui, sans-serif; text-align: center; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.6); pointer-events: none; }
   .picker { position: absolute; inset: 0; overflow-y: auto; background: var(--bg); padding: 16px; z-index: 4; }
-  .picker h2 { font-size: 14px; margin: 0 0 10px; color: var(--dim); }
+  .picker h2 { font-size: 0.875rem; margin: 0 0 10px; color: var(--dim); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px; }
-  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; cursor: pointer; text-align: left; color: var(--text); font: inherit; }
+  .simcard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 0 0 10px; cursor: pointer; text-align: left; color: var(--text); font: inherit; overflow: hidden; }
   .simcard:hover { border-color: var(--accent); }
-  .simcard .emoji { font-size: 26px; }
-  .simcard .name { font-weight: 700; font-size: 13px; margin: 6px 0 3px; }
-  .simcard .meta { font-size: 11px; color: var(--dim); line-height: 1.4; }
-  .credit-line { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 6; font-size: 10.5px; color: #9fb4d8; background: rgba(15,23,42,0.72); border: 1px solid var(--line); border-radius: 8px; padding: 4px 9px; line-height: 1.35; }
-  .credit-line a { color: var(--accent); }
-  .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; }
-  .backbar button { background: rgba(15,23,42,0.85); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 700; cursor: pointer; }
-  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--dim); font-size: 13px; z-index: 3; text-align: center; padding: 20px; }
+  .simcard .thumb { display: block; width: 100%; height: 120px; object-fit: cover; background: #000; }
+  .simcard .emoji { font-size: 1.625rem; padding: 10px 12px 0; }
+  .simcard .name { font-weight: 700; font-size: 0.8125rem; margin: 6px 12px 3px; }
+  .simcard .meta { font-size: 0.6875rem; color: var(--dim); line-height: 1.4; margin: 0 12px; }
+  .simcard .badge { display: inline-block; font-size: 0.625rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: 1px 7px; margin: 6px 12px 0; }
+  .custom { margin-top: 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .custom h3 { margin: 0 0 6px; font-size: 0.8125rem; }
+  .custom p { margin: 0 0 8px; font-size: 0.71875rem; color: var(--dim); line-height: 1.45; }
+  .custom input { width: 100%; background: var(--bg); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px; font-size: 0.8125rem; margin-bottom: 8px; }
+  .custom .err { color: var(--warn); font-size: 0.71875rem; margin-top: 6px; }
+  .credit-line { position: absolute; bottom: 8px; left: 8px; right: 8px; z-index: 6; font-size: 0.65625rem; color: #e2e8f0; background: rgba(15,23,42,0.82); border: 1px solid #475569; border-radius: 8px; padding: 4px 9px; line-height: 1.35; }
+  .credit-line a { color: #7dd3fc; }
+  .backbar { position: absolute; top: 8px; left: 8px; z-index: 6; display: flex; gap: 6px; }
+  .backbar button { background: rgba(15,23,42,0.88); color: #e2e8f0; border: 1px solid #475569; border-radius: 8px; padding: 5px 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; }
+  .backbar button[aria-pressed="true"] { border-color: var(--pin); color: var(--pin); }
+  .zoomread { position: absolute; top: 48px; right: 8px; z-index: 6; font-size: 0.6875rem; color: #e2e8f0; background: rgba(15,23,42,0.82); border: 1px solid #475569; border-radius: 8px; padding: 3px 8px; }
+  .loadmsg { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #e2e8f0; font-size: 0.8125rem; z-index: 3; text-align: center; padding: 20px; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   @media (max-width: 760px) { .wrap { flex-direction: column; } .coach { flex: 0 0 46%; border-right: 0; border-bottom: 1px solid var(--line); } }
 </style>
 </head>
 <body>
 <header>
-  <h1>🔍 Zoom Gallery</h1>
-  <span class="sub">OpenSeadragon deep zoom (BSD-3) · Smithsonian Open Access (CC0) + NASA (public domain) + AlloFlow Notice-Wonder coach</span>
-  <select id="imgSelect" aria-label="Choose an image"><option value="">Choose an image…</option></select>
+  <h1 data-s="win_title">🔍 Zoom Gallery</h1>
+  <span class="sub" data-s="win_sub">OpenSeadragon deep zoom (BSD-3) · Smithsonian Open Access (CC0) + NASA (public domain) + AlloFlow Notice-Wonder coach</span>
+  <select id="imgSelect" aria-label="Choose an image" data-s-aria="select_label"><option value="" data-s="select_placeholder">Choose an image…</option></select>
 </header>
 <div class="wrap">
-  <aside class="coach" aria-label="Notice and Wonder coach">
-    <h2>Observation coach</h2>
+  <aside class="coach" aria-label="Notice and Wonder coach" data-s-aria="coach_aria">
+    <h2 data-s="coach_heading">Observation coach</h2>
     <div class="ai-state" id="aiState">Connecting to AlloFlow…</div>
-    <div class="steps" role="tablist" aria-label="Observation steps">
-      <button id="tabNotice" role="tab" aria-selected="true">1 · Notice</button>
-      <button id="tabWonder" role="tab" aria-selected="false">2 · Wonder</button>
-      <button id="tabCoach" role="tab" aria-selected="false">3 · Coach</button>
+    <div class="steps" role="tablist" aria-label="Observation steps" data-s-aria="steps_aria">
+      <button id="tabNotice" role="tab" aria-selected="true" data-s="step_notice">1 · Notice</button>
+      <button id="tabWonder" role="tab" aria-selected="false" data-s="step_wonder">2 · Wonder</button>
+      <button id="tabCoach" role="tab" aria-selected="false" data-s="step_coach">3 · Coach</button>
     </div>
-    <div class="body" id="coachBody">
-      <div class="qcard">Pick an image, then zoom right in. Scroll or pinch to magnify, drag to move around. Write down what you <b>notice</b> up close.</div>
-    </div>
-    <div class="privacy">Your notes live in this window only — nothing is saved or graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
+    <div class="body" id="coachBody"></div>
+    <div class="privacy" data-s="privacy">Your notes stay on this device — they are sent back to your AlloFlow window so they survive closing this one, and nothing is graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.</div>
   </aside>
-  <main class="stage" aria-label="Deep-zoom image viewer">
-    <div class="backbar" id="backbar" style="display:none"><button id="backBtn" type="button">← Gallery</button></div>
+  <main class="stage" aria-label="Deep-zoom image viewer" data-s-aria="stage_aria">
+    <div class="backbar" id="backbar" style="display:none">
+      <button id="backBtn" type="button" data-s="back_gallery">← Gallery</button>
+      <button id="pinBtn" type="button" aria-pressed="false" data-s="pin_drop">📍 Drop a pin</button>
+      <button id="clearPinsBtn" type="button" style="display:none" data-s="pin_clear">Clear pins</button>
+    </div>
+    <div class="zoomread" id="zoomRead" style="display:none" aria-live="off"></div>
     <div id="osd"></div>
     <div class="loadmsg" id="loadmsg" style="display:none"></div>
     <div class="credit-line" id="creditLine" style="display:none"></div>
     <div class="picker" id="picker">
-      <h2>Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you'd miss from far away.</h2>
+      <h2 data-s="picker_heading">Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you'd miss from far away.</h2>
       <div class="grid" id="pickerGrid"></div>
+      <div class="custom">
+        <h3 data-s="custom_heading">Bring your own image</h3>
+        <p data-s="custom_help">Paste a link to a picture (.jpg or .png) or a IIIF info.json link from a museum or library. It opens in this window only and is not saved. Some sites block browser access; if a link will not load, try another.</p>
+        <input id="customUrl" type="url" placeholder="https://…" aria-label="Image or IIIF link" data-s-aria="custom_input_aria" data-s-ph="custom_placeholder">
+        <button class="go" id="customGo" type="button" data-s="custom_open">Open link</button>
+        <div class="err" id="customErr" role="alert"></div>
+      </div>
     </div>
   </main>
 </div>
+<div class="sr-only" id="srLive" aria-live="polite"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/openseadragon.min.js"></script>
 <script>
 (function () {
   'use strict';
 
+  // ── Strings (English here; the opener may resolve the same keys through
+  //    its language packs and send them back on alloczoom-ready) ─────────
+  var STR = {
+    win_title: '🔍 Zoom Gallery',
+    win_sub: 'OpenSeadragon deep zoom (BSD-3) · Smithsonian Open Access (CC0) + NASA (public domain) + AlloFlow Notice-Wonder coach',
+    select_label: 'Choose an image',
+    select_placeholder: 'Choose an image…',
+    coach_aria: 'Notice and Wonder coach',
+    coach_heading: 'Observation coach',
+    steps_aria: 'Observation steps',
+    step_notice: '1 · Notice',
+    step_wonder: '2 · Wonder',
+    step_coach: '3 · Coach',
+    privacy: 'Your notes stay on this device — they are sent back to your AlloFlow window so they survive closing this one, and nothing is graded. AI feedback flows only when your teacher has AI hints on, and only when you ask for it.',
+    stage_aria: 'Deep-zoom image viewer',
+    back_gallery: '← Gallery',
+    pin_drop: '📍 Drop a pin',
+    pin_drop_active: '📍 Click the image to place pin {n}',
+    pin_clear: 'Clear pins',
+    pin_placed_sr: 'Pin {n} placed at {x}% across, {y}% down, zoom {z}×.',
+    pin_summary: 'Pin {n}: {x}% across, {y}% down at {z}× zoom',
+    pins_heading: 'Your pins',
+    zoom_readout: 'Zoom {z}×',
+    picker_heading: 'Pick an image — each one is a real, openly licensed photograph or artifact. Zoom in close and look for details you\'d miss from far away.',
+    badge_deep: 'true deep zoom',
+    badge_photo: 'high-res photo',
+    custom_heading: 'Bring your own image',
+    custom_help: 'Paste a link to a picture (.jpg or .png) or a IIIF info.json link from a museum or library. It opens in this window only and is not saved. Some sites block browser access; if a link will not load, try another.',
+    custom_input_aria: 'Image or IIIF link',
+    custom_placeholder: 'https://…',
+    custom_open: 'Open link',
+    custom_err_url: 'That does not look like a web link. It should start with https://',
+    custom_err_iiif: 'Could not read that IIIF link from the browser. The site may block cross-origin access.',
+    custom_name: 'Your image',
+    custom_credit: 'Link provided by you — check its licence before sharing.',
+    custom_notice: 'Zoom right in. What is ONE detail you can only see up close?',
+    custom_wonder: 'What question does this image make you want to ask?',
+    intro_card: 'Pick an image, then zoom right in. Scroll or pinch to magnify, drag to move around. Write down what you notice up close.',
+    notice_label: 'What you notice',
+    notice_placeholder: 'I notice…',
+    to_wonder: 'On to Wonder →',
+    wonder_label: 'What you wonder',
+    wonder_placeholder: 'I wonder…',
+    you_noticed: 'You noticed:',
+    you_wondered: 'You wondered:',
+    to_coach: 'Take it to the coach →',
+    ask_ai: '✨ What does the coach think?',
+    ask_prompt: '🤔 Give me an observation prompt',
+    thinking: 'thinking…',
+    ai_no_answer: 'The AI coach didn’t answer{err}. Meanwhile: {prompt}',
+    copy_notes: '📋 Copy notes',
+    copied: 'Copied!',
+    copy_failed: 'Copy failed — select the text and copy it by hand.',
+    notes_header: 'Zoom Gallery notes',
+    ai_connected_on: 'AlloFlow connected · AI coach <span class="on">on</span>',
+    ai_connected_off: 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in observation prompts',
+    ai_standalone: 'Standalone — built-in observation prompts (open from AlloFlow for the AI coach)',
+    loading: 'Loading {name}…',
+    viewer_failed: 'The deep-zoom viewer could not load. Check your internet connection and try again.',
+    image_failed: 'Could not load "{name}". Check your internet connection and try again.',
+    source_record: 'source record',
+    reflect_1: 'Zoom in one more level than feels necessary. What is ONE detail you can only see up close that you would have missed from far away?',
+    reflect_2: 'Compare the middle of the image with an edge. How are they different — sharper, blurrier, brighter, emptier?',
+    reflect_3: 'If you had to give this image a title of your own, what would it be, and which detail made you choose it?',
+    reflect_4: 'Pick one small area and describe it as if to someone who cannot see it. What exactly is there?',
+    reflect_5: 'What is one question about this image that zooming in even more might actually help you answer?'
+  };
+
   // ── Curated openly-licensed images ──────────────────────────────────
-  // type 'iiif'  → Smithsonian Open Access, served as an IIIF tile pyramid
-  //                (true deep zoom). CC0. src = the info.json URL.
-  // type 'image' → NASA public-domain photo, OpenSeadragon single-image
-  //                pan/zoom. src = the large JPEG URL.
-  // All URLs HEAD-verified 200 at build time (2026-07-05).
+  // type 'iiif'  → Smithsonian Open Access IIIF tile pyramid (true deep zoom),
+  //                CC0. src = the IIIF base (no /info.json); width/height are
+  //                pinned here because ids.si.edu does not serve info.json
+  //                with CORS headers, while the tiles themselves are CORS-open.
+  // type 'image' → NASA public-domain JPEG, single-image pan/zoom. NASA sends
+  //                no CORS header, so cors:false (canvas is tainted; no
+  //                snapshot for the coach, everything else works).
+  // Sizes measured 2026-09-07.
   var IMAGES = [
-    { id: 'earthrise', emoji: '🌍', name: 'Earthrise (Apollo 8, 1968)', type: 'image',
-      src: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~large.jpg',
+    { id: 'earthrise', emoji: '🌍', name: 'Earthrise (Apollo 8, 1968)', type: 'image', cors: false, width: 3000, height: 3000,
+      src: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~orig.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/as08-14-2383/as08-14-2383~thumb.jpg',
       source: 'NASA', credit: 'NASA / Apollo 8 (public domain)', link: 'https://images.nasa.gov/details/as08-14-2383',
       meta: 'the whole Earth rising over the Moon — one of the most famous photographs ever taken',
       notice: 'Zoom into the edge between the lit Earth and black space. What do you notice about how sharp or soft that edge is, and about the swirls of white?',
       wonder: 'The astronauts didn\'t plan this shot — they scrambled for a camera. Why might a single photo of Earth from far away have changed how people thought about the planet?' },
-    { id: 'bootprint', emoji: '👣', name: 'Bootprint on the Moon (Apollo 11)', type: 'image',
-      src: 'https://images-assets.nasa.gov/image/as11-40-5877/as11-40-5877~large.jpg',
+    { id: 'bootprint', emoji: '👣', name: 'Bootprint on the Moon (Apollo 11)', type: 'image', cors: false, width: 3930, height: 3930,
+      src: 'https://images-assets.nasa.gov/image/as11-40-5877/as11-40-5877~orig.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/as11-40-5877/as11-40-5877~thumb.jpg',
       source: 'NASA', credit: 'NASA / Apollo 11, Buzz Aldrin (public domain)', link: 'https://images.nasa.gov/details/as11-40-5877',
       meta: 'Buzz Aldrin\'s boot print pressed into lunar soil, 1969',
       notice: 'Zoom in on the ridges of the print. How crisp are the edges? What does the soil around it look like up close?',
       wonder: 'There is no wind or rain on the Moon. What might that mean for how long this print stays exactly like this?' },
-    { id: 'pillars', emoji: '🌌', name: 'Pillars of Creation (Hubble)', type: 'image',
+    { id: 'pillars', emoji: '🌌', name: 'Pillars of Creation (Hubble)', type: 'image', cors: false, width: 1920, height: 1800,
       src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~large.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000842/GSFC_20171208_Archive_e000842~thumb.jpg',
       source: 'NASA/ESA Hubble', credit: 'NASA, ESA / Hubble Space Telescope (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e000842',
       meta: 'towers of gas and dust in the Eagle Nebula where new stars are forming',
       notice: 'Zoom into the tips of the tallest pillar. What colors and textures appear that you couldn\'t see zoomed out? Any tiny bright points?',
       wonder: 'These pillars are light-years tall and slowly being worn away. What might be both building stars and destroying the pillars at the same time?' },
-    { id: 'carina', emoji: '✨', name: 'Cosmic Cliffs, Carina Nebula (Webb)', type: 'image',
+    { id: 'carina', emoji: '✨', name: 'Cosmic Cliffs, Carina Nebula (Webb)', type: 'image', cors: false, width: 1920, height: 1100,
       src: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~large.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/carina_nebula/carina_nebula~thumb.jpg',
       source: 'NASA/ESA/CSA Webb', credit: 'NASA, ESA, CSA, STScI / James Webb Space Telescope (public domain)', link: 'https://images.nasa.gov/details/carina_nebula',
       meta: 'a "mountain range" of gas and dust imaged in infrared by the Webb telescope',
       notice: 'Zoom across the glowing ridge. How many separate points of light (stars) can you find above the "cliffs"? Do they look the same or different?',
       wonder: 'Webb sees infrared light our eyes can\'t. Why might a telescope that sees "heat" reveal stars hidden inside clouds of dust?' },
-    { id: 'saturn', emoji: '🪐', name: 'Saturn Mosaic (Cassini)', type: 'image',
-      src: 'https://images-assets.nasa.gov/image/PIA21617/PIA21617~large.jpg',
+    { id: 'saturn', emoji: '🪐', name: 'Saturn Mosaic (Cassini)', type: 'image', cors: false, width: 5001, height: 5301,
+      src: 'https://images-assets.nasa.gov/image/PIA21617/PIA21617~orig.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/PIA21617/PIA21617~thumb.jpg',
       source: 'NASA/JPL', credit: 'NASA / JPL-Caltech / Space Science Institute — Cassini (public domain)', link: 'https://images.nasa.gov/details/PIA21617',
       meta: 'Saturn and its rings, stitched from many Cassini spacecraft photos',
       notice: 'Zoom into the rings. Is it one solid band, or can you see gaps and separate ringlets? Where does the planet\'s shadow fall on them?',
       wonder: 'The rings are made of countless pieces of ice and rock. Why might they form flat bands instead of a ball around the planet?' },
-    { id: 'curiosity', emoji: '🤖', name: 'Curiosity Rover Selfie (Mars)', type: 'image',
+    { id: 'curiosity', emoji: '🤖', name: 'Curiosity Rover Selfie (Mars)', type: 'image', cors: false, width: 1920, height: 1920,
       src: 'https://images-assets.nasa.gov/image/PIA20602/PIA20602~large.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/PIA20602/PIA20602~thumb.jpg',
       source: 'NASA/JPL', credit: 'NASA / JPL-Caltech / MSSS — Curiosity rover (public domain)', link: 'https://images.nasa.gov/details/PIA20602',
       meta: 'the Curiosity rover photographs itself on the surface of Mars',
       notice: 'Zoom into the ground and the rover\'s wheels. What does the Martian soil look like up close? Any marks the rover left behind?',
       wonder: 'This "selfie" is actually many photos stitched together — so where was the camera arm that took them? Why can\'t you see it?' },
-    { id: 'solarflare', emoji: '☀️', name: 'Solar Flare (SDO)', type: 'image',
-      src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e000963/GSFC_20171208_Archive_e000963~orig.jpg',
-      source: 'NASA SDO', credit: 'NASA / Solar Dynamics Observatory (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e000963',
-      meta: 'a burst of energy erupting from the Sun, seen in ultraviolet light',
+    { id: 'solarflare', emoji: '☀️', name: 'Solar Flare (SDO)', type: 'image', cors: false, width: 4096, height: 4096,
+      src: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~orig.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e001209/GSFC_20171208_Archive_e001209~thumb.jpg',
+      source: 'NASA SDO', credit: 'NASA / Solar Dynamics Observatory (public domain)', link: 'https://images.nasa.gov/details/GSFC_20171208_Archive_e001209',
+      meta: 'a burst of energy erupting from the Sun, seen in ultraviolet light (large file — give it a moment)',
       notice: 'Zoom into the bright loop where the flare erupts. What shape does the glowing material make as it arcs off the surface?',
       wonder: 'These loops follow invisible magnetic field lines. What everyday object also makes curved patterns you can only see with the help of something else (like iron filings on a magnet)?' },
-    { id: 'iss-cupola', emoji: '🛰️', name: 'Astronaut in the ISS Cupola', type: 'image',
-      src: 'https://images-assets.nasa.gov/image/iss044e011632/iss044e011632~large.jpg',
+    { id: 'iss-cupola', emoji: '🛰️', name: 'Astronaut in the ISS Cupola', type: 'image', cors: false, width: 4928, height: 3280,
+      src: 'https://images-assets.nasa.gov/image/iss044e011632/iss044e011632~orig.jpg',
+      thumb: 'https://images-assets.nasa.gov/image/iss044e011632/iss044e011632~thumb.jpg',
       source: 'NASA', credit: 'NASA — International Space Station (public domain)', link: 'https://images.nasa.gov/details/iss044e011632',
       meta: 'an astronaut looks down at Earth from the Space Station\'s window dome',
       notice: 'Zoom into the window frame and the view of Earth beyond it. How many separate windows make up the dome? What can you see through them?',
       wonder: 'The Station circles Earth about every 90 minutes. What might it be like to see a sunrise and sunset 16 times in one day?' },
-    { id: 'apollo-cm', emoji: '🚀', name: 'Apollo 11 Command Module "Columbia"', type: 'iiif',
-      src: 'https://ids.si.edu/ids/iiif/NASM-NASM2022-05013-000003/info.json',
+    { id: 'apollo-cm', emoji: '🚀', name: 'Apollo 11 Command Module "Columbia"', type: 'iiif', cors: true, width: 5440, height: 5783,
+      src: 'https://ids.si.edu/ids/iiif/NASM-NASM2022-05013-000003',
       source: 'Smithsonian NASM', credit: 'Smithsonian National Air and Space Museum (CC0)', link: 'https://airandspace.si.edu/collection-objects/command-module-apollo-11/nasm_A19700102000',
       meta: 'the actual spacecraft that carried the Apollo 11 crew to the Moon and back — deep-zoom to the scorched surface',
       notice: 'Zoom into the outer surface. What do you notice about its color and texture — smooth, burned, patched? This is the side that faced re-entry.',
       wonder: 'This capsule came back through Earth\'s atmosphere at enormous speed. What might explain the scorched, uneven look of the outside?' },
-    { id: 'fan-coral', emoji: '🪸', name: 'Fan Coral Specimen', type: 'iiif',
-      src: 'https://ids.si.edu/ids/iiif/SIA-MNH-3917/info.json',
-      source: 'Smithsonian', credit: 'Smithsonian Institution Archives (CC0)', link: 'https://www.si.edu/openaccess',
-      meta: 'a preserved sea-fan coral — deep-zoom into its branching lattice',
+    { id: 'wright-flyer', emoji: '✈️', name: '1903 Wright Flyer', type: 'iiif', cors: true, width: 8451, height: 4532,
+      src: 'https://ids.si.edu/ids/iiif/NASM-NASM2022-00100A-000001',
+      source: 'Smithsonian NASM', credit: 'Smithsonian National Air and Space Museum (CC0)', link: 'https://airandspace.si.edu/collection-objects/1903-wright-flyer/nasm_A19610048000',
+      meta: 'the first airplane to make a powered, controlled flight — deep-zoom to the wires, fabric and engine',
+      notice: 'Zoom along one wing. What holds the two wings apart, and what keeps them from twisting? Count the wires you can find between them.',
+      wonder: 'The pilot lay flat on the lower wing and steered by shifting his hips. Why might the Wrights have chosen that over a seat and a steering wheel?' },
+    { id: 'snowflake-342', emoji: '❄️', name: 'Snowflake No. 342 (Wilson Bentley, c. 1900)', type: 'iiif', cors: true, width: 3000, height: 2629,
+      src: 'https://ids.si.edu/ids/iiif/SIA-SIA2008-1394',
+      source: 'Smithsonian Archives', credit: 'Wilson A. Bentley photomicrograph, Smithsonian Institution Archives (CC0)', link: 'https://siarchives.si.edu/collections/siris_arc_308074',
+      meta: 'a single snow crystal photographed through a microscope by the farmer who first did it',
+      notice: 'Zoom into one arm of the crystal, then compare it with the arm opposite. How alike are they? Where do they differ?',
+      wonder: 'All six arms grew at the same time in the same tiny patch of cloud. Why might that make them so similar — and still not identical?' },
+    { id: 'snowflake-1205', emoji: '🔬', name: 'Stellar Snowflake No. 1205 (Wilson Bentley)', type: 'iiif', cors: true, width: 3000, height: 2578,
+      src: 'https://ids.si.edu/ids/iiif/SIA-SIA2013-09168',
+      source: 'Smithsonian Archives', credit: 'Wilson A. Bentley photomicrograph, Smithsonian Institution Archives (CC0)', link: 'https://siarchives.si.edu/collections/siris_arc_308063',
+      meta: 'a plate-shaped snow crystal with a hexagon inside a hexagon',
+      notice: 'Zoom into the center. How many nested six-sided shapes can you count? Do the lines look ruler-straight or slightly curved?',
+      wonder: 'Water molecules lock together at 60° angles. How might that one rule produce every six-sided pattern you see here?' },
+    { id: 'fan-coral', emoji: '🪸', name: 'Fan Coral Specimen (glass-plate photograph)', type: 'iiif', cors: true, width: 4932, height: 6761,
+      src: 'https://ids.si.edu/ids/iiif/SIA-MNH-3917',
+      source: 'Smithsonian Archives', credit: 'Smithsonian Institution Archives, natural history glass-plate negative (CC0)', link: 'https://ids.si.edu/ids/deliveryService?id=SIA-MNH-3917',
+      meta: 'a museum sea-fan coral photographed on a glass plate a century ago — deep-zoom into its branching lattice',
       notice: 'Zoom into where the branches split. How does the pattern repeat as it gets smaller and smaller? Does each little branch look like the whole fan?',
       wonder: 'A shape that repeats at smaller and smaller scales is called a fractal, and it shows up in trees, rivers, and lungs too. Why might branching be such a common design in nature?' }
   ];
 
   var params = new URLSearchParams(window.location.search);
 
-  // ── State (in-memory only) ──────────────────────────────────────────
+  // ── State (in-memory; mirrored to the opener when connected) ────────
   var current = null;
-  var perImg = {};              // id → {notice, wonder, feedback}
+  var perImg = {};              // id → {notice, wonder, feedback, pins:[{x,y,z}]}
   var step = 'notice';
-  var aiAvailable = false, openerOk = false, busy = false;
+  var aiAvailable = false, openerOk = false, busy = false, pinMode = false;
   var viewer = null;
+  var overlayEls = [];
 
   var picker = document.getElementById('picker');
   var pickerGrid = document.getElementById('pickerGrid');
@@ -249,47 +386,94 @@
   var aiStateEl = document.getElementById('aiState');
   var backbar = document.getElementById('backbar');
   var backBtn = document.getElementById('backBtn');
+  var pinBtn = document.getElementById('pinBtn');
+  var clearPinsBtn = document.getElementById('clearPinsBtn');
+  var zoomRead = document.getElementById('zoomRead');
   var loadmsg = document.getElementById('loadmsg');
   var creditLine = document.getElementById('creditLine');
+  var srLive = document.getElementById('srLive');
+  var osdEl = document.getElementById('osd');
   var tabs = { notice: document.getElementById('tabNotice'), wonder: document.getElementById('tabWonder'), coach: document.getElementById('tabCoach') };
 
-  // ── Opener AI bridge ─────────────────────────────────────────────────
+  function fmt(s, vars) {
+    return String(s).replace(/\{(\w+)\}/g, function (m, k) { return vars && k in vars ? vars[k] : m; });
+  }
+  function imgStr(item, field) {
+    // Catalog copy is also exposed as img_<id>_<field> so packs can translate it.
+    var key = 'img_' + String(item.id).replace(/-/g, '_') + '_' + field;
+    return STR[key] != null ? STR[key] : item[field];
+  }
+  function applyStrings(incoming) {
+    if (!incoming || typeof incoming !== 'object') return;
+    Object.keys(incoming).forEach(function (k) {
+      if (typeof incoming[k] === 'string' && incoming[k]) STR[k] = incoming[k];
+    });
+    document.querySelectorAll('[data-s]').forEach(function (n) { var k = n.getAttribute('data-s'); if (STR[k]) n.textContent = STR[k]; });
+    document.querySelectorAll('[data-s-aria]').forEach(function (n) { var k = n.getAttribute('data-s-aria'); if (STR[k]) n.setAttribute('aria-label', STR[k]); });
+    document.querySelectorAll('[data-s-ph]').forEach(function (n) { var k = n.getAttribute('data-s-ph'); if (STR[k]) n.setAttribute('placeholder', STR[k]); });
+    buildPicker();
+    renderAiState();
+    renderCoach();
+    updatePinButton();
+  }
+  // The full key → English table the opener needs to resolve (UI + catalog copy).
+  function stringManifest() {
+    var out = {};
+    Object.keys(STR).forEach(function (k) { out[k] = STR[k]; });
+    IMAGES.forEach(function (it) {
+      var base = 'img_' + it.id.replace(/-/g, '_') + '_';
+      out[base + 'name'] = it.name; out[base + 'meta'] = it.meta; out[base + 'notice'] = it.notice; out[base + 'wonder'] = it.wonder;
+    });
+    return out;
+  }
+  function announce(text) { srLive.textContent = ''; setTimeout(function () { srLive.textContent = text; }, 30); }
+
+  // ── Opener bridge ────────────────────────────────────────────────────
   var pending = {};
   function toOpener(payload) {
     try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
     return false;
   }
+  var notesTimer = null;
+  function syncNotes() {
+    clearTimeout(notesTimer);
+    notesTimer = setTimeout(function () { toOpener({ type: 'alloczoom-notes', notes: perImg }); }, 400);
+  }
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    if (data.type === 'alloczoom-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
+    if (data.type === 'alloczoom-ready') {
+      openerOk = true; aiAvailable = Boolean(data.ai);
+      if (data.notes && typeof data.notes === 'object') {
+        Object.keys(data.notes).forEach(function (id) {
+          var n = data.notes[id] || {};
+          perImg[id] = { notice: String(n.notice || ''), wonder: String(n.wonder || ''), feedback: String(n.feedback || ''), pins: Array.isArray(n.pins) ? n.pins.slice(0, 20) : [] };
+        });
+        if (current) { drawPins(); }
+      }
+      applyStrings(data.strings);
+      return;
+    }
     if (data.type === 'alloczoom-ai-response' && data.id && pending[data.id]) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);
     }
   });
-  function askAi(imageName, meta, notice, wonder) {
+  function askAi(item, mem) {
     var id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    var shot = snapshotForCoach();
     return new Promise(function (resolve) {
       pending[id] = { resolve: resolve, timer: setTimeout(function () { delete pending[id]; resolve(null); }, 25000) };
-      var sent = toOpener({ type: 'alloczoom-ai-request', id: id, image: imageName, meta: meta, notice: notice, wonder: wonder });
+      var sent = toOpener({ type: 'alloczoom-ai-request', id: id, image: item.name, meta: item.meta, notice: mem.notice, wonder: mem.wonder,
+        pins: pinsText(mem), zoom: currentZoom(), snapshot: shot ? shot.data : null, mime: shot ? shot.mime : null });
       if (!sent) { var e = pending[id]; delete pending[id]; if (e) clearTimeout(e.timer); resolve(null); }
     });
   }
 
-  var REFLECT_BANK = [
-    'Zoom in one more level than feels necessary. What is ONE detail you can only see up close that you would have missed from far away?',
-    'Compare the middle of the image with an edge. How are they different — sharper, blurrier, brighter, emptier?',
-    'If you had to give this image a title of your own, what would it be, and which detail made you choose it?',
-    'Pick one small area and describe it as if to someone who cannot see it. What exactly is there?',
-    'What is one question about this image that zooming in even more might actually help you answer?'
-  ];
-  var reflectIndex = Math.floor(Math.random() * REFLECT_BANK.length);
-  function nextReflect() { reflectIndex = (reflectIndex + 1) % REFLECT_BANK.length; return REFLECT_BANK[reflectIndex]; }
+  var reflectIndex = Math.floor(Math.random() * 5);
+  function nextReflect() { reflectIndex = (reflectIndex + 1) % 5; return STR['reflect_' + (reflectIndex + 1)]; }
 
   function renderAiState() {
-    aiStateEl.innerHTML = openerOk
-      ? (aiAvailable ? 'AlloFlow connected · AI coach <span class="on">on</span>' : 'AlloFlow connected · AI hints <span class="off">off</span> — using built-in observation prompts')
-      : 'Standalone — built-in observation prompts (open from AlloFlow for the AI coach)';
+    aiStateEl.innerHTML = openerOk ? (aiAvailable ? STR.ai_connected_on : STR.ai_connected_off) : STR.ai_standalone;
   }
 
   // ── Coach panel rendering ───────────────────────────────────────────
@@ -299,69 +483,108 @@
     if (text != null) node.textContent = text;
     return node;
   }
+  function memFor(item) {
+    return perImg[item.id] = perImg[item.id] || { notice: '', wonder: '', feedback: '', pins: [] };
+  }
   function setStep(next) {
     step = next;
     Object.keys(tabs).forEach(function (k) { tabs[k].setAttribute('aria-selected', String(k === next)); });
     renderCoach();
   }
+  function pinsText(mem) {
+    if (!mem.pins || !mem.pins.length) return '';
+    return mem.pins.map(function (p, i) { return fmt(STR.pin_summary, { n: i + 1, x: Math.round(p.x * 100), y: Math.round(p.y * 100), z: p.z }); }).join('\n');
+  }
+  function notesText() {
+    var lines = [STR.notes_header, ''];
+    IMAGES.concat(customItem ? [customItem] : []).forEach(function (it) {
+      var m = perImg[it.id]; if (!m || !(m.notice.trim() || m.wonder.trim() || (m.pins && m.pins.length))) return;
+      lines.push('## ' + imgStr(it, 'name'));
+      if (m.notice.trim()) lines.push(STR.you_noticed + ' ' + m.notice.trim());
+      if (m.wonder.trim()) lines.push(STR.you_wondered + ' ' + m.wonder.trim());
+      var pt = pinsText(m); if (pt) lines.push(pt);
+      if (m.feedback) lines.push('> ' + m.feedback);
+      lines.push('');
+    });
+    return lines.join('\n');
+  }
+  function copyNotes(btn) {
+    var text = notesText();
+    var done = function (ok) { var orig = STR.copy_notes; btn.textContent = ok ? STR.copied : STR.copy_failed; setTimeout(function () { btn.textContent = orig; }, 2200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(legacyCopy(text)); });
+    } else done(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    try { var ta = document.createElement('textarea'); ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); var ok = document.execCommand('copy'); document.body.removeChild(ta); return !!ok; } catch (_) { return false; }
+  }
   function renderCoach() {
     coachBody.innerHTML = '';
     if (!current) {
-      coachBody.appendChild(el('div', { class: 'qcard' }, 'Pick an image, then zoom in and write down what you notice.'));
+      coachBody.appendChild(el('div', { class: 'qcard' }, STR.intro_card));
       return;
     }
-    var mem = perImg[current.id] = perImg[current.id] || { notice: '', wonder: '', feedback: '' };
+    var mem = memFor(current);
     if (mem.notice.trim()) tabs.notice.classList.add('done'); else tabs.notice.classList.remove('done');
+    if (mem.wonder.trim()) tabs.wonder.classList.add('done'); else tabs.wonder.classList.remove('done');
 
     if (step === 'notice') {
-      coachBody.appendChild(el('div', { class: 'qcard' }, '🔍 ' + current.notice));
-      var ta = el('textarea', { id: 'noticeText', 'aria-label': 'What you notice', placeholder: 'I notice…' });
+      coachBody.appendChild(el('div', { class: 'qcard' }, '🔍 ' + imgStr(current, 'notice')));
+      var ta = el('textarea', { id: 'noticeText', 'aria-label': STR.notice_label, placeholder: STR.notice_placeholder });
       ta.value = mem.notice;
-      ta.addEventListener('input', function () { mem.notice = ta.value; });
+      ta.addEventListener('input', function () { mem.notice = ta.value; syncNotes(); });
       coachBody.appendChild(ta);
-      var toWonder = el('button', { class: 'go' }, 'On to Wonder →');
+      var pt = pinsText(mem);
+      if (pt) { var pd = el('div', { class: 'pins' }); pd.appendChild(el('b', null, STR.pins_heading)); pt.split('\n').forEach(function (l) { pd.appendChild(document.createElement('br')); pd.appendChild(document.createTextNode(l)); }); coachBody.appendChild(pd); }
+      var toWonder = el('button', { class: 'go' }, STR.to_wonder);
       toWonder.addEventListener('click', function () {
         if (mem.notice.trim()) toOpener({ type: 'alloczoom-noticed' });
         setStep('wonder');
       });
       coachBody.appendChild(toWonder);
     } else if (step === 'wonder') {
-      coachBody.appendChild(el('div', { class: 'qcard' }, '💭 ' + current.wonder));
-      var ta2 = el('textarea', { id: 'wonderText', 'aria-label': 'What you wonder', placeholder: 'I wonder…' });
+      coachBody.appendChild(el('div', { class: 'qcard' }, '💭 ' + imgStr(current, 'wonder')));
+      var ta2 = el('textarea', { id: 'wonderText', 'aria-label': STR.wonder_label, placeholder: STR.wonder_placeholder });
       ta2.value = mem.wonder;
-      ta2.addEventListener('input', function () { mem.wonder = ta2.value; });
+      ta2.addEventListener('input', function () { mem.wonder = ta2.value; syncNotes(); });
       coachBody.appendChild(ta2);
       if (mem.notice.trim()) {
         var remind = el('div', { class: 'locked' });
-        remind.innerHTML = '<b>You noticed:</b>\n';
-        remind.appendChild(document.createTextNode(mem.notice));
+        remind.appendChild(el('b', null, STR.you_noticed)); remind.appendChild(document.createTextNode('\n' + mem.notice));
         coachBody.appendChild(remind);
       }
-      var toCoach = el('button', { class: 'go' }, 'Take it to the coach →');
+      var toCoach = el('button', { class: 'go' }, STR.to_coach);
       toCoach.addEventListener('click', function () { setStep('coach'); });
       coachBody.appendChild(toCoach);
     } else {
-      var askBtn = el('button', { class: 'go', id: 'coachBtn' }, aiAvailable && openerOk ? '✨ What does the coach think?' : '🤔 Give me an observation prompt');
+      var live = aiAvailable && openerOk;
+      var askBtn = el('button', { class: 'go', id: 'coachBtn' }, live ? STR.ask_ai : STR.ask_prompt);
       askBtn.addEventListener('click', function () {
         if (busy) return;
-        if (!(aiAvailable && openerOk)) { mem.feedback = nextReflect(); renderCoach(); return; }
+        if (!live) { mem.feedback = nextReflect(); toOpener({ type: 'alloczoom-coached' }); syncNotes(); renderCoach(); return; }
         if (!mem.notice.trim()) { setStep('notice'); return; }
-        busy = true; askBtn.disabled = true; askBtn.textContent = 'thinking…';
-        askAi(current.name, current.meta, mem.notice, mem.wonder).then(function (res) {
+        busy = true; askBtn.disabled = true; askBtn.textContent = STR.thinking;
+        askAi(current, mem).then(function (res) {
           var text = res && !res.error && res.text ? String(res.text).trim() : '';
-          mem.feedback = text || ('The AI coach didn’t answer' + (res && res.error ? ' (' + res.error + ')' : '') + '. Meanwhile: ' + nextReflect());
-          busy = false;
+          mem.feedback = text || fmt(STR.ai_no_answer, { err: res && res.error ? ' (' + res.error + ')' : '', prompt: nextReflect() });
+          busy = false; syncNotes();
           renderCoach();
         });
       });
       coachBody.appendChild(askBtn);
       if (mem.notice.trim()) {
         var rem2 = el('div', { class: 'locked' });
-        rem2.innerHTML = '<b>You noticed:</b>\n';
-        rem2.appendChild(document.createTextNode(mem.notice + (mem.wonder.trim() ? '\n\nYou wondered:\n' + mem.wonder : '')));
+        rem2.appendChild(el('b', null, STR.you_noticed)); rem2.appendChild(document.createTextNode('\n' + mem.notice));
+        if (mem.wonder.trim()) { rem2.appendChild(document.createTextNode('\n\n')); rem2.appendChild(el('b', null, STR.you_wondered)); rem2.appendChild(document.createTextNode('\n' + mem.wonder)); }
+        var pt2 = pinsText(mem); if (pt2) rem2.appendChild(document.createTextNode('\n\n' + pt2));
         coachBody.appendChild(rem2);
       }
       if (mem.feedback) coachBody.appendChild(el('div', { class: 'feedback' }, mem.feedback));
+      var row = el('div', { class: 'row' });
+      var cp = el('button', { class: 'sec', type: 'button' }, STR.copy_notes);
+      cp.addEventListener('click', function () { copyNotes(cp); });
+      row.appendChild(cp);
+      coachBody.appendChild(row);
     }
   }
   Object.keys(tabs).forEach(function (k) {
@@ -373,37 +596,119 @@
     if (viewer) return viewer;
     if (typeof window.OpenSeadragon !== 'function') return null;
     viewer = window.OpenSeadragon({
-      element: document.getElementById('osd'),
+      element: osdEl,
       prefixUrl: 'https://cdn.jsdelivr.net/npm/openseadragon@5.0.1/build/openseadragon/images/',
       showNavigator: true,
-      navigatorPosition: 'TOP_RIGHT',
+      navigatorPosition: 'BOTTOM_RIGHT',
+      navigationControlAnchor: window.OpenSeadragon.ControlAnchor.TOP_RIGHT,
       gestureSettingsMouse: { clickToZoom: false, dblClickToZoom: true },
       maxZoomPixelRatio: 2.5,
       visibilityRatio: 1,
       constrainDuringPan: true,
+      // IIIF tiles are CORS-open, so load them anonymously and keep the canvas
+      // clean for the coach snapshot; NASA items override this to false per open().
       crossOriginPolicy: 'Anonymous',
       ajaxWithCredentials: false
     });
+    viewer.addHandler('zoom', updateZoomReadout);
+    viewer.addHandler('canvas-click', function (ev) {
+      if (!pinMode || !ev.quick || !current) return;
+      var vp = viewer.viewport.pointFromPixel(ev.position);
+      var img = viewer.viewport.viewportToImageCoordinates(vp);
+      var size = viewer.world.getItemAt(0) ? viewer.world.getItemAt(0).getContentSize() : null;
+      if (!size) return;
+      var mem = memFor(current);
+      if (mem.pins.length >= 20) return;
+      var p = { x: Math.min(1, Math.max(0, img.x / size.x)), y: Math.min(1, Math.max(0, img.y / size.y)), z: currentZoom() };
+      mem.pins.push(p);
+      ev.preventDefaultAction = true;
+      drawPins(); syncNotes(); renderCoach();
+      announce(fmt(STR.pin_placed_sr, { n: mem.pins.length, x: Math.round(p.x * 100), y: Math.round(p.y * 100), z: p.z }));
+      setPinMode(false);
+    });
     return viewer;
   }
+  function currentZoom() {
+    try {
+      var item = viewer && viewer.world.getItemAt(0); if (!item) return 1;
+      var z = viewer.viewport.getZoom(true);
+      var home = viewer.viewport.getHomeZoom();
+      return Math.max(1, Math.round((z / home) * 10) / 10);
+    } catch (_) { return 1; }
+  }
+  function updateZoomReadout() {
+    if (!current) return;
+    zoomRead.style.display = 'block';
+    zoomRead.textContent = fmt(STR.zoom_readout, { z: currentZoom() });
+  }
+  function drawPins() {
+    if (!viewer) return;
+    overlayEls.forEach(function (o) { try { viewer.removeOverlay(o); } catch (_) {} });
+    overlayEls = [];
+    var mem = current ? memFor(current) : null;
+    var item = viewer.world.getItemAt(0);
+    if (!mem || !item) { clearPinsBtn.style.display = 'none'; return; }
+    var size = item.getContentSize();
+    mem.pins.forEach(function (p, i) {
+      var d = el('div', { class: 'pin', 'aria-hidden': 'true' }, String(i + 1));
+      var vp = viewer.viewport.imageToViewportCoordinates(p.x * size.x, p.y * size.y);
+      viewer.addOverlay({ element: d, location: vp, placement: 'CENTER', checkResize: false });
+      overlayEls.push(d);
+    });
+    clearPinsBtn.style.display = mem.pins.length ? 'inline-block' : 'none';
+  }
+  function setPinMode(on) {
+    pinMode = !!on;
+    osdEl.classList.toggle('pinning', pinMode);
+    updatePinButton();
+  }
+  function updatePinButton() {
+    pinBtn.setAttribute('aria-pressed', String(pinMode));
+    var n = current ? memFor(current).pins.length + 1 : 1;
+    pinBtn.textContent = pinMode ? fmt(STR.pin_drop_active, { n: n }) : STR.pin_drop;
+  }
+  pinBtn.addEventListener('click', function () { setPinMode(!pinMode); });
+  clearPinsBtn.addEventListener('click', function () { if (!current) return; memFor(current).pins = []; drawPins(); syncNotes(); renderCoach(); updatePinButton(); });
+
+  // Snapshot of the current view for the coach — only when the canvas is not
+  // CORS-tainted (IIIF items). Downscaled to keep the message small.
+  function snapshotForCoach() {
+    try {
+      if (!viewer || !current || current.cors === false) return null;
+      var src = viewer.drawer && viewer.drawer.canvas; if (!src || !src.width) return null;
+      var scale = Math.min(1, 768 / Math.max(src.width, src.height));
+      var c = document.createElement('canvas'); c.width = Math.round(src.width * scale); c.height = Math.round(src.height * scale);
+      c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+      var url = c.toDataURL('image/jpeg', 0.72);
+      return { data: url.split(',')[1], mime: 'image/jpeg' };
+    } catch (_) { return null; }
+  }
+
   function tileSourceFor(item) {
-    // IIIF info.json passed as a string → OSD auto-detects the IIIF pyramid.
-    // NASA single image → OSD's built-in 'image' tile source (pan/zoom, no tiles).
-    return item.type === 'iiif' ? item.src : { type: 'image', url: item.src };
+    if (item.type === 'iiif') {
+      if (item.width && item.height) {
+        return { '@context': 'http://iiif.io/api/image/2/context.json', '@id': item.src, protocol: 'http://iiif.io/api/image',
+          width: item.width, height: item.height, tiles: [{ width: 512, scaleFactors: [1, 2, 4, 8, 16] }], profile: ['http://iiif.io/api/image/2/level2.json'] };
+      }
+      return item.src.replace(/\/?$/, '') + (/info\.json$/.test(item.src) ? '' : '/info.json');
+    }
+    return { type: 'image', url: item.src, crossOriginPolicy: item.cors === false ? false : 'Anonymous' };
   }
   function loadImage(id) {
-    current = IMAGES.find(function (s) { return s.id === id; }) || null;
+    current = (customItem && customItem.id === id) ? customItem : (IMAGES.find(function (s) { return s.id === id; }) || null);
     if (!current) return;
+    setPinMode(false);
     picker.style.display = 'none';
-    backbar.style.display = 'block';
-    imgSelect.value = current.id;
-    document.title = 'AlloFlow Zoom Gallery — ' + current.name;
-    loadmsg.textContent = 'Loading ' + current.name + '…';
+    backbar.style.display = 'flex';
+    imgSelect.value = current.id === 'custom' ? '' : current.id;
+    document.title = 'AlloFlow Zoom Gallery — ' + imgStr(current, 'name');
+    loadmsg.textContent = fmt(STR.loading, { name: imgStr(current, 'name') });
     loadmsg.style.display = 'flex';
     creditLine.style.display = 'none';
+    zoomRead.style.display = 'none';
     var v = ensureViewer();
     if (!v) {
-      loadmsg.textContent = 'The deep-zoom viewer could not load. Check your internet connection and try again.';
+      loadmsg.textContent = STR.viewer_failed;
       return;
     }
     var settled = false;
@@ -413,51 +718,101 @@
       creditLine.innerHTML = '';
       creditLine.appendChild(document.createTextNode('📷 ' + current.credit + ' · '));
       var a = document.createElement('a');
-      a.href = current.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = 'source record';
+      a.href = current.link; a.target = '_blank'; a.rel = 'noopener noreferrer'; a.textContent = STR.source_record;
       creditLine.appendChild(a);
       creditLine.style.display = 'block';
+      drawPins(); updateZoomReadout(); updatePinButton();
       v.removeHandler('open', onOpen); v.removeHandler('open-failed', onFail);
     };
     var onFail = function () {
       if (settled) return; settled = true;
-      loadmsg.textContent = 'Could not load "' + current.name + '". Check your internet connection and try again.';
+      loadmsg.textContent = fmt(STR.image_failed, { name: imgStr(current, 'name') });
       v.removeHandler('open', onOpen); v.removeHandler('open-failed', onFail);
     };
     v.addHandler('open', onOpen);
     v.addHandler('open-failed', onFail);
-    try { v.open(tileSourceFor(current)); }
+    var ts = tileSourceFor(current);
+    try { v.open(current.cors === false ? { tileSource: ts, crossOriginPolicy: false } : ts); }
     catch (e) { onFail(); }
     toOpener({ type: 'alloczoom-imgopened', image: current.id });
     setStep('notice');
   }
   function showPicker() {
+    setPinMode(false);
     picker.style.display = 'block';
     backbar.style.display = 'none';
     creditLine.style.display = 'none';
+    zoomRead.style.display = 'none';
     try { if (viewer) viewer.close(); } catch (_) {}
+    overlayEls = [];
   }
 
-  IMAGES.forEach(function (s) {
-    var opt = el('option', { value: s.id }, s.emoji + ' ' + s.name);
-    imgSelect.appendChild(opt);
-    var card = el('button', { class: 'simcard', type: 'button' });
-    card.appendChild(el('div', { class: 'emoji' }, s.emoji));
-    card.appendChild(el('div', { class: 'name' }, s.name));
-    card.appendChild(el('div', { class: 'meta' }, s.meta + ' · ' + s.source));
-    card.addEventListener('click', function () { loadImage(s.id); });
-    pickerGrid.appendChild(card);
-  });
+  // ── Bring your own image ─────────────────────────────────────────────
+  var customItem = null;
+  var customUrl = document.getElementById('customUrl');
+  var customGo = document.getElementById('customGo');
+  var customErr = document.getElementById('customErr');
+  function openCustom() {
+    customErr.textContent = '';
+    var url = String(customUrl.value || '').trim();
+    if (!/^https:\/\/\S+/i.test(url)) { customErr.textContent = STR.custom_err_url; return; }
+    var base = { id: 'custom', emoji: '🖼️', name: STR.custom_name, source: '', credit: STR.custom_credit, link: url,
+      meta: url, notice: STR.custom_notice, wonder: STR.custom_wonder };
+    if (/info\.json(\?|$)/i.test(url)) {
+      customGo.disabled = true;
+      fetch(url, { mode: 'cors' }).then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).then(function (info) {
+        customGo.disabled = false;
+        if (!info || !info.width || !info.height) throw new Error('bad info');
+        customItem = Object.assign(base, { type: 'iiif', cors: true, width: info.width, height: info.height, src: url.replace(/\/info\.json.*$/i, '') });
+        perImg.custom = { notice: '', wonder: '', feedback: '', pins: [] };
+        loadImage('custom');
+      }).catch(function () { customGo.disabled = false; customErr.textContent = STR.custom_err_iiif; });
+      return;
+    }
+    customItem = Object.assign(base, { type: 'image', cors: false, src: url });
+    perImg.custom = { notice: '', wonder: '', feedback: '', pins: [] };
+    loadImage('custom');
+  }
+  customGo.addEventListener('click', openCustom);
+  customUrl.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); openCustom(); } });
+
+  // ── Picker ───────────────────────────────────────────────────────────
+  function buildPicker() {
+    pickerGrid.innerHTML = '';
+    while (imgSelect.options.length > 1) imgSelect.remove(1);
+    IMAGES.forEach(function (s) {
+      var opt = el('option', { value: s.id }, s.emoji + ' ' + imgStr(s, 'name'));
+      imgSelect.appendChild(opt);
+      var card = el('button', { class: 'simcard', type: 'button' });
+      var thumbUrl = s.thumb || (s.type === 'iiif' ? s.src + '/full/320,/0/default.jpg' : null);
+      if (thumbUrl) {
+        var im = el('img', { class: 'thumb', src: thumbUrl, alt: '', loading: 'lazy' });
+        im.addEventListener('error', function () { var e = el('div', { class: 'emoji' }, s.emoji); im.replaceWith(e); });
+        card.appendChild(im);
+      } else card.appendChild(el('div', { class: 'emoji' }, s.emoji));
+      card.appendChild(el('div', { class: 'name' }, s.emoji + ' ' + imgStr(s, 'name')));
+      card.appendChild(el('div', { class: 'meta' }, imgStr(s, 'meta') + ' · ' + s.source));
+      card.appendChild(el('span', { class: 'badge' }, s.type === 'iiif' ? STR.badge_deep : STR.badge_photo));
+      card.addEventListener('click', function () { loadImage(s.id); });
+      pickerGrid.appendChild(card);
+    });
+  }
+  buildPicker();
   imgSelect.addEventListener('change', function () { if (imgSelect.value) loadImage(imgSelect.value); });
   backBtn.addEventListener('click', showPicker);
+  renderCoach();
 
   // ── Boot ────────────────────────────────────────────────────────────
   var requested = (params.get('img') || '').toLowerCase();
   if (requested && IMAGES.some(function (s) { return s.id === requested; })) loadImage(requested);
-  var hello = function () { toOpener({ type: 'alloczoom-hello' }); };
+  var hello = function () { toOpener({ type: 'alloczoom-hello', strings: stringManifest() }); };
   hello();
   setTimeout(hello, 900);
   setTimeout(renderAiState, 2600);
-  window.addEventListener('beforeunload', function () { toOpener({ type: 'alloczoom-closed' }); });
+  window.addEventListener('beforeunload', function () { toOpener({ type: 'alloczoom-notes', notes: perImg }); toOpener({ type: 'alloczoom-closed' }); });
+
+  // Test seam (read-only): lets a harness confirm the catalog + state.
+  window.__zoomGallery = { IMAGES: IMAGES, STR: STR, get current() { return current; }, get viewer() { return viewer; }, notes: perImg, loadImage: loadImage };
 })();
 </script>
 </body>

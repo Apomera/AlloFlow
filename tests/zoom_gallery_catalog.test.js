@@ -1,0 +1,177 @@
+// Zoom Gallery v2 invariants (2026-09-07).
+//
+// The tool exists as an inline STEAM Lab tool (stem_lab/stem_tool_zoomgallery.js)
+// AND a companion pop-out (zoom_gallery/zoom_gallery.html). Both carry the same
+// image catalog and the same string table, and both ship from two live copies
+// (root = CDN, desktop/web-app/public = desktop app). These tests pin the
+// invariants that broke — or would have broken silently — in v1:
+//   1. Every NASA source is loaded WITHOUT CORS (images-assets.nasa.gov sends no
+//      Access-Control-Allow-Origin header; the anonymous request failed for all
+//      eight photos in v1) and every Smithsonian IIIF source carries pinned
+//      width/height (ids.si.edu does not serve info.json with CORS).
+//   2. Catalogs are identical between the inline tool and the companion window.
+//   3. Live mirrors are byte-identical.
+//   4. The zoom_coach quest is reachable with AI off (v1 counted only on the AI
+//      path, so the quest was unattainable for AI-off classrooms).
+//   5. Every companion-window string key is registered under
+//      stem.zoomGallery in ui_strings.js, in all four copies, with the same
+//      English value the source falls back to.
+import { describe, it, expect } from 'vitest';
+import fs from 'node:fs';
+import path from 'node:path';
+import vm from 'node:vm';
+
+const ROOT = process.cwd();
+const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8');
+const TOOL = 'stem_lab/stem_tool_zoomgallery.js';
+const TOOL_MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_zoomgallery.js';
+const POPUP = 'zoom_gallery/zoom_gallery.html';
+const POPUP_MIRROR = 'desktop/web-app/public/zoom_gallery/zoom_gallery.html';
+const UI_STRINGS_COPIES = ['ui_strings.js', 'desktop/web-app/public/ui_strings.js', 'desktop/web-app/build/ui_strings.js', 'desktop/app-build/ui_strings.js'];
+
+// Evaluate a `var NAME = [...]` / `var NAME = {...}` literal out of source text.
+function extractLiteral(src, name) {
+  const start = src.indexOf('var ' + name + ' = ');
+  if (start < 0) throw new Error('no ' + name + ' in source');
+  const open = src.indexOf('=', start) + 1;
+  // Find the matching close by walking brackets outside strings.
+  let depth = 0, i = src.indexOf(src.slice(open).match(/[\[{]/)[0], open), inStr = null;
+  const first = src[i];
+  const closeCh = first === '[' ? ']' : '}';
+  for (; i < src.length; i++) {
+    const ch = src[i];
+    if (inStr) { if (ch === '\\') { i++; continue; } if (ch === inStr) inStr = null; continue; }
+    if (ch === '\'' || ch === '"' || ch === '`') { inStr = ch; continue; }
+    if (ch === first) depth++;
+    else if (ch === closeCh) { depth--; if (depth === 0) break; }
+  }
+  const literal = src.slice(open, i + 1);
+  return vm.runInNewContext('(' + literal + ')');
+}
+
+const toolSrc = read(TOOL);
+const popupSrc = read(POPUP);
+const toolImages = extractLiteral(toolSrc, 'IMAGES');
+const popupImages = extractLiteral(popupSrc, 'IMAGES');
+const toolWin = extractLiteral(toolSrc, 'WIN');
+const toolInl = extractLiteral(toolSrc, 'INL');
+const popupStr = extractLiteral(popupSrc, 'STR');
+
+describe('Zoom Gallery catalog', () => {
+  it('has at least 13 images with the required fields', () => {
+    expect(toolImages.length).toBeGreaterThanOrEqual(13);
+    for (const it of toolImages) {
+      for (const f of ['id', 'emoji', 'name', 'type', 'src', 'source', 'credit', 'link', 'meta', 'notice', 'wonder', 'width', 'height']) {
+        expect(it[f], `${it.id}.${f}`).toBeTruthy();
+      }
+      expect(['iiif', 'image']).toContain(it.type);
+      expect(/^https:\/\//.test(it.src), it.id + ' src https').toBe(true);
+      expect(/^https:\/\//.test(it.link), it.id + ' link https').toBe(true);
+    }
+    const ids = toolImages.map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('only cites openly licensed hosts (NASA public domain, Smithsonian CC0)', () => {
+    for (const it of toolImages) {
+      const host = new URL(it.src).hostname;
+      expect(['images-assets.nasa.gov', 'ids.si.edu'], it.id + ' host').toContain(host);
+      if (host === 'ids.si.edu') expect(it.type).toBe('iiif');
+      if (host === 'images-assets.nasa.gov') expect(it.type).toBe('image');
+    }
+  });
+
+  it('loads every NASA image without CORS and pins IIIF dimensions (the v1 breakage)', () => {
+    for (const it of toolImages) {
+      if (it.type === 'image') {
+        expect(it.cors, it.id + ' must be cors:false (NASA sends no ACAO header)').toBe(false);
+      } else {
+        expect(it.cors, it.id).toBe(true);
+        expect(/\/info\.json$/.test(it.src), it.id + ' src must be the IIIF base, not info.json').toBe(false);
+        expect(it.width).toBeGreaterThan(1000);
+        expect(it.height).toBeGreaterThan(1000);
+      }
+    }
+    // The tile source must honour the flag — a catalog flag nothing reads is decoration.
+    for (const src of [toolSrc, popupSrc]) {
+      expect(src).toMatch(/crossOriginPolicy: item\.cors === false \? false : 'Anonymous'/);
+      expect(src).toMatch(/\{ tileSource: ts, crossOriginPolicy: false \}/);
+    }
+  });
+
+  it('keeps real deep zoom available: at least 5 IIIF pyramids, at least 4 NASA photos above 3000px', () => {
+    expect(toolImages.filter((i) => i.type === 'iiif').length).toBeGreaterThanOrEqual(5);
+    expect(toolImages.filter((i) => i.type === 'image' && Math.max(i.width, i.height) >= 3000).length).toBeGreaterThanOrEqual(4);
+  });
+
+  it('is identical between the inline tool and the companion window', () => {
+    expect(popupImages).toEqual(toolImages);
+  });
+
+  it('shares one string table between the inline tool and the companion window', () => {
+    expect(popupStr).toEqual(toolWin);
+  });
+});
+
+describe('Zoom Gallery mirrors', () => {
+  it('root and desktop copies of the tool are byte-identical', () => {
+    expect(read(TOOL_MIRROR)).toBe(toolSrc);
+  });
+  it('root and desktop copies of the companion window are byte-identical', () => {
+    expect(read(POPUP_MIRROR)).toBe(popupSrc);
+  });
+  it('the launcher opens the v2 companion (cache pin bumped with the rewrite)', () => {
+    expect(toolSrc).toMatch(/zoom_gallery\/zoom_gallery\.html\?v=2/);
+    expect(toolSrc).not.toMatch(/zoom_gallery\.html\?v=1/);
+  });
+});
+
+describe('Zoom Gallery quests', () => {
+  it('the coach quest counts with AI off, inline and via the companion', () => {
+    // Inline: the AI-off branch bumps coachCount.
+    expect(toolSrc).toMatch(/if \(!aiOn\) \{ setNote\(current\.id, \{ feedback: nextReflect\(\) \}\); bumpSlice\('coachCount'\); return; \}/);
+    // Companion: the AI-off branch tells the opener, and the opener counts it.
+    expect(popupSrc).toMatch(/toOpener\(\{ type: 'alloczoom-coached' \}\)/);
+    expect(toolSrc).toMatch(/data\.type === 'alloczoom-coached'\) \{ bumpSlice\('coachCount'\)/);
+  });
+  it('opening an image inline satisfies zoom_open', () => {
+    expect(toolSrc).toMatch(/function openImage\(id\) \{[\s\S]*?bumpSlice\('openedCount'\)/);
+  });
+});
+
+describe('Zoom Gallery strings in ui_strings.js (all four copies)', () => {
+  const expected = {};
+  for (const k of Object.keys(toolWin)) expected[k] = toolWin[k];
+  for (const k of Object.keys(toolInl)) expected[k] = toolInl[k];
+  for (const it of toolImages) {
+    const base = 'img_' + it.id.replace(/-/g, '_') + '_';
+    expected[base + 'name'] = it.name; expected[base + 'meta'] = it.meta; expected[base + 'notice'] = it.notice; expected[base + 'wonder'] = it.wonder;
+  }
+  const sections = UI_STRINGS_COPIES.map((p) => {
+    const json = JSON.parse(read(p));
+    return { path: p, section: (json.stem && json.stem.zoomGallery) || {} };
+  });
+
+  it('registers every key the source falls back to, with the identical English value', () => {
+    const missing = [], drift = [];
+    for (const k of Object.keys(expected)) {
+      const v = sections[0].section[k];
+      if (v == null) missing.push(k);
+      else if (v !== expected[k]) drift.push(k + ': shipped "' + String(v).slice(0, 40) + '" vs source "' + String(expected[k]).slice(0, 40) + '"');
+    }
+    expect(missing, 'missing keys').toEqual([]);
+    expect(drift, 'shipped value differs from source fallback').toEqual([]);
+  });
+
+  it('all four copies agree on the zoomGallery section', () => {
+    for (const s of sections.slice(1)) {
+      expect(s.section, s.path).toEqual(sections[0].section);
+    }
+  });
+
+  it('the inline tool reads every key through t() under the stem.zoomGallery prefix', () => {
+    expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ key, WIN\[key\]\)/);
+    expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ key, INL\[key\]\)/);
+    expect(toolSrc).toMatch(/t\('stem\.zoomGallery\.' \+ imgKey\(item, field\), item\[field\]\)/);
+  });
+});
