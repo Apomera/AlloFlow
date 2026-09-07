@@ -129,6 +129,37 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(sharedToolData.gisMissionProgress['custom-otago-towns:compare'].setup).toBe(true);
   });
 
+  it('adopts a pasted JSON pack with boundaries and offers the boundary mission', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+    const textarea = findLabeledControl('Or paste region rows', 'textarea');
+    expect(textarea).toBeTruthy();
+    const pack = Object.assign(tool.testing.regionPackTemplate(), { label: 'Harbour district', scope: 'Harbour district' });
+    delete pack.id;
+    const textSetter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+    await React.act(async function () {
+      textSetter.call(textarea, JSON.stringify(pack));
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+      await Promise.resolve();
+    });
+    await click(findButton('Preview pasted region'));
+    expect(await settle(() => host.textContent.includes('Review before using'))).toBe(true);
+    expect(host.textContent).toContain('Review before using: Harbour district');
+    expect(host.textContent).toContain('1 boundary features');
+    await click(findButton('Use this pack'));
+    expect(await settle(() => !!host.querySelector('option[value="custom-harbour-district"]'))).toBe(true);
+    expect(host.textContent).toContain('GeoJSON choropleth');
+    expect(host.textContent).toContain('Example district');
+    await click(findButton('Guided missions'));
+    expect(await settle(() => host.textContent.includes('Inside the boundaries'))).toBe(true);
+    const boundaryTab = Array.from(host.querySelectorAll('button[role="tab"]')).find((button) => button.textContent.includes('Inside the boundaries'));
+    await click(boundaryTab);
+    expect(host.textContent).toContain('1 boundary features in Harbour district');
+    await click(findButton('Prepare and open analysis map'));
+    expect(await settle(() => sharedToolData.gisTab === 'map')).toBe(true);
+    expect(sharedToolData.gisMissionProgress['custom-harbour-district:boundaries'].setup).toBe(true);
+    expect(host.textContent).toContain('Example district');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

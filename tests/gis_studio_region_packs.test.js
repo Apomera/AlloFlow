@@ -211,6 +211,40 @@ describe('GIS Studio - custom region packs', () => {
     expect(tool.testing.generateRegionMissions(null)).toEqual([]);
   });
 
+  it('carries optional GeoJSON boundaries and generates a boundary mission from them', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const pack = tool.testing.normalizeGISRegionPack(samplePack({ boundaries: { type: 'FeatureCollection', features: [{ type: 'Feature', properties: { name: 'Coastal Otago', index: 3 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -46.2], [171.2, -46.2], [171.2, -45.0], [170.2, -45.0], [170.2, -46.2]]] } }] } }));
+    expect(pack.boundaries.features).toHaveLength(1);
+    expect(pack.boundaries.features[0].properties.name).toBe('Coastal Otago');
+    const file = tool.testing.serializeGISRegionPack(pack);
+    expect(file.boundaries.features).toHaveLength(1);
+    expect(tool.testing.normalizeGISRegionPack(JSON.parse(JSON.stringify(file)), { allowExistingId: true })).toEqual(pack);
+    const missions = tool.testing.generateRegionMissions(pack);
+    expect(missions.map((mission) => mission.kind)).toEqual(['compare', 'buffer', 'extremes', 'boundaries']);
+    expect(missions[3].question).toContain('1 boundary features in Otago region, New Zealand');
+    expect(tool.testing.generateRegionMissions(tool.testing.normalizeGISRegionPack(samplePack())).map((mission) => mission.kind)).not.toContain('boundaries');
+    expect(tool.testing.normalizeGISRegionPack(samplePack()).boundaries).toBeNull();
+    expect(tool.testing.serializeGISRegionPack(samplePack())).not.toHaveProperty('boundaries');
+    expect(() => tool.testing.normalizeGISRegionPack(samplePack({ boundaries: { type: 'FeatureCollection', features: [] } }))).toThrow(/at least one feature|No supported GeoJSON features/);
+    expect(() => tool.testing.normalizeGISRegionPack(samplePack({ boundaries: { type: 'Nope' } }))).toThrow();
+    const many = { type: 'FeatureCollection', features: Array.from({ length: 501 }, (_, i) => ({ type: 'Feature', properties: { index: i }, geometry: { type: 'Point', coordinates: [i / 10, 0] } })) };
+    expect(() => tool.testing.normalizeGISRegionPack(samplePack({ boundaries: many }))).toThrow(/at most 500 features/);
+    expect(tool.testing.regionPackTemplate().boundaries.features).toHaveLength(1);
+    const rows = tool.testing.parseCSV('name,latitude,longitude,value\nA,-45.5,170.5,5\n');
+    const withBounds = tool.testing.regionPackFromImportedRows(rows, { label: 'Survey', boundaries: { type: 'FeatureCollection', features: [{ type: 'Feature', properties: { name: 'Coastal Otago', index: 3 }, geometry: { type: 'Polygon', coordinates: [[[170.2, -46.2], [171.2, -46.2], [171.2, -45.0], [170.2, -45.0], [170.2, -46.2]]] } }] } });
+    expect(withBounds.boundaries.features).toHaveLength(1);
+  });
+
+  it('fills mission templates from pack variables and leaves unknown placeholders alone', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    expect(tool.testing.gisFillTemplate('{a} and {b} in {scope}', { a: 'X', b: 'Y', scope: 'Z' })).toBe('X and Y in Z');
+    expect(tool.testing.gisFillTemplate('{a} {missing}', { a: 1 })).toBe('1 {missing}');
+    const html = renderTool('gisStudio', { gisTab: 'missions', gisRegionPack: 'global' }, {
+      t: function (key, fallback) { return key === 'stem.gisstudio.gen.compare_title' ? '{b} contra {a}' : fallback; }
+    });
+    expect(html).toContain('Broadband access index contra Population density');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

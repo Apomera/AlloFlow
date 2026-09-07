@@ -216,6 +216,25 @@
   var GIS_PACK_LAT_ALIASES = ['latitude', 'lat', 'latitud', 'breitengrad', '纬度', '緯度', 'خط العرض', 'широта', 'y'];
   var GIS_PACK_LON_ALIASES = ['longitude', 'lon', 'lng', 'long', 'longitud', 'lengtegraad', 'längengrad', '经度', '経度', 'خط الطول', 'долгота', 'x'];
 
+  function gisFillTemplate(text, vars) {
+    return String(text == null ? '' : text).replace(/\{([a-z0-9_]+)\}/gi, function (match, key) {
+      return vars && Object.prototype.hasOwnProperty.call(vars, key) ? String(vars[key]) : match;
+    });
+  }
+
+  var GIS_CUSTOM_PACK_BOUNDARY_LIMIT = 500;
+  var GIS_CUSTOM_PACK_BOUNDARY_BYTES = 1500000;
+
+  function normalizeGISRegionPackBoundaries(value) {
+    if (value == null || value === '') return null;
+    var text = typeof value === 'string' ? value : JSON.stringify(value);
+    if (text.length > GIS_CUSTOM_PACK_BOUNDARY_BYTES) throw new Error('Region pack boundaries must be smaller than 1.5 MB of GeoJSON.');
+    var parsed = parseGeoJSON(text);
+    if (!parsed.data.features.length) throw new Error('Region pack boundaries need at least one feature.');
+    if (parsed.originalFeatureCount > GIS_CUSTOM_PACK_BOUNDARY_LIMIT) throw new Error('Region pack boundaries can hold at most ' + GIS_CUSTOM_PACK_BOUNDARY_LIMIT + ' features.');
+    return parsed.data;
+  }
+
   function gisPackSlug(value, fallback) {
     var slug = String(value == null ? '' : value).toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
@@ -290,6 +309,7 @@
     if (!rawRecords.length) throw new Error('A region pack needs at least one coordinate record.');
     if (rawRecords.length > GIS_CUSTOM_PACK_RECORD_LIMIT) throw new Error('A region pack can hold at most ' + GIS_CUSTOM_PACK_RECORD_LIMIT + ' records.');
     var records = rawRecords.map(function (record, index) { return normalizeGISRegionPackRecord(record, metrics, index); });
+    var boundaries = normalizeGISRegionPackBoundaries(source.boundaries);
     metrics = metrics.map(function (metric) {
       return { id: metric.id, field: metric.field, label: metric.label, unit: metric.unit, maximumFractionDigits: metric.maximumFractionDigits };
     });
@@ -328,13 +348,14 @@
       },
       description: gisPackText(source.description, 300) || (records.length + ' reference points for ' + scope + '.'),
       sourceNote: gisPackText(source.sourceNote || source.source, 400) || 'Learner-supplied values; document the source, date, and method in the project provenance.',
-      records: records
+      records: records,
+      boundaries: boundaries
     };
   }
 
   function serializeGISRegionPack(pack) {
     var normalized = normalizeGISRegionPack(pack, { allowExistingId: true });
-    return {
+    var file = {
       format: GIS_REGION_PACK_FORMAT,
       version: GIS_REGION_PACK_VERSION,
       id: normalized.id,
@@ -350,6 +371,8 @@
       }),
       records: normalized.records
     };
+    if (normalized.boundaries) file.boundaries = normalized.boundaries;
+    return file;
   }
 
   function regionPackTemplate() {
@@ -364,7 +387,11 @@
         { name: 'Place A', lat: 44.0, lon: -70.0, population: 1200, elevation: 40 },
         { name: 'Place B', lat: 44.5, lon: -69.5, population: 800, elevation: 120 },
         { name: 'Place C', lat: 45.0, lon: -69.0, population: 300, elevation: 310 }
-      ]
+      ],
+      boundaries: {
+        type: 'FeatureCollection',
+        features: [{ type: 'Feature', properties: { name: 'Example district (optional; delete this key if you have no boundaries)', index: 1 }, geometry: { type: 'Polygon', coordinates: [[[-70.4, 43.7], [-68.6, 43.7], [-68.6, 45.3], [-70.4, 45.3], [-70.4, 43.7]]] } }]
+      }
     });
   }
 
@@ -425,6 +452,7 @@
       description: options.description,
       sourceNote: options.sourceNote,
       coverage: options.coverage,
+      boundaries: options.boundaries,
       metrics: [{ id: metric.id, label: metric.label, unit: metric.unit }],
       records: records
     }, options);
@@ -1512,61 +1540,85 @@
     var viewport = dataViewport(pack.records, { center: [0, 0], zoom: 2 });
     var diagonalKm = haversineKm({ lat: viewport.bounds.south, lon: viewport.bounds.west }, { lat: viewport.bounds.north, lon: viewport.bounds.east });
     var radiusKm = Math.max(1, niceScaleKilometers(Math.max(1, diagonalKm / 4)));
-    var placeWord = pack.records.length === 1 ? 'place' : 'places';
+    var boundaryCount = pack.boundaries && Array.isArray(pack.boundaries.features) ? pack.boundaries.features.length : 0;
+    var vars = {
+      a: first.label, b: second ? second.label : '', scope: scope, n: pack.records.length, r: radiusKm, k: boundaryCount,
+      unit: first.unit ? ' (' + first.unit + ')' : '',
+      places: pack.records.length === 1 ? __alloT('stem.gisstudio.gen.place_one', 'place') : __alloT('stem.gisstudio.gen.place_many', 'places')
+    };
+    function fill(text) { return gisFillTemplate(text, vars); }
     var missions = [];
     if (second) {
       missions.push({
         id: pack.id + ':compare', kind: 'compare', generated: true,
-        title: first.label + ' and ' + second.label,
-        duration: '20-30 minutes',
-        question: 'How do the ' + first.label + ' and ' + second.label + ' patterns compare across the ' + pack.records.length + ' mapped ' + placeWord + ' in ' + scope + '?',
+        title: fill(__alloT('stem.gisstudio.gen.compare_title', '{a} and {b}')),
+        duration: __alloT('stem.gisstudio.gen.duration_medium', '20-30 minutes'),
+        question: fill(__alloT('stem.gisstudio.gen.compare_question', 'How do the {a} and {b} patterns compare across the {n} mapped {places} in {scope}?')),
         workspace: 'compare',
-        evidencePrompt: 'Make one comparison claim. Cite at least two named places, one from each map, and name one limitation of the values in this pack.',
-        teacherNote: 'Two synchronized maps invite students to confuse correlation with cause. Ask what else varies between the places, and whether ' + pack.records.length + ' reference points can represent ' + scope + '.',
-        practices: ['Spatial pattern comparison', 'Evidence-based argument', 'Data limitations and scale'],
+        evidencePrompt: __alloT('stem.gisstudio.gen.compare_evidence', 'Make one comparison claim. Cite at least two named places, one from each map, and name one limitation of the values in this pack.'),
+        teacherNote: fill(__alloT('stem.gisstudio.gen.compare_teacher', 'Two synchronized maps invite students to confuse correlation with cause. Ask what else varies between the places, and whether {n} reference points can represent {scope}.')),
+        practices: [__alloT('stem.gisstudio.gen.practice_pattern', 'Spatial pattern comparison'), __alloT('stem.gisstudio.gen.practice_argument', 'Evidence-based argument'), __alloT('stem.gisstudio.gen.practice_limits', 'Data limitations and scale')],
         steps: [
-          { id: 'setup', label: 'Prepare the synchronized ' + first.label + ' and ' + second.label + ' maps.' },
-          { id: 'pattern', label: 'Identify one similarity and one difference between the two patterns.' },
-          { id: 'evidence', label: 'Record evidence from at least two named places.' },
-          { id: 'limits', label: 'Explain why the maps cannot prove what caused the pattern.' }
+          { id: 'setup', label: fill(__alloT('stem.gisstudio.gen.compare_step_setup', 'Prepare the synchronized {a} and {b} maps.')) },
+          { id: 'pattern', label: __alloT('stem.gisstudio.gen.compare_step_pattern', 'Identify one similarity and one difference between the two patterns.') },
+          { id: 'evidence', label: __alloT('stem.gisstudio.gen.step_evidence_places', 'Record evidence from at least two named places.') },
+          { id: 'limits', label: __alloT('stem.gisstudio.gen.compare_step_limits', 'Explain why the maps cannot prove what caused the pattern.') }
         ],
         compareLeft: 'point:' + (first.field || first.id), compareRight: 'point:' + (second.field || second.id)
       });
     }
     missions.push({
       id: pack.id + ':buffer', kind: 'buffer', generated: true,
-      title: radiusKm + ' km service radius',
-      duration: '20-30 minutes',
-      question: 'Which mapped ' + placeWord + ' in ' + scope + ' fall within a hypothetical ' + radiusKm + ' km straight-line radius of a center you choose?',
+      title: fill(__alloT('stem.gisstudio.gen.buffer_title', '{r} km service radius')),
+      duration: __alloT('stem.gisstudio.gen.duration_medium', '20-30 minutes'),
+      question: fill(__alloT('stem.gisstudio.gen.buffer_question', 'Which mapped {places} in {scope} fall within a hypothetical {r} km straight-line radius of a center you choose?')),
       workspace: 'map',
-      evidencePrompt: 'State which places are inside the buffer and their ' + first.label + ' values, then explain why a circular straight-line buffer is not the same as travel time or equitable access.',
-      teacherNote: 'The ' + radiusKm + ' km radius is scaled to the extent of this pack, not to any real service standard. Students should say what radius would make sense for a real question and why.',
-      practices: ['GIS proximity analysis', 'Model assumptions and limitations', 'Quantitative spatial reasoning'],
+      evidencePrompt: fill(__alloT('stem.gisstudio.gen.buffer_evidence', 'State which places are inside the buffer and their {a} values, then explain why a circular straight-line buffer is not the same as travel time or equitable access.')),
+      teacherNote: fill(__alloT('stem.gisstudio.gen.buffer_teacher', 'The {r} km radius is scaled to the extent of this pack, not to any real service standard. Students should say what radius would make sense for a real question and why.')),
+      practices: [__alloT('stem.gisstudio.gen.practice_proximity', 'GIS proximity analysis'), __alloT('stem.gisstudio.gen.practice_models', 'Model assumptions and limitations'), __alloT('stem.gisstudio.gen.practice_quantitative', 'Quantitative spatial reasoning')],
       steps: [
-        { id: 'setup', label: 'Prepare a ' + radiusKm + ' km radius-buffer analysis on ' + first.label + '.' },
-        { id: 'place', label: 'Place the center and inspect the selected point rows.' },
-        { id: 'evidence', label: 'Summarize the selected count and selected attribute values.' },
-        { id: 'limits', label: 'Contrast straight-line proximity with real transportation access.' }
+        { id: 'setup', label: fill(__alloT('stem.gisstudio.gen.buffer_step_setup', 'Prepare a {r} km radius-buffer analysis on {a}.')) },
+        { id: 'place', label: __alloT('stem.gisstudio.gen.buffer_step_place', 'Place the center and inspect the selected point rows.') },
+        { id: 'evidence', label: __alloT('stem.gisstudio.gen.buffer_step_evidence', 'Summarize the selected count and selected attribute values.') },
+        { id: 'limits', label: __alloT('stem.gisstudio.gen.buffer_step_limits', 'Contrast straight-line proximity with real transportation access.') }
       ],
       metric: first.id, radiusKm: radiusKm
     });
     missions.push({
       id: pack.id + ':extremes', kind: 'extremes', generated: true,
-      title: 'Highest and lowest ' + first.label,
-      duration: '15-25 minutes',
-      question: 'Where are the highest and lowest ' + first.label + ' values in ' + scope + ', and what is near each of them?',
+      title: fill(__alloT('stem.gisstudio.gen.extremes_title', 'Highest and lowest {a}')),
+      duration: __alloT('stem.gisstudio.gen.duration_short', '15-25 minutes'),
+      question: fill(__alloT('stem.gisstudio.gen.extremes_question', 'Where are the highest and lowest {a} values in {scope}, and what is near each of them?')),
       workspace: 'map',
-      evidencePrompt: 'Name the highest and lowest places with their values' + (first.unit ? ' (' + first.unit + ')' : '') + ', describe where each sits on the map, and say what the pack does not tell you about them.',
-      teacherNote: 'Sorting the table twin is the accessible route to the same evidence as scanning the map. Push students from "where" to "why might that be" without letting them claim causes the data cannot support.',
-      practices: ['Table and map as equivalent evidence', 'Describing spatial distribution', 'Questioning data provenance'],
+      evidencePrompt: fill(__alloT('stem.gisstudio.gen.extremes_evidence', 'Name the highest and lowest places with their values{unit}, describe where each sits on the map, and say what the pack does not tell you about them.')),
+      teacherNote: __alloT('stem.gisstudio.gen.extremes_teacher', 'Sorting the table twin is the accessible route to the same evidence as scanning the map. Push students from "where" to "why might that be" without letting them claim causes the data cannot support.'),
+      practices: [__alloT('stem.gisstudio.gen.practice_table_map', 'Table and map as equivalent evidence'), __alloT('stem.gisstudio.gen.practice_distribution', 'Describing spatial distribution'), __alloT('stem.gisstudio.gen.practice_provenance', 'Questioning data provenance')],
       steps: [
-        { id: 'setup', label: 'Open the map with ' + first.label + ' as the thematic attribute and sort the table by value.' },
-        { id: 'pattern', label: 'Locate the highest and lowest places on the map or in the table.' },
-        { id: 'evidence', label: 'Record both places, their values, and what surrounds them.' },
-        { id: 'limits', label: 'Name one thing about these places the pack cannot show.' }
+        { id: 'setup', label: fill(__alloT('stem.gisstudio.gen.extremes_step_setup', 'Open the map with {a} as the thematic attribute and sort the table by value.')) },
+        { id: 'pattern', label: __alloT('stem.gisstudio.gen.extremes_step_pattern', 'Locate the highest and lowest places on the map or in the table.') },
+        { id: 'evidence', label: __alloT('stem.gisstudio.gen.extremes_step_evidence', 'Record both places, their values, and what surrounds them.') },
+        { id: 'limits', label: __alloT('stem.gisstudio.gen.extremes_step_limits', 'Name one thing about these places the pack cannot show.') }
       ],
       metric: first.id
     });
+    if (boundaryCount) {
+      missions.push({
+        id: pack.id + ':boundaries', kind: 'boundaries', generated: true,
+        title: __alloT('stem.gisstudio.gen.boundaries_title', 'Inside the boundaries'),
+        duration: __alloT('stem.gisstudio.gen.duration_long', '30-40 minutes'),
+        question: fill(__alloT('stem.gisstudio.gen.boundaries_question', 'Which mapped {places} fall inside each of the {k} boundary features in {scope}, and how would a different boundary change the answer?')),
+        workspace: 'map',
+        evidencePrompt: __alloT('stem.gisstudio.gen.boundaries_evidence', 'Choose a boundary, report its approximate area or perimeter and the places inside it, then describe how a different boundary could change the result.'),
+        teacherNote: __alloT('stem.gisstudio.gen.boundaries_teacher', 'These boundaries came with the pack. Ask who drew them, for what purpose, and whether the reference points are representative of the areas inside them.'),
+        practices: [__alloT('stem.gisstudio.gen.practice_region', 'Scale and region concepts'), __alloT('stem.gisstudio.gen.practice_systems', 'Systems and models'), __alloT('stem.gisstudio.gen.practice_boundary', 'Boundary and classification literacy')],
+        steps: [
+          { id: 'setup', label: __alloT('stem.gisstudio.gen.boundaries_step_setup', 'Load the pack boundaries as a polygon layer.') },
+          { id: 'measure', label: __alloT('stem.gisstudio.gen.boundaries_step_measure', 'Measure one polygon and select mapped places inside it.') },
+          { id: 'evidence', label: __alloT('stem.gisstudio.gen.boundaries_step_evidence', 'Use the feature table and point table as evidence.') },
+          { id: 'limits', label: __alloT('stem.gisstudio.gen.boundaries_step_limits', 'Explain how boundaries and classification choices shape conclusions.') }
+        ]
+      });
+    }
     return missions;
   }
 
@@ -3406,7 +3458,8 @@
       pointInFeature: pointInFeature, selectPointsInFeature: selectPointsInFeature,
       selectWithinRadius: selectWithinRadius, nearestRecord: nearestRecord, featureMeasurements: featureMeasurements,
       buildEvidenceReport: buildEvidenceReport, missionCompletion: missionCompletion, missions: GIS_MISSIONS, regionPacks: GIS_REGION_PACKS,
-      generateRegionMissions: generateRegionMissions,
+      generateRegionMissions: generateRegionMissions, gisFillTemplate: gisFillTemplate,
+      normalizeGISRegionPackBoundaries: normalizeGISRegionPackBoundaries,
       parseTimeCSV: parseTimeCSV, timelineSnapshot: timelineSnapshot, calculateTemporalChange: calculateTemporalChange,
       calculateSpectralIndex: calculateSpectralIndex, classifySpectralPixel: classifySpectralPixel,
       normalizeRemoteSensingState: normalizeRemoteSensingState, summarizeRemoteChange: summarizeRemoteChange,
@@ -3487,7 +3540,7 @@
         regionBuiltInGroup: t('stem.gisstudio.region.built_in_group', 'Built-in sample packs'),
         packKicker: t('stem.gisstudio.pack.kicker', 'YOUR OWN GEOGRAPHY'),
         packHeading: t('stem.gisstudio.pack.heading', 'Load a different region'),
-        packIntro: t('stem.gisstudio.pack.intro', 'Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, and project file as the built-in samples.'),
+        packIntro: t('stem.gisstudio.pack.intro', 'Bring any place into the studio as a region pack: a JSON pack file, or a CSV with name, latitude, longitude, and one column per numeric attribute. A JSON pack can also carry GeoJSON boundaries. Custom packs get the same layer workspace, table twin, comparison maps, coverage lens, generated missions, and project file as the built-in samples.'),
         packChooseFile: t('stem.gisstudio.pack.choose_file', 'Region pack file (.json or .csv)'),
         packLabel: t('stem.gisstudio.pack.label', 'Pack name'),
         packLabelPlaceholder: t('stem.gisstudio.pack.label_placeholder', 'Example: Cumberland County towns'),
@@ -3505,6 +3558,11 @@
         packEmpty: t('stem.gisstudio.pack.empty', 'No custom packs yet. Packs you load travel with the project file and device-local autosave.'),
         packActive: t('stem.gisstudio.pack.active', 'Active'),
         packPlaces: t('stem.gisstudio.pack.places', 'places'),
+        packPaste: t('stem.gisstudio.pack.paste', 'Or paste region rows (CSV) or a JSON pack'),
+        packPastePlaceholder: t('stem.gisstudio.pack.paste_placeholder', 'name,latitude,longitude,population,elevation (m)\nPlace A,44.0,-70.0,1200,40'),
+        packPastePreview: t('stem.gisstudio.pack.paste_preview', 'Preview pasted region'),
+        packIncludeBoundaries: t('stem.gisstudio.pack.include_boundaries', 'Include the current boundary layer in the saved pack'),
+        packBoundaryFeatures: t('stem.gisstudio.pack.boundary_features', 'boundary features'),
         packQuickLink: t('stem.gisstudio.pack.quick_link', 'Load a different region\u2026'),
         packCoverageSummary: t('stem.gisstudio.pack.coverage_summary', 'Coverage notes (optional)'),
         packCoverageIntro: t('stem.gisstudio.pack.coverage_intro', 'Say which areas these points represent and which they leave out. The coverage lens shows these notes beside the map so nobody mistakes a sample for the whole region.'),
@@ -3626,6 +3684,8 @@
         var packErrorState = React.useState(''), packError = packErrorState[0], setPackError = packErrorState[1];
         var packStatusState = React.useState(''), packStatus = packStatusState[0], setPackStatus = packStatusState[1];
         var packPreviewState = React.useState(null), packPreview = packPreviewState[0], setPackPreview = packPreviewState[1];
+        var packTextState = React.useState(''), packText = packTextState[0], setPackText = packTextState[1];
+        var packIncludeBoundariesState = React.useState(true), packIncludeBoundaries = packIncludeBoundariesState[0], setPackIncludeBoundaries = packIncludeBoundariesState[1];
         var importDiagnosticsState = React.useState({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }), importDiagnostics = importDiagnosticsState[0], setImportDiagnostics = importDiagnosticsState[1];
         var s4 = React.useState([]), importedRows = s4[0], setImportedRows = s4[1];
         var s5 = React.useState(EXAMPLE), csv = s5[0], setCSV = s5[1];
@@ -4945,6 +5005,9 @@
           setPackStatus((replaced ? __alloT('stem.gisstudio.pack.status_replaced', 'Updated region pack') : __alloT('stem.gisstudio.pack.status_loaded', 'Loaded region pack')) + ': ' + pack.label + ' (' + pack.records.length + ' \u00D7 ' + pack.metrics.length + ')' + (note ? ' ' + note : ''));
           changeRegionPack(pack.id, pack);
           setTab('map');
+          if (pack.boundaries) {
+            try { applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(pack.boundaries)), { sourceFormat: 'geojson' }), pack.label, {}); } catch (boundaryProblem) { setGeoError(boundaryProblem.message); }
+          }
           announce(__alloT('stem.gisstudio.sr_region_pack_loaded', 'Region pack loaded and mapped.') + ' ' + pack.label);
           return true;
         }
@@ -4962,8 +5025,30 @@
             return { pack: normalizeGISRegionPack(merged, overrides), rejectedRows: 0, truncatedRows: 0 };
           }
           return regionPackFromCSV(trimmed, Object.assign({}, overrides, {
-            fileName: fileName, label: packForm.label.trim(), scope: packForm.scope.trim(), sourceNote: provenance.source
+            fileName: fileName, label: packForm.label.trim() || (fileName ? '' : __alloT('stem.gisstudio.pack.pasted_label', 'Pasted region')), scope: packForm.scope.trim(), sourceNote: provenance.source
           }));
+        }
+
+        function showRegionPackPreview(result, fileName) {
+          setPackPreview({ pack: result.pack, rejectedRows: result.rejectedRows || 0, rejected: result.rejected || [], truncatedRows: result.truncatedRows || 0, fileName: fileName });
+          setPackForm(Object.assign({}, packForm, {
+            label: result.pack.label, scope: result.pack.scope,
+            represented: result.pack.coverage.represented.join(', '), gaps: result.pack.coverage.gaps.join(', '),
+            note: /^Coverage was described by/.test(result.pack.coverage.note) ? '' : result.pack.coverage.note
+          }));
+          setPackError('');
+          setPackStatus('');
+          announce(__alloT('stem.gisstudio.sr_region_pack_previewed', 'Region pack previewed. Review the places and attributes, then choose Use this pack.') + ' ' + result.pack.label);
+        }
+
+        function previewPastedRegionPack() {
+          try {
+            if (!String(packText || '').trim()) throw new Error(__alloT('stem.gisstudio.pack.paste_empty', 'Paste region rows or a JSON pack first.'));
+            showRegionPackPreview(importRegionPackText(packText, ''), '');
+          } catch (problem) {
+            setPackError(problem.message);
+            announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
+          }
         }
 
         function readRegionPackFile(event) {
@@ -4974,16 +5059,7 @@
           var reader = new FileReader();
           reader.onload = function () {
             try {
-              var result = importRegionPackText(String(reader.result || ''), file.name);
-              setPackPreview({ pack: result.pack, rejectedRows: result.rejectedRows || 0, rejected: result.rejected || [], truncatedRows: result.truncatedRows || 0, fileName: file.name });
-              setPackForm(Object.assign({}, packForm, {
-                label: result.pack.label, scope: result.pack.scope,
-                represented: result.pack.coverage.represented.join(', '), gaps: result.pack.coverage.gaps.join(', '),
-                note: /^Coverage was described by/.test(result.pack.coverage.note) ? '' : result.pack.coverage.note
-              }));
-              setPackError('');
-              setPackStatus('');
-              announce(__alloT('stem.gisstudio.sr_region_pack_previewed', 'Region pack previewed. Review the places and attributes, then choose Use this pack.') + ' ' + result.pack.label);
+              showRegionPackPreview(importRegionPackText(String(reader.result || ''), file.name), file.name);
             } catch (problem) {
               setPackError(problem.message);
               announce(__alloT('stem.gisstudio.sr_region_pack_error', 'Region pack error.') + ' ' + problem.message);
@@ -5029,6 +5105,7 @@
               metricLabel: packForm.metricLabel.trim(),
               metricUnit: packForm.metricUnit.trim(),
               coverage: packCoverageFromForm(),
+              boundaries: packIncludeBoundaries && geoFeatures.length ? geoData : undefined,
               sourceNote: provenance.source,
               existingIds: customRegionPacks.map(function (item) { return item.id; }),
               allowExistingId: true
@@ -5681,7 +5758,8 @@
             h('p', { role: 'status', style: { margin: '0 0 8px', color: '#dbeafe', fontSize: 12, lineHeight: 1.5 } },
               pack.records.length + ' ' + gisText.packPlaces + ' \u00B7 ' + previewMetrics.map(function (metric) { return metric.label + (metric.unit ? ' (' + metric.unit + ')' : ''); }).join(', ') +
               (packPreview.rejectedRows ? ' \u00B7 ' + packPreview.rejectedRows + ' ' + gisText.packRowsSkippedShort : '') +
-              (packPreview.truncatedRows ? ' \u00B7 ' + packPreview.truncatedRows + ' ' + gisText.packRowsTruncated : '')),
+              (packPreview.truncatedRows ? ' \u00B7 ' + packPreview.truncatedRows + ' ' + gisText.packRowsTruncated : '') +
+              (pack.boundaries ? ' \u00B7 ' + pack.boundaries.features.length + ' ' + gisText.packBoundaryFeatures : '')),
             packPreview.rejected.length > 0 && h('ul', { style: { margin: '0 0 8px', paddingLeft: 18, color: '#fde68a', fontSize: 11 } },
               packPreview.rejected.slice(0, 5).map(function (item) { return h('li', { key: 'rejected-' + item.row }, gisText.packRow + ' ' + item.row + (item.name ? ' (' + item.name + ')' : '') + ': ' + item.reason); })),
             h('div', { style: { overflowX: 'auto', maxHeight: 240, overflowY: 'auto' } },
@@ -5729,7 +5807,13 @@
                   h('input', { type: 'text', value: packForm.gaps, maxLength: 600, onChange: function (event) { updatePackForm('gaps', event.target.value); }, style: control })),
                 h('label', { style: fieldLabel }, gisText.packCoverageNote,
                   h('input', { type: 'text', value: packForm.note, maxLength: 500, onChange: function (event) { updatePackForm('note', event.target.value); }, style: control })))),
+            h('label', { style: { display: 'grid', gap: 6, fontSize: 12, fontWeight: 700, margin: '0 0 12px' } }, gisText.packPaste,
+              h('textarea', { value: packText, onChange: function (event) { setPackText(event.target.value); setPackError(''); }, rows: 5, spellCheck: false, placeholder: gisText.packPastePlaceholder, style: { width: '100%', boxSizing: 'border-box', padding: 12, borderRadius: 10, border: '1px solid #3f6b82', background: '#071827', color: '#f8fafc', fontFamily: 'ui-monospace, monospace', fontSize: 12 } })),
+            geoFeatures.length > 0 && h('label', { style: { display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, margin: '0 0 12px' } },
+              h('input', { type: 'checkbox', checked: packIncludeBoundaries, onChange: function (event) { setPackIncludeBoundaries(event.target.checked); } }),
+              gisText.packIncludeBoundaries + ' (' + geoFeatures.length + ')'),
             h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'flex-end' } },
+              h('button', { type: 'button', onClick: previewPastedRegionPack, style: primary }, gisText.packPastePreview),
               h('label', { style: Object.assign({}, control, { cursor: 'pointer', fontWeight: 700 }) }, gisText.packChooseFile,
                 h('input', { type: 'file', accept: '.json,.csv,.gispack.json,application/json,text/csv', onChange: readRegionPackFile, style: { display: 'block', marginTop: 7 } })),
               h('button', { type: 'button', onClick: saveMappedRowsAsPack, disabled: !canSaveMapped, 'aria-describedby': canSaveMapped ? undefined : 'gis-region-pack-save-hint', style: Object.assign({}, primary, { opacity: canSaveMapped ? 1 : 0.55 }) }, gisText.packSaveMapped),
@@ -5745,7 +5829,7 @@
                 return h('li', { key: pack.id, style: { display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', justifyContent: 'space-between', padding: 10, borderRadius: 8, border: '1px solid ' + (active ? '#22d3ee' : '#2d5868'), background: '#081d29' } },
                   h('div', { style: { display: 'grid', gap: 3, minWidth: 0 } },
                     h('strong', { style: { color: '#f0fdfa', fontSize: 13 } }, pack.label, active ? h('span', { style: { color: '#67e8f9', fontWeight: 700, marginLeft: 8, fontSize: 11 } }, gisText.packActive) : null),
-                    h('span', { style: { color: '#9fb6c5', fontSize: 11 } }, pack.records.length + ' ' + gisText.packPlaces + ' \u00B7 ' + pack.metrics.map(function (metric) { return metric.label + (metric.unit ? ' (' + metric.unit + ')' : ''); }).join(', '))),
+                    h('span', { style: { color: '#9fb6c5', fontSize: 11 } }, pack.records.length + ' ' + gisText.packPlaces + ' \u00B7 ' + pack.metrics.map(function (metric) { return metric.label + (metric.unit ? ' (' + metric.unit + ')' : ''); }).join(', ') + (pack.boundaries ? ' \u00B7 ' + pack.boundaries.features.length + ' ' + gisText.packBoundaryFeatures : ''))),
                   h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
                     h('button', { type: 'button', onClick: function () { changeRegionPack(pack.id, pack); setTab('map'); }, 'aria-label': gisText.packUse + ': ' + pack.label, style: Object.assign({}, primary, { padding: '7px 10px' }) }, gisText.packUse),
                     h('button', { type: 'button', onClick: function () { downloadRegionPack(pack); }, 'aria-label': gisText.packDownload + ': ' + pack.label, style: Object.assign({}, control, { cursor: 'pointer' }) }, gisText.packDownload),
@@ -6259,6 +6343,13 @@
             setTab('map');
             persist('gisTab', 'map');
             persist('gisMetric', mission.metric);
+          } else if (mission.kind === 'boundaries') {
+            if (activeRegionPack.boundaries) {
+              try { applyGeoJSON(Object.assign(parseGeoJSON(JSON.stringify(activeRegionPack.boundaries)), { sourceFormat: 'geojson' }), activeRegionPack.label, {}); } catch (boundaryProblem) { setGeoError(boundaryProblem.message); }
+            }
+            setLayers(function (previous) { return Object.assign({}, previous, { points: true, polygons: true }); });
+            setTab('map');
+            persist('gisTab', 'map');
           } else if (mission.kind === 'extremes') {
             setMetric(mission.metric);
             setAnalysisMode('distance');
