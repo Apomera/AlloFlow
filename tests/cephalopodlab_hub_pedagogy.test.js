@@ -545,3 +545,38 @@ describe('Cephalopod Lab Intelligence Lab evidence ladder', () => {
     expect(renderIntel('otto').textContent).toMatch(/Weak evidence is not worthless/);
   });
 });
+
+// ── Camo Discovery theming ──
+describe('Cephalopod Lab Camo Discovery', () => {
+  const renderDiscovery = () => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', {
+      cephalopodLab: { activeSection: 'camoHunt', camoHunt: { substrate: 'coral', brightness: 60, hue: 80, coarseness: 85, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] } },
+    });
+    return c;
+  };
+
+  it('carries no light-theme utility classes, so it cannot render as a white card in the dark tool', () => {
+    const html = renderDiscovery().innerHTML;
+    expect(html).not.toMatch(/bg-white/);
+    expect(html).not.toMatch(/bg-slate-(50|100)/);
+    expect(html).not.toMatch(/text-slate-[5-8]00/);
+    expect(html).not.toMatch(/bg-(amber|emerald|rose|indigo)-(50|100|200)/);
+    // the only classes left are screen-reader captions
+    const classed = Array.from(renderDiscovery().querySelectorAll('[class]'));
+    expect(classed.every((el) => el.getAttribute('class') === 'sr-only')).toBe(true);
+  });
+
+  it('lets the substrate colour reach the frame around the diagram', () => {
+    const c = renderDiscovery();
+    const svg = c.querySelector('svg[role="img"]');
+    expect(svg).not.toBeNull();
+    // the wrapper is painted with the substrate so the fitted diagram has no pale bars
+    expect(svg.parentElement.getAttribute('style')).toMatch(/background:\s*#c97777/);
+  });
+
+  it('keeps its accessible summary of the current sliders', () => {
+    const label = renderDiscovery().querySelector('svg[role="img"]').getAttribute('aria-label');
+    expect(label).toMatch(/brightness 60 percent, hue 80 percent, coarseness 85 percent/);
+  });
+});
