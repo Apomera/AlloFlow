@@ -37,7 +37,7 @@ describe('Learning Lab Self-Assessment accessibility', () => {
   });
 
   it('reports incomplete submission in an alert and focuses the first missing group', () => {
-    expect(assessment).toContain("llAnnounce('Snapshot not saved. Answer all 12 questions. ' + missing.length + ' remaining.')");
+    expect(assessment).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_snapshot_not_saved_answer_all_12_questions_remain', 'Snapshot not saved. Answer all 12 questions. {value1} remaining.'), { value1: missing.length }))");
     expect(assessment).toContain("focusById('learning-lab-assessment-question-' + missing[0])");
     expect(assessment).toContain("missingIds.length > 0 ? hh('div', { role: 'alert'");
   });

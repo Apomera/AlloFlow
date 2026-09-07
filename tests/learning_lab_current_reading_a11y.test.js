@@ -50,7 +50,7 @@ describe('Learning Lab Current Reading accessibility', () => {
   });
 
   it('announces successful addition and restores title focus', () => {
-    expect(reading).toContain("llAnnounce('Book added: ' + title)");
+    expect(reading).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_book_added', 'Book added: {value1}'), { value1: title }))");
     expect(reading).toContain("focusById('learning-lab-reading-title')");
   });
 

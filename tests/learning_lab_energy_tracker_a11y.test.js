@@ -62,7 +62,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
   });
 
   it('announces saved energy value and time', () => {
-    expect(tracker).toContain("llAnnounce('Energy log saved for ' + formatHour(entry.hour) + ': ' + entry.level + ' out of 10.')");
+    expect(tracker).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_energy_log_saved_for_out_of_10', 'Energy log saved for {value1}: {value2} out of 10.'), { value1: formatHour(entry.hour), value2: entry.level }))");
   });
 
   it('includes every valid hour in the chart calculation', () => {
@@ -120,7 +120,7 @@ describe('Learning Lab Personal Energy Tracker accessibility', () => {
   });
 
   it('names deletion controls and restores focus after removal', () => {
-    expect(tracker).toContain("'aria-label': 'Remove energy log from ' + whenText");
+    expect(tracker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_energy_log_from', 'Remove energy log from {value1}'), { value1: whenText })");
     expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_energy_log_removed', 'Energy log removed.'))");
     expect(tracker).toContain("focusById('learning-lab-energy-history-heading')");
   });

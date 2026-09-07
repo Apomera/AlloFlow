@@ -41,7 +41,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
 
   it('announces deck creation and opens the new deck', () => {
     expect(flashcards).toContain("setView('cards')");
-    expect(flashcards).toContain("llAnnounce('Flashcard deck created: ' + name + '.')");
+    expect(flashcards).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_flashcard_deck_created', 'Flashcard deck created: {value1}.'), { value1: name }))");
   });
 
   it('confirms deck deletion without placing user content in the dialog title', () => {
@@ -50,7 +50,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
   });
 
   it('announces deck deletion and restores deck-list focus', () => {
-    expect(flashcards).toContain("llAnnounce('Flashcard deck deleted: ' + name + '.')");
+    expect(flashcards).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_flashcard_deck_deleted', 'Flashcard deck deleted: {value1}.'), { value1: name }))");
     expect(flashcards).toContain("setFocusTarget('learning-lab-flashcards-heading')");
   });
 
@@ -62,7 +62,7 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
 
   it('uses explicit native button types for deck opening, deletion, and creation', () => {
     expect(flashcards).toContain("type: 'button', onClick: function() { openDeck(deckName); }");
-    expect(flashcards).toContain("'aria-label': 'Delete flashcard deck: ' + deckName");
+    expect(flashcards).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_flashcard_deck', 'Delete flashcard deck: {value1}'), { value1: deckName })");
     expect(flashcards).toContain("type: 'button', onClick: addDeck");
   });
 
@@ -127,8 +127,8 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
   });
 
   it('provides item-specific edit and delete controls with full-size targets', () => {
-    expect(flashcards).toContain("'aria-label': 'Edit flashcard: ' + itemName");
-    expect(flashcards).toContain("'aria-label': 'Delete flashcard: ' + itemName");
+    expect(flashcards).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_flashcard', 'Edit flashcard: {value1}'), { value1: itemName })");
+    expect(flashcards).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_flashcard', 'Delete flashcard: {value1}'), { value1: itemName })");
     expect(flashcards.match(/minHeight: 44, padding: '8px 11px'/g)?.length).toBeGreaterThanOrEqual(2);
   });
 
@@ -180,8 +180,8 @@ describe('Learning Lab Personal Flashcard Deck accessibility', () => {
   });
 
   it('announces review progress, completion, and early ending', () => {
-    expect(flashcards).toContain("llAnnounce('Rating saved. Moving to card '");
-    expect(flashcards).toContain("llAnnounce('Review complete. '");
+    expect(flashcards).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_rating_saved_moving_to_card_of', 'Rating saved. Moving to card {value1} of {value2}.'), { value1: (revIdx + 2), value2: reviewIds.length })");
+    expect(flashcards).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_review_complete_of_cards_rated_good_or_easy', 'Review complete. {value1} of {value2} cards rated Good or Easy.'), { value1: nextStats.remembered, value2: nextStats.total })");
     expect(flashcards).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_review_session_ended', 'Review session ended.'))");
   });
 

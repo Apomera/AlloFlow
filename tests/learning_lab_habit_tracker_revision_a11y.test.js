@@ -31,7 +31,7 @@ describe('Learning Lab Habit Tracker revised accessibility', () => {
   it('uses a named semantic list for template choices', () => {
     expect(tracker).toContain("hh('ul', { 'aria-labelledby': 'learning-lab-habit-templates-heading'");
     expect(tracker).toContain("return hh('li', { key: 'tp-' + index }");
-    expect(tracker).toContain("'aria-label': 'Use editable example: ' + template.name");
+    expect(tracker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_use_editable_example', 'Use editable example: {value1}'), { value1: template.name })");
   });
 
   it('hides template and habit icons as decorative', () => {

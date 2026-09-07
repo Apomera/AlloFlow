@@ -69,8 +69,8 @@ describe('Learning Lab Notes Workbench accessibility', () => {
     for (const id of ['learning-lab-notebook-heading', 'learning-lab-notebooks-heading', 'learning-lab-note-editor-heading', 'learning-lab-note-results-heading']) {
       expect(notes).toContain("focusId('" + id + "')");
     }
-    expect(notes).toContain("llAnnounce('Note saved: '");
-    expect(notes).toContain("llAnnounce('Note deleted: '");
+    expect(notes).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_note_saved', 'Note saved: {value1}.'), { value1: title })");
+    expect(notes).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_note_deleted', 'Note deleted: {value1}.'), { value1: note.title })");
     expect(notes).toContain("llAnnounce('Notebook deleted: '");
   });
 

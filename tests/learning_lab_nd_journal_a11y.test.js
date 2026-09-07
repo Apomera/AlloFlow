@@ -99,7 +99,7 @@ describe('Learning Lab Neurodivergence Journal accessibility', () => {
   });
 
   it('names removal controls, announces removal, and restores focus', () => {
-    expect(journal).toContain("'aria-label': 'Remove journal entry: ' + topic.label");
+    expect(journal).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_journal_entry', 'Remove journal entry: {value1}'), { value1: topic.label })");
     expect(journal).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_journal_entry_removed', 'Journal entry removed.'))");
     expect(journal).toContain("focusById('learning-lab-nd-history-heading')");
   });

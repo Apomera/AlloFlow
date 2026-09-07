@@ -63,9 +63,9 @@ describe('Learning Lab Class Roster accessibility', () => {
   });
 
   it('provides a named action group for each class', () => {
-    expect(roster).toContain("role: 'group', 'aria-label': 'Actions for ' + className");
-    expect(roster).toContain("'aria-label': 'Edit class: ' + className");
-    expect(roster).toContain("'aria-label': 'Remove class: ' + className");
+    expect(roster).toContain("role: 'group', 'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_actions_for', 'Actions for {value1}'), { value1: className })");
+    expect(roster).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_class', 'Edit class: {value1}'), { value1: className })");
+    expect(roster).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_class', 'Remove class: {value1}'), { value1: className })");
   });
 
   it('moves focus into editing and restores it after update or cancellation', () => {

@@ -44,7 +44,7 @@ describe('Learning Lab Self-Compassion accessibility', () => {
     expect(compassion).toContain("'Finish without saving'");
     expect(compassion).toContain("'Save to personal history'");
     expect(compassion).toContain('function savePractice(exercise)');
-    expect(compassion).toContain("llAnnounce('Practice history entry saved: '");
+    expect(compassion).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_practice_history_entry_saved', 'Practice history entry saved: {value1}.'), { value1: exercise.label })");
     expect(compassion).not.toContain('Self-compassion practice completed:');
   });
 
@@ -72,8 +72,8 @@ describe('Learning Lab Self-Compassion accessibility', () => {
   });
 
   it('uses named 44-pixel exercise and history controls', () => {
-    expect(compassion).toContain("'aria-label': 'Start ' + exercise.label");
-    expect(compassion).toContain("'aria-label': 'Delete self-compassion history entry: ' + label");
+    expect(compassion).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_start', 'Start {value1}'), { value1: exercise.label })");
+    expect(compassion).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_self_compassion_history_entry', 'Delete self-compassion history entry: {value1}'), { value1: label })");
     expect(compassion.match(/minHeight: 44/g)?.length).toBeGreaterThanOrEqual(2);
   });
 

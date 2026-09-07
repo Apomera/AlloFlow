@@ -49,7 +49,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('provides named 44-pixel removal controls for commitment fields', () => {
-    expect(contracts).toContain("'aria-label': 'Remove commitment ' + (index + 1)");
+    expect(contracts).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_commitment', 'Remove commitment {value1}'), { value1: (index + 1) })");
     expect(contracts).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_commitment_field_removed', 'Commitment field removed.'))");
     expect(contracts).toContain("minWidth: 44, minHeight: 44");
   });
@@ -82,7 +82,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
   });
 
   it('announces saves and focuses the new contract heading', () => {
-    expect(contracts).toContain("llAnnounce('Unsigned learning contract saved: ' + entry.title)");
+    expect(contracts).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_unsigned_learning_contract_saved', 'Unsigned learning contract saved: {value1}'), { value1: entry.title }))");
     expect(contracts).toContain("focusById('learning-lab-contract-heading-' + entry.id)");
   });
 
@@ -101,7 +101,7 @@ describe('Learning Lab Learning Contracts accessibility', () => {
     expect(contracts).toContain("title: 'Sign this learning contract?', confirmText: 'Sign contract'");
     expect(contracts).toContain("setData(Object.assign({}, data, { contracts: rawContracts.map");
     expect(contracts).toContain("signed: true, signedAt: todayISO()");
-    expect(contracts).toContain("llAnnounce('Learning contract signed: ' + textValue(entry.title))");
+    expect(contracts).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_learning_contract_signed', 'Learning contract signed: {value1}'), { value1: textValue(entry.title) }))");
   });
 
   it('confirms deletion through the accessible app dialog', () => {

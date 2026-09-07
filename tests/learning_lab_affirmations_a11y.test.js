@@ -49,7 +49,7 @@ describe('Learning Lab Affirmation Library accessibility', () => {
   });
 
   it('announces additions and restores focus for another entry', () => {
-    expect(affirmations).toContain("llAnnounce('Custom affirmation added: ' + text)");
+    expect(affirmations).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_custom_affirmation_added', 'Custom affirmation added: {value1}'), { value1: text }))");
     expect(affirmations).toContain("focusById('learning-lab-affirmation-new')");
   });
 
@@ -125,7 +125,7 @@ describe('Learning Lab Affirmation Library accessibility', () => {
   });
 
   it('names custom removal controls', () => {
-    expect(affirmations).toContain("'aria-label': 'Remove custom affirmation: ' + entry.text");
+    expect(affirmations).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_custom_affirmation', 'Remove custom affirmation: {value1}'), { value1: entry.text })");
     expect(affirmations).toContain("'Remove'");
   });
 

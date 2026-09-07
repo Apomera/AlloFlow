@@ -93,7 +93,7 @@ describe('Learning Lab Disclosure Wizard accessibility', () => {
   });
 
   it('announces saves with both rating values and restores focus', () => {
-    expect(wizard).toContain("llAnnounce('Disclosure decision saved. Risk ' + entry.risk + ' out of 10 and possible benefit ' + entry.gain + ' out of 10.')");
+    expect(wizard).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_disclosure_decision_saved_risk_out_of_10_and_poss', 'Disclosure decision saved. Risk {value1} out of 10 and possible benefit {value2} out of 10.'), { value1: entry.risk, value2: entry.gain }))");
     expect(wizard).toContain("focusById('learning-lab-disclosure-context')");
   });
 

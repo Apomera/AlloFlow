@@ -58,8 +58,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('announces timer start, pause, reset, and completion', () => {
-    expect(worry).toContain("'Worry-time timer started for '");
-    expect(worry).toContain("'Worry-time timer paused with '");
+    expect(worry).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_worry_time_timer_started_for_minutes', 'Worry-time timer started for {value1} minutes.'), { value1: (secsLeft <= 0 ? 15 : Math.ceil(secsLeft / 60)) })");
+    expect(worry).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_worry_time_timer_paused_with_minutes_remaining', 'Worry-time timer paused with {value1} minutes remaining.'), { value1: Math.ceil(secsLeft / 60) })");
     expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_timer_reset_to_15_minutes', 'Worry-time timer reset to 15 minutes.'))");
     expect(worry).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_worry_time_is_complete_pause_ground_yourself_and', 'Worry time is complete.");
   });
@@ -115,8 +115,8 @@ describe('Learning Lab Personal Worry Time accessibility', () => {
   });
 
   it('provides named action groups and deletion controls for open worries', () => {
-    expect(worry).toContain("'aria-label': 'Actions for worry: ' + worryText");
-    expect(worry).toContain("'aria-label': 'Remove worry: ' + worryText");
+    expect(worry).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_actions_for_worry', 'Actions for worry: {value1}'), { value1: worryText })");
+    expect(worry).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_worry', 'Remove worry: {value1}'), { value1: worryText })");
     expect(worry).toContain("id: 'learning-lab-worry-process-' + worry.id");
   });
 

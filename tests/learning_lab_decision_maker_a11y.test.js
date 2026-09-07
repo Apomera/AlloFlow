@@ -103,7 +103,7 @@ describe('Learning Lab Decision Maker accessibility', () => {
 
   it('labels and constrains every score input', () => {
     expect(decision).toContain("type: 'number', min: 0, max: 10, step: 1");
-    expect(decision).toContain("'aria-label': 'Score ' + option.name + ' on ' + criterion.name + ', from 0 to 10'");
+    expect(decision).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_score_on_from_0_to_10', 'Score {value1} on {value2}, from 0 to 10'), { value1: option.name, value2: criterion.name })");
     expect(decision).toContain('Math.max(0, Math.min(10, Number(value) || 0))');
   });
 
@@ -137,7 +137,7 @@ describe('Learning Lab Decision Maker accessibility', () => {
   });
 
   it('announces creation and structural changes', () => {
-    expect(decision).toContain("llAnnounce('Decision created: '");
+    expect(decision).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_decision_created', 'Decision created: {value1}.'), { value1: decision.title })");
     expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_option_added', 'Decision option added.'))");
     expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_criterion_added', 'Decision criterion added.'))");
     expect(decision).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_decision_deleted', 'Decision deleted.'))");

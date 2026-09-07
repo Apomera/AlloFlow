@@ -51,7 +51,7 @@ describe('Learning Lab Personal Reference Sheet Builder accessibility', () => {
   it('uses semantic lists, sections, articles, and ordinary named button groups', () => {
     expect(sheets).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_saved_reference_sheets', 'Saved reference sheets')`);
     expect(sheets).toContain(`hh('ol', { 'aria-label': __alloLLT('stem.learning_lab.a11y_reference_sheet_sections', 'Reference sheet sections')`);
-    expect(sheets).toContain("hh('ul', { 'aria-label': 'Bullets in section '");
+    expect(sheets).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_bullets_in_section', 'Bullets in section {value1}'), { value1: (sectionIndex + 1) })");
     expect(sheets).toContain("hh('section', { 'aria-labelledby': sectionHeadingId }");
     expect(sheets).toContain("hh('article', { 'aria-labelledby': sheetHeadingId }");
     expect(sheets).toContain(`role: 'group', 'aria-label': __alloLLT('stem.learning_lab.a11y_reference_sheet_actions', 'Reference sheet actions')`);

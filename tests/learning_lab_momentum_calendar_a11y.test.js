@@ -70,7 +70,7 @@ describe('Learning Lab Momentum Calendar accessibility', () => {
   });
 
   it('announces saving and restores form focus', () => {
-    expect(calendar).toContain("llAnnounce('Momentum item saved: ' + label)");
+    expect(calendar).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_momentum_item_saved', 'Momentum item saved: {value1}'), { value1: label }))");
     expect(calendar).toContain("setForm(emptyForm); setLabelError('')");
     expect(calendar).toContain("focusById('learning-lab-momentum-label')");
   });
@@ -122,7 +122,7 @@ describe('Learning Lab Momentum Calendar accessibility', () => {
 
   it('groups dates into twelve named weeks', () => {
     expect(calendar).toContain('for (var weekIndex = 0; weekIndex < 12; weekIndex++)');
-    expect(calendar).toContain("role: 'group', 'aria-label': 'Week ' + (index + 1)");
+    expect(calendar).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_week_through', 'Week {value1}: {value2} through {value3}'), { value1: (index + 1), value2: dateLabel(first.date), value3: dateLabel(last.date) })");
   });
 
   it('gives every date button a contextual accessible name', () => {

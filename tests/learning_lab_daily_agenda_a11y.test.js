@@ -18,8 +18,8 @@ describe('Learning Lab Daily Agenda accessibility', () => {
   });
   it('accurately scopes the completion snapshot', () => {
     expect(agenda).toContain('The completion snapshot below counts only habit check-ins and extra agenda items.');
-    expect(agenda).toContain("'Completion snapshot: '");
-    expect(agenda).toContain("' habit check-ins and extra items complete.'");
+    expect(agenda).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_completion_snapshot_percent_of_habit_check_ins', 'Completion snapshot: {value1} percent. {value2} of {value3} habit check-ins and extra items complete.'), { value1: score.pct, value2: score.done, value3: score.total })");
+    expect(agenda).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_completion_snapshot_percent_of_habit_check_ins', 'Completion snapshot: {value1} percent. {value2} of {value3} habit check-ins and extra items complete.'), { value1: score.pct, value2: score.done, value3: score.total })");
     expect(agenda).not.toContain("' planned items.'");
     expect(agenda).not.toContain("Today's done-rate");
   });
@@ -39,7 +39,7 @@ describe('Learning Lab Daily Agenda accessibility', () => {
     expect(agenda.match(/setData\(Object\.assign\(\{\}, data,/g)).toHaveLength(3);
     expect(agenda).toContain("focusId('learning-lab-agenda-item')");
     expect(agenda).toContain("'learning-lab-agenda-extra-heading'");
-    expect(agenda).toContain("llAnnounce('Agenda item deleted: ' + item.text + '.')");
+    expect(agenda).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_agenda_item_deleted', 'Agenda item deleted: {value1}.'), { value1: item.text }))");
   });
   it('confirms deletion and keeps the deployed mirror identical', () => {
     expect(agenda).toContain("title: 'Delete this agenda item?', confirmText: 'Delete item'");

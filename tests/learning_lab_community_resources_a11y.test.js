@@ -51,7 +51,7 @@ describe('Learning Lab Community Resources accessibility', () => {
   });
 
   it('announces saving and returns focus to the form', () => {
-    expect(resources).toContain("llAnnounce('Community resource saved: ' + name)");
+    expect(resources).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_community_resource_saved', 'Community resource saved: {value1}'), { value1: name }))");
     expect(resources).toContain("setForm(emptyForm); setNameError('');");
     expect(resources).toContain("focusById('learning-lab-resource-name')");
   });

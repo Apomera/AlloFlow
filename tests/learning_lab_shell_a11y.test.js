@@ -29,7 +29,7 @@ describe('Learning Lab shell and cross-tool navigation accessibility', () => {
 
   it('updates the route and its accessible label atomically', () => {
     expect(shell).toContain('updMulti({ view: value, viewLabel: nextLabel })');
-    expect(shell).toContain("llAnnounce('Opening ' + nextLabel + '.')");
+    expect(shell).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_opening', 'Opening {value1}.'), { value1: nextLabel }))");
   });
 
   it('moves focus according to the destination rather than the page being left', () => {

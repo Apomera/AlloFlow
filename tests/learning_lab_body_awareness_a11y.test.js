@@ -61,7 +61,7 @@ describe('Learning Lab Body Awareness accessibility', () => {
   });
 
   it('announces the saved value and moves focus to history', () => {
-    expect(body).toContain("llAnnounce('Body comfort check saved. Overall comfort: ' + entry.overall + ' out of 10.')");
+    expect(body).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_body_comfort_check_saved_overall_comfort_out_of_1', 'Body comfort check saved. Overall comfort: {value1} out of 10.'), { value1: entry.overall }))");
     expect(body).toContain("focusById('learning-lab-body-history-heading')");
   });
 

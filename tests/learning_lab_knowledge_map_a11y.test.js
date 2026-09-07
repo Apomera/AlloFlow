@@ -62,7 +62,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   });
 
   it('announces area saving and restores form focus', () => {
-    expect(map).toContain("llAnnounce('Knowledge area saved: ' + name)");
+    expect(map).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_knowledge_area_saved', 'Knowledge area saved: {value1}'), { value1: name }))");
     expect(map).toContain("focusById('learning-lab-knowledge-area-name')");
   });
 
@@ -142,7 +142,7 @@ describe('Learning Lab Knowledge Map accessibility', () => {
   });
 
   it('announces topic saving and restores topic-form focus', () => {
-    expect(map).toContain("llAnnounce('Topic saved: ' + text)");
+    expect(map).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_topic_saved', 'Topic saved: {value1}'), { value1: text }))");
     expect(map).toContain("focusById('learning-lab-knowledge-topic-name')");
   });
 

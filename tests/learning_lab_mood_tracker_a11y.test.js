@@ -49,7 +49,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   });
 
   it('announces saved mood and energy values', () => {
-    expect(tracker).toContain("llAnnounce('Mood check-in saved. Mood ' + entry.mood + ' out of 10 and energy ' + entry.energy + ' out of 10.')");
+    expect(tracker).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_mood_check_in_saved_mood_out_of_10_and_energy_out', 'Mood check-in saved. Mood {value1} out of 10 and energy {value2} out of 10.'), { value1: entry.mood, value2: entry.energy }))");
   });
 
   it('uses a semantic definition list for summary statistics', () => {
@@ -106,7 +106,7 @@ describe('Learning Lab Personal Mood Tracker accessibility', () => {
   });
 
   it('names deletion controls and restores focus after removal', () => {
-    expect(tracker).toContain("'aria-label': 'Remove mood check-in from ' + logDate");
+    expect(tracker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_mood_check_in_from', 'Remove mood check-in from {value1}'), { value1: logDate })");
     expect(tracker).toContain("focusById('learning-lab-mood-recent-heading')");
     expect(tracker).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_mood_check_in_removed', 'Mood check-in removed.'))");
   });

@@ -125,7 +125,7 @@ describe('Learning Lab Parent or Guardian Message Builder accessibility', () => 
   });
 
   it('gives each saved-draft removal control a contextual name and 44-pixel target', () => {
-    expect(messages).toContain("'aria-label': 'Remove saved ' + label + ' draft'");
+    expect(messages).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_saved_draft', 'Remove saved {value1} draft'), { value1: label })");
     expect(messages).toContain("minWidth: 44, minHeight: 44");
   });
 

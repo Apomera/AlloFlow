@@ -65,7 +65,7 @@ describe('Learning Lab Friendship Tracker accessibility', () => {
   });
 
   it('announces saving and returns focus to the form', () => {
-    expect(tracker).toContain("llAnnounce('Check-in reminder saved for ' + name + '.')");
+    expect(tracker).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_check_in_reminder_saved_for', 'Check-in reminder saved for {value1}.'), { value1: name }))");
     expect(tracker).toContain("setForm(emptyForm); setNameError('')");
     expect(tracker).toContain("focusById('learning-lab-friend-name')");
   });

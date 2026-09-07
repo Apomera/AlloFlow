@@ -45,7 +45,7 @@ describe('Learning Lab Routine Builder accessibility', () => {
 
   it('preserves unrelated data, announces creation, and focuses the editor', () => {
     expect(routines).toContain("setData(Object.assign({}, data, { routines: [routine].concat(data.routines || []) }))");
-    expect(routines).toContain("llAnnounce('Routine created: ' + title + '. Add the first step.')");
+    expect(routines).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_routine_created_add_the_first_step', 'Routine created: {value1}. Add the first step.'), { value1: title }))");
     expect(routines).toContain("focusById('learning-lab-routine-editor-heading')");
   });
 
@@ -79,7 +79,7 @@ describe('Learning Lab Routine Builder accessibility', () => {
   it('saves normalized step values while preserving unrelated data', () => {
     expect(routines).toContain("var step = { id: tkId(), text: text, mins: mins };");
     expect(routines).toContain("setData(Object.assign({}, data, { routines: (data.routines || []).map");
-    expect(routines).toContain("llAnnounce('Routine step added: ' + text)");
+    expect(routines).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_routine_step_added', 'Routine step added: {value1}'), { value1: text }))");
   });
 
   it('confirms removing a step and restores focus', () => {

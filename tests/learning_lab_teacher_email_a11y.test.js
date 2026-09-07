@@ -142,7 +142,7 @@ describe('Learning Lab Teacher Email Builder accessibility', () => {
   });
 
   it('names deletion controls, preserves data, announces removal, and restores focus', () => {
-    expect(email).toContain("'aria-label': 'Remove saved ' + label + ' draft'");
+    expect(email).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_saved_draft', 'Remove saved {value1} draft'), { value1: label })");
     expect(email).toContain("setData(Object.assign({}, data, { saved: rawSaved.filter");
     expect(email).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_email_draft_removed', 'Saved email draft removed.'))");
     expect(email).toContain("focusById('learning-lab-email-saved-heading')");

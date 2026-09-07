@@ -110,7 +110,7 @@ describe('Learning Lab Mindfulness Practice accessibility', () => {
   it('uses a semantic list of named practice controls', () => {
     expect(mindfulness).toContain(`hh('ul', { 'aria-label': __alloLLT('stem.learning_lab.a11y_available_mindfulness_practices', 'Available mindfulness practices')`);
     expect(mindfulness).toContain("return hh('li', { key: 'pr-' + practice.id }");
-    expect(mindfulness).toContain("'aria-label': 'Start ' + practice.label + ', '");
+    expect(mindfulness).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_start_minutes', 'Start {value1}, {value2} minutes'), { value1: practice.label, value2: Math.round(practice.duration / 60) })");
   });
 
   it('does not use practice accent colors for essential small text', () => {

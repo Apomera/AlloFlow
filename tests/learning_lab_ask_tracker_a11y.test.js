@@ -98,7 +98,7 @@ describe('Learning Lab Optional Support Request Notes accessibility', () => {
   });
 
   it('uses visible delete text with accessible in-app confirmation and focus recovery', () => {
-    expect(tracker).toContain("'aria-label': 'Delete support note ' + (visibleIndex + 1)");
+    expect(tracker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_support_note', 'Delete support note {value1}'), { value1: (visibleIndex + 1) })");
     expect(tracker).toContain("}, 'Delete note')");
     expect(tracker).toContain("title: 'Delete this support note?', confirmText: 'Delete note'");
     expect(tracker).toContain('function nextRecordIndex(items, preferred)');

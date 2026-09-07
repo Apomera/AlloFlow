@@ -93,7 +93,7 @@ describe('Learning Lab Open Letter accessibility', () => {
   });
 
   it('names removal controls, announces removal, and restores focus', () => {
-    expect(letters).toContain("'aria-label': 'Remove unsent letter to ' + recipient");
+    expect(letters).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_unsent_letter_to', 'Remove unsent letter to {value1}'), { value1: recipient })");
     expect(letters).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_unsent_letter_removed', 'Saved unsent letter removed.'))");
     expect(letters).toContain("focusById('learning-lab-open-letter-history-heading')");
   });

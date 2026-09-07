@@ -54,7 +54,7 @@ describe('Learning Lab Role Models accessibility', () => {
   });
 
   it('announces saves and restores entry focus', () => {
-    expect(models).toContain("llAnnounce('Role model saved: ' + name)");
+    expect(models).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_role_model_saved', 'Role model saved: {value1}'), { value1: name }))");
     expect(models).toContain("focusById('learning-lab-role-model-name')");
   });
 

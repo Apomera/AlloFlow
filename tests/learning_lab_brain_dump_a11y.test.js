@@ -70,7 +70,7 @@ describe('Learning Lab Personal Brain Dump accessibility', () => {
   });
 
   it('announces successful additions and completion changes', () => {
-    expect(brain).toContain("llAnnounce('Brain dump item added to ' + selectedCategory.label + '.')");
+    expect(brain).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_brain_dump_item_added_to', 'Brain dump item added to {value1}.'), { value1: selectedCategory.label }))");
     expect(brain).toContain("llAnnounce((nextDone ? 'Completed: ' : 'Marked incomplete: ') + item.text)");
   });
 
@@ -104,7 +104,7 @@ describe('Learning Lab Personal Brain Dump accessibility', () => {
   });
 
   it('uses an item-specific accessible name for deletion', () => {
-    expect(brain).toContain("'aria-label': 'Delete brain dump item: ' + itemName");
+    expect(brain).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_brain_dump_item', 'Delete brain dump item: {value1}'), { value1: itemName })");
     expect(brain).not.toContain("'aria-label': 'Delete'");
   });
 

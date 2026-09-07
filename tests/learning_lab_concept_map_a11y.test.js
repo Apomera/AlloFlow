@@ -30,7 +30,7 @@ describe('Learning Lab Concept Map accessibility', () => {
     expect(conceptMap).toContain("'data-concept-id': node.id");
     expect(conceptMap).toContain("'aria-pressed': selectedNode === node.id ? 'true' : 'false'");
     expect(conceptMap).toContain("'aria-labelledby': 'learning-lab-connections-heading'");
-    expect(conceptMap).toContain("'aria-label': 'Delete connection: ' + text");
+    expect(conceptMap).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_connection', 'Delete connection: {value1}'), { value1: text })");
   });
 
   it('treats the scalable SVG as an optional visual equivalent', () => {
@@ -58,7 +58,7 @@ describe('Learning Lab Concept Map accessibility', () => {
     expect(conceptMap).toContain("llAnnounce('Concept deleted: '");
     expect(conceptMap).toContain("llAnnounce('Connection deleted'");
     expect(conceptMap).toContain("' moved ' + direction + ' '");
-    expect(conceptMap).toContain("llAnnounce('Color changed for '");
+    expect(conceptMap).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_color_changed_for', 'Color changed for {value1}.'), { value1: node.label })");
     expect(conceptMap).not.toContain("setView('list'); return null;");
   });
 

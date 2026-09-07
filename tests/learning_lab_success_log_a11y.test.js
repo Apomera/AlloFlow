@@ -46,7 +46,7 @@ describe('Learning Lab Personal Success Log accessibility', () => {
   });
 
   it('announces saves and returns focus for another entry', () => {
-    expect(successLog).toContain("llAnnounce('Progress saved: ' + successText)");
+    expect(successLog).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_progress_saved', 'Progress saved: {value1}'), { value1: successText }))");
     expect(successLog).toContain('setForm(emptyForm)');
     expect(successLog).toContain("focusById('learning-lab-success-text')");
   });

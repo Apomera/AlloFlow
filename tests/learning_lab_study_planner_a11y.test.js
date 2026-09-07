@@ -91,7 +91,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
   it('selects and announces a newly added subject', () => {
     expect(planner).toContain("setForm(Object.assign({}, form, { subject: name }))");
     expect(planner).toContain("setFocusTarget('learning-lab-study-subject-heading')");
-    expect(planner).toContain("llAnnounce('Study subject added and selected: ' + name + '.')");
+    expect(planner).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_study_subject_added_and_selected', 'Study subject added and selected: {value1}.'), { value1: name }))");
   });
 
   it('labels and bounds the optional task field', () => {
@@ -115,7 +115,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
   });
 
   it('announces block creation and cancellation', () => {
-    expect(planner).toContain("llAnnounce('Study block added for ' + DAYS[block.day].full");
+    expect(planner).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_study_block_added_for_at', 'Study block added for {value1} at {value2}.'), { value1: DAYS[block.day].full, value2: formatHour(block.hour) })");
     expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_study_block_creation_canceled', 'Study block creation canceled.'))");
   });
 
@@ -152,7 +152,7 @@ describe('Learning Lab Personal Study Planner accessibility', () => {
   });
 
   it('uses item-specific full-size remove controls', () => {
-    expect(planner).toContain("'aria-label': 'Remove study block: ' + blockName");
+    expect(planner).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_study_block', 'Remove study block: {value1}'), { value1: blockName })");
     expect(planner).toContain("width: '100%', minHeight: 44");
   });
 

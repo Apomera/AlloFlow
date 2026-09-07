@@ -28,9 +28,9 @@ describe('Learning Lab Task Breaker accessibility', () => {
   });
 
   it('names icon-only controls and supplies 44-pixel targets', () => {
-    expect(taskBreaker).toContain("'aria-label': 'Remove step ' + (index + 1)");
-    expect(taskBreaker).toContain("'aria-label': 'Edit task: ' + taskName");
-    expect(taskBreaker).toContain("'aria-label': 'Delete task: ' + taskName");
+    expect(taskBreaker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_step', 'Remove step {value1}'), { value1: (index + 1) })");
+    expect(taskBreaker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_task', 'Edit task: {value1}'), { value1: taskName })");
+    expect(taskBreaker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_task', 'Delete task: {value1}'), { value1: taskName })");
     expect(taskBreaker.match(/minHeight: 44/g)?.length).toBeGreaterThanOrEqual(8);
   });
 

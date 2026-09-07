@@ -77,8 +77,8 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('uses separate open and delete controls instead of nested interaction', () => {
-    expect(vocab).toContain("'aria-label': 'Delete vocabulary list: ' + listName");
-    expect(vocab).toContain("'aria-label': 'Open vocabulary list: ' + listName");
+    expect(vocab).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_vocabulary_list', 'Delete vocabulary list: {value1}'), { value1: listName })");
+    expect(vocab).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_open_vocabulary_list', 'Open vocabulary list: {value1}'), { value1: listName })");
     expect(vocab).not.toContain('e.stopPropagation()');
   });
 
@@ -90,7 +90,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('communicates mastery with text and bounded values', () => {
-    expect(vocab).toContain("'aria-label': 'Mastery ' + mastery + ' of 5'");
+    expect(vocab).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_mastery_of_5', 'Mastery {value1} of 5'), { value1: mastery })");
     expect(vocab).toContain("'Mastery: ' + mastery + ' of 5 '");
     expect(vocab).toContain('Math.max(0, Math.min(5, Number(value) || 0))');
   });
@@ -116,7 +116,7 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
 
   it('includes the final answer in the reported quiz score', () => {
     expect(vocab).toContain('var nextScore = state.score + (correct ? 1 : 0);');
-    expect(vocab).toContain("'Quiz complete. Score: ' + nextScore + ' of '");
+    expect(vocab).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_quiz_complete_score_of', 'Quiz complete. Score: {value1} of {value2}.'), { value1: nextScore, value2: state.words.length })");
   });
 
   it('only quizzes words with both a term and definition', () => {
@@ -131,8 +131,8 @@ describe('Learning Lab Vocabulary Builder accessibility', () => {
   });
 
   it('announces creation, additions, quiz states, and deletion', () => {
-    expect(vocab).toContain("llAnnounce('Vocabulary list created: '");
-    expect(vocab).toContain("llAnnounce('Vocabulary word added: '");
+    expect(vocab).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_vocabulary_list_created', 'Vocabulary list created: {value1}.'), { value1: list.name })");
+    expect(vocab).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_vocabulary_word_added', 'Vocabulary word added: {value1}.'), { value1: word.word })");
     expect(vocab).toContain("llAnnounce('Vocabulary quiz started. '");
     expect(vocab).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_vocabulary_word_deleted', 'Vocabulary word deleted.'))");
   });

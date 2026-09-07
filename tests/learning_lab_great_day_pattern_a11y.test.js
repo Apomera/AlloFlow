@@ -77,7 +77,7 @@ describe('Learning Lab Day Pattern Reflection accessibility', () => {
   });
 
   it('announces successful saving and restores rating focus', () => {
-    expect(pattern).toContain("llAnnounce('Day pattern reflection saved with a rating of '");
+    expect(pattern).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_day_pattern_reflection_saved_with_a_rating_of_out', 'Day pattern reflection saved with a rating of {value1} out of 10.'), { value1: rating })");
     expect(pattern).toContain("focusById('learning-lab-day-pattern-rating')");
   });
 
@@ -114,7 +114,7 @@ describe('Learning Lab Day Pattern Reflection accessibility', () => {
   });
 
   it('names removal controls, announces removal, and restores focus', () => {
-    expect(pattern).toContain("'aria-label': 'Remove day reflection rated ' + rating + ' out of 10'");
+    expect(pattern).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_day_reflection_rated_out_of_10', 'Remove day reflection rated {value1} out of 10'), { value1: rating })");
     expect(pattern).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_day_reflection_removed', 'Saved day reflection removed.'))");
     expect(pattern).toContain("focusById('learning-lab-day-pattern-history-heading')");
   });

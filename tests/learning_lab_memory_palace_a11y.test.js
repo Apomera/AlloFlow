@@ -56,8 +56,8 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('uses separate open and delete controls instead of nested interaction', () => {
-    expect(palace).toContain("'aria-label': 'Delete memory palace: ' + palaceName");
-    expect(palace).toContain("'aria-label': 'Open memory palace: ' + palaceName");
+    expect(palace).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_memory_palace', 'Delete memory palace: {value1}'), { value1: palaceName })");
+    expect(palace).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_open_memory_palace', 'Open memory palace: {value1}'), { value1: palaceName })");
     expect(palace).not.toContain('e.stopPropagation()');
   });
 
@@ -83,7 +83,7 @@ describe('Learning Lab Memory Palace accessibility', () => {
   it('moves focus into the walk and on each next stop', () => {
     expect(palace).toContain("focusById('learning-lab-palace-walk-heading')");
     expect(palace).toContain("id: 'learning-lab-palace-walk-heading', tabIndex: -1");
-    expect(palace).toContain("llAnnounce('Stop ' + (nextIndex + 1) + ' of '");
+    expect(palace).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_stop_of', 'Stop {value1} of {value2}.'), { value1: (nextIndex + 1), value2: stops.length })");
   });
 
   it('returns focus to the walk launcher when a walk ends', () => {
@@ -104,14 +104,14 @@ describe('Learning Lab Memory Palace accessibility', () => {
   });
 
   it('announces creation, stop changes, and walk start', () => {
-    expect(palace).toContain("llAnnounce('Memory palace created: '");
-    expect(palace).toContain("llAnnounce('Memory palace stop added: '");
+    expect(palace).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_memory_palace_created', 'Memory palace created: {value1}.'), { value1: palace.name })");
+    expect(palace).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_memory_palace_stop_added', 'Memory palace stop added: {value1}.'), { value1: locus.location })");
     expect(palace).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_memory_palace_stop_deleted', 'Memory palace stop deleted.'))");
-    expect(palace).toContain("llAnnounce('Memory walk started. Stop 1 of '");
+    expect(palace).toContain("__alloFill(__alloLLT('stem.learning_lab.sr_memory_walk_started_stop_1_of', 'Memory walk started. Stop 1 of {value1}.'), { value1: stops.length })");
   });
 
   it('provides named 44-pixel controls and fields', () => {
-    expect(palace).toContain("'aria-label': 'Delete memory stop '");
+    expect(palace).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_delete_memory_stop', 'Delete memory stop {value1}: {value2}'), { value1: (index + 1), value2: locusLocation })");
     expect(palace).toContain('minWidth: 44, minHeight: 44');
     expect(palace).toContain("minHeight: 44, padding: '9px 14px'");
     expect(palace).toContain("width: '100%', minHeight: 44");

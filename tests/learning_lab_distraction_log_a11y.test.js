@@ -83,8 +83,8 @@ describe('Learning Lab Distraction Log accessibility', () => {
   });
 
   it('uses named 44-pixel edit and delete actions', () => {
-    expect(log).toContain("'aria-label': 'Edit attention entry: ' + label");
-    expect(log).toContain("'aria-label': 'Delete attention entry: ' + label");
+    expect(log).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_attention_entry', 'Edit attention entry: {value1}'), { value1: label })");
+    expect(log).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_attention_entry', 'Delete attention entry: {value1}'), { value1: label })");
     expect(log.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(2);
   });
 

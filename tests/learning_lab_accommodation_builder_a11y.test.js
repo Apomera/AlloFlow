@@ -84,7 +84,7 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
   });
 
   it('opens a context with an announcement and heading focus', () => {
-    expect(builder).toContain("llAnnounce('Opened ' + template.label + ' drafting form.')");
+    expect(builder).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_opened_drafting_form', 'Opened {value1} drafting form.'), { value1: template.label }))");
     expect(builder).toContain("focusById('learning-lab-accom-editor-heading')");
   });
 
@@ -229,8 +229,8 @@ describe('Learning Lab Accommodation Request Builder accessibility', () => {
   });
 
   it('gives saved-draft copy and removal controls contextual names', () => {
-    expect(builder).toContain("'aria-label': 'Copy saved ' + template.label + ' draft'");
-    expect(builder).toContain("'aria-label': 'Remove saved ' + template.label + ' draft'");
+    expect(builder).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_copy_saved_draft', 'Copy saved {value1} draft'), { value1: template.label })");
+    expect(builder).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_saved_draft', 'Remove saved {value1} draft'), { value1: template.label })");
   });
 
   it('confirms saved-draft removal before changing data', () => {

@@ -49,7 +49,7 @@ describe('Learning Lab Subject learning-status accessibility', () => {
   });
 
   it('renders counts and records as semantic lists, articles, and times', () => {
-    expect(mastery).toContain("'aria-label': 'Learning-status counts for ' + subject.name");
+    expect(mastery).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_learning_status_counts_for', 'Learning-status counts for {value1}'), { value1: subject.name })");
     expect(mastery).toContain("'aria-label': subject.name + ' topics'");
     expect(mastery).toContain("hh('article', { 'aria-labelledby': 'learning-lab-topic-heading-' + topic.id");
     expect(mastery).toContain("hh('time', { dateTime: safeDateTime(topic.updatedAt) }");

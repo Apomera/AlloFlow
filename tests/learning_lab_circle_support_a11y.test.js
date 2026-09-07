@@ -60,7 +60,7 @@ describe('Learning Lab Circle of Support accessibility', () => {
   });
 
   it('announces saves and restores entry focus', () => {
-    expect(support).toContain("llAnnounce('Support contact saved: ' + name)");
+    expect(support).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_support_contact_saved', 'Support contact saved: {value1}'), { value1: name }))");
     expect(support).toContain("focusById('learning-lab-support-name')");
   });
 

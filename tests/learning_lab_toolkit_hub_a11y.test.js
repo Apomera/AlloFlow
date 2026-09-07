@@ -117,7 +117,7 @@ describe('Learning Lab My Toolkit Hub accessibility', () => {
   });
 
   it('announces tool navigation and handles an unavailable navigator', () => {
-    expect(hub).toContain("llAnnounce('Opening ' + tool.label + '.')");
+    expect(hub).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_opening', 'Opening {value1}.'), { value1: tool.label }))");
     expect(hub).toContain("typeof navigate !== 'function'");
     expect(hub).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_this_toolkit_tool_could_not_be_opened', 'This toolkit tool could not be opened.'))");
   });

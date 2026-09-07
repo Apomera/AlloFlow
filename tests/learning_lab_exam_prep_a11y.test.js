@@ -35,7 +35,7 @@ describe('Learning Lab Exam Prep accessibility', () => {
   });
 
   it('confirms plan deletion and provides a generous delete target', () => {
-    expect(examPrep).toContain("'aria-label': 'Delete exam prep plan: ' + examName");
+    expect(examPrep).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_exam_prep_plan', 'Delete exam prep plan: {value1}'), { value1: examName })");
     expect(examPrep).toContain("title: 'Delete this exam prep plan?', confirmText: 'Delete plan'");
     expect(examPrep).toContain("minHeight: 44, padding: '8px 10px'");
   });

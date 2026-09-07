@@ -52,7 +52,7 @@ describe('Learning Lab Priorities Matrix accessibility', () => {
   });
 
   it('announces a successful add and restores task-input focus', () => {
-    expect(priorities).toContain("llAnnounce('Task added to ' + quadrantFor(task.quadrant).label + ': ' + text)");
+    expect(priorities).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_task_added_to', 'Task added to {value1}: {value2}'), { value1: quadrantFor(task.quadrant).label, value2: text }))");
     expect(priorities).toContain("setForm({ text: '', quadrant: 'q2' }); setFormError('')");
   });
 
@@ -95,7 +95,7 @@ describe('Learning Lab Priorities Matrix accessibility', () => {
 
   it('uses a named form and explicit submit to move each task', () => {
     expect(priorities).toContain("onSubmit: function(event) { event.preventDefault(); moveTask(task, moveValue); }");
-    expect(priorities).toContain("'aria-label': 'Move task: ' + taskText");
+    expect(priorities).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_move_task', 'Move task: {value1}'), { value1: taskText })");
     expect(priorities).toContain("}, 'Move task')");
     expect(priorities).not.toContain("onChange: function(e) { moveTask");
   });
@@ -114,7 +114,7 @@ describe('Learning Lab Priorities Matrix accessibility', () => {
   it('announces a move and sends focus to the destination category', () => {
     expect(priorities).toContain("llAnnounce('Task moved to ' + target.label + ': '");
     expect(priorities).toContain("focusById('learning-lab-priorities-heading-' + target.id)");
-    expect(priorities).toContain("llAnnounce('Task is already in ' + target.label + '.')");
+    expect(priorities).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_task_is_already_in', 'Task is already in {value1}.'), { value1: target.label }))");
   });
 
   it('confirms task removal before changing stored data', () => {
@@ -124,7 +124,7 @@ describe('Learning Lab Priorities Matrix accessibility', () => {
   });
 
   it('names remove controls, announces removal, and restores focus', () => {
-    expect(priorities).toContain("'aria-label': 'Remove task: ' + taskText");
+    expect(priorities).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_task', 'Remove task: {value1}'), { value1: taskText })");
     expect(priorities).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_task_removed_from_the_priorities_matrix', 'Task removed from the priorities matrix.'))");
     expect(priorities).toContain("focusById('learning-lab-priorities-matrix-heading')");
   });

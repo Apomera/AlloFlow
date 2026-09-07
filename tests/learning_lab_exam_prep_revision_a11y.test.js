@@ -140,7 +140,7 @@ describe('Learning Lab Exam Prep revised accessibility', () => {
   });
 
   it('uses item-specific full-size deletion with confirmation and focus recovery', () => {
-    expect(planner).toContain("'aria-label': 'Delete exam prep plan: ' + examName");
+    expect(planner).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_exam_prep_plan', 'Delete exam prep plan: {value1}'), { value1: examName })");
     expect(planner).toContain("title: 'Delete this exam prep plan?', confirmText: 'Delete plan'");
     expect(planner).toContain("setFocusTarget(remaining.length ? 'learning-lab-exam-plans-heading' : 'learning-lab-exam-new-button')");
     expect(planner).toContain('minHeight: 44');

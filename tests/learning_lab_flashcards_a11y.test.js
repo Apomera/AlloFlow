@@ -47,8 +47,8 @@ describe('Learning Lab flashcard accessibility', () => {
   it('uses accessible confirmations and 44-pixel real buttons for destructive actions', () => {
     expect(source).toContain("title: 'Delete this flashcard deck?', confirmText: 'Delete deck'");
     expect(source).toContain("title: 'Delete this flashcard?'");
-    expect(source).toContain("'aria-label': 'Delete flashcard: ' + itemName");
-    expect(source).toContain("'aria-label': 'Delete flashcard deck: ' + deckName");
+    expect(source).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_flashcard', 'Delete flashcard: {value1}'), { value1: itemName })");
+    expect(source).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_flashcard_deck', 'Delete flashcard deck: {value1}'), { value1: deckName })");
     expect(source).toContain('minWidth: 44, minHeight: 44');
     expect(source).not.toContain("confirm('Delete this card?')");
     expect(source).not.toContain("alert('Cannot delete Default deck.')");

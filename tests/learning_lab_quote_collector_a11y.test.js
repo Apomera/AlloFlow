@@ -81,7 +81,7 @@ describe('Learning Lab Quote Collector accessibility', () => {
   });
 
   it('names removal controls using quote text', () => {
-    expect(collector).toContain("'aria-label': 'Remove quote: ' + quoteLabel");
+    expect(collector).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_remove_quote', 'Remove quote: {value1}'), { value1: quoteLabel })");
     expect(collector).toContain("onClick: function() { remove(q); }");
   });
 

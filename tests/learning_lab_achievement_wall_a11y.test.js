@@ -61,7 +61,7 @@ describe('Learning Lab Achievement Wall accessibility', () => {
   });
 
   it('announces saves and returns focus for another entry', () => {
-    expect(wall).toContain("llAnnounce('Achievement saved: ' + title)");
+    expect(wall).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_achievement_saved', 'Achievement saved: {value1}'), { value1: title }))");
     expect(wall).toContain("focusById('learning-lab-achievement-title')");
   });
 

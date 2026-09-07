@@ -39,7 +39,7 @@ describe('Learning Lab Habit Tracker accessibility', () => {
   });
 
   it('confirms deletion and names its 44-pixel control', () => {
-    expect(habitTracker).toContain("'aria-label': 'Delete habit: ' + habitName");
+    expect(habitTracker).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_habit', 'Delete habit: {value1}'), { value1: habitName })");
     expect(habitTracker).toContain("title: 'Delete this habit?', confirmText: 'Delete habit'");
     expect(habitTracker).toContain('minHeight: 44');
     expect(habitTracker).not.toContain("confirm('Remove this habit and all its history?')");

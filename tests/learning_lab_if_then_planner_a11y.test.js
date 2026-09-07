@@ -90,7 +90,7 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
   it('announces save, cancel, and recorded-use outcomes', () => {
     expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_if_then_plan_saved', 'If-then plan saved.'))");
     expect(planner).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_new_if_then_plan_canceled', 'New if-then plan canceled.'))");
-    expect(planner).toContain("llAnnounce('Use recorded for plan: When ' + plan.ifPart + '.')");
+    expect(planner).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_use_recorded_for_plan_when', 'Use recorded for plan: When {value1}.'), { value1: plan.ifPart }))");
   });
 
   it('reports the saved-plan count through a polite atomic status', () => {
@@ -112,8 +112,8 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
   });
 
   it('gives plan action buttons descriptive accessible names', () => {
-    expect(planner).toContain("'aria-label': 'Record use for: ' + itemName");
-    expect(planner).toContain("'aria-label': 'Delete if-then plan: ' + itemName");
+    expect(planner).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_record_use_for', 'Record use for: {value1}'), { value1: itemName })");
+    expect(planner).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_if_then_plan', 'Delete if-then plan: {value1}'), { value1: itemName })");
   });
 
   it('gives plan actions at least 44 pixels of target height', () => {
@@ -138,7 +138,7 @@ describe('Learning Lab Personal If-Then Planner accessibility', () => {
   });
 
   it('uses explicit template button types, names, and full-size targets', () => {
-    expect(planner).toContain("type: 'button', onClick: function() { openNew(template); }, 'aria-label': 'Use editable example: ' + templateName");
+    expect(planner).toContain("type: 'button', onClick: function() { openNew(template); }, 'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_use_editable_example', 'Use editable example: {value1}'), { value1: templateName })");
     expect(planner).toContain("width: '100%', minHeight: 44");
   });
 

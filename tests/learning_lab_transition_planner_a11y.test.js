@@ -129,7 +129,7 @@ describe('Learning Lab Transition Planner accessibility', () => {
   });
 
   it('announces phase changes', () => {
-    expect(planner).toContain("llAnnounce('Current reflection phase changed to ' + phase.label + '.')");
+    expect(planner).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_current_reflection_phase_changed_to', 'Current reflection phase changed to {value1}.'), { value1: phase.label }))");
   });
 
   it('associates visible labels with all preparation textareas', () => {

@@ -84,8 +84,8 @@ describe('Learning Lab Personal Focus Timer accessibility', () => {
   });
 
   it('announces interval start, completion, break, and reset events', () => {
-    expect(timer).toContain("llAnnounce('Focus interval started for ' + workMin + ' minutes.')");
-    expect(timer).toContain("llAnnounce('Focus interval complete. Break started for ' + breakMin + ' minutes.')");
+    expect(timer).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_focus_interval_started_for_minutes', 'Focus interval started for {value1} minutes.'), { value1: workMin }))");
+    expect(timer).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_focus_interval_complete_break_started_for_minutes', 'Focus interval complete. Break started for {value1} minutes.'), { value1: breakMin }))");
     expect(timer).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_break_complete_focus_session_finished', 'Break complete. Focus session finished.'))");
     expect(timer).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_focus_timer_reset', 'Focus timer reset.'))");
   });

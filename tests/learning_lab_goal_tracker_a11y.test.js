@@ -89,8 +89,8 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('announces successful check-ins and status changes', () => {
-    expect(goal).toContain("llAnnounce('Check-in saved at ' + chkForm.progress + ' percent progress.')");
-    expect(goal).toContain("llAnnounce('Goal status changed to ' + status + '.')");
+    expect(goal).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_check_in_saved_at_percent_progress', 'Check-in saved at {value1} percent progress.'), { value1: chkForm.progress }))");
+    expect(goal).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_goal_status_changed_to', 'Goal status changed to {value1}.'), { value1: status }))");
   });
 
   it('exposes detail progress as a named progressbar', () => {
@@ -149,7 +149,7 @@ describe('Learning Lab Personal Goal Tracker accessibility', () => {
   });
 
   it('provides an informative name and full-size target for each goal card', () => {
-    expect(goal).toContain("'aria-label': 'Open goal: ' + g.title + '. Status ' + g.status + '. Progress ' + (g.progress || 0) + ' percent.'");
+    expect(goal).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_open_goal_status_progress_percent', 'Open goal: {value1}. Status {value2}. Progress {value3} percent.'), { value1: g.title, value2: g.status, value3: (g.progress || 0) })");
     expect(goal).toContain("width: '100%', minHeight: 44");
   });
 

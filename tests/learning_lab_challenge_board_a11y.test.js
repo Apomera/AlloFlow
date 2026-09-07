@@ -70,7 +70,7 @@ describe('Learning Lab Challenge Board accessibility', () => {
 
   it('renders visible, semantic, robust check-in dates', () => {
     expect(board).toContain("'View saved check-ins (' + logs.length + ')'");
-    expect(board).toContain("'aria-label': 'Saved check-ins for ' + title");
+    expect(board).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_saved_check_ins_for', 'Saved check-ins for {value1}'), { value1: title })");
     expect(board).toContain("hh('time', { dateTime: date.dateTime }");
     expect(board).toContain("'Date not recorded'");
     expect(board).not.toContain('role: \'img\', \'aria-label\': \'Daily completion history');
@@ -80,8 +80,8 @@ describe('Learning Lab Challenge Board accessibility', () => {
     expect(board).toContain(`'aria-label': __alloLLT('stem.learning_lab.a11y_saved_challenges_and_practices', 'Saved challenges and practices')`);
     expect(board).toContain("hh('article', { 'aria-labelledby': headingId }");
     expect(board).toContain("hh('h4', { id: headingId, tabIndex: -1");
-    expect(board).toContain("'aria-label': 'Edit challenge or practice: ' + title");
-    expect(board).toContain("'aria-label': 'Delete challenge or practice: ' + title");
+    expect(board).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_challenge_or_practice', 'Edit challenge or practice: {value1}'), { value1: title })");
+    expect(board).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_challenge_or_practice', 'Delete challenge or practice: {value1}'), { value1: title })");
     expect(board.match(/minWidth: 44, minHeight: 44/g)?.length).toBeGreaterThanOrEqual(2);
   });
 

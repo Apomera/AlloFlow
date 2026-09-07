@@ -61,7 +61,7 @@ describe('Learning Lab Weekly Reflection revised accessibility', () => {
     expect(reflection).toContain("hh('dt', { style:");
     expect(reflection).toContain("hh('dd', { style:");
     expect(reflection).toContain("hh('time', { dateTime: entry.date");
-    expect(reflection).toContain("'aria-label': 'View reflection from ' + entry.date + ', rating ' + rating");
+    expect(reflection).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_view_reflection_from_rating', 'View reflection from {value1}, rating {value2}'), { value1: entry.date, value2: rating })");
   });
 
   it('uses higher-contrast prompt colors and hides their icons', () => {
@@ -71,7 +71,7 @@ describe('Learning Lab Weekly Reflection revised accessibility', () => {
 
   it('confirms deletion and announces save, cancel, and delete outcomes', () => {
     expect(reflection).toContain("title: 'Delete this reflection?', confirmText: 'Delete reflection'");
-    expect(reflection).toContain("'aria-label': 'Delete reflection from ' + detailEntry.date");
+    expect(reflection).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_reflection_from', 'Delete reflection from {value1}'), { value1: detailEntry.date })");
     expect(reflection).toContain("llAnnounce(existing ? 'Reflection changes saved.' : 'Reflection saved.')");
     expect(reflection).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_editing_canceled', 'Reflection editing canceled.'))");
     expect(reflection).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_reflection_deleted', 'Reflection deleted.'))");

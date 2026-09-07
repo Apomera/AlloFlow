@@ -63,7 +63,7 @@ describe('Learning Lab Reflection Prompts revised accessibility', () => {
     expect(prompts).toContain("hh('article', { 'aria-labelledby': 'learning-lab-reflection-entry-' + entry.id }");
     expect(prompts).toContain("hh('time', { dateTime: entry.date");
     expect(prompts).toContain("whiteSpace: 'pre-wrap', overflowWrap: 'anywhere'");
-    expect(prompts).toContain("'aria-label': 'Delete reflection response from ' + entry.date");
+    expect(prompts).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_reflection_response_from', 'Delete reflection response from {value1}'), { value1: entry.date })");
   });
 
   it('confirms deletion and restores meaningful focus', () => {

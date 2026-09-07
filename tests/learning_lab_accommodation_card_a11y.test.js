@@ -124,7 +124,7 @@ describe('Learning Lab Personal Accommodation Card accessibility', () => {
   });
 
   it('uses item-specific custom delete names and 44 by 44 pixel targets', () => {
-    expect(card).toContain("'aria-label': 'Delete custom accommodation: ' + itemName");
+    expect(card).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_custom_accommodation', 'Delete custom accommodation: {value1}'), { value1: itemName })");
     expect(card).toContain('minWidth: 44, minHeight: 44');
   });
 

@@ -49,7 +49,7 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   });
 
   it('announces a saved question and restores a predictable capture focus', () => {
-    expect(questionLog).toContain("llAnnounce('Question saved: ' + questionText)");
+    expect(questionLog).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_question_saved', 'Question saved: {value1}'), { value1: questionText }))");
     expect(questionLog).toContain("setForm(emptyForm)");
   });
 
@@ -100,7 +100,7 @@ describe('Learning Lab Personal Question Log accessibility', () => {
   });
 
   it('announces status changes and restores focus after an item leaves the open view', () => {
-    expect(questionLog).toContain("llAnnounce('Question marked answered: ' + textValue(q.text))");
+    expect(questionLog).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_question_marked_answered', 'Question marked answered: {value1}'), { value1: textValue(q.text) }))");
     expect(questionLog).toContain("focusById(filter === 'open' ? 'learning-lab-question-results-heading'");
   });
 

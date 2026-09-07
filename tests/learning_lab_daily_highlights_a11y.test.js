@@ -95,7 +95,7 @@ describe('Learning Lab Daily Moments accessibility', () => {
   });
 
   it('names removal controls, announces removal, and restores focus', () => {
-    expect(daily).toContain("'aria-label': 'Remove daily reflection with '");
+    expect(daily).toContain("__alloFill(__alloLLT('stem.learning_lab.a11y_remove_daily_reflection_with_moments', 'Remove daily reflection with {value1} moments'), { value1: moments.length })");
     expect(daily).toContain("llAnnounce(__alloLLT('stem.learning_lab.sr_saved_daily_reflection_removed', 'Saved daily reflection removed.'))");
     expect(daily).toContain("focusById('learning-lab-daily-history-heading')");
   });

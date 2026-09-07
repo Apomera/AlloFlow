@@ -95,7 +95,7 @@ describe('Learning Lab Task Breaker revised accessibility', () => {
   it('renders saved tasks and their steps as semantic lists', () => {
     expect(task).toContain("hh('ul', { 'aria-labelledby': 'learning-lab-task-list-heading'");
     expect(task).toContain("return hh('li', { key: 't-' + task.id");
-    expect(task).toContain("hh('ol', { 'aria-label': 'Steps for ' + taskName");
+    expect(task).toContain("hh('ol', { 'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_steps_for', 'Steps for {value1}'), { value1: taskName })");
     expect(task).toContain("return hh('li', { key: 'ts-' + step.id");
   });
 
@@ -114,8 +114,8 @@ describe('Learning Lab Task Breaker revised accessibility', () => {
   });
 
   it('uses item-specific full-size edit, delete, and completion controls', () => {
-    expect(task).toContain("'aria-label': 'Edit task: ' + taskName");
-    expect(task).toContain("'aria-label': 'Delete task: ' + taskName");
+    expect(task).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_edit_task', 'Edit task: {value1}'), { value1: taskName })");
+    expect(task).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_delete_task', 'Delete task: {value1}'), { value1: taskName })");
     expect(task.match(/minHeight: 44/g)?.length).toBeGreaterThanOrEqual(8);
   });
 

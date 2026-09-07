@@ -60,7 +60,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('announces creation and opens the editor with heading focus', () => {
-    expect(curriculum).toContain("llAnnounce('Curriculum saved: ' + title)");
+    expect(curriculum).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_curriculum_saved', 'Curriculum saved: {value1}'), { value1: title }))");
     expect(curriculum).toContain("setActiveId(curriculum.id); setView('edit'); focusById('learning-lab-curriculum-detail-heading')");
   });
 
@@ -115,7 +115,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
 
   it('uses native progress with explicit text in the editor', () => {
     expect(curriculum).toContain("hh('progress', { value: done, max: progressMax");
-    expect(curriculum).toContain("'aria-label': 'Curriculum completion: ' + progressText");
+    expect(curriculum).toContain("'aria-label': __alloFill(__alloLLT('stem.learning_lab.a11y_curriculum_completion', 'Curriculum completion: {value1}'), { value1: progressText })");
     expect(curriculum).toContain('No learning steps saved yet.');
   });
 
@@ -149,7 +149,7 @@ describe('Learning Lab Curriculum Builder accessibility', () => {
   });
 
   it('announces step saving and restores form focus', () => {
-    expect(curriculum).toContain("llAnnounce('Learning step saved: ' + label)");
+    expect(curriculum).toContain("llAnnounce(__alloFill(__alloLLT('stem.learning_lab.sr_learning_step_saved', 'Learning step saved: {value1}'), { value1: label }))");
     expect(curriculum).toContain("focusById('learning-lab-curriculum-step-title')");
   });
 
