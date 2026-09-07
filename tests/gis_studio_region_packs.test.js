@@ -671,6 +671,64 @@ describe('GIS Studio - custom region packs', () => {
     expect(html).not.toMatch(/>-d+.dd°</);
   });
 
+  it('names the data problems that pass validation but put places in the wrong spot', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const inspect = (pack) => tool.testing.inspectRegionPackQuality(tool.testing.normalizeGISRegionPack(pack));
+    const ids = (report) => report.findings.map((finding) => finding.id);
+
+    // A clean pack raises nothing, so the warnings keep their meaning.
+    expect(inspect(samplePack()).findings).toEqual([]);
+
+    const duplicates = inspect(samplePack({
+      records: [
+        { name: 'Dunedin', lat: -45.87, lon: 170.5, population: 1, 'Elevation (m)': 1 },
+        { name: 'dunedin', lat: -45.0, lon: 170.9, population: 2, 'Elevation (m)': 2 },
+        { name: 'Oamaru', lat: -45.1, lon: 170.97, population: 3, 'Elevation (m)': 3 }
+      ]
+    }));
+    expect(ids(duplicates)).toContain('duplicate-names');
+    expect(duplicates.findings[0].examples).toContain('dunedin');
+
+    // 0, 0 is open ocean; it almost always means a coordinate failed to parse.
+    const nullIsland = inspect(samplePack({
+      records: [
+        { name: 'Broken row', lat: 0, lon: 0, population: 1, 'Elevation (m)': 1 },
+        { name: 'Dunedin', lat: -45.87, lon: 170.5, population: 2, 'Elevation (m)': 2 }
+      ]
+    }));
+    expect(ids(nullIsland)).toContain('null-island');
+    expect(nullIsland.findings.find((finding) => finding.id === 'null-island').examples).toEqual(['Broken row']);
+
+    // A dropped minus sign leaves one place on the far side of the world.
+    const outlier = inspect(samplePack({
+      records: [
+        { name: 'Dunedin', lat: -45.87, lon: 170.5, population: 1, 'Elevation (m)': 1 },
+        { name: 'Queenstown', lat: -45.03, lon: 168.66, population: 2, 'Elevation (m)': 2 },
+        { name: 'Oamaru', lat: -45.1, lon: 170.97, population: 3, 'Elevation (m)': 3 },
+        { name: 'Typo', lat: 45.1, lon: 170.97, population: 4, 'Elevation (m)': 4 }
+      ]
+    }));
+    expect(ids(outlier)).toContain('far-from-the-rest');
+    expect(outlier.findings.find((finding) => finding.id === 'far-from-the-rest').examples).toEqual(['Typo']);
+
+    // A genuinely global pack is not an outlier problem; most of it is spread out.
+    const global = tool.testing.regionPacks.find((pack) => pack.id === 'global');
+    expect(ids(tool.testing.inspectRegionPackQuality(global))).not.toContain('far-from-the-rest');
+
+    // An attribute with one value everywhere cannot make a thematic map.
+    const flat = inspect(samplePack({
+      metrics: [{ id: 'population', label: 'Population' }, { id: 'same', label: 'Same everywhere' }],
+      records: [
+        { name: 'A', lat: -45.8, lon: 170.5, population: 1, same: 4 },
+        { name: 'B', lat: -45.0, lon: 170.9, population: 2, same: 4 }
+      ]
+    }));
+    expect(ids(flat)).toContain('no-variation');
+    expect(flat.findings.find((finding) => finding.id === 'no-variation').examples).toEqual(['Same everywhere']);
+
+    expect(tool.testing.inspectRegionPackQuality(null)).toEqual({ findings: [], checked: 0 });
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });

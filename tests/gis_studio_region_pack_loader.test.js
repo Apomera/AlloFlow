@@ -223,6 +223,32 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(source.value).toBe('Stats NZ 2023 census, collected March 2023.');
   });
 
+  it('shows pack health findings in the preview before the pack is adopted', { timeout: 30000 }, async () => {
+    mountGIS({ gisTab: 'import', gisBasemap: 'none' });
+    const csv = [
+      'Town,Latitude,Longitude,Population',
+      'Dunedin,-45.87,170.50,130000',
+      'Dunedin,-45.03,168.66,16000',
+      'Lost,0,0,900',
+      'Typo,45.10,170.97,400'
+    ].join('\n');
+    const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
+    const file = new File([csv], 'Otago.csv', { type: 'text/csv' });
+    Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+    await React.act(async function () {
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => host.textContent.includes('Review before using'))).toBe(true);
+    expect(host.textContent).toContain('Worth checking before you map this:');
+    expect(host.textContent).toContain('appear more than once');
+    expect(host.textContent).toContain('Gulf of Guinea');
+    expect(host.textContent).toContain('3,000 km from the rest');
+    // These are questions, not blockers: the pack can still be adopted.
+    await click(findButton('Use this pack'));
+    expect(await settle(() => !!host.querySelector('option[value="custom-otago"]'))).toBe(true);
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');

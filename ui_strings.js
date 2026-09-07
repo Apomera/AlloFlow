@@ -13300,7 +13300,12 @@
         "privacy_note": "{precise} place(s) use 4 or more decimal places, which can identify a building, and {named} have identifier-like labels. Do not map student homes or other sensitive locations. Aggregate, blur, or suppress them first.",
         "privacy_examples": "High precision:",
         "privacy_round": "Round these coordinates to 2 decimal places",
-        "budget_exceeded": "These boundaries need {incoming} kB and your packs already use {used} kB of the {budget} kB the studio keeps on this device. Remove a pack with boundaries, or load this one without them."
+        "budget_exceeded": "These boundaries need {incoming} kB and your packs already use {used} kB of the {budget} kB the studio keeps on this device. Remove a pack with boundaries, or load this one without them.",
+        "quality_label": "Worth checking before you map this:",
+        "quality_duplicate_names": "{count} place name(s) appear more than once, so rows may be double counted:",
+        "quality_null_island": "{count} place(s) sit at 0, 0 in the Gulf of Guinea, which usually means a coordinate did not parse:",
+        "quality_far_from_the_rest": "{count} place(s) lie more than 3,000 km from the rest, which often means a missing minus sign or swapped columns:",
+        "quality_no_variation": "{count} attribute(s) hold the same value everywhere, so they cannot make a thematic map:"
       },
       "sr_region_pack_loaded": "Region pack loaded and mapped.",
       "sr_region_pack_error": "Region pack error.",

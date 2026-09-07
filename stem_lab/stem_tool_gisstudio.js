@@ -3276,6 +3276,65 @@
   // A custom pack carries real coordinates and real labels, so it gets the same
   // privacy screening as an imported CSV. Without this a pack of home addresses
   // would map, autosave, and export with no warning at all.
+  var GIS_PACK_OUTLIER_KM = 3000;
+
+  function inspectRegionPackQuality(pack) {
+    var findings = [];
+    var records = pack && Array.isArray(pack.records) ? pack.records : [];
+    if (!records.length) return { findings: findings, checked: 0 };
+    var metrics = regionMetrics(pack);
+
+    var seen = {}, duplicates = [];
+    records.forEach(function (record) {
+      var key = String(record.name || '').trim().toLocaleLowerCase();
+      if (!key) return;
+      if (seen[key] && duplicates.indexOf(record.name) < 0) duplicates.push(record.name);
+      seen[key] = true;
+    });
+    if (duplicates.length) {
+      findings.push({ id: 'duplicate-names', severity: 'warning', count: duplicates.length, examples: duplicates.slice(0, 5) });
+    }
+
+    // 0, 0 is in the Gulf of Guinea. A place there is nearly always a value
+    // that failed to parse rather than a place anyone meant to map.
+    var nullIsland = records.filter(function (record) {
+      return Math.abs(Number(record.lat)) < 1e-9 && Math.abs(Number(record.lon)) < 1e-9;
+    });
+    if (nullIsland.length) {
+      findings.push({ id: 'null-island', severity: 'warning', count: nullIsland.length, examples: nullIsland.slice(0, 5).map(function (record) { return record.name; }) });
+    }
+
+    // A dropped minus sign or a swapped pair usually leaves one place a long
+    // way from the rest, which is visible here but easy to miss on a map that
+    // has zoomed out to fit it.
+    // Rows already flagged as 0, 0 are excluded from the reference centre:
+    // left in, a single unparsed coordinate drags the median far enough to
+    // make every real place look like an outlier, and the check cancels itself.
+    var located = records.filter(function (record) {
+      return !(Math.abs(Number(record.lat)) < 1e-9 && Math.abs(Number(record.lon)) < 1e-9);
+    });
+    if (located.length > 2) {
+      var latitudes = located.map(function (record) { return Number(record.lat); }).sort(function (a, b) { return a - b; });
+      var longitudes = located.map(function (record) { return Number(record.lon); }).sort(function (a, b) { return a - b; });
+      var middle = { lat: latitudes[Math.floor(latitudes.length / 2)], lon: longitudes[Math.floor(longitudes.length / 2)] };
+      var far = located.filter(function (record) { return haversineKm(middle, record) > GIS_PACK_OUTLIER_KM; });
+      if (far.length && far.length < located.length / 2) {
+        findings.push({ id: 'far-from-the-rest', severity: 'warning', count: far.length, examples: far.slice(0, 5).map(function (record) { return record.name; }) });
+      }
+    }
+
+    // An attribute with one value everywhere cannot make a thematic map.
+    var flat = metrics.filter(function (metric) {
+      var values = records.map(function (record) { return Number(record[metric.field]); }).filter(Number.isFinite);
+      return values.length > 1 && values.every(function (value) { return value === values[0]; });
+    });
+    if (flat.length) {
+      findings.push({ id: 'no-variation', severity: 'note', count: flat.length, examples: flat.slice(0, 5).map(function (metric) { return metric.label; }) });
+    }
+
+    return { findings: findings, checked: records.length };
+  }
+
   function regionPackRows(pack) {
     if (!pack || !Array.isArray(pack.records)) return [];
     var metrics = regionMetrics(pack);
@@ -3785,6 +3844,7 @@
       createGISProject: createGISProject, validateGISProject: validateGISProject,
       assessCoordinatePrivacy: assessCoordinatePrivacy, roundPointCoordinates: roundPointCoordinates,
       regionPackRows: regionPackRows, assessRegionPackPrivacy: assessRegionPackPrivacy,
+      inspectRegionPackQuality: inspectRegionPackQuality,
       regionPackBoundaryBytes: regionPackBoundaryBytes, totalRegionPackBoundaryBytes: totalRegionPackBoundaryBytes,
       regionPackBoundaryBudget: regionPackBoundaryBudget, writeGISDraft: writeGISDraft,
       gisDraftWithoutPackBoundaries: gisDraftWithoutPackBoundaries, gisDraftWithoutPacks: gisDraftWithoutPacks,
@@ -3885,6 +3945,11 @@
         autosaveUnavailable: t('stem.gisstudio.autosave.unavailable', 'Local autosave is unavailable or the project is too large. Download a project file instead.'),
         draftBoundariesOmitted: t('stem.gisstudio.autosave.draft_without_boundaries', 'It was saved without region pack boundaries.'),
         draftPacksOmitted: t('stem.gisstudio.autosave.draft_without_packs', 'It was saved without region packs or the polygon layer.'),
+        packQualityLabel: t('stem.gisstudio.pack.quality_label', 'Worth checking before you map this:'),
+        packQuality_duplicate_names: t('stem.gisstudio.pack.quality_duplicate_names', '{count} place name(s) appear more than once, so rows may be double counted:'),
+        packQuality_null_island: t('stem.gisstudio.pack.quality_null_island', '{count} place(s) sit at 0, 0 in the Gulf of Guinea, which usually means a coordinate did not parse:'),
+        packQuality_far_from_the_rest: t('stem.gisstudio.pack.quality_far_from_the_rest', '{count} place(s) lie more than 3,000 km from the rest, which often means a missing minus sign or swapped columns:'),
+        packQuality_no_variation: t('stem.gisstudio.pack.quality_no_variation', '{count} attribute(s) hold the same value everywhere, so they cannot make a thematic map:'),
         packPrivacyLabel: t('stem.gisstudio.pack.privacy_label', 'Check this before mapping:'),
         packPrivacyNote: t('stem.gisstudio.pack.privacy_note', '{precise} place(s) use 4 or more decimal places, which can identify a building, and {named} have identifier-like labels. Do not map student homes or other sensitive locations. Aggregate, blur, or suppress them first.'),
         packPrivacyExamples: t('stem.gisstudio.pack.privacy_examples', 'High precision:'),
@@ -6158,6 +6223,17 @@
                   },
                   style: Object.assign({}, control, { marginTop: 8, cursor: 'pointer' })
                 }, gisText.packPrivacyRound));
+            })(),
+            (function () {
+              var quality = inspectRegionPackQuality(pack);
+              if (!quality.findings.length) return null;
+              return h('aside', { role: 'status', style: { margin: '0 0 9px', padding: 10, borderLeft: '4px solid #38bdf8', background: '#082032', color: '#bae6fd', fontSize: 11, lineHeight: 1.5 } },
+                h('strong', null, gisText.packQualityLabel + ' '),
+                h('ul', { style: { margin: '6px 0 0', paddingLeft: 18 } }, quality.findings.map(function (finding) {
+                  return h('li', { key: finding.id },
+                    gisFillTemplate(gisText['packQuality_' + finding.id.replace(/-/g, '_')] || finding.id, { count: finding.count }) +
+                    (finding.examples.length ? ' ' + finding.examples.join(', ') : ''));
+                })));
             })(),
             packPreview.derivedFrom === 'boundaries' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedBoundaries),
             packPreview.derivedFrom === 'points' && h('p', { style: { margin: '0 0 8px', color: '#86efac', fontSize: 11, lineHeight: 1.45 } }, gisText.packDerivedPoints),
