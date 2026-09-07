@@ -5804,6 +5804,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     getCoreSeaMotion: getCoreSeaMotion,
     sampleCoreSeaSurface: sampleCoreSeaSurface,
     getCoreNorthboundExperiment: getCoreNorthboundExperiment,
+    getCoreNavigationReadout: getCoreNavigationReadout,
     getCoreExplanationPractice: getCoreExplanationPractice,
     getCoreExplanationFeedback: getCoreExplanationFeedback,
     getCoreMeasurementModel: getCoreMeasurementModel,
@@ -13898,6 +13899,31 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     return { seaState: sea.id, windKnots: sea.windKnots, driftX: driftX, driftZ: 0, resistance: resistance,
       groundX: groundX, groundZ: groundZ, groundSpeed: groundSpeed, course: course };
   }
+  function getCoreNavigationReadout(input) {
+    input = input || {};
+    var speed = typeof input.speed === 'number' && isFinite(input.speed) ? Math.max(-8, Math.min(8, input.speed)) : 0;
+    var heading = typeof input.heading === 'number' && isFinite(input.heading) ? input.heading : Math.PI;
+    var bearing = ((180 - heading * 180 / Math.PI) % 360 + 360) % 360;
+    var motion = getCoreSeaMotion({ seaState: input.seaState, heading: heading, speed: speed });
+    var nearZero = Math.abs(speed) < 0.01;
+    var direction = nearZero ? 'near zero' : speed < 0 ? 'astern' : 'ahead';
+    var id = motion.course === null ? (nearZero ? 'still' : 'balanced') : nearZero ? 'drifting' : speed < 0 ? 'astern' : 'ahead';
+    var labels = { still:'Nearly stopped', balanced:'Motion nearly balanced', drifting:'Drifting with the wind', astern:'Astern through water', ahead:'Ahead through water' };
+    var explanation = id === 'still' ? 'There is almost no motion through water or over ground.' :
+      id === 'balanced' ? 'Through-water motion and wind drift nearly cancel. A nearly fixed position does not mean the boat is still in the water.' :
+      id === 'drifting' ? 'There is very little through-water motion, but the model wind still carries the boat east.' :
+      id === 'astern' ? 'The bow still shows heading, while reverse motion runs toward the stern. The gold arrow includes any wind drift.' :
+      motion.windKnots ? 'The boat moves forward through water; wind adds eastward drift to its track over ground.' :
+      'With no wind drift, forward travel follows the bow heading.';
+    var offset = motion.course === null ? null : ((motion.course - bearing + 540) % 360) - 180;
+    var relation = offset === null ? 'No stable track at this speed' : Math.abs(offset) < 0.5 ? 'Track follows the bow heading' :
+      Math.abs(offset) > 179.5 ? 'Track points toward the stern' :
+      'Track is ' + Math.round(Math.abs(offset)) + '° to ' + (offset > 0 ? 'starboard' : 'port') + ' of the bow';
+    return { id:id, label:labels[id], explanation:explanation, relation:relation, offset:offset,
+      speed:speed, direction:direction, speedLabel:Math.abs(speed).toFixed(Math.abs(speed) < 0.1 ? 2 : 1) + ' kt' + (nearZero ? '' : ' ' + direction),
+      groundSpeed:motion.groundSpeed, course:motion.course, bearing:bearing,
+      color:id === 'astern' ? '#ddd6fe' : id === 'balanced' ? '#fde68a' : '#99f6e4' };
+  }
   function getCoreNorthboundExperiment(seaState, choice) {
     var sea = getCoreSeaState(seaState), speed = 4;
     var correction = Math.asin(sea.windKnots * 0.03 / speed) * 180 / Math.PI;
@@ -17968,6 +17994,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
     var cameraView = camHook[0], setCameraViewState = camHook[1];
     var seaStateHook = useState('calm');
     var seaState = seaStateHook[0], setSeaState = seaStateHook[1];
+    var navigationReadout = getCoreNavigationReadout({ seaState:seaState, heading:hud.heading, speed:hud.speed });
     var seaPredictionHook = useState(null);
     var seaPrediction = seaPredictionHook[0], setSeaPrediction = seaPredictionHook[1];
     var weatherHook = useState('clear');
@@ -20066,11 +20093,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
             h('div', { style: { color: '#5eead4', fontSize: 11, fontWeight: 900, letterSpacing: '0.08em' } }, 'WIND & WATER · ' + sea.label.toUpperCase()),
             h('p', { style: { color: '#f0fdfa', fontSize: 20, fontWeight: 800, margin: '5px 0 8px' } }, sea.windKnots ? 'Wind from W · ' + sea.windKnots + ' kt → E' : 'Calm wind · gentle surface'),
             h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '6px 20px', fontSize: 13, color: '#e0f2fe', lineHeight: 1.6 } },
-              h('span', null, 'Through water: ', h('b', null, Math.abs(hud.speed || 0).toFixed(1) + ' kt')),
+              h('span', null, 'Through water: ', h('b', { 'data-sea-water-speed':true }, navigationReadout.speedLabel)),
               h('span', null, 'Over ground: ', h('b', { 'data-sea-ground-speed': true }, motion.groundSpeed.toFixed(1) + ' kt')),
               h('span', null, 'Heading: ', h('b', null, Math.round(heading) % 360 + '°')),
               h('span', null, 'Track: ', h('b', { 'data-sea-course': true }, motion.course === null ? '— stationary' : Math.round(motion.course) % 360 + '°'))),
-            h('p', { style: Object.assign({}, textStyle, { margin: '8px 0 0' }) }, 'Solid blue: bow heading. Dashed gold: travel direction. ' + (hud.paused ? 'Paused: values preview the selected conditions.' : sea.windKnots ? 'Wind adds eastward drift; heading and track can differ.' : 'Try Breeze or Chop in the sea conditions control.')))),
+            h('div', { 'data-navigation-motion':navigationReadout.id, style:{marginTop:10,padding:'9px 12px',border:'1px solid #31586f',borderRadius:9,background:'#071d30'} },
+              h('b', { style:{color:navigationReadout.color,fontSize:13} }, (hud.paused ? 'Paused preview · ' : '') + navigationReadout.label),
+              h('p', { style:Object.assign({},textStyle,{margin:'4px 0 0'}) }, navigationReadout.explanation),
+              h('p', { style:Object.assign({},textStyle,{margin:'4px 0 0',color:'#fde68a'}) }, navigationReadout.relation)),
+            h('p', { style: Object.assign({}, textStyle, { margin: '8px 0 0' }) }, 'Solid blue: bow heading. Dashed gold: travel direction.'))),
         h('details', { style: { marginTop: 8 } },
           h('summary', { style: { color: '#bae6fd', fontSize: 12 } }, 'How this training sea works'),
           h('p', { style: textStyle }, 'Keep the throttle steady and compare heading with track. Turning into the model waves adds resistance. Wind can move an unpowered boat. The compass diagram uses north at the top; the harbor and travel distances use a compressed training scale.'),
@@ -21233,13 +21264,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
                     h('div', null, row.bagLimit === null ? row.retainedCount + ' retained · profile not numeric' : row.retainedCount + '/' + row.bagLimit + ' retained · ' + (row.limitReached ? 'LIMIT REACHED' : row.remaining + ' left')));
                 })
               ) : null,
-              // Throttle level indicator bar
-              h('div', { style: { marginTop: 6, display: 'flex', alignItems: 'center', gap: 6 } },
-                h('span', { style: { fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)', width: 35 } }, 'Throttle:'),
-                h('div', { style: { flex: 1, height: 6, background: '#1e293b', borderRadius: 3, overflow: 'hidden', border: '1px solid rgba(56,189,248,0.2)' } },
-                  h('div', { style: { height: '100%', width: Math.min(100, Math.max(0, (hud.speed || 0) / 8 * 100)) + '%', background: '#38bdf8' } })
-                )
+              // Signed speed through water, not engine throttle or speed over ground.
+              h('div', { 'data-water-speed-gauge': navigationReadout.direction, role:'img', 'aria-label':'Through-water speed: ' + navigationReadout.speedLabel,
+                style:{marginTop:10,paddingTop:8,borderTop:'1px solid #31586f'} },
+                h('div', { 'aria-hidden':'true', style:{fontSize:11,color:'#cbd5e1',marginBottom:6} }, 'Through-water speed'),
+                h('div', { 'aria-hidden':'true', style:{position:'relative',height:10,background:'#1e293b',borderRadius:5,overflow:'hidden',border:'1px solid #56819a'} },
+                  h('div', { 'data-water-speed-fill': true, style:{position:'absolute',top:0,bottom:0,left:(navigationReadout.speed < 0 ? 50-Math.abs(navigationReadout.speed)/8*50 : 50)+'%',width:(Math.abs(navigationReadout.speed)/8*50)+'%',background:navigationReadout.speed < 0 ? '#c4b5fd' : '#38bdf8'} }),
+                  h('div', { style:{position:'absolute',left:'50%',top:0,bottom:0,width:2,background:'#f8fafc'} })),
+                h('div', { 'aria-hidden':'true', style:{display:'flex',justifyContent:'space-between',fontSize:10,color:'#cbd5e1',marginTop:4} }, h('span',null,'Astern'),h('span',null,'0'),h('span',null,'Ahead'))
               )
+
             ),
 
             // Mission progress
@@ -21284,6 +21318,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('fisherLab'))) 
               })),
             
             h('div', { className: 'fl-sim-touch', role: 'group', 'aria-label': __alloT('stem.fisherlab.a11y_on_screen_boat_controls', 'On-screen boat controls') },
+              h('div', { 'data-helm-motion':navigationReadout.id, style:{flexBasis:'100%',textAlign:'center',color:navigationReadout.color,fontSize:13,lineHeight:1.5} }, (hud.paused ? 'Paused preview · ' : '') + navigationReadout.label + ' · ' + navigationReadout.speedLabel + ' · Ground ' + navigationReadout.groundSpeed.toFixed(1) + ' kt'),
               [
                 { key: 'arrowleft', label: 'Turn port', icon: '←' },
                 { key: 'arrowup', label: 'Throttle forward', icon: '↑' },

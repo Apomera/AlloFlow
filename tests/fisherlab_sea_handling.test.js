@@ -77,3 +77,36 @@ describe('Fisher Lab sea handling', () => {
     expect(core.createCoreVoyageCheckpoint(base).environment.seaState).toBe('calm');
   });
 });
+
+describe('Fisher Lab live navigation interpretation',()=>{
+  it('distinguishes still water, passive drift, and opposing motion that nearly balances',()=>{
+    const read=window.__FisherLabCore.getCoreNavigationReadout;
+    expect(read()).toMatchObject({id:'still',direction:'near zero',course:null,offset:null});
+    expect(read({seaState:'breeze',speed:0})).toMatchObject({id:'drifting',course:90,direction:'near zero'});
+    const balanced=read({seaState:'chop',heading:Math.PI*1.5,speed:0.48});
+    expect(balanced.id).toBe('balanced');expect(balanced.groundSpeed).toBeLessThan(0.01);
+    expect(balanced.speedLabel).toBe('0.5 kt ahead');
+    expect(balanced.explanation).toContain('does not mean the boat is still');
+  });
+  it('keeps reverse water motion separate from bow heading and ground travel',()=>{
+    const read=window.__FisherLabCore.getCoreNavigationReadout;
+    const astern=read({heading:Math.PI,speed:-2,seaState:'calm'});
+    expect(astern).toMatchObject({id:'astern',direction:'astern',course:180,speedLabel:'2.0 kt astern'});
+    expect(astern.relation).toBe('Track points toward the stern');
+    const ahead=read({heading:Math.PI,speed:2,seaState:'calm'});
+    expect(ahead).toMatchObject({id:'ahead',direction:'ahead',course:0});
+    expect(ahead.relation).toBe('Track follows the bow heading');
+    const reversedOverGround=read({heading:Math.PI*1.5,speed:0.1,seaState:'chop'});
+    expect(reversedOverGround.id).toBe('ahead');expect(reversedOverGround.relation).toBe('Track points toward the stern');
+  });
+  it('handles compass wrap, invalid readings, and bounded speed without a false turn direction',()=>{
+    const read=window.__FisherLabCore.getCoreNavigationReadout;
+    const crossing=read({heading:(180-359)*Math.PI/180,speed:4,seaState:'breeze'});
+    expect(crossing.course).toBeLessThan(10);expect(crossing.offset).toBeGreaterThan(0);
+    expect(crossing.relation).toContain('starboard');
+    expect(read({heading:Infinity,speed:NaN,seaState:'bogus'})).toEqual(read());
+    expect(read({speed:-100}).speed).toBe(-8);
+    expect(read({speed:100}).speed).toBe(8);
+    expect(read({speed:-0.03}).speedLabel).toBe('0.03 kt astern');
+  });
+});

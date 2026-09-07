@@ -1,0 +1,54 @@
+import { test, expect } from '@playwright/test';
+import { GlHarness } from './helpers/stem_gl_harness';
+test.describe.configure({timeout:180_000});
+const harness=new GlHarness({toolFile:'stem_lab/stem_tool_fisherlab.js',toolId:'fisherLab',width:1180,height:980,appStyles:true,extraScripts:['desktop/web-app/node_modules/axe-core/axe.min.js']});
+test.beforeAll(async()=>harness.start());test.afterAll(async()=>harness.stop());
+test.afterEach(async({page})=>harness.destroy(page));
+async function launch(page:any){
+  await harness.mount(page,{},undefined,{expectCanvas:false});
+  await page.getByRole('tab',{name:/3D Sim/}).click();
+  await page.getByRole('button',{name:/Start new Guided voyage/}).click();
+  await page.waitForSelector('canvas.fl-sim-canvas');
+  await page.getByRole('button',{name:/Pause \(P\)/}).click();
+}
+test('explains real reverse motion and shows a signed speed gauge without changing paused movement',async({page})=>{
+  await launch(page);
+  const card=page.locator('[data-navigation-motion]'),ribbon=page.locator('[data-helm-motion]');
+  await expect(card).toHaveAttribute('data-navigation-motion','still');
+  await expect(ribbon).toContainText('Paused preview');
+  await page.getByRole('button',{name:/Resume \(P\)/}).click();
+  const reverse=page.getByRole('button',{name:'Reduce speed or reverse',exact:true});
+  await reverse.focus();await page.keyboard.down('Enter');
+  await expect(ribbon).toHaveAttribute('data-helm-motion','astern');
+  await page.keyboard.up('Enter');
+  await page.getByRole('button',{name:/Pause \(P\)/}).click();
+  await expect(card).toContainText('Track points toward the stern');
+  await expect(page.locator('[data-sea-water-speed]')).toContainText('astern');
+  await expect(page.locator('[data-water-speed-gauge]')).toHaveAttribute('data-water-speed-gauge','astern');
+  const fill=await page.locator('[data-water-speed-fill]').evaluate(el=>({left:parseFloat((el as HTMLElement).style.left),width:parseFloat((el as HTMLElement).style.width)}));
+  expect(fill.left).toBeLessThan(50);expect(fill.width).toBeGreaterThan(0);expect(fill.left+fill.width).toBeCloseTo(50);
+  await page.locator('[data-fisherlab-sea-card]').screenshot({path:'scratch/fisherlab-motion-astern.png'});
+  await page.getByLabel('Sea conditions',{exact:true}).selectOption('breeze');
+  await expect(ribbon).toContainText('Paused preview');
+  await expect(card).toHaveAttribute('data-navigation-motion','astern');
+  await page.locator('.fl-sim-stage').screenshot({path:'scratch/fisherlab-motion-helm.png'});
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
+test('makes idle wind drift legible on a phone with large text and reduced motion',async({page})=>{
+  await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:390,height:900});
+  await launch(page);await page.evaluate(()=>{document.getElementById('wrap')!.style.width='390px';});
+  await page.getByRole('button',{name:'Large text',exact:true}).click();
+  await page.getByLabel('Sea conditions',{exact:true}).selectOption('chop');
+  await expect(page.locator('[data-navigation-motion]')).toHaveAttribute('data-navigation-motion','drifting');
+  await expect(page.locator('[data-navigation-motion]')).toContainText('carries the boat east');
+  await expect(page.locator('[data-helm-motion]')).toContainText('Ground 0.5 kt');
+  await expect(page.locator('[data-water-speed-gauge]')).toHaveAttribute('aria-label','Through-water speed: 0.00 kt');
+  expect(await page.locator('[data-water-speed-fill]').evaluate(el=>(el as HTMLElement).style.width)).toBe('0%');
+  const overflow=await page.locator('[data-fisherlab-sea-card],.fl-sim-touch').evaluateAll(els=>els.map(el=>el.scrollWidth-el.clientWidth));
+  for(const px of overflow)expect(px).toBeLessThanOrEqual(1);
+  const violations=await page.evaluate(async()=>(await(window as any).axe.run('[data-fisherlab-sea-card],.fl-sim-touch,.fl-sim-instruments',{runOnly:{type:'rule',values:['color-contrast','button-name','aria-valid-attr-value','aria-allowed-attr']}})).violations.map((v:any)=>({id:v.id,targets:v.nodes.map((n:any)=>n.target)})));
+  expect(violations).toEqual([]);
+  await page.locator('[data-fisherlab-sea-card]').screenshot({path:'scratch/fisherlab-motion-mobile.png'});
+  await page.locator('.fl-sim-touch').screenshot({path:'scratch/fisherlab-motion-controls-mobile.png'});
+  expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
+});
