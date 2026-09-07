@@ -344,6 +344,36 @@
   }
   window.StemLab.GeometryWorldGroundTint = geometryWorldGroundTint;
 
+  // Per-vertex ambient occlusion for one vertex of a block, the classic voxel
+  // rule: look at the three cells that touch this corner on the far side of the
+  // face (two edge neighbours and the diagonal) and darken by how many are
+  // filled. Corners where two edge neighbours meet count as fully occluded.
+  // (cx, cy, cz) is the vertex in cell-local 0..1 space, (nx, ny, nz) its face
+  // normal in the same frame, cell the block's grid position, occupied(x, y, z)
+  // the world query. Pure so the rule can be pinned without WebGL.
+  var GEOMETRY_WORLD_AO_LEVELS = [1.0, 0.82, 0.68, 0.55];
+  function geometryWorldVertexAo(cx, cy, cz, nx, ny, nz, cell, occupied) {
+    var ax = Math.abs(nx) > 0.3 ? (nx > 0 ? 1 : -1) : 0;
+    var ay = Math.abs(ny) > 0.3 ? (ny > 0 ? 1 : -1) : 0;
+    var az = Math.abs(nz) > 0.3 ? (nz > 0 ? 1 : -1) : 0;
+    if (!ax && !ay && !az) return 1;
+    var bx = cell.x + ax, by = cell.y + ay, bz = cell.z + az;
+    var offs = [];
+    if (!ax) { var tx = cx > 0.75 ? 1 : cx < 0.25 ? -1 : 0; if (tx) offs.push([tx, 0, 0]); }
+    if (!ay) { var ty = cy > 0.75 ? 1 : cy < 0.25 ? -1 : 0; if (ty) offs.push([0, ty, 0]); }
+    if (!az) { var tz = cz > 0.75 ? 1 : cz < 0.25 ? -1 : 0; if (tz) offs.push([0, 0, tz]); }
+    if (!offs.length) return 1;
+    var s1 = occupied(bx + offs[0][0], by + offs[0][1], bz + offs[0][2]) ? 1 : 0;
+    var s2 = 0, corner = 0;
+    if (offs[1]) {
+      s2 = occupied(bx + offs[1][0], by + offs[1][1], bz + offs[1][2]) ? 1 : 0;
+      corner = occupied(bx + offs[0][0] + offs[1][0], by + offs[0][1] + offs[1][1], bz + offs[0][2] + offs[1][2]) ? 1 : 0;
+    }
+    var occ = (s1 && s2) ? 3 : s1 + s2 + corner;
+    return GEOMETRY_WORLD_AO_LEVELS[occ];
+  }
+  window.StemLab.GeometryWorldVertexAo = geometryWorldVertexAo;
+
   // ── Block Types ──
   var BLOCK_TYPES = [
     { id: 'stone', name: 'Stone', color: 0x808080, emoji: '\uD83E\uDEA8' },
@@ -3344,6 +3374,26 @@
         var hemi = new THREE.HemisphereLight(0x9fd3f5, 0x3f6b3a, 0.4);
         engine.scene.add(hemi);
         engine._hemi = hemi;
+
+        // ── Horizon ground ──
+        // The lesson floor is a finite slab of grass blocks; past its edge the world
+        // dropped straight into fog, so every lesson looked like a floating island.
+        // A single plane just under the floor, in a slightly deeper green, carries
+        // the ground to the horizon. Visual only: it is not in engine.blocks, so
+        // building, measuring and the crosshair never see it, and it rides with the
+        // camera so its edge is never reached.
+        (function initHorizon() {
+          var hg = new THREE.PlaneGeometry(600, 600);
+          var hm = new THREE.MeshStandardMaterial({ color: geometryWorldSrgbColor(THREE, 0x3b8a42), roughness: 0.95, metalness: 0 });
+          var horizon = new THREE.Mesh(hg, hm);
+          horizon.rotation.x = -Math.PI / 2;
+          horizon.position.y = -0.03;
+          horizon.receiveShadow = true;
+          horizon.name = 'gw-horizon';
+          horizon.userData.gwHorizon = true;
+          engine.scene.add(horizon);
+          engine._horizon = horizon;
+        })();
         // Soft rim light from behind for depth
         var rim = new THREE.DirectionalLight(0xc0d8ff, 0.25);
         rim.position.set(-15, 20, -15);
@@ -3816,6 +3866,51 @@
           engine._undoStack.push(a);
         };
 
+        // ── Ambient occlusion ──
+        // Corners and the foot of every wall darken a little, which is what makes a
+        // voxel world read as solid mass instead of coloured paper. Computed per
+        // vertex from neighbouring cells and written as a vertex colour, so it costs
+        // nothing per frame; refreshed for the 3x3x3 neighbourhood on each change,
+        // or once for the whole world after a lesson fill.
+        var _aoSeeThrough = { glass: 1, water: 1, ice: 1 };
+        function aoOccupied(x, y, z) {
+          var m = engine.blocks[x + ',' + y + ',' + z];
+          return !!(m && !_aoSeeThrough[m.userData && m.userData.blockType]);
+        }
+        engine.refreshBlockAO = function(mesh) {
+          if (!mesh || !mesh.geometry || !mesh.userData || !mesh.userData.gridPos) return;
+          var type = mesh.userData.blockType;
+          if (type === 'lava' || type === 'torch' || _aoSeeThrough[type]) return;
+          var geo = mesh.geometry, pos = geo.getAttribute('position'), nrm = geo.getAttribute('normal');
+          if (!pos || !nrm || !pos.count) return;
+          var gp = mesh.userData.gridPos, count = pos.count;
+          var col = geo.getAttribute('color');
+          if (!col || col.count !== count) { col = new THREE.Float32BufferAttribute(new Float32Array(count * 3), 3); geo.setAttribute('color', col); }
+          var rot = mesh.rotation.y || 0, c = Math.cos(rot), sn = Math.sin(rot);
+          var oy = mesh.position.y - gp.y;
+          for (var i = 0; i < count; i++) {
+            var lx = pos.getX(i), ly = pos.getY(i), lz = pos.getZ(i);
+            var nx = nrm.getX(i), ny = nrm.getY(i), nz = nrm.getZ(i);
+            var rx = lx * c + lz * sn, rz = -lx * sn + lz * c;
+            var rnx = nx * c + nz * sn, rnz = -nx * sn + nz * c;
+            var f = geometryWorldVertexAo(rx + 0.5, ly + oy, rz + 0.5, rnx, ny, rnz, gp, aoOccupied);
+            col.setXYZ(i, f, f, f);
+          }
+          col.needsUpdate = true;
+          var mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          mats.forEach(function(m) { if (m && !m.vertexColors) { m.vertexColors = true; m.needsUpdate = true; } });
+        };
+        engine.refreshAONeighbourhood = function(x, y, z) {
+          for (var dx = -1; dx <= 1; dx++) for (var dy = -1; dy <= 1; dy++) for (var dz = -1; dz <= 1; dz++) {
+            var m = engine.blocks[(x + dx) + ',' + (y + dy) + ',' + (z + dz)];
+            if (m) engine.refreshBlockAO(m);
+          }
+        };
+        engine.refreshAllAO = function() {
+          engine._aoDirty = false;
+          Object.keys(engine.blocks).forEach(function(k) { engine.refreshBlockAO(engine.blocks[k]); });
+        };
+
         // Block operations
         engine.placeBlock = function(x, y, z, type, shape, rotation) {
           var key = x + ',' + y + ',' + z;
@@ -3849,6 +3944,7 @@
           mesh.userData = { blockType: type, gridPos: { x: x, y: y, z: z }, shape: shapeId, volume: shapeDef.volume, rotation: rot, _lessonBlock: !!engine._placingLessonBlocks, _measurementLayer: engine._measurementLayer || (engine._placingLessonBlocks ? 'lesson' : 'student') };
           engine.scene.add(mesh);
           engine.blocks[key] = mesh;
+          if (engine._placingLessonBlocks) engine._aoDirty = true; else engine.refreshAONeighbourhood(x, y, z);
           engine._blocksDirty = true; // invalidate cached blocks array so raycasters rebuild
           pushUndo({ action: 'place', x: x, y: y, z: z, type: type, shape: shapeId, rotation: rot });
           // Torch blocks emit a point light
@@ -3892,6 +3988,7 @@
             mesh.geometry.dispose(); mesh.material.dispose();
             delete engine.blocks[key];
             engine._blocksDirty = true; // invalidate cached blocks array
+            engine.refreshAONeighbourhood(x, y, z);
             pushUndo({ action: 'remove', x: x, y: y, z: z, type: removedType, shape: removedShape, rotation: removedRotation });
           }
         };
@@ -4091,6 +4188,7 @@
           });
           engine._placingLessonBlocks = false;
           engine._measurementLayer = null;
+          engine.refreshAllAO();
           if (engine._fillTruncated && addToast) {
             addToast('⚠️ This world is larger than the ' + MAX_BLOCKS + '-block limit — part of it was not built. Measurements may not match the lesson.', 'error');
           }
@@ -4969,6 +5067,9 @@
               var shapeDef2 = BLOCK_SHAPES[ps.selectedShape] || BLOCK_SHAPES[0];
               var placeType = typeDef.id;
               engine.placeBlock(placeX, placeY, placeZ, placeType, shapeDef2.id, ps.blockRotation);
+              // A short scale-in so the block feels set down rather than switched on.
+              var placedMesh = engine.blocks[placeX + ',' + placeY + ',' + placeZ];
+              if (placedMesh && engine._ambientMotionEnabled !== false) { placedMesh.scale.setScalar(0.7); placedMesh.userData._popT = 0; (engine._popBlocks = engine._popBlocks || []).push(placedMesh); }
               sfxPlace(placeType); if (window._alloHaptic) window._alloHaptic('place');
               spawnPlaceParticles(engine, placeX + 0.5, placeY + 0.5, placeZ + 0.5);
               engine.blocksPlaced = (engine.blocksPlaced || 0) + 1;
@@ -6258,6 +6359,16 @@
           }
           // The sky dome rides with the camera and takes its two colours from the
           // scene, so the time-of-day cross-fade in updateEnvTransition drives it.
+          if (engine._popBlocks && engine._popBlocks.length) {
+            for (var pi = engine._popBlocks.length - 1; pi >= 0; pi--) {
+              var pm = engine._popBlocks[pi]; pm.userData._popT = (pm.userData._popT || 0) + dt / 0.16;
+              var ptp = Math.min(1, pm.userData._popT), pe = 1 - Math.pow(1 - ptp, 3);
+              pm.scale.setScalar(0.7 + 0.3 * pe);
+              if (ptp >= 1) { pm.scale.setScalar(1); engine._popBlocks.splice(pi, 1); }
+            }
+          }
+          if (engine._aoDirty && !engine._placingLessonBlocks && engine.refreshAllAO) engine.refreshAllAO();
+          if (engine._horizon && engine.camera) { engine._horizon.position.x = engine.camera.position.x; engine._horizon.position.z = engine.camera.position.z; }
           if (engine._skyDome && engine.camera) {
             engine._skyDome.position.copy(engine.camera.position);
             var skyUniforms = engine._skyDome.material.uniforms;
@@ -6783,6 +6894,7 @@
           if (engine._ghostMesh) { engine.scene.remove(engine._ghostMesh); engine._ghostMesh.geometry.dispose(); engine._ghostMesh.material.dispose(); }
           if (engine._skyDome) { engine.scene.remove(engine._skyDome); engine._skyDome.geometry.dispose(); engine._skyDome.material.dispose(); engine._skyDome = null; }
           if (engine._envRT) { try { engine._envRT.dispose(); } catch (e) {} engine._envRT = null; }
+          if (engine._horizon) { engine.scene.remove(engine._horizon); engine._horizon.geometry.dispose(); engine._horizon.material.dispose(); engine._horizon = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows

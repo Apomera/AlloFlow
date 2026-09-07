@@ -50,6 +50,53 @@ describe('geometryWorldGroundTint', () => {
   });
 });
 
+describe('geometryWorldVertexAo', () => {
+  let ao;
+  beforeAll(() => { ao = window.StemLab.GeometryWorldVertexAo; if (typeof ao !== 'function') throw new Error('GeometryWorldVertexAo not exposed'); });
+  const cell = { x: 5, y: 0, z: 5 };
+  const world = (filled) => (x, y, z) => filled.has(x + ',' + y + ',' + z);
+
+  it('leaves an open corner at full brightness', () => {
+    expect(ao(1, 1, 1, 0, 1, 0, cell, world(new Set()))).toBe(1);
+  });
+
+  it('darkens the top-face corner next to one neighbouring block', () => {
+    // top face (+y) corner at +x,+z; a block standing on the floor at (6,1,5)
+    expect(ao(1, 1, 1, 0, 1, 0, cell, world(new Set(['6,1,5'])))).toBe(0.82);
+  });
+
+  it('counts the diagonal neighbour on its own as one step', () => {
+    expect(ao(1, 1, 1, 0, 1, 0, cell, world(new Set(['6,1,6'])))).toBe(0.82);
+  });
+
+  it('treats two edge neighbours as a fully occluded corner regardless of the diagonal', () => {
+    expect(ao(1, 1, 1, 0, 1, 0, cell, world(new Set(['6,1,5', '5,1,6'])))).toBe(0.55);
+    expect(ao(1, 1, 1, 0, 1, 0, cell, world(new Set(['6,1,5', '5,1,6', '6,1,6'])))).toBe(0.55);
+  });
+
+  it('reads the opposite corner from the opposite neighbours', () => {
+    const filled = world(new Set(['6,1,5']));
+    expect(ao(0, 1, 0, 0, 1, 0, cell, filled)).toBe(1);
+    expect(ao(1, 1, 0, 0, 1, 0, cell, filled)).toBe(0.82);
+  });
+
+  it('follows the face normal: a side face looks sideways, not up', () => {
+    // +x face, top-front corner. The across cell is (6,0,5); its edge neighbours
+    // for this corner are (6,1,5) above and (6,0,6) in front, the diagonal (6,1,6).
+    // A block at (5,1,5), on top of this cell, is not on the far side of the face.
+    expect(ao(1, 1, 1, 1, 0, 0, cell, world(new Set(['5,1,5'])))).toBe(1);
+    expect(ao(1, 1, 1, 1, 0, 0, cell, world(new Set(['6,1,5'])))).toBe(0.82);
+    expect(ao(1, 1, 1, 1, 0, 0, cell, world(new Set(['6,1,5', '6,1,6'])))).toBe(0.68);
+    expect(ao(1, 1, 1, 1, 0, 0, cell, world(new Set(['6,1,5', '6,0,6'])))).toBe(0.55);
+  });
+
+  it('gives mid-edge vertices (slab tops, wedge apexes) only the neighbours they actually touch', () => {
+    // a vertex at cy = 0.5 on a +x face has no vertical tangent, so only z counts
+    expect(ao(1, 0.5, 1, 1, 0, 0, cell, world(new Set(['6,1,5'])))).toBe(1);
+    expect(ao(1, 0.5, 1, 1, 0, 0, cell, world(new Set(['6,0,6'])))).toBe(0.82);
+  });
+});
+
 describe('colour pipeline source contract', () => {
   const src = readFileSync('stem_lab/stem_tool_geometryworld.js', 'utf8');
   const pub = readFileSync('desktop/web-app/public/stem_lab/stem_tool_geometryworld.js', 'utf8');

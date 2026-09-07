@@ -34,6 +34,16 @@ Geometry World is the first-person voxel builder (`stem_lab/stem_tool_geometrywo
 - Ambient occlusion in block corners would deepen the voxel look further; it needs per-vertex work in `createShapeGeometry` and was left out to keep the STL and volume paths untouched.
 - Physical devices and headsets were not exercised.
 
+## Round 5 (same day): mass, horizon, touch
+
+**Ambient occlusion.** Every block now carries per-vertex ambient occlusion written as a vertex colour: the classic voxel rule reads the two edge neighbours and the diagonal on the far side of each face corner and darkens in four steps (1.0, 0.82, 0.68, 0.55). Corners and the foot of every wall darken, so structures read as solid mass instead of coloured paper. It costs nothing per frame; the 3x3x3 neighbourhood is refreshed on each place or remove, and the whole world once after a lesson fill. Glass, water and ice neither occlude nor darken; lava and torches keep their glow. The pure rule (`geometryWorldVertexAo`) is pinned in the pipeline test; a browser probe measured 0.55 on wall and floor-beside-wall vertices and 0.82 to 1.0 on open floor.
+
+**Horizon ground.** The lesson floor is a finite slab of grass blocks; beyond its edge every lesson looked like a floating island. A single deeper-green plane just under the floor now carries the ground to the fog line. It rides with the camera, receives shadows, and is not in the block map, so building, measuring and the crosshair never see it.
+
+**Placement pop.** A block placed by the student scales in from 0.7 over 160 ms (skipped under reduced motion / battery saver). Direct `placeBlock` calls, which lessons and the e2e block-fidelity checks use, stay exact.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
+
+Round 5 run of the same spec: **14 passed, 3 flaky (passed on retry)** in 14.7 minutes while another session had a browser suite running (13 Chromium processes alive before the run). The three, "starting a lesson leaves ONE canvas", "W walks the player forward" and "slab or wedge preflight", were then re-run unchanged twice each with retries off: **6 passed** in 2.1 minutes. The flakes were load, not the code.
