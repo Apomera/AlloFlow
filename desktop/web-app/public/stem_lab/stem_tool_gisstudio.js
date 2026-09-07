@@ -4610,8 +4610,8 @@
         React.useEffect(function () {
           if (typeof ctx.canvasNarrate === 'function') {
             ctx.canvasNarrate('gis-studio', 'init', {
-              first: 'GIS Studio loaded. Map layers and equivalent tables show ' + localizedRegionLabel(activeRegionPack) + '. Import CSV or GeoJSON, load a different region pack, compare satellite imagery, or explore projections.',
-              repeat: 'GIS Studio active.', terse: 'GIS Studio.'
+              first: gisFillTemplate(__alloT('stem.gisstudio.sr_studio_loaded', 'GIS Studio loaded. Map layers and equivalent tables show {region}. Import CSV or GeoJSON, load a different region pack, compare satellite imagery, or explore projections.'), { region: localizedRegionLabel(activeRegionPack) }),
+              repeat: __alloT('stem.gisstudio.sr_studio_active', 'GIS Studio active.'), terse: __alloT('stem.gisstudio.sr_studio_terse', 'GIS Studio.')
             }, { debounce: 800 });
           }
         }, []);
@@ -4818,19 +4818,19 @@
                 setAnalysisPoints(function (previous) { return previous.concat([point]).slice(-20); });
                 setAnalysisSelection([]); setAnalysisSelectionSource('none');
                 persist('gisSpatialAnalysis', true);
-                announce('Measurement vertex added at ' + display.coordinate(point.lat, 4, 'lat') + ', ' + display.coordinate(point.lon, 4, 'lon') + '.');
+                announce(gisFillTemplate(__alloT('stem.gisstudio.sr_vertex_added', 'Measurement vertex added at {lat}, {lon}.'), { lat: display.coordinate(point.lat, 4, 'lat'), lon: display.coordinate(point.lon, 4, 'lon') }));
               } else if (analysisMode === 'buffer') {
                 var buffered = selectWithinRadius(records, point, bufferRadiusKm);
                 setAnalysisPoints([point]); setAnalysisSelection([]); setAnalysisSelectionSource('buffer');
                 persist('gisSpatialAnalysis', true);
-                announce(formatDistance(Number(bufferRadiusKm) || 0) + ' buffer selected ' + buffered.length + ' of ' + records.length + ' points.');
+                announce(gisFillTemplate(__alloT('stem.gisstudio.sr_buffer_selected', '{radius} buffer selected {count} of {total} points.'), { radius: formatDistance(Number(bufferRadiusKm) || 0), count: buffered.length, total: records.length }));
               } else {
                 var nearest = nearestRecord(records, point);
                 setAnalysisPoints([point]);
                 setAnalysisSelection(nearest ? [nearest.index] : []);
                 setAnalysisSelectionSource('nearest');
                 persist('gisSpatialAnalysis', true);
-                announce(nearest ? nearest.record.name + ' is nearest at ' + formatDistance(nearest.distanceKm) + '.' : 'No mapped points are available.');
+                announce(nearest ? gisFillTemplate(__alloT('stem.gisstudio.sr_nearest_point', '{name} is nearest at {distance}.'), { name: nearest.record.name, distance: formatDistance(nearest.distanceKm) }) : __alloT('stem.gisstudio.sr_no_mapped_points', 'No mapped points are available.'));
               }
             });
             var instruction = analysisMode === 'distance' ? 'Click map vertices to measure a path.' :
@@ -5135,7 +5135,7 @@
           if (next === 'projection') persist('gisProjectionCompared', true);
           if (next === 'compare') persist('gisCompared', true);
           if (next === 'timeline') persist('gisTimelineAnalyzed', true);
-          announce(next + ' workspace');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_workspace_opened', '{name} workspace'), { name: next }));
         }
 
         function csvConventionControl(value, onChange) {
@@ -5200,11 +5200,11 @@
             });
             setImportAxisOrder(preview.axisOrder);
             setError('');
-            announce(preview.totalRows + ' CSV rows previewed. Review the coordinate system and column mapping.');
+            announce(gisFillTemplate(__alloT('stem.gisstudio.sr_csv_rows_previewed', '{count} CSV rows previewed. Review the coordinate system and column mapping.'), { count: preview.totalRows }));
           } catch (problem) {
             clearPointImportPreview();
             setError(problem.message);
-            announce('CSV preview error. ' + problem.message);
+            announce(__alloT('stem.gisstudio.sr_csv_preview_error', 'CSV preview error.') + ' ' + problem.message);
           }
         }
 
@@ -5225,8 +5225,8 @@
             timeViewState.current = null;
             setImportedRows(rows); setSource('import'); setError(''); setTab('map');
             persist('gisImported', true);
-            announce(rows.length + ' CSV locations converted to WGS84 and mapped.');
-          } catch (problem) { setError(problem.message); announce('CSV error. ' + problem.message); }
+            announce(gisFillTemplate(__alloT('stem.gisstudio.sr_csv_locations_mapped', '{count} CSV locations converted to WGS84 and mapped.'), { count: rows.length }));
+          } catch (problem) { setError(problem.message); announce(__alloT('stem.gisstudio.sr_csv_error', 'CSV error.') + ' ' + problem.message); }
         }
 
         function readFile(event) {
@@ -5302,7 +5302,7 @@
           setGeoImportMetric(inspection.suggestedMetric);
           setGeoImportNameKey(inspection.suggestedNameKey);
           setGeoError('');
-          announce(inspection.featureCount + ' spatial features are ready for review. The active map has not changed.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_features_ready_for_review', '{count} spatial features are ready for review. The active map has not changed.'), { count: inspection.featureCount }));
         }
 
 
@@ -5334,7 +5334,7 @@
           setTab('map');
           persist('gisGeoJSONImported', true);
           var formatLabel = parsed.sourceFormat === 'kml' ? 'KML' : parsed.sourceFormat === 'gpx' ? 'GPX' : 'GeoJSON';
-          announce(parsed.data.features.length + ' ' + formatLabel + ' features mapped from ' + sourceLabel + '.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_features_mapped_from', '{count} {format} features mapped from {source}.'), { count: parsed.data.features.length, format: formatLabel, source: sourceLabel }));
         }
 
         function mapReviewedGeoImport() {
@@ -5348,7 +5348,7 @@
         function doGeoImport() {
           clearGeoImportReview();
           try { prepareGeoImport(parseGISVectorText(geoText, 'auto', 'pasted-data'), 'pasted data'); }
-          catch (problem) { clearGeoImportReview(); setGeoError(problem.message); announce('Spatial layer error. ' + problem.message); }
+          catch (problem) { clearGeoImportReview(); setGeoError(problem.message); announce(__alloT('stem.gisstudio.sr_spatial_layer_error', 'Spatial layer error.') + ' ' + problem.message); }
         }
 
         function readGeoFile(event) {
@@ -5363,7 +5363,7 @@
             var text = String(reader.result || '');
             setGeoText(text);
             try { prepareGeoImport(parseGISVectorText(text, 'auto', file.name), file.name); }
-            catch (problem) { clearGeoImportReview(); setGeoError(problem.message); announce('Spatial layer error. ' + problem.message); }
+            catch (problem) { clearGeoImportReview(); setGeoError(problem.message); announce(__alloT('stem.gisstudio.sr_spatial_layer_error', 'Spatial layer error.') + ' ' + problem.message); }
           };
           reader.onerror = function () { if (requestId !== geoImportRequestRef.current) return; clearGeoImportReview(); setGeoError('That spatial layer file could not be read.'); };
           reader.readAsText(file);
@@ -5421,7 +5421,7 @@
             setJoinValueKey(valueKey);
             setJoinPreview(null);
             setJoinError(valueKey ? '' : 'The join CSV needs at least one numeric value column.');
-            announce(table.rows.length + ' join rows and ' + table.headers.length + ' columns ready.');
+            announce(gisFillTemplate(__alloT('stem.gisstudio.sr_join_rows_ready', '{rows} join rows and {columns} columns ready.'), { rows: table.rows.length, columns: table.headers.length }));
           } catch (problem) { setJoinError(problem.message); setJoinTable(null); }
         }
 
@@ -5430,7 +5430,7 @@
             var preview = joinTableToGeoJSON(geoData, joinTable ? joinTable.rows : [], joinGeoKey, joinCSVKey, joinValueKey, { decimalSeparator: joinTable && joinTable.decimalSeparator });
             setJoinPreview(preview);
             setJoinError('');
-            announce(preview.matched + ' boundaries matched. ' + preview.unmatchedCSV.length + ' CSV rows and ' + preview.unmatchedGeo.length + ' boundaries unmatched.');
+            announce(gisFillTemplate(__alloT('stem.gisstudio.sr_join_match_summary', '{matched} boundaries matched. {rows} CSV rows and {boundaries} boundaries unmatched.'), { matched: preview.matched, rows: preview.unmatchedCSV.length, boundaries: preview.unmatchedGeo.length }));
           } catch (problem) { setJoinError(problem.message); setJoinPreview(null); }
         }
 
@@ -5444,7 +5444,7 @@
           setJoinPreview(null);
           setTab('map');
           persist('gisJoinApplied', true);
-          announce('Join applied. Choropleth now maps ' + joinValueKey + '.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_join_applied', 'Join applied. The choropleth now maps {field}.'), { field: joinValueKey }));
         }
 
         function updatePackForm(key, value) {
@@ -5662,7 +5662,7 @@
             setPackBoundaryOwner('');
           }
           persist('gisRegionPack', next.id);
-          announce(localizedRegionLabel(next) + ' loaded. ' + next.description + ' ' + next.sourceNote);
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_region_loaded', '{name} loaded.'), { name: localizedRegionLabel(next) }) + ' ' + next.description + ' ' + next.sourceNote);
         }
         function clearAnalysis() {
           if (hasAnalysisState()) pushAnalysisHistory();
@@ -5683,7 +5683,7 @@
           setAnalysisSelectionSource('boundary');
           setAnalysisPoints([]);
           persist('gisSpatialAnalysis', true);
-          announce(selected.length + ' of ' + records.length + ' points selected inside the boundary.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_points_inside_boundary', '{count} of {total} points selected inside the boundary.'), { count: selected.length, total: records.length }));
         }
 
         function sonifySelection() {
@@ -5701,7 +5701,7 @@
             oscillator.connect(gain); gain.connect(ac.destination);
             oscillator.start(start); oscillator.stop(start + 0.13);
           });
-          announce('Playing ' + selectedRecords.length + ' selected values from low pitch to high pitch.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_playing_selected_values', 'Playing {count} selected values from low pitch to high pitch.'), { count: selectedRecords.length }));
         }
 
         function explain() {
@@ -6631,7 +6631,7 @@
           setTimePlaying(false);
           setProjectError('');
           persist('gisProjectLoaded', true);
-          announce('GIS project opened from ' + sourceLabel + '.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_project_opened_from', 'GIS project opened from {source}.'), { source: sourceLabel }));
         }
 
         function downloadProjectFile() {
@@ -6694,7 +6694,7 @@
               setAutosaveReady(true);
             } catch (openError) {
               setProjectError(openError.message);
-              announce('Project file error. ' + openError.message);
+              announce(__alloT('stem.gisstudio.sr_project_file_error', 'Project file error.') + ' ' + openError.message);
             }
           };
           reader.onerror = function () { setProjectError('That project file could not be read.'); };
@@ -6736,7 +6736,7 @@
             return Object.assign({}, previous, { rows: rows });
           });
           setProjectError('');
-          announce((activePackIsCustom ? 'Region pack, imported' : 'Imported') + ' and timeline point coordinates rounded to ' + privacyDigits + ' decimal places. GeoJSON boundaries were not changed.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_coordinates_rounded', 'Coordinates rounded to {digits} decimal places for {scope}. GeoJSON boundaries were not changed.'), { digits: privacyDigits, scope: activePackIsCustom ? __alloT('stem.gisstudio.sr_scope_pack_imported_timeline', 'the region pack, imported points and timeline rows') : __alloT('stem.gisstudio.sr_scope_imported_timeline', 'imported points and timeline rows') }));
         }
 
         function loadTimeSeries() {
@@ -6749,11 +6749,11 @@
             setTimePlaying(false);
             setTimeError(parsed.duplicates.length ? 'Duplicate location-year rows: ' + parsed.duplicates.join(', ') + '. The last duplicate is used for change calculations.' : '');
             persist('gisTimelineAnalyzed', true);
-            announce(parsed.rows.length + ' time-series records across ' + parsed.years.length + ' years loaded.');
+            announce(gisFillTemplate(__alloT('stem.gisstudio.sr_time_series_loaded', '{count} time-series records across {years} years loaded.'), { count: parsed.rows.length, years: parsed.years.length }));
           } catch (problem) {
             setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] });
             setTimeError(problem.message);
-            announce('Time-series CSV error. ' + problem.message);
+            announce(__alloT('stem.gisstudio.sr_time_series_csv_error', 'Time-series CSV error.') + ' ' + problem.message);
           }
         }
 
@@ -6795,7 +6795,7 @@
           if (!timePlaying && effectiveFocusYear === timeYears[timeYears.length - 1]) setTimeFocusYear(timeYears[0]);
           setTimePlaying(!timePlaying);
           persist('gisTimelineAnalyzed', true);
-          announce(timePlaying ? 'Timeline paused.' : 'Timeline playback started.');
+          announce(timePlaying ? __alloT('stem.gisstudio.sr_timeline_paused', 'Timeline paused.') : __alloT('stem.gisstudio.sr_timeline_started', 'Timeline playback started.'));
         }
 
         function sonifyTemporalChange() {
@@ -6946,7 +6946,7 @@
           }
           saveMissionProgress(mission.id, 'setup', true);
           persist('gisActiveMission', mission.id);
-          announce(mission.title + ' prepared. ' + (mission.workspace === 'compare' ? 'Comparison workspace opened.' : 'Map workspace opened.'));
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_mission_prepared', '{title} prepared. {workspace}'), { title: mission.title, workspace: mission.workspace === 'compare' ? __alloT('stem.gisstudio.sr_comparison_workspace_opened', 'Comparison workspace opened.') : __alloT('stem.gisstudio.sr_map_workspace_opened', 'Map workspace opened.') }));
         }
 
         function missionEvidenceModel(mission) {
@@ -6972,7 +6972,7 @@
           window.setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
           persist('gisMissionCompleted', true);
           persist('gisEvidenceExported', true);
-          announce(mission.title + ' evidence report downloaded.');
+          announce(gisFillTemplate(__alloT('stem.gisstudio.sr_mission_report_downloaded', '{title} evidence report downloaded.'), { title: mission.title }));
         }
         function spatialAnalysisEvidence() {
           var method = 'No active spatial analysis';
@@ -7422,7 +7422,7 @@
         function chooseInquiryTemplate(template) {
           var defaults = GIS_INQUIRY_TEMPLATES[template] || GIS_INQUIRY_TEMPLATES.distribution;
           var next = normalizeInquiryPlan({ template: template, question: defaults.question, claim: '', evidencePlan: defaults.evidencePlan, alternative: defaults.alternative, nextStep: defaults.nextStep, checklist: {} });
-          setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true); setPlannerStatus(defaults.label + ' investigation template loaded.'); announce(defaults.label + ' investigation template loaded.');
+          setInquiryPlan(next); persist('gisInquiryPlan', next); persist('gisInquiryPlanStarted', true); setPlannerStatus(defaults.label + ' investigation template loaded.'); announce(gisFillTemplate(__alloT('stem.gisstudio.sr_investigation_template_loaded', '{name} investigation template loaded.'), { name: defaults.label }));
         }
 
         function updateInquiryChecklist(field, value) {

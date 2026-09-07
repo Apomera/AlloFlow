@@ -9,7 +9,12 @@
 // This sweeps every workspace across the shapes a region pack can take and
 // fails on the tokens that mean a computation escaped without a value.
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { createRequire } from 'node:module';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+
+const require = createRequire(import.meta.url);
 
 vi.setConfig({ testTimeout: 30000 });
 
@@ -203,6 +208,63 @@ describe('GIS Studio output sanity', () => {
     // A caller-supplied stamp still wins, and a locale still formats it.
     const fixed = tool.testing.buildEvidenceReport({ left: { label: 'L', rows }, right: { label: 'R', rows }, generated: 'Fixed stamp' });
     expect(fixed).toContain('Generated Fixed stamp');
+  });
+
+  it('speaks to a screen reader in the reader’s own language', () => {
+    // 28 of 91 announcements were hard-coded English, including every
+    // confirmation a screen-reader user relies on after an action: rows mapped,
+    // join applied, timeline paused, points selected.
+    const acorn = require(resolve(process.cwd(), 'node_modules/acorn'));
+    const source = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_gisstudio.js'), 'utf8');
+    const ast = acorn.parse(source, { ecmaVersion: 2022, locations: true });
+
+    function translated(node) {
+      let found = false;
+      (function walk(n) {
+        if (!n || typeof n.type !== 'string' || found) return;
+        if (n.type === 'CallExpression') {
+          const callee = n.callee;
+          const name = callee.type === 'Identifier' ? callee.name
+            : (callee.type === 'MemberExpression' && callee.property ? callee.property.name : null);
+          if (name === 't' || name === '__alloT' || name === 'gisFillTemplate') found = true;
+        }
+        if (n.type === 'MemberExpression' && n.object && n.object.name === 'gisText') found = true;
+        for (const key of Object.keys(n)) {
+          if (key === 'loc' || key === 'range') continue;
+          const value = n[key];
+          if (Array.isArray(value)) value.forEach((child) => child && typeof child.type === 'string' && walk(child));
+          else if (value && typeof value.type === 'string') walk(value);
+        }
+      })(node);
+      return found;
+    }
+
+    const english = [];
+    let total = 0;
+    (function walk(node) {
+      if (!node || typeof node.type !== 'string') return;
+      if (node.type === 'CallExpression') {
+        const callee = node.callee;
+        const name = callee.type === 'Identifier' ? callee.name
+          : (callee.type === 'MemberExpression' && callee.property ? callee.property.name : null);
+        if (name === 'announce' || name === 'announceToSR' || name === 'canvasNarrate') {
+          const subject = name === 'canvasNarrate' ? node.arguments[2] : node.arguments[0];
+          if (subject) {
+            total += 1;
+            if (!translated(subject)) english.push('line ' + node.loc.start.line);
+          }
+        }
+      }
+      for (const key of Object.keys(node)) {
+        if (key === 'loc' || key === 'range') continue;
+        const value = node[key];
+        if (Array.isArray(value)) value.forEach((child) => child && typeof child.type === 'string' && walk(child));
+        else if (value && typeof value.type === 'string') walk(value);
+      }
+    })(ast);
+
+    expect(total).toBeGreaterThan(80);
+    expect(english, 'these announcements reach a screen reader in English whatever language the class uses').toEqual([]);
   });
 
   it('says so when a pack has only one attribute to compare', () => {
