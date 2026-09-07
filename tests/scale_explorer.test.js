@@ -294,3 +294,36 @@ describe('Scale Explorer camera cost', () => {
     expect(src).toMatch(/say\(Math\.abs\(d\) <= 2/);
   });
 });
+
+describe('Scale Explorer guided journey', () => {
+  // The Eames film is a continuous outward trip, not a control panel. Dragging a
+  // slider does not give a student the experience of passing each power of ten.
+  it('walks one power of ten per step and names what is there', () => {
+    expect(src).toMatch(/function startJourney\(dir\)/);
+    expect(src).toMatch(/var next = targetRef\.current \+ dir;/);
+    expect(src).toMatch(/var here = nearestItem\(clamp\(next, MIN_EXP, MAX_EXP\)\);/);
+    expect(src).toMatch(/if \(here\) setFocusId\(here\.id\);/);
+  });
+
+  it('stops itself at the end of the ladder rather than running against the clamp', () => {
+    expect(src).toMatch(/var atEnd = dir > 0 \? next >= MAX_EXP : next <= MIN_EXP;/);
+    expect(src).toMatch(/if \(atEnd\) \{ stopJourney\(\); say\(S\('journey_end'/);
+  });
+
+  it('yields to the student instead of fighting them', () => {
+    // Manual navigation cancels the trip; two things driving one camera is worse
+    // than either alone.
+    expect(src).toMatch(/function zoomBy\(decades\) \{ stopJourney\(\);/);
+    expect(src).toMatch(/function flyTo\(item, opts\) \{\n\s*stopJourney\(\);/);
+  });
+
+  it('clears its timer on unmount, so it cannot outlive the tool', () => {
+    expect(src).toMatch(/if \(journeyRef\.current\) clearInterval\(journeyRef\.current\);/);
+    expect(src).toMatch(/function stopJourney\(\)/);
+  });
+
+  it('exposes its state to assistive tech as a toggle', () => {
+    expect(src).toMatch(/'aria-pressed': journey !== 0 \? 'true' : 'false'/);
+    expect(src).toMatch(/journey_pause/);
+  });
+});

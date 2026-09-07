@@ -264,6 +264,9 @@
       var _cmpA = React.useState('human'); var cmpA = _cmpA[0], setCmpA = _cmpA[1];
       var _cmpB = React.useState('rbc'); var cmpB = _cmpB[0], setCmpB = _cmpB[1];
       var _speaking = React.useState(''); var speaking = _speaking[0], setSpeaking = _speaking[1];
+      var _journey = React.useState(0); var journey = _journey[0], setJourney = _journey[1];
+      var journeyRef = React.useRef(null);
+      var journeyDirRef = React.useRef(0);
       var _showLadder = React.useState(true); var showLadder = _showLadder[0], setShowLadder = _showLadder[1];
       var _pair = React.useState({ big: 'earth', small: 'human' }); var pair = _pair[0], setPair = _pair[1];
       var _guess = React.useState(''); var guess = _guess[0], setGuess = _guess[1];
@@ -347,8 +350,42 @@
           ? S('decade_sr_near', 'Now at about {len}.', { len: len })
           : S('decade_sr', 'Now at ten to the power {n}, about {len}.', { n: d, len: len }));
       }
-      function zoomBy(decades) { goTo(targetRef.current + decades); }
+      function zoomBy(decades) { stopJourney(); goTo(targetRef.current + decades); }
+
+      // The Eames film is a continuous outward journey, not a control panel. This
+      // walks one power of ten at a time and names what lives at each, which is
+      // the part a student cannot get by dragging.
+      function nearestItem(e) {
+        var best = null, bestD = Infinity;
+        for (var i = 0; i < sorted.length; i++) {
+          var d = Math.abs(log10(sorted[i].size) - e);
+          if (d < bestD) { bestD = d; best = sorted[i]; }
+        }
+        return best;
+      }
+      function stopJourney() {
+        if (journeyRef.current) { clearInterval(journeyRef.current); journeyRef.current = null; }
+        if (journeyDirRef.current !== 0) { journeyDirRef.current = 0; setJourney(0); }
+      }
+      function startJourney(dir) {
+        stopJourney();
+        journeyDirRef.current = dir;
+        setJourney(dir);
+        var stepOnce = function () {
+          var next = targetRef.current + dir;
+          var atEnd = dir > 0 ? next >= MAX_EXP : next <= MIN_EXP;
+          goTo(next);
+          var here = nearestItem(clamp(next, MIN_EXP, MAX_EXP));
+          if (here) setFocusId(here.id);
+          if (atEnd) { stopJourney(); say(S('journey_end', 'That is as far as the ladder goes.')); }
+        };
+        stepOnce();
+        // One decade every couple of seconds: long enough to read the name that
+        // just came into view, short enough that the trip still feels like one.
+        journeyRef.current = setInterval(stepOnce, 2400);
+      }
       function flyTo(item, opts) {
+        stopJourney();
         setFocusId(item.id);
         goTo(log10(item.size), opts);
       }
@@ -467,6 +504,7 @@
         return function () {
           window.removeEventListener('resize', onResize);
           if (rafRef.current) cancelAnimationFrame(rafRef.current);
+          if (journeyRef.current) clearInterval(journeyRef.current);
           clearTimeout(speakTimerRef.current);
         };
       }, []);
@@ -640,6 +678,11 @@
             h('div', { style: { display: 'flex', gap: 6, flexWrap: 'wrap' } },
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(-1); }, 'aria-label': S('out_one', 'Zoom out one power of ten') }, '− 10×'),
               h('button', { type: 'button', style: btn, onClick: function () { zoomBy(1); }, 'aria-label': S('in_one', 'Zoom in one power of ten') }, '+ 10×'),
+              h('button', { type: 'button', style: journey !== 0 ? Object.assign({}, btn, { borderColor: P.accent, color: P.accent }) : btn,
+                'aria-pressed': journey !== 0 ? 'true' : 'false',
+                onClick: function () { if (journey !== 0) { stopJourney(); say(S('journey_paused', 'Journey paused.')); } else { startJourney(1); } } },
+                journey !== 0 ? S('journey_pause', '⏸ Pause the journey') : S('journey_out', '▶ Journey outward')),
+              journey === 0 ? h('button', { type: 'button', style: btn, onClick: function () { startJourney(-1); } }, S('journey_in', '▶ Journey inward')) : null,
               h('button', { type: 'button', style: btn, onClick: function () { flyTo(byId.human); } }, S('to_human', '🧍 Human scale')),
               h('button', { type: 'button', style: btn, onClick: function () { goTo(MAX_EXP); } }, S('to_big', '🌌 Biggest')),
               h('button', { type: 'button', style: btn, onClick: function () { goTo(MIN_EXP); } }, S('to_small', '🔴 Smallest')))
