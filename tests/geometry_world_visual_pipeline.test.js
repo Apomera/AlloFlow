@@ -361,6 +361,20 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain("* (engine._dimLines && engine._dimLines.length > 0 ? 0.35 : 1)");
   });
 
+  it('keeps hidden layers countable as outlines in the layer explorer', () => {
+    // a hidden layer used to vanish outright, so revealing 'through layer 1' of a
+    // 3x3x3 lost the other 18 cells and the prism's height
+    expect(src).toContain('engine.addLayerGhost = function(mesh)');
+    expect(src).toContain('new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), engine._layerGhostMat)');
+    // both visibility branches (measured-structure targets and whole-world) outline what they hide
+    expect(src.split('if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);').length - 1).toBe(2);
+    // outlines are rebuilt from scratch on every focus change and dropped with the block map
+    expect(src).toContain('engine._layerFocus = next;\n          engine.clearLayerGhosts();');
+    expect(src).toContain('engine.clearWorld = function() {\n          if (engine.clearLayerGhosts) engine.clearLayerGhosts();');
+    // and the hidden layers\' glow slabs soften so the outlines are what the eye reads
+    expect(src).toContain('g.material.opacity = hidden ? 0.07 : 0.22;');
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

@@ -4223,6 +4223,7 @@
         };
 
         engine.clearWorld = function() {
+          if (engine.clearLayerGhosts) engine.clearLayerGhosts();
           Object.keys(engine.blocks).forEach(function(k) {
             var m = engine.blocks[k]; engine.scene.remove(m); m.geometry.dispose(); m.material.dispose();
           });
@@ -5573,10 +5574,30 @@
         engine._layerFocus = null;
         engine._layerExplorerBlocks = null;
         engine._layerExplorerMinY = null;
+        // Layer outlines. A hidden layer used to vanish outright, so a student
+        // revealing 'through layer 1' of a 3x3x3 lost sight of the other 18 cells
+        // and of the prism's height. Each hidden block now leaves a faint edge
+        // outline at its own cell: the revealed layers read solid, the rest read
+        // as the frame they fill, and every cell is still there to be counted.
+        engine._layerGhosts = [];
+        engine._layerGhostMat = null;
+        engine.clearLayerGhosts = function() {
+          engine._layerGhosts.forEach(function(g) { engine.scene.remove(g); if (g.geometry) g.geometry.dispose(); });
+          engine._layerGhosts = [];
+        };
+        engine.addLayerGhost = function(mesh) {
+          if (!mesh || !mesh.geometry) return;
+          if (!engine._layerGhostMat) engine._layerGhostMat = new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: 0.42, depthWrite: false });
+          var ghost = new THREE.LineSegments(new THREE.EdgesGeometry(mesh.geometry), engine._layerGhostMat);
+          ghost.position.copy(mesh.position); ghost.rotation.copy(mesh.rotation);
+          ghost.renderOrder = 996;
+          engine.scene.add(ghost); engine._layerGhosts.push(ghost);
+        };
         engine.setLayerFocus = function(level, silent) {
           var parsed = Number(level);
           var next = Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : null;
           engine._layerFocus = next;
+          engine.clearLayerGhosts();
           var targets = Array.isArray(engine._layerExplorerBlocks) && engine._layerExplorerBlocks.length ? engine._layerExplorerBlocks : null;
           var visibleCount = 0;
           var layerBase = Number(engine._layerExplorerMinY);
@@ -5586,7 +5607,7 @@
               var mesh = pos && engine.blocks[pos.x + ',' + pos.y + ',' + pos.z];
               if (!mesh) return;
               mesh.visible = next === null || (Math.floor(Number(pos.y) || 0) - layerBase) < next;
-              if (mesh.visible) visibleCount++;
+              if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);
             });
           } else {
             Object.keys(engine.blocks).forEach(function(key) {
@@ -5594,9 +5615,16 @@
               var grid = mesh && mesh.userData && mesh.userData.gridPos;
               if (!mesh || !grid) return;
               mesh.visible = next === null || (Math.floor(Number(grid.y) || 0) - layerBase) < next;
-              if (mesh.visible) visibleCount++;
+              if (mesh.visible) visibleCount++; else engine.addLayerGhost(mesh);
             });
           }
+          try {
+            (engine._selectionGlows || []).forEach(function(g) {
+              var gy = Math.floor(g.position.y) - layerBase;
+              var hidden = next !== null && gy >= next;
+              g.material.opacity = hidden ? 0.07 : 0.22;
+            });
+          } catch (e) {}
           if (!silent) announceToSR(next === null ? 'Layer explorer reset. Showing all layers.' : 'Showing layers 1 through ' + next + '. ' + visibleCount + ' measured blocks visible.');
           return next;
         };
@@ -7199,6 +7227,7 @@
           if (engine._sunTarget) { engine.scene.remove(engine._sunTarget); engine._sunTarget = null; }
           if (engine._moonSprite) { engine.scene.remove(engine._moonSprite); try { engine._moonSprite.material.map.dispose(); engine._moonSprite.material.dispose(); } catch (e) {} engine._moonSprite = null; }
           if (engine._highlightMesh) { engine.scene.remove(engine._highlightMesh); engine._highlightMesh.geometry.dispose(); engine._highlightMesh.material.dispose(); }
+          if (engine.clearLayerGhosts) { engine.clearLayerGhosts(); if (engine._layerGhostMat) { engine._layerGhostMat.dispose(); engine._layerGhostMat = null; } }
           if (engine._hoverGlowMesh) { engine.scene.remove(engine._hoverGlowMesh); engine._hoverGlowMesh.geometry.dispose(); engine._hoverGlowMesh.material.dispose(); }
           // Dispose dimension lines + selection glows
           if (engine._dimLines) engine._dimLines.forEach(function(obj) { engine.scene.remove(obj); if (obj.geometry) obj.geometry.dispose(); if (obj.material) obj.material.dispose(); });

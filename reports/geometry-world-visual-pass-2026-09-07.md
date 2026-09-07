@@ -100,6 +100,14 @@ Pressing M on a structure is the pedagogical core: layer glows reveal bottom to 
 
 Captures: `before-box-measure.png` and `after-box2-measure.png` on the same 3 by 2 by 2 brick box, plus `before-measure.png` where the crosshair caught the floor and the tool correctly measured all 29 by 29 by 1 of it.
 
+## Round 11 (same day): the layer explorer
+
+After a measurement, the Layer Explorer slider reveals a structure one layer at a time so a student can see that volume is layers of a base. Hidden layers simply vanished: revealing "through layer 1" of a 3 by 3 by 3 cube left one red slab and lost sight of the other eighteen cells and of the prism's height, with only the coloured glow slabs hinting at what was there.
+
+Each hidden block now leaves a faint edge outline at its own cell. The revealed layers read solid, the rest read as the frame they fill, and every cell is still there to be counted. The hidden layers' glow slabs soften to a tint so the outlines are what the eye reads. Outlines are rebuilt from scratch on every slider change, share one material, and are dropped on reset, on a lesson change and on teardown.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round11-layers.mjs`): a 3 by 3 by 3 measured and revealed through layer 1 gives 18 outlines, hidden glows at 0.07 and shown at 0.22; reset leaves 0 outlines with the top block visible again. Zero page errors. Captures: `before-layer1.png`, `after2-layer1.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -115,3 +123,5 @@ Round 8 run of the same spec: **17 passed, 0 failed, 0 flaky** in 8.0 minutes on
 Round 9 run of the same spec: **17 passed, 0 failed, 0 flaky** in 7.2 minutes, no retries.
 
 Round 10 run of the same spec: **17 passed, 0 failed, 0 flaky** in 4.4 minutes on a quiet machine, no retries. The five tests covering the ghost, building and teardown had already passed 5/5 under load.
+
+Round 11 verification at commit time: 307 unit tests, and the five e2e tests covering lesson reset, building and teardown passed 5/5 with retries off under a competing browser suite. The full spec was queued for a quiet machine; its result is recorded below when it lands.
