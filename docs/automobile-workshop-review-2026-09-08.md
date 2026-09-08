@@ -128,6 +128,21 @@ Validation: **504 tests across all 39 automobile suites passed**, including 57 w
 - [Latched stop and physical recovery controls](../reports/automobile-workshop/lift-stop-latched.png)
 - [Mobile stop and reset panel](../reports/automobile-workshop/lift-stop-mobile.png)
 
+## Follow-up: interactive brake parts explorer
+
+An exposed front brake now has a SPREAD control and a parts explorer beside the viewer. With the vehicle supported on its mechanical locks and the wheel removed, learners can separate the rotor, representative friction pad and caliper, adjust the amount from 0–100%, and select each physical part or its label to read its role. The selected part is highlighted. JOIN returns the geometry to its assembled positions.
+
+Spacing is an explanatory view setting, not a simulated removal procedure or a real travel dimension. The simplified brake shows one representative pad; the description explains that a complete brake has pads on both rotor faces. Pad information follows the authored service state (2 mm before service, 8 mm afterward), while the gauge, calculation and task evidence remain required for completing the work order.
+
+In the separated view, clicking the caliper inspects it. Returning to the assembled view restores its existing service action. Opening the explorer, changing spacing or selecting parts never completes a service task or alters a captured measurement. Wheel seating closes the explorer and restores the assembled geometry; the fastener sequence still must be completed. Saved view settings are normalized and bounded, and older records start with the assembled view.
+
+The native range input supports keyboard adjustment. Equivalent part buttons, descriptions and spacing controls remain available without WebGL. A dedicated focus control frames the components from an oblique angle so their separation can be seen.
+
+Validation: **513 tests across all 39 automobile suites passed**, including 66 workshop state/render tests. **All 14 workshop browser tests passed** in Chromium with real Three.js/WebGL, including physical component picking, exact separation positions, native keyboard slider changes, restored caliper service clicks and automatic closure on wheel seating. The final browser run took 8.7 minutes; the automobile regression took 86.08 seconds. Desktop and mobile explorer screenshots were visually reviewed. Syntax, scoped diff hygiene and source/public parity passed. An initial browser run reached wheel seating but timed out during context teardown; the passing final run disabled video and trace recording through a temporary config while retaining the full assertions and evidence screenshots. That config was removed afterward. No deployment or installer build was performed.
+
+- [Separated brake components](../reports/automobile-workshop/brake-explorer-3d.png)
+- [Mobile brake explorer](../reports/automobile-workshop/brake-explorer-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

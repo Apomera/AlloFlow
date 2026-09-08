@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -406,5 +406,60 @@ describe('Latched workshop lift stop', () => {
     expect(host.querySelector('[data-ar-scene-action="lift-stop"]').getAttribute('aria-pressed')).toBe('true');
     expect(host.querySelector('[data-ar-scene-action="lift-clear"]').getAttribute('aria-pressed')).toBe('false');
     expect(html).toContain('Resetting does not resume a command');
+  });
+});
+
+
+describe('Interactive brake parts explorer', () => {
+  const exposed = () => model.normalize({ job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, answer: '6' });
+  it.each([{ job: 'oil' }, { lift: 'raised' }, { wheelRemoved: false }, { wheelSeated: true }])('requires an exposed brake and mechanical support in %j', patch => {
+    const state = model.normalize({ ...exposed(), brakeSpread: 100, ...patch });
+    expect(state.brakeSpread).toBe(0);
+    expect(model.explore(state, { type: 'spacing', value: 100 }).brakeSpread).toBe(0);
+    expect(model.actions(state).some(a => a.explore)).toBe(false);
+  });
+  it('normalizes older records, invalid selections and bounded spacing', () => {
+    expect(model.normalize({ job: 'brakes' })).toMatchObject({ brakeSpread: 0, brakePart: 'rotor' });
+    expect(model.normalize({ ...exposed(), brakeSpread: Infinity, brakePart: 'hose' })).toMatchObject({ brakeSpread: 0, brakePart: 'rotor' });
+    expect(model.explore(exposed(), { type: 'spacing', value: 999 }).brakeSpread).toBe(100);
+    expect(model.explore(exposed(), { type: 'spacing', value: -5 }).brakeSpread).toBe(0);
+    expect(model.explore(exposed(), { type: 'spacing', value: NaN }).brakeSpread).toBe(0);
+  });
+  it('preserves captured evidence, service progress and tool choice while inspecting', () => {
+    const measured = model.operate(exposed(), { type: 'read' });
+    let state = model.explore(measured, { type: 'spacing', value: 75 });
+    for (const id of ['rotor', 'pad', 'caliper']) {
+      state = model.explore(state, { type: 'part', id });
+      expect(state).toMatchObject({ brakePart: id, brakeSpread: 75, step: 7, tool: 'gauge', serviced: false, answer: '6', history: [] });
+      expect(model.ready(state)).toBe(true);
+    }
+    expect(model.advance(state).step).toBe(8);
+    expect(model.explore(state, { type: 'part', id: 'unknown' }).brakePart).toBe('caliper');
+    expect(measured.brakeSpread).toBe(0);
+  });
+  it('shares physical actions, rejects stale picks and restores the assembled view', () => {
+    let state = exposed(); const token = model.token(state, 'brake-part-pad');
+    state = model.direct(state, model.token(state, 'brake-spread'));
+    expect(state.brakeSpread).toBe(100);
+    state = model.direct(state, token); expect(state.brakePart).toBe('pad');
+    state = model.direct(state, model.token(state, 'brake-join')); expect(state.brakeSpread).toBe(0);
+    expect(model.direct({ ...state, step: 8, brakePart: 'rotor' }, token).brakePart).toBe('rotor');
+  });
+  it('restores assembled geometry when seating the wheel and retains progress after serialization', () => {
+    let state = model.normalize({ ...exposed(), step: 9, tool: 'torque', serviced: true, brakeSpread: 100, brakePart: 'pad' });
+    expect(model.normalize(JSON.parse(JSON.stringify(state)))).toMatchObject({ brakeSpread: 100, brakePart: 'pad' });
+    state = model.normalize(model.operate(state, { type: 'seat-wheel' }));
+    expect(state).toMatchObject({ brakeSpread: 0, wheelSeated: true, step: 9 });
+    expect(model.actions(state).some(a => a.explore)).toBe(false);
+    expect(model.advance(state).step).toBe(9);
+  });
+  it('keeps the slider, component descriptions and model thickness available without WebGL', () => {
+    resetStemLab(); loadTool(file, 'autoRepair');
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: { ...exposed(), brakeSpread: 50, brakePart: 'pad' } } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelector('#ar-brake-spacing').getAttribute('aria-valuetext')).toBe('50 percent separated');
+    expect(host.querySelector('label[for="ar-brake-spacing"]')).not.toBeNull();
+    expect(host.querySelector('[data-ar-brake-part="pad"]').textContent).toContain('Model lining: 2 mm');
+    for (const part of ['rotor', 'pad', 'caliper']) expect(host.querySelectorAll('[data-ar-scene-action="brake-part-' + part + '"]')).toHaveLength(1);
   });
 });

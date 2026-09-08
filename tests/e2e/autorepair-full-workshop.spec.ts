@@ -566,3 +566,48 @@ test('physical lift stop latches, survives view changes and resets without resum
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('brake explorer separates real parts, supports physical picking and restores service interactions', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 8, station: 'brakes', tool: 'brake-kit', lift: 'locked', wheelRemoved: true, measured: true } } });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-brake-spread');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('100');
+  for (const part of ['rotor', 'caliper', 'pad']) {
+    await page.locator('[data-ar-brake-focus]').click();
+    await clickShop(page, 'brake-' + part + '--1.3-0.79');
+    await expect(page.locator('[data-ar-brake-part]')).toHaveAttribute('data-ar-brake-part', part);
+    await expect(page.locator('[data-ar-shop-task="service"]')).toBeVisible();
+  }
+  await page.locator('[data-ar-brake-focus]').click();
+  await shopPoint(page, 'brake-pad--1.3-0.79');
+  const positions = await page.evaluate(() => ['rotor', 'pad', 'caliper'].map(part => (window as any).__shopScene.getObjectByName('brake-' + part + '--1.3-0.79').position.z));
+  expect(positions[0]).toBeCloseTo(0.99); expect(positions[1]).toBeCloseTo(1.435); expect(positions[2]).toBeCloseTo(1.87);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-explorer-3d.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('#ar-brake-spacing').focus(); await page.keyboard.press('Home'); await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('5');
+  await page.keyboard.press('End'); await expect(page.locator('#ar-brake-spacing')).toHaveValue('100');
+  await page.locator('[data-ar-scene-action="brake-part-caliper"]').focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-brake-part]')).toHaveAttribute('data-ar-brake-part', 'caliper');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await page.locator('[data-ar-brake-explorer]').screenshot({ path: 'reports/automobile-workshop/brake-explorer-mobile.png' });
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-brake-join');
+  await expect(page.locator('#ar-brake-spacing')).toHaveValue('0');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'brake-caliper--1.3-0.79');
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  await page.locator('[data-ar-scene-action="brake-part-pad"]').click();
+  await expect(page.locator('[data-ar-brake-part]')).toContainText('Model lining: 8 mm');
+  await page.locator('[data-ar-scene-action="brake-spread"]').click();
+  await page.locator('#ar-shop-tool').selectOption('torque');
+  await page.locator('[data-ar-scene-action="seat"]').click();
+  await expect(page.locator('[data-ar-brake-explorer]')).toHaveCount(0);
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79')?.position.z < 0.82);
+  await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

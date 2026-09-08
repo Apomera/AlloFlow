@@ -9456,10 +9456,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       shopTask('measure', 'brakes', 'aligner', 'Capture initial individual toe and calculate the total', 'Measure both front wheels relative to the authored straight rear thrust line. Record the baseline before making an adjustment.', { measured: true }, { alignmentReady: true, lift: 'ground', wheelRemoved: false }),
       shopTask('service', 'brakes', 'tie-rod', 'Adjust individual toe to the service sheet', 'Change each simulated tie rod, then measure again. A correct total alone is insufficient: both individual angles and the left/right balance must pass.', { serviced: true }, { measured: true, alignmentReady: true, lift: 'ground', wheelRemoved: false }),
       shopTask('verify', 'brakes', 'aligner', 'Repeat the alignment measurement after securing the adjustment', 'This step represents securing hardware to the vehicle procedure, settling the suspension, checking steering centre and remeasuring. Capture a fresh result before accepting the repair.', { verified: true }, { serviced: true, alignmentReady: true, lift: 'ground', wheelRemoved: false }), SHOP_RELEASE] });
+  var SHOP_BRAKE_PARTS = [
+    { id: 'rotor', label: 'Brake rotor', offset: 0.20, detail: 'The rotor turns with the wheel. The pads press against its faces to slow it. This authored inspection records a passing rotor; appearance alone does not replace thickness and condition checks.' },
+    { id: 'pad', label: 'Friction pad', offset: 0.62, detail: 'The friction lining contacts the rotor. Compare its thickness with this work order’s limit using the gauge. One representative pad is shown; a complete brake has pads on both sides of the rotor.' },
+    { id: 'caliper', label: 'Brake caliper', offset: 1.08, detail: 'The caliper applies the pads to the rotor using hydraulic force. The simplified block represents the assembly; this view does not demonstrate piston retraction or hose disconnection.' }
+  ];
+  function arShopBrakeAccess(state) { return state.job === 'brakes' && state.lift === 'locked' && state.wheelRemoved === true && !state.wheelSeated; }
+  function arShopBrakeExplore(raw, action) {
+    var state = arShopState(raw);
+    if (!arShopBrakeAccess(state)) return Object.assign({}, state, { feedback: 'Expose the front brake on the locked lift before using the parts explorer.' });
+    if (action && action.type === 'spacing' && Number.isFinite(action.value)) return Object.assign({}, state, { station: 'brakes', brakeSpread: Math.max(0, Math.min(100, Math.round(action.value))), feedback: action.value > 0 ? 'Brake parts separated for a visual explanation only. Click a part to inspect its role.' : 'Brake parts returned to their assembled view.' });
+    var part = action && action.type === 'part' && SHOP_BRAKE_PARTS.filter(function (item) { return item.id === action.id; })[0];
+    return Object.assign({}, state, part ? { station: 'brakes', brakePart: part.id, feedback: part.label + ': ' + part.detail } : { feedback: 'Choose a listed brake part or a finite spacing value.' });
+  }
   function arShopJob(id) { return SHOP_JOBS.filter(function (j) { return j.id === id; })[0] || SHOP_JOBS[0]; }
   function arShopInitial(jobId) {
     return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false, liftStopped: false, liftBayClear: false,
-      wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
+      brakeSpread: 0, brakePart: 'rotor', wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
       alignmentReady: false, alignment: { left: 30, right: 10, selected: 'left', tyres: false, targets: false, centered: false },
       plugSecured: false, refilled: false, torqued: false, wheelSeated: false, lugs: [], reading: null, instrument: { mode: 'dcv', contact: 'posts', load: 'off', surface: 'lining', jugMl: 4100 }, answer: '', notes: '', feedback: '', history: [] };
   }
@@ -9470,6 +9483,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     state.step = Number.isInteger(state.step) ? Math.max(0, Math.min(job.tasks.length, state.step)) : 0;
     if (!SHOP_STATIONS.some(function (p) { return p.id === state.station; })) state.station = 'intake';
     if (['ground', 'prepared', 'low', 'checked', 'raised', 'locked'].indexOf(state.lift) === -1) state.lift = 'ground';
+    state.brakeSpread = arShopBrakeAccess(state) && Number.isFinite(state.brakeSpread) ? Math.max(0, Math.min(100, Math.round(state.brakeSpread))) : 0;
+    if (!SHOP_BRAKE_PARTS.some(function (part) { return part.id === state.brakePart; })) state.brakePart = 'rotor';
     state.liftStopped = state.liftStopped === true;
     state.liftBayClear = state.liftStopped && state.liftBayClear === true;
     var setup = state.instrument && typeof state.instrument === 'object' ? state.instrument : {};
@@ -9623,6 +9638,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   }
   function arShop3DActions(state) {
     var task = arShopJob(state.job).tasks[state.step], kind = arShopInstrumentKind(state), actions = [];
+    if (arShopBrakeAccess(state)) {
+      actions.push({ id: 'brake-spread', label: 'Spread brake parts', station: 'brakes', explore: { type: 'spacing', value: 100 } });
+      actions.push({ id: 'brake-join', label: 'Return to assembled view', station: 'brakes', explore: { type: 'spacing', value: 0 } });
+      SHOP_BRAKE_PARTS.forEach(function (part) { actions.push({ id: 'brake-part-' + part.id, label: 'Inspect ' + part.label.toLowerCase(), station: 'brakes', explore: { type: 'part', id: part.id } }); });
+    }
     actions.push({ id: 'lift-stop', label: 'Emergency stop lift', station: 'lift' });
     if (state.liftStopped) {
       actions.push({ id: 'lift-clear', label: state.liftBayClear ? 'Reopen bay-clear check' : 'Confirm simulated bay is clear', station: 'lift' });
@@ -9666,6 +9686,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     }
     var action = arShop3DActions(state).filter(function (item) { return item.id === id; })[0];
     if (!action) return blocked('This control is unavailable for the current task.');
+    if (action.explore) return arShopBrakeExplore(state, action.explore);
     var atStation = Object.assign({}, state, { station: action.station });
     if (id === 'lift-stop') return Object.assign({}, atStation, { liftStopped: true, liftBayClear: false, feedback: 'Lift stop latched. Lift commands are blocked; the vehicle stays at its current height. Check the bay before resetting.' });
     if (id === 'lift-clear') return Object.assign({}, atStation, { liftBayClear: !state.liftBayClear, feedback: state.liftBayClear ? 'Bay-clear check reopened. The lift remains stopped.' : 'Simulated bay-clear check recorded. Reset the stop when ready; reset will not move the vehicle.' });
@@ -10130,6 +10151,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         directButton(alignmentConsole, 'toe-minus', '−.01', [-0.36, 0.81, 0.09], 0.24);
         directButton(alignmentConsole, 'toe-plus', '+.01', [0.36, 0.81, 0.09], 0.24);
         ['tyres', 'targets', 'centered'].forEach(function (check, i) { directButton(alignmentConsole, 'check-' + check, ['TYRES', 'TARGET', 'CENTRE'][i], [-0.35 + i * 0.35, 0.64, 0.09], 0.26); });
+      }
+    }
+    if (arShopBrakeAccess(state)) {
+      directButton(brakes, 'brake-spread', 'SPREAD', [-1.65, 1.13, 1.18], 0.28);
+      if (state.brakeSpread > 0) {
+        directButton(brakes, 'brake-join', 'JOIN', [-1.25, 1.13, 1.18], 0.28);
+        var separation = state.brakeSpread / 100;
+        SHOP_BRAKE_PARTS.forEach(function (part) {
+          var object = brakes.getObjectByName('brake-' + part.id + '--1.3-0.79');
+          if (!object) return;
+          object.position.z += part.offset * separation;
+          object.position.x -= 0.70 * separation;
+          object.position.y += 0.20 * separation;
+          object.userData.explorerPart = part.id; object.userData.separation = state.brakeSpread;
+          object.material = object.material.clone();
+          if (object.material.emissive) object.material.emissive.setHex(part.id === state.brakePart ? 0x286b73 : 0x000000);
+          bindControl(object, 'brake-part-' + part.id);
+          var marker = instrumentDisplay(brakes, part.id.toUpperCase(), [object.position.x, 0.28, object.position.z], 0.44);
+          if (marker) marker.rotation.y = -0.90;
+          bindControl(marker, 'brake-part-' + part.id);
+        });
       }
     }
     if (state.job === 'alignment' && state.alignmentCutaway) {
@@ -19938,7 +19980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var instrumentKind = arShopInstrumentKind(shop);
         var instrumentVisible = instrumentKind && task && shop.station === task.station && shop.tool === task.tool;
         var equipmentState = instrumentVisible ? JSON.stringify([instrumentKind, shop.instrument, shop.reading ? shop.reading.key : '']) : '';
-        var sceneState = [shop.job, shop.step, shop.tool, shop.lift, shop.liftStopped, shop.liftBayClear, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
+        var sceneState = [shop.job, shop.step, shop.tool, shop.brakeSpread, shop.brakePart, shop.lift, shop.liftStopped, shop.liftBayClear, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled, shop.wheelSeated, instrumentKind === 'torque' ? shop.lugs.join(',') : '', instrumentKind === 'torque', equipmentState, shop.job === 'alignment' ? JSON.stringify([shop.alignment, !!shop.alignmentCutaway]) : ''].join('-');
         SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
           sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
           onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
@@ -19965,6 +20007,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           pick('lift'); stationCamera('lift'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
           SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
         }
+        function brakeExplorerPanel() {
+          if (!arShopBrakeAccess(shop)) return null;
+          var part = SHOP_BRAKE_PARTS.filter(function (item) { return item.id === shop.brakePart; })[0];
+          function explore(action) { var next = arShopBrakeExplore(shop, action); save(next); arAnnounce(next.feedback); }
+          function focus() {
+            pick('brakes'); stationCamera('brakes'); SHOP3D.reset(); SHOP3D.nudge(-0.45, -0.15);
+            SHOP3D.focus('brakes', { distance: 2.6, target: { x: -1.80, y: 2.13, z: 1.35 }, immediate: true });
+          }
+          return h('section', { 'data-ar-brake-explorer': true, 'aria-label': 'Brake parts explorer', style: { marginTop: 12, padding: 12, border: '1px solid #67e8f9', borderRadius: 8 } },
+            h('h4', { style: { margin: '0 0 6px', fontSize: 15 } }, 'Brake parts explorer'),
+            h('p', { style: { fontSize: 12 } }, 'Spread the exposed rotor, pad and caliper to see their relationship. Spacing is a visual aid, not a disassembly procedure. The gauge and work order still determine service evidence.'),
+            control('Focus brake explorer', focus, { 'data-ar-brake-focus': true }),
+            h('label', { htmlFor: 'ar-brake-spacing', style: { display: 'block', marginTop: 12, fontSize: 12 } }, 'Visual separation: ' + shop.brakeSpread + '%'),
+            h('input', { id: 'ar-brake-spacing', type: 'range', min: 0, max: 100, step: 5, value: shop.brakeSpread, 'aria-valuetext': shop.brakeSpread === 0 ? 'Assembled view' : shop.brakeSpread + ' percent separated',
+              onChange: function (e) { explore({ type: 'spacing', value: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: '#67e8f9' } }),
+            h('div', { className: 'ar-shop-actions' }, arShop3DActions(shop).filter(function (action) { return !!action.explore; }).map(function (action) {
+              return control(action.label, function () { pick(arShop3DToken(shop, action.id)); }, { key: action.id, 'data-ar-scene-action': action.id,
+                'aria-pressed': action.explore.type === 'part' ? shop.brakePart === action.explore.id : undefined });
+            })),
+            h('div', { 'data-ar-brake-part': part.id, style: { marginTop: 10, padding: 10, background: '#1e3346', borderRadius: 6, fontSize: 13 } },
+              h('strong', null, part.label), h('p', { style: { margin: '6px 0' } }, part.detail),
+              part.id === 'pad' && h('p', null, 'Model lining: ' + (shop.serviced ? '8' : '2') + ' mm. This job’s replacement limit: 3 mm.')));
+        }
         function sceneControlPanel() {
           function use(id) { pick(arShop3DToken(shop, id)); }
           return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
@@ -19990,9 +20055,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             h('div', { className: 'ar-shop-actions', 'aria-label': 'Current tool tray' }, arShop3DTools(shop).map(function (tool) {
               return control(tool[1], function () { use('equip-' + tool[0]); }, { key: tool[0], 'data-ar-scene-tool': tool[0], 'aria-pressed': shop.tool === tool[0] });
             })),
-            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0; }).map(function (action) {
+            h('div', { className: 'ar-shop-actions', 'aria-label': 'Physical control actions' }, arShop3DActions(shop).filter(function (action) { return action.id.indexOf('lift-') !== 0 && !action.explore; }).map(function (action) {
               return control(action.label, function () { use(action.id); }, { key: action.id, 'data-ar-scene-action': action.id });
             })),
+            brakeExplorerPanel(),
             task && (task.id === 'measure' || task.id === 'refill') && h('div', { style: { marginTop: 12 } },
               h('label', { htmlFor: 'ar-shop-scene-answer', style: { display: 'block', fontSize: 12, marginBottom: 6 } }, job.question + ' (' + job.unit + ')'),
               h('input', { id: 'ar-shop-scene-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); },
