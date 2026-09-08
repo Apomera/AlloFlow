@@ -797,3 +797,47 @@ describe('Cephalopod Lab ethogram recorder', () => {
     expect(c.textContent).toMatch(/2 of the 25 catalogued behaviours were seen/);
   });
 });
+
+// ── Challenge tracker checked against real dives ──
+describe('Cephalopod Lab challenge tracker', () => {
+  const KEY = 'allo.cephalopodlab.leaderboard.v1';
+  const renderChal = () => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'challenges' } });
+    return c;
+  };
+
+  it('claims nothing when there is no dive history', () => {
+    window.localStorage.removeItem(KEY);
+    const c = renderChal();
+    expect(c.textContent).toMatch(/0 \/ 5 met/);
+    expect(c.textContent).toMatch(/No dives recorded yet/);
+    // and it never marks an untracked challenge as done
+    expect(c.textContent).not.toMatch(/✓ done/);
+  });
+
+  it('ticks only the challenges the dive record can actually settle', () => {
+    window.localStorage.setItem(KEY, JSON.stringify({
+      commonOcto: { bestScore: 18, bestSurvivalMs: 372000, bestCamoEff: 0.94, totalDives: 4, totalCatches: 22 },
+      cuttlefish: { bestScore: 9, bestSurvivalMs: 141000, bestCamoEff: 0.71, totalDives: 2, totalCatches: 7 },
+    }));
+    const c = renderChal();
+    // 6.2 minutes best dive clears the 5-minute target but not 10 or 15;
+    // 94% camouflage clears 90%; 2 of 12 species is short
+    expect(c.textContent).toMatch(/2 \/ 5 met/);
+    expect(c.textContent).toMatch(/6\.2 \/ 5\.0 min best dive/);
+    expect(c.textContent).toMatch(/6\.2 \/ 10\.0 min best dive/);
+    expect(c.textContent).toMatch(/94% \/ 90% best camouflage/);
+    expect(c.textContent).toMatch(/2 \/ 12 species dived/);
+    window.localStorage.removeItem(KEY);
+  });
+
+  it('marks the ten it cannot verify as the reader’s to check, never as done', () => {
+    window.localStorage.removeItem(KEY);
+    const c = renderChal();
+    const selfChecks = c.textContent.match(/check this one yourself/g) || [];
+    expect(selfChecks).toHaveLength(10);
+    // the untrackable ones are exactly those depending on unrecorded detail
+    expect(c.textContent).toMatch(/Use 3 different shelter types in one dive[\s\S]{0,120}check this one yourself/);
+  });
+});

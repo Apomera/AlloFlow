@@ -21745,24 +21745,90 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // SECTION 16aw — CHALLENGES
       // ═══════════════════════════════════════════════════════
       function renderChallenges() {
+        // The list was static, in a tool that already keeps a per-species record
+        // of every dive. Five of these fifteen are stated in quantities that
+        // record actually holds, so those are checked against real play. The
+        // rest are marked self-checked rather than guessed at — a badge that
+        // claims you did something you did not is worse than no badge.
         var tiers = ['Bronze', 'Silver', 'Gold', 'Platinum'];
+        var lb = (function() { try { return loadLeaderboard() || {}; } catch (e) { return {}; } })();
+        var lbKeys = Object.keys(lb);
+        var bestMs = 0, bestCamo = 0, played = 0;
+        lbKeys.forEach(function(k) {
+          var r = lb[k] || {};
+          if ((r.bestSurvivalMs || 0) > bestMs) bestMs = r.bestSurvivalMs || 0;
+          if ((r.bestCamoEff || 0) > bestCamo) bestCamo = r.bestCamoEff || 0;
+          if ((r.totalDives || 0) > 0) played += 1;
+        });
+        var totalSpecies = SIM_SPECIES.length;
+        var mins = function(ms) { return (ms / 60000); };
+        // Keyed on the challenge text. A wording change falls back to
+        // self-checked, which is the safe direction to fail in.
+        var CHECKS = {
+          'Survive 5 minutes as any species': function() {
+            return { met: bestMs >= 300000, progress: mins(bestMs).toFixed(1) + ' / 5.0 min best dive' };
+          },
+          'Survive 10 minutes as any species': function() {
+            return { met: bestMs >= 600000, progress: mins(bestMs).toFixed(1) + ' / 10.0 min best dive' };
+          },
+          'Survive a 15-minute dive': function() {
+            return { met: bestMs >= 900000, progress: mins(bestMs).toFixed(1) + ' / 15.0 min best dive' };
+          },
+          'Reach 90% camouflage effectiveness': function() {
+            return { met: bestCamo >= 0.9, progress: Math.round(bestCamo * 100) + '% / 90% best camouflage' };
+          },
+          'Play all 12 species at least once': function() {
+            return { met: played >= totalSpecies, progress: played + ' / ' + totalSpecies + ' species dived' };
+          }
+        };
+        var verdictFor = function(text) {
+          var fn = CHECKS[text];
+          if (!fn) return { tracked: false };
+          var r = fn();
+          return { tracked: true, met: r.met, progress: r.progress };
+        };
+        var trackedCount = 0, metCount = 0;
+        CHALLENGES.forEach(function(c) {
+          var v = verdictFor(c.challenge);
+          if (v.tracked) { trackedCount += 1; if (v.met) metCount += 1; }
+        });
+
         return h('div', null,
           panelHeader('🏅 Hunter Sim Challenges',
             'Gamified achievement targets across four tiers. Use these as in-class competitions or for self-paced learning.'),
+          h('div', { style: Object.assign({}, cardStyle(), { borderLeft: '4px solid #fbbf24' }) },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+              h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.chal_progress_title', '📈 Checked against your dives')),
+              h('div', { role: 'status', style: { fontSize: 11.5, fontWeight: 800, color: '#fde68a' } },
+                metCount + ' / ' + trackedCount + ' ' + __alloT('stem.cephalopodlab.chal_met', 'met'))),
+            h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } },
+              lbKeys.length
+                ? __alloT('stem.cephalopodlab.chal_intro_played', 'Five of the fifteen are stated in numbers the dive record keeps, so those are ticked from your own runs. The other ten depend on things the run summary does not record — which shelters you carried, which predator you met — so they stay yours to check.')
+                : __alloT('stem.cephalopodlab.chal_intro_empty', 'No dives recorded yet. Five of these fifteen will tick themselves once you have played; the other ten depend on things the run summary does not record, so they stay yours to check.'))),
           tiers.map(function(t) {
             var entries = CHALLENGES.filter(function(c) { return c.tier === t; });
             var tierColor = t === 'Bronze' ? '#cd7f32' : t === 'Silver' ? '#c0c0c0' : t === 'Gold' ? '#fbbf24' : '#e0e7ff';
             return h('div', { key: t, style: cardStyle() },
-              h('div', { style: { fontSize: 18, fontWeight: 800, color: tierColor, marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🏆 ' + t + ' tier'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 } },
-                entries.map(function(c, idx) {
-                  return h('div', { key: idx, style: { background: 'rgba(15,23,42,0.5)', border: '1px solid ' + tierColor + '40', borderRadius: 8, padding: 12 } },
-                    h('div', { style: { fontSize: 12, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.5, marginBottom: 6 } }, c.challenge),
-                    h('div', { style: { fontSize: 11, color: tierColor, fontStyle: 'italic' } }, '🎖 ' + c.reward)
-                  );
-                })
-              )
-            );
+              h('div', { style: { fontSize: 18, fontWeight: 800, color: clReadableInk(tierColor), marginBottom: 12, textTransform: 'uppercase', letterSpacing: '0.08em' } }, '🏆 ' + t),
+              entries.map(function(c, i) {
+                var v = verdictFor(c.challenge);
+                var border = v.tracked ? (v.met ? 'rgba(52,211,153,0.6)' : 'rgba(148,163,184,0.35)') : 'rgba(148,163,184,0.25)';
+                return h('div', { key: i, style: { padding: '10px 12px', marginBottom: 8, borderRadius: 8,
+                    background: v.tracked && v.met ? 'rgba(52,211,153,0.10)' : 'rgba(15,23,42,0.5)',
+                    border: '1px solid ' + border, borderLeft: '3px solid ' + tierColor } },
+                  h('div', { style: { display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
+                    h('div', { style: { fontSize: 13, fontWeight: 700, color: '#e2e8f0', flex: '1 1 260px' } }, c.challenge),
+                    v.tracked
+                      ? h('span', { style: { fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.05em', padding: '3px 9px', borderRadius: 999,
+                          color: v.met ? '#a7f3d0' : '#cbd5e1',
+                          background: v.met ? 'rgba(52,211,153,0.18)' : 'rgba(148,163,184,0.12)',
+                          border: '1px solid ' + (v.met ? 'rgba(52,211,153,0.7)' : 'rgba(148,163,184,0.4)') } },
+                          v.met ? __alloT('stem.cephalopodlab.chal_done', '✓ done') : __alloT('stem.cephalopodlab.chal_not_yet', 'not yet'))
+                      : h('span', { style: { fontSize: 10, fontWeight: 800, color: '#94a3b8', fontStyle: 'italic' } },
+                          __alloT('stem.cephalopodlab.chal_self_check', 'check this one yourself'))),
+                  h('div', { style: { fontSize: 11, color: '#fde68a', marginTop: 4 } }, '🎖 ' + c.reward),
+                  v.tracked ? h('div', { style: { fontSize: 10.5, color: '#cbd5e1', marginTop: 3, fontFamily: 'ui-monospace, Menlo, monospace' } }, v.progress) : null);
+              }));
           })
         );
       }
