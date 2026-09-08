@@ -932,3 +932,13 @@ Validation: 19 existing setup, active-turn, live-vote and HUD contracts passed; 
   - `ctx.pluginInstanceToken` — not provided (only a `pluginInstanceTokenRef` exists); `dissection` falls back to `setLabToolData`. Harmless.
 - Everything else the script listed is UNVERIFIED. `money.submitExploreScore` and others do appear in the host and are probably fine.
 - No code changed this round beyond what was already committed; both my tools remain clean (82 tests, axe 0/0).
+
+### 2026-09-07 — Scale Explorer visual pass (Claude Code) @f99d6e985
+- Captured the tool across themes/scales and critiqued the screenshots. Five defects, one of which was a real bug wearing a style problem's clothes:
+  - ★★**Stale closure in the draw loop.** The focused object had no gold ring and no label during a zoom. `draw()` closed over `focusId`, and the rAF loop keeps calling the draw from whichever render STARTED it, so the highlight was always a step behind the panel. Reads through `focusIdRef` now. Same class as [[feedback_canvas_stale_closure_reads]] — worth checking in any tool whose loop reads React state.
+  - **One centreline meant neighbours drew on top of each other** (ladybird inside a bee; both labels on an elephant). Three lanes now, assigned by index in the size-ordered ladder. Position on y carries no meaning here so it is free; the DIAMETER still carries size, which is the part that must stay honest.
+  - **Labels are a second pass, ordered NEAREST first.** Exempting the focus from collision (`!clash || isFocus`) made it draw ON TOP of whatever already claimed the space. Priority-by-ordering is the right shape. Edge labels are clamped so names are not cut in half.
+  - ★**Canvas text used the PANEL's dim ink on a near-black stage** — about 1.8:1 in the light theme for the axis and size sublabels. **axe cannot see painted text**, so nothing flagged it. Added a `stageDim` token; canvas text is now stage-relative. Generalisable: any tool drawing text on a canvas whose background differs from the panel needs its own palette tokens.
+  - **~450px of dead card** below the controls, because the stage was a fixed height while the side panel is always taller. Stage now grows to fill the column, with a `ResizeObserver` on its host so the canvas re-measures when the flex box settles instead of guessing at a timeout.
+- 54 tests; axe 0/0 across three themes; canvas verifiably painted in each; clean at 320px. Not deployed.
+- ★Housekeeping: `writeFileSync` into `stem_lab/` failed with `UNKNOWN` (OneDrive lock) **three times** this session, and `cp` to the mirror once. Each time the file was intact — verify with size + `node --check`, then use the editor tool, which has not failed. See [[feedback_truncating_write_empty_file]].
