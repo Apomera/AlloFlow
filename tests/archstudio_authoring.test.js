@@ -304,7 +304,8 @@ describe('Architecture Studio authoring', () => {
       expect(source).toContain('openArchGridForKeyboard();');
       expect(source).toContain('function getArchReplacementViewState(nextBlocks, preferredLayer)');
       expect(source).toContain('getArchReplacementViewState(loadedBlocks, a.editLayer)');
-      expect(source).toContain('getArchReplacementViewState(newBlocks, a.editLayer)');
+      const templateCommit = source.slice(source.indexOf('function commitArchTemplate('), source.indexOf('window.__alloArchTemplates'));
+      expect(templateCommit).toContain('getArchReplacementViewState(result.blocks, state.editLayer)');
       expect(source).toContain('getArchReplacementViewState(imported, a.editLayer)');
       expect(source).toContain('getArchReplacementViewState(gen, a.editLayer)');
       expect(source).toContain("!mainUse3d && renderBuildGrid()");

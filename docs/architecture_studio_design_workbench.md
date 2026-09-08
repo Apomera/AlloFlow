@@ -53,6 +53,18 @@ The schedule includes the whole live model within its selected scope, including 
 
 **Close schedule** returns focus to its toolbar button. Escape also closes it from the panel, except when a native floor or grouping selector owns the key. Opening Design workbench or Project & revisions closes the schedule; visiting Drawing desk and returning preserves it. Controls have 44px targets, the table uses row and column headers, and the phone sidebar scrolls to keep every row and the download reachable.
 
+## Explore and apply templates
+
+Open **Templates** in the feature toolbar to browse Cottage, Greek Temple, Castle Tower, Arch Bridge, and Great Pyramid. Choosing a template changes only the preview. The library shows a front elevation or an exact floor plan, block count, teaching credits, and width × depth × height in grid units. The preview floor is independent of the editing floor. These drawings show occupied cells, including material colors; they do not depict detailed curved or sloped shape geometry.
+
+Choose **Right (+X)**, **Left (−X)**, **Forward (+Z)**, or **Back (−Z)** to add beside the current model. The template sits at ground Y=0, with one empty grid cell separating the models along the chosen axis and their lower X or Z extents aligned along the other axis. In an empty build it starts at X=0, Y=0, Z=0. The placement note shows its lower-corner destination before applying.
+
+**Add template to build** keeps the existing blocks. **Replace current build** is a separate placement choice with an explicit **Replace build with template** button and a notice showing how many current blocks will be replaced. Both operations preserve the project name, notes, and saved-revision identity. Their complete geometry change is one undo step; undo and redo restore it together.
+
+Applying revalidates the exact previewed destination against the latest build. Occupied cells, world bounds, the 4,096-block limit, replay, and unchanged replacements prevent the operation without modifying blocks or history. A late collision shows feedback and updates the preview; it does not partially insert the template. Successful application clears restrictive 3D filters so the resulting model is visible. New templates retain their shapes, materials, colors, and rotations.
+
+Templates remain available for browsing during replay, while application is disabled. Opening Design workbench, Project & revisions, or Materials schedule closes the library. Visiting Drawing desk and returning preserves it. Close or Escape returns keyboard focus to the Templates button; native selectors retain their Escape behavior. The wider desktop panel and scrollable phone layout use 44px controls and named previews.
+
 ## Projects and revisions
 
 Open **Project & revisions** next to Design workbench. Give the build a name and design notes, then choose **Save snapshot**. The panel reports whether the current geometry and notes match the saved snapshot. Snapshots include names, notes, blocks, and their existing thumbnail; the browser gallery keeps the latest 50 snapshots.
@@ -123,7 +135,7 @@ The source and desktop public copy stay identical. New labels and feedback are r
 
 Coverage includes room geometry, openings, ceilings, quantities, invalid dimensions, collisions, capacity, negative coordinates, group transforms, property preservation, no-op edits, bounded history, latest-state conflicts, replay protection, desktop and phone workflows, and WebGL selection outlines.
 
-Results: all 13 Architecture Studio unit suites passed (368 tests), including 21 materials-schedule checks. Eight Chromium workflows passed in the schedule refinement: scope and grouping, CSV content and filename, live quantity updates after edits and undo, replay and workspace preservation, keyboard focus, 320px phone controls and scrolling, plus existing design, project, workspace, and grid regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested schedule and grid states across light, dark, and high-contrast appearances. Desktop and phone schedule screenshots were visually reviewed. Local browser validation disabled video/trace recording; the existing test assertions remain intact.
+Results: all 14 Architecture Studio unit suites passed (399 tests), including 31 template-library checks. Nine Chromium workflows passed in this refinement: preview-only browsing, front/floor views, side placement, explicit replacement, late collisions, boundary/replay protection, undo/redo, keyboard focus, 320px phone controls and scrolling, and existing design, project, workspace, materials-schedule, and replacement-view regressions. Axe reported no selected WCAG 2 A/AA, 2.1 AA, or 2.2 AA violations in the tested template-library state across light, dark, and high-contrast appearances. Desktop and phone template screenshots were visually reviewed. Local browser validation disabled video/trace recording; existing workflow assertions remain intact, with the replacement-template test updated for the separate apply step.
 
 No deployment or push was performed.
 

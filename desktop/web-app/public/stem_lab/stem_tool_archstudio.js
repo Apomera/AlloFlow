@@ -1423,6 +1423,93 @@ function __alloAST(k, fb) {
   }
   window.__alloArchSchedule = { data: archScheduleData, csv: archScheduleCSV, labels: ARCH_SCHEDULE_LABELS };
 
+
+  var ARCH_TEMPLATE_LABELS = {
+    "title": "Template library",
+    "toggle": "Templates",
+    "close": "Close template library",
+    "choose": "Choose a template",
+    "preview": "Template preview",
+    "view": "Preview view",
+    "floor": "Preview floor",
+    "placement": "Template placement",
+    "right": "Right (+X)",
+    "left": "Left (−X)",
+    "forward": "Forward (+Z)",
+    "back": "Back (−Z)",
+    "replace": "Replace current build",
+    "add": "Add template to build",
+    "replace_button": "Replace build with template",
+    "browse": "Explore a starting point. Choosing a template only changes this preview.",
+    "dimensions": "{width} × {depth} × {height} grid units",
+    "add_help": "Add {count} blocks at X {x}, Y {y}, Z {z}. Side placements leave one empty cell between builds.",
+    "replace_help": "Replace the current {count} blocks. Project name and notes stay the same. Undo restores the previous build.",
+    "preview_help": "Drawings show occupied grid cells, not detailed curved or sloped shapes.",
+    "result": "Result: {count} blocks in the build",
+    "added": "Added {count} template blocks. Undo restores the previous build.",
+    "replaced": "Replaced the build with {count} template blocks. Undo restores the previous build.",
+    "bounds": "This placement would leave the build area. Choose another side or replace the build.",
+    "capacity": "The result would exceed 4,096 blocks. Remove blocks or choose a smaller template.",
+    "collision": "The previewed position is now occupied. Review the updated placement before adding.",
+    "unchanged": "The current build already matches this template.",
+    "replay": "You can browse templates during replay. Return to the live build to apply one.",
+    "invalid": "Choose an available template and placement.",
+    "name_cottage": "Cottage",
+    "desc_cottage": "A stone base, wood walls, windows, and a pitched roof.",
+    "name_temple": "Greek Temple",
+    "desc_temple": "A marble platform with columns, arches, and a raised roof.",
+    "name_tower": "Castle Tower",
+    "desc_tower": "A tall stone tower with a doorway and battlements.",
+    "name_bridge": "Arch Bridge",
+    "desc_bridge": "A stone crossing with arch openings and metal railings.",
+    "name_pyramid": "Great Pyramid",
+    "desc_pyramid": "Stepped stone layers with a marble cap."
+};
+  function archTemplateCatalog() {
+    return makeTemplates().map(function (source) {
+      var blocks = sanitizeArchBlocks(source.blocks()), bounds = archDesignBounds(blocks);
+      return { id: source.id, icon: source.icon, name: source.name, blocks: blocks, bounds: bounds,
+        count: blocks.length, cost: blocks.reduce(function (total, block) { return total + ARCH_DESIGN_COST[block.material]; }, 0) };
+    });
+  }
+  function checkArchTemplateAction(state, action) {
+    state = state || {}; action = action || {};
+    var template = archTemplateCatalog().find(function (item) { return item.id === action.id; });
+    if (!template) return { ok: false, code: 'template' };
+    var project = makeArchProject({ blocks: template.blocks, projectName: state.projectName, projectNotes: state.projectNotes });
+    return previewArchProjectImport(state, project, action.mode, action.offset);
+  }
+  function archTemplateProposal(state, id, placement) {
+    state = state || {};
+    var template = archTemplateCatalog().find(function (item) { return item.id === id; });
+    if (!template || ['right', 'left', 'forward', 'back', 'replace'].indexOf(placement) < 0) return { ok: false, code: 'template' };
+    var bounds = archDesignBounds(getArchRuntimeBlocks(state.blocks)), box = template.bounds;
+    var offset = { dx: -box.minX, dy: -box.minY, dz: -box.minZ };
+    if (bounds && placement !== 'replace') {
+      offset.dx = bounds.minX - box.minX; offset.dz = bounds.minZ - box.minZ;
+      if (placement === 'right') offset.dx = bounds.maxX + 2 - box.minX;
+      else if (placement === 'left') offset.dx = bounds.minX - 2 - box.maxX;
+      else if (placement === 'forward') offset.dz = bounds.maxZ + 2 - box.minZ;
+      else if (placement === 'back') offset.dz = bounds.minZ - 2 - box.maxZ;
+    }
+    var action = { id: id, mode: placement === 'replace' ? 'replace' : 'merge', offset: offset };
+    return { template: template, action: action, result: checkArchTemplateAction(state, action),
+      origin: { x: box.minX + offset.dx, y: box.minY + offset.dy, z: box.minZ + offset.dz } };
+  }
+  function commitArchTemplate(state, action) {
+    state = state || {};
+    var result = checkArchTemplateAction(state, action);
+    if (!result.ok) return { state: state, result: result };
+    var history = getArchHistoryStack(state.undoStack); history.push(archProjectHistoryFrame(state));
+    var materials = Object.assign({}, state.materialsUsed || {});
+    result.blocks.forEach(function (block) { materials[block.material] = true; });
+    return { result: Object.assign({}, result, { code: action.mode === 'replace' ? 'replaced' : 'added', count: result.importedCount }),
+      state: Object.assign({}, state, getArchReplacementViewState(result.blocks, state.editLayer), {
+        blocks: result.blocks, undoStack: history.slice(-50), redoStack: [], materialsUsed: materials
+      }) };
+  }
+  window.__alloArchTemplates = { catalog: archTemplateCatalog, proposal: archTemplateProposal, check: checkArchTemplateAction, commit: commitArchTemplate, labels: ARCH_TEMPLATE_LABELS };
+
   // Pure, atomic design operations: reject a clipped room or partial move.
   var ARCH_DESIGN_COST = { stone: 5, brick: 8, wood: 3, glass: 12, marble: 15, metal: 20 };
   function archDesignInteger(value, min, max) {
@@ -2985,23 +3072,90 @@ function __alloAST(k, fb) {
     // ══════════════════════════════════════════════════════════════
     // ── Template System ──
     // ══════════════════════════════════════════════════════════════
-    var templates = makeTemplates();
 
-    var loadTemplate = function (tpl) {
-      if (!requireLiveBuild()) return;
-      var newBlocks = (tpl.blocks)();
-      newBlocks = sanitizeArchBlocks(newBlocks);
-      ctx.setToolData(function (p) {
-        var a = Object.assign({}, p.archStudio || {});
-        if (a.showReplay) return p;
-        return Object.assign({}, p, { archStudio: Object.assign({}, a,
-          getArchReplacementViewState(newBlocks, a.editLayer),
-          { blocks: newBlocks, undoStack: pushUndoFromState(a), redoStack: [] }) });
+    function templateText(key, values) {
+      var text = t('stem.archstudio.template_' + key, ARCH_TEMPLATE_LABELS[key]);
+      Object.keys(values || {}).forEach(function (name) { text = text.split('{' + name + '}').join(String(values[name])); });
+      return text;
+    }
+    function closeTemplates() {
+      upd('showTemplates', false);
+      setTimeout(function () { var button = document.getElementById('arch-template-toggle'); if (button) button.focus(); }, 0);
+    }
+    function toggleTemplates() {
+      if (showTemplates) { closeTemplates(); return; }
+      upd({ showTemplates: true, showDesign: false, showProject: false, showBOM: false });
+      setTimeout(function () {
+        var heading = document.getElementById('arch-template-heading');
+        if (heading) { heading.focus(); heading.scrollIntoView({ block: 'nearest' }); }
+      }, 0);
+    }
+    function templateMessage(result) {
+      return templateText(Object.prototype.hasOwnProperty.call(ARCH_TEMPLATE_LABELS, result.code) ? result.code : 'invalid', { count: result.count || 0 });
+    }
+    function applyTemplate(action) {
+      var outcome;
+      ctx.setToolData(function (previous) {
+        var transaction = commitArchTemplate(previous.archStudio || {}, action); outcome = transaction.result;
+        return Object.assign({}, previous, { archStudio: Object.assign({}, transaction.state, {
+          templateNotice: { id: action.id, code: outcome.code, count: outcome.count,
+            signature: getArchBuildSignature(getArchRuntimeBlocks(transaction.state.blocks)) }
+        }) });
       });
-      if (ctx.addToast) ctx.addToast('\uD83D\uDCC2 Template loaded: ' + tpl.name, 'info');
-      if (soundEnabled) sfxLoad();
-      if (announceToSR) announceToSR('Template loaded: ' + tpl.name + '. ' + newBlocks.length + ' blocks.');
-    };
+      setTimeout(function () {
+        if (!outcome) return;
+        if (announceToSR) announceToSR(templateMessage(outcome));
+        if (outcome.ok && soundEnabled) sfxLoad();
+      }, 0);
+    }
+    function renderTemplateLibrary() {
+      if (!showTemplates) return null;
+      var catalog = archTemplateCatalog(), selected = catalog.find(function (item) { return item.id === d.templateId; }) || catalog[0];
+      var placement = ['right', 'left', 'forward', 'back', 'replace'].indexOf(d.templatePlacement) >= 0 ? d.templatePlacement : 'right';
+      var proposal = archTemplateProposal(d, selected.id, placement), result = proposal.result;
+      var view = d.templateView === 'plan' ? 'plan' : 'front';
+      var floor = Math.max(selected.bounds.minY, Math.min(selected.bounds.maxY, archDesignInteger(d.templateFloor, 0, 31) || 0));
+      var projection = archDrawingProjection(selected.blocks, { view: view, floor: floor, cut: -64 });
+      var drawingLabels = {}; Object.keys(ARCH_DRAWING_LABELS).forEach(function (key) { drawingLabels[key] = drawingText(key); });
+      var notice = d.templateNotice && d.templateNotice.id === selected.id && d.templateNotice.signature === currentBuildSignature ? d.templateNotice : null;
+      function select(patch) { upd(Object.assign({ templateNotice: null }, patch)); }
+      return el('section', { id: 'arch-template-library', 'aria-labelledby': 'arch-template-heading',
+        onKeyDown: function (event) { if (event.key === 'Escape' && event.target.tagName !== 'SELECT') { event.stopPropagation(); closeTemplates(); } } },
+        el('div', { className: 'arch-template-header' },
+          el('h2', { id: 'arch-template-heading', tabIndex: -1 }, templateText('title')),
+          el('button', { type: 'button', className: 'arch-template-close', 'aria-label': templateText('close'), onClick: closeTemplates }, '×')),
+        el('p', { className: 'arch-template-note' }, templateText('browse')),
+        el('label', null, templateText('choose'),
+          el('select', { 'aria-label': templateText('choose'), value: selected.id, onChange: function (event) { select({ templateId: event.target.value, templateFloor: 0 }); } },
+            catalog.map(function (item) { return el('option', { key: item.id, value: item.id }, templateText('name_' + item.id)); }))),
+        el('div', { className: 'arch-template-identity' }, el('span', { 'aria-hidden': 'true' }, selected.icon),
+          el('div', null, el('h3', null, templateText('name_' + selected.id)), el('p', null, templateText('desc_' + selected.id)))),
+        el('div', { className: 'arch-template-view-controls', role: 'group', 'aria-label': templateText('view') },
+          ['front', 'plan'].map(function (kind) { return el('button', { key: kind, type: 'button', 'aria-pressed': view === kind, onClick: function () { select({ templateView: kind }); } }, drawingText(kind)); })),
+        view === 'plan' && el('label', { className: 'arch-template-floor' }, templateText('floor'),
+          el('select', { 'aria-label': templateText('floor'), value: floor, onChange: function (event) { select({ templateFloor: Number(event.target.value) }); } },
+            projection.floors.map(function (level) { return el('option', { key: level.y, value: level.y }, gridNavText('option', { floor: level.y, count: level.count })); }))),
+        el('div', { className: 'arch-template-preview', role: 'group', 'aria-label': templateText('preview'),
+          dangerouslySetInnerHTML: { __html: archDrawingSvg(projection, { width: 360, height: 250, labels: drawingLabels, dimensions: true }) } }),
+        el('dl', { className: 'arch-template-quantities' },
+          el('div', null, el('dt', null, scheduleText('blocks')), el('dd', { 'data-arch-template-count': 'true' }, selected.count)),
+          el('div', null, el('dt', null, scheduleText('credits')), el('dd', null, selected.cost))),
+        el('p', { className: 'arch-template-dimensions' }, templateText('dimensions', { width: selected.bounds.maxX - selected.bounds.minX + 1, depth: selected.bounds.maxZ - selected.bounds.minZ + 1, height: selected.bounds.maxY - selected.bounds.minY + 1 })),
+        el('label', null, templateText('placement'),
+          el('select', { 'aria-label': templateText('placement'), value: placement, onChange: function (event) { select({ templatePlacement: event.target.value }); } },
+            ['right', 'left', 'forward', 'back', 'replace'].map(function (side) { return el('option', { key: side, value: side }, templateText(side)); }))),
+        el('p', { className: 'arch-template-placement-note', id: 'arch-template-placement-help' }, placement === 'replace'
+          ? templateText('replace_help', { count: blocks.length })
+          : templateText('add_help', { count: selected.count, x: proposal.origin.x, y: proposal.origin.y, z: proposal.origin.z })),
+        result.ok && el('p', { className: 'arch-template-result' }, templateText('result', { count: result.blocks.length })),
+        !result.ok && el('p', { className: 'arch-template-warning', id: 'arch-template-warning' }, templateMessage(result)),
+        el('button', { type: 'button', className: 'arch-template-apply', 'data-arch-template-apply': 'true', disabled: !result.ok,
+          'aria-describedby': result.ok ? 'arch-template-placement-help' : 'arch-template-warning', onClick: function () { applyTemplate(proposal.action); } },
+          templateText(placement === 'replace' ? 'replace_button' : 'add')),
+        notice && el('p', { role: 'status', className: 'arch-template-notice', 'data-arch-template-notice': 'true' }, templateMessage(notice)),
+        el('p', { className: 'arch-template-note' }, templateText('preview_help')));
+    }
+
 
     // ══════════════════════════════════════════════════════════════
     // ── Mirror / Symmetry ──
@@ -3916,7 +4070,7 @@ function __alloAST(k, fb) {
     }
     function toggleSchedule() {
       if (showBOM) { closeSchedule(); return; }
-      upd({ showBOM: true, showDesign: false, showProject: false });
+      upd({ showBOM: true, showDesign: false, showProject: false, showTemplates: false });
       setTimeout(function () {
         var heading = document.getElementById('arch-schedule-heading'); if (heading) { heading.focus(); heading.scrollIntoView({ block: 'nearest' }); }
       }, 0);
@@ -4948,6 +5102,31 @@ function __alloAST(k, fb) {
         + '.theme-contrast #arch-schedule-panel{background:#000;border-color:#ffff00;}.theme-contrast #arch-schedule-panel .arch-schedule-bar>span{background:#ffff00;}'
         + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-schedule{width:auto!important;max-height:min(72vh,620px);}#arch-schedule-panel{padding:12px;}}'
 
+
+        + '#arch-studio-region .arch-studio-sidebar.arch-studio-templates{width:clamp(300px,31vw,400px)!important;}'
+        + '#arch-template-library{padding:14px;border:1px solid #38bdf8;border-radius:14px;background:linear-gradient(155deg,#183348,#101e31);color:#f1f5f9;flex:none;}'
+        + '#arch-template-library .arch-template-header{display:flex;align-items:center;gap:10px;}#arch-template-library h2{font-size:20px;line-height:1.2;margin:0;}'
+        + '#arch-template-library button,#arch-template-library select{font:inherit;font-size:12px;min-height:44px;min-width:0;border:1px solid #94a3b8;border-radius:8px;padding:8px;background:#0f172a;color:#f1f5f9;}'
+        + '#arch-template-library button{cursor:pointer;}#arch-template-library .arch-template-close{margin-left:auto;flex:none;width:44px;font-size:22px;}'
+        + '#arch-template-library label{display:grid;gap:5px;font-size:12px;color:#e2e8f0;}#arch-template-library select{width:100%;}'
+        + '#arch-template-library .arch-template-note{font-size:12px;line-height:1.5;color:#cbd5e1;margin:12px 0;}'
+        + '#arch-template-library .arch-template-identity{display:flex;gap:10px;align-items:center;margin:16px 0 12px;}#arch-template-library .arch-template-identity>span{font-size:30px;}'
+        + '#arch-template-library h3{font-size:17px;margin:0 0 4px;}#arch-template-library .arch-template-identity p{font-size:12px;line-height:1.45;color:#cbd5e1;margin:0;}'
+        + '#arch-template-library .arch-template-view-controls{display:flex;gap:6px;}#arch-template-library .arch-template-view-controls button{flex:1;}'
+        + '#arch-template-library .arch-template-view-controls button[aria-pressed=true]{background:#075985;border-color:#7dd3fc;box-shadow:inset 0 -3px #7dd3fc;}'
+        + '#arch-template-library .arch-template-floor{margin-top:10px;}'
+        + '#arch-template-library .arch-template-preview{margin-top:10px;border:1px solid #94a3b8;border-radius:8px;overflow:hidden;background:#fff;}#arch-template-library .arch-template-preview svg{display:block;width:100%;height:auto;}'
+        + '#arch-template-library .arch-template-quantities{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 8px;}'
+        + '#arch-template-library .arch-template-quantities>div{padding:9px;border:1px solid #476b88;border-radius:8px;background:#0f1d30;}#arch-template-library dt{font-size:12px;color:#cbd5e1;}#arch-template-library dd{margin:4px 0 0;font-size:23px;font-weight:800;color:#bae6fd;}'
+        + '#arch-template-library .arch-template-dimensions{font-size:12px;font-weight:700;color:#bae6fd;margin:8px 0 14px;}'
+        + '#arch-template-library .arch-template-placement-note{font-size:12px;line-height:1.5;color:#e2e8f0;background:#1e293b;border:1px solid #64748b;padding:9px;border-radius:8px;}'
+        + '#arch-template-library .arch-template-result{font-size:12px;font-weight:700;color:#99f6e4;}'
+        + '#arch-template-library .arch-template-warning{padding:10px;border:1px solid #eab308;border-radius:8px;color:#fef3c7;background:#422006;font-size:12px;line-height:1.5;}'
+        + '#arch-template-library .arch-template-apply{width:100%;font-weight:800;background:#075985;color:#f0f9ff;border-color:#38bdf8;}'
+        + '#arch-template-library .arch-template-notice{padding:10px;border:1px solid #2dd4bf;border-radius:8px;background:#134e4a;color:#ccfbf1;font-size:12px;line-height:1.5;}'
+        + '.theme-contrast #arch-template-library{background:#000;border-color:#ffff00;}.theme-contrast #arch-template-library .arch-template-view-controls button[aria-pressed=true]{outline:2px solid #ffff00;outline-offset:-4px;}'
+        + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-templates{width:auto!important;max-height:min(74vh,640px);}#arch-template-library{padding:12px;}}'
+
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -5096,12 +5275,12 @@ function __alloAST(k, fb) {
         ),
         el('nav', { className: 'arch-studio-workspaces', 'aria-label': uxText('workspaces') },
         el('button', { id: 'arch-design-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDesign && !showDrawings, 'aria-controls': showDesign && !showDrawings ? 'arch-design-panel' : undefined,
-          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false, showBOM: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showDesign: showDrawings || !showDesign, showProject: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #38bdf8', color: '#e0f2fe', background: showDesign ? '#075985' : '#164e63', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.design_open', 'Design workbench')),
         el('button', { id: 'arch-drawings-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showDrawings, 'aria-controls': showDrawings ? 'arch-drawings-desk' : undefined, onClick: function () { upd('showDrawings', !showDrawings); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20, border: '1px solid #2dd4bf', color: '#ccfbf1', background: showDrawings ? '#115e59' : '#134e4a', cursor: 'pointer', fontSize: 11, fontWeight: 800 } }, drawingText('title')),
         el('button', { id: 'arch-project-toggle', className: 'arch-workspace-button', type: 'button', 'aria-expanded': showProject && !showDrawings, 'aria-controls': showProject && !showDrawings ? 'arch-project-panel' : undefined,
-          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false, showBOM: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
+          onClick: function () { upd({ showProject: showDrawings || !showProject, showDesign: false, showDrawings: false, showBOM: false, showTemplates: false }); }, style: { flex: '0 0 auto', padding: '5px 12px', borderRadius: 20,
             border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
         ),
@@ -5118,7 +5297,9 @@ function __alloAST(k, fb) {
         pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }),
         pillBtn('\u2696\uFE0F Inquiry', showInquiryLab, 'rgba(139,92,246,.2)', '#8b5cf6', '#c4b5fd', function () { upd('showInquiryLab', !showInquiryLab); }),
         pillBtn('\uD83D\uDCBE Gallery', showGallery, 'rgba(34,197,94,.2)', '#22c55e', '#4ade80', function () { upd('showGallery', !showGallery); }),
-        pillBtn('\uD83D\uDCC2 Templates', showTemplates, 'rgba(56,189,248,.2)', '#38bdf8', '#7dd3fc', function () { upd('showTemplates', !showTemplates); }),
+        el('button', { id: 'arch-template-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleTemplates,
+          'aria-expanded': !!showTemplates, 'aria-controls': showTemplates ? 'arch-template-library' : undefined,
+          style: { background: showTemplates ? '#075985' : 'rgba(71,85,105,.3)', border: '1px solid #38bdf8', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, templateText('toggle')),
         pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }),
         pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }),
         el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
@@ -5154,8 +5335,9 @@ function __alloAST(k, fb) {
         // ══════════════════════════════════════════════════════════
         // ── Left sidebar ──
         // ══════════════════════════════════════════════════════════
-        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
+        el('aside', { id: 'arch-studio-tools', className: 'arch-studio-sidebar' + (showDesign ? ' arch-studio-workbench' : '') + (showBOM ? ' arch-studio-schedule' : '') + (showTemplates ? ' arch-studio-templates' : ''), 'aria-label': __alloAST('stem.archstudio.a11y_architecture_tools', 'Architecture tools'), style: { width: showDesign ? 'clamp(280px,28vw,360px)' : 'clamp(224px,21vw,252px)', flexShrink: 0, background: 'linear-gradient(180deg,var(--allo-stem-panel, #1e293b),rgba(15,23,42,.98))', padding: '11px 10px', overflowY: 'auto', borderRight: '1px solid var(--allo-stem-border, #334155)', display: 'flex', flexDirection: 'column', gap: 10 } },
 
+          renderTemplateLibrary(),
           renderSchedulePanel(),
           renderProjectPanel(),
           renderDesignPanel(),
@@ -5408,26 +5590,6 @@ function __alloAST(k, fb) {
                   );
                 })
               )
-          ),
-
-          // Templates Panel
-          showTemplates && el('div', null,
-            el('div', { style: { fontSize: 10, fontWeight: 700, color: '#7dd3fc', textTransform: 'uppercase', letterSpacing: 1.2, marginBottom: 4 } }, '\uD83D\uDCC2 Templates'),
-            el('div', { style: { display: 'flex', flexDirection: 'column', gap: 3 } },
-              templates.map(function (tpl) {
-                return el('button', { key: tpl.id, disabled: showReplay, title: showReplay ? 'Exit construction replay to load a template' : tpl.name, onClick: function () { loadTemplate(tpl); }, style: {
-                  display: 'flex', alignItems: 'center', gap: 6, padding: '6px 8px', fontSize: 10, fontWeight: 600,
-                  border: '1px solid var(--allo-stem-border, #334155)', borderRadius: 8, background: 'transparent',
-                  color: showReplay ? '#475569' : 'var(--allo-stem-text-soft, #94a3b8)', cursor: showReplay ? 'default' : 'pointer', textAlign: 'left', width: '100%'
-                } },
-                  el('span', { style: { fontSize: 16, flexShrink: 0 } }, tpl.icon),
-                  el('div', { style: { flex: 1 } },
-                    el('div', { style: { fontWeight: 700, color: '#f8fafc', fontSize: 11 } }, tpl.name),
-                    el('div', { style: { fontSize: 10, lineHeight: 1.35, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, tpl.desc)
-                  )
-                );
-              })
-            )
           ),
 
           // Earthquake Simulator

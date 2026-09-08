@@ -581,7 +581,9 @@ test.describe('Architecture Studio — real WebGL', () => {
     }));
 
     await page.getByRole('button', { name: /Templates/ }).click();
-    await page.getByTitle('Cottage').click();
+    await page.getByLabel('Choose a template', { exact: true }).selectOption('cottage');
+    await page.getByLabel('Template placement', { exact: true }).selectOption('replace');
+    await page.getByRole('button', { name: 'Replace build with template', exact: true }).click();
     await expect.poll(() => page.evaluate(() => (window as any).__bucket())).toMatchObject({
       viewLayer: -1,
       showSlice: false,
@@ -1941,6 +1943,128 @@ test.describe('Architecture Studio — real WebGL', () => {
       });
       expect(violations, theme).toEqual([]);
     }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
+
+  test('template library previews without editing and adds beside the build in one undo step', async ({ page }, testInfo) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false, projectName: 'Keep name', projectNotes: 'Keep notes', filterMaterial: 'glass' }), tower());
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    await page.getByRole('button', { name: 'Templates', exact: true }).click();
+    const panel = page.locator('#arch-template-library');
+    await expect(panel.getByRole('heading', { name: 'Template library', exact: true })).toBeFocused();
+    await panel.getByLabel('Choose a template', { exact: true }).selectOption('temple');
+    await panel.getByRole('button', { name: 'Floor plan', exact: true }).click();
+    await panel.getByLabel('Preview floor', { exact: true }).selectOption('3');
+    await expect(panel.locator('.arch-template-preview svg')).toHaveAccessibleName('Floor plan · Y=3');
+    expect(await page.evaluate(() => ({ count: (window as any).__bucket().blocks.length, undo: (window as any).__bucket().undoStack || [], filter: (window as any).__bucket().filterMaterial }))).toEqual({ count: 13, undo: [], filter: 'glass' });
+    await panel.getByLabel('Choose a template', { exact: true }).selectOption('cottage');
+    await panel.getByRole('button', { name: 'Front elevation', exact: true }).click();
+    const count = Number(await panel.locator('[data-arch-template-count]').textContent());
+    await panel.getByRole('heading', { name: 'Template library', exact: true }).focus();
+    await page.screenshot({ path: testInfo.outputPath('template-library-desktop.png'), fullPage: true });
+    await panel.getByRole('button', { name: 'Add template to build', exact: true }).click();
+    await expect(panel.locator('[data-arch-template-notice]')).toContainText('Added ' + count);
+    const state = await page.evaluate(() => (window as any).__bucket());
+    expect(state.blocks).toHaveLength(13 + count);
+    expect(state.blocks.slice(13).every((b: any) => b.x >= 5)).toBe(true);
+    expect(state).toMatchObject({ projectName: 'Keep name', projectNotes: 'Keep notes', filterMaterial: '' });
+    expect(state.undoStack).toHaveLength(1);
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    await page.getByRole('button', { name: /Redo/ }).first().click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13 + count);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('template library rejects changed preview positions and keeps replay browsing read-only', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ blocks: [{ x: 0, y: 0, z: 0, shape: 'block', material: 'stone' }], editorView: 'grid', showTemplates: true, soundEnabled: false }));
+    const panel = page.locator('#arch-template-library');
+    await expect(panel.getByRole('button', { name: 'Add template to build', exact: true })).toBeEnabled();
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio.blocks.push({ x: 2, y: 0, z: 0, shape: 'block', material: 'stone' });
+      (document.querySelector('[data-arch-template-apply]') as HTMLButtonElement).click();
+    });
+    await expect(panel.locator('[data-arch-template-notice]')).toContainText('previewed position is now occupied');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    await page.evaluate(() => {
+      const w = window as any;
+      w.__toolData.archStudio = Object.assign({}, w.__toolData.archStudio, { showReplay: true, undoStack: [[]] });
+      (document.querySelector('[data-arch-template-apply]') as HTMLButtonElement).click();
+    });
+    await expect(panel.locator('[data-arch-template-apply]')).toBeDisabled();
+    await panel.getByLabel('Choose a template', { exact: true }).selectOption('bridge');
+    await panel.getByRole('button', { name: 'Floor plan', exact: true }).click();
+    await expect(panel.locator('#arch-template-warning')).toContainText('browse templates during replay');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(2);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toEqual([[]]);
+  });
+
+  test('template library explains boundaries and replaces only after the explicit action', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ blocks: [{ x: 64, y: 0, z: 0, shape: 'block', material: 'stone' }], editorView: 'grid', showTemplates: true, projectName: 'Boundary study', projectNotes: 'Retain', soundEnabled: false }));
+    const panel = page.locator('#arch-template-library');
+    await expect(panel.locator('[data-arch-template-apply]')).toBeDisabled();
+    await expect(panel.locator('#arch-template-warning')).toContainText('build area');
+    await panel.getByLabel('Template placement', { exact: true }).selectOption('left');
+    await expect(panel.locator('[data-arch-template-apply]')).toBeEnabled();
+    await panel.getByLabel('Template placement', { exact: true }).selectOption('replace');
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(1);
+    await expect(panel.locator('#arch-template-placement-help')).toContainText('Replace the current 1 blocks');
+    const count = Number(await panel.locator('[data-arch-template-count]').textContent());
+    await panel.getByRole('button', { name: 'Replace build with template', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(count);
+    await expect(panel.locator('[data-arch-template-apply]')).toBeDisabled();
+    expect(await page.evaluate(() => (window as any).__bucket())).toMatchObject({ projectName: 'Boundary study', projectNotes: 'Retain' });
+    await page.getByRole('button', { name: /Undo/ }).first().click();
+    expect(await page.evaluate(() => (window as any).__bucket().blocks)).toHaveLength(1);
+  });
+
+  test('template library supports phone keyboard navigation and three accessible appearances', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ blocks: [], showTemplates: true, editorView: 'grid', soundEnabled: false }));
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:860px}' });
+    const panel = page.locator('#arch-template-library');
+    await panel.getByLabel('Choose a template', { exact: true }).selectOption('tower');
+    await panel.getByRole('heading', { name: 'Template library', exact: true }).focus();
+    await page.keyboard.press('Tab');
+    await expect(panel.getByRole('button', { name: 'Close template library', exact: true })).toBeFocused();
+    await page.screenshot({ path: testInfo.outputPath('template-library-phone.png'), fullPage: true });
+    const sizes = await panel.locator('button,select').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, height: r.height }; }));
+    expect(sizes.filter(r => r.left < 0 || r.right > 320 || r.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await panel.locator('[data-arch-template-apply]').scrollIntoViewIfNeeded();
+    await expect(panel.locator('[data-arch-template-apply]')).toBeInViewport();
+    await panel.getByRole('heading', { name: 'Template library', exact: true }).focus();
+    await page.keyboard.press('Escape');
+    await expect(panel).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Templates', exact: true })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(panel).toBeVisible();
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addStyleTag({ content: '#wrap{height:920px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    await page.getByRole('button', { name: 'Materials schedule', exact: true }).click();
+    await expect(panel).toHaveCount(0);
+    await expect(page.locator('#arch-schedule-panel')).toBeVisible();
     expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
   });
 
