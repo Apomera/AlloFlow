@@ -1,0 +1,61 @@
+# Automobile STEM tool: workshop review and refinements
+
+Date: 2026-09-08. Scope: Auto Repair Shop, its shared 3D viewer, and the desktop public mirrors. Changes are local; no deployment or installer build was requested.
+
+## What the review found
+
+The existing tool already covers ownership, maintenance, diagnostics, repair procedures, buying a used car, career pathways, an engine-bay tour, seven diagnostic cases, and a staged roadside tire change. Those activities have substantial accessible HTML content and a shared Three.js viewer with context cleanup, picking, keyboard controls and reduced-motion support.
+
+The largest experiential gap was between these activities: the learner could inspect an engine or a wheel corner, but could not follow a work order around a complete vehicle in a shop. The existing scene camera also prohibited looking upward, making an underbody view impossible. Selection effects suitable for isolated engine parts enlarged lift hardware and made solid panels translucent when applied to a whole vehicle.
+
+A content review also found an incorrect brake-fluid explanation in the brake walkthrough and quiz: it said to open the reservoir to avoid bursting a seal and allow fluid to overflow into a rag. Both passages now teach level monitoring, preventing overflow and contamination, protecting painted surfaces, and following the vehicle-specific procedure.
+
+## Implemented
+
+Open **Auto Repair Shop → Full mechanic workshop (3D)**.
+
+- Complete stylized sedan with cabin, opening hood, engine, battery, wheels, front brakes, suspension, sump, filter, exhaust, catalyst, muffler and brake lines.
+- Service desk, tool cabinet, pegboard, wheel rack, used-oil drum, floor drainage, bay markings, shop signs and lighting.
+- Seven selectable stations with equivalent HTML buttons and descriptions: service desk, lift, engine/electrical, wheels/brakes, oil/filter, underbody/exhaust and tool bench.
+- A staged two-post lift: equipment/contact-point setup, low lift, stability check, working height and mechanical locks. Underbody operations and the upward inspection camera require the locked state.
+- Three ordered work orders: front brake service, oil/filter service, and slow-crank diagnosis. Every action checks the selected station, equipment, task prerequisites and required calculation before it advances.
+- Visible service changes: the front wheel moves to the rack; both front pad sets change from worn to serviced; used oil appears in the collection pan; the filter changes; the sump records drained/refilled states; terminal corrosion disappears after the connection service.
+- STEM calculations use explicitly fictional service-sheet values: lining loss, remaining fluid volume and voltage-drop excess. Accepted calculations are retained in the downloadable work-order record.
+- Verification and a written customer handoff are required before work-order completion. Each job preserves its own progress in tool state. The existing host controls persistence of that state.
+- Links into the detailed engine tour, diagnostic cases and tire-change activity include a return-to-workshop path.
+- Keyboard camera controls, station labels, touch-sized controls, responsive layout, light/dark/contrast palettes, reduced-motion behavior and a usable HTML path if WebGL fails.
+- The shared viewer accepts an optional bounded `minPitch`. Its existing 0.12-radian minimum remains the default. Only the new workshop opts into an upward view, with a camera-height floor so students cannot orbit beneath the shop floor. Opaque materials and physical lift geometry retain their appearance and scale during station selection.
+
+## Validation
+
+The final unit/HTML regression run passed **591 tests across 40 files**, covering every automobile suite plus the shared first-response 3D contracts. An initial run alongside WebGL exceeded one existing used-car test’s five-second timeout; it passed in isolation, and the final broad run passed with a 15-second timeout. Syntax checks and scoped `git diff --check` passed. Both public mirrors are byte-identical.
+
+Browser tests use the local working tree, real Three.js and Chromium WebGL, not the deployed website. **Seven browser checks passed**: three existing engine-bay checks and four workshop checks covering complete brake/oil/electrical jobs, tool and measurement errors, lift and reassembly states, verification, download, return navigation, per-job progress, reduced motion, mobile overflow, physical label anchors and the upward underbody camera. The final label/camera changes also passed a focused **144-test** regression rerun. The four evidence screenshots were refreshed and visually inspected.
+
+Reproduce the regression run in PowerShell:
+
+```powershell
+$arTests = (Get-ChildItem tests/autorepair_*.test.js).FullName
+npx.cmd vitest run @arTests tests/firstresponse_body_3d.test.js --maxWorkers=1 --testTimeout=15000
+```
+
+Run workshop browser coverage with `npx.cmd playwright test tests/e2e/autorepair-full-workshop.spec.ts --workers=1 --retries=0`.
+
+Evidence images:
+
+- [Whole shop](../reports/automobile-workshop/full-shop.png)
+- [Brake inspection](../reports/automobile-workshop/brake-inspection.png)
+- [Underbody inspection](../reports/automobile-workshop/underbody.png)
+- [Mobile layout](../reports/automobile-workshop/mobile.png)
+
+## Scope and remaining opportunities
+
+This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.
+
+Useful next expansions would be an additional suspension/alignment work order, instructor-authored fault variants, more detailed transmission geometry, validated vehicle-specific reference data, localized workshop copy, and skill-specific assessments of the learner’s written reasoning. These were not added to the current change.
+
+## Reference checks
+
+- [Automotive Lift Institute: safe lift use](https://www.autolift.org/be-a-smart-auto-lift-user/) — basis for the simulated low-height stability check and load-holding-lock sequence; actual operation requires equipment-specific training.
+- [Brembo: brake caliper replacement](https://asia.bremboparts.com/europe/en/support/car/car-fitting/instructions-for-replacing-the-brake-caliper-280503) — piston retraction raises the reservoir level; avoid overflow and damage to painted surfaces.
+- [Three.js: cleanup](https://threejs.org/manual/en/cleanup.html) — checked against the existing host’s geometry, material and texture disposal behavior. The workshop uses that lifecycle.

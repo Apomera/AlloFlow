@@ -2906,7 +2906,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         { n: 2, do: 'Chock the REAR wheels (so the car can\'t roll backward when you lift the front). Set parking brake.' },
         { n: 3, do: 'Jack up one front side. Place jack stand at the frame point. Repeat for the other front. Both wheels off the ground, both on stands.' },
         { n: 4, do: 'Remove lug nuts the rest of the way. Pull the wheel off (Maine: corrosion may stick the wheel to the hub. Tap the back of the tire with a rubber mallet to break it free — never hit the rim).' },
-        { n: 5, do: 'Open the brake-fluid reservoir cap on the master cylinder under the hood. (Pushing the caliper piston back will push fluid up — opening the cap lets it overflow into a rag instead of bursting a seal.)' },
+        { n: 5, do: 'Check the brake-fluid reservoir level before retracting a caliper piston. Returning fluid raises the level; prevent overflow and contamination, protect painted surfaces, and follow the vehicle-specific piston and reservoir procedure. Do not let fluid spill into a rag.' },
         { n: 6, do: 'Locate the two CALIPER BOLTS on the back of the caliper (usually 14–17mm). Remove them. The caliper now slides off the rotor. Hang it from the strut spring with a wire or bungee — DO NOT let it dangle from the brake hose (will rip).' },
         { n: 7, do: 'Pull old pads out of the bracket. Note the spring clip orientation — new pads go in the same way.' },
         { n: 8, do: 'Compress the caliper piston back into its bore. Use a c-clamp or a dedicated brake-piston tool. SLOWLY — the fluid path is the master cylinder. Watch the reservoir for overflow.' },
@@ -9393,6 +9393,323 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     zoom: function () {}, focus: function () {}, returnToScene: function () {},
     reset: function () {}, status: function () { return 'failed'; }
   };
+  // Full-vehicle workshop: one serializable state machine drives the job card and geometry.
+  // Values are authored for a fictional training sedan, never universal service specifications.
+  var SHOP_STATIONS = [
+    { id: 'intake', label: 'Service desk', color: '#38bdf8', detail: 'Read the customer concern, confirm the scope, and record findings before releasing the vehicle.' },
+    { id: 'lift', label: 'Vehicle lift', color: '#fbbf24', detail: 'Practice the sequence: inspect equipment and approved points, make a low lift, check stability, raise, then settle on the mechanical locks. Real operation requires training for the specific lift.' },
+    { id: 'engine', label: 'Engine & electrical', color: '#fb923c', detail: 'Open the hood to inspect the engine, battery and connections. A voltage-drop test under load can separate a poor connection from a weak battery.' },
+    { id: 'brakes', label: 'Wheels & brakes', color: '#f87171', detail: 'Remove the simulated front wheel to expose the rotor, pads and caliper. Compare a measured lining thickness against this work order’s specification.' },
+    { id: 'oil', label: 'Oil & filter', color: '#34d399', detail: 'Trace oil from the sump to the filter. Capture used fluid, restore the plug and filter, refill to the vehicle specification, and check for leaks.' },
+    { id: 'exhaust', label: 'Underbody & exhaust', color: '#c4b5fd', detail: 'Find the exhaust pipe, catalyst, muffler, suspension and brake lines. Inspect only after the vehicle is stable on the lift locks and hot components have cooled.' },
+    { id: 'tools', label: 'Tool bench', color: '#67e8f9', detail: 'Choose equipment for the current task. A torque wrench verifies a specified final torque; an impact wrench alone does not.' }
+  ];
+  var SHOP_TOOLS = [
+    ['job-card', 'Work order'], ['lift-card', 'Lift inspection card'], ['lift-controls', 'Lift controls'],
+    ['lamp', 'Inspection lamp'], ['socket', 'Wheel socket'], ['gauge', 'Pad thickness gauge'],
+    ['brake-kit', 'Brake service kit'], ['torque', 'Torque wrench'], ['drain-pan', 'Drain pan'],
+    ['filter', 'Filter wrench'], ['funnel', 'Measured oil jug'], ['meter', 'DC voltmeter'],
+    ['terminal-kit', 'Terminal service kit'], ['checklist', 'Verification checklist']
+  ];
+  function shopTask(id, station, tool, label, why, changes, requires) {
+    return { id: id, station: station, tool: tool, label: label, why: why, changes: changes || {}, requires: requires || {} };
+  }
+  var SHOP_INTAKE = shopTask('intake', 'intake', 'job-card', 'Confirm the simulated work order', 'Check the concern and vehicle-specific job information. Authorize only the work described here.', { accepted: true });
+  var SHOP_LIFT_TASKS = [
+    shopTask('setup', 'lift', 'lift-card', 'Inspect lift, capacity and lifting points', 'In this training bay, confirm a clear area, engine off, rated equipment, approved contact points and correctly positioned adapters.', { lift: 'prepared' }),
+    shopTask('low-lift', 'lift', 'lift-controls', 'Raise to the initial check height', 'Lift just clear of the floor for the stability check. This is not a working height.', { lift: 'low' }, { lift: 'prepared' }),
+    shopTask('stability', 'lift', 'lamp', 'Confirm stable contact at all four pads', 'Check the simulated contact points and balance before raising further.', { lift: 'checked' }, { lift: 'low' }),
+    shopTask('raise', 'lift', 'lift-controls', 'Raise to working height', 'Keep the area clear. The vehicle still needs to be settled onto its load-holding locks.', { lift: 'raised' }, { lift: 'checked' }),
+    shopTask('locks', 'lift', 'lift-controls', 'Settle onto the mechanical locks', 'Only the locked state opens this simulation’s underbody service tasks.', { lift: 'locked' }, { lift: 'raised' })
+  ];
+  var SHOP_LOWER = shopTask('lower', 'lift', 'lift-controls', 'Clear the bay and complete the lowering sequence', 'A qualified operator clears people and equipment, raises off the locks, releases them, and lowers according to the lift instructions. This button simulates that complete sequence.', { lift: 'ground' }, { lift: 'locked', wheelRemoved: false });
+  var SHOP_RELEASE = shopTask('release', 'intake', 'job-card', 'Complete the customer handoff', 'Record what was found, what changed and how the repair was checked. Training completion does not certify a real vehicle.', { released: true }, { verified: true, lift: 'ground' });
+  var SHOP_JOBS = [
+    { id: 'brakes', title: '01 / Front brake service', concern: 'A customer reports a scraping sound during braking. Inspect the front axle before recommending parts.', spec: 'Training service sheet: new lining 8 mm; replace at 3 mm or less. Initial measurement: 2 mm. Rotor and hardware pass this authored inspection. Real specifications and procedures vary.', question: 'How much lining has worn away from 8 mm to 2 mm?', answer: 6, unit: 'mm',
+      tasks: [SHOP_INTAKE].concat(SHOP_LIFT_TASKS, [
+        shopTask('wheel-off', 'brakes', 'socket', 'Remove the front wheel in the simulation', 'The wheel moves to the rack, revealing the brake assembly. Hardware is retained for reassembly.', { wheelRemoved: true }, { lift: 'locked' }),
+        shopTask('measure', 'brakes', 'gauge', 'Measure the lining and calculate wear', 'The gauge reads 2 mm. Compare it with the 3 mm limit; calculate the material lost before deciding on service.', { measured: true }, { wheelRemoved: true, lift: 'locked' }),
+        shopTask('service', 'brakes', 'brake-kit', 'Simulate front-axle brake service', 'This represents a trained technician following the vehicle procedure, inspecting both sides and servicing the front axle as a set. Both front pad sets change to 8 mm.', { serviced: true }, { measured: true, lift: 'locked' }),
+        shopTask('refit', 'brakes', 'torque', 'Refit wheel and verify specified fastener torque', 'The training checklist confirms the vehicle-specific tightening pattern and torque. No universal torque value is assumed.', { wheelRemoved: false, torqued: true }, { serviced: true, lift: 'locked' }),
+        SHOP_LOWER,
+        shopTask('verify', 'brakes', 'checklist', 'Verify brake operation after service', 'Simulation result: pedal restored, no leaks, fasteners checked and trained-technician function check passed. Do not road-test a real vehicle with an unresolved brake concern.', { verified: true }, { serviced: true, torqued: true, lift: 'ground' }), SHOP_RELEASE]) },
+    { id: 'oil', title: '02 / Oil & filter service', concern: 'A customer has booked a scheduled oil and filter service. Match the fluid and filter to the vehicle service sheet.', spec: 'Fictional training sedan: service fill is 4.6 L including filter. The measured jug contains 4.1 L. Engine is off and the oil is cool enough for this simulated service.', question: 'How much more oil is needed to reach the 4.6 L service fill from 4.1 L?', answer: 0.5, unit: 'L',
+      tasks: [SHOP_INTAKE].concat(SHOP_LIFT_TASKS, [
+        shopTask('drain', 'oil', 'drain-pan', 'Position the drain pan and drain used oil', 'The pan moves below the sump and captures the simulated used fluid. The engine must remain off.', { oilDrained: true }, { lift: 'locked' }),
+        shopTask('filter', 'oil', 'filter', 'Replace filter and secure the drain plug', 'The scripted service includes the correct filter and seal, plug inspection and the vehicle-specific tightening procedure.', { serviced: true, plugSecured: true }, { oilDrained: true, lift: 'locked' }),
+        SHOP_LOWER,
+        shopTask('refill', 'engine', 'funnel', 'Calculate the remaining fill and refill', 'Use the specified grade and quantity, then verify level by the vehicle procedure. The simulated oil quantity returns to the service fill.', { refilled: true, hood: true }, { plugSecured: true, lift: 'ground' }),
+        shopTask('verify', 'engine', 'checklist', 'Verify level, pressure indication and leaks', 'The scripted check includes exhaust extraction for the brief run, engine shutdown, the specified wait before checking level, no leaks and used-oil recycling.', { verified: true }, { refilled: true, lift: 'ground' }), SHOP_RELEASE]) },
+    { id: 'electrical', title: '03 / Slow-crank diagnosis', concern: 'The starter turns slowly. The customer asks whether the battery needs replacement. Gather evidence before choosing a repair.', spec: 'Authored test: 12.6 V at rest, 10.4 V while cranking and 1.6 V drop across the positive post-to-clamp connection under starter load. For this case, that connection should drop less than 0.2 V.', question: 'How far above the 0.2 V case limit is the 1.6 V connection drop?', answer: 1.4, unit: 'V',
+      tasks: [SHOP_INTAKE,
+        shopTask('hood', 'engine', 'lamp', 'Open hood and inspect battery connections', 'A corroded positive clamp is visible. Visual evidence suggests a test; it does not by itself prove the battery is defective.', { hood: true }),
+        shopTask('measure', 'engine', 'meter', 'Compare voltage-drop evidence', 'The simulated meter uses DC volts across the positive joint under starter load. The 1.6 V drop points to resistance at the connection.', { measured: true }, { hood: true }),
+        shopTask('service', 'engine', 'terminal-kit', 'Simulate servicing the faulty connection', 'With the engine off, a trained technician follows the vehicle battery-isolation and terminal-service procedure. Corrosion disappears; the original battery stays installed.', { serviced: true }, { measured: true }),
+        shopTask('verify', 'engine', 'meter', 'Repeat the same loaded voltage-drop test', 'After service the same connection measures 0.08 V under starter load, below the 0.2 V case limit. Cranking is restored; this test supports the connection repair.', { verified: true }, { serviced: true, lift: 'ground' }), SHOP_RELEASE] }
+  ];
+  function arShopJob(id) { return SHOP_JOBS.filter(function (j) { return j.id === id; })[0] || SHOP_JOBS[0]; }
+  function arShopInitial(jobId) {
+    return { job: arShopJob(jobId).id, step: 0, station: 'intake', tool: 'job-card', lift: 'ground', hood: false,
+      wheelRemoved: false, measured: false, serviced: false, verified: false, released: false, oilDrained: false,
+      plugSecured: false, refilled: false, torqued: false, answer: '', notes: '', feedback: '', history: [] };
+  }
+  function arShopState(raw) {
+    var state = Object.assign(arShopInitial(raw && raw.job), raw || {});
+    var job = arShopJob(state.job);
+    state.job = job.id;
+    state.step = Number.isInteger(state.step) ? Math.max(0, Math.min(job.tasks.length, state.step)) : 0;
+    if (!SHOP_STATIONS.some(function (p) { return p.id === state.station; })) state.station = 'intake';
+    if (['ground', 'prepared', 'low', 'checked', 'raised', 'locked'].indexOf(state.lift) === -1) state.lift = 'ground';
+    state.history = Array.isArray(state.history) ? state.history.slice(0, job.tasks.length) : [];
+    return state;
+  }
+  function arShopAdvance(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
+    function blocked(message) { return Object.assign({}, state, { feedback: message }); }
+    if (!task) return blocked('This training work order is complete. Review the handoff or choose another job.');
+    if (state.station !== task.station) return blocked('Go to ' + SHOP_STATIONS.filter(function (p) { return p.id === task.station; })[0].label + ' for this task.');
+    if (state.tool !== task.tool) return blocked('Choose ' + SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1] + ' for this task.');
+    var unmet = Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; });
+    if (unmet) return blocked('The vehicle is not ready for this operation. Complete the preceding setup and reassembly steps.');
+    if ((task.id === 'measure' || task.id === 'refill') && (!String(state.answer).trim() || !Number.isFinite(Number(state.answer)) || Math.abs(Number(state.answer) - job.answer) > 0.001)) {
+      return blocked('Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
+    }
+    if (task.id === 'release' && String(state.notes || '').trim().length < 20) return blocked('Write a handoff of at least 20 characters describing the finding, service and verification.');
+    return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', feedback: 'Completed: ' + task.label,
+      history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
+  }
+
+  function buildWorkshopScene(THREE, api) {
+    var state = arShopState(api.sceneProps), scene = api.scene;
+    var meshes = {}, picks = [];
+    var height = state.lift === 'locked' ? 1.58 : state.lift === 'raised' ? 1.68 : (state.lift === 'low' || state.lift === 'checked') ? 0.18 : 0;
+    if (scene.fog) { scene.fog.near = 12; scene.fog.far = 26; }
+    var room = new THREE.Group(); room.name = 'full-workshop-environment'; scene.add(room);
+    var paint = api.trim(0x246b8e, 90), rubber = api.trim(0x171e29, 8), metal = api.trim(0xa4b3c1, 75);
+    var dark = api.trim(0x283647, 25), amber = api.trim(0xf8b73c, 45), blue = api.trim(0x1958a1, 50);
+    var red = api.trim(0xc83542, 45), pale = api.trim(0xd5e3e8, 30), green = api.trim(0x36b58e, 40);
+    function box(parent, name, size, pos, mat) {
+      var mesh = new THREE.Mesh(new THREE.BoxGeometry(size[0], size[1], size[2]), mat);
+      mesh.name = name; mesh.position.set(pos[0], pos[1], pos[2]); parent.add(mesh);
+      if (api.wantShadow) { mesh.castShadow = true; mesh.receiveShadow = true; }
+      return mesh;
+    }
+    function cylinder(parent, name, radius, length, pos, mat, axis) {
+      var mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length, 20), mat);
+      mesh.name = name; mesh.position.set(pos[0], pos[1], pos[2]);
+      if (axis === 'z') mesh.rotation.x = Math.PI / 2;
+      if (axis === 'x') mesh.rotation.z = Math.PI / 2;
+      parent.add(mesh); if (api.wantShadow) mesh.castShadow = true; return mesh;
+    }
+    function pipe(parent, name, from, to, radius, mat) {
+      var a = new THREE.Vector3(from[0], from[1], from[2]), b = new THREE.Vector3(to[0], to[1], to[2]);
+      var mesh = cylinder(parent, name, radius, a.distanceTo(b), [0, 0, 0], mat);
+      mesh.position.copy(a.clone().add(b).multiplyScalar(0.5));
+      mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), b.sub(a).normalize()); return mesh;
+    }
+    function label(parent, text, pos, width, color) {
+      var canvas = document.createElement('canvas'); canvas.width = 768; canvas.height = 128;
+      var ctx = canvas.getContext('2d');
+      if (!ctx) return;
+      ctx.fillStyle = '#102033'; ctx.fillRect(0, 0, 768, 128);
+      ctx.strokeStyle = color || '#fbbf24'; ctx.lineWidth = 8; ctx.strokeRect(4, 4, 760, 120);
+      ctx.fillStyle = '#f8fafc'; ctx.font = 'bold 48px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, 384, 66, 720);
+      var texture = new THREE.CanvasTexture(canvas);
+      var plane = new THREE.Mesh(new THREE.PlaneGeometry(width, width / 6), new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+      plane.name = 'shop-sign-' + text; plane.position.set(pos[0], pos[1], pos[2]); parent.add(plane); return plane;
+    }
+    function register(id, group, at) {
+      group.userData.partId = id;
+      group.userData.noSelectionScale = true;
+      scene.updateMatrixWorld(true);
+      group.userData.labelAnchor = group.worldToLocal(new THREE.Vector3(at[0], at[1], at[2]));
+      var materials = new Map();
+      group.traverse(function (o) {
+        if (!o.isMesh) return;
+        // Selection must not recolor the rest of the car through shared materials,
+        // enlarge lift hardware, or make solid body panels transparent.
+        if (!materials.has(o.material)) {
+          var material = o.material.clone();
+          material.userData._keepOpaqueOnRecede = !material.transparent;
+          materials.set(o.material, material);
+        }
+        o.material = materials.get(o.material); o.userData.partId = id; picks.push(o);
+      });
+      meshes[id] = group;
+    }
+    box(room, 'workshop-floor', [10, 0.12, 8], [0, -0.1, 0], api.trim(0x475b6d, 15));
+    for (var tile = -4; tile <= 4; tile++) {
+      box(room, 'floor-seam-x-' + tile, [0.016, 0.005, 7.9], [tile, -0.034, 0], dark);
+      box(room, 'floor-seam-z-' + tile, [9.9, 0.005, 0.016], [0, -0.033, tile], dark);
+    }
+    box(room, 'rear-shop-wall', [10, 3.8, 0.14], [0, 1.83, -3.9], pale);
+    box(room, 'rear-wall-blue-band', [10, 0.66, 0.03], [0, 0.82, -3.81], blue);
+    box(room, 'garage-door', [3.25, 2.75, 0.07], [-2.5, 1.36, -3.79], dark);
+    for (var slat = 0; slat < 11; slat++) box(room, 'garage-door-slat-' + slat, [3.16, 0.022, 0.04], [-2.5, 0.12 + slat * 0.25, -3.74], metal);
+    label(room, 'ALLO / MOTOR WORKS', [1.85, 3.16, -3.79], 3.4);
+    label(room, 'BAY 01', [-2.5, 2.98, -3.75], 1.5, '#38bdf8');
+    [-1.62, 1.62].forEach(function (z) { box(room, 'bay-floor-stripe-' + z, [5.7, 0.012, 0.06], [0, -0.023, z], amber); });
+    [-2.8, 2.8].forEach(function (x) { box(room, 'bay-end-stripe-' + x, [0.06, 0.012, 3.3], [x, -0.023, 0], amber); });
+    box(room, 'shop-floor-drain', [2.3, 0.014, 0.21], [0.2, -0.019, 2.12], dark);
+    for (var grate = 0; grate < 22; grate++) box(room, 'drain-grate-' + grate, [0.027, 0.014, 0.19], [-0.86 + grate * 0.10, -0.012, 2.12], metal);
+    [-2, 2].forEach(function (x) {
+      box(room, 'ceiling-light-housing-' + x, [2.3, 0.10, 0.22], [x, 3.8, -1.2], dark);
+      box(room, 'ceiling-light-diffuser-' + x, [2.15, 0.02, 0.18], [x, 3.735, -1.2], new THREE.MeshBasicMaterial({ color: 0xe7f5ff }));
+    });
+    var shopLight = new THREE.PointLight(0xdcefff, 0.7, 12, 2); shopLight.position.set(-1, 3.5, 1); room.add(shopLight);
+    var desk = new THREE.Group(); desk.name = 'service-desk'; desk.position.x = 0.65; room.add(desk);
+    box(desk, 'desk-base', [1.1, 0.88, 0.58], [-3.55, 0.44, -1.8], blue);
+    box(desk, 'desk-top', [1.24, 0.07, 0.75], [-3.55, 0.92, -1.8], metal);
+    box(desk, 'work-order-clipboard', [0.36, 0.025, 0.46], [-3.38, 0.976, -1.72], pale);
+    box(desk, 'desk-monitor', [0.52, 0.35, 0.065], [-3.7, 1.2, -2], dark);
+    label(desk, 'SERVICE', [-3.55, 0.65, -1.498], 0.95, '#38bdf8'); register('intake', desk, [-2.90, 1.15, -1.5]);
+    var bench = new THREE.Group(); bench.name = 'workshop-tool-bench'; room.add(bench);
+    box(bench, 'rolling-tool-cabinet', [1.5, 0.92, 0.64], [1.7, 0.57, -3.1], red);
+    box(bench, 'steel-worktop', [1.62, 0.07, 0.74], [1.7, 1.06, -3.1], metal);
+    for (var drawer = 0; drawer < 5; drawer++) {
+      box(bench, 'cabinet-drawer-' + drawer, [1.37, 0.11, 0.028], [1.7, 0.30 + drawer * 0.145, -2.767], dark);
+      box(bench, 'drawer-handle-' + drawer, [1.18, 0.022, 0.05], [1.7, 0.33 + drawer * 0.145, -2.74], metal);
+    }
+    box(bench, 'tool-pegboard', [1.7, 1.10, 0.045], [1.7, 1.82, -3.74], dark);
+    for (var wrench = 0; wrench < 7; wrench++) {
+      pipe(bench, 'hanging-wrench-' + wrench, [1.08 + wrench * 0.2, 1.57, -3.65], [1.08 + wrench * 0.2, 2.02 + wrench * 0.025, -3.65], 0.023, metal);
+      cylinder(bench, 'wrench-head-' + wrench, 0.06, 0.03, [1.08 + wrench * 0.2, 2.05 + wrench * 0.025, -3.65], metal, 'z');
+    }
+    label(bench, 'TOOLS / RETURN AFTER USE', [1.7, 2.56, -3.70], 2.1, '#67e8f9'); register('tools', bench, [1.7, 1.5, -2.8]);
+    cylinder(room, 'used-oil-recycling-drum', 0.28, 0.85, [3.5, 0.425, -2.9], green);
+    var rack = new THREE.Group(); rack.name = 'wheel-storage-rack'; room.add(rack);
+    [2.75, 3.65].forEach(function (x) { box(rack, 'rack-upright-' + x, [0.045, 1.35, 0.045], [x, 0.675, -1.9], blue); });
+    box(rack, 'wheel-rack-shelf', [1.05, 0.06, 0.68], [3.2, 0.20, -1.9], dark);
+    // A complete vehicle, with the body, engine and running gear sharing the lift transform.
+    var car = new THREE.Group(); car.name = 'workshop-vehicle'; car.position.y = height;
+    car.userData.liftState = state.lift; scene.add(car);
+    box(car, 'vehicle-floorpan', [3.65, 0.14, 1.31], [0, 0.56, 0], dark);
+    [-0.78, 0.78].forEach(function (z) {
+      box(car, 'rocker-panel-' + z, [3.96, 0.28, 0.095], [0, 0.74, z], paint);
+      box(car, 'door-panel-' + z, [1.65, 0.38, 0.05], [0.24, 1.02, z], paint);
+      // Solid quarter panels follow the wheel arches; the open wheel cavity remains visible.
+      [[-1.3, -2.02, -0.64], [1.28, 0.72, 2.04]].forEach(function (fenderSpec) {
+        var center = fenderSpec[0], outline = new THREE.Shape();
+        outline.moveTo(fenderSpec[1], 0.65);
+        outline.lineTo(center - Math.sqrt(0.1875), 0.65);
+        outline.absarc(center, 0.40, 0.50, Math.PI * 5 / 6, Math.PI / 6, true);
+        outline.lineTo(fenderSpec[2], 0.65); outline.lineTo(fenderSpec[2], 1.20);
+        outline.lineTo(fenderSpec[1], 1.13); outline.closePath();
+        var fender = new THREE.Mesh(new THREE.ShapeGeometry(outline), paint);
+        fender.name = 'vehicle-quarter-panel-' + center + '-' + z;
+        fender.position.z = z;
+        if (z < 0) { fender.material = paint.clone(); fender.material.side = THREE.DoubleSide; }
+        car.add(fender);
+      });
+      box(car, 'door-seam-' + z, [0.013, 0.36, 0.018], [0.35, 1.03, z * 1.04], dark);
+      [-0.23, 0.73].forEach(function (x) { box(car, 'door-handle-' + x + '-' + z, [0.17, 0.025, 0.04], [x, 1.12, z * 1.05], metal); });
+      box(car, 'sill-trim-' + z, [3.92, 0.035, 0.025], [0, 0.61, z * 1.07], metal);
+      [-1.3, 1.28].forEach(function (x) {
+        var arch = new THREE.Mesh(new THREE.TorusGeometry(0.415, 0.045, 8, 32, Math.PI), paint);
+        arch.name = 'wheel-arch-' + x + '-' + z; arch.position.set(x, 0.40, z); car.add(arch);
+      });
+    });
+    box(car, 'rear-deck', [0.86, 0.18, 1.48], [1.52, 1.03, 0], paint);
+    box(car, 'roof', [1.47, 0.085, 1.22], [0.3, 1.70, 0], paint);
+    var glass = new THREE.MeshPhongMaterial({ color: 0x7eb4c9, transparent: true, opacity: 0.46, shininess: 100, side: THREE.DoubleSide });
+    [-0.64, 0.64].forEach(function (z) {
+      var shape = new THREE.Shape(); shape.moveTo(-0.72, 1.21); shape.lineTo(-0.41, 1.66); shape.lineTo(0.97, 1.66); shape.lineTo(1.25, 1.21); shape.closePath();
+      var windowPane = new THREE.Mesh(new THREE.ShapeGeometry(shape), glass); windowPane.position.z = z; windowPane.name = 'side-glazing-' + z; car.add(windowPane);
+      [[-0.72, 1.21, -0.41, 1.66], [0.36, 1.21, 0.36, 1.66], [1.25, 1.21, 0.97, 1.66]].forEach(function (p, i) { pipe(car, 'cabin-pillar-' + z + '-' + i, [p[0], p[1], z], [p[2], p[3], z], 0.035, paint); });
+      box(car, 'mirror-' + z, [0.20, 0.11, 0.18], [-0.65, 1.28, z * 1.3], paint);
+    });
+    var windscreen = box(car, 'front-windscreen', [0.035, 0.54, 1.23], [-0.575, 1.44, 0], glass); windscreen.rotation.z = -0.59;
+    var rearScreen = box(car, 'rear-windscreen', [0.035, 0.54, 1.23], [1.12, 1.44, 0], glass); rearScreen.rotation.z = 0.55;
+    [-0.36, 0.36].forEach(function (z) { box(car, 'seat-' + z, [0.47, 0.42, 0.43], [0.3, 1.19, z], rubber); });
+    box(car, 'front-bumper', [0.14, 0.28, 1.58], [-2.08, 0.78, 0], paint);
+    box(car, 'rear-bumper', [0.14, 0.28, 1.58], [2.04, 0.77, 0], paint);
+    box(car, 'front-grille', [0.03, 0.18, 0.73], [-2.16, 0.83, 0], dark);
+    [-0.59, 0.59].forEach(function (z) {
+      box(car, 'headlamp-' + z, [0.045, 0.14, 0.32], [-2.17, 0.99, z], pale);
+      box(car, 'tail-lamp-' + z, [0.045, 0.14, 0.29], [2.13, 1, z], red);
+    });
+    var engine = new THREE.Group(); engine.name = 'workshop-engine-station'; car.add(engine);
+    box(engine, 'engine-bay-tray', [1.4, 0.07, 1.34], [-1.3, 0.81, 0], dark);
+    box(engine, 'engine-block', [0.64, 0.35, 0.64], [-1.22, 0.99, 0], metal);
+    box(engine, 'engine-cover', [0.68, 0.085, 0.66], [-1.22, 1.2, 0], dark);
+    for (var rib = 0; rib < 5; rib++) box(engine, 'engine-cover-rib-' + rib, [0.50, 0.023, 0.035], [-1.22, 1.255, -0.22 + rib * 0.11], metal);
+    box(engine, 'workshop-battery', [0.38, 0.26, 0.29], [-0.87, 1.01, 0.51], rubber);
+    cylinder(engine, 'positive-post', 0.03, 0.05, [-0.97, 1.165, 0.51], red);
+    cylinder(engine, 'negative-post', 0.03, 0.05, [-0.76, 1.165, 0.51], metal);
+    if (state.job === 'electrical' && !state.serviced) {
+      var corrosion = cylinder(engine, 'workshop-terminal-corrosion', 0.065, 0.018, [-0.97, 1.157, 0.51], api.trim(0x99ddc6, 2)); corrosion.userData.faultState = 'high-resistance';
+    }
+    box(engine, 'air-filter-housing', [0.41, 0.22, 0.34], [-0.92, 1.01, -0.49], rubber);
+    pipe(engine, 'intake-hose', [-0.96, 1.14, -0.38], [-1.21, 1.13, -0.17], 0.075, rubber);
+    var hood = new THREE.Group(); hood.name = 'workshop-hood-pivot'; hood.position.set(-0.58, 1.24, 0);
+    hood.rotation.z = state.hood ? -1.05 : 0;
+    box(hood, 'workshop-hood', [1.48, 0.055, 1.49], [-0.74, 0, 0], paint); engine.add(hood);
+    register('engine', engine, [-1.23, 1.3 + height, 0]);
+    var brakes = new THREE.Group(); brakes.name = 'workshop-brake-station'; car.add(brakes);
+    function wheel(parent, name, x, y, z) {
+      var group = new THREE.Group(); group.name = name; group.position.set(x, y, z); parent.add(group);
+      var tyre = new THREE.Mesh(new THREE.TorusGeometry(0.285, 0.104, 12, 32), rubber); group.add(tyre);
+      cylinder(group, name + '-rim', 0.20, 0.18, [0, 0, 0], metal, 'z');
+      for (var spoke = 0; spoke < 5; spoke++) {
+        var a = spoke * Math.PI * 2 / 5;
+        pipe(group, name + '-spoke-' + spoke, [0, 0, 0.102], [Math.cos(a) * 0.17, Math.sin(a) * 0.17, 0.102], 0.024, dark);
+      }
+      return group;
+    }
+    [-1.3, 1.28].forEach(function (x) {
+      [-0.79, 0.79].forEach(function (z) {
+        var front = x < 0, removed = front && z > 0 && state.wheelRemoved;
+        cylinder(brakes, 'brake-rotor-' + x + '-' + z, 0.225, 0.033, [x, 0.40, z], metal, 'z');
+        box(brakes, 'brake-caliper-' + x + '-' + z, [0.14, 0.22, 0.13], [x + 0.17, 0.44, z], red);
+        var pad = box(brakes, 'brake-pad-' + x + '-' + z, [0.11, 0.15, state.serviced && state.job === 'brakes' && front ? 0.048 : 0.012], [x + 0.15, 0.44, z + (z > 0 ? 0.025 : -0.025)], amber);
+        pad.userData.thicknessMm = state.serviced && state.job === 'brakes' && front ? 8 : 2;
+        if (!removed) wheel(brakes, 'mounted-wheel-' + x + '-' + z, x, 0.4, z * 1.07);
+        pipe(car, 'strut-' + x + '-' + z, [x, 0.45, z * 0.80], [x + 0.08, 1.05, z * 0.70], 0.055, metal);
+        for (var coil = 0; coil < 5; coil++) {
+          var spring = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.013, 6, 16), amber); spring.rotation.x = Math.PI / 2; spring.position.set(x + 0.04, 0.68 + coil * 0.055, z * 0.75); car.add(spring);
+        }
+      });
+      pipe(car, 'axle-' + x, [x, 0.40, -0.65], [x, 0.40, 0.65], 0.052, dark);
+    });
+    if (state.wheelRemoved) wheel(rack, 'removed-front-wheel', 3.2, 0.64, -1.9);
+    register('brakes', brakes, [-1.3, 0.65 + height, 0.99]);
+    var oil = new THREE.Group(); oil.name = 'workshop-oil-station'; car.add(oil);
+    var sump = box(oil, 'engine-oil-sump', [0.73, 0.20, 0.55], [-1.2, 0.40, 0], metal);
+    sump.userData.fluidState = state.refilled ? 'filled' : state.oilDrained ? 'drained' : 'used-oil';
+    cylinder(oil, 'sump-drain-plug', 0.03, 0.026, [-1.2, 0.286, 0], dark);
+    cylinder(oil, 'service-oil-filter', 0.095, 0.21, [-0.8, 0.42, 0.29], state.serviced && state.job === 'oil' ? green : blue);
+    register('oil', oil, [-1.2, 0.40 + height, 0]);
+    var drainX = state.oilDrained && state.lift === 'locked' ? -1.2 : 2.95;
+    var pan = cylinder(room, 'workshop-drain-pan', 0.35, 0.08, [drainX, 0.07, 0], dark);
+    if (state.oilDrained) cylinder(room, 'captured-used-oil', 0.31, 0.008, [drainX, 0.114, 0], api.trim(0x3c271c, 70));
+    var underbody = new THREE.Group(); underbody.name = 'workshop-underbody'; car.add(underbody);
+    pipe(underbody, 'exhaust-downpipe', [-1.2, 0.43, -0.30], [-0.50, 0.33, -0.24], 0.046, metal);
+    cylinder(underbody, 'catalytic-converter', 0.13, 0.48, [-0.35, 0.33, -0.24], metal, 'x');
+    pipe(underbody, 'exhaust-midpipe', [-0.08, 0.33, -0.24], [1.1, 0.33, -0.24], 0.046, metal);
+    box(underbody, 'rear-muffler', [0.55, 0.20, 0.41], [1.4, 0.34, -0.22], metal);
+    pipe(underbody, 'tailpipe', [1.67, 0.34, -0.22], [2.2, 0.34, -0.22], 0.046, metal);
+    [-0.47, 0.47].forEach(function (z) { pipe(underbody, 'underbody-brake-line-' + z, [-1.3, 0.475, z], [1.35, 0.475, z], 0.009, metal); });
+    register('exhaust', underbody, [0.6, 0.38 + height, -0.2]);
+    var lift = new THREE.Group(); lift.name = 'workshop-two-post-lift'; lift.userData.liftState = state.lift; room.add(lift);
+    [-1.36, 1.36].forEach(function (z) {
+      box(lift, 'lift-base-' + z, [0.65, 0.09, 0.65], [0.05, 0.025, z], blue);
+      box(lift, 'lift-column-' + z, [0.22, 3.25, 0.28], [0.05, 1.64, z], blue);
+      box(lift, 'lift-guide-' + z, [0.045, 3.1, 0.10], [-0.08, 1.65, z], metal);
+      box(lift, 'lift-carriage-' + z, [0.32, 0.38, 0.33], [0.05, 0.41 + height, z], dark);
+      [-0.75, 0.94].forEach(function (x) {
+        pipe(lift, 'lift-arm-' + x + '-' + z, [0.05, 0.40 + height, z], [x, 0.40 + height, z > 0 ? 0.64 : -0.64], 0.065, amber);
+        cylinder(lift, 'lift-contact-pad-' + x + '-' + z, 0.08, 0.095, [x, 0.49 + height, z > 0 ? 0.64 : -0.64], rubber);
+      });
+      box(lift, 'lift-lock-indicator-' + z, [0.065, 0.12, 0.045], [-0.115, 0.51 + height, z + 0.19], state.lift === 'locked' ? green : red);
+    });
+    box(lift, 'lift-overhead-crossbar', [0.26, 0.17, 2.97], [0.05, 3.30, 0], blue);
+    box(lift, 'lift-control-panel', [0.20, 0.31, 0.16], [-0.13, 1.35, 1.51], dark);
+    cylinder(lift, 'lift-emergency-stop', 0.035, 0.032, [-0.13, 1.39, 1.607], red, 'z');
+    register('lift', lift, [0.05, 1.75, 1.36]);
+    scene.updateMatrixWorld(true);
+    return { meshes: meshes, picks: picks, anchor: car };
+  }
+
   function makeViewer(cfg) {
     var mk = window.StemLab && window.StemLab.makeBayViewer;
     if (!mk) { console.warn('[AutoRepair] host viewer shell unavailable — 3D disabled, 2D paths intact'); return NULL_VIEWER; }
@@ -9408,6 +9725,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // Second viewer instance, same lifecycle, different scene. Both are
   // singletons and only one module is mounted at a time, so they never
   // contend for the canvas.
+  var SHOP3D = makeViewer({ parts: SHOP_STATIONS, buildScene: buildWorkshopScene, minPitch: -0.55, minCameraY: 0.12, home: { yaw: -0.65, pitch: 0.54, dist: 8.5, target: { x: 0, y: 1.2, z: -0.2 } } });
+
   var TIRE3D = makeViewer({
     parts: TIRE_PARTS,
     buildScene: buildWheelCornerScene,
@@ -9490,9 +9809,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       choices: ['Pour it in the woods behind the house', 'Mix it into kitty litter, bag it, and put it out with the household trash', 'Bring it (sealed) to a parts store for free disposal', 'Burn it in a fire pit'],
       correct: 2, why: 'NAPA, O\'Reilly, AutoZone, and AAA shops accept used oil free. One quart contaminates ~1,000,000 gallons of groundwater. Maine has fines for improper disposal.' },
     { id: 'q8', icon: '🛑',
-      stem: 'You\'re changing brake pads. Why do you open the brake-fluid reservoir cap before pushing the caliper piston back?',
-      choices: ['Tradition', 'Pushing the piston back forces fluid back to the reservoir; if the cap is sealed, you can blow a seal', 'It looks more professional', 'It\'s a Maine state law: inspection rules require the reservoir to be vented during any brake service so the fluid can be checked for moisture'],
-      correct: 1, why: 'Compressing the piston pushes fluid up the line. Cap closed = pressure builds in the master cylinder. Open = it overflows into a rag.' },
+      stem: 'You\'re changing brake pads. Why must you monitor the reservoir level when retracting a caliper piston?',
+      choices: ['Tradition', 'Returning fluid raises the reservoir level, so prevent overflow and follow the vehicle service procedure', 'It looks more professional', 'It\'s a Maine state law: inspection rules require the reservoir to be vented during any brake service so the fluid can be checked for moisture'],
+      correct: 1, why: 'Retracting a piston sends fluid toward the reservoir and raises its level. Prevent overflow and contamination, protect paint, and follow the vehicle-specific procedure. Opening a cap is not permission to spill brake fluid.' },
     { id: 'q9', icon: '🔋',
       stem: 'Your car won\'t start, just clicks rapidly. What\'s the FIRST thing you test?',
       choices: ['Replace the starter', 'Test battery voltage with a multimeter', 'Replace the battery on principle, since clicking always means a dead cell', 'Tow it to the shop'],
@@ -9847,10 +10166,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           'data-ar-print-hide': 'true',
           role: navigationLabel ? 'navigation' : undefined,
           'aria-label': navigationLabel || undefined,
-          style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border }
+          style: { display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 14, paddingBottom: 10, borderBottom: '1px solid ' + T.border }
         },
           h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-print-hide': 'true', 'aria-label': __alloT('stem.autorepair.back_to_menu', 'Back to menu'),
             onClick: function() { setView('menu'); }, style: btnGhost() }, __alloT('stem.autorepair.menu', '← Menu')),
+          d.shopFrom && view !== 'workshop' && h('button', { type: 'button', 'data-ar-focusable': true, onClick: function () { updMulti({ view: 'workshop', shopFrom: false }); }, style: btnGhost() }, 'Return to workshop'),
           !navigationLabel && h('h1', { style: { margin: 0, fontSize: 18, color: T.text } }, title)
         );
       }
@@ -9981,6 +10301,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             desc: __alloT('stem.autorepair.just_bought_it_drive_it_keep_it_health', 'Just bought it / drive it / keep it healthy.'),
             modules: [
               { id: 'firstcar', icon: '🚗', label: __alloT('stem.autorepair.first_car_start_here', 'First car? Start here'), desc: __alloT('stem.autorepair.just_bought_your_first_car_30_day_week', 'Just bought your first car. 30-day week-by-week plan.') },
+              { id: 'workshop', icon: '🔧', label: __alloT('stem.autorepair.full_workshop', 'Full mechanic workshop (3D)'), desc: __alloT('stem.autorepair.full_workshop_desc', 'Service a whole vehicle: lift, brakes, oil and electrical work orders with tools, measurements and a customer handoff.') },
               { id: 'underhood', icon: '🔎', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)'), desc: __alloT('stem.autorepair.spin_the_engine_bay_find_all_12_parts', 'Spin the engine bay. Find all 12 parts and learn what each one looks like.') },
               { id: 'tyre', icon: '🛞', label: __alloT('stem.autorepair.change_a_tyre_menu', 'Change a tyre (3D)'), desc: __alloT('stem.autorepair.13_steps_in_order_get_the_order_wrong', '13 steps, in order. Get the order wrong and the wheel just spins — or worse.') },
               { id: 'walk', icon: '🚶', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around'), desc: __alloT('stem.autorepair.quick_pre_drive_check_the_professional', 'A quick pre-drive check. The professional habit.') },
@@ -10070,7 +10391,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         var roiStageCount = roiRequiredReady ? 1 : 0;
         if (roiRequiredReady && menuROI.compareState === 'ready') roiStageCount = 2;
         if (roiStageCount === 2 && menuROI.evidenceCount === 4) roiStageCount = 3;
+        var workshopProgress = arShopState(d.shop);
         var moduleProgress = {
+          workshop: workshopProgress.step ? workshopProgress.step + '/' + arShopJob(workshopProgress.job).tasks.length : null,
           underhood: uhSeenCount > 0 ? uhSeenCount + '/' + UNDER_HOOD_PARTS.length : null,
           repairbay: Object.keys(rbDoneRec).length > 0 ? rbSolved + '/' + REPAIR_CASES.length : null,
           tyre: tcSteps > 0 ? tcSteps + '/' + TIRE_STEPS.length : null,
@@ -10136,6 +10459,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         });
 
         var resumeOptions = [
+          { id: 'workshop', label: 'Full mechanic workshop (3D)' },
           { id: 'walk', label: __alloT('stem.autorepair.pre_drive_walk_around', 'Pre-drive walk-around') },
           { id: 'roi', label: __alloT('stem.autorepair.repair_decision_lab', 'Repair Decision Lab') },
           { id: 'underhood', label: __alloT('stem.autorepair.under_hood_tour_menu', 'Under-hood tour (3D)') },
@@ -19138,6 +19462,140 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       // and screen-reader path. If WebGL is missing or a school filter blocks
       // the CDN, the module loses a picture and loses nothing else.
       // ─────────────────────────────────────────
+      function renderWorkshop() {
+        var shop = arShopState(d.shop), job = arShopJob(shop.job), task = job.tasks[shop.step];
+        var station = SHOP_STATIONS.filter(function (p) { return p.id === shop.station; })[0];
+        var liftLabels = { ground: 'On the floor', prepared: 'Setup checked', low: 'Low lift — check stability', checked: 'Stability checked', raised: 'Raised — not yet locked', locked: 'Supported on mechanical locks' };
+        function save(next) {
+          var records = Object.assign({}, d.shopRecords || {}); records[next.job] = next;
+          updMulti({ shop: next, shopRecords: records });
+        }
+        function change(patch) { save(Object.assign({}, shop, patch)); }
+        function pick(id) {
+          if (!SHOP_STATIONS.some(function (p) { return p.id === id; })) return;
+          change({ station: id, feedback: '' });
+          arAnnounce(SHOP_STATIONS.filter(function (p) { return p.id === id; })[0].label + ' selected.');
+        }
+        function stationCamera(id) {
+          if (!SHOP3D.focus) return;
+          SHOP3D.reset();
+          if (id === 'oil' || id === 'exhaust') {
+            if (shop.lift !== 'locked') {
+              change({ feedback: 'Raise the vehicle and settle it on the mechanical locks before the underbody camera inspection.' });
+              return;
+            }
+            SHOP3D.nudge(id === 'oil' ? 0.20 : 1.40, -0.54);
+            SHOP3D.focus(id, { distance: id === 'oil' ? 3.0 : 4.4, target: { x: id === 'oil' ? -1.0 : 0.45, y: 1.98, z: 0 }, immediate: true });
+          } else if (id === 'brakes') {
+            SHOP3D.nudge(0.65, -0.28);
+            SHOP3D.focus(id, { distance: 2.8, target: { x: -1.3, y: (shop.lift === 'locked' ? 1.58 : shop.lift === 'raised' ? 1.68 : 0) + 0.5, z: 0.65 }, immediate: true });
+          } else SHOP3D.focus(id, { distance: id === 'lift' ? 5.8 : 3.7 });
+        }
+        var sceneState = [shop.job, shop.lift, shop.hood, shop.wheelRemoved, shop.serviced, shop.oilDrained, shop.refilled].join('-');
+        SHOP3D.sync({ selected: shop.station, dark: isDark, contrast: isContrast,
+          sceneKey: 'whole-workshop-' + sceneState, sceneProps: shop, showAllLabels: !!d.shopLabels,
+          onPick: pick, onStatus: function (next) { upd('uh3dStatus', next); } });
+        function control(label, fn, attrs) {
+          return h('button', Object.assign({ type: 'button', 'data-ar-focusable': true, onClick: fn,
+            style: btnSecondary({ minHeight: 44, fontSize: 12 }) }, attrs || {}), label);
+        }
+        function openActivity(viewId) { updMulti({ view: viewId, shopFrom: true }); }
+        function downloadReport() {
+          var text = ['AUTO REPAIR SHOP / TRAINING WORK ORDER', job.title, '', 'Customer concern: ' + job.concern,
+            'Service sheet: ' + job.spec, '', 'Status: ' + (shop.released ? 'Training job completed' : 'In progress'),
+            'Tasks: ' + shop.step + ' / ' + job.tasks.length, '', 'EVIDENCE & SERVICE RECORD'].concat(
+              shop.history.map(function (entry, i) { return (i + 1) + '. ' + entry.label + '\n' + entry.result; }),
+              ['', 'CUSTOMER HANDOFF', shop.notes || '(No handoff recorded)', '', 'Educational simulation only. This report does not certify real service or vehicle safety.']).join('\n');
+          var url = URL.createObjectURL(new Blob([text], { type: 'text/plain;charset=utf-8' }));
+          var link = document.createElement('a'); link.href = url; link.download = 'auto-workshop-' + job.id + '.txt'; link.click();
+          setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+        }
+        return h('div', { role: 'main', 'aria-label': 'Full mechanic workshop', 'data-ar-workshop': true,
+          style: { fontFamily: 'system-ui, -apple-system, Segoe UI, sans-serif', padding: 'clamp(12px,2.5vw,24px)', maxWidth: 1360, margin: '0 auto', background: T.bg, color: T.text, borderRadius: 16 } },
+          h('style', null,
+            '.ar-shop-layout{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(290px,1fr);gap:18px;align-items:start}' +
+            '.ar-shop-stations{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:7px;margin:12px 0}' +
+            '.ar-shop-metrics{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.ar-shop-metrics span{padding:7px 10px;border:1px solid currentColor;border-radius:8px;font-size:12px}' +
+            '.ar-shop-card{min-width:0;padding:16px;border:1px solid var(--shop-border);border-radius:12px;background:var(--shop-card)}' +
+            '.ar-shop-card p{font-size:13px;line-height:1.6;margin:10px 0}.ar-shop-card h2,.ar-shop-card h3{margin:0 0 10px}' +
+            '.ar-shop-card select,.ar-shop-card textarea,.ar-shop-card input{box-sizing:border-box;max-width:100%;width:100%;min-height:44px;padding:10px;border:1px solid var(--shop-border);border-radius:8px;background:var(--shop-input);color:inherit;font:inherit}' +
+            '.ar-shop-card label{display:block;font-size:13px;font-weight:700;margin:14px 0 7px}' +
+            '.ar-shop-card button{white-space:normal}.ar-shop-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}' +
+            '@media(max-width:850px){.ar-shop-layout{grid-template-columns:minmax(0,1fr)}.ar-shop-stations{grid-template-columns:repeat(2,minmax(0,1fr))}.ar-shop-viewport .ar-bay-viewport{height:340px!important}}' +
+            '@media(forced-colors:active){.ar-shop-card,.ar-shop-metrics span{border-color:CanvasText}.ar-shop-card progress{forced-color-adjust:auto}}'),
+          backBar('Full mechanic workshop / 3D'),
+          h('p', { style: { margin: '4px 0 14px', lineHeight: 1.6, fontSize: 14, color: T.muted } },
+            'A whole vehicle. A real sequence of decisions. Move between the service desk, lift and work stations to complete a training work order.'),
+          h('div', { className: 'ar-shop-metrics', 'aria-label': 'Workshop status' },
+            h('span', { 'data-ar-shop-lift': shop.lift, style: { color: shop.lift === 'locked' ? T.good : T.accentHi } }, liftLabels[shop.lift]),
+            h('span', null, shop.wheelRemoved ? 'Front wheel on rack' : 'Wheels fitted'),
+            h('span', null, shop.released ? 'Work order completed' : 'Task ' + Math.min(shop.step + 1, job.tasks.length) + ' of ' + job.tasks.length)),
+          h('div', { className: 'ar-shop-layout', style: { '--shop-border': T.border, '--shop-card': T.card, '--shop-input': T.cardAlt } },
+            h('section', { 'aria-label': 'Workshop scene and stations', style: { minWidth: 0 } },
+              h('div', { className: 'ar-bay-viewer-frame ar-shop-viewport' },
+                bayViewport({ viewer: SHOP3D, height: 470, selected: shop.station, selectedLabel: station.label,
+                  label: 'Full vehicle in a mechanic workshop', failText: '3D view unavailable. Use the station buttons and work order below; all tasks and findings remain available.', loadText: 'Loading the full mechanic workshop…' }),
+                bayControls({ viewer: SHOP3D, selected: shop.station, selectedLabel: station.label }),
+                h('div', { className: 'ar-shop-actions' },
+                  control('Whole shop', function () { SHOP3D.reset(); }),
+                  control('View selected station', function () { stationCamera(shop.station); }, { 'data-ar-shop-camera': 'station' }),
+                  control(d.shopLabels ? 'Hide station labels' : 'Show station labels', function () { upd('shopLabels', !d.shopLabels); }, { 'aria-pressed': !!d.shopLabels })),
+                h('p', { style: { color: '#cbd5e1', fontSize: 12, lineHeight: 1.5, marginBottom: 0 } }, 'Drag to orbit · scroll to zoom · arrow keys rotate · + / − zoom · 0 resets. Select a station below for the same content.')),
+              h('nav', { className: 'ar-shop-stations', 'aria-label': 'Workshop stations' }, SHOP_STATIONS.map(function (p) {
+                return control(p.label, function () { pick(p.id); }, { key: p.id, 'data-ar-shop-station': p.id, 'aria-pressed': p.id === shop.station,
+                  style: btnSecondary({ minHeight: 48, textAlign: 'left', fontSize: 12, borderLeft: '4px solid ' + (isContrast ? T.accent : p.color), background: p.id === shop.station ? T.cardAlt : T.card, fontWeight: p.id === shop.station ? 800 : 500 }) });
+              })),
+              h('div', { className: 'ar-shop-card' },
+                h('h2', { style: { fontSize: 17 } }, station.label), h('p', null, station.detail),
+                (shop.station === 'oil' || shop.station === 'exhaust') && h('p', { style: { color: T.accentHi }, 'data-ar-underbody-access': shop.lift === 'locked' ? 'ready' : 'blocked' },
+                  shop.lift === 'locked' ? 'Underbody access ready. Use “View selected station” to look below the raised vehicle.' : 'Inspection preview only. Complete the lift sequence and engage the locks before any underbody service.'),
+                shop.station === 'engine' && control(shop.hood ? 'Close hood' : 'Open hood', function () { change({ hood: !shop.hood }); }, { 'aria-pressed': shop.hood, 'data-ar-shop-hood': true }),
+                shop.station === 'brakes' && h('p', { 'data-ar-shop-pad': shop.serviced && shop.job === 'brakes' ? '8' : '2' },
+                  shop.serviced && shop.job === 'brakes' ? 'After service: both front pad sets show 8 mm lining. Refit and verify the wheel before lowering.' : 'Training observation: 2 mm front pad lining. This job uses a 3 mm replacement limit.'),
+                shop.station === 'engine' && shop.job === 'electrical' && h('p', { 'data-ar-shop-voltage': shop.verified ? '0.08' : '1.6' },
+                  shop.verified ? 'Repeat loaded test: 0.08 V across the positive joint. Cranking restored.' : 'Service sheet: 12.6 V at rest; 10.4 V while cranking; 1.6 V drop across the positive connection.'),
+                h('div', { className: 'ar-shop-actions' },
+                  control('Detailed engine bay', function () { openActivity('underhood'); }),
+                  control('Diagnostic cases', function () { openActivity('repairbay'); }),
+                  control('Tire-change practice', function () { openActivity('tyre'); })))),
+            h('section', { className: 'ar-shop-card', 'aria-label': 'Training work order' },
+              h('h2', { style: { fontSize: 19 } }, 'Your work order'),
+              h('label', { htmlFor: 'ar-shop-job' }, 'Choose a service job'),
+              h('select', { id: 'ar-shop-job', value: job.id, onChange: function (e) {
+                var nextId = e.target.value, records = Object.assign({}, d.shopRecords || {}); records[shop.job] = shop;
+                updMulti({ shop: arShopState(records[nextId] || arShopInitial(nextId)), shopRecords: records }); SHOP3D.reset();
+              } }, SHOP_JOBS.map(function (j) { return h('option', { key: j.id, value: j.id }, j.title); })),
+              h('p', null, job.concern),
+              h('details', { open: true }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Vehicle service sheet — simulation values'), h('p', null, job.spec)),
+              h('progress', { value: shop.step, max: job.tasks.length, 'aria-label': 'Work order progress', style: { width: '100%', height: 12, accentColor: T.accent } }),
+              task ? h('div', { 'data-ar-shop-task': task.id },
+                h('h3', { style: { marginTop: 15, fontSize: 17 } }, (shop.step + 1) + '. ' + task.label),
+                h('p', null, task.why),
+                control('Go to task station', function () { pick(task.station); }, { 'data-ar-shop-go-task': true }),
+                h('label', { htmlFor: 'ar-shop-tool' }, 'Equipment in hand'),
+                h('select', { id: 'ar-shop-tool', value: shop.tool, onChange: function (e) { change({ tool: e.target.value, feedback: '' }); } },
+                  SHOP_TOOLS.map(function (tool) { return h('option', { key: tool[0], value: tool[0] }, tool[1]); })),
+                (task.id === 'measure' || task.id === 'refill') && h('div', null,
+                  h('label', { htmlFor: 'ar-shop-answer' }, job.question + ' (' + job.unit + ')'),
+                  h('input', { id: 'ar-shop-answer', type: 'number', step: 'any', inputMode: 'decimal', value: shop.answer, onChange: function (e) { change({ answer: e.target.value, feedback: '' }); } })),
+                h('button', { type: 'button', 'data-ar-focusable': true, 'data-ar-shop-perform': task.id,
+                  onClick: function () { var next = arShopAdvance(shop); save(next); arAnnounce(next.feedback); },
+                  style: btnPrimary({ marginTop: 14, minHeight: 46, width: '100%', fontSize: 14 }) }, task.id === 'release' ? 'Complete training work order' : 'Perform simulated task'))
+                : h('div', { 'data-ar-shop-complete': true }, h('h3', { style: { color: T.good, marginTop: 15 } }, 'Work order completed'), h('p', null, 'Your findings, service and verification are recorded below. Choose another job to continue practicing.')),
+              h('p', { role: 'status', 'aria-live': 'polite', 'data-ar-shop-feedback': true, style: { color: T.accentHi, minHeight: 20 } }, shop.feedback),
+              h('label', { htmlFor: 'ar-shop-notes' }, 'Customer handoff — finding, service and verification'),
+              h('textarea', { id: 'ar-shop-notes', rows: 4, maxLength: 2000, value: shop.notes, placeholder: 'What did you find? What changed? How did you verify it?',
+                onChange: function (e) { change({ notes: e.target.value }); } }),
+              h('details', { style: { marginTop: 12 } }, h('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'Service record (' + shop.history.length + ' completed tasks)'),
+                h('ol', { style: { paddingLeft: 22, fontSize: 12, lineHeight: 1.6 } }, shop.history.map(function (entry) { return h('li', { key: entry.id }, h('strong', null, entry.label), h('p', null, entry.result)); }))),
+              h('div', { className: 'ar-shop-actions' }, control('Download work order', downloadReport),
+                control('Restart this job', function () { save(arShopInitial(job.id)); SHOP3D.reset(); arAnnounce('Training work order restarted.'); })),
+              h('p', { style: { color: T.muted, fontSize: 12 } }, 'Each job keeps its own progress while you explore other activities. Training steps summarize supervised work; they are not a complete repair manual.'),
+              h('a', { href: 'https://www.autolift.org/be-a-smart-auto-lift-user/', target: '_blank', rel: 'noopener noreferrer', style: { color: T.link, fontSize: 12 } }, 'Lift training guidance / Automotive Lift Institute (opens in a new tab)'))),
+          disclaimerFooter());
+      }
+
+
       function renderUnderHood() {
         var sel = d.uhSel || null;
         var seen = d.uhSeen || {};
@@ -20894,6 +21352,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
         case 'badges':     return renderBadges();
         case 'path':       return renderPath();
         case 'tires':      return renderTires();
+        case 'workshop':   return renderWorkshop();
         case 'underhood':  return renderUnderHood();
         case 'repairbay':  return renderRepairBay();
         case 'tyre':       return renderTireChange();
