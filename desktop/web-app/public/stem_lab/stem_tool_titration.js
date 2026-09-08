@@ -1084,7 +1084,7 @@ var BENCH_GL = (typeof window !== 'undefined' && window.StemLab && typeof window
       attr: 'data-titration-bench-gl',
       clearColor: 0x0a1420,
       fov: 40,
-      rot: { y: 18, x: 10 },
+      rot: { y: 8, x: 10 },
       fitSlack: 1.08,
       failMessage: '3D bench unavailable — the table of tolerances below carries the same comparison.',
       // See the note on relighting at the top of pass 4 in the burette lights below:
@@ -4619,13 +4619,13 @@ return React.createElement("div", {
 
           x: pad.left, y: zoneY1, width: chartW, height: Math.max(0, zoneH),
 
-          fill: indicator.colorMid, opacity: 0.12, rx: 2
+          fill: indicator.colorMid, opacity: 0.17, rx: 2
 
         }),
 
         !isPotentiometric && indicatorId !== 'universal' && React.createElement("text", {
 
-          x: pad.left + 4, y: zoneY1 + 12, fill: indicator.colorMid, fontSize: '11', fontWeight: 'bold', opacity: 0.6
+          x: pad.left + 4, y: zoneY1 + 12, fill: indicator.colorMid, fontSize: '11', fontWeight: 'bold', opacity: 0.95
 
         }, indicator.label + ' zone'),
 
@@ -4646,6 +4646,7 @@ return React.createElement("div", {
 
 
 
+
         // Grid lines. pH mode picks out pH 7 as the neutral reference; volts mode has no
         // equivalent landmark on the axis itself (the reference is the equivalence
         // potential, drawn with the equivalence marker below).
@@ -4658,7 +4659,7 @@ return React.createElement("div", {
 
             key: 'g' + gv, x1: pad.left, y1: yScale(gv), x2: pad.left + chartW, y2: yScale(gv),
 
-            stroke: isRef ? 'rgba(74,222,128,0.3)' : 'rgba(100,116,139,0.15)', strokeWidth: isRef ? 1.5 : 0.5,
+            stroke: isRef ? 'rgba(74,222,128,0.45)' : 'rgba(100,116,139,0.30)', strokeWidth: isRef ? 1.5 : 0.7,
 
             strokeDasharray: isRef ? '' : '3,3'
 
@@ -5992,7 +5993,7 @@ return React.createElement("div", {
       for (var gi = 0; gi < GLASSWARE.length; gi++) if (GLASSWARE[gi].id === benchSel) sel = GLASSWARE[gi];
       var benchReady = BENCH_GL.status() === 'ready';
       BENCH_GL.onStatusChange(function () { upd('benchTick', (d.benchTick || 0) + 1); });
-      var bRot = d.benchRot || { rotY: 18, rotX: 10 };
+      var bRot = d.benchRot || { rotY: 8, rotX: 10 };
       var bZoom = d.benchZoom || 1;
       var setBRot = function (y, x) { upd('benchRot', { rotY: y, rotX: Math.max(-40, Math.min(70, x)) }); };
       BENCH_GL.push({
@@ -6009,7 +6010,7 @@ return React.createElement("div", {
         React.createElement("p", { className: "text-[0.6875rem] text-slate-300 leading-relaxed" },
           __alloT('stem.titration.bore_explains_tolerance', 'A tolerance is not an arbitrary number stamped on the glass \u2014 it follows from how wide the vessel is where you read it. The blue slice in each vessel below is one millilitre, drawn to scale against that vessel\'s real bore.')),
         React.createElement("div", {
-          style: { position: 'relative', height: 220, borderRadius: 10, overflow: 'hidden',
+          style: { position: 'relative', height: 'clamp(240px, 26vw, 340px)', borderRadius: 10, overflow: 'hidden',
             background: '#0a1420', border: '1px solid rgba(100,116,139,0.35)' }
         },
           React.createElement("div", {
@@ -6043,7 +6044,7 @@ return React.createElement("div", {
               else if (k === 'ArrowDown') setBRot(bRot.rotY, bRot.rotX + 6);
               else if (k === '+' || k === '=') upd('benchZoom', Math.min(2.4, bZoom * 1.15));
               else if (k === '-' || k === '_') upd('benchZoom', Math.max(0.55, bZoom * 0.87));
-              else if (k === '0' || k === 'Home') updMulti({ benchRot: { rotY: 18, rotX: 10 }, benchZoom: 1 });
+              else if (k === '0' || k === 'Home') updMulti({ benchRot: { rotY: 8, rotX: 10 }, benchZoom: 1 });
               else return;
               ev.preventDefault();
             }

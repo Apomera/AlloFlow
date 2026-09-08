@@ -92,12 +92,18 @@ const SURFACES = [
   }],
 ];
 
+// A full axe pass over one surface takes ~0.3 s alone and several times that when the
+// other sixteen titration suites are competing for threads, so the 5 s default loses a
+// race under load. The failure is also far uglier than it looks: axe is not reentrant,
+// so the first timeout leaves a run in flight and EVERY later surface reports "Axe is
+// already running" instead of its own result. A shifting failure count across runs is
+// the tell — 22, then 5, then 15, and 274/274 green at --maxWorkers=2.
 describe('titrationLab — axe audit of every reachable surface', () => {
   for (const [name, state] of SURFACES) {
     it(name + ' has no axe violations', async () => {
       const violations = await auditState(state);
       expect(violations, name + report(violations)).toEqual([]);
-    });
+    }, 30000);
   }
 });
 
@@ -141,7 +147,8 @@ describe('titrationLab — checks axe cannot make for us', () => {
         expect(Boolean(named), `${name}: unnamed ${el.tagName} — ${el.outerHTML.slice(0, 120)}`).toBe(true);
       }
     }
-  });
+  // Renders every surface in one test, so it is subject to the same load timeout.
+  }, 30000);
 
   it('no id is emitted twice on any surface', async () => {
     for (const [name, state] of SURFACES) {
