@@ -2069,4 +2069,166 @@ test.describe('Architecture Studio — real WebGL', () => {
   });
 
 
+
+  test('tool browser searches and filters without changing the model or history', async ({ page }, testInfo) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false, undoStack: [[]], projectName: 'Studio study', filterMaterial: 'stone' }), tower());
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:920px}' });
+    const before = await page.evaluate(() => JSON.stringify((window as any).__bucket()));
+    const toggle = page.getByRole('button', { name: 'All tools', exact: true });
+    await toggle.click();
+    const browser = page.locator('#arch-tool-browser'), search = browser.getByRole('searchbox', { name: 'Search tools', exact: true });
+    await expect(search).toBeFocused();
+    await expect(browser.locator('[data-arch-tool]')).toHaveCount(29);
+    await browser.getByLabel('Tool category', { exact: true }).selectOption('share');
+    await expect(browser.locator('[data-arch-tool]')).toHaveCount(7);
+    await search.fill('3d print');
+    await expect(browser.locator('[data-arch-tool]')).toHaveCount(2);
+    await search.fill('not-a-tool');
+    await expect(browser.getByRole('status')).toHaveText('0 tools');
+    await expect(browser.locator('.arch-tool-empty')).toBeVisible();
+    await browser.getByRole('button', { name: 'Reset filters', exact: true }).click();
+    await expect(search).toBeFocused();
+    await search.fill('BOM');
+    await expect(browser.getByRole('button', { name: 'Materials schedule', exact: true })).toBeVisible();
+    await expect(browser.locator('[data-arch-tool]')).toHaveCount(1);
+    await browser.getByRole('button', { name: 'Reset filters', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('tool-browser-desktop.png'), fullPage: true });
+    await search.press('Escape');
+    await expect(browser).toHaveCount(0);
+    await expect(toggle).toBeFocused();
+    const after = await page.evaluate(() => {
+      const state = { ...(window as any).__bucket() };
+      delete state.toolBrowserOpen; delete state.toolBrowserQuery; delete state.toolBrowserGroup;
+      return JSON.stringify(state);
+    });
+    expect(after).toBe(before);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('tool browser opens existing panels, restores focus, and preserves active controls', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false }), tower());
+    const toggle = page.getByRole('button', { name: 'All tools', exact: true }), browser = page.locator('#arch-tool-browser');
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await browser.getByRole('searchbox').fill('templates');
+    await browser.getByRole('button', { name: 'Templates', exact: true }).click();
+    await expect(browser).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Template library', exact: true })).toBeFocused();
+    await toggle.click();
+    await expect(browser.locator('[data-arch-tool=templates]')).toHaveAttribute('aria-expanded', 'true');
+    await browser.getByRole('searchbox').fill('BOM');
+    await browser.getByRole('button', { name: 'Materials schedule', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Materials schedule', exact: true })).toBeFocused();
+    await expect(page.locator('#arch-template-library')).toHaveCount(0);
+    await toggle.click();
+    await browser.getByRole('searchbox').fill('sound');
+    await browser.getByRole('button', { name: 'Sound effects', exact: true }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=sound]')).toBeFocused();
+    await toggle.click();
+    await expect(browser.locator('[data-arch-tool=sound]')).toHaveAttribute('aria-pressed', 'true');
+    await expect(browser.locator('[data-arch-tool=sound]')).toHaveAttribute('data-active', 'true');
+    await browser.getByRole('group', { name: 'Editor style', exact: true }).getByRole('button', { name: /Bricks/ }).click();
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=style-1]')).toBeFocused();
+    expect(await page.evaluate(() => (window as any).__bucket().styleMode)).toBe('bricks');
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack || [])).toEqual([]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('tool browser preserves export and replay actions on the existing 3D renderer', async ({ page }) => {
+    await mount3d(page, { blocks: tower(), soundEnabled: false, undoStack: [[]] });
+    await page.evaluate(() => { (window as any).__browserCanvas = document.querySelector('canvas[data-arch-gl]'); });
+    const toggle = page.getByRole('button', { name: 'All tools', exact: true }), browser = page.locator('#arch-tool-browser');
+    await toggle.click();
+    await browser.getByRole('searchbox').fill('top svg');
+    const downloadEvent = page.waitForEvent('download');
+    await browser.getByRole('button', { name: 'Top SVG', exact: true }).click();
+    const download = await downloadEvent;
+    expect(download.suggestedFilename()).toMatch(/\.svg$/);
+    expect(await readFile((await download.path())!, 'utf8')).toContain('<svg');
+    await expect(page.locator('.arch-studio-feature-strip [data-arch-tool-id=topsvg]')).toBeFocused();
+    await toggle.click();
+    await browser.getByRole('searchbox').fill('construction replay');
+    await browser.getByRole('button', { name: 'Construction replay', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().showReplay)).toBe(true);
+    await toggle.click();
+    await expect(browser.locator('[data-arch-tool=gravity]')).toBeDisabled();
+    await expect(browser.locator('[data-arch-tool=gravity]')).toContainText('Exit replay');
+    await expect(browser.locator('[data-arch-tool=replay]')).toHaveAttribute('aria-pressed', 'true');
+    await browser.getByRole('button', { name: 'Construction replay', exact: true }).click();
+    await expect.poll(() => page.evaluate(() => (window as any).__bucket().showReplay)).toBe(false);
+    expect(await page.evaluate(() => document.querySelector('canvas[data-arch-gl]') === (window as any).__browserCanvas)).toBe(true);
+    expect(await page.locator('canvas[data-arch-gl]').count()).toBe(1);
+    expect(await page.evaluate(() => (window as any).__bucket().blocks.length)).toBe(13);
+    expect(await page.evaluate(() => (window as any).__bucket().undoStack)).toEqual([[]]);
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('tool browser explains unavailable exports and follows workspace navigation', async ({ page }) => {
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(() => (window as any).__mount({ blocks: [], editorView: 'grid', soundEnabled: false }));
+    const toggle = page.getByRole('button', { name: 'All tools', exact: true }), browser = page.locator('#arch-tool-browser');
+    await toggle.click();
+    for (const id of ['gravity', 'topsvg', 'sidesvg', 'printlab', 'stl']) {
+      await expect(browser.locator('[data-arch-tool=' + id + ']')).toBeDisabled();
+      await expect(browser.locator('[data-arch-tool=' + id + ']')).toContainText('Add blocks');
+    }
+    await page.getByRole('button', { name: 'Drawing desk', exact: true }).click();
+    await expect(browser).toHaveCount(0);
+    await expect(toggle).toHaveCount(0);
+    await page.getByRole('button', { name: 'Return to build', exact: true }).click();
+    await expect(browser).toBeVisible();
+    await browser.getByRole('button', { name: 'Close tool browser', exact: true }).click();
+    await expect(toggle).toBeFocused();
+    await page.locator('[data-arch-cell="0,0,0"]').click();
+    await toggle.click();
+    for (const id of ['gravity', 'topsvg', 'sidesvg', 'printlab', 'stl']) await expect(browser.locator('[data-arch-tool=' + id + ']')).toBeEnabled();
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+  test('tool browser fits a phone with keyboard navigation and three accessible appearances', async ({ page }, testInfo) => {
+    await page.setViewportSize({ width: 320, height: 900 });
+    await page.goto(base + '/__harness');
+    await page.waitForFunction(() => !!(window as any).StemLab?._registry?.archStudio);
+    await page.evaluate(blocks => (window as any).__mount({ blocks, editorView: 'grid', soundEnabled: false }), tower());
+    await page.addStyleTag({ content: '#wrap{font-family:Arial,Helvetica,sans-serif;height:860px}' });
+    const toggle = page.getByRole('button', { name: 'All tools', exact: true }), browser = page.locator('#arch-tool-browser');
+    await expect(toggle).toBeInViewport();
+    await toggle.click();
+    const search = browser.getByRole('searchbox', { name: 'Search tools', exact: true });
+    await expect(search).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(browser.getByLabel('Tool category', { exact: true })).toBeFocused();
+    await browser.getByLabel('Tool category', { exact: true }).selectOption('review');
+    await page.screenshot({ path: testInfo.outputPath('tool-browser-phone.png'), fullPage: true });
+    const sizes = await browser.locator('button,input,select').evaluateAll(els => els.map(el => { const r = el.getBoundingClientRect(); return { left: r.left, right: r.right, height: r.height }; }));
+    expect(sizes.filter(r => r.left < 0 || r.right > 320 || r.height < 44)).toEqual([]);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await browser.getByRole('button', { name: 'Construction replay', exact: true }).scrollIntoViewIfNeeded();
+    await expect(browser.getByRole('button', { name: 'Construction replay', exact: true })).toBeInViewport();
+    await search.focus();
+    await search.press('Escape');
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(search).toBeFocused();
+    await expect(browser.getByLabel('Tool category', { exact: true })).toHaveValue('all');
+    await page.setViewportSize({ width: 1280, height: 960 });
+    await page.addStyleTag({ content: '#wrap{height:920px}' });
+    await page.addScriptTag({ path: join(ROOT, 'node_modules/axe-core/axe.min.js') });
+    for (const theme of ['theme-light', 'theme-dark', 'theme-contrast']) {
+      await page.evaluate(theme => { document.documentElement.className = theme; }, theme);
+      const violations = await page.evaluate(async () => {
+        const result = await (window as any).axe.run(document.querySelector('#arch-studio-region'), { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'] } });
+        return result.violations.map((v: any) => ({ id: v.id, nodes: v.nodes.map((n: any) => ({ target: n.target, summary: n.failureSummary })) }));
+      });
+      expect(violations, theme).toEqual([]);
+    }
+    expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+  });
+
+
 });

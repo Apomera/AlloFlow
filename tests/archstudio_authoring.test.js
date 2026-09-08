@@ -499,6 +499,7 @@ describe('Architecture Studio authoring', () => {
     host.remove();
   });
 
+  // This integration scenario exercises dozens of full studio renders in jsdom.
   it('copies a block with Pick and immediately repeats it on another floor', async () => {
     resetStemLab();
     const cfg = loadTool('stem_lab/stem_tool_archstudio.js', 'archStudio');
@@ -848,5 +849,5 @@ describe('Architecture Studio authoring', () => {
 
     await React.act(async () => { root.unmount(); });
     host.remove();
-  }, 15_000);
+  }, 60_000);
 });

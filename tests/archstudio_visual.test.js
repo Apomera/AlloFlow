@@ -109,7 +109,8 @@ for (const file of files) {
 
       expect(header).not.toBeNull();
       expect(titleRow?.parentElement).toBe(header);
-      expect(featureStrip?.parentElement).toBe(header);
+      expect(featureStrip?.closest('.arch-studio-header')).toBe(header);
+      expect(featureStrip?.parentElement.classList.contains('arch-feature-row')).toBe(true);
       expect(titleRow?.style.overflowX).toBe('visible');
       expect(titleRow?.style.flexWrap).toBe('wrap');
       expect(header.querySelector('nav[aria-label="Studio workspaces"]').querySelectorAll('button')).toHaveLength(3);

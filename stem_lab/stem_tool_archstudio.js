@@ -2150,6 +2150,89 @@ function __alloAST(k, fb) {
   try { window.__alloArchBuildSignature = getArchBuildSignature; } catch (e) {}
   try { window.__alloArchSimulateEarthquake = simulateArchEarthquake; } catch (e) {}
 
+
+  // A shared catalog describes existing actions; searching never edits the build.
+  var ARCH_TOOLBOX_GROUPS = ['create', 'view', 'study', 'review', 'share'];
+  var ARCH_TOOLBOX_TEXT = {
+  "toggle": "All tools",
+  "title": "Find your next tool",
+  "intro": "Explore, inspect, and share your build.",
+  "search": "Search tools",
+  "placeholder": "Try materials or export",
+  "category": "Tool category",
+  "all": "All categories",
+  "reset": "Reset filters",
+  "close": "Close tool browser",
+  "results": "{count} tools",
+  "empty": "No tools match your search.",
+  "empty_help": "Try another word or reset the filters.",
+  "active": "Active",
+  "needs_blocks": "Add blocks to use this tool.",
+  "needs_replay": "Exit replay to use this tool.",
+  "group_create": "Build & customize",
+  "group_view": "View & inspect",
+  "group_study": "Explore & test",
+  "group_review": "Review quantities",
+  "group_share": "Save & export"
+};
+  var ARCH_TOOLBOX_ITEMS = [
+    ["style","create","🏛️","Editor style","Choose the architect or brick-building appearance.","architect bricks appearance"],
+    ["blueprint","view","📐","Blueprint view","Switch the model between blueprint and 3D appearance.","wireframe drawing"],
+    ["challenges","study","🏆","Challenges","Choose a building challenge and track completed goals.","goals tasks"],
+    ["analysis","study","📐","Structural analysis","Inspect stability, support, and structural tips.","structure unsupported"],
+    ["inquiry","study","⚖️","Inquiry lab","Test ideas and compare what happens to your structure.","experiment earthquake"],
+    ["gallery","share","💾","Gallery","Open and manage saved builds.","save load projects"],
+    ["templates","create","🏠","Templates","Preview a starting structure and place it beside your build.","cottage temple tower bridge pyramid"],
+    ["ai","study","🤖","AI Architect","Request design advice for your current building.","assistant help"],
+    ["budget","review","💰","Budget","Turn the material budget on or off and track spending.","cost credits limit"],
+    ["schedule","review","📋","Materials schedule","Count materials or shapes for the whole build or one floor.","bill quantities BOM CSV"],
+    ["stats","review","📊","Statistics","Review the dimensions and quantities in your structure.","stats size"],
+    ["styles","study","🏛️","Architecture styles","Explore architectural styles and their defining features.","guide history"],
+    ["phases","review","🏗️","Construction phases","Review the building stages in your design.","sequence steps"],
+    ["share","share","📤","Share","Create or open a code for exchanging builds.","import export code"],
+    ["generate","create","🎲","Generate","Explore a randomly generated building as a starting point.","random generator"],
+    ["colors","create","🎨","Colors","Choose custom colors for building and painting.","colour palette paint"],
+    ["slice","view","🔬","Section slice","Look through a cross-section of the building.","cut section"],
+    ["heatmap","view","🔥","Stress heatmap","Highlight structural stress in the model.","support load"],
+    ["replay","review","⏪","Construction replay","Enter or exit a step-by-step replay of the build.","history timeline"],
+    ["filter","view","🔍","Material filter","Show selected materials to inspect parts of your build.","visibility isolate"],
+    ["badges","study","🏅","Badges","See the achievements earned while building.","awards progress"],
+    ["floorplans","view","🏠","Floor plans","Show plans for the floors of your building.","levels plan"],
+    ["gravity","study","⬇️","Apply gravity","Drop floating blocks onto the structure below.","fall unsupported"],
+    ["screenshot","share","📸","Screenshot","Capture an image of the current view.","image picture PNG"],
+    ["sound","create","🔊","Sound effects","Turn building sounds on or off.","audio mute"],
+    ["topsvg","share","📐","Top SVG","Download a vector drawing of the build from above.","export plan"],
+    ["sidesvg","share","🏗️","Side SVG","Download a vector elevation of the build.","export side"],
+    ["printlab","share","🖨️","Print Lab","Continue this building in Print Lab to prepare a print.","3D printer"],
+    ["stl","share","📥","STL model","Download the building as a 3D model for printing.","export mesh print"]
+  ];
+  function archToolboxText(key) {
+    return __alloAST('stem.archstudio.toolbox_' + key, ARCH_TOOLBOX_TEXT[key] || key);
+  }
+  function getArchToolboxEntries() {
+    return ARCH_TOOLBOX_ITEMS.map(function (item) {
+      return { id: item[0], group: item[1], icon: item[2],
+        name: __alloAST('stem.archstudio.toolbox_' + item[0] + '_name', item[3]),
+        description: __alloAST('stem.archstudio.toolbox_' + item[0] + '_help', item[4]),
+        aliases: item[5], groupName: archToolboxText('group_' + item[1]) };
+    });
+  }
+  function normalizeArchToolQuery(value) {
+    var text = typeof value === 'string' ? value.toLowerCase() : '';
+    if (typeof text.normalize === 'function') text = text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return text.trim().replace(/\s+/g, ' ');
+  }
+  function filterArchToolbox(entries, query, group) {
+    var tokens = normalizeArchToolQuery(query).slice(0, 100).split(' ').filter(Boolean);
+    var selectedGroup = ARCH_TOOLBOX_GROUPS.indexOf(group) >= 0 ? group : 'all';
+    return entries.filter(function (item) {
+      if (selectedGroup !== 'all' && item.group !== selectedGroup) return false;
+      var text = normalizeArchToolQuery([item.name, item.description, item.groupName, item.aliases].join(' '));
+      return tokens.every(function (token) { return text.indexOf(token) >= 0; });
+    });
+  }
+  try { window.__alloArchToolbox = { catalog: getArchToolboxEntries, filter: filterArchToolbox }; } catch (e) {}
+
   // ── REGISTER TOOL ──
   // ══════════════════════════════════════════════════════════════
   window.StemLab.registerTool('archStudio', {
@@ -4158,6 +4241,121 @@ function __alloAST(k, fb) {
       } }, label);
     };
 
+
+    var toolBrowserOpen = d.toolBrowserOpen === true;
+    var toolBrowserQuery = typeof d.toolBrowserQuery === 'string' ? d.toolBrowserQuery.slice(0, 100) : '';
+    var toolBrowserGroup = ARCH_TOOLBOX_GROUPS.indexOf(d.toolBrowserGroup) >= 0 ? d.toolBrowserGroup : 'all';
+    var focusToolBrowserToggle = function () {
+      setTimeout(function () {
+        var target = document.getElementById('arch-tool-browser-toggle');
+        if (target) target.focus();
+      }, 0);
+    };
+    var closeToolBrowser = function () {
+      upd('toolBrowserOpen', false);
+      focusToolBrowserToggle();
+    };
+    var toggleToolBrowser = function () {
+      if (toolBrowserOpen) { closeToolBrowser(); return; }
+      upd({ toolBrowserOpen: true, toolBrowserQuery: '', toolBrowserGroup: 'all' });
+      setTimeout(function () {
+        var search = document.getElementById('arch-tool-search');
+        if (search) search.focus();
+      }, 0);
+    };
+    var renderFeatureTools = function (actions) {
+      var catalog = getArchToolboxEntries();
+      var filtered = filterArchToolbox(catalog, toolBrowserQuery, toolBrowserGroup);
+      var nodes = {};
+      actions.forEach(function (action) { nodes[action.id] = action.node; });
+      var wrapAction = function (node, id, expanded) {
+        var originalClick = node.props.onClick;
+        return React.cloneElement(node, {
+          key: id, type: 'button', 'data-arch-tool-id': id,
+          onClick: !expanded ? originalClick : function (event) {
+            if (node.props.disabled) return;
+            upd('toolBrowserOpen', false);
+            if (typeof originalClick === 'function') originalClick(event);
+            // Tools with a dedicated panel keep their own focus destination.
+            // Otherwise return to the equivalent action in the compact rail.
+            setTimeout(function () {
+              var active = document.activeElement;
+              if (active && active !== document.body && active.isConnected) return;
+              var target = document.querySelector('.arch-studio-feature-strip [data-arch-tool-id="' + id + '"]');
+              if (target) target.focus();
+              else focusToolBrowserToggle();
+            }, 0);
+          }
+        });
+      };
+      var renderItem = function (item, expanded) {
+        var node = nodes[item.id];
+        if (!node) return null;
+        if (item.id === 'style') {
+          var group = React.cloneElement(node, { key: item.id },
+            React.Children.map(node.props.children, function (button, index) {
+              return wrapAction(button, 'style-' + index, expanded);
+            }));
+          return !expanded ? group : el('div', { key: item.id, className: 'arch-tool-card arch-tool-style', 'data-arch-tool': item.id },
+            el('span', { className: 'arch-tool-name' }, el('span', { 'aria-hidden': true }, item.icon), item.name),
+            el('span', { className: 'arch-tool-description' }, item.description), group);
+        }
+        var action = wrapAction(node, item.id, expanded);
+        if (!expanded) return action;
+        var active = node.props['aria-pressed'] === true || node.props['aria-expanded'] === true;
+        var disabledHelp = node.props.disabled ? archToolboxText(item.id === 'gravity' && showReplay ? 'needs_replay' : 'needs_blocks') : '';
+        return React.cloneElement(action, {
+          className: 'arch-tool-card', style: undefined, 'data-arch-tool': item.id,
+          'aria-label': item.name, 'aria-describedby': 'arch-tool-help-' + item.id,
+          'data-active': active ? 'true' : undefined
+        },
+          el('span', { className: 'arch-tool-name' }, el('span', { 'aria-hidden': true }, item.icon), item.name,
+            active && el('span', { className: 'arch-tool-active', 'aria-hidden': true }, archToolboxText('active'))),
+          el('span', { id: 'arch-tool-help-' + item.id, className: 'arch-tool-description' }, item.description,
+            disabledHelp && el('span', { className: 'arch-tool-disabled-reason' }, disabledHelp)));
+      };
+      return el('div', { className: 'arch-studio-tools' },
+        el('div', { className: 'arch-feature-row' },
+          el('button', { id: 'arch-tool-browser-toggle', type: 'button', className: 'arch-tool-browser-toggle',
+            'aria-expanded': toolBrowserOpen, 'aria-controls': toolBrowserOpen ? 'arch-tool-browser' : undefined,
+            onClick: toggleToolBrowser },
+            el('span', { 'aria-hidden': true }, '\u25A6'), archToolboxText('toggle'),
+            el('span', { 'aria-hidden': true }, toolBrowserOpen ? '\u2212' : '+')),
+          !toolBrowserOpen && el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
+            catalog.map(function (item) { return renderItem(item, false); }))),
+        toolBrowserOpen && el('section', { id: 'arch-tool-browser', 'aria-labelledby': 'arch-tool-browser-heading',
+          onKeyDown: function (event) {
+            if (event.key === 'Escape' && event.target.tagName !== 'SELECT') {
+              event.preventDefault(); event.stopPropagation(); closeToolBrowser();
+            }
+          } },
+          el('div', { className: 'arch-tool-browser-heading' },
+            el('div', null, el('h2', { id: 'arch-tool-browser-heading' }, archToolboxText('title')), el('p', null, archToolboxText('intro'))),
+            el('button', { type: 'button', className: 'arch-tool-close', onClick: closeToolBrowser, 'aria-label': archToolboxText('close') }, '\u00D7')),
+          el('div', { className: 'arch-tool-filters' },
+            el('label', { htmlFor: 'arch-tool-search', className: 'arch-tool-search-label' }, archToolboxText('search'),
+              el('input', { id: 'arch-tool-search', type: 'search', value: toolBrowserQuery, maxLength: 100, autoComplete: 'off',
+                placeholder: archToolboxText('placeholder'), onChange: function (event) { upd('toolBrowserQuery', event.target.value); } })),
+            el('label', { htmlFor: 'arch-tool-category' }, archToolboxText('category'),
+              el('select', { id: 'arch-tool-category', 'aria-label': archToolboxText('category'), value: toolBrowserGroup, onChange: function (event) { upd('toolBrowserGroup', event.target.value); } },
+                el('option', { value: 'all' }, archToolboxText('all')),
+                ARCH_TOOLBOX_GROUPS.map(function (id) { return el('option', { key: id, value: id }, archToolboxText('group_' + id)); }))),
+            el('button', { type: 'button', className: 'arch-tool-reset', disabled: !toolBrowserQuery && toolBrowserGroup === 'all', onClick: function () {
+              upd({ toolBrowserQuery: '', toolBrowserGroup: 'all' });
+              setTimeout(function () { var search = document.getElementById('arch-tool-search'); if (search) search.focus(); }, 0);
+            } }, archToolboxText('reset'))),
+          el('p', { className: 'arch-tool-result-count', role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+            archToolboxText('results').replace('{count}', String(filtered.length))),
+          el('div', { className: 'arch-tool-groups' },
+            !filtered.length && el('div', { className: 'arch-tool-empty' }, el('strong', null, archToolboxText('empty')), el('p', null, archToolboxText('empty_help'))),
+            ARCH_TOOLBOX_GROUPS.map(function (id) {
+              var items = filtered.filter(function (item) { return item.group === id; });
+              return !items.length ? null : el('section', { key: id, className: 'arch-tool-group', 'aria-labelledby': 'arch-tool-group-' + id },
+                el('h3', { id: 'arch-tool-group-' + id }, archToolboxText('group_' + id), el('span', { 'aria-hidden': true }, items.length)),
+                el('div', { className: 'arch-tool-list' }, items.map(function (item) { return renderItem(item, true); })));
+            }))));
+    };
+
     var cameraBtn = function (label, glyph, action) {
       return el('button', { key: action, type: 'button', 'aria-label': label, title: label, onClick: function () { setArchCamera(action); }, style: {
         width: 30, height: 28, padding: 0, borderRadius: 6, border: '1px solid #475569', background: 'rgba(30,41,59,.92)', color: '#e2e8f0', cursor: 'pointer', fontSize: 14, fontWeight: 800
@@ -5127,6 +5325,42 @@ function __alloAST(k, fb) {
         + '.theme-contrast #arch-template-library{background:#000;border-color:#ffff00;}.theme-contrast #arch-template-library .arch-template-view-controls button[aria-pressed=true]{outline:2px solid #ffff00;outline-offset:-4px;}'
         + '@media(max-width:680px){#arch-studio-region .arch-studio-sidebar.arch-studio-templates{width:auto!important;max-height:min(74vh,640px);}#arch-template-library{padding:12px;}}'
 
+
+        + '#arch-studio-region .arch-studio-tools{min-width:0;}'
+        + '#arch-studio-region .arch-feature-row{display:flex;align-items:center;gap:8px;min-width:0;}'
+        + '#arch-studio-region .arch-feature-row .arch-studio-feature-strip{flex:1;width:auto!important;border-top:0;padding-top:2px!important;}'
+        + '#arch-studio-region .arch-tool-browser-toggle{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;min-height:44px;border:1px solid #7dd3fc;border-radius:9px;background:#15354b;color:#e0f2fe;padding:9px 12px;font-size:12px;font-weight:800;cursor:pointer;}'
+        + '#arch-studio-region .arch-tool-browser-toggle[aria-expanded=true]{background:#075985;box-shadow:inset 0 -3px #7dd3fc;}'
+        + '#arch-tool-browser{box-sizing:border-box;max-height:min(52vh,460px);overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#64748b #0f172a;margin-top:9px;padding:16px;border:1px solid #617d98;border-radius:12px;background:linear-gradient(135deg,#15263c,#0c1729);color:#f1f5f9;}'
+        + '#arch-tool-browser .arch-tool-browser-heading{display:flex;align-items:center;gap:12px;margin-bottom:16px;}'
+        + '#arch-tool-browser h2{margin:0;font-size:20px;letter-spacing:-.3px;}#arch-tool-browser .arch-tool-browser-heading p{margin:5px 0 0;color:#cbd5e1;font-size:12px;line-height:1.4;}'
+        + '#arch-tool-browser button,#arch-tool-browser input,#arch-tool-browser select{box-sizing:border-box;font:inherit;min-height:44px;min-width:0;border:1px solid #7189a1;border-radius:8px;background:#0f1c30;color:#f1f5f9;padding:9px;font-size:13px;}'
+        + '#arch-tool-browser button{cursor:pointer;}#arch-tool-browser .arch-tool-close{margin-left:auto;flex:none;width:44px;font-size:22px;}'
+        + '#arch-tool-browser .arch-tool-filters{display:flex;gap:10px;align-items:end;flex-wrap:wrap;}'
+        + '#arch-tool-browser label{display:grid;gap:6px;color:#e2e8f0;font-size:12px;font-weight:650;min-width:0;flex:1;}'
+        + '#arch-tool-browser .arch-tool-search-label{flex:2;}#arch-tool-browser input,#arch-tool-browser select{width:100%;font-size:14px;}'
+        + '#arch-tool-browser input::placeholder{color:#a9bcd0;opacity:1;}'
+        + '#arch-tool-browser .arch-tool-reset{flex:none;font-size:12px;}#arch-tool-browser button:disabled{cursor:default;}'
+        + '#arch-tool-browser .arch-tool-result-count{font-size:12px;color:#cbd5e1;margin:14px 0 10px;font-variant-numeric:tabular-nums;}'
+        + '#arch-tool-browser .arch-tool-groups{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:start;}'
+        + '#arch-tool-browser .arch-tool-group{min-width:0;}#arch-tool-browser h3{display:flex;align-items:center;gap:8px;margin:0 0 9px;font-size:12px;color:#bae6fd;font-weight:750;}'
+        + '#arch-tool-browser h3>span{font-size:10px;border:1px solid #617d98;border-radius:999px;padding:2px 6px;font-variant-numeric:tabular-nums;}'
+        + '#arch-tool-browser .arch-tool-list{display:grid;gap:7px;}'
+        + '#arch-tool-browser .arch-tool-card{box-sizing:border-box;display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;text-align:left;padding:12px;border:1px solid #617d98;border-radius:9px;background:#142439;color:#f1f5f9;white-space:normal;min-width:0;}'
+        + '#arch-tool-browser .arch-tool-card:not(:disabled):hover{border-color:#7dd3fc;background:#1d344b;}'
+        + '#arch-tool-browser .arch-tool-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;font-weight:750;line-height:1.35;overflow-wrap:anywhere;}'
+        + '#arch-tool-browser .arch-tool-name>span:first-child{font-size:17px;}'
+        + '#arch-tool-browser .arch-tool-description{display:block;color:#cbd5e1;font-size:12px;line-height:1.45;font-weight:400;overflow-wrap:anywhere;}'
+        + '#arch-tool-browser .arch-tool-card[data-active=true]{background:#153a48;border-color:#5eead4;}'
+        + '#arch-tool-browser .arch-tool-active{margin-left:auto;border-radius:4px;background:#115e59;color:#ccfbf1;padding:2px 5px;font-size:10px;font-weight:750;}'
+        + '#arch-tool-browser .arch-tool-disabled-reason{display:block;margin-top:5px;color:#fde68a;font-size:11px;}'
+        + '#arch-tool-browser .arch-tool-style [role=group]{border-radius:7px!important;flex-wrap:wrap;}#arch-tool-browser .arch-tool-style button{flex:1;color:#e2e8f0!important;border-radius:5px!important;}'
+        + '#arch-tool-browser .arch-tool-style button[aria-pressed=true]{border-color:#7dd3fc!important;background:#075985!important;box-shadow:inset 0 -3px #7dd3fc!important;}'
+        + '#arch-tool-browser .arch-tool-empty{grid-column:1/-1;padding:20px;border:1px dashed #7189a1;border-radius:9px;text-align:center;font-size:14px;}#arch-tool-browser .arch-tool-empty p{font-size:12px;color:#cbd5e1;margin:8px 0 0;}'
+        + '.theme-contrast #arch-tool-browser,.theme-contrast #arch-tool-browser .arch-tool-card{background:#000;border-color:#ffff00;}.theme-contrast #arch-tool-browser .arch-tool-card[data-active=true]{outline:2px solid #5eead4;outline-offset:-4px;}'
+        + '@media(max-width:1000px){#arch-tool-browser .arch-tool-groups{grid-template-columns:repeat(2,minmax(0,1fr));}}'
+        + '@media(max-width:680px){#arch-tool-browser{padding:12px;max-height:min(55vh,490px);}#arch-tool-browser .arch-tool-groups{grid-template-columns:minmax(0,1fr);}#arch-tool-browser .arch-tool-search-label{flex-basis:100%;}#arch-tool-browser .arch-tool-filters label:not(.arch-tool-search-label){flex-basis:55%;}#arch-tool-browser input,#arch-tool-browser select{font-size:16px;}#arch-studio-region .arch-tool-browser-toggle{padding:8px;font-size:11px;}}'
+
         + '#arch-studio-region button{font-family:inherit;}'
         + '#arch-studio-region button:not(:disabled){transition:transform .15s ease,filter .15s ease,box-shadow .15s ease,border-color .15s ease;}'
         + '#arch-studio-region button:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px);}'
@@ -5284,49 +5518,46 @@ function __alloAST(k, fb) {
             border: '1px solid #818cf8', color: '#e0e7ff', background: showProject ? '#3730a3' : '#312e81', cursor: 'pointer', fontSize: 11, fontWeight: 800 }
         }, t('stem.archstudio.project_open_panel', 'Project & revisions'))
         ),
-        !showDrawings && el('div', { className: 'arch-studio-feature-strip', role: 'toolbar', 'aria-label': __alloAST('stem.archstudio.a11y_architecture_studio_features_and_actions', 'Architecture Studio features and actions'), style: { display: 'flex', alignItems: 'center', gap: 6, width: '100%', minWidth: 0, overflowX: 'auto', overflowY: 'hidden', padding: '2px 1px 4px' } },
-        // Toggle pills
-        el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
+        !showDrawings && renderFeatureTools([
+          { id: 'style', node: el('div', { role: 'group', 'aria-label': __alloAST('stem.archstudio.a11y_editor_style', 'Editor style'), style: { flex: '0 0 auto', display: 'flex', padding: 2, gap: 2, borderRadius: 20, border: '1px solid #475569', background: 'rgba(2,6,23,.42)' } },
           [{ id: 'architect', label: '\uD83C\uDFDB\uFE0F Architect', color: '#a5b4fc', bg: 'rgba(99,102,241,.24)' }, { id: 'bricks', label: '\uD83E\uDDF1 Bricks', color: '#fca5a5', bg: 'rgba(239,68,68,.22)' }].map(function (option) {
             var selectedStyle = styleMode === option.id;
             return el('button', { key: option.id, type: 'button', 'aria-pressed': selectedStyle, onClick: function () { upd('styleMode', option.id); }, style: { padding: '3px 9px', borderRadius: 16, border: '1px solid ' + (selectedStyle ? option.color : 'transparent'), background: selectedStyle ? option.bg : 'transparent', color: selectedStyle ? option.color : '#64748b', cursor: 'pointer', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap', boxShadow: selectedStyle ? '0 0 14px ' + option.bg : 'none' } }, option.label);
           })
-        ),
-        pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }),
-        pillBtn('\uD83C\uDFC6 ' + completedCount + '/10', showChallenges, 'rgba(245,158,11,.2)', '#f59e0b', '#fbbf24', function () { upd('showChallenges', !showChallenges); }),
-        pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }),
-        pillBtn('\u2696\uFE0F Inquiry', showInquiryLab, 'rgba(139,92,246,.2)', '#8b5cf6', '#c4b5fd', function () { upd('showInquiryLab', !showInquiryLab); }),
-        pillBtn('\uD83D\uDCBE Gallery', showGallery, 'rgba(34,197,94,.2)', '#22c55e', '#4ade80', function () { upd('showGallery', !showGallery); }),
-        el('button', { id: 'arch-template-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleTemplates,
+        ) },
+          { id: 'blueprint', node: pillBtn(blueprintView ? '\uD83D\uDCD0 Blueprint' : '\uD83C\uDFD7\uFE0F 3D View', blueprintView, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('blueprintView', !blueprintView); }) },
+          { id: 'challenges', node: pillBtn('\uD83C\uDFC6 ' + completedCount + '/10', showChallenges, 'rgba(245,158,11,.2)', '#f59e0b', '#fbbf24', function () { upd('showChallenges', !showChallenges); }) },
+          { id: 'analysis', node: pillBtn('\uD83D\uDCD0 Analysis', showAnalysis, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showAnalysis', !showAnalysis); }) },
+          { id: 'inquiry', node: pillBtn('\u2696\uFE0F Inquiry', showInquiryLab, 'rgba(139,92,246,.2)', '#8b5cf6', '#c4b5fd', function () { upd('showInquiryLab', !showInquiryLab); }) },
+          { id: 'gallery', node: pillBtn('\uD83D\uDCBE Gallery', showGallery, 'rgba(34,197,94,.2)', '#22c55e', '#4ade80', function () { upd('showGallery', !showGallery); }) },
+          { id: 'templates', node: el('button', { id: 'arch-template-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleTemplates,
           'aria-expanded': !!showTemplates, 'aria-controls': showTemplates ? 'arch-template-library' : undefined,
-          style: { background: showTemplates ? '#075985' : 'rgba(71,85,105,.3)', border: '1px solid #38bdf8', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, templateText('toggle')),
-        pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }),
-        pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }),
-        el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
+          style: { background: showTemplates ? '#075985' : 'rgba(71,85,105,.3)', border: '1px solid #38bdf8', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, templateText('toggle')) },
+          { id: 'ai', node: pillBtn('\uD83E\uDD16 AI Architect', showAI, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { if (!showAI && !aiAdvice && !aiLoading) askAIArchitect(); upd('showAI', !showAI); }) },
+          { id: 'budget', node: pillBtn('\uD83D\uDCB0 Budget' + (budgetEnabled ? ' ' + budgetRemaining : ''), budgetEnabled, overBudget ? 'rgba(239,68,68,.2)' : 'rgba(245,158,11,.2)', overBudget ? '#ef4444' : '#f59e0b', overBudget ? '#fca5a5' : '#fbbf24', function () { upd('budgetEnabled', !budgetEnabled); }) },
+          { id: 'schedule', node: el('button', { id: 'arch-schedule-toggle', className: 'arch-studio-pill', type: 'button', onClick: toggleSchedule,
           'aria-expanded': !!showBOM, 'aria-controls': showBOM ? 'arch-schedule-panel' : undefined,
-          style: { background: showBOM ? '#713f12' : 'rgba(71,85,105,.3)', border: '1px solid #b89751', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, scheduleText('title')),
-        pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showStats', !showStats); }),
-        pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }),
-        pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }),
-        pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }),
-        pillBtn('\uD83C\uDFB2 Generate', showRandomGen, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showRandomGen', !showRandomGen); }),
-        pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { upd('showColorPicker', !showColorPicker); }),
-        pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }),
-        pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }),
-        pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }),
-        pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }),
-        pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }),
-        pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }),
-        el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity'),
-        // Screenshot + Sound
-        el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8'),
-        el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07'),
-        // Export buttons
-        el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG'),
-        el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG'),
-        el('button', { type: 'button', onClick: sendToPrintLab, disabled: !blocks.length, 'aria-label': t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), title: t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_lab', 'Print Lab')),
-        el('button', { onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL')
-        )
+          style: { background: showBOM ? '#713f12' : 'rgba(71,85,105,.3)', border: '1px solid #b89751', borderRadius: 20, padding: '4px 12px', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, scheduleText('title')) },
+          { id: 'stats', node: pillBtn('\uD83D\uDCCA Stats', showStats, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showStats', !showStats); }) },
+          { id: 'styles', node: pillBtn('\uD83C\uDFDB\uFE0F Styles', showStyleGuide, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showStyleGuide', !showStyleGuide); }) },
+          { id: 'phases', node: pillBtn('\uD83C\uDFD7\uFE0F Phases', showPhases, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showPhases', !showPhases); }) },
+          { id: 'share', node: pillBtn('\uD83D\uDCE4 Share', showShare, 'rgba(129,140,248,.2)', '#818cf8', '#a5b4fc', function () { upd('showShare', !showShare); }) },
+          { id: 'generate', node: pillBtn('\uD83C\uDFB2 Generate', showRandomGen, 'rgba(168,85,247,.2)', '#a855f7', '#c084fc', function () { upd('showRandomGen', !showRandomGen); }) },
+          { id: 'colors', node: pillBtn('\uD83C\uDFA8 Colors', showColorPicker, 'rgba(244,114,182,.2)', '#f472b6', '#f9a8d4', function () { upd('showColorPicker', !showColorPicker); }) },
+          { id: 'slice', node: pillBtn('\uD83D\uDD2C Slice', showSlice, 'rgba(34,211,238,.2)', '#22d3ee', '#67e8f9', function () { upd('showSlice', !showSlice); }) },
+          { id: 'heatmap', node: pillBtn('\uD83D\uDD25 Heatmap', showHeatmap, 'rgba(239,68,68,.2)', '#ef4444', '#fca5a5', function () { upd('showHeatmap', !showHeatmap); }) },
+          { id: 'replay', node: pillBtn('\u23EA Replay', showReplay, 'rgba(251,191,36,.2)', '#fbbf24', '#fde68a', function () { if (!showReplay) startReplay(); else exitReplay(); }) },
+          { id: 'filter', node: pillBtn('\uD83D\uDD0D Filter', showFilter, 'rgba(96,165,250,.2)', '#60a5fa', '#93c5fd', function () { upd('showFilter', !showFilter); }) },
+          { id: 'badges', node: pillBtn('\uD83C\uDFC5 ' + badgeCount + '/' + badges.length, showBadges, 'rgba(251,146,60,.2)', '#fb923c', '#fdba74', function () { upd('showBadges', !showBadges); }) },
+          { id: 'floorplans', node: pillBtn('\uD83C\uDFE0 Floor Plans', showFloorPlans, 'rgba(45,212,191,.2)', '#2dd4bf', '#5eead4', function () { upd('showFloorPlans', !showFloorPlans); }) },
+          { id: 'gravity', node: el('button', { onClick: applyGravity, disabled: showReplay || !blocks.length, title: showReplay ? 'Exit construction replay to apply gravity' : t('stem.archstudio.apply_gravity_drop_floating_blocks', 'Apply gravity (drop floating blocks)'), style: { background: !showReplay && blocks.length && analysis.unsupported > 0 ? 'rgba(239,68,68,.2)' : 'rgba(71,85,105,.3)', border: '1px solid ' + (!showReplay && blocks.length && analysis.unsupported > 0 ? '#ef4444' : '#475569'), color: !showReplay && blocks.length && analysis.unsupported > 0 ? '#fca5a5' : '#94a3b8', borderRadius: 20, padding: '4px 10px', cursor: !showReplay && blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\u2B07\uFE0F Gravity') },
+          { id: 'screenshot', node: el('button', { type: 'button', onClick: takeScreenshot, title: t('stem.archstudio.screenshot', 'Screenshot'), 'aria-label': t('stem.archstudio.screenshot', 'Screenshot'), style: { background: 'rgba(71,85,105,.3)', border: '1px solid var(--allo-stem-border, #475569)', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: 20, padding: '4px 10px', cursor: 'pointer', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCF8') },
+          { id: 'sound', node: el('button', { onClick: function () { upd('soundEnabled', !soundEnabled); }, title: t('stem.archstudio.sound_effects', 'Sound effects'), 'aria-label': soundEnabled ? 'Mute sound effects' : 'Enable sound effects', 'aria-pressed': soundEnabled, style: { background: 'transparent', border: 'none', color: soundEnabled ? '#94a3b8' : '#475569', cursor: 'pointer', fontSize: 14, padding: '2px 6px' } }, soundEnabled ? '\uD83D\uDD0A' : '\uD83D\uDD07') },
+          { id: 'topsvg', node: el('button', { onClick: exportBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(34,211,238,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #22d3ee' : '1px solid transparent', color: blocks.length ? '#67e8f9' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83D\uDCD0 Top SVG') },
+          { id: 'sidesvg', node: el('button', { onClick: exportSideBlueprint, disabled: !blocks.length, style: { background: blocks.length ? 'rgba(168,85,247,.15)' : 'rgba(71,85,105,.3)', border: blocks.length ? '1px solid #a855f7' : '1px solid transparent', color: blocks.length ? '#c084fc' : '#475569', borderRadius: 8, padding: '5px 10px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700 } }, '\uD83C\uDFD7\uFE0F Side SVG') },
+          { id: 'printlab', node: el('button', { type: 'button', onClick: sendToPrintLab, disabled: !blocks.length, 'aria-label': t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), title: t('stem.archstudio.print_lab_aria', 'Continue this building in Print Lab'), style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#7c3aed,#4c1d95)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDDA8\uFE0F ' + t('stem.archstudio.print_lab', 'Print Lab')) },
+          { id: 'stl', node: el('button', { onClick: exportSTL, disabled: !blocks.length, style: { flex: '0 0 auto', background: blocks.length ? 'linear-gradient(135deg,#b45309,#92400e)' : 'rgba(71,85,105,.3)', border: 'none', color: blocks.length ? '#fff' : '#475569', borderRadius: 8, padding: '5px 12px', cursor: blocks.length ? 'pointer' : 'default', fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap' } }, '\uD83D\uDCE5 STL') }
+        ])
       ),
 
       // ── Main content: sidebar + viewport ──
