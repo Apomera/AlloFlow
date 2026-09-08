@@ -102,7 +102,13 @@ window.__text = function () { return document.body.innerText.replace(/\\s+/g, ' 
   });
   await page.route('**/*', (route) => (/tile\.openstreetmap|arcgisonline|unpkg\.com/.test(route.request().url()) ? route.abort() : route.continue()));
 
-  await page.setContent('<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#06131f}#slot{min-height:100vh}</style></head><body><div id="slot"></div></body></html>');
+  // A real origin, because localStorage is denied on about:blank and the tool
+  // autosaves there. page.setContent alone made every draft path look broken.
+  await page.route('https://gis-studio.test/**', (route) => route.fulfill({
+    status: 200, contentType: 'text/html',
+    body: '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#06131f}#slot{min-height:100vh}</style></head><body><div id="slot"></div></body></html>'
+  }));
+  await page.goto('https://gis-studio.test/studio');
   for (const code of scripts.concat(shell)) await page.addScriptTag({ content: code });
   await page.evaluate(() => window.__mountGIS({ gisTab: 'import', gisBasemap: 'none' }));
   await page.waitForTimeout(400);

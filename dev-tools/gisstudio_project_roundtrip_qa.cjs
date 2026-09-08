@@ -132,7 +132,13 @@ window.__text = function () { return document.body.innerText.replace(/\\s+/g, ' 
     problems.push(message.type() + ': ' + text.slice(0, 300));
   });
   await page.route('**/*', (route) => (/tile\.openstreetmap|arcgisonline|unpkg\.com/.test(route.request().url()) ? route.abort() : route.continue()));
-  await page.setContent('<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#06131f}#slot{min-height:100vh}</style></head><body><div id="slot"></div></body></html>');
+  // A real origin, because localStorage is denied on about:blank and the tool
+  // autosaves there. page.setContent alone made every draft path look broken.
+  await page.route('https://gis-studio.test/**', (route) => route.fulfill({
+    status: 200, contentType: 'text/html',
+    body: '<!doctype html><html><head><meta charset="utf-8"><style>body{margin:0;background:#06131f}#slot{min-height:100vh}</style></head><body><div id="slot"></div></body></html>'
+  }));
+  await page.goto('https://gis-studio.test/studio');
   for (const code of scripts.concat(shell)) await page.addScriptTag({ content: code });
   await page.evaluate(() => window.__captureDownloads());
 
@@ -239,6 +245,65 @@ window.__text = function () { return document.body.innerText.replace(/\\s+/g, ' 
   if (!remounted.showsPack || !remounted.showsWard) {
     problems.push('after switching away and back, the opened project is gone: ' + JSON.stringify(remounted));
   }
+
+
+  // ---- The crash safety net: a device-local draft, not a saved file ----
+  // Autosave writes to local storage about a second after any change. A learner
+  // whose tab dies has nothing else, so this checks the draft is offered on the
+  // next visit and actually restores the work.
+  await page.evaluate(() => { try { window.localStorage.clear(); } catch (e) { /* ignore */ } });
+  await page.evaluate(() => window.__mountGIS({ gisTab: 'import', gisBasemap: 'none' }));
+  await page.waitForTimeout(500);
+  const draftPackLoaded = await page.evaluate((pack) => window.__loadFileInto('Region pack file', 'wards.gispack.json', JSON.stringify(pack)), PACK);
+  if (!draftPackLoaded) problems.push('the draft phase could not reach the region pack input');
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.__clickText('Use this pack'));
+  await page.waitForTimeout(700);
+  await page.evaluate(() => window.__clickText('Project'));
+  await page.waitForTimeout(400);
+  await page.evaluate(() => window.__setField('Project name', 'Draft recovery study'));
+  // Autosave is debounced; give it room to write.
+  await page.waitForTimeout(2200);
+
+  const draftState = await page.evaluate(() => {
+    let raw = null;
+    try { raw = window.localStorage.getItem('alloflow_gis_studio_draft_v1'); } catch (e) { /* ignore */ }
+    return {
+      present: !!raw,
+      bytes: raw ? raw.length : 0,
+      title: raw ? (JSON.parse(raw).title || '') : '',
+      packs: raw ? ((JSON.parse(raw).data || {}).customRegionPacks || []).length : 0,
+      status: (Array.from(document.querySelectorAll('p')).map((n) => n.textContent).find((t) => /Autosaved|autosave/i.test(t)) || '').slice(0, 90)
+    };
+  });
+  console.log('draft written: ' + JSON.stringify(draftState));
+  if (!draftState.present) problems.push('autosave wrote no device-local draft at all');
+  if (draftState.title !== 'Draft recovery study') problems.push('the draft does not carry the project name: ' + JSON.stringify(draftState.title));
+  if (draftState.packs !== 1) problems.push('the draft does not carry the region pack');
+
+  // A fresh visit: empty tool data, same browser storage.
+  await page.evaluate(() => window.__mountGIS({ gisTab: 'project', gisBasemap: 'none' }));
+  await page.waitForTimeout(1100);
+  const offered = await page.evaluate(() => ({
+    text: window.__text().slice(0, 0) || undefined,
+    offers: window.__text().includes('Restore draft'),
+    names: window.__text().includes('Draft recovery study'),
+    onProjectTab: window.__text().includes('Project files travel')
+  }));
+  console.log('recovery offered on a fresh visit: ' + JSON.stringify(offered));
+  if (!offered.offers) problems.push('a fresh visit was never offered the recovered draft');
+
+  const restored = await page.evaluate(() => window.__clickText('Restore draft'));
+  await page.waitForTimeout(1000);
+  if (!restored) problems.push('the Restore draft control could not be clicked');
+  const afterRestore = await page.evaluate(() => ({
+    activePack: window.__toolData.gisRegionPack,
+    packs: (window.__toolData.gisCustomRegionPacks || []).length,
+    showsWard: window.__text().includes('Munjoy Hill')
+  }));
+  console.log('after restoring the draft: ' + JSON.stringify(afterRestore));
+  if (afterRestore.packs !== 1) problems.push('restoring the draft did not bring the region pack back');
+  if (!/^custom-harbour-wards/.test(String(afterRestore.activePack))) problems.push('restoring the draft did not make the region active: ' + afterRestore.activePack);
 
   await browser.close();
   console.log('\nwritten to ' + OUT);
