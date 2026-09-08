@@ -37,6 +37,7 @@
     "verify:blockly-build": "node dev-tools/build_blockly_runtime.cjs --check",
     "test:e2e": "playwright test",
     "test:e2e:gl": "playwright test tests/e2e/17-memory-palace-gl.spec.ts tests/e2e/18-geometry-world-gl.spec.ts tests/e2e/19-solar-system-gl.spec.ts tests/e2e/20-galaxy-gl.spec.ts tests/e2e/21-moon-mission-gl.spec.ts tests/e2e/22-stem-gl-conformance.spec.ts tests/e2e/raptor-flight-continuity.spec.ts --workers=1",
+    "test:e2e:contrast": "playwright test tests/e2e/25-titration-contrast.spec.ts",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:report": "playwright show-report",
     "test:mobile": "playwright test -c playwright.mobile.config.ts",

@@ -3070,7 +3070,10 @@ if (!safetyChecked) {
   var stationDefs = [
     { id: 1, label: __alloT('stem.titration.suit_up', 'Suit Up'), icon: '\uD83E\uDDFA', color: '#f59e0b', complete: ppeComplete, progress: ppeCount + '/' + ppeItems.length },
     { id: 2, label: __alloT('stem.titration.lab_scan', 'Lab Scan'), icon: '\uD83D\uDD2C', color: '#38bdf8', complete: mapComplete, progress: mapCount + '/' + mapEquip.length },
-    { id: 3, label: __alloT('stem.titration.chemicals', 'Chemicals'), icon: 'SDS', color: '#ef4444', complete: chemsComplete, progress: chemsCount + '/' + presChems.length },
+    // red-500 is the one station accent too dark for 11-14 px on this ground: the
+    // stepper label measured 4.4:1 and the SDS badge 3.8:1, while amber, sky and
+    // orange all clear it comfortably. red-400 brings it into line with its siblings.
+    { id: 3, label: __alloT('stem.titration.chemicals', 'Chemicals'), icon: 'SDS', color: '#f87171', complete: chemsComplete, progress: chemsCount + '/' + presChems.length },
     { id: 4, label: __alloT('stem.titration.safety_drill', 'Safety Drill'), icon: '\uD83D\uDEA8', color: '#f97316', complete: drillComplete, progress: drillComplete ? '1/1' : '0/1' }
   ];
 
@@ -3109,7 +3112,7 @@ if (!safetyChecked) {
     '@keyframes safetyParticle { 0% { opacity:1; transform:translateY(0) scale(1); } 100% { opacity:0; transform:translateY(-60px) scale(0); } } ' +
     '@keyframes safetyStationEnter { 0% { opacity:0; transform:translateX(30px); } 100% { opacity:1; transform:translateX(0); } } ' +
     '@keyframes safetyGaugeShine { 0% { left:-100%; } 100% { left:200%; } } ' +
-    '@keyframes safetyBreathe { 0%,100% { opacity:0.5; transform:scale(1); } 50% { opacity:1; transform:scale(1.02); } } ' +
+    '@keyframes safetyBreathe { 0%,100% { box-shadow:0 0 0 0 rgba(251,191,36,0); transform:scale(1); } 50% { box-shadow:0 0 16px 1px rgba(251,191,36,0.30); transform:scale(1.015); } } ' +
     '@keyframes safetyRipple { 0% { box-shadow:0 0 0 0 currentColor; opacity:0.6; } 100% { box-shadow:0 0 0 20px transparent; opacity:0; } } ' +
     '.ppe-card-unequipped:hover { transform:translateY(-3px) scale(1.02); border-color:rgba(251,191,36,0.5) !important; box-shadow:0 8px 25px rgba(245,158,11,0.2) !important; } ' +
     '.ppe-card-unequipped { transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important; } ';
@@ -3186,7 +3189,7 @@ if (!safetyChecked) {
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.back', "Back"),
       onClick: function() { setStemLabTool(null); },
       className: "text-xs font-bold transition-colors",
-      style: { color: ctx.isContrast ? '#ffffff' : '#155e75' }
+      style: { color: ctx.isContrast ? '#ffffff' : '#22d3ee' }
     }, __alloT('stem.titration.back_2', "\u2190 Back")),
 
     // ── Header ──
@@ -3945,12 +3948,12 @@ return React.createElement("div", {
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.safety_info', "Safety Info"), "aria-expanded": showSafetyRef, "aria-controls": "titration-safety-reference",
       onClick: function () { upd('showSafetyRef', !showSafetyRef); },
       className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " +
-        (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "transition-colors text-amber-500/60 hover:text-amber-400 hover:bg-amber-500/10 active:scale-[0.97]")
+        (showSafetyRef ? "bg-amber-500/20 text-amber-300 ring-1 ring-amber-500/40" : "transition-colors text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 active:scale-[0.97]")
     }, __alloT('stem.titration.safety_info_2', "\u26A0\uFE0F Safety Info")),
     React.createElement("button", { type: "button", "aria-label": __alloT('stem.titration.hazards', "Hazards"), "aria-expanded": showHazards, "aria-controls": "titration-hazards-panel",
       onClick: function () { upd('showHazards', !showHazards); },
       className: "min-h-[44px] px-3 py-2 rounded-lg text-xs font-bold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " +
-        (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "transition-colors text-red-500/60 hover:text-red-400 hover:bg-red-500/10 active:scale-[0.97]")
+        (showHazards ? "bg-red-500/20 text-red-300 ring-1 ring-red-500/40" : "transition-colors text-red-400 hover:text-red-300 hover:bg-red-500/10 active:scale-[0.97]")
     }, __alloT('stem.titration.hazards_2', "SDS Hazards"))
   ),
 
@@ -4121,7 +4124,7 @@ return React.createElement("div", {
     var TAB_META = {
       titrate:    { accent: '#38bdf8', soft: 'rgba(56,189,248,0.10)', icon: '\uD83E\uDDEA', title: __alloT('stem.titration.titrate_find_the_equivalence_point', 'Titrate \u2014 find the equivalence point'),  hint: __alloT('stem.titration.add_titrant_drop_by_drop_until_indicat', 'Add titrant carefully while following the selected endpoint signal. Equivalence is stoichiometric balance; an endpoint is the visual or instrumental signal used to estimate it.') },
       challenge:  { accent: '#f59e0b', soft: 'rgba(245,158,11,0.10)', icon: '\uD83C\uDFC6', title: __alloT('stem.titration.challenge_graded_titrations', 'Challenge \u2014 graded titrations'),           hint: __alloT('stem.titration.match_real_world_unknowns_by_titrating', 'Determine a hidden concentration from authentic initial and final burette readings. Calculate titre = final \u2212 initial, select concordant trials, and separate stopping error from indicator-method bias. A question bank on safety and theory sits alongside it.') },
-      incidents:  { accent: '#dc2626', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: __alloT('stem.titration.safety_drills_what_could_go_wrong', 'Safety drills \u2014 what could go wrong'),     hint: __alloT('stem.titration.burette_explodes_acid_burns_spill_indi', 'Practice protocol-first responses to splashes, spills, fumes, incompatible chemicals, and other realistic lab incidents.') },
+      incidents:  { accent: '#f87171', soft: 'rgba(220,38,38,0.10)',  icon: '\uD83D\uDEA8', title: __alloT('stem.titration.safety_drills_what_could_go_wrong', 'Safety drills \u2014 what could go wrong'),     hint: __alloT('stem.titration.burette_explodes_acid_burns_spill_indi', 'Practice protocol-first responses to splashes, spills, fumes, incompatible chemicals, and other realistic lab incidents.') },
       equipment:  { accent: '#22c55e', soft: 'rgba(34,197,94,0.10)',  icon: '\uD83D\uDD2C', title: __alloT('stem.titration.equipment_burette_flask_pipette', 'Equipment \u2014 burette, flask, pipette'),     hint: __alloT('stem.titration.burette_tolerance_0_05_ml_volumetric_f', 'Distinguish 0.01 mL displayed readings, a typical 50 mL Class AS manufacturer error limit of ±0.05 mL, this activity’s scoring target, and the course-defined concordance range. They are not interchangeable.') },
       molarity:   { accent: '#a78bfa', soft: 'rgba(167,139,250,0.10)', icon: '\uD83E\uDDEE', title: __alloT('stem.titration.dilution_calculator_m_v_m_v', 'Dilution calculator \u2014 M\u2081V\u2081 = M\u2082V\u2082'),     hint: __alloT('stem.titration.stock_diluent_desired_concentration_th', 'Stock + diluent \u2192 desired concentration. The 4 most-tested AP Chem problems all reduce to this single equation. Track significant figures: weakest measurement sets the answer.') },
       buffers:    { accent: '#0891b2', soft: 'rgba(8,145,178,0.10)',  icon: '\uD83D\uDEE1\uFE0F', title: __alloT('stem.titration.buffer_discovery_when_does_a_buffer_ho', 'Buffer discovery \u2014 when does a buffer hold?'), hint: __alloT('stem.titration.adjust_acid_strength_a_ha_ratio_starti', 'Adjust acid strength, [A\u207B]/[HA] ratio, starting pH. Discrete outcome: good buffer or poor buffer (after 20% more acid added). No score, no reveal \u2014 just sweep and observe.') }
