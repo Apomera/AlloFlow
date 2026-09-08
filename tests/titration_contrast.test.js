@@ -64,6 +64,16 @@ const PANEL = 'rgba(15,23,42,0.55)';      // inner observation panel
 const READOUT = 'rgba(15,23,42,0.6)';     // the burette / pH readout box
 const RESULT = 'rgba(15,23,42,0.7)';      // graded result panel
 
+// Safety-briefing surfaces. Each station paints a four-stop gradient; the value here
+// is its LIGHTEST stop, which is the worst case for light text on it.
+const ST1 = '#3d1f00';                     // suit up (amber)
+const ST2 = '#002240';                     // lab scan (cyan)
+const ST3 = '#3d0f0f';                     // chemicals (red)
+const ST4 = '#3d2000';                     // safety drill (orange)
+const STEP = 'rgba(0,0,0,0.25)';           // the progress stepper strip
+const MAP = '#0a1929';                     // the lab-map SVG ground
+const BRIEF_BODY = 'rgba(226,232,240,0.88)';
+
 const AA_NORMAL = 4.5;
 const AA_LARGE = 3.0;                      // >=18.66px bold or >=24px
 
@@ -103,6 +113,37 @@ const CASES = [
 
   // Glassware bench punchline
   ['bench punchline', '#a7f3d0', ['rgba(15,23,42,0.4)', CARD, PAGE], AA_NORMAL],
+
+  // ── The pre-lab safety briefing ───────────────────────────────────────────
+  // The gate every student passes through before the lab exists, and it had no cover
+  // here at all. Measured in a real browser first: the not-yet-reached stepper steps
+  // came out at 1.2:1, the PPE descriptions at 3.2:1, and the four station intros
+  // anywhere from 2.5:1 to 4.7:1 purely as a function of which accent hue the station
+  // used. Each station paints a gradient; the LIGHTEST stop is the worst case for
+  // light text, so that is what these composite against.
+  ['briefing intro — PPE', BRIEF_BODY, [ST1], AA_NORMAL],
+  ['briefing intro — lab scan', BRIEF_BODY, [ST2], AA_NORMAL],
+  ['briefing intro — chemicals', BRIEF_BODY, [ST3], AA_NORMAL],
+  ['briefing intro — drill', BRIEF_BODY, [ST4], AA_NORMAL],
+
+  ['stepper label, reachable', 'rgba(255,255,255,0.82)', [STEP, ST1], AA_NORMAL],
+  ['stepper label, locked', 'rgba(255,255,255,0.62)', [STEP, ST1], AA_NORMAL],
+  ['stepper count, reachable', 'rgba(255,255,255,0.72)', [STEP, ST1], AA_NORMAL],
+  ['stepper count, locked', 'rgba(255,255,255,0.58)', [STEP, ST1], AA_NORMAL],
+  // Same steps on the darkest-accented station, which is the other end of the range.
+  ['stepper label, locked on drill', 'rgba(255,255,255,0.62)', [STEP, ST4], AA_NORMAL],
+
+  // Why each PPE item is required — "no glove protects against every chemical" is the
+  // content of that card, not a caption on it.
+  ['PPE description, unequipped', 'rgba(251,191,36,0.70)', ['rgba(0,0,0,0.3)', ST1], AA_NORMAL],
+  ['PPE description, equipped', 'rgba(52,211,153,0.85)', ['rgba(16,185,129,0.12)', ST1], AA_NORMAL],
+
+  // Lab-map furniture. The task on that station is finding equipment on the map, so
+  // the labels naming what is already drawn on it are content.
+  ['map label — fume hood', 'rgba(125,211,252,0.92)', ['rgba(56,189,248,0.08)', MAP], AA_NORMAL],
+  ['map label — sink', 'rgba(125,211,252,0.92)', ['rgba(56,189,248,0.05)', MAP], AA_NORMAL],
+  ['map label — bench', 'rgba(203,213,225,0.82)', ['rgba(148,163,184,0.1)', MAP], AA_NORMAL],
+  ['map label — exit', 'rgba(203,213,225,0.92)', ['rgba(148,163,184,0.08)', MAP], AA_NORMAL],
 ];
 
 describe('inline colour choices meet WCAG AA', () => {
@@ -113,6 +154,29 @@ describe('inline colour choices meet WCAG AA', () => {
         .toBeGreaterThanOrEqual(threshold);
     });
   }
+});
+
+// ── The blind spot this file has, pinned ────────────────────────────────────
+// Everything above composites the colours the tool sets INLINE. A Tailwind opacity
+// utility on an ancestor multiplies all of them and is invisible here, and that is not
+// hypothetical: the briefing stepper's label was rgba(255,255,255,0.5), which composites
+// to a perfectly respectable 5.1:1 — while the button around it carried opacity-30, so
+// what a student actually saw was 1.2:1. The maths in this file said the colour was
+// fine and it was unreadable on screen.
+//
+// So the stepper states its "locked" and "reachable" difference through the inline
+// colour instead, and this asserts nobody quietly reintroduces the multiplier.
+import fs from 'node:fs';
+describe('inline colours are not silently multiplied by an ancestor', () => {
+  const source = fs.readFileSync('stem_lab/stem_tool_titration.js', 'utf8');
+  it('the safety-briefing stepper button carries no opacity utility', () => {
+    const marker = 'isCurrent ? "scale-110" : canAccess ?';
+    const at = source.indexOf(marker);
+    expect(at, 'stepper className not found — this pin needs updating').toBeGreaterThan(-1);
+    const clause = source.slice(at, at + 200);
+    expect(clause, `stepper className reintroduces an opacity utility: ${clause}`)
+      .not.toMatch(/[\s"]opacity-\d/);
+  });
 });
 
 describe('the contrast maths itself', () => {

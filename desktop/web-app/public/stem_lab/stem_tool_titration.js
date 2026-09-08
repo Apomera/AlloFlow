@@ -3219,27 +3219,27 @@ if (!safetyChecked) {
               disabled: !canAccess,
               onClick: function() { if (canAccess) goSafetyStation(st.id); },
               className: "min-h-[44px] min-w-[76px] flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300 " +
-                (isCurrent ? "scale-110" : canAccess ? "opacity-70 hover:opacity-100 cursor-pointer" : "opacity-30 cursor-not-allowed"),
+                (isCurrent ? "scale-110" : canAccess ? "cursor-pointer" : "cursor-not-allowed"),
               style: isCurrent ? { background: st.color + '25', boxShadow: '0 0 20px ' + st.color + '30' } : {}
             },
               React.createElement("div", {
                 style: {
                   width:'32px', height:'32px', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center',
-                  fontSize:'14px', fontWeight:900, border: '2px solid ' + (st.complete ? '#10b981' : isCurrent ? st.color : 'rgba(255,255,255,0.2)'),
+                  fontSize:'14px', fontWeight:900, border: '2px solid ' + (st.complete ? '#10b981' : isCurrent ? st.color : canAccess ? 'rgba(255,255,255,0.45)' : 'rgba(255,255,255,0.3)'),
                   background: st.complete ? 'rgba(16,185,129,0.2)' : isCurrent ? st.color + '20' : 'rgba(0,0,0,0.3)',
                   animation: st.complete ? 'safetyCheckPop 0.4s ease' : isCurrent ? 'safetyPulseGlow 2s ease infinite' : 'none',
                   color: st.complete ? '#10b981' : st.color
                 }
               }, st.complete ? "\u2714" : st.icon),
               React.createElement("span", {
-                style: { fontSize:'11px', fontWeight:700, color: isCurrent ? st.color : 'rgba(255,255,255,0.5)', whiteSpace:'nowrap' }
+                style: { fontSize:'11px', fontWeight:700, color: isCurrent ? st.color : canAccess ? 'rgba(255,255,255,0.82)' : 'rgba(255,255,255,0.62)', whiteSpace:'nowrap' }
               }, st.label),
               React.createElement("span", {
-                style: { fontSize:'10px', color: st.complete ? '#10b981' : 'rgba(255,255,255,0.3)' }
+                style: { fontSize:'10px', color: st.complete ? '#10b981' : canAccess ? 'rgba(255,255,255,0.72)' : 'rgba(255,255,255,0.58)' }
               }, st.progress)
             ),
             i < 3 ? React.createElement("div", {
-              style: { width:'24px', height:'2px', background: stationDefs[i].complete ? '#10b981' : 'rgba(255,255,255,0.1)', borderRadius:'1px', transition:'background 0.3s' }
+              style: { width:'24px', height:'2px', background: stationDefs[i].complete ? '#10b981' : 'rgba(255,255,255,0.28)', borderRadius:'1px', transition:'background 0.3s' }
             }) : null
           );
         })
@@ -3255,7 +3255,7 @@ if (!safetyChecked) {
       },
         React.createElement("div", { className: "text-center mb-2" },
           React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#fbbf24', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.personal_protective_equipment', "\uD83D\uDEE1\uFE0F Personal Protective Equipment")),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(251,191,36,0.6)', marginTop:'4px' } }, __alloT('stem.titration.equip_each_piece_of_ppe_before_proceed', "Complete this simulated PPE check. In a real lab, the reviewed procedure, risk assessment, and exact SDS determine the required protection."))
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(226,232,240,0.88)', marginTop:'4px' } }, __alloT('stem.titration.equip_each_piece_of_ppe_before_proceed', "Complete this simulated PPE check. In a real lab, the reviewed procedure, risk assessment, and exact SDS determine the required protection."))
         ),
 
         // PPE readiness gauge
@@ -3304,7 +3304,7 @@ if (!safetyChecked) {
               // Label
               React.createElement("div", { style: { fontSize:'13px', fontWeight:800, color: checked ? '#34d399' : '#fbbf24', textAlign:'center', transition:'color 0.3s' } }, item.label),
               // Description
-              React.createElement("div", { id: "titration-ppe-desc-" + item.id, style: { fontSize:'12px', color: checked ? 'rgba(52,211,153,0.7)' : 'rgba(251,191,36,0.45)', textAlign:'center', marginTop:'3px', lineHeight:'1.3' } }, item.desc),
+              React.createElement("div", { id: "titration-ppe-desc-" + item.id, style: { fontSize:'12px', color: checked ? 'rgba(52,211,153,0.85)' : 'rgba(251,191,36,0.70)', textAlign:'center', marginTop:'3px', lineHeight:'1.3' } }, item.desc),
               // Consequence warning (only when NOT equipped)
               !checked && consequence && React.createElement("div", {
                 id: "titration-ppe-risk-" + item.id,
@@ -3353,7 +3353,7 @@ if (!safetyChecked) {
       },
         React.createElement("div", { className: "text-center mb-2" },
           React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#38bdf8', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.locate_emergency_equipment', "\uD83D\uDD0D Locate Emergency Equipment")),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(56,189,248,0.6)', marginTop:'4px' } }, __alloT('stem.titration.find_each_piece_of_safety_equipment_on', "Find each piece of safety equipment on the lab map. In a real emergency, seconds matter \u2014 you must know where everything is BEFORE you start."))
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(226,232,240,0.88)', marginTop:'4px' } }, __alloT('stem.titration.find_each_piece_of_safety_equipment_on', "Find each piece of safety equipment on the lab map. In a real emergency, seconds matter \u2014 you must know where everything is BEFORE you start."))
         ),
 
         // Lab Map SVG
@@ -3378,16 +3378,16 @@ if (!safetyChecked) {
 
             // Fume hood (top)
             React.createElement("rect", { x:20, y:10, width:120, height:35, fill:'rgba(56,189,248,0.08)', stroke:'rgba(56,189,248,0.2)', strokeWidth:1, rx:3 }),
-            React.createElement("text", { x:80, y:32, fill:'rgba(56,189,248,0.4)', fontSize:8, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.fume_hood', "FUME HOOD")),
+            React.createElement("text", { x:80, y:32, fill:'rgba(125,211,252,0.92)', fontSize:8, textAnchor:'middle', fontWeight:'bold' }, __alloT('stem.titration.fume_hood', "FUME HOOD")),
 
             // Lab benches with equipment
             React.createElement("rect", { x:40, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:220, y:80, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:40, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
             React.createElement("rect", { x:220, y:150, width:140, height:30, fill:'rgba(148,163,184,0.1)', stroke:'rgba(148,163,184,0.2)', strokeWidth:1, rx:2 }),
-            React.createElement("text", { x:110, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_1', "Bench 1")),
-            React.createElement("text", { x:290, y:98, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_2', "Bench 2")),
-            React.createElement("text", { x:110, y:168, fill:'rgba(148,163,184,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_3', "Bench 3")),
+            React.createElement("text", { x:110, y:98, fill:'rgba(203,213,225,0.82)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_1', "Bench 1")),
+            React.createElement("text", { x:290, y:98, fill:'rgba(203,213,225,0.82)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_2', "Bench 2")),
+            React.createElement("text", { x:110, y:168, fill:'rgba(203,213,225,0.82)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.bench_3', "Bench 3")),
 
             // Tiny equipment on benches (beakers, flasks)
             React.createElement("text", { x:65, y:93, fill:'rgba(56,189,248,0.25)', fontSize:10 }, "\u2697\uFE0F"),
@@ -3412,11 +3412,11 @@ if (!safetyChecked) {
 
             // Door
             React.createElement("rect", { x:370, y:240, width:25, height:35, fill:'rgba(148,163,184,0.08)', stroke:'rgba(148,163,184,0.25)', strokeWidth:1, rx:2 }),
-            React.createElement("text", { x:382, y:262, fill:'rgba(148,163,184,0.4)', fontSize:7, textAnchor:'middle' }, "EXIT"),
+            React.createElement("text", { x:382, y:262, fill:'rgba(203,213,225,0.92)', fontSize:7, textAnchor:'middle' }, "EXIT"),
 
             // Sink
             React.createElement("rect", { x:330, y:10, width:50, height:25, fill:'rgba(56,189,248,0.05)', stroke:'rgba(56,189,248,0.15)', strokeWidth:1, rx:2 }),
-            React.createElement("text", { x:355, y:26, fill:'rgba(56,189,248,0.3)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.sink', "Sink")),
+            React.createElement("text", { x:355, y:26, fill:'rgba(125,211,252,0.92)', fontSize:7, textAnchor:'middle' }, __alloT('stem.titration.sink', "Sink")),
 
             // Scanline animation overlay
             !mapComplete && React.createElement("rect", {
@@ -3599,7 +3599,7 @@ if (!safetyChecked) {
       },
         React.createElement("div", { className: "text-center mb-2" },
           React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#ef4444', letterSpacing:'2px', textTransform:'uppercase' } }, __alloT('stem.titration.chemical_hazard_briefing', "SDS Chemical Hazard Briefing")),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(239,68,68,0.6)', marginTop:'4px' } }, __alloT('stem.titration.review_every_chemical_you_will_handle_', "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards."))
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(226,232,240,0.88)', marginTop:'4px' } }, __alloT('stem.titration.review_every_chemical_you_will_handle_', "Review EVERY chemical you will handle today. Tap each card to acknowledge you understand the hazards."))
         ),
 
         // Chemical cards
@@ -3662,7 +3662,7 @@ if (!safetyChecked) {
         React.createElement("div", { className: "text-center mb-2" },
           React.createElement("div", { style: { fontSize:'14px', fontWeight:900, color:'#f97316', letterSpacing:'2px', textTransform:'uppercase',
             animation: drillActive && drillTimeLeft <= 5 ? 'safetyTimerWarn 0.5s ease infinite' : 'none' } }, __alloT('stem.titration.emergency_response_drill', "\uD83D\uDEA8 Emergency Response Drill")),
-          React.createElement("p", { style: { fontSize:'11px', color:'rgba(249,115,22,0.6)', marginTop:'4px' } },
+          React.createElement("p", { style: { fontSize:'11px', color:'rgba(226,232,240,0.88)', marginTop:'4px' } },
             drillResult ? "Drill complete \u2014 review the outcome below." :
             drillActive ? "Choose the safest first action. Pause or add time whenever you need it." :
             "Practice the first response at your own pace. The optional timer can be paused or extended at any time.")
