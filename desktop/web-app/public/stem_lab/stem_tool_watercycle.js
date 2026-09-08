@@ -23788,7 +23788,8 @@ const d = labToolData.waterCycle || {};
             makeProcessLabel3d('condensation', 'Condensation', '#e0f2fe', [0.2, 4.1, -1.55]);
             makeProcessLabel3d('precipitation', 'Precipitation', '#60a5fa', [2.7, 1.25, -0.4]);
             makeProcessLabel3d('land', 'Land pathways', '#f59e0b', [4.3, 0.05, -0.1]);
-            makeProcessLabel3d('river', 'Surface runoff', '#3b82f6', [1.15, -0.1, 1.35]);
+            // y 0.28: clears the estuary salinity band, whose top edge is -0.185.
+            makeProcessLabel3d('river', 'Surface runoff', '#3b82f6', [1.15, 0.28, 1.35]);
             makeProcessLabel3d('aquifer', 'Groundwater', '#22d3ee', [4.8, -1.72, -0.55]);
             makeProcessLabel3d('soil_pore_water', 'Soil pore water', '#67e8f9', [4.65, -1.12, -0.42]);
             makeProcessLabel3d('plant', 'Plant uptake', '#4ade80', [5.9, 0.45, 1.25]);
@@ -23896,7 +23897,9 @@ const d = labToolData.waterCycle || {};
               waterTableLabel3d.visible = false;
             }
             var sedimentTransportLabel3d = makeProcessLabel3d(
-              'sediment_transport', 'Suspended sediment', '#f0c27b', [2.0, -0.15, 1.0]
+              // y 1.02: only 0.85 from 'Surface runoff' in x against a 2.8-wide
+              // sprite, so the two need 0.7 of vertical separation; this gives 0.74.
+              'sediment_transport', 'Suspended sediment', '#f0c27b', [2.0, 1.02, 1.0]
             );
             if (sedimentTransportLabel3d) {
               delete processLabels3d.sediment_transport;
@@ -23958,7 +23961,10 @@ const d = labToolData.waterCycle || {};
             var estuarySalinityLabels3d = [];
             [
               { key: 'salinity_fresh', zone: 'freshwater', text: 'River water', color: '#7dd3fc', position: [-0.25, -0.38, 1.28] },
-              { key: 'salinity_mix', zone: 'brackish', text: 'Brackish mix', color: '#2dd4bf', position: [-1.25, -0.38, 1.78] },
+              // Staggered DOWN 0.44 (> the 0.39 these sprites need) because it is
+              // 1.0 and 1.2 from its neighbours against a 1.55 width. Its x/z stay
+              // put: they anchor the label to the brackish zone it names.
+              { key: 'salinity_mix', zone: 'brackish', text: 'Brackish mix', color: '#2dd4bf', position: [-1.25, -0.82, 1.78] },
               { key: 'salinity_ocean', zone: 'marine', text: 'Ocean water', color: '#0ea5e9', position: [-2.45, -0.38, 2.08] }
             ].forEach(function(estuaryLabelSpec3d) {
               var estuaryLabelSprite3d = makeProcessLabel3d(estuaryLabelSpec3d.key, estuaryLabelSpec3d.text,
