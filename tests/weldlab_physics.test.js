@@ -283,13 +283,16 @@ describe('WeldLab progress tier never claims a credential', () => {
   // Apprentice and Journeyman are real apprenticeship classifications and AWS
   // certification is a witnessed performance test; none of it is earned by reading,
   // and this same tool teaches that correctly elsewhere. Guard the regression.
-  const ALL_MODULES = [
-    'heatInput', 'beadLab', 'defectHunt', 'processCompare', 'jointCatalog',
-    'symbolsReader', 'ppeSafety', 'careerPaths', 'underwater', 'speedChallenge',
-    'defectCatalog', 'metallurgy', 'codes', 'qualPrep', 'pipeWelding', 'robotic',
-    'inspection', 'consumables', 'maineEcosystem', 'safetyHealth', 'mathBlueprint',
-    'careerStories'
-  ];
+  // ★ Read BADGE_IDS out of the tool rather than keeping a copy here. This list
+  // WAS a copy, and it went stale the moment two modules were added to the tool —
+  // which is the same drift that left BADGE_LABELS with 11 entries for 22 ids.
+  // A test that hardcodes what it is testing stops testing it.
+  const ALL_MODULES = (function () {
+    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const m = /var BADGE_IDS = \[([^\]]+)\]/.exec(src);
+    expect(m, 'BADGE_IDS not found in the tool').toBeTruthy();
+    return m[1].split(',').map((x) => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+  })();
 
   const renderWithVisits = (n) => {
     const weldBadges = {};
@@ -311,7 +314,7 @@ describe('WeldLab progress tier never claims a credential', () => {
     'Knows the way around', 'Toured every station'
   ];
 
-  it.each([0, 1, 4, 8, 21, 22])('awards only an exploration tier at %i modules opened', (n) => {
+  it.each([0, 1, 4, 8, ALL_MODULES.length - 1, ALL_MODULES.length])('awards only an exploration tier at %i modules opened', (n) => {
     const panel = tierPanel(renderWithVisits(n));
 
     // Exactly one of the honest names, and nothing claiming a qualification.
@@ -330,19 +333,20 @@ describe('WeldLab progress tier never claims a credential', () => {
     // The fix must not have flattened the motivation, only the claim.
     const none = renderWithVisits(0);
     const some = renderWithVisits(4);
-    const all = renderWithVisits(22);
+    const all = renderWithVisits(ALL_MODULES.length);
 
     expect(none).toMatch(/New to the shop/);
     expect(some).toMatch(/Finding your way around/);
     expect(all).toMatch(/Toured every station/);
 
     // Progress counter tracks the real number.
-    expect(none).toMatch(/0 \/ 22 modules/);
-    expect(all).toMatch(/22 \/ 22 modules/);
+    const N = ALL_MODULES.length;
+    expect(none).toMatch(new RegExp('0 \\/ ' + N + ' modules'));
+    expect(all).toMatch(new RegExp(N + ' \\/ ' + N + ' modules'));
   });
 
   it('points a fully-explored student at what certification actually takes', () => {
-    const all = renderWithVisits(22);
+    const all = renderWithVisits(ALL_MODULES.length);
     expect(all).toMatch(/witnessed weld test/i);
     expect(all).toMatch(/Welder Qualification Prep/);
   });
@@ -545,6 +549,27 @@ describe('WeldLab quiz answers are not clustered in one slot', () => {
       expect(q.idx).toBeGreaterThanOrEqual(0);
       expect(q.idx).toBeLessThan(q.n);
     });
+  });
+
+  it('routes every card gradient through the helper, not straight to a class', () => {
+    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+    // ★ The assertion above only proves cardGradient() WOULD return a legible
+    // pair. It says nothing about whether a card actually calls it. Three card
+    // systems built their header as `'bg-gradient-to-br ' + someObj.color`, and
+    // because the class names arrive through a VARIABLE, a sweep for literal
+    // `from-*` on a `text-white` line walked straight past all three: the menu
+    // cards, the Process Comparison cards (TIG 2.15:1) and the Speed Challenge
+    // tiers (Apprentice 2.54:1). Ban the concatenated form outright.
+    const concatenated = src.match(/bg-gradient-to-[a-z]+ '\s*\+/g) || [];
+    expect(concatenated, 'a gradient class is being built by concatenation').toEqual([]);
+
+    // And every object that carries a `from-… to-…` pair must be read through it.
+    const pairs = (src.match(/color: 'from-[a-z]+-\d+ to-[a-z]+-\d+'/g) || []).length;
+    const calls = (src.match(/cardGradient\(/g) || []).length;
+    expect(pairs).toBeGreaterThan(20);
+    // one definition + one call per card system
+    expect(calls).toBeGreaterThanOrEqual(4);
   });
 });
 
@@ -760,5 +785,395 @@ describe('WeldLab radiogroups honour the keyboard contract', () => {
       // Edge-guarded, so re-entering an answered question does not steal focus.
       expect(src).toContain('var ' + ref + 'Prev = useRef(false)');
     });
+  });
+});
+
+describe('WeldLab never flashes above the photosensitivity threshold', () => {
+  // WCAG 2.3.1 draws the line at three flashes per second. This is an ARC
+  // simulator: the brightest thing on screen is a near-white core on a black
+  // field, which is the worst case the guideline exists for.
+  //
+  // The top-down bead arc had already been retuned from sin(elapsed * 30)
+  // (4.77 Hz) to a compound 2.40 + 0.91 Hz waveform. The Helmet POV bloom — the
+  // same effect, on the darkest ground in the tool — kept sin(elapsed * 28) =
+  // 4.46 Hz and was missed. One view being fixed is exactly why the other needs
+  // a gate rather than a comment.
+  const HZ_LIMIT = 3;
+
+  function oscillators() {
+    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    const out = [];
+    const re = /Math\.(?:sin|cos)\(\s*([^)]{0,70})\)/g;
+    let m;
+    while ((m = re.exec(src))) {
+      const expr = m[1];
+      // Only oscillations driven by wall-clock time flash; the rest are geometry.
+      if (!/elapsed|now|time/.test(expr)) continue;
+      const mult = /\*\s*([\d.]+)/.exec(expr);
+      if (!mult) continue;
+      out.push({
+        line: src.slice(0, m.index).split('\n').length,
+        expr: expr.trim(),
+        hz: Number(mult[1]) / (2 * Math.PI),
+      });
+    }
+    return out;
+  }
+
+  it('keeps every time-driven oscillation under 3 Hz', () => {
+    const found = oscillators();
+    expect(found.length, 'no oscillators parsed — the scan broke').toBeGreaterThan(4);
+    const over = found
+      .filter((o) => o.hz > HZ_LIMIT)
+      .map((o) => 'line ' + o.line + ': ' + o.expr + ' = ' + o.hz.toFixed(2) + ' Hz');
+    expect(over, 'oscillation faster than 3 flashes per second').toEqual([]);
+  });
+
+  it('drives both arc views from the same retuned waveform', () => {
+    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    // THREE views draw a pulsing arc — top-down, 3-D scene and helmet POV. Two
+    // carried the retuned waveform and the helmet kept the old one; pin all three
+    // to each other so the next edit cannot fix two of them again.
+    const waveform = /0\.78 \+ 0\.12 \* Math\.sin\(elapsed \* 15\.1\) \+ 0\.06 \* Math\.sin\(elapsed \* 5\.7\)/g;
+    expect((src.match(waveform) || []).length, 'an arc view uses a different pulse').toBe(3);
+  });
+
+  it('reads prefers-reduced-motion live rather than once at module load', () => {
+    const src = readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+    // The CSS guard is a media query and updates itself; the canvas guard is a
+    // variable, and a variable sampled at module load never changes — in the
+    // bundled desktop shell that is the lifetime of the app.
+    expect(src).toMatch(/mq\.addEventListener\('change'/);
+    expect(src).toMatch(/mq\.addListener/);
+  });
+});
+
+describe('WeldLab progress bars survive the contrast theme', () => {
+  // Two measured defects, one fix. Light theme: fill-against-track ran 1.74:1
+  // (amber-500) to 2.98:1 (rose-500), under the 3:1 WCAG 1.4.11 floor, and no
+  // single track shade fixes it because the fills span orange-400 to
+  // fuchsia-600. Contrast theme: the host's blanket
+  // `.theme-contrast [class*="bg-"] { background-color:#000 !important }`
+  // blackened fill AND track, so all six bars measured exactly 1.00:1.
+  // Marking the value with an EDGE fixes both: that rule only touches
+  // background-color, so a border survives it.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  it('marks the value with a border rather than a hue difference', () => {
+    const src = read();
+    expect(src).toContain('var BAR_TRACK_STYLE = ');
+    expect(src).toContain('function barFillStyle(');
+    // currentColor, not a fixed ink: the edge then follows the surrounding text
+    // colour, which the contrast theme forces to yellow and light leaves dark —
+    // so it is legible against whatever ground it lands on. A hardcoded slate
+    // would be invisible on the contrast theme's black.
+    const helper = src.slice(src.indexOf('var BAR_TRACK_STYLE = '), src.indexOf('var BAR_TRACK_STYLE = ') + 600);
+    expect(helper).toMatch(/border:\s*'1px solid currentColor'/);
+    expect(helper).toMatch(/borderRight:.*'2px solid currentColor'/);
+  });
+
+  it('routes every bar through the shared style', () => {
+    const src = read();
+    // A track is a rounded-full overflow-hidden box holding a percentage fill.
+    const tracks = src.split('\n').filter((l) => /rounded-full overflow-hidden/.test(l) && /aria-hidden/.test(l));
+    expect(tracks.length).toBeGreaterThanOrEqual(6);
+    const bare = tracks.filter((l) => !l.includes('BAR_TRACK_STYLE'));
+    expect(bare.map((l) => l.trim().slice(0, 70)), 'a bar track with no edge').toEqual([]);
+
+    // And no fill may still set a bare inline width.
+    expect((src.match(/barFillStyle\(/g) || []).length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('drops the marker at 100%, where there is no edge to mark', () => {
+    const src = read();
+    const helper = src.slice(src.indexOf('function barFillStyle('), src.indexOf('function barFillStyle(') + 400);
+    expect(helper).toMatch(/p > 0 && p < 100/);
+  });
+});
+
+describe('WeldLab rating dots survive the contrast theme', () => {
+  // Probed in Chromium: all 120 dots in Process Comparison computed to
+  // rgb(0,0,0) under the host's blanket
+  // `.theme-contrast [class*="bg-"] { background-color:#000 !important }` —
+  // 76 filled and 44 empty alike — so every cell of the 24-cell side-by-side
+  // matrix was six identical black dots, and the module's whole point conveyed
+  // nothing. Light was not clean either: orange-500 on slate-200 is 2.27:1,
+  // under the 3:1 WCAG 1.4.11 floor for a graphic that carries meaning.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  it('distinguishes filled from empty by border style, not only by fill', () => {
+    const src = read();
+    const fn = src.slice(src.indexOf('function ratingDots('), src.indexOf('function ratingDots(') + 900);
+    // border-style is untouched by a background-color override, so solid vs
+    // dashed survives any palette the host forces.
+    expect(fn).toMatch(/border:\s*'2px solid currentColor'/);
+    expect(fn).toMatch(/border:\s*'1px dashed currentColor'/);
+    // currentColor, so the ring follows the surrounding ink in every theme.
+    expect(fn).not.toMatch(/border:\s*'[^']*#[0-9a-f]{3,6}/i);
+  });
+
+  it('still carries an accessible count for readers who see no dots at all', () => {
+    const src = read();
+    const fn = src.slice(src.indexOf('function ratingDots('), src.indexOf('function ratingDots(') + 1200);
+    expect(fn).toContain("'aria-hidden': true");
+    expect(fn).toMatch(/role: 'img', 'aria-label': n \+ ' of ' \+ max/);
+  });
+});
+
+describe('WeldLab print stylesheet keeps its promises', () => {
+  // Every Teacher Notes block carries a Print button, so printing is a first-class
+  // path for this tool. The print CSS claimed to "hide interactive controls", but
+  // `.weldlab-no-print` was on exactly ONE element — the Print button itself — so a
+  // printed module still carried every slider, tab strip and back button. And
+  // `.weldlab-page-break` was declared while NO element in the file ever carried
+  // the class: confirmed dead at runtime by walking document.styleSheets and
+  // counting querySelectorAll matches per rule.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  function printBlock(src) {
+    const at = src.indexOf("'@media print {'");
+    expect(at, 'no print stylesheet').toBeGreaterThan(-1);
+    const raw = src.slice(at, src.indexOf(".join('", at));
+    // Strip the JS comments before scanning: a comment naming a selector is not
+    // a rule, and one of them deliberately records the dead `.weldlab-page-break`
+    // rule that was removed. A gate that cannot tell prose from CSS reports the
+    // explanation as the defect.
+    return raw.split('\n').filter((l) => !l.trim().startsWith('//')).join('\n');
+  }
+
+  it('declares no rule whose class nothing carries', () => {
+    const src = read();
+    const block = printBlock(src);
+    // Every class the print CSS targets must be applied somewhere outside the
+    // stylesheet itself. A negative grep is not absence — count usages.
+    const classes = [...block.matchAll(/\.(weldlab-[a-z-]+)/g)].map((m) => m[1]);
+    const dead = [...new Set(classes)].filter((c) => {
+      const uses = (src.match(new RegExp(c, 'g')) || []).length;
+      const inCss = (block.match(new RegExp(c, 'g')) || []).length;
+      return uses - inCss < 1;
+    });
+    expect(dead, 'print rule targeting a class no element carries').toEqual([]);
+  });
+
+  it('hides navigation but never the quiz options', () => {
+    const src = read();
+    const block = printBlock(src);
+    // Tab strips are navigation the reader cannot use on paper; the selected
+    // panel still prints because only the control is hidden.
+    expect(block).toMatch(/\[role="tab"\], \[role="tablist"\]/);
+    // role=radio carries the answer choices. A printed worksheet without its
+    // options is worthless, so these must never be swept up with the chrome.
+    expect(block).not.toMatch(/role="radio"/);
+    expect(block).not.toMatch(/^\s*'\s*button\s*\{/m);
+  });
+
+  it('gives the teacher their notes on a page of their own', () => {
+    const block = printBlock(read());
+    expect(block).toMatch(/details\.weldlab-teacher-notes \{ page-break-before: always/);
+  });
+
+  it('tags the back button as chrome, not content', () => {
+    const src = read();
+    // The bar itself carries the module title, which a printed page wants.
+    expect(src).toMatch(/className: 'weldlab-no-print px-3 py-1\.5 rounded-lg bg-white\/20/);
+  });
+});
+
+describe('WeldLab saved progress uses one precedence rule', () => {
+  // Three collections persisted three different ways:
+  //  - defect catalog: window slot first, then localStorage
+  //  - badges:         localStorage only, so a fresh mount after a project load
+  //                    showed 0/22 modules even with five badges in the slot
+  //                    (measured in Chromium against HEAD)
+  //  - speed bests:    localStorage ONLY, mirrored to neither the slot nor
+  //                    toolData, so they never reached the project file at all —
+  //                    in a module whose own card promises
+  //                    "Personal-best score saved per tier".
+  // The window slot is what the host's handleLoadProject populates, and the
+  // project file is the only layer that survives a Canvas session, so the slot
+  // has to win.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  it('reads all three collections through the same helper', () => {
+    const src = read();
+    expect(src).toMatch(/function savedCollection\(slotKey, lsKey\)/);
+    ['badges', 'defectCatalog', 'speedBest'].forEach((k) => {
+      expect(src, k + ' does not go through savedCollection').toMatch(
+        new RegExp("savedCollection\\('" + k + "'")
+      );
+    });
+    // No collection may still read localStorage directly at hydration time —
+    // that is exactly how badges came to ignore a loaded project.
+    const hyd = src.slice(src.indexOf('// Hydrate persisted state once on mount.'),
+      src.indexOf('// Hydrate persisted state once on mount.') + 900);
+    expect(hyd).not.toMatch(/lsGet\(/);
+  });
+
+  it('mirrors all three into the slot the project file is built from', () => {
+    const src = read();
+    const mirror = src.slice(src.indexOf('window.__alloflowWeldLab = Object.assign'),
+      src.indexOf('window.__alloflowWeldLab = Object.assign') + 420);
+    ['defectCatalog:', 'badges:', 'speedBest:'].forEach((k) => {
+      expect(mirror, k + ' is not mirrored to the slot').toContain(k);
+    });
+    // and the effect must re-run when any of them changes
+    expect(src).toMatch(/\[d\.defectCatalog, d\.weldBadges, d\.speedBest\]/);
+  });
+
+  it('restores all three when the host signals a project load', () => {
+    const src = read();
+    const onRestore = src.slice(src.indexOf('function onRestore()'), src.indexOf('function onRestore()') + 420);
+    expect(onRestore).toContain("upd('defectCatalog'");
+    expect(onRestore).toContain("upd('weldBadges'");
+    expect(onRestore).toContain("upd('speedBest'");
+  });
+
+  it('writes a new personal best to toolData, not only to localStorage', () => {
+    const src = read();
+    const at = src.indexOf("lsSet('weldLab.speed.best.v1', newBest)");
+    expect(at).toBeGreaterThan(-1);
+    expect(src.slice(at, at + 200)).toContain("upd('speedBest', newBest)");
+  });
+});
+
+describe('WeldLab treats a saved project as untrusted input', () => {
+  // Everything in `d` arrives from toolData, which arrives from a project file a
+  // student can save, copy, hand-edit or carry between tool versions. Mounting
+  // the tool against ten malformed states in Chromium crashed SIX of them at
+  // HEAD — `V.toFixed is not a function`, `TH.toFixed is not a function`,
+  // `Cannot read properties of undefined` — and in this shell one tool's throw
+  // takes the surrounding error boundary with it, so a single bad file can blank
+  // the whole lab. All ten mount cleanly once the values are coerced on the way in.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  it('coerces and clamps every persisted number', () => {
+    const src = read();
+    expect(src).toMatch(/function usePersistedNumber\(key, defaultValue, min, max\)/);
+
+    // A numeric default handed to the plain string helper is the bug: it trusts
+    // whatever the file said. Every one of these must use the numeric helper.
+    const plainNumeric = [...src.matchAll(/usePersistedState\('([a-z_0-9]+)',\s*(-?[\d.]+)\)/g)]
+      .map((m) => m[1]);
+    expect(plainNumeric, 'numeric key still on the unchecked helper').toEqual([]);
+
+    // and the helper must actually do both jobs
+    const fn = src.slice(src.indexOf('function usePersistedNumber('), src.indexOf('function usePersistedNumber(') + 700);
+    expect(fn).toMatch(/parseFloat\(raw\)/);
+    expect(fn).toMatch(/isFinite\(n\)/);
+    expect(fn).toMatch(/clamp\(n, min, max\)/);
+  });
+
+  it('bounds every index before it reaches a list', () => {
+    const src = read();
+    expect(src).toMatch(/function persistedIndex\(raw, len\)/);
+    // The two vignette indices read straight off toolData and were used as
+    // LIST[i] — a string or an out-of-range number made that undefined and the
+    // next property read threw.
+    expect(src).toMatch(/var psIdx = persistedIndex\(d\.psIdx, V\.length\)/);
+    expect(src).toMatch(/var ddIdx2 = persistedIndex\(d\.dd2Idx, V\.length\)/);
+    expect(src).not.toMatch(/d\.psIdx == null \? -1 : d\.psIdx/);
+    expect(src).not.toMatch(/d\.dd2Idx == null \? -1 : d\.dd2Idx/);
+
+    const fn = src.slice(src.indexOf('function persistedIndex('), src.indexOf('function persistedIndex(') + 400);
+    expect(fn).toMatch(/Math\.floor\(n\)/);
+    expect(fn).toMatch(/n >= 0 && n < len/);
+  });
+
+  it('never lets a clamp range be open-ended', () => {
+    const src = read();
+    // usePersistedNumber clamps unconditionally, so a call without bounds would
+    // clamp against undefined and pass the bad value straight through.
+    const calls = [...src.matchAll(/usePersistedNumber\(([^)]*)\)/g)].map((m) => m[1]);
+    expect(calls.length).toBeGreaterThanOrEqual(15);
+    calls.forEach((args) => {
+      expect(args.split(',').length, 'usePersistedNumber without min/max: ' + args).toBe(4);
+    });
+  });
+});
+
+describe('WeldLab heat-input discovery uses the right units', () => {
+  // The widget's slider is labelled mm/SECOND but the formula carried the x60
+  // that only belongs to a per-MINUTE travel speed (which is what the main Heat
+  // Input Calculator uses, in/min). Every reading came out 60x too large, so the
+  // default settings reported "Burn-through risk" at 24.75 kJ/mm when the true
+  // figure was 0.41 — on the one screen whose entire job is discovering the
+  // relationship between travel speed and heat input.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  it('computes kJ/mm from mm/s without a per-minute factor', () => {
+    const src = read();
+    expect(src).toMatch(/var heatInput = \(iq\.amperage \* iq\.voltage\) \/ \(iq\.travelSpeed \* 1000\);/);
+    expect(src).not.toMatch(/iq\.amperage \* iq\.voltage \* 60/);
+  });
+
+  it('keeps the regime thresholds, which were always realistic', () => {
+    const src = read();
+    // 0.8 / 2.0 / 3.5 kJ/mm are sane arc-welding bands. They were never the bug;
+    // only the value fed into them was. Pin them so a later "fix" does not move
+    // the bands to accommodate a wrong number.
+    const at = src.indexOf('var heatInput = (iq.amperage');
+    const block = src.slice(at, at + 420);
+    expect(block).toMatch(/heatInput < 0\.8\) state = 'cold'/);
+    expect(block).toMatch(/heatInput < 2\.0\) state = 'optimal'/);
+    expect(block).toMatch(/heatInput < 3\.5\) state = 'hot'/);
+  });
+
+  it('opens on settings that land in the optimal band', () => {
+    const src = read();
+    const m = /heatHunt \|\| \{ amperage: (\d+), travelSpeed: ([\d.]+), voltage: (\d+)/.exec(src);
+    expect(m, 'default state not found').toBeTruthy();
+    const [A, v, V] = [Number(m[1]), Number(m[2]), Number(m[3])];
+    const kJmm = (A * V) / (v * 1000);
+    // A discovery widget should open showing the target regime, not an extreme.
+    expect(kJmm).toBeGreaterThanOrEqual(0.8);
+    expect(kJmm).toBeLessThan(2.0);
+  });
+});
+
+describe('WeldLab menu, badges and labels agree with each other', () => {
+  // Three lists that had to be kept in sync by hand, and were not:
+  //  - 24 menu cards, 22 BADGE_IDS. Opening Process Sleuth or Defect Diagnose
+  //    never marked it explored — no tick on the card, no progress credit — and
+  //    the counter read "X / 22 modules" beside 24 cards, so a student could
+  //    reach 22/22 "Toured every station" with two cards still blank.
+  //  - 22 BADGE_IDS, 11 BADGE_LABELS. The "Try next" nudge names the first
+  //    UNVISITED id, so every prompt after the first eleven modules rendered
+  //    "→ Try next:" and then nothing. Measured: nudge text "" at 11 visits.
+  const read = () => readFileSync(resolve(process.cwd(), 'stem_lab/stem_tool_weldlab.js'), 'utf8');
+
+  const badgeIds = () => {
+    const m = /var BADGE_IDS = \[([^\]]+)\]/.exec(read());
+    return m[1].split(',').map((x) => x.trim().replace(/^'|'$/g, '')).filter(Boolean);
+  };
+  const cardIds = () => [...read().matchAll(/^\s*id: '([A-Za-z0-9_]+)', title:/gm)].map((m) => m[1]);
+
+  it('gives every menu card a badge, and every badge a card', () => {
+    const ids = badgeIds();
+    const cards = cardIds();
+    expect(cards.length).toBeGreaterThan(20);
+    expect(cards.filter((c) => !ids.includes(c)), 'card with no badge').toEqual([]);
+    expect(ids.filter((i) => !cards.includes(i)), 'badge with no card').toEqual([]);
+  });
+
+  it('derives the nudge labels from the cards instead of a second hand-kept map', () => {
+    const src = read();
+    // A parallel map is exactly how 11-of-22 happened. The cards already carry a
+    // title for every id — and the translated one, not an English copy.
+    expect(src).toMatch(/var BADGE_LABELS = \{\};/);
+    expect(src).toMatch(/bigCards\.concat\(miniCards\)\.forEach\(function \(c\) \{ BADGE_LABELS\[c\.id\] = c\.title; \}\);/);
+    // and no literal label map may come back
+    expect(src).not.toMatch(/BADGE_LABELS = \{\s*\n\s*heatInput:/);
+  });
+
+  it('counts the progress denominator from the badge list, not a typed number', () => {
+    const src = read();
+    expect(src).toMatch(/var totalCount = BADGE_IDS\.length;/);
+    // and the footer sentence too — it once read "All 10 modules live" with 22 on
+    // screen. Assert the FALLBACK carries the placeholder rather than banning the
+    // old wording outright: the comment that records the bug contains that
+    // wording, and a gate matching prose flags its own explanation (same trap the
+    // print-CSS gate hit).
+    expect(src).toMatch(/value1: BADGE_IDS\.length/);
+    expect(src).toMatch(/'All \{value1\} modules live\./);
   });
 });

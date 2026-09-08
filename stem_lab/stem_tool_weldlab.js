@@ -50,10 +50,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
   // Detect prefers-reduced-motion at module load — used to gate canvas-level
   // cosmetic motion (arc-tip travel animation, sparks). Bead geometry still
   // renders accurately; only purely decorative animation is suppressed.
-  var _prefersReducedMotion = (function() {
+  // ★ Read ONCE at module load, this went stale the moment a student turned
+  // reduced motion on: the CSS half of the guard is a media query and updates
+  // live, but the canvas half is this variable, and the RAF loops kept running.
+  // In the bundled desktop shell the module is evaluated once for the life of
+  // the app, so "until you reload" can mean a whole class period. Track the
+  // query instead. Turning motion back OFF resumes on the next effect run
+  // rather than instantly, which is the harmless direction.
+  var _prefersReducedMotion = false;
+  (function () {
     try {
-      return window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    } catch (e) { return false; }
+      if (!window.matchMedia) return;
+      var mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+      _prefersReducedMotion = !!mq.matches;
+      var onChange = function (e) { _prefersReducedMotion = !!e.matches; };
+      if (mq.addEventListener) mq.addEventListener('change', onChange);
+      else if (mq.addListener) mq.addListener(onChange);
+    } catch (e) { _prefersReducedMotion = false; }
   })();
 
   // Print stylesheet — when teachers print a module, hide interactive controls
@@ -66,12 +79,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
     st.textContent = [
       '@media print {',
       '  .weldlab-no-print { display: none !important; }',
+      // Navigation is meaningless on paper: a tab strip, a back button and a
+      // view switcher all reference interactions the reader cannot perform, and
+      // they cost ink on every printed page. The SELECTED tab's content still
+      // prints, because only the controls are hidden, not the panel.
+      // Quiz options are deliberately NOT hidden -- role=radio carries the
+      // answer choices, and a printed worksheet is useless without them.
+      '  [role="tab"], [role="tablist"] { display: none !important; }',
       '  details.weldlab-teacher-notes { display: block !important; }',
       '  details.weldlab-teacher-notes > summary { list-style: none; cursor: default; }',
       '  details.weldlab-teacher-notes[open] > *,',
       '  details.weldlab-teacher-notes > * { display: block !important; }',
       '  canvas { max-width: 100% !important; height: auto !important; page-break-inside: avoid; }',
-      '  .weldlab-page-break { page-break-after: always; }',
+      // Was `.weldlab-page-break { page-break-after: always }` -- a rule no
+      // element in the file ever carried, so it did nothing. The intent it was
+      // reaching for is worth keeping: give a teacher their notes on a sheet of
+      // their own rather than trailing the student content.
+      '  details.weldlab-teacher-notes { page-break-before: always; page-break-inside: avoid; }',
       '  body { background: white !important; }',
       '}'
     ].join('\n');
@@ -533,23 +557,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         return s;
       }
 
+      // ── Saved collections: ONE precedence rule for all three ──
+      // The window slot wins over localStorage, because the host's
+      // handleLoadProject populates the slot from a project-JSON load and the
+      // project file is the only layer that survives a Canvas session.
+      //
+      // The three collections used to disagree with each other. The defect
+      // catalog checked the slot first; BADGES read localStorage only, so after
+      // loading a project a student saw whatever progress happened to be on THAT
+      // machine rather than what the file said. And Speed Challenge personal
+      // bests lived in localStorage alone — mirrored to neither the slot nor
+      // toolData — so they did not survive a project round-trip at all, in a
+      // module whose own menu card promises "Personal-best score saved per tier".
+      function savedCollection(slotKey, lsKey) {
+        var fromSlot = null;
+        try {
+          if (typeof window !== 'undefined' && window.__alloflowWeldLab) {
+            fromSlot = window.__alloflowWeldLab[slotKey] || null;
+          }
+        } catch (e) {}
+        return fromSlot || lsGet(lsKey, null);
+      }
+
+      // ── Persisted NUMBERS are untrusted input ──
+      // Everything in `d` came from toolData, which came from a project file a
+      // student can save, copy, hand-edit or carry between versions. It is input,
+      // not something this tool wrote. A file holding `bl_V: "abc"` crashed the
+      // Bead Lab outright with `V.toFixed is not a function` — measured by
+      // mounting the tool against six malformed states; five degraded quietly and
+      // this one threw. In this shell one tool's throw takes the surrounding error
+      // boundary with it, so a single bad file can blank the whole lab.
+      // Coerce and clamp on the way in; a nonsense value becomes the default
+      // rather than a crash, and the student keeps a working module.
+      function usePersistedNumber(key, defaultValue, min, max) {
+        var raw = d[key];
+        var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+        if (!isFinite(n)) n = defaultValue;
+        n = clamp(n, min, max);
+        var s = useState(n);
+        var firstRef = useRef(true);
+        useEffect(function () {
+          if (firstRef.current) { firstRef.current = false; return; }
+          upd(key, s[0]);
+        }, [s[0]]);
+        return s;
+      }
+      // Same idea for an index into a fixed list: a non-integer or out-of-range
+      // index makes `LIST[i]` undefined, and the very next property read throws.
+      function persistedIndex(raw, len) {
+        var n = (typeof raw === 'number') ? raw : parseFloat(raw);
+        if (!isFinite(n)) return -1;
+        n = Math.floor(n);
+        return (n >= 0 && n < len) ? n : -1;
+      }
+
       // Hydrate persisted state once on mount.
       var _hydratedRef = useRef(false);
       if (!_hydratedRef.current) {
         _hydratedRef.current = true;
-        var savedBadges = lsGet('weldLab.badges.v1', null);
+        var savedBadges = savedCollection('badges', 'weldLab.badges.v1');
         if (savedBadges && d.weldBadges === undefined) upd('weldBadges', savedBadges);
-        // Defect catalog — cross-sample log of defect types correctly identified
-        // at least once. Window slot wins over localStorage (host's
-        // handleLoadProject populates the slot from a project JSON load).
-        var savedCatalog = null;
-        try {
-          if (typeof window !== 'undefined' && window.__alloflowWeldLab && window.__alloflowWeldLab.defectCatalog) {
-            savedCatalog = window.__alloflowWeldLab.defectCatalog;
-          }
-        } catch (e) {}
-        if (!savedCatalog) savedCatalog = lsGet('weldLab.defectCatalog.v1', null);
+        // Cross-sample log of defect types correctly identified at least once.
+        var savedCatalog = savedCollection('defectCatalog', 'weldLab.defectCatalog.v1');
         if (savedCatalog && d.defectCatalog === undefined) upd('defectCatalog', savedCatalog);
+        // Per-tier personal bests for the Speed Challenge.
+        var savedBest = savedCollection('speedBest', 'weldLab.speed.best.v1');
+        if (savedBest && d.speedBest === undefined) upd('speedBest', savedBest);
       }
 
       var viewState = useState(d.view || 'menu');
@@ -613,10 +686,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           window.__alloflowWeldLab = Object.assign({}, current, {
             defectCatalog: d.defectCatalog || current.defectCatalog || {},
             badges: d.weldBadges || current.badges || {},
+            speedBest: d.speedBest || current.speedBest || {},
             _ts: Date.now()
           });
         } catch (e) {}
-      }, [d.defectCatalog, d.weldBadges]);
+      }, [d.defectCatalog, d.weldBadges, d.speedBest]);
 
       // Hot-reload from a project-JSON load mid-session.
       useEffect(function () {
@@ -625,13 +699,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             var w = window.__alloflowWeldLab || {};
             if (w.defectCatalog) upd('defectCatalog', w.defectCatalog);
             if (w.badges) upd('weldBadges', w.badges);
+            if (w.speedBest) upd('speedBest', w.speedBest);
           } catch (e) {}
         }
         window.addEventListener('alloflow-weldlab-restored', onRestore);
         return function () { window.removeEventListener('alloflow-weldlab-restored', onRestore); };
       }, []);
 
-      var BADGE_IDS = ['heatInput','beadLab','defectHunt','processCompare','jointCatalog','symbolsReader','ppeSafety','careerPaths','underwater','speedChallenge','defectCatalog','metallurgy','codes','qualPrep','pipeWelding','robotic','inspection','consumables','maineEcosystem','safetyHealth','mathBlueprint','careerStories'];
+      // ★ processSleuth and defectDiagnose were menu CARDS but not BADGE_IDS, so
+      // opening either never marked it explored: no tick on the card, no progress
+      // credit, no "Module explored" announcement. The progress line also read
+      // "X / 22 modules" beside 24 cards, and a student could reach 22/22
+      // "Toured every station" with two cards still showing no tick. Ordered to
+      // match the card layout, because the nudge walks this list to pick what to
+      // suggest next.
+      var BADGE_IDS = ['heatInput','beadLab','defectHunt','processCompare','jointCatalog','symbolsReader','ppeSafety','careerPaths','underwater','speedChallenge','processSleuth','defectDiagnose','defectCatalog','metallurgy','codes','qualPrep','pipeWelding','robotic','inspection','consumables','maineEcosystem','safetyHealth','mathBlueprint','careerStories'];
       var goto = function(v) {
         setView(v);
         upd('view', v);
@@ -650,6 +732,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // ─────────────────────────────────────────────────────
       // SHARED COMPONENTS
       // ─────────────────────────────────────────────────────
+
+      // ── Progress-bar edges ──
+      // Two measured problems with the hand-rolled `bg-slate-200` track plus a
+      // `bg-*` fill this file uses in six places:
+      //  1. Light theme, fill against track: 1.74:1 (amber-500) up to 2.98:1
+      //     (rose-500) — under the 3:1 WCAG 1.4.11 floor for a graphic that
+      //     carries meaning. NO single track shade fixes it: the fills run from
+      //     orange-400 to fuchsia-600, so any mid grey fails one end or the other.
+      //  2. Contrast theme: the host ships
+      //     `.theme-contrast [class*="bg-"] { background-color:#000 !important }`,
+      //     which blackens the fill AND the track, so every bar measured exactly
+      //     1.00:1 — completely invisible, for the readers who chose the
+      //     high-contrast theme precisely to see things.
+      // Both disappear if the value is marked by an EDGE instead of a hue
+      // difference: that host rule only touches background-color, so a border
+      // survives it, and a visible boundary satisfies 1.4.11 on its own.
+      // `currentColor` rather than a fixed ink, so the edge follows whatever text
+      // colour the surrounding card uses — dark slate on a white card, forced
+      // yellow under the contrast theme — and is therefore always visible
+      // against the ground it sits on.
+      var BAR_TRACK_STYLE = { border: '1px solid currentColor' };
+      function barFillStyle(pct) {
+        var p = clamp(Number(pct) || 0, 0, 100);
+        return {
+          width: p + '%',
+          borderRight: (p > 0 && p < 100) ? '2px solid currentColor' : 'none'
+        };
+      }
 
       // ── Responsive canvas fitting ──
       // ★ StemLab.setupHiDPI writes `canvas.style.width = logicalW + 'px'`. That
@@ -719,7 +829,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           h('button', {
             onClick: function() { setView('menu'); upd('view', 'menu'); },
             'aria-label': __alloT('stem.weldlab.back_to_weldlab_menu', 'Back to WeldLab menu'),
-            className: 'px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
+            className: 'weldlab-no-print px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 font-bold text-sm transition-colors'
           }, __alloT('stem.weldlab.menu', '← Menu')),
           h('span', { className: 'text-3xl' }, props.icon),
           h('h1', { className: 'text-xl font-black flex-1' }, props.title)
@@ -1119,19 +1229,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           // rather than a flat 0-of-11 counter. Surfaces the closest
           // un-visited module by name with a direct jump button.
           (function () {
-            var BADGE_LABELS = {
-              heatInput: 'Heat Input Calculator',
-              beadLab: 'Weld Bead Lab',
-              defectHunt: 'Defect Hunt Lab',
-              processCompare: 'Process Comparison',
-              jointCatalog: 'Joint Configuration',
-              symbolsReader: 'Welding Symbols Reader',
-              ppeSafety: 'PPE & Safety',
-              careerPaths: 'Career Pathways',
-              underwater: 'Underwater Welding',
-              speedChallenge: 'Speed Challenge',
-              defectCatalog: "Welder's Defect Catalog"
-            };
+            // ★ Was a hand-written map holding ELEVEN entries against 22 BADGE_IDS,
+            // so the "Try next" nudge rendered a BLANK module name for the other
+            // eleven — and it bit in the ordinary case, because the nudge names the
+            // first UNVISITED id, so every prompt after the first eleven modules was
+            // nameless: "→ Try next:" and then nothing, beside a working Open button.
+            // Measured by mounting the menu with eleven badges set: nudge text "".
+            // Derived from the cards now, which already carry a title for every id,
+            // so a new module cannot arrive with no name. It also picks up the
+            // translated title rather than a second English copy of it.
+            var BADGE_LABELS = {};
+            bigCards.concat(miniCards).forEach(function (c) { BADGE_LABELS[c.id] = c.title; });
             // Progress tier from visit count — and it counts VISITS, so it is named
             // for what it measures.
             //
@@ -1201,10 +1309,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 ),
                 h('div', { className: 'flex-shrink-0 w-36' },
                   h('div', { className: 'text-xs text-slate-700 mb-1 text-right font-mono' }, visitedCount + ' / ' + totalCount + ' modules'),
-                  h('div', { className: 'w-full h-3 bg-slate-200 rounded-full overflow-hidden relative', 'aria-hidden': true },
+                  h('div', { className: 'w-full h-3 bg-slate-200 rounded-full overflow-hidden relative', style: BAR_TRACK_STYLE, 'aria-hidden': true },
                     h('div', {
                       className: 'h-full weldlab-stripe-anim ' + (allDone ? 'bg-orange-500' : 'bg-orange-400') + ' transition-all',
-                      style: { width: Math.round((visitedCount / totalCount) * 100) + '%' }
+                      style: barFillStyle(Math.round((visitedCount / totalCount) * 100))
                     })
                   )
                 )
@@ -1253,8 +1361,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     h('span', { 'aria-hidden': true, className: 'text-xl' }, '📔'),
                     h('h2', { className: 'text-base font-black text-slate-800' }, __alloT('stem.weldlab.welder_s_defect_catalog_2', "Welder's Defect Catalog"))
                   ),
-                  h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', 'aria-hidden': true },
-                    h('div', { className: 'h-full bg-orange-600 transition-all', style: { width: catalogPct + '%' } })
+                  h('div', { className: 'h-2 bg-white/60 rounded-full overflow-hidden mb-1.5', style: BAR_TRACK_STYLE, 'aria-hidden': true },
+                    h('div', { className: 'h-full bg-orange-600 transition-all', style: barFillStyle(catalogPct) })
                   ),
                   // Per-type tally: all defect icons, lit when identified, grayed when not — shows WHICH remain.
                   h('div', { className: 'flex flex-wrap gap-1 mb-1.5', 'aria-hidden': true },
@@ -1296,9 +1404,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // MODULE 1: HEAT INPUT CALCULATOR
       // ─────────────────────────────────────────────────────
       function HeatInputCalculator() {
-        var V_state = usePersistedState('hi_V', 22);
-        var A_state = usePersistedState('hi_A', 180);
-        var TS_state = usePersistedState('hi_TS', 12);
+        var V_state = usePersistedNumber('hi_V', 22, 10, 40);
+        var A_state = usePersistedNumber('hi_A', 180, 50, 350);
+        var TS_state = usePersistedNumber('hi_TS', 12, 3, 30);
         var P_state = usePersistedState('hi_process', 'mig');
         var V = V_state[0], setV = V_state[1];
         var A = A_state[0], setA = A_state[1];
@@ -1461,12 +1569,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       // MODULE 2: WELD BEAD LAB
       // ─────────────────────────────────────────────────────
       function WeldBeadLab() {
-        var V_state = usePersistedState('bl_V', 22);
-        var A_state = usePersistedState('bl_A', 180);
-        var TS_state = usePersistedState('bl_TS', 12);
+        var V_state = usePersistedNumber('bl_V', 22, 10, 40);
+        var A_state = usePersistedNumber('bl_A', 180, 50, 350);
+        var TS_state = usePersistedNumber('bl_TS', 12, 3, 30);
         var P_state = usePersistedState('bl_process', 'mig');
         var M_state = usePersistedState('bl_material', 'steel');
-        var TH_state = usePersistedState('bl_thickness', 0.25);
+        var TH_state = usePersistedNumber('bl_thickness', 0.25, 0.125, 0.375);
         // View mode: 'topdown' (default, existing 2D Canvas2D) or '3d'
         // (new Three.js scene). Persisted so a student returning to the
         // module gets the same view they last used.
@@ -1972,8 +2080,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       h('span', { className: 'font-semibold text-slate-800' }, row.label),
                       h('span', { className: 'font-bold text-slate-700' }, Math.round(row.val) + '%')
                     ),
-                    h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden mt-1', 'aria-hidden': true },
-                      h('div', { className: 'h-full ' + color + ' transition-all', style: { width: row.val + '%' } })
+                    h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden mt-1', style: BAR_TRACK_STYLE, 'aria-hidden': true },
+                      h('div', { className: 'h-full ' + color + ' transition-all', style: barFillStyle(row.val) })
                     ),
                     h('div', { className: 'text-xs text-slate-700 mt-0.5' }, row.hint),
                     row.val < 80 && row.coach && h('div', {
@@ -3421,7 +3529,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
 
             // ── Arc bloom: bright yellow-white core ──
             if (t < 0.99) {
-              var pulse = _prefersReducedMotion ? 1 : (0.78 + 0.22 * Math.sin(elapsed * 28));
+              // ★ Same compound sub-3Hz waveform the top-down arc uses (2.40 + 0.91 Hz,
+              // amplitude +/-0.18). This view kept the ORIGINAL sin(elapsed * 28) ~ 4.46 Hz
+              // at +/-0.22 when its sibling was retuned, and it is the worse place for it:
+              // the helmet view is a near-white core on a black field, so the luminance
+              // swing is the largest in the tool. WCAG 2.3.1 draws the line at 3 flashes
+              // per second. Kept byte-identical to the sibling so the two cannot drift again.
+              var pulse = _prefersReducedMotion ? 1
+                : (0.78 + 0.12 * Math.sin(elapsed * 15.1) + 0.06 * Math.sin(elapsed * 5.7));
               // Outer glow
               var bloomR = 50;
               var bloom = ctxC.createRadialGradient(arcX, jointY, 0, arcX, jointY, bloomR);
@@ -3649,7 +3764,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       ];
 
       function DefectHuntLab() {
-        var sampleIdx_state = usePersistedState('dh_sampleIdx', 0);
+        var sampleIdx_state = usePersistedNumber('dh_sampleIdx', 0, 0, 2);
         var sampleIdx = sampleIdx_state[0], setSampleIdx = sampleIdx_state[1];
         var found_state = useState({});
         var found = found_state[0], setFound = found_state[1];
@@ -4095,16 +4210,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var selected_state = useState(null);
         var selected = selected_state[0], setSelected = selected_state[1];
 
+        // ── Rating dots ──
+        // The filled/empty split was carried by background-colour alone, which the
+        // host's `.theme-contrast [class*="bg-"] { background-color:#000 !important }`
+        // erases: probed in Chromium, all 120 dots in this view computed to
+        // rgb(0,0,0) — 76 filled and 44 empty alike — so every cell of the 24-cell
+        // comparison matrix was six identical black dots and the whole side-by-side
+        // read as nothing. Light theme was not fine either: orange-500 against
+        // slate-200 is 2.27:1, under the 3:1 WCAG 1.4.11 floor for a graphic that
+        // carries meaning.
+        // Encode the state in the BORDER as well as the fill — border-style is not
+        // touched by that rule, and solid-versus-dashed survives any palette.
+        // currentColor so the ring follows the surrounding ink (dark on the white
+        // card, forced yellow under contrast).
         function ratingDots(n, max, color) {
           var dots = [];
           for (var i = 0; i < max; i++) {
+            var on = i < n;
             dots.push(h('span', {
               key: i,
               'aria-hidden': true,
-              className: 'inline-block w-2 h-2 rounded-full mr-0.5 ' + (i < n ? color : 'bg-slate-200')
+              className: 'inline-block w-2.5 h-2.5 rounded-full mr-0.5 align-middle ' + (on ? color : 'bg-slate-200'),
+              style: on
+                ? { border: '2px solid currentColor' }
+                : { border: '1px dashed currentColor', opacity: 0.55 }
             }));
           }
-          return h('span', { 'aria-label': n + ' of ' + max }, dots);
+          // role='img' matters here: aria-label on a roleless <span> maps to
+          // role=generic, where the spec says the name is not exposed — so the
+          // dots were aria-hidden and their only label was being dropped, making
+          // all 24 cells of the comparison matrix silent to a screen reader.
+          return h('span', { role: 'img', 'aria-label': n + ' of ' + max }, dots);
         }
 
         var rows = [
@@ -4128,6 +4264,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4' },
               ['mig','tig','stick','oxy'].map(function(pk) {
                 var p = PROCESS_INFO[pk];
+                var pGrad = cardGradient(p.color);
                 var sel = (selected === pk);
                 return h('button', {
                   key: pk,
@@ -4138,13 +4275,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     (sel ? 'border-orange-600 ring-4 ring-orange-500/30' : 'border-slate-200 hover:border-slate-400') +
                     ' overflow-hidden focus:outline-none focus:ring-4 ring-orange-500/40'
                 },
-                  h('div', { className: 'bg-gradient-to-br ' + p.color + ' p-4 text-white' },
+                  // Same measured treatment as the menu cards: the gradient here
+                  // arrives through a VARIABLE (p.color), which is why a sweep for
+                  // literal `from-*` classes on a `text-white` line walked straight
+                  // past it. Measured white-on-from-stop: TIG 2.15:1 and MIG 2.80:1,
+                  // both under even the 3:1 large-text floor, and the tagline sits at
+                  // 11px behind opacity-90 on top of that.
+                  h('div', {
+                    className: 'p-4 text-white relative',
+                    style: { background: 'linear-gradient(135deg, ' + pGrad.deep[0] + ' 0%, ' + pGrad.deep[1] + ' 100%)' }
+                  },
+                    h('span', {
+                      'aria-hidden': true,
+                      className: 'absolute inset-x-0 top-0 h-1.5',
+                      style: { background: 'linear-gradient(90deg, ' + pGrad.bright[0] + ' 0%, ' + pGrad.bright[1] + ' 100%)' }
+                    }),
                     h('div', { className: 'flex items-center justify-between mb-1' },
                       h('span', { className: 'text-3xl' }, p.icon),
-                      h('span', { className: 'text-[0.625rem] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-full' }, __alloT('stem.weldlab.process_2', 'Process'))
+                      h('span', {
+                        className: 'text-[0.625rem] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ring-1 ring-white/30',
+                        style: { background: 'rgba(15,23,42,0.42)' }
+                      }, __alloT('stem.weldlab.process_2', 'Process'))
                     ),
                     h('div', { className: 'text-lg font-black' }, p.name),
-                    h('div', { className: 'text-[0.6875rem] opacity-90 font-medium' }, p.tagline)
+                    h('div', { className: 'text-[0.6875rem] font-medium text-white' }, p.tagline)
                   ),
                   h('div', { className: 'p-3' },
                     h('div', { className: 'text-xs font-bold uppercase tracking-wider text-slate-700 mb-1' }, __alloT('stem.weldlab.best_for', 'Best For')),
@@ -5849,7 +6003,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function UnderwaterLab() {
         var view_state = usePersistedState('uw_view', 'intro');
         var view = view_state[0], setLocalView = view_state[1];
-        var depth_state = usePersistedState('uw_depth', 30);
+        var depth_state = usePersistedNumber('uw_depth', 30, 0, 300);
         var depth = depth_state[0], setDepth = depth_state[1];
         var technique_state = usePersistedState('uw_tech', 'wet');
         var technique = technique_state[0], setTech = technique_state[1];
@@ -6288,7 +6442,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             why: 'Stick with E6011 electrode handles dirty / rusty / painted surfaces — the cellulose coating burns aggressively enough to dig through contamination. No gas cylinder needed (electrode coating provides shielding). Outdoor-tolerant. This is why stick endures despite slower deposition: it works in conditions where nothing else will.' }
         ];
 
-        var psIdx = d.psIdx == null ? -1 : d.psIdx;
+        var psIdx = persistedIndex(d.psIdx, V.length);
         var psSeed = d.psSeed || 1;
         var psAns = !!d.psAns;
         // ── Focus after answering ──
@@ -6528,7 +6682,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             why: 'Hot stainless reacts with atmospheric oxygen on the weld backside if the inside of the pipe is not purged with argon. The result: chromium-depleted, corrosion-prone scale that harbors bacteria — disqualifying for food/pharma/dairy work. Fix: argon backside purge during the entire weld + cool-down period. Required for sanitary 3-A certification.' }
         ];
 
-        var ddIdx2 = d.dd2Idx == null ? -1 : d.dd2Idx;
+        var ddIdx2 = persistedIndex(d.dd2Idx, V.length);
         var ddSeed2 = d.dd2Seed || 1;
         var ddAns2 = !!d.dd2Ans;
         // ── Focus after answering ──
@@ -6723,7 +6877,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var samples_state = useState([]);
         var samples = samples_state[0], setSamples = samples_state[1];
         var bestScores_state = useState(function() {
-          return lsGet('weldLab.speed.best.v1', { apprentice: 0, pro: 0, biw: 0 });
+          // toolData first: it is what a project load restores into.
+          return d.speedBest || lsGet('weldLab.speed.best.v1', { apprentice: 0, pro: 0, biw: 0 });
         });
         var bestScores = bestScores_state[0], setBestScores = bestScores_state[1];
 
@@ -6784,6 +6939,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                 newBest[tier] = finalScore;
                 setBestScores(newBest);
                 lsSet('weldLab.speed.best.v1', newBest);
+                // Also into toolData, which the slot mirror and the project file read.
+                upd('speedBest', newBest);
                 announce(__alloFill(__alloT('stem.weldlab.sr_new_personal_best_for_tier_percent', 'New personal best for {value1} tier: {value2} percent'), { value1: live.T.name, value2: finalScore }));
               } else {
                 announce(__alloFill(__alloT('stem.weldlab.sr_run_complete_score_percent', 'Run complete. Score: {value1} percent.'), { value1: finalScore }));
@@ -6845,6 +7002,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
               h('div', { onKeyDown: radioGroupKeys, 'role': 'radiogroup', 'aria-label': __alloT('stem.weldlab.difficulty_tier_2', 'Difficulty tier'), className: 'grid grid-cols-1 md:grid-cols-3 gap-3' },
                 Object.keys(SPEED_TIERS).map(function(tk) {
                   var t = SPEED_TIERS[tk];
+                  var tGrad = cardGradient(t.color);
                   var sel = (tier === tk);
                   return h('button', {
                     key: tk,
@@ -6862,7 +7020,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                       (sel ? 'border-orange-700 shadow-lg' : 'border-slate-200 hover:border-orange-400') +
                       (running ? ' opacity-50 cursor-not-allowed' : ' weldlab-card-lift')
                   },
-                    h('div', { className: 'bg-gradient-to-br ' + t.color + ' p-3 text-white' },
+                    // Third card system on the same measured treatment. Apprentice
+                    // (emerald-500) came in at 2.54:1 and Pro (orange-500) at 2.80:1
+                    // for white ink — under even the 3:1 large-text floor.
+                    h('div', {
+                      className: 'p-3 text-white relative',
+                      style: { background: 'linear-gradient(135deg, ' + tGrad.deep[0] + ' 0%, ' + tGrad.deep[1] + ' 100%)' }
+                    },
+                      h('span', {
+                        'aria-hidden': true,
+                        className: 'absolute inset-x-0 top-0 h-1.5',
+                        style: { background: 'linear-gradient(90deg, ' + tGrad.bright[0] + ' 0%, ' + tGrad.bright[1] + ' 100%)' }
+                      }),
                       h('div', { className: 'flex items-center gap-2' },
                         h('span', { className: 'text-2xl' }, t.icon),
                         h('div', { className: 'text-base font-black' }, t.name)
@@ -6875,8 +7044,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                         h('div', null, 'V tolerance: ±' + t.tolV + ' V'),
                         h('div', null, 'A tolerance: ±' + t.tolA + ' A')
                       ),
-                      h('div', { className: 'mt-2 text-xs font-bold ' + t.accent },
-                        '🏆 Best: ' + (bestScores[tk] || 0) + '%')
+                      // `bestScores[tk] || 0` rendered "Best: 0%" on a tier nobody had
+                      // played, so a student's first sight of all three tiers was three
+                      // zero scores — that reads as three failures rather than three
+                      // untried runs. An absent best is not a best of zero.
+                      (function () {
+                        var best = bestScores[tk];
+                        var played = typeof best === 'number' && best > 0;
+                        return h('div', { className: 'mt-2 text-xs font-bold ' + (played ? t.accent : 'text-slate-600') },
+                          played
+                            ? __alloFill(__alloT('stem.weldlab.best_percent', '🏆 Best: {value1}%'), { value1: best })
+                            : __alloT('stem.weldlab.not_attempted_yet', 'Not attempted yet'));
+                      })()
                     )
                   );
                 })
@@ -6891,10 +7070,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   'aria-live': 'polite'
                 }, (T.duration - Math.floor(elapsed)) + 's')
               ),
-              h('div', { className: 'h-4 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
+              h('div', { className: 'h-4 bg-slate-200 rounded-full overflow-hidden', style: BAR_TRACK_STYLE, 'aria-hidden': true },
                 h('div', {
                   className: 'h-full transition-all ' + timerColor + (running ? ' weldlab-stripe-anim' : ''),
-                  style: { width: (pctElapsed * 100) + '%' }
+                  style: barFillStyle(pctElapsed * 100)
                 })
               )
             ),
@@ -7033,7 +7212,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             },
               h('div', { className: 'p-5 flex items-center gap-5 flex-wrap' },
                 h('div', { className: 'flex-shrink-0 text-center' },
-                  h('div', { className: 'text-5xl font-black text-orange-800', 'aria-label': foundKeys.length + ' of ' + allDefectKeys.length + ' defect types identified' },
+                  h('div', { role: 'img', className: 'text-5xl font-black text-orange-800', 'aria-label': foundKeys.length + ' of ' + allDefectKeys.length + ' defect types identified' },
                     foundKeys.length + ' / ' + allDefectKeys.length
                   ),
                   h('div', { className: 'text-[0.625rem] uppercase tracking-widest text-slate-700 font-bold mt-1' }, __alloT('stem.weldlab.defect_types_id_d', 'defect types ID\'d'))
@@ -7046,8 +7225,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                   h('p', { className: 'text-sm text-slate-700 leading-snug' },
                     __alloT('stem.weldlab.every_welding_discontinuity_you_correc', "Every welding discontinuity you correctly identify in Defect Hunt Lab lands here. CWI inspectors keep mental catalogs like this their whole careers — yours starts now.")
                   ),
-                  h('div', { className: 'h-2 mt-2 bg-white/60 rounded-full overflow-hidden', 'aria-hidden': 'true' },
-                    h('div', { className: 'h-full bg-orange-600', style: { width: pct + '%' } })
+                  h('div', { className: 'h-2 mt-2 bg-white/60 rounded-full overflow-hidden', style: BAR_TRACK_STYLE, 'aria-hidden': 'true' },
+                    h('div', { className: 'h-full bg-orange-600', style: barFillStyle(pct) })
                   )
                 ),
                 foundKeys.length === 0 && h('div', { className: 'flex-shrink-0' },
@@ -7627,7 +7806,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       function WelderQualPrep() {
         var qpState = usePersistedState('qp_view', 'overview');
         var qpView = qpState[0], setQpView = qpState[1];
-        var quizState = usePersistedState('qp_quizidx', 0);
+        var quizState = usePersistedNumber('qp_quizidx', 0, 0, 999);
         var quizIdx = quizState[0], setQuizIdx = quizState[1];
         var ansState = usePersistedState('qp_ans', {});
         var ans = ansState[0], setAns = ansState[1];
@@ -8394,9 +8573,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var sect = cSect[0], setSect = cSect[1];
         var consModeState = usePersistedState('cons_mode', 'browse'); // 'browse' | 'scenarios'
         var consMode = consModeState[0], setConsMode = consModeState[1];
-        var consScIdxState = usePersistedState('cons_sc_idx', 0);
+        var consScIdxState = usePersistedNumber('cons_sc_idx', 0, 0, 999);
         var consScIdx = consScIdxState[0], setConsScIdx = consScIdxState[1];
-        var consScScoreState = usePersistedState('cons_sc_score', 0);
+        var consScScoreState = usePersistedNumber('cons_sc_score', 0, 0, 999);
         var consScScore = consScScoreState[0], setConsScScore = consScScoreState[1];
         var consScPickedState = usePersistedState('cons_sc_picked', null);
         var consScPicked = consScPickedState[0], setConsScPicked = consScPickedState[1];
@@ -9309,7 +9488,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             ),
             h('div', { className: 'bg-emerald-50 border-2 border-emerald-300 rounded-xl p-4' },
               h('div', { className: 'text-sm font-bold text-emerald-900 mb-2' }, __alloT('stem.weldlab.what_protects_you_career_long', '✓ What protects you (career-long)')),
-              h('p', { className: 'text-sm text-slate-800' }, __alloT('stem.weldlab.1_always_use_local_exhaust_ventilation', '1. ALWAYS use local exhaust ventilation (LEV) on every weld, not just stainless. 2. Wear hearing protection on the shop floor, not just when grinding. 3. Take micro-breaks every 30-60 min for posture reset. 4. Get a doctor who knows occupational medicine; do annual spirometry. 5. Know your OSHA right to a clean shop + report violations without retaliation.'))
+              // The five career-protection rules shipped as ONE paragraph with
+              // "1. ... 2. ..." inline: no list semantics for a screen reader, and a
+              // wall of prose visually, on the most safety-critical advice in the
+              // tool. Split the SAME translated string on its own numbering rather
+              // than minting five new keys, so existing translations keep working and
+              // a translator still sees one coherent passage. A translation that
+              // numbers differently simply falls back to the paragraph.
+              (function () {
+                var raw = String(__alloT('stem.weldlab.1_always_use_local_exhaust_ventilation',
+                  '1. ALWAYS use local exhaust ventilation (LEV) on every weld, not just stainless. 2. Wear hearing protection on the shop floor, not just when grinding. 3. Take micro-breaks every 30-60 min for posture reset. 4. Get a doctor who knows occupational medicine; do annual spirometry. 5. Know your OSHA right to a clean shop + report violations without retaliation.'));
+                var items = raw.split(/\s*\b\d+\.\s+/).filter(function (x) { return x.trim(); });
+                if (items.length < 2) return h('p', { className: 'text-sm text-slate-800' }, raw);
+                return h('ol', { className: 'text-sm text-slate-800 list-decimal list-outside pl-5 space-y-1' },
+                  items.map(function (it, i) { return h('li', { key: i }, it.trim()); }));
+              })()
             )
           );
         } else if (sect === 'fume') {
@@ -9574,8 +9767,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
                     className: 'transition-colors text-xs font-bold px-3 py-1 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700'
                   }, __alloT('stem.weldlab.reset_audit', '↺ Reset audit'))
                 ),
-                h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden', 'aria-hidden': true },
-                  h('div', { className: 'h-full bg-fuchsia-600 transition-all', style: { width: ((overall.answered / overall.total) * 100) + '%' } })
+                h('div', { className: 'h-2 bg-slate-200 rounded-full overflow-hidden', style: BAR_TRACK_STYLE, 'aria-hidden': true },
+                  h('div', { className: 'h-full bg-fuchsia-600 transition-all', style: barFillStyle((overall.answered / overall.total) * 100) })
                 )
               ),
               auditCategories.map(function(c, ci) {
@@ -9642,9 +9835,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
         var sect = mbSect[0], setSect = mbSect[1];
         var mbModeState = usePersistedState('mb_mode', 'browse'); // 'browse' | 'quiz'
         var mbMode = mbModeState[0], setMbMode = mbModeState[1];
-        var mbQIdxState = usePersistedState('mb_q_idx', 0);
+        var mbQIdxState = usePersistedNumber('mb_q_idx', 0, 0, 999);
         var mbQIdx = mbQIdxState[0], setMbQIdx = mbQIdxState[1];
-        var mbQScoreState = usePersistedState('mb_q_score', 0);
+        var mbQScoreState = usePersistedNumber('mb_q_score', 0, 0, 999);
         var mbQScore = mbQScoreState[0], setMbQScore = mbQScoreState[1];
         var mbQPickedState = usePersistedState('mb_q_picked', null);
         var mbQPicked = mbQPickedState[0], setMbQPicked = mbQPickedState[1];
@@ -10132,7 +10325,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
           { name: __alloT('stem.weldlab.daniel_o', 'Daniel O.'), age: 47, role: 'Welder + small farm owner (Downeast Maine)', path: 'Welder 25 years (various shops + freelance) → bought farm at 38 → welding part-time + farming part-time', pay: 'Welding $25-30K + farm net $15-25K (varies). Combined ~$50K + lifestyle benefits.', voice: '"I weld 2-3 days/week (mobile + small shop in barn) + farm 4-5 days/week. The welding pays the bills + insurance + equipment. The farm is the life. Most Maine farmers I know have a side trade — welding, carpentry, plumbing. The land doesn\'t feed you alone in Maine."', advice: 'If you want a Maine homestead, having a portable trade is huge. Welding scales down well — small shop in a barn covers a lot of mobile work.', tags: { want: ['creative'], school: ['fast'], place: ['self'] } }
         ];
 
-        var sSel = usePersistedState('cs_sel', 0);
+        var sSel = usePersistedNumber('cs_sel', 0, 0, 999);
         var idx = sSel[0], setIdx = sSel[1];
         var s = stories[idx] || stories[0];
 
@@ -10343,7 +10536,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
       else if (view === 'careerStories') viewBody = h(CareerStories);
       else if (view === 'heatHunt') viewBody = h(function() {
         var d2 = (toolData && toolData.weldLab) || {};
-        var iq = d2.heatHunt || { amperage: 150, travelSpeed: 8, voltage: 22, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
+        var iq = d2.heatHunt || { amperage: 150, travelSpeed: 3, voltage: 22, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
         function setIQ(patch) {
           setToolData(function(prev) {
             var prior = (prev && prev.weldLab) || {};
@@ -10351,7 +10544,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('weldLab'))) {
             return Object.assign({}, prev, { weldLab: Object.assign({}, prior, { heatHunt: st }) });
           });
         }
-        var heatInput = (iq.amperage * iq.voltage * 60) / (iq.travelSpeed * 1000);
+        // ★ Was `(A * V * 60) / (v * 1000)` — 60x too large. The 60 converts a
+        // per-MINUTE travel speed, which is what the main Heat Input Calculator
+        // uses (in/min), but this slider is labelled mm/SECOND. Heat input in
+        // kJ/mm from mm/s is simply (V x A) / (v x 1000).
+        // The regime thresholds below (0.8 / 2.0 / 3.5 kJ/mm) are realistic for
+        // arc welding, so the BANDS were right and only the number feeding them
+        // was wrong — which parked the widget in "burn-through" at settings that
+        // are actually sound, and told a student the opposite of the truth on the
+        // one screen whose whole job is discovering this relationship.
+        var heatInput = (iq.amperage * iq.voltage) / (iq.travelSpeed * 1000);
         var state;
         if (heatInput < 0.8) state = 'cold';
         else if (heatInput < 2.0) state = 'optimal';
