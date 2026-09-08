@@ -9617,20 +9617,43 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return !!(state.reading && state.reading.valid && state.reading.key === arShopReadingKey(state));
   }
 
+  // One set of checks drives both the live guide and task completion.
+  function arShopReadiness(raw) {
+    var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], checks = [];
+    if (!task) return { complete: true, ready: false, checks: checks, next: null,
+      message: 'This training work order is complete. Review the handoff or choose another job.' };
+    function check(id, label, ready, message) { checks.push({ id: id, label: label, ready: !!ready, message: message }); }
+    if (task.tool === 'lift-controls') check('lift-stop', 'Lift stop released', !state.liftStopped,
+      'Lift stop is latched. Check the bay is clear and reset the stop before issuing a new lift command.');
+    var stationLabel = SHOP_STATIONS.filter(function (p) { return p.id === task.station; })[0].label;
+    var toolLabel = SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1];
+    check('station', stationLabel, state.station === task.station, 'Go to ' + stationLabel + ' for this task.');
+    check('tool', toolLabel, state.tool === task.tool, 'Choose ' + toolLabel + ' for this task.');
+    check('prerequisites', 'Vehicle setup and access', Object.keys(task.requires).every(function (key) { return state[key] === task.requires[key]; }),
+      'The vehicle is not ready for this operation. Complete the preceding setup and reassembly steps.');
+    if (task.id === 'measure' || task.id === 'refill') check('calculation', 'Service-sheet calculation',
+      String(state.answer).trim() && Number.isFinite(Number(state.answer)) && Math.abs(Number(state.answer) - job.answer) <= 0.001,
+      'Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
+    var kind = arShopInstrumentKind(state);
+    if (kind) check('evidence', kind === 'torque' ? 'Wheel seated · ' + state.lugs.length + '/5 fasteners checked' :
+      kind === 'alignment' && task.id === 'alignment-setup' ? 'Bay preparation · ' + ['tyres', 'targets', 'centered'].filter(function (key) { return state.alignment[key]; }).length + '/3 checks' : 'Current valid instrument reading',
+      arShopEvidenceReady(state), task.id === 'alignment-setup' ? 'Complete all three alignment bay setup checks before continuing.' :
+      'Operate the equipment and capture valid evidence for this task before completing it.');
+    if (task.id === 'release') check('handoff', 'Customer handoff', String(state.notes || '').trim().length >= 20,
+      'Write a handoff of at least 20 characters describing the finding, service and verification.');
+    var unmet = checks.filter(function (item) { return !item.ready; });
+    // Guide equipment selection before travel, and observation before arithmetic.
+    // The completion feedback retains its original gate order.
+    var order = ['lift-stop', 'prerequisites', 'tool', 'station', 'evidence', 'calculation', 'handoff'];
+    var next = unmet.slice().sort(function (a, b) { return order.indexOf(a.id) - order.indexOf(b.id); })[0] || null;
+    return { complete: false, ready: !unmet.length, checks: checks, next: next,
+      message: unmet.length ? unmet[0].message : 'Ready to perform: ' + task.label };
+  }
+
   function arShopAdvance(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step];
-    function blocked(message) { return Object.assign({}, state, { feedback: message }); }
-    if (!task) return blocked('This training work order is complete. Review the handoff or choose another job.');
-    if (state.liftStopped && task.tool === 'lift-controls') return blocked('Lift stop is latched. Check the bay is clear and reset the stop before issuing a new lift command.');
-    if (state.station !== task.station) return blocked('Go to ' + SHOP_STATIONS.filter(function (p) { return p.id === task.station; })[0].label + ' for this task.');
-    if (state.tool !== task.tool) return blocked('Choose ' + SHOP_TOOLS.filter(function (t) { return t[0] === task.tool; })[0][1] + ' for this task.');
-    var unmet = Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; });
-    if (unmet) return blocked('The vehicle is not ready for this operation. Complete the preceding setup and reassembly steps.');
-    if ((task.id === 'measure' || task.id === 'refill') && (!String(state.answer).trim() || !Number.isFinite(Number(state.answer)) || Math.abs(Number(state.answer) - job.answer) > 0.001)) {
-      return blocked('Check the measurement calculation against the service sheet. Enter your answer in ' + job.unit + '.');
-    }
-    if (!arShopEvidenceReady(state)) return blocked(task.id === 'alignment-setup' ? 'Complete all three alignment bay setup checks before continuing.' : 'Operate the equipment and capture valid evidence for this task before completing it.');
-    if (task.id === 'release' && String(state.notes || '').trim().length < 20) return blocked('Write a handoff of at least 20 characters describing the finding, service and verification.');
+    var readiness = arShopReadiness(state);
+    if (!readiness.ready) return Object.assign({}, state, { feedback: readiness.message });
     return Object.assign({}, state, task.changes, { step: state.step + 1, answer: '', reading: null, feedback: 'Completed: ' + task.label,
       history: state.history.concat([{ id: task.id, label: task.label, tool: task.tool, result: task.why + (state.reading && state.reading.key === arShopReadingKey(state) ? ' Captured: ' + state.reading.value + ' ' + state.reading.unit + '. ' + state.reading.detail : '') + (task.id === 'refit' ? ' Fasteners checked: 1 → 3 → 5 → 2 → 4.' : '') + ((task.id === 'measure' || task.id === 'refill') ? ' Learner calculation: ' + Number(state.answer) + ' ' + job.unit + '.' : '') }]) });
   }
@@ -20052,6 +20075,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
           }
         }
+        function focusToolControls() {
+          pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
+          SHOP3D.focus('tools', { distance: 2.6, target: { x: 1.7, y: 1.30, z: -2.97 }, immediate: true });
+        }
         function focusLiftControls() {
           pick('lift'); stationCamera('lift'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
           SHOP3D.focus('lift', { distance: 2.6, target: { x: -0.13, y: 1.30, z: 1.51 }, immediate: true });
@@ -20083,17 +20110,55 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', null, part.label), h('p', { style: { margin: '6px 0' } }, part.detail),
               part.id === 'pad' && h('p', null, 'Model lining: ' + (shop.serviced ? '8' : '2') + ' mm. This job’s replacement limit: 3 mm. Lining depth is shown at 6× for visibility.')));
         }
+        function taskGuidePanel() {
+          var readiness = arShopReadiness(shop), next = readiness.next;
+          var target = next ? next.id : readiness.complete ? 'complete' : 'ready';
+          var labels = { 'lift-stop': 'Show lift reset controls', prerequisites: 'Review task requirements', tool: 'Show tool choices',
+            station: 'Go to task station', evidence: 'Show equipment controls', calculation: 'Enter calculation', handoff: 'Write customer handoff',
+            ready: 'Show task controls', complete: 'Review completed work order' };
+          function guide() {
+            var selector;
+            if (target === 'tool') { focusToolControls(); selector = '[data-ar-scene-tool]'; }
+            else if (target === 'lift-stop') { focusLiftControls(); selector = '[data-ar-scene-action="' + (shop.liftBayClear ? 'lift-reset' : 'lift-clear') + '"]'; }
+            else if (target === 'calculation' || target === 'handoff') selector = target === 'calculation' ? '#ar-shop-scene-answer' : '#ar-shop-scene-notes';
+            else if (target === 'prerequisites' || target === 'complete') selector = '#ar-shop-work-order';
+            else {
+              focusServiceControls();
+              if (target === 'evidence' && instrumentKind === 'torque' && shop.wheelSeated) selector = '[data-ar-shop-lug="' + TIRE_LUG_PATTERN[shop.lugs.length] + '"]';
+              else if (target === 'evidence') selector = '[data-ar-scene-action="' +
+                (instrumentKind === 'torque' ? 'seat' : instrumentKind === 'alignment' && task.id === 'alignment-setup' ?
+                  'check-' + ['tyres', 'targets', 'centered'].filter(function (key) { return !shop.alignment[key]; })[0] : 'read') + '"]';
+              else selector = '[data-ar-scene-action="task"]';
+            }
+            requestAnimationFrame(function () {
+              var element = document.querySelector('[data-ar-workshop] ' + selector);
+              if (element) { element.focus({ preventScroll: true }); element.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+            });
+            arAnnounce(next ? next.message : readiness.message);
+          }
+          var passed = readiness.checks.filter(function (item) { return item.ready; }).length;
+          return h('section', { 'data-ar-task-guide': target, 'aria-label': 'Live task guide',
+            style: { padding: 12, margin: '10px 0', border: '1px solid #67e8f9', borderRadius: 8, background: '#172f43' } },
+            h('strong', { style: { display: 'block', fontSize: 14 } }, readiness.complete ? 'Work order complete' : 'Task ' + (shop.step + 1) + '/' + job.tasks.length + ' · ' + task.label),
+            h('p', { 'data-ar-task-guide-status': true, role: 'status', 'aria-atomic': 'true', style: { fontSize: 12, margin: '8px 0', color: '#a5f3fc' } },
+              readiness.complete ? 'Service and verification recorded.' : readiness.ready ? 'All checks ready. Perform the task when you are ready.' : next.message),
+            control(labels[target], guide, { 'data-ar-task-guide-go': target }),
+            !readiness.complete && h('details', { style: { fontSize: 12, marginTop: 8 } },
+              h('summary', { style: { cursor: 'pointer', padding: '8px 0' } }, passed + '/' + readiness.checks.length + ' task checks ready'),
+              h('ul', { style: { paddingLeft: 18, margin: '4px 0', lineHeight: 1.8 } }, readiness.checks.map(function (item) {
+                return h('li', { key: item.id, 'data-ar-task-check': item.id, 'data-ar-check-ready': String(item.ready) },
+                  (item.ready ? 'Ready: ' : 'Needed: ') + item.label);
+              }))));
+        }
         function sceneControlPanel() {
           function use(id) { pick(arShop3DToken(shop, id)); }
           return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Work directly in the 3D shop'),
+            taskGuidePanel(),
             h('p', { style: { fontSize: 12, margin: '6px 0' } }, 'Click the hood, tool cases, instrument displays or blue controls. NEXT performs the current task. Dragging still orbits. These buttons provide the same actions with a keyboard.'),
             h('div', { className: 'ar-shop-actions' },
               control('Focus service controls', focusServiceControls, { 'data-ar-scene-focus': true }),
-              control('Choose tools in 3D', function () {
-                pick('tools'); stationCamera('tools'); SHOP3D.reset(); SHOP3D.nudge(0.65, 0);
-                SHOP3D.focus('tools', { distance: 2.6, target: { x: 1.7, y: 1.30, z: -2.97 }, immediate: true });
-              }, { 'data-ar-scene-tools-focus': true })),
+              control('Choose tools in 3D', focusToolControls, { 'data-ar-scene-tools-focus': true })),
             h('div', { 'data-ar-lift-stop-panel': true, style: { padding: 10, marginTop: 10, border: '1px solid ' + (shop.liftStopped ? '#f87171' : '#64748b'), borderRadius: 8 } },
               h('strong', { 'data-ar-lift-stop-status': shop.liftStopped ? 'stopped' : 'ready', style: { display: 'block', color: shop.liftStopped ? '#fca5a5' : '#a7f3d0' } }, shop.liftStopped ? 'Lift stop latched — commands blocked' : 'Lift stop released'),
               h('p', { style: { fontSize: 12, margin: '6px 0' } }, shop.liftStopped ? 'Vehicle remains: ' + liftLabels[shop.lift] + '. Check the simulated bay, then reset. Resetting does not resume a command.' : 'The red 3D button latches the stop at the current height. This authored control exercise does not replace instructions for a specific lift.'),

@@ -158,6 +158,19 @@ Validation: **516 tests across all 39 automobile suites passed**, including 69 w
 - [Pad and gauge close-up](../reports/automobile-workshop/brake-pad-closeup.png)
 - [Rotor and hub close-up](../reports/automobile-workshop/brake-rotor-closeup.png)
 
+## Live task guide and contextual navigation
+
+The direct 3D controls now include the current task, a live readiness message and an expandable checklist. The guide and task completion share one readiness model covering station, selected tool, vehicle prerequisites, lift stop, arithmetic, instrument evidence and customer handoff. Existing completion feedback keeps its previous priority. The guide prioritizes resolving the lift stop and vehicle setup, selecting equipment before travel, and capturing observations before arithmetic.
+
+The contextual button moves to the relevant tool tray, service controls, lift clear/reset controls, equipment action, calculation field or handoff field. Navigation does not choose a tool, reset the lift, capture evidence, perform a task or supply an arithmetic answer. Keyboard focus follows the destination; the equivalent controls remain available without WebGL. Alignment preparation and fastener checks include live counts. A completed order links back to its record.
+
+Readiness responds to changes in instrument setup and retains valid evidence during camera movement and brake exploration. The new display uses the existing scene state; typing calculations or handoff notes does not rebuild the 3D geometry.
+
+Validation: **527 tests across all 39 automobile suites passed**, including 80 workshop model/render tests. **Eight targeted WebGL browser checks passed**: the two new guide flows, direct 3D meter/tool interaction, full brake service, oil service, electrical evidence, physical wheel fasteners and the complete alignment job. The browser batches took 1.0 and 3.7 minutes; unit regression took 129.69 seconds. Desktop and 390-pixel phone guide screenshots were visually reviewed. Keyboard focus, navigation without task execution, stale evidence, completed-order review and mobile overflow checks passed. Syntax, source/public parity and scoped diff checks passed. Temporary browser recording overrides were removed after testing. No deployment or installer build was performed.
+
+- [Ready task checklist](../reports/automobile-workshop/task-guide-ready.png)
+- [Mobile task guide](../reports/automobile-workshop/task-guide-mobile.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

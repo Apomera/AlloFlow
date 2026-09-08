@@ -658,3 +658,78 @@ test('detailed brake parts retain clickable components, tracked gauge and select
   await expect(page.locator('[data-ar-shop-task="measure"]')).toBeVisible();
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('live task guide navigates tools, evidence and calculation without performing the task', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 7, station: 'tools', tool: 'lamp', lift: 'locked', wheelRemoved: true } } });
+  const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'tool');
+  await go.focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-scene-tool]').first()).toBeFocused();
+  await expect(page.locator('#ar-shop-tool')).toHaveValue('lamp');
+  await page.locator('[data-ar-scene-tool="gauge"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'station');
+  await go.click();
+  await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await go.click();
+  await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveAttribute('data-ar-shop-reading', '');
+  // The learner, rather than navigation, captures evidence.
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'calculation');
+  await go.click(); await expect(page.locator('#ar-shop-scene-answer')).toBeFocused();
+  await page.keyboard.type('6');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await guide.locator('summary').click();
+  await expect(guide.locator('[data-ar-check-ready="false"]')).toHaveCount(0);
+  await guide.screenshot({ path: 'reports/automobile-workshop/task-guide-ready.png' });
+  await go.click();
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  // Camera and explorer changes preserve readiness; a changed gauge setup does not.
+  await page.locator('[data-ar-scene-action="brake-spread"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await page.locator('[data-ar-scene-action="gauge-surface"]').click();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await go.focus(); await page.keyboard.press('Enter');
+  await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await guide.screenshot({ path: 'reports/automobile-workshop/task-guide-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('live task guide supports lift recovery, alignment, wheel seating and customer handoff', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 2, station: 'lift', tool: 'lift-controls', lift: 'prepared', liftStopped: true } } });
+  const guide = page.locator('[data-ar-task-guide]'), go = page.locator('[data-ar-task-guide-go]');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="lift-clear"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'lift-stop');
+  await page.keyboard.press('Enter');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="lift-reset"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await expect(page.locator('[data-ar-shop-task="low-lift"]')).toHaveCount(1);
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 1, station: 'brakes', tool: 'aligner' }));
+  for (const check of ['tyres', 'targets', 'centered']) {
+    await go.click(); await expect(page.locator('[data-ar-scene-action="check-' + check + '"]')).toBeFocused();
+    await page.keyboard.press('Enter');
+  }
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'brakes', step: 9, station: 'brakes', tool: 'torque', lift: 'locked', wheelRemoved: true, serviced: true }));
+  await go.click(); await expect(page.locator('[data-ar-scene-action="seat"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await go.click(); await expect(page.locator('[data-ar-shop-lug="0"]')).toBeFocused();
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'evidence');
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'electrical', step: 5, station: 'intake', tool: 'job-card', verified: true }));
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'handoff');
+  await go.click(); await expect(page.locator('#ar-shop-scene-notes')).toBeFocused();
+  await page.keyboard.type('Repaired the connection and verified loaded voltage drop.');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'ready');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="task"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(guide).toHaveAttribute('data-ar-task-guide', 'complete');
+  await go.click(); await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

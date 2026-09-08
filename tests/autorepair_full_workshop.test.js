@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -487,5 +487,76 @@ describe('Brake inspection camera coordinates', () => {
     const host = document.createElement('div'); host.innerHTML = html;
     expect(host.querySelector('[data-ar-brake-closeup="pad"]').textContent).toContain('Friction pad');
     expect(host.querySelector('[data-ar-brake-part="pad"]').textContent).toContain('6×');
+  });
+});
+
+
+describe('Live workshop task readiness', () => {
+  function at(jobId, taskId) {
+    let state = model.initial(jobId), job = model.jobs.find(j => j.id === jobId);
+    while (job.tasks[state.step].id !== taskId) state = step(state);
+    const task = job.tasks[state.step];
+    return model.normalize({ ...state, station: task.station, tool: task.tool });
+  }
+  it.each(model.jobs)('matches completion gates throughout $id without advancing or mutating state', job => {
+    let state = model.initial(job.id);
+    for (const task of job.tasks) {
+      const variants = [state, { ...state, station: 'tools' }, { ...state, tool: 'not-a-tool' },
+        { ...state, answer: 'NaN' }, { ...state, liftStopped: true }, { ...state, notes: '' }];
+      for (const candidate of variants) {
+        const before = JSON.stringify(candidate), guide = model.readiness(candidate), result = model.advance(candidate);
+        expect(guide.ready, task.id).toBe(result.step === state.step + 1);
+        if (!guide.ready) expect(result.feedback).toBe(guide.message);
+        expect(JSON.stringify(candidate)).toBe(before);
+      }
+      state = step(state, { notes: 'Service completed and the repair verified for the customer.' });
+    }
+    expect(model.readiness(state)).toMatchObject({ complete: true, ready: false, next: null, checks: [] });
+  });
+  it('guides equipment before travel and evidence before calculation', () => {
+    let state = { ...at('brakes', 'measure'), station: 'tools', tool: 'lamp', answer: '' };
+    expect(model.readiness(state).next.id).toBe('tool');
+    state.tool = 'gauge'; expect(model.readiness(state).next.id).toBe('station');
+    state.station = 'brakes'; expect(model.readiness(state).next.id).toBe('evidence');
+    state = model.operate(state, { type: 'read' });
+    expect(model.readiness(state).next.id).toBe('calculation');
+    state.answer = '6'; expect(model.readiness(state).ready).toBe(true);
+    state = model.operate(state, { type: 'configure', field: 'surface', value: 'backing' });
+    expect(model.readiness(state).next.id).toBe('evidence');
+  });
+  it('keeps an emergency stop and unsafe access ahead of equipment guidance', () => {
+    const state = { ...at('brakes', 'low-lift'), liftStopped: true, tool: 'lamp' };
+    expect(model.readiness(state).next.id).toBe('lift-stop');
+    expect(model.readiness({ ...at('brakes', 'wheel-off'), lift: 'raised', tool: 'lamp' }).next.id).toBe('prerequisites');
+    // A latched lift does not prohibit a non-movement inspection.
+    expect(model.readiness({ ...at('brakes', 'stability'), liftStopped: true }).ready).toBe(true);
+  });
+  it('reports partial preparation and reassembly while keeping evidence incomplete', () => {
+    let setup = at('alignment', 'alignment-setup');
+    setup = model.operate(setup, { type: 'alignment-check', check: 'tyres' });
+    expect(model.readiness(setup).next).toMatchObject({ id: 'evidence', label: 'Bay preparation · 1/3 checks' });
+    let refit = at('brakes', 'refit');
+    refit = model.operate(refit, { type: 'seat-wheel' });
+    refit = model.operate(refit, { type: 'lug', index: 0 });
+    expect(model.readiness(refit).next).toMatchObject({ id: 'evidence', label: 'Wheel seated · 1/5 fasteners checked' });
+    for (const index of [2, 4, 1, 3]) refit = model.operate(refit, { type: 'lug', index });
+    expect(model.readiness(refit).ready).toBe(true);
+  });
+  it('distinguishes a missing customer handoff from a completed work order', () => {
+    const state = at('electrical', 'release');
+    expect(model.readiness(state).next.id).toBe('handoff');
+    expect(model.readiness({ ...state, notes: 'Repaired the connection and verified loaded voltage drop.' }).ready).toBe(true);
+  });
+});
+
+describe('Task guide fallback presentation', () => {
+  beforeEach(() => { resetStemLab(); loadTool(file, 'autoRepair'); });
+  it.each([{ isDark: false }, { isDark: true }, { isContrast: true }])('offers a labelled checklist without WebGL in %j', theme => {
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: { job: 'brakes', tool: 'lamp' } } }, theme);
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelector('[data-ar-task-guide]').getAttribute('aria-label')).toBe('Live task guide');
+    expect(host.querySelector('[data-ar-task-guide-go]').textContent).toBe('Show tool choices');
+    expect(host.querySelector('[data-ar-task-check="tool"]').getAttribute('data-ar-check-ready')).toBe('false');
+    expect(host.querySelector('[data-ar-task-guide-status]').getAttribute('role')).toBe('status');
   });
 });
