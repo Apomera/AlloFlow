@@ -841,3 +841,44 @@ describe('Cephalopod Lab challenge tracker', () => {
     expect(c.textContent).toMatch(/Use 3 different shelter types in one dive[\s\S]{0,120}check this one yourself/);
   });
 });
+
+// ── Ocean Sounds frequency spectrum ──
+describe('Cephalopod Lab ocean sound spectrum', () => {
+  const renderSounds = () => {
+    const c = document.createElement('div');
+    c.innerHTML = renderTool('cephalopodLab', { cephalopodLab: { activeSection: 'sounds' } });
+    return c;
+  };
+  const chart = (c) => c.querySelector('svg[aria-label^="Marine soundscape on a logarithmic frequency axis"]');
+
+  it('plots a band for every entry whose figure is a plain range', () => {
+    const c = renderSounds();
+    const svg = chart(c);
+    expect(svg).not.toBeNull();
+    const bars = Array.from(svg.querySelectorAll('rect'));
+    expect(bars).toHaveLength(9);
+    expect(svg.getAttribute('aria-label')).toMatch(/Humpback whale song, 30 Hz - 2 kHz/);
+  });
+
+  it('says which entry it could not plot instead of approximating it', () => {
+    const c = renderSounds();
+    expect(c.textContent).toMatch(/Not plotted, because the figure is not a plain range: Cephalopod jet noise \(Sub-kHz to 1 kHz\)/);
+    expect(chart(c).getAttribute('aria-label')).not.toMatch(/Cephalopod jet noise/);
+  });
+
+  it('places bands on a log axis, so a decade is a constant distance', () => {
+    const svg = chart(renderSounds());
+    const ticks = Array.from(svg.querySelectorAll('text')).filter((t) => /^(0\.1|1|10|100) Hz$|^(1|10) kHz$/.test(t.textContent));
+    expect(ticks).toHaveLength(6);
+    const xs = ticks.map((t) => Number(t.getAttribute('x')));
+    const gaps = xs.slice(1).map((x, i) => x - xs[i]);
+    gaps.forEach((g) => expect(Math.abs(g - gaps[0])).toBeLessThan(1));
+  });
+
+  it('repeats only the claim the section already makes about cephalopod hearing', () => {
+    const c = renderSounds();
+    // the chart must not invent a cephalopod audible range
+    expect(c.textContent).toMatch(/cephalopods cannot hear as pressure waves/);
+    expect(c.textContent).not.toMatch(/cephalopod hearing range/i);
+  });
+});

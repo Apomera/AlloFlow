@@ -21140,7 +21140,83 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
       // ═══════════════════════════════════════════════════════
       // SECTION 16ab — OCEAN SOUNDS
       // ═══════════════════════════════════════════════════════
+      // Pull a numeric Hz band out of the frequency strings the data already
+      // holds ("2-10 kHz", "30 Hz - 2 kHz", "0.1 Hz - 10 kHz"). Returns null
+      // when the string is not a plain range — "Sub-kHz to 1 kHz" has no
+      // leading number — so those are reported rather than approximated.
+      function clParseHzBand(text) {
+        var t = String(text || '').replace(/[\u2012-\u2015]/g, '-').replace(/\s+to\s+/i, '-');
+        var m = t.match(/(\d+(?:\.\d+)?)\s*(k?hz)?\s*-\s*(\d+(?:\.\d+)?)\s*(k?hz)/i);
+        if (!m) return null;
+        var unitHi = m[4].toLowerCase();
+        var unitLo = (m[2] || unitHi).toLowerCase();
+        var mul = function(u) { return u === 'khz' ? 1000 : 1; };
+        var lo = parseFloat(m[1]) * mul(unitLo);
+        var hi = parseFloat(m[3]) * mul(unitHi);
+        if (!(lo > 0) || !(hi > lo)) return null;
+        return { lo: lo, hi: hi };
+      }
+
       function renderOceanSounds() {
+        var bands = OCEAN_SOUNDS.map(function(s) { return { s: s, band: clParseHzBand(s.frequency) }; });
+        var plotted = bands.filter(function(b) { return b.band; });
+        var unplotted = bands.filter(function(b) { return !b.band; });
+        var spectrum = (function() {
+          if (!plotted.length) return null;
+          var W = 680, L = 92, R = 648, rowH = 22, TOP = 34;
+          var H = TOP + plotted.length * rowH + 34;
+          var MIN = 0.1, MAX = 25000;
+          var xAt = function(hz) {
+            var t = (Math.log10(Math.max(MIN, Math.min(MAX, hz))) - Math.log10(MIN)) / (Math.log10(MAX) - Math.log10(MIN));
+            return L + t * (R - L);
+          };
+          var TICKS = [0.1, 1, 10, 100, 1000, 10000];
+          var tickLabel = function(hz) { return hz >= 1000 ? (hz / 1000) + ' kHz' : hz + ' Hz'; };
+          var summary = __alloT('stem.cephalopodlab.sounds_chart_summary', 'Marine soundscape on a logarithmic frequency axis from 0.1 Hz to 25 kHz. ') +
+            plotted.map(function(b) { return b.s.name + ', ' + b.s.frequency; }).join('; ') + '.';
+          return h('div', { style: cardStyle() },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 6 } },
+              h('div', { style: subheaderStyle() }, __alloT('stem.cephalopodlab.sounds_chart_title', '📶 The soundscape, by frequency')),
+              h('div', { style: { fontSize: 10.5, color: '#cbd5e1' } }, __alloT('stem.cephalopodlab.sounds_chart_hint', 'Log scale — each step is ten times the frequency'))),
+            h('div', { style: { background: 'linear-gradient(180deg, #0b2033 0%, #08131f 100%)', borderRadius: 12, border: '1px solid rgba(56,189,248,0.28)', overflow: 'hidden' } },
+              h('svg', { viewBox: '0 0 ' + W + ' ' + H, width: '100%', height: H, role: 'img', 'aria-label': summary, style: { display: 'block' } },
+                TICKS.map(function(t) {
+                  return h('g', { key: 't' + t },
+                    h('line', { x1: xAt(t), y1: TOP - 12, x2: xAt(t), y2: H - 30, stroke: 'rgba(148,163,184,0.22)', strokeWidth: 1 }),
+                    h('text', { x: xAt(t), y: H - 16, textAnchor: 'middle', fontSize: 9, fill: '#94a3b8', fontFamily: 'ui-monospace, Menlo, monospace' }, tickLabel(t)));
+                }),
+                plotted.map(function(b, i) {
+                  var y = TOP + i * rowH;
+                  var x1 = xAt(b.band.lo), x2 = xAt(b.band.hi);
+                  return h('g', { key: b.s.id },
+                    h('text', { x: L - 8, y: y + 11, textAnchor: 'end', fontSize: 9.5, fill: '#e2e8f0' },
+                      b.s.name.length > 22 ? b.s.name.slice(0, 21) + '…' : b.s.name),
+                    h('rect', { x: x1, y: y + 3, width: Math.max(3, x2 - x1), height: 11, rx: 4, fill: '#38bdf8', opacity: 0.75 }),
+                    (function() {
+                      // Label after the bar, unless that would run past the axis
+                      // — then put it before the bar instead. A bar reaching the
+                      // right edge otherwise gets its own label printed over it.
+                      var txt = b.s.frequency.length > 22 ? b.s.frequency.slice(0, 21) + '…' : b.s.frequency;
+                      var w = txt.length * 4.6;
+                      if ((x2 + 6 + w) < R) {
+                        return h('text', { x: x2 + 6, y: y + 12, fontSize: 8.5, fill: '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' }, txt);
+                      }
+                      if ((x1 - 6 - w) > L) {
+                        return h('text', { x: x1 - 6, y: y + 12, textAnchor: 'end', fontSize: 8.5, fill: '#7dd3fc', fontFamily: 'ui-monospace, Menlo, monospace' }, txt);
+                      }
+                      // A band spanning nearly the whole axis leaves no room on
+                      // either side, so the label goes inside it, in dark ink.
+                      return h('text', { x: x1 + 7, y: y + 12, fontSize: 8.5, fill: '#01121a', fontWeight: 700, fontFamily: 'ui-monospace, Menlo, monospace' }, txt);
+                    })());
+                }),
+                h('text', { x: L - 8, y: 20, textAnchor: 'end', fontSize: 9, fontWeight: 800, fill: '#94a3b8' }, __alloT('stem.cephalopodlab.sounds_axis_source', 'source')),
+                h('text', { x: L, y: 20, fontSize: 9, fontWeight: 800, fill: '#94a3b8' }, __alloT('stem.cephalopodlab.sounds_axis_band', 'frequency band')))),
+            h('div', { style: { fontSize: 11, color: '#cbd5e1', lineHeight: 1.55, marginTop: 10 } },
+              __alloT('stem.cephalopodlab.sounds_chart_note', 'Bands are read from each entry\'s own frequency figure. Note how far apart the physical sources and the animal calls sit, and how much of this the card above says cephalopods cannot hear as pressure waves at all.')),
+            unplotted.length ? h('div', { style: { fontSize: 10.5, color: '#94a3b8', marginTop: 8, fontStyle: 'italic' } },
+              __alloT('stem.cephalopodlab.sounds_not_plotted', 'Not plotted, because the figure is not a plain range: ') +
+              unplotted.map(function(b) { return b.s.name + ' (' + b.s.frequency + ')'; }).join('; ')) : null);
+        })();
         return h('div', null,
           panelHeader('🔊 Ocean Sound Reference',
             'Marine soundscape reference — what students might hear if they were submerged in different cephalopod habitats. Each entry includes the frequency range + range + biological context.'),
@@ -21150,6 +21226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               __alloT('stem.cephalopodlab.the_ocean_is_not_silent_sounds_are_cri', 'The ocean is NOT silent. Sounds are critical for many marine species — from whale communication to dolphin echolocation to fish spawning calls. Notably, cephalopods themselves are LARGELY DEAF in the vertebrate sense; they detect particle motion in water rather than pressure waves. This means SOUND is mostly a vertebrate-marine channel.')
             )
           ),
+          spectrum,
           OCEAN_SOUNDS.map(function(s, idx) {
             return h('div', { key: s.id, style: cardStyle() },
               h('div', { style: { fontSize: 15, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, s.name),
