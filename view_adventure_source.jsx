@@ -22,12 +22,16 @@ function adventureVisualTokens(theme = 'light', immersive = false) {
 }
 
 
-function AdventureDecisionProgress({ state, t, theme, immersive = false }) {
+function adventureDecisionCount(state) {
   // The opening scene is turn one, before the learner has completed a decision.
   const recorded = state.stats && state.stats.decisions;
   const legacyTurn = Number(state.turnCount);
-  const completed = Math.max(0, Math.floor(typeof recorded === 'number' && Number.isFinite(recorded)
+  return Math.max(0, Math.floor(typeof recorded === 'number' && Number.isFinite(recorded)
     ? recorded : (Number.isFinite(legacyTurn) ? legacyTurn : 1) - 1));
+}
+
+function AdventureDecisionProgress({ state, t, theme, immersive = false }) {
+  const completed = adventureDecisionCount(state);
   const bounded = value => Math.max(3, Math.min(50, Math.round(Number(value) || 20)));
   const limit = Object.prototype.hasOwnProperty.call(state, 'episodeTurnLimit')
     ? (state.episodeTurnLimit == null ? null : bounded(state.episodeTurnLimit))
@@ -71,6 +75,89 @@ function AdventureProfileMark({ profile = 'guided', className = '' }) {
       <circle cx="43" cy="14" r="5"/><path d="M18 13v6M15 16h6"/>
     </>}
   </svg>;
+}
+
+
+function adventureEpisodeDepleted(state) {
+  const energy = state.energy == null || state.energy === '' ? NaN : Number(state.energy);
+  return Number.isFinite(energy) && energy <= 0 && !state.canStartSequel;
+}
+
+function AdventureEpisodeRecap({ state, t, theme, immersive = false, mode, social,
+  minimumXP, isProcessing, onExport, onSequel, canContinue = true }) {
+  if (!state.isGameOver) return null;
+  const label = (key, fallback) => adventureSettingsText(t, 'recap_' + key, fallback);
+  const _isDefeat = adventureEpisodeDepleted(state);
+  const completed = adventureDecisionCount(state);
+  const level = Number(state.level);
+  const xp = Number.isFinite(Number(state.xp)) ? Math.max(0, Number(state.xp)) : 0;
+  const threshold = Number.isFinite(Number(minimumXP)) ? Math.max(0, Number(minimumXP)) : 0;
+  const concepts = Array.from(new Map((Array.isArray(state.stats?.conceptsFound) ? state.stats.conceptsFound : [])
+    .filter(value => typeof value === 'string' && value.trim())
+    .map(value => [value.trim().toLocaleLowerCase(), value.trim()])).values());
+  const profile = mode === 'system' ? 'systems' : mode === 'debate' ? 'debate' : social ? 'social' : 'guided';
+  const prompts = {
+    systems: ['systems_reflection', 'Which change helped most, and what tradeoff would you plan for next time?'],
+    debate: ['debate_reflection', 'Which claim had the strongest evidence? How would you respond to a counterargument?'],
+    social: ['social_reflection', 'Whose perspective did you consider? What could you say or do differently next time?'],
+    guided: ['story_reflection', 'Which decision changed the story most? What evidence from the lesson supported it?']
+  };
+  const prompt = prompts[profile];
+  const busy = !!(isProcessing || state.isLoading);
+  const buttonClass = 'min-h-11 rounded-xl border border-[var(--av-control)] px-4 py-3 text-sm font-bold flex items-center justify-center gap-2 text-[var(--av-ink)] bg-[var(--av-wash)] hover:bg-[var(--av-surface)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)] disabled:opacity-50 disabled:cursor-not-allowed';
+  return <section data-adventure-recap aria-label={label('title', 'Episode recap')} style={adventureVisualTokens(theme, immersive)}
+    className="w-full max-w-4xl rounded-3xl border border-[var(--av-line)] border-t-[3px] border-t-[var(--av-accent)] bg-[var(--av-surface)] p-4 sm:p-6 text-[var(--av-ink)] shadow-[var(--av-shadow)] min-w-0 [overflow-wrap:anywhere] space-y-4">
+    <div className="flex items-start gap-3">
+      <AdventureProfileMark profile={profile} className="w-12 h-12 sm:w-16 sm:h-16 shrink-0 text-[var(--av-accent)]" />
+      <div className="min-w-0">
+        <p className="text-xs font-bold text-[var(--av-accent)] mb-1">{state.canStartSequel
+          ? label('chapter_complete', 'Chapter complete') : label('ended', 'Episode ended')}</p>
+        <h3 className="text-xl sm:text-2xl font-bold tracking-tight">{label('title', 'Episode recap')}</h3>
+      </div>
+    </div>
+    <p role="status" aria-live="polite" aria-atomic="true" className="text-sm leading-relaxed text-[var(--av-muted)]">{_isDefeat
+      ? (mode === 'system' ? label('stability_depleted', 'Stability reached zero. Use what happened to plan your next attempt.')
+        : label('energy_depleted', 'Out of energy — the journey ends here. Every attempt teaches something!'))
+      : label('review_intro', 'Look back at your decisions, then take one useful idea into your next adventure.')}</p>
+    <dl className="grid grid-cols-2 gap-3">
+      <div className="rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3">
+        <dt className="text-xs leading-relaxed text-[var(--av-muted)]">{label('decisions', 'Decisions completed')}</dt>
+        <dd className="mt-1 text-2xl font-bold tabular-nums">{completed}</dd>
+      </div>
+      <div className="rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3">
+        <dt className="text-xs leading-relaxed text-[var(--av-muted)]">{label('level', 'Story level reached')}</dt>
+        <dd className="mt-1 text-2xl font-bold tabular-nums">{Number.isFinite(level) && level > 0 ? Math.floor(level) : '—'}</dd>
+      </div>
+    </dl>
+    <details className="border-y border-[var(--av-line)]">
+      <summary className="min-h-11 py-3 cursor-pointer text-sm font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] rounded-lg">
+        {label('concepts', 'Concepts to revisit')} <span className="text-[var(--av-muted)] tabular-nums">({concepts.length})</span>
+      </summary>
+      {concepts.length ? <>
+        <p className="text-xs leading-relaxed text-[var(--av-muted)] mb-3">{label('concepts_hint', 'Check these ideas against the lesson, then explain one in your own words.')}</p>
+        <ul className="flex flex-wrap gap-2 pb-3">{concepts.map(concept => <li key={concept.toLocaleLowerCase()} className="max-w-full rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-3 py-2 text-xs font-semibold">{concept}</li>)}</ul>
+      </> : <p className="text-xs leading-relaxed text-[var(--av-muted)] pb-3">{label('no_concepts', 'Use your journey notebook to choose one idea worth revisiting.')}</p>}
+    </details>
+    <div className="rounded-xl border-l-[3px] border-[var(--av-accent)] bg-[var(--av-wash)] p-3">
+      <p className="text-xs font-bold text-[var(--av-accent)] mb-2">{label('reflect', 'Take one idea with you')}</p>
+      <p className="text-sm leading-relaxed">{label(prompt[0], prompt[1])}</p>
+    </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {state.canStartSequel && canContinue && typeof onSequel === 'function' && <button type="button"
+        onClick={onSequel} disabled={busy} className={buttonClass}>
+        <Sparkles size={17} aria-hidden="true" /><span>{t('adventure.start_sequel')}</span>
+      </button>}
+      {xp >= threshold && typeof onExport === 'function' ? <button type="button"
+        onClick={onExport} disabled={busy} aria-busy={isProcessing || undefined} className={buttonClass}>
+        {isProcessing ? <RefreshCw size={17} aria-hidden="true" className="animate-spin motion-reduce:animate-none" /> : <BookOpen size={17} aria-hidden="true" />}
+        <span>{isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}</span>
+      </button> : xp < threshold ? <p className="text-xs leading-relaxed text-[var(--av-muted)] flex items-start gap-2 py-2">
+        <Lock size={15} className="shrink-0 mt-0.5" aria-hidden="true" />
+        <span>{t('adventure.storybook_locked', { needed: Math.max(0, threshold - xp) })}</span>
+      </p> : null}
+    </div>
+    {state.canStartSequel && !canContinue && <p className="text-xs leading-relaxed text-[var(--av-muted)]">{label('teacher_continues', 'Your teacher can continue the story with the class.')}</p>}
+  </section>;
 }
 
 function AdventureLearningProfiles(props) {
@@ -1679,42 +1766,11 @@ function AdventureView(props) {
                                 </div>
                             )}
                             {adventureState.isGameOver && (() => {
-                                // Defeat vs completion (2026-07-16): energy-death used to get the SAME
-                                // confetti + trophy as a victory — a failure celebrated. Defeat now gets
-                                // an honest (still kind) treatment; completions keep the party.
-                                const _isDefeat = (Number(adventureState.energy) || 0) <= 0 && !adventureState.canStartSequel;
-                                return (
-                                <div className="flex flex-col items-center justify-center py-8 gap-4">
-                                    {!_isDefeat && <div aria-hidden="true"><ConfettiExplosion /></div>}
-                                    {_isDefeat ? (
-                                        <div className="bg-amber-100 text-amber-900 px-6 py-3 rounded-full font-bold border border-amber-300 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
-                                            <Zap size={18} aria-hidden="true"/> {t('adventure.game_over_defeat') || 'Out of energy — the journey ends here. Every attempt teaches something!'}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-green-100 text-green-800 px-6 py-3 rounded-full font-bold border border-green-200 flex items-center gap-2 shadow-sm animate-in zoom-in duration-500 motion-reduce:animate-none" role="status" aria-live="polite" aria-atomic="true">
-                                            <Trophy size={18} aria-hidden="true"/> {t('adventure.game_over')}
-                                        </div>
-                                    )}
-                                    <div className="text-sm text-slate-600 font-bold">{t('adventure.final_level')}: {adventureState.level}</div>
-                                    {adventureState.xp >= studentProjectSettings.adventureMinXP ? (
-                                        <button type="button"
-                                            onClick={handleSetShowStorybookExportModalToTrue}
-                                            disabled={isProcessing} aria-busy={isProcessing}
-                                            className="min-h-11 flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all animate-in slide-in-from-bottom-4 motion-reduce:animate-none motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                            title={t('adventure.storybook')}
-                                            aria-label={t('adventure.storybook')}
-                                        >
-                                            {isProcessing ? <RefreshCw size={20} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <BookOpen size={20} aria-hidden="true"/>}
-                                            {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
-                                        </button>
-                                    ) : (
-                                        <div className="min-h-11 flex items-center gap-2 bg-slate-100 text-slate-700 px-6 py-3 rounded-xl font-bold border-2 border-slate-300 shadow-inner animate-in slide-in-from-bottom-4 motion-reduce:animate-none">
-                                            <Lock size={18} aria-hidden="true" />
-                                            <span>{t('adventure.storybook_locked', { needed: studentProjectSettings.adventureMinXP - adventureState.xp })}</span>
-                                        </div>
-                                    )}
-                                </div>
-                                );
+                                const _isDefeat = adventureEpisodeDepleted(adventureState);
+                                return <>
+                                    {!_isDefeat && adventureState.canStartSequel && <div aria-hidden="true"><ConfettiExplosion /></div>}
+                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} />
+                                </>;
                             })()}
                         </div>
                         ) : (
@@ -1935,18 +1991,20 @@ function AdventureView(props) {
                                              <button
                                                  type="button"
                                                  aria-pressed={immersiveShowChoices}
-                                                 aria-label={immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice')}
+                                                 aria-label={immersiveShowChoices ? t('adventure.return_to_story') : (adventureState.isGameOver ? adventureSettingsText(t, 'recap_title', 'Episode recap') : t('adventure.make_a_choice'))}
                                                 data-help-key="adventure_choice_toggle" onClick={handleToggleImmersiveShowChoices}
                                                 className="min-h-11 bg-indigo-600 text-white text-xs font-bold px-6 py-2 rounded-full border-2 border-white/20 shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all motion-reduce:transform-none flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                                              >
-                                                {immersiveShowChoices ? <BookOpen size={14} aria-hidden="true"/> : <MousePointerClick size={14} aria-hidden="true"/>}
-                                                {immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice')}
+                                                {immersiveShowChoices || adventureState.isGameOver ? <BookOpen size={14} aria-hidden="true"/> : <MousePointerClick size={14} aria-hidden="true"/>}
+                                                {immersiveShowChoices ? t('adventure.return_to_story') : (adventureState.isGameOver ? adventureSettingsText(t, 'recap_title', 'Episode recap') : t('adventure.make_a_choice'))}
                                              </button>
                                         </div>
                                         {immersiveShowChoices ? (
                                             <div data-adventure-actions="immersive" role="region" aria-label={adventureSettingsText(t, 'available_actions', 'Available actions')} style={adventureVisualTokens(theme, true)} className="max-h-[55vh] overflow-y-auto overscroll-contain p-1 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4 duration-300">
                                                 {adventureState.currentScene && <AdventureDecisionProgress state={adventureState} t={t} theme={theme} immersive />}
-                                                {failedAdventureAction ? (
+                                                {adventureState.isGameOver ? (
+                                                    <AdventureEpisodeRecap state={adventureState} t={t} theme={theme} mode={adventureInputMode} social={props.isSocialStoryMode} minimumXP={studentProjectSettings.adventureMinXP} isProcessing={isProcessing} onExport={handleSetShowStorybookExportModalToTrue} onSequel={handleStartSequel} canContinue={isTeacherMode || !activeSessionCode} immersive />
+                                                ) : failedAdventureAction ? (
                                                     <div role="alert" aria-atomic="true" className="w-full bg-red-900/90 border-2 border-red-500 rounded-xl p-6 flex flex-col items-center justify-center text-center animate-in fade-in slide-in-from-bottom-2 motion-reduce:animate-none backdrop-blur-sm">
                                                         <div className="bg-red-500 p-3 rounded-full mb-3 text-white">
                                                             <WifiOff size={24} aria-hidden="true" />

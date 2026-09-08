@@ -41,12 +41,13 @@ async function mountActiveAdventure(page: any, theme: string, config: any = {}) 
       for (const name of propNames) props[name] = /^(set|handle|open|toggle|stop|prewarm|save|execute)/.test(name) ? noop : /^[A-Z]/.test(name) ? w[name] || (() => null) : /Ref$/.test(name) ? { current: null } : false;
       const scene = 'A river crosses the valley below the town. Compare the water measurements before deciding where to restore habitat.';
       Object.assign(props, {
-        theme, t: (key: string, values?: any) => key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
+        theme, t: (key: string, values?: any) => key === 'adventure.storybook_locked' ? 'Storybook unlocks after ' + values.needed + ' more XP.' : key === 'adventure.vote_status' ? values.count + (values.count === 1 ? ' vote' : ' votes') + ' · ' + values.percent + '%' : ({ 'adventure.title': 'Adventure', 'common.level_abbrev': 'Lvl', 'adventure.start_sequel': 'Start a sequel', 'adventure.storybook': 'Create a storybook', 'adventure.storybook_writing': 'Creating storybook…', 'adventure.current_scene': 'Current scene', 'common.adjust_image_size': 'Scene image size', 'adventure.read_aloud_title': 'Read aloud', 'common.listen': 'Listen', 'adventure.return_to_story': 'Return to story', 'adventure.make_a_choice': 'Make a choice' } as any)[key] || ((key.startsWith('adventure.learning_settings.') || key.startsWith('adventure.debrief.')) ? key : key.split('.').at(-1).replaceAll('_', ' ')),
         activeView: 'adventure', adventureImageSize: 200, adventureInputMode: 'choice', adventureLanguageMode: 'English', adventureDifficulty: 'Normal',
         adventureArtStyle: 'auto', adventureTextInput: '', adventureCustomInstructions: '', adventureCustomArtStyle: '', universalImageStyle: '',
         selectedLanguages: [], editingOptionsBuffer: [], studentProjectSettings: {}, sessionData: null, playbackState: {}, adventureEffects: [],
         globalPoints: 0, isTeacherMode: false, isZenMode: true, showNewGameSetup: false,
         ErrorBoundary: (p: any) => R.createElement(R.Fragment, null, p.children),
+        ConfettiExplosion: () => R.createElement('span', { 'data-fixture-celebration': true }),
         AnimatedNumber: (p: any) => R.createElement('span', null, p.value), AdventureAmbience: () => null, ClimaxProgressBar: () => null,
         renderFormattedText: (s: any) => s, formatInteractiveText: (s: any) => s, splitTextToSentences: (s: string) => [s],
         adventureState: { currentScene: { text: scene, options: ['Compare the measurements', 'Inspect the wetland'] }, history: [], inventory: [], systemResources: [], imageCache: [],
@@ -67,6 +68,9 @@ async function mountActiveAdventure(page: any, theme: string, config: any = {}) 
         if (adventureState) Object.assign(props.adventureState, adventureState);
         root.render(R.createElement(w.AlloModules.AdventureView, { ...props }));
       };
+      w.__endingCalls = { sequels: 0, exports: 0 };
+      props.handleStartSequel = () => { w.__endingCalls.sequels++; };
+      props.handleSetShowStorybookExportModalToTrue = () => { w.__endingCalls.exports++; };
       props.handleAdventureChoice = (opt: any) => w.__calls.choices.push(opt);
       props.handleSpeak = (text: string, id: string) => { w.__calls.speech.push([text, id]); w.__updateAdventure({ isPlaying: true, playingContentId: id }); };
       props.handleExitAdventureImmersive = () => w.__updateAdventure({ adventureState: { isImmersiveMode: false } });
@@ -353,3 +357,110 @@ for (const theme of ['light', 'dark', 'contrast']) {
     expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
   });
 }
+
+for (const immersive of [false, true]) {
+  for (const theme of ['light', 'dark', 'contrast']) {
+    test('episode recap offers ending actions and reflows in ' + theme + ' ' + (immersive ? 'immersive' : 'standard'), async ({ page }, info) => {
+      await page.setViewportSize({ width: 375, height: 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await load(page, theme);
+      const history = notebookHistory();
+      await mountActiveAdventure(page, theme, {
+        props: { immersiveShowChoices: false, isTeacherMode: true, studentProjectSettings: { adventureMinXP: 50 } },
+        state: { isImmersiveMode: immersive, isGameOver: true, canStartSequel: true, history, xp: 80, level: 3, energy: 45,
+          stats: { decisions: 2, conceptsFound: ['Water quality', 'Habitat', ' Water quality ', null, 7] } }
+      });
+      if (immersive) {
+        await page.getByRole('button', { name: 'Episode recap', exact: true }).click();
+        await expect(page.getByRole('button', { name: 'Return to story', exact: true })).toBeVisible();
+      }
+      const recap = page.getByRole('region', { name: 'Episode recap', exact: true });
+      await expect(recap).toBeVisible();
+      await expect(recap.getByText('Chapter complete', { exact: true })).toBeVisible();
+      await expect(recap.locator('dd')).toHaveText(['2', '3']);
+      await expect(page.locator('[data-help-key="adventure_choice_btn"]')).toHaveCount(0);
+      await expect(page.locator('[data-help-key="adventure_input_send"]')).toHaveCount(0);
+      await recap.getByRole('button', { name: 'Start a sequel', exact: true }).click();
+      await recap.getByRole('button', { name: 'Create a storybook', exact: true }).click();
+      expect(await page.evaluate(() => (window as any).__endingCalls)).toEqual({ sequels: 1, exports: 1 });
+      expect(await page.evaluate(() => (window as any).__calls.choices)).toEqual([]);
+      expect(await page.evaluate(() => (window as any).__adventureProps.adventureState.history)).toEqual(history);
+
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { xp: 49 } }));
+      await expect(recap.getByRole('button', { name: 'Create a storybook', exact: true })).toHaveCount(0);
+      await expect(recap.getByText('Storybook unlocks after 1 more XP.', { exact: true })).toBeVisible();
+      await page.evaluate(() => (window as any).__updateAdventure({ isProcessing: true, adventureState: { xp: 50 } }));
+      await expect(recap.getByRole('button', { name: 'Creating storybook…', exact: true })).toBeDisabled();
+      await expect(recap.getByRole('button', { name: 'Start a sequel', exact: true })).toBeDisabled();
+      await page.evaluate(() => (window as any).__updateAdventure({ isProcessing: false }));
+      await recap.locator('summary').click();
+      await expect(recap.getByRole('listitem')).toHaveText(['Water quality', 'Habitat']);
+      for (const width of [320, 1200]) {
+        await page.setViewportSize({ width, height: 1100 });
+        await recap.getByRole('heading', { name: 'Episode recap', exact: true }).scrollIntoViewIfNeeded();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        await axe(page, '[data-adventure-recap]');
+        await page.screenshot({ path: info.outputPath('recap-' + theme + '-' + (immersive ? 'immersive' : 'standard') + '-' + width + '.png') });
+      }
+      if (immersive) {
+        await page.getByRole('button', { name: 'Return to story', exact: true }).click();
+        await expect(page.getByRole('region', { name: 'Story and feedback', exact: true })).toBeVisible();
+        await page.getByRole('button', { name: 'Episode recap', exact: true }).click();
+      }
+      await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isGameOver: false, canStartSequel: false } }));
+      await expect(recap).toHaveCount(0);
+      await expect(page.locator('[data-help-key="adventure_choice_btn"]')).toHaveCount(2);
+    });
+  }
+}
+
+test('episode recap reflects the learning mode and treats depleted attempts honestly', async ({ page }) => {
+  await page.setViewportSize({ width: 1000, height: 1100 });
+  await load(page, 'dark');
+  await mountActiveAdventure(page, 'dark', {
+    state: { isGameOver: true, canStartSequel: false, energy: 0, turnCount: 9, stats: { decisions: 0, conceptsFound: [] } }
+  });
+  const recap = page.getByRole('region', { name: 'Episode recap', exact: true });
+  await expect(recap.locator('dd').first()).toHaveText('0');
+  await expect(recap.getByText(/Out of energy/)).toBeVisible();
+  await expect(recap.getByText('Chapter complete', { exact: true })).toHaveCount(0);
+  await expect(page.locator('[data-fixture-celebration]')).toHaveCount(0);
+  await expect(recap.getByRole('button', { name: 'Start a sequel', exact: true })).toHaveCount(0);
+  await expect(recap.getByRole('button', { name: 'Create a storybook', exact: true })).toBeEnabled();
+  await recap.locator('summary').click();
+  await expect(recap.getByText('Use your journey notebook to choose one idea worth revisiting.', { exact: true })).toBeVisible();
+  const modes = [
+    { mode: 'choice', social: false, prompt: 'Which decision changed the story most? What evidence from the lesson supported it?' },
+    { mode: 'debate', social: false, prompt: 'Which claim had the strongest evidence? How would you respond to a counterargument?' },
+    { mode: 'system', social: false, prompt: 'Which change helped most, and what tradeoff would you plan for next time?' },
+    { mode: 'choice', social: true, prompt: 'Whose perspective did you consider? What could you say or do differently next time?' }
+  ];
+  for (const value of modes) {
+    await page.evaluate(value => (window as any).__updateAdventure({ adventureInputMode: value.mode, isSocialStoryMode: value.social }), value);
+    await expect(recap.getByText(value.prompt, { exact: true })).toBeVisible();
+    if (value.mode === 'system') await expect(recap.getByText(/Stability reached zero/)).toBeVisible();
+    await axe(page, '[data-adventure-recap]');
+  }
+  await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { energy: undefined, stats: undefined, turnCount: 4 } }));
+  await expect(recap.locator('dd').first()).toHaveText('3');
+  await expect(recap.getByText(/Out of energy|Stability reached zero/)).toHaveCount(0);
+});
+
+test('ended immersive sessions keep class continuation with the teacher and hide old response controls', async ({ page }) => {
+  await load(page, 'light');
+  await mountActiveAdventure(page, 'light', {
+    props: { activeSessionCode: 'CLASS', isTeacherMode: false, immersiveShowChoices: true, adventureFreeResponseEnabled: true },
+    state: { isImmersiveMode: true, isGameOver: true, canStartSequel: true }
+  });
+  const recap = page.getByRole('region', { name: 'Episode recap', exact: true });
+  await expect(recap).toBeVisible();
+  await expect(recap.getByRole('button', { name: 'Start a sequel', exact: true })).toHaveCount(0);
+  await expect(recap.getByText('Your teacher can continue the story with the class.', { exact: true })).toBeVisible();
+  await expect(page.locator('[data-help-key="adventure_input_send"]')).toHaveCount(0);
+  await expect(page.locator('[data-help-key="adventure_choice_btn"]')).toHaveCount(0);
+  await page.evaluate(() => (window as any).__updateAdventure({ isTeacherMode: true, adventureState: { isLoading: true } }));
+  await expect(recap.getByRole('button', { name: 'Start a sequel', exact: true })).toBeDisabled();
+  await page.evaluate(() => (window as any).__updateAdventure({ adventureState: { isLoading: false } }));
+  await recap.getByRole('button', { name: 'Start a sequel', exact: true }).click();
+  expect(await page.evaluate(() => (window as any).__endingCalls.sequels)).toBe(1);
+});

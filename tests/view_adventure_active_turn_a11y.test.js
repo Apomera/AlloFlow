@@ -6,7 +6,7 @@ const source = fs.readFileSync('view_adventure_source.jsx', 'utf8');
 describe('Adventure active-turn accessibility', () => {
   it('exposes accurate state and action names for choice and dictation controls', () => {
     expect(source).toContain('aria-pressed={immersiveShowChoices}');
-    expect(source).toContain("aria-label={immersiveShowChoices ? t('adventure.return_to_story') : t('adventure.make_a_choice')}");
+    expect(source).toContain("aria-label={immersiveShowChoices ? t('adventure.return_to_story') : (adventureState.isGameOver ? adventureSettingsText(t, 'recap_title', 'Episode recap') : t('adventure.make_a_choice'))}");
     expect(source).toContain("aria-label={isDictationMode ? t('adventure.tooltips.dictation_stop') : t('adventure.tooltips.dictation_start')} aria-pressed={isDictationMode}");
     expect(source).toContain("motion-reduce:animate-none' : 'bg-white border-indigo-300");
     expect(source).not.toContain("aria-label={t('common.voice_input')}");
