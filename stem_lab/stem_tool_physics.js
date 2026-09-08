@@ -2557,7 +2557,8 @@ const d = labToolData.physics;
                   onChange: function(e) { upd('predictedRange', e.target.value); },
                   className: "w-16 px-1.5 py-0.5 text-xs font-mono border border-fuchsia-600 rounded bg-white text-slate-700 focus:outline-none focus:border-fuchsia-500"
                 }),
-                React.createElement("span", { className: "text-[0.625rem] text-fuchsia-600" }, "m")
+                // fuchsia-600 on the fuchsia-50 field measured 4.39:1, just under AA.
+                React.createElement("span", { className: "text-[0.625rem] text-fuchsia-700" }, "m")
               ),
 
               // \u2500\u2500 Estimation result feedback (shown after landing if an estimate was made) \u2500\u2500
@@ -3697,11 +3698,14 @@ const d = labToolData.physics;
                   __alloT('stem.physics.iq_intro', 'Three sliders control gravity (any planet), launch angle, and velocity. The simulator tells you whether your projectile range is near-optimal, reasonable, or far-off \u2014 a discrete 3-state outcome (no numeric score). Sweep the sliders. Log observations. Type what you discover.')),
                 h('div', { className: 'mb-3 p-3 rounded-lg text-center', style: { background: stateMeta.bg, border: '2px solid ' + stateMeta.border } },
                   h('div', { className: 'text-lg font-black', style: { color: stateMeta.color } }, stateMeta.label),
-                  // ★ The box above is deliberately BLACK in the contrast theme
-                  // (stateMeta.bg is forced to #000000 there), so this readout's
-                  // slate-700 landed at 2.03:1 on it — the label got the yellow
-                  // treatment and its sub-line was missed.
-                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1', style: isContrast ? { color: '#ffff00' } : undefined }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
+                  // ★ This box paints its own ground from stateMeta.bg, which is
+                  // dark in BOTH themed cases — #000000 in contrast, and one of
+                  // #052e2b / #422006 / #450a0a in dark. The contrast case was
+                  // fixed with the yellow above; the DARK case was not, leaving
+                  // slate-700 on #052e2b at 1.42:1 — measured 2026-09-07 with the
+                  // real --allo-stem palette injected, which is the only way this
+                  // shows up: nothing in the repo rendered a tool in dark before.
+                  h('div', { className: 'text-[0.6875rem] text-slate-700 mt-1', style: isContrast ? { color: '#ffff00' } : (isDark ? { color: '#e2e8f0' } : undefined) }, __alloT('stem.physics.iq_range_prefix', 'Range ') + range.toFixed(1) + __alloT('stem.physics.iq_range_mid', ' m (max possible at this v + g: ') + maxRange.toFixed(1) + __alloT('stem.physics.iq_range_end', ' m)'))
                 ),
                 h('div', { className: 'grid grid-cols-1 md:grid-cols-3 gap-3 mb-3' },
                   [
