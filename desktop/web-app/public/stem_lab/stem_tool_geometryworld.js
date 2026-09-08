@@ -9414,8 +9414,23 @@
           'aria-hidden': 'true',
           ref: function(canvasNode) {
             if (!canvasNode || !engine) return;
+            // The map was painted once, right here, when React attached the node.
+            // Walking never redrew it, so it showed wherever you happened to be
+            // standing when you opened it: measured, fourteen blocks of travel left
+            // the canvas pixel-identical. It now runs its own loop, like the compass
+            // strip does, and the pulsing question markers finally pulse.
+            if (canvasNode._miniStarted) return;
+            canvasNode._miniStarted = true;
             var ctx = canvasNode.getContext('2d');
             if (!ctx) return;
+            var lastMiniDraw = 0;
+            function drawMinimap() {
+              // Read the live engine and the live answered map on every draw. A loop
+              // that outlives a React render would otherwise hold the closure's
+              // engine and answered set from whichever render started it.
+              var engine = window.__geoWorldEngine;
+              if (!engine || !engine.camera || !engine.npcs || !window.THREE) return;
+              var answeredNpcs = engine._answeredRef || {};
             var w = canvasNode.width, h = canvasNode.height;
             var scale = 3; // pixels per block
             var camX = engine.camera.position.x, camZ = engine.camera.position.z;
@@ -9502,6 +9517,15 @@
             // Border
             ctx.strokeStyle = 'rgba(100,116,139,0.4)'; ctx.lineWidth = 1;
             ctx.strokeRect(0, 0, w, h);
+            }
+            function miniLoop(now) {
+              if (!canvasNode.isConnected) { canvasNode._miniStarted = false; return; }
+              // A map does not need sixty frames a second, and each draw walks the
+              // whole block map; ten a second tracks a walking player perfectly well.
+              if (now - lastMiniDraw >= 100) { lastMiniDraw = now; try { drawMinimap(); } catch (e) {} }
+              requestAnimationFrame(miniLoop);
+            }
+            requestAnimationFrame(miniLoop);
           },
           width: 100, height: 100,
           style: { overflow: 'hidden' }

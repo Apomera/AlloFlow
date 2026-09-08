@@ -152,6 +152,18 @@ It now measures the viewport's offset from the workspace and places itself twelv
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round15-compass.mjs`) and capture `compass-after.png`.
 
+## Round 16 (same day): the minimap was a snapshot
+
+Having found the compass strip drawn outside the play area, I checked the other canvas affordance. The minimap draws inside a React `ref` callback, which runs when the node attaches, not per frame. So it painted once, when the panel opened, and never again.
+
+Measured: with the panel open, the player was moved fourteen blocks diagonally and the canvas came back **pixel-identical**, same hash and same non-background pixel count. A map that does not follow you is worse than no map, and the pulsing question markers over unanswered characters never pulsed either.
+
+It now runs its own loop, like the compass strip does. Two details matter. It reads the live engine and the live answered set on every draw, because a loop that outlives a React render would otherwise hold that render's closure, which is the stale-closure trap this tool has been bitten by before. And it redraws ten times a second rather than sixty, because each draw walks the whole block map and ten is plenty to track a walking player. After the fix the same fourteen-block move changes the canvas, and the drawn content grows from 2248 to 3086 pixels as more of the world comes into range.
+
+Probe: `scratch/geometry-world-visuals-2026-09-07/probe-round16-minimap.mjs`. Captures: `after-minimap-open.png` and `after-minimap-moved.png`.
+
+**A flake worth recording.** The first combined unit run after this change reported four failures in the display-controls file. That file passes 14 of 14 alone, and the identical combined command passes 319 of 319 on re-run. Two independent confirmations that it was raciness on this machine, not a regression.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -181,3 +193,5 @@ Round 14 verification at commit time: 315 unit tests, and five e2e tests coverin
 Full spec for the tree carrying round 13, run under 38 competing browser processes: **17 passed, 0 failed, 0 flaky** in 9.1 minutes.
 
 Round 15 verification at commit time: 317 unit tests, and four e2e tests including the HUD-layout preset sweep passed 4/4 with retries off.
+
+Round 16 verification at commit time: 319 unit tests, and four e2e tests including the HUD preset sweep passed 4/4 with retries off.

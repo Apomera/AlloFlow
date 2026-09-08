@@ -465,6 +465,26 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain("ctx.fillText('N', northX, 12);");
   });
 
+  it('redraws the minimap on its own loop instead of once when React attaches it', () => {
+    // painted inside the ref, the map showed wherever the player stood when they
+    // opened it: fourteen blocks of travel left the canvas pixel-identical
+    expect(src).toContain('function drawMinimap()');
+    expect(src).toContain('function miniLoop(now)');
+    expect(src).toContain('requestAnimationFrame(miniLoop);');
+    // the loop stops with the canvas and re-arms if the panel is reopened
+    expect(src).toContain("if (!canvasNode.isConnected) { canvasNode._miniStarted = false; return; }");
+    expect(src).toContain('if (canvasNode._miniStarted) return;');
+  });
+
+  it('reads live engine state in the minimap loop rather than a render closure', () => {
+    // a loop that outlives a render would hold that render's engine and answered set
+    const fn = src.slice(src.indexOf('function drawMinimap()'), src.indexOf('var scale = 3; // pixels per block'));
+    expect(fn).toContain('var engine = window.__geoWorldEngine;');
+    expect(fn).toContain('var answeredNpcs = engine._answeredRef || {};');
+    // and a map does not need every frame
+    expect(src).toContain('if (now - lastMiniDraw >= 100)');
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();
