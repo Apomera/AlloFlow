@@ -216,6 +216,13 @@ for (const item of items) {
   const references = Array.isArray(item.references) ? item.references : [];
   const sourceDetails = Array.isArray(item.sourceDetails) ? item.sourceDetails : [];
   itemIds.add(recordId);
+  // A key that runs much longer than every distractor is a length cue: the
+  // elaborated option can be chosen without reading the biology. The key may
+  // still be the longest, but not by a quarter of its length.
+  const choiceLengths = choices.map((choice) => String(choice || '').length);
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, choiceIndex) => choiceIndex !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  requireCondition(longestDistractor > 0 && keyLength < longestDistractor * 1.25, 'choice-length-parity', 'Each item must keep its distractors within a quarter of the key length.', { recordId });
   prompts.push({ id: recordId, prompt: item.prompt });
   requireCondition(
     /^ap-bio-u[1-8]-\d{3}$/.test(recordId) && item.templateVersion === 1 && item.itemSchemaVersion === 2 &&

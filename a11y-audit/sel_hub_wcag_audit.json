@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-07T00:11:14.561Z",
+  "generatedAt": "2026-09-08T00:06:04.459Z",
   "scope": [
     "SEL Hub shell/catalog",
     "Recent SEL work entry point",
@@ -39,7 +39,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "light",
-      "renderedBytes": 214708,
+      "renderedBytes": 216059,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -54,7 +54,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "dark",
-      "renderedBytes": 214719,
+      "renderedBytes": 216070,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -69,7 +69,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "high-contrast",
-      "renderedBytes": 214653,
+      "renderedBytes": 216004,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,
@@ -84,7 +84,7 @@
     {
       "view": "sel-hub-catalog",
       "theme": "mobile-high-contrast",
-      "renderedBytes": 214505,
+      "renderedBytes": 215856,
       "issueCount": 0,
       "errorCount": 0,
       "warningCount": 0,

@@ -2,9 +2,9 @@
   "langName": "tagalog",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1412,
+  "translatedKeys": 1407,
   "missingKeys": 0,
-  "passthroughKeys": 18,
-  "coveragePct": 98.7,
+  "passthroughKeys": 23,
+  "coveragePct": 98.4,
   "missing": {}
 }

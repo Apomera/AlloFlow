@@ -295,6 +295,13 @@ for (const item of items) {
   const choiceRationales = Array.isArray(item.choiceRationales) ? item.choiceRationales : [];
   const references = Array.isArray(item.references) ? item.references : [];
   prompts.push({ id: recordId, prompt: item.prompt });
+  // A key that runs much longer than every distractor is a length cue: the
+  // elaborated option can be picked without reading the physics. The key may
+  // still be the longest option, but not by a quarter of its length.
+  const choiceLengths = choices.map((choice) => String(choice || '').length);
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, choiceIndex) => choiceIndex !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  requireCondition(longestDistractor > 0 && keyLength < longestDistractor * 1.25, 'choice-length-parity', 'Each item must keep its distractors within a quarter of the key length.', { recordId });
   requireCondition(/^ap-physics-1-u[1-8]-\d{3}$/.test(recordId) && item.templateVersion === 1 && item.itemSchemaVersion === 2 && item.type === 'single-choice' && normalizeText(item.prompt).length >= 24 && choices.length === 4 && new Set(normalizedChoices).size === 4 && Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex <= 3, 'one-best-answer', 'Item must have a substantive prompt, four distinct options, and one valid answer key.', { recordId });
   const expectedDistractorChoiceIndices = choices.map((_, choiceIndex) => choiceIndex).filter((choiceIndex) => choiceIndex !== item.answerIndex);
   requireCondition(Array.isArray(item.distractorDiagnostics) && item.distractorDiagnostics.length === 3 && item.distractorDiagnostics.map((diagnostic) => diagnostic.choiceIndex).join('|') === expectedDistractorChoiceIndices.join('|') && item.distractorDiagnostics.every((diagnostic) => misconceptionFamilyById.has(diagnostic.misconceptionFamilyId) && misconceptionRemediationPlaybookById.has(diagnostic.remediationPlaybookId) && diagnostic.remediationPlaybookId === `ap-physics-1-remediation-${diagnostic.misconceptionFamilyId}` && typeof diagnostic.misconceptionText === 'string' && diagnostic.misconceptionText.length >= 8 && typeof diagnostic.remediationMove === 'string' && diagnostic.remediationMove.length >= 30) && Array.isArray(item.misconceptionFamilyIds) && item.misconceptionFamilyIds.length > 0 && item.misconceptionFamilyIds.every((familyId) => misconceptionFamilyById.has(familyId)), 'learning-alignment', 'Each item must expose choice-level misconception families and actionable remediation metadata.', { recordId });

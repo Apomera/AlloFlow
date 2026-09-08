@@ -98,15 +98,14 @@
     "testWiseness": {
       "keyedItemCount": 240,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 45,
-      "keyLongerByQuarterSharePercent": 34.2,
+      "keyLongestSharePercent": 43.3,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 720,
       "distinctDistractorRationaleCount": 720,
       "repeatedDistractorRationaleSharePercent": 0.1,
       "largestSharedChoiceSet": 1,
       "advisories": [
-        "answer-key-position-cycle",
-        "key-length-cue"
+        "answer-key-position-cycle"
       ],
       "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
     },
@@ -199,7 +198,7 @@
     "nativeLearningRoutes": 240
   },
   "inputs": {
-    "packSha256": "5299507a96c524453f5a0a5576321ff0559ef313c44036de180273db17468048",
+    "packSha256": "bcf6a5ec42979afafbbceb491a25b964cbde7f87680043b3e554880be7fd8207",
     "learningLibrarySha256": "ce65e23e6f6735c9c8a5508049558864a853278c89abc52119bc7a7282947744",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
     "reviewedAt": "2026-08-20"

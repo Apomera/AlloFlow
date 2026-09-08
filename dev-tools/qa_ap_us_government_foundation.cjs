@@ -249,6 +249,13 @@ for (const item of items) {
   // distractors explained by the same text.
   const distractorNotes = Array.isArray(item.choiceRationales) ? item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((value) => normalizeText(value)) : [];
   requireCondition(distractorNotes.length === 3 && new Set(distractorNotes).size === 3 && !distractorNotes.includes(normalizeText(item.rationale)) && distractorNotes.every((note) => !/not the best answer because it does not match/i.test(note)), 'feedback-specificity', item.id + ' must explain each distractor with its own specific feedback.', record);
+  // A key that runs much longer than every distractor is a length cue: a
+  // test-wise learner can pick the elaborated option without reading it. The
+  // key may still be the longest, but not by a quarter of its length.
+  const choiceLengths = Array.isArray(item.choices) ? item.choices.map((choice) => String(choice || '').length) : [];
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  requireCondition(longestDistractor > 0 && keyLength < longestDistractor * 1.25, 'choice-length-parity', item.id + ' must keep its distractors within a quarter of the key length.', record);
   requireCondition(Array.isArray(item.references) && item.references.includes(CED_URL) && item.references.every(validHttpsUrl), 'source-and-provenance', item.id + ' must include the official CED and valid public references.', record);
   requireCondition(Array.isArray(item.sourceDetails) && item.sourceDetails.length >= 2 && item.sourceDetails.every((source) => hasText(source.title) && hasText(source.organization) && validHttpsUrl(source.url)), 'source-and-provenance', item.id + ' must include source details.', record);
   requireCondition(item.provenance === 'native-original' && item.officialItem === false && item.releaseEligible === false && item.rights?.secureContentUsed === false && item.rights?.copiedOfficialQuestion === false, 'rights-boundary', item.id + ' must remain original and unreleased.', record);

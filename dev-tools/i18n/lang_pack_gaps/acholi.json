@@ -2,9 +2,9 @@
   "langName": "acholi",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1392,
+  "translatedKeys": 1385,
   "missingKeys": 0,
-  "passthroughKeys": 38,
-  "coveragePct": 97.3,
+  "passthroughKeys": 45,
+  "coveragePct": 96.9,
   "missing": {}
 }

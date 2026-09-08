@@ -980,10 +980,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Which claim best represents the Federalist argument that a large republic could protect liberty?",
       "choices": [
-        "A large republic eliminates all political factions by requiring unanimous agreement.",
-        "A large republic makes state governments unnecessary because local interests disappear.",
+        "A large republic eliminates all political factions by requiring unanimous agreement among representatives.",
+        "A large republic makes state governments unnecessary because local interests disappear as territory expands.",
         "A large republic can make it harder for one faction to dominate by multiplying interests and representatives.",
-        "A large republic protects liberty only when voters cannot replace elected officials."
+        "A large republic protects liberty only when voters are barred from replacing the officials who represent them."
       ],
       "answerIndex": 2,
       "rationale": "Federalist No. 10 argued that an extended republic could control faction by making majority combinations more difficult and by filtering public views through representation.",
@@ -1184,9 +1184,9 @@
       "prompt": "What was the principal effect of the Great Compromise at the Constitutional Convention?",
       "choices": [
         "It created a bicameral Congress with population-based representation in the House and equal state representation in the Senate.",
-        "It gave every state the same number of representatives in both chambers.",
-        "It replaced congressional representation with direct national voting on every law.",
-        "It required the president to be elected by the Supreme Court."
+        "It gave every state an identical number of representatives in both chambers regardless of its population.",
+        "It replaced congressional representation with direct national voting by citizens on every proposed law.",
+        "It required the president to be selected by the Supreme Court rather than by electors chosen in the states."
       ],
       "answerIndex": 0,
       "rationale": "The Great Compromise balanced large-state and small-state interests by combining proportional representation in the House with equal state representation in the Senate.",
@@ -1488,9 +1488,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Which constitutional interpretation did McCulloch v. Maryland support?",
       "choices": [
-        "Congress may exercise only powers listed word-for-word in Article I.",
-        "States may tax or veto any federal institution operating within their borders.",
-        "The Supreme Court may review only state cases involving criminal law.",
+        "Congress may exercise only the powers listed word-for-word in Article I, so implied powers are never valid.",
+        "States may tax or veto any federal institution that operates within their borders whenever they object to it.",
+        "The Supreme Court may review only state cases involving criminal law, leaving federal questions to Congress.",
         "Congress may use implied powers under the Necessary and Proper Clause, and states may not interfere with valid federal actions."
       ],
       "answerIndex": 3,
@@ -1589,9 +1589,9 @@
       "prompt": "Why can federalism create multiple access points for an interest group seeking a policy change?",
       "choices": [
         "The group can pursue action through both national institutions and state governments that share policymaking authority.",
-        "Federalism requires every policy to be approved by every level of government.",
-        "Federalism removes state governments from policy implementation.",
-        "Federalism gives courts exclusive control over all public policy."
+        "Federalism requires every policy change to be approved separately by every level of government before it takes effect.",
+        "Federalism removes state governments from policy implementation and leaves national agencies as the only venue.",
+        "Federalism gives courts exclusive control over public policy, so advocacy outside litigation cannot succeed."
       ],
       "answerIndex": 0,
       "rationale": "Shared authority creates more than one venue for advocacy, implementation, litigation, and coalition building.",
@@ -1893,9 +1893,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Which concern did Brutus No. 1 raise about ratifying the Constitution?",
       "choices": [
-        "A weak national government would be unable to prevent every local election.",
-        "A small republic would create too many competing factions to govern.",
-        "A national government with separated powers would automatically abolish states.",
+        "A weak national government would be unable to supervise the local elections held in the states.",
+        "A small republic would create too many competing factions for any legislature to govern.",
+        "A national government with separated powers would automatically abolish the states.",
         "A large national government could become distant and threaten individual liberty and state authority."
       ],
       "answerIndex": 3,
@@ -2199,10 +2199,10 @@
       "cognitiveProcess": "compare",
       "prompt": "Which example best illustrates separation of powers rather than checks and balances?",
       "choices": [
-        "The Senate confirms a presidential nominee to a federal court.",
-        "The Supreme Court declares a statute unconstitutional.",
+        "The Senate votes on whether to confirm a presidential nominee to a seat on a federal court.",
+        "The Supreme Court reviews an act of Congress and declares the statute unconstitutional.",
         "The Constitution assigns legislative, executive, and judicial functions to different branches.",
-        "Congress overrides a presidential veto with a supermajority."
+        "Congress votes to override a presidential veto by a two-thirds majority in both chambers."
       ],
       "answerIndex": 2,
       "rationale": "Separation of powers distributes core governmental functions across branches; the other examples show one branch checking another.",
@@ -2300,9 +2300,9 @@
       "cognitiveProcess": "classify",
       "prompt": "Which power is generally reserved to the states by the federal system?",
       "choices": [
-        "Coining national currency",
-        "Negotiating treaties with foreign governments",
-        "Declaring war on another country",
+        "Coining national currency and setting the value of money used throughout the United States",
+        "Negotiating treaties with foreign governments and appointing ambassadors to represent the nation",
+        "Declaring war on another country and raising the armed forces that would conduct it",
         "Administering local elections and establishing public-school systems subject to constitutional limits"
       ],
       "answerIndex": 3,
@@ -3102,9 +3102,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why have presidents often used executive orders to pursue policy goals?",
       "choices": [
-        "Executive orders permanently amend the Constitution without judicial review.",
-        "Executive orders allow presidents to enact any policy outside the executive branch.",
-        "Executive orders cannot be changed by a later president.",
+        "Executive orders permanently amend the text of the Constitution, so neither courts nor Congress can revisit them.",
+        "Executive orders allow presidents to enact any policy they choose, including matters outside the executive branch.",
+        "Executive orders bind every future administration, so a later president cannot revoke or narrow them by any means.",
         "Executive orders can direct executive-branch implementation without waiting for a new statute, although they remain subject to legal limits."
       ],
       "answerIndex": 3,
@@ -3405,10 +3405,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What is the significance of judicial review in the American constitutional system?",
       "choices": [
-        "Courts can write the national budget without Congress.",
-        "Courts appoint all members of the executive branch.",
+        "Courts can write the national budget without any action by Congress.",
+        "Courts appoint all of the senior members of the executive branch.",
         "Courts can invalidate government actions that conflict with the Constitution.",
-        "Courts can remove any elected official without legal process."
+        "Courts can remove any elected official from office without legal process."
       ],
       "answerIndex": 2,
       "rationale": "Judicial review allows courts to determine whether statutes or executive actions violate the Constitution.",
@@ -3505,9 +3505,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why might the Supreme Court grant a writ of certiorari?",
       "choices": [
-        "The president requests that the Court approve an executive order.",
-        "A state legislature automatically sends every case to the Court.",
-        "The Court must review every trial before a verdict is entered.",
+        "The president requests that the Court approve an executive order before it takes effect nationwide.",
+        "A state legislature automatically forwards every case it considers important to the Court for review.",
+        "The Court must review the record of every trial in the country before a verdict may be entered.",
         "At least four justices may agree that a lower-court decision presents an important legal question for review."
       ],
       "answerIndex": 3,
@@ -3704,10 +3704,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What is a central function of the federal bureaucracy?",
       "choices": [
-        "Replacing elections with permanent agency appointments",
+        "Replacing national elections with permanent appointments to federal agencies",
         "Implementing laws and administering programs created through the political process",
-        "Declaring war without authorization from any institution",
-        "Writing constitutional amendments without ratification"
+        "Declaring war on other nations without authorization from any elected institution",
+        "Writing constitutional amendments that take effect without state ratification"
       ],
       "answerIndex": 1,
       "rationale": "Bureaucratic agencies translate statutes and executive priorities into rules, services, enforcement, and administration.",
@@ -4002,9 +4002,9 @@
       "prompt": "Why do policy advocates often work with Congress, executive agencies, and courts on the same issue?",
       "choices": [
         "Each branch has different formal and informal powers that can affect policy design, implementation, and review.",
-        "Only the courts can create any policy, so other branches are irrelevant.",
-        "The Constitution requires every advocate to use all three branches in sequence.",
-        "Branches have identical powers, so using multiple branches does not change strategy."
+        "Only the courts can make policy of any kind, so working with the other branches is a waste of effort.",
+        "The Constitution requires every advocate to petition all three branches in a fixed sequence.",
+        "The branches hold identical powers, so approaching more than one of them cannot change an advocacy strategy."
       ],
       "answerIndex": 0,
       "rationale": "Multiple institutions create distinct access points and leverage, so groups adapt their strategies to lawmaking, implementation, and litigation.",
@@ -4202,10 +4202,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why are congressional committees important to the legislative process?",
       "choices": [
-        "They replace the Constitution’s requirement that bills pass both chambers.",
-        "They allow courts to appoint committee chairs.",
+        "They replace the Constitution’s requirement that a bill pass both chambers before enactment.",
+        "They allow federal courts to appoint the chairs who lead each standing committee.",
         "They divide work, develop expertise, hold hearings, and revise bills before floor consideration.",
-        "They prevent constituents from communicating with legislators."
+        "They prevent constituents from communicating with legislators about pending bills."
       ],
       "answerIndex": 2,
       "rationale": "Committees organize the large volume of legislative work and provide venues for hearings, investigation, markup, and oversight.",
@@ -4300,9 +4300,9 @@
       "cognitiveProcess": "apply",
       "prompt": "A representative supports a farm subsidy because it benefits a narrow district industry even though the policy has diffuse national costs. Which concept best explains the vote?",
       "choices": [
-        "Judicial activism",
-        "Executive privilege",
-        "Selective incorporation",
+        "Judicial activism in reviewing economic regulation",
+        "Executive privilege over confidential agency advice",
+        "Selective incorporation of federal rights against states",
         "Constituency service and concentrated-interest incentives"
       ],
       "answerIndex": 3,
@@ -4401,9 +4401,9 @@
       "prompt": "Which action most directly illustrates the president’s role as chief executive?",
       "choices": [
         "Directing executive agencies to implement a statute according to administration priorities",
-        "Presiding over a state legislative session",
-        "Writing the majority opinion in a Supreme Court case",
-        "Ratifying a constitutional amendment alone"
+        "Presiding over the annual session of a state legislature and setting its agenda",
+        "Writing the majority opinion in a Supreme Court case about a federal statute",
+        "Ratifying a proposed constitutional amendment without any action by the states"
       ],
       "answerIndex": 0,
       "rationale": "The president is chief executive and supervises the executive branch, subject to statutes, appropriations, and judicial review.",
@@ -4502,10 +4502,10 @@
       "cognitiveProcess": "identify",
       "prompt": "Which presidential action requires the Senate’s advice and consent?",
       "choices": [
-        "Issuing a pardon for a federal offense",
+        "Issuing a pardon to a person convicted of a federal offense",
         "Nominating a federal judge who must be confirmed by the Senate",
-        "Delivering a State of the Union address",
-        "Recognizing a foreign government diplomatically"
+        "Delivering an annual State of the Union address to Congress",
+        "Recognizing a newly formed foreign government diplomatically"
       ],
       "answerIndex": 1,
       "rationale": "The Senate confirms federal judicial nominations; pardons, communication, and recognition are presidential powers that do not use this confirmation process.",
@@ -4602,10 +4602,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can a president’s unilateral action be limited even when the action is legally issued?",
       "choices": [
-        "The president can never direct executive agencies without a new constitutional amendment.",
-        "Unilateral actions are automatically permanent once published.",
+        "The president can never direct executive agencies to act without first obtaining a new constitutional amendment.",
+        "Unilateral actions become automatically permanent once they are published in the Federal Register for public notice.",
         "Congress can restrict funding or pass a contrary statute, and courts can review whether the action exceeds executive authority.",
-        "Only state courts can review federal executive actions."
+        "Only state courts, and never Congress or a federal judge, have any authority to review an executive action."
       ],
       "answerIndex": 2,
       "rationale": "Unilateral action operates within a separation-of-powers system; legal, fiscal, and political checks can reduce or reverse its effect.",
@@ -4702,9 +4702,9 @@
       "cognitiveProcess": "analyze",
       "prompt": "Which feature of a presidential speech would best help a student identify its persuasive strategy?",
       "choices": [
-        "The number of Supreme Court justices in the audience",
-        "The exact population of every congressional district",
-        "The private opinions of all agency employees",
+        "The number of Supreme Court justices seated in the audience during the speech",
+        "The exact population figures for every congressional district named in the speech",
+        "The private opinions held by every federal agency employee who watched the speech",
         "The values, audience, evidence, and policy frame used to connect the proposal to public concerns"
       ],
       "answerIndex": 3,
@@ -5106,9 +5106,9 @@
       "cognitiveProcess": "apply",
       "prompt": "Which development can limit the practical effect of a Supreme Court decision without changing the written opinion?",
       "choices": [
-        "A single state newspaper can overrule the holding.",
-        "The president can erase the opinion from the United States Reports.",
-        "A lower court can ignore the Supreme Court without consequence.",
+        "A single state newspaper can publish an editorial that formally overrules the Court’s holding.",
+        "The president can order the opinion erased from the United States Reports and from federal law.",
+        "A lower court can openly ignore a Supreme Court precedent without any consequence for its rulings.",
         "Congress can change a statute or adjust funding in ways that affect implementation when constitutionally permitted."
       ],
       "answerIndex": 3,
@@ -5303,10 +5303,10 @@
       "cognitiveProcess": "explain",
       "prompt": "An agency publishes a proposed rule, receives public comments, and revises the final rule. Which conclusion is best supported?",
       "choices": [
-        "Public comments automatically require the agency to adopt the most common suggestion.",
+        "Public comments automatically require the agency to adopt whichever suggestion appears most often.",
         "The notice-and-comment process provides an opportunity for affected interests to influence implementation details.",
-        "The process transfers all legislative power to private organizations.",
-        "The final rule cannot be challenged in court after publication."
+        "The notice-and-comment process transfers all legislative power to the private organizations that comment.",
+        "The final rule cannot be challenged in any court once the agency has published it in final form."
       ],
       "answerIndex": 1,
       "rationale": "Notice and comment creates an input channel and record for rulemaking, but the agency remains responsible for the final legally authorized rule.",
@@ -5401,10 +5401,10 @@
       "cognitiveProcess": "argue",
       "prompt": "Which response would most directly address an argument that bureaucratic oversight is unnecessary?",
       "choices": [
-        "Oversight is unnecessary because agencies are elected directly by all voters.",
-        "Oversight proves that agencies should never use technical expertise.",
+        "Oversight is unnecessary because agency officials are elected directly by voters in a national ballot.",
+        "Oversight proves that agencies should never rely on technical expertise when they carry out a statute.",
         "Oversight can identify implementation failures while preserving the agency’s specialized role in carrying out legislation.",
-        "Oversight makes statutes and courts irrelevant to policy implementation."
+        "Oversight makes statutes and judicial review irrelevant to how agencies implement national policy."
       ],
       "answerIndex": 2,
       "rationale": "A strong rebuttal acknowledges administrative expertise while explaining why monitoring and accountability remain necessary.",
@@ -5502,9 +5502,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A graph shows that the number of stakeholders filing comments on a proposed rule rises sharply, but the final rule changes little. What limitation should a student note?",
       "choices": [
-        "The graph proves that every participant supported the final rule.",
-        "The graph proves the agency ignored all public input.",
-        "The graph cannot show any information about the rulemaking process.",
+        "The graph proves that every participant who commented supported the final rule.",
+        "The graph proves that the agency ignored every comment that the public submitted.",
+        "The graph cannot show any information at all about how the rulemaking process worked.",
         "The graph shows participation, not whether comments were persuasive or caused particular changes."
       ],
       "answerIndex": 3,
@@ -5604,9 +5604,9 @@
       "prompt": "What is the principal purpose of the Bill of Rights?",
       "choices": [
         "To enumerate protections for individual liberties and limit arbitrary government action",
-        "To establish the procedures for electing every state official",
-        "To give the president power to suspend the Constitution permanently",
-        "To replace the Constitution with ordinary congressional statutes"
+        "To establish the procedures for electing every state and local official",
+        "To give the president the power to suspend the Constitution permanently",
+        "To replace the Constitution with a set of ordinary congressional statutes"
       ],
       "answerIndex": 0,
       "rationale": "The first ten amendments identify rights and freedoms that constrain government power.",
@@ -5703,10 +5703,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A public school requires students to participate in a government-written prayer. Which constitutional issue is most directly raised?",
       "choices": [
-        "The Commerce Clause",
+        "The Commerce Clause of Article I, Section 8",
         "The Establishment Clause of the First Amendment",
-        "The Takings Clause",
-        "The Appointments Clause"
+        "The Takings Clause of the Fifth Amendment",
+        "The Appointments Clause of Article II, Section 2"
       ],
       "answerIndex": 1,
       "rationale": "Government-sponsored prayer raises the Establishment Clause concern that government may not establish or endorse religion.",
@@ -5903,9 +5903,9 @@
       "cognitiveProcess": "identify",
       "prompt": "A newspaper publishes information about government conduct, and officials seek to stop publication before it occurs. Which constitutional concept is most directly implicated?",
       "choices": [
-        "Double jeopardy",
-        "Equal protection",
-        "The right to bear arms",
+        "Double jeopardy after acquittal",
+        "Equal protection of the laws",
+        "The right to keep and bear arms",
         "Prior restraint on the press"
       ],
       "answerIndex": 3,
@@ -6005,9 +6005,9 @@
       "prompt": "Which constitutional interpretation did District of Columbia v. Heller support?",
       "choices": [
         "The Second Amendment protects an individual right to possess a firearm for lawful purposes such as self-defense in the home.",
-        "The Second Amendment applies only to state militias and protects no individual right.",
-        "The Second Amendment prevents every form of firearm regulation.",
-        "The Second Amendment applies only to voting in federal elections."
+        "The Second Amendment applies only to organized state militias and protects no individual right at all.",
+        "The Second Amendment prevents every form of firearm regulation by federal, state, or local government.",
+        "The Second Amendment applies only to voting rights in federal elections and not to any other activity."
       ],
       "answerIndex": 0,
       "rationale": "Heller recognized an individual right connected to self-defense while also stating that the right is not unlimited.",
@@ -6104,10 +6104,10 @@
       "cognitiveProcess": "argue",
       "prompt": "Why might a court uphold a search rule designed to protect public safety while still recognizing Fourth Amendment interests?",
       "choices": [
-        "Public safety automatically eliminates every constitutional protection.",
+        "A government interest in public safety automatically eliminates every constitutional protection a person might raise.",
         "Constitutional analysis can balance individual rights against a sufficiently justified government interest under the facts of the case.",
-        "Individual rights are relevant only when no government interest exists.",
-        "The Fourth Amendment applies only to private businesses and not government actors."
+        "Individual rights become relevant only in the cases where the government can identify no interest of its own.",
+        "The Fourth Amendment applies only to searches by private businesses and never to actions by government officers."
       ],
       "answerIndex": 1,
       "rationale": "The unit’s liberty-and-order reasoning asks whether the government’s justification and method are constitutionally sufficient, not whether one value always defeats the other.",
@@ -6204,10 +6204,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What is selective incorporation?",
       "choices": [
-        "The process by which Congress selects which states may vote in federal elections.",
-        "The power of a state court to rewrite the Bill of Rights.",
+        "The process by which Congress decides which of the states may take part in the voting during federal elections.",
+        "The power of a state supreme court to rewrite the terms of the Bill of Rights as they apply to its residents.",
         "The process by which the Supreme Court applies particular Bill of Rights protections to the states through the Fourteenth Amendment.",
-        "The rule that only federal officials must obey constitutional rights."
+        "The rule that only federal officials, and never state or local officials, must obey constitutional rights."
       ],
       "answerIndex": 2,
       "rationale": "Selective incorporation uses the Fourteenth Amendment’s due process protection to apply many, but not all at once, Bill of Rights guarantees to the states.",
@@ -6304,9 +6304,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Which protection is most directly associated with procedural due process for an accused person?",
       "choices": [
-        "Automatic conviction whenever police make an arrest",
-        "A guarantee that every case will be decided by a legislature",
-        "Permission for officials to use evidence obtained through any search",
+        "Automatic conviction of the accused whenever police officers make an arrest",
+        "A guarantee that every criminal case will be decided by a state legislature",
+        "Permission for officials to use evidence obtained through any search they choose",
         "Notice of the accusation and a fair opportunity to be heard through lawful procedures"
       ],
       "answerIndex": 3,
@@ -6405,9 +6405,9 @@
       "prompt": "Why is privacy often described as an unenumerated constitutional right?",
       "choices": [
         "The Constitution does not name a general right to privacy in one provision, but the Court has inferred protections from several constitutional guarantees.",
-        "Privacy is listed as the only right in the First Amendment.",
-        "Privacy exists only when Congress creates it by ordinary statute.",
-        "Privacy is a power reserved exclusively to state legislatures."
+        "Privacy appears in the text of the First Amendment as the only right it protects, and no other constitutional provision names a freedom.",
+        "Privacy exists only when Congress creates it by ordinary statute, and the Court has never inferred it from any constitutional guarantee.",
+        "Privacy is a power reserved exclusively to state legislatures, so no provision of the federal Constitution has any bearing on it."
       ],
       "answerIndex": 0,
       "rationale": "The Court has reasoned that privacy interests can arise from the combined implications of specific guarantees and substantive due process.",
@@ -6507,10 +6507,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What constitutional principle was central to Brown v. Board of Education?",
       "choices": [
-        "States could segregate schools as long as they offered no public education.",
+        "States could segregate their public schools as long as they also funded a separate school system.",
         "State-sponsored racial segregation in public schools violated the Equal Protection Clause of the Fourteenth Amendment.",
-        "The First Amendment required all schools to teach the same religion.",
-        "Congress could not pass any civil-rights legislation."
+        "The First Amendment required every public school in the country to teach the same religious curriculum.",
+        "Congress could not pass civil-rights legislation of any kind affecting the public schools in the states."
       ],
       "answerIndex": 1,
       "rationale": "Brown rejected school segregation as inconsistent with equal protection, overturning the separate-but-equal approach in public education.",
@@ -6609,10 +6609,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Which action is an example of the national government responding legislatively to a civil-rights movement?",
       "choices": [
-        "A court declines to hear a case because no legal issue exists.",
-        "A political party changes its logo without changing policy.",
+        "A federal court declines to hear a case because it presents no legal issue.",
+        "A political party changes its campaign logo without changing any policy position.",
         "Congress passes a law prohibiting discrimination in public accommodations and employment.",
-        "A state agency publishes a weather forecast."
+        "A state weather agency publishes its regular forecast for the coming week."
       ],
       "answerIndex": 2,
       "rationale": "Civil-rights legislation uses national law to prohibit discriminatory practices and expand equal protection in public life.",
@@ -6712,9 +6712,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can majority rule be limited in a constitutional democracy?",
       "choices": [
-        "Majorities are never allowed to participate in elections.",
-        "Constitutional rights apply only to elected officials.",
-        "Courts must approve every private disagreement before it can occur.",
+        "Majorities are never allowed to take part in the elections that decide questions of public policy.",
+        "Constitutional rights apply only to elected officials and not to the citizens they represent.",
+        "Courts must approve every private disagreement between citizens before it is allowed to occur.",
         "Constitutional rights and judicial review can protect minority liberties from unconstitutional government action."
       ],
       "answerIndex": 3,
@@ -6813,9 +6813,9 @@
       "prompt": "What constitutional question is central to debates over affirmative-action policies?",
       "choices": [
         "Whether a policy addressing disparities is consistent with the Equal Protection Clause’s limits on government classifications.",
-        "Whether Congress may coin money for state universities",
-        "Whether the president may appoint every local school principal",
-        "Whether the First Amendment bans all public education"
+        "Whether Congress may coin additional money in order to fund the operation of state universities and colleges",
+        "Whether the president may appoint every local school principal without any consent from the state governments",
+        "Whether the First Amendment bans every form of public education that is operated by a state government"
       ],
       "answerIndex": 0,
       "rationale": "Affirmative-action litigation has focused on how government classifications and remedial goals fit within equal-protection doctrine.",
@@ -6912,10 +6912,10 @@
       "cognitiveProcess": "argue",
       "prompt": "Which evidence would best support the claim that student speech restrictions should be limited?",
       "choices": [
-        "Evidence that the student held a political opinion unpopular with administrators",
+        "Evidence that the student held a political opinion that school administrators found unpopular",
         "Evidence that the expression was peaceful and did not materially disrupt instruction or threaten safety",
-        "Evidence that the school has a written dress code unrelated to disruption",
-        "Evidence that no one in the community has ever disagreed about speech"
+        "Evidence that the school maintains a written dress code unrelated to any disruption",
+        "Evidence that no one in the surrounding community has ever disagreed about student speech"
       ],
       "answerIndex": 1,
       "rationale": "The relevant evidence connects the expression to the constitutional interest and to the school’s claimed justification, especially disruption or safety.",
@@ -7116,9 +7116,9 @@
       "cognitiveProcess": "define",
       "prompt": "Which statement best describes political culture in the United States?",
       "choices": [
-        "It is identical to the platform of whichever party controls Congress.",
-        "It consists only of the formal text of the Constitution.",
-        "It changes every day because no political beliefs persist over time.",
+        "It is identical to the written policy platform of whichever political party currently controls Congress.",
+        "It consists only of the formal text of the Constitution and of the statutes that Congress has passed.",
+        "It changes from one day to the next because no political belief held by citizens persists over time.",
         "It includes widely held beliefs about individual rights, equality, civic participation, and the proper role of government."
       ],
       "answerIndex": 3,
@@ -7410,10 +7410,10 @@
       "cognitiveProcess": "explain",
       "prompt": "How can a major national crisis influence political ideology?",
       "choices": [
-        "It automatically makes every citizen adopt the same ideology.",
-        "It prevents political parties from responding to public opinion.",
+        "It automatically causes every citizen in the country to adopt one identical ideology.",
+        "It prevents political parties from responding in any way to shifts in public opinion.",
         "It can change how citizens evaluate government responsibility, security, liberty, and policy priorities.",
-        "It affects only local elections and never national policy debates."
+        "It affects only local elections and never reaches the national policy debates that follow."
       ],
       "answerIndex": 2,
       "rationale": "Major events can shift the salience of issues and alter judgments about government’s proper role without producing uniform views.",
@@ -7509,9 +7509,9 @@
       "cognitiveProcess": "identify",
       "prompt": "Which feature most improves the representativeness of a scientific public-opinion poll?",
       "choices": [
-        "A voluntary online poll promoted to the strongest supporters of one side",
-        "A sample made entirely of the pollster’s friends",
-        "A question asked only to people who already agree with the conclusion",
+        "A voluntary online poll promoted mainly to the strongest supporters of one side",
+        "A sample made up entirely of the pollster’s own friends, family, and neighbors",
+        "A question asked only of people who already agree with the poll’s conclusion",
         "A probability sample that gives members of the target population a known chance of selection"
       ],
       "answerIndex": 3,
@@ -7608,9 +7608,9 @@
       "prompt": "A poll reports that 51 percent of respondents support a policy, with a margin of error of plus or minus 4 percentage points. Which conclusion is most defensible?",
       "choices": [
         "The population support could plausibly range from about 47 to 55 percent under the poll’s assumptions.",
-        "Exactly 51 percent of every citizen supports the policy.",
-        "The poll proves the policy will pass the legislature.",
-        "The margin of error means the poll included no sampling uncertainty."
+        "Exactly 51 percent of all citizens in the population support the policy as written.",
+        "The poll proves that the policy will certainly pass in the legislature this session.",
+        "The reported margin of error shows that the poll included no sampling uncertainty at all."
       ],
       "answerIndex": 0,
       "rationale": "A margin of error identifies a range of plausible population estimates; it does not guarantee an electoral or legislative outcome.",
@@ -7708,10 +7708,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Which statement reflects the broad ideological pattern identified in the current course framework?",
       "choices": [
-        "The two major parties have no ideological differences in any policy area.",
+        "The two major parties have no ideological differences in any policy area, so their written platforms are interchangeable documents.",
         "Democratic platforms generally align more closely with liberal positions, while Republican platforms generally align more closely with conservative positions.",
-        "Party platforms are written by the Supreme Court rather than political organizations.",
-        "Ideology is irrelevant to party policy debates."
+        "Party platforms are written by the Supreme Court rather than by political organizations, and party delegates play no part in them.",
+        "Ideology is irrelevant to party policy debates, because the two major parties take identical positions on every national issue."
       ],
       "answerIndex": 1,
       "rationale": "The framework describes broad tendencies while recognizing that party coalitions and platforms can change over time and vary by issue.",
@@ -7808,10 +7808,10 @@
       "cognitiveProcess": "argue",
       "prompt": "A policymaker argues that a social issue should be addressed nationally rather than left entirely to states. Which evidence would best support the argument?",
       "choices": [
-        "A claim that every state has identical political preferences",
-        "A statement that ideology never influences public policy",
+        "A claim that every state already holds identical political preferences, so the choice of governing level cannot matter",
+        "A statement asserting that ideology never influences public policy at any level of the American federal system",
         "Evidence that national action would address a cross-state problem through a constitutional power and produce a consistent policy result.",
-        "A poll of one person with no explanation of the policy mechanism"
+        "A poll of a single respondent that offers no explanation of the mechanism through which the policy would work"
       ],
       "answerIndex": 2,
       "rationale": "A strong policy argument connects the preferred level of government to the problem’s scope, constitutional authority, and expected consequences.",
@@ -8007,9 +8007,9 @@
       "prompt": "Which policy position is generally associated with a conservative ideology in the framework?",
       "choices": [
         "Leaving more responsibility for some social issues to state governments rather than expanding national involvement.",
-        "Requiring national government to manage every local program directly",
-        "Rejecting all limits on government power in every context",
-        "Abolishing state governments from the federal system"
+        "Requiring the national government to manage every local social program directly from Washington",
+        "Rejecting all limits on the power of government in every social, economic, and legal context",
+        "Abolishing the state governments altogether and removing them from the federal system entirely"
       ],
       "answerIndex": 0,
       "rationale": "The framework generally associates conservative ideology with less national involvement in some social issues and greater state responsibility.",
@@ -8203,10 +8203,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "An advocacy group publishes an opt-in poll from its own website and claims it represents the entire electorate. What is the strongest limitation?",
       "choices": [
-        "The poll is automatically representative because it has many responses.",
-        "The poll cannot contain any useful information because all surveys are invalid.",
+        "The poll is automatically representative because it collected a large number of responses.",
+        "The poll cannot contain any useful information because every survey of opinion is invalid.",
         "The self-selected sample may overrepresent people motivated to visit and respond to the group’s website.",
-        "The poll proves that respondents who declined to participate oppose the group."
+        "The poll proves that the people who declined to participate all oppose the group’s position."
       ],
       "answerIndex": 2,
       "rationale": "Opt-in samples can be systematically different from the broader population, so sample size alone does not establish representativeness.",
@@ -8501,10 +8501,10 @@
       "cognitiveProcess": "identify",
       "prompt": "Which function do political parties perform in representative democracy?",
       "choices": [
-        "They replace the Constitution with private rules.",
+        "They replace the Constitution with a set of private rules written by party officials.",
         "They recruit candidates, organize voters, develop platforms, and help structure governing coalitions.",
-        "They prevent voters from comparing policy positions.",
-        "They serve only as temporary court-appointed agencies."
+        "They prevent voters from comparing the policy positions offered by rival candidates.",
+        "They serve only as temporary administrative agencies appointed by the federal courts."
       ],
       "answerIndex": 1,
       "rationale": "Parties connect citizens and government by recruiting candidates, aggregating interests, mobilizing voters, and organizing institutions.",
@@ -8599,10 +8599,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why might a major political party change its platform after a significant shift in the electorate?",
       "choices": [
-        "Party platforms cannot change because they are constitutional documents.",
-        "Parties change platforms only when courts order them to do so.",
+        "Party platforms cannot change at all because they are formal constitutional documents.",
+        "Parties change their written platforms only when a federal court orders them to do so.",
         "Adapting positions can help the party build a winning coalition and respond to changing public priorities.",
-        "A platform change eliminates the need for candidates or voters."
+        "A platform change eliminates the need for the party to run candidates or court voters."
       ],
       "answerIndex": 2,
       "rationale": "Parties adapt to demographic change, issue salience, electoral incentives, and coalition-building pressures.",
@@ -8697,9 +8697,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why do third-party candidates often face difficulty winning national office?",
       "choices": [
-        "Third parties are prohibited from appearing on every ballot by the Constitution.",
-        "Third parties cannot raise any money under federal law.",
-        "Third parties automatically receive the same electoral votes as major parties.",
+        "The Constitution prohibits third parties from appearing on the ballot in any state or federal election.",
+        "Third parties are barred from raising money of any kind under the federal campaign-finance laws in force.",
+        "Third-party candidates automatically receive the same number of electoral votes as the major-party nominees.",
         "Single-member, plurality elections and ballot-access rules make it difficult to convert support into seats or electoral votes."
       ],
       "answerIndex": 3,
@@ -8800,9 +8800,9 @@
       "prompt": "Which activity is a typical form of interest-group lobbying?",
       "choices": [
         "Providing policy information and communicating with lawmakers about proposed legislation.",
-        "Selecting the chief justice without presidential involvement",
-        "Counting every vote in a national election",
-        "Issuing a judicial opinion on behalf of a federal court"
+        "Selecting the chief justice of the United States without any presidential involvement",
+        "Counting and certifying every ballot cast in a national general election",
+        "Issuing a written judicial opinion on behalf of a federal appellate court"
       ],
       "answerIndex": 0,
       "rationale": "Lobbying seeks to influence policymakers through information, relationships, testimony, and organized advocacy.",
@@ -8899,10 +8899,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can an interest group with a relatively small membership still influence policy?",
       "choices": [
-        "Influence is determined only by the total number of people in the group.",
+        "Influence is determined only by the total number of people who hold membership in the group.",
         "It may have concentrated resources, specialized information, motivated members, or access to decision-makers.",
-        "Small groups are constitutionally barred from using courts or media.",
-        "A small group automatically controls every election in its state."
+        "Small groups are constitutionally barred from using the courts or the news media at all.",
+        "A small group automatically controls the outcome of every election that is held in its state."
       ],
       "answerIndex": 1,
       "rationale": "Resources, expertise, intensity, organization, and access can matter in addition to membership size.",
@@ -8997,10 +8997,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What is the role of the Electoral College in selecting the president?",
       "choices": [
-        "It directly writes the platforms of the major parties.",
-        "It selects members of the House according to national popular vote totals.",
+        "It directly writes the campaign platforms that are adopted by each of the major parties.",
+        "It selects the members of the House of Representatives according to national popular vote totals.",
         "It formally allocates electoral votes to states and determines the winner under the constitutional process.",
-        "It allows the Supreme Court to choose the president in every election."
+        "It allows the Supreme Court to choose the president at the close of every national election."
       ],
       "answerIndex": 2,
       "rationale": "The Electoral College uses state-based electoral votes to select the president, subject to constitutional and statutory rules.",
@@ -9095,9 +9095,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why do incumbents often have an advantage in congressional elections?",
       "choices": [
-        "Incumbents cannot be challenged in primary elections.",
-        "Incumbents receive every vote from their party by constitutional requirement.",
-        "Incumbents are appointed rather than elected after their first term.",
+        "Sitting incumbents cannot be challenged by any other candidate of their party in a primary election.",
+        "Incumbents receive every vote cast by members of their own party as a constitutional requirement.",
+        "Incumbents are appointed to their office rather than elected once they have served a first term.",
         "They may benefit from name recognition, constituent service, fundraising networks, and a record of public visibility."
       ],
       "answerIndex": 3,
@@ -9194,9 +9194,9 @@
       "prompt": "Which feature of modern campaigns most directly reflects professionalized election strategy?",
       "choices": [
         "Campaigns use consultants, targeted communication, fundraising operations, polling, and media planning.",
-        "Campaigns are conducted without parties, donors, or communication.",
-        "Campaigns require candidates to avoid all public appearances.",
-        "Campaigns are decided by courts before voters participate."
+        "Campaigns are conducted without parties, donors, or any communication with the voters.",
+        "Campaigns require candidates to avoid every public appearance during the entire race.",
+        "Campaigns are decided by the federal courts long before any of the voters participate."
       ],
       "answerIndex": 0,
       "rationale": "Modern campaigns rely on specialized organizations and communication strategies, with benefits and costs for democratic participation.",
@@ -9291,10 +9291,10 @@
       "cognitiveProcess": "compare",
       "prompt": "What is a central difference between a traditional political action committee and an independent-expenditure-only committee?",
       "choices": [
-        "A traditional PAC may never communicate with voters.",
+        "A traditional political action committee may never communicate with voters or with any federal candidate.",
         "An independent-expenditure-only committee may spend independently of candidates but cannot coordinate expenditures with them.",
-        "An independent-expenditure-only committee is part of the Supreme Court.",
-        "Both organizations are exempt from all disclosure and campaign-finance rules."
+        "An independent-expenditure-only committee operates as an official branch of the Supreme Court itself.",
+        "Both kinds of organization are entirely exempt from all disclosure requirements and campaign-finance rules."
       ],
       "answerIndex": 1,
       "rationale": "The distinction concerns coordination and independent expenditures; campaign-finance rules and disclosure requirements can still apply.",
@@ -9488,9 +9488,9 @@
       "cognitiveProcess": "explain",
       "prompt": "What is one possible democratic consequence of increasingly fragmented media choices?",
       "choices": [
-        "All citizens receive exactly the same news from one source.",
-        "Media fragmentation eliminates political participation.",
-        "More media choices guarantee that every claim is accurate.",
+        "All citizens now receive exactly the same news coverage, because a single national source supplies it.",
+        "Media fragmentation eliminates political participation entirely by making news too difficult to follow.",
+        "A larger number of media choices guarantees that every claim that citizens encounter has been verified.",
         "Citizens may encounter more information but also more ideologically selective content and reinforcement of existing beliefs."
       ],
       "answerIndex": 3,
@@ -9686,10 +9686,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Which change would most directly reduce a structural barrier to voting?",
       "choices": [
-        "Reducing the number of polling locations in high-population areas",
+        "Reducing the number of polling locations available in high-population areas",
         "Making voter registration available through an accessible automatic or same-day process",
-        "Requiring voters to support a particular party before registration",
-        "Limiting voting information to campaign advertisements"
+        "Requiring voters to declare support for a particular party before they may register",
+        "Limiting all official voting information to paid campaign advertisements"
       ],
       "answerIndex": 1,
       "rationale": "Registration rules, polling access, identification requirements, and election timing can create or reduce opportunities for participation.",
@@ -9884,9 +9884,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A chart shows one party’s support declining among one age cohort while rising among another across several elections. What conclusion is best supported?",
       "choices": [
-        "Every individual in the older cohort changed parties.",
-        "The party’s platform had no relationship to its support.",
-        "The chart proves that campaign spending caused the shift.",
+        "Every individual voter in the older cohort changed political parties during the measured period.",
+        "The party’s written platform had no relationship at all to the support that it received.",
+        "The chart proves that campaign spending is what caused the measured shift in cohort support.",
         "The party’s coalition changed across the measured cohorts, although the chart alone cannot identify the cause."
       ],
       "answerIndex": 3,
@@ -9984,9 +9984,9 @@
       "prompt": "A third-party candidate wins enough votes to deny either major candidate a plurality in a state. What possible effect is illustrated?",
       "choices": [
         "The candidate may act as a spoiler by changing which major candidate wins the state’s plurality.",
-        "The candidate automatically receives all electoral votes in every state.",
-        "The candidate eliminates the need for a general election.",
-        "The candidate proves that plurality rules favor every third party equally."
+        "The candidate automatically receives all of the electoral votes in every state.",
+        "The candidate eliminates any need for the state to hold a general election at all.",
+        "The candidate proves that plurality rules favor every third party in the race equally."
       ],
       "answerIndex": 0,
       "rationale": "In a plurality system, a third-party candidate can alter the distribution of votes enough to affect the major-party winner without winning the office.",
@@ -10085,10 +10085,10 @@
       "cognitiveProcess": "identify",
       "prompt": "An interest group files an amicus brief in a Supreme Court case. What is the group attempting to do?",
       "choices": [
-        "Replace the justices with elected interest-group representatives",
+        "Replace the sitting justices with elected representatives chosen by organized interest groups",
         "Present arguments or information that may influence the Court’s understanding of the legal and policy issues.",
-        "Count ballots in the next congressional election",
-        "Write a constitutional amendment without ratification"
+        "Count and certify the ballots that are cast in the next congressional election in every state",
+        "Write a new constitutional amendment that takes effect without any ratification by the states"
       ],
       "answerIndex": 1,
       "rationale": "An amicus brief allows an organization to offer legal reasoning or relevant information to the Court without being one of the principal parties.",
@@ -10481,10 +10481,10 @@
       "cognitiveProcess": "argue",
       "prompt": "Which claim is most defensible about professional campaign consultants?",
       "choices": [
-        "They guarantee that voters will support the candidate regardless of policy.",
+        "They guarantee that voters will support the candidate regardless of which policy positions a campaign takes up.",
         "They can improve a campaign’s communication and fundraising strategy, but their use can also increase costs and reduce candidate autonomy.",
-        "They make parties and interest groups irrelevant to elections.",
-        "They eliminate the need for candidates to communicate with citizens."
+        "They make political parties and organized interest groups entirely irrelevant to the conduct of modern elections.",
+        "They eliminate any need for the candidate to communicate with citizens at any point during the campaign season."
       ],
       "answerIndex": 1,
       "rationale": "A defensible claim recognizes both the strategic benefits and the institutional tradeoffs of professionalized campaigns.",
@@ -10579,10 +10579,10 @@
       "cognitiveProcess": "analyze",
       "prompt": "A political advertisement is funded by an organization that does not disclose its donors. Which source-analysis question is most important?",
       "choices": [
-        "Whether the advertisement uses the same font as a judicial opinion",
-        "Whether the organization can appoint federal judges",
+        "Whether the advertisement uses the same typeface as a recently published judicial opinion",
+        "Whether the sponsoring organization has the power to appoint judges to the federal courts",
         "How the funding source and lack of disclosure may affect the advertisement’s perspective and credibility.",
-        "Whether the ad automatically represents every voter’s opinion"
+        "Whether the advertisement automatically represents the opinion held by every single voter"
       ],
       "answerIndex": 2,
       "rationale": "Source analysis considers authorship, funding, audience, purpose, evidence, and perspective when evaluating political communication.",
@@ -10678,9 +10678,9 @@
       "cognitiveProcess": "identify",
       "prompt": "When a news organization repeatedly highlights one issue, what media effect may it have on political discussion?",
       "choices": [
-        "Judicial review by declaring the issue unconstitutional",
-        "Federalism by assigning the issue to state governments",
-        "Cloture by ending debate in the Senate",
+        "Judicial review, by declaring the disputed issue unconstitutional in a written opinion",
+        "Federalism, by assigning the issue to state governments for their own resolution",
+        "Cloture, by ending an extended Senate debate over the issue with a formal vote",
         "Agenda setting by increasing the issue’s perceived importance among citizens and policymakers."
       ],
       "answerIndex": 3,
@@ -10983,10 +10983,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A national-security proposal would allow officials to search homes without warrants whenever they believe a threat might exist. Which constitutional concern is most directly raised?",
       "choices": [
-        "The proposal would require equal representation in both chambers of Congress.",
-        "The proposal would transfer all reserved powers to state governments.",
+        "The proposal would require equal state representation in both of the chambers of Congress.",
+        "The proposal would transfer all of the reserved powers directly to state governments.",
         "The proposal could give government power that is not adequately limited by individual-rights protections.",
-        "The proposal would make the Electoral College proportional in every state."
+        "The proposal would make the Electoral College allocation proportional in every state."
       ],
       "answerIndex": 2,
       "rationale": "The conflict is between a claimed public-safety objective and constitutional protections that constrain searches and executive discretion.",
@@ -11084,9 +11084,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why did the Articles of Confederation make coordinated economic policy difficult?",
       "choices": [
-        "Congress controlled a unified national tax system and permanent executive agencies.",
-        "The national judiciary could invalidate every state economic regulation.",
-        "The president could impose tariffs without legislative approval.",
+        "Congress controlled a unified national tax system along with permanent executive agencies.",
+        "The national judiciary could invalidate every economic regulation that any state adopted.",
+        "The president could impose national tariffs without seeking any approval from the legislature.",
         "Congress lacked effective authority to regulate interstate commerce and depended heavily on state cooperation."
       ],
       "answerIndex": 3,
@@ -11187,9 +11187,9 @@
       "prompt": "A Federalist pamphlet argues that the proposed Constitution would correct the weaknesses of the Articles, while an Anti-Federalist response warns about distant national power. Which analysis is strongest?",
       "choices": [
         "The sources identify a tradeoff between effective national authority and safeguards for state influence and liberty.",
-        "The sources prove that the two sides agreed about the proper scope of government.",
-        "The sources show that ratification involved no disagreement over institutional design.",
-        "The sources establish that the Articles created a stronger executive than the Constitution."
+        "The sources prove that the two sides agreed completely about the proper scope of national government.",
+        "The sources show that ratification involved no real disagreement over the institutional design.",
+        "The sources establish that the Articles created a stronger national executive than the Constitution."
       ],
       "answerIndex": 0,
       "rationale": "The ratification debate included competing concerns about national capacity, state authority, representation, and individual liberty.",
@@ -11290,10 +11290,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Which example most directly illustrates limited government?",
       "choices": [
-        "A legislature gives an agency authority to administer a statute.",
+        "A state legislature gives an executive agency the authority to administer a new statute.",
         "A court rejects an executive action because the action exceeds authority granted by law and the Constitution.",
-        "A citizen joins a political party to support a candidate.",
-        "A state uses a local referendum to approve a school budget."
+        "A citizen joins a local political party in order to support a candidate for statewide office.",
+        "A state government uses a local referendum to approve the annual budget for its schools."
       ],
       "answerIndex": 1,
       "rationale": "Limited government means public officials remain subject to constitutional and legal constraints, including judicial review of unlawful action.",
@@ -11898,9 +11898,9 @@
       "cognitiveProcess": "compare",
       "prompt": "Which contrast between Federalist No. 10 and Brutus No. 1 is most accurate?",
       "choices": [
-        "Federalist No. 10 rejects representation, while Brutus supports direct democracy in every matter.",
-        "Both sources argue that state governments should be eliminated from the constitutional system.",
-        "Both sources claim that a large republic guarantees agreement among citizens.",
+        "Federalist No. 10 rejects representation entirely, while Brutus No. 1 calls for direct democracy on every public question.",
+        "Both of the sources argue that state governments should be eliminated entirely from the constitutional system under debate.",
+        "Both of the sources claim that a large republic guarantees lasting agreement among citizens on every public question at issue.",
         "Federalist No. 10 emphasizes controlling factions through an extended republic, while Brutus warns that a large republic may threaten self-government."
       ],
       "answerIndex": 3,
@@ -12000,9 +12000,9 @@
       "prompt": "A table shows that the Confederation Congress requested funds from states but received less than half of the amount requested in each of three years. What conclusion is best supported?",
       "choices": [
         "The national government faced a recurring fiscal weakness because it depended on voluntary state contributions.",
-        "The table proves that the national government had unlimited taxing authority.",
-        "The table shows that states were required to surrender all revenue to Congress.",
-        "The table demonstrates that the national judiciary controlled appropriations."
+        "The table proves that the national government held unlimited taxing authority over states.",
+        "The table shows that the states were required to surrender all of their revenue to Congress.",
+        "The table demonstrates that the national judiciary controlled all federal appropriations."
       ],
       "answerIndex": 0,
       "rationale": "The repeated gap between requests and receipts supports a conclusion about dependence on state cooperation, not a claim about every aspect of the Confederation system.",
@@ -12102,10 +12102,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why did the Constitution include a process for ratification by conventions rather than relying only on state legislatures?",
       "choices": [
-        "Convention ratification guaranteed that every state would have identical population sizes.",
+        "Convention ratification guaranteed that every state taking part would have an identical population in the census.",
         "Convention ratification could appeal directly to the people and address concerns about whether the new system rested on popular consent.",
-        "Convention ratification allowed the president to approve the Constitution alone.",
-        "Convention ratification prevented citizens from debating the proposed system."
+        "Convention ratification allowed the president to approve the finished Constitution without any action by states.",
+        "Convention ratification prevented ordinary citizens from debating the merits of the proposed system of government."
       ],
       "answerIndex": 1,
       "rationale": "Ratification conventions connected the new constitutional order to popular sovereignty and created a forum for public debate over the proposed structure.",
@@ -12408,9 +12408,9 @@
       "prompt": "In United States v. Lopez, the Supreme Court limited Congress power under the Commerce Clause. Which reasoning move is reflected?",
       "choices": [
         "The Court distinguished an activity with an insufficient connection to interstate commerce from activities Congress may regulate.",
-        "The Court held that Congress may regulate every local activity without a connection to commerce.",
-        "The Court transferred the power to declare war from Congress to the states.",
-        "The Court ruled that the Necessary and Proper Clause applies only to state legislatures."
+        "The Court held that Congress may regulate every local activity even without any connection at all to commerce.",
+        "The Court transferred the power to declare war from Congress to the individual governments of the states.",
+        "The Court ruled that the Necessary and Proper Clause applies only to the legislatures of the several states."
       ],
       "answerIndex": 0,
       "rationale": "Lopez illustrates that the Commerce Clause has judicially enforceable boundaries and does not automatically reach every local activity.",
@@ -12507,10 +12507,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A map shows that states receiving a larger share of federal transportation grants also report more projects subject to federal accessibility rules. Which inference is most defensible?",
       "choices": [
-        "The map proves that federal grants eliminate state discretion in all transportation decisions.",
+        "The map proves that federal grants eliminate state discretion in every transportation decision that a state makes.",
         "Federal funding may create implementation incentives, but the map alone does not establish that funding caused every rule-compliant project.",
-        "The map proves that states receiving fewer grants have no accessibility requirements.",
-        "The map shows that federalism prevents any national standards from applying to states."
+        "The map proves that the states receiving fewer grants have no accessibility requirements of any kind now in place.",
+        "The map shows that federalism prevents national standards from ever applying to any project funded within a state."
       ],
       "answerIndex": 1,
       "rationale": "The pattern is consistent with grant conditions influencing implementation, but a map without controls cannot establish a complete causal explanation.",
@@ -12608,10 +12608,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why does the Senate generally provide each state with equal representation while the House uses population-based districts?",
       "choices": [
-        "The design gives the president control over both chambers.",
-        "The design requires every state to elect the same number of House members.",
+        "The design gives the president direct control over the membership of both chambers of Congress.",
+        "The design requires every state to elect an identical number of members to the House of Representatives.",
         "The constitutional design balances state equality in the Senate with population-based representation in the House.",
-        "The design eliminates the need for committees in either chamber."
+        "The design eliminates any need for standing committees within either of the chambers of Congress."
       ],
       "answerIndex": 2,
       "rationale": "Bicameral representation was a constitutional compromise between equal state representation and representation tied to population.",
@@ -12907,10 +12907,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Which presidential action most clearly reflects the role of commander in chief?",
       "choices": [
-        "Presiding over a state legislative committee",
+        "Presiding over a standing committee of a state legislature during its session",
         "Directing military operations after Congress has provided legal authorization and funding",
-        "Deciding the constitutionality of a federal statute",
-        "Counting electoral votes without congressional procedure"
+        "Deciding the constitutionality of a federal statute in a published opinion",
+        "Counting the electoral votes without following any congressional procedure"
       ],
       "answerIndex": 1,
       "rationale": "The commander-in-chief role concerns leadership of the armed forces, while Congress retains important powers over authorization and funding.",
@@ -13109,9 +13109,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A president directs agencies to prioritize enforcement of an existing statute in a particular way, and critics argue that the direction changes the statute. What issue is raised?",
       "choices": [
-        "The boundary between state taxation and foreign diplomacy",
-        "The boundary between jury service and congressional apportionment",
-        "The boundary between political parties and private schools",
+        "The boundary between state taxation authority and the conduct of foreign diplomacy abroad",
+        "The boundary between the duty of jury service and the rules of congressional apportionment",
+        "The boundary between political party organizations and privately operated religious schools",
         "The boundary between presidential implementation discretion and the duty to faithfully execute the law"
       ],
       "answerIndex": 3,
@@ -13313,10 +13313,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can life tenure for federal judges support judicial independence?",
       "choices": [
-        "It permits judges to write legislation without review.",
+        "It permits federal judges to write legislation of their own without any review at all by either of the elected branches.",
         "It reduces the threat that a judge will lose office because of an unpopular ruling, while impeachment remains available for serious misconduct.",
-        "It requires judges to win reelection after every decision.",
-        "It prevents Congress from creating any lower federal court."
+        "It requires federal judges to stand for a new statewide election after every decision that they issue from the bench.",
+        "It prevents Congress from creating any lower federal court, so the Supreme Court must hear every federal case itself."
       ],
       "answerIndex": 1,
       "rationale": "Tenure during good behavior insulates judges from ordinary electoral retaliation while preserving constitutional accountability mechanisms.",
@@ -13413,10 +13413,10 @@
       "cognitiveProcess": "identify",
       "prompt": "A court follows the reasoning of an earlier decision when deciding a similar constitutional question. Which judicial principle is most directly involved?",
       "choices": [
-        "Executive privilege",
-        "Senatorial courtesy",
+        "Executive privilege over documents",
+        "Senatorial courtesy in appointments",
         "Stare decisis, or respect for precedent",
-        "Federal preemption"
+        "Federal preemption of a state law"
       ],
       "answerIndex": 2,
       "rationale": "Stare decisis promotes consistency by asking courts to consider prior decisions, although precedent can be distinguished, limited, or overruled.",
@@ -13513,9 +13513,9 @@
       "cognitiveProcess": "connect",
       "prompt": "After hearing oral arguments, the Supreme Court assigns a justice to write the majority opinion. What does the assignment signal?",
       "choices": [
-        "The president has vetoed the case before the opinion is published.",
-        "The case will automatically be returned to the state legislature.",
-        "The justice writing the opinion can decide the case without other votes.",
+        "The president has vetoed the outcome of the case before the Court can publish an opinion.",
+        "The case will automatically be returned to the state legislature for a final decision.",
+        "The justice who writes the opinion can decide the case without votes from the others.",
         "A majority of the justices agreed on the judgment and will develop the reasoning for the Court decision."
       ],
       "answerIndex": 3,
@@ -13712,10 +13712,10 @@
       "cognitiveProcess": "identify",
       "prompt": "An agency receives a statute instructing it to administer a food-safety program. Which bureaucratic function is illustrated when the agency inspects facilities?",
       "choices": [
-        "Ratification of a constitutional amendment",
+        "Ratification of a proposed constitutional amendment by the states",
         "Implementation and enforcement of a law passed through the political process",
-        "Selection of senators through primary elections",
-        "Judicial review of every state constitution"
+        "Selection of United States senators through party primary elections",
+        "Judicial review of every state constitution and every state statute"
       ],
       "answerIndex": 1,
       "rationale": "Bureaucracies implement statutes through administration, inspection, service delivery, enforcement, and other specialized work.",
@@ -14011,9 +14011,9 @@
       "prompt": "When different branches support different approaches to an environmental policy, what most directly affects the final outcome?",
       "choices": [
         "The constitutional powers, institutional incentives, and bargaining strategies of the branches involved",
-        "The assumption that one branch always controls every policy area",
-        "The requirement that courts write every administrative rule",
-        "The absence of any role for organized interests or public opinion"
+        "The assumption that a single branch always controls every area of environmental policy",
+        "The requirement that the federal courts write every administrative rule by themselves",
+        "The absence of any role at all for organized interests or for shifts in public opinion"
       ],
       "answerIndex": 0,
       "rationale": "Policy emerges through interaction among branches, agencies, courts, interests, and public pressures rather than through a single institutional command.",
@@ -14110,10 +14110,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A table shows that House reelection rates remain high while Senate reelection rates fluctuate more across four election cycles. Which explanation is most plausible?",
       "choices": [
-        "Senators are appointed by governors in every election cycle.",
+        "Senators are appointed by the state governors in every election cycle rather than being elected.",
         "Senate races cover statewide constituencies and may be more exposed to national political swings than House races.",
-        "House members cannot face primary challenges under the Constitution.",
-        "The Senate has no party organizations or campaign fundraising."
+        "Members of the House cannot face any primary challenge at all under the rules of the Constitution.",
+        "Senate contests involve no party organization and no campaign fundraising at any point in the cycle."
       ],
       "answerIndex": 1,
       "rationale": "The pattern is consistent with differences in constituency size, campaign context, and nationalization, although the table alone cannot prove one cause.",
@@ -14212,10 +14212,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Which congressional structure gives committees an important role in developing legislation?",
       "choices": [
-        "Committees are required to approve every judicial opinion.",
-        "Committees replace elections with agency appointments.",
+        "Committees are required to approve every federal judicial opinion before it is issued.",
+        "Committees replace congressional elections with a system of permanent agency appointments.",
         "Committees can hold hearings, revise bills, and decide which proposals receive detailed consideration.",
-        "Committees allow the president to write all statutes without a vote."
+        "Committees allow the president to write every statute without any vote in Congress."
       ],
       "answerIndex": 2,
       "rationale": "The committee system specializes legislative work and filters proposals before full-chamber debate and voting.",
@@ -14412,9 +14412,9 @@
       "prompt": "Why might a president use an executive agreement instead of seeking a treaty?",
       "choices": [
         "An executive agreement can establish an international commitment without requiring the same Senate treaty-ratification process.",
-        "An executive agreement permanently changes the Constitution.",
-        "An executive agreement gives state courts control over foreign policy.",
-        "An executive agreement must be approved by every local government."
+        "An executive agreement permanently changes the text of the Constitution without any ratification by states.",
+        "An executive agreement gives the state courts full control over the conduct of national foreign policy.",
+        "An executive agreement must be approved by every local government in the country before it can take effect."
       ],
       "answerIndex": 0,
       "rationale": "Executive agreements are a presidential tool in foreign affairs, but their scope and durability remain subject to legal and political constraints.",
@@ -14513,10 +14513,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Congress passes a bill over a presidential veto with the required supermajority. What does the outcome demonstrate?",
       "choices": [
-        "The president has no role in the legislative process.",
+        "The president holds no formal role in the national legislative process under the Constitution.",
         "A formal legislative check can overcome presidential opposition when the constitutional threshold is met.",
-        "The Supreme Court must approve every veto override.",
-        "The states have repealed the separation of powers."
+        "The Supreme Court must approve every congressional veto override before it takes effect.",
+        "The states have collectively repealed the separation of powers in the national government."
       ],
       "answerIndex": 1,
       "rationale": "The override illustrates that the veto is a check, not an absolute presidential power, because the Constitution provides a congressional response.",
@@ -14817,9 +14817,9 @@
       "prompt": "Why can the appointment process create tension over the federal judiciary?",
       "choices": [
         "The elected branches select judges, but lifetime tenure allows judges to exercise independent constitutional judgment after confirmation.",
-        "Judges are required to campaign for office after confirmation.",
-        "The judiciary writes the party platforms for Congress.",
-        "The appointment process prevents courts from hearing constitutional cases."
+        "Federal judges are required to campaign for their office in every national election after the Senate confirms them.",
+        "The federal judiciary writes the party platforms that the members of Congress adopt at the start of each session.",
+        "The appointment process prevents the federal courts from hearing any constitutional case after a confirmation."
       ],
       "answerIndex": 0,
       "rationale": "The process connects courts to elected institutions while tenure protects judicial independence, creating debate over qualifications and interpretive direction.",
@@ -14916,10 +14916,10 @@
       "cognitiveProcess": "classify",
       "prompt": "Which action best illustrates judicial restraint?",
       "choices": [
-        "A court invalidates every law it dislikes without constitutional reasoning.",
+        "A court invalidates every law that its members dislike without offering any constitutional reasoning.",
         "A court upholds a law when it finds a reasonable constitutional basis and declines to replace legislative policy judgment.",
-        "A court writes a complete administrative code for Congress.",
-        "A court requires all voters to adopt one policy position."
+        "A court writes a complete administrative code on its own and sends it to Congress for its adoption.",
+        "A court orders all of the voters in a state to adopt one single policy position on the disputed issue."
       ],
       "answerIndex": 1,
       "rationale": "Judicial restraint emphasizes deference to elected branches when constitutional text and precedent do not require intervention.",
@@ -15016,10 +15016,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why might the Supreme Court use a narrow holding rather than deciding every issue raised by the parties?",
       "choices": [
-        "A narrow holding prevents the parties from receiving any judgment.",
-        "A narrow holding allows Congress to select the justices voting in the case.",
+        "A narrow holding prevents the parties from receiving any judgment at all in the case.",
+        "A narrow holding allows Congress to select which of the justices will vote in the case.",
         "A narrow holding resolves the case while limiting unnecessary constitutional or doctrinal consequences.",
-        "A narrow holding means the Court has no power of judicial review."
+        "A narrow holding means that the Court no longer holds any power of judicial review."
       ],
       "answerIndex": 2,
       "rationale": "Courts often limit decisions to the facts and legal question necessary to resolve a dispute, which can preserve flexibility for later cases.",
@@ -15117,9 +15117,9 @@
       "cognitiveProcess": "identify",
       "prompt": "Which action can the Senate take as part of its constitutional role involving the federal judiciary?",
       "choices": [
-        "Write the majority opinion in every Supreme Court case",
-        "Remove a justice through an ordinary appropriations bill",
-        "Direct a lower court to ignore a constitutional precedent",
+        "Write the majority opinion in every case the Supreme Court hears",
+        "Remove a sitting justice through an ordinary appropriations bill",
+        "Direct a lower court to ignore an established constitutional precedent",
         "Provide advice and consent on presidential nominations to federal courts."
       ],
       "answerIndex": 3,
@@ -15216,9 +15216,9 @@
       "prompt": "An agency report shows that two regional offices applied the same statute differently before receiving new guidance. What bureaucratic issue is suggested?",
       "choices": [
         "Implementation discretion can produce variation unless agencies establish consistent rules or supervision.",
-        "The data prove that Congress cannot pass statutes.",
-        "The variation shows that courts administer every agency program.",
-        "The report proves that all agency employees are elected."
+        "The data prove that Congress cannot pass statutes that govern the work of the agency.",
+        "The variation shows that federal courts, rather than agencies, administer every program.",
+        "The report proves that all of the agency employees are elected by the voters in each region."
       ],
       "answerIndex": 0,
       "rationale": "Agencies often exercise discretion in applying broad statutes, so guidance, oversight, and review can affect consistency.",
@@ -15412,10 +15412,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "Which action is most likely to improve bureaucratic accountability without eliminating agency expertise?",
       "choices": [
-        "Congress can permit the agency to ignore all statutory limits.",
-        "Congress can require courts to approve every routine employee decision.",
+        "Congress can permit the agency to ignore all of the statutory limits placed on its own authority.",
+        "Congress can require the federal courts to approve every routine decision that an employee makes.",
         "Congress can require reporting, conduct oversight, and review whether the agency is implementing its statutory mandate.",
-        "Congress can prohibit citizens from challenging agency action."
+        "Congress can prohibit citizens from ever challenging an action taken by an agency in any federal court."
       ],
       "answerIndex": 2,
       "rationale": "Accountability tools can monitor agencies while preserving specialized administration within the boundaries established by law.",
@@ -16015,9 +16015,9 @@
       "prompt": "Which principle did District of Columbia v. Heller recognize?",
       "choices": [
         "The Second Amendment protects an individual right to possess a firearm for lawful purposes such as self-defense, subject to constitutional analysis of regulation.",
-        "The Second Amendment applies only to state legislatures and not individuals.",
-        "The Second Amendment prevents every form of firearm regulation.",
-        "The Second Amendment gives Congress power to appoint local police chiefs."
+        "The Second Amendment applies only to state legislatures and never to individuals, so no personal right exists under its terms at all.",
+        "The Second Amendment prevents every form of firearm regulation, so no legislature may impose any limit on the ownership of weapons.",
+        "The Second Amendment gives Congress the power to appoint the police chiefs who serve in local communities across the entire country."
       ],
       "answerIndex": 0,
       "rationale": "Heller recognized an individual right while also explaining that the decision did not make every regulation invalid.",
@@ -16114,10 +16114,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A city limits amplified demonstrations near a hospital to certain hours and applies the rule to all viewpoints. Which analysis is strongest?",
       "choices": [
-        "The rule is automatically invalid because speech can never be regulated in public.",
+        "The rule is automatically invalid, because speech can never be regulated in any public place for any reason whatsoever.",
         "The rule may be a content-neutral time, place, and manner regulation if it leaves adequate alternative channels and serves a legitimate interest.",
-        "The rule is automatically valid because public safety overrides every constitutional protection.",
-        "The rule is a treaty because it applies to an international organization."
+        "The rule is automatically valid, because a public-safety justification overrides every constitutional protection at issue.",
+        "The rule counts as a treaty, because it applies to an international organization operating inside the limits of the city."
       ],
       "answerIndex": 1,
       "rationale": "Speech protections can coexist with neutral regulations designed to address public safety, traffic, or access, but the regulation must satisfy constitutional standards.",
@@ -16214,10 +16214,10 @@
       "cognitiveProcess": "identify",
       "prompt": "What does selective incorporation mean?",
       "choices": [
-        "Every provision of every state constitution automatically applies to Congress.",
-        "The president chooses which rights state courts must enforce.",
+        "Every provision of each state constitution automatically applies to the United States Congress.",
+        "The president decides which of the rights the state courts will be required to enforce in each case.",
         "The Supreme Court has applied many Bill of Rights protections to the states through the Fourteenth Amendment.",
-        "The Bill of Rights applies only to federal agencies and never to states."
+        "The Bill of Rights applies only to federal agencies and never to any of the state governments."
       ],
       "answerIndex": 2,
       "rationale": "Selective incorporation is the process through which the Court has recognized particular fundamental rights as binding on state governments through the Fourteenth Amendment.",
@@ -16314,9 +16314,9 @@
       "cognitiveProcess": "connect",
       "prompt": "Which principle from Gideon v. Wainwright is most directly relevant when a state denies counsel to an indigent felony defendant?",
       "choices": [
-        "The right to counsel applies only in civil disputes over property.",
-        "States may deny counsel whenever a defendant is unable to pay.",
-        "The case established that Congress may regulate all local elections.",
+        "The right to counsel applies only in civil disputes concerning property ownership.",
+        "States may deny counsel whenever a defendant is unable to pay an attorney’s fee.",
+        "The case established that Congress may regulate all local elections in the states.",
         "The right to appointed counsel in serious criminal cases is fundamental and applies to the states."
       ],
       "answerIndex": 3,
@@ -16415,9 +16415,9 @@
       "prompt": "A state requires a warrant for a home search but permits officials to collect private medical information without a lawful basis. Which issue is most directly raised?",
       "choices": [
         "Substantive privacy and due-process limits on government intrusion into personal liberty",
-        "The issue is solely about equal state representation in Congress.",
-        "The issue concerns the president power to veto a bill.",
-        "The issue proves that all government records are public by default."
+        "The issue is solely about equal state representation within the Congress.",
+        "The issue concerns the president’s power to veto a bill passed by Congress.",
+        "The issue proves that all government records are public documents by default."
       ],
       "answerIndex": 0,
       "rationale": "Privacy analysis can involve substantive liberty interests and due-process limits even when the government claims an administrative purpose.",
@@ -16517,10 +16517,10 @@
       "cognitiveProcess": "analyze",
       "prompt": "A civil-rights organization uses litigation, boycotts, and public demonstrations to challenge an unequal school system. Which conclusion is most accurate?",
       "choices": [
-        "Social movements must rely only on presidential executive orders.",
+        "Social movements must rely only on presidential executive orders to achieve any change.",
         "Social movements can use multiple strategies to change public opinion, law, and institutional practice.",
-        "Litigation prevents citizens from using political participation.",
-        "A movement succeeds automatically whenever it files one lawsuit."
+        "Litigation prevents citizens from using any other form of political participation at all.",
+        "A movement succeeds automatically whenever it files a single lawsuit in a federal court."
       ],
       "answerIndex": 1,
       "rationale": "Movements often combine legal, electoral, economic, organizational, and expressive strategies rather than relying on one institution.",
@@ -16824,9 +16824,9 @@
       "prompt": "A university considers a policy designed to expand opportunity for applicants from historically excluded groups. Which question is most important for constitutional analysis?",
       "choices": [
         "What classification the policy uses, what governmental interest it serves, and whether the means are appropriately related to that interest.",
-        "Whether every applicant will receive the same outcome regardless of qualifications or policy design.",
-        "Whether the policy can be adopted without any public explanation or review.",
-        "Whether affirmative action questions are decided by political parties rather than courts."
+        "Whether every applicant will receive exactly the same outcome regardless of qualifications or of the policy design.",
+        "Whether the policy can be adopted without any public explanation or review by the wider university community at all.",
+        "Whether affirmative-action questions are decided by the political parties rather than by the federal courts at all."
       ],
       "answerIndex": 0,
       "rationale": "Equal-protection analysis examines classifications, governmental interests, and the fit between the policy and its stated objective; a careful conclusion requires the policy details.",
@@ -17023,10 +17023,10 @@
       "cognitiveProcess": "connect",
       "prompt": "A defendant confesses after police question the defendant in custody without providing required warnings. Which constitutional protection is most directly implicated?",
       "choices": [
-        "The Tenth Amendment reservation of powers to states",
-        "The Seventh Amendment right to a civil jury in every dispute",
+        "The Tenth Amendment reservation of unlisted powers to the states and the people",
+        "The Seventh Amendment right to a jury trial in every sort of private civil dispute",
         "The Fifth Amendment privilege against self-incrimination as applied through Miranda safeguards",
-        "The Twenty-Sixth Amendment voting-age rule"
+        "The Twenty-Sixth Amendment rule that sets the national voting age at eighteen"
       ],
       "answerIndex": 2,
       "rationale": "Miranda safeguards protect against compelled self-incrimination during custodial interrogation by requiring procedural warnings about important rights.",
@@ -17123,9 +17123,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A national survey asks respondents whether government should expand services but does not define the services. What limitation should analysts note?",
       "choices": [
-        "The survey proves that all respondents hold identical ideological views.",
-        "The wording guarantees a representative sample regardless of selection.",
-        "The survey can measure voting turnout only and cannot measure attitudes.",
+        "The survey proves that all of the respondents hold an identical set of ideological views.",
+        "The wording guarantees a representative sample regardless of how respondents were selected.",
+        "The survey can measure only voting turnout and cannot measure any policy attitude at all.",
         "Responses may reflect different interpretations of the question rather than one shared policy preference."
       ],
       "answerIndex": 3,
@@ -17320,10 +17320,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A survey finds that respondents increasingly describe themselves as independent while their policy positions remain close to one major party. Which conclusion is most defensible?",
       "choices": [
-        "The survey proves that party organizations no longer matter.",
+        "The survey proves that party organizations no longer matter to any group of these voters.",
         "The label change may reflect changes in political identity without proving a complete ideological realignment.",
-        "The data show that every respondent changed every policy position.",
-        "Independent identification automatically means no political preferences exist."
+        "The data show that every respondent has changed each of the policy positions they once held.",
+        "Independent identification automatically means that no political preferences exist at all."
       ],
       "answerIndex": 1,
       "rationale": "Political labels and policy preferences do not always move together, so the survey supports a limited conclusion about identity rather than a total realignment.",
@@ -17419,10 +17419,10 @@
       "cognitiveProcess": "explain",
       "prompt": "After a major economic crisis, a poll shows increased support for government regulation. Which explanation is most reasonable?",
       "choices": [
-        "A single event proves that every citizen adopted the same ideology.",
-        "The poll proves that political socialization ends after adulthood.",
+        "A single event proves that every citizen in the country adopted the very same ideology.",
+        "The poll proves that political socialization ends as soon as a person reaches adulthood.",
         "Political events can change which problems citizens prioritize and how they evaluate government action.",
-        "The result shows that public opinion cannot change over time."
+        "The result shows that public opinion cannot change over time in response to any events."
       ],
       "answerIndex": 2,
       "rationale": "Events can influence issue salience and attitudes, but a poll alone does not show that the event was the only cause.",
@@ -17717,10 +17717,10 @@
       "cognitiveProcess": "classify",
       "prompt": "A party platform supports lower taxes, reduced regulation, and greater state authority on several social issues. Which analysis is most accurate?",
       "choices": [
-        "The platform proves that every party member holds the same view.",
+        "The platform proves that every member of the party holds exactly the same views on every policy.",
         "The platform reflects broad conservative tendencies, although individual candidates and coalitions may vary by issue.",
-        "The platform is a constitutional document that courts must enforce.",
-        "The platform shows that ideology has no relationship to policy."
+        "The platform is a constitutional document that the federal courts are required to enforce in full.",
+        "The platform shows that ideology bears no relationship at all to the policy positions a party takes."
       ],
       "answerIndex": 1,
       "rationale": "Party platforms often express broad ideological tendencies without determining every position of every candidate or voter.",
@@ -17817,10 +17817,10 @@
       "cognitiveProcess": "argue",
       "prompt": "A policymaker argues that a national standard is justified because pollution crosses state boundaries. Which evidence would best support the argument?",
       "choices": [
-        "A claim that all state policies are identical in every region.",
-        "A single personal preference with no description of the problem.",
+        "A claim asserting that all of the state policies are already identical in every region of the country",
+        "A single personal preference offered with no description at all of the underlying pollution problem",
         "Evidence that the problem crosses jurisdictions and that national authority could coordinate a more effective response.",
-        "A statement that ideology eliminates the need for constitutional authority."
+        "A statement claiming that ideology eliminates any need to identify constitutional authority for the action"
       ],
       "answerIndex": 2,
       "rationale": "A strong ideological and policy argument links the preferred governmental response to the scope of the problem, constitutional authority, and expected consequences.",
@@ -18016,9 +18016,9 @@
       "prompt": "A debate compares a proposal for national health assistance with a proposal that gives states more discretion over assistance design. Which ideological question is central?",
       "choices": [
         "How much responsibility and authority should the national government exercise in social policy?",
-        "Whether Congress should have equal state representation in the Senate",
-        "Whether courts may hear cases involving federal statutes",
-        "Whether political parties can recruit candidates for office"
+        "Whether the Congress should provide for equal state representation in the Senate",
+        "Whether the federal courts may hear any case that involves a federal health statute",
+        "Whether the political parties can recruit candidates to run for public office"
       ],
       "answerIndex": 0,
       "rationale": "Social-policy ideology often involves competing views about government responsibility, individual choice, equality, and the appropriate level of policymaking.",
@@ -18113,10 +18113,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A survey shows support for a policy at 62 percent among respondents contacted by text message and 49 percent among respondents contacted by landline. Which conclusion is best supported?",
       "choices": [
-        "The contact method proves that one group is more informed.",
+        "The method of contact proves that one of the two groups of respondents is better informed about the proposed policy.",
         "The two contact groups report different levels of support, but the difference may reflect sampling or population-composition differences.",
-        "The data establish that the policy will pass in Congress.",
-        "The difference proves that every respondent changed views because of the survey."
+        "The data establish that the proposed policy will pass in Congress whenever the chamber finally takes the measure up.",
+        "The difference proves that every one of the respondents changed their views because of the survey questions themselves."
       ],
       "answerIndex": 1,
       "rationale": "Comparing subgroup estimates can reveal a pattern, but the data alone do not identify why the groups differ or predict a policy outcome.",
@@ -18212,10 +18212,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A researcher finds that people who watch more campaign news are also more likely to report high political knowledge. Which caution is most appropriate?",
       "choices": [
-        "The association proves that news has no political effect.",
-        "The study proves that all viewers receive identical information.",
+        "The association proves that campaign news produces no political effects of any kind.",
+        "The study proves that all of the viewers received exactly the same campaign information.",
         "The association does not by itself establish that watching campaign news caused the higher knowledge.",
-        "The relationship cannot be discussed because survey data are never useful."
+        "The relationship cannot be discussed at all because survey data are never useful to researchers."
       ],
       "answerIndex": 2,
       "rationale": "Correlation can be consistent with several explanations, including reverse causation or prior interest, so causal claims require stronger evidence.",
@@ -18411,9 +18411,9 @@
       "prompt": "A county reports lower turnout in local elections than in presidential elections, even though the same residents are eligible. Which factor is a plausible explanation?",
       "choices": [
         "Local elections may receive less media attention and mobilization, and voters may perceive lower stakes.",
-        "Local elections are always unconstitutional for eligible voters.",
-        "Presidential elections eliminate all registration requirements.",
-        "Turnout is determined only by the number of candidates on the ballot."
+        "Local elections are always unconstitutional for the residents who are eligible to vote.",
+        "Presidential elections eliminate all of the voter registration requirements in a county.",
+        "Turnout is determined only by the number of candidates who appear on the local ballot."
       ],
       "answerIndex": 0,
       "rationale": "Election timing, perceived importance, campaign mobilization, information, and registration rules can all affect turnout.",
@@ -18511,10 +18511,10 @@
       "cognitiveProcess": "identify",
       "prompt": "A political party recruits candidates, publishes a platform, and organizes legislators after an election. Which party function is most directly shown?",
       "choices": [
-        "Replacing the judiciary with a party tribunal",
+        "Replacing the federal judiciary with a party-run tribunal",
         "Linking voters to government and organizing governing institutions",
-        "Preventing citizens from learning policy positions",
-        "Serving only as a temporary census agency"
+        "Preventing citizens from learning about any policy positions",
+        "Serving only as a temporary agency that conducts the census"
       ],
       "answerIndex": 1,
       "rationale": "Parties connect citizens and institutions through recruitment, policy aggregation, mobilization, and legislative organization.",
@@ -18708,9 +18708,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can a third-party candidate affect an election without winning a large share of electoral votes?",
       "choices": [
-        "Third parties automatically receive one-half of every state electoral vote.",
-        "Third parties cannot appear on ballots unless they win the presidency first.",
-        "A third party can change the Constitution through a campaign advertisement.",
+        "Third parties automatically receive one half of the electoral votes that every state casts.",
+        "Third parties cannot appear on any state ballot unless they have won the presidency first.",
+        "A third party can change the Constitution itself simply by running a campaign advertisement.",
         "The candidate may draw enough votes from one major-party coalition to change which candidate wins a plurality."
       ],
       "answerIndex": 3,
@@ -18811,9 +18811,9 @@
       "prompt": "An interest group submits testimony to a legislative committee and provides technical research about a proposed regulation. Which strategy is illustrated?",
       "choices": [
         "Lobbying through information and direct communication with policymakers",
-        "Judicial appointment through senatorial confirmation",
-        "Electoral vote allocation by the Electoral College",
-        "Executive privilege over legislative records"
+        "Judicial appointment through a confirmation vote in the Senate",
+        "Electoral vote allocation among states by the Electoral College",
+        "Executive privilege asserted over legislative committee records"
       ],
       "answerIndex": 0,
       "rationale": "Lobbying includes communicating policy preferences, evidence, and expertise to officials who make or implement policy.",
@@ -18911,10 +18911,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why might people benefit from an interest group victory even if they never join or contribute to the group?",
       "choices": [
-        "Interest groups can require every citizen to join under the Constitution.",
+        "Interest groups can require every citizen to join them under the Constitution.",
         "The policy may provide a public good whose benefits are difficult to withhold from nonmembers.",
-        "A public good is available only to the organizations that paid for it.",
-        "Nonmembers automatically receive extra votes in the next election."
+        "A public good is available only to the organizations that helped to pay for it.",
+        "Nonmembers of the group automatically receive extra votes in the next election."
       ],
       "answerIndex": 1,
       "rationale": "Free-rider incentives arise when people can enjoy a policy benefit without bearing the costs of organizing or contributing.",
@@ -19009,10 +19009,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A candidate wins the statewide popular vote in a state that uses a winner-take-all allocation. What is the most likely electoral consequence?",
       "choices": [
-        "The candidate receives every electoral vote in the country.",
-        "The candidate is automatically elected before other states report results.",
+        "The candidate receives every one of the electoral votes cast in the entire country during that election.",
+        "The candidate is automatically elected president before any of the other states report their results.",
         "The candidate receives the states electoral votes under that state rule, subject to the state law and constitutional process.",
-        "The candidate loses the state electoral votes because only Congress counts votes."
+        "The candidate loses the state’s electoral votes because only Congress is allowed to count the votes."
       ],
       "answerIndex": 2,
       "rationale": "Winner-take-all allocation links the statewide result to the state electoral-vote slate, while the national result depends on the total electoral vote process.",
@@ -19107,9 +19107,9 @@
       "cognitiveProcess": "identify",
       "prompt": "A state legislature redraws congressional districts after a census. Which constitutional process is most directly involved?",
       "choices": [
-        "Treaty ratification by the Senate",
-        "Selective incorporation of the Bill of Rights",
-        "Judicial appointment by the president",
+        "Treaty ratification through a two-thirds Senate vote",
+        "Selective incorporation of the Bill of Rights protections",
+        "Judicial appointment by the president with Senate consent",
         "Reapportionment and redistricting based on population changes"
       ],
       "answerIndex": 3,
@@ -19304,10 +19304,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why can disclosure rules be relevant to campaign-finance debates?",
       "choices": [
-        "Disclosure rules guarantee that every advertisement is accurate.",
+        "Disclosure rules guarantee that each political advertisement will be entirely accurate and fair.",
         "Disclosure can give voters information about who is funding political communication and may support accountability.",
-        "Disclosure eliminates the constitutional distinction between speech and conduct.",
-        "Disclosure requires every donor to become a candidate for office."
+        "Disclosure eliminates the constitutional distinction between political speech and other conduct.",
+        "Disclosure requires every campaign donor to register as a candidate for some elected public office."
       ],
       "answerIndex": 1,
       "rationale": "Disclosure can increase transparency, although it does not by itself resolve every question about regulation, privacy, or political expression.",
@@ -19402,10 +19402,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A study finds that users are more likely to see political posts similar to posts they previously engaged with. Which media condition is suggested?",
       "choices": [
-        "All users are receiving the same politically neutral news stream.",
-        "The study proves that online content cannot affect political beliefs.",
+        "All of the users are receiving exactly the same politically neutral news stream.",
+        "The study proves that online content cannot affect a user’s political beliefs.",
         "Algorithmic or social filtering may contribute to selective exposure and echo-chamber effects.",
-        "The finding means that traditional media no longer exist."
+        "The finding means that traditional news media organizations no longer exist at all."
       ],
       "answerIndex": 2,
       "rationale": "Digital platforms can personalize exposure, which may increase relevant content while also narrowing the range of views a user encounters.",
@@ -19602,9 +19602,9 @@
       "prompt": "A registration reform is followed by larger increases in turnout among newly eligible voters than among already registered voters. Which conclusion is best supported?",
       "choices": [
         "The reform is associated with greater participation among newly eligible voters, although other factors may also contribute.",
-        "The reform proves that registration is the only cause of turnout.",
-        "The reform shows that already registered voters are constitutionally barred from voting.",
-        "The data prove that every newly eligible voter voted because of the reform."
+        "The reform proves that registration rules are the sole cause of turnout in every election that follows.",
+        "The reform shows that voters who had already registered are now constitutionally barred from voting at all.",
+        "The data prove that every one of the newly eligible voters cast a ballot because of the reform alone."
       ],
       "answerIndex": 0,
       "rationale": "The comparison supports an association and a subgroup difference but does not establish that the reform alone caused every change.",
@@ -19702,10 +19702,10 @@
       "cognitiveProcess": "argue",
       "prompt": "A party platform combines positions from labor advocates, business groups, and environmental voters. What challenge is the party attempting to manage?",
       "choices": [
-        "Eliminating the need for a governing coalition",
+        "Eliminating the need to build any governing coalition among its members",
         "Aggregating interests that may support the party but disagree about particular policies",
-        "Replacing the Constitution with a private contract",
-        "Preventing any group from participating in elections"
+        "Replacing the national Constitution with a private contract among members",
+        "Preventing every organized group from participating in future elections"
       ],
       "answerIndex": 1,
       "rationale": "Parties build coalitions by packaging multiple interests into a platform, which can require compromise among groups.",
@@ -19800,10 +19800,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "Across three elections, a party gains support among college-educated voters but loses support among voters without college degrees. What does the pattern show?",
       "choices": [
-        "Every voter in each education group changed parties.",
-        "The party no longer has any policy positions.",
+        "Every single voter within each of the education groups changed their political party.",
+        "The party no longer holds any policy positions of its own on the major national issues.",
         "The party coalition changed across the measured elections, but the data alone do not identify the cause.",
-        "Education explains all voting behavior without other evidence."
+        "Education alone explains all of the voting behavior without any additional evidence."
       ],
       "answerIndex": 2,
       "rationale": "The data support a group-level shift in coalition support, not a claim about every individual or a complete causal explanation.",
@@ -20101,10 +20101,10 @@
       "cognitiveProcess": "connect",
       "prompt": "An interest group files an amicus brief in a case involving a policy that affects its members. What is the group trying to do?",
       "choices": [
-        "Choose the next president through the Electoral College",
+        "Choose the next president of the United States through the Electoral College",
         "Influence judicial reasoning by presenting legal or policy arguments relevant to the case.",
-        "Replace the parties in Congress with interest-group delegates",
-        "Prevent the Court from considering constitutional questions"
+        "Replace the political parties in Congress with delegates from interest groups",
+        "Prevent the Court from considering any of the constitutional questions raised"
       ],
       "answerIndex": 1,
       "rationale": "Amicus briefs let organizations provide information and arguments without becoming the principal party that brought the case.",
@@ -20199,10 +20199,10 @@
       "cognitiveProcess": "explain",
       "prompt": "A candidate wins the national popular vote but receives fewer electoral votes than an opponent. Which conclusion is accurate?",
       "choices": [
-        "The result proves that electoral votes are assigned equally to every candidate.",
-        "The result means the House did not conduct an election.",
+        "The result proves that the electoral votes are assigned equally to each of the candidates on the ballot.",
+        "The result means that the House of Representatives never conducted an election in any of the fifty states.",
         "The Electoral College allocates electoral votes through state-based rules rather than using a single national popular-vote total.",
-        "The result shows that state election rules have no effect on presidential outcomes."
+        "The result shows that the election rules used in each state have no effect at all on presidential outcomes."
       ],
       "answerIndex": 2,
       "rationale": "The Electoral College is a state-based constitutional process, so the national popular vote and electoral-vote outcome can diverge.",
@@ -20494,10 +20494,10 @@
       "cognitiveProcess": "analyze",
       "prompt": "An advertisement says it is paid for by an independent organization but provides little information about the organizations funders. Which evaluation is most important?",
       "choices": [
-        "Assume the message is neutral because the organization is independent.",
+        "Assume that the message must be neutral because the sponsoring organization calls itself independent.",
         "Consider how funding transparency and the organizations purpose may affect the source perspective and credibility.",
-        "Conclude that the advertisement is a judicial opinion.",
-        "Treat the advertisement as a government document because it discusses policy."
+        "Conclude that the advertisement is really a judicial opinion that was issued by a federal court.",
+        "Treat the advertisement as an official government document because it discusses public policy."
       ],
       "answerIndex": 1,
       "rationale": "Source analysis asks who created and funded a message, what audience it targets, what it wants the audience to do, and what evidence it supplies.",
@@ -20593,10 +20593,10 @@
       "cognitiveProcess": "identify",
       "prompt": "A news organization repeatedly highlights immigration policy while giving little attention to other legislative issues. Which media function is most directly involved?",
       "choices": [
-        "Judicial review by declaring a policy unconstitutional",
-        "Cloture by ending debate in the Senate",
+        "Judicial review, by declaring an immigration policy unconstitutional",
+        "Cloture, by bringing an extended floor debate in the Senate to an end",
         "Agenda setting by influencing which issues receive sustained public attention.",
-        "Federalism by dividing authority between states"
+        "Federalism, by dividing authority between the nation and the states"
       ],
       "answerIndex": 2,
       "rationale": "Agenda setting concerns issue prominence and attention; it does not necessarily determine the direction of every citizens opinion.",
@@ -20691,9 +20691,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A social-media user shares an inaccurate political claim after seeing it repeated by several accounts in the same online network. Which risk is most relevant?",
       "choices": [
-        "Repeated exposure guarantees that the claim is supported by evidence.",
-        "Digital media prevent all citizens from receiving political information.",
-        "The network has the constitutional power to certify election results.",
+        "Repeated exposure guarantees that any widely shared claim is supported by real evidence.",
+        "Digital media prevent all citizens from receiving any political information whatsoever.",
+        "The online network has the constitutional power to certify the results of an election.",
         "Repetition within a fragmented network can create perceived confirmation without establishing accuracy."
       ],
       "answerIndex": 3,
@@ -20792,9 +20792,9 @@
       "prompt": "A town charter says that public officials may govern only with the continuing consent of the people. Which democratic ideal is most directly expressed?",
       "choices": [
         "Popular sovereignty makes the people the ultimate source of governmental authority.",
-        "Judicial review gives courts authority over every local budget.",
-        "Federalism requires every public decision to be made nationally.",
-        "Elite democracy limits legitimate authority to property owners."
+        "Judicial review gives the courts authority over every local town budget.",
+        "Federalism requires every public decision to be made at the national level.",
+        "Elite democracy limits legitimate authority to a class of property owners."
       ],
       "answerIndex": 0,
       "rationale": "Popular sovereignty holds that government authority originates with the people and remains accountable to their consent.",
@@ -20893,10 +20893,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A state uses elected representatives but also permits citizens to propose and vote on laws through initiatives. Which description best fits this arrangement?",
       "choices": [
-        "It is an elite democracy because voters cannot influence policy.",
+        "It is an elite democracy because ordinary voters cannot influence any policy.",
         "It combines representative democracy with participatory or direct-democratic opportunities.",
-        "It is a confederation because state courts write every law.",
-        "It is a monarchy because representatives serve fixed terms."
+        "It is a confederation because the state courts write all of the laws themselves.",
+        "It is a monarchy because the representatives all serve fixed terms in office."
       ],
       "answerIndex": 1,
       "rationale": "Democratic systems can use elected representation while also giving citizens direct tools such as initiatives, referenda, or recalls.",
@@ -20995,10 +20995,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A city requires a warrant before police may search a home, even when officials claim that speed would improve public safety. What constitutional tension is being managed?",
       "choices": [
-        "The city is balancing equal state representation against bicameralism.",
-        "The city is balancing treaty power against the Electoral College.",
+        "The city is balancing equal state representation against the principle of bicameralism in Congress.",
+        "The city is balancing the national treaty power against the workings of the Electoral College.",
         "The government is balancing individual privacy and security against the public-order goal of effective enforcement.",
-        "The city is balancing party platforms against congressional reapportionment."
+        "The city is balancing party platforms against the process of congressional reapportionment in states."
       ],
       "answerIndex": 2,
       "rationale": "The example presents the recurring liberty-order tension: public safety goals are limited by protections for individual rights.",
@@ -21095,9 +21095,9 @@
       "cognitiveProcess": "analyze",
       "prompt": "A historian argues that the Articles of Confederation made national action difficult because states retained substantial autonomy. Which evidence would best support the claim?",
       "choices": [
-        "Congress appointed a president with authority to enforce every law directly.",
-        "Congress required state governments to accept a national court in every dispute.",
-        "Congress collected a nationwide income tax without state participation.",
+        "Congress appointed a national president with the authority to enforce every law without the states.",
+        "Congress required the state governments to accept a national court ruling in every kind of dispute.",
+        "Congress collected a nationwide income tax without any participation at all from the state governments.",
         "Congress depended on state cooperation for revenue and implementation rather than commanding a strong national executive."
       ],
       "answerIndex": 3,
@@ -21198,9 +21198,9 @@
       "prompt": "A ratification debate asks whether a new Constitution should replace a government that could not coordinate national policy. Which argument supports ratification?",
       "choices": [
         "A stronger constitutional structure could solve collective-action problems while retaining limits on government power.",
-        "A new Constitution would eliminate disagreement by ending state governments.",
-        "A stronger national structure would make individual rights unnecessary.",
-        "Ratification would transfer all lawmaking authority to unelected military officers."
+        "A new Constitution would eliminate all political disagreement by ending the state governments entirely.",
+        "A stronger national structure would make protections for individual rights unnecessary in every case.",
+        "Ratification would transfer all of the lawmaking authority to a body of unelected military officers."
       ],
       "answerIndex": 0,
       "rationale": "Supporters of ratification argued that a more effective national government was necessary, while constitutional structure and later amendments could constrain power.",
@@ -21401,10 +21401,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A state administers elections, but federal law requires accessible procedures for certain national elections. What does this example illustrate about federalism?",
       "choices": [
-        "Federalism prevents national laws from affecting any state administration.",
-        "Federalism requires state and national officials to hold the same office.",
+        "Federalism prevents national laws from ever affecting the administration of elections by states.",
+        "Federalism requires that state and national officials hold exactly the same office at once.",
         "State and national governments can share responsibility for implementing policy within constitutional limits.",
-        "Federalism gives local governments exclusive authority over constitutional rights."
+        "Federalism gives local governments exclusive authority over every constitutional right of residents."
       ],
       "answerIndex": 2,
       "rationale": "Federalism divides and overlaps authority, so state administration can operate alongside valid national standards and protections.",
@@ -21502,9 +21502,9 @@
       "cognitiveProcess": "connect",
       "prompt": "A court upholds a federal environmental rule after finding that Congress delegated authority under an enumerated power. Which interpretation of federalism is being applied?",
       "choices": [
-        "The states may veto every federal rule by invoking reserved powers.",
-        "Congress may regulate any activity without a constitutional connection.",
-        "Courts may decide federalism questions only when state taxes are involved.",
+        "The states may veto every federal rule simply by invoking their own reserved powers under the Tenth Amendment at any time.",
+        "Congress may regulate any activity at all without ever identifying a constitutional connection to the activity in question.",
+        "The courts may decide questions about federalism only in those cases where some state tax revenue happens to be involved.",
         "The national government may exercise constitutionally grounded powers, including appropriate implied authority, over a connected national problem."
       ],
       "answerIndex": 3,
@@ -21603,9 +21603,9 @@
       "prompt": "A nonprofit first petitions a state agency, then challenges the agency rule in federal court, and finally asks Congress to revise the statute. What feature of federalism does the strategy use?",
       "choices": [
         "Multiple institutions and levels of government provide access points for pursuing a policy change.",
-        "Federalism requires a single petition to resolve every policy dispute.",
-        "Federalism prevents interest groups from using litigation or legislation.",
-        "Federalism makes state agencies independent of all constitutional limits."
+        "Federalism requires a single petition to resolve every kind of policy dispute that arises.",
+        "Federalism prevents interest groups from using either litigation or legislation at all.",
+        "Federalism makes state agencies entirely independent of every constitutional limit."
       ],
       "answerIndex": 0,
       "rationale": "Shared authority and multiple institutions create access points for advocacy, litigation, implementation, and legislative revision.",
@@ -21901,9 +21901,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A representative supports a farm bill after negotiating changes for the district while also following the party leadership on final passage. Which explanation is strongest?",
       "choices": [
-        "Representatives act only on personal ideology and never respond to constituents.",
-        "Party leaders may command every vote because members have no independent incentives.",
-        "District concerns are irrelevant once a member joins a congressional committee.",
+        "Representatives act only on their own personal ideology and never respond to constituents in any way at all.",
+        "Party leaders can command every single vote, because the members have no independent incentives of any kind.",
+        "District concerns become entirely irrelevant once a member has joined any standing congressional committee.",
         "Congressional behavior can reflect constituency interests, party goals, policy views, and institutional incentives at the same time."
       ],
       "answerIndex": 3,
@@ -22103,10 +22103,10 @@
       "cognitiveProcess": "connect",
       "prompt": "Congress refuses to fund a proposed military operation and requires reports before authorizing further action. What check on the presidency is being used?",
       "choices": [
-        "Congress is using judicial review to invalidate a state law.",
+        "Congress is using judicial review to invalidate an existing state law.",
         "Congress is using its appropriations and oversight powers to limit executive action.",
-        "Congress is using the pardon power to release federal prisoners.",
-        "Congress is using executive privilege to withhold agency records."
+        "Congress is using the pardon power to release a group of federal prisoners.",
+        "Congress is using executive privilege to withhold records from the agency."
       ],
       "answerIndex": 1,
       "rationale": "Congress can shape presidential action through funding decisions, statutory authorization, hearings, reporting requirements, and other oversight tools.",
@@ -22203,10 +22203,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A president relies on an executive agreement to coordinate with another country without seeking Senate treaty ratification. What conclusion is most defensible?",
       "choices": [
-        "The agreement automatically has the same status as every constitutional amendment.",
-        "The president may use executive agreements to override any statute.",
+        "The agreement automatically carries the same legal status as a fully ratified amendment to the Constitution.",
+        "The president may use an executive agreement to override any statute that the Congress has already passed.",
         "The agreement may expand executive flexibility, but its authority and durability remain bounded by law and later political choices.",
-        "The agreement transfers all foreign-policy power from Congress to the courts."
+        "The agreement permanently transfers all of the foreign-policy power from Congress to the federal court system."
       ],
       "answerIndex": 2,
       "rationale": "Executive agreements can facilitate foreign-policy action, but they do not erase statutory, constitutional, funding, or political limits.",
@@ -22303,9 +22303,9 @@
       "cognitiveProcess": "analyze",
       "prompt": "A president gives a televised address after a veto threat and frames the bill as a choice between security and liberty. Which presidential resource is being used?",
       "choices": [
-        "The president is exercising judicial review over the bill.",
-        "The president is using federalism to transfer the bill to state courts.",
-        "The president is using senatorial confirmation to appoint a committee chair.",
+        "The president is exercising the power of judicial review over the proposed bill.",
+        "The president is using federalism to transfer the bill to the courts of the states.",
+        "The president is using senatorial confirmation to appoint a new committee chair.",
         "Presidential communication is being used to shape public opinion and create pressure on Congress."
       ],
       "answerIndex": 3,
@@ -22406,9 +22406,9 @@
       "prompt": "A federal court hears a dispute arising under federal law, while a state court handles a matter governed by state law. What principle helps organize these courts?",
       "choices": [
         "Jurisdiction determines which court system and level of court has authority to hear a particular dispute.",
-        "The Electoral College assigns every lawsuit to a state legislature.",
-        "Judicial review prevents courts from applying statutes to disputes.",
-        "The Senate assigns jurisdiction by changing the outcome of each trial."
+        "The Electoral College assigns each lawsuit to one of the state legislatures for decision.",
+        "Judicial review prevents the courts from applying any statute to the disputes they hear.",
+        "The Senate assigns jurisdiction by changing the outcome of each trial that is held in a court."
       ],
       "answerIndex": 0,
       "rationale": "Federal and state courts operate within defined jurisdictional boundaries based on the source of law, parties, subject matter, and constitutional structure.",
@@ -22706,9 +22706,9 @@
       "cognitiveProcess": "explain",
       "prompt": "Congress narrows a federal court's jurisdiction over a class of cases while the president nominates judges subject to Senate confirmation. What does the example show?",
       "choices": [
-        "Congress and the president may direct the result of every pending case.",
-        "The judiciary has no independence because judges are elected by interest groups.",
-        "The Senate cannot influence the composition of the federal courts.",
+        "Congress and the president together may direct the result of every case now pending in court.",
+        "The judiciary has no independence, because federal judges are elected by organized interest groups.",
+        "The Senate cannot influence the composition of the federal court system in any way at all.",
         "The elected branches have constitutional tools that can shape the judiciary without deciding individual cases."
       ],
       "answerIndex": 3,
@@ -22805,9 +22805,9 @@
       "prompt": "An agency converts a broad statutory goal into a program with technical standards and specialized procedures. Why might Congress delegate this work?",
       "choices": [
         "Delegation can allow an agency with expertise and administrative capacity to implement a complex policy.",
-        "Delegation eliminates the need for Congress to enact any statutory policy.",
-        "Delegation makes agency decisions immune from judicial and political review.",
-        "Delegation requires agencies to exercise only powers held by state governments."
+        "Delegation eliminates all need for Congress to enact any statutory policy whatsoever.",
+        "Delegation makes agency decisions entirely immune from judicial and political review.",
+        "Delegation requires agencies to exercise only those powers held by the state governments."
       ],
       "answerIndex": 0,
       "rationale": "Congress may delegate implementation details when agencies possess expertise, although statutory limits, oversight, courts, and public procedures remain relevant.",
@@ -22902,10 +22902,10 @@
       "cognitiveProcess": "identify",
       "prompt": "An agency publishes a proposed rule, receives public comments, and revises the rule before adoption. Which administrative process is illustrated?",
       "choices": [
-        "The agency is conducting a presidential impeachment trial.",
+        "The agency is conducting a presidential impeachment trial in the place of the United States Senate.",
         "Notice-and-comment rulemaking gives affected parties an opportunity to respond before a binding rule is finalized.",
-        "The agency is exercising the Supreme Court's power to grant certiorari.",
-        "The agency is ratifying a constitutional amendment without the states."
+        "The agency is exercising the Supreme Court's power to grant a writ of certiorari in the case.",
+        "The agency is ratifying a proposed constitutional amendment without any action by the state legislatures."
       ],
       "answerIndex": 1,
       "rationale": "Notice-and-comment procedures create a public record and allow affected parties to identify evidence, costs, legal concerns, and implementation problems.",
@@ -23000,10 +23000,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A congressional committee audits an agency, requires testimony from its administrator, and reviews whether funds were used as authorized. What accountability mechanism is shown?",
       "choices": [
-        "The committee is using the president's pardon power over agency staff.",
-        "The committee is replacing every agency rule with a judicial precedent.",
+        "The committee is exercising the president's pardon power over each of the employees who work at the agency.",
+        "The committee is replacing each of the agency's rules with a judicial precedent written by a federal court.",
         "Congressional oversight monitors administrative action and can influence agencies through information, funding, and legislation.",
-        "The committee is exercising state police power over local elections."
+        "The committee is exercising the state police power over the conduct of local elections in the district."
       ],
       "answerIndex": 2,
       "rationale": "Oversight allows Congress to investigate implementation, demand information, evaluate compliance, and consider changes to statutes or appropriations.",
@@ -23101,9 +23101,9 @@
       "cognitiveProcess": "argue",
       "prompt": "A policy coalition asks Congress to pass a law, the president to support implementation, and courts to reject conflicting agency action. What does the strategy recognize?",
       "choices": [
-        "Only the judiciary can propose, implement, and fund a national policy.",
-        "Branches cannot influence one another after a law is enacted.",
-        "Policy coalitions must choose one branch and avoid all other institutions.",
+        "Only the federal judiciary can propose, implement, and fund a national policy of any kind.",
+        "The branches of government cannot influence one another after a law has been enacted at all.",
+        "Policy coalitions must choose one single branch and then avoid every other institution entirely.",
         "Policy outcomes can result from interaction among branches rather than from a single institution acting alone."
       ],
       "answerIndex": 3,
@@ -23301,10 +23301,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A public school allows students to form religious clubs on the same terms as other student groups but does not sponsor worship. Which principle is most relevant?",
       "choices": [
-        "The school must prohibit all student religious expression to comply with federalism.",
+        "The school must prohibit all student religious expression in order to comply with federalism.",
         "Government neutrality can protect private religious expression while limiting official establishment of religion.",
-        "The school must select one official religion to protect free exercise.",
-        "The school may compel students to join the club under the Establishment Clause."
+        "The school must select a single official religion in order to protect the free exercise of religion.",
+        "The school may compel all of its students to join the club under the terms of the Establishment Clause."
       ],
       "answerIndex": 1,
       "rationale": "The First Amendment can protect private religious exercise and expression while restricting government endorsement or coercive establishment.",
@@ -23401,10 +23401,10 @@
       "cognitiveProcess": "apply",
       "prompt": "A city denies a permit for a peaceful protest solely because officials dislike the group's viewpoint. Which constitutional concern is strongest?",
       "choices": [
-        "The denial is required by the Third Amendment because protests use public space.",
-        "The denial concerns only the Senate's treaty power and has no speech dimension.",
+        "The denial is required by the Third Amendment because the protest would use public space.",
+        "The denial concerns only the Senate's treaty power and raises no speech dimension at all.",
         "The denial is a viewpoint-based restriction on speech that raises a serious First Amendment concern.",
-        "The denial is a valid use of judicial review by a city administrator."
+        "The denial is a valid use of judicial review by a local city administrator acting alone."
       ],
       "answerIndex": 2,
       "rationale": "Government generally may regulate time, place, and manner under valid standards, but discriminating against a viewpoint directly burdens core speech protections.",
@@ -23501,9 +23501,9 @@
       "cognitiveProcess": "analyze",
       "prompt": "A newspaper publishes leaked evidence of official misconduct, and the government seeks to stop publication before it occurs. Which issue is presented?",
       "choices": [
-        "The case concerns only the Senate's power to confirm judges.",
-        "The case proves that all leaked information is automatically protected.",
-        "The case transfers press regulation to local school boards.",
+        "The case concerns only the Senate's power to confirm judges to the federal courts.",
+        "The case proves that all leaked information is automatically protected from publication.",
+        "The case transfers all press regulation to the local school boards in the state.",
         "The case raises the strong constitutional presumption against prior restraint of the press."
       ],
       "answerIndex": 3,
@@ -23602,9 +23602,9 @@
       "prompt": "A legislature proposes a firearm regulation, and the debate turns on whether the rule burdens an individual right while serving a public-safety goal. Which analysis is most appropriate?",
       "choices": [
         "The regulation must be evaluated against the constitutional protection of the right to keep and bear arms and the government's asserted interest.",
-        "The Second Amendment prevents every regulation regardless of context.",
-        "The Second Amendment applies only to state taxation and public schools.",
-        "The regulation is constitutional solely because the legislature voted for it."
+        "The Second Amendment prevents every firearm regulation, regardless of the context in which the legislature adopts it.",
+        "The Second Amendment applies only to questions about state taxation and to the daily operation of the public schools.",
+        "The regulation is constitutional solely because a majority in the legislature voted in favor of the measure after debate."
       ],
       "answerIndex": 0,
       "rationale": "Second Amendment analysis considers the protected right, the type of regulation, constitutional text and precedent, and the government's public-safety rationale.",
@@ -23701,10 +23701,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "A city imposes a neutral nighttime limit on large outdoor events after documenting repeated safety hazards. Which feature would most strengthen the city's constitutional defense?",
       "choices": [
-        "The rule applies only to messages criticizing city officials.",
+        "The rule applies only to those messages that criticize the officials who now run the city.",
         "The rule is content neutral, narrowly connected to safety, and leaves adequate alternative ways to communicate.",
-        "The rule gives officials unlimited discretion to approve favored speakers.",
-        "The rule prohibits all public discussion of safety and order."
+        "The rule gives city officials unlimited discretion to approve whichever speakers they favor.",
+        "The rule prohibits every public discussion of safety and of public order within the city."
       ],
       "answerIndex": 1,
       "rationale": "A neutral time-place-manner rule is stronger when it advances an important public interest without targeting content and leaves meaningful alternatives for expression.",
@@ -23801,10 +23801,10 @@
       "cognitiveProcess": "connect",
       "prompt": "A state court must apply a Supreme Court interpretation of a right listed in the Bill of Rights. Which doctrine explains this obligation?",
       "choices": [
-        "Dual federalism prevents any national rights standard from reaching states.",
-        "The Necessary and Proper Clause incorporates only tax rules into state law.",
+        "Dual federalism prevents any national standard for rights from ever reaching a state court.",
+        "The Necessary and Proper Clause incorporates only the tax rules into the law of each state.",
         "Selective incorporation applies many Bill of Rights protections to the states through the Fourteenth Amendment.",
-        "The Electoral College incorporates rights by assigning votes to courts."
+        "The Electoral College incorporates rights by assigning electoral votes to the state courts."
       ],
       "answerIndex": 2,
       "rationale": "Selective incorporation uses the Fourteenth Amendment to apply fundamental Bill of Rights protections against state governments.",
@@ -24002,9 +24002,9 @@
       "prompt": "A government program collects detailed location data from phones without a warrant or clear safeguards. Which constitutional question is most relevant?",
       "choices": [
         "Whether the collection unreasonably intrudes on a protected privacy or security interest under the Fourth Amendment.",
-        "Whether the program changes the number of Senate seats in each state.",
-        "Whether the program gives Congress power to appoint state governors.",
-        "Whether the program establishes a national political party."
+        "Whether the program changes the number of Senate seats that are assigned to each of the states.",
+        "Whether the program gives Congress the power to appoint the governor in each of the fifty states.",
+        "Whether the program establishes an entirely new national political party for citizens to join."
       ],
       "answerIndex": 0,
       "rationale": "Privacy analysis asks whether government surveillance is a search or unreasonable intrusion and whether legal safeguards justify the collection under the circumstances.",
@@ -24206,10 +24206,10 @@
       "cognitiveProcess": "connect",
       "prompt": "A federal law prohibits discrimination in public accommodations, and an agency investigates complaints under the law. What relationship is shown?",
       "choices": [
-        "Federal legislation makes enforcement unnecessary because discrimination ends automatically.",
-        "Administrative agencies may enforce only state constitutions and not federal statutes.",
+        "Federal legislation makes enforcement unnecessary, because discrimination ends automatically once a law passes.",
+        "Administrative agencies may enforce only the state constitutions and never any federal statute passed by Congress.",
         "Government responses can combine legislation that defines rights with administrative enforcement that makes those protections operative.",
-        "Civil-rights policy is limited to judicial opinions and cannot involve Congress."
+        "Civil-rights policy is limited to judicial opinions and can never involve Congress or the federal agencies at all."
       ],
       "answerIndex": 2,
       "rationale": "Civil-rights protections often depend on interaction among constitutional rules, statutes, agencies, courts, and organized citizens.",
@@ -24309,9 +24309,9 @@
       "cognitiveProcess": "argue",
       "prompt": "A majority supports a policy that would silence a small religious minority, while a court blocks the policy. Which democratic principle best explains the decision?",
       "choices": [
-        "Majority rule requires courts to uphold every popular policy.",
-        "Minority rights mean elected officials cannot enact any public policy.",
-        "The decision illustrates only federal spending and not constitutional democracy.",
+        "Majority rule requires the courts to uphold every policy that a clear majority supports.",
+        "Minority rights mean that elected officials cannot enact any public policy of any kind.",
+        "The decision illustrates only federal spending rules and not constitutional democracy.",
         "Constitutional rights place limits on majority rule to protect minority rights and individual liberty."
       ],
       "answerIndex": 3,
@@ -24410,9 +24410,9 @@
       "prompt": "A university uses a narrowly tailored admissions policy to address documented unequal opportunity while considering applicants individually. Which issue is central?",
       "choices": [
         "The policy raises questions about how government and institutions may pursue equal opportunity while satisfying constitutional limits.",
-        "Affirmative action automatically requires identical outcomes for every group.",
-        "The policy is unrelated to equal protection because admissions are never governmental.",
-        "The policy eliminates the need to examine evidence about unequal opportunity."
+        "Affirmative action automatically requires identical admission outcomes for every group of applicants involved.",
+        "The policy is unrelated to equal protection, because admissions decisions are never governmental in character.",
+        "The policy eliminates any need to examine the evidence about unequal opportunity documented at the university."
       ],
       "answerIndex": 0,
       "rationale": "Affirmative-action analysis considers the policy goal, evidence of inequality, method, constitutional standards, and whether the approach is appropriately limited.",
@@ -24607,10 +24607,10 @@
       "cognitiveProcess": "apply",
       "prompt": "Two siblings receive similar civic lessons but develop different party preferences after following different peer groups and media sources. What concept best explains the difference?",
       "choices": [
-        "Political socialization ends when a person enters elementary school.",
-        "Political parties are constitutional branches that determine every family belief.",
+        "Political socialization ends as soon as a person first enters an elementary school classroom.",
+        "Political parties are constitutional branches that determine every belief held in a family.",
         "Political socialization is shaped by multiple agents and experiences rather than by one uniform influence.",
-        "The difference proves that political culture has no influence on citizens."
+        "The difference proves that political culture has no influence on individual citizens at all."
       ],
       "answerIndex": 2,
       "rationale": "Families, schools, peers, media, religion, community, identity, and political events can interact in shaping political attitudes.",
@@ -24705,9 +24705,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A long-term survey shows younger cohorts becoming more supportive of environmental regulation while older cohorts change more slowly. What can the evidence support?",
       "choices": [
-        "Every person in each cohort changed for exactly the same reason.",
-        "The survey proves that one campaign caused all ideological change.",
-        "The trend shows that ideology never changes after early adulthood.",
+        "Every person within each of the measured cohorts changed their view for exactly the same reason.",
+        "The survey proves that a single campaign caused all of the measured ideological change in the cohorts.",
+        "The trend shows that a person's ideology never changes at all after they have reached early adulthood.",
         "The distribution of ideology or policy preference changed across cohorts, but the pattern alone does not establish why."
       ],
       "answerIndex": 3,
@@ -24804,9 +24804,9 @@
       "prompt": "After a major economic crisis, support for expanded regulation rises in several surveys but later declines as conditions improve. Which inference is most defensible?",
       "choices": [
         "Political events may influence ideology and policy preferences, although the timing alone does not prove a single cause.",
-        "A single event permanently determines every citizen's ideology.",
-        "The surveys show that economic conditions cannot affect political beliefs.",
-        "The change proves that party identification has disappeared."
+        "A single economic event permanently determines the ideology that every citizen will hold thereafter.",
+        "The surveys show that economic conditions cannot affect any of the political beliefs citizens hold.",
+        "The change proves that party identification has now disappeared entirely from the American electorate."
       ],
       "answerIndex": 0,
       "rationale": "Political events can shift the context in which citizens evaluate government, but observed timing should not be confused with proof of a complete causal explanation.",
@@ -24999,10 +24999,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A poll reports 52 percent support with a margin of error of plus or minus 3 points from a probability sample. Which statement is appropriate?",
       "choices": [
-        "The poll proves that exactly 52 percent of all citizens support the policy.",
-        "The margin of error measures whether the question wording was unbiased.",
+        "The poll proves that exactly 52 percent of all citizens support the policy as stated.",
+        "The margin of error measures whether the wording of the question was truly unbiased.",
         "The reported support is an estimate, so nearby values within the stated sampling range remain plausible.",
-        "The poll can predict the election result without knowing turnout or timing."
+        "The poll can predict the election result without any knowledge of turnout or of timing."
       ],
       "answerIndex": 2,
       "rationale": "A margin of error describes sampling uncertainty around an estimate; it does not remove non-sampling error or guarantee a future election outcome.",
@@ -25099,9 +25099,9 @@
       "cognitiveProcess": "compare",
       "prompt": "A party platform emphasizes lower taxes and less regulation, while another emphasizes expanded social programs and stronger regulation. What does the comparison show?",
       "choices": [
-        "Party platforms are constitutional amendments that cannot change.",
-        "Ideological labels determine every voter's position without exception.",
-        "The comparison proves that parties perform no interest-aggregation function.",
+        "Party platforms are formal constitutional amendments that can never be changed once they are adopted.",
+        "Ideological labels determine every voter's position on each of the issues without a single exception.",
+        "The comparison proves that the two parties perform no interest-aggregation function of any kind at all.",
         "Party ideologies organize contrasting policy priorities, although individual members and voters may not agree on every issue."
       ],
       "answerIndex": 3,
@@ -25200,9 +25200,9 @@
       "prompt": "A legislator uses a stated ideological commitment to justify a bill but modifies it after negotiating with a coalition of lawmakers. What does the episode illustrate?",
       "choices": [
         "Ideology can guide policy goals while bargaining and institutional constraints shape the enacted proposal.",
-        "Ideology guarantees that a bill will pass without coalition building.",
-        "Negotiation means the legislator no longer has any policy commitment.",
-        "Institutions cannot influence policy once a legislator states an ideology."
+        "Ideology alone guarantees that a bill will pass without any coalition building at all.",
+        "Negotiation means that the legislator no longer holds any policy commitment of any kind.",
+        "Institutions cannot influence policy at all once a legislator has stated an ideology."
       ],
       "answerIndex": 0,
       "rationale": "Policymaking translates beliefs through bargaining, coalition building, rules, constituency pressure, and the resources of political institutions.",
@@ -25497,9 +25497,9 @@
       "cognitiveProcess": "classify",
       "prompt": "A voter chooses a candidate after comparing the candidate's stated plans for future policy. Which voting model is illustrated?",
       "choices": [
-        "Retrospective voting evaluates only the incumbent's past record.",
-        "Straight-ticket voting requires a voter to choose no candidates.",
-        "Judicial voting allows courts to cast ballots for citizens.",
+        "Retrospective voting evaluates only the past record that the incumbent has in office.",
+        "Straight-ticket voting requires that a voter choose none of the listed candidates.",
+        "Judicial voting allows the federal courts to cast ballots on behalf of the citizens.",
         "Prospective voting evaluates candidates by their expected future performance and policy commitments."
       ],
       "answerIndex": 3,
@@ -25596,9 +25596,9 @@
       "prompt": "A state expands early voting, but turnout rises more among frequent voters than among people who rarely vote. What conclusion is best supported?",
       "choices": [
         "The reform may have increased access without eliminating other differences in motivation, information, or resources.",
-        "The reform guaranteed equal turnout for every eligible citizen.",
-        "The result proves that early voting reduces participation for all groups.",
-        "The data show that registration and turnout are identical measures."
+        "The reform has guaranteed an equal rate of turnout among every eligible citizen living in the state.",
+        "The result proves that early voting reduces participation for every group of voters in the state.",
+        "The data show that voter registration and turnout are two entirely identical measures of participation."
       ],
       "answerIndex": 0,
       "rationale": "Access reforms can affect participation while other institutional, informational, social, and motivational barriers continue to shape turnout.",
@@ -25695,10 +25695,10 @@
       "cognitiveProcess": "identify",
       "prompt": "A political party recruits candidates, builds a platform, mobilizes voters, and coordinates officials after an election. Which party functions are represented?",
       "choices": [
-        "The party is exercising judicial review and deciding constitutional cases.",
+        "The party is exercising judicial review and deciding constitutional cases in court.",
         "The party is recruiting, aggregating interests, mobilizing participation, and organizing government.",
-        "The party is replacing federal agencies with private corporations.",
-        "The party is performing only a ceremonial role with no electoral function."
+        "The party is replacing all of the federal agencies with private business corporations.",
+        "The party is performing only a ceremonial role and has no electoral function at all."
       ],
       "answerIndex": 1,
       "rationale": "Political parties connect citizens to government through recruitment, platform building, mobilization, electoral competition, and governing coordination.",
@@ -25793,10 +25793,10 @@
       "cognitiveProcess": "explain",
       "prompt": "A party changes its platform after new voters join its coalition and a major issue becomes salient. What does the change illustrate?",
       "choices": [
-        "Parties cannot change because their platforms are fixed by the Constitution.",
-        "A platform change proves that every former supporter changed opinions.",
+        "Parties cannot change, because their platforms are permanently fixed by the Constitution.",
+        "A platform change proves that every former supporter has changed all of their opinions.",
         "Political parties adapt to electoral incentives, coalition changes, social conditions, and policy demands.",
-        "Party adaptation removes all disagreement among party members."
+        "Party adaptation removes every remaining disagreement among the members of the party."
       ],
       "answerIndex": 2,
       "rationale": "Parties revise messages and priorities as coalitions, issues, institutions, and electoral incentives change.",
@@ -25891,9 +25891,9 @@
       "cognitiveProcess": "apply",
       "prompt": "A third-party candidate wins a small share of votes but changes the major-party candidates' campaign strategies. What effect is shown?",
       "choices": [
-        "A third party automatically receives a majority of electoral votes.",
-        "Third parties cannot affect major-party platforms under plurality rules.",
-        "The candidate has replaced the two major parties in every institution.",
+        "A third party automatically receives a majority of the electoral votes that are cast.",
+        "Third parties cannot affect the major-party platforms under any plurality rules.",
+        "The candidate has replaced the two major parties in every national institution.",
         "A third party can influence issue attention and vote distribution even without winning office."
       ],
       "answerIndex": 3,
@@ -25994,9 +25994,9 @@
       "prompt": "An interest group supplies testimony, research, and draft language to a congressional committee without nominating candidates. What strategy is being used?",
       "choices": [
         "The group is lobbying by providing information and advocating directly to policymakers.",
-        "The group is conducting a judicial impeachment trial.",
-        "The group is exercising the president's appointment power.",
-        "The group is administering a statewide election."
+        "The group is conducting a judicial impeachment trial within the Congress.",
+        "The group is exercising the president's appointment power over federal judges.",
+        "The group is administering a statewide general election for the Congress."
       ],
       "answerIndex": 0,
       "rationale": "Lobbying includes direct communication, testimony, research, and policy advocacy aimed at influencing public officials.",
@@ -26191,10 +26191,10 @@
       "cognitiveProcess": "connect",
       "prompt": "A candidate wins a majority of electoral votes after narrowly winning several states and losing others by large margins. What does the result demonstrate?",
       "choices": [
-        "The Electoral College assigns every state the same number of electoral votes.",
-        "The Electoral College requires the national popular vote winner to win every state.",
+        "The Electoral College assigns every state exactly the same number of electoral votes each year.",
+        "The Electoral College requires the national popular-vote winner to carry every single state as well.",
         "The Electoral College aggregates state-based electoral votes rather than simply totaling the national popular vote.",
-        "The Electoral College allows Congress to appoint every president without elections."
+        "The Electoral College allows Congress to appoint every president without holding any elections."
       ],
       "answerIndex": 2,
       "rationale": "The constitutional election system allocates electoral votes by state, so the national result depends on state outcomes and electoral-vote rules.",
@@ -26485,10 +26485,10 @@
       "cognitiveProcess": "explain",
       "prompt": "A campaign-finance rule requires an organization to disclose its donors and spending for an advertisement. What democratic concern does disclosure address?",
       "choices": [
-        "Disclosure guarantees that every political claim is true.",
+        "Disclosure guarantees that every political claim in an advertisement is entirely true.",
         "Disclosure can help citizens evaluate the interests and resources behind political communication.",
-        "Disclosure prevents all organizations from speaking about public policy.",
-        "Disclosure transfers election administration to the Supreme Court."
+        "Disclosure prevents all organizations from speaking about matters of public policy.",
+        "Disclosure transfers all election administration to the United States Supreme Court."
       ],
       "answerIndex": 1,
       "rationale": "Disclosure gives voters information about who funds political communication, although it does not itself establish the truth of every message.",
@@ -26583,10 +26583,10 @@
       "cognitiveProcess": "connect",
       "prompt": "A news outlet gives repeated attention to housing costs, leading candidates to discuss the issue more often. Which media effect is most directly suggested?",
       "choices": [
-        "Prior restraint requires the government to select the issue for the outlet.",
-        "Judicial review means the outlet can invalidate housing legislation.",
+        "Prior restraint requires the government to select which issues the outlet may cover.",
+        "Judicial review means that the outlet can invalidate any housing legislation it dislikes.",
         "Agenda setting can increase the perceived importance of an issue in public and political discussion.",
-        "Cloture ends every public discussion once the outlet publishes a story."
+        "Cloture ends every public discussion as soon as the outlet publishes a single story."
       ],
       "answerIndex": 2,
       "rationale": "Agenda setting concerns the issues that receive attention and become more salient, not necessarily the specific opinion citizens adopt.",
@@ -26681,9 +26681,9 @@
       "cognitiveProcess": "evaluate",
       "prompt": "Citizens receive political news through many personalized feeds and disagree about which facts deserve attention. What tradeoff is most relevant?",
       "choices": [
-        "More media choices guarantee that citizens receive identical information.",
-        "Personalized feeds eliminate the possibility of political participation.",
-        "Media fragmentation means that all political claims are equally reliable.",
+        "A greater number of media choices guarantees that all citizens receive entirely identical information each day.",
+        "Personalized news feeds eliminate every possibility of political participation by ordinary citizens at all.",
+        "Media fragmentation means that all of the political claims that citizens encounter are equally reliable.",
         "Fragmented media can broaden access and choice while also increasing selective exposure and disagreement about shared information."
       ],
       "answerIndex": 3,

@@ -22,7 +22,9 @@ import { makePoseProbe, span } from './helpers/firstresponse_pose_probe.js';
 const FILE = 'stem_lab/stem_tool_firstresponse.js';
 const ID = 'firstResponse';
 const SRC = readFileSync(resolve(process.cwd(), FILE), 'utf8');
-const HOST = readFileSync(resolve(process.cwd(), 'stem_lab/stem_lab_module.js'), 'utf8');
+// Overridable so a mutated copy can prove these host pins are not vacuous.
+const HOST_FILE = process.env.FR_HOST_FILE || 'stem_lab/stem_lab_module.js';
+const HOST = readFileSync(resolve(process.cwd(), HOST_FILE), 'utf8');
 
 function extractArray(name) {
   const start = SRC.indexOf('var ' + name + ' = [');
@@ -272,14 +274,57 @@ describe('body 3D — 30:2 timing and breath coach', () => {
   });
 
   it('animates through the shared viewer without scene rebuilds', () => {
-    expect(HOST).toContain('contentFrame: contentFrame');
-    expect(HOST).toContain('S.contentFrame(Date.now(), props.sceneProps || {}, S.reduced)');
+    // `stem_lab_module.js` is shared by ~150 tools and refactored by other
+    // sessions, so an exact-call-expression pin here is a red waiting to happen
+    // — that is precisely how the reduced-motion pin below sat red for a whole
+    // session while the behaviour it guarded was intact and improved.
+    expect(HOST, 'the shared viewer no longer exposes contentFrame')
+      .toMatch(/contentFrame\s*[:,}]/);
+
+    // The RAF loop must hand contentFrame the CURRENT props every frame rather
+    // than a snapshot taken at build time. That is the seam this tool depends
+    // on: live-varying values (mech, gate, age) travel in sceneProps, never in
+    // sceneKey, because sceneKey triggers a rebuild. Pin the arguments, not the
+    // punctuation between them.
+    const frameCall = HOST.match(/S\.contentFrame\(([^;]*)\)/);
+    expect(frameCall, 'the frame loop no longer calls S.contentFrame').toBeTruthy();
+    expect(frameCall[1], 'contentFrame must receive the live sceneProps').toMatch(/props\.sceneProps/);
+    expect(frameCall[1], 'contentFrame must receive the live reduced flag').toMatch(/S\.reduced/);
     expect(SRC).toContain("sceneKey: tab + ':' + sceneAge");
     expect(SRC).toContain("if (!reduced && mode === 'coach')");
   });
   it('lets a mounted tool update shared 3D motion without rebuilding WebGL', () => {
-    expect(HOST).toContain("typeof props.reduced === 'boolean' ? props.reduced");
-    expect(HOST).toContain("if (S && typeof props.reduced === 'boolean') S.reduced = props.reduced");
+    // This pinned the one-line spelling
+    //   `if (S && typeof props.reduced === 'boolean') S.reduced = props.reduced`
+    // and went red when the host expanded it into a block that ALSO settles an
+    // in-flight camera move the moment reduced motion turns on — i.e. the
+    // behaviour was kept and improved, and only the formatting moved. Pin the
+    // invariant instead: sync() adopts the incoming props and pushes `reduced`
+    // into the live scene, without rebuilding it. A spelling pin left red is
+    // worse than no pin, because it makes a real regression indistinguishable
+    // from the noise.
+    expect(HOST, 'the host no longer honours an explicit reduced flag from props')
+      .toMatch(/typeof\s+props\.reduced\s*===\s*'boolean'\s*\?\s*props\.reduced/);
+
+    const start = HOST.indexOf('sync: function (next) {');
+    expect(start, 'the shared viewer no longer exposes sync(next)').toBeGreaterThan(-1);
+    const open = HOST.indexOf('{', start);
+    let depth = 0;
+    let end = -1;
+    for (let i = open; i < HOST.length; i++) {
+      if (HOST[i] === '{') depth++;
+      else if (HOST[i] === '}') { depth--; if (depth === 0) { end = i; break; } }
+    }
+    const sync = HOST.slice(open, end + 1);
+
+    expect(sync, 'sync must adopt the incoming props').toMatch(/props\s*=\s*next/);
+    expect(sync, 'sync must guard on a boolean reduced flag')
+      .toMatch(/typeof\s+props\.reduced\s*===\s*'boolean'/);
+    expect(sync, 'sync must push reduced into the live scene')
+      .toMatch(/S\.reduced\s*=\s*props\.reduced/);
+    // The whole point of the seam: a preference change reaches the running
+    // scene without tearing down and re-creating the WebGL context.
+    expect(sync, 'sync must not rebuild the scene').not.toMatch(/buildScene|createRenderer|new THREE\.WebGLRenderer/);
   });
 
   it('locks each breath through chest rise and fall and resets interrupted sessions', () => {
@@ -692,7 +737,8 @@ describe('body 3D — degrades without the canvas', () => {
 
 describe('body 3D — uses the shared viewer shell', () => {
   it('takes the shell from the host rather than copying it', () => {
-    expect(HOST).toContain('makeBayViewer: function (cfg)');
+    expect(HOST, 'the host no longer exposes makeBayViewer')
+      .toMatch(/makeBayViewer\s*[:(]/);
     expect(SRC).toContain('window.StemLab && window.StemLab.makeBayViewer');
     expect(SRC).not.toContain('function makeBayViewer');
     expect(SRC).toContain('FR_NULL_VIEWER');

@@ -1421,15 +1421,35 @@ function baseMetadata(topicId, plan, practiceId, skillId, answerIndex, id, diffi
   };
 }
 
+// Concept items draw their distractors from the other concept cards on the same
+// topic. Taking the first three can pair a long keyed label with three short
+// ones, which lets a learner pick the answer by length alone. The first three
+// are kept whenever they already avoid that, and otherwise the shortest is
+// traded for the longest unused label until the key no longer runs a quarter
+// longer than every distractor.
+function chooseConceptDistractorLabels(keyLabel, otherLabels) {
+  const chosen = otherLabels.slice(0, 3);
+  const spare = otherLabels.slice(3);
+  const satisfied = () => chosen.some((label) => keyLabel.length < label.length * 1.25);
+  while (!satisfied() && spare.length) {
+    const longestSpareIndex = spare.reduce((best, label, index) => (label.length > spare[best].length ? index : best), 0);
+    const shortestChosenIndex = chosen.reduce((best, label, index) => (label.length < chosen[best].length ? index : best), 0);
+    if (spare[longestSpareIndex].length <= chosen[shortestChosenIndex].length) break;
+    const [promoted] = spare.splice(longestSpareIndex, 1);
+    chosen[shortestChosenIndex] = promoted;
+  }
+  return chosen;
+}
+
 function makeConceptItem(topicId, plan, blueprint, id, answerIndex, generatedIndex) {
   const concepts = topicConcepts(topicId);
   const answer = concepts[blueprint.conceptIndex];
   const choices = rotateChoices(
     answer.label,
-    concepts
-      .filter((_, index) => index !== blueprint.conceptIndex)
-      .slice(0, 3)
-      .map((concept) => concept.label),
+    chooseConceptDistractorLabels(
+      answer.label,
+      concepts.filter((_, index) => index !== blueprint.conceptIndex).map((concept) => concept.label),
+    ),
     answerIndex,
     0x110000 + generatedIndex,
   );

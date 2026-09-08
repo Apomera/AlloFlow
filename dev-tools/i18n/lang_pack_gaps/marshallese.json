@@ -2,9 +2,9 @@
   "langName": "marshallese",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1410,
+  "translatedKeys": 1405,
   "missingKeys": 0,
-  "passthroughKeys": 20,
-  "coveragePct": 98.6,
+  "passthroughKeys": 25,
+  "coveragePct": 98.3,
   "missing": {}
 }

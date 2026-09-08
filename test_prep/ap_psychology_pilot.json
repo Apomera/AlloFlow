@@ -2167,7 +2167,7 @@
       "choices": [
         "Latent learning",
         "Observational learning",
-        "Habituation",
+        "Vicarious reinforcement",
         "Instinctive drift"
       ],
       "answerIndex": 1,
@@ -2175,7 +2175,7 @@
       "choiceRationales": [
         "Latent learning is acquired without immediate reinforcement and becomes evident later when there is an incentive; direct imitation of a visible model is more specific here.",
         "The child attends to the sibling's behavior and reproduces it, providing a clear example of modeling within observational learning.",
-        "Habituation is a reduced response after repeated exposure to a stimulus; the stem emphasizes copying a demonstrated action rather than simple response decline.",
+        "Vicarious reinforcement changes behavior after a model is seen receiving a rewarding consequence; the stem describes the actions being copied without any consequence to the sibling.",
         "Instinctive drift is a learned behavior's tendency to shift toward species-typical behavior, which is not suggested by this social imitation."
       ],
       "references": [
@@ -2250,7 +2250,7 @@
       "prompt": "A teacher sees a student arrive late once and immediately concludes that the student is irresponsible, without considering the documented train delay that affected the neighborhood. Which tendency is most evident?",
       "choices": [
         "The self-serving bias",
-        "The actor-observer bias",
+        "The actor-observer asymmetry",
         "The just-world hypothesis",
         "The fundamental attribution error"
       ],
@@ -2258,7 +2258,7 @@
       "rationale": "The fundamental attribution error is the tendency to overemphasize dispositional explanations for another person's behavior while underweighting situational influences. The teacher favors a character judgment despite a salient external cause.",
       "choiceRationales": [
         "Self-serving bias concerns explaining one's own successes internally and failures externally; the teacher is instead explaining another person's behavior.",
-        "Actor-observer bias contrasts explanations of one's own behavior with explanations of another person's behavior; the scenario provides no comparison involving the teacher's own actions.",
+        "Actor-observer asymmetry contrasts explanations of one’s own behavior with explanations of another person’s behavior; the scenario provides no comparison involving the teacher’s own actions.",
         "The just-world hypothesis concerns believing that people generally receive deserved outcomes; the judgment here more directly ignores a known situational cause.",
         "The teacher overweights an inferred trait and overlooks a documented circumstance, which directly illustrates the fundamental attribution error."
       ],
@@ -2922,10 +2922,10 @@
       "cognitiveDemand": "application",
       "prompt": "A researcher compares several communities that differ in nutrition, schooling, and climate and finds that reading performance varies widely. Which statement best applies the concept of heritability?",
       "choices": [
-        "A person's environment cannot affect a highly heritable trait.",
+        "A person's environment cannot affect a trait that carries a high heritability estimate in a population.",
         "Heritability describes population variation under specific environmental conditions, not one person's genetic percentage.",
-        "A heritability estimate identifies the single gene causing the trait.",
-        "A high estimate means the trait cannot change across generations."
+        "A heritability estimate identifies the single gene that is responsible for causing the trait in a population.",
+        "A high heritability estimate means that the trait cannot change at all across generations of a population."
       ],
       "answerIndex": 1,
       "rationale": "Heritability is a population statistic describing how much variation within a particular environment is associated with genetic differences. It does not assign a genetic percentage to one person or rule out environmental influence.",
@@ -4831,7 +4831,7 @@
         "Epigenetic influence",
         "Gene–environment interaction",
         "Heritability",
-        "Phenotype"
+        "Gene–environment correlation"
       ],
       "answerIndex": 1,
       "rationale": "Gene–environment interaction is the best answer because the way inherited characteristics and environmental conditions combine to influence an outcome. The example presents the defining pattern for Gene–environment interaction, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
@@ -4839,7 +4839,7 @@
         "Epigenetic influence refers to an environmental effect on whether particular genes are expressed without changing the underlying DNA sequence. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction.",
         "Gene–environment interaction fits because the way inherited characteristics and environmental conditions combine to influence an outcome. The example's defining pattern is the defining pattern for Gene–environment interaction, which matches this concept rather than a neighboring construct.",
         "Heritability refers to a population statistic describing the proportion of variation associated with genetic differences under particular conditions. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction.",
-        "Phenotype refers to the observable characteristics that result from inherited factors and environmental influences. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction."
+        "Gene–environment correlation refers to the tendency for inherited characteristics to influence the environments people experience or select. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction."
       ]
     },
     {
@@ -4915,7 +4915,7 @@
       "choices": [
         "Gene–environment interaction",
         "Heritability",
-        "Phenotype",
+        "Gene–environment correlation",
         "Epigenetic influence"
       ],
       "answerIndex": 0,
@@ -4923,7 +4923,7 @@
       "choiceRationales": [
         "Gene–environment interaction fits because the way inherited characteristics and environmental conditions combine to influence an outcome. The example's defining pattern is the defining pattern for Gene–environment interaction, which matches this concept rather than a neighboring construct.",
         "Heritability refers to a population statistic describing the proportion of variation associated with genetic differences under particular conditions. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction.",
-        "Phenotype refers to the observable characteristics that result from inherited factors and environmental influences. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction.",
+        "Gene–environment correlation refers to the tendency for inherited characteristics to influence the environments people experience or select. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction.",
         "Epigenetic influence refers to an environmental effect on whether particular genes are expressed without changing the underlying DNA sequence. That distinction does not match the defining pattern for Gene–environment interaction; the example instead describes Gene–environment interaction."
       ]
     },
@@ -6699,7 +6699,7 @@
       "prompt": "A reader identifies dark letters as the object of attention against a lighter page. Which term most directly applies to the example?",
       "choices": [
         "Gestalt proximity",
-        "Gestalt closure",
+        "Perceptual constancy",
         "Figure-ground organization",
         "Retinal disparity"
       ],
@@ -6707,7 +6707,7 @@
       "rationale": "Figure-ground organization is the best answer because the perceptual separation of a focal object from its surrounding background. The example presents the defining pattern for Figure-ground organization, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Gestalt proximity refers to the tendency to group nearby elements together perceptually. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
-        "Gestalt closure refers to the tendency to perceive a complete object despite gaps in the available information. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
+        "Perceptual constancy refers to the tendency to perceive an object as stable despite changes in sensory input. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
         "Figure-ground organization fits because the perceptual separation of a focal object from its surrounding background. The example's defining pattern is the defining pattern for Figure-ground organization, which matches this concept rather than a neighboring construct.",
         "Retinal disparity refers to a binocular depth cue based on the slightly different images received by the two eyes. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization."
       ]
@@ -6783,7 +6783,7 @@
       },
       "prompt": "In an ambiguous picture, attention shifts between seeing a vase and seeing two faces as the focal figure. Which psychological concept would a researcher use to describe this result?",
       "choices": [
-        "Gestalt closure",
+        "Perceptual constancy",
         "Gestalt proximity",
         "Retinal disparity",
         "Figure-ground organization"
@@ -6791,7 +6791,7 @@
       "answerIndex": 3,
       "rationale": "Figure-ground organization is the best answer because the perceptual separation of a focal object from its surrounding background. The example presents the defining pattern for Figure-ground organization, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Gestalt closure refers to the tendency to perceive a complete object despite gaps in the available information. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
+        "Perceptual constancy refers to the tendency to perceive an object as stable despite changes in sensory input. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
         "Gestalt proximity refers to the tendency to group nearby elements together perceptually. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
         "Retinal disparity refers to a binocular depth cue based on the slightly different images received by the two eyes. That distinction does not match the defining pattern for Figure-ground organization; the example instead describes Figure-ground organization.",
         "Figure-ground organization fits because the perceptual separation of a focal object from its surrounding background. The example's defining pattern is the defining pattern for Figure-ground organization, which matches this concept rather than a neighboring construct."
@@ -9418,7 +9418,7 @@
       },
       "prompt": "A student facing a difficult schedule creates a study plan and contacts the instructor about unclear requirements. Which term most directly applies to the example?",
       "choices": [
-        "HPA axis",
+        "Emotion-focused coping",
         "Problem-focused coping",
         "Acute stress",
         "Chronic stress"
@@ -9426,7 +9426,7 @@
       "answerIndex": 1,
       "rationale": "Problem-focused coping is the best answer because coping that attempts to change, solve, or manage the source of stress. The example presents the defining pattern for Problem-focused coping, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "HPA axis refers to a stress-response pathway linking the hypothalamus, pituitary gland, and adrenal cortex. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
+        "Emotion-focused coping refers to coping that attempts to manage the emotional response to a stressor. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
         "Problem-focused coping fits because coping that attempts to change, solve, or manage the source of stress. The example's defining pattern is the defining pattern for Problem-focused coping, which matches this concept rather than a neighboring construct.",
         "Acute stress refers to a short-term response to an immediate demand or threat. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
         "Chronic stress refers to a prolonged stress response produced by continuing or repeated demands. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping."
@@ -9503,7 +9503,7 @@
       },
       "prompt": "A worker responds to an overwhelming task by breaking it into steps and requesting a realistic deadline. Which psychological concept would a researcher use to describe this result?",
       "choices": [
-        "HPA axis",
+        "Emotion-focused coping",
         "Problem-focused coping",
         "Acute stress",
         "Chronic stress"
@@ -9511,7 +9511,7 @@
       "answerIndex": 1,
       "rationale": "Problem-focused coping is the best answer because coping that attempts to change, solve, or manage the source of stress. The example presents the defining pattern for Problem-focused coping, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "HPA axis refers to a stress-response pathway linking the hypothalamus, pituitary gland, and adrenal cortex. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
+        "Emotion-focused coping refers to coping that attempts to manage the emotional response to a stressor. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
         "Problem-focused coping fits because coping that attempts to change, solve, or manage the source of stress. The example's defining pattern is the defining pattern for Problem-focused coping, which matches this concept rather than a neighboring construct.",
         "Acute stress refers to a short-term response to an immediate demand or threat. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping.",
         "Chronic stress refers to a prolonged stress response produced by continuing or repeated demands. That distinction does not match the defining pattern for Problem-focused coping; the example instead describes Problem-focused coping."
@@ -9589,7 +9589,7 @@
       "prompt": "A person uses breathing exercises and social support to reduce distress while an uncontrollable situation continues. Which explanation is most consistent with the observation?",
       "choices": [
         "Emotion-focused coping",
-        "HPA axis",
+        "Problem-focused coping",
         "Chronic stress",
         "Acute stress"
       ],
@@ -9597,7 +9597,7 @@
       "rationale": "Emotion-focused coping is the best answer because coping that attempts to manage the emotional response to a stressor. The example presents the defining pattern for Emotion-focused coping, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Emotion-focused coping fits because coping that attempts to manage the emotional response to a stressor. The example's defining pattern is the defining pattern for Emotion-focused coping, which matches this concept rather than a neighboring construct.",
-        "HPA axis refers to a stress-response pathway linking the hypothalamus, pituitary gland, and adrenal cortex. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
+        "Problem-focused coping refers to coping that attempts to change, solve, or manage the source of stress. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
         "Chronic stress refers to a prolonged stress response produced by continuing or repeated demands. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
         "Acute stress refers to a short-term response to an immediate demand or threat. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping."
       ]
@@ -9674,7 +9674,7 @@
       "prompt": "A student journals and talks with a trusted friend to manage worry about an outcome that cannot be changed immediately. Which concept is illustrated by the situation?",
       "choices": [
         "Acute stress",
-        "HPA axis",
+        "Problem-focused coping",
         "Emotion-focused coping",
         "Chronic stress"
       ],
@@ -9682,7 +9682,7 @@
       "rationale": "Emotion-focused coping is the best answer because coping that attempts to manage the emotional response to a stressor. The example presents the defining pattern for Emotion-focused coping, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Acute stress refers to a short-term response to an immediate demand or threat. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
-        "HPA axis refers to a stress-response pathway linking the hypothalamus, pituitary gland, and adrenal cortex. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
+        "Problem-focused coping refers to coping that attempts to change, solve, or manage the source of stress. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping.",
         "Emotion-focused coping fits because coping that attempts to manage the emotional response to a stressor. The example's defining pattern is the defining pattern for Emotion-focused coping, which matches this concept rather than a neighboring construct.",
         "Chronic stress refers to a prolonged stress response produced by continuing or repeated demands. That distinction does not match the defining pattern for Emotion-focused coping; the example instead describes Emotion-focused coping."
       ]
@@ -10439,7 +10439,7 @@
       "prompt": "During the early prenatal weeks, basic organ structures begin developing rapidly. Which term most directly applies to the example?",
       "choices": [
         "Teratogen",
-        "Zygote",
+        "Myelination",
         "Embryonic period",
         "Puberty"
       ],
@@ -10447,7 +10447,7 @@
       "rationale": "Embryonic period is the best answer because the prenatal period from about the second through the eighth week when major organs begin forming. The example presents the defining pattern for Embryonic period, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Teratogen refers to an environmental agent that can harm prenatal development. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
-        "Zygote refers to the single cell formed when sperm and egg unite at conception. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
+        "Myelination refers to the development of insulating tissue around axons that improves neural communication. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
         "Embryonic period fits because the prenatal period from about the second through the eighth week when major organs begin forming. The example's defining pattern is the defining pattern for Embryonic period, which matches this concept rather than a neighboring construct.",
         "Puberty refers to the period of physical maturation leading to reproductive capability. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period."
       ]
@@ -10523,7 +10523,7 @@
       },
       "prompt": "A harmful exposure during a period of rapid organ formation creates a particularly important developmental concern. Which psychological concept would a researcher use to describe this result?",
       "choices": [
-        "Zygote",
+        "Myelination",
         "Teratogen",
         "Embryonic period",
         "Puberty"
@@ -10531,7 +10531,7 @@
       "answerIndex": 2,
       "rationale": "Embryonic period is the best answer because the prenatal period from about the second through the eighth week when major organs begin forming. The example presents the defining pattern for Embryonic period, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Zygote refers to the single cell formed when sperm and egg unite at conception. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
+        "Myelination refers to the development of insulating tissue around axons that improves neural communication. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
         "Teratogen refers to an environmental agent that can harm prenatal development. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period.",
         "Embryonic period fits because the prenatal period from about the second through the eighth week when major organs begin forming. The example's defining pattern is the defining pattern for Embryonic period, which matches this concept rather than a neighboring construct.",
         "Puberty refers to the period of physical maturation leading to reproductive capability. That distinction does not match the defining pattern for Embryonic period; the example instead describes Embryonic period."
@@ -11883,7 +11883,7 @@
       },
       "prompt": "A quiet person who enjoys mathematics is judged more likely to be an engineer than a salesperson despite base-rate information. Which concept is illustrated by the situation?",
       "choices": [
-        "Algorithm",
+        "Functional fixedness",
         "Availability heuristic",
         "Representativeness heuristic",
         "Confirmation bias"
@@ -11891,7 +11891,7 @@
       "answerIndex": 2,
       "rationale": "Representativeness heuristic is the best answer because judging category membership or probability by similarity to a typical example. The example presents the defining pattern for Representativeness heuristic, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Algorithm refers to a systematic step-by-step procedure that guarantees a solution when applied correctly. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic.",
+        "Functional fixedness refers to the tendency to perceive an object only in terms of its familiar use. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic.",
         "Availability heuristic refers to judging likelihood by how easily examples or instances come to mind. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic.",
         "Representativeness heuristic fits because judging category membership or probability by similarity to a typical example. The example's defining pattern is the defining pattern for Representativeness heuristic, which matches this concept rather than a neighboring construct.",
         "Confirmation bias refers to the tendency to seek or interpret evidence in ways that support an existing belief. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic."
@@ -11971,7 +11971,7 @@
         "Confirmation bias",
         "Availability heuristic",
         "Representativeness heuristic",
-        "Algorithm"
+        "Functional fixedness"
       ],
       "answerIndex": 2,
       "rationale": "Representativeness heuristic is the best answer because judging category membership or probability by similarity to a typical example. The example presents the defining pattern for Representativeness heuristic, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
@@ -11979,7 +11979,7 @@
         "Confirmation bias refers to the tendency to seek or interpret evidence in ways that support an existing belief. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic.",
         "Availability heuristic refers to judging likelihood by how easily examples or instances come to mind. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic.",
         "Representativeness heuristic fits because judging category membership or probability by similarity to a typical example. The example's defining pattern is the defining pattern for Representativeness heuristic, which matches this concept rather than a neighboring construct.",
-        "Algorithm refers to a systematic step-by-step procedure that guarantees a solution when applied correctly. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic."
+        "Functional fixedness refers to the tendency to perceive an object only in terms of its familiar use. That distinction does not match the defining pattern for Representativeness heuristic; the example instead describes Representativeness heuristic."
       ]
     },
     {
@@ -19363,7 +19363,7 @@
       },
       "prompt": "In a crowded hallway, each witness assumes someone else will call for help during an emergency. Which concept is illustrated by the situation?",
       "choices": [
-        "Obedience",
+        "Social loafing",
         "Groupthink",
         "Diffusion of responsibility",
         "Conformity"
@@ -19371,7 +19371,7 @@
       "answerIndex": 2,
       "rationale": "Diffusion of responsibility is the best answer because a reduction in personal responsibility when other people are present. The example presents the defining pattern for Diffusion of responsibility, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Obedience refers to following a direct command from an authority figure. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility.",
+        "Social loafing refers to reduced individual effort when working in a group than when working alone. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility.",
         "Groupthink refers to a decision-making failure caused by pressure for consensus and suppression of dissent. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility.",
         "Diffusion of responsibility fits because a reduction in personal responsibility when other people are present. The example's defining pattern is the defining pattern for Diffusion of responsibility, which matches this concept rather than a neighboring construct.",
         "Conformity refers to adjusting behavior or expressed beliefs to match a group’s expectations. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility."
@@ -19451,7 +19451,7 @@
         "Groupthink",
         "Diffusion of responsibility",
         "Conformity",
-        "Obedience"
+        "Social loafing"
       ],
       "answerIndex": 1,
       "rationale": "Diffusion of responsibility is the best answer because a reduction in personal responsibility when other people are present. The example presents the defining pattern for Diffusion of responsibility, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
@@ -19459,7 +19459,7 @@
         "Groupthink refers to a decision-making failure caused by pressure for consensus and suppression of dissent. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility.",
         "Diffusion of responsibility fits because a reduction in personal responsibility when other people are present. The example's defining pattern is the defining pattern for Diffusion of responsibility, which matches this concept rather than a neighboring construct.",
         "Conformity refers to adjusting behavior or expressed beliefs to match a group’s expectations. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility.",
-        "Obedience refers to following a direct command from an authority figure. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility."
+        "Social loafing refers to reduced individual effort when working in a group than when working alone. That distinction does not match the defining pattern for Diffusion of responsibility; the example instead describes Diffusion of responsibility."
       ]
     },
     {
@@ -20556,7 +20556,7 @@
         "Deep processing",
         "Elaborative rehearsal",
         "Mnemonic device",
-        "Chunking"
+        "Self-reference effect"
       ],
       "answerIndex": 1,
       "rationale": "Elaborative rehearsal is the best answer because connecting new information to existing knowledge or meaningful examples to improve encoding. The example presents the defining pattern for Elaborative rehearsal, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
@@ -20564,7 +20564,7 @@
         "Deep processing refers to encoding information by focusing on meaning and connections rather than surface features. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal.",
         "Elaborative rehearsal fits because connecting new information to existing knowledge or meaningful examples to improve encoding. The example's defining pattern is the defining pattern for Elaborative rehearsal, which matches this concept rather than a neighboring construct.",
         "Mnemonic device refers to a deliberate strategy that uses imagery, organization, or associations to aid memory. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal.",
-        "Chunking refers to grouping individual pieces of information into larger meaningful units. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal."
+        "Self-reference effect refers to the tendency for information related to oneself to be encoded especially well. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal."
       ]
     },
     {
@@ -21658,7 +21658,7 @@
       },
       "prompt": "Immediately after a spike, a neuron requires a short recovery interval before it can fire again. Which concept best explains this pattern?",
       "choices": [
-        "Axon",
+        "Action potential",
         "Refractory period",
         "Myelin sheath",
         "Dendrites"
@@ -21666,7 +21666,7 @@
       "answerIndex": 1,
       "rationale": "Refractory period is the best answer because a brief interval after firing during which a neuron cannot immediately generate another full action potential. The example presents the defining pattern for Refractory period, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Axon refers to the neuronal extension that carries an electrical signal away from the cell body. That distinction does not match the defining pattern for Refractory period; the example instead describes Refractory period.",
+        "Action potential refers to a brief all-or-none electrical event that travels down an axon after threshold is reached. That distinction does not match the defining pattern for Refractory period; the example instead describes Refractory period.",
         "Refractory period fits because a brief interval after firing during which a neuron cannot immediately generate another full action potential. The example's defining pattern is the defining pattern for Refractory period, which matches this concept rather than a neighboring construct.",
         "Myelin sheath refers to a fatty insulating covering that increases the speed of neural transmission along some axons. That distinction does not match the defining pattern for Refractory period; the example instead describes Refractory period.",
         "Dendrites refers to branched neuronal structures that receive signals from other cells. That distinction does not match the defining pattern for Refractory period; the example instead describes Refractory period."
@@ -21999,7 +21999,7 @@
       "prompt": "A learner adds explanations and examples to class notes rather than copying the definition repeatedly. Which psychological concept would a researcher use to describe this result?",
       "choices": [
         "Mnemonic device",
-        "Chunking",
+        "Self-reference effect",
         "Elaborative rehearsal",
         "Deep processing"
       ],
@@ -22007,7 +22007,7 @@
       "rationale": "Elaborative rehearsal is the best answer because connecting new information to existing knowledge or meaningful examples to improve encoding. The example presents the defining pattern for Elaborative rehearsal, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Mnemonic device refers to a deliberate strategy that uses imagery, organization, or associations to aid memory. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal.",
-        "Chunking refers to grouping individual pieces of information into larger meaningful units. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal.",
+        "Self-reference effect refers to the tendency for information related to oneself to be encoded especially well. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal.",
         "Elaborative rehearsal fits because connecting new information to existing knowledge or meaningful examples to improve encoding. The example's defining pattern is the defining pattern for Elaborative rehearsal, which matches this concept rather than a neighboring construct.",
         "Deep processing refers to encoding information by focusing on meaning and connections rather than surface features. That distinction does not match the defining pattern for Elaborative rehearsal; the example instead describes Elaborative rehearsal."
       ]
@@ -29733,7 +29733,7 @@
       },
       "prompt": "A normally talkative person becomes quiet during a formal interview but lively with close friends. Which concept best explains this pattern?",
       "choices": [
-        "Locus of control",
+        "Self-efficacy belief",
         "Big Five trait model",
         "Reciprocal determinism",
         "Person–situation interaction"
@@ -29741,7 +29741,7 @@
       "answerIndex": 3,
       "rationale": "Person–situation interaction is the best answer because the idea that behavior reflects both stable tendencies and the demands of particular situations. The example presents the defining pattern for Person–situation interaction, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Locus of control refers to a person’s expectation about whether outcomes depend mainly on personal actions or external forces. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
+        "Self-efficacy belief refers to a person’s judgment that they can successfully perform a specific behavior or task. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Big Five trait model refers to a trait framework organized around openness, conscientiousness, extraversion, agreeableness, and neuroticism. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Reciprocal determinism refers to the interaction among personal factors, behavior, and environment. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Person–situation interaction fits because the idea that behavior reflects both stable tendencies and the demands of particular situations. The example's defining pattern is the defining pattern for Person–situation interaction, which matches this concept rather than a neighboring construct."
@@ -31178,7 +31178,7 @@
       },
       "prompt": "A trait predicts behavior more accurately when the situation provides an opportunity to express that trait. Which term most directly applies to the example?",
       "choices": [
-        "Locus of control",
+        "Self-efficacy belief",
         "Big Five trait model",
         "Reciprocal determinism",
         "Person–situation interaction"
@@ -31186,7 +31186,7 @@
       "answerIndex": 3,
       "rationale": "Person–situation interaction is the best answer because the idea that behavior reflects both stable tendencies and the demands of particular situations. The example presents the defining pattern for Person–situation interaction, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Locus of control refers to a person’s expectation about whether outcomes depend mainly on personal actions or external forces. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
+        "Self-efficacy belief refers to a person’s judgment that they can successfully perform a specific behavior or task. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Big Five trait model refers to a trait framework organized around openness, conscientiousness, extraversion, agreeableness, and neuroticism. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Reciprocal determinism refers to the interaction among personal factors, behavior, and environment. That distinction does not match the defining pattern for Person–situation interaction; the example instead describes Person–situation interaction.",
         "Person–situation interaction fits because the idea that behavior reflects both stable tendencies and the demands of particular situations. The example's defining pattern is the defining pattern for Person–situation interaction, which matches this concept rather than a neighboring construct."
@@ -33730,7 +33730,7 @@
       "choices": [
         "Circadian rhythm",
         "Activation-synthesis theory",
-        "REM sleep",
+        "Sleep deprivation",
         "Sleep spindles"
       ],
       "answerIndex": 1,
@@ -33738,7 +33738,7 @@
       "choiceRationales": [
         "Circadian rhythm refers to an approximately 24-hour biological cycle that helps organize sleep, waking, and other functions. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
         "Activation-synthesis theory fits because the proposal that dreams result from the brain’s attempt to organize internally generated neural activity. The example's defining pattern is the defining pattern for Activation-synthesis theory, which matches this concept rather than a neighboring construct.",
-        "REM sleep refers to a sleep stage marked by rapid eye movements, vivid dreaming, and muscle inhibition. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
+        "Sleep deprivation refers to a condition in which insufficient or disrupted sleep impairs functioning. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
         "Sleep spindles refers to brief bursts of rhythmic brain activity associated with stage 2 non-REM sleep. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory."
       ]
     },
@@ -33815,7 +33815,7 @@
       "choices": [
         "Circadian rhythm",
         "Activation-synthesis theory",
-        "REM sleep",
+        "Sleep deprivation",
         "Sleep spindles"
       ],
       "answerIndex": 1,
@@ -33823,7 +33823,7 @@
       "choiceRationales": [
         "Circadian rhythm refers to an approximately 24-hour biological cycle that helps organize sleep, waking, and other functions. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
         "Activation-synthesis theory fits because the proposal that dreams result from the brain’s attempt to organize internally generated neural activity. The example's defining pattern is the defining pattern for Activation-synthesis theory, which matches this concept rather than a neighboring construct.",
-        "REM sleep refers to a sleep stage marked by rapid eye movements, vivid dreaming, and muscle inhibition. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
+        "Sleep deprivation refers to a condition in which insufficient or disrupted sleep impairs functioning. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory.",
         "Sleep spindles refers to brief bursts of rhythmic brain activity associated with stage 2 non-REM sleep. That distinction does not match the defining pattern for Activation-synthesis theory; the example instead describes Activation-synthesis theory."
       ]
     },
@@ -39254,16 +39254,16 @@
       "prompt": "An adult uses a large vocabulary and accumulated factual knowledge to explain a historical event. Which concept best explains this pattern?",
       "choices": [
         "Crystallized intelligence",
-        "Reliability",
-        "Validity",
+        "Standardization",
+        "Stereotype threat",
         "Fluid intelligence"
       ],
       "answerIndex": 0,
       "rationale": "Crystallized intelligence is the best answer because knowledge and skills acquired through education and experience. The example presents the defining pattern for Crystallized intelligence, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Crystallized intelligence fits because knowledge and skills acquired through education and experience. The example's defining pattern is the defining pattern for Crystallized intelligence, which matches this concept rather than a neighboring construct.",
-        "Reliability refers to the consistency of a measurement across time, forms, or raters. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
-        "Validity refers to the extent to which a test measures what it is intended to measure. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
+        "Standardization refers to the use of consistent procedures and norms for administering and interpreting a test. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
+        "Stereotype threat refers to the risk that concern about confirming a negative group stereotype harms performance. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
         "Fluid intelligence refers to the ability to reason about novel problems without relying heavily on learned knowledge. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence."
       ]
     },
@@ -40019,7 +40019,7 @@
       "prompt": "A prescriber chooses a medication that increases serotonin availability by reducing its reabsorption at synapses. Which explanation is most consistent with the observation?",
       "choices": [
         "Cognitive-behavioral therapy",
-        "Exposure therapy",
+        "Electroconvulsive therapy",
         "Psychodynamic therapy",
         "Selective serotonin reuptake inhibitor"
       ],
@@ -40027,7 +40027,7 @@
       "rationale": "Selective serotonin reuptake inhibitor is the best answer because a medication that reduces serotonin reuptake and can be used for several mood or anxiety conditions. The example presents the defining pattern for Selective serotonin reuptake inhibitor, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Cognitive-behavioral therapy refers to a treatment that changes unhelpful thoughts and behaviors through structured learning and practice. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
-        "Exposure therapy refers to a behavioral treatment that uses gradual, supported contact with feared cues while preventing avoidance. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
+        "Electroconvulsive therapy refers to a medical treatment that induces a controlled seizure under anesthesia for some severe, treatment-resistant conditions. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
         "Psychodynamic therapy refers to a treatment that explores recurring patterns, relationships, and possible unconscious conflicts. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
         "Selective serotonin reuptake inhibitor fits because a medication that reduces serotonin reuptake and can be used for several mood or anxiety conditions. The example's defining pattern is the defining pattern for Selective serotonin reuptake inhibitor, which matches this concept rather than a neighboring construct."
       ]
@@ -40103,7 +40103,7 @@
       },
       "prompt": "A treatment plan includes monitoring benefits and side effects after beginning a commonly used antidepressant class. Which concept is illustrated by the situation?",
       "choices": [
-        "Exposure therapy",
+        "Electroconvulsive therapy",
         "Cognitive-behavioral therapy",
         "Selective serotonin reuptake inhibitor",
         "Psychodynamic therapy"
@@ -40111,7 +40111,7 @@
       "answerIndex": 2,
       "rationale": "Selective serotonin reuptake inhibitor is the best answer because a medication that reduces serotonin reuptake and can be used for several mood or anxiety conditions. The example presents the defining pattern for Selective serotonin reuptake inhibitor, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
-        "Exposure therapy refers to a behavioral treatment that uses gradual, supported contact with feared cues while preventing avoidance. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
+        "Electroconvulsive therapy refers to a medical treatment that induces a controlled seizure under anesthesia for some severe, treatment-resistant conditions. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
         "Cognitive-behavioral therapy refers to a treatment that changes unhelpful thoughts and behaviors through structured learning and practice. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor.",
         "Selective serotonin reuptake inhibitor fits because a medication that reduces serotonin reuptake and can be used for several mood or anxiety conditions. The example's defining pattern is the defining pattern for Selective serotonin reuptake inhibitor, which matches this concept rather than a neighboring construct.",
         "Psychodynamic therapy refers to a treatment that explores recurring patterns, relationships, and possible unconscious conflicts. That distinction does not match the defining pattern for Selective serotonin reuptake inhibitor; the example instead describes Selective serotonin reuptake inhibitor."
@@ -40699,17 +40699,17 @@
       "prompt": "Years of professional experience help a worker recognize a familiar problem and select an effective solution. Which term most directly applies to the example?",
       "choices": [
         "Crystallized intelligence",
-        "Validity",
+        "Stereotype threat",
         "Fluid intelligence",
-        "Reliability"
+        "Standardization"
       ],
       "answerIndex": 0,
       "rationale": "Crystallized intelligence is the best answer because knowledge and skills acquired through education and experience. The example presents the defining pattern for Crystallized intelligence, so the learner must distinguish this mechanism from related concepts rather than match a surface word.",
       "choiceRationales": [
         "Crystallized intelligence fits because knowledge and skills acquired through education and experience. The example's defining pattern is the defining pattern for Crystallized intelligence, which matches this concept rather than a neighboring construct.",
-        "Validity refers to the extent to which a test measures what it is intended to measure. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
+        "Stereotype threat refers to the risk that concern about confirming a negative group stereotype harms performance. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
         "Fluid intelligence refers to the ability to reason about novel problems without relying heavily on learned knowledge. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence.",
-        "Reliability refers to the consistency of a measurement across time, forms, or raters. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence."
+        "Standardization refers to the use of consistent procedures and norms for administering and interpreting a test. That distinction does not match the defining pattern for Crystallized intelligence; the example instead describes Crystallized intelligence."
       ]
     },
     {

@@ -237,6 +237,13 @@ for (const item of items) {
   // distractors explained by the same text.
   const distractorNotes = Array.isArray(item.choiceRationales) ? item.choiceRationales.filter((_, index) => index !== item.answerIndex).map((value) => String(value || '').replace(/\s+/g, ' ').trim()) : [];
   requireCondition(distractorNotes.length === 3 && new Set(distractorNotes).size === 3 && !distractorNotes.includes(String(item.rationale || '').replace(/\s+/g, ' ').trim()) && distractorNotes.every((note) => note.length >= 30 && !/does not fit the evidence or historical relationship/i.test(note)), 'feedback-specificity', `${item.id} must explain each distractor with its own specific feedback.`, record);
+  // A key that runs much longer than every distractor is a length cue: a
+  // test-wise learner can pick the elaborated option without reading it. The
+  // key may still be the longest, but not by a quarter of its length.
+  const choiceLengths = Array.isArray(item.choices) ? item.choices.map((choice) => String(choice || '').length) : [];
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  requireCondition(longestDistractor > 0 && keyLength < longestDistractor * 1.25, 'choice-length-parity', `${item.id} must keep its distractors within a quarter of the key length.`, record);
   requireCondition(Array.isArray(item.references) && item.references.includes(CED_URL) && item.references.every(validHttpsUrl), 'source-and-provenance', `${item.id} must include the official CED link and valid HTTPS references.`, record);
   requireCondition(Array.isArray(item.sourceDetails) && item.sourceDetails.length >= 2 && item.sourceDetails.every((source) => hasText(source.title) && hasText(source.organization) && validHttpsUrl(source.url)), 'source-and-provenance', `${item.id} must include source details.`, record);
   requireCondition(item.provenance === 'native-original' && item.officialItem === false && item.releaseEligible === false, 'rights-boundary', `${item.id} must remain independently authored and unreleased.`, record);
@@ -306,6 +313,7 @@ const signalDefinitions = [
   ['one-best-answer', 'Every item and chapter check has one prompt, four distinct options, and a valid key.'],
   ['substantive-feedback', 'Every item has a rationale and four option-level feedback records.'],
   ['feedback-specificity', 'Every distractor carries its own authored explanation: three distinct notes per item, none a generic placeholder, none a copy of the key rationale.'],
+  ['choice-length-parity', 'No item lets a student find the key by length alone: the correct option never runs a quarter longer than the longest distractor.'],
   ['source-and-provenance', 'Public framework and factual-reference links plus independent-original provenance declarations are complete.'],
   ['rights-boundary', 'Automated QA confirms only that restricted-content and release flags remain closed; it is not independent rights clearance.'],
   ['accessibility-boundary', 'Automated QA confirms text/reading-order declarations and a still-pending independent accessibility gate.'],

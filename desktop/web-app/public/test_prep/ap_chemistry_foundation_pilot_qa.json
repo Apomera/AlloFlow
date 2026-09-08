@@ -138,15 +138,14 @@
     "testWiseness": {
       "keyedItemCount": 700,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 54.1,
-      "keyLongerByQuarterSharePercent": 28.7,
+      "keyLongestSharePercent": 53,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 2100,
       "distinctDistractorRationaleCount": 2093,
       "repeatedDistractorRationaleSharePercent": 0.1,
       "largestSharedChoiceSet": 2,
       "advisories": [
-        "answer-key-position-cycle",
-        "key-length-cue"
+        "answer-key-position-cycle"
       ],
       "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
     },
@@ -249,6 +248,12 @@
       "status": "pass",
       "findingCount": 0,
       "description": "The native library has navigable, text-first chapter structures, data moments, retrieval, and transfer blocks."
+    },
+    {
+      "id": "choice-length-parity",
+      "status": "pass",
+      "findingCount": 0,
+      "description": "No item lets a student find the key by length alone: the correct option never runs a quarter longer than the longest distractor."
     },
     {
       "id": "source-and-provenance",
@@ -432,7 +437,7 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4",
+    "packSha256": "3c617cc728b48e9cca14fb726e893bee17386464102250b4b5ec859a0080583d",
     "learningLibrarySha256": "0f9ad6aadcbac33cabeda6be148c099067a59e55ee4970c95ebf8167ce60f7ff",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-chemistry-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-chemistry",
@@ -443,8 +448,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4",
-      "deploySha256": "d3f9fa8397a68c663f4bf276ea2a343e82627b3f71402708fa45b544afedaee4"
+      "sourceSha256": "3c617cc728b48e9cca14fb726e893bee17386464102250b4b5ec859a0080583d",
+      "deploySha256": "3c617cc728b48e9cca14fb726e893bee17386464102250b4b5ec859a0080583d"
     },
     {
       "asset": "learning-library",

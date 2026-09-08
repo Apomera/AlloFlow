@@ -2,9 +2,9 @@
   "langName": "indonesian",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1416,
+  "translatedKeys": 1411,
   "missingKeys": 0,
-  "passthroughKeys": 14,
-  "coveragePct": 99,
+  "passthroughKeys": 19,
+  "coveragePct": 98.7,
   "missing": {}
 }

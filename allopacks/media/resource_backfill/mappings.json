@@ -1,0 +1,123 @@
+{
+  "forces_motion_grade3": {
+    "anchor": [
+      "fm-term-force",
+      "fm-img-shoe-grip",
+      "fm-term-unbalanced",
+      "fm-img-three-rolls"
+    ],
+    "sort": [
+      "fm-term-balanced",
+      "+kick",
+      "fm-img-tug-balanced",
+      "+carpet",
+      "+pencil",
+      "fm-img-gravity-chair",
+      "+bike",
+      "+wagon",
+      "+sled",
+      "+puck"
+    ]
+  },
+  "materials_grade2": {
+    "anchor": [
+      "mt-img-window-sweater",
+      "mt-img-window-sweater",
+      "mt-img-two-water-jobs",
+      "mt-img-fair-test"
+    ],
+    "sort": [
+      "+raincoat",
+      "+boots",
+      "+umbrella",
+      "+towel",
+      "+sponge",
+      "+napkin",
+      "+brickwall",
+      "+hammer",
+      "+step"
+    ]
+  },
+  "plant_needs_grade3": {
+    "anchor": [
+      "pl-img-root-soil",
+      "pl-img-leaf-light",
+      "pl-img-leaf-gases",
+      "pl-term-warmth",
+      "pl-img-space"
+    ],
+    "sort": [
+      "pl-term-water",
+      "pl-term-sunlight",
+      "pl-term-air",
+      "pl-term-warmth",
+      "+music",
+      "+blanket",
+      "pl-img-space",
+      "+toys",
+      "+name",
+      "pl-img-nutrients"
+    ]
+  },
+  "states_of_matter_grade4": {
+    "anchor": [
+      "sm-img-solid-particles",
+      "sm-img-liquid-particles",
+      "sm-img-gas-particles",
+      "sm-term-melt",
+      "sm-img-closed-system"
+    ],
+    "sort": [
+      "+ice",
+      "+milk",
+      "sm-term-gas",
+      "+pencilstill",
+      "+honey",
+      "+room",
+      "+sand",
+      "+room",
+      "+butter"
+    ]
+  },
+  "water_cycle_grade6": {
+    "anchor": [
+      "wc-img-root-leaf",
+      "wc-img-cloud-droplets",
+      "wc-img-rain-snow",
+      "wc-img-reservoirs",
+      "wc-img-cycle-diagram"
+    ],
+    "sort": [
+      "wc-img-puddle-time",
+      "wc-img-root-leaf",
+      "wc-img-glass-condensation",
+      "wc-img-cloud-droplets",
+      "+snow",
+      "+hail",
+      "wc-img-groundwater",
+      "wc-term-runoff",
+      "+soup",
+      "+fog"
+    ]
+  },
+  "weather_vs_climate_grade5": {
+    "anchor": [
+      "wx-term-weather",
+      "wx-img-observation-series",
+      "wx-img-many-records",
+      "wx-img-cold-day"
+    ],
+    "sort": [
+      "+snowyday",
+      "+snowywinters",
+      "+hurricane",
+      "+sahara",
+      "wx-img-heat-wave",
+      "+hotyears",
+      "+rain",
+      "+rainycities",
+      "+wind",
+      "+seaice"
+    ]
+  }
+}

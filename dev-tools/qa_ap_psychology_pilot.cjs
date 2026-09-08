@@ -55,6 +55,7 @@ const signalDefinitions = [
   ['feedback-specificity', 'Generated distractor explanations identify the relevant conceptual, methodological, or numerical error rather than using a generic placeholder.'],
   ['learning-alignment', 'Every item resolves to an internal topic learning target, chapter, lesson route, and matching science-practice process for actionable remediation.'],
   ['keyed-option-length-cues', 'No severe item-level or bank-level keyed-option length cue crosses the automated threshold.'],
+  ['choice-length-parity', 'Prose options are length-matched to their key; only bare-term options may exceed the quarter-length ratio, and their count cannot rise.'],
   ['distractor-editorial', 'Choices are distinct and substantive and avoid all/none-of-the-above; wording advisories remain human-review signals.'],
   ['library-inventory', 'Declared chapter, section, check, study-aid, and workshop counts match the actual library.'],
   ['library-content-structure', 'Chapters, study aids, references, review declarations, and release boundaries remain structurally complete.'],
@@ -887,6 +888,37 @@ requireCondition(
   keyedToDistractorMeanRatio >= 0.8 && keyedToDistractorMeanRatio <= 1.25,
   'keyed-option-length-cues',
   `Bank-level keyed/distractor mean word ratio ${keyedToDistractorMeanRatio.toFixed(3)} is outside 0.80-1.25.`
+);
+
+// Character-length parity, which the other AP packs gate at zero. This bank
+// cannot reach zero honestly: many items ask a learner to name a construct, so
+// all four options are domain terms and the keyed term is sometimes simply the
+// longest word in the topic's vocabulary. Padding a term would falsify it, and
+// borrowing a longer term from another topic would hand the learner an obvious
+// elimination. So prose options must be length-matched, term-only options are
+// allowed to exceed the ratio, and their number is capped so it can only fall.
+const TERM_ONLY_LENGTH_CUE_ALLOWANCE = 18;
+const looksLikeProse = (choice) => String(choice || '').length > 45 || /[.!?]$/.test(String(choice || '').trim());
+let termOnlyLengthCues = 0;
+for (const item of items) {
+  const choiceLengths = (Array.isArray(item.choices) ? item.choices : []).map((choice) => String(choice || '').length);
+  if (choiceLengths.length !== 4 || !Number.isInteger(item.answerIndex)) continue;
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  if (longestDistractor > 0 && keyLength < longestDistractor * 1.25) continue;
+  const prose = item.choices.some(looksLikeProse);
+  requireCondition(
+    !prose,
+    'choice-length-parity',
+    `Keyed option runs ${keyLength} characters against a ${longestDistractor}-character longest distractor, and these options are prose rather than bare terms.`,
+    { recordId: item.id }
+  );
+  if (!prose) termOnlyLengthCues += 1;
+}
+requireCondition(
+  termOnlyLengthCues <= TERM_ONLY_LENGTH_CUE_ALLOWANCE,
+  'choice-length-parity',
+  `${termOnlyLengthCues} term-only items exceed the quarter-length ratio, above the allowance of ${TERM_ONLY_LENGTH_CUE_ALLOWANCE}.`
 );
 
 const chapterRecords = Array.isArray(library.chapters) ? library.chapters : [];

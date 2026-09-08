@@ -656,10 +656,10 @@
       "cognitiveProcess": "justify",
       "prompt": "As x approaches 4, g(x) approaches 3 from the left and 7 from the right. Which conclusion is valid?",
       "choices": [
-        "The limit is 3",
+        "The limit is 3, the left-hand value.",
         "The two-sided limit does not exist.",
-        "The limit is 5",
-        "The limit is 7"
+        "The limit is 5, the average of 3 and 7.",
+        "The limit is 7, the right-hand value."
       ],
       "answerIndex": 1,
       "rationale": "A two-sided limit requires equal left-hand and right-hand limits.",
@@ -1480,9 +1480,9 @@
       "prompt": "A function is continuous on [1,4], with f(1)=-2 and f(4)=5. What does IVT guarantee?",
       "choices": [
         "At least one c in (1,4) has f(c)=0.",
-        "Exactly one such c exists",
-        "f is increasing",
-        "Some c has f'(c)=0"
+        "Exactly one such c in (1,4) exists.",
+        "f is increasing on the interval [1,4].",
+        "Some c in (1,4) has f'(c)=0 instead."
       ],
       "answerIndex": 0,
       "rationale": "Zero lies between the endpoint outputs, and continuity guarantees an interior preimage.",
@@ -1596,10 +1596,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A continuous function has f(a)=1 and f(b)=6 for a<b. Which claim is justified?",
       "choices": [
-        "It takes value 3 exactly once",
+        "The function takes the value 3 exactly once.",
         "The function takes value 3 somewhere between a and b.",
-        "Its slope is constant",
-        "It has no local extrema"
+        "The slope of the function is constant on [a,b].",
+        "The function has no local extrema on [a,b]."
       ],
       "answerIndex": 1,
       "rationale": "IVT guarantees existence for every target between the endpoint values.",
@@ -1950,9 +1950,9 @@
       "prompt": "The graph of f(x)=|x-2| has a corner at x=2. Why is f not differentiable there?",
       "choices": [
         "The one-sided slopes are -1 and 1.",
-        "f is not continuous there",
-        "The function value is zero",
-        "The graph has a minimum"
+        "The function is not continuous at x=2.",
+        "The function value at x=2 is zero.",
+        "The graph has a minimum point at x=2."
       ],
       "answerIndex": 0,
       "rationale": "A derivative requires matching one-sided slopes; this continuous corner has unequal slopes.",
@@ -3240,9 +3240,9 @@
       "cognitiveProcess": "calculate",
       "prompt": "For xy+y^2=8, what is dy/dx at (2,2)?",
       "choices": [
-        "-1",
+        "-2/3",
         "1/3",
-        "3",
+        "-1/2",
         "-1/3"
       ],
       "answerIndex": 3,
@@ -3359,9 +3359,9 @@
       "prompt": "A one-to-one function has f(2)=5 and f'(2)=3. What is the derivative of its inverse at 5?",
       "choices": [
         "1/3",
-        "2",
+        "1/2",
         "3",
-        "5"
+        "1/5"
       ],
       "answerIndex": 0,
       "rationale": "The inverse derivative is the reciprocal slope at the corresponding input.",
@@ -3710,9 +3710,9 @@
       "cognitiveProcess": "select",
       "prompt": "Which rules are most direct for differentiating e^(x^2)/(1+x)?",
       "choices": [
-        "Only the power rule",
-        "Only implicit differentiation",
-        "The Fundamental Theorem",
+        "Only the power rule is needed for this",
+        "Only implicit differentiation is needed",
+        "The Fundamental Theorem of Calculus only",
         "The quotient rule together with the chain rule"
       ],
       "answerIndex": 3,
@@ -4414,10 +4414,10 @@
       "cognitiveProcess": "justify",
       "prompt": "At t=3, v(t)=t^2-4 and a(t)=2t. Is speed increasing or decreasing?",
       "choices": [
-        "Decreasing because acceleration is positive",
+        "Decreasing, because the acceleration is positive here.",
         "Increasing, because velocity and acceleration are both positive.",
-        "Decreasing because velocity is positive",
-        "Neither"
+        "Decreasing, because the velocity itself is positive.",
+        "Neither increasing nor decreasing, because the speed stays constant."
       ],
       "answerIndex": 1,
       "rationale": "Speed increases when nonzero velocity and acceleration have the same sign.",
@@ -5352,10 +5352,10 @@
       "cognitiveProcess": "justify",
       "prompt": "Why does the Mean Value Theorem not apply to f(x)=|x| on [-1,1]?",
       "choices": [
-        "It is not continuous at 0",
+        "The function is not continuous at x=0.",
         "The function is not differentiable at x=0.",
-        "The endpoint values are equal",
-        "The interval has negative inputs"
+        "The endpoint values are equal to each other.",
+        "The interval contains negative inputs."
       ],
       "answerIndex": 1,
       "rationale": "The function is continuous but has a corner inside the interval.",
@@ -5469,10 +5469,10 @@
       "cognitiveProcess": "select",
       "prompt": "To find absolute extrema of a differentiable function on a closed interval, which values must be compared?",
       "choices": [
-        "Only endpoint values",
-        "Only points where the derivative is zero",
+        "Only the function values at the two endpoints of it",
+        "Only the points where the derivative is equal to zero",
         "Function values at endpoints and all interior critical numbers",
-        "Only second-derivative values"
+        "Only the values taken by the second derivative there"
       ],
       "answerIndex": 2,
       "rationale": "The candidates test includes endpoints and every interior point where the derivative is zero or undefined.",
@@ -7594,9 +7594,9 @@
       "prompt": "A population satisfies dP/dt=0.04P. What does the equation state?",
       "choices": [
         "Growth rate is 4 percent of the current population per time unit.",
-        "Growth is exactly 0.04 individuals",
-        "Population is always 4",
-        "Population decreases by 4 percent"
+        "Growth is exactly 0.04 individuals in each time unit.",
+        "The population always stays equal to just 4 individuals.",
+        "The population decreases by 4 percent each time unit."
       ],
       "answerIndex": 0,
       "rationale": "The rate is positively proportional to the current population.",
@@ -7710,10 +7710,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "For dT/dt=-k(T-20), k positive, what happens when T>20?",
       "choices": [
-        "It increases away from 20",
+        "The temperature increases away from 20.",
         "Temperature decreases toward 20.",
-        "It is always constant",
-        "It immediately becomes 20"
+        "The temperature stays constant forever.",
+        "The temperature immediately becomes 20."
       ],
       "answerIndex": 1,
       "rationale": "When T-20 is positive, the derivative is negative.",
@@ -7944,9 +7944,9 @@
       "cognitiveProcess": "verify",
       "prompt": "Does y=x^2 satisfy y'=y for every real x?",
       "choices": [
-        "Yes, both contain x",
-        "Yes, equality holds at x=0",
-        "No, x^2 is not differentiable",
+        "Yes, because both expressions contain x.",
+        "Yes, because the equality holds when x=0.",
+        "No, because x^2 is not differentiable.",
         "No, because 2x is not equal to x^2 for every x."
       ],
       "answerIndex": 3,
@@ -9834,9 +9834,9 @@
       "cognitiveProcess": "translate",
       "prompt": "The region between y=x and y=x^2 on [0,1] rotates about the x-axis. Which washer integral applies?",
       "choices": [
-        "pi integral of (x-x^2)",
-        "pi integral of (x^4-x^2)",
-        "2 pi integral of x(x-x^2)",
+        "pi integral 0 to 1 of (x-x^2)dx",
+        "pi integral 0 to 1 of (x^4-x^2)dx",
+        "2 pi integral 0 to 1 of x(x-x^2)dx",
         "pi integral 0 to 1 of (x^2-x^4)dx"
       ],
       "answerIndex": 3,
@@ -10185,7 +10185,7 @@
       "cognitiveProcess": "calculate",
       "prompt": "Evaluate lim as x approaches 2 of (x^3-8)/(x-2).",
       "choices": [
-        "0",
+        "The limit does not exist",
         "4",
         "12",
         "8"
@@ -11008,10 +11008,10 @@
       "cognitiveProcess": "select",
       "prompt": "Which conditions are sufficient to apply IVT to guarantee f(c)=k for some c in (a,b)?",
       "choices": [
-        "f is differentiable only at a",
+        "The function f is differentiable only at the point a.",
         "f is continuous on [a,b] and k lies between f(a) and f(b).",
-        "f(a)=f(b) for every k",
-        "f has a critical point in (a,b)"
+        "The values f(a) and f(b) are equal for every such k.",
+        "The function f has some critical point in (a,b)."
       ],
       "answerIndex": 1,
       "rationale": "Continuity on the closed interval and an intermediate target value are the required conditions.",
@@ -12770,10 +12770,10 @@
       "cognitiveProcess": "calculate",
       "prompt": "A differentiable one-to-one function satisfies f(4)=1 and f'(4)=-2. What is (f inverse)'(1)?",
       "choices": [
-        "-1/2",
-        "-2",
-        "1/2",
-        "2"
+        "-0.5",
+        "-2.0",
+        "0.5",
+        "2.0"
       ],
       "answerIndex": 0,
       "rationale": "The inverse-derivative rule gives 1/f prime of 4, which is -1/2.",
@@ -13122,9 +13122,9 @@
       "cognitiveProcess": "select",
       "prompt": "To differentiate x^2 sin(e^x), which combination of rules is required?",
       "choices": [
-        "Only the power rule",
-        "Only the quotient rule",
-        "Implicit differentiation only",
+        "Only the power rule is needed for it",
+        "Only the quotient rule is needed here",
+        "Only implicit differentiation is needed",
         "The product rule and a nested chain rule"
       ],
       "answerIndex": 3,
@@ -13710,8 +13710,8 @@
       "prompt": "For t>=0, a particle has velocity v(t)=(t-1)(t-4). When is it moving to the right?",
       "choices": [
         "[0,1) and (4,infinity)",
-        "(1,4)",
-        "(0,4)",
+        "(1,4) and (4,infinity)",
+        "[0,1) and (1,4)",
         "(1,infinity)"
       ],
       "answerIndex": 0,
@@ -14764,10 +14764,10 @@
       "cognitiveProcess": "evaluate",
       "prompt": "Why can the Mean Value Theorem not be applied to f(x)=1/x on [-1,1]?",
       "choices": [
-        "The endpoint values are equal.",
+        "The endpoint values are equal to each other.",
         "The function is not continuous on the closed interval.",
-        "The derivative is zero at x=0.",
-        "The interval contains negative inputs."
+        "The derivative is equal to zero at the point x=0.",
+        "The given interval contains negative inputs."
       ],
       "answerIndex": 1,
       "rationale": "The function is undefined at x=0, so the required continuity hypothesis fails.",
@@ -14998,9 +14998,9 @@
       "cognitiveProcess": "justify",
       "prompt": "What does the Extreme Value Theorem guarantee for a function continuous on [a,b]?",
       "choices": [
-        "It has exactly one critical point.",
-        "It is differentiable on (a,b).",
-        "Its endpoint values are extrema.",
+        "It has exactly one critical point on the interval [a,b].",
+        "It is differentiable at every point of the interval (a,b).",
+        "Its endpoint values are always the extreme values on [a,b].",
         "It attains both an absolute maximum and an absolute minimum on [a,b]."
       ],
       "answerIndex": 3,
@@ -15354,10 +15354,10 @@
       "cognitiveProcess": "justify",
       "prompt": "If f'' changes from positive to negative at x=c, which conclusion is supported?",
       "choices": [
-        "The graph has a local minimum at c.",
-        "The graph is increasing on both sides of c.",
+        "The graph of the function has a local minimum at the point x equals c.",
+        "The graph of the function is increasing on both sides of x equals c.",
         "The graph has an inflection point at c and changes from concave up to concave down.",
-        "The value f'(c) must be zero."
+        "The value of f'(c) must therefore be exactly equal to zero at that point."
       ],
       "answerIndex": 2,
       "rationale": "A sign change in the second derivative establishes a change in concavity; it does not by itself determine monotonicity.",
@@ -15944,9 +15944,9 @@
       "cognitiveProcess": "translate",
       "prompt": "If C prime of q is a marginal cost in dollars per item, what does the integral of C prime from q=0 to q=100 represent?",
       "choices": [
-        "The average cost of one item",
-        "The cost at exactly 100 items",
-        "The number of items produced per dollar",
+        "The average cost of producing a single item of the output",
+        "The total cost of production at exactly 100 items produced",
+        "The number of items that are produced for every one dollar",
         "The change in total cost of increasing production from 0 to 100 items"
       ],
       "answerIndex": 3,
@@ -16652,10 +16652,10 @@
       "cognitiveProcess": "justify",
       "prompt": "If f is even, how can the integral from -3 to 3 of f(x)dx be rewritten?",
       "choices": [
-        "0",
+        "0, because symmetric limits always cancel each other",
         "2 times the integral from 0 to 3 of f(x)dx",
-        "The integral from 0 to 3 only",
-        "-2 times the integral from 0 to 3"
+        "The integral from 0 to 3 of f(x)dx only",
+        "-2 times the integral from 0 to 3 of f(x)dx"
       ],
       "answerIndex": 1,
       "rationale": "Even-function symmetry makes the contributions on the two halves equal.",
@@ -17006,9 +17006,9 @@
       "prompt": "A quantity Q satisfies dQ/dt=-0.1Q. Which interpretation is correct?",
       "choices": [
         "Q decays at an instantaneous rate equal to 10 percent of its current amount per unit time.",
-        "Q decreases by exactly 0.1 unit each time period.",
-        "Q grows toward a carrying capacity of 0.1.",
-        "Q remains constant because the equation has no explicit t."
+        "The quantity Q decreases by exactly 0.1 unit during each period of time.",
+        "The quantity Q grows toward a carrying capacity that is equal to 0.1 units.",
+        "The quantity Q remains constant, because the equation has no explicit t in it."
       ],
       "answerIndex": 0,
       "rationale": "The negative proportionality constant describes continuous exponential decay relative to the current amount.",
@@ -17239,10 +17239,10 @@
       "cognitiveProcess": "verify",
       "prompt": "Does y=x+1 satisfy the differential equation y'=1?",
       "choices": [
-        "No, because y is not constant.",
-        "No, because y prime equals x.",
+        "No, because the function y is not constant.",
+        "No, because y prime is instead equal to x.",
         "Yes, because differentiating y gives 1.",
-        "Yes, but only at x=0."
+        "Yes, but only at the single point x=0."
       ],
       "answerIndex": 2,
       "rationale": "Verification requires differentiating the proposed solution and checking the equation for all inputs in its domain.",
@@ -18296,9 +18296,9 @@
       "cognitiveProcess": "justify",
       "prompt": "If f is continuous on [a,b], what does the Mean Value Theorem for Integrals guarantee?",
       "choices": [
-        "The average value must occur at the midpoint.",
-        "The integral must equal zero.",
-        "The function must be differentiable.",
+        "The average value must always occur at the interval midpoint.",
+        "The integral of f must be equal to zero over the whole interval.",
+        "The function must also be differentiable on the interval [a,b].",
         "Some c in [a,b] has f(c) equal to the average value of f on the interval."
       ],
       "answerIndex": 3,
@@ -18532,10 +18532,10 @@
       "cognitiveProcess": "plan",
       "prompt": "When velocity changes sign on an interval, how should total distance be computed?",
       "choices": [
-        "Integrate velocity once without splitting.",
+        "Integrate the velocity just once without splitting the interval.",
         "Split at the zeros of velocity and integrate the absolute value of velocity.",
-        "Differentiate velocity and add endpoint values.",
-        "Use only the largest velocity value."
+        "Differentiate the velocity and then add up the endpoint values.",
+        "Use only the largest velocity value that is found on the interval."
       ],
       "answerIndex": 1,
       "rationale": "Distance accumulates speed, so negative velocity contributions must be made positive and sign-change points define the pieces.",
@@ -18890,7 +18890,7 @@
       "choices": [
         "(sqrt(3)/4)[s(x)]^2",
         "(1/2)[s(x)]^2",
-        "sqrt(3)[s(x)]^2",
+        "(sqrt(3)/2)[s(x)]^2",
         "(pi/4)[s(x)]^2"
       ],
       "answerIndex": 0,

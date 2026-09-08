@@ -18,9 +18,9 @@ module.exports = {
     'Random assignment bias.': 'Random assignment is not a bias, and no treatments are assigned in a survey.',
   },
   'item-164': {
-    'The grand total of all treatment labels.': 'Labels are not data; the analysis needs each participant’s two responses.',
-    'Only the larger response in each pair.': 'Keeping one response discards the comparison the pairing was designed to make.',
-    'The sample proportion in one treatment group.': 'Responses are quantitative and paired; there is no single treatment group or proportion.',
+    'The grand total of all of the treatment labels that are used.': 'Labels are not data; the analysis needs each participant’s two responses.',
+    'Only the larger of the two responses in each matched pair.': 'Keeping one response discards the comparison the pairing was designed to make.',
+    'The sample proportion within one of the treatment groups.': 'Responses are quantitative and paired; there is no single treatment group or proportion.',
   },
   'item-165': {
     '20.4': '20.4 adds the slope and intercept (18 + 2.4) without multiplying the slope by x = 5.',
@@ -73,9 +73,9 @@ module.exports = {
     '162': '162 multiplies 18 by 9 instead of dividing.',
   },
   'item-175': {
-    'The correlation must equal 1.': 'A correlation of 1 means a perfect line with zero residuals; a curved residual pattern shows the line misses the shape.',
-    'Every residual is zero.': 'A pattern in the residuals means they are nonzero; zero residuals would give a flat plot at zero.',
-    'The response is necessarily categorical.': 'Residual plots require a quantitative response; curvature concerns model form, not variable type.',
+    'The correlation must therefore be exactly equal to 1.': 'A correlation of 1 means a perfect line with zero residuals; a curved residual pattern shows the line misses the shape.',
+    'Every one of the residuals must be exactly zero here.': 'A pattern in the residuals means they are nonzero; zero residuals would give a flat plot at zero.',
+    'The response variable must necessarily be categorical.': 'Residual plots require a quantitative response; curvature concerns model form, not variable type.',
   },
   'item-176': {
     'About 7.2%': '7.2% divides 72 by 10 and has no meaning here; the unexplained share is 100% − 72%.',
@@ -83,19 +83,19 @@ module.exports = {
     'About 128%': 'Adding instead of subtracting gives a percentage above 100, which is impossible for a share of variation.',
   },
   'item-177': {
-    'The slope is proven to be exactly zero.': 'Zero is one plausible value in the interval, not the proven value.',
-    'The variables are proven independent in every population.': 'Lack of evidence for a slope is not proof of no relationship, and the result applies only to the sampled population.',
-    'The model proves a causal effect.': 'An interval containing zero gives no evidence of any effect, let alone a causal one.',
+    'The population slope has been proven to be exactly zero in the entire population here.': 'Zero is one plausible value in the interval, not the proven value.',
+    'The two variables are proven to be independent in every possible population studied here.': 'Lack of evidence for a slope is not proof of no relationship, and the result applies only to the sampled population.',
+    'The fitted model proves that a real causal effect exists between the two variables here.': 'An interval containing zero gives no evidence of any effect, let alone a causal one.',
   },
   'item-178': {
-    'There is a 48% chance the null is true.': 'A p-value assumes the null is true; it does not measure the probability that it is.',
-    'The alternative has been disproven.': 'A large p-value means the data are compatible with the null; it does not rule out the alternative.',
-    'The statistic must equal zero.': 'A p-value of 0.48 means the test statistic is unremarkable under the null, not that it equals zero.',
+    'There is a 48% chance that the null model is actually true.': 'A p-value assumes the null is true; it does not measure the probability that it is.',
+    'The alternative hypothesis has been disproven entirely.': 'A large p-value means the data are compatible with the null; it does not rule out the alternative.',
+    'The test statistic must therefore equal exactly zero.': 'A p-value of 0.48 means the test statistic is unremarkable under the null, not that it equals zero.',
   },
   'item-179': {
-    'The p-value is exactly 0.05.': 'A p-value of exactly 0.05 would typically lead to rejection at 0.05, and the result was not rejected there.',
-    'The null is proven true.': 'The test rejected the null at the 10% level, and no test proves the null true anyway.',
-    'The sample was not random.': 'The p-value’s position between two alpha levels says nothing about how the sample was chosen.',
+    'The p-value must be exactly 0.05.': 'A p-value of exactly 0.05 would typically lead to rejection at 0.05, and the result was not rejected there.',
+    'The null model has been proven true.': 'The test rejected the null at the 10% level, and no test proves the null true anyway.',
+    'The sample was not a random one.': 'The p-value’s position between two alpha levels says nothing about how the sample was chosen.',
   },
   'item-180': {
     'Reduce the sample size.': 'Smaller samples make real effects harder to detect and increase the Type II error rate.',
@@ -108,9 +108,9 @@ module.exports = {
     'Replacing random samples with volunteers.': 'Volunteers introduce bias and do not reduce the standard error.',
   },
   'item-182': {
-    'Every observed count equals its expected count.': 'Equal observed and expected counts would give a chi-square statistic of zero, not a large one.',
-    'The variables are proven causal.': 'A chi-square statistic measures association, never causation.',
-    'The sample size must be one.': 'A sample of one cannot produce a chi-square statistic at all; larger discrepancies, not tiny samples, make it large.',
+    'Every one of the observed counts equals its expected count exactly here.': 'Equal observed and expected counts would give a chi-square statistic of zero, not a large one.',
+    'The two variables are proven to be causally related to each other here.': 'A chi-square statistic measures association, never causation.',
+    'The sample size must have been exactly one single observation only here.': 'A sample of one cannot produce a chi-square statistic at all; larger discrepancies, not tiny samples, make it large.',
   },
   'item-183': {
     '0.2': '0.2 divides 20 by 100 instead of by the square root of 100.',
@@ -118,14 +118,14 @@ module.exports = {
     '200': '200 multiplies 20 by 10 instead of dividing.',
   },
   'item-184': {
-    'Small samples never need conditions.': 'Small samples need the conditions most, since the t model is sensitive to skewness and outliers when n is small.',
-    'The response must be categorical.': 't procedures require quantitative data so that differences and means exist.',
-    'The paired differences are ignored.': 'The paired differences are exactly what the procedure analyzes.',
+    'Small samples never need any one of the conditions to be checked in any way at all here.': 'Small samples need the conditions most, since the t model is sensitive to skewness and outliers when n is small.',
+    'The response variable must be categorical rather than quantitative in every single case.': 't procedures require quantitative data so that differences and means exist.',
+    'The paired differences are simply ignored throughout the entire procedure used here now.': 'The paired differences are exactly what the procedure analyzes.',
   },
   'item-185': {
-    'The individual observations differ by 4 to 11 units.': 'The interval estimates the difference in population means, not the spread of individual differences.',
-    'The first sample mean must equal 4.': '4 is the lower bound of the interval for the difference, not a sample mean.',
-    'The interval proves the first treatment caused the difference.': 'Causal language requires random assignment; a confidence interval alone describes the size of a difference.',
+    'The individual observations differ by exactly 4 to 11 units each.': 'The interval estimates the difference in population means, not the spread of individual differences.',
+    'The first sample mean must therefore be exactly equal to 4 units.': '4 is the lower bound of the interval for the difference, not a sample mean.',
+    'The interval proves that the first treatment caused the whole difference.': 'Causal language requires random assignment; a confidence interval alone describes the size of a difference.',
   },
   'item-186': {
     'H0: x-bar_difference > 0': 'The null concerns the population mean difference, not a sample mean, and states equality rather than an inequality.',
@@ -143,9 +143,9 @@ module.exports = {
     'It becomes negative.': 'A standard error is a square root and is always positive.',
   },
   'item-189': {
-    'The response is a single categorical label.': 'A categorical response would call for a proportion or chi-square procedure, not a t interval.',
-    'Each person contributes a before-and-after pair.': 'Paired data call for a matched-pairs procedure, not a two-sample one.',
-    'The groups were selected by voluntary response only.': 'Voluntary response is a source of bias, not a condition that justifies any inference procedure.',
+    'The response variable is a single categorical label in each group.': 'A categorical response would call for a proportion or chi-square procedure, not a t interval.',
+    'Each person contributes a single before-and-after pair of values.': 'Paired data call for a matched-pairs procedure, not a two-sample one.',
+    'The two groups were selected by voluntary response alone here.': 'Voluntary response is a source of bias, not a condition that justifies any inference procedure.',
   },
   'item-190': {
     'Ha: mu_new - mu_old = 0': 'Equality is the null hypothesis, not the alternative.',
@@ -153,14 +153,14 @@ module.exports = {
     'Ha: x-bar_new - x-bar_old > 0 for every sample': 'Sample means cannot appear in a hypothesis; the claim is about the population means mu_new and mu_old.',
   },
   'item-191': {
-    'The result generalizes to all people automatically.': 'Generalization depends on how participants were selected, not on random assignment.',
-    'The p-value is the probability the treatment works.': 'A p-value describes how unusual the data would be under the null, not the chance the treatment works.',
-    'The two sample means will be equal in future samples.': 'Rejecting the null suggests a real difference; future sample means will vary and are unlikely to be equal.',
+    'The result generalizes automatically to all of the people in any possible population here.': 'Generalization depends on how participants were selected, not on random assignment.',
+    'The p-value is the probability that the treatment actually works as it was intended to.': 'A p-value describes how unusual the data would be under the null, not the chance the treatment works.',
+    'The two sample means will be exactly equal in every one of the future samples taken.': 'Rejecting the null suggests a real difference; future sample means will vary and are unlikely to be equal.',
   },
   'item-192': {
-    'Fit a line without checking the plot.': 'Fitting a line to a curved pattern produces a misleading model; the plot must be examined first.',
-    'Conclude the variables are independent.': 'A strong curved pattern is a strong association, not independence.',
-    'Replace both variables with category labels.': 'Turning quantitative data into categories discards the information the scatterplot shows.',
+    'Fit a straight line without checking the plot at all.': 'Fitting a line to a curved pattern produces a misleading model; the plot must be examined first.',
+    'Conclude that the two variables must be independent here.': 'A strong curved pattern is a strong association, not independence.',
+    'Replace both of the variables with categorical labels.': 'Turning quantitative data into categories discards the information the scatterplot shows.',
   },
   'item-193': {
     'The association is weak because the number is negative.': 'The sign gives direction only; a magnitude of 0.80 is strong.',
@@ -173,19 +173,19 @@ module.exports = {
     'y-hat = 4x - 10': 'The slope is right but the intercept should be +10, not −10.',
   },
   'item-195': {
-    'Predicting far beyond the observed range.': 'Predicting beyond the observed range is extrapolation, the riskier practice.',
-    'Changing the response units.': 'Unit conversion rescales the model but has nothing to do with the range of predictions.',
-    'Randomly assigning service calls.': 'Random assignment is an experimental design idea, not a use of a regression model.',
+    'Predicting far beyond the observed range of the data values.': 'Predicting beyond the observed range is extrapolation, the riskier practice.',
+    'Changing the measurement units of the response variable.': 'Unit conversion rescales the model but has nothing to do with the range of predictions.',
+    'Randomly assigning the service calls across all of the months.': 'Random assignment is an experimental design idea, not a use of a regression model.',
   },
   'item-196': {
-    'The explanatory value is below its mean.': 'A residual concerns the response, not the position of x relative to its mean.',
-    'The correlation is positive.': 'One residual’s sign says nothing about the overall correlation.',
-    'The observed response equals zero.': 'A positive residual means observed exceeds predicted, not that the observed value is zero.',
+    'The explanatory value must be below its own mean value.': 'A residual concerns the response, not the position of x relative to its mean.',
+    'The correlation between the variables must be positive.': 'One residual’s sign says nothing about the overall correlation.',
+    'The observed response must be exactly equal to zero here.': 'A positive residual means observed exceeds predicted, not that the observed value is zero.',
   },
   'item-197': {
-    'A point with a guaranteed large residual.': 'The point lies close to the line, so its residual is small; leverage does not require a large residual.',
-    'A categorical response.': 'Responses in regression are quantitative; an unusual x-value does not change that.',
-    'A sampling error by definition.': 'An unusual x-value can be a perfectly valid observation; it is not an error.',
+    'A point with a guaranteed large residual value.': 'The point lies close to the line, so its residual is small; leverage does not require a large residual.',
+    'A categorical response variable in the whole data set.': 'Responses in regression are quantitative; an unusual x-value does not change that.',
+    'A sampling error by definition in every possible case.': 'An unusual x-value can be a perfectly valid observation; it is not an error.',
   },
   'item-198': {
     '-0.36': 'Squaring a negative number gives a positive result; r-squared is always nonnegative.',
@@ -198,14 +198,14 @@ module.exports = {
     'There is no remaining variation.': 'The model explains 81%, which leaves 19% of the variation unexplained.',
   },
   'item-200': {
-    'The residual must be zero.': 'Residuals exist only for observed points; no observation exists at x = 250 to compare against.',
-    'The response becomes categorical.': 'The response variable stays quantitative regardless of the x-value used for prediction.',
-    'The correlation is automatically one.': 'Correlation describes the observed data and does not change when predicting for a new x-value.',
+    'The residual value must therefore be exactly zero here.': 'Residuals exist only for observed points; no observation exists at x = 250 to compare against.',
+    'The response variable becomes a categorical variable.': 'The response variable stays quantitative regardless of the x-value used for prediction.',
+    'The correlation becomes automatically equal to one here.': 'Correlation describes the observed data and does not change when predicting for a new x-value.',
   },
   'item-201': {
-    'Is one named student satisfied?': 'One student’s answer has no variability to study; a statistical question asks about a group.',
-    'What color are the cafeteria tables?': 'Table color is a single fact, not a characteristic that varies across students.',
-    'Did the principal choose the schedule?': 'This asks about one decision with a yes-or-no answer, not about a distribution of responses.',
+    'Is one particular named student satisfied with the lunch schedule?': 'One student’s answer has no variability to study; a statistical question asks about a group.',
+    'What color are the tables in the cafeteria at the school this year?': 'Table color is a single fact, not a characteristic that varies across students.',
+    'Did the principal personally choose this lunch schedule all alone?': 'This asks about one decision with a yes-or-no answer, not about a distribution of responses.',
   },
   'item-202': {
     'A histogram of grade labels.': 'A histogram displays a quantitative distribution; grade level and transportation method are categorical.',
@@ -243,14 +243,14 @@ module.exports = {
     'Random assignment.': 'Random assignment is an experimental technique, not a bias, and no treatments are involved.',
   },
   'item-209': {
-    'The variables must be perfectly dependent.': 'Similar conditional percentages suggest little association, the opposite of strong dependence.',
-    'The sample mean is zero.': 'Categorical data have no mean; late arrival is a category, not a measurement.',
-    'The categories are quantitative measurements.': 'Bus rider, walker, and late are labels; conditional percentages are computed because the variables are categorical.',
+    'The two categorical variables must be perfectly dependent.': 'Similar conditional percentages suggest little association, the opposite of strong dependence.',
+    'The sample mean of all the data must be exactly zero here.': 'Categorical data have no mean; late arrival is a category, not a measurement.',
+    'The categories must really be quantitative measurements here.': 'Bus rider, walker, and late are labels; conditional percentages are computed because the variables are categorical.',
   },
   'item-210': {
-    'It guarantees the next repetition is a success.': 'Each repetition is still random; more repetitions do not determine any single outcome.',
-    'It changes the event being modeled.': 'Running more repetitions of the same simulation estimates the same event more precisely.',
-    'It makes the probability exceed 1.': 'An estimated probability is a proportion of repetitions and can never exceed 1.',
+    'It guarantees that the next repetition will be a success here.': 'Each repetition is still random; more repetitions do not determine any single outcome.',
+    'It changes the actual event that is being modeled in the simulation.': 'Running more repetitions of the same simulation estimates the same event more precisely.',
+    'It makes the estimated probability rise above a value of 1.': 'An estimated probability is a proportion of repetitions and can never exceed 1.',
   },
   'item-211': {
     '0.72': '0.72 is P(A) itself; the complement subtracts it from 1.',
@@ -268,9 +268,9 @@ module.exports = {
     '4.00': '4.00 is the most likely outcome, not the expected value; the average must weight all three outcomes.',
   },
   'item-214': {
-    'The probability of winning is 2.': 'A probability cannot exceed 1; 2 points is a measure of spread, not a probability.',
-    'Every payout is between 3 and 7 points.': 'Standard deviation describes typical distance, not a guaranteed range; payouts can fall outside one standard deviation.',
-    'The most common payout is exactly 5 points.': 'The expected value need not be a possible or common payout; it is a long-run average.',
+    'The probability of winning the game must be exactly 2 points.': 'A probability cannot exceed 1; 2 points is a measure of spread, not a probability.',
+    'Every single payout must be between 3 and 7 points exactly.': 'Standard deviation describes typical distance, not a guaranteed range; payouts can fall outside one standard deviation.',
+    'The single most common payout must be exactly 5 points here.': 'The expected value need not be a possible or common payout; it is a long-run average.',
   },
   'item-215': {
     '(0.25)^12': '(0.25)^12 is the probability that all 12 trials succeed, not that at least one does.',
@@ -278,14 +278,14 @@ module.exports = {
     '1 - (0.25)^12': 'This is the complement of all successes; at least one success is the complement of zero successes, whose probability is (0.75)^12.',
   },
   'item-216': {
-    'Every observation in the population becomes normal.': 'The theorem concerns the sampling distribution of the mean; individual observations keep the skewed population shape.',
-    'The sample mean has no variability.': 'Sample means still vary; with n = 100 that variability is smaller but not zero.',
-    'The population shape is changed by sampling.': 'Sampling does not alter the population; it only produces estimates of it.',
+    'Every single observation in the population becomes normally distributed too.': 'The theorem concerns the sampling distribution of the mean; individual observations keep the skewed population shape.',
+    'The sample mean has no variability at all across any of the repeated samples.': 'Sample means still vary; with n = 100 that variability is smaller but not zero.',
+    'The shape of the population is changed by the sampling process used here.': 'Sampling does not alter the population; it only produces estimates of it.',
   },
   'item-217': {
-    'Estimator A equals the parameter in every sample.': 'A smaller standard deviation means less variation, not none; estimates still differ from the parameter.',
-    'Estimator B is necessarily biased.': 'Both estimators were stated to be unbiased; more variability does not create bias.',
-    'Both estimators have zero sampling variability.': 'Unbiased estimators vary from sample to sample; only their long-run centers match the parameter.',
+    'Estimator A equals the population parameter exactly in every sample that is taken.': 'A smaller standard deviation means less variation, not none; estimates still differ from the parameter.',
+    'Estimator B must therefore necessarily be a biased estimator of the parameter.': 'Both estimators were stated to be unbiased; more variability does not create bias.',
+    'Both of the estimators have zero sampling variability in all repeated samples.': 'Unbiased estimators vary from sample to sample; only their long-run centers match the parameter.',
   },
   'item-218': {
     'Use a more extreme confidence level.': 'A higher confidence level widens the interval, and the question specified keeping the level fixed.',
@@ -298,9 +298,9 @@ module.exports = {
     'Ha: p-hat > 0.55 for every sample': 'Hypotheses are about the population proportion p, not sample proportions.',
   },
   'item-220': {
-    'There is a 20% probability the null hypothesis is true.': 'A p-value is computed assuming the null is true; it is not the probability that the null is true.',
-    'The alternative hypothesis is impossible.': 'A large p-value means weak evidence against the null; it does not rule out the alternative.',
-    'The sample proportion is wrong by 20 percentage points.': 'A p-value is not an error in the estimate; it measures how unusual the result would be under the null.',
+    'There is a 20% probability that the null hypothesis is actually true in this one case.': 'A p-value is computed assuming the null is true; it is not the probability that the null is true.',
+    'The alternative hypothesis is entirely impossible for this whole population here.': 'A large p-value means weak evidence against the null; it does not rule out the alternative.',
+    'The observed sample proportion is wrong by exactly 20 percentage points in this study.': 'A p-value is not an error in the estimate; it measures how unusual the result would be under the null.',
   },
   'item-221': {
     'A test fails to reject a false null hypothesis.': 'Missing a false null is a Type II error, the false negative.',
@@ -313,9 +313,9 @@ module.exports = {
     'The chi-square statistic.': 'A chi-square statistic belongs to a different procedure and is not the center of a proportion interval.',
   },
   'item-223': {
-    'Small expected counts prove independence.': 'Expected counts come from the totals and say nothing about whether the variables are associated.',
-    'They make the variables quantitative.': 'The variables remain categorical; expected counts are a computational check, not a change of variable type.',
-    'They guarantee a small p-value.': 'Small expected counts make the p-value unreliable; they do not push it in a particular direction.',
+    'Small expected counts always prove complete independence here.': 'Expected counts come from the totals and say nothing about whether the variables are associated.',
+    'They make the two variables into quantitative measurements here.': 'The variables remain categorical; expected counts are a computational check, not a change of variable type.',
+    'They guarantee that the p-value will always be very small in every case.': 'Small expected counts make the p-value unreliable; they do not push it in a particular direction.',
   },
   'item-224': {
     '5': '5 is the number of categories; the degrees of freedom subtract 1 from it.',
@@ -343,9 +343,9 @@ module.exports = {
     'Reject the null only if p is greater than alpha.': 'The decision rule is reversed; rejection requires p at most alpha.',
   },
   'item-229': {
-    'The sum of the two population means.': 'Pairing produces differences, and their mean estimates a difference of means, not a sum.',
-    'The proportion of participants who improve.': 'The mean difference is a quantitative summary; a proportion would count participants rather than average their changes.',
-    'The correlation coefficient only.': 'Correlation describes the association between the two measurements, not the average change.',
+    'The sum of the two separate population means added together.': 'Pairing produces differences, and their mean estimates a difference of means, not a sum.',
+    'The proportion of all of the participants who improved at all.': 'The mean difference is a quantitative summary; a proportion would count participants rather than average their changes.',
+    'The correlation coefficient between the two conditions.': 'Correlation describes the association between the two measurements, not the average change.',
   },
   'item-230': {
     'The second population mean is greater.': 'The interval for mu1 − mu2 is entirely positive, which indicates the first mean is larger.',
@@ -358,9 +358,9 @@ module.exports = {
     'The 99% interval has no sampling variability.': 'Every interval reflects sampling variability; the 99% interval is wider precisely to allow for it.',
   },
   'item-232': {
-    'There is a 4% chance the null is true.': 'A p-value assumes the null is true; it does not give the probability that it is.',
-    'The sample means will differ by exactly the same amount forever.': 'Sample differences vary; the conclusion is about population means.',
-    'The result proves causation regardless of design.': 'Causal claims require random assignment; a significant difference alone does not establish cause.',
+    'There is only a 4% chance that the null hypothesis is actually true for this population.': 'A p-value assumes the null is true; it does not give the probability that it is.',
+    'The sample means will differ by exactly the same amount in every future study done here.': 'Sample differences vary; the conclusion is about population means.',
+    'The result proves causation regardless of the design of the whole study that was used.': 'Causal claims require random assignment; a significant difference alone does not establish cause.',
   },
   'item-233': {
     'A weak positive nonlinear association.': 'The points cluster tightly around a straight, downward line, so the association is strong, negative, and linear.',
@@ -368,9 +368,9 @@ module.exports = {
     'A categorical distribution.': 'A scatterplot displays two quantitative variables, not a categorical distribution.',
   },
   'item-234': {
-    'It triples.': 'Correlation is unitless and unaffected by multiplying a variable by a positive constant.',
-    'It becomes zero.': 'Rescaling preserves the linear relationship, so the correlation keeps its value.',
-    'It changes sign.': 'A positive multiplier preserves direction; only a negative multiplier would flip the sign.',
+    'It triples along with the response values.': 'Correlation is unitless and unaffected by multiplying a variable by a positive constant.',
+    'It becomes exactly zero after the change.': 'Rescaling preserves the linear relationship, so the correlation keeps its value.',
+    'It changes its sign after the multiplication.': 'A positive multiplier preserves direction; only a negative multiplier would flip the sign.',
   },
   'item-235': {
     '1.8 response units.': '1.8 is the change for a one-unit increase; a five-unit increase multiplies it by 5.',
@@ -378,9 +378,9 @@ module.exports = {
     '90 response units.': '90 multiplies by 50 instead of 5.',
   },
   'item-236': {
-    'The correlation coefficient.': 'The intercept is a model coefficient in response units, not the unitless correlation.',
-    'The residual for every observation.': 'Residuals vary by point and are computed from observed minus predicted values.',
-    'The predicted response at the sample mean only.': 'The intercept is the prediction at x = 0; the prediction at the mean of x is the mean of y.',
+    'The correlation coefficient between the two variables in this one fitted model here.': 'The intercept is a model coefficient in response units, not the unitless correlation.',
+    'The residual value for every one of the observations in the entire collected data set.': 'Residuals vary by point and are computed from observed minus predicted values.',
+    'The predicted response at the sample mean of the explanatory variable and nowhere else.': 'The intercept is the prediction at x = 0; the prediction at the mean of x is the mean of y.',
   },
   'item-237': {
     'The response must be categorical.': 'Residual plots require a quantitative response; a fan shape concerns changing spread, not variable type.',
@@ -388,9 +388,9 @@ module.exports = {
     'The sample must be a census.': 'Residual plots do not depend on how the sample was drawn; the funnel indicates non-constant variance.',
   },
   'item-238': {
-    'The correlation must be 0.49 regardless of direction.': 'The correlation magnitude is the square root of 0.49, which is 0.70, with a sign given by the direction.',
-    'The model is correct for 49% of individuals.': 'r-squared is a share of variation explained, not a count of individuals predicted correctly.',
-    'There is a 49% chance of causation.': 'r-squared measures fit; it says nothing about causation.',
+    'The correlation must be exactly 0.49 regardless of its direction.': 'The correlation magnitude is the square root of 0.49, which is 0.70, with a sign given by the direction.',
+    'The model is correct for exactly 49% of all of the individuals.': 'r-squared is a share of variation explained, not a count of individuals predicted correctly.',
+    'There is a 49% chance that the association is truly causal here.': 'r-squared measures fit; it says nothing about causation.',
   },
   'item-239': {
     'Squaring makes every residual positive before fitting.': 'The purpose is to prevent cancellation in the sum, not merely to change signs; positive and negative residuals still exist after fitting.',

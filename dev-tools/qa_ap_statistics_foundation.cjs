@@ -49,6 +49,15 @@ for (const item of pack.items || []) {
     const specific = notes.length === 3 && new Set(notes).size === 3 && notes.every((note) => note.length >= 30 && note !== keyNote && !/does not match the statistical definition, calculation, or scope/i.test(note));
     if (!specific) findings.push({ code: 'feedback-specificity', itemId: item.id });
   }
+  // A key that runs much longer than every distractor is a length cue: the
+  // elaborated option can be picked without reading the statistics. The key may
+  // still be the longest, but not by a quarter of its length.
+  {
+    const choiceLengths = (Array.isArray(item.choices) ? item.choices : []).map((choice) => String(choice || '').length);
+    const keyLength = choiceLengths[item.answerIndex] || 0;
+    const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+    if (!(longestDistractor > 0 && keyLength < longestDistractor * 1.25)) findings.push({ code: 'choice-length-parity', itemId: item.id });
+  }
 }
 
 const unitCounts = Object.fromEntries((pack.domains || []).map((domain) => [domain.id, (pack.items || []).filter((item) => item.domainId === domain.id).length]));

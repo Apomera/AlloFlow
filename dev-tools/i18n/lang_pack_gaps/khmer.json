@@ -2,9 +2,9 @@
   "langName": "khmer",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1425,
+  "translatedKeys": 1418,
   "missingKeys": 0,
-  "passthroughKeys": 5,
-  "coveragePct": 99.7,
+  "passthroughKeys": 12,
+  "coveragePct": 99.2,
   "missing": {}
 }

@@ -721,9 +721,9 @@
       "prompt": "Which question is a valid statistical investigative question?",
       "choices": [
         "What proportion of students at the school walk or bike to school?",
-        "Did Maya walk to school today?",
-        "What is the school mascot?",
-        "Is walking better than driving for every student?"
+        "Did Maya walk to school on Tuesday morning last week?",
+        "What is the name of the school mascot chosen for this year?",
+        "Is walking always better than driving for every student?"
       ],
       "answerIndex": 0,
       "rationale": "A statistical investigative question anticipates variability and identifies a population or sample from which data can be collected.",
@@ -1553,9 +1553,9 @@
       "prompt": "Two classes have the same median test score. Class A has a smaller IQR than Class B. What does that indicate?",
       "choices": [
         "The middle 50% of Class A scores are less spread out.",
-        "Class A must have the larger mean.",
-        "Class A has more scores below its median.",
-        "Class B must have a higher maximum score."
+        "Class A must therefore have the larger mean score.",
+        "Class A has more of its scores below the median.",
+        "Class B must therefore have a higher maximum score."
       ],
       "answerIndex": 0,
       "rationale": "The IQR measures the spread of the middle half of a distribution; it does not determine the mean or the extremes.",
@@ -1656,10 +1656,10 @@
       "cognitiveProcess": "explain",
       "prompt": "A researcher changes the wording of a survey question after seeing that the first wording produced an unexpected result. Why is that a problem?",
       "choices": [
-        "It guarantees a larger random sample.",
+        "It guarantees that the study will end up with a much larger random sample of people.",
         "Changing the question after seeing results can make the study question depend on the observed data.",
-        "It turns an observational study into a randomized experiment.",
-        "It eliminates all response bias."
+        "It turns an observational study into a completely randomized experiment instead.",
+        "It eliminates all of the response bias from every one of the survey responses given."
       ],
       "answerIndex": 1,
       "rationale": "A valid investigative question should be determined before the analysis so the study is not retrofitted to a desired or surprising result.",
@@ -2488,10 +2488,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A random sample of 500 app users reports their weekly screen time. Which conclusion is justified if the sample was representative?",
       "choices": [
-        "The sample proves that the app caused the reported screen time.",
+        "The sample proves that the app itself caused the reported screen time.",
         "The sample can support a generalization about the population of similar app users.",
-        "The result automatically applies to every person in the country.",
-        "The statistic is equal to the population parameter."
+        "The result automatically applies to every single person in the country.",
+        "The sample statistic is exactly equal to the population parameter itself."
       ],
       "answerIndex": 1,
       "rationale": "Random sampling supports generalization to the sampled population, but an observational survey does not establish causation and statistics are estimates.",
@@ -2592,10 +2592,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Adding the same constant to every observation in a data set changes the mean but leaves which quantity unchanged?",
       "choices": [
-        "The median",
-        "The minimum",
+        "The median of the data",
+        "The minimum of the data",
         "The standard deviation",
-        "The maximum"
+        "The maximum of the data"
       ],
       "answerIndex": 2,
       "rationale": "Adding a constant shifts location summaries but does not change distances among observations, so standard deviation remains unchanged.",
@@ -2801,9 +2801,9 @@
       "prompt": "A two-way table shows device ownership by grade. Which display is best for comparing device ownership across grades?",
       "choices": [
         "Conditional relative frequencies within each grade",
-        "The grand total only",
-        "A histogram of the grade labels",
-        "The sample mean of the device categories"
+        "The grand total of the entire two-way table",
+        "A histogram showing the grade labels only",
+        "The sample mean of all the device categories"
       ],
       "answerIndex": 0,
       "rationale": "Conditional proportions within each grade put the grade groups on a common basis for comparison.",
@@ -3323,7 +3323,7 @@
         "0.25",
         "0.625",
         "0.40",
-        "0.80"
+        "0.375"
       ],
       "answerIndex": 1,
       "rationale": "Conditional probability uses the borrowers as the denominator: 20/32 = 0.625.",
@@ -3331,7 +3331,7 @@
         "0.25 is 20 out of 80, using all visitors as the denominator; the condition restricts attention to the 32 borrowers.",
         "Best answer. Conditional probability uses the borrowers as the denominator: 20/32 = 0.625.",
         "0.40 is 32 out of 80, the probability of borrowing a book, not the conditional probability of using a study room.",
-        "0.80 would require 16 of 20 or 32 of 40; the ratio of 20 study-room users to 32 borrowers is 0.625."
+        "0.375 is 12 out of 32, the share of borrowers who did not use a study room; the question asks for the share who did."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -3840,10 +3840,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A game’s expected payout is $2.40 per play. What does that mean?",
       "choices": [
-        "Every player will receive exactly $2.40.",
-        "The game must pay $2.40 on its most common outcome.",
+        "Every single player will receive exactly $2.40 on each play.",
+        "The game must pay exactly $2.40 on its single most common outcome.",
         "Over many plays, the average payout per play will tend to approach $2.40.",
-        "The probability of winning is 2.40."
+        "The probability of winning on any one play is exactly 2.40."
       ],
       "answerIndex": 2,
       "rationale": "Expected value is a long-run average, not a guarantee for an individual play or the most likely outcome.",
@@ -3944,9 +3944,9 @@
       "cognitiveProcess": "classify",
       "prompt": "Which situation can be modeled by a binomial random variable?",
       "choices": [
-        "The number of rolls until a six first appears",
-        "The amount of rainfall tomorrow",
-        "The number of heads in flips where the coin changes bias every flip",
+        "The number of separate rolls that are needed until a six first appears on a fair six-sided die",
+        "The total amount of rainfall that is recorded tomorrow at the local weather station in the city",
+        "The number of heads in a set of flips where the coin changes its bias on every single flip",
         "The number of defective items in 12 independently inspected items when each has the same defect probability."
       ],
       "answerIndex": 3,
@@ -4152,18 +4152,18 @@
       "cognitiveProcess": "select",
       "prompt": "For X ~ Binomial(5, 0.2), which expression gives P(X = 2)?",
       "choices": [
-        "C(5,2)(0.2)^5",
+        "C(5,2)(0.2)^2(0.8)^5",
         "C(5,2)(0.2)^2(0.8)^3",
-        "5(0.2)(0.8)",
-        "(0.2)^2(0.8)^2"
+        "C(5,2)(0.2)^3(0.8)^2",
+        "C(5,3)(0.2)^2(0.8)^3"
       ],
       "answerIndex": 1,
       "rationale": "The binomial probability function chooses the two success positions and multiplies by the probability of two successes and three failures.",
       "choiceRationales": [
-        "This raises the success probability to the fifth power, as if all five trials succeeded; two successes and three failures need (0.2)^2(0.8)^3.",
+        "This uses five failures, but two successes in five trials leave only three, so the exponent on 0.8 must be 3.",
         "Best answer. The binomial probability function chooses the two success positions and multiplies by the probability of two successes and three failures.",
-        "This is the probability of one success in one particular arrangement of two trials; it counts neither two successes nor three failures.",
-        "This omits the C(5,2) arrangements and uses only two failures when there must be three."
+        "This swaps the exponents and gives the probability of three successes and two failures rather than two successes.",
+        "The count of arrangements must match the two successes being counted, so C(5,2) is required rather than C(5,3)."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4256,18 +4256,18 @@
       "cognitiveProcess": "calculate",
       "prompt": "If X is binomial with n = 100 and p = 0.60, what is the standard deviation of X?",
       "choices": [
-        "24",
-        "40",
+        "24, the variance of X",
+        "sqrt(40), or about 6.32",
         "sqrt(24), or about 4.90",
-        "60"
+        "sqrt(60), or about 7.75"
       ],
       "answerIndex": 2,
       "rationale": "The binomial standard deviation is sqrt(np(1-p)) = sqrt(100(0.6)(0.4)) = sqrt(24).",
       "choiceRationales": [
-        "24 is the variance np(1 − p); the standard deviation is its square root.",
-        "40 is the expected number of failures, n(1 − p), not a measure of spread.",
+        "24 is the variance np(1 − p); the standard deviation is its square root, about 4.90.",
+        "40 is the expected number of failures, n(1 − p), not the variance, so its square root is not the standard deviation.",
         "Best answer. The binomial standard deviation is sqrt(np(1-p)) = sqrt(100(0.6)(0.4)) = sqrt(24).",
-        "60 is the mean np, not the standard deviation."
+        "60 is the mean np; taking its square root does not give the standard deviation, which is the square root of np(1 − p)."
       ],
       "references": [
         "https://apcentral.collegeboard.org/media/pdf/ap-statistics-course-and-exam-description.pdf?course=852",
@@ -4672,10 +4672,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why does the Central Limit Theorem matter for sample means?",
       "choices": [
-        "It says every individual observation is normally distributed.",
-        "It makes the population standard deviation equal to zero.",
+        "It says that every individual observation in the population is normally distributed whatever the sample size happens to be.",
+        "It makes the population standard deviation become exactly equal to zero once the sample size is large enough for the study.",
         "For sufficiently large random samples, the sampling distribution of the sample mean is approximately normal even when the population is not normal.",
-        "It eliminates sampling variability."
+        "It eliminates all of the sampling variability whenever the sample is large enough for the procedure to be applied here."
       ],
       "answerIndex": 2,
       "rationale": "The Central Limit Theorem supports normal modeling of sample means under appropriate conditions, not of every observation and not without variability.",
@@ -4776,9 +4776,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A sampling distribution of sample means is centered at 50 with standard deviation 3. What does a sample mean of 56 represent?",
       "choices": [
-        "It proves the population mean is 56.",
-        "It is six standard deviations above the center.",
-        "It must be the most likely sample mean.",
+        "It proves that the population mean must be exactly 56 in this case.",
+        "It is six standard deviations above the center of the distribution.",
+        "It must therefore be the most likely sample mean in the distribution.",
         "It is two standard deviations above the center of the sampling distribution."
       ],
       "answerIndex": 3,
@@ -4881,9 +4881,9 @@
       "prompt": "An estimator is unbiased when which statement is true?",
       "choices": [
         "Its sampling distribution is centered at the population parameter.",
-        "It has no sampling variability.",
-        "It always equals the parameter.",
-        "It has the smallest possible standard deviation."
+        "It has no sampling variability at all in repeated samples.",
+        "It always equals the population parameter in every sample.",
+        "It has the smallest possible standard deviation of all."
       ],
       "answerIndex": 0,
       "rationale": "Unbiasedness means the long-run mean of the estimator equals the parameter; individual estimates can still vary.",
@@ -5608,9 +5608,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "What does a p-value of 0.03 mean in a test of a population proportion?",
       "choices": [
-        "There is a 3% chance the null hypothesis is true.",
-        "There is a 97% chance the alternative hypothesis is true.",
-        "The observed proportion is wrong by 3 percentage points.",
+        "There is only a 3% chance that the null hypothesis is actually true for the whole population here.",
+        "There is a 97% chance that the alternative hypothesis is actually true for the whole population.",
+        "The observed sample proportion is wrong by exactly 3 percentage points in this particular study.",
         "Assuming the null hypothesis is true, the probability of a result at least as extreme as the observed result is 0.03."
       ],
       "answerIndex": 3,
@@ -6232,10 +6232,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A confidence interval for p1 − p2 is (−0.04, 0.12). What claim is supported?",
       "choices": [
-        "The first population proportion is definitely larger.",
+        "The first population proportion is definitely the larger of the two population proportions.",
         "The interval does not provide convincing evidence of a difference between the population proportions.",
-        "The second population proportion is definitely larger.",
-        "The two sample proportions are exactly equal."
+        "The second population proportion is definitely the larger of the two population proportions.",
+        "The two sample proportions in the study must be exactly equal to one another here."
       ],
       "answerIndex": 1,
       "rationale": "Because the interval contains 0, a zero difference remains plausible; this does not prove equality.",
@@ -6440,9 +6440,9 @@
       "cognitiveProcess": "justify",
       "prompt": "A two-proportion test finds p = 0.01. Which conclusion is appropriate at alpha = 0.05?",
       "choices": [
-        "The null hypothesis is proven false in every population.",
-        "There is no difference because 0.01 is small.",
-        "The sample sizes must have been equal.",
+        "The null hypothesis has been proven false in every possible population of interest here.",
+        "There is no difference between the two proportions because 0.01 is such a small value.",
+        "The two sample sizes must have been exactly equal for this result to appear in the data.",
         "There is convincing evidence that the population proportions differ in the direction of the alternative."
       ],
       "answerIndex": 3,
@@ -6856,9 +6856,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A chi-square test produces a small p-value. What does that suggest?",
       "choices": [
-        "Every expected count is zero.",
-        "The variables must have a perfect causal relationship.",
-        "The sample was necessarily a census.",
+        "Every one of the expected counts in the whole table is exactly zero.",
+        "The two variables must have a perfect causal relationship here.",
+        "The sample must necessarily have been a full census of the population.",
         "The observed categorical counts would be unusual if the null model were true."
       ],
       "answerIndex": 3,
@@ -7168,10 +7168,10 @@
       "cognitiveProcess": "explain",
       "prompt": "Why is a t-distribution used for a one-sample confidence interval for a population mean?",
       "choices": [
-        "The data are categorical.",
-        "The population mean is always zero.",
+        "The data being analyzed are entirely categorical rather than quantitative in nature.",
+        "The population mean is always exactly zero in every one of the samples that could be drawn.",
         "The population standard deviation is usually unknown and is estimated with the sample standard deviation.",
-        "A t-distribution has no tails."
+        "A t-distribution has no tails at all, and so it cannot be used for any interval here."
       ],
       "answerIndex": 2,
       "rationale": "Replacing unknown sigma with s adds uncertainty; the t family accounts for that extra uncertainty through degrees of freedom.",
@@ -7688,9 +7688,9 @@
       "cognitiveProcess": "verify",
       "prompt": "For a matched-pairs t procedure with fewer than 30 pairs, which condition is especially important?",
       "choices": [
-        "The two original variables must be categorical.",
-        "The population standard deviation must be known exactly.",
-        "Every difference must equal zero.",
+        "The two original variables must both be categorical rather than numeric.",
+        "The population standard deviation must always be known exactly in advance.",
+        "Every one of the paired differences must be exactly equal to zero here.",
         "The distribution of the paired differences should not have strong skewness or outliers."
       ],
       "answerIndex": 3,
@@ -7896,10 +7896,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A one-sample t-test gives t = 2.4 and p = 0.02 for H_a: mu > 0. What does the p-value describe?",
       "choices": [
-        "The probability that mu equals 0.02.",
+        "The probability that the population mean mu is exactly equal to 0.02 here.",
         "The probability, assuming mu = 0, of obtaining a test statistic at least as large as 2.4.",
-        "The chance that the sample mean is exactly 2.4.",
-        "The probability that the alternative is true."
+        "The chance that the observed sample mean turns out to be exactly 2.4 again.",
+        "The probability that the alternative hypothesis is actually true in the population."
       ],
       "answerIndex": 1,
       "rationale": "The p-value is computed under the null model and follows the direction of the alternative.",
@@ -8000,10 +8000,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A test uses alpha = 0.01 and p = 0.02. Which conclusion is correct?",
       "choices": [
-        "Reject the null hypothesis at the 1% level.",
-        "Accept the null as proven.",
+        "Reject the null hypothesis at the 1% significance level.",
+        "Accept the null hypothesis as having been proven true.",
         "Fail to reject the null hypothesis at the 1% significance level.",
-        "The p-value must be recalculated as 0.99."
+        "The p-value must be recalculated so that it becomes 0.99."
       ],
       "answerIndex": 2,
       "rationale": "The p-value exceeds alpha, so the result is not statistically significant at the stated level.",
@@ -8416,10 +8416,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A confidence interval for mu1 − mu2 is (−3.1, 1.4). What conclusion is supported?",
       "choices": [
-        "The first population mean is definitely smaller.",
-        "The second population mean is definitely smaller.",
+        "The first population mean is definitely the smaller of the two means.",
+        "The second population mean is definitely the smaller of the two means.",
         "There is not convincing evidence of a difference between the population means.",
-        "The sample means are exactly equal."
+        "The two sample means must be exactly equal to one another here."
       ],
       "answerIndex": 2,
       "rationale": "Because zero is in the interval, a zero population difference remains plausible; the interval does not prove equality.",
@@ -8728,10 +8728,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A two-sample t-test for mu1 − mu2 has p = 0.004. At alpha = 0.01, what is the correct conclusion?",
       "choices": [
-        "Fail to reject because 0.004 is greater than 0.001.",
+        "Fail to reject the null hypothesis because 0.004 is greater than the 0.001 cutoff here.",
         "Reject the null hypothesis and report convincing evidence for a nonzero difference in population means.",
-        "Accept the null as proven true.",
-        "Conclude that every individual in group 1 exceeds every individual in group 2."
+        "Accept the null hypothesis as having been proven true by this one particular sample.",
+        "Conclude that every individual in group 1 exceeds every individual in group 2 here."
       ],
       "answerIndex": 1,
       "rationale": "The p-value is below alpha, so the result is statistically significant; the conclusion must stay about population means, not every individual.",
@@ -8936,9 +8936,9 @@
       "cognitiveProcess": "connect",
       "prompt": "A confidence interval and a two-sided hypothesis test use the same sample and matched significance level. Which relationship is expected?",
       "choices": [
-        "The null value is rejected only when it is inside the interval.",
-        "The interval must contain every individual observation.",
-        "The test and interval always use different population parameters.",
+        "The null value is rejected only when it falls inside the confidence interval.",
+        "The interval must contain every individual observation in the whole sample.",
+        "The test and the interval always use two different population parameters.",
         "The null value is rejected when it falls outside the corresponding confidence interval."
       ],
       "answerIndex": 3,
@@ -9248,10 +9248,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "What does a correlation of r = −0.82 indicate?",
       "choices": [
-        "A strong positive linear association",
-        "That 82% of observations are negative",
+        "A strong positive linear association between the two variables",
+        "That 82% of all of the observations are negative numbers in value",
         "A strong negative linear association between the two quantitative variables",
-        "That the response causes the explanatory variable"
+        "That the response variable causes the explanatory variable here"
       ],
       "answerIndex": 2,
       "rationale": "Correlation measures the direction and strength of a linear association and does not establish causation.",
@@ -9560,10 +9560,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "In the model y-hat = 12 + 4x, how should the slope be interpreted?",
       "choices": [
-        "Every observed y is exactly 4.",
+        "Every observed value of y in the data is exactly equal to 4 units.",
         "For each one-unit increase in x, the predicted value of y increases by 4 units.",
-        "The correlation between x and y is 4.",
-        "When x is zero, the response must be 4."
+        "The correlation between x and y must therefore equal exactly 4 units.",
+        "When x is equal to zero, the predicted response must be exactly 4."
       ],
       "answerIndex": 1,
       "rationale": "The slope describes the change in predicted response for a one-unit increase in the explanatory variable.",
@@ -9664,10 +9664,10 @@
       "cognitiveProcess": "explain",
       "prompt": "What does the intercept represent in a linear regression model?",
       "choices": [
-        "The strength of the association in every context",
-        "The largest observed response",
+        "The strength of the association between the two variables in every possible context here",
+        "The largest observed response value in the whole of the data set that was collected here",
         "The predicted response when the explanatory variable equals zero, if that value is meaningful in context.",
-        "The residual for every observation"
+        "The residual value for every single observation in the entire set of the collected data"
       ],
       "answerIndex": 2,
       "rationale": "The intercept is a model prediction at x = 0; its contextual interpretation depends on whether x = 0 is reasonable and in the data range.",
@@ -9873,9 +9873,9 @@
       "prompt": "A residual plot shows a curved pattern rather than random scatter around zero. What does that suggest?",
       "choices": [
         "A linear model may not adequately describe the relationship.",
-        "The correlation must be exactly 1.",
-        "The explanatory variable is categorical.",
-        "The model has no residuals."
+        "The correlation between the variables must be exactly 1.",
+        "The explanatory variable must be a categorical variable.",
+        "The fitted model has no residuals of any kind at all."
       ],
       "answerIndex": 0,
       "rationale": "Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
@@ -9976,10 +9976,10 @@
       "cognitiveProcess": "classify",
       "prompt": "A residual plot has one point far from the rest vertically but not far horizontally. How is the point best described?",
       "choices": [
-        "A high-leverage point only",
+        "A point with high leverage only",
         "An outlier in the response direction",
-        "A point with zero residual",
-        "A sampling stratum"
+        "A point with a zero residual value",
+        "A sampling stratum in the data"
       ],
       "answerIndex": 1,
       "rationale": "A large vertical residual indicates an unusual response relative to the model; leverage concerns an unusual explanatory-variable value.",
@@ -10184,9 +10184,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "If r-squared = 0.64, what is the best interpretation in context?",
       "choices": [
-        "The model predicts every response within 64 units.",
-        "The correlation is 0.64 regardless of direction.",
-        "There is a 64% chance the model is causal.",
+        "The model predicts every observed response to within 64 units of its actual observed value here.",
+        "The correlation between the variables is exactly 0.64 regardless of the direction of the association.",
+        "There is a 64% chance that the fitted model describes a causal relationship between the two variables.",
         "About 64% of the variation in the response is explained by the linear regression model with the explanatory variable."
       ],
       "answerIndex": 3,
@@ -10289,9 +10289,9 @@
       "prompt": "Which statement about least-squares regression is correct?",
       "choices": [
         "The least-squares line minimizes the sum of the squared residuals.",
-        "It minimizes the sum of residuals without squaring.",
-        "It passes through every data point.",
-        "It makes every residual positive."
+        "It minimizes the sum of the residuals without squaring them.",
+        "It passes through every one of the observed data points.",
+        "It makes every one of the residuals positive in value."
       ],
       "answerIndex": 0,
       "rationale": "Squaring residuals prevents cancellation and produces the line with the smallest total squared error.",
@@ -10808,10 +10808,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A residual plot shows roughly equal vertical spread across the x-values and no obvious pattern. What does that support?",
       "choices": [
-        "The response variable is categorical.",
+        "The response variable must be a categorical variable instead.",
         "The constant-variance and linear-form conditions are reasonably plausible.",
-        "The fitted line must be causal.",
-        "The model predicts every point exactly."
+        "The fitted line must therefore describe a causal relationship.",
+        "The model predicts every one of the data points exactly right."
       ],
       "answerIndex": 1,
       "rationale": "Random scatter with similar spread around zero supports, but does not prove, a useful linear model with roughly constant variability.",
@@ -10912,10 +10912,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A fitted regression line has a 95% confidence interval for its slope that includes 0. What is a cautious conclusion?",
       "choices": [
-        "The variables are proven independent in every population.",
-        "The slope is exactly zero.",
+        "The two variables have been proven to be independent in every population of interest here.",
+        "The population slope must therefore be exactly equal to zero everywhere in the population.",
         "The data do not provide convincing evidence of a nonzero population linear association at that confidence level.",
-        "The model proves there is a causal effect."
+        "The fitted model proves that there is a real causal effect between these two variables here."
       ],
       "answerIndex": 2,
       "rationale": "An interval containing zero means a zero slope remains plausible; it does not prove no association or establish causation.",
@@ -11016,9 +11016,9 @@
       "cognitiveProcess": "select",
       "prompt": "Which feature should be checked before using a linear regression model for a scatterplot?",
       "choices": [
-        "Only the largest response value",
-        "Whether the graph uses a pie chart",
-        "Whether the sample mean equals zero",
+        "Only the largest response value that appears in the whole data set",
+        "Whether the graph happens to use a pie chart instead of a scatterplot",
+        "Whether the sample mean of the response happens to be equal to zero",
         "The form, direction, strength, outliers, and influential points of the association"
       ],
       "answerIndex": 3,
@@ -11121,9 +11121,9 @@
       "prompt": "A school wants to estimate the proportion of all enrolled students who regularly use public transportation. What is the parameter of interest?",
       "choices": [
         "The population proportion of enrolled students who regularly use public transportation.",
-        "The proportion in the sample who answer the survey.",
-        "The number of buses used by the school.",
-        "The mean number of trips made by one student."
+        "The proportion within the sample of students who answered this survey question.",
+        "The total number of school buses that are used by the school every day.",
+        "The mean number of transportation trips that are made by one single student."
       ],
       "answerIndex": 0,
       "rationale": "A parameter is a numerical summary of the population, while the sample proportion is a statistic used to estimate it.",
@@ -11953,9 +11953,9 @@
       "prompt": "Two distributions have equal means, but Distribution A has a smaller standard deviation. What is supported?",
       "choices": [
         "Distribution A has less typical distance from its mean.",
-        "Distribution A must have a larger median.",
-        "Distribution A must be skewed right.",
-        "Distribution A has no variability."
+        "Distribution A must therefore have a larger median.",
+        "Distribution A must therefore be skewed to the right.",
+        "Distribution A has no variability of any kind."
       ],
       "answerIndex": 0,
       "rationale": "Standard deviation describes typical distance from the mean; equal means do not determine shape or median.",
@@ -12369,9 +12369,9 @@
       "prompt": "A study randomly assigns volunteers to either a new tutoring program or no program. Which conclusion is supported if the groups differ in scores?",
       "choices": [
         "The assignment supports a cause-and-effect conclusion about the treatments for the study participants.",
-        "The result automatically generalizes to every student in the world.",
-        "The study proves the sample mean equals the population mean.",
-        "The result is only a description of an unassigned survey."
+        "The result automatically generalizes to every single student in the entire world today.",
+        "The study proves that the sample mean equals the whole population mean exactly here.",
+        "The result is only a description of an unassigned observational survey sample here."
       ],
       "answerIndex": 0,
       "rationale": "Random assignment supports causal comparison, while generalization requires an appropriate sampling design.",
@@ -12472,10 +12472,10 @@
       "cognitiveProcess": "select",
       "prompt": "A two-way table compares breakfast choice for athletes and nonathletes. What should be compared to assess whether choice differs by group?",
       "choices": [
-        "Only the grand total of all breakfast choices.",
+        "Only the grand total of all of the breakfast choices made.",
         "The conditional percentages of breakfast choices within each group.",
-        "The row labels without any counts.",
-        "The mean of the categorical labels."
+        "The row labels by themselves without any of the counts.",
+        "The mean value of all of the categorical labels that are used."
       ],
       "answerIndex": 1,
       "rationale": "Conditional percentages use a common within-group denominator and reveal differences in the distributions.",
@@ -12888,10 +12888,10 @@
       "cognitiveProcess": "compare",
       "prompt": "Which statement distinguishes mutually exclusive events from independent events?",
       "choices": [
-        "The two terms always mean exactly the same thing.",
+        "The two terms always mean exactly the same thing in every probability problem that a student might ever encounter.",
         "Mutually exclusive events cannot occur together, while independent events can occur together but do not change each other's probabilities.",
-        "Independent events must have equal probabilities.",
-        "Mutually exclusive events must each have probability 0.50."
+        "Independent events must always have exactly equal probabilities as each other in every case that could ever arise.",
+        "Mutually exclusive events must each have a probability of exactly 0.50 in every problem that might ever be posed."
       ],
       "answerIndex": 1,
       "rationale": "Mutual exclusivity concerns the intersection; independence concerns whether conditioning changes a probability.",
@@ -13096,9 +13096,9 @@
       "cognitiveProcess": "infer",
       "prompt": "If P(A | B) = 0.42 and P(A) = 0.42, what does this support?",
       "choices": [
-        "The events A and B are mutually exclusive.",
-        "The probability of B must be zero.",
-        "A and B must always occur together.",
+        "The events A and B must therefore be mutually exclusive.",
+        "The probability of the event B must be exactly zero.",
+        "The events A and B must always occur at the same time.",
         "The events A and B are independent, assuming P(B) is positive."
       ],
       "answerIndex": 3,
@@ -13304,10 +13304,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A random variable has expected value 12. Which interpretation is appropriate?",
       "choices": [
-        "Every individual outcome equals 12.",
+        "Every one of the individual outcomes is exactly equal to 12.",
         "The long-run average value over many repetitions tends to approach 12.",
-        "The most likely outcome must equal 12.",
-        "The variable has standard deviation 12."
+        "The most likely single outcome must be exactly equal to 12.",
+        "The random variable has a standard deviation of exactly 12."
       ],
       "answerIndex": 1,
       "rationale": "Expected value describes a long-run center and does not guarantee an individual result or identify the mode.",
@@ -13617,9 +13617,9 @@
       "prompt": "For a population with standard deviation 18, what happens to the standard deviation of the sample mean when sample size changes from 25 to 100?",
       "choices": [
         "It is cut in half, from 3.6 to 1.8.",
-        "It doubles from 3.6 to 7.2.",
-        "It remains 18.",
-        "It becomes zero."
+        "It doubles, going from 3.6 to 7.2.",
+        "It remains exactly 18 in both.",
+        "It becomes exactly zero here."
       ],
       "answerIndex": 0,
       "rationale": "The standard error is sigma/sqrt(n), so quadrupling n halves the standard error.",
@@ -14656,10 +14656,10 @@
       "cognitiveProcess": "select",
       "prompt": "A confidence interval for p1 - p2 is based on independent random samples from two populations. Which parameter does it estimate?",
       "choices": [
-        "The sum of the two sample counts only.",
-        "The mean of one quantitative population.",
+        "The sum of the two sample counts and nothing more.",
+        "The mean of one single quantitative population only.",
         "The difference between the two population proportions.",
-        "The correlation between two measurements."
+        "The correlation between two sets of measurements."
       ],
       "answerIndex": 2,
       "rationale": "The two-proportion interval targets p1 - p2, the difference in population proportions.",
@@ -14760,9 +14760,9 @@
       "cognitiveProcess": "justify",
       "prompt": "A confidence interval for p1 - p2 is (0.02, 0.18). What does the sign of the interval imply?",
       "choices": [
-        "The second population proportion is definitely greater.",
-        "The two sample proportions are equal.",
-        "The interval proves a causal effect.",
+        "The second population proportion is definitely the greater one.",
+        "The two sample proportions must be exactly equal to each other.",
+        "The interval proves that a causal effect must exist here.",
         "The first population proportion is plausibly greater than the second."
       ],
       "answerIndex": 3,
@@ -14968,10 +14968,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A two-proportion test rejects H0. Which statement should be included in the conclusion?",
       "choices": [
-        "The null is mathematically impossible.",
+        "The null hypothesis is mathematically impossible in any possible population of interest.",
         "The data provide statistically significant evidence for the stated alternative in the population context.",
-        "The sample proportions are guaranteed to differ in every future sample.",
-        "The result proves one treatment caused the difference without a randomized design."
+        "The sample proportions are guaranteed to differ in every one of the future samples taken.",
+        "The result proves that one treatment caused the difference without a randomized design."
       ],
       "answerIndex": 1,
       "rationale": "A test conclusion describes evidence relative to the null and must respect the sampling and assignment design.",
@@ -15384,10 +15384,10 @@
       "cognitiveProcess": "select",
       "prompt": "A study measures each participant before and after an intervention. Which procedure targets the mean change?",
       "choices": [
-        "A one-proportion z-test",
+        "A one-proportion z-test applied to the paired responses only",
         "A matched-pairs t procedure applied to the within-person differences.",
-        "A chi-square test for independence",
-        "A two-sample procedure that ignores the pairing"
+        "A chi-square test for independence between the variables",
+        "A two-sample procedure that ignores the pairing entirely"
       ],
       "answerIndex": 1,
       "rationale": "Paired measurements should be reduced to one difference per participant before using a one-sample t procedure.",
@@ -15488,10 +15488,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A 95% confidence interval for a population mean is (72, 80). What does the interval estimate?",
       "choices": [
-        "95% of individual observations are between 72 and 80.",
-        "The sample mean changes between 72 and 80 with probability 0.95.",
+        "About 95% of the individual observations fall between the values 72 and 80.",
+        "The sample mean changes between 72 and 80 with a probability of 0.95.",
         "The population mean is plausibly between 72 and 80 under the confidence procedure.",
-        "Every future sample mean must be in the interval."
+        "Every future sample mean must fall inside this same confidence interval."
       ],
       "answerIndex": 2,
       "rationale": "A confidence interval targets the fixed population mean; it does not describe the middle 95% of individual observations.",
@@ -15697,9 +15697,9 @@
       "prompt": "A one-sample t-test gives p = 0.004. What does this indicate when the null model is true?",
       "choices": [
         "A result at least as extreme as the observed result would be unusual under the null model.",
-        "There is a 0.4% chance the null is true.",
-        "The sample mean is wrong by 0.004 units.",
-        "The population standard deviation is 0.004."
+        "There is only a 0.4% chance that the null model is actually true for this population.",
+        "The observed sample mean is wrong by exactly 0.004 units in this particular study.",
+        "The population standard deviation must equal exactly 0.004 units in this study."
       ],
       "answerIndex": 0,
       "rationale": "The p-value is a probability under the null model, not a probability that the null or a measurement is correct.",
@@ -15904,10 +15904,10 @@
       "cognitiveProcess": "select",
       "prompt": "Which procedure estimates the difference between two independent population means?",
       "choices": [
-        "A one-proportion z-interval",
-        "A chi-square test for homogeneity",
+        "A one-proportion z-interval for a proportion",
+        "A chi-square test for homogeneity of counts",
         "A two-sample t-interval for a difference in means.",
-        "A binomial probability calculation"
+        "A binomial probability calculation for counts"
       ],
       "answerIndex": 2,
       "rationale": "Two independent quantitative samples with a mean difference as the target call for a two-sample t interval when conditions hold.",
@@ -16008,9 +16008,9 @@
       "cognitiveProcess": "justify",
       "prompt": "A confidence interval for mu1 - mu2 is (-1.4, 2.1). What is the cautious conclusion?",
       "choices": [
-        "The first mean is definitely larger.",
-        "The two population means are proven equal.",
-        "Every individual measurement has a difference in that interval.",
+        "The first population mean is definitely the larger one of the two population means.",
+        "The two population means have been proven to be exactly equal by this one interval.",
+        "Every individual measurement has a difference that falls inside that same interval.",
         "A zero difference remains plausible, so the interval does not show a clear population mean difference."
       ],
       "answerIndex": 3,
@@ -16216,10 +16216,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A two-sample t-test has p = 0.23 at alpha = 0.05. What is the correct decision?",
       "choices": [
-        "Reject the null because the p-value is nonzero.",
+        "Reject the null hypothesis because the p-value is not exactly equal to zero here.",
         "Fail to reject the null hypothesis because the evidence is not statistically significant at 5%.",
-        "Accept the null as proven true.",
-        "Conclude the two sample means can never differ."
+        "Accept the null hypothesis as having been proven true by these particular data.",
+        "Conclude that the two sample means can never differ from one another at all."
       ],
       "answerIndex": 1,
       "rationale": "A p-value greater than alpha does not provide enough evidence for the alternative and does not prove the null.",
@@ -16320,10 +16320,10 @@
       "cognitiveProcess": "describe",
       "prompt": "A scatterplot of hours studied and score shows an upward roughly linear pattern. What is supported?",
       "choices": [
-        "The relationship is necessarily causal.",
-        "The response variable is categorical.",
+        "The relationship must necessarily be causal.",
+        "The response variable must be categorical here.",
         "The variables have a positive linear association.",
-        "The correlation must equal zero."
+        "The correlation must be exactly equal to zero."
       ],
       "answerIndex": 2,
       "rationale": "An upward linear pattern indicates positive association, but design and other features determine what conclusions are justified.",
@@ -16632,10 +16632,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A regression slope is -2.5 minutes per additional practice session. What does the slope mean?",
       "choices": [
-        "Every student loses exactly 2.5 minutes.",
+        "Every single student loses exactly 2.5 minutes of time in each practice session.",
         "The predicted response decreases by 2.5 minutes for each additional practice session.",
-        "The intercept is -2.5 minutes.",
-        "The correlation is -2.5."
+        "The intercept of the fitted model must be exactly -2.5 minutes in this case.",
+        "The correlation between the variables must therefore be exactly -2.5."
       ],
       "answerIndex": 1,
       "rationale": "The slope gives the predicted change in response for a one-unit increase in the explanatory variable, with units.",
@@ -17672,9 +17672,9 @@
       "cognitiveProcess": "select",
       "prompt": "In a matched-pairs experiment, each participant tries both treatments in random order. What is analyzed?",
       "choices": [
-        "The grand total of all treatment labels.",
-        "Only the larger response in each pair.",
-        "The sample proportion in one treatment group.",
+        "The grand total of all of the treatment labels that are used.",
+        "Only the larger of the two responses in each matched pair.",
+        "The sample proportion within one of the treatment groups.",
         "The difference between the two responses for each participant."
       ],
       "answerIndex": 3,
@@ -18816,10 +18816,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A residual plot has a clear curved pattern. What does this suggest about a linear model?",
       "choices": [
-        "The correlation must equal 1.",
-        "Every residual is zero.",
+        "The correlation must therefore be exactly equal to 1.",
+        "Every one of the residuals must be exactly zero here.",
         "The linear form may not adequately describe the relationship.",
-        "The response is necessarily categorical."
+        "The response variable must necessarily be categorical."
       ],
       "answerIndex": 2,
       "rationale": "Systematic curvature in residuals indicates that the linear form misses structure in the relationship.",
@@ -19025,9 +19025,9 @@
       "prompt": "A confidence interval for the slope contains 0. What is a cautious conclusion?",
       "choices": [
         "The data do not provide convincing evidence of a nonzero population linear slope at that confidence level.",
-        "The slope is proven to be exactly zero.",
-        "The variables are proven independent in every population.",
-        "The model proves a causal effect."
+        "The population slope has been proven to be exactly zero in the entire population here.",
+        "The two variables are proven to be independent in every possible population studied here.",
+        "The fitted model proves that a real causal effect exists between the two variables here."
       ],
       "answerIndex": 0,
       "rationale": "An interval containing zero leaves a zero slope plausible; it does not prove no association or establish causation.",
@@ -19128,10 +19128,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A p-value of 0.48 is obtained. Which statement is accurate?",
       "choices": [
-        "There is a 48% chance the null is true.",
+        "There is a 48% chance that the null model is actually true.",
         "The observed result is reasonably compatible with the null model.",
-        "The alternative has been disproven.",
-        "The statistic must equal zero."
+        "The alternative hypothesis has been disproven entirely.",
+        "The test statistic must therefore equal exactly zero."
       ],
       "answerIndex": 1,
       "rationale": "A large p-value means the result is not unusual under the null model; it does not assign a probability to the hypothesis.",
@@ -19232,10 +19232,10 @@
       "cognitiveProcess": "infer",
       "prompt": "A test rejects H0 at alpha = 0.10 but not at alpha = 0.05. What does this show?",
       "choices": [
-        "The p-value is exactly 0.05.",
-        "The null is proven true.",
+        "The p-value must be exactly 0.05.",
+        "The null model has been proven true.",
         "The p-value is between 0.05 and 0.10.",
-        "The sample was not random."
+        "The sample was not a random one."
       ],
       "answerIndex": 2,
       "rationale": "Rejecting at the larger alpha but not the smaller one places the p-value between those cutoffs.",
@@ -19544,10 +19544,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A chi-square statistic is large relative to its degrees of freedom. What does that suggest?",
       "choices": [
-        "Every observed count equals its expected count.",
+        "Every one of the observed counts equals its expected count exactly here.",
         "The observed counts differ substantially from the expected counts under the null model.",
-        "The variables are proven causal.",
-        "The sample size must be one."
+        "The two variables are proven to be causally related to each other here.",
+        "The sample size must have been exactly one single observation only here."
       ],
       "answerIndex": 1,
       "rationale": "The chi-square statistic aggregates squared observed-minus-expected discrepancies scaled by expected counts.",
@@ -19752,9 +19752,9 @@
       "cognitiveProcess": "justify",
       "prompt": "Why can a t procedure be appropriate for a small sample of quantitative differences?",
       "choices": [
-        "Small samples never need conditions.",
-        "The response must be categorical.",
-        "The paired differences are ignored.",
+        "Small samples never need any one of the conditions to be checked in any way at all here.",
+        "The response variable must be categorical rather than quantitative in every single case.",
+        "The paired differences are simply ignored throughout the entire procedure used here now.",
         "The differences are reasonably free of strong skewness and outliers, and the design supports independence."
       ],
       "answerIndex": 3,
@@ -19857,9 +19857,9 @@
       "prompt": "A 95% confidence interval for mu1 - mu2 is (4, 11) units. What is supported?",
       "choices": [
         "The first population mean is plausibly greater than the second by 4 to 11 units.",
-        "The individual observations differ by 4 to 11 units.",
-        "The first sample mean must equal 4.",
-        "The interval proves the first treatment caused the difference."
+        "The individual observations differ by exactly 4 to 11 units each.",
+        "The first sample mean must therefore be exactly equal to 4 units.",
+        "The interval proves that the first treatment caused the whole difference."
       ],
       "answerIndex": 0,
       "rationale": "The interval targets the population mean difference and is entirely positive; causal language requires an appropriate experiment.",
@@ -20273,9 +20273,9 @@
       "prompt": "A study compares the mean completion time for two unrelated random samples. Which feature makes a two-sample t interval appropriate?",
       "choices": [
         "The response is quantitative and the samples represent independent groups.",
-        "The response is a single categorical label.",
-        "Each person contributes a before-and-after pair.",
-        "The groups were selected by voluntary response only."
+        "The response variable is a single categorical label in each group.",
+        "Each person contributes a single before-and-after pair of values.",
+        "The two groups were selected by voluntary response alone here."
       ],
       "answerIndex": 0,
       "rationale": "A two-sample t interval targets a difference in means for independent quantitative groups when conditions hold.",
@@ -20480,10 +20480,10 @@
       "cognitiveProcess": "justify",
       "prompt": "A two-sample test rejects H0 for a randomized experiment. What conclusion is justified?",
       "choices": [
-        "The result generalizes to all people automatically.",
-        "The p-value is the probability the treatment works.",
+        "The result generalizes automatically to all of the people in any possible population here.",
+        "The p-value is the probability that the treatment actually works as it was intended to.",
         "There is evidence that the treatment causes a difference in the population represented by the experiment.",
-        "The two sample means will be equal in future samples."
+        "The two sample means will be exactly equal in every one of the future samples taken."
       ],
       "answerIndex": 2,
       "rationale": "Random assignment supports a causal conclusion for the experimental population, while generalization depends on how participants were sampled.",
@@ -20584,9 +20584,9 @@
       "cognitiveProcess": "select",
       "prompt": "A scatterplot has a strong downward curved pattern. What is the best first response?",
       "choices": [
-        "Fit a line without checking the plot.",
-        "Conclude the variables are independent.",
-        "Replace both variables with category labels.",
+        "Fit a straight line without checking the plot at all.",
+        "Conclude that the two variables must be independent here.",
+        "Replace both of the variables with categorical labels.",
         "Describe the form as nonlinear before considering a linear model."
       ],
       "answerIndex": 3,
@@ -20896,10 +20896,10 @@
       "cognitiveProcess": "classify",
       "prompt": "A model predicts monthly cost from number of service calls. What is interpolation?",
       "choices": [
-        "Predicting far beyond the observed range.",
-        "Changing the response units.",
+        "Predicting far beyond the observed range of the data values.",
+        "Changing the measurement units of the response variable.",
         "Predicting for a number of service calls within the observed range.",
-        "Randomly assigning service calls."
+        "Randomly assigning the service calls across all of the months."
       ],
       "answerIndex": 2,
       "rationale": "Interpolation uses the model within the range of observed explanatory values and is generally less risky than extrapolation.",
@@ -21000,9 +21000,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "An observation has a positive residual. What does that mean?",
       "choices": [
-        "The explanatory value is below its mean.",
-        "The correlation is positive.",
-        "The observed response equals zero.",
+        "The explanatory value must be below its own mean value.",
+        "The correlation between the variables must be positive.",
+        "The observed response must be exactly equal to zero here.",
         "The observed response is above the value predicted by the model."
       ],
       "answerIndex": 3,
@@ -21105,9 +21105,9 @@
       "prompt": "A point has an unusual x-value but lies close to the fitted line vertically. What is it?",
       "choices": [
         "A high-leverage point that may or may not be influential.",
-        "A point with a guaranteed large residual.",
-        "A categorical response.",
-        "A sampling error by definition."
+        "A point with a guaranteed large residual value.",
+        "A categorical response variable in the whole data set.",
+        "A sampling error by definition in every possible case."
       ],
       "answerIndex": 0,
       "rationale": "Unusual explanatory values create leverage; influence depends on how much the fitted model changes when the point is considered.",
@@ -21416,9 +21416,9 @@
       "cognitiveProcess": "justify",
       "prompt": "Why is predicting for x = 250 risky when the observed x-values range from 10 to 80?",
       "choices": [
-        "The residual must be zero.",
-        "The response becomes categorical.",
-        "The correlation is automatically one.",
+        "The residual value must therefore be exactly zero here.",
+        "The response variable becomes a categorical variable.",
+        "The correlation becomes automatically equal to one here.",
         "The prediction is extrapolation far beyond the observed range."
       ],
       "answerIndex": 3,
@@ -21521,9 +21521,9 @@
       "prompt": "A school wants to know whether its students are satisfied with the lunch schedule. Which question is statistical?",
       "choices": [
         "What proportion of students would report being satisfied with the lunch schedule?",
-        "Is one named student satisfied?",
-        "What color are the cafeteria tables?",
-        "Did the principal choose the schedule?"
+        "Is one particular named student satisfied with the lunch schedule?",
+        "What color are the tables in the cafeteria at the school this year?",
+        "Did the principal personally choose this lunch schedule all alone?"
       ],
       "answerIndex": 0,
       "rationale": "The question anticipates variability across students and asks about a population proportion.",
@@ -22353,9 +22353,9 @@
       "prompt": "If the conditional percentage of late arrivals is nearly the same for bus riders and walkers, what does that suggest?",
       "choices": [
         "The two categorical variables may have weak association in the sample.",
-        "The variables must be perfectly dependent.",
-        "The sample mean is zero.",
-        "The categories are quantitative measurements."
+        "The two categorical variables must be perfectly dependent.",
+        "The sample mean of all the data must be exactly zero here.",
+        "The categories must really be quantitative measurements here."
       ],
       "answerIndex": 0,
       "rationale": "Similar conditional distributions suggest little association, although sampling variation remains possible.",
@@ -22456,10 +22456,10 @@
       "cognitiveProcess": "explain",
       "prompt": "A simulation estimates a probability as 0.41. What does repeating the simulation many more times generally do?",
       "choices": [
-        "It guarantees the next repetition is a success.",
+        "It guarantees that the next repetition will be a success here.",
         "It tends to make the estimate more stable around the modeled probability.",
-        "It changes the event being modeled.",
-        "It makes the probability exceed 1."
+        "It changes the actual event that is being modeled in the simulation.",
+        "It makes the estimated probability rise above a value of 1."
       ],
       "answerIndex": 1,
       "rationale": "More repetitions reduce random simulation error but do not guarantee an individual result.",
@@ -22872,10 +22872,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A game has expected payout 5 points and standard deviation 2 points. What does the standard deviation describe?",
       "choices": [
-        "The probability of winning is 2.",
+        "The probability of winning the game must be exactly 2 points.",
         "The typical distance of payouts from the long-run average of 5 points.",
-        "Every payout is between 3 and 7 points.",
-        "The most common payout is exactly 5 points."
+        "Every single payout must be between 3 and 7 points exactly.",
+        "The single most common payout must be exactly 5 points here."
       ],
       "answerIndex": 1,
       "rationale": "Standard deviation measures spread around the expected value; it does not set a guaranteed range or identify the mode.",
@@ -23080,9 +23080,9 @@
       "cognitiveProcess": "justify",
       "prompt": "A population is strongly skewed, but random samples have size 100. Which statement is most reasonable about the sample mean?",
       "choices": [
-        "Every observation in the population becomes normal.",
-        "The sample mean has no variability.",
-        "The population shape is changed by sampling.",
+        "Every single observation in the population becomes normally distributed too.",
+        "The sample mean has no variability at all across any of the repeated samples.",
+        "The shape of the population is changed by the sampling process used here.",
         "Its sampling distribution may be approximately normal because of the Central Limit Theorem."
       ],
       "answerIndex": 3,
@@ -23185,9 +23185,9 @@
       "prompt": "Two estimators are both unbiased. Estimator A has smaller standard deviation. What is supported?",
       "choices": [
         "Estimator A is less variable while both estimators are centered at the parameter in the long run.",
-        "Estimator A equals the parameter in every sample.",
-        "Estimator B is necessarily biased.",
-        "Both estimators have zero sampling variability."
+        "Estimator A equals the population parameter exactly in every sample that is taken.",
+        "Estimator B must therefore necessarily be a biased estimator of the parameter.",
+        "Both of the estimators have zero sampling variability in all repeated samples."
       ],
       "answerIndex": 0,
       "rationale": "Unbiasedness concerns center, while standard deviation compares sampling variability.",
@@ -23496,9 +23496,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A p-value is 0.20. Which statement is correct?",
       "choices": [
-        "There is a 20% probability the null hypothesis is true.",
-        "The alternative hypothesis is impossible.",
-        "The sample proportion is wrong by 20 percentage points.",
+        "There is a 20% probability that the null hypothesis is actually true in this one case.",
+        "The alternative hypothesis is entirely impossible for this whole population here.",
+        "The observed sample proportion is wrong by exactly 20 percentage points in this study.",
         "Results at least as extreme as the observed result are not especially unusual under the null model."
       ],
       "answerIndex": 3,
@@ -23808,10 +23808,10 @@
       "cognitiveProcess": "justify",
       "prompt": "For a chi-square procedure, why are very small expected counts a concern?",
       "choices": [
-        "Small expected counts prove independence.",
-        "They make the variables quantitative.",
+        "Small expected counts always prove complete independence here.",
+        "They make the two variables into quantitative measurements here.",
         "The chi-square approximation to the sampling distribution may be unreliable.",
-        "They guarantee a small p-value."
+        "They guarantee that the p-value will always be very small in every case."
       ],
       "answerIndex": 2,
       "rationale": "Chi-square procedures rely on conditions that keep the expected counts sufficiently large for the approximation.",
@@ -24433,9 +24433,9 @@
       "prompt": "In a paired study, what parameter is estimated by the mean of the within-person differences?",
       "choices": [
         "The population mean difference between the two paired conditions.",
-        "The sum of the two population means.",
-        "The proportion of participants who improve.",
-        "The correlation coefficient only."
+        "The sum of the two separate population means added together.",
+        "The proportion of all of the participants who improved at all.",
+        "The correlation coefficient between the two conditions."
       ],
       "answerIndex": 0,
       "rationale": "Pairing creates one quantitative difference per unit, and the mean difference targets its population mean.",
@@ -24744,9 +24744,9 @@
       "cognitiveProcess": "justify",
       "prompt": "A test of a mean difference produces p = 0.04 at alpha = 0.05. Which wording is best?",
       "choices": [
-        "There is a 4% chance the null is true.",
-        "The sample means will differ by exactly the same amount forever.",
-        "The result proves causation regardless of design.",
+        "There is only a 4% chance that the null hypothesis is actually true for this population.",
+        "The sample means will differ by exactly the same amount in every future study done here.",
+        "The result proves causation regardless of the design of the whole study that was used.",
         "There is statistically significant evidence of a mean difference in the direction of the alternative."
       ],
       "answerIndex": 3,
@@ -24952,10 +24952,10 @@
       "cognitiveProcess": "explain",
       "prompt": "If all response values are multiplied by 3, what happens to the correlation with the explanatory variable?",
       "choices": [
-        "It triples.",
+        "It triples along with the response values.",
         "It remains the same if the multiplier is positive.",
-        "It becomes zero.",
-        "It changes sign."
+        "It becomes exactly zero after the change.",
+        "It changes its sign after the multiplication."
       ],
       "answerIndex": 1,
       "rationale": "Correlation is unchanged by positive linear rescaling of either variable.",
@@ -25160,9 +25160,9 @@
       "cognitiveProcess": "interpret",
       "prompt": "A regression line has intercept 6. What does the intercept represent?",
       "choices": [
-        "The correlation coefficient.",
-        "The residual for every observation.",
-        "The predicted response at the sample mean only.",
+        "The correlation coefficient between the two variables in this one fitted model here.",
+        "The residual value for every one of the observations in the entire collected data set.",
+        "The predicted response at the sample mean of the explanatory variable and nowhere else.",
         "The predicted response when the explanatory variable equals zero, if that value is meaningful in context."
       ],
       "answerIndex": 3,
@@ -25368,10 +25368,10 @@
       "cognitiveProcess": "interpret",
       "prompt": "A model has r-squared = 0.49. Which statement is appropriate?",
       "choices": [
-        "The correlation must be 0.49 regardless of direction.",
+        "The correlation must be exactly 0.49 regardless of its direction.",
         "The linear model explains about 49% of the observed variation in the response.",
-        "The model is correct for 49% of individuals.",
-        "There is a 49% chance of causation."
+        "The model is correct for exactly 49% of all of the individuals.",
+        "There is a 49% chance that the association is truly causal here."
       ],
       "answerIndex": 1,
       "rationale": "R-squared is the proportion of response variation explained by the fitted linear model, not a probability or accuracy rate.",

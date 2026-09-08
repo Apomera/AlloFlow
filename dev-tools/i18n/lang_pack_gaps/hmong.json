@@ -2,9 +2,9 @@
   "langName": "hmong",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1423,
+  "translatedKeys": 1415,
   "missingKeys": 0,
-  "passthroughKeys": 7,
-  "coveragePct": 99.5,
+  "passthroughKeys": 15,
+  "coveragePct": 99,
   "missing": {}
 }

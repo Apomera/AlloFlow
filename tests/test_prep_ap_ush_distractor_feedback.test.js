@@ -42,7 +42,7 @@ describe('AP U.S. History distractor feedback module', () => {
 
   it('expands short ids and matches distractors regardless of apostrophe or dash style', () => {
     const id = feedback.ID_PREFIX + '027';
-    const curly = 'The constitution had no effect because law never matters in history.';
+    const curly = 'The constitution had no effect at all because the law never matters in history.';
     expect(feedback.distractorFeedbackFor(id, curly)).toBeTruthy();
     expect(feedback.distractorFeedbackFor(id, '  ' + curly + ' ')).toBe(feedback.distractorFeedbackFor(id, curly));
     const withApostrophe = feedback.ID_PREFIX + '032';

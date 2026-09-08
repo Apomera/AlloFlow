@@ -2,9 +2,9 @@
   "langName": "latin",
   "generated": "extract_behavior_lens_keys / lang_pack_gap_report",
   "totalEnglishKeys": 1430,
-  "translatedKeys": 1419,
+  "translatedKeys": 1412,
   "missingKeys": 0,
-  "passthroughKeys": 11,
-  "coveragePct": 99.2,
+  "passthroughKeys": 18,
+  "coveragePct": 98.7,
   "missing": {}
 }

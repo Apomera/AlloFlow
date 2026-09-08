@@ -153,14 +153,13 @@
       "keyedItemCount": 600,
       "keyCycleSharePercent": 100,
       "keyLongestSharePercent": 78.7,
-      "keyLongerByQuarterSharePercent": 30.8,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1800,
       "distinctDistractorRationaleCount": 1800,
       "repeatedDistractorRationaleSharePercent": 0.1,
       "largestSharedChoiceSet": 1,
       "advisories": [
-        "answer-key-position-cycle",
-        "key-length-cue"
+        "answer-key-position-cycle"
       ],
       "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
     },
@@ -209,13 +208,13 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_us_history_foundation_pilot.json",
-      "byteLength": 2838782,
-      "sha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f"
+      "byteLength": 2852557,
+      "sha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303"
     },
     "learningLibrary": {
       "path": "test_prep/ap_us_history_foundation_pilot_learning_library.json",
-      "byteLength": 534272,
-      "sha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88"
+      "byteLength": 535847,
+      "sha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610"
     }
   },
   "standard": {
@@ -323,6 +322,12 @@
         "status": "pass",
         "findingCount": 0,
         "meaning": "Every distractor carries its own authored explanation: three distinct notes per item, none a generic placeholder, none a copy of the key rationale."
+      },
+      {
+        "check": "choice-length-parity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "No item lets a student find the key by length alone: the correct option never runs a quarter longer than the longest distractor."
       },
       {
         "check": "source-and-provenance",
@@ -480,16 +485,16 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f",
-      "deploySha256": "4bcc2d8386b6b2dc8783ec6e949eccf019a6267c26fa07cdb0de628c25c54a8f",
+      "sourceSha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303",
+      "deploySha256": "5b6257faf6913f5fcf3e6cdb487bc10883d10923f0ed7fac0314e0b659579303",
       "note": "Source and deployment bytes are identical."
     },
     {
       "asset": "learning-library",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
-      "deploySha256": "dafb07123e4c09b54fb8f95748cdcbcc28f0248c393424590adecbf92b99bf88",
+      "sourceSha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610",
+      "deploySha256": "89087bdf218c00d4bd45ab7ac9e3e057a15249a5b04dc58baaf02169411dd610",
       "note": "Source and deployment bytes are identical."
     }
   ],

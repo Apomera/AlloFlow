@@ -280,6 +280,80 @@
     return p.a * (x - p.h) * (x - p.h) + p.k; // parabola (vertex form)
   }
 
+  // The structure each family teaches: the axis a parabola folds across, the midline
+  // a wave oscillates about and how far its crest reaches, the floor or ceiling an
+  // exponential approaches and never crosses, the two turning points a cubic author
+  // places. Pure data with the labels baked, so every surface draws the same claim.
+  // Caller owns the visibility gate — these are curve-derived, so showing them on a
+  // hidden-preview tier would leak what that tier deliberately hides.
+  function arcStructureGuides(level, params, tier, t) {
+    t = t || function (k, d) { return d; };
+    var out = [], fam = level.family, P = params, w = level.world;
+    function inY(y) { return isFinite(y) && y >= w.y0 && y <= w.y1; }
+    if ((fam === 'parabola' || fam === 'absval') && P.h >= w.x0 && P.h <= w.x1) {
+      out.push({ kind: 'axis', name: 'axis-sym', x: P.h, label: 'x = ' + fmtVal(P.h, level.params.h.step) });
+      // The practice tier already has a labelled vertex handle; a second marker there
+      // would be two names for one point.
+      if (tier !== 'practice' && inY(P.k)) out.push({ kind: 'vertex', name: 'vertex', x: P.h, y: P.k, label: t('arccity.guide_vertex', 'vertex') });
+    } else if (fam === 'sine' && inY(P.k)) {
+      out.push({ kind: 'midline', name: 'midline', y: P.k, label: t('arccity.guide_midline', 'midline') + ' y = ' + fmtVal(P.k, level.params.k.step) });
+      if (inY(P.k + P.a)) out.push({ kind: 'amp', name: 'amp', y0: P.k, y1: P.k + P.a, label: 'a = ' + fmtVal(P.a, level.params.a.step) });
+    } else if (fam === 'exp' && inY(P.k)) {
+      out.push({
+        kind: 'asymptote', name: 'asymptote', y: P.k, ceiling: P.a < 0,
+        label: (P.a < 0 ? t('arccity.guide_ceiling', 'ceiling') : t('arccity.guide_floor', 'floor')) + ' y = ' + fmtVal(P.k, level.params.k.step) + ' \u2014 ' + t('arccity.guide_never_crossed', 'never crossed')
+      });
+    } else if (fam === 'poly') {
+      [['p', P.p, t('arccity.guide_crest', 'crest')], ['q', P.q, t('arccity.guide_dip', 'dip')]].forEach(function (tp, ti) {
+        var tx = tp[1], ty = fnY(fam, P, tx);
+        if (tx < w.x0 || tx > w.x1 || !inY(ty)) return;
+        out.push({ kind: 'turn', name: 'turn-' + tp[0], param: tp[0], x: tx, y: ty, index: ti, label: tp[2] + ' ' + tp[0] + '=' + fmtVal(tx, level.params[tp[0]].step) });
+      });
+    }
+    return out;
+  }
+
+  // What a fired shot measured: the tangent you arrived at beside the one the gate
+  // demanded, the worst disagreement with a match target, and how far short of the
+  // node you finished. Every number here is READ OFF the adjudication result — none
+  // of it is re-derived, so a drawn measurement can never contradict the sentence
+  // the player is told. Caller passes only a shot that has actually been fired.
+  function arcShotAnalysis(level, res, samples, isMatch, t) {
+    t = t || function (k, d) { return d; };
+    var out = [];
+    if (res.result === 'slope' && res.obstacle && res.obstacle.slope && isFinite(res.yAt) && isFinite(res.slopeAt)) {
+      out.push({
+        kind: 'slope', x: res.at, y: res.yAt, dx: 0.9, actual: res.slopeAt, needed: res.obstacle.slope.value,
+        labelYours: t('arccity.guide_yours', 'yours') + ' ' + round1(res.slopeAt),
+        labelNeeds: t('arccity.guide_needs', 'needs') + ' ' + res.obstacle.slope.value
+      });
+    }
+    if (isMatch && res.result === 'miss' && isFinite(res.matchWorstX) && isFinite(res.playerYAtWorst) && isFinite(res.ghostYAtWorst)) {
+      out.push({
+        kind: 'matchgap', x: res.matchWorstX, yPlayer: res.playerYAtWorst, yGhost: res.ghostYAtWorst,
+        label: t('arccity.guide_off_by', 'off by') + ' ' + round1(res.matchErr)
+      });
+    }
+    if (!isMatch && res.result === 'miss' && isFinite(res.nodeDist)) {
+      // The closest the beam ever came to the node, measured on the same sample array
+      // the adjudication used — so the drawn gap is the gap that was judged.
+      var nearest = null, nbest = Infinity;
+      for (var i = 0; i < samples.length; i++) {
+        var dx = samples[i].x - level.node.x, dy = samples[i].y - level.node.y;
+        if (!isFinite(dy)) continue;
+        var d = Math.sqrt(dx * dx + dy * dy);
+        if (d < nbest) { nbest = d; nearest = samples[i]; }
+      }
+      if (nearest) {
+        out.push({
+          kind: 'missgap', from: { x: nearest.x, y: nearest.y }, to: { x: level.node.x, y: level.node.y },
+          label: round1(res.nodeDist) + ' ' + t('arccity.units_short', 'units short')
+        });
+      }
+    }
+    return out;
+  }
+
   // Numeric central-difference derivative f'(x) for slope-gates (§3.2): the SAME
   // analytic-style slope the gate checks, the tangent tick draws, and the SR
   // readout announces — never a crude adjacent-sample secant.
@@ -1142,6 +1216,9 @@
   //  ★★  solved with the preview hidden + no hint ("independent")
   //  ★★★ ...AND aced it with no misses that run ("flawless"). Re-earnable: Reset
   //      clears the attempt counters (not the earned stars), so anyone can try for 3.
+  // Visually hidden but announced. Inline so it cannot depend on host CSS.
+  var ARC_SR_ONLY = { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+
   function levelStars(st) {
     if (!st || !st.solved) return 0;
     if (st.flawless) return 3;
@@ -1213,7 +1290,7 @@
     levelById: levelById,
     levelIndex: levelIndex,
     round1: round1,
-    fnY: fnY,
+    fnY: fnY, arcStructureGuides: arcStructureGuides, arcShotAnalysis: arcShotAnalysis,
     defaultParams: defaultParams,
     sampleCurve: sampleCurve,
     classifyShot: classifyShot,
@@ -1320,6 +1397,10 @@
       + '--allo-stem-canvas:#ffffff;--allo-stem-panel:#f8fafc;--allo-stem-deeper:#e2e8f0;'
       + '--allo-stem-text:#0f172a;--allo-stem-text-soft:#475569;--allo-stem-border:#cbd5e1;'
       + '--allo-stem-button-bg:#f1f5f9;--allo-stem-button-text:#0f172a;--allo-stem-button-border:#cbd5e1;}'
+      + '.theme-dark #allo-arccity-root{'
+      + '--allo-stem-canvas:#0f172a;--allo-stem-panel:#1e293b;--allo-stem-deeper:#0b1220;'
+      + '--allo-stem-text:#e2e8f0;--allo-stem-text-soft:#94a3b8;--allo-stem-border:#334155;'
+      + '--allo-stem-button-bg:#1e293b;--allo-stem-button-text:#e2e8f0;--allo-stem-button-border:#475569;}'
       + '.theme-contrast #allo-arccity-root{'
       + '--allo-stem-canvas:#000000;--allo-stem-panel:#000000;--allo-stem-deeper:#000000;'
       + '--allo-stem-text:#ffff00;--allo-stem-text-soft:#ffff00;--allo-stem-border:#ffff00;'
@@ -1338,6 +1419,8 @@
       '#allo-arccity-root button:focus-visible{outline:2px solid #22d3ee;outline-offset:2px;border-radius:6px;}' +
       '#allo-arccity-root,#allo-arccity-root *{box-sizing:border-box;}' +
       '#allo-arccity-root .arc-battle-options>summary{min-height:44px;display:flex;align-items:center;cursor:pointer;font-weight:800;}' +
+      '#allo-arccity-root .arc-battle-options>summary::before{content:"\\25B8";margin-right:8px;font-size:11px;line-height:1;opacity:.85;}' +
+      '#allo-arccity-root .arc-battle-options[open]>summary::before{content:"\\25BE";}' +
       '#allo-arccity-root .arc-battle-option-group button,#allo-arccity-root .arc-battle-lanes button,#allo-arccity-root .arc-battle-loadout button,#allo-arccity-root .arc-battle-replay button{min-height:40px;}' +
       // ── Play layout. On a wide viewport the board and the authoring controls sit
       // side by side and the board STICKS while you scroll the controls — so
@@ -1394,6 +1477,7 @@
       '@keyframes arccityFlash{0%{opacity:.22;}100%{opacity:0;}}' +
       '@keyframes arccityHalo{0%,100%{opacity:.28;}50%{opacity:.12;}}' +
       '@keyframes arccityStar{0%,100%{opacity:.5;}50%{opacity:.15;}}' +
+      '@keyframes arccityBeacon{0%,100%{opacity:.85;}55%{opacity:.12;}}' +
       '@keyframes arccitySparks{0%{transform:scale(.4);opacity:.95;}100%{transform:scale(1.9);opacity:0;}}' +
       '@keyframes arccityEmber{0%{transform:translateY(0) scale(1);opacity:.9;}100%{transform:translateY(-32px) scale(.3);opacity:0;}}' +
       // node power-on punch (squash → overshoot → settle) the instant it lights
@@ -1426,6 +1510,7 @@
       '#allo-arccity-root .arccity-gate-lit{animation:arccityGateLit .5s ease-out;}' +
       '#allo-arccity-root .arccity-halo{animation:arccityHalo 2.6s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-star{animation:arccityStar 3.4s ease-in-out infinite;}' +
+      '#allo-arccity-root .arccity-beacon{animation:arccityBeacon 2.2s ease-in-out infinite;}' +
       '#allo-arccity-root .arccity-beam-draw{animation:arccityBeamDraw .5s ease-out;}' +
       '#allo-arccity-root .arccity-ghost-remainder{animation:arccityGhostFlow 1.4s linear infinite;}' +
       '#allo-arccity-root .arccity-beam-head{animation:arccityHeadIn .25s ease-out both;}' +
@@ -1553,18 +1638,23 @@
   function syncArcBattle3D(pack, rawBattle) {
     if (!pack || !pack.THREE) return;
     var THREE = pack.THREE, battle = normalizeBattleState(rawBattle);
-    var laneMeta = battleArena(battle.arena).lanes;
+    var arenaCfg = battleArena(battle.arena), laneMeta = arenaCfg.lanes, hiContrast = !!pack.hiContrast;
     var replayComparison3D = battle.status === 'won' ? battleReplayComparison(battle) : null;
     for (var seat = 0; seat < 2; seat++) {
       for (var lane = 0; lane < 3; lane++) {
         var relay = pack.relays[seat][lane], online = battle.shields[seat][lane];
-        var color = laneMeta[lane].color;
-        relay.material.color.set(online ? color : '#334155');
+        var color = arcLaneColor(arenaCfg, lane, hiContrast ? 'contrast' : 'dark');
+        relay.material.color.set(online ? color : (hiContrast ? '#8a8a8a' : '#334155'));
         relay.material.emissive.set(online ? color : '#000000');
         relay.material.emissiveIntensity = online ? 0.8 : 0;
         relay.material.opacity = online ? 1 : 0.38;
         if (relay.userData.halo) relay.userData.halo.material.opacity = online ? 0.55 : 0.08;
       }
+    }
+    // The lane the active player is aiming down glows brighter than its neighbours.
+    if (pack.laneGlows) {
+      var activeLaneNo = (battle.status === 'won' || battle.handoff) ? -1 : battle.selectedLane[battle.turn];
+      pack.laneGlows.forEach(function (g, li) { g.material.opacity = li === activeLaneNo ? 0.2 : 0.07; });
     }
     clearArcBattle3DGroup(pack.trailGroup);
     function addTrail(samples, shooter, laneNo, color, opacity, dashed, killX) {
@@ -1579,7 +1669,15 @@
       if (pts.length < 2) return;
       // The live preview and the selected replay are solid, bright beams: draw them as
       // glowing tubes (history and denied paths stay as thin dashed lines).
-      if (!dashed && opacity >= 0.9) { var tube = arcTube(THREE, pts, 0.06, color, 1); if (tube) { pack.trailGroup.add(tube); return pts; } }
+      if (!dashed && opacity >= 0.9) {
+        var tube = arcTube(THREE, pts, 0.06, color, 1);
+        if (tube) {
+          pack.trailGroup.add(tube);
+          var floor = arcTube(THREE, pts.map(function (p) { return new THREE.Vector3(p.x, 0.012, p.z); }), 0.13, color, 0.2);
+          if (floor) { floor.material.blending = THREE.AdditiveBlending; floor.material.depthWrite = false; pack.trailGroup.add(floor); }
+          return pts;
+        }
+      }
       var geo = new THREE.BufferGeometry().setFromPoints(pts);
       var mat = dashed
         ? new THREE.LineDashedMaterial({ color: color, transparent: true, opacity: opacity, dashSize: 0.25, gapSize: 0.16 })
@@ -1592,7 +1690,7 @@
     battle.trails.forEach(function (trail, trailIndex) {
       var selectedReplay = battle.status === 'won' && trailIndex === battle.replayIndex;
       var comparedReplay = replayComparison3D && replayComparison3D.comparable && trailIndex === replayComparison3D.previousIndex;
-      var trailColor = selectedReplay ? '#ffffff' : (comparedReplay ? '#94a3b8' : (trail.weapon === 'phase' ? '#ffffff' : laneMeta[trail.lane].color));
+      var trailColor = selectedReplay ? '#ffffff' : (comparedReplay ? '#94a3b8' : (trail.weapon === 'phase' ? '#ffffff' : arcLaneColor(arenaCfg, trail.lane, hiContrast ? 'contrast' : 'dark')));
       var trailOpacity = selectedReplay ? 1 : (comparedReplay ? 0.72 : (battle.status === 'won' ? 0.16 : (trail.weapon === 'phase' ? 0.95 : 0.58)));
       var trailDashed = selectedReplay ? false : (comparedReplay ? true : (trail.weapon === 'phase' ? false : trail.result !== 'hit'));
       var renderedPoints = addTrail(trail.samples || [], trail.seat, trail.lane, trailColor, trailOpacity, trailDashed, trail.killedAt && trail.killedAt.x);
@@ -1640,8 +1738,10 @@
         if (disposed || !canvas) return;
         var arenaConfig = battleArena(props.battle.arena);
         var scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x050712);
-        scene.fog = new THREE.Fog(0x050712, 14, 30);
+        var hiContrast = props.theme === 'contrast';
+        scene.background = new THREE.Color(hiContrast ? 0x000000 : 0x050712);
+        // No haze on the contrast theme — it washes far edges toward the background.
+        if (!hiContrast) scene.fog = new THREE.Fog(0x050712, 14, 30);
         var camera = new THREE.PerspectiveCamera(48, 2, 0.1, 100);
         camera.position.set(11.5, 8.5, 13.5); camera.lookAt(0, 1.5, 0);
         var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
@@ -1649,33 +1749,33 @@
         if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
         scene.add(new THREE.HemisphereLight(0x9adfff, 0x12091f, 0.85));
         var keyLight = new THREE.DirectionalLight(0xffffff, 0.72); keyLight.position.set(4, 9, 7); scene.add(keyLight);
-        var ground = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshPhongMaterial({ color: 0x090d20, shininess: 25 }));
+        var ground = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshPhongMaterial({ color: hiContrast ? 0x000000 : 0x090d20, shininess: 25 }));
         ground.rotation.x = -Math.PI / 2; ground.position.y = -0.04; scene.add(ground);
-        var grid = new THREE.GridHelper(12, 24, 0x22d3ee, 0x24304b); grid.scale.z = 0.72; scene.add(grid);
-        scene.add(arcStarField(THREE, 21, 380, 60));
-        scene.add(arcHorizonGlow(THREE, 0x22d3ee, 90, 5, -17));
-        var laneZ = [-3, 0, 3];
+        var grid = new THREE.GridHelper(12, 24, hiContrast ? 0xffffff : 0x22d3ee, hiContrast ? 0x9aa4b2 : 0x24304b); grid.scale.z = 0.72; scene.add(grid);
+        if (!hiContrast) { scene.add(arcStarField(THREE, 21, 380, 60)); scene.add(arcHorizonGlow(THREE, 0x22d3ee, 90, 5, -17)); }
+        var laneZ = [-3, 0, 3], laneGlows = [];
         for (var li = 0; li < 3; li++) {
           var laneGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-5.4, 0.03, laneZ[li]), new THREE.Vector3(5.4, 0.03, laneZ[li])]);
-          scene.add(new THREE.Line(laneGeo, new THREE.LineBasicMaterial({ color: arenaConfig.lanes[li].color, transparent: true, opacity: 0.28 })));
-          var laneGlow = new THREE.Mesh(new THREE.PlaneGeometry(11, 1.1), new THREE.MeshBasicMaterial({ color: arenaConfig.lanes[li].color, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false }));
-          laneGlow.rotation.x = -Math.PI / 2; laneGlow.position.set(0, 0.01, laneZ[li]); scene.add(laneGlow);
+          scene.add(new THREE.Line(laneGeo, new THREE.LineBasicMaterial({ color: arcLaneColor(arenaConfig, li, hiContrast ? 'contrast' : 'dark'), transparent: true, opacity: hiContrast ? 0.7 : 0.28 })));
+          var laneGlow = new THREE.Mesh(new THREE.PlaneGeometry(11, 1.1), new THREE.MeshBasicMaterial({ color: arcLaneColor(arenaConfig, li, hiContrast ? 'contrast' : 'dark'), transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false }));
+          laneGlow.rotation.x = -Math.PI / 2; laneGlow.position.set(0, 0.01, laneZ[li]); scene.add(laneGlow); laneGlows.push(laneGlow);
         }
         var relays = [[], []];
         for (var defender = 0; defender < 2; defender++) {
           for (var laneNo = 0; laneNo < 3; laneNo++) {
             var relayLevel = battleLane(laneNo, arenaConfig.id), shooter = defender === 1 ? 0 : 1;
             var rx = shooter === 0 ? -5 + relayLevel.node.x : 5 - relayLevel.node.x;
-            var relayMat = new THREE.MeshPhongMaterial({ color: arenaConfig.lanes[laneNo].color, emissive: arenaConfig.lanes[laneNo].color, emissiveIntensity: 0.8, transparent: true });
+            var relayColor = arcLaneColor(arenaConfig, laneNo, hiContrast ? 'contrast' : 'dark');
+            var relayMat = new THREE.MeshPhongMaterial({ color: relayColor, emissive: relayColor, emissiveIntensity: 0.8, transparent: true });
             var relay = new THREE.Mesh(new THREE.SphereGeometry(0.24, 18, 14), relayMat);
             relay.position.set(rx, Math.max(0.28, relayLevel.node.y * 0.52), laneZ[laneNo]);
             scene.add(relay); relays[defender][laneNo] = relay;
-            var relayHalo = arcHaloSprite(THREE, arenaConfig.lanes[laneNo].color, 1.6, 0.55); relayHalo.position.copy(relay.position); scene.add(relayHalo); relay.userData.halo = relayHalo;
+            if (!hiContrast) { var relayHalo = arcHaloSprite(THREE, relayColor, 1.6, 0.55); relayHalo.position.copy(relay.position); scene.add(relayHalo); relay.userData.halo = relayHalo; }
           }
         }
         // Mirror each selected arena's wall and gate markers into both firing directions.
         for (var obstacleLane = 0; obstacleLane < 3; obstacleLane++) {
-          var obstacleLevel = battleLane(obstacleLane, arenaConfig.id), obstacleColor = arenaConfig.lanes[obstacleLane].color;
+          var obstacleLevel = battleLane(obstacleLane, arenaConfig.id), obstacleColor = arcLaneColor(arenaConfig, obstacleLane, hiContrast ? 'contrast' : 'dark');
           (obstacleLevel.walls || []).forEach(function (wallSpec) {
             var wallHeight = Math.max(0.2, wallSpec.height * 0.52);
             var wallX = -5 + wallSpec.x;
@@ -1696,10 +1796,12 @@
         }
         var trailGroup = new THREE.Group(); scene.add(trailGroup);
         // Neon skyline behind the far lane (decorative; the lanes, relays and beams are untouched).
-        var arenaGround = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshPhongMaterial({ color: 0x06091a, shininess: 10 }));
+        var arenaGround = new THREE.Mesh(new THREE.PlaneGeometry(70, 70), new THREE.MeshPhongMaterial({ color: hiContrast ? 0x000000 : 0x06091a, shininess: 10, transparent: !hiContrast, opacity: hiContrast ? 1 : 0.88 }));
         arenaGround.rotation.x = -Math.PI / 2; arenaGround.position.y = -0.08; scene.add(arenaGround);
-        scene.add(arcBuildCity(THREE, 77, [arenaConfig.lanes[0].color, arenaConfig.lanes[1].color, arenaConfig.lanes[2].color], { count: 28, spread: 9, xShift: -4, zNear: -7, zFar: -14 }));
-        var pack = { THREE: THREE, scene: scene, camera: camera, renderer: renderer, relays: relays, trailGroup: trailGroup, disposed: false };
+        var arenaCity = arcBuildCity(THREE, 77, [arcLaneColor(arenaConfig, 0, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 1, hiContrast ? 'contrast' : 'dark'), arcLaneColor(arenaConfig, 2, hiContrast ? 'contrast' : 'dark')], { count: 28, spread: 9, xShift: -4, zNear: -7, zFar: -14 });
+        scene.add(arenaCity);
+        if (!hiContrast) scene.add(arcReflectCity(THREE, arenaCity));
+        var pack = { THREE: THREE, scene: scene, camera: camera, renderer: renderer, relays: relays, trailGroup: trailGroup, laneGlows: laneGlows, hiContrast: hiContrast, disposed: false };
         packRef.current = pack;
         function resize() {
           if (disposed || !canvas.parentElement) return;
@@ -1710,7 +1812,7 @@
         resize();
         if (window.ResizeObserver) { resizeObserver = new window.ResizeObserver(resize); resizeObserver.observe(canvas.parentElement); }
         syncArcBattle3D(pack, props.battle);
-        arcAttachBloom(pack, { threshold: 0.6, strength: 0.8, radius: 0.35 }, function () { resize(); });
+        if (!hiContrast) arcAttachBloom(pack, { threshold: 0.6, strength: 0.8, radius: 0.35 }, function () { resize(); });
         setStatus('ready');
       }).catch(function () { if (!disposed) setStatus('unavailable'); });
       return function () {
@@ -1847,6 +1949,19 @@
       var slab = new THREE.Mesh(geo, slabMat); slab.position.set(x, hgt / 2, z); group.add(slab);
       var ai = Math.floor(rnd() * accents.length);
       var edges = new THREE.LineSegments(new THREE.EdgesGeometry(geo), edgeMats[ai]); edges.position.copy(slab.position); group.add(edges);
+      // Tall towers get a spire and an aviation beacon — the detail that reads as
+      // "skyline" rather than "boxes". Beacons blink out of phase with each other.
+      if (hgt > 4 && rnd() > 0.35) {
+        var spireH = 0.5 + rnd() * 1.1;
+        var spire = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.03, spireH, 5), new THREE.MeshBasicMaterial({ color: accents[ai], transparent: true, opacity: 0.5 }));
+        spire.position.set(x, hgt + spireH / 2, z); group.add(spire);
+        var beacon = arcHaloSprite(THREE, '#ff5b5b', 0.34, 0.9);
+        beacon.position.set(x, hgt + spireH, z);
+        beacon.userData.phase = rnd() * Math.PI * 2;
+        group.add(beacon);
+        group.userData.beacons = group.userData.beacons || [];
+        group.userData.beacons.push(beacon);
+      }
       // Lit windows on the camera-facing face (capped so the draw-call count stays small).
       var rows = Math.max(1, Math.floor(hgt / 0.55)), cols = Math.max(1, Math.floor(w / 0.32));
       for (var r = 0; r < rows; r++) {
@@ -1925,6 +2040,58 @@
     }
     pts.geometry.attributes.position.needsUpdate = true;
   }
+  // Diagonal hazard stripes (cached). A barrier the beam must clear is exactly the
+  // thing this pattern means in the physical world, so it carries meaning, not just texture.
+  var _arcHazardTex = null;
+  function arcHazardTexture(THREE) {
+    if (_arcHazardTex) return _arcHazardTex;
+    try {
+      var c = document.createElement('canvas'); c.width = c.height = 64;
+      var g = c.getContext('2d');
+      g.fillStyle = '#516074'; g.fillRect(0, 0, 64, 64);
+      g.strokeStyle = '#c8b26a'; g.lineWidth = 9;
+      for (var i = -64; i < 128; i += 26) { g.beginPath(); g.moveTo(i, 0); g.lineTo(i + 64, 64); g.stroke(); }
+      _arcHazardTex = new THREE.CanvasTexture(c);
+      _arcHazardTex.wrapS = _arcHazardTex.wrapT = THREE.RepeatWrapping;
+    } catch (e) { _arcHazardTex = null; }
+    return _arcHazardTex;
+  }
+  var ARC_CONTRAST_LANES = ['#ffff00', '#00ffff', '#ffffff'];
+  // Lane colour is DATA on the arena config, shared by the 2D board, the 3D arena and
+  // the shield chips, so it is not edited — it is MAPPED for the surface it lands on.
+  // The stored values are neon, picked for a dark ground: on a white board they run
+  // 1.53-2.72:1, under the 3:1 a mark you aim with needs. These keep each lane's hue
+  // (so the three circuits stay tellable apart) at 4.9-7.1:1 on white.
+  var ARC_LIGHT_LANES = {
+    '#22d3ee': '#0e7490', '#f472b6': '#be185d', '#facc15': '#a16207',
+    '#a78bfa': '#6d28d9', '#34d399': '#047857', '#fb923c': '#c2410c'
+  };
+  // `mode` is the GROUND the colour will sit on, not the app theme — the 3D arena
+  // paints its own dark scene even while the app is in light mode, so it asks for
+  // 'dark' there and only switches on the contrast theme.
+  function arcLaneColor(arenaConfig, laneIndex, mode) {
+    if (mode === true || mode === 'contrast') return ARC_CONTRAST_LANES[laneIndex % ARC_CONTRAST_LANES.length];
+    var c = arenaConfig.lanes[laneIndex].color;
+    if (mode === 'light') return ARC_LIGHT_LANES[String(c).toLowerCase()] || c;
+    return c;
+  }
+  // The same mapping for a colour that is not read off a lane (the aiming preview
+  // picks its colour from the seat, not the arena).
+  function arcInkForGround(color, mode) {
+    if (mode === 'light') return ARC_LIGHT_LANES[String(color).toLowerCase()] || color;
+    return color;
+  }
+  // Mirror a city's neon edge lines below the ground plane: a wet-street reflection.
+  // Only the LineSegments are mirrored — the slabs would read as a second city.
+  function arcReflectCity(THREE, city) {
+    var group = new THREE.Group();
+    city.children.forEach(function (ch) {
+      if (!ch.isLineSegments) return;
+      var m = ch.clone(); m.material = ch.material.clone(); m.material.opacity = 0.16;
+      m.position.y = -ch.position.y - 0.02; m.scale.y = -1; group.add(m);
+    });
+    return group;
+  }
   // A glowing tube through a point list (MeshBasic = unlit, so it blooms cleanly).
   function arcTube(THREE, pts, radius, color, opacity) {
     if (!pts || pts.length < 2) return null;
@@ -1969,25 +2136,31 @@
     return runs.filter(function (r) { return r.length >= 2; });
   }
   function arcBuildPlay3D(THREE, canvas, scene3d) {
-    var PAL3 = arcPalette('dark'), world = scene3d.world;
+    var hiContrast = scene3d.theme === 'contrast';
+    var PAL3 = arcPalette(hiContrast ? 'contrast' : 'dark'), world = scene3d.world;
+    // On the contrast theme every atmospheric layer is off: each one trades edge
+    // definition for mood, and that trade is wrong here.
+    var atmosphere = !hiContrast && !scene3d.calm && !arcLowPower();
     var scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x05070f);
-    scene.fog = new THREE.Fog(0x05070f, 18, 42);
+    scene.background = new THREE.Color(hiContrast ? 0x000000 : 0x05070f);
+    // No distance haze on the contrast theme: fog washes far edges toward the
+    // background, which is the opposite of what this theme is for.
+    if (!hiContrast) scene.fog = new THREE.Fog(new THREE.Color(0x05070f).lerp(new THREE.Color(arcFamilyTint(scene3d)), 0.12), 18, 42);
     var camera = new THREE.PerspectiveCamera(46, 2, 0.1, 120);
     var renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, alpha: false });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
     if ('outputEncoding' in renderer && THREE.sRGBEncoding) renderer.outputEncoding = THREE.sRGBEncoding;
     scene.add(new THREE.HemisphereLight(0x8fd6ff, 0x0b0618, 0.7));
     var key = new THREE.DirectionalLight(0xffffff, 0.55); key.position.set(5, 10, 8); scene.add(key);
-    scene.add(arcStarField(THREE, 9, 420, 60));
-    var tint = arcFamilyTint(scene3d);
-    scene.add(arcHorizonGlow(THREE, tint, 90, 5.5, -15.5));
-    var motes = (!scene3d.calm && !arcLowPower()) ? arcMotes(THREE, 90, { x: 8, y: 6.5, z: 4 }) : null;
+    if (!hiContrast) scene.add(arcStarField(THREE, 9, 420, 60));
+    var tint = hiContrast ? PAL3.accent : arcFamilyTint(scene3d);
+    if (!hiContrast) scene.add(arcHorizonGlow(THREE, tint, 90, 5.5, -15.5));
+    var motes = atmosphere ? arcMotes(THREE, 90, { x: 8, y: 6.5, z: 4 }) : null;
     if (motes) scene.add(motes);
     var headLight = new THREE.PointLight(PAL3.accent, 0, 6); scene.add(headLight);
     // Ground, the lit "street" the beam flies over, and the vertical graph grid the
     // SVG board also draws (so the 3D view reads as the same coordinate space).
-    var ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshPhongMaterial({ color: 0x070a16, shininess: 30, transparent: true, opacity: 0.86 }));
+    var ground = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.MeshPhongMaterial({ color: hiContrast ? 0x000000 : 0x070a16, shininess: 30, transparent: !hiContrast, opacity: hiContrast ? 1 : 0.86 }));
     ground.rotation.x = -Math.PI / 2; ground.position.y = -0.02; scene.add(ground);
     var street = new THREE.Mesh(new THREE.PlaneGeometry(ARC_3D_W + 1.2, 1.1), new THREE.MeshBasicMaterial({ color: tint, transparent: true, opacity: 0.1, blending: THREE.AdditiveBlending, depthWrite: false }));
     street.rotation.x = -Math.PI / 2; street.position.y = 0; scene.add(street);
@@ -1996,9 +2169,9 @@
     var gridPts = [];
     for (var gx = Math.ceil(world.x0); gx <= world.x1; gx++) { gridPts.push(arcScenePoint(THREE, world, gx, world.y0, -0.03), arcScenePoint(THREE, world, gx, world.y1, -0.03)); }
     for (var gy = Math.ceil(world.y0); gy <= world.y1; gy++) { gridPts.push(arcScenePoint(THREE, world, world.x0, gy, -0.03), arcScenePoint(THREE, world, world.x1, gy, -0.03)); }
-    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(gridPts), new THREE.LineBasicMaterial({ color: PAL3.accent, transparent: true, opacity: 0.13 })));
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(gridPts), new THREE.LineBasicMaterial({ color: hiContrast ? '#ffffff' : PAL3.accent, transparent: true, opacity: hiContrast ? 0.5 : 0.13 })));
     // Gates: two glowing posts leave the aperture as a lit slot between two lips.
-    var gateParts = [];
+    var gateParts = [], gateMarks = [], slotMats = [];
     (scene3d.gates || []).forEach(function (g) {
       var lo = arcScenePoint(THREE, world, g.x, g.lo, 0), hi = arcScenePoint(THREE, world, g.x, g.hi, 0), top = ARC_3D_H + 0.35;
       var mat = new THREE.MeshBasicMaterial({ color: PAL3.gate, transparent: true, opacity: 0.78 });
@@ -2006,41 +2179,75 @@
       var postHi = new THREE.Mesh(new THREE.BoxGeometry(0.16, Math.max(0.05, top - hi.y), 0.42), mat); postHi.position.set(hi.x, (top + hi.y) / 2, 0);
       var lipLo = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), mat); lipLo.position.set(lo.x, lo.y, 0);
       var lipHi = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.05, 0.5), mat); lipHi.position.set(hi.x, hi.y, 0);
-      var slot = new THREE.Mesh(new THREE.BoxGeometry(0.06, Math.max(0.02, hi.y - lo.y), 0.36), new THREE.MeshBasicMaterial({ color: PAL3.gate, transparent: true, opacity: 0.12 })); slot.position.set(lo.x, (lo.y + hi.y) / 2, 0);
+      var slotMat = new THREE.MeshBasicMaterial({ color: PAL3.gate, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false });
+      var slot = new THREE.Mesh(new THREE.BoxGeometry(0.06, Math.max(0.02, hi.y - lo.y), 0.36), slotMat); slot.position.set(lo.x, (lo.y + hi.y) / 2, 0);
+      slotMats.push(slotMat);
       scene.add(postLo, postHi, lipLo, lipHi, slot); gateParts.push(mat);
+      gateMarks.push({ mat: mat, x: lo.x, base: 0.78, flash: 0, passed: false });
       var gateEdgeMat = new THREE.LineBasicMaterial({ color: '#ffffff', transparent: true, opacity: 0.35 });
       [postLo, postHi].forEach(function (post) { var e = new THREE.LineSegments(new THREE.EdgesGeometry(post.geometry), gateEdgeMat); e.position.copy(post.position); scene.add(e); });
     });
     (scene3d.walls || []).forEach(function (w) {
       var topPt = arcScenePoint(THREE, world, w.x, w.height, 0), hgt = Math.max(0.1, topPt.y);
-      var wall = new THREE.Mesh(new THREE.BoxGeometry(0.26, hgt, 0.75), new THREE.MeshPhongMaterial({ color: 0x64748b, emissive: 0x1e293b, shininess: 40 }));
+      var hazardTex = arcHazardTexture(THREE);
+      if (hazardTex) { hazardTex = hazardTex.clone(); hazardTex.needsUpdate = true; hazardTex.repeat.set(1, Math.max(1, Math.round(hgt))); }
+      var wall = new THREE.Mesh(new THREE.BoxGeometry(0.26, hgt, 0.75), new THREE.MeshPhongMaterial({ color: hazardTex ? 0xffffff : 0x64748b, map: hazardTex, emissive: 0x1e293b, shininess: 40 }));
       wall.position.set(topPt.x, hgt / 2, 0); scene.add(wall);
       var wallEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wall.geometry), new THREE.LineBasicMaterial({ color: PAL3.wall, transparent: true, opacity: 0.6 })); wallEdges.position.copy(wall.position); scene.add(wallEdges);
       var parapet = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.06, 0.85), new THREE.MeshBasicMaterial({ color: PAL3.wall })); parapet.position.set(topPt.x, hgt, 0); scene.add(parapet);
     });
-    var nodeMesh = null, nodeRing = null, nodeLight = null, nodeHalo = null;
+    var nodeMesh = null, nodeRing = null, nodeLight = null, nodeHalo = null, nodeShaft = null, nodePing = null;
     if (!scene3d.isMatch && scene3d.node) {
       var np = arcScenePoint(THREE, world, scene3d.node.x, scene3d.node.y, 0);
       var nr = Math.max(0.2, scene3d.node.r * ARC_3D_W / (world.x1 - world.x0));
-      nodeMesh = new THREE.Mesh(new THREE.SphereGeometry(nr, 22, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(PAL3.nodeOff).multiplyScalar(0.72) }));
+      nodeMesh = new THREE.Mesh(new THREE.SphereGeometry(nr, 22, 16), new THREE.MeshBasicMaterial({ color: new THREE.Color(PAL3.nodeOff).multiplyScalar(hiContrast ? 1 : 0.72) }));
       nodeMesh.position.copy(np); scene.add(nodeMesh);
       nodeRing = new THREE.Mesh(new THREE.TorusGeometry(nr * 1.9, 0.03, 8, 40), new THREE.MeshBasicMaterial({ color: PAL3.nodeOff, transparent: true, opacity: 0.55 }));
       nodeRing.position.copy(np); nodeRing.rotation.x = Math.PI / 2; scene.add(nodeRing);
       nodeLight = new THREE.PointLight(PAL3.nodeOff, 0.9, 7); nodeLight.position.copy(np); nodeLight.position.z = 1.2; scene.add(nodeLight);
-      nodeHalo = arcHaloSprite(THREE, PAL3.nodeOff, nr * 7, 0.5); nodeHalo.position.copy(np); nodeHalo.userData.base = nr * 7; scene.add(nodeHalo);
+      if (!hiContrast) {
+        nodeHalo = arcHaloSprite(THREE, PAL3.nodeOff, nr * 7, 0.5); nodeHalo.position.copy(np); nodeHalo.userData.base = nr * 7; scene.add(nodeHalo);
+      }
+      // A searchlight shaft rising from the node once it is lit: the payoff is visible
+      // from anywhere in the city, not only when you are looking straight at the node.
+      var shaftH = 9;
+      nodeShaft = new THREE.Mesh(new THREE.CylinderGeometry(nr * 3.2, nr * 0.9, shaftH, 18, 1, true), new THREE.MeshBasicMaterial({ color: PAL3.nodeOn, transparent: true, opacity: 0, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false }));
+      nodeShaft.position.set(np.x, np.y + shaftH / 2, np.z); scene.add(nodeShaft);
+      nodePing = new THREE.Mesh(new THREE.TorusGeometry(nr * 1.6, 0.022, 8, 44), new THREE.MeshBasicMaterial({ color: PAL3.nodeOff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      nodePing.position.copy(np); nodePing.rotation.x = Math.PI / 2; nodePing.userData.base = 1; nodePing.visible = false; scene.add(nodePing);
     }
-    var city = arcBuildCity(THREE, 2026, [PAL3.accent, PAL3.gate, PAL3.nodeOff, '#f472b6'], { count: 30, spread: 13, zNear: -4.2, zFar: -12 }); scene.add(city);
-    var reflect = new THREE.Group();
-    city.children.forEach(function (ch) {
-      if (!ch.isLineSegments) return;
-      var m = ch.clone(); m.material = ch.material.clone(); m.material.opacity = 0.16; m.position.y = -ch.position.y - 0.02; m.scale.y = -1; reflect.add(m);
-    });
-    scene.add(reflect);
+    var city = arcBuildCity(THREE, 2026, [PAL3.accent, PAL3.gate, PAL3.nodeOff, hiContrast ? PAL3.nodeOn : '#f472b6'], { count: 30, spread: 13, zNear: -4.2, zFar: -12 }); scene.add(city);
+    if (!hiContrast) scene.add(arcReflectCity(THREE, city));
+    // Traffic: headlight and tail-light streaks running along the avenue between the
+    // play plane and the skyline. Deterministic, and only stepped while idle motion is on.
+    var traffic = [];
+    if (atmosphere) {
+      var trnd = arcSeededRandom(404);
+      for (var ti = 0; ti < 14; ti++) {
+        var warm = trnd() > 0.5;
+        var car = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.05, 0.05), new THREE.MeshBasicMaterial({ color: warm ? '#fde68a' : '#fca5a5', transparent: true, opacity: 0.75, blending: THREE.AdditiveBlending, depthWrite: false }));
+        var lane = -2.6 - Math.floor(trnd() * 2) * 0.55;
+        car.position.set((trnd() * 2 - 1) * 9, 0.06, lane);
+        car.userData.dir = warm ? 1 : -1; car.userData.speed = 2.2 + trnd() * 2.6;
+        scene.add(car); traffic.push(car);
+      }
+    }
+    // A searchlight on a far rooftop, sweeping the sky. It sits behind the skyline
+    // and above the play plane, so it never crosses anything the player has to read.
+    var searchlight = null;
+    if (atmosphere) {
+      var slGeo = new THREE.CylinderGeometry(0.02, 1.5, 15, 14, 1, true);
+      slGeo.translate(0, 7.5, 0); // pivot at the lamp, not the middle of the shaft
+      searchlight = new THREE.Mesh(slGeo, new THREE.MeshBasicMaterial({ color: '#dbeafe', transparent: true, opacity: 0.045, side: THREE.DoubleSide, blending: THREE.AdditiveBlending, depthWrite: false, fog: false }));
+      searchlight.position.set(-8.6, 1.4, -9.5); searchlight.rotation.x = -0.3;
+      scene.add(searchlight);
+    }
     var dyn = new THREE.Group(); scene.add(dyn);
     var fx = new THREE.Group(); scene.add(fx);
     return {
       THREE: THREE, scene: scene, camera: camera, renderer: renderer, canvas: canvas, PAL: PAL3, world: world,
-      dyn: dyn, fx: fx, gateMats: gateParts, nodeMesh: nodeMesh, nodeRing: nodeRing, nodeLight: nodeLight, nodeHalo: nodeHalo, motes: motes, headLight: headLight, city: city, sparks: null, nextTwinkle: 0,
+      dyn: dyn, fx: fx, gateMats: gateParts, gateMarks: gateMarks, slotMats: slotMats, ghostTubes: [], nodeMesh: nodeMesh, nodeRing: nodeRing, nodeLight: nodeLight, nodeHalo: nodeHalo, nodeShaft: nodeShaft, nodePing: nodePing, motes: motes, traffic: traffic, searchlight: searchlight, headLight: headLight, city: city, sparks: null, nextTwinkle: 0,
+      hiContrast: hiContrast,
       cam: { theta: 0.3, phi: 0.3, r: 12.5, ty: 1.4, baseTheta: 0.3 }, dirty: true, visible: true, lastLitShots: -1
     };
   }
@@ -2055,17 +2262,64 @@
     var THREE = pack.THREE, PAL3 = pack.PAL, world = pack.world, reduce = arcReducedMotion();
     var lit = !!scene3d.lit, litColor = lit ? PAL3.nodeOn : PAL3.nodeOff;
     if (pack.nodeMesh) {
-      pack.nodeMesh.material.color.set(litColor).multiplyScalar(0.72); pack.nodeRing.material.color.set(litColor);
+      pack.nodeMesh.material.color.set(litColor).multiplyScalar(pack.hiContrast ? 1 : 0.72); pack.nodeRing.material.color.set(litColor);
       if (pack.nodeLight) pack.nodeLight.color.set(litColor);
       if (pack.nodeHalo) { pack.nodeHalo.material.color.set(litColor); pack.nodeHalo.material.opacity = lit ? 0.8 : 0.5; }
+      if (pack.nodeShaft) pack.nodeShaft.material.opacity = lit ? 0.09 : 0;
     }
     if (pack.headLight) pack.headLight.intensity = 0;
     pack.gateMats.forEach(function (m) { m.color.set(lit ? PAL3.nodeOn : PAL3.gate); });
     arcClearGroup(pack.dyn);
+    pack.ghostTubes = [];
     // Ghost target (Transformations world) and the live preview: only when the
     // board shows them — the same anti-fishing gate as the SVG, never looser.
     if (scene3d.ghost && scene3d.showPreview) {
-      arcCurveRuns(THREE, world, scene3d.ghost).forEach(function (run) { var l = arcDashedLine(THREE, run, PAL3.gate, 0.75, 0.42, 0.22); if (l) pack.dyn.add(l); var gt = arcTube(THREE, run, 0.05, PAL3.gate, 0.28); if (gt) pack.dyn.add(gt); });
+      arcCurveRuns(THREE, world, scene3d.ghost).forEach(function (run) { var l = arcDashedLine(THREE, run, PAL3.gate, 0.75, 0.42, 0.22); if (l) pack.dyn.add(l); var gt = arcTube(THREE, run, 0.05, PAL3.gate, 0.28); if (gt) { gt.material.blending = THREE.AdditiveBlending; gt.material.depthWrite = false; pack.dyn.add(gt); pack.ghostTubes.push(gt); } });
+    }
+    // The measurements, in the city — the same array the board draws.
+    (scene3d.analysis || []).forEach(function (a) {
+      if (a.kind === 'missgap') {
+        var seg = arcDashedLine(THREE, [arcScenePoint(THREE, world, a.from.x, a.from.y, 0), arcScenePoint(THREE, world, a.to.x, a.to.y, 0)], PAL3.warn, 0.95, 0.16, 0.12);
+        if (seg) pack.dyn.add(seg);
+        var dot = new THREE.Mesh(new THREE.SphereGeometry(0.08, 10, 8), new THREE.MeshBasicMaterial({ color: PAL3.warn }));
+        dot.position.copy(arcScenePoint(THREE, world, a.from.x, a.from.y, 0)); pack.dyn.add(dot);
+      } else if (a.kind === 'matchgap') {
+        var mg = arcDashedLine(THREE, [arcScenePoint(THREE, world, a.x, a.yPlayer, 0), arcScenePoint(THREE, world, a.x, a.yGhost, 0)], PAL3.warn, 0.95, 0.14, 0.1);
+        if (mg) pack.dyn.add(mg);
+      } else if (a.kind === 'slope') {
+        // The tangent the beam actually arrived at, drawn where the gate rejected it.
+        var t0 = arcScenePoint(THREE, world, a.x - a.dx, a.y - a.actual * a.dx, 0);
+        var t1 = arcScenePoint(THREE, world, a.x + a.dx, a.y + a.actual * a.dx, 0);
+        var tan = arcTube(THREE, [t0, t1], 0.045, PAL3.danger, 0.95);
+        if (tan) pack.dyn.add(tan);
+      }
+    });
+    // The structure layer, in the city. Same array the board draws, so the two can
+    // never disagree about where the axis or the asymptote is.
+    (scene3d.guides || []).forEach(function (g) {
+      var col = g.kind === 'asymptote' ? PAL3.warn : '#cbd5e1';
+      if (g.kind === 'axis' || g.kind === 'turn') {
+        var top = g.kind === 'axis' ? world.y1 : g.y;
+        var l = arcDashedLine(THREE, [arcScenePoint(THREE, world, g.x, world.y0, -0.02), arcScenePoint(THREE, world, g.x, top, -0.02)], col, 0.5, 0.18, 0.14);
+        if (l) pack.dyn.add(l);
+        if (g.kind === 'turn') {
+          var dot = new THREE.Mesh(new THREE.SphereGeometry(0.075, 10, 8), new THREE.MeshBasicMaterial({ color: PAL3.accent }));
+          dot.position.copy(arcScenePoint(THREE, world, g.x, g.y, 0)); pack.dyn.add(dot);
+        }
+      } else if (g.kind === 'midline' || g.kind === 'asymptote') {
+        var hl = arcDashedLine(THREE, [arcScenePoint(THREE, world, world.x0, g.y, -0.02), arcScenePoint(THREE, world, world.x1, g.y, -0.02)], col, g.kind === 'asymptote' ? 0.85 : 0.5, 0.2, 0.16);
+        if (hl) pack.dyn.add(hl);
+      } else if (g.kind === 'amp') {
+        var ax = world.x0 + (world.x1 - world.x0) * 0.06;
+        var al = arcDashedLine(THREE, [arcScenePoint(THREE, world, ax, g.y0, 0), arcScenePoint(THREE, world, ax, g.y1, 0)], PAL3.accent, 0.8, 0.12, 0.1);
+        if (al) pack.dyn.add(al);
+      } else if (g.kind === 'vertex') {
+        var ring = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.02, 8, 24), new THREE.MeshBasicMaterial({ color: PAL3.accent }));
+        ring.position.copy(arcScenePoint(THREE, world, g.x, g.y, 0)); pack.dyn.add(ring);
+      }
+    });
+    if (scene3d.trail && scene3d.trail.length) {
+      arcCurveRuns(THREE, world, scene3d.trail).forEach(function (run) { var l = arcDashedLine(THREE, run, '#94a3b8', 0.34, 0.06, 0.22); if (l) pack.dyn.add(l); });
     }
     if (!scene3d.fired && scene3d.showPreview && scene3d.samples.length) {
       arcCurveRuns(THREE, world, scene3d.samples).forEach(function (run) { var l = arcDashedLine(THREE, run, '#e2e8f0', 0.6, 0.2, 0.16); if (l) pack.dyn.add(l); var pt = arcTube(THREE, run, 0.035, PAL3.accent, 0.3); if (pt) pack.dyn.add(pt); });
@@ -2075,7 +2329,7 @@
       var beamColor = scene3d.hit ? PAL3.nodeOn : PAL3.accent, killX = scene3d.killX;
       var tubes = [], total = 0, allPts = [];
       arcCurveRuns(THREE, world, scene3d.samples, null, killX).forEach(function (run) {
-        var tube = arcTube(THREE, run, 0.075, beamColor, 1);
+        var tube = arcTube(THREE, run, pack.hiContrast ? 0.11 : 0.075, beamColor, 1);
         if (!tube) return;
         pack.dyn.add(tube); tubes.push(tube); total += run.length;
         var core = arcTube(THREE, run, 0.03, '#ffffff', 0.85);
@@ -2107,6 +2361,7 @@
         tubes.forEach(function (tb) { if (tb.geometry.index) tb.geometry.setDrawRange(0, 0); });
         pack.beamAnim = { start: 0, tubes: tubes, ms: 520, path: allPts };
         arcSpawnSparks(pack, beamColor);
+        pack.gateMarks.forEach(function (gm) { gm.passed = false; });
       }
       if (pack.pendingHit && !pack.beamAnim) { pack.pendingHit = false; arcSpawnBurst(pack); pack.punch = { start: 0, ms: 420 }; }
       if (scene3d.hit && scene3d.shots !== pack.lastLitShots) {
@@ -2174,7 +2429,14 @@
       var tip = null;
       if (ba.path && ba.path.length) { tip = ba.path[Math.min(ba.path.length - 1, Math.floor(eased * (ba.path.length - 1)))]; if (pack.headLight) { pack.headLight.position.set(tip.x, tip.y, 0.6); pack.headLight.intensity = 1.1 + 1.4 * (1 - p); } }
       arcStepSparks(pack, tip, true, 0.016);
-      if (tip) { pack.cam.lookTX = tip.x * 0.3; pack.cam.lookTY = (tip.y - pack.cam.ty) * 0.3; }
+      if (tip) {
+        pack.cam.lookTX = tip.x * 0.3; pack.cam.lookTY = (tip.y - pack.cam.ty) * 0.3;
+        // A gate lights up the moment the beam passes through it.
+        for (var gi = 0; gi < pack.gateMarks.length; gi++) {
+          var gm = pack.gateMarks[gi];
+          if (!gm.passed && tip.x >= gm.x) { gm.passed = true; gm.flash = 1; }
+        }
+      }
       if (p >= 1) {
         pack.beamAnim = null;
         if (pack.pendingImpact) { arcSpawnBurst(pack, pack.pendingImpact.at, pack.pendingImpact.color, 36); pack.pendingImpact = null; }
@@ -2208,6 +2470,13 @@
     if (!pack.beamAnim) { pack.cam.lookTX = 0; pack.cam.lookTY = 0; }
     var lx = pack.cam.lookX || 0, ly = pack.cam.lookY || 0, tx = pack.cam.lookTX || 0, ty2 = pack.cam.lookTY || 0;
     if (Math.abs(lx - tx) > 0.002 || Math.abs(ly - ty2) > 0.002) { pack.cam.lookX = lx + (tx - lx) * 0.1; pack.cam.lookY = ly + (ty2 - ly) * 0.1; motion = true; }
+    for (var gk = 0; gk < pack.gateMarks.length; gk++) {
+      var gmk = pack.gateMarks[gk];
+      if (gmk.flash <= 0) continue;
+      gmk.flash = Math.max(0, gmk.flash - 0.05);
+      gmk.mat.opacity = Math.min(1, gmk.base + gmk.flash * 0.22);
+      motion = true;
+    }
     var punchOffset = 0;
     if (pack.punch) {
       var pu = pack.punch; if (!pu.start) pu.start = now;
@@ -2223,6 +2492,27 @@
       if (pack.nodeRing) { pack.nodeRing.rotation.z = now * 0.0006; pack.nodeRing.scale.setScalar(1 + (pack.lit ? 0.06 : 0.03) * Math.sin(now * 0.003)); }
       if (pack.nodeHalo) { var hs = 1 + 0.08 * Math.sin(now * 0.0024); pack.nodeHalo.scale.set(pack.nodeHalo.userData.base * hs, pack.nodeHalo.userData.base * hs, 1); }
       if (pack.motes) arcStepMotes(pack.motes, 0.016);
+      if (pack.searchlight) pack.searchlight.rotation.z = 0.55 * Math.sin(now * 0.00033);
+      for (var tk = 0; tk < pack.traffic.length; tk++) {
+        var car = pack.traffic[tk];
+        car.position.x += car.userData.dir * car.userData.speed * 0.016;
+        if (car.position.x > 9.5) car.position.x = -9.5; else if (car.position.x < -9.5) car.position.x = 9.5;
+      }
+      if (pack.city && pack.city.userData.beacons) {
+        pack.city.userData.beacons.forEach(function (b) { b.material.opacity = 0.25 + 0.75 * Math.max(0, Math.sin(now * 0.0016 + b.userData.phase)); });
+      }
+      if (pack.nodeShaft && pack.lit) pack.nodeShaft.material.opacity = 0.075 + 0.03 * Math.sin(now * 0.0013);
+      // The gate apertures shimmer, each a little out of phase with the next.
+      for (var sk2 = 0; sk2 < pack.slotMats.length; sk2++) pack.slotMats[sk2].opacity = 0.1 + 0.07 * Math.sin(now * 0.0021 + sk2 * 1.3);
+      // The match target is a projection, so it breathes like one.
+      for (var gh = 0; gh < pack.ghostTubes.length; gh++) pack.ghostTubes[gh].material.opacity = 0.22 + 0.12 * Math.sin(now * 0.0027);
+      // While the node is dark it pings: a ring expands out of it every ~2.4s.
+      if (pack.nodePing && !pack.lit) {
+        var t = (now % 2400) / 2400;
+        pack.nodePing.visible = true;
+        pack.nodePing.scale.setScalar(pack.nodePing.userData.base * (0.6 + t * 2.6));
+        pack.nodePing.material.opacity = 0.5 * (1 - t);
+      } else if (pack.nodePing) { pack.nodePing.visible = false; }
       // A window somewhere flips every ~350ms: the city is inhabited.
       if (pack.city && pack.city.userData.windows && now > pack.nextTwinkle) {
         pack.nextTwinkle = now + 350;
@@ -2269,7 +2559,7 @@
         on(canvas, 'pointerup', endDrag); on(canvas, 'pointercancel', endDrag);
         on(canvas, 'dblclick', function () { pack.cam.baseTheta = 0.3; pack.cam.theta = 0.3; pack.cam.phi = 0.3; pack.dirty = true; });
         arcSyncPlay3D(pack, sceneRef.current);
-        arcAttachBloom(pack, { threshold: 0.66, strength: 0.8, radius: 0.4 }, function () { resize(); });
+        if (!pack.hiContrast) arcAttachBloom(pack, { threshold: 0.66, strength: 0.8, radius: 0.4 }, function () { resize(); });
         function frame(now) {
           if (pack.disposed) return;
           pack.raf = requestAnimationFrame(frame);
@@ -2289,11 +2579,38 @@
       };
     }, []);
     React.useEffect(function () { if (packRef.current) arcSyncPlay3D(packRef.current, props.scene); }, [props.sig]);
+    // The idle sway rewrites cam.theta from cam.baseTheta every frame, so baseTheta
+    // is the knob to turn — writing theta directly would be undone on the next frame.
+    function nudgeCam(dTheta, dPhi) {
+      var pack = packRef.current; if (!pack || pack.disposed) return;
+      pack.cam.baseTheta += dTheta; pack.cam.theta = pack.cam.baseTheta;
+      pack.cam.phi = Math.max(0.1, Math.min(1.15, pack.cam.phi + dPhi));
+      pack.dirty = true;
+    }
+    function resetCam() {
+      var pack = packRef.current; if (!pack || pack.disposed) return;
+      pack.cam.baseTheta = 0.3; pack.cam.theta = 0.3; pack.cam.phi = 0.3; pack.dirty = true;
+    }
+    var camText = props.camText || {};
+    var camBtnStyle = { padding: '2px 8px', borderRadius: 6, border: '1px solid rgba(148,163,184,0.45)', background: 'transparent', color: '#cbd5e1', fontSize: 12, lineHeight: 1.4, cursor: 'pointer' };
+    function camBtn(key, label, glyph, dTheta, dPhi) {
+      return h('button', {
+        key: key, type: 'button', 'aria-label': label, title: label, disabled: status !== 'ready',
+        onClick: dTheta === null ? resetCam : function () { nudgeCam(dTheta, dPhi); },
+        style: Object.assign({}, camBtnStyle, status !== 'ready' ? { opacity: 0.45, cursor: 'default' } : null)
+      }, glyph);
+    }
     return h('div', { className: 'arc-city3d', style: { position: 'relative', marginTop: 10, border: '1px solid rgba(34,211,238,0.35)', borderRadius: 12, overflow: 'hidden', background: '#05070f' } },
       h('canvas', { ref: canvasRef, 'aria-hidden': 'true', style: { display: 'block', width: '100%', minHeight: 220, touchAction: 'pan-y', cursor: 'grab' } }),
       status !== 'ready' ? h('div', { role: 'status', style: { position: 'absolute', inset: 0, display: 'grid', placeItems: 'center', padding: 20, color: '#e2e8f0', background: 'rgba(5,7,15,0.88)', textAlign: 'center', fontSize: 12 } }, status === 'unavailable' ? props.unavailableText : props.loadingText) : null,
       h('div', { style: { padding: '6px 10px', color: '#cbd5e1', fontSize: 11, display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'space-between' } },
         h('span', { key: 'cap' }, props.captionText),
+        h('span', { key: 'cam', role: 'group', 'aria-label': camText.group, style: { display: 'flex', gap: 4, alignItems: 'center' } },
+          camBtn('city3d-cam-left', camText.left, '\u25c0', -0.35, 0),
+          camBtn('city3d-cam-right', camText.right, '\u25b6', 0.35, 0),
+          camBtn('city3d-cam-up', camText.up, '\u25b2', 0, 0.12),
+          camBtn('city3d-cam-down', camText.down, '\u25bc', 0, -0.12),
+          camBtn('city3d-cam-reset', camText.reset, '\u21ba', null, 0)),
         h('span', { key: 'hint', 'aria-hidden': 'true', style: { opacity: 0.75 } }, props.orbitHintText)));
   }
 
@@ -2835,11 +3152,20 @@
         var PAL = arcPalette(THEME);
         var BEAM = PAL.accent, NODE_OFF = PAL.nodeOff, NODE_ON = PAL.nodeOn, GATE = PAL.gate, WALL = PAL.wall;
         // ★PAL drives the SVG scene, which paints its OWN dark sky and is legitimately
-        // dark in the dark theme -- do not flip THEME globally. But three sites use the
-        // accent as HTML TEXT, and that text sits on the host card, which is white in
-        // the light theme AND white in the dark theme. The dark accent #22d3ee is 1.8:1
-        // on white. Contrast mode keeps its own accent: there the host surface is black.
-        var BEAM_INK = (THEME === 'contrast') ? PAL.accent : arcPalette('light').accent;
+        // dark in the dark theme -- do not flip THEME globally. Three sites use the
+        // accent as HTML TEXT (the equation values and the co-highlighted numbers).
+        //
+        // That ink used to be forced to the LIGHT accent on the dark theme, because the
+        // shell rendered every tool on a WHITE card in both themes. The root's "OWN
+        // GROUND" fix below ended that: the root now paints #0f172a on dark, so the
+        // white-card premise no longer holds and the forced light accent became dark
+        // cyan on dark navy -- 3.33:1, under the 4.5:1 this size of text needs. Two
+        // derivations of "what is behind this text" had drifted apart.
+        //
+        // Each theme's own accent is correct against the ground that theme actually
+        // paints: light #0e7490 on white 5.36:1, dark #22d3ee on #0f172a 9.88:1,
+        // contrast #ffff00 on black 19.56:1. So there is one derivation again.
+        var BEAM_INK = PAL.accent;
 
         // ── Calm board (§8.3 "reduced clutter", a UDL knob that was specified and never
         // built — and this pass has been ADDING marks to the board, so it earns its
@@ -2860,13 +3186,25 @@
         var SKY = calm ? null : (THEME === 'dark' ? [['0%', '#141c38'], ['55%', '#0a0e1c'], ['100%', '#05070f']]
           : (THEME === 'contrast' ? null
             : [['0%', '#ffffff'], ['72%', '#f6f9fc'], ['100%', '#eef3f9']]));
+        // Light canvas: shadow. Dark and contrast canvases: the neon bloom they were
+        // designed around. Same two ids either way, so every call site is unchanged.
+        var _lightBoard = (THEME === 'light');
         var defs = h('defs', { key: 'defs' },
-          h('filter', { key: 'g', id: 'arc-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
-            h('feGaussianBlur', { key: 'b', stdDeviation: 2.4, result: 'gb' }),
-            h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
-          h('filter', { key: 'gs', id: 'arc-glow-strong', x: '-70%', y: '-70%', width: '240%', height: '240%' },
-            h('feGaussianBlur', { key: 'b', stdDeviation: 4.5, result: 'gb' }),
-            h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
+          _lightBoard
+            ? h('filter', { key: 'g', id: 'arc-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
+              h('feDropShadow', { key: 'ds', dx: 0, dy: 1, stdDeviation: 1.1, floodColor: '#0f172a', floodOpacity: 0.3 }))
+            : h('filter', { key: 'g', id: 'arc-glow', x: '-30%', y: '-30%', width: '160%', height: '160%' },
+              h('feGaussianBlur', { key: 'b', stdDeviation: 2.4, result: 'gb' }),
+              h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
+          _lightBoard
+            ? h('filter', { key: 'gs', id: 'arc-glow-strong', x: '-70%', y: '-70%', width: '240%', height: '240%' },
+              h('feDropShadow', { key: 'ds', dx: 0, dy: 2, stdDeviation: 2.1, floodColor: '#0f172a', floodOpacity: 0.32 }))
+            : h('filter', { key: 'gs', id: 'arc-glow-strong', x: '-70%', y: '-70%', width: '240%', height: '240%' },
+              h('feGaussianBlur', { key: 'b', stdDeviation: 4.5, result: 'gb' }),
+              h('feMerge', { key: 'm' }, h('feMergeNode', { key: 'n1', in: 'gb' }), h('feMergeNode', { key: 'n2', in: 'SourceGraphic' }))),
+          (THEME === 'dark' && !calm) ? h('radialGradient', { key: 'vg', id: 'arc-vignette', cx: '50%', cy: '50%', r: '75%' },
+            h('stop', { key: 'v0', offset: '55%', stopColor: '#000000', stopOpacity: 0 }),
+            h('stop', { key: 'v1', offset: '100%', stopColor: '#000000', stopOpacity: 0.42 })) : null,
           SKY ? h('radialGradient', { key: 'sky', id: 'arc-sky', cx: '50%', cy: '40%', r: '78%' },
             SKY.map(function (s, i) { return h('stop', { key: 'st' + i, offset: s[0], stopColor: s[1] }); })) : null,
           (THEME === 'dark' && !calm) ? h('linearGradient', { key: 'hz', id: 'arc-horizon', x1: '0', y1: '0', x2: '0', y2: '1' },
@@ -2874,6 +3212,9 @@
             h('stop', { key: 'h1', offset: '100%', stopColor: BEAM, stopOpacity: 0.2 })) : null);
         var backdropEls = [];
         if (SKY) backdropEls.push(h('rect', { key: 'backdrop', x: 0, y: 0, width: W, height: H, fill: 'url(#arc-sky)', 'aria-hidden': 'true' }));
+        // Vignette: DARK theme only, and it darkens only the corners — on this theme the
+        // ink and tick labels are light, so a darker edge raises their contrast, never lowers it.
+        if (THEME === 'dark' && !calm) backdropEls.push(h('rect', { key: 'vignette', x: 0, y: 0, width: W, height: H, fill: 'url(#arc-vignette)', 'aria-hidden': 'true' }));
         if (THEME === 'dark' && !calm) backdropEls.push(h('rect', { key: 'horizon', x: 0, y: H * 0.6, width: W, height: H * 0.4, fill: 'url(#arc-horizon)', 'aria-hidden': 'true' }));
         // Faint distant city skyline along the bottom (dark theme only — decorative,
         // aria-hidden, low-opacity so it never competes with the grid/gameplay above).
@@ -2896,6 +3237,8 @@
               }
             }
             if (winEls.length) backdropEls.push(h('g', { key: 'bw' + i, 'aria-hidden': 'true' }, winEls));
+            // Aviation beacon on the taller towers, blinking out of phase.
+            if (b[2] >= 44) backdropEls.push(h('circle', { key: 'bcn' + i, cx: b[0] + (b[1] - 2) / 2, cy: H - b[2] - 2, r: 1.6, fill: '#ff5b5b', opacity: 0.75, className: 'arccity-beacon', style: { animationDelay: ((i % 5) * 0.6) + 's' }, 'aria-hidden': 'true' }));
           });
         }
 
@@ -2935,6 +3278,13 @@
         var obstacleEls = [];
         (level.walls || []).forEach(function (w, i) {
           obstacleEls.push(h('rect', { key: 'wall' + i, x: sx(w.x) - 4, y: sy(w.height), width: 8, height: sy(0) - sy(w.height), fill: WALL, rx: 2, filter: GLOW }));
+          // Hazard chevrons down the barrier — decorative (the height is announced),
+          // drawn INSIDE the tested wall colour so the bar's own contrast is untouched.
+          if (!calm) {
+            var wTop = sy(w.height), wBot = sy(0), chev = [];
+            for (var cy = wTop + 5; cy < wBot - 2; cy += 9) chev.push(h('line', { key: 'wc' + i + '-' + Math.round(cy), x1: sx(w.x) - 4, y1: cy, x2: sx(w.x) + 4, y2: cy - 5, stroke: PAL.warn, strokeWidth: 2.5, opacity: 0.5 }));
+            if (chev.length) obstacleEls.push(h('g', { key: 'wchev' + i, 'aria-hidden': 'true' }, chev));
+          }
           // A bright cap on the wall's top edge: the height you must clear is the one
           // number that matters here, so the parapet is drawn as its own line rather
           // than left as the top pixel of a bar. Decorative (the height is announced).
@@ -3052,6 +3402,7 @@
         // Suppressed on match levels: there the reference curve is the GHOST, and a
         // third curve on the same overlay would make "am I on the target?" harder,
         // not easier.
+        var trail3d = null;
         var ghostShotParams = (S.fired ? ls.prevShot : ls.lastShot);
         if (ghostShotParams && !isMatch && (S.fired || showPreview)) {
           var samePos = true;
@@ -3062,9 +3413,21 @@
           if (!samePos) {
             var tsamp = sampleCurve(level, ghostShotParams), ts = '';
             for (var tgi = 0; tgi < tsamp.length; tgi++) { var tgy = tsamp[tgi].y; if (!isFinite(tgy) || tgy < wy0 - 2 || tgy > wy1 + 2) continue; ts += sx(tsamp[tgi].x) + ',' + sy(tgy) + ' '; }
-            if (ts) trailEls.push(h('polyline', { key: 'prevtrail', points: ts.trim(), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '1 7', strokeLinecap: 'round', opacity: 0.34, 'aria-hidden': 'true' }));
+            trail3d = tsamp;
+            // 0.34 put this at 2.14:1 on the light board — effectively invisible to a
+            // low-vision player, and it carries something available nowhere else: the
+            // shot before this one, to compare against. The result narration describes
+            // only the CURRENT shot. 0.5 clears 3:1 on every theme (light 3.32, dark
+            // 4.36, contrast 5.01) and matches the level the other secondary guides
+            // already use. What keeps it subordinate to the live beam is the sparse
+            // '1 7' dash and the thinner stroke, not the faintness.
+            if (ts) trailEls.push(h('polyline', { key: 'prevtrail', points: ts.trim(), fill: 'none', stroke: INK, strokeWidth: 2, strokeDasharray: '1 7', strokeLinecap: 'round', opacity: 0.5, 'aria-hidden': 'true' }));
           }
         }
+
+        // One measurement of the shot, read by the board's overlay, the board's
+        // analysis layer and the city view alike.
+        var shotAnalysis = S.fired ? arcShotAnalysis(level, res, samples, isMatch, t) : [];
 
         var overlay = [];
         if (S.fired) {
@@ -3098,24 +3461,17 @@
           // the node. Draw the actual shortest gap and label it, so "missed by 0.4"
           // is a distance you can SEE and shrink — the same number describeResult
           // announces, measured off the same sample array.
-          if (!isMatch && res.result === 'miss' && isFinite(res.nodeDist)) {
-            var nearest = null, nbest = Infinity;
-            for (var ni2 = 0; ni2 < samples.length; ni2++) {
-              var ndx = samples[ni2].x - level.node.x, ndy = samples[ni2].y - level.node.y;
-              if (!isFinite(ndy)) continue;
-              var nd = Math.sqrt(ndx * ndx + ndy * ndy);
-              if (nd < nbest) { nbest = nd; nearest = samples[ni2]; }
-            }
-            if (nearest) {
-              overlay.push(h('line', { key: 'missgap', x1: sx(nearest.x), y1: sy(nearest.y), x2: ncx, y2: ncy, stroke: PAL.warn, strokeWidth: 2, strokeDasharray: '4 3', strokeLinecap: 'round', 'aria-hidden': 'true' }));
-              overlay.push(h('circle', { key: 'missdot', cx: sx(nearest.x), cy: sy(nearest.y), r: 3.5, fill: PAL.warn, 'aria-hidden': 'true' }));
-              overlay.push(h('text', {
-                key: 'misslabel', x: (sx(nearest.x) + ncx) / 2 + 8, y: (sy(nearest.y) + ncy) / 2 - 6,
-                fill: PAL.warn, fontSize: 11, fontWeight: 800, 'aria-hidden': 'true',
-                style: { paintOrder: 'stroke', stroke: _tickHalo, strokeWidth: 3 }
-              }, round1(res.nodeDist) + ' ' + t('arccity.units_short', 'units short')));
-            }
-          }
+          shotAnalysis.forEach(function (a) {
+            if (a.kind !== 'missgap') return;
+            var nx = sx(a.from.x), ny = sy(a.from.y), tx2 = sx(a.to.x), ty2 = sy(a.to.y);
+            overlay.push(h('line', { key: 'missgap', x1: nx, y1: ny, x2: tx2, y2: ty2, stroke: PAL.warn, strokeWidth: 2, strokeDasharray: '4 3', strokeLinecap: 'round', 'aria-hidden': 'true' }));
+            overlay.push(h('circle', { key: 'missdot', cx: nx, cy: ny, r: 3.5, fill: PAL.warn, 'aria-hidden': 'true' }));
+            overlay.push(h('text', {
+              key: 'misslabel', x: (nx + tx2) / 2 + 8, y: (ny + ty2) / 2 - 6,
+              fill: PAL.warn, fontSize: 11, fontWeight: 800, 'aria-hidden': 'true',
+              style: { paintOrder: 'stroke', stroke: _tickHalo, strokeWidth: 3 }
+            }, a.label));
+          });
         }
 
         // ── Drag handles (Practice tier only: the concrete scaffold. Never on
@@ -3229,69 +3585,49 @@
           }, text));
         }
         function inWorldY(y) { return isFinite(y) && y >= wy0 && y <= wy1; }
-        if (showPreview && !(gauntlet && gauntlet.empty)) {
-          var fam = level.family;
-          if ((fam === 'parabola' || fam === 'absval') && P.h >= wx0 && P.h <= wx1) {
-            // axis of symmetry x = h — the line the whole shape folds across
-            guideLine(structureEls, 'axis-sym', { x1: sx(P.h), y1: sy(wy0), x2: sx(P.h), y2: sy(wy1) });
-            guideLabel(structureEls, 'axis-sym-lbl', sx(P.h) + 5, sy(wy1) + 13, 'x = ' + fmtVal(P.h, level.params.h.step));
-            if (tier !== 'practice' && inWorldY(P.k)) {   // practice tier already has a labelled vertex handle
-              structureEls.push(h('circle', { key: 'vertex-dot', cx: sx(P.h), cy: sy(P.k), r: 4, fill: 'none', stroke: BEAM, strokeWidth: 2, 'aria-hidden': 'true' }));
-              guideLabel(structureEls, 'vertex-lbl', sx(P.h) + 8, sy(P.k) - 7, t('arccity.guide_vertex', 'vertex'), 'start', BEAM);
-            }
-          } else if (fam === 'sine' && inWorldY(P.k)) {
-            // midline y = k — the vertical centre the wave oscillates about
-            guideLine(structureEls, 'midline', { x1: sx(wx0), y1: sy(P.k), x2: sx(wx1), y2: sy(P.k) });
-            guideLabel(structureEls, 'midline-lbl', sx(wx1) - 5, sy(P.k) - 6, t('arccity.guide_midline', 'midline') + ' y = ' + fmtVal(P.k, level.params.k.step), 'end');
-            // amplitude: how far the crest reaches above that centre
-            if (inWorldY(P.k + P.a)) {
-              guideLine(structureEls, 'amp', { x1: sx(wx0) + 32, y1: sy(P.k), x2: sx(wx0) + 32, y2: sy(P.k + P.a), stroke: BEAM, strokeDasharray: '3 3', opacity: 0.75 });
-              guideLabel(structureEls, 'amp-lbl', sx(wx0) + 37, (sy(P.k) + sy(P.k + P.a)) / 2 + 3, 'a = ' + fmtVal(P.a, level.params.a.step), 'start', BEAM);
-            }
-          } else if (fam === 'exp' && inWorldY(P.k)) {
-            // the floor/ceiling it approaches and never crosses — the whole point of L7
-            guideLine(structureEls, 'asymptote', { x1: sx(wx0), y1: sy(P.k), x2: sx(wx1), y2: sy(P.k), stroke: PAL.warn, opacity: 0.8 });
-            guideLabel(structureEls, 'asymptote-lbl', sx(wx1) - 5, sy(P.k) - 6, (P.a < 0 ? t('arccity.guide_ceiling', 'ceiling') : t('arccity.guide_floor', 'floor')) + ' y = ' + fmtVal(P.k, level.params.k.step) + ' — ' + t('arccity.guide_never_crossed', 'never crossed'), 'end', PAL.warn);
-          } else if (fam === 'poly') {
-            // the two turning points the player authored, where they landed
-            [['p', P.p, t('arccity.guide_crest', 'crest')], ['q', P.q, t('arccity.guide_dip', 'dip')]].forEach(function (tp, ti) {
-              var tx = tp[1], ty = fnY(fam, P, tx);
-              if (tx < wx0 || tx > wx1 || !inWorldY(ty)) return;
-              guideLine(structureEls, 'turn-' + tp[0], { x1: sx(tx), y1: sy(ty), x2: sx(tx), y2: sy(wy0), strokeDasharray: '3 4', opacity: 0.45 });
-              structureEls.push(h('circle', { key: 'turndot-' + tp[0], cx: sx(tx), cy: sy(ty), r: 4, fill: BEAM, stroke: INK, strokeWidth: 1.5, 'aria-hidden': 'true' }));
-              guideLabel(structureEls, 'turnlbl-' + tp[0], sx(tx), sy(ty) - 9 - (ti * 12), tp[2] + ' ' + tp[0] + '=' + fmtVal(tx, level.params[tp[0]].step), 'middle', BEAM);
-            });
+        var structureGuides = (showPreview && !(gauntlet && gauntlet.empty)) ? arcStructureGuides(level, P, tier, t) : [];
+        structureGuides.forEach(function (g) {
+          if (g.kind === 'axis') {
+            guideLine(structureEls, 'axis-sym', { x1: sx(g.x), y1: sy(wy0), x2: sx(g.x), y2: sy(wy1) });
+            guideLabel(structureEls, 'axis-sym-lbl', sx(g.x) + 5, sy(wy1) + 13, g.label);
+          } else if (g.kind === 'vertex') {
+            structureEls.push(h('circle', { key: 'vertex-dot', cx: sx(g.x), cy: sy(g.y), r: 4, fill: 'none', stroke: BEAM, strokeWidth: 2, 'aria-hidden': 'true' }));
+            guideLabel(structureEls, 'vertex-lbl', sx(g.x) + 8, sy(g.y) - 7, g.label, 'start', BEAM);
+          } else if (g.kind === 'midline') {
+            guideLine(structureEls, 'midline', { x1: sx(wx0), y1: sy(g.y), x2: sx(wx1), y2: sy(g.y) });
+            guideLabel(structureEls, 'midline-lbl', sx(wx1) - 5, sy(g.y) - 6, g.label, 'end');
+          } else if (g.kind === 'amp') {
+            guideLine(structureEls, 'amp', { x1: sx(wx0) + 32, y1: sy(g.y0), x2: sx(wx0) + 32, y2: sy(g.y1), stroke: BEAM, strokeDasharray: '3 3', opacity: 0.75 });
+            guideLabel(structureEls, 'amp-lbl', sx(wx0) + 37, (sy(g.y0) + sy(g.y1)) / 2 + 3, g.label, 'start', BEAM);
+          } else if (g.kind === 'asymptote') {
+            guideLine(structureEls, 'asymptote', { x1: sx(wx0), y1: sy(g.y), x2: sx(wx1), y2: sy(g.y), stroke: PAL.warn, opacity: 0.8 });
+            guideLabel(structureEls, 'asymptote-lbl', sx(wx1) - 5, sy(g.y) - 6, g.label, 'end', PAL.warn);
+          } else if (g.kind === 'turn') {
+            guideLine(structureEls, g.name, { x1: sx(g.x), y1: sy(g.y), x2: sx(g.x), y2: sy(wy0), strokeDasharray: '3 4', opacity: 0.45 });
+            structureEls.push(h('circle', { key: 'turndot-' + g.param, cx: sx(g.x), cy: sy(g.y), r: 4, fill: BEAM, stroke: INK, strokeWidth: 1.5, 'aria-hidden': 'true' }));
+            guideLabel(structureEls, 'turnlbl-' + g.param, sx(g.x), sy(g.y) - 9 - (g.index * 12), g.label, 'middle', BEAM);
           }
-        }
+        });
 
-        // ── Slope gates: show the angle you ARRIVED at next to the angle demanded.
-        // The gate already draws its required tangent; a rejected shot only said the
-        // numbers in a sentence. Drawing the beam's own tangent at the same point makes
-        // "flat, and it needs climbing" a picture — and it is the SAME analytic f'(x)
-        // the gate checked (§3.2), not a re-derived approximation.
-        if (S.fired && res.result === 'slope' && res.obstacle && res.obstacle.slope) {
-          var gx2 = res.at, gy2 = res.yAt, gsd = 0.9, act = res.slopeAt;
-          if (isFinite(gy2) && isFinite(act)) {
+        // The post-shot measurements, drawn from the single derivation above. The
+        // slope tangent is the SAME analytic f'(x) the gate checked, and the match gap
+        // is the pair classifyMatch judged, so a picture and a sentence cannot disagree.
+        shotAnalysis.forEach(function (a) {
+          if (a.kind === 'slope') {
             analysisEls.push(h('line', {
-              key: 'actual-slope', x1: sx(gx2 - gsd), y1: sy(gy2 - act * gsd), x2: sx(gx2 + gsd), y2: sy(gy2 + act * gsd),
+              key: 'actual-slope', x1: sx(a.x - a.dx), y1: sy(a.y - a.actual * a.dx), x2: sx(a.x + a.dx), y2: sy(a.y + a.actual * a.dx),
               stroke: PAL.danger, strokeWidth: 2.5, strokeLinecap: 'round', 'aria-hidden': 'true'
             }));
-            guideLabel(analysisEls, 'actual-slope-lbl', sx(gx2) + 12, sy(gy2) + 16, t('arccity.guide_yours', 'yours') + ' ' + round1(act), 'start', PAL.danger);
-            guideLabel(analysisEls, 'need-slope-lbl', sx(gx2) + 12, sy(gy2) - 10, t('arccity.guide_needs', 'needs') + ' ' + res.obstacle.slope.value, 'start', PAL.warn);
+            guideLabel(analysisEls, 'actual-slope-lbl', sx(a.x) + 12, sy(a.y) + 16, a.labelYours, 'start', PAL.danger);
+            guideLabel(analysisEls, 'need-slope-lbl', sx(a.x) + 12, sy(a.y) - 10, a.labelNeeds, 'start', PAL.warn);
+          } else if (a.kind === 'matchgap') {
+            var mwx = sx(a.x), mpy = sy(a.yPlayer), mgy = sy(a.yGhost);
+            analysisEls.push(h('line', { key: 'matchgap', x1: mwx, y1: mpy, x2: mwx, y2: mgy, stroke: PAL.warn, strokeWidth: 2.5, strokeLinecap: 'round', 'aria-hidden': 'true' }));
+            analysisEls.push(h('circle', { key: 'matchgap-you', cx: mwx, cy: mpy, r: 4, fill: PAL.warn, 'aria-hidden': 'true' }));
+            analysisEls.push(h('circle', { key: 'matchgap-ghost', cx: mwx, cy: mgy, r: 4, fill: 'none', stroke: PAL.warn, strokeWidth: 2, 'aria-hidden': 'true' }));
+            guideLabel(analysisEls, 'matchgap-lbl', mwx + 8, (mpy + mgy) / 2 + 3, a.label, 'start', PAL.warn);
           }
-        }
-
-        // ── Match levels: point at the WORST disagreement. classifyMatch already knows
-        // exactly where the two curves are furthest apart and by how much; that was
-        // reported only as a sentence. Drawn, it turns "not matched yet" into a place
-        // on the board to go and fix.
-        if (isMatch && S.fired && res.result === 'miss' && isFinite(res.matchWorstX) && isFinite(res.playerYAtWorst) && isFinite(res.ghostYAtWorst)) {
-          var mwx = sx(res.matchWorstX), mpy = sy(res.playerYAtWorst), mgy = sy(res.ghostYAtWorst);
-          analysisEls.push(h('line', { key: 'matchgap', x1: mwx, y1: mpy, x2: mwx, y2: mgy, stroke: PAL.warn, strokeWidth: 2.5, strokeLinecap: 'round', 'aria-hidden': 'true' }));
-          analysisEls.push(h('circle', { key: 'matchgap-you', cx: mwx, cy: mpy, r: 4, fill: PAL.warn, 'aria-hidden': 'true' }));
-          analysisEls.push(h('circle', { key: 'matchgap-ghost', cx: mwx, cy: mgy, r: 4, fill: 'none', stroke: PAL.warn, strokeWidth: 2, 'aria-hidden': 'true' }));
-          guideLabel(analysisEls, 'matchgap-lbl', mwx + 8, (mpy + mgy) / 2 + 3, t('arccity.guide_off_by', 'off by') + ' ' + round1(res.matchErr), 'start', PAL.warn);
-        }
+        });
 
         var svg = (gauntlet && gauntlet.empty) ? null : h('svg', {
           key: 'svg', viewBox: '0 0 ' + W + ' ' + H, width: '100%',
@@ -3310,19 +3646,27 @@
             levelId: level.id, family: level.family, isMatch: isMatch,
             world: { x0: wx0, x1: wx1, y0: wy0, y1: wy1 },
             gates: level.gates || [], walls: level.walls || [], node: level.node,
-            samples: curveVisible ? samples : [], ghost: ghost3d,
+            samples: curveVisible ? samples : [], ghost: ghost3d, trail: trail3d,
             fired: !!S.fired, hit: !!(S.fired && res.result === 'hit'), lit: !!lit, shots: sk,
             killX: (S.fired && res.killedAt) ? res.killedAt.x : null,
             killedAt: (S.fired && res.killedAt) ? { x: res.killedAt.x, y: res.killedAt.y } : null,
-            showPreview: !!showPreview, calm: calm
+            showPreview: !!showPreview, calm: calm, theme: THEME, guides: structureGuides, analysis: shotAnalysis
           };
           city3dEl = h(ArcCityPlay3D, {
-            key: 'city3d-' + level.id, React: React, scene: scene3d,
+            key: 'city3d-' + level.id + '-' + THEME, React: React, scene: scene3d,
             sig: [level.id, tier, S.fired ? 1 : 0, res.result, sk, showPreview ? 1 : 0, lit ? 1 : 0, calm ? 1 : 0, JSON.stringify(P)].join('|'),
             loadingText: t('arccity.city3d_loading', 'Loading the 3D city view\u2026'),
             unavailableText: t('arccity.city3d_unavailable', '3D view unavailable here. The board above is the complete game.'),
             captionText: t('arccity.city3d_caption', '3D city view \u2014 a projection of the board above. Aim and fire on the board and sliders.'),
-            orbitHintText: t('arccity.city3d_orbit', 'Drag to orbit \u00b7 double-click to reset')
+            orbitHintText: t('arccity.city3d_orbit', 'Drag to orbit \u00b7 double-click to reset'),
+            camText: {
+              group: t('arccity.city3d_cam_group', '3D camera'),
+              left: t('arccity.city3d_cam_left', 'Turn the city view left'),
+              right: t('arccity.city3d_cam_right', 'Turn the city view right'),
+              up: t('arccity.city3d_cam_up', 'Raise the city view'),
+              down: t('arccity.city3d_cam_down', 'Lower the city view'),
+              reset: t('arccity.city3d_cam_reset', 'Reset the city view angle')
+            }
           });
         }
 
@@ -3515,7 +3859,13 @@
           announceArc(ctx, t('arccity.hint_declined', 'Tip put away. It will be offered again after your next try.'));
         }
 
-        var coordItems = [h('li', { key: 'cn' }, '🎯 ' + t('arccity.node', 'Node (target):') + ' x ' + level.node.x + ', y ' + level.node.y)];
+        // On a Transformations level the node is suppressed on the board and is not what
+        // gets judged — the gap to the ghost is. Naming a node here pointed the player at
+        // a target that is neither drawn nor scored, and contradicted describeBoard, which
+        // already narrates these levels correctly.
+        var coordItems = isMatch
+          ? [h('li', { key: 'cn' }, '🎯 ' + t('arccity.match_target', 'Target curve:') + ' ' + t('arccity.match_within', 'stay within') + ' ' + level.matchTol + ' ' + t('arccity.match_units_of_ghost', 'units of the ghost, all the way across') + ((level.matchDomain && (level.matchDomain[0] !== level.world.x0 || level.matchDomain[1] !== level.world.x1)) ? ' (' + t('arccity.match_judged_from', 'judged from x') + ' ' + level.matchDomain[0] + ' ' + t('arccity.match_to', 'to') + ' ' + level.matchDomain[1] + ')' : ''))]
+          : [h('li', { key: 'cn' }, '🎯 ' + t('arccity.node', 'Node (target):') + ' x ' + level.node.x + ', y ' + level.node.y)];
         (level.walls || []).forEach(function (w, i) { coordItems.push(h('li', { key: 'cw' + i }, '🧱 ' + t('arccity.wall', 'Wall:') + ' x ' + w.x + ', height ' + w.height)); });
         (level.gates || []).forEach(function (g, i) { coordItems.push(h('li', { key: 'cg' + i }, '🚪 ' + t('arccity.gate', 'Gate:') + ' x ' + g.x + ', opening y ' + g.lo + ' to ' + g.hi + (g.slope ? ', slope ≈ ' + g.slope.value + ' ±' + g.slope.tol + ' (' + (g.slope.value < 0 ? 'descending' : 'climbing') + ')' : ''))); });
 
@@ -3602,7 +3952,11 @@
             h('span', { key: 'kt' }, t('arccity.key_hint', 'Keys: F fire · R reset · H hint · arrows nudge the focused control')),
             h('button', {
               key: 'keys-toggle', type: 'button', 'aria-expanded': keysOpen ? 'true' : 'false', onClick: toggleKeys,
-              style: { padding: '2px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
+              // 2px of vertical padding on an 11px font left an 18px-tall tap target.
+              // WCAG 2.2 SC 2.5.8 puts the floor at 24x24 CSS px, and this tool is used
+              // on touchscreen Chromebooks. Padding rather than a fixed height, so the
+              // label can still wrap without being clipped.
+              style: { padding: '5px 9px', minHeight: 24, borderRadius: 8, border: '1px solid ' + GRID, background: 'transparent', color: INK, fontSize: 11, fontWeight: 700, cursor: 'pointer' }
             }, keysOpen ? t('arccity.keys_hide', 'Hide all keys') : t('arccity.keys_show', 'All keys (?)'))),
           keysOpen ? h('ul', { key: 'keyspanel', 'aria-label': t('arccity.keys_title', 'Keyboard shortcuts'), style: { listStyle: 'none', padding: '8px 10px', margin: '6px 0 0', borderRadius: 8, border: '1px solid ' + GRID, background: 'rgba(148,163,184,0.08)', fontSize: 12, color: INK, lineHeight: 1.7 } },
             SHORTCUTS.map(function (sc) {
@@ -3685,10 +4039,10 @@
         // ── Board legend. The board speaks in colour and shape; a two-line key turns
         // "what is that violet bar?" into a glance instead of a guess. Swatch + word
         // together (never colour alone), and it mirrors the coordinate list's icons.
-        var legendItems = [
-          { c: NODE_OFF, k: 'node', label: t('arccity.legend_node', 'node to light') },
-          { c: GATE, k: 'gate', label: t('arccity.legend_gate', 'gate — pass through the opening') }
-        ];
+        var legendItems = isMatch
+          ? [{ c: GATE, k: 'ghost', label: t('arccity.legend_ghost', 'target curve — overlay yours onto it') }]
+          : [{ c: NODE_OFF, k: 'node', label: t('arccity.legend_node', 'node to light') }];
+        if (!isMatch && (level.gates || []).length) legendItems.push({ c: GATE, k: 'gate', label: t('arccity.legend_gate', 'gate — pass through the opening') });
         if ((level.walls || []).length) legendItems.push({ c: WALL, k: 'wall', label: t('arccity.legend_wall', 'wall — clear the top') });
         legendItems.push({ c: BEAM, k: 'beam', label: t('arccity.legend_beam', 'your beam') });
         var boardLegend = h('div', { key: 'legend', 'aria-hidden': 'true', style: { display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 8, fontSize: 11, color: INK, opacity: 0.85 } },
@@ -3747,7 +4101,10 @@
           // (the chips are spans). This disclosure is the same content as visible text;
           // the chips above stay a scannable grid.
           h('details', { key: 'blegend', style: { marginTop: 8, fontSize: 12, color: INK } },
-            h('summary', { style: { cursor: 'pointer', fontWeight: 700, opacity: 0.85 } },
+            // Vertical padding, NOT display:flex + min-height — a flex <summary> stops
+            // being a list-item and the browser drops its disclosure triangle, which is
+            // exactly how the Match options panel came to look like an inert heading.
+            h('summary', { style: { cursor: 'pointer', fontWeight: 700, opacity: 0.85, padding: '5px 0' } },
               t('arccity.badge_legend', 'What each badge means')),
             h('ul', { style: { margin: '6px 0 0', paddingLeft: 18, lineHeight: 1.6 } },
               BADGES.map(function (bd) {
@@ -3807,12 +4164,17 @@
               var bit = l.status;
               if (l.status === 'completed') bit += l.independent ? ' (independently)' : ' (with live preview)';
               if (l.status !== 'not started') bit += ' — ' + l.shots + ' shot' + (l.shots === 1 ? '' : 's') + ' (' + l.exploredAdjustments + ' missed)';
-              if (l.stars) bit += '  ' + '★★★☆☆☆'.slice(3 - l.stars, 6 - l.stars);
-              return h('li', { key: 'tl-' + l.id, style: { marginBottom: 3 } }, l.title + ': ' + bit);
+              return h('li', { key: 'tl-' + l.id, style: { marginBottom: 3 } },
+                l.title + ': ' + bit,
+                // Decorative glyphs, then the same fact in words for anyone listening.
+                l.stars ? h('span', { key: 'tlg-' + l.id, 'aria-hidden': 'true', style: { marginLeft: 6, letterSpacing: '1px', color: PAL.warn } }, '★★★☆☆☆'.slice(3 - l.stars, 6 - l.stars)) : null,
+                l.stars ? h('span', { key: 'tls-' + l.id, style: ARC_SR_ONLY }, ' — ' + l.stars + ' of 3 stars') : null);
             })),
           summary.badges.length ? h('div', { key: 'tbadges', style: { fontSize: 13, color: INK, marginBottom: 12 } }, t('arccity.badges', 'Badges earned') + ': ' + summary.badges.join(', ')) : null,
           h('div', { key: 'exportbox', style: { borderTop: '1px solid ' + GRID, paddingTop: 10 } },
-            h('label', { key: 'el', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: INK } },
+            // The checkbox itself is user-agent sized (13px); what a finger hits is this
+            // label, so give it a comfortable height rather than resizing the native box.
+            h('label', { key: 'el', style: { display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: INK, minHeight: 28, padding: '3px 0', cursor: 'pointer' } },
               h('input', { key: 'ec', type: 'checkbox', checked: exportEnabled, onChange: toggleExport }),
               t('arccity.export_note', 'Enable export (off by default — local only, contains no student names)')),
             h('button', { key: 'eb', type: 'button', disabled: !exportEnabled, onClick: copySummary,
@@ -3908,7 +4270,7 @@
         for (var bty = 1; bty <= 7; bty++) battleSvgEls.push(h('text', { key: 'bty' + bty, x: 5, y: bsy(bty) + 3, textAnchor: 'start', fill: INK, fontSize: 10, fontWeight: 600, opacity: 0.85, style: _btick, 'aria-hidden': 'true' }, String(bty)));
         // Halfway line: this board is two mirrored halves and nothing said where they
         // met, so "whose side is that trail on?" had no visual answer.
-        battleSvgEls.push(h('line', { key: 'bmid', x1: bsx(5), y1: 0, x2: bsx(5), y2: BH, stroke: INK, strokeWidth: 1.5, strokeDasharray: '6 6', opacity: 0.35, 'aria-hidden': 'true' }));
+        battleSvgEls.push(h('line', { key: 'bmid', x1: bsx(5), y1: 0, x2: bsx(5), y2: BH, stroke: INK, strokeWidth: 1.5, strokeDasharray: '6 6', opacity: 0.5, 'aria-hidden': 'true' }));
         battleSvgEls.push(h('text', { key: 'p1label', x: 10, y: 20, fill: INK, fontSize: 12, fontWeight: 800 }, 'PLAYER 1'));
         battleSvgEls.push(h('text', { key: 'p2label', x: BW - 10, y: 20, fill: INK, fontSize: 12, fontWeight: 800, textAnchor: 'end' }, battle.mode === 'cpu' ? 'CPU' : 'PLAYER 2'));
         // Draw previous shots as bounded Tron-like light trails.
@@ -3917,7 +4279,7 @@
           battleSvgEls.push(h('polyline', {
             key: 'bt-' + trail.id + '-' + ti,
             points: battlePoints(trail.samples || [], trail.seat, trail.killedAt && trail.killedAt.x),
-            fill: 'none', stroke: trail.weapon === 'phase' ? '#ffffff' : meta.color, strokeWidth: trail.weapon === 'phase' ? 4 : 2.5,
+            fill: 'none', stroke: trail.weapon === 'phase' ? '#ffffff' : arcLaneColor(battleArenaConfig, trail.lane, THEME), strokeWidth: trail.weapon === 'phase' ? 4 : 2.5,
             strokeDasharray: trail.weapon === 'phase' || trail.result === 'hit' ? null : '7 5', opacity: trail.weapon === 'phase' ? 0.9 : 0.42,
             'aria-hidden': 'true'
           }));
@@ -3964,7 +4326,9 @@
         if (battlePreviewVisible) {
           battleSvgEls.push(h('polyline', {
             key: 'battle-preview', points: battlePoints(battlePreview, battleSeat, battlePreviewResult.killedAt && battlePreviewResult.killedAt.x),
-            fill: 'none', stroke: battleWeapon === 'phase' ? '#ffffff' : (battleSeat === 0 ? '#22d3ee' : '#f472b6'),
+            // The mark the player aims with. Its seat colour was a hard-coded neon,
+            // which is 1.81:1 on the white default board — mapped for the ground now.
+            fill: 'none', stroke: battleWeapon === 'phase' ? '#ffffff' : arcInkForGround(battleSeat === 0 ? '#22d3ee' : '#f472b6', THEME),
             strokeWidth: battleWeapon === 'phase' ? 4 : 3.5, strokeDasharray: battleWeapon === 'phase' ? null : '5 4', filter: GLOW
           }));
           if (battlePreviewResult.result === 'trail' && battlePreviewResult.killedAt) {
@@ -3986,7 +4350,7 @@
             battleSvgEls.push(h('circle', {
               key: 'brelay' + defender + '-' + laneNo,
               cx: bsx(relayX), cy: bsy(relayY), r: 10,
-              fill: relayOn ? battleLaneMeta[laneNo].color : '#64748b',
+              fill: relayOn ? arcLaneColor(battleArenaConfig, laneNo, THEME) : '#64748b',
               stroke: relayOn ? '#ffffff' : '#334155', strokeWidth: 2,
               opacity: relayOn ? 1 : 0.45, filter: relayOn ? GLOW : null
             }));
@@ -4005,7 +4369,10 @@
             h('div', { key: 'name', style: { color: INK, fontSize: 13, fontWeight: 800, marginBottom: 6 } }, battlePlayerLabel(battle, seat) + (seat === battleSeat && battle.status !== 'won' ? (battleHandoff ? ' — awaiting handoff' : ' — active turn') : '')),
             h('div', { key: 'relays', style: { display: 'flex', gap: 6, flexWrap: 'wrap' } }, battleLaneMeta.map(function (meta, laneNo) {
               var active = battle.shields[seat][laneNo];
-              return h('span', { key: 'shield-' + seat + '-' + laneNo, style: { padding: '3px 7px', borderRadius: 999, border: '1px solid ' + (active ? meta.color : GRID), color: INK, fontSize: 11, opacity: active ? 1 : 0.55 } }, (active ? '● ' : '○ ') + meta.short + (active ? ' online' : ' offline'));
+              // Same ground mapping as the board. These chips are the board's legend,
+              // so a lane has to look like the same lane in both places — a neon border
+              // beside a deep-teal relay reads as two different circuits.
+              return h('span', { key: 'shield-' + seat + '-' + laneNo, style: { padding: '3px 7px', borderRadius: 999, border: '1px solid ' + (active ? arcLaneColor(battleArenaConfig, laneNo, THEME) : GRID), color: INK, fontSize: 11, opacity: active ? 1 : 0.55 } }, (active ? '● ' : '○ ') + meta.short + (active ? ' online' : ' offline'));
             })));
         }
 
@@ -4013,12 +4380,17 @@
           var spec = battleLevel.params[name], value = battleParams[name];
           var display = spec.asPeriod ? periodOf(value) + ' units' : fmtVal(value, spec.step);
           if (spec.locked) return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 8, color: INK, fontSize: 12, opacity: 0.72 } }, spec.label + ': ' + display + ' (fixed)');
-          if (spec.snapValues) return h('label', { key: 'bp-' + name, className: 'arc-battle-param arc-battle-param-snap', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(110px,180px)', gap: 10, alignItems: 'center', marginBottom: 9, color: INK, fontSize: 12 } },
+          // Every input below is `disabled: battleLocked` — while the match is over, or
+          // it is the CPU's turn, they cannot be moved. They used to render at full
+          // strength anyway, so a finished match still showed a slider that looked
+          // draggable. Dim the whole control, label included, to the same 0.55 the
+          // locked relay buttons and the Fire button use.
+          if (spec.snapValues) return h('label', { key: 'bp-' + name, className: 'arc-battle-param arc-battle-param-snap', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) minmax(110px,180px)', gap: 10, alignItems: 'center', marginBottom: 9, color: INK, fontSize: 12, opacity: battleLocked ? 0.55 : 1 } },
             h('span', { key: 'label' }, spec.label),
             h('select', { key: 'select', value: String(value), disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', padding: '7px 8px', borderRadius: 8, border: '1px solid ' + GRID, background: 'var(--allo-stem-panel, #ffffff)', color: INK } }, spec.snapValues.map(function (snap) {
               return h('option', { key: 'snap-' + snap, value: String(snap) }, periodOf(snap) + ' units');
             })));
-          return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 9 } },
+          return h('div', { key: 'bp-' + name, className: 'arc-battle-param', style: { marginBottom: 9, opacity: battleLocked ? 0.55 : 1 } },
             h('label', { key: 'label', htmlFor: 'arc-battle-' + name, style: { display: 'flex', justifyContent: 'space-between', gap: 8, color: INK, fontSize: 12, marginBottom: 4 } }, h('span', { key: 'txt' }, spec.label), h('span', { key: 'val', style: { fontWeight: 800 } }, display)),
             h('div', { key: 'inputs', className: 'arc-battle-param-inputs', style: { display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 86px', gap: 8, alignItems: 'center' } },
               h('input', { key: 'range', id: 'arc-battle-' + name, type: 'range', min: spec.min, max: spec.max, step: spec.step, value: value, disabled: battleLocked, onChange: function (e) { setBattleParam(name, e.target.value); }, style: { width: '100%', accentColor: BEAM } }),
@@ -4073,7 +4445,9 @@
             h('div', { key: 'title', style: { fontSize: 17, fontWeight: 900 } }, 'Circuit Clash'),
             h('div', { key: 'copy', style: { fontSize: 12, lineHeight: 1.45, opacity: 0.82, marginTop: 3 } }, 'Turn-based neon function battle. Capture all three opposing relays. Every shot leaves a light trail; there is no timer.')),
           h('details', { key: 'battle-help', style: { marginBottom: 10, padding: '7px 10px', border: '1px solid ' + GRID, borderRadius: 8, color: INK, fontSize: 12 } },
-            h('summary', { key: 'summary', style: { cursor: 'pointer', fontWeight: 800 } }, 'How to play Circuit Clash'),
+            // Padding, not display:flex — see the badge legend and Match options: a flex
+            // <summary> loses its disclosure triangle.
+            h('summary', { key: 'summary', style: { cursor: 'pointer', fontWeight: 800, padding: '5px 0' } }, 'How to play Circuit Clash'),
             h('ul', { key: 'steps', style: { margin: '7px 0 2px', paddingLeft: 20, lineHeight: 1.45 } },
               h('li', { key: 'goal' }, 'Capture all three opposing relays by authoring a function that clears its circuit.'),
               h('li', { key: 'turns' }, 'Choose a relay, adjust the equation, and fire. Every valid shot ends the turn.'),
@@ -4114,12 +4488,12 @@
             var stat = battle.stats[seat], accuracy = stat.shots ? Math.round(stat.captures / stat.shots * 100) : 0;
             return h('span', { key: 'battle-stat-' + seat }, battlePlayerLabel(battle, seat) + ': ' + stat.captures + ' captures / ' + stat.shots + ' shots (' + accuracy + '%)');
           })),
-          S.battle3d ? h(ArcCityBattle3D, { key: 'battle3d-' + battle.arena, React: React, battle: battle }) : null,
+          S.battle3d ? h(ArcCityBattle3D, { key: 'battle3d-' + battle.arena + '-' + THEME, React: React, battle: battle, theme: THEME }) : null,
           battleSvg,
           h('div', { key: 'turn', role: 'status', style: { margin: '10px 0', padding: '8px 10px', borderRadius: 8, background: battle.status === 'won' ? 'rgba(52,211,153,0.14)' : (battleHandoff ? 'rgba(250,204,21,0.11)' : 'rgba(148,163,184,0.09)'), color: INK, fontWeight: 800, fontSize: 13 } }, battle.status === 'won' ? battlePlayerLabel(battle, battle.winner) + ' won in round ' + battle.round + '.' : (battleHandoff ? 'Pass the device to ' + battlePlayerLabel(battle, battleSeat) + '. Controls remain hidden until they confirm.' : 'Round ' + battle.round + ' — ' + battlePlayerLabel(battle, battleSeat) + ' turn')),
           h('div', { key: 'lane-group', className: 'arc-battle-lanes', role: 'group', 'aria-label': 'Target circuit', style: { display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 12 } }, battleLaneMeta.map(function (meta, laneNo) {
             var selected = laneNo === battleLaneIndex, available = battle.shields[battleDefender][laneNo];
-            return h('button', { key: 'lane-' + laneNo, type: 'button', disabled: battleLocked || !available, 'aria-pressed': selected, onClick: function () { setBattleLane(laneNo); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (selected ? meta.color : GRID), background: selected ? 'rgba(34,211,238,0.11)' : 'transparent', color: INK, opacity: available ? 1 : 0.48, fontWeight: selected ? 800 : 600, cursor: battleLocked || !available ? 'not-allowed' : 'pointer' } }, meta.short + (available ? ' relay' : ' captured'));
+            return h('button', { key: 'lane-' + laneNo, type: 'button', disabled: battleLocked || !available, 'aria-pressed': selected, onClick: function () { setBattleLane(laneNo); }, style: { padding: '7px 10px', borderRadius: 8, border: '1px solid ' + (selected ? meta.color : GRID), background: selected ? 'rgba(34,211,238,0.11)' : 'transparent', color: INK, opacity: !available ? 0.48 : (battleLocked ? 0.55 : 1), fontWeight: selected ? 800 : 600, cursor: battleLocked || !available ? 'not-allowed' : 'pointer' } }, meta.short + (available ? ' relay' : ' captured'));
           })),
           !battleHandoff && battle.trailRule === 'walls' && battle.status !== 'won' ? h('div', { key: 'battle-weapon', className: 'arc-battle-loadout', role: 'group', 'aria-label': 'Shot loadout', style: { display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 10 } },
             h('span', { key: 'label', style: { color: INK, fontSize: 12, fontWeight: 800 } }, 'Loadout:'),

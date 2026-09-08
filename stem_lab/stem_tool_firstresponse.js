@@ -275,7 +275,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       pauseOk: pauseOk,
       fractionOk: fractionOk,
       steadyOk: steadyOk,
-      steadyKnown: enough,
+      enoughData: enough,
       passed: rateOk && pauseOk && fractionOk && steadyOk && enough
     };
   }
@@ -1567,12 +1567,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // ── First Action Sleuth shared data (hoisted so both the play view
       // and the Mastery view can reference the same canonical list) ──
       var FA_ACTIONS = [
-        { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-        { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Chest compressions at 100–120/min. Add breaths when appropriate—especially for children, infants, and drowning—if willing and able.' },
-        { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
-        { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-        { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts', 'Back blows + thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Give 5 back blows, then 5 abdominal thrusts for a responsive adult or child; repeat.' },
-        { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
+        { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911', 'Call 911'),                  color: '#dc2626', ink: '#fca5a5', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
+        { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr', 'Start CPR'),                 color: '#ef4444', ink: '#fca5a5', icon: '❤️', def: 'Chest compressions at 100–120/min. Add breaths when appropriate—especially for children, infants, and drowning—if willing and able.' },
+        { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed', 'Apply AED'),                 color: '#f59e0b', ink: '#fcd34d', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
+        { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure', 'Direct pressure'),           color: '#7c3aed', ink: '#c4b5fd', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
+        { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts', 'Back blows + thrusts'),         color: '#0ea5e9', ink: '#7dd3fc', icon: '🫶', def: 'Give 5 back blows, then 5 abdominal thrusts for a responsive adult or child; repeat.' },
+        { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position', 'Recovery position'),         color: '#16a34a', ink: '#86efac', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
       ];
       // Compact vignette index for Mastery view (full scenarios still live in
       // renderFirstActionSleuth's local block to keep this hoist small).
@@ -1945,11 +1945,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           __alloT('stem.firstresponse.educational_only_real_emergencies', 'Educational only. Real emergencies → '),
           h('strong', { style: { color: T.accentHi } }, '911'),
           __alloT('stem.firstresponse.get_certified', '. Get certified → '),
-          h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'redcross.org'),
+          h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'redcross.org'),
           ' · ',
-          h('a', { href: 'https://cpr.heart.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'heart.org'),
+          h('a', { href: 'https://cpr.heart.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'heart.org'),
           ' · ',
-          h('a', { href: 'https://www.stopthebleed.org', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'stopthebleed.org')
+          h('a', { href: 'https://www.stopthebleed.org', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'stopthebleed.org')
         );
       }
 
@@ -2423,7 +2423,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('h3', { style: { margin: '0 0 8px', fontSize: 15, color: T.text } }, __alloT('stem.firstresponse.text_to_911_maine', '💬 Text-to-911 (Maine)')),
               h('p', { style: { margin: '0 0 10px', color: T.muted, fontSize: 12, lineHeight: 1.5 } },
                 __alloT('stem.firstresponse.use_text_to_911_if_you_re_deaf_hoh_can', 'Use text-to-911 if you’re deaf/HoH, can’t speak safely, or have a speech disability. Maine supports it statewide; check coverage at '),
-                h('a', { href: 'https://www.maine.gov/dps/911', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'maine.gov/dps/911'),
+                h('a', { href: 'https://www.maine.gov/dps/911', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'maine.gov/dps/911'),
                 '.'),
               h('div', { role: 'list', style: { display: 'flex', flexDirection: 'column', gap: 8 } },
                 TEXT_911_SCRIPT.map(function(s) {
@@ -2541,13 +2541,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.gate_breathing', 'Breathing normally, but will not wake up → recovery position. ')),
                     __alloT('stem.firstresponse.gate_breathing_why', 'Their heart is beating. Compressions on someone who is breathing cause real injury and help nothing. Roll them onto their side, keep watching, and start CPR if the breathing stops or turns to gasping.'))),
                 h('button', { 'data-fr-focusable': true,
-                  'aria-label': __alloT('stem.firstresponse.open_3d_breathing_gate', 'Open the 3D breathing gate and practise telling normal breathing from agonal gasping'),
+                  'aria-label': __alloT('stem.firstresponse.a11y_see_difference_3d', 'See the difference in 3D. Opens the 3D breathing gate, where normal breathing and agonal gasping move differently.'),
                   onClick: function() { updMulti({ view: 'body3d', b3dTab: 'gate' }); markVisited('body3d'); frAnnounce(__alloT('stem.firstresponse.sr_3d_breathing_gate', 'Body position in 3D, breathing gate.')); },
                   style: btn({ padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.see_the_difference_in_3d', '🫁 See the difference in 3D'))),
 
-              h('div', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: 'rgba(245,158,11,0.12)', border: '1px solid ' + T.warn } },
-                h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.firstresponse.hands_only_exception_title', '⚠️ When compressions alone are not enough')),
+              h('details', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: 'rgba(245,158,11,0.12)', border: '1px solid ' + T.warn } },
+                h('summary', { style: { cursor: 'pointer', fontSize: 13, color: T.text, fontWeight: 700, lineHeight: 1.5 } },
+                  __alloT('stem.firstresponse.hands_only_exception_summary', '⚠️ Hands-only is for adults — infants, children, drowning and overdose need breaths too')),
                 h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
                   __alloT('stem.firstresponse.hands_only_exception_why', 'Hands-only works for an adult who drops in front of you because their blood is still carrying oxygen — it has just stopped moving. That is not the situation when the arrest was caused by not being able to breathe:')),
                 h('ul', { style: { margin: '0 0 6px 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
@@ -2563,25 +2564,75 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   h('strong', null, __alloT('stem.firstresponse.hands_only_exception_fallback', 'If you cannot or will not give breaths, push anyway.')),
                   __alloT('stem.firstresponse.hands_only_exception_fallback_why', ' Compressions alone are far better than nothing. Standing there deciding is the only option that is certain to help no one.')),
                 h('button', { 'data-fr-focusable': true,
-                  'aria-label': __alloT('stem.firstresponse.open_3d_breath_coach', 'Open the 3D coach and practise the 30 to 2 compression and breath cycle'),
+                  'aria-label': __alloT('stem.firstresponse.a11y_practise_30_2_3d', 'Practise 30:2 in 3D. Opens the 3D coach for the thirty compressions to two breaths cycle.'),
                   onClick: function() { updMulti({ view: 'body3d', b3dTab: 'coach' }); markVisited('body3d'); frAnnounce(__alloT('stem.firstresponse.sr_3d_breath_coach', 'Body position in 3D, guided compression and breath cycle.')); },
                   style: btn({ marginTop: 10, padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.practise_30_to_2_in_3d', '🫀 Practise 30:2 in 3D'))),
+
+              h('details', { style: { padding: '10px 12px', borderRadius: 8, marginBottom: 12, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('summary', { style: { cursor: 'pointer', fontSize: 13, color: T.text, fontWeight: 700, lineHeight: 1.5 } },
+                  __alloT('stem.firstresponse.midcpr_summary', '😖 If they vomit, or start to come round — neither means stop for long')),
+                h('ul', { style: { margin: '6px 0 0 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.midcpr_vomit', 'Vomiting is common. ')),
+                    __alloT('stem.firstresponse.midcpr_vomit_why', 'Roll them onto their side, let it drain, wipe the mouth clear, roll them back and resume compressions. Do the whole thing in a few seconds — it is an interruption like any other.')),
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.midcpr_signs', 'Real signs of life mean stop and watch. ')),
+                    __alloT('stem.firstresponse.midcpr_signs_why', 'Breathing normally, moving purposefully, or opening their eyes: stop compressions, put them in the recovery position, and keep watching. Occasional gasping is NOT a sign of life — that is the arrest, and you keep going.'))
+                )),
 
               h('p', { style: { margin: '0 0 6px', color: T.text, fontSize: 12, fontWeight: 600 } },
                 __alloT('stem.firstresponse.for_an_adult_who_collapsed', 'For an adult who collapsed in front of you:')),
               h('ol', { style: { margin: '0 0 0 18px', color: T.muted, fontSize: 13, lineHeight: 1.7 } },
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.check', 'Check')), __alloT('stem.firstresponse.shake_shout_gate_v2', ' — shake & shout. No response, and not breathing normally (gasping counts as not breathing)?')),
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.call_911_2', 'Call 911')), __alloT('stem.firstresponse.or_have_someone_else_call_send_another', ' (or have someone else call). Send another person for an AED.')),
-                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.push_hard_push_fast', 'Push hard, push fast')), __alloT('stem.firstresponse.center_of_chest', ' — center of chest, '),
+                h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.push_hard_push_fast', 'Push hard, push fast')),
+                  __alloT('stem.firstresponse.hand_technique_adult', ' — heel of one hand on the breastbone in the centre of the chest, the other hand on top, fingers interlaced. Arms locked straight, shoulders stacked directly above your hands, so the push comes from your body weight and not your arms. '),
+                  __alloT('stem.firstresponse.center_of_chest_v2', 'Go '),
                   h('span', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.2_inches_deep', '2 inches deep')), __alloT('stem.firstresponse.at', ', at '),
                   h('span', { style: { color: T.accentHi } }, __alloT('stem.firstresponse.100_120_bpm', '100–120 bpm')), '.'),
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.don_t_stop', 'Don’t stop')), __alloT('stem.firstresponse.until_ems_takes_over_aed_tells_you_to_', ' until EMS takes over, AED tells you to clear, or person starts breathing.')),
                 h('li', null, h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.use_the_aed', 'Use the AED')), __alloT('stem.firstresponse.as_soon_as_it_arrives_it_talks_you_thr', ' as soon as it arrives — it talks you through it.'))
               ),
+              h('details', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border } },
+                h('summary', { style: { cursor: 'pointer', fontSize: 12, color: T.text, fontWeight: 700, lineHeight: 1.5 } },
+                  __alloT('stem.firstresponse.hands_by_age_summary', '👶 Hand position is different for a child or an infant')),
+                h('ul', { style: { margin: '6px 0 0 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hands_child', 'Child: ')),
+                    __alloT('stem.firstresponse.hands_child_why', 'one hand, or two if one is not enough to reach the depth. Use whatever gets you deep enough on that particular child.')),
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hands_infant', 'Infant: ')),
+                    __alloT('stem.firstresponse.hands_infant_why', 'the heel of one hand on the breastbone, or the two-thumb encircling-hands technique. The older two-finger method is no longer recommended, because it often fails to reach adequate depth.')),
+                  h('li', null,
+                    h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hands_pregnant', 'Visibly pregnant: ')),
+                    __alloT('stem.firstresponse.hands_pregnant_why', 'do not move your hands and do not push more gently. Compress exactly as you would for any other adult — the best thing for the baby is a mother whose blood is moving.'))
+                )),
+
+              h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 12, color: T.muted, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.wasted_compressions_title', 'Two things quietly waste good compressions: ')),
+                h('span', null,
+                  __alloT('stem.firstresponse.wasted_surface', 'a soft surface and leaning. On a bed or a sofa the mattress absorbs the push instead of the chest — get them onto the floor or another firm flat surface first. And between pushes let the chest come all the way back up, keeping your hands in contact but resting no weight on it: leaning is easy to do once you are tired, and it stops the heart refilling for the next compression.'))),
               h('div', { style: { marginTop: 10, padding: '8px 10px', borderRadius: 8, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, fontStyle: 'italic' } },
                 __alloT('stem.firstresponse.depth_adult_child_infant', 'Depth: at least 2 in (5 cm) and no more than about 2.4 in (6 cm) for an adult; about 2 in (5 cm) for a child; about 1.5 in (4 cm) for an infant — in each case roughly one third of the depth of the chest. Source: 2025 AHA/AAP Guidelines for CPR & ECC.'))
             ),
+            h('details', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('summary', { style: { cursor: 'pointer', fontSize: 15, color: T.text, fontWeight: 700, lineHeight: 1.5, marginBottom: 8 } },
+                __alloT('stem.firstresponse.hesitating_summary', '🤚 If you are hesitating — broken ribs, legal risk, or forgetting the steps')),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hesitating_ribs', '“What if I break a rib?” ')),
+                __alloT('stem.firstresponse.hesitating_ribs_why', 'It happens, and it is not a reason to stop or to push more gently. Ribs heal. Someone in cardiac arrest is already not breathing and has no pulse — the realistic alternative to imperfect compressions is not a gentler outcome, it is no outcome. Shallow compressions are the more common mistake by far.')),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hesitating_legal', '“Could I get in trouble?” ')),
+                __alloT('stem.firstresponse.hesitating_legal_why', 'Every US state has some form of Good Samaritan law covering people who help in good faith, though what each one covers varies. If you are unsure what applies where you live, look it up before you need it — not while someone is on the floor.')),
+              h('p', { style: { margin: '0 0 8px', color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hesitating_death', '“What if they die anyway?” ')),
+                __alloT('stem.firstresponse.hesitating_death_why', 'Most people who suffer a cardiac arrest outside hospital do not survive it, even when everything is done right — and bystander CPR still roughly doubles or triples the chance that they do. If they die, that is the arrest, not you. Doing nothing is the only choice that removes the chance entirely, and it is worth knowing beforehand that this can be hard to carry afterwards.')),
+              h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
+                h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.hesitating_forgot', '“I will forget what to do.” ')),
+                __alloT('stem.firstresponse.hesitating_forgot_why', 'Put the phone on speaker. The 911 dispatcher will count compressions with you and stay on the line until help arrives — you are not expected to remember this alone.'))
+            ),
+
             h('div', { style: { padding: 14, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
               h('h3', { style: { margin: '0 0 8px', fontSize: 16, color: T.text } }, __alloT('stem.firstresponse.aed_in_one_paragraph', '⚡ AED in one paragraph')),
               h('p', { style: { margin: 0, color: T.muted, fontSize: 13, lineHeight: 1.55 } },
@@ -2593,17 +2644,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             ),
             h('div', { style: { display: 'flex', gap: 10, flexWrap: 'wrap' } },
               h('button', { 'data-fr-focusable': true,
-                'aria-label': __alloT('stem.firstresponse.open_cpr_rhythm_metronome', 'Open CPR rhythm metronome'),
+                'aria-label': __alloT('stem.firstresponse.a11y_metronome_button', 'Metronome (100–120 bpm). Opens the CPR rhythm metronome.'),
                 onClick: function() { upd('cprView', 'metronome'); frAnnounce(__alloT('stem.firstresponse.cpr_tab_metronome', 'Metronome')); },
                 style: btnPrimary()
               }, __alloT('stem.firstresponse.metronome_100_120_bpm', '🥁 Metronome (100–120 bpm)')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': __alloT('stem.firstresponse.practice_cpr_rhythm_30_second_window', 'Practice CPR rhythm — 30 second window'),
+                'aria-label': __alloT('stem.firstresponse.a11y_practice_button', 'Practice (30 sec). Practise the CPR rhythm in a 30 second window.'),
                 onClick: function() { upd('cprView', 'practice'); frAnnounce(__alloT('stem.firstresponse.sr_practice_mode', 'Practice mode')); },
                 style: btn()
               }, __alloT('stem.firstresponse.practice_30_sec', '⏱️ Practice (30 sec)')),
               h('button', { 'data-fr-focusable': true,
-                'aria-label': __alloT('stem.firstresponse.walk_through_using_an_aed', 'Walk through using an AED'),
+                'aria-label': __alloT('stem.firstresponse.a11y_aed_walkthrough_button', 'AED walkthrough. Walks through using an AED, step by step.'),
                 onClick: function() { upd('cprView', 'aed'); frAnnounce(__alloT('stem.firstresponse.sr_aed_walkthrough', 'AED walkthrough')); },
                 style: btn()
               }, __alloT('stem.firstresponse.aed_walkthrough', '⚡ AED walkthrough'))
@@ -2680,7 +2731,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   style: btn({ padding: '6px 12px', fontSize: 12, background: audioOn ? '#1e3a8a' : T.card, color: audioOn ? '#dbeafe' : T.text })
                 }, audioOn ? __alloT('stem.firstresponse.audio_on', '🔊 Audio on') : __alloT('stem.firstresponse.audio_off', '🔇 Audio off')),
                 h('button', { 'data-fr-focusable': true,
-                  'aria-label': __alloT('stem.firstresponse.reset_bpm_to_110', 'Reset bpm to 110'),
+                  'aria-label': __alloT('stem.firstresponse.a11y_reset_to_110', 'Reset to 110. Sets the metronome back to 110 beats per minute.'),
                   onClick: function() { upd('cprBpm', 110); },
                   style: btn({ padding: '6px 12px', fontSize: 12 })
                 }, __alloT('stem.firstresponse.reset_to_110', 'Reset to 110'))
@@ -2836,7 +2887,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   'aria-disabled': practiceRunning ? 'false' : 'true',
                   'aria-label': practiceRunning
                     ? __alloT('stem.firstresponse.sr_tap_to_record_a_compression', 'Tap to record a compression')
-                    : __alloT('stem.firstresponse.sr_practice_not_running_press_start', 'Practice not running. Press Start.'),
+                    : __alloT('stem.firstresponse.a11y_tap_off', 'Off. Practice is not running — press Start.'),
                   onClick: tapNow,
                   style: {
                     width: 180, height: 180, borderRadius: '50%',
@@ -2848,11 +2899,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     transition: 'transform 90ms ease-out, box-shadow 90ms ease-out',
                     boxShadow: practiceRunning ? (taps.length % 2 === 1 ? '0 0 34px rgba(220,38,38,0.6)' : '0 0 24px rgba(220,38,38,0.45)') : 'none'
                   }
-                }, practiceRunning ? 'TAP' : '— off —')
+                }, practiceRunning ? __alloT('stem.firstresponse.tap_label', 'TAP') : __alloT('stem.firstresponse.off_label', 'Off'))
               ),
               practiceRunning && h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 10 } },
-                statTile(__alloT('stem.firstresponse.stat_rate', 'Rate'), live.medianBpm + ' bpm',
-                  live.rateOk ? 'ok' : 'warn',
+                statTile(__alloT('stem.firstresponse.stat_rate', 'Rate'),
+                  live.enoughData ? live.medianBpm + ' bpm' : '—',
+                  live.enoughData ? (live.rateOk ? 'ok' : 'warn') : 'unknown',
                   __alloT('stem.firstresponse.stat_rate_note', 'Target 100–120')),
                 statTile(__alloT('stem.firstresponse.stat_hands_off', 'Hands off'), (handsOffMs / 1000).toFixed(1) + ' s',
                   handsOffMs < CPR_PRACTICE_SPEC.warnPauseMs ? 'ok' : 'warn',
@@ -2861,8 +2913,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   live.fractionOk ? 'ok' : 'warn',
                   __alloT('stem.firstresponse.stat_compressing_note', 'Share of the window, target 60%+')),
                 statTile(__alloT('stem.firstresponse.stat_steady', 'Steady'),
-                  live.steadyKnown ? live.consistencyPct + '%' : '—',
-                  live.steadyKnown ? (live.steadyOk ? 'ok' : 'warn') : 'unknown',
+                  live.enoughData ? live.consistencyPct + '%' : '—',
+                  live.enoughData ? (live.steadyOk ? 'ok' : 'warn') : 'unknown',
                   __alloT('stem.firstresponse.stat_steady_note', 'An even beat, not an even average'))
               ),
               handsOffWarn && h('div', { role: 'status', style: {
@@ -2883,7 +2935,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               ),
               h('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' } },
                 !practiceRunning && h('button', { 'data-fr-focusable': true,
-                  'aria-label': __alloT('stem.firstresponse.start_30_second_practice', 'Start 30 second practice'),
+                  'aria-label': __alloT('stem.firstresponse.a11y_start_30s', 'Start 30s. Begins the 30 second practice window.'),
                   onClick: startPractice, style: btnPrimary()
                 }, __alloT('stem.firstresponse.start_30s', '▶ Start 30s')),
                 practiceRunning && h('button', { 'data-fr-focusable': true,
@@ -2946,9 +2998,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 __alloT('stem.firstresponse.result_source_v2', 'Rate, pause and compression-fraction targets come from the 2025 AHA Guidelines for CPR & ECC: 100–120 compressions per minute, interruptions under 10 seconds, chest compression fraction of at least 60%. Steadiness is this tool’s own check that your rate is a rhythm rather than an average, not a published guideline number.'))
             ),
 
+            h('div', { style: { padding: 12, borderRadius: 10, background: T.card, border: '1px solid ' + T.border, marginBottom: 14 } },
+              h('h4', { style: { margin: '0 0 6px', fontSize: 13, color: T.text } }, __alloT('stem.firstresponse.fatigue_title', '💪 Thirty seconds is the easy part')),
+              h('p', { style: { margin: '0 0 6px', color: T.muted, fontSize: 12, lineHeight: 1.55 } },
+                __alloT('stem.firstresponse.fatigue_body', 'A real arrest runs for many minutes. Compression depth starts falling after about a minute or two — and the rescuer almost never notices, because effort feels the same while the chest moves less. That is why the advice is not "push until you are tired".')),
+              h('ul', { style: { margin: '0 0 0 18px', color: T.muted, fontSize: 12, lineHeight: 1.65 } },
+                h('li', null,
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.fatigue_swap', 'Swap compressors about every two minutes')),
+                  __alloT('stem.firstresponse.fatigue_swap_why', ' if there is anyone else at all, whether or not you feel able to continue.')),
+                h('li', null,
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.fatigue_when', 'Use the AED’s analysis as the changeover')),
+                  __alloT('stem.firstresponse.fatigue_when_why', ' — everyone is already off the chest, so the swap costs nothing extra.')),
+                h('li', null,
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.fatigue_fast', 'Count it out loud and keep it under five seconds')),
+                  __alloT('stem.firstresponse.fatigue_fast_why', '. Plan the handover before it happens: the next person kneels ready on the opposite side, and takes over on the count.')),
+                h('li', null,
+                  h('strong', { style: { color: T.text } }, __alloT('stem.firstresponse.fatigue_alone', 'Alone? Do not stop to rest.')),
+                  __alloT('stem.firstresponse.fatigue_alone_why', ' Tiring compressions still move blood; stopped compressions move none. Keep going until EMS takes over.'))
+              )),
+
             h('div', { style: { padding: 12, borderRadius: 10, background: T.cardAlt, border: '1px solid ' + T.border, fontSize: 11, color: T.dim, lineHeight: 1.55 } },
               __alloT('stem.firstresponse.you_re_practicing_rhythm_and_continuity', 'You’re practicing rhythm and continuity only — depth (about 2 inches on an adult) and full chest recoil also matter, and you can’t practice those on a screen. Get hands-on at '),
-              h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link } }, 'redcross.org'),
+              h('a', { href: 'https://www.redcross.org/take-a-class', target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, 'redcross.org'),
               '.')
           );
         }
@@ -2975,7 +3046,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               tip: __alloT('stem.firstresponse.pick_a_branch_below_to_see_what_happen', 'Pick a branch below to see what happens for each.') },
             { icon: '🔁', title: __alloT('stem.firstresponse.step_6_continue_compressions', 'Step 6 — Continue compressions'),
               say: '"Begin CPR. Continue chest compressions. AED will re-analyze in 2 minutes."',
-              tip: __alloT('stem.firstresponse.whether_shock_or_no_shock_the_aed_will', 'Whether shock or no shock — the AED will tell you to do CPR for 2 minutes, then it re-analyzes. Do not remove the pads. Keep going until EMS arrives.') }
+              tip: __alloT('stem.firstresponse.whether_shock_or_no_shock_v2', 'Whether shock or no shock — the AED will tell you to do CPR for 2 minutes, then it re-analyzes. Do not remove the pads. Keep going until EMS arrives. Those analysis pauses are also when you swap compressors if anyone else is there: everybody is off the chest already, so the changeover is free.') }
           ];
 
           // Step 5 is the only DECISION in the walkthrough, and "no shock
@@ -3043,7 +3114,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               h('div', { style: { fontSize: 12, color: T.dim } },
                 __alloT('stem.firstresponse.step', 'Step '), (aedStep + 1), __alloT('stem.firstresponse.of_separator', ' of '), STEPS.length),
               h('div', { style: { display: 'flex', gap: 6 } },
-                aedStep > 0 && h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.previous_step', 'Previous step'), onClick: prev, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.back', '← Back')),
+                aedStep > 0 && h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.a11y_back_previous_step', 'Back. Goes to the previous step.'), onClick: prev, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.back', '← Back')),
                 h('button', { 'data-fr-focusable': true, 'aria-label': __alloT('stem.firstresponse.reset_to_first_step', 'Reset to first step'), onClick: reset, style: btn({ padding: '6px 12px', fontSize: 12 }) }, __alloT('stem.firstresponse.reset', 'Reset')),
                 h('button', { 'data-fr-focusable': true,
                   'aria-label': branchNeeded
@@ -3068,7 +3139,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             tabBtn('overview', __alloT('stem.firstresponse.cpr_tab_overview', 'Overview')),
             tabBtn('metronome', __alloT('stem.firstresponse.cpr_tab_metronome', 'Metronome')),
             tabBtn('practice', __alloT('stem.firstresponse.cpr_tab_practice', 'Practice')),
-            tabBtn('aed', __alloT('stem.firstresponse.cpr_tab_aed', 'AED walkthrough'))
+            tabBtn('aed', __alloT('stem.firstresponse.sr_aed_walkthrough', 'AED walkthrough'))
           ),
           h('div', { role: 'tabpanel',
             id: 'firstresponse-cpr-panel-' + cprView,
@@ -4036,7 +4107,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
             source && h('div', { style: { fontSize: 11, color: T.dim, fontStyle: 'italic' } },
               'Source: ',
               sourceUrl
-                ? h('a', { href: sourceUrl, target: '_blank', rel: 'noopener', style: { color: T.link } }, source)
+                ? h('a', { href: sourceUrl, target: '_blank', rel: 'noopener', style: { color: T.link, textDecoration: 'underline' } }, source)
                 : source)
           );
         }
@@ -4895,14 +4966,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
       // first (the most-common confusion).
       // ─────────────────────────────────────────
       function renderFirstActionSleuth() {
-        var ACTIONS = [
-          { id: 'callEMS',  label: __alloT('stem.firstresponse.call_911_3', 'Call 911'),                  color: '#dc2626', icon: '📞', def: 'Activate emergency services. In Maine you can text 911 too.' },
-          { id: 'cpr',      label: __alloT('stem.firstresponse.start_cpr_2', 'Start CPR'),                 color: '#ef4444', icon: '❤️', def: 'Chest compressions at 100–120/min. Add breaths when appropriate—especially for children, infants, and drowning—if willing and able.' },
-          { id: 'aed',      label: __alloT('stem.firstresponse.apply_aed_2', 'Apply AED'),                 color: '#f59e0b', icon: '⚡', def: 'Power on, attach pads, follow voice prompts. Continue compressions until shock.' },
-          { id: 'pressure', label: __alloT('stem.firstresponse.direct_pressure_3', 'Direct pressure'),           color: '#7c3aed', icon: '🩹', def: 'Press hard on the wound with whatever cloth is at hand. Maintain pressure.' },
-          { id: 'heimlich', label: __alloT('stem.firstresponse.abdominal_thrusts_2', 'Back blows + thrusts'),         color: '#0ea5e9', icon: '🫶', def: 'Give 5 back blows, then 5 abdominal thrusts for a responsive adult or child; repeat.' },
-          { id: 'recovery', label: __alloT('stem.firstresponse.recovery_position_2', 'Recovery position'),         color: '#16a34a', icon: '🛌', def: 'Roll onto side; keeps airway open and prevents aspiration if they vomit.' }
-        ];
+        // The canonical list lives at module scope precisely so the play view
+        // and Mastery cannot drift. This view had shadowed it with a local copy
+        // that was byte-identical in every field except its i18n keys — which is
+        // where the duplicate call_911_3 / direct_pressure_3 family came from.
+        var ACTIONS = FA_ACTIONS;
         var VIGNETTES = [
           { id: 1, scenario: 'A coworker collapses in the office. They are unresponsive, not breathing, and have no pulse. You are alone with them. Your phone is in your pocket.', correct: 'callEMS',
             why: 'Single-rescuer adult cardiac arrest: call 911 FIRST so EMS + AED are dispatched while you start CPR. Adult sudden cardiac arrest is usually a heart-rhythm problem; defibrillation is the highest-value intervention and needs EMS en route.' },
@@ -5027,7 +5095,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                   },
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 } },
                       h('span', { style: { fontSize: 16 }, 'aria-hidden': 'true' }, a.icon),
-                      h('span', { style: { color: a.color, fontWeight: 800, fontSize: 12 } }, a.label)
+                      h('span', { style: { color: a.ink, fontWeight: 800, fontSize: 12 } }, a.label)
                     ),
                     h('div', { style: { fontSize: 11, color: T.muted, lineHeight: 1.45 } }, a.def)
                   );
@@ -5084,7 +5152,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               },
                 h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 } },
                   h('span', { style: { fontSize: 18 }, 'aria-hidden': 'true' }, a.icon),
-                  h('span', { style: { color: faAnswered ? color : a.color, fontSize: 13, fontWeight: 800 } }, a.label)
+                  h('span', { style: { color: faAnswered ? color : a.ink, fontSize: 13, fontWeight: 800 } }, a.label)
                 ),
                 h('div', { style: { fontSize: 11, fontWeight: 500, lineHeight: 1.4, color: faAnswered ? color : T.muted } }, a.def)
               );
@@ -5205,7 +5273,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                 },
                   h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 } },
                     h('span', { 'aria-hidden': 'true', style: { fontSize: 14 } }, a.icon),
-                    h('span', { style: { color: a.color, fontWeight: 800, fontSize: 12 } }, a.label),
+                    h('span', { style: { color: a.ink, fontWeight: 800, fontSize: 12 } }, a.label),
                     h('span', { style: { fontSize: 11, color: T.dim, marginLeft: 'auto', fontWeight: 700 } }, done + ' / ' + avail)
                   ),
                   h('div', { style: { height: 4, background: T.cardAlt, borderRadius: 2, overflow: 'hidden' }, 'aria-hidden': 'true' },
@@ -5222,7 +5290,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
               FA_VIGNETTE_INDEX.map(function (v) {
                 var entry = mastery[v.id];
                 var done = !!entry;
-                var actionInfo = FA_ACTIONS.filter(function (a) { return a.id === v.correct; })[0] || { label: v.correct, icon: '✓', color: T.dim };
+                var actionInfo = FA_ACTIONS.filter(function (a) { return a.id === v.correct; })[0] || { label: v.correct, icon: '✓', color: T.dim, ink: T.dim };
                 return h('li', { key: v.id,
                   style: { display: 'flex', alignItems: 'flex-start', gap: 10,
                            padding: '10px 12px', borderRadius: 10,
@@ -5237,7 +5305,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                     ),
                     h('div', { style: { display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: done ? T.muted : T.dim } },
                       h('span', { 'aria-hidden': 'true' }, actionInfo.icon),
-                      h('span', { style: { color: actionInfo.color, fontWeight: 700 } }, actionInfo.label),
+                      h('span', { style: { color: actionInfo.ink, fontWeight: 700 } }, actionInfo.label),
                       done && entry.firstCorrectAt && h('span', { style: { color: T.dim, marginLeft: 'auto', fontStyle: 'italic' } }, fmtDate(entry.firstCorrectAt))
                     )
                   )
@@ -5683,7 +5751,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         return h('div', { style: { padding: 16, maxWidth: 1040, margin: '0 auto' } },
           h('button', { onClick: function () { if (frCoachRef.current.running) stopCoach(); upd('view', 'menu'); }, style: btn({ padding: '6px 12px', fontSize: 12, marginBottom: 12 }) },
             __alloT('stem.firstresponse.b3d_back', '← Menu')),
-          h('h1', { style: { margin: '0 0 6px', fontSize: 20, color: T.text } },
+          h('h2', { style: { margin: '0 0 6px', fontSize: 20, color: T.text } },
             h('span', { 'aria-hidden': 'true' }, '🫀 '), __alloT('stem.firstresponse.b3d_title', 'Body position in 3D')),
           h('p', { style: { margin: '0 0 8px', fontSize: 13, color: T.muted, lineHeight: 1.6 } },
             __alloT('stem.firstresponse.b3d_intro', 'Explore a rounded, age-aware training manikin from every side. Find the hand position, watch compression and full recoil, rehearse the 30:2 flow with visible breaths, place both AED pads, and build the recovery position step by step.')),
@@ -6219,16 +6287,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
           else if (readiness < 0.8) state = 'competent';
           else state = 'expert';
           var sm = {
-            novice:     { label: __alloT('stem.firstresponse.novice_responder', '🌱 Novice responder'), color: '#dc2626', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.firstresponse.build_foundational_recognition_first', 'Build foundational recognition first.') },
-            developing: { label: __alloT('stem.firstresponse.developing', '🟡 Developing'), color: '#d97706', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.firstresponse.practice_scenarios_build_automaticity', 'Practice scenarios; build automaticity.') },
-            competent:  { label: __alloT('stem.firstresponse.competent', '🟢 Competent'), color: '#059669', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.firstresponse.reliable_in_familiar_situations', 'Reliable in familiar situations.') },
+            novice:     { label: __alloT('stem.firstresponse.novice_responder', '🌱 Novice responder'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5', desc: __alloT('stem.firstresponse.build_foundational_recognition_first', 'Build foundational recognition first.') },
+            developing: { label: __alloT('stem.firstresponse.developing', '🟡 Developing'), color: '#b45309', bg: '#fffbeb', border: '#fcd34d', desc: __alloT('stem.firstresponse.practice_scenarios_build_automaticity', 'Practice scenarios; build automaticity.') },
+            competent:  { label: __alloT('stem.firstresponse.competent', '🟢 Competent'), color: '#047857', bg: '#ecfdf5', border: '#86efac', desc: __alloT('stem.firstresponse.reliable_in_familiar_situations', 'Reliable in familiar situations.') },
             expert:     { label: __alloT('stem.firstresponse.expert', '🌟 Expert'), color: '#7c3aed', bg: '#f5f3ff', border: '#c4b5fd', desc: __alloT('stem.firstresponse.calibrated_across_diverse_vignettes', 'Calibrated across diverse vignettes.') }
           }[state];
           var H = function(t, p, c) { return ctx.React.createElement.apply(null, arguments); };
           return H('div', { style: { padding: 20, maxWidth: 900, margin: '0 auto' } },
             H('button', { onClick: function() { upd('view', 'menu'); }, style: { padding: '6px 12px', background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', border: '1px solid rgba(99,102,241,0.4)', borderRadius: 6, fontSize: 11, cursor: 'pointer', marginBottom: 12 } }, '← Menu'),
             H('div', { style: { padding: 16, background: T.card, borderRadius: 10, color: T.text, border: '1px solid ' + T.border } },
-              H('h3', { style: { fontSize: 14, fontWeight: 800, color: T.accent, margin: '0 0 6px 0' } }, '🧭 Decision-calibration discovery'),
+              H('h3', { style: { fontSize: 14, fontWeight: 800, color: T.accentHi, margin: '0 0 6px 0' } }, '🧭 Decision-calibration discovery'),
               H('p', { style: { fontSize: 12, color: T.muted, marginBottom: 12 } }, 'Four sliders self-rate response capabilities. Discrete 4-state readiness + SVG capability heatmap. No score, no reveal.'),
               H('div', { style: { padding: 12, borderRadius: 8, textAlign: 'center', background: sm.bg, border: '2px solid ' + sm.border, marginBottom: 12 } },
                 H('div', { style: { fontSize: 14, fontWeight: 900, color: sm.color } }, sm.label),
@@ -6255,7 +6323,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
                  { k: 'consistency', l: 'Scenario consistency (%)' },
                  { k: 'recall', l: 'Critical-action recall (%)' }].map(function(s) {
                   return H('div', { key: s.k },
-                    H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.muted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accent, fontFamily: 'monospace' } }, iq[s.k])),
+                    H('label', { htmlFor: 'dc-' + s.k, style: { display: 'block', fontSize: 11, fontWeight: 'bold', color: T.muted, marginBottom: 4 } }, s.l + ': ', H('span', { style: { color: T.accentHi, fontFamily: 'monospace' } }, iq[s.k])),
                     H('input', { id: 'dc-' + s.k, type: 'range', min: 0, max: 100, step: 5, value: iq[s.k],
                       onChange: function(e) { var p = {}; p[s.k] = parseInt(e.target.value, 10); setIQ(p); },
                       style: { width: '100%' }, 'aria-label': s.l }));
@@ -6283,7 +6351,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('firstResponse'
         case 'menu':
         default:                viewBody = renderMenu(); break;
       }
-      return React.createElement(React.Fragment, null, frCelebOverlay(), viewBody);
+      return React.createElement(React.Fragment, null, frCelebOverlay(),
+        React.createElement('div', {
+          'data-fr-substrate': 'true',
+          style: { background: T.bg, color: T.text, borderRadius: 12 }
+        }, viewBody));
       } catch(e) {
         console.error('[FirstResponse] render error', e);
         return ctx.React.createElement('div', { style: { padding: 16, color: '#fde2e2', background: '#7f1d1d', borderRadius: 8 } },

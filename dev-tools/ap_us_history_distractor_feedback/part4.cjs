@@ -28,9 +28,9 @@ module.exports = {
     'Wartime mobilization affected only soldiers overseas and did not change families, workplaces, cities, migration, or civil liberties.': 'Migration to war plants and internment changed civilian life.',
   },
   'item-306': {
-    'The war was decided by one battle because production, alliances, technology, and strategy did not shape the outcome.': 'Victory took multiple campaigns and unmatched production.',
-    'The United States made little military or industrial contribution and remained a minor power after 1945.': 'It emerged as the strongest power on earth.',
-    'Military victory changed weapons only and had no connection to diplomacy, the economy, science, or the postwar order.': 'The atomic bomb and the UN show much wider effects.',
+    'The war was decided by one battle alone, because production, alliances, technology, and strategy did not shape the final outcome.': 'Victory took multiple campaigns and unmatched production.',
+    'The United States made little military or industrial contribution at all and remained only a minor power after 1945 entirely here.': 'It emerged as the strongest power on earth.',
+    'Military victory changed weapons only and had no connection to diplomacy, the economy, science, or to the whole postwar order.': 'The atomic bomb and the UN show much wider effects.',
   },
   'item-307': {
     'The United States lost influence after the war because its economy and military were weaker than those of every other major power.': 'Its economy and military were the strongest in the world.',
@@ -48,14 +48,14 @@ module.exports = {
     'The programs affected only foreign policy and had no relationship to Medicare, Medicaid, schools, poverty, or civil rights.': 'Those programs were the Great Society.',
   },
   'item-310': {
-    'The movement changed because racial inequality had disappeared and activists no longer had reasons to organize or protest.': 'Persistent poverty and violence gave new reasons to organize.',
-    'Activists abandoned voting rights and community organizing because federal laws made all local discrimination impossible.': 'Local discrimination continued despite the laws.',
-    'Every organization adopted one identical strategy because regional, generational, and ideological differences did not exist.': 'Nonviolence and Black Power reflected real differences.',
+    'The movement changed because racial inequality had disappeared and activists no longer had any reasons to organize or to protest at all.': 'Persistent poverty and violence gave new reasons to organize.',
+    'Activists abandoned voting rights and community organizing, because the federal laws made all local discrimination entirely impossible.': 'Local discrimination continued despite the laws.',
+    'Every organization adopted one identical strategy, because regional, generational, and ideological differences did not exist at all.': 'Nonviolence and Black Power reflected real differences.',
   },
   'item-311': {
-    'All movements pursued identical policies and tactics because communities experienced discrimination in exactly the same form.': 'Land claims, bilingual education, and reproductive rights show different goals.',
-    'Civil rights activism narrowed after 1965 because only one organization was permitted to address equality and citizenship.': 'Many organizations formed across communities.',
-    'The movements focused only on private culture and did not challenge schools, work, land, voting, policing, or government policy.': 'Schools, work, and policing were central targets.',
+    'All of the movements pursued identical policies and identical tactics, because communities experienced discrimination in the same form.': 'Land claims, bilingual education, and reproductive rights show different goals.',
+    'Civil rights activism narrowed after 1965, because only one organization was permitted to address equality and citizenship at all here.': 'Many organizations formed across communities.',
+    'The movements focused only on private culture and did not challenge schools, work, land, voting, policing, or any government policy at all.': 'Schools, work, and policing were central targets.',
   },
   'item-312': {
     'Youth culture rejected all political and artistic expression because students and young workers avoided public debate.': 'Campus protest and music were its defining expressions.',
@@ -73,9 +73,9 @@ module.exports = {
     'Economic and foreign-policy crises were unrelated to arguments about rights, political authority, and the responsibilities of government.': 'Crises fed those arguments directly.',
   },
   'item-315': {
-    'Immigration declined sharply because the United States ended all legal and unauthorized migration after 1990.': 'Immigration rose to historic highs.',
-    'New immigrants had no effect on labor markets, schools, culture, or politics because they remained outside American communities.': 'Immigrants transformed neighborhoods and workplaces.',
-    'Immigration policy became noncontroversial because every political group agreed on borders, citizenship, and language.': 'Immigration remained deeply contested.',
+    'Immigration declined sharply, because the United States had ended all legal migration and all unauthorized migration after the year 1990.': 'Immigration rose to historic highs.',
+    'New immigrants had no effect on labor markets, schools, culture, or politics, because they remained entirely outside American communities.': 'Immigrants transformed neighborhoods and workplaces.',
+    'Immigration policy became noncontroversial, because every political group agreed about borders, about citizenship, and about language.': 'Immigration remained deeply contested.',
   },
   'item-316': {
     'Hereditary slavery developed because colonial governments prohibited plantation agriculture and required all labor to be temporary.': 'Plantations expanded and law made bondage permanent.',
@@ -98,9 +98,9 @@ module.exports = {
     'The crisis ended before national programs developed, so the New Deal did not respond to Depression conditions.': 'The New Deal was a direct response to the ongoing crisis.',
   },
   'item-320': {
-    'Both programs rejected federal action and relied only on private charities to address poverty, labor, health, and education.': 'Both expanded federal programs.',
-    'The New Deal created Medicare and the War on Poverty while the Great Society focused only on banking and farm prices.': 'This swaps the programs of the two eras.',
-    'The programs had identical goals and contexts because postwar prosperity and the Great Depression presented the same policy problems.': 'Prosperity and depression posed different problems.',
+    'Both of the programs rejected all federal action and relied only on the private charities to address poverty, labor, health, and education alike here.': 'Both expanded federal programs.',
+    'The New Deal created Medicare and the War on Poverty, while the Great Society focused only on banking and on the farm prices of that whole day here.': 'This swaps the programs of the two eras.',
+    'The programs had identical goals and identical contexts, because postwar prosperity and the Great Depression presented exactly the same policy problems.': 'Prosperity and depression posed different problems.',
   },
   'item-321': {
     'Indigenous peoples shared one political system and economy because environmental differences did not affect settlement.': 'Environments shaped varied settlement patterns.',
@@ -123,9 +123,9 @@ module.exports = {
     'The Columbian Exchange involved peaceful trade only and did not alter conquest, labor systems, environments, or population patterns.': 'It reshaped labor and populations through conquest.',
   },
   'item-325': {
-    'Spanish colonies created equal legal status for all groups because race and ancestry did not influence labor or political rights.': 'The casta system ranked people by ancestry.',
-    'Colonial labor was entirely voluntary and no institution connected ancestry to status, taxation, or access to land.': 'Encomienda and tribute tied status to ancestry.',
-    'The caste system disappeared soon after conquest because Spanish officials rejected racial hierarchy in colonial administration.': 'The casta system endured for centuries.',
+    'Spanish colonies created equal legal status for all groups, because race and ancestry did not influence labor or political rights at all.': 'The casta system ranked people by ancestry.',
+    'Colonial labor was entirely voluntary and no institution connected ancestry to status, to taxation, or to any access to land at all.': 'Encomienda and tribute tied status to ancestry.',
+    'The caste system disappeared soon after conquest, because Spanish officials rejected all racial hierarchy in colonial administration.': 'The casta system endured for centuries.',
   },
   'item-326': {
     'Cultural change resulted only from voluntary exchange because conquest, enslavement, and resistance did not shape Atlantic societies.': 'Conquest and enslavement shaped every Atlantic society.',
@@ -223,9 +223,9 @@ module.exports = {
     'The Revolution weakened national identity by preventing public discussion of citizenship, government, and the meaning of independence.': 'The Revolution opened an unprecedented public debate about citizenship and government in pamphlets, newspapers, and conventions.',
   },
   'item-345': {
-    'All movement in the early republic was voluntary and expanded political freedom equally for settlers, Native peoples, and enslaved people.': 'Removal and the slave trade were forced.',
-    'Westward migration affected only white farmers and had no relationship to Indigenous sovereignty, slavery, markets, or federal policy.': 'Migration displaced nations and spread slavery.',
-    'The early republic restricted migration because new roads and land policies made movement more difficult for every group.': 'Roads and land sales eased movement.',
+    'All movement in the early republic was entirely voluntary and expanded political freedom equally for settlers, Native peoples, and enslaved people.': 'Removal and the slave trade were forced.',
+    'Westward migration affected only the white farmers and had no relationship at all to Indigenous sovereignty, slavery, markets, or federal policy.': 'Migration displaced nations and spread slavery.',
+    'The early republic restricted all migration, because the new roads and the land policies made movement far more difficult for every single group.': 'Roads and land sales eased movement.',
   },
   'item-346': {
     'The period produced complete social equality because independence removed inherited status and ended disputes over political membership.': 'Slavery, coverture, and property qualifications survived independence, so inherited status was far from removed.',
@@ -268,9 +268,9 @@ module.exports = {
     'The expansion of voting resulted entirely from foreign pressure and had no connection to state law, parties, or popular politics.': 'State constitutions and parties drove it.',
   },
   'item-354': {
-    'All political groups agreed that the president should have unlimited authority over banks, Native nations, states, and Congress.': 'Whigs attacked Jackson as a tyrant.',
-    'Jacksonian politics reduced executive power because the president avoided national economic, territorial, and constitutional questions.': 'Jackson used the veto and removal aggressively.',
-    'The conflicts concerned only local elections and had no connection to federal institutions, Indigenous sovereignty, or economic policy.': 'The bank and removal were national issues.',
+    'All of the political groups agreed that the president should have unlimited authority over the banks, the Native nations, the states, and the Congress.': 'Whigs attacked Jackson as a tyrant.',
+    'Jacksonian politics reduced all executive power, because the president avoided all of the national economic, territorial, and constitutional questions.': 'Jackson used the veto and removal aggressively.',
+    'The conflicts concerned only the local elections and had no connection at all to any federal institutions, Indigenous sovereignty, or to economic policy.': 'The bank and removal were national issues.',
   },
   'item-355': {
     'A national culture developed only after regional traditions disappeared and every community adopted the same artistic and religious practices.': 'Regional traditions persisted.',
@@ -373,9 +373,9 @@ module.exports = {
     'Indigenous peoples had no influence on western development because their resistance ended before railroads and settlers expanded westward.': 'Resistance continued through the 1880s.',
   },
   'item-375': {
-    'The New South replaced plantation agriculture with equal industrial opportunity and ended racial hierarchy throughout the region.': 'Agriculture and hierarchy persisted.',
-    'Southern leaders rejected industrial investment and transportation because modernization had no place in their economic plans.': 'They promoted mills and railroads.',
-    'The New South created change only in culture and did not affect labor, politics, industry, cities, or federal policy.': 'Mills and cities were real changes.',
+    'The New South replaced plantation agriculture with equal industrial opportunity and ended all racial hierarchy throughout the region.': 'Agriculture and hierarchy persisted.',
+    'Southern leaders rejected all industrial investment and all transportation, because modernization had no place in their economic plans.': 'They promoted mills and railroads.',
+    'The New South created change only in culture and did not affect labor, politics, industry, cities, or any federal policy at all here.': 'Mills and cities were real changes.',
   },
   'item-376': {
     'Technological innovation changed household entertainment only and had no effect on factories, cities, transportation, or communication.': 'Steel and electricity transformed all of these.',

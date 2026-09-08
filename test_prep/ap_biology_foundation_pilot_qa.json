@@ -106,15 +106,14 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 76.6,
-      "keyLongerByQuarterSharePercent": 38.8,
+      "keyLongestSharePercent": 76.2,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1500,
       "distinctDistractorRationaleCount": 1498,
       "repeatedDistractorRationaleSharePercent": 0.2,
       "largestSharedChoiceSet": 1,
       "advisories": [
-        "answer-key-position-cycle",
-        "key-length-cue"
+        "answer-key-position-cycle"
       ],
       "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
     },
@@ -297,7 +296,7 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479",
+    "packSha256": "be831727f5d21716f60750b8114bba9f80bdb48bbae271bec7275b4ba6407b92",
     "learningLibrarySha256": "d47c457d209727d37284a46cd0ff627f46c13c429fce15ebf977c4692240b5ae",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-biology-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-biology",
@@ -308,8 +307,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479",
-      "deploySha256": "621f9bd9c3d9d1e9a9184b1ffd106bd31acca1be5b0fb892261734b651496479"
+      "sourceSha256": "be831727f5d21716f60750b8114bba9f80bdb48bbae271bec7275b4ba6407b92",
+      "deploySha256": "be831727f5d21716f60750b8114bba9f80bdb48bbae271bec7275b4ba6407b92"
     },
     {
       "asset": "learning-library",

@@ -10,6 +10,26 @@ const ReactDOMClient = require(resolve(MODULES_DIR, 'react-dom/client'));
 const { act } = require(resolve(MODULES_DIR, 'react-dom/test-utils'));
 const axe = require(resolve(MODULES_DIR, 'axe-core'));
 
+// axe-core guards every run with `assert(!axe._running, 'Axe is already
+// running...')`, and that flag is module-global. When ONE axe test overruns its
+// timeout, vitest abandons the test but the underlying run keeps going with the
+// flag still set, so every later axe test threw instantly — turning a single
+// slow pass into 9 red tests. That happened repeatedly, and the failure COUNT
+// stopped meaning anything: it was always one real stall plus N instant
+// cascades, and which tab stalled varied run to run.
+//
+// `axe.teardown()` does NOT help — it clears caches and the tree, not _running.
+// Serialising is the honest fix: a later test now WAITS for the in-flight run
+// instead of exploding, so the suite reports one slow test rather than nine
+// failures that say nothing about the product.
+let axeQueue = Promise.resolve();
+function runAxe(host, options) {
+  const started = axeQueue.then(() => axe.run(host, options), () => axe.run(host, options));
+  // Swallow on the queue only; `started` still rejects for the caller.
+  axeQueue = started.then(() => undefined, () => undefined);
+  return started;
+}
+
 const TOOL_PATHS = [
   'stem_lab/stem_tool_spacestation.js',
   'desktop/web-app/public/stem_lab/stem_tool_spacestation.js',
@@ -208,6 +228,19 @@ describe('space station tool', () => {
       expect(source).toContain('arm1.position.copy(armBase.clone().add(armAxis1');
       expect(source).toContain('arm2.position.copy(armElbow.clone().add(armAxis2');
       expect(source).not.toContain('arm2.position.set(1.7, 1.25');
+      // A SAVED camera view has to reach the camera on build. d.mapView
+      // persists and the view buttons render aria-pressed from it, but
+      // _issSetView had only two call sites — the Home key and the button's
+      // onClick — so after a tab switch the button stayed lit on "Earth-facing"
+      // while the scene sat at the hardcoded overview pose. jsdom has no WebGL,
+      // so a source pin is the only way to stop this being dropped again.
+      expect(source).toContain("if (d && d.mapView && d.mapView !== 'overview') cv._issSetView(d.mapView, true);");
+      // ...and it must restore SILENTLY and without a tween: nothing was just
+      // selected, so announcing it would lie to a screen reader, and swooping
+      // from a pose the student never chose is worse than opening there.
+      expect(source).toContain('cv._issSetView = function (name, immediate)');
+      expect(source).toContain('if (_prefersReducedMotion || immediate)');
+      expect(source).toContain("if (!immediate) announceToSR(name + ' camera view selected.');");
     });
   });
 
@@ -2356,7 +2389,14 @@ describe('space station tool', () => {
       expect(at(28.5)).toContain('filled dot = pad can reach this orbit');
       expect(at(28.5)).toMatch(/data-iss-site-reachable="no"[\s\S]{0,400}?fill="none"/);
       expect(at(28.5)).toMatch(/Tanegashima and Baikonur cannot reach this orbit directly/);
-      expect(iss).toContain('All five marked launch sites can reach this orbit directly');
+      // Derived from LAUNCH_SITES.length, not the literal "five" this used to
+      // pin: the readout below the map already computes the count, so a spelled
+      // -out twin in the aria-label was a second derivation of one fact that
+      // would have started lying the moment a sixth pad was added — invisibly,
+      // since only a screen reader ever reads it. Pin the DERIVATION by
+      // checking the count matches the site list rather than a frozen word.
+      expect(iss).toContain('All 5 marked launch sites can reach this orbit directly');
+      expect(iss).toContain('Pads that can reach it');
 
       // The explanation must survive: you can aim higher than your latitude,
       // never lower.
@@ -2372,7 +2412,14 @@ describe('space station tool', () => {
       // checkable anchor, and both cities are in the tool's own light list.
       expect(iss).toContain('London at 51.5°N');
       expect(iss).toContain('Berlin, at 52.5°N');
-    });
+      // 30 s for the same reason the module/operations sweeps got it: this
+      // renders the tool at many inclinations, and against vitest's 5 s default
+      // it timed out on four separate runs while ASSERTING NOTHING WRONG. A
+      // baseline swap settled that it is not a regression — HEAD's tool times
+      // out on this same test under the same load (5.4 s vs 7.0 s). A cap that
+      // trips on machine load is a false alarm generator, and this one has
+      // repeatedly made a green change look red.
+    }, 30000);
 
     it('derives the quiz pass mark once instead of writing it out six times', () => {
       TOOL_PATHS.forEach((filePath) => {
@@ -2620,6 +2667,32 @@ describe('space station tool', () => {
       expect((html.match(/<rect[^>]*>/g) || []).length).toBeLessThan(30);
     });
 
+    it('draws the counts it states — seven Cupola windows, arrays joined to the truss', () => {
+      // Two silent-regression classes, both caught by eye and neither reachable
+      // by any behavioural assertion: a DRAWN COUNT that disagrees with a number
+      // printed everywhere else, and hardware drawn floating unattached.
+      const cupola = mountWithSeed({ ...BASE, tab: 'map', selModule: 'cupola' });
+      const dome = cupola.slice(cupola.indexOf('MODULE BLUEPRINT'));
+      // The blueprint drew FIVE while the timeline says "the seven-window
+      // Cupola", the shutter task says "all seven pressure windows", and the
+      // 3-D scene builds 1 + 6. Count the window circles in the dome art.
+      const windows = (dome.match(/<circle[^>]*stroke="#7dd3fc"/g) || []).length;
+      expect(windows).toBe(7);
+      // The stated count lives in the History timeline and the shutter task, not
+      // in the map render — cross-check it against the SOURCE, which is the
+      // whole point of this test: the drawing and the prose must agree.
+      const toolSource = readFileSync(TOOL_PATHS[0], 'utf8');
+      expect(toolSource).toContain('seven-window Cupola');
+      expect(toolSource).toContain('all seven pressure windows');
+
+      // The truss blueprint's four wings hung 15-22 units clear of the beam
+      // with nothing joining them; each now has a mast and a rotary joint.
+      const truss = mountWithSeed({ ...BASE, tab: 'map', selModule: 'truss' });
+      const trussArt = truss.slice(truss.indexOf('MODULE BLUEPRINT'));
+      expect((trussArt.match(/<rect[^>]*fill="#a86e16"/g) || []).length).toBe(4);
+      expect((trussArt.match(/<line[^>]*stroke="#cbd5e1"[^>]*stroke-width="2.4"/g) || []).length).toBe(4);
+    }, 30000);
+
     it('grows the solar arrays on the dates they were actually installed', () => {
       // The picture used to put all four wing pairs up at once from 2002 and
       // leave them, beside an AVAILABLE POWER readout climbing 18 -> 120 kW.
@@ -2705,7 +2778,7 @@ describe('space station tool', () => {
         expect(live.host.querySelector('#iss-quiz-feedback').getAttribute('aria-atomic')).toBe('true');
         expect(document.activeElement).toBe(next);
 
-        const results = await axe.run(live.host, {
+        const results = await runAxe(live.host, {
           rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
         });
         expect(results.violations.map((violation) => violation.id)).toEqual([]);
@@ -2725,7 +2798,7 @@ describe('space station tool', () => {
       async (tab) => {
         const live = mountLiveWithSeed({ ...BASE, tab });
         try {
-          const results = await axe.run(live.host, {
+          const results = await runAxe(live.host, {
             rules: { 'color-contrast': { enabled: false }, region: { enabled: false } },
           });
           expect(results.violations.map((violation) => violation.id)).toEqual([]);
@@ -2733,7 +2806,14 @@ describe('space station tool', () => {
           live.cleanup();
         }
       },
-      120000,
+      // 240 s, raised from 120 s. The heaviest tab (interior, which mounts the
+      // full 3-D crew scene) runs this pass in 2.6-4.4 s in ISOLATION and has
+      // overrun 120 s three times under full-suite load — most recently at
+      // 122.8 s, a 2% overshoot that failed a run in which nothing was wrong.
+      // The cap is here to catch a HANG, not to measure how busy the machine
+      // is, and 240 s still catches one. Same reasoning as the inclination
+      // sweep above; see also runAxe, which stops one overrun cascading.
+      240000,
     );
   });
 

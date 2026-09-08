@@ -216,11 +216,20 @@
       challenge: 'Sixteen sunsets a day means sixteen battery cycles a day. What does that do to battery lifetime, and why were all the batteries replaced in 2017-2021?' },
     { id: 'thermal', icon: '🌡️', name: 'Thermal control', color: '#f97316',
       how: 'Sunlit surfaces can reach ~+120°C while shaded ones drop to ~-160°C. Water loops collect heat inside; ammonia loops carry it to big white radiators that glow it away as infrared.',
-      num: 'In vacuum there is no air to carry heat off — radiation is the ONLY exit. That’s why the radiators are almost as prominent as the solar arrays.',
+      // ★"By the numbers" with no number in it. Six of the eight systems give a
+      // figure here; thermal and attitude gave only prose, under a heading that
+      // promises otherwise. Both now lead with quantities the tool ALREADY
+      // states elsewhere rather than new unaudited claims — here the 18-27 °C
+      // comfort band (the ops thermal flight rule) and the sixteen day/night
+      // cycles a day (the orbit-cycle ribbon and the power caption).
+      num: 'The cabin is held in an 18–27 °C band while the outside swings between sunlight and shadow sixteen times a day. In vacuum there is no air to carry heat off — radiation is the ONLY exit, which is why the radiators are almost as prominent as the solar arrays.',
       challenge: 'A laptop on Earth is cooled by a fan pulling in room air. List two reasons that fails on the station, and what replaces it.' },
     { id: 'attitude', icon: '🧭', name: 'Attitude control', color: '#a78bfa',
       how: 'Four spinning 100-kg flywheels (Control Moment Gyroscopes) twist the station without burning any fuel; thrusters take over only when the gyros run out of authority ("saturate").',
-      num: 'The station must hold its orientation so arrays face the Sun, radiators face cold space, and antennas face Earth — all at once, forever.',
+      // Figures reused from the tool's own audited set: four 100-kg rotors (the
+      // description above and the CMG panel) and the < 80% cluster-saturation
+      // flight rule (the ops attitude readout).
+      num: 'Four 100-kg rotors carry the whole job, and flight rules keep cluster saturation below 80% — past that the gyros are out of authority and thrusters must burn propellant to unload them. Meanwhile the station must hold arrays at the Sun, radiators at cold space and antennas at Earth, all at once, forever.',
       challenge: 'Why is torque from a spinning wheel "free" compared to a thruster, and what is the catch that eventually forces a fuel-burning desaturation?' },
     { id: 'debris', icon: '🛡️', name: 'Debris & shielding', color: '#f87171',
       how: 'Whipple shields — a thin outer bumper spaced ahead of the hull — make an incoming particle vaporize itself before it reaches the crew wall. Big tracked debris is dodged with reboost burns.',
@@ -1510,7 +1519,11 @@
           // also permanently freezes the idle auto-rotation, since that is gated
           // on !dragging.
           window.addEventListener('pointercancel', onUp);
-          cv._issSetView = function (name) {
+          // `immediate` skips both the tween and the announcement, for the
+          // restore-on-build call below: nothing was just selected, so saying so
+          // to a screen reader would be a lie, and swooping the camera from a
+          // pose the student never chose is worse than simply opening there.
+          cv._issSetView = function (name, immediate) {
             cameraFocusId = null;
             var views = {
               overview: { camera: [8.2, 4.8, 10.4], target: [0, 0, 1], rotation: [-0.08, 0.15, -0.055] },
@@ -1526,14 +1539,24 @@
               nadir: { camera: [0, -3.9, 5.6], target: [0, 0, .5], rotation: [0, 0, 0] }
             };
             var view = views[name] || views.overview;
-            if (_prefersReducedMotion) {
+            if (_prefersReducedMotion || immediate) {
               camera.position.set(view.camera[0], view.camera[1], view.camera[2]); camera.lookAt(view.target[0], view.target[1], view.target[2]);
               station.rotation.set(view.rotation[0], view.rotation[1], view.rotation[2]);
             } else {
               cameraTween = { progress: 0, fromCamera: camera.position.clone(), toCamera: new THREE.Vector3(view.camera[0], view.camera[1], view.camera[2]), fromRotation: [station.rotation.x, station.rotation.y, station.rotation.z], toRotation: view.rotation.slice(), target: new THREE.Vector3(view.target[0], view.target[1], view.target[2]) };
             }
-            announceToSR(name + ' camera view selected.');
+            if (!immediate) announceToSR(name + ' camera view selected.');
           };
+          // ★★RESTORE THE SAVED CAMERA VIEW. `d.mapView` persists in the tool
+          // bucket and the view buttons render `aria-pressed` from it, but the
+          // camera was only ever moved by a CLICK — `_issSetView` had exactly
+          // two call sites, the Home key and the button, and neither runs on
+          // build. `camera.position.set(8.2, 4.8, 10.4)` above IS the overview
+          // preset, hardcoded. So after a tab switch or a reload the button
+          // stayed lit on "Earth-facing", the status line announced "Camera
+          // view nadir", and the scene showed the overview. The button state
+          // and the scene are now one fact again.
+          if (d && d.mapView && d.mapView !== 'overview') cv._issSetView(d.mapView, true);
           cv._issFocusModule = function (id) {
             var focused = null;
             for (var focusIndex = 0; focusIndex < clickable.length; focusIndex++) { if (clickable[focusIndex]._issId === id) { focused = clickable[focusIndex]; break; } }
@@ -2576,7 +2599,25 @@
           cargoHalo.position.z = 0.225;
           cargoHalo.renderOrder = 7;
           cargo.add(cargoHalo);
-          var cargoBase = new THREE.Vector3(-0.66, 0.18, -0.25);
+          // ★★THE POUCH WAS SPAWNED 0.66 m DEAD AHEAD AND BLOCKED THE WHOLE ROOM.
+          // Unity's camera starts at the node centre (0, 0, -0.25) facing -x, and
+          // the old base sat at exactly that bearing: a 0.64 m box at 0.66 m
+          // subtends ~51 deg of a 70 deg fov, so opening this room showed a
+          // wall-to-wall teal wedge and none of the module behind it. It also
+          // sat 0.684 m out against a 0.65 m `cargoCatchReach` — close enough to
+          // grab almost without moving, which contradicts the task's own prompt
+          // ("how should you LAUNCH toward the pouch"). Now off the opening
+          // bearing and across the node: ~1.24 m away (~29 deg, the module reads)
+          // and ~21 deg off-axis, so it is plainly in view without owning the
+          // frame, and reaching it is a real push-off. Radius from the tube axis
+          // is 1.15, inside the 1.68 shell with room for the pouch's half-width.
+          // ★Kept at 0.45 lateral after trying 0.32: the pouch carries a 0.43 m
+          // guide halo, which is ~20 deg of angular radius on top of the body,
+          // so pulling the pouch toward the centre put that ring across the
+          // whole frame and over the reticle. Off to one side it stays legible
+          // as "the thing to go and get" and leaves the hatch view clear. The
+          // halo itself is oversized for this range and is worth shrinking.
+          var cargoBase = new THREE.Vector3(-1.15, 0.1, 0.2);
           var cargoSecurePoint = new THREE.Vector3(1.02, -0.52, 0.52);
           cargo.position.copy(cargoBase);
           scene.add(cargo);
@@ -2875,6 +2916,64 @@
             cupolaShutters.add(shutter);
           });
           cupolaShutters.visible = false;
+          // ★★THE SEVEN WINDOWS SHOWED NOTHING. Each was a bare torus FRAME with
+          // no pane, so with the shutters open (the default) you looked straight
+          // through to the scene background and every window read as a black
+          // hole — in the one module whose entire purpose is the view of Earth,
+          // and whose 2-D counterpart in this same tool was rebuilt at R22 for
+          // exactly this. The scene's Earth sphere sits at y -11.0 r 6.2, i.e.
+          // its top (-4.8) is BELOW the room shell's lower opening (-4.45) and
+          // it never reaches these pixels — verified by screenshot with the
+          // Earth's emissive boosted to 3.0 and a magenta fallback: still black.
+          // So the pane carries the view, inside the room volume where it is
+          // certainly visible.
+          // ★One shared texture with per-window UVs, not one picture per window:
+          // seven panes a metre apart look at the SAME Earth, so the coastlines
+          // must run CONTINUOUSLY across the cluster (R22's finding, in 3-D).
+          // ★★THE SEVEN WINDOWS SHOWED NOTHING. Each was a bare torus FRAME with
+          // no pane, so with the shutters open (the default) you looked straight
+          // through to the scene background and every window read as a BLACK HOLE
+          // — in the one module whose entire purpose is the view of Earth, and
+          // whose 2-D counterpart was rebuilt at R22 for exactly this. Proven by a
+          // shutters-open vs shutters-closed shot: closed draws slate discs, open
+          // drew background. The scene HAS an Earth (y -11.0, r 6.2) but its top
+          // (-4.8) sits below this room shell's opening (-4.45) and it never
+          // reaches these pixels — confirmed by screenshot with that Earth's
+          // emissive boosted to 3.0 and a magenta fallback: still black. So the
+          // pane carries the view, inside the room volume where it is visible.
+          // ★★DELIBERATELY A FLAT OCEAN BLUE, NOT THE REAL EARTH MAP. Sharing
+          // `earth.material.map` onto these panes (with per-window UVs, so the
+          // coastlines ran continuously across the cluster) LOOKED far better and
+          // pushed the interior tab's axe test from ~3 s to over its 120 s cap,
+          // reddening 9 tests. Bisected: the meshes alone are free, the shared
+          // texture is what costs — the interior render loop keeps running during
+          // axe's async pass, so an extra textured material is paid every frame
+          // for the whole analysis. Verified 76/76 in this form. A small
+          // purpose-built pane texture would be the way back to coastlines.
+          // ★Deeper than it looks: the renderer encodes output to sRGB, so an
+          // UNLIT material's colour is gamma-lifted on the way to the screen.
+          // 0x3f95d8 — a reasonable ocean blue as a hex literal — came out a pale
+          // frosted cyan that read as lit glass rather than a view of a planet.
+          // These values are chosen for how they LAND, not how they read here.
+          var cupolaPaneMat = new THREE.MeshBasicMaterial({ color: 0x0a3466 });
+          var cupolaRimMat = new THREE.MeshBasicMaterial({ color: 0x6fc6ee, transparent: true, opacity: 0.42 });
+          var cupolaPanes = new THREE.Group();
+          cupolaWindowCenters.forEach(function (offset, index) {
+            var paneRadius = (index ? 0.29 : 0.4) * 0.91;
+            var pane = new THREE.Mesh(new THREE.CircleGeometry(paneRadius, 28), cupolaPaneMat);
+            pane.rotation.x = -Math.PI / 2;
+            // Below the frame (-4.35) and below the shutter (-4.31), so a closed
+            // shutter still covers it and both task states stay distinct.
+            pane.position.set(-6.25 + offset[0], -4.4, -0.25 + offset[1]);
+            cupolaPanes.add(pane);
+            // Atmospheric rim, so the pane reads as a window onto a planet rather
+            // than a painted disc.
+            var rim = new THREE.Mesh(new THREE.RingGeometry(paneRadius * 0.86, paneRadius, 28), cupolaRimMat);
+            rim.rotation.x = -Math.PI / 2;
+            rim.position.set(-6.25 + offset[0], -4.39, -0.25 + offset[1]);
+            cupolaPanes.add(rim);
+          });
+          scene.add(cupolaPanes);
           scene.add(cupolaWindows);
           scene.add(cupolaShutters);
           var cupolaGlow = new THREE.PointLight(0x7dd3fc, 0.46, 5.5, 2);
@@ -8030,10 +8129,31 @@
             isTruss ? h('g', null,
               h('rect', { x: 105, y: 72, width: 430, height: 9, rx: 4, fill: '#94a3b8' }),
               [135,205,275,345,415,485].map(function (x, i) { return h('g', { key: i }, h('line', { x1: x, y1: 55, x2: x + 40, y2: 98, stroke: '#cbd5e1', strokeWidth: 2 }), h('line', { x1: x + 40, y1: 55, x2: x, y2: 98, stroke: '#64748b', strokeWidth: 2 })); }),
-              [135,225,415,505].map(function (x, i) { return h('rect', { key: 'a' + i, x: x - 24, y: i % 2 ? 103 : 35, width: 48, height: 22, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }); })) :
+              // ★The arrays used to FLOAT: the beam is y 72-81 and the panels sit
+              // at y 35-57 and 103-125, so each one hung 15-22 units clear of the
+              // truss with nothing joining them. On the real station a wing
+              // mounts through a mast and a rotary joint — the same parts the
+              // assembly view already draws — so the blueprint now shows them.
+              [135,225,415,505].map(function (x, i) {
+                var top = i % 2 === 0;
+                return h('g', { key: 'a' + i },
+                  h('line', { x1: x, y1: top ? 57 : 103, x2: x, y2: top ? 74 : 79, stroke: '#cbd5e1', strokeWidth: 2.4 }),
+                  h('circle', { cx: x, cy: top ? 74 : 79, r: 3.4, fill: '#0f172a', stroke: '#cbd5e1', strokeWidth: 1.6 }),
+                  h('rect', { x: x - 24, y: top ? 35 : 103, width: 48, height: 22, rx: 2, fill: '#a86e16', stroke: '#fbbf24' }));
+              })) :
             isCupola ? h('g', null,
               h('path', { d: 'M255 106 Q265 42 320 38 Q375 42 385 106 Z', fill: 'url(#iss-module-metal)', stroke: '#bae6fd', strokeWidth: 2 }),
-              [-42,-21,0,21,42].map(function (dx, i) { return h('circle', { key: i, cx: 320 + dx, cy: 78 - Math.abs(dx) * .25, r: i === 2 ? 11 : 7, fill: '#12324c', stroke: '#7dd3fc' }); }),
+              // ★SEVEN, not five. Everything else in this tool says seven: the
+              // timeline calls it "the seven-window Cupola", the task feedback
+              // says "all seven pressure windows", the 3-D scene builds
+              // cupolaWindowCenters as 1 + 6, and the 2-D dome draws 7 panes.
+              // This blueprint alone drew 5, so the one module a student would
+              // actually count disagreed with every number beside it. The big
+              // centre circle is the 80 cm nadir window; the six around it are
+              // the trapezoids. Geometry checked against the dome path: at
+              // dx 42 the circle spans y 61-73 and the dome's edge there is
+              // y 57, so the outermost pair sits inside the shell.
+              [-42,-28,-14,0,14,28,42].map(function (dx, i) { return h('circle', { key: i, cx: 320 + dx, cy: 80 - Math.abs(dx) * .3, r: i === 3 ? 10 : 6, fill: '#12324c', stroke: '#7dd3fc' }); }),
               h('rect', { x: 252, y: 106, width: 136, height: 13, rx: 5, fill: '#94a3b8' })) :
             h('g', null,
               h('rect', { x: bodyX, y: bodyY, width: bodyW, height: bodyH, rx: Math.min(28, bodyH / 2), fill: 'url(#iss-module-metal)', stroke: '#e2e8f0', strokeWidth: 2 }),
@@ -8336,8 +8456,15 @@
           power: { nodes: [['SUN', 'radiant energy'], ['ARRAYS', 'direct current'], ['BATTERIES', 'store for eclipse'], ['LOADS', 'labs + life support']], loop: false, caption: 'Generation and storage must survive sixteen daily eclipses.' },
           thermal: { nodes: [['CABIN', 'collect heat'], ['WATER', 'internal loop'], ['AMMONIA', 'external loop'], ['RADIATORS', 'infrared to space']], loop: false, caption: 'In vacuum, the final heat-transfer step must be radiation.' },
           attitude: { nodes: [['SENSORS', 'measure pose'], ['COMPUTER', 'calculate torque'], ['CMGs', 'exchange momentum'], ['STATION', 'hold orientation']], loop: true, loopLabel: 'FEEDBACK / CONTROL LOOP', caption: 'A feedback loop continually senses, corrects, and verifies.' },
-          debris: { nodes: [['TRACK', 'ground radar'], ['ASSESS', 'predict miss distance'], ['MANEUVER', 'burn if needed'], ['SHIELD', 'stop small debris']], loop: false, caption: 'Risk is managed differently depending on particle size.' },
-          comms: { nodes: [['STATION', 'transmit upward'], ['RELAY', 'geostationary satellite'], ['TERMINAL', 'New Mexico dish'], ['CONTROL', 'Houston']], loop: false, caption: 'Up 35,800 km and back down — the long way round to a room in Texas' },
+          // ★flowLabel is the one-way twin of R30's loopLabel, and it exists for
+          // the same reason: the shared default said ENERGY AND MASS MOVE ONE
+          // WAY, which is true of power (SUN->LOADS) and thermal (CABIN->
+          // RADIATORS) and false of the other two non-loop systems. Nothing
+          // material moves through TRACK->ASSESS->MANEUVER->SHIELD — that is a
+          // decision chain — and a comms link carries a signal, not mass.
+          // **A shared string is only validated by the callers you have read.**
+          debris: { nodes: [['TRACK', 'ground radar'], ['ASSESS', 'predict miss distance'], ['MANEUVER', 'burn if needed'], ['SHIELD', 'stop small debris']], loop: false, flowLabel: 'DECISIONS MOVE ONE WAY THROUGH THIS VIEW', caption: 'Risk is managed differently depending on particle size.' },
+          comms: { nodes: [['STATION', 'transmit upward'], ['RELAY', 'geostationary satellite'], ['TERMINAL', 'New Mexico dish'], ['CONTROL', 'Houston']], loop: false, flowLabel: 'A SIGNAL MOVES ONE WAY THROUGH THIS VIEW', caption: 'Up 35,800 km and back down — the long way round to a room in Texas' },
           body: { nodes: [['MICRO-G', 'remove loading'], ['CHANGE', 'bone + muscle loss'], ['COUNTER', 'exercise + diet'], ['MEASURE', 'adapt the plan']], loop: true, loopLabel: 'FEEDBACK / COUNTERMEASURE LOOP', caption: 'Each astronaut is both crew member and longitudinal study.' }
         };
         var flow = flows[sys.id] || flows.water;
@@ -8378,7 +8505,7 @@
                 h('text', { x: 12, y: 38, fill: '#f8fafc', fontSize: 10.5, fontWeight: 850, letterSpacing: .5 }, node[0]),
                 h('text', { x: 12, y: 53, fill: '#94a3b8', fontSize: 8.5 }, node[1]));
             }),
-            flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, flow.loopLabel || 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 132, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
+            flow.loop ? h('text', { x: 320, y: 166, textAnchor: 'middle', fill: sys.color, fontSize: 8.5, fontWeight: 800, letterSpacing: 1.2 }, flow.loopLabel || 'FEEDBACK / RECOVERY LOOP') : h('text', { x: 320, y: 132, textAnchor: 'middle', fill: '#94a3b8', fontSize: 8.5, fontWeight: 700, letterSpacing: 1.1 }, flow.flowLabel || 'ENERGY AND MASS MOVE ONE WAY THROUGH THIS VIEW')),
           h('div', { className: 'iss-system-steps', role: 'group', 'aria-label': __alloFill(__alloT('stem.spacestation.a11y_inspect_process_stages', 'Inspect {value1} process stages'), { value1: sys.name })}, [{ label: 'All stages', step: 0 }].concat(flow.nodes.map(function (node, nodeIndex) { return { label: (nodeIndex + 1) + ' ' + node[0], step: nodeIndex + 1 }; })).map(function (item) { var on = selectedStep === item.step; return h('button', { key: item.step, type: 'button', 'data-iss-system-step': item.step, 'aria-pressed': on, onClick: function () { upd({ sysStep: item.step }); } }, item.label); })),
           h('div', { className: 'iss-visual-caption' }, h('span', null, selectedStep ? flow.nodes[selectedStep - 1][0] + ': ' + flow.nodes[selectedStep - 1][1] : flow.caption), h('span', null, selectedStep ? 'STAGE ' + selectedStep + ' / ' + flow.nodes.length : 'SELECTED: ' + sys.name.toUpperCase())));
       }
@@ -8660,7 +8787,13 @@
         var westShift = 360 * (orbitT * 60) / SIDEREAL_DAY_S;
         var blockedPads = LAUNCH_SITES.filter(function (s) { return inc < s.lat - 0.05; });
         return h('div', { className: 'iss-learning-visual', 'data-iss-ground-track': inc.toFixed(1) },
-          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': 'World map with the station ground track at ' + inc.toFixed(1) + ' degrees inclination. The track reaches ' + inc.toFixed(1) + ' degrees north and south, crossing ' + Math.round(landShare * 100) + ' percent of Earth’s land area. Each orbit shifts ' + westShift.toFixed(1) + ' degrees west. ' + (blockedPads.length ? blockedPads.map(function (s) { return s.name; }).join(' and ') + ' cannot reach this orbit directly; the other launch sites can.' : 'All five marked launch sites can reach this orbit directly.') },
+          h('svg', { viewBox: '0 0 640 372', role: 'img', 'aria-label': 'World map with the station ground track at ' + inc.toFixed(1) + ' degrees inclination. The track reaches ' + inc.toFixed(1) + ' degrees north and south, crossing ' + Math.round(landShare * 100) + ' percent of Earth’s land area. Each orbit shifts ' + westShift.toFixed(1) + ' degrees west. ' + (blockedPads.length ? blockedPads.map(function (s) { return s.name; }).join(' and ') + ' cannot reach this orbit directly; the other launch sites can.' : // ★Derived, not "five". The readout below this map already computes
+// `(LAUNCH_SITES.length - blocked.length) + ' of ' + LAUNCH_SITES.length`,
+// so the count had two derivations and one of them was a literal. It happens
+// to be right today; adding a sixth pad would have made this line lie. Worst
+// of all it is aria-label text, so the lie would be invisible to anyone
+// reviewing by eye and audible only to a screen-reader user.
+'All ' + LAUNCH_SITES.length + ' marked launch sites can reach this orbit directly.') },
             h('text', { x: 20, y: 20, fill: '#94a3b8', fontSize: 8.5, fontWeight: 850, letterSpacing: 1.2 }, 'GROUND TRACK // 3 CONSECUTIVE ORBITS'),
             h('text', { x: 620, y: 20, textAnchor: 'end', fill: '#7dd3fc', fontSize: 8.5, fontWeight: 850, letterSpacing: 1 }, 'INCLINATION ' + inc.toFixed(1) + '°'),
             h('rect', { x: mapX, y: mapY, width: mapW, height: mapH, rx: 4, fill: '#071b33' }),

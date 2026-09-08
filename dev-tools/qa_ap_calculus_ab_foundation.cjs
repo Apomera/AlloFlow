@@ -75,6 +75,15 @@ for (const item of items) {
   if (Number.isInteger(item.answerIndex) && item.answerIndex >= 0 && item.answerIndex <= 3) answerCounts[item.answerIndex] += 1;
   check(String(item.prompt || '').length >= 24 && String(item.rationale || '').length >= 30, 'editorial-depth', 'Prompt or rationale is too short for the foundation standard.', { itemId: item.id });
   check(Array.isArray(item.choiceRationales) && item.choiceRationales.length === 4 && item.choiceRationales.every((value) => String(value).length >= 40), 'choice-feedback', 'Every choice needs substantive feedback.', { itemId: item.id });
+  // A key that runs much longer than every distractor is a length cue: a
+  // test-wise learner can pick the elaborated option without reading it. The
+  // key may still be the longest, but not by a quarter of its length.
+  {
+    const choiceLengths = (Array.isArray(item.choices) ? item.choices : []).map((choice) => String(choice || '').length);
+    const keyLength = choiceLengths[item.answerIndex] || 0;
+    const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+    check(longestDistractor > 0 && keyLength < longestDistractor * 1.25, 'choice-length-parity', 'Each item must keep its distractors within a quarter of the key length.', { itemId: item.id });
+  }
   check(expectedPractices.has(item.practiceId), 'practice-id', 'Item practice ID is invalid.', { itemId: item.id, practiceId: item.practiceId });
   check(expectedRepresentations.has(item.representation), 'representation', 'Item representation is invalid.', { itemId: item.id, representation: item.representation });
   check(expectedCalculatorModes.has(item.calculatorUse), 'calculator-mode', 'Item calculator route is invalid.', { itemId: item.id, calculatorUse: item.calculatorUse });

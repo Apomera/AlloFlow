@@ -97,7 +97,7 @@ describe('Arc City replay revision comparison render flow', () => {
     expect(r.find('battle-replay-compare-trail').props.strokeDasharray).toBe('4 4');
     expect(r.find('battle-replay-trail').props.stroke).toBe('#ffffff');
     expect(r.find('battle-svg').props['aria-label']).toContain('Compared with shot 1');
-    expect(r.find('battle3d-classic').props.battle.replayIndex).toBe(2);
+    expect(r.find('battle3d-classic-light').props.battle.replayIndex).toBe(2);
   });
 
   it('removes the ghost comparison when navigation reaches a first attempt', () => {

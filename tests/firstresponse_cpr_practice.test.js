@@ -206,7 +206,7 @@ describe('CPR practice scoring — the window is 30 seconds, not the tap span', 
     // Two taps have zero spread, so raw consistency reads 100.
     const s = analyzeCprPractice([START, START + 545], START, START + WINDOW);
     expect(s.consistencyPct).toBeGreaterThan(90);
-    expect(s.steadyKnown).toBe(false);
+    expect(s.enoughData).toBe(false);
     expect(s.steadyOk).toBe(false);
     expect(s.passed).toBe(false);
   });
@@ -244,7 +244,8 @@ describe('CPR practice scoring — the window is 30 seconds, not the tap span', 
 describe('CPR practice scoring — one verdict, one derivation', () => {
   it('routes the Practice tab through the shared analyzer', () => {
     expect(SRC).toContain('var live = analyzeCprPractice(taps, practiceStart');
-    expect(SRC).toContain('analyzeCprPractice(practiceTaps || [], practiceStart, practiceStart + windowMs)');
+    expect(SRC, 'stopping early must score against the full window')
+      .toMatch(/analyzeCprPractice\(\s*practiceTaps[^)]*practiceStart\s*\+\s*windowMs\s*\)/);
   });
 
   it('no longer re-derives a rate from the tap span', () => {
@@ -347,8 +348,13 @@ describe('AED walkthrough — the decision step is not a slide', () => {
     const html = aed({ aedStep: 4 });
     expect(html).toContain('Pick what the AED said to continue');
     expect(html).toContain('aria-disabled="true"');
-    expect(SRC).toContain('var branchNeeded = aedStep === 4 && !aedShockBranch;');
-    expect(SRC).toContain('if (branchNeeded) {');
+    // The gate's BEHAVIOUR is asserted above (rendered hint + aria-disabled)
+    // and end-to-end in the browser suite's "will not let a learner past the
+    // AED decision without making it", which clicks Next and checks the step
+    // did not advance. Pinning the source spelling here as well would only add
+    // a red that fires on a rename.
+    expect(SRC, 'the gate must key off step 5 having no branch')
+      .toMatch(/branchNeeded\s*=\s*aedStep\s*===\s*4\s*&&\s*!aedShockBranch/);
   });
 
   it('does not block any other step', () => {
@@ -392,9 +398,44 @@ describe('CPR overview — hands-only is scoped, and its exception is named', ()
     // Asphyxial arrest: the blood has run out of oxygen, so moving it does less.
     // The tool already taught this in the drowning and infant scenarios and in
     // the 3D coach; the front page of the CPR lab did not.
-    expect(html).toContain('When compressions alone are not enough');
     for (const who of ['Infants and children', 'Drowning', 'Choking', 'Drug or opioid overdose']) {
       expect(html, 'missing exception: ' + who).toContain(who);
+    }
+  });
+
+  it('states the exception in the summary, so folding it away cannot hide it', () => {
+    // The block is a <details> to keep the Overview from becoming a wall, but a
+    // learner who never opens it still has to learn that hands-only is scoped.
+    const div = document.createElement('div');
+    div.innerHTML = overview();
+    const summaries = [...div.querySelectorAll('details > summary')].map((s) => s.textContent);
+    expect(summaries.some((t) => /infants, children, drowning and overdose need breaths/i.test(t)),
+      'the exception is not stated in any summary: ' + JSON.stringify(summaries)).toBe(true);
+  });
+
+  it('keeps the breathing gate and the numbered sequence unfolded', () => {
+    // The first decision and the action sequence are not objections to be
+    // tucked away — only the two blocks that answer an objection fold.
+    const div = document.createElement('div');
+    div.innerHTML = overview();
+    const all = [...div.querySelectorAll('details')];
+    const detailsText = all.map((d) => d.textContent).join(' ');
+    expect(detailsText, 'the first decision must never be folded away')
+      .not.toContain('is this cardiac arrest?');
+    expect(detailsText, 'the action sequence must never be folded away')
+      .not.toContain('For an adult who collapsed in front of you');
+
+    // Counting disclosures pinned the wrong thing — adding a legitimate one
+    // (age-specific hand position) turned it red for no behavioural reason.
+    // The real rule is that folding never hides a fact: every summary has to
+    // carry its own claim, because a learner who does not open it still reads
+    // that line.
+    expect(all.length, 'at least one supporting block should fold').toBeGreaterThan(0);
+    for (const d of all) {
+      const summary = d.querySelector(':scope > summary');
+      expect(summary, 'a details with no summary is unopenable and unreadable').toBeTruthy();
+      expect(summary.textContent.trim().length, 'summary too short to carry a claim: ' + summary.textContent)
+        .toBeGreaterThan(24);
     }
   });
 
@@ -422,7 +463,8 @@ describe('CPR overview — hands-only is scoped, and its exception is named', ()
 
   it('routes to the 3D coach that actually drills the 30:2 cycle', () => {
     expect(overview()).toContain('Practise 30:2 in 3D');
-    expect(SRC).toContain("updMulti({ view: 'body3d', b3dTab: 'coach' })");
+    expect(SRC, 'the 30:2 link must open the coach tab')
+      .toMatch(/view:\s*'body3d'[^}]*b3dTab:\s*'coach'/);
   });
 });
 
@@ -431,7 +473,9 @@ describe('CPR module — screen readers do not get English', () => {
     expect(SRC).toContain("tabBtn('overview', __alloT('stem.firstresponse.cpr_tab_overview'");
     expect(SRC).toContain("tabBtn('metronome', __alloT('stem.firstresponse.cpr_tab_metronome'");
     expect(SRC).toContain("tabBtn('practice', __alloT('stem.firstresponse.cpr_tab_practice'");
-    expect(SRC).toContain("tabBtn('aed', __alloT('stem.firstresponse.cpr_tab_aed'");
+    // One key, one string: this label was a duplicate of sr_aed_walkthrough,
+    // which the tab's own frAnnounce already used.
+    expect(SRC).toContain("tabBtn('aed', __alloT('stem.firstresponse.sr_aed_walkthrough'");
   });
 
   it('translates the metronome and practice controls', () => {
@@ -440,7 +484,7 @@ describe('CPR module — screen readers do not get English', () => {
       'stem.firstresponse.sr_audio_on_click_to_mute',
       'stem.firstresponse.sr_audio_off_click_to_enable',
       'stem.firstresponse.sr_tap_to_record_a_compression',
-      'stem.firstresponse.sr_practice_not_running_press_start',
+      'stem.firstresponse.a11y_tap_off',
     ]) {
       expect(SRC, 'untranslated: ' + key).toContain(key);
     }
@@ -556,20 +600,24 @@ describe('metronome audio — the one channel a blind learner has', () => {
   });
 
   it('only plays a click through a context that is actually running', () => {
-    expect(SRC).toContain("var ac = frEnsureAudio();");
-    expect(SRC).toContain("if (ac && ac.state === 'running') {");
+    expect(SRC, 'the tick must go through the create-or-resume helper')
+      .toMatch(/=\s*frEnsureAudio\(\)/);
+    expect(SRC, 'a click may only play through a RUNNING context')
+      .toMatch(/ac\.state\s*===\s*'running'/);
   });
 
   it('unlocks the context from the toggle, which is the real user gesture', () => {
-    expect(SRC).toContain('if (!audioOn) frEnsureAudio();');
+    expect(SRC, 'enabling audio must unlock the context inside the gesture')
+      .toMatch(/!audioOn\s*\)?\s*frEnsureAudio\(\)/);
   });
 
   it('admits it when the browser is holding the sound', () => {
-    expect(SRC).toContain('var audioBlocked = audioOn && !!audioCtxRef.current');
-    expect(SRC).toContain("audioCtxRef.current.state !== 'running'");
+    expect(SRC, 'the banner must be driven by the real context state')
+      .toMatch(/audioBlocked\s*=\s*audioOn[\s\S]{0,120}state\s*!==\s*'running'/);
     // resume() is async, so a grace window keeps the banner from flashing on
     // every successful enable. A warning that cries wolf trains users to ignore it.
-    expect(SRC).toContain('(Date.now() - (audioCtxRef.resumeAskedAt || 0)) > 1200');
+    expect(SRC, 'the banner needs a grace window after a resume attempt')
+      .toMatch(/resumeAskedAt[\s\S]{0,20}\)\s*>\s*\d{3,}/);
     expect(SRC).toContain('stem.firstresponse.audio_blocked_title');
   });
 
@@ -585,7 +633,8 @@ describe('metronome audio — the one channel a blind learner has', () => {
     // an audit reading it would tick a box nothing implemented. The live
     // accommodation is the inline animation:'none' on the heart.
     expect(SRC).not.toContain('function pulseScale()');
-    expect(SRC).toContain("(prefers-reduced-motion: reduce)').matches) ? 'none'");
+    expect(SRC, 'the live reduced-motion guard on the heart must remain')
+      .toMatch(/prefers-reduced-motion:\s*reduce[\s\S]{0,40}'none'/);
   });
 });
 
@@ -633,7 +682,8 @@ describe('CPR overview — the breathing gate reaches the 2D lab', () => {
 
   it('routes to the 3D gate that drills the same judgement', () => {
     expect(overview()).toContain('See the difference in 3D');
-    expect(SRC).toContain("updMulti({ view: 'body3d', b3dTab: 'gate' })");
+    expect(SRC, 'the gate link must open the breathing-gate tab')
+      .toMatch(/view:\s*'body3d'[^}]*b3dTab:\s*'gate'/);
   });
 });
 
@@ -701,7 +751,8 @@ describe('CPR practice UI — state is not carried by colour alone', () => {
   });
 
   it('hides the status glyph from screen readers, which get the word instead', () => {
-    expect(SRC).toContain("h('span', { 'aria-hidden': 'true', style: { marginRight: 6 } }, st.glyph)");
+    expect(SRC, 'the status glyph must stay out of the accessibility tree')
+      .toMatch(/'aria-hidden':\s*'true'[^}]*}[^,]*,\s*st\.glyph/);
   });
 });
 
@@ -791,7 +842,7 @@ describe('CPR practice — a timer must not steal the learner’s focus', () => 
     const div = document.createElement('div');
     div.innerHTML = html;
     const tap = [...div.querySelectorAll('button')]
-      .find((b) => (b.getAttribute('aria-label') || '').startsWith('Practice not running'));
+      .find((b) => (b.getAttribute('aria-label') || '').startsWith('Off.'));
     expect(tap, 'tap button not found').toBeTruthy();
     expect(tap.getAttribute('aria-disabled')).toBe('true');
     expect(tap.hasAttribute('disabled')).toBe(false);
@@ -815,10 +866,556 @@ describe('CPR practice — a timer must not steal the learner’s focus', () => 
   it('does not drop focus twice per cycle in the 30:2 coach either', () => {
     // The breath button locks for 1500 ms after every breath, so a keyboard
     // user lost focus on every single breath of the drill.
-    expect(SRC).toContain("'aria-disabled': breathReady ? 'false' : 'true',");
-    expect(SRC).not.toContain('disabled: !breathReady,');
+    expect(SRC, 'the breath button must be aria-disabled, not disabled')
+      .toMatch(/'aria-disabled':\s*breathReady\s*\?/);
+    expect(SRC, 'a hard disabled attribute would drop focus every breath')
+      .not.toMatch(/\bdisabled:\s*!breathReady/);
     // The handler already refuses a press inside the lock, so the control being
     // reachable cannot let a breath through early.
-    expect(SRC).toContain('if (session.lastBreathAt && now - session.lastBreathAt < CPR_COACH_SPEC.breathLockMs) return;');
+    expect(SRC, 'the breath lock must be enforced in the handler, not by the DOM')
+      .toMatch(/lastBreathAt\s*<\s*CPR_COACH_SPEC\.breathLockMs\)\s*return/);
+  });
+});
+
+// ── Structural accessibility, swept across every view ───────────────────────
+// These four properties were audited by hand and came back clean (bar the
+// heading level). Locking them in costs one render per view and catches the
+// whole class rather than the one instance that happened to be found.
+describe('First Response — structural a11y across every view', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const NOW = () => Date.now();
+  function views() {
+    const now = NOW();
+    return [
+      ['menu', { view: 'menu' }],
+      ['cpr:overview', { view: 'cprAed', cprView: 'overview' }],
+      ['cpr:metronome', { view: 'cprAed', cprView: 'metronome' }],
+      ['cpr:practice', { view: 'cprAed', cprView: 'practice' }],
+      ['cpr:practice:running', { view: 'cprAed', cprView: 'practice', cprPracticeRunning: true,
+        cprPracticeStart: now - 12_000, cprPracticeTaps: [now - 9000, now - 8400] }],
+      ['cpr:aed', { view: 'cprAed', cprView: 'aed', aedStep: 0 }],
+      ['cpr:aed:branch', { view: 'cprAed', cprView: 'aed', aedStep: 4, aedShockBranch: 'shock' }],
+      ['body3d:gate', { view: 'body3d', b3dTab: 'gate' }],
+      ['body3d:coach', { view: 'body3d', b3dTab: 'coach' }],
+    ];
+  }
+
+  function dom(state) {
+    const div = document.createElement('div');
+    div.innerHTML = renderFr(state);
+    return div;
+  }
+
+  it('never puts a focusable control inside an aria-hidden subtree', () => {
+    // Reachable by keyboard, invisible to assistive tech — the worst of both.
+    for (const [name, state] of views()) {
+      const buried = [];
+      for (const hidden of dom(state).querySelectorAll('[aria-hidden="true"]')) {
+        for (const el of hidden.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')) {
+          buried.push(el.tagName.toLowerCase() + ':' + (el.textContent || '').trim().slice(0, 30));
+        }
+      }
+      expect(buried, 'buried controls in ' + name).toEqual([]);
+    }
+  });
+
+  it('gives every control an accessible name', () => {
+    for (const [name, state] of views()) {
+      const nameless = [...dom(state).querySelectorAll('button, a[href], input')]
+        .filter((el) => !((el.getAttribute('aria-label') || '').trim()
+          || (el.textContent || '').trim()
+          || (el.getAttribute('title') || '').trim()))
+        .map((el) => el.outerHTML.slice(0, 60));
+      expect(nameless, 'unnamed controls in ' + name).toEqual([]);
+    }
+  });
+
+  it('emits no duplicate ids', () => {
+    for (const [name, state] of views()) {
+      const seen = {};
+      for (const el of dom(state).querySelectorAll('[id]')) seen[el.id] = (seen[el.id] || 0) + 1;
+      expect(Object.keys(seen).filter((k) => seen[k] > 1), 'duplicate ids in ' + name).toEqual([]);
+    }
+  });
+
+  it('leaves the H1 to the host shell, which renders one for every tool', () => {
+    // stem_lab_module.js:1887 renders an sr-only <h1> with the tool name. A
+    // module emitting its own h1 plants a second one inside it; backBar(),
+    // used by the other modules, correctly starts at h2.
+    for (const [name, state] of views()) {
+      expect([...dom(state).querySelectorAll('h1')].length, 'own h1 in ' + name).toBe(0);
+    }
+  });
+
+  it('does not skip a heading level in any view', () => {
+    for (const [name, state] of views()) {
+      const levels = [...dom(state).querySelectorAll('h1,h2,h3,h4,h5,h6')]
+        .map((el) => Number(el.tagName.slice(1)));
+      for (let i = 1; i < levels.length; i++) {
+        expect(levels[i] - levels[i - 1], 'heading jump in ' + name + ': ' + levels.join(' ')).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+});
+
+describe('CPR practice — no confident readout from too little data', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  it('refuses to call a rate "on track" from two intervals', () => {
+    // Found by screenshotting the running tab: "Rate ✓ 110 bpm — On track" sat
+    // beside "Steady — Not enough yet" on a run with THREE taps. The scorer
+    // already knew 3 was too few; only one of the two tiles asked it.
+    const now = Date.now();
+    const html = renderFr({
+      cprView: 'practice',
+      cprPracticeRunning: true,
+      cprPracticeStart: now - 20_000,
+      cprPracticeTaps: [now - 19_000, now - 18_400, now - 17_800],
+    });
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const tile = [...div.querySelectorAll('div')]
+      .find((d) => (d.firstChild && d.firstChild.textContent || '').trim() === 'Rate' && d.children.length >= 3);
+    expect(tile, 'Rate tile not found').toBeTruthy();
+    expect(tile.textContent).toContain('Not enough yet');
+    expect(tile.textContent).not.toContain('On track');
+    expect(tile.textContent).not.toMatch(/\d+ bpm/);
+  });
+
+  it('shows the rate once there is enough of a rhythm to judge', () => {
+    const now = Date.now();
+    const taps = [];
+    for (let t = 12_000; t >= 1000; t -= 545) taps.push(now - t);
+    const html = renderFr({
+      cprView: 'practice',
+      cprPracticeRunning: true,
+      cprPracticeStart: now - 13_000,
+      cprPracticeTaps: taps,
+    });
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const tile = [...div.querySelectorAll('div')]
+      .find((d) => (d.firstChild && d.firstChild.textContent || '').trim() === 'Rate' && d.children.length >= 3);
+    expect(tile.textContent).toMatch(/\d+ bpm/);
+    expect(tile.textContent).toContain('On track');
+  });
+
+  it('uses one sufficiency flag for both derived readouts', () => {
+    expect(SRC, 'one sufficiency flag, named for what it means')
+      .toMatch(/enoughData:\s*enough/);
+    expect(SRC, 'the old name must be gone so both tiles read the same flag')
+      .not.toMatch(/steadyKnown/);
+  });
+});
+
+// ── WCAG 2.5.3 Label in Name (Level A) ─────────────────────────────────────
+// Voice-control users say what they see. axe cannot gate this for us: the rule
+// is `label-content-name-mismatch` and it is tagged EXPERIMENTAL, so the
+// wcag2a/2aa tag filter every AlloFlow harness uses never runs it. So gate it
+// directly. Normalize BOTH sides identically or "30s" vs "30 sec" is noise.
+describe('First Response — every visible control label survives into its name', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const norm = (s) => (s || '')
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}️‍←-⇿■-◿]/gu, ' ')
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
+
+  // For a composite control (a card with a title and a description paragraph)
+  // the LABEL is the title, not the whole card. Everything else labels itself.
+  function visibleLabel(el) {
+    const kids = [...el.children];
+    if (kids.length >= 2 && (kids[0].textContent || '').trim()) return kids[0].textContent;
+    return el.textContent;
+  }
+
+  function violations(state) {
+    const div = document.createElement('div');
+    div.innerHTML = renderFr(state);
+    const bad = [];
+    for (const el of div.querySelectorAll('button, summary, [role="button"], a[href]')) {
+      const name = el.getAttribute('aria-label');
+      if (!name) continue;
+      const vis = norm(visibleLabel(el));
+      if (!vis) continue;
+      if (!norm(name).includes(vis)) bad.push(vis + ' -> ' + name);
+    }
+    return bad;
+  }
+
+  const now = () => Date.now();
+
+  it('holds across the CPR + AED module', () => {
+    const t = now();
+    const taps = [];
+    for (let x = 11_000; x >= 1500; x -= 545) taps.push(t - x);
+    for (const [name, state] of [
+      ['overview', { view: 'cprAed', cprView: 'overview' }],
+      ['metronome', { view: 'cprAed', cprView: 'metronome' }],
+      ['practice', { view: 'cprAed', cprView: 'practice' }],
+      ['practice:running', { view: 'cprAed', cprView: 'practice', cprPracticeRunning: true,
+        cprPracticeStart: t - 12_000, cprPracticeTaps: taps }],
+      ['aed', { view: 'cprAed', cprView: 'aed', aedStep: 0 }],
+      ['aed:branch', { view: 'cprAed', cprView: 'aed', aedStep: 4, aedShockBranch: 'shock' }],
+    ]) {
+      expect(violations(state), 'label-in-name in ' + name).toEqual([]);
+    }
+  });
+
+  it('holds on the menu, where each tile is titled then described', () => {
+    expect(violations({ view: 'menu' })).toEqual([]);
+  });
+
+  it('keeps the off-state tap button self-describing', () => {
+    // It read "— off —" while its accessible name never contained "off".
+    const html = renderFr({ view: 'cprAed', cprView: 'practice' });
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const tap = [...div.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Off');
+    expect(tap, 'off-state tap button not found').toBeTruthy();
+    expect(tap.getAttribute('aria-label')).toMatch(/^Off\./);
+  });
+});
+
+// ── One key, one English string ────────────────────────────────────────────
+describe('First Response — i18n key hygiene', () => {
+  const CALLS = () => {
+    const re = /__alloT\(\s*'([^']+)'\s*,\s*'((?:[^'\\]|\\.)*)'/g;
+    const byKey = new Map();
+    let m;
+    while ((m = re.exec(SRC))) {
+      if (!byKey.has(m[1])) byKey.set(m[1], new Set());
+      byKey.get(m[1]).add(m[2]);
+    }
+    return byKey;
+  };
+
+  it('never gives one key two different English strings', () => {
+    // This is the direction that actually breaks: the pack stores ONE
+    // translation per key, so a second call site with different English renders
+    // text nobody translated. Currently clean across ~770 keys — worth keeping.
+    const clashes = [...CALLS()]
+      .filter(([, v]) => v.size > 1)
+      .map(([k, v]) => k + ' => ' + [...v].map((s) => JSON.stringify(s.slice(0, 40))).join(' | '));
+    expect(clashes).toEqual([]);
+  });
+
+  it('leaves no reference to a key retired during this work', () => {
+    for (const dead of [
+      'you_re_practicing_rhythm_only_depth_2_',
+      'practice_scores_interruptions_too', 'result_all_three', 'result_source',
+      'hands_off_warning', 'shake_shout_no_response_not_breathing_',
+      'cut_or_tear_off_the_shirt_if_chest_is_', 'open_cpr_rhythm_metronome',
+      'walk_through_using_an_aed', 'practice_cpr_rhythm_30_second_window',
+      'reset_bpm_to_110', 'start_30_second_practice', 'open_3d_breathing_gate',
+      'open_3d_breath_coach', 'sr_practice_not_running_press_start', 'cpr_tab_aed',
+    ]) {
+      expect(SRC.includes("'stem.firstresponse." + dead + "'"), 'retired key still live: ' + dead).toBe(false);
+    }
+  });
+});
+
+// ── Contrast across a whole input band, not just the default frame ─────────
+describe('First Response — readiness chips are legible at every level', () => {
+  // Only ONE readiness state renders at any given slider position, so a browser
+  // audit of the default view sees one of four. axe caught `developing` at
+  // 3.07:1; `novice` (4.41) and `competent` (3.58) were equally broken and
+  // simply out of frame. Compute the whole band instead of rendering it.
+  function luminance(hex) {
+    const channels = [0, 2, 4]
+      .map((i) => parseInt(hex.replace('#', '').substr(i, 2), 16) / 255)
+      .map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
+    return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+  }
+  function ratio(a, b) {
+    const l1 = luminance(a);
+    const l2 = luminance(b);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  }
+
+  it('holds 4.5:1 for every state marker against its own tint', () => {
+    const block = SRC.slice(SRC.indexOf('novice:'), SRC.indexOf('}[state];'));
+    const pairs = [...block.matchAll(/color: '(#[0-9a-f]{6})', bg: '(#[0-9a-f]{6})'/g)];
+    expect(pairs.length, 'readiness state map not found').toBe(4);
+    for (const [, fg, bg] of pairs) {
+      expect(Number(ratio(fg, bg).toFixed(2)), fg + ' on ' + bg).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps the action ink readable on the dark card', () => {
+    // T.card is #1e293b. The identity `color` stays a chip fill; `ink` is what
+    // gets painted as text.
+    const block = SRC.slice(SRC.indexOf('var FA_ACTIONS = ['), SRC.indexOf('var FA_ACTIONS = [') + 3000);
+    const inks = [...block.matchAll(/ink: '(#[0-9a-f]{6})'/g)].map((m) => m[1]);
+    expect(inks.length, 'no ink values found on FA_ACTIONS').toBe(6);
+    for (const ink of inks) {
+      expect(Number(ratio(ink, '#1e293b').toFixed(2)), ink + ' on card').toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
+  it('keeps one canonical action list', () => {
+    // renderFirstActionSleuth had shadowed FA_ACTIONS with a byte-identical
+    // local copy whose only difference was its i18n keys.
+    expect(SRC, 'the play view must alias the canonical list')
+      .toMatch(/var\s+ACTIONS\s*=\s*FA_ACTIONS/);
+    expect(SRC, 'no second copy of the action list')
+      .not.toMatch(/var\s+ACTIONS\s*=\s*\[/);
+  });
+});
+
+// ── The concept the debrief already relied on ──────────────────────────────
+// The debrief calls a rescuer swap one of the only two legitimate reasons to
+// pause. Before this, "swapping" appeared exactly once in the whole CPR module
+// — in that sentence — and "fatigue" appeared zero times. The lab asked for 30
+// seconds and never said what happens over the following ten minutes.
+describe('CPR practice — rescuer fatigue and the handover', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const practice = () => renderFr({ cprView: 'practice' });
+
+  it('says quality falls before the rescuer feels it', () => {
+    const html = practice();
+    expect(html).toContain('Thirty seconds is the easy part');
+    expect(html).toMatch(/rescuer almost never notices/);
+  });
+
+  it('gives the swap interval, not just the advice to swap', () => {
+    expect(practice()).toContain('Swap compressors about every two minutes');
+  });
+
+  it('ties the changeover to the AED analysis, when everyone is already clear', () => {
+    const html = practice();
+    expect(html).toContain('Use the AED’s analysis as the changeover');
+    // …and the AED walkthrough says the same thing from its own side.
+    const aed = renderFr({ cprView: 'aed', aedStep: 5 });
+    expect(aed).toContain('swap compressors');
+  });
+
+  it('bounds the handover so it does not eat the interruption budget', () => {
+    // A swap is only "free" if it is fast; the tool has just spent 30 seconds
+    // teaching that pauses are what cost lives.
+    expect(practice()).toContain('keep it under five seconds');
+  });
+
+  it('does not tell a lone rescuer to rest', () => {
+    // The dangerous misreading of "swap every two minutes" is "so stop at two
+    // minutes". Someone alone has no one to swap with.
+    const html = practice();
+    expect(html).toContain('Alone? Do not stop to rest.');
+    expect(html).toMatch(/stopped compressions move none/);
+  });
+
+  it('no longer leaves the debrief referring to something never taught', () => {
+    // The debrief only renders after a run, and its pause line is the one that
+    // names swapping — so score a run with a pause in it.
+    const start = Date.now() - 40_000;
+    const html = renderFr({
+      cprView: 'practice',
+      cprPracticeRunning: true,
+      cprPracticeStart: start,
+      cprPracticeTaps: liveTaps(start, 110, 8),
+    });
+    expect(html).toContain('swapping rescuers'); // the debrief's phrasing…
+    expect(html).toContain('Swap compressors');  // …and the teaching behind it
+  });
+});
+
+// ── What silently wastes compressions, and what stops people starting ──────
+// Term sweep before this pass: "firm surface"/"mattress" appeared NOWHERE in
+// the file; "lean" appeared 36 times, every one of them inside body3d, whose
+// CPR_MECHANICS calls leaning the error that "quietly undoes your work".
+describe('CPR overview — the two silent wasters', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const overview = () => renderFr({ cprView: 'overview' });
+
+  it('says to get them onto a firm flat surface', () => {
+    const html = overview();
+    expect(html).toContain('firm flat surface');
+    expect(html, 'the reason is what makes it stick').toMatch(/mattress absorbs the push/);
+  });
+
+  it('teaches full recoil, and names leaning as what prevents it', () => {
+    const html = overview();
+    expect(html).toMatch(/come all the way back up/);
+    expect(html).toContain('leaning is easy to do once you are tired');
+    expect(html).toMatch(/stops the heart refilling/);
+  });
+
+  it('keeps hands in contact while releasing', () => {
+    // "Come all the way up" without "keep your hands there" reads as lifting
+    // off, which loses the landmark every cycle.
+    expect(overview()).toMatch(/keeping your hands in contact/);
+  });
+});
+
+describe('CPR overview — the reasons bystanders freeze', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const overview = () => renderFr({ cprView: 'overview' });
+
+  it('answers the broken-rib fear without telling anyone to push gently', () => {
+    const html = overview();
+    expect(html).toContain('If you are hesitating');
+    expect(html).toMatch(/not a reason to stop or to push more gently/);
+    expect(html, 'shallow is the commoner error and must be said').toMatch(/Shallow compressions are the more common mistake/);
+  });
+
+  it('states the legal position without overstating it', () => {
+    // Good Samaritan protections exist in every state but differ; the tool's
+    // other references are overdose-specific (Maine). Promising immunity would
+    // be a scientific-integrity failure, not a reassurance.
+    const html = overview();
+    expect(html).toContain('some form of Good Samaritan law');
+    expect(html).toMatch(/what each one covers varies/);
+    expect(html).not.toMatch(/cannot be sued|you are immune|no legal risk/i);
+  });
+
+  it('tells them the dispatcher will do the remembering', () => {
+    const html = overview();
+    expect(html).toContain('Put the phone on speaker');
+    expect(html).toMatch(/count compressions with you/);
+  });
+});
+
+// ── How to actually put your hands on the chest ────────────────────────────
+// Term sweep before this pass: "heel of" appeared 18 times in this file and
+// ZERO in the CPR module; "breastbone" 29 and zero. The front page taught
+// where, how deep, how fast and when to stop — and never the most basic
+// mechanical instruction in CPR. All of it lived in body3d.
+describe('CPR overview — hand technique', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const overview = () => renderFr({ cprView: 'overview' });
+
+  it('states the adult hand position in the action step itself', () => {
+    const html = overview();
+    expect(html).toMatch(/heel of one hand on the breastbone/);
+    expect(html).toMatch(/fingers interlaced/);
+  });
+
+  it('teaches the posture that makes depth reachable', () => {
+    // Depth is a body-weight problem, not an arm-strength one; without this a
+    // learner pushes with their arms and cannot reach 2 inches.
+    const html = overview();
+    expect(html).toMatch(/[Aa]rms locked straight/);
+    expect(html).toMatch(/shoulders stacked directly above your hands/);
+    expect(html).toMatch(/body weight and not your arms/);
+  });
+
+  it('says a child and an infant are different, even when folded away', () => {
+    const div = document.createElement('div');
+    div.innerHTML = overview();
+    const summaries = [...div.querySelectorAll('details > summary')].map((s) => s.textContent);
+    expect(summaries.some((t) => /child or an infant/i.test(t)),
+      'age variation is not announced in any summary: ' + JSON.stringify(summaries)).toBe(true);
+  });
+
+  it('does not resurrect the two-finger infant method', () => {
+    // The tool's own CPR_AGES records that it is no longer recommended because
+    // it often fails to reach adequate depth. Writing this section from memory
+    // rather than from the tool would have contradicted its 3D module.
+    const html = overview();
+    expect(html).toContain('two-thumb encircling-hands technique');
+    expect(html).toMatch(/two-finger method is no longer recommended/);
+  });
+
+  it('tells a rescuer not to go easy on a pregnant patient', () => {
+    // The predictable hesitation, and the predictable wrong fix (moving the
+    // hands or pushing softly).
+    const html = overview();
+    expect(html).toMatch(/do not move your hands and do not push more gently/);
+    expect(html).toMatch(/mother whose blood is moving/);
+  });
+
+  it('agrees with the 3D module rather than paraphrasing it', () => {
+    // Both surfaces must teach the same technique in the same words, or they
+    // drift — which is the defect this whole session keeps finding.
+    const zones = SRC.slice(SRC.indexOf('var CPR_ZONES = ['), SRC.indexOf('var CPR_MECHANICS'));
+    expect(zones).toMatch(/fingers interlaced/);
+    expect(zones).toMatch(/arms locked/);
+    expect(overview()).toMatch(/fingers interlaced/);
+  });
+});
+
+// ── Mid-CPR events, and the aftermath ──────────────────────────────────────
+// "vomit" appeared 7 times in this file — all in recovery-position drainage —
+// and zero in the CPR module. "signs of life" and "not your fault" appeared
+// nowhere at all.
+describe('CPR overview — what happens once you have started', () => {
+  beforeEach(() => {
+    resetStemLab();
+    loadTool(FILE, ID);
+  });
+
+  const overview = () => renderFr({ cprView: 'overview' });
+
+  it('warns that vomiting is common and is not a reason to stop', () => {
+    const html = overview();
+    expect(html).toMatch(/Vomiting is common/);
+    expect(html).toMatch(/resume compressions/);
+  });
+
+  it('says what a real sign of life looks like', () => {
+    expect(overview()).toMatch(/Breathing normally, moving purposefully, or opening their eyes/);
+  });
+
+  it('does not let gasping be mistaken for recovery a second time', () => {
+    // The gate card teaches this at the start; the moment it could be unlearned
+    // is when the rescuer is exhausted and looking for a reason to stop.
+    expect(overview()).toMatch(/Occasional gasping is NOT a sign of life/);
+  });
+
+  it('announces the whole thing in the summary, since it folds', () => {
+    const div = document.createElement('div');
+    div.innerHTML = overview();
+    const summaries = [...div.querySelectorAll('details > summary')].map((s) => s.textContent);
+    expect(summaries.some((t) => /vomit/i.test(t) && /come round/i.test(t)),
+      'mid-CPR events are not announced: ' + JSON.stringify(summaries)).toBe(true);
+  });
+
+  it('tells a learner in advance that most arrests are not survived', () => {
+    // Someone who does everything right and loses the patient should not read
+    // that as their failure — and should hear it before it happens.
+    const html = overview();
+    expect(html).toMatch(/do not survive it, even when everything is done right/);
+    expect(html).toMatch(/that is the arrest, not you/);
+  });
+
+  it('pairs that with the reason to act anyway', () => {
+    // Survival odds stated alone are a reason not to bother. They have to
+    // arrive attached to the effect bystander CPR actually has.
+    const html = overview();
+    expect(html).toMatch(/doubles or triples/);
+    expect(html).toMatch(/Doing nothing is the only choice that removes the chance/);
+  });
+
+  it('does not overstate the survival figures', () => {
+    const html = overview();
+    expect(html).toMatch(/roughly doubles or triples/);
+    expect(html).not.toMatch(/guarantee|will survive|saves? their life\b/i);
   });
 });

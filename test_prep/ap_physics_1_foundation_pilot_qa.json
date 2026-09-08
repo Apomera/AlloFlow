@@ -85,15 +85,14 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 100,
-      "keyLongestSharePercent": 58.8,
-      "keyLongerByQuarterSharePercent": 48,
+      "keyLongestSharePercent": 57.4,
+      "keyLongerByQuarterSharePercent": 0,
       "distractorRationaleCount": 1500,
       "distinctDistractorRationaleCount": 1480,
       "repeatedDistractorRationaleSharePercent": 0.2,
       "largestSharedChoiceSet": 2,
       "advisories": [
-        "answer-key-position-cycle",
-        "key-length-cue"
+        "answer-key-position-cycle"
       ],
       "note": "Advisory only. The Hub presents choices in a per-session order, which removes the position cue for learners; length and rationale cues are authoring backlog."
     },
@@ -370,7 +369,7 @@
     "nearDuplicatePairCount": 0
   },
   "inputs": {
-    "packSha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9",
+    "packSha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f",
     "learningLibrarySha256": "82e7590737db99b73ccf07138beae96d02fb0fd0651ec92c76a49e6686b68098",
     "officialBlueprintUrl": "https://apcentral.collegeboard.org/media/pdf/ap-physics-1-course-and-exam-description.pdf",
     "officialCourseUrl": "https://apstudents.collegeboard.org/courses/ap-physics-1-algebra-based",
@@ -381,8 +380,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9",
-      "deploySha256": "c867a95d40f0a64338cddef91ac47a3a69991e9d37aa7c1d594fda9406fd33f9"
+      "sourceSha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f",
+      "deploySha256": "eec8585c7cf3e6c2e7f9baa938ce644a36cfe7af60d7275009b7450a6096a81f"
     },
     {
       "asset": "learning-library",

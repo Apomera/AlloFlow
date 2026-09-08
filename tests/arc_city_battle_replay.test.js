@@ -108,6 +108,6 @@ describe('Arc City post-match replay render flow', () => {
     expect(Math.abs(lastPoint[0] - Number(endpoint.props.cx))).toBeLessThan(1);
     expect(Math.abs(lastPoint[1] - Number(endpoint.props.cy))).toBeLessThan(1);
     expect(r.find('battle-svg').props['aria-label']).toContain('Replay shot 2 of 5.');
-    expect(r.find('battle3d-classic').props.battle.replayIndex).toBe(1);
+    expect(r.find('battle3d-classic-light').props.battle.replayIndex).toBe(1);
   });
 });

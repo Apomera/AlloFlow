@@ -78,8 +78,8 @@
     "testWiseness": {
       "keyedItemCount": 500,
       "keyCycleSharePercent": 24.8,
-      "keyLongestSharePercent": 28.8,
-      "keyLongerByQuarterSharePercent": 6,
+      "keyLongestSharePercent": 27,
+      "keyLongerByQuarterSharePercent": 3.6,
       "distractorRationaleCount": 1500,
       "distinctDistractorRationaleCount": 682,
       "repeatedDistractorRationaleSharePercent": 2.3,
@@ -135,8 +135,8 @@
   "inputs": {
     "pack": {
       "path": "test_prep/ap_psychology_pilot.json",
-      "byteLength": 2300186,
-      "sha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082"
+      "byteLength": 2300929,
+      "sha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf"
     },
     "learningLibrary": {
       "path": "test_prep/ap_psychology_pilot_learning_library.json",
@@ -257,6 +257,12 @@
         "meaning": "No severe item-level or bank-level keyed-option length cue crosses the automated threshold."
       },
       {
+        "check": "choice-length-parity",
+        "status": "pass",
+        "findingCount": 0,
+        "meaning": "Prose options are length-matched to their key; only bare-term options may exceed the quarter-length ratio, and their count cannot rise."
+      },
+      {
         "check": "distractor-editorial",
         "status": "pass",
         "findingCount": 0,
@@ -370,8 +376,8 @@
       "asset": "pack",
       "status": "pass",
       "blocking": false,
-      "sourceSha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082",
-      "deploySha256": "3a1677fcdd709b6d5217f4ab2e11ceda228b77ddd6f65c8df066ca1de1f31082",
+      "sourceSha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf",
+      "deploySha256": "8078e0be84694ce110ca6114a60a393b460b81e9339156daa5222d8bf0de1dcf",
       "note": "Source and deployment bytes are identical."
     },
     {
@@ -1538,9 +1544,9 @@
       "expertGateItems": 500,
       "psychometricBoundaryItems": 500,
       "keyedOptionMeanWords": 4.348,
-      "distractorOptionMeanWords": 4.304,
-      "keyedToDistractorMeanRatio": 1.01,
-      "uniquelyLongestKeyedOptions": 58,
+      "distractorOptionMeanWords": 4.325,
+      "keyedToDistractorMeanRatio": 1.005,
+      "uniquelyLongestKeyedOptions": 57,
       "severeKeyedLengthCueItems": 0,
       "optionLengthMetrics": [
         {
@@ -1666,7 +1672,7 @@
         {
           "id": "ap-psych-u1-005",
           "keyedWords": 13,
-          "longestDistractorWords": 10,
+          "longestDistractorWords": 17,
           "severeCue": false
         },
         {
@@ -2824,13 +2830,13 @@
         {
           "id": "ap-psych-u4-042",
           "keyedWords": 3,
-          "longestDistractorWords": 1,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
           "id": "ap-psych-u4-043",
           "keyedWords": 3,
-          "longestDistractorWords": 1,
+          "longestDistractorWords": 2,
           "severeCue": false
         },
         {
@@ -18111,7 +18117,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 34,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -18123,7 +18129,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 34,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19117,7 +19123,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -19129,7 +19135,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 43,
-      "minimumChoiceFeedbackWords": 31,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20183,7 +20189,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20195,7 +20201,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20356,7 +20362,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 33,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -20560,7 +20566,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 44,
-      "minimumChoiceFeedbackWords": 29,
+      "minimumChoiceFeedbackWords": 33,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22226,7 +22232,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -22238,7 +22244,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 47,
-      "minimumChoiceFeedbackWords": 33,
+      "minimumChoiceFeedbackWords": 31,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23016,7 +23022,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },
@@ -23220,7 +23226,7 @@
       "findings": [],
       "editorialAdvisories": [],
       "rationaleWords": 40,
-      "minimumChoiceFeedbackWords": 30,
+      "minimumChoiceFeedbackWords": 32,
       "sourceDetailCount": 1,
       "automatedStatus": "pass"
     },

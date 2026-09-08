@@ -3800,10 +3800,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Which development provided important context for colonial resistance to British revenue measures after 1763?",
           "choices": [
-            "The United States had already adopted the Constitution.",
-            "France had ended all competition for North American territory before the war.",
+            "The United States had already adopted the federal Constitution by that point in time.",
+            "France had ended all of its competition for North American territory before the war began.",
             "Britain’s victory in the Seven Years’ War left it with war debt and new costs of administering its empire.",
-            "Colonial assemblies had ceased debating taxation and representation."
+            "The colonial assemblies had ceased debating both taxation and representation altogether."
           ],
           "answerIndex": 2,
           "rationale": "The postwar fiscal and imperial context helps explain why Britain changed its policies and why colonists contested those changes.",
@@ -3822,9 +3822,9 @@
           "type": "single-choice-retrieval",
           "prompt": "Colonial protesters argued that Parliament could not tax them without their consent. Which larger issue did that argument raise?",
           "choices": [
-            "Whether colonies should eliminate all elected assemblies.",
-            "Whether Britain should expand hereditary monarchy in North America.",
-            "Whether taxation could be collected only during wartime.",
+            "Whether the colonies should eliminate all of their elected assemblies entirely.",
+            "Whether Britain should expand its hereditary monarchy further into North America.",
+            "Whether the taxation could be collected only during periods of open warfare.",
             "Whether legitimate political authority required representation by the people being governed."
           ],
           "answerIndex": 3,
@@ -3845,9 +3845,9 @@
           "prompt": "A revolutionary pamphlet uses universal language about natural rights while seeking support for independence. Which limitation is most important when using it to study social equality in 1776?",
           "choices": [
             "The political goals of the authors may not represent the rights available to women, enslaved people, or Indigenous peoples.",
-            "The pamphlet could not have been read by any colonist.",
-            "The language of rights proves that legal equality already existed.",
-            "The authors necessarily opposed every form of representative government."
+            "The pamphlet could not have been read by any colonist anywhere at the time when it was first written.",
+            "The language of rights proves that legal equality already existed in all of the colonies well before 1776.",
+            "The authors necessarily opposed every possible form of representative government of any kind at the time."
           ],
           "answerIndex": 0,
           "rationale": "A source can articulate influential ideals while reflecting the boundaries of its authors’ political community and immediate purpose.",
@@ -4672,9 +4672,9 @@
           "prompt": "Canals and steamboats lowered transportation costs between interior farms and Atlantic ports. Which effect was most likely?",
           "choices": [
             "Farmers could participate more fully in commercial markets and regional specialization increased.",
-            "The United States became economically identical in every region.",
-            "The technologies ended the use of wage labor in manufacturing.",
-            "Transportation improvements prevented cities from growing."
+            "The United States became economically identical across every one of its regions.",
+            "The new technologies ended the use of wage labor throughout all manufacturing.",
+            "Transportation improvements prevented the cities from growing in any region at all."
           ],
           "answerIndex": 0,
           "rationale": "Lower transportation costs connected producers to distant markets while allowing regions to specialize in different products.",
@@ -4693,10 +4693,10 @@
           "type": "single-choice-retrieval",
           "prompt": "A historian argues that Jacksonian democracy expanded political participation but also strengthened executive power. Which evidence best supports the claim?",
           "choices": [
-            "Women and enslaved people gained equal voting rights during the period.",
+            "Women and enslaved people gained fully equal voting rights during the same period.",
             "More white men voted while the president used federal authority in the Bank War and Indian Removal.",
-            "The president surrendered all policy authority to Congress.",
-            "The expansion of voting ended political parties and popular campaigning."
+            "The president surrendered all of his policy authority to the Congress entirely here.",
+            "The expansion of voting ended political parties and popular campaigning entirely."
           ],
           "answerIndex": 1,
           "rationale": "The claim is supported by the simultaneous expansion of white male electoral participation and forceful use of presidential and federal power.",
@@ -4715,10 +4715,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Which development helped create the setting for the Second Great Awakening and antebellum reform movements?",
           "choices": [
-            "The end of all religious disagreement in the United States.",
-            "The restoration of hereditary aristocratic privilege after independence.",
+            "The complete end of all religious disagreement across the United States during that whole period of time.",
+            "The restoration of hereditary aristocratic privilege in the years right after independence was won.",
             "Democratic and individualistic ideas, mobility, and market changes encouraged people to organize around moral improvement.",
-            "The collapse of voluntary associations and print culture."
+            "The complete collapse of voluntary associations and of print culture across the whole of the nation."
           ],
           "answerIndex": 2,
           "rationale": "Religious revival and reform drew energy from social mobility, democratic ideas, print networks, and concern about changing communities.",
@@ -5564,9 +5564,9 @@
           "type": "single-choice-retrieval",
           "prompt": "Why did congressional compromises over slavery fail to resolve the sectional crisis permanently?",
           "choices": [
-            "They abolished slavery in every state immediately.",
-            "They removed the issue of slavery from western territorial politics.",
-            "They ended the political importance of sectional identity.",
+            "They abolished slavery in every one of the states immediately and permanently everywhere at once.",
+            "They removed the issue of slavery from all of the western territorial politics entirely and at once.",
+            "They ended the political importance of sectional identity across the whole of the country at once.",
             "They managed political balance temporarily while leaving the underlying conflict over slavery’s expansion intact."
           ],
           "answerIndex": 3,
@@ -6435,10 +6435,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Why did federal western policy often produce conflict with Indigenous nations?",
           "choices": [
-            "Indigenous nations had no established governments or territorial claims.",
+            "Indigenous nations had no established governments and no territorial claims of any kind at all.",
             "Settlement and resource extraction required the United States to restrict Indigenous land, sovereignty, and mobility.",
-            "Federal policy sought to prevent all non-Indigenous settlement west of the Mississippi.",
-            "Railroads and mining reduced pressure on western land."
+            "Federal policy sought to prevent all non-Indigenous settlement west of the Mississippi River entirely.",
+            "Railroads and mining together reduced the pressure on western land and on all of its resources."
           ],
           "answerIndex": 1,
           "rationale": "The expansion of settlement and extraction conflicted with Indigenous sovereignty and existing relationships to land.",
@@ -6457,10 +6457,10 @@
           "type": "single-choice-retrieval",
           "prompt": "A corporation controls its mines, factories, rail lines, and distribution network. Which business strategy does this describe?",
           "choices": [
-            "Collective bargaining, which transfers management to a labor union.",
-            "A tariff, which taxes imported goods at a national border.",
+            "Collective bargaining, which transfers all management of the firm to a labor union.",
+            "A tariff, which places a tax on imported goods at the national border of a country.",
             "Vertical integration, which combines multiple stages of production or distribution under one company.",
-            "Sharecropping, which organizes agricultural labor after emancipation."
+            "Sharecropping, which organizes agricultural labor in the years after emancipation."
           ],
           "answerIndex": 2,
           "rationale": "Vertical integration is control across stages of a production and distribution chain, increasing coordination and often market power.",
@@ -7284,10 +7284,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Which problem most directly motivated Progressive reformers to support stronger government regulation?",
           "choices": [
-            "The disappearance of corporations and city governments.",
-            "The end of immigration and urban growth.",
+            "The complete disappearance of large corporations and of city governments during the whole period.",
+            "The complete end of immigration and of urban growth during the whole of the industrial period.",
             "Industrial and urban conditions exposed consumers and workers to risks that private markets did not reliably control.",
-            "The belief that government had already solved all public-health problems."
+            "The belief that government had already solved every public-health problem in the growing cities."
           ],
           "answerIndex": 2,
           "rationale": "Progressive reform responded to problems associated with industrial capitalism, urbanization, corruption, and weak oversight.",
@@ -7306,9 +7306,9 @@
           "type": "single-choice-retrieval",
           "prompt": "A president presents overseas intervention as a defense of civilization and national honor. Which context would help a historian evaluate the claim?",
           "choices": [
-            "The complete withdrawal of the United States from world trade.",
-            "The absence of domestic disagreement about overseas expansion.",
-            "The end of all anticolonial resistance after the Spanish-American War.",
+            "The complete withdrawal of the United States from all world trade during the whole of that period.",
+            "The complete absence of any domestic disagreement about overseas expansion during that entire time.",
+            "The end of all anticolonial resistance in the years after the end of the Spanish-American War itself.",
             "The growth of U.S. commercial and strategic interests and debates over imperialism at the end of the nineteenth century."
           ],
           "answerIndex": 3,
@@ -7329,9 +7329,9 @@
           "prompt": "How did World War I and the Great Migration connect to one another?",
           "choices": [
             "War production increased demand for labor, encouraging African American migration to industrial cities while also producing racial tensions.",
-            "The war ended racial discrimination in every industrial city.",
-            "The Great Migration moved workers away from all manufacturing centers.",
-            "World War I prevented African Americans from entering northern labor markets."
+            "The war ended racial discrimination in every one of the industrial cities of the northern states altogether now.",
+            "The Great Migration moved workers away from all of the northern manufacturing centers during those same war years.",
+            "World War I prevented African Americans from entering any of the northern labor markets during all those war years."
           ],
           "answerIndex": 0,
           "rationale": "Wartime labor demand was one important push-and-pull factor in migration, but migrants encountered both opportunity and discrimination.",
@@ -8156,9 +8156,9 @@
           "prompt": "Which development provides the clearest context for the creation of postwar containment policies?",
           "choices": [
             "The wartime alliance with the Soviet Union broke down amid ideological rivalry and disputes over the postwar order.",
-            "The United States and Soviet Union had become one political system.",
-            "The United States had abandoned international economic institutions.",
-            "The Cold War began before World War II ended because of a direct U.S.-Soviet battle."
+            "The United States and the Soviet Union had become one single shared political system after the war.",
+            "The United States had abandoned all of the international economic institutions after the war.",
+            "The Cold War began before World War II ended because of a direct U.S.-Soviet battle between the two."
           ],
           "answerIndex": 0,
           "rationale": "Postwar tensions, ideological rivalry, and disagreement over security and reconstruction shaped containment.",
@@ -8177,10 +8177,10 @@
           "type": "single-choice-retrieval",
           "prompt": "A U.S. policy document describes aid as support for free nations, while a recipient describes the same aid as pressure to align with Washington. What does the comparison show?",
           "choices": [
-            "Only the U.S. source can provide historical evidence.",
+            "Only the U.S. policy source can provide any useful historical evidence about the whole aid program.",
             "Foreign-policy consequences can differ from the policy’s stated purpose and can be interpreted differently by participants.",
-            "Economic aid has no connection to geopolitical competition.",
-            "The two sources cannot describe the same event because their views differ."
+            "Economic aid has no connection at all to any form of geopolitical competition between the two powers.",
+            "The two sources cannot describe the same event, because their accounts of it differ from each other so sharply."
           ],
           "answerIndex": 1,
           "rationale": "Comparing perspectives helps identify purpose, power, and the difference between official language and lived or strategic consequences.",
@@ -8199,10 +8199,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Which development best demonstrates the interaction between grassroots civil rights activism and federal policy?",
           "choices": [
-            "Federal policy changed without any organizing, protest, or litigation.",
-            "Grassroots movements rejected all use of courts or legislation.",
+            "Federal policy changed without any organizing, any protest, or any litigation of any kind at all.",
+            "Grassroots movements rejected the use of courts and legislation of every kind in their campaigns.",
             "Local campaigns and legal challenges helped create pressure for federal court decisions and civil-rights legislation.",
-            "Civil-rights laws were enacted before segregation and disenfranchisement existed."
+            "Civil-rights laws were enacted long before segregation and disenfranchisement had ever appeared."
           ],
           "answerIndex": 2,
           "rationale": "Civil-rights change resulted from sustained organizing and litigation interacting with federal institutions and political opportunities.",
@@ -9048,10 +9048,10 @@
           "type": "single-choice-retrieval",
           "prompt": "Which statement best describes the relationship between globalization and U.S. work after 1980?",
           "choices": [
-            "Globalization affected only foreign economies and not U.S. workers.",
-            "Technology eliminated all regional differences in employment.",
+            "Globalization affected only the foreign economies and never touched any workers within the United States itself.",
+            "Technology eliminated every regional difference in employment across the whole of the United States as well.",
             "Trade and technology reorganized production and employment, creating gains in some sectors and displacement or insecurity in others.",
-            "Globalization ended the importance of immigration and internal migration."
+            "Globalization ended the importance of both immigration and of internal migration within the whole country."
           ],
           "answerIndex": 2,
           "rationale": "Economic restructuring is uneven: it can create new opportunities while reducing employment or bargaining power in other regions and industries.",
@@ -9070,9 +9070,9 @@
           "type": "single-choice-retrieval",
           "prompt": "A historian compares census data with local oral histories to study late-twentieth-century migration. Why is using both kinds of evidence useful?",
           "choices": [
-            "Oral histories make quantitative data unnecessary.",
-            "Census data can explain every individual motivation without additional sources.",
-            "The two sources cannot be compared because they use different methods.",
+            "Oral histories make all quantitative data completely unnecessary for any historian studying migration.",
+            "Census data alone can explain every individual motivation without any other kind of evidence at all.",
+            "The two kinds of source cannot be compared at all, because they rely on entirely different methods of study.",
             "Statistics show patterns of movement while oral histories can reveal how migrants experienced and interpreted those changes."
           ],
           "answerIndex": 3,

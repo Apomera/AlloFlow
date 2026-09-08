@@ -116,12 +116,26 @@ describe('Arc City visuals — the previous attempt stays visible', () => {
     expect(second.byLevel.L1.prevShot).toEqual({ m: 0.2, b: 0 });
   });
 
-  it('draws the earlier attempt as a faint trail while you tune the next one', () => {
+  it('draws the earlier attempt as a trail that stays subordinate to the live curve', () => {
     const r = render({ levelId: 'L1', byLevel: { L1: { params: { m: 0.4, b: 0 }, shots: 1, misses: 1, lastShot: { m: 0.2, b: 0 } } }, tier: 'practice', fired: false, badges: [] });
     const trail = r.find('prevtrail');
     expect(trail).not.toBeNull();
     expect(trail.props['aria-hidden']).toBe('true');
-    expect(trail.props.opacity).toBeLessThan(0.5);
+
+    // This used to assert opacity < 0.5, using faintness as a proxy for "secondary".
+    // That proxy collided with legibility: at 0.34 the trail measured 2.14:1 on the
+    // light board, under the 3:1 a meaningful mark needs, and it carries something no
+    // other surface does — the shot BEFORE this one (the result text describes only the
+    // current shot). So assert what was actually meant. The trail is subordinate
+    // because it is thinner and mostly gaps, and because the live curve is drawn over
+    // it at full strength — not because it is too faint to see.
+    const live = r.find('preview');
+    expect(live, 'the live curve is on the board to be subordinate TO').not.toBeNull();
+    expect(trail.props.strokeWidth).toBeLessThan(live.props.strokeWidth + 0.001);
+    expect(trail.props.opacity).toBeLessThan(Number(live.props.opacity ?? 1));
+    expect(trail.props.strokeDasharray, 'mostly gaps, so it reads as history').toBe('1 7');
+    // ...and still legible: 0.5 is what clears 3:1 on the lightest board.
+    expect(trail.props.opacity).toBeGreaterThanOrEqual(0.5);
   });
 
   it('suppresses the trail when the earlier attempt is identical (nothing to compare)', () => {

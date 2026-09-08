@@ -49,6 +49,7 @@ const signalDefinitions = [
   ['learning-alignment', 'Every item resolves to an internal objective, topic, chapter, lesson route, and science-practice metadata.'],
   ['library-inventory', 'Native chapters, sections, checks, cards, memory aids, and rich prototypes match their declared counts.'],
   ['library-content-structure', 'The native library has navigable, text-first chapter structures, data moments, retrieval, and transfer blocks.'],
+  ['choice-length-parity', 'No item lets a student find the key by length alone: the correct option never runs a quarter longer than the longest distractor.'],
   ['source-and-provenance', 'Public blueprint/factual references and independent-original provenance declarations are complete.'],
   ['rights-boundary', 'Restricted content, copied-question, and release flags remain closed pending independent review.'],
   ['accessibility-boundary', 'Text, linear-reading-order, hands-free, and independent accessibility gates are declared.'],
@@ -268,6 +269,16 @@ for (const item of items) {
   requireCondition(
     wordCount(item.rationale) >= 10 && choiceRationales.length === 4 && choiceRationales.every((text) => wordCount(text) >= 10),
     'substantive-feedback', 'Each item needs a substantive overall rationale and four option-specific explanations.', { recordId }
+  );
+  // A key that runs much longer than every distractor is a length cue: a
+  // test-wise learner can pick the elaborated option without reading it. The
+  // key may still be the longest, but not by a quarter of its length.
+  const choiceLengths = choices.map((choice) => String(choice || '').length);
+  const keyLength = choiceLengths[item.answerIndex] || 0;
+  const longestDistractor = choiceLengths.filter((_, index) => index !== item.answerIndex).reduce((max, value) => Math.max(max, value), 0);
+  requireCondition(
+    longestDistractor > 0 && keyLength < longestDistractor * 1.25,
+    'choice-length-parity', 'Each item must keep its distractors within a quarter of the key length.', { recordId }
   );
   requireCondition(
     objective && objective.domainId === item.domainId && objective.topicId === item.topicIds?.[0] &&
