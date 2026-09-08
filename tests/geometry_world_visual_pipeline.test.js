@@ -485,6 +485,27 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('if (now - lastMiniDraw >= 100)');
   });
 
+  it('shrink-wraps the action bar instead of stretching it across the world', () => {
+    // pinned left AND right it was a glass panel nearly the width of the screen
+    // holding three small buttons, which reads as an empty band over the play area
+    const bar = src.slice(src.indexOf("el('div', { className: 'gw-action-bar',"), src.indexOf("// Fly mode toggle (always visible)"));
+    expect(bar).not.toContain("left: '130px'");
+    expect(bar).not.toContain("right: '120px'");
+    expect(bar).toContain("left: '50%'");
+    expect(bar).toContain("width: 'max-content'");
+    // still allowed to wrap on a narrow screen rather than overflowing
+    expect(bar).toContain("maxWidth: 'calc(100% - 24px)'");
+    expect(bar).toContain("flexWrap: 'wrap'");
+  });
+
+  it('rings the crosshair so it reads over bright grass as well as night', () => {
+    // 1px white arms at half alpha vanish over the green this world is mostly made of
+    expect(src).toContain("var chRing = '0 0 0 1px rgba(2,6,23,0.6)';");
+    expect(src).not.toContain("ct === 'block' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)'");
+    // every arm carries the ring, not just the centre dot
+    expect(src.split('background: chColor, boxShadow: chRing').length - 1).toBe(4);
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

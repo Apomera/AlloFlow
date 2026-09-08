@@ -164,6 +164,16 @@ Probe: `scratch/geometry-world-visuals-2026-09-07/probe-round16-minimap.mjs`. Ca
 
 **A flake worth recording.** The first combined unit run after this change reported four failures in the display-controls file. That file passes 14 of 14 alone, and the identical combined command passes 319 of 319 on re-run. Two independent confirmations that it was raciness on this machine, not a regression.
 
+## Round 17 (same day): the empty band, and a crosshair you can see
+
+Two things sat in every screenshot taken during this whole pass, which is exactly why they were easy to stop noticing.
+
+**A long empty band across the play area.** The action bar holding Fly, Home and Clear Mine was pinned 130 pixels from the left and 120 from the right, and it carries the same glass panel styling as the hotbar. So three small buttons sat centred in a panel 1190 pixels wide, and the rest read as a dark bar laid across the world. It is now centred and shrink-wrapped like the shape tray and hotbar beneath it: measured at 192 pixels for 182 pixels of buttons. It still wraps rather than overflows on a narrow screen.
+
+**A crosshair that vanished over grass.** The reticle is four one-pixel arms and a dot, and when not targeting anything they were white at half alpha with a soft drop shadow. Over the bright green this world is mostly made of, that is nearly invisible, which every capture shows. Each arm now carries a dark one-pixel ring and the idle alpha is 0.88, so the reticle reads on bright grass, on stone and against the night sky. The targeting colours for characters and questions are unchanged.
+
+Probe: `scratch/geometry-world-visuals-2026-09-07/probe-round17-hudfit.mjs`. Capture: `after-hudfit.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -195,3 +205,5 @@ Full spec for the tree carrying round 13, run under 38 competing browser process
 Round 15 verification at commit time: 317 unit tests, and four e2e tests including the HUD-layout preset sweep passed 4/4 with retries off.
 
 Round 16 verification at commit time: 319 unit tests, and four e2e tests including the HUD preset sweep passed 4/4 with retries off.
+
+Round 17 run of the same spec: **17 passed, 0 failed, 0 flaky** in 6.4 minutes on a quiet machine, no retries.

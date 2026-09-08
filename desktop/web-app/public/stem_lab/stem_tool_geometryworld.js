@@ -9650,7 +9650,10 @@
         // All pills live in one wrapping flex row so they align regardless of which are
         // visible, and wrap gracefully on narrow viewports instead of colliding.
         engine && el('div', { className: 'gw-action-bar',
-          style: { position: 'absolute', bottom: '10px', left: '130px', right: '120px', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }
+          // Centred and shrink-wrapped like the shape tray and hotbar below it.
+          // Pinned left AND right, this glass panel spanned almost the whole width
+          // to hold three small buttons, reading as an empty band across the world.
+          style: { position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: 'max-content', maxWidth: 'calc(100% - 24px)', zIndex: 20, display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center', justifyContent: 'center' }
         },
           // Fly mode toggle (always visible)
           el('button', {
@@ -10009,15 +10012,19 @@
         // Crosshair — interactive (changes color based on target)
         (function() {
           var ct = engine ? (engine._crosshairTarget || 'none') : 'none';
-          var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.5)';
-          var chGlow = ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)';
+          var chColor = ct === 'npc_question' ? '#fbbf24' : ct === 'npc' ? '#a78bfa' : ct === 'block' ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.88)';
+          // One-pixel white arms at half alpha disappear over bright grass, which is
+          // most of this world. A dark ring around each arm reads on any background,
+          // bright or dark, which a soft drop shadow alone does not.
+          var chRing = '0 0 0 1px rgba(2,6,23,0.6)';
+          var chGlow = (ct === 'npc_question' ? '0 0 6px #fbbf24' : ct === 'npc' ? '0 0 4px #a78bfa' : '0 0 2px rgba(0,0,0,0.5)') + ', ' + chRing;
           var chSize = ct === 'npc_question' ? '5px' : ct === 'npc' ? '4px' : '3px';
           return el('div', { className: 'gw-crosshair', 'data-target': ct, 'aria-hidden': 'true', style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 10, pointerEvents: 'none', width: '22px', height: '22px', transition: 'all 0.15s ease' } },
             el('div', { style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: chSize, height: chSize, borderRadius: '50%', background: chColor, boxShadow: chGlow, transition: 'all 0.15s ease' } }),
-            el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
-            el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '50%', left: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '50%', right: '0', transform: 'translateY(-50%)', width: '6px', height: '1px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', top: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
+            el('div', { style: { position: 'absolute', bottom: '0', left: '50%', transform: 'translateX(-50%)', width: '1px', height: '6px', background: chColor, boxShadow: chRing, transition: 'background 0.15s' } }),
             // Target label hint
             ct === 'npc_question' && el('div', { className: 'gw-target-hint', style: { position: 'absolute', top: '14px', left: '50%', transform: 'translateX(-50%)', fontSize: '8px', color: '#fbbf24', fontWeight: 700, whiteSpace: 'nowrap', textShadow: '0 1px 3px rgba(0,0,0,0.8)' } }, isMobile ? 'Tap Talk' : 'Press E')
           );
