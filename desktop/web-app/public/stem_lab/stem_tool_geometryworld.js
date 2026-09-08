@@ -273,8 +273,18 @@
       var sv = [];
       for (var si = 0; si < 400; si++) sv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
       sg.setAttribute('position', new THREE.Float32BufferAttribute(sv, 3));
-      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xffffff, size: 0.25, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      engine._manualStars = new THREE.Points(sg, new THREE.PointsMaterial({ color: 0xdbeafe, size: 0.22, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
       engine.scene.add(engine._manualStars);
+      // A second, sparser layer of larger warm stars, carried as a CHILD so the
+      // parent's slow rotation, fade and disposal all reach it. PointsMaterial has
+      // one size for every point, so depth in a star field costs a second layer
+      // rather than a custom shader.
+      var bg = new THREE.BufferGeometry(), bv = [];
+      for (var bi = 0; bi < 70; bi++) bv.push((Math.random() - 0.5) * 200, 25 + Math.random() * 55, (Math.random() - 0.5) * 200);
+      bg.setAttribute('position', new THREE.Float32BufferAttribute(bv, 3));
+      var bright = new THREE.Points(bg, new THREE.PointsMaterial({ color: 0xfff7e0, size: 0.46, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false }));
+      bright.userData.isBrightStars = true;
+      engine._manualStars.add(bright);
       engine._manualStarsTarget = 0.8;
     } else if (!isNightime && engine._manualStars) {
       engine._manualStarsTarget = 0; // fade out
@@ -289,9 +299,20 @@
       var starStep = 1 - Math.pow(0.001, dt);   // frame-rate independent approach
       engine._manualStars.material.opacity += (stTarget - engine._manualStars.material.opacity) * Math.min(1, starStep);
       if (engine._ambientMotionEnabled !== false) engine._manualStars.rotation.y += dt * 0.015;
+      // Twinkle: the bright layer breathes around the faint layer's level. Slow
+      // enough to read as air, not as a flicker, and steady under reduced motion.
+      engine._starPhase = (engine._starPhase || 0) + dt;
+      engine._manualStars.children.forEach(function(layer) {
+        if (!layer.material) return;
+        var twinkle = engine._ambientMotionEnabled === false ? 1 : (0.82 + Math.sin(engine._starPhase * 1.6) * 0.18);
+        layer.material.opacity = engine._manualStars.material.opacity * twinkle;
+      });
       if (stTarget === 0 && engine._manualStars.material.opacity < 0.01) {
         engine.scene.remove(engine._manualStars);
-        engine._manualStars.geometry.dispose(); engine._manualStars.material.dispose();
+        engine._manualStars.traverse(function(part) {
+          if (part.geometry && part.geometry.dispose) part.geometry.dispose();
+          if (part.material && part.material.dispose) part.material.dispose();
+        });
         engine._manualStars = null;
       }
     }
@@ -324,7 +345,11 @@
       engine.scene.children.forEach(function(c) {
         if (c.isAmbientLight) c.intensity = mix(start.ambientIntensity, tgt.ambientIntensity);
       });
-      if (engine._cloudPlane) engine._cloudPlane.material.opacity = mix(start.cloudOpacity, tgt.cloudOpacity);
+      if (engine._cloudPlane) {
+        var cloudOp = mix(start.cloudOpacity, tgt.cloudOpacity);
+        engine._cloudPlane.material.opacity = cloudOp;
+        if (engine._cloudPlaneHigh) engine._cloudPlaneHigh.material.opacity = cloudOp * 0.6;
+      }
     }
     if (t >= 1) { engine._envDone = true; if (typeof engine.refreshEnvironment === 'function') engine.refreshEnvironment(); }
   }
@@ -3604,29 +3629,54 @@
           engine._moonSprite = moonSprite;
 
           // Cloud plane — a large flat plane with procedural cloud texture, slowly drifting
-          var cloudCanvas = document.createElement('canvas'); cloudCanvas.width = 512; cloudCanvas.height = 512;
-          var cctx = cloudCanvas.getContext('2d');
-          cctx.clearRect(0, 0, 512, 512);
-          // Paint blotchy clouds
-          for (var ci = 0; ci < 46; ci++) {
-            var cx2 = Math.random() * 512, cy2 = Math.random() * 512;
-            var cr = 30 + Math.random() * 60;
-            var cgrad = cctx.createRadialGradient(cx2, cy2, 0, cx2, cy2, cr);
-            cgrad.addColorStop(0, 'rgba(255,255,255,' + (0.16 + Math.random() * 0.14) + ')');
-            cgrad.addColorStop(1, 'rgba(255,255,255,0)');
-            cctx.fillStyle = cgrad;
-            cctx.fillRect(cx2 - cr, cy2 - cr, cr * 2, cr * 2);
+          // Clouds were one sheet of evenly scattered fog blobs, which reads as haze
+          // rather than weather. Each cloud is now a CLUSTER of overlapping puffs,
+          // wider than it is deep and denser along its base, so it carries a cumulus
+          // silhouette; and there are two sheets at different heights drifting at
+          // different speeds, so the sky has depth instead of a single flat ceiling.
+          function paintCloudSheet(px, count, scale, alpha) {
+            for (var ci = 0; ci < count; ci++) {
+              var cxc = Math.random() * 512, cyc = Math.random() * 512;
+              var puffs = 5 + Math.floor(Math.random() * 4);
+              var spread = (34 + Math.random() * 30) * scale;
+              for (var pi = 0; pi < puffs; pi++) {
+                var t = (pi / (puffs - 1)) - 0.5;                       // -0.5 .. 0.5 across the cloud
+                var pr = (18 + Math.random() * 16) * scale * (1 - Math.abs(t) * 0.45);
+                var px2 = cxc + t * spread * 2;
+                var py2 = cyc - Math.pow(1 - Math.abs(t) * 2, 2) * spread * 0.32 + (Math.random() - 0.5) * spread * 0.18;
+                var pg = px.createRadialGradient(px2, py2, 0, px2, py2, pr);
+                pg.addColorStop(0, 'rgba(255,255,255,' + (alpha + Math.random() * alpha * 0.5).toFixed(3) + ')');
+                pg.addColorStop(0.55, 'rgba(255,255,255,' + (alpha * 0.5).toFixed(3) + ')');
+                pg.addColorStop(1, 'rgba(255,255,255,0)');
+                px.fillStyle = pg;
+                px.fillRect(px2 - pr, py2 - pr, pr * 2, pr * 2);
+              }
+            }
           }
-          var cloudTex = new THREE.CanvasTexture(cloudCanvas);
-          cloudTex.wrapS = cloudTex.wrapT = THREE.RepeatWrapping;
-          var cloudGeo = new THREE.PlaneGeometry(200, 200);
-          var cloudMat = new THREE.MeshBasicMaterial({ map: cloudTex, transparent: true, opacity: 0.5, depthWrite: false, side: THREE.DoubleSide });
-          var cloudPlane = new THREE.Mesh(cloudGeo, cloudMat);
-          cloudPlane.rotation.x = -Math.PI / 2;
-          cloudPlane.position.y = 40;
-          engine.scene.add(cloudPlane);
+          function makeCloudSheet(count, scale, alpha, size, height, opacity) {
+            var cnv = document.createElement('canvas'); cnv.width = 512; cnv.height = 512;
+            var pxc = cnv.getContext('2d');
+            pxc.clearRect(0, 0, 512, 512);
+            paintCloudSheet(pxc, count, scale, alpha);
+            var tex = new THREE.CanvasTexture(cnv);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            if (typeof THREE.sRGBEncoding !== 'undefined') tex.encoding = THREE.sRGBEncoding;
+            var mesh = new THREE.Mesh(new THREE.PlaneGeometry(size, size),
+              new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: opacity, depthWrite: false, side: THREE.DoubleSide }));
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.y = height;
+            engine.scene.add(mesh);
+            return mesh;
+          }
+          var cloudPlane = makeCloudSheet(13, 1, 0.16, 200, 40, 0.5);
           engine._cloudPlane = cloudPlane;
-          engine._cloudTex = cloudTex;
+          engine._cloudTex = cloudPlane.material.map;
+          // The high sheet is bigger, fainter and slower: parallax against the low
+          // one is what sells the depth.
+          var cloudPlaneHigh = makeCloudSheet(9, 1.7, 0.1, 320, 62, 0.3);
+          engine._cloudPlaneHigh = cloudPlaneHigh;
+          engine._cloudTexHigh = cloudPlaneHigh.material.map;
+          engine._cloudWhite = new THREE.Color(1, 1, 1);
         })();
 
         engine.raycaster = new THREE.Raycaster();
@@ -6683,11 +6733,20 @@
           if (engine._ambientMotionEnabled !== false && engine._cloudTex) {
             engine._cloudTex.offset.x += dt * 0.005;
             engine._cloudTex.offset.y += dt * 0.002;
+            if (engine._cloudTexHigh) { engine._cloudTexHigh.offset.x += dt * 0.002; engine._cloudTexHigh.offset.y += dt * 0.0008; }
           }
           // Keep cloud plane centered above camera so it always covers the sky
           if (engine._cloudPlane && engine.camera) {
             engine._cloudPlane.position.x = engine.camera.position.x;
             engine._cloudPlane.position.z = engine.camera.position.z;
+            if (engine._cloudPlaneHigh) { engine._cloudPlaneHigh.position.x = engine.camera.position.x; engine._cloudPlaneHigh.position.z = engine.camera.position.z; }
+            // Clouds are lit by the same sky they hang in. White clouds over an
+            // orange sunset read as a compositing mistake; these take most of their
+            // colour from the fog and keep enough white to stay bright.
+            if (engine.scene.fog && engine._cloudWhite) {
+              engine._cloudPlane.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.72);
+              if (engine._cloudPlaneHigh) engine._cloudPlaneHigh.material.color.copy(engine.scene.fog.color).lerp(engine._cloudWhite, 0.8);
+            }
           }
           // The sky dome rides with the camera and takes its two colours from the
           // scene, so the time-of-day cross-fade in updateEnvTransition drives it.
@@ -7294,7 +7353,14 @@
           _dispGeo(engine._angleHelpers); _dispGeo(engine._netHelpers); _dispGeo(engine._rulerLine); _dispGeo(engine._rulerLabel);
           // Dispose sky elements
           if (engine._sunSprite) engine.scene.remove(engine._sunSprite);
-          if (engine._cloudPlane) engine.scene.remove(engine._cloudPlane);
+          [engine._cloudPlane, engine._cloudPlaneHigh].forEach(function(sheet) {
+            if (!sheet) return;
+            engine.scene.remove(sheet);
+            if (sheet.material && sheet.material.map) sheet.material.map.dispose();
+            if (sheet.material) sheet.material.dispose();
+            if (sheet.geometry) sheet.geometry.dispose();
+          });
+          engine._cloudPlaneHigh = null; engine._cloudTexHigh = null;
           // Dispose material cache
           if (engine._matCache) Object.values(engine._matCache).forEach(function(m) { if (m.dispose) m.dispose(); });
           if (engine.composer) { try { (engine.composer.passes || []).forEach(function (p) { if (p && p.dispose) p.dispose(); }); } catch (e) {} engine.composer = null; }

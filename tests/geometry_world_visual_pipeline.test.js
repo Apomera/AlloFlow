@@ -408,6 +408,43 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain("qcx.strokeText('?', 64, 68);");
   });
 
+  it('builds two cloud sheets that drift at different rates', () => {
+    // one sheet of evenly scattered blobs reads as haze; parallax between two
+    // sheets is what gives the sky depth
+    expect(src).toContain('function makeCloudSheet(count, scale, alpha, size, height, opacity)');
+    expect(src).toContain('var cloudPlane = makeCloudSheet(13, 1, 0.16, 200, 40, 0.5);');
+    expect(src).toContain('var cloudPlaneHigh = makeCloudSheet(9, 1.7, 0.1, 320, 62, 0.3);');
+    expect(src).toContain('engine._cloudTexHigh.offset.x += dt * 0.002;');
+    // and both sheets follow the preset's cloud opacity
+    expect(src).toContain('engine._cloudPlaneHigh.material.opacity = cloudOp * 0.6;');
+  });
+
+  it('tints the clouds with the sky while keeping them brighter than it', () => {
+    // white clouds over an orange sunset read as a compositing mistake; clouds
+    // tinted all the way to the fog colour disappear into it
+    const m = src.match(/engine\._cloudPlane\.material\.color\.copy\(engine\.scene\.fog\.color\)\.lerp\(engine\._cloudWhite, ([\d.]+)\)/);
+    expect(m).not.toBeNull();
+    const keepWhite = Number(m[1]);
+    expect(keepWhite).toBeGreaterThan(0.6);
+    expect(keepWhite).toBeLessThan(0.95);
+  });
+
+  it('gives the star field two layers and a twinkle', () => {
+    // PointsMaterial has one size for every point, so depth costs a second layer
+    expect(src).toContain('bright.userData.isBrightStars = true;');
+    expect(src).toContain('engine._manualStars.add(bright);');
+    expect(src).toContain('Math.sin(engine._starPhase * 1.6)');
+    // steady under reduced motion, like every other ambient motion in this tool
+    expect(src).toContain("engine._ambientMotionEnabled === false ? 1 :");
+  });
+
+  it('disposes both cloud sheets and every star layer', () => {
+    // the cloud plane was removed from the scene but never disposed
+    expect(src).toContain('[engine._cloudPlane, engine._cloudPlaneHigh].forEach(function(sheet)');
+    expect(src).toContain('if (sheet.material && sheet.material.map) sheet.material.map.dispose();');
+    expect(src).toContain('engine._manualStars.traverse(function(part) {');
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

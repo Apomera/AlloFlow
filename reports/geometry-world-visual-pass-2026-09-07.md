@@ -128,6 +128,18 @@ Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round12-complete.mjs`): 
 
 Captures: `r13-measure.png` (bars through the glow) and `r13-aimed-desktop.png` (prompt and name plate over Professor Block).
 
+## Round 14 (same day): the sky
+
+**Clouds have shape and depth.** They were one sheet of evenly scattered soft blobs, which reads as haze rather than weather. Each cloud is now a cluster of overlapping puffs, wider than it is deep and denser along its base, so it carries a cumulus silhouette. There are two sheets: a low one at 40 units and a larger, fainter one at 62 drifting about a third as fast. The parallax between them is what gives the sky depth instead of a single flat ceiling.
+
+**Clouds take the colour of the sky.** White clouds over an orange sunset read as a compositing mistake. Both sheets now tint from the fog colour each frame. The amount of white kept matters and took a correction: at 45 per cent white the sunset clouds tinted so close to the sky that they vanished, so they now keep 72 per cent and stay clearly brighter than the sky they hang in, which is also how a lit cloud actually behaves.
+
+**Stars have depth and twinkle.** The field was 400 identical white points. `PointsMaterial` has one size for every point, so depth costs a second layer rather than a custom shader: 70 larger, warmer stars now ride as a child of the 400 smaller, cooler ones, inheriting the parent's slow rotation, fade and disposal. The bright layer breathes gently around the faint layer's level, slow enough to read as air rather than a flicker, and steady under reduced motion.
+
+**A leak fixed on the way.** The cloud plane was removed from the scene at teardown but never disposed, and the star field disposed only its own geometry and material. Both now dispose properly, including textures and the new layers.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round14-sky.mjs`): two sheets at 40 and 62, both following the camera, the low one drifting more than 1.5 times faster; sunset cloud tint `#f5d2ca` against fog `#db6042`; 400 faint stars at size 0.22 with 70 bright at 0.46, twinkling and rotating. Zero page errors. Captures: `sky2-clouds-day.png`, `sky2-clouds-sunset.png`, `sky-stars-night.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -151,3 +163,5 @@ Round 12 verification at commit time: 309 unit tests, and the four e2e tests cov
 Full spec for the tree carrying rounds 11 and 12, run under a competing suite after a 20-minute wait for quiet that never came: **17 passed, 0 failed, 0 flaky** in 6.7 minutes.
 
 Round 13 verification at commit time: 311 unit tests, and the four e2e tests covering mount, characters, the sprite census and teardown passed 4/4 with retries off. The full spec is queued for a quiet machine.
+
+Round 14 verification at commit time: 315 unit tests, and five e2e tests covering mount, lesson change, repeated remounts and teardown passed 5/5 with retries off against 52 competing browser processes.
