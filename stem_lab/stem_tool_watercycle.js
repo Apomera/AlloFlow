@@ -14334,7 +14334,14 @@ const d = labToolData.waterCycle || {};
                 var op = oceanGeo.attributes.position;
                 for (var oi = 0; oi < op.count; oi++) {
                   var ox = oceanBase[oi * 3], oz = oceanBase[oi * 3 + 2];
-                  op.array[oi * 3 + 1] = Math.sin(ox * 0.035 + t * 1.3) * 0.9 + Math.cos(oz * 0.028 + t * 0.9) * 0.7;
+                  // Steeper, not taller. At 0.035 the wavelength was ~180 units
+                  // against a 1.6-unit crest -- a 1:110 slope, so the normals
+                  // barely moved and the Phong specular above (added precisely
+                  // for "sun glint off the wave crests") had nothing to catch.
+                  // Roughly halving the wavelength doubles the slope while
+                  // keeping the crest height, and ~5-6 of the 96 segments still
+                  // span a wave, so it stays resolved rather than aliasing.
+                  op.array[oi * 3 + 1] = Math.sin(ox * 0.072 + t * 1.3) * 0.9 + Math.cos(oz * 0.058 + t * 0.9) * 0.7;
                 }
                 op.needsUpdate = true;
                 oceanGeo.computeVertexNormals();
@@ -14348,8 +14355,8 @@ const d = labToolData.waterCycle || {};
                   + (motionReduced ? 0 : Math.cos(t * 0.58 + wgi * 1.3) * 0.34);
                 waterGlintAttr.array[wgi * 3] = waterGlintX;
                 waterGlintAttr.array[wgi * 3 + 1] = 1.15
-                  + Math.sin(waterGlintX * 0.035 + waterGlintT * 1.3) * 0.9
-                  + Math.cos(waterGlintZ * 0.028 + waterGlintT * 0.9) * 0.7;
+                  + Math.sin(waterGlintX * 0.072 + waterGlintT * 1.3) * 0.9
+                  + Math.cos(waterGlintZ * 0.058 + waterGlintT * 0.9) * 0.7;
                 waterGlintAttr.array[wgi * 3 + 2] = waterGlintZ;
               }
               waterGlintAttr.needsUpdate = true;
@@ -21686,11 +21693,38 @@ const d = labToolData.waterCycle || {};
             scene.add(world3d);
 
             var oceanMat = new THREE.MeshPhysicalMaterial({
-              color: 0x087aa5, roughness: 0.18, metalness: 0.05,
+              color: 0xffffff, vertexColors: true, roughness: 0.18, metalness: 0.05,
               transparent: true, opacity: 0.9, clearcoat: 0.75, clearcoatRoughness: 0.16
             });
             var oceanGeometry3d = new THREE.PlaneGeometry(18, 10, 28, 18);
             var oceanBasePositions3d = new Float32Array(oceanGeometry3d.attributes.position.array);
+
+            // Depth grading. The ocean is the largest surface in frame and a
+            // single flat blue made it read as paper. Open water is graded dark
+            // and cold, the shallows near the shoreline bright and warm, so the
+            // eye gets distance cues across the whole plane for zero cost.
+            // Local +2.5 on the plane is the shoreline (world x 0); -9 is open water.
+            var oceanColorAttribute3d = new THREE.BufferAttribute(
+              new Float32Array(oceanGeometry3d.attributes.position.count * 3), 3);
+            var oceanDeepColor3d = new THREE.Color(0x04304c);
+            var oceanShallowColor3d = new THREE.Color(0x2fb0c8);
+            var oceanFogColor3d = new THREE.Color(0x08283b);
+            var oceanGradeColor3d = new THREE.Color();
+            for (var oceanColorIndex3d = 0; oceanColorIndex3d < oceanColorAttribute3d.count; oceanColorIndex3d++) {
+              var oceanLocalX3d = oceanBasePositions3d[oceanColorIndex3d * 3];
+              var oceanLocalY3d = oceanBasePositions3d[oceanColorIndex3d * 3 + 1];
+              var oceanShoreT3d = Math.min(1, Math.max(0, (oceanLocalX3d + 9) / 11.5));
+              oceanGradeColor3d.copy(oceanDeepColor3d).lerp(oceanShallowColor3d, Math.pow(oceanShoreT3d, 1.7));
+              // Dissolve the outer rim into the fog colour. Raising scene fog
+              // enough to hide the plane's edge washed the depth grading out of
+              // the whole scene, so the fade is painted only where it is needed.
+              var oceanRimX3d = Math.min(1, Math.max(0, (oceanLocalX3d + 9) / 3.2));
+              var oceanRimY3d = Math.min(1, Math.max(0, (5 - Math.abs(oceanLocalY3d)) / 2.2));
+              oceanGradeColor3d.lerp(oceanFogColor3d, (1 - Math.min(oceanRimX3d, oceanRimY3d)) * 0.9);
+              oceanColorAttribute3d.setXYZ(oceanColorIndex3d,
+                oceanGradeColor3d.r, oceanGradeColor3d.g, oceanGradeColor3d.b);
+            }
+            oceanGeometry3d.setAttribute('color', oceanColorAttribute3d);
             var ocean3d = new THREE.Mesh(oceanGeometry3d, oceanMat);
             ocean3d.rotation.x = -Math.PI / 2;
             ocean3d.position.set(-2.5, -1.25, 1.6);
@@ -23653,6 +23687,34 @@ const d = labToolData.waterCycle || {};
             var vaporShell3d = new THREE.Mesh(new THREE.IcosahedronGeometry(0.48, 1), vaporShellMat3d);
             vaporShell3d.visible = false;
             dropletGroup3d.add(vaporShell3d);
+
+            // Vapour billows. The wireframe on its own read as a debug cage
+            // rather than as water vapour -- and this parcel is the object the
+            // student is asked to BE, so it is the most-looked-at thing in the
+            // scene. Soft additive puffs give it volume while the wireframe
+            // stays underneath to keep its structure legible.
+            var vaporBillowGeometry3d = new THREE.SphereGeometry(1, 14, 10);
+            var vaporBillowMat3d = new THREE.MeshBasicMaterial({
+              color: 0xcfeaff, transparent: true, opacity: 0,
+              depthWrite: false, blending: THREE.AdditiveBlending
+            });
+            var vaporBillowSeeds3d = [
+              { x: 0, y: 0.06, z: 0, r: 0.34, s: 1 },
+              { x: -0.19, y: -0.05, z: 0.12, r: 0.24, s: 1.35 },
+              { x: 0.2, y: 0.02, z: -0.1, r: 0.22, s: 0.85 },
+              { x: 0.02, y: 0.2, z: 0.16, r: 0.18, s: 1.7 }
+            ];
+            var vaporBillows3d = new THREE.Group();
+            for (var vaporBillowIndex3d = 0; vaporBillowIndex3d < vaporBillowSeeds3d.length; vaporBillowIndex3d++) {
+              var vaporBillowSeed3d = vaporBillowSeeds3d[vaporBillowIndex3d];
+              var vaporBillowMesh3d = new THREE.Mesh(vaporBillowGeometry3d, vaporBillowMat3d);
+              vaporBillowMesh3d.position.set(vaporBillowSeed3d.x, vaporBillowSeed3d.y, vaporBillowSeed3d.z);
+              vaporBillowMesh3d.scale.setScalar(vaporBillowSeed3d.r);
+              vaporBillowMesh3d.userData.wcVaporSeed = vaporBillowSeed3d;
+              vaporBillows3d.add(vaporBillowMesh3d);
+            }
+            vaporBillows3d.visible = false;
+            dropletGroup3d.add(vaporBillows3d);
             var iceCrystal3d = new THREE.Group();
             var iceCrystalMat3d = new THREE.MeshPhysicalMaterial({
               color: 0xe0f2fe, emissive: 0x7dd3fc, emissiveIntensity: 0.42,
@@ -23733,7 +23795,12 @@ const d = labToolData.waterCycle || {};
             makeProcessLabel3d('transpiration', 'Transpiration', '#86efac', [5.9, 2.85, 1.25]);
             makeProcessLabel3d('cycle', 'Cycle continues', '#67e8f9', [-3.0, 0.65, 1.7]);
             var windTransportLabel3d = makeProcessLabel3d(
-              'wind_transport', 'Atmospheric transport', '#bae6fd', [-0.6, 3.95, -1.6]
+              // Moved clear of the 'Condensation' label at [0.2, 4.1, -1.55]:
+              // 0.8 apart in x with a 2.35-wide banner meant the two chips always
+              // overlapped once both were visible, and this one covered the other.
+              // It marks the whole airflow band, not a point, so it is the one
+              // that can move.
+              'wind_transport', 'Atmospheric transport', '#bae6fd', [-2.7, 4.85, -1.6]
             );
             if (windTransportLabel3d) {
               delete processLabels3d.wind_transport;
@@ -24727,9 +24794,24 @@ const d = labToolData.waterCycle || {};
               }
               droplet3d.scale.lerp(dropletScaleGoal3d, motionReduced3d ? 1 : 0.1);
               dropletMat3d.opacity += ((0.96 - parcelGasBlend3d * 0.68) - dropletMat3d.opacity) * (motionReduced3d ? 1 : 0.1);
-              vaporShellMat3d.opacity = vaporShell3d.visible ? 0.16 + parcelGasBlend3d * 0.34 : 0;
+              vaporShellMat3d.opacity = vaporShell3d.visible ? 0.1 + parcelGasBlend3d * 0.2 : 0;
               vaporShell3d.scale.setScalar(0.88 + parcelGasBlend3d * 0.24 + (motionReduced3d ? 0 : Math.sin(visualTime3d * 2.4) * 0.04));
               vaporShell3d.rotation.set(visualTime3d * 0.18, visualTime3d * 0.26, visualTime3d * 0.11);
+              vaporBillows3d.visible = vaporShell3d.visible;
+              vaporBillowMat3d.opacity = vaporShell3d.visible ? 0.1 + parcelGasBlend3d * 0.26 : 0;
+              if (vaporShell3d.visible) {
+                for (var vaporBillowAnimIndex3d = 0; vaporBillowAnimIndex3d < vaporBillows3d.children.length; vaporBillowAnimIndex3d++) {
+                  var vaporBillowAnimMesh3d = vaporBillows3d.children[vaporBillowAnimIndex3d];
+                  var vaporBillowAnimSeed3d = vaporBillowAnimMesh3d.userData.wcVaporSeed;
+                  var vaporBillowPulse3d = motionReduced3d ? 1
+                    : 1 + Math.sin(visualTime3d * vaporBillowAnimSeed3d.s + vaporBillowAnimIndex3d * 1.7) * 0.16;
+                  vaporBillowAnimMesh3d.scale.setScalar(
+                    vaporBillowAnimSeed3d.r * (0.9 + parcelGasBlend3d * 0.35) * vaporBillowPulse3d);
+                  vaporBillowAnimMesh3d.position.y = vaporBillowAnimSeed3d.y + (motionReduced3d ? 0
+                    : Math.sin(visualTime3d * (0.8 + vaporBillowAnimSeed3d.s * 0.3) + vaporBillowAnimIndex3d) * 0.05);
+                }
+                vaporBillows3d.rotation.y = motionReduced3d ? 0 : visualTime3d * 0.12;
+              }
               iceCrystal3d.rotation.set(visualTime3d * 0.3, visualTime3d * 0.42, visualTime3d * 0.16);
               fallStreakMat3d.opacity = rainParcel3d ? 0.2 + rainVisual3d / 300 : 0;
               halo3d.material.color.setHex(stateVisualColor3d);
@@ -25746,7 +25828,15 @@ const d = labToolData.waterCycle || {};
               dropletGroup3d.position.lerp(target3d, lerp3d);
               if (!userOrbit3d) camera.position.lerp(cameraGoal3d, motionReduced3d ? 1 : 0.025);
               dropletMat3d.color.setHex(stateColors3d[state3d] || 0x38bdf8);
+              // The emissive must be a DARKER derivative of the state colour, not
+              // the same hex. Driving both from one bright value pushed the parcel
+              // to a white blob that lost its teardrop form and stopped reading as
+              // water -- and it is the object the student is asked to follow. The
+              // two different fallbacks below (bright base, dark 0x075985 glow)
+              // are the original intent; every real state has an entry, so that
+              // intent was silently lost for every state that actually renders.
               dropletMat3d.emissive.setHex(stateColors3d[state3d] || 0x075985);
+              if (stateColors3d[state3d]) dropletMat3d.emissive.multiplyScalar(0.34);
               dropletLight3d.intensity = 1.8 + hydroPoints3d / 55;
               halo3d.material.opacity = 0.10 + hydroPoints3d / 600;
               route3d.material.opacity = 0.18 + hydroPoints3d / 800;
@@ -25998,8 +26088,16 @@ const d = labToolData.waterCycle || {};
                   for (var oceanVertexIndex3d = 0; oceanVertexIndex3d < oceanPositionAttribute3d.count; oceanVertexIndex3d++) {
                     var oceanBaseX3d = oceanBasePositions3d[oceanVertexIndex3d * 3];
                     var oceanBaseY3d = oceanBasePositions3d[oceanVertexIndex3d * 3 + 1];
-                    var waveHeight3d = Math.sin(oceanBaseX3d * 0.72 + visualTime3d * (0.8 + windVisual3d * 0.18)) * (0.035 + windVisual3d * 0.014) +
-                      Math.cos(oceanBaseY3d * 0.92 - visualTime3d * 0.65) * 0.028;
+                    // Three octaves instead of two: the diagonal term makes the
+                    // swells interfere, so recomputed normals vary across the
+                    // plane rather than in parallel stripes.
+                    var waveHeight3d = Math.sin(oceanBaseX3d * 0.72 + visualTime3d * (0.8 + windVisual3d * 0.18)) * (0.042 + windVisual3d * 0.014) +
+                      Math.cos(oceanBaseY3d * 0.92 - visualTime3d * 0.65) * 0.032 +
+                      Math.sin(oceanBaseX3d * 0.47 + oceanBaseY3d * 0.61 + visualTime3d * 1.15) * (0.016 + windVisual3d * 0.006);
+                    // The shore plane sits 0.14 above the water surface; wind
+                    // reaches 3.0, so clamp rather than trust the constants.
+                    if (waveHeight3d > 0.112) waveHeight3d = 0.112;
+                    else if (waveHeight3d < -0.112) waveHeight3d = -0.112;
                     oceanPositionAttribute3d.setZ(oceanVertexIndex3d, waveHeight3d);
                   }
                   oceanPositionAttribute3d.needsUpdate = true;
