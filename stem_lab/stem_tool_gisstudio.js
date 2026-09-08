@@ -4514,6 +4514,10 @@
           };
         }
 
+        function persistMany(values) {
+          setToolData(function (previous) { return Object.assign({}, previous || {}, values); });
+        }
+
         function persist(key, value) {
           setToolData(function (previous) {
             var next = Object.assign({}, previous || {});
@@ -6634,7 +6638,29 @@
           setTab(allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project');
           setTimePlaying(false);
           setProjectError('');
-          persist('gisProjectLoaded', true);
+          persistMany({
+            gisProjectLoaded: true,
+            gisTab: allowedTabs.indexOf(settings.tab) >= 0 ? settings.tab : 'project',
+            gisRegionPack: restoredPack.id,
+            gisCustomRegionPacks: restoredCustomPacks.map(serializeGISRegionPack),
+            gisMetric: restoredMetric,
+            gisBasemap: getGISBasemapProvider(restoredBasemap) ? restoredBasemap : 'none',
+            gisClassification: ['quantile', 'equal', 'jenks', 'custom'].indexOf(settings.classification) >= 0 ? settings.classification : 'quantile',
+            gisAnalysisUnit: settings.analysisUnit === 'imperial' ? 'imperial' : 'metric',
+            gisCompareLeft: String(settings.compareLeft || 'point:density'),
+            gisCompareRight: String(settings.compareRight || 'point:access'),
+            gisCompareLeftBasemap: getGISBasemapProvider(restoredLeftBasemap) && restoredLeftBasemap !== 'none' ? restoredLeftBasemap : 'none',
+            gisCompareRightBasemap: getGISBasemapProvider(restoredRightBasemap) && restoredRightBasemap !== 'none' ? restoredRightBasemap : 'none',
+            gisActiveMission: typeof work.activeMissionId === 'string' && work.activeMissionId ? work.activeMissionId.slice(0, 120) : GIS_MISSIONS[0].id,
+            gisMissionProgress: work.missionProgress && typeof work.missionProgress === 'object' ? work.missionProgress : {},
+            gisMissionResponses: work.missionResponses && typeof work.missionResponses === 'object' ? work.missionResponses : {},
+            gisComposer: normalizeMapComposition(work.composer || {}),
+            gisRemoteSensing: normalizeRemoteSensingState(work.remoteSensing || {}),
+            gisStoryMap: normalizeStoryMap(work.storyMap || {}),
+            gisQualityReview: normalizeQualityReviewState(work.qualityReview || {}),
+            gisInquiryPlan: normalizeInquiryPlan(work.inquiryPlan || {}),
+            gisTeacherReview: normalizeTeacherReview(work.teacherReview || {})
+          });
           announce(gisFillTemplate(__alloT('stem.gisstudio.sr_project_opened_from', 'GIS project opened from {source}.'), { source: sourceLabel }));
         }
 

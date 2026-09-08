@@ -390,6 +390,42 @@ describe('GIS Studio region pack loader (mounted)', () => {
     expect(host.textContent).not.toContain('GeoJSON choropleth');
   });
 
+  it('writes an opened project into the state the tool reads back at mount', { timeout: 30000 }, async () => {
+    // Opening a project restored component state and told the host almost
+    // nothing, so switching away and back reverted the region to the Maine
+    // sample and dropped the composed map, while the pack list stayed.
+    const pack = tool.testing.serializeGISRegionPack({
+      label: 'Harbour wards',
+      metrics: [{ id: 'households', label: 'Households' }],
+      records: [{ name: 'Munjoy Hill', lat: 43.6685, lon: -70.2418, households: 2600 }]
+    });
+    const project = tool.testing.createGISProject({
+      title: 'Harbour ward study',
+      settings: { regionPack: pack.id, metric: 'households', tab: 'project', basemap: 'none' },
+      data: { importedRows: [], customRegionPacks: [pack] },
+      work: { composer: { title: 'Households in the harbour wards', altText: 'x'.repeat(50), annotations: [{ id: 'a1', label: 'Densest ward', lat: 43.6685, lon: -70.2418 }] } }
+    }, '2026-09-07T00:00:00.000Z');
+
+    mountGIS({ gisTab: 'project', gisBasemap: 'none' });
+    const fileInput = findLabeledControl('Open GIS Studio project', 'input[type="file"]');
+    expect(fileInput).toBeTruthy();
+    const file = new File([JSON.stringify(project)], 'study.gisstudio.json', { type: 'application/json' });
+    Object.defineProperty(fileInput, 'files', { value: [file], configurable: true });
+    await React.act(async function () {
+      fileInput.dispatchEvent(new Event('change', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(await settle(() => !!sharedToolData.gisProjectLoaded)).toBe(true);
+
+    // Everything the tool seeds its state from at mount must now be present.
+    expect(sharedToolData.gisRegionPack).toBe(pack.id);
+    expect(sharedToolData.gisCustomRegionPacks).toHaveLength(1);
+    expect(sharedToolData.gisMetric).toBe('households');
+    expect(sharedToolData.gisComposer.title).toBe('Households in the harbour wards');
+    expect(sharedToolData.gisComposer.annotations).toHaveLength(1);
+    expect(sharedToolData.gisTab).toBe('project');
+  });
+
   it('discards a preview without touching the pack list', { timeout: 30000 }, async () => {
     mountGIS({ gisTab: 'import', gisBasemap: 'none' });
     const fileInput = findLabeledControl('Region pack file', 'input[type="file"]');
