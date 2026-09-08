@@ -111,6 +111,9 @@ async function shot(label, clicks, outfile) {
   await page.evaluate(() => window.__mount());
   await page.waitForTimeout(1800);
   for (const c of clicks) {
+    // 'wait:12000' pauses instead of clicking -- the guided journey only offers
+    // the land-decision routes about 95 s in, so some scenes must sit and wait.
+    if (c.startsWith('wait:')) { await page.waitForTimeout(Number(c.slice(5))); continue; }
     const ok = await page.evaluate((re) => window.__clickText(re), c);
     if (!ok) console.log('  [' + label + '] no button matched /' + c + '/');
     await page.waitForTimeout(2200);
@@ -142,6 +145,10 @@ const SCENES = {
   pilot: ['Be the Water'],
   piloting: ['Be the Water', 'Begin - see your parcel'],
   started: ['Droplet Journey', 'Begin as a droplet'],
+  // the land decision appears ~95 s in; choosing Underground reaches the
+  // aquifer / subsurface visuals, which nothing else in this file gets to.
+  underground: ['Droplet Journey', 'Begin as a droplet', 'wait:98000', 'Underground'],
+  runoff: ['Droplet Journey', 'Begin as a droplet', 'wait:98000', 'River Runoff'],
   // NOTE: there is no clickable lens control. The Sky / Surface / Subsurface
   // chips in the SCENE LENS panel are `.wc-scene-lens-axis span` STATUS
   // indicators (`is-active`) showing which band the camera is in -- they have no

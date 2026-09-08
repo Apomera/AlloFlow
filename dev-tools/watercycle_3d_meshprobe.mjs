@@ -92,12 +92,18 @@ window.__clickText = function (re) {
 
 await page.evaluate(() => window.__mount());
 await page.waitForTimeout(1800);
-await page.evaluate(() => window.__clickText('Droplet Journey'));
-await page.waitForTimeout(2500);
-await page.evaluate(() => window.__clickText('Begin as a droplet'));
+// CLICKS lets a caller drive deeper states, e.g. the land decision:
+//   CLICKS='Droplet Journey,Begin as a droplet,wait:98000,Underground'
+const CLICKS = (process.env.CLICKS || 'Droplet Journey,Begin as a droplet').split(',');
+for (const c of CLICKS) {
+  if (c.startsWith('wait:')) { await page.waitForTimeout(Number(c.slice(5))); continue; }
+  const ok = await page.evaluate((re) => window.__clickText(re), c);
+  if (!ok) console.log('  no button matched /' + c + '/');
+  await page.waitForTimeout(2500);
+}
 await page.waitForTimeout(SETTLE);
 
-const out = await page.evaluate((filter) => {
+const out = await page.evaluate((filterMode) => {
   const THREE = window.THREE;
   const rows = [];
   const seen = new Set();
@@ -107,8 +113,15 @@ const out = await page.evaluate((filter) => {
     if (!root.isScene) continue;
     seen.add(m.uuid);
     let vis = m.visible;
-    for (let p = m.parent; p && vis; p = p.parent) vis = p.visible;
-    if (!vis) continue;
+    let hiddenBy = null;
+    for (let p = m.parent; p; p = p.parent) {
+      if (!p.visible) { hiddenBy = p.name || p.type; break; }
+    }
+    if (!m.visible) hiddenBy = 'self';
+    // FILTER=hidden reports what is NOT drawn, and why -- an absent mesh and a
+    // deliberately hidden one look identical in a screenshot.
+    if (filterMode !== 'hidden' && (hiddenBy || !vis)) continue;
+    if (filterMode === 'hidden' && !hiddenBy) continue;
     const pos = new THREE.Vector3();
     m.getWorldPosition(pos);
     const mat = Array.isArray(m.material) ? m.material[0] : m.material;
@@ -122,10 +135,14 @@ const out = await page.evaluate((filter) => {
       opacity: mat.opacity == null ? null : +mat.opacity.toFixed(2),
       blending: mat.blending === THREE.AdditiveBlending ? 'additive' : 'normal',
       mat: mat.type,
+      hiddenBy: hiddenBy,
     });
   }
-  if (filter === 'sky') return rows.filter((r) => r.pos[1] > 0.8);
-  if (filter === 'dark') {
+  if (filterMode === 'hidden') return rows.filter((r) => r.geo === 'LatheGeometry' || r.geo === 'SphereGeometry');
+  if (filterMode === 'parcel') return rows.filter((r) => r.geo === 'LatheGeometry'
+    || (r.color && ['#38bdf8', '#22d3ee', '#67e8f9', '#e0f2fe', '#ffffff'].indexOf(r.color) >= 0 && r.scale < 1.3));
+  if (filterMode === 'sky') return rows.filter((r) => r.pos[1] > 0.8);
+  if (filterMode === 'dark') {
     return rows.filter((r) => {
       if (!r.color) return false;
       const n = parseInt(r.color.slice(1), 16);
