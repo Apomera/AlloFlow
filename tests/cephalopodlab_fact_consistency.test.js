@@ -226,3 +226,29 @@ describe('Cephalopod Lab lesson plans can actually be run', () => {
     expect(src).toMatch(/elapsedSec \+ 's survived/);
   });
 });
+
+describe('Cephalopod Lab shows labels, not data keys', () => {
+  // Comparative tables build column headings from row keys. Capitalising only
+  // the first letter left camelCase intact, so a reader saw "SameOrDifferent".
+  it('humanises a multi-word key rather than only capitalising it', () => {
+    expect(src).toMatch(/function clHumaniseKey\(key\)/);
+    expect(src).toMatch(/borderBottom: '2px solid rgba\(167,139,250,0\.4\)' \} \}, clHumaniseKey\(k\)\)/);
+    expect(src).not.toMatch(/\} \}, k\.charAt\(0\)\.toUpperCase\(\) \+ k\.slice\(1\)\)/);
+  });
+
+  it('leaves no camelCase key reaching a table heading', () => {
+    // every key used as a heading in COMPARATIVE_TABLES
+    const seg = src.slice(src.indexOf('COMPARATIVE_TABLES'), src.indexOf('COMPARATIVE_TABLES') + 14000);
+    const keys = new Set(Array.from(seg.matchAll(/([a-z][a-zA-Z]*): '/g)).map((m) => m[1]));
+    const camel = Array.from(keys).filter((k) => /[a-z][A-Z]/.test(k));
+    // these exist in the data and must be rendered readably, not hidden
+    expect(camel.length).toBeGreaterThan(0);
+    const humanise = (key) => String(key)
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .toLowerCase()
+      .replace(/^./, (ch) => ch.toUpperCase());
+    expect(humanise('sameOrDifferent')).toBe('Same or different');
+    expect(camel.every((k) => !/[a-z][A-Z]/.test(humanise(k)))).toBe(true);
+  });
+});

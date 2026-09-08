@@ -409,6 +409,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   //   habitat (array), prey (array), tactics (array of best-suited)
   //   weird (one striking fact), conservation (IUCN status or proxy)
   //   notes (paragraph)
+  // ─── A data key, written for a person ────────────────────────────
+  // Comparative tables build their column headings from row keys. Capitalising
+  // only the first letter left camelCase intact, so readers saw
+  // "SameOrDifferent" where the column means "Same or different".
+  function clHumaniseKey(key) {
+    return String(key || '')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .replace(/[_-]+/g, ' ')
+      .toLowerCase()
+      .replace(/^./, function(ch) { return ch.toUpperCase(); });
+  }
+
   // ─── Readable ink from a data accent ─────────────────────────────
   // Several datasets carry a colour that reads as a period or an event (deep
   // Triassic browns, the sky blue of a glaciation). Those work as a band fill
@@ -20801,7 +20813,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(t.rows[0]).map(function(k, i) {
-                        return h('th', { key: i, scope: 'col', style: { padding: '8px 12px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k.charAt(0).toUpperCase() + k.slice(1));
+                        return h('th', { key: i, scope: 'col', style: { padding: '8px 12px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, clHumaniseKey(k));
                       })
                     )
                   ),
