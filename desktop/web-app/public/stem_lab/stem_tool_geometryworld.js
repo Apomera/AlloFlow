@@ -8954,15 +8954,39 @@
             cv.style.width = W + 'px'; cv.style.height = H + 'px';
             var ctx = cv.getContext('2d');
             ctx.scale(dpr, dpr);
+            // The strip is absolutely positioned inside the WORKSPACE, which starts
+            // at the toolbar, so a plain top:12px put the whole thing inside the dark
+            // header: drawn correctly, camouflaged against the header's own navy, and
+            // nowhere near where a player is looking. Measure the viewport instead of
+            // hard-coding a toolbar height, which wraps on narrow screens.
+            function placeStrip() {
+              try {
+                var wrapEl = document.getElementById('geoworld-fs-wrap');
+                var host = cv.offsetParent;
+                if (!wrapEl || !host) return;
+                var wr = wrapEl.getBoundingClientRect(), hr = host.getBoundingClientRect();
+                cv.style.top = Math.max(0, Math.round(wr.top - hr.top) + 12) + 'px';
+              } catch (e) {}
+            }
+            placeStrip();
+            var stripRO = null;
+            try {
+              if (window.ResizeObserver && cv.offsetParent) { stripRO = new window.ResizeObserver(placeStrip); stripRO.observe(cv.offsetParent); }
+            } catch (e) { stripRO = null; }
+            window.addEventListener('resize', placeStrip);
+            function stopStrip() {
+              try { if (stripRO) stripRO.disconnect(); } catch (e) {}
+              window.removeEventListener('resize', placeStrip);
+            }
             function render() {
-              if (!cv.isConnected) return; // canvas removed — stop loop
+              if (!cv.isConnected) { stopStrip(); return; } // canvas removed — stop loop
               if (!window.THREE || !engine || !engine.camera || !engine.npcs) {
                 requestAnimationFrame(render);
                 return;
               }
               ctx.clearRect(0, 0, W, H);
               // Background pill
-              ctx.fillStyle = 'rgba(15,23,42,0.7)';
+              ctx.fillStyle = 'rgba(15,23,42,0.82)';
               if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(0, 0, W, H, 16); ctx.fill(); }
               else ctx.fillRect(0, 0, W, H);
               ctx.strokeStyle = 'rgba(124,58,237,0.3)'; ctx.lineWidth = 1;
@@ -8977,6 +9001,20 @@
               ctx.beginPath();
               ctx.moveTo(W / 2, 5); ctx.lineTo(W / 2 - 4, 11); ctx.lineTo(W / 2 + 4, 11);
               ctx.closePath(); ctx.fill();
+              // North tick. Without it the strip is blank whenever every character is
+              // behind you, which is exactly when a lost player looks at it. World
+              // north is -Z, the same convention the pips below use.
+              var relNorth = -camYaw;
+              while (relNorth > Math.PI) relNorth -= 2 * Math.PI;
+              while (relNorth < -Math.PI) relNorth += 2 * Math.PI;
+              if (Math.abs(relNorth) <= halfFov / 2) {
+                var northX = W / 2 + (relNorth / (halfFov / 2)) * (W / 2 - 12);
+                ctx.strokeStyle = 'rgba(226,232,240,0.75)'; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(northX, 6); ctx.lineTo(northX, 12); ctx.stroke();
+                ctx.fillStyle = 'rgba(226,232,240,0.9)'; ctx.font = 'bold 8px system-ui';
+                ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+                ctx.fillText('N', northX, 12);
+              }
               // Draw pips for each NPC
               engine.npcs.forEach(function(npc, i) {
                 if (!npc || !npc.body) return;

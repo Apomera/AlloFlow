@@ -445,6 +445,26 @@ describe('colour pipeline source contract', () => {
     expect(src).toContain('engine._manualStars.traverse(function(part) {');
   });
 
+  it('places the compass strip over the play area, measured not hard-coded', () => {
+    // the strip is absolutely positioned inside the workspace, which starts at the
+    // toolbar, so a plain top:12px drew it inside the dark header
+    expect(src).toContain('function placeStrip()');
+    expect(src).toContain("var wrapEl = document.getElementById('geoworld-fs-wrap');");
+    expect(src).toContain("cv.style.top = Math.max(0, Math.round(wr.top - hr.top) + 12) + 'px';");
+    // a hard-coded toolbar height would break when the toolbar wraps on narrow screens
+    expect(src).not.toMatch(/cv\.style\.top = '\d+px'/);
+    // and the observers come down with the canvas
+    expect(src).toContain('function stopStrip()');
+    expect(src).toContain('if (!cv.isConnected) { stopStrip(); return; }');
+  });
+
+  it('gives the compass a north tick so it orients with nobody in view', () => {
+    // with every character behind the player the strip drew only edge arrows,
+    // which is exactly when someone lost looks at it
+    expect(src).toContain('var relNorth = -camYaw;');
+    expect(src).toContain("ctx.fillText('N', northX, 12);");
+  });
+
   it('keeps bloom above what a lit surface or a white label can reach', () => {
     const m = src.match(/UnrealBloomPass\([^;]*?,\s*([\d.]+)\)\);/);
     expect(m).not.toBeNull();

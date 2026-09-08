@@ -140,6 +140,18 @@ Captures: `r13-measure.png` (bars through the glow) and `r13-aimed-desktop.png` 
 
 Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round14-sky.mjs`): two sheets at 40 and 62, both following the camera, the low one drifting more than 1.5 times faster; sunset cloud tint `#f5d2ca` against fog `#db6042`; 400 faint stars at size 0.22 with 70 bright at 0.46, twinkling and rotating. Zero page errors. Captures: `sky2-clouds-day.png`, `sky2-clouds-sunset.png`, `sky-stars-night.png`.
 
+## Round 15 (same day): the compass strip was drawn outside the world
+
+The NPC compass strip is this tool's main wayfinding affordance: a pill at the top of the view with a pip per character showing who is where relative to your facing, red squares for unanswered and green circles for answered. It was rendering perfectly and almost nobody would ever have seen it.
+
+The canvas is absolutely positioned with `top: 12px`, but its offset parent is the whole workspace, which starts at the toolbar. Measured in the browser: the strip sat at y 12 to 44 while the 3D viewport starts at y 61. The entire strip was inside the dark header, beside the lesson title, where its dark navy pill is nearly invisible against the header's own navy. The pixels confirmed it was drawing all along, 8120 opaque pixels and 423 red pip pixels, just not where anyone looks.
+
+It now measures the viewport's offset from the workspace and places itself twelve pixels inside the top of the play area, with a resize observer and a window listener that both come down with the canvas. A hard-coded toolbar height would have broken the moment the toolbar wraps on a narrow screen. After the fix the strip sits at y 72 against a viewport top of 61.
+
+**A north tick came with it.** With every character behind the player the strip drew only two edge arrows, which is exactly the moment someone lost looks at it. A small north marker now rides the same scale as the pips, so the strip always says something.
+
+Probe (`scratch/geometry-world-visuals-2026-09-07/probe-round15-compass.mjs`) and capture `compass-after.png`.
+
 ## Addendum: WebGL e2e result
 
 `npx playwright test tests/e2e/18-geometry-world-gl.spec.ts` against the working tree: **17 passed, 0 failed** in 9.8 minutes under SwiftShader, including the pixel-difference, block fidelity, STL winding and teardown checks.
@@ -165,3 +177,7 @@ Full spec for the tree carrying rounds 11 and 12, run under a competing suite af
 Round 13 verification at commit time: 311 unit tests, and the four e2e tests covering mount, characters, the sprite census and teardown passed 4/4 with retries off. The full spec is queued for a quiet machine.
 
 Round 14 verification at commit time: 315 unit tests, and five e2e tests covering mount, lesson change, repeated remounts and teardown passed 5/5 with retries off against 52 competing browser processes.
+
+Full spec for the tree carrying round 13, run under 38 competing browser processes: **17 passed, 0 failed, 0 flaky** in 9.1 minutes.
+
+Round 15 verification at commit time: 317 unit tests, and four e2e tests including the HUD-layout preset sweep passed 4/4 with retries off.
