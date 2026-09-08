@@ -2375,10 +2375,13 @@
     add('privacy', 'Coordinate privacy', privacyStatus,
       privacy.highPrecision || privacy.identifierWarnings ? privacy.highPrecision + ' high-precision row' + (privacy.highPrecision === 1 ? '' : 's') + ' and ' + privacy.identifierWarnings + ' identifier-like label' + (privacy.identifierWarnings === 1 ? '' : 's') + ' need review.' : 'No high-precision or identifier-like coordinate risks detected.',
       privacyStatus === 'warning' ? 'Round or aggregate sensitive locations, then review labels separately.' : 'Keep student or household locations aggregated.', privacyStatus === 'warning' ? 0.45 : 1);
-    var remoteStatus = remote.masked > 0 ? 'warning' : 'pass';
+    var remoteUsed = model.remoteUsed !== false && !!(model.remoteSummary || model.remoteUsed);
+    var remoteStatus = !remoteUsed ? 'pass' : (remote.masked > 0 ? 'warning' : 'pass');
     add('imagery', 'Imagery quality', remoteStatus,
-      remote.masked > 0 ? remote.masked + ' of ' + remote.total + ' illustrative pixels are cloud-masked.' : 'No masked pixels are affecting the current illustrative scene.',
-      remoteStatus === 'warning' ? 'Keep masked pixels out of statistics and avoid explaining their surface class.' : 'Record dates, resolution, and sensor before interpreting imagery.', remoteStatus === 'warning' ? 0.55 : 1);
+      !remoteUsed ? 'No imagery has been analysed in this project.'
+        : (remote.masked > 0 ? remote.masked + ' of ' + remote.total + ' illustrative pixels are cloud-masked.' : 'No masked pixels are affecting the current illustrative scene.'),
+      !remoteUsed ? 'Open the Remote Sensing lab if imagery belongs in this investigation.'
+        : (remoteStatus === 'warning' ? 'Keep masked pixels out of statistics and avoid explaining their surface class.' : 'Record dates, resolution, and sensor before interpreting imagery.'), remoteStatus === 'warning' ? 0.55 : 1);
     var composerStatus = Number(composer.errors || 0) > 0 ? 'error' : Number(composer.warnings || 0) > 0 ? 'warning' : 'pass';
     add('cartography', 'Map communication', composerStatus,
       composerStatus === 'pass' ? 'Composer checks pass.' : composer.errors + ' required map fix' + (composer.errors === 1 ? '' : 'es') + ' and ' + composer.warnings + ' recommendation' + (composer.warnings === 1 ? '' : 's') + ' remain.',
@@ -4426,7 +4429,9 @@
         var remoteAfterIndex = remoteIndexValue(remoteSelectedCell, 'after', remoteSensing.analysisIndex, remoteSensing.cloudMask);
         var remoteBeforeClass = classifySpectralPixel(remoteSelectedCell.beforeBands);
         var storyProgress = storyMapProgress(storyMap);
-        var qualityReview = buildDataQualityReview({ importedRows: reviewRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
+        var remoteSensingUsed = !!(ctx.toolData && (ctx.toolData.gisRemoteSensingCompleted || ctx.toolData.gisRemoteSensingStarted)) ||
+          Object.keys(remoteSensing.qualityChecks || {}).some(function (key) { return remoteSensing.qualityChecks[key]; });
+        var qualityReview = buildDataQualityReview({ remoteUsed: remoteSensingUsed, importedRows: reviewRows, timeRows: timeDataset.rows, provenance: provenance, privacyAssessment: privacyAssessment, composerAudit: composerAudit, remoteSummary: remoteSummary, storyProgress: storyProgress, reviewState: qualityReviewState });
         var inquiryProgress = inquiryPlanProgress(inquiryPlan);
         var teacherProgress = teacherReviewProgress(teacherReview);
         var remoteAfterClass = remoteSelectedCell.quality === 'cloud'

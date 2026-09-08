@@ -825,6 +825,43 @@ describe('GIS Studio - custom region packs', () => {
     expect(global).toContain('It does not show Global regions (classroom sample).');
   });
 
+  it('does not grade a demo scene into a project that never opened it', () => {
+    const tool = loadTool(TOOL, 'gisStudio');
+    const rows = [{ name: 'West End', lat: 43.65, lon: -70.27, value: 2400 }];
+
+    // Untouched: the fixed illustrative scene has a cloud-masked pixel, but that
+    // is not a limitation of someone else's household study.
+    const untouched = tool.testing.buildDataQualityReview({ importedRows: rows, provenance: {} });
+    const imageryUntouched = untouched.checks.find((check) => check.id === 'imagery');
+    expect(imageryUntouched.status).toBe('pass');
+    expect(imageryUntouched.message).toContain('No imagery has been analysed');
+
+    // Once imagery is part of the investigation, the check grades it again.
+    const used = tool.testing.buildDataQualityReview({
+      importedRows: rows, provenance: {},
+      remoteSummary: tool.testing.summarizeRemoteChange(tool.testing.remoteScene, 'ndvi', 30)
+    });
+    const imageryUsed = used.checks.find((check) => check.id === 'imagery');
+    expect(imageryUsed.status).toBe('warning');
+    expect(imageryUsed.message).toContain('cloud-masked');
+
+    // The readiness score improves because a warning that was never theirs is gone.
+    expect(untouched.score).toBeGreaterThan(used.score);
+
+    // On screen: a project with no imagery work says so.
+    const pack = tool.testing.serializeGISRegionPack(samplePack());
+    const html = renderTool('gisStudio', { gisTab: 'quality', gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id });
+    expect(html).toContain('No imagery has been analysed in this project.');
+    expect(html).not.toContain('illustrative pixels are cloud-masked');
+
+    // And a project that did the imagery work still gets graded on it.
+    const analysed = renderTool('gisStudio', {
+      gisTab: 'quality', gisBasemap: 'none', gisCustomRegionPacks: [pack], gisRegionPack: pack.id,
+      gisRemoteSensingCompleted: true
+    });
+    expect(analysed).toContain('cloud-masked');
+  });
+
   it('falls back to the Maine sample when a saved pack id no longer exists', () => {
     loadTool(TOOL, 'gisStudio');
     const html = renderTool('gisStudio', { gisRegionPack: 'custom-vanished' });
