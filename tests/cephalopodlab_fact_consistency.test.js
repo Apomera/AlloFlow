@@ -251,4 +251,11 @@ describe('Cephalopod Lab shows labels, not data keys', () => {
     expect(humanise('sameOrDifferent')).toBe('Same or different');
     expect(camel.every((k) => !/[a-z][A-Z]/.test(humanise(k)))).toBe(true);
   });
+
+  it('applies the same treatment to the sample-data tables, and keeps abbreviations', () => {
+    // these tables printed the raw key with no transform at all
+    expect(src).toMatch(/borderBottom: '2px solid rgba\(167,139,250,0\.4\)' \} \}, clHumaniseKey\(k\)\);/);
+    // "sd" is an abbreviation, not a word: humanising it to "Sd" reads worse
+    expect(src).toMatch(/var CL_KEY_ABBREV = \{ sd: 'SD'/);
+  });
 });

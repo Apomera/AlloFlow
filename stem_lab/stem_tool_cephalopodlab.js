@@ -413,8 +413,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
   // Comparative tables build their column headings from row keys. Capitalising
   // only the first letter left camelCase intact, so readers saw
   // "SameOrDifferent" where the column means "Same or different".
+  // Keys that are abbreviations, not words: humanising "sd" to "Sd" would read
+  // worse than leaving it alone.
+  var CL_KEY_ABBREV = { sd: 'SD', ngss: 'NGSS', iucn: 'IUCN', mya: 'MYA', id: 'ID', dna: 'DNA' };
   function clHumaniseKey(key) {
-    return String(key || '')
+    var raw = String(key || '');
+    if (CL_KEY_ABBREV[raw]) return CL_KEY_ABBREV[raw];
+    return raw
       .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
       .replace(/[_-]+/g, ' ')
       .toLowerCase()
@@ -21623,7 +21628,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
                   h('thead', null,
                     h('tr', { style: { background: 'rgba(167,139,250,0.18)' } },
                       Object.keys(ds.data[0]).map(function(k, i) {
-                        return h('th', { key: i, scope: 'col', style: { padding: '6px 10px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, k);
+                        return h('th', { key: i, scope: 'col', style: { padding: '6px 10px', textAlign: 'left', fontWeight: 800, color: '#c7d2fe', borderBottom: '2px solid rgba(167,139,250,0.4)' } }, clHumaniseKey(k));
                       })
                     )
                   ),
