@@ -9617,6 +9617,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     return !!(state.reading && state.reading.valid && state.reading.key === arShopReadingKey(state));
   }
 
+  // Describe the equipment without operating it or changing the learner's work.
+  function arShopInstrumentGuide(raw) {
+    var state = arShopState(raw), kind = arShopInstrumentKind(state), task = arShopJob(state.job).tasks[state.step];
+    if (!kind || !task) return null;
+    var setup = state.instrument, reading = state.reading && state.reading.key === arShopReadingKey(state) ? state.reading : null;
+    var result = { kind: kind, status: 'setup', action: null, lug: null, panel: false,
+      title: { meter: 'DC voltmeter', gauge: 'Pad thickness gauge', jug: 'Measured oil jug', alignment: 'Alignment console', torque: 'Wheel reassembly' }[kind],
+      capture: reading ? String(reading.value) + ' ' + reading.unit : 'No current capture', captured: !!(reading && reading.valid), summary: '', detail: '' };
+    function hint(status, detail, action) { result.status = status; result.detail = detail; result.action = action || null; return result; }
+    if (kind === 'meter') result.summary = (setup.mode === 'dcv' ? 'DC volts' : 'Resistance') + ' · ' + (setup.contact === 'joint' ? 'Positive joint' : 'Battery posts') + ' · ' + (setup.load === 'starter' ? 'Starter load on' : 'Starter load off');
+    if (kind === 'gauge') result.summary = setup.surface === 'lining' ? 'Measuring friction lining' : 'Measuring steel backing plate';
+    if (kind === 'jug') result.summary = setup.jugMl + ' mL in jug · 5000 mL capacity';
+    if (kind === 'alignment') {
+      var toe = arShopAlignment(state);
+      if (task.id === 'alignment-setup') result.capture = '';
+      result.summary = 'Left ' + toe.left.toFixed(2) + '° · Right ' + toe.right.toFixed(2) + '° · Total ' + toe.total.toFixed(2) + '°';
+    }
+    if (kind === 'torque') { result.summary = (state.wheelSeated ? 'Wheel seated' : 'Wheel on rack') + ' · ' + state.lugs.length + '/5 fasteners checked'; result.capture = ''; }
+    if (state.station !== task.station || state.tool !== task.tool || Object.keys(task.requires).some(function (key) { return state[key] !== task.requires[key]; }))
+      return hint('blocked', 'Use the task guide to prepare the vehicle, choose equipment and reach the task station.');
+    if (kind === 'meter') {
+      if (setup.mode !== 'dcv') return hint('setup', 'Select DC volts on the meter dial for this powered-circuit test.', 'meter-mode');
+      if (setup.contact !== 'joint') return hint('setup', 'Post-to-post voltage measures the battery. Move the probes across the positive post-to-clamp joint to test that connection.', 'meter-contact');
+      if (setup.load !== 'starter') return hint('setup', 'Apply the simulated starter load. An unloaded connection reading cannot establish how it carries starter current.', 'meter-load');
+    }
+    if (kind === 'gauge' && setup.surface !== 'lining') return hint('setup', 'The gauge is on the steel backing plate. Move it onto the friction lining before comparing wear with the service sheet.', 'gauge-surface');
+    if (kind === 'jug' && setup.jugMl !== 4600) return hint('adjust', 'Match the service sheet’s 4600 mL before capturing the fill. The controls change the jug; they do not transfer oil into the engine.', setup.jugMl > 4600 ? 'jug-remove' : 4600 - setup.jugMl >= 500 ? 'jug-add' : 'jug-fine');
+    if (kind === 'alignment') {
+      if (!toe.prepared) {
+        if (task.id !== 'alignment-setup') return hint('blocked', 'The saved alignment preparation is incomplete. Review the work order requirements.');
+        var missing = ['tyres', 'targets', 'centered'].filter(function (key) { return !state.alignment[key]; })[0];
+        return hint('setup', { tyres: 'Record the tyre and steering-joint inspection.', targets: 'Prepare the plates and fit the alignment targets.', centered: 'Centre and secure the simulated steering wheel.' }[missing], 'check-' + missing);
+      }
+      if (task.id === 'alignment-setup') return hint('complete', 'All three preparation checks are recorded. You can complete bay setup.');
+      if (task.id !== 'measure' && !toe.inSpec) {
+        result.panel = true;
+        if (task.id === 'verify') return hint('blocked', 'The verification angles are outside the training ranges. Review the work order; this verification step only measures the secured result.');
+        return hint('adjust', 'Compare each wheel, total toe and left/right balance with the training ranges. Select a tie rod and adjust the angles before measuring again.');
+      }
+    }
+    if (kind === 'torque') {
+      if (!state.wheelSeated) return hint('setup', 'Seat the wheel and start its fasteners before the cross-hub check.', 'seat');
+      if (!arShopEvidenceReady(state)) {
+        result.lug = TIRE_LUG_PATTERN[state.lugs.length];
+        return hint('setup', 'Continue the training cross-hub sequence: check fastener ' + (result.lug + 1) + ' next.');
+      }
+      return hint('complete', 'All five fasteners are checked in the training sequence. Complete reassembly to record the work.');
+    }
+    return reading && reading.valid ? hint('captured', 'Current evidence captured. Complete the remaining task checks before advancing.') :
+      hint('capture', 'The equipment is set up. Capture a fresh reading to record this task’s evidence.', 'read');
+  }
+
   // One set of checks drives both the live guide and task completion.
   function arShopReadiness(raw) {
     var state = arShopState(raw), job = arShopJob(state.job), task = job.tasks[state.step], checks = [];
@@ -9691,6 +9743,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     if (kind === 'gauge') operate('gauge-surface', state.instrument.surface === 'lining' ? 'Move gauge to backing plate' : 'Move gauge to friction lining', { type: 'configure', field: 'surface', value: state.instrument.surface === 'lining' ? 'backing' : 'lining' });
     if (kind === 'jug') {
       operate('jug-add', 'Add 500 mL to jug', { type: 'quantity', delta: 500 });
+      operate('jug-fine', 'Add 100 mL to jug', { type: 'quantity', delta: 100 });
       operate('jug-remove', 'Remove 100 mL from jug', { type: 'quantity', delta: -100 });
     }
     if (kind === 'torque' && !state.wheelSeated) operate('seat', 'Seat wheel and start fasteners', { type: 'seat-wheel' });
@@ -10210,6 +10263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       if (instrumentReady && instrumentKind === 'jug') {
         bindControl(engine.getObjectByName('workshop-measuring-jug'), 'read');
         directButton(engine, 'jug-add', '+500', [-2.69, 1.14, 1.18], 0.20);
+        directButton(engine, 'jug-fine', '+100', [-2.40, 0.93, 1.18], 0.20);
         directButton(engine, 'jug-remove', '−100', [-2.10, 1.14, 1.18], 0.20);
       }
       if (instrumentKind === 'alignment' && alignmentConsole) {
@@ -20110,8 +20164,26 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', null, part.label), h('p', { style: { margin: '6px 0' } }, part.detail),
               part.id === 'pad' && h('p', null, 'Model lining: ' + (shop.serviced ? '8' : '2') + ' mm. This job’s replacement limit: 3 mm. Lining depth is shown at 6× for visibility.')));
         }
+        function instrumentGuideSelector(coach) {
+          if (coach.lug !== null) return '[data-ar-shop-lug="' + coach.lug + '"]';
+          if (coach.panel) return '[data-ar-alignment-panel]';
+          return coach.action ? '[data-ar-scene-action="' + coach.action + '"]' : '#ar-shop-work-order';
+        }
+        function instrumentCoachPanel() {
+          var coach = arShopInstrumentGuide(shop);
+          if (!coach) return null;
+          return h('section', { 'data-ar-instrument-coach': coach.kind, 'data-ar-coach-status': coach.status, 'aria-label': 'Instrument status',
+            style: { margin: '10px 0', padding: 12, border: '1px solid #64748b', borderRadius: 8, background: '#1e3346' } },
+            h('strong', { style: { fontSize: 14 } }, coach.title),
+            h('p', { 'data-ar-coach-setup': true, style: { fontSize: 12, margin: '8px 0', lineHeight: 1.5 } }, coach.summary),
+            coach.capture && h('div', { 'data-ar-coach-capture': coach.captured ? 'valid' : 'pending', style: { borderRadius: 6, padding: 8, background: '#0b1928', color: '#a5f3fc' } },
+              h('span', { style: { fontSize: 11, display: 'block' } }, coach.capture === 'No current capture' ? 'Evidence' : coach.captured ? 'Valid capture' : 'Capture needs correction'),
+              h('strong', { style: { fontFamily: 'ui-monospace, monospace', fontSize: 20 } }, coach.capture)),
+            h('p', { 'data-ar-coach-detail': true, style: { fontSize: 12, marginBottom: 0, lineHeight: 1.5 } }, coach.detail));
+        }
         function taskGuidePanel() {
-          var readiness = arShopReadiness(shop), next = readiness.next;
+          var readiness = arShopReadiness(shop), next = readiness.next, coach = arShopInstrumentGuide(shop);
+          var instruction = next && next.id === 'evidence' && coach ? coach.detail : next ? next.message : readiness.message;
           var target = next ? next.id : readiness.complete ? 'complete' : 'ready';
           var labels = { 'lift-stop': 'Show lift reset controls', prerequisites: 'Review task requirements', tool: 'Show tool choices',
             station: 'Go to task station', evidence: 'Show equipment controls', calculation: 'Enter calculation', handoff: 'Write customer handoff',
@@ -20124,24 +20196,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             else if (target === 'prerequisites' || target === 'complete') selector = '#ar-shop-work-order';
             else {
               focusServiceControls();
-              if (target === 'evidence' && instrumentKind === 'torque' && shop.wheelSeated) selector = '[data-ar-shop-lug="' + TIRE_LUG_PATTERN[shop.lugs.length] + '"]';
-              else if (target === 'evidence') selector = '[data-ar-scene-action="' +
-                (instrumentKind === 'torque' ? 'seat' : instrumentKind === 'alignment' && task.id === 'alignment-setup' ?
-                  'check-' + ['tyres', 'targets', 'centered'].filter(function (key) { return !shop.alignment[key]; })[0] : 'read') + '"]';
+              if (target === 'evidence' && coach) selector = instrumentGuideSelector(coach);
               else selector = '[data-ar-scene-action="task"]';
             }
             requestAnimationFrame(function () {
               var element = document.querySelector('[data-ar-workshop] ' + selector);
               if (element) { element.focus({ preventScroll: true }); element.scrollIntoView({ block: 'center', behavior: 'auto' }); }
             });
-            arAnnounce(next ? next.message : readiness.message);
+            arAnnounce(instruction);
           }
           var passed = readiness.checks.filter(function (item) { return item.ready; }).length;
           return h('section', { 'data-ar-task-guide': target, 'aria-label': 'Live task guide',
             style: { padding: 12, margin: '10px 0', border: '1px solid #67e8f9', borderRadius: 8, background: '#172f43' } },
             h('strong', { style: { display: 'block', fontSize: 14 } }, readiness.complete ? 'Work order complete' : 'Task ' + (shop.step + 1) + '/' + job.tasks.length + ' · ' + task.label),
             h('p', { 'data-ar-task-guide-status': true, role: 'status', 'aria-atomic': 'true', style: { fontSize: 12, margin: '8px 0', color: '#a5f3fc' } },
-              readiness.complete ? 'Service and verification recorded.' : readiness.ready ? 'All checks ready. Perform the task when you are ready.' : next.message),
+              readiness.complete ? 'Service and verification recorded.' : readiness.ready ? 'All checks ready. Perform the task when you are ready.' : instruction),
             control(labels[target], guide, { 'data-ar-task-guide-go': target }),
             !readiness.complete && h('details', { style: { fontSize: 12, marginTop: 8 } },
               h('summary', { style: { cursor: 'pointer', padding: '8px 0' } }, passed + '/' + readiness.checks.length + ' task checks ready'),
@@ -20155,6 +20224,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('section', { 'data-ar-scene-controls': true, 'aria-label': 'Direct workshop controls', style: { marginTop: 12, padding: 12, border: '1px solid #475569', borderRadius: 10, background: '#102033', color: '#e2e8f0' } },
             h('h3', { style: { margin: '0 0 8px', fontSize: 15 } }, 'Work directly in the 3D shop'),
             taskGuidePanel(),
+            instrumentCoachPanel(),
             h('p', { style: { fontSize: 12, margin: '6px 0' } }, 'Click the hood, tool cases, instrument displays or blue controls. NEXT performs the current task. Dragging still orbits. These buttons provide the same actions with a keyboard.'),
             h('div', { className: 'ar-shop-actions' },
               control('Focus service controls', focusServiceControls, { 'data-ar-scene-focus': true }),
@@ -20195,7 +20265,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
               h('strong', { style: { display: 'block', fontFamily: 'ui-monospace, monospace', fontSize: 24, color: pass ? T.good : T.accentHi } }, signed(value)),
               h('span', { style: { fontSize: 11 } }, pass ? 'In training range' : 'Adjustment needed'));
           }
-          return h('div', { 'data-ar-alignment-panel': true },
+          return h('div', { 'data-ar-alignment-panel': true, tabIndex: -1, 'aria-label': 'Alignment setup and adjustment controls' },
             h('p', null, 'Positive = toe-in. Negative = toe-out. Total toe is the sum of left and right. Wheel angles and guide lines are shown at 24× for visibility; all readouts show actual model angles.'),
             setup ? h('div', null, [['tyres', 'Inspect tyres and steering joints', 'The authored inspection passes tyre pressures, wear, joint play, rear thrust, camber and caster.'],
               ['targets', 'Prepare plates and fit alignment targets', 'The simulated bay is level, tyres carry the vehicle weight, slip/turn plates are free and targets are compensated.'],

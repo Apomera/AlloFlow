@@ -695,7 +695,7 @@ test('live task guide navigates tools, evidence and calculation without performi
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
   await go.focus(); await page.keyboard.press('Enter');
-  await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await expect(page.locator('[data-ar-scene-action="gauge-surface"]')).toBeFocused();
   await guide.screenshot({ path: 'reports/automobile-workshop/task-guide-mobile.png' });
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
@@ -731,5 +731,64 @@ test('live task guide supports lift recovery, alignment, wheel seating and custo
   await page.keyboard.press('Enter');
   await expect(guide).toHaveAttribute('data-ar-task-guide', 'complete');
   await go.click(); await expect(page.locator('#ar-shop-work-order')).toBeFocused();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+
+test('instrument coach identifies meter setup and routes keyboard focus without changing it', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'electrical', step: 2, station: 'engine', tool: 'meter', hood: true,
+    instrument: { mode: 'resistance', contact: 'posts', load: 'off' } } } });
+  const coach = page.locator('[data-ar-instrument-coach="meter"]'), go = page.locator('[data-ar-task-guide-go]');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'setup');
+  await expect(page.locator('[data-ar-task-guide-status]')).toContainText('Select DC volts');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-mode"]')).toBeFocused();
+  await expect(page.locator('#ar-shop-instrument-mode')).toHaveValue('resistance');
+  await page.keyboard.press('Enter');
+  await expect(coach).toContainText('Move the probes');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-contact"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toContainText('Apply the simulated starter load');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="meter-load"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'capture');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="read"]')).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(coach).toHaveAttribute('data-ar-coach-status', 'captured');
+  await expect(coach.locator('[data-ar-coach-capture="valid"]')).toContainText('1.6 V');
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toHaveCount(1);
+  await expect(page.locator('#ar-shop-scene-answer')).toHaveValue('');
+  await coach.screenshot({ path: 'reports/automobile-workshop/instrument-coach-meter.png' });
+  await page.locator('[data-ar-scene-action="meter-load"]').click();
+  await expect(coach).toContainText('No current capture');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await coach.screenshot({ path: 'reports/automobile-workshop/instrument-coach-mobile.png' });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});
+
+test('physical fine-fill control changes the jug by 100 mL and coaching routes alignment adjustment', async ({ page }) => {
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'oil', step: 9, station: 'engine', tool: 'funnel', serviced: true, plugSecured: true,
+    instrument: { jugMl: 4500 } } } });
+  const go = page.locator('[data-ar-task-guide-go]');
+  await go.click(); await expect(page.locator('[data-ar-scene-action="jug-fine"]')).toBeFocused();
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4500');
+  await page.locator('[data-ar-scene-focus]').click();
+  await clickShop(page, 'workshop-control-jug-fine');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4600');
+  await expect(page.locator('[data-ar-instrument-coach="jug"]')).toHaveAttribute('data-ar-coach-status', 'capture');
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'jug-clear-container');
+  await expect(page.locator('[data-ar-coach-capture="valid"]')).toContainText('4.6 L');
+  await page.locator('[data-ar-scene-focus]').click();
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/jug-fine-control.png' });
+  await page.locator('[data-ar-scene-focus]').click(); await clickShop(page, 'workshop-control-jug-fine');
+  await expect(page.locator('[data-ar-shop-jug-quantity]')).toHaveAttribute('data-ar-shop-jug-quantity', '4700');
+  await expect(page.locator('[data-ar-instrument-coach="jug"]')).toContainText('No current capture');
+  await expect(page.locator('[data-ar-shop-task="refill"]')).toHaveCount(1);
+  await page.evaluate(() => (window as any).__ctx.update('autoRepair', 'shop', { job: 'alignment', step: 3, station: 'brakes', tool: 'tie-rod', measured: true, alignmentReady: true,
+    alignment: { left: 30, right: 10, selected: 'left', tyres: true, targets: true, centered: true } }));
+  await expect(page.locator('[data-ar-instrument-coach="alignment"]')).toHaveAttribute('data-ar-coach-status', 'adjust');
+  await go.click(); await expect(page.locator('[data-ar-alignment-panel]')).toBeFocused();
+  await expect(page.locator('[data-ar-alignment-total]')).toHaveAttribute('data-ar-alignment-total', '0.4');
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });

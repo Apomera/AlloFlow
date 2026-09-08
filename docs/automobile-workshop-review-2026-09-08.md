@@ -171,6 +171,22 @@ Validation: **527 tests across all 39 automobile suites passed**, including 80 w
 - [Ready task checklist](../reports/automobile-workshop/task-guide-ready.png)
 - [Mobile task guide](../reports/automobile-workshop/task-guide-mobile.png)
 
+## Instrument coaching and fine oil measurement
+
+The direct workshop controls now show an instrument status card with current setup, capture status and a specific next step. Meter coaching distinguishes DC-voltage mode, battery-post versus positive-joint placement, and simulated starter load. Gauge coaching explains backing-plate versus friction-lining placement. The task guide focuses the relevant setting control instead of repeatedly directing the learner to capture an invalid reading.
+
+The oil jug has an additional physical +100 mL button, shared with its keyboard control. Coaching chooses coarse fill, fine fill or removal based on the current amount. These controls only change the measured jug: transfer remains a separate task with the existing service, evidence and arithmetic gates. Capacity and access checks remain enforced.
+
+Alignment coaching distinguishes preparation, adjustment and fresh measurement. It focuses the adjustment panel when angles require correction; out-of-range verification explains the measurement-only step. Wheel coaching follows seating and the authored cross-hub sequence. Instrument suggestions are withheld when station, tool or vehicle access prerequisites are missing.
+
+Captured values appear alongside setup. Invalid captures are identified as needing correction; changed setup removes the current capture, while camera movement and brake exploration preserve valid evidence. Coaching is derived from existing state and does not operate equipment, advance work, or populate the learner’s answer.
+
+Validation: **539 tests across all 39 automobile suites passed**, including 92 workshop tests. **Six targeted WebGL browser tests passed**: existing direct meter/hood/tool actions, direct jug/alignment controls, both task-guide flows, meter coaching and physical fine-fill/alignment coaching. The browser run took 1.5 minutes; full automobile regression took 156.13 seconds. Physical +100 mL picking, keyboard focus without automatic operation, invalidation of changed captures, alignment-panel focus and phone overflow checks passed. Meter/phone status cards and the physical jug control were visually reviewed. Source/public parity, syntax and scoped diff checks passed. Temporary browser recording overrides were removed. No deployment or installer build was performed.
+
+- [Meter setup and evidence card](../reports/automobile-workshop/instrument-coach-meter.png)
+- [Phone instrument feedback](../reports/automobile-workshop/instrument-coach-mobile.png)
+- [Physical 100 mL jug control](../reports/automobile-workshop/jug-fine-control.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

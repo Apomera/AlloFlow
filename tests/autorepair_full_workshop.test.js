@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose, readiness: arShopReadiness, coach: arShopInstrumentGuide };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -558,5 +558,82 @@ describe('Task guide fallback presentation', () => {
     expect(host.querySelector('[data-ar-task-guide-go]').textContent).toBe('Show tool choices');
     expect(host.querySelector('[data-ar-task-check="tool"]').getAttribute('data-ar-check-ready')).toBe('false');
     expect(host.querySelector('[data-ar-task-guide-status]').getAttribute('role')).toBe('status');
+  });
+});
+
+
+describe('Workshop instrument coaching', () => {
+  function at(job, task) {
+    const definition = model.jobs.find(j => j.id === job); let state = model.initial(job);
+    while (definition.tasks[state.step].id !== task) state = step(state);
+    return model.normalize({ ...state, station: definition.tasks[state.step].station, tool: definition.tasks[state.step].tool });
+  }
+  it('identifies meter setup in order without operating the instrument', () => {
+    let state = at('electrical', 'measure');
+    state = model.operate(state, { type: 'configure', field: 'mode', value: 'resistance' });
+    const before = JSON.stringify(state);
+    expect(model.coach(state)).toMatchObject({ status: 'setup', action: 'meter-mode', capture: 'No current capture' });
+    expect(JSON.stringify(state)).toBe(before);
+    for (const [field, value, action] of [['mode', 'dcv', 'meter-contact'], ['contact', 'joint', 'meter-load'], ['load', 'starter', 'read']]) {
+      state = model.operate(state, { type: 'configure', field, value }); expect(model.coach(state).action).toBe(action);
+    }
+    state = model.operate(state, { type: 'read' });
+    expect(model.coach(state)).toMatchObject({ status: 'captured', capture: '1.6 V', captured: true, action: null });
+    expect(state.step).toBe(2); expect(state.measured).toBe(false);
+  });
+  it('explains an invalid captured value and clears the displayed capture when setup changes', () => {
+    let state = at('electrical', 'measure'); state = model.operate(state, { type: 'read' });
+    expect(model.coach(state)).toMatchObject({ capture: '12.6 V', captured: false, action: 'meter-contact' });
+    state = model.operate(state, { type: 'configure', field: 'contact', value: 'joint' });
+    expect(model.coach(state)).toMatchObject({ capture: 'No current capture', action: 'meter-load' });
+  });
+  it('directs the learner from backing plate to lining and preserves captures during exploration', () => {
+    let state = at('brakes', 'measure');
+    state = model.operate(state, { type: 'configure', field: 'surface', value: 'backing' });
+    state = model.operate(state, { type: 'read' });
+    expect(model.coach(state)).toMatchObject({ action: 'gauge-surface', captured: false, capture: '5 mm' });
+    state = model.operate(state, { type: 'configure', field: 'surface', value: 'lining' });
+    state = model.operate(state, { type: 'read' });
+    expect(model.coach(model.explore(state, { type: 'spacing', value: 100 }))).toMatchObject({ captured: true, capture: '2 mm' });
+  });
+  it.each([[4100, 'jug-add'], [4200, 'jug-fine'], [4500, 'jug-fine'], [4600, 'read'], [4700, 'jug-remove']])('chooses a usable jug control at %i mL', (jugMl, action) => {
+    const state = at('oil', 'refill'); state.instrument.jugMl = jugMl;
+    expect(model.coach(state).action).toBe(action); expect(state.instrument.jugMl).toBe(jugMl);
+  });
+  it('fine-fill changes exactly 100 mL, invalidates capture and respects capacity/access gates', () => {
+    let state = at('oil', 'refill'); state.instrument.jugMl = 4500;
+    const use = s => model.direct(s, model.token(s, 'jug-fine'));
+    state = use(state); expect(state.instrument.jugMl).toBe(4600);
+    state = model.operate(state, { type: 'read' }); expect(model.coach(state).captured).toBe(true);
+    state = use(state); expect(state.instrument.jugMl).toBe(4700); expect(state.reading).toBeNull();
+    expect(state.refilled).toBe(false); expect(state.step).toBe(9);
+    expect(use({ ...state, instrument: { ...state.instrument, jugMl: 5000 } }).instrument.jugMl).toBe(5000);
+    expect(use({ ...state, tool: 'lamp' }).instrument.jugMl).toBe(4700);
+    expect(use({ ...state, plugSecured: false }).instrument.jugMl).toBe(4700);
+  });
+  it('distinguishes alignment preparation, adjustment, capture and blocked verification', () => {
+    let setup = at('alignment', 'alignment-setup');
+    expect(model.coach(setup)).toMatchObject({ action: 'check-tyres', capture: '' });
+    for (const check of ['tyres', 'targets', 'centered']) setup = model.operate(setup, { type: 'alignment-check', check });
+    expect(model.coach(setup)).toMatchObject({ status: 'complete', action: null });
+    const service = at('alignment', 'service');
+    expect(model.coach(service)).toMatchObject({ status: 'adjust', panel: true, action: null });
+    const verify = at('alignment', 'verify'); verify.alignment.left = 30;
+    expect(model.coach(verify)).toMatchObject({ status: 'blocked', panel: true, action: null });
+  });
+  it('guides each fastener in the authored sequence and requires the learner to operate it', () => {
+    let state = at('brakes', 'refit'); expect(model.coach(state).action).toBe('seat');
+    state = model.operate(state, { type: 'seat-wheel' });
+    for (const index of [0, 2, 4, 1, 3]) {
+      expect(model.coach(state).lug).toBe(index);
+      state = model.operate(state, { type: 'lug', index });
+    }
+    expect(model.coach(state)).toMatchObject({ status: 'complete', action: null, lug: null });
+    expect(state.wheelRemoved).toBe(true);
+  });
+  it('withholds suggested equipment actions until station, tool and access are ready', () => {
+    const state = at('electrical', 'measure');
+    for (const patch of [{ station: 'tools' }, { tool: 'lamp' }, { hood: false }]) expect(model.coach({ ...state, ...patch })).toMatchObject({ status: 'blocked', action: null });
+    expect(model.coach(model.initial('brakes'))).toBeNull();
   });
 });
