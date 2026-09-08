@@ -942,3 +942,11 @@ Validation: 19 existing setup, active-turn, live-vote and HUD contracts passed; 
   - **~450px of dead card** below the controls, because the stage was a fixed height while the side panel is always taller. Stage now grows to fill the column, with a `ResizeObserver` on its host so the canvas re-measures when the flex box settles instead of guessing at a timeout.
 - 54 tests; axe 0/0 across three themes; canvas verifiably painted in each; clean at 320px. Not deployed.
 - ★Housekeeping: `writeFileSync` into `stem_lab/` failed with `UNKNOWN` (OneDrive lock) **three times** this session, and `cp` to the mirror once. Each time the file was intact — verify with size + `node --check`, then use the editor tool, which has not failed. See [[feedback_truncating_write_empty_file]].
+
+### 2026-09-07 — Zoom Gallery visual pass (Claude Code) @0b6400a88
+- Same discipline as the Scale Explorer pass: screenshot every state and theme, then critique the pictures rather than the code. Four defects, all layout rather than behaviour:
+  - ★**A stretched side panel is a bordered void.** The coach `<aside>` stretched to match the stage (`alignItems: stretch` on the row), so on the PICKER — where the coach has one sentence — it was ~1,400px of empty bordered column. `alignSelf: 'flex-start'` fixes it. The `margin: 'auto 0 0'` pinning the hint to the bottom was what held the void open. **Same defect existed in Scale Explorer (~450px) and was fixed there by growing the stage instead; either shape works, but decide which side owns the height.**
+  - Picker cards are now flex columns with the badge on `marginTop: auto`, so badges line up across cards whose captions differ in length.
+  - The zoom trio (one glyph each) sat beside a worded button and read as three specks; given an explicit `minWidth/minHeight`.
+  - ★**The credit line and the OSD navigator inset share the bottom-right corner**, so the credit ran underneath the inset. Credit now stops short when the navigator is on (`right: navOn ? 218 : 8`) and reclaims the width on a phone where the navigator is off. Needed a `navOn` state because the navigator decision is made inside the OSD init from `clientWidth`, not at render.
+- 87 tests across both tools; axe 0/0 in three themes; no horizontal scroll at 320/375/768. Behaviour unchanged. Not deployed.
