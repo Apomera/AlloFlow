@@ -205,3 +205,24 @@ describe('Cephalopod Lab entry headings never use a raw data colour', () => {
     });
   });
 });
+
+describe('Cephalopod Lab lesson plans can actually be run', () => {
+  // The pressure-and-depth lesson asks students to "record: max depth they
+  // descended". The sim tracked verticalY frame to frame but never kept the
+  // deepest point, so that number could not be read off the end-of-dive
+  // summary and the lesson step was not runnable as written.
+  it('tracks the deepest point of a dive and reports it at the end', () => {
+    expect(src).toMatch(/deepestY: 0\.55/);
+    expect(src).toMatch(/if \(gameState\.verticalY < gameState\.runStats\.deepestY\) gameState\.runStats\.deepestY = gameState\.verticalY;/);
+    expect(src).toMatch(/statCard\('Deepest', Math\.abs\(rs\.deepestY\)/);
+  });
+
+  it('reports the other quantities its lesson plans ask students to record', () => {
+    // prey caught by type, time survived and predator damage are all asked for
+    // by the camouflage and food-web lessons
+    ["statCard('Crabs'", "statCard('Fish'", "statCard('Clams'", "statCard('Bites taken'"].forEach((frag) => {
+      expect(src).toContain(frag);
+    });
+    expect(src).toMatch(/elapsedSec \+ 's survived/);
+  });
+});

@@ -13295,6 +13295,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
               statCard('Max camo', maxCamoPct + '%', '#22d3ee') +
               statCard('Longest still', maxStillSec + 's', '#22d3ee') +
               statCard('Longest squeeze', maxSqueezeSec + 's', '#fbbf24') +
+              statCard('Deepest', Math.abs(rs.deepestY).toFixed(1) + 'm · ' + DEPTH_ZONES[depthZoneFor(rs.deepestY)].name, '#38bdf8') +
               statCard('Dens used', rs.densVisited, '#22c55e') +
               statCard('Ink uses', rs.inkUsed, '#a78bfa') +
               statCard('Bites taken', rs.bites, '#fca5a5') +
@@ -13401,6 +13402,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             mimicTimeMs: 0,
             maxCamoEff: 0,
             maxStationaryMs: 0,
+            deepestY: 0.55,          // starting altitude; only ever lowered
             longestSqueezeMs: 0,
             currentSqueezeStart: 0,
             // Per-run a11y telemetry — what palette/captions actually shipped
@@ -13465,6 +13467,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('cephalopodLab'
             gameState.verticalY = (gameState.verticalY || 0.55) + vertInput * vertSpeed * dt;
             // Soft clamp by depth limits
             gameState.verticalY = Math.max(-45, Math.min(18, gameState.verticalY));
+            // Deepest point of the run. The pressure-and-depth lesson plan asks
+            // students to record how deep they went, and nothing tracked it.
+            if (gameState.verticalY < gameState.runStats.deepestY) gameState.runStats.deepestY = gameState.verticalY;
             octopus.position.y = gameState.verticalY + (isJetting ? 0.15 : 0) + Math.sin(now * 0.004) * 0.05;
             octopus.rotation.y = gameState.facingAngle;
 
