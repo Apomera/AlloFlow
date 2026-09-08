@@ -143,6 +143,21 @@ Validation: **513 tests across all 39 automobile suites passed**, including 66 w
 - [Separated brake components](../reports/automobile-workshop/brake-explorer-3d.png)
 - [Mobile brake explorer](../reports/automobile-workshop/brake-explorer-mobile.png)
 
+## Follow-up: detailed brake inspection and close-ups
+
+The exposed front brake rotor now shows separate friction faces, ventilation vanes, a raised hub and five studs. Detailed geometry is built only for that accessible inspection corner; hidden wheels and other jobs retain the lightweight assembly. The caliper has a visible bridge, guide pins and piston housing instead of a solid block. The representative pad separates its steel backing, retaining ears and friction lining; the displayed lining changes with the authored 2 mm/8 mm service state. Lining depth is visually enlarged sixfold, explicitly explained in the pad description. These shapes remain schematic and do not establish real component dimensions or repair procedures.
+
+Every subcomponent retains its parent interaction. The open caliper has an invisible selection volume inside its housing so clicks through its central window still select the assembly. Exploded-view descriptions, service clicking after JOIN, and the existing alignment transforms continue to use the same named component groups.
+
+The gauge and its placement control now translate with the pad as visual separation changes. Capturing the lining and backing-plate values still uses the existing evidence rules; repositioning invalidates a capture. Returning to the assembled view restores both the pad and equipment positions.
+
+A selected-part close-up control frames the rotor, pad or caliper at its current assembled or separated position. The workshop opts in to a closer zoom limit through the shared viewer's optional minDistance setting; other viewers retain the 2.6 default and the existing orbit convention. Physical control labels are narrower to reduce overlap.
+
+Validation: **516 tests across all 39 automobile suites passed**, including 69 workshop model/render tests. **All 15 workshop WebGL browser tests passed**, plus three existing engine-bay, tyre-workflow and focus/return browser checks for the shared viewer. The final workshop run took 8.2 minutes, the three shared-viewer checks took 19.8 seconds, and the automobile regression took 86.06 seconds. Physical component picking, tracked gauge capture, invalid backing-plate evidence, camera centering/proximity and keyboard/mobile close-up access passed. Rotor and pad close-up screenshots were visually reviewed. Both source/public pairs match; syntax and scoped diff checks passed. The final browser runs disabled video/trace recording using a temporary config that was removed afterward. No deployment or installer build was performed.
+
+- [Pad and gauge close-up](../reports/automobile-workshop/brake-pad-closeup.png)
+- [Rotor and hub close-up](../reports/automobile-workshop/brake-rotor-closeup.png)
+
 ## Scope and remaining opportunities
 
 This is an authored educational simulation. Service actions represent supervised procedures; it does not model wrench forces, hydraulic pressure, component collision, thread engagement, fluid dynamics or every repair operation. The work orders do not supply universal torque/fluid specifications or certify a real vehicle. Exhaust and tool stations currently support exploration rather than separate exhaust-repair or inventory-management jobs.

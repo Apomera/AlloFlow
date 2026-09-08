@@ -4,7 +4,7 @@ import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke
 const file = 'stem_lab/stem_tool_autorepair.js';
 const source = readFileSync(file, 'utf8');
 const lugModel = source.slice(source.indexOf('  var TIRE_LUG_PATTERN ='), source.indexOf('  function buildWheelCornerScene('));
-const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess };')();
+const model = new Function(lugModel + source.slice(source.indexOf('  var SHOP_STATIONS = ['), source.indexOf('  function buildWorkshopScene(')) + '\nreturn { jobs: SHOP_JOBS, initial: arShopInitial, advance: arShopAdvance, normalize: arShopState, operate: arShopOperate, kind: arShopInstrumentKind, ready: arShopEvidenceReady, alignment: arShopAlignment, direct: arShop3DPick, actions: arShop3DActions, token: arShop3DToken, tools: arShop3DTools, explore: arShopBrakeExplore, brakeAccess: arShopBrakeAccess, brakePose: arShopBrakePose };')();
 function step(state, extra = {}) {
   const job = model.jobs.find(j => j.id === state.job), task = job.tasks[state.step];
   let ready = model.normalize({ ...state, station: task.station, tool: task.tool, answer: String(job.answer), ...extra });
@@ -461,5 +461,31 @@ describe('Interactive brake parts explorer', () => {
     expect(host.querySelector('label[for="ar-brake-spacing"]')).not.toBeNull();
     expect(host.querySelector('[data-ar-brake-part="pad"]').textContent).toContain('Model lining: 2 mm');
     for (const part of ['rotor', 'pad', 'caliper']) expect(host.querySelectorAll('[data-ar-scene-action="brake-part-' + part + '"]')).toHaveLength(1);
+  });
+});
+
+
+describe('Brake inspection camera coordinates', () => {
+  const state = () => model.normalize({ job: 'brakes', lift: 'locked', wheelRemoved: true });
+  it('tracks each selected component across assembled, partial and exploded views', () => {
+    for (const spread of [0, 50, 100]) {
+      const base = state(), pose = model.brakePose({ ...base, brakeSpread: spread }, 'pad');
+      expect(pose.x).toBeCloseTo(-1.15 - 0.7 * spread / 100);
+      expect(pose.y).toBeCloseTo(0.44 + 0.2 * spread / 100);
+      expect(pose.z).toBeCloseTo(0.815 + 0.62 * spread / 100);
+    }
+    expect(model.brakePose({ ...state(), brakeSpread: 100 }, 'rotor').z).toBeCloseTo(0.99);
+    expect(model.brakePose({ ...state(), brakeSpread: 100 }, 'caliper').z).toBeCloseTo(1.87);
+  });
+  it('does not point a closed explorer at stale separated coordinates', () => {
+    expect(model.brakePose({ ...state(), wheelSeated: true, brakeSpread: 100 }, 'rotor')).toEqual({ x: -1.3, y: 0.4, z: 0.79 });
+    expect(model.brakePose({ ...state(), brakeSpread: Infinity }, 'unknown')).toEqual({ x: -1.3, y: 0.4, z: 0.79 });
+  });
+  it('exposes the selected-part close-up and explains enlarged lining without WebGL', () => {
+    resetStemLab(); loadTool(file, 'autoRepair');
+    const html = renderTool('autoRepair', { autoRepair: { view: 'workshop', uh3dStatus: 'failed', shop: { ...state(), brakePart: 'pad' } } });
+    const host = document.createElement('div'); host.innerHTML = html;
+    expect(host.querySelector('[data-ar-brake-closeup="pad"]').textContent).toContain('Friction pad');
+    expect(host.querySelector('[data-ar-brake-part="pad"]').textContent).toContain('6×');
   });
 });

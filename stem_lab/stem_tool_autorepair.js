@@ -9459,9 +9459,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   var SHOP_BRAKE_PARTS = [
     { id: 'rotor', label: 'Brake rotor', offset: 0.20, detail: 'The rotor turns with the wheel. The pads press against its faces to slow it. This authored inspection records a passing rotor; appearance alone does not replace thickness and condition checks.' },
     { id: 'pad', label: 'Friction pad', offset: 0.62, detail: 'The friction lining contacts the rotor. Compare its thickness with this work order’s limit using the gauge. One representative pad is shown; a complete brake has pads on both sides of the rotor.' },
-    { id: 'caliper', label: 'Brake caliper', offset: 1.08, detail: 'The caliper applies the pads to the rotor using hydraulic force. The simplified block represents the assembly; this view does not demonstrate piston retraction or hose disconnection.' }
+    { id: 'caliper', label: 'Brake caliper', offset: 1.08, detail: 'The caliper applies the pads to the rotor using hydraulic force. The simplified housing, bridge and guide pins represent the assembly; this view does not demonstrate piston retraction or hose disconnection.' }
   ];
   function arShopBrakeAccess(state) { return state.job === 'brakes' && state.lift === 'locked' && state.wheelRemoved === true && !state.wheelSeated; }
+  function arShopBrakePose(state, id) {
+    var part = SHOP_BRAKE_PARTS.filter(function (item) { return item.id === id; })[0] || SHOP_BRAKE_PARTS[0];
+    var spread = arShopBrakeAccess(state) && Number.isFinite(state.brakeSpread) ? Math.max(0, Math.min(100, state.brakeSpread)) / 100 : 0;
+    return { x: -1.3 + (part.id === 'rotor' ? 0 : part.id === 'pad' ? 0.15 : 0.17) - 0.70 * spread,
+      y: (part.id === 'rotor' ? 0.40 : 0.44) + 0.20 * spread,
+      z: 0.79 + (part.id === 'pad' ? 0.025 : 0) + part.offset * spread };
+  }
   function arShopBrakeExplore(raw, action) {
     var state = arShopState(raw);
     if (!arShopBrakeAccess(state)) return Object.assign({}, state, { feedback: 'Expose the front brake on the locked lift before using the parts explorer.' });
@@ -9895,10 +9902,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
     [-1.3, 1.28].forEach(function (x) {
       [-0.79, 0.79].forEach(function (z) {
         var front = x < 0, removed = front && z > 0 && state.wheelRemoved && !state.wheelSeated;
-        cylinder(brakes, 'brake-rotor-' + x + '-' + z, 0.225, 0.033, [x, 0.40, z], metal, 'z');
-        box(brakes, 'brake-caliper-' + x + '-' + z, [0.14, 0.22, 0.13], [x + 0.17, 0.44, z], red);
-        var pad = box(brakes, 'brake-pad-' + x + '-' + z, [0.11, 0.15, state.serviced && state.job === 'brakes' && front ? 0.048 : 0.012], [x + 0.15, 0.44, z + (z > 0 ? 0.025 : -0.025)], amber);
-        pad.userData.thicknessMm = state.serviced && state.job === 'brakes' && front ? 8 : 2;
+        // Spend detail on the exposed inspection corner, not hidden wheels or other jobs.
+        if (front && z > 0 && arShopBrakeAccess(state)) {
+          var cornerName = x + '-' + z, outside = z > 0 ? 1 : -1;
+          var rotor = new THREE.Group(); rotor.name = 'brake-rotor-' + cornerName; rotor.position.set(x, 0.40, z); brakes.add(rotor);
+          if (front) {
+            [-1, 1].forEach(function (face) { cylinder(rotor, 'rotor-friction-face-' + face, 0.225, 0.008, [0, 0, face * 0.014], metal, 'z'); });
+            for (var vent = 0; vent < 16; vent++) {
+              var ventAngle = vent * Math.PI / 8;
+              var vane = box(rotor, 'rotor-vent-vane-' + vent, [0.12, 0.009, 0.020], [Math.cos(ventAngle) * 0.16, Math.sin(ventAngle) * 0.16, 0], dark);
+              vane.rotation.z = ventAngle;
+            }
+          } else cylinder(rotor, 'rotor-solid-disc', 0.225, 0.033, [0, 0, 0], metal, 'z');
+          cylinder(rotor, 'rotor-hat', 0.087, 0.062, [0, 0, outside * 0.022], dark, 'z');
+          cylinder(rotor, 'rotor-hub-center', 0.035, 0.068, [0, 0, outside * 0.025], metal, 'z');
+          for (var stud = 0; stud < 5; stud++) {
+            var studAngle = Math.PI / 2 + stud * Math.PI * 2 / 5;
+            cylinder(rotor, 'rotor-hub-stud-' + stud, 0.011, 0.025, [Math.cos(studAngle) * 0.062, Math.sin(studAngle) * 0.062, outside * 0.060], metal, 'z');
+          }
+          var caliper = new THREE.Group(); caliper.name = 'brake-caliper-' + cornerName; caliper.position.set(x + 0.17, 0.44, z); brakes.add(caliper);
+          [-1, 1].forEach(function (end) {
+            box(caliper, 'caliper-bridge-' + end, [0.10, 0.045, 0.18], [0, end * 0.095, 0], red);
+            cylinder(caliper, 'caliper-guide-pin-' + end, 0.017, 0.20, [0.05, end * 0.085, 0], metal, 'z');
+          });
+          box(caliper, 'caliper-outer-finger', [0.06, 0.17, 0.035], [0.01, 0, outside * 0.087], red);
+          cylinder(caliper, 'caliper-piston-housing', 0.059, 0.055, [0, 0, -outside * 0.07], red, 'z');
+          cylinder(caliper, 'caliper-piston-face', 0.043, 0.012, [0, 0, -outside * 0.037], metal, 'z');
+          // Keep the open caliper housing easy to select through its central window.
+          box(caliper, 'caliper-pick-volume', [0.14, 0.23, 0.20], [0, 0, 0], new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false, colorWrite: false }));
+          var pad = new THREE.Group(); pad.name = 'brake-pad-' + cornerName; pad.position.set(x + 0.15, 0.44, z + outside * 0.025); brakes.add(pad);
+          pad.userData.thicknessMm = state.serviced && state.job === 'brakes' && front ? 8 : 2;
+          var liningDepth = pad.userData.thicknessMm * 0.006;
+          box(pad, 'pad-steel-backing', [0.125, 0.17, 0.012], [0, 0, outside * 0.006], dark);
+          box(pad, 'pad-friction-lining', [0.105, 0.14, liningDepth], [0, 0, -outside * liningDepth / 2], amber);
+          [-1, 1].forEach(function (ear) { box(pad, 'pad-retaining-ear-' + ear, [0.035, 0.024, 0.012], [0, ear * 0.09, outside * 0.006], metal); });
+        } else {
+          cylinder(brakes, 'brake-rotor-' + x + '-' + z, 0.225, 0.033, [x, 0.40, z], metal, 'z');
+          box(brakes, 'brake-caliper-' + x + '-' + z, [0.14, 0.22, 0.13], [x + 0.17, 0.44, z], red);
+          var pad = box(brakes, 'brake-pad-' + x + '-' + z, [0.11, 0.15, state.serviced && state.job === 'brakes' && front ? 0.048 : 0.012], [x + 0.15, 0.44, z + (z > 0 ? 0.025 : -0.025)], amber);
+          pad.userData.thicknessMm = state.serviced && state.job === 'brakes' && front ? 8 : 2;
+        }
         if (state.job === 'alignment' && front) {
           var cornerSide = z > 0 ? 'left' : 'right', steeringCorner = new THREE.Group();
           steeringCorner.name = 'alignment-steering-corner-' + cornerSide; steeringCorner.position.set(x, 0.40, z); brakes.add(steeringCorner);
@@ -10158,17 +10201,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
       if (state.brakeSpread > 0) {
         directButton(brakes, 'brake-join', 'JOIN', [-1.25, 1.13, 1.18], 0.28);
         var separation = state.brakeSpread / 100;
+        var movingGauge = brakes.getObjectByName('workshop-pad-thickness-gauge');
+        if (movingGauge) movingGauge.position.set(-0.70 * separation, 0.20 * separation, 0.62 * separation);
+        var gaugePlacement = brakes.getObjectByName('workshop-control-gauge-surface');
+        if (gaugePlacement) { gaugePlacement.position.x -= 0.70 * separation; gaugePlacement.position.y += 0.20 * separation; gaugePlacement.position.z += 0.62 * separation; }
         SHOP_BRAKE_PARTS.forEach(function (part) {
           var object = brakes.getObjectByName('brake-' + part.id + '--1.3-0.79');
           if (!object) return;
-          object.position.z += part.offset * separation;
-          object.position.x -= 0.70 * separation;
-          object.position.y += 0.20 * separation;
+          var pose = arShopBrakePose(state, part.id);
+          object.position.set(pose.x, pose.y, pose.z);
           object.userData.explorerPart = part.id; object.userData.separation = state.brakeSpread;
-          object.material = object.material.clone();
-          if (object.material.emissive) object.material.emissive.setHex(part.id === state.brakePart ? 0x286b73 : 0x000000);
+          object.traverse(function (mesh) {
+            if (!mesh.isMesh) return;
+            mesh.material = mesh.material.clone();
+            if (mesh.material.emissive) mesh.material.emissive.setHex(part.id === state.brakePart ? 0x286b73 : 0x000000);
+          });
           bindControl(object, 'brake-part-' + part.id);
-          var marker = instrumentDisplay(brakes, part.id.toUpperCase(), [object.position.x, 0.28, object.position.z], 0.44);
+          var marker = instrumentDisplay(brakes, part.id.toUpperCase(), [object.position.x, 0.28, object.position.z], 0.34);
           if (marker) marker.rotation.y = -0.90;
           bindControl(marker, 'brake-part-' + part.id);
         });
@@ -10200,7 +10249,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
   // Second viewer instance, same lifecycle, different scene. Both are
   // singletons and only one module is mounted at a time, so they never
   // contend for the canvas.
-  var SHOP3D = makeViewer({ parts: SHOP_STATIONS, buildScene: buildWorkshopScene, minPitch: -0.55, minCameraY: 0.12, home: { yaw: -0.65, pitch: 0.54, dist: 8.5, target: { x: 0, y: 1.2, z: -0.2 } } });
+  var SHOP3D = makeViewer({ parts: SHOP_STATIONS, buildScene: buildWorkshopScene, minDistance: 1.0, minPitch: -0.55, minCameraY: 0.12, home: { yaw: -0.65, pitch: 0.54, dist: 8.5, target: { x: 0, y: 1.2, z: -0.2 } } });
 
   var TIRE3D = makeViewer({
     parts: TIRE_PARTS,
@@ -20018,7 +20067,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
           return h('section', { 'data-ar-brake-explorer': true, 'aria-label': 'Brake parts explorer', style: { marginTop: 12, padding: 12, border: '1px solid #67e8f9', borderRadius: 8 } },
             h('h4', { style: { margin: '0 0 6px', fontSize: 15 } }, 'Brake parts explorer'),
             h('p', { style: { fontSize: 12 } }, 'Spread the exposed rotor, pad and caliper to see their relationship. Spacing is a visual aid, not a disassembly procedure. The gauge and work order still determine service evidence.'),
-            control('Focus brake explorer', focus, { 'data-ar-brake-focus': true }),
+            h('div', { className: 'ar-shop-actions' }, control('Focus brake explorer', focus, { 'data-ar-brake-focus': true }),
+              control('Close up: ' + part.label, function () {
+                var pose = arShopBrakePose(shop, shop.brakePart); pick('brakes'); stationCamera('brakes'); SHOP3D.reset(); SHOP3D.nudge(-0.15, -0.32);
+                SHOP3D.focus('brakes', { distance: 1.15, target: { x: pose.x, y: pose.y + 1.58, z: pose.z }, immediate: true });
+              }, { 'data-ar-brake-closeup': part.id })),
             h('label', { htmlFor: 'ar-brake-spacing', style: { display: 'block', marginTop: 12, fontSize: 12 } }, 'Visual separation: ' + shop.brakeSpread + '%'),
             h('input', { id: 'ar-brake-spacing', type: 'range', min: 0, max: 100, step: 5, value: shop.brakeSpread, 'aria-valuetext': shop.brakeSpread === 0 ? 'Assembled view' : shop.brakeSpread + ' percent separated',
               onChange: function (e) { explore({ type: 'spacing', value: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: '#67e8f9' } }),
@@ -20028,7 +20081,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('autoRepair')))
             })),
             h('div', { 'data-ar-brake-part': part.id, style: { marginTop: 10, padding: 10, background: '#1e3346', borderRadius: 6, fontSize: 13 } },
               h('strong', null, part.label), h('p', { style: { margin: '6px 0' } }, part.detail),
-              part.id === 'pad' && h('p', null, 'Model lining: ' + (shop.serviced ? '8' : '2') + ' mm. This job’s replacement limit: 3 mm.')));
+              part.id === 'pad' && h('p', null, 'Model lining: ' + (shop.serviced ? '8' : '2') + ' mm. This job’s replacement limit: 3 mm. Lining depth is shown at 6× for visibility.')));
         }
         function sceneControlPanel() {
           function use(id) { pick(arShop3DToken(shop, id)); }

@@ -611,3 +611,50 @@ test('brake explorer separates real parts, supports physical picking and restore
   await expect(page.locator('[data-ar-shop-task="refit"]')).toBeVisible();
   expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
 });
+
+
+test('detailed brake parts retain clickable components, tracked gauge and selected-part close-ups', async ({ page }) => {
+  await page.setViewportSize({ width: 1360, height: 1100 });
+  await harness.mount(page, { autoRepair: { view: 'workshop', shop: { job: 'brakes', step: 7, station: 'brakes', tool: 'gauge', lift: 'locked', wheelRemoved: true, brakeSpread: 100, brakePart: 'pad' } } });
+  await page.locator('[data-ar-brake-focus]').click();
+  await shopPoint(page, 'gauge-digital-head');
+  const details = await page.evaluate(() => {
+    const s = (window as any).__shopScene, rotor = s.getObjectByName('brake-rotor--1.3-0.79'), pad = s.getObjectByName('brake-pad--1.3-0.79');
+    return { vents: rotor.children.filter((c: any) => c.name.startsWith('rotor-vent-vane')).length,
+      studs: rotor.children.filter((c: any) => c.name.startsWith('rotor-hub-stud')).length,
+      lining: pad.getObjectByName('pad-friction-lining').geometry.parameters.depth,
+      backing: !!pad.getObjectByName('pad-steel-backing'), piston: !!s.getObjectByName('brake-caliper--1.3-0.79').getObjectByName('caliper-piston-face'),
+      gauge: s.getObjectByName('workshop-pad-thickness-gauge').position.toArray() };
+  });
+  expect(details).toMatchObject({ vents: 16, studs: 5, backing: true, piston: true });
+  expect(details.lining).toBeCloseTo(0.012); expect(details.gauge).toEqual([-0.7, 0.2, 0.62]);
+  await clickShop(page, 'gauge-digital-head');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('2 mm');
+  await page.locator('[data-ar-brake-closeup]').click();
+  await shopPoint(page, 'brake-pad--1.3-0.79');
+  const centered = await page.evaluate(() => (window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79').getWorldPosition(new (window as any).THREE.Vector3()).project((window as any).__shopCamera).toArray());
+  expect(Math.abs(centered[0])).toBeLessThan(0.05); expect(Math.abs(centered[1])).toBeLessThan(0.05);
+  const distance = await page.evaluate(() => (window as any).__shopCamera.position.distanceTo((window as any).__shopScene.getObjectByName('brake-pad--1.3-0.79').getWorldPosition(new (window as any).THREE.Vector3())));
+  // The host preserves an authored home-target offset in its orbit math.
+  expect(distance).toBeLessThan(1.7);
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-pad-closeup.png' });
+  await page.locator('[data-ar-brake-focus]').click();
+  await clickShop(page, 'workshop-control-gauge-surface');
+  await expect(page.locator('#ar-shop-instrument-surface')).toHaveValue('backing');
+  await page.locator('[data-ar-brake-focus]').click(); await clickShop(page, 'gauge-digital-head');
+  await expect(page.locator('[data-ar-shop-reading]')).toHaveText('5 mm');
+  await expect(page.locator('[data-ar-shop-reading-valid]')).toHaveAttribute('data-ar-shop-reading-valid', 'false');
+  await page.locator('[data-ar-scene-action="brake-part-rotor"]').click();
+  await page.locator('[data-ar-brake-closeup]').click();
+  await shopPoint(page, 'brake-rotor--1.3-0.79');
+  await page.locator('.ar-shop-viewport').screenshot({ path: 'reports/automobile-workshop/brake-rotor-closeup.png' });
+  await page.locator('[data-ar-scene-action="brake-join"]').click();
+  await page.locator('[data-ar-brake-focus]').click();
+  await page.waitForFunction(() => (window as any).__shopScene.getObjectByName('workshop-pad-thickness-gauge').position.length() === 0);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.locator('#wrap').evaluate((el: HTMLElement) => { el.style.width = '100%'; el.style.maxWidth = '100%'; });
+  await page.locator('[data-ar-brake-closeup]').focus(); await page.keyboard.press('Enter');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  await expect(page.locator('[data-ar-shop-task="measure"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__events.errors)).toEqual([]);
+});

@@ -308,6 +308,9 @@
           // Whole-vehicle bays can inspect upward; existing callers keep the above-floor orbit.
           var minPitch = typeof cfg.minPitch === 'number' && isFinite(cfg.minPitch)
             ? Math.max(-1.35, Math.min(0.12, cfg.minPitch)) : 0.12;
+          // Small component inspectors may opt in to closer framing.
+          var minDistance = typeof cfg.minDistance === 'number' && isFinite(cfg.minDistance)
+            ? Math.max(0.8, Math.min(2.6, cfg.minDistance)) : 2.6;
           var S = null;                 // live scene state, null when detached
           var props = { selected: null, onPick: null, onStatus: null, dark: true, contrast: false };
           var status = 'idle';          // idle | loading | ready | failed
@@ -533,7 +536,7 @@
           function moveCamera(target, distance, opts, focusedId) {
             if (!S || !target) return false;
             opts = opts || {};
-            var nextDist = Math.max(2.6, Math.min(8.5, distance));
+            var nextDist = Math.max(minDistance, Math.min(8.5, distance));
             var duration = typeof opts.duration === 'number'
               ? Math.max(0, Math.min(2000, opts.duration)) : 460;
             S.focusedId = focusedId || null;
@@ -576,7 +579,7 @@
                 : 2.6;
               var distance = typeof opts.distance === 'number' ? opts.distance : autoDistance;
               // Focusing should never pull farther away than the whole-scene home.
-              distance = Math.max(2.6, Math.min(cfg.home.dist, distance));
+              distance = Math.max(minDistance, Math.min(cfg.home.dist, distance));
               return moveCamera(target, distance, opts, id);
             } catch (e) {
               return false;
@@ -962,7 +965,7 @@
               // A direct zoom takes control from an in-flight focus animation,
               // but lands its target on the requested part before applying zoom.
               settleCameraMove(true);
-              S.dist = Math.max(2.6, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
+              S.dist = Math.max(minDistance, Math.min(8.5, S.dist + (ev.deltaY > 0 ? 0.4 : -0.4)));
             }, { passive: false });
             el.style.cursor = 'grab';
 
@@ -1235,7 +1238,7 @@
             zoom: function (delta) {
               if (!S) return;
               settleCameraMove(true);
-              S.dist = Math.max(2.6, Math.min(8.5, S.dist + delta));
+              S.dist = Math.max(minDistance, Math.min(8.5, S.dist + delta));
             },
             // Explicitly focus a named part. Omitting partId uses the current
             // props.selected id, so keyboard/list selection and raycast selection
