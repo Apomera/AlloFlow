@@ -6015,7 +6015,7 @@
               (selectedGeometryType === 'LineString' || selectedGeometryType === 'MultiLineString') && h('strong', { style: { color: '#86efac' } }, gisFillTemplate(__alloT('stem.gisstudio.ui_line_length_is', 'Line length: {value}'), { value: formatDistance(measuredFeature.lengthKm) }))),
             selectedRecords.length > 0 && h('div', { style: { marginTop: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(140px,1fr))', gap: 8 } },
               h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#fde047', fontSize: 18 } }, selectedRecords.length), h('span', { style: { fontSize: 10 } }, __alloT('stem.gisstudio.ui_selected_points', 'selected points'))),
-              h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, Number.isFinite(selectedMean) ? display.number(selectedMean, 1) : '\u2014'), h('span', { style: { fontSize: 10 } }, 'selected mean, ' + metricLabel)),
+              h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, Number.isFinite(selectedMean) ? display.number(selectedMean, 1) : '\u2014'), h('span', { style: { fontSize: 10 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_selected_mean_of', 'selected mean, {attribute}'), { attribute: metricLabel }))),
               h('div', { style: { padding: 9, borderRadius: 8, background: '#123143' } }, h('strong', { style: { display: 'block', color: '#f0fdfa', fontSize: 12 } }, selectedRecords.slice(0, 4).map(function (record) { return record.name; }).join(', ') + (selectedRecords.length > 4 ? ' +' + (selectedRecords.length - 4) : '')), h('span', { style: { fontSize: 10 } }, __alloT('stem.gisstudio.ui_selected_locations', 'selected locations')))),
             h('p', { style: { margin: '10px 0 0', color: '#fcd34d', fontSize: 10, lineHeight: 1.45 } }, __alloT('stem.gisstudio.ui_analysis_describes_spatial_relationships_in_th', 'Analysis describes spatial relationships in the loaded data; it does not establish cause and effect. The table below marks every selected row.')));
         }
@@ -7597,19 +7597,19 @@
                   h('input', { type: 'checkbox', checked: remoteSensing.cloudMask, onChange: function (event) { updateRemoteSensing('cloudMask', event.target.checked); } }),
                   __alloT('stem.gisstudio.ui_mask_cloud_obscured_pixels', 'Mask cloud-obscured pixels'))),
               h('label', { style: { display: 'grid', gap: 6, marginTop: 12, fontSize: 12, fontWeight: 700 } },
-                'Swipe position: ' + remoteSensing.swipe + '%',
+                gisFillTemplate(__alloT('stem.gisstudio.ui_swipe_position', 'Swipe position: {percent}%'), { percent: remoteSensing.swipe }),
                 h('input', {
                   type: 'range', min: 0, max: 100, step: 1, value: remoteSensing.swipe,
                   onChange: function (event) { updateRemoteSensing('swipe', Number(event.target.value)); },
                   'aria-label': __alloT('stem.gisstudio.a11y_before_and_after_imagery_swipe_position', 'Before and after imagery swipe position'), 'aria-valuetext': remoteSensing.swipe + ' percent'
                 })),
               h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } },
-                remoteIndexName(remoteSensing.analysisIndex) + ': ' + remoteIndexFormula(remoteSensing.analysisIndex) + '. Reflectance values range from 0 to 1.')),
+                gisFillTemplate(__alloT('stem.gisstudio.ui_index_formula_note', '{name}: {formula}. Reflectance values range from 0 to 1.'), { name: remoteIndexName(remoteSensing.analysisIndex), formula: remoteIndexFormula(remoteSensing.analysisIndex) }))),
             h('section', { 'aria-labelledby': 'gis-remote-swipe-heading', style: panel },
               h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'end', gap: 10, flexWrap: 'wrap' } },
                 h('div', null,
                   h('h2', { id: 'gis-remote-swipe-heading', style: { margin: '0 0 3px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_before_and_after_swipe_comparison', 'Before-and-after swipe comparison')),
-                  h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 10 } }, remoteScene.beforeDate + ' on the left; ' + remoteScene.afterDate + ' on the right. Same season, 30 m pixels.')),
+                  h('p', { style: { margin: 0, color: '#a7c7d8', fontSize: 10 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_before_after_dates', '{before} on the left; {after} on the right. Same season, 30 m pixels.'), { before: remoteScene.beforeDate, after: remoteScene.afterDate }))),
                 h('button', { type: 'button', onClick: sonifyRemoteChange, style: Object.assign({}, primary, { background: '#083344', border: '1px solid #22d3ee' }) }, __alloT('stem.gisstudio.ui_sonify_index_change', '♫ Sonify index change'))),
               h('div', {
                 role: 'group',
@@ -7644,9 +7644,9 @@
                     item[0]);
                 })),
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#cfe8f3', fontSize: 11, lineHeight: 1.5 } },
-                'Selected pixel ' + remoteSelectedCell.id + '. Before: ' + remoteSelectedCell.beforeClass + '; after: ' + remoteSelectedCell.afterClass +
-                '. ' + indexKey + ' before ' + indexNumber(remoteBeforeIndex) + ', after ' + indexNumber(remoteAfterIndex) +
-                (validChange == null ? '.' : ', change ' + display.number(validChange, 3) + '.'))),
+                (validChange == null
+                ? gisFillTemplate(__alloT('stem.gisstudio.ui_selected_pixel_no_change', 'Selected pixel {id}. Before: {beforeClass}; after: {afterClass}. {index} before {beforeValue}, after {afterValue}.'), { id: remoteSelectedCell.id, beforeClass: remoteSelectedCell.beforeClass, afterClass: remoteSelectedCell.afterClass, index: indexKey, beforeValue: indexNumber(remoteBeforeIndex), afterValue: indexNumber(remoteAfterIndex) })
+                : gisFillTemplate(__alloT('stem.gisstudio.ui_selected_pixel_with_change', 'Selected pixel {id}. Before: {beforeClass}; after: {afterClass}. {index} before {beforeValue}, after {afterValue}, change {change}.'), { id: remoteSelectedCell.id, beforeClass: remoteSelectedCell.beforeClass, afterClass: remoteSelectedCell.afterClass, index: indexKey, beforeValue: indexNumber(remoteBeforeIndex), afterValue: indexNumber(remoteAfterIndex), change: display.number(validChange, 3) })))),
             h('section', { 'aria-labelledby': 'gis-remote-summary-heading', style: panel },
               h('h2', { id: 'gis-remote-summary-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_change_measurement', 'Change measurement')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(135px,1fr))', gap: 8 } },
@@ -7663,7 +7663,7 @@
                     h('span', { style: { color: '#a7c7d8', fontSize: 10 } }, item[1]));
                 })),
               h('p', { style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 10 } },
-                'Area model: ' + remoteScene.resolutionMeters + ' m × ' + remoteScene.resolutionMeters + ' m = 900 m² = 0.09 ha per pixel. Only clear pixels are compared.')),
+                gisFillTemplate(__alloT('stem.gisstudio.ui_area_model_note', 'Area model: {size} m × {size} m = 900 m² = 0.09 ha per pixel. Only clear pixels are compared.'), { size: remoteScene.resolutionMeters }))),
             h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(300px,1fr))', gap: 14 } },
               h('section', { 'aria-labelledby': 'gis-remote-inspector-heading', style: panel },
                 h('h2', { id: 'gis-remote-inspector-heading', style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_pixel_spectral_inspector', 'Pixel spectral inspector')),
@@ -7672,7 +7672,7 @@
                     remoteScene.cells.map(function (cell) { return h('option', { key: cell.id, value: cell.id }, cell.id + ' — ' + cell.beforeClass + ' to ' + cell.afterClass); }))),
                 h('div', { style: { overflowX: 'auto' } },
                   h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
-                    h('caption', { style: { textAlign: 'left', color: '#67e8f9', fontWeight: 800, paddingBottom: 6 } }, 'Reflectance proportions for pixel ' + remoteSelectedCell.id),
+                    h('caption', { style: { textAlign: 'left', color: '#67e8f9', fontWeight: 800, paddingBottom: 6 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_reflectance_caption', 'Reflectance proportions for pixel {id}'), { id: remoteSelectedCell.id })),
                     h('thead', null, h('tr', null, ['Band', 'Before', 'After', 'Common interpretation'].map(function (heading) {
                       return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 6, borderBottom: '1px solid #3f6b82', color: '#67e8f9' } }, heading);
                     }))),
@@ -7695,7 +7695,7 @@
               h('section', { 'aria-labelledby': 'gis-remote-quality-heading', style: panel },
                 h('h2', { id: 'gis-remote-quality-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_interpretation_quality_check', 'Interpretation quality check')),
                 h('p', { role: 'status', style: { margin: '0 0 9px', color: checkedCount === 4 ? '#86efac' : '#fde68a', fontSize: 11 } },
-                  checkedCount + ' of 4 checks confirmed.'),
+                  gisFillTemplate(__alloT('stem.gisstudio.ui_checks_confirmed', '{done} of 4 checks confirmed.'), { done: checkedCount })),
                 [
                   ['dates', 'The dates are from comparable seasons.'],
                   ['clouds', 'Clouds and missing pixels are masked or disclosed.'],
@@ -7786,11 +7786,11 @@
                 schematicMap({ annotations: composer.annotations, altText: composer.altText || suggestMapAltText(composerModel) }),
                 composer.showLegend && h('div', { role: 'group', 'aria-label': __alloT('stem.gisstudio.a11y_map_legend', 'Map legend'), style: { marginTop: 10, padding: 10, border: '1px solid #cbd5e1', borderRadius: 8, background: '#fff' } },
                   h('strong', { style: { display: 'block', color: '#0f5f5a', fontSize: 12 } }, composer.legendTitle || metricLabel),
-                  h('p', { style: { margin: '4px 0 0', fontSize: 11 } }, 'Low teal → middle green → high rose. Unit: ' + (composerModel.unit || 'not specified') + '.')),
+                  h('p', { style: { margin: '4px 0 0', fontSize: 11 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_composer_legend_note', 'Low teal to middle green to high rose. Unit: {unit}.'), { unit: composerModel.unit || __alloT('stem.gisstudio.ui_not_specified', 'not specified') }))),
                 composer.claim && h('div', { style: { marginTop: 10, borderLeft: '4px solid #d97706', background: '#fff7ed', padding: 10, fontSize: 12, lineHeight: 1.5 } },
                   h('strong', null, __alloT('stem.gisstudio.ui_takeaway', 'Takeaway: ')), composer.claim),
                 h('p', { style: { margin: '9px 0 0', color: '#52636f', fontSize: 10 } },
-                  'Source: ' + (provenance.source || 'not specified') + '. ' + composerRows.length + ' synchronized table records.'),
+                  gisFillTemplate(__alloT('stem.gisstudio.ui_composer_source_note', 'Source: {source}. {count} synchronized table records.'), { source: provenance.source || __alloT('stem.gisstudio.ui_not_specified', 'not specified'), count: composerRows.length })),
                 composer.annotations.length > 0 && h('ol', { 'aria-label': __alloT('stem.gisstudio.a11y_map_annotation_key', 'Map annotation key'), style: { margin: '10px 0 0', paddingLeft: 22, fontSize: 11 } },
                   composer.annotations.map(function (annotation, index) {
                     return h('li', { key: annotation.id }, 'A' + (index + 1) + ': ' + annotation.label);
@@ -7827,13 +7827,13 @@
                   h('h2', { id: 'gis-cartography-coach-heading', style: { margin: '4px 0', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_share_readiness_review', 'Share-readiness review'))),
                 h('strong', { style: { color: readyToShare ? '#86efac' : '#fca5a5', fontSize: 20 } }, composerAudit.score + '/100')),
               h('p', { role: 'status', style: { margin: '7px 0 10px', color: readyToShare ? '#86efac' : '#fde68a', fontSize: 12 } },
-                composerAudit.errors + ' required fix' + (composerAudit.errors === 1 ? '' : 'es') + ' and ' + composerAudit.warnings + ' recommendation' + (composerAudit.warnings === 1 ? '' : 's') + '.'),
+                gisFillTemplate(__alloT('stem.gisstudio.ui_composer_audit_counts', '{errors} required fixes and {warnings} recommendations.'), { errors: composerAudit.errors, warnings: composerAudit.warnings })),
               composerAudit.issues.length ? h('ul', { style: { margin: 0, paddingLeft: 20, color: '#dbeafe', fontSize: 11, lineHeight: 1.7 } },
                 composerAudit.issues.map(function (item) {
                   return h('li', { key: item.id }, h('strong', { style: { color: item.severity === 'error' ? '#fca5a5' : '#fde68a' } }, item.severity === 'error' ? 'Required: ' : 'Consider: '), item.message);
                 })) : h('p', { style: { color: '#86efac', fontWeight: 800 } }, __alloT('stem.gisstudio.ui_all_composer_checks_pass', 'All composer checks pass.')),
               h('details', { style: { marginTop: 10, fontSize: 11, color: '#cfe8f3' } },
-                h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, composerAudit.passes.length + ' safeguards already included'),
+                h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_composer_safeguards_included', '{count} safeguards already included'), { count: composerAudit.passes.length })),
                 h('ul', { style: { lineHeight: 1.7 } }, composerAudit.passes.map(function (item) { return h('li', { key: item }, item); })))),
             h('section', { 'aria-labelledby': 'gis-composer-export-heading', style: panel },
               h('h2', { id: 'gis-composer-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_export_the_accessible_evidence_package', 'Export the accessible evidence package')),
@@ -7858,8 +7858,8 @@
                 ['claim', 'evidence', 'limitation'].map(function (key) { return h('label', { key: key, style: { display: 'flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800 } }, h('input', { type: 'checkbox', checked: storyMap.checks[key], onChange: function (event) { updateStoryMapField(key, event.target.checked); } }), key.charAt(0).toUpperCase() + key.slice(1) + ' check'); })),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', marginTop: 13 } },
                 h('progress', { max: storyProgress.total, value: storyProgress.complete, style: { width: 190, accentColor: '#5eead4' }, 'aria-label': __alloT('stem.gisstudio.a11y_story_map_reflection_progress', 'Story Map reflection progress') }),
-                h('strong', { style: { color: storyProgress.complete === storyProgress.total ? '#86efac' : '#fde68a' } }, storyProgress.complete + '/' + storyProgress.total + ' reflection checks complete'),
-                h('span', { style: { color: '#a7c7d8', fontSize: 11 } }, storyProgress.frames + '/' + STORY_FRAME_LIMIT + ' frames')),
+                h('strong', { style: { color: storyProgress.complete === storyProgress.total ? '#86efac' : '#fde68a' } }, gisFillTemplate(__alloT('stem.gisstudio.ui_reflection_checks_complete', '{done} of {total} reflection checks complete'), { done: storyProgress.complete, total: storyProgress.total })),
+                h('span', { style: { color: '#a7c7d8', fontSize: 11 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_story_frames_count', '{used} of {total} frames'), { used: storyProgress.frames, total: STORY_FRAME_LIMIT }))),
               h('p', { role: 'status', style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, storyStatus)),
             h('section', { 'aria-labelledby': 'gis-story-capture-heading', style: panel },
               h('h2', { id: 'gis-story-capture-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_capture_evidence_frames', 'Capture evidence frames')),
@@ -7893,7 +7893,7 @@
               h('h2', { id: 'gis-quality-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, __alloT('stem.gisstudio.ui_data_quality_and_uncertainty_review', 'Data Quality and Uncertainty Review')),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, __alloT('stem.gisstudio.ui_use_the_project_s_existing_safeguards_to_decid', 'Use the project’s existing safeguards to decide what the evidence can support. A score is a teaching aid, not a statistical confidence interval.')),
               h('div', { style: { display: 'flex', alignItems: 'center', gap: 15, flexWrap: 'wrap', marginTop: 14 } }, h('span', { style: { color: '#a7c7d8', fontSize: 11, fontWeight: 800 } }, __alloT('stem.gisstudio.ui_evidence_readiness', 'Evidence readiness')), h('strong', { style: { fontSize: 34, color: statusColor } }, qualityReview.score + '/100'), h('p', { role: 'status', style: { margin: 0, color: statusColor, fontSize: 12, fontWeight: 800 } }, qualityReview.summary)),
-              h('p', { style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11 } }, qualityReview.errors + ' required check' + (qualityReview.errors === 1 ? '' : 's') + '; ' + qualityReview.warnings + ' highlighted limitation' + (qualityReview.warnings === 1 ? '' : 's') + '.')),
+              h('p', { style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_quality_counts', '{errors} required checks; {warnings} highlighted limitations.'), { errors: qualityReview.errors, warnings: qualityReview.warnings }))),
             h('section', { 'aria-labelledby': 'gis-quality-checklist-heading', style: panel },
               h('h2', { id: 'gis-quality-checklist-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_learner_review_checklist', 'Learner review checklist')),
               h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11 } }, __alloT('stem.gisstudio.ui_these_acknowledgements_are_saved_with_the_proj', 'These acknowledgements are saved with the project so a teacher or collaborator can see which safeguards were reviewed.')),
@@ -7920,7 +7920,7 @@
             h('section', { 'aria-labelledby': 'gis-packet-contents-heading', style: panel },
               h('h2', { id: 'gis-packet-contents-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_packet_contents', 'Packet contents')),
               h('ul', { style: { margin: 0, paddingLeft: 21, color: '#dbeafe', fontSize: 12, lineHeight: 1.8 } }, h('li', null, __alloT('stem.gisstudio.ui_working_claim_and_investigation_question', 'Working claim and investigation question')), h('li', null, storyProgress.frames + ' ordered Story Map evidence frame' + (storyProgress.frames === 1 ? '' : 's')), h('li', null, __alloT('stem.gisstudio.ui_quality_and_uncertainty_table_with_next_action', 'Quality and uncertainty table with next actions')), h('li', null, composerRows.length + ' mapped records in a data-table twin'), h('li', null, __alloT('stem.gisstudio.ui_provenance_method_limitations_and_handoff_ques', 'Provenance, method, limitations, and handoff questions'))),
-              h('p', { style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, 'Source: ' + (provenance.source || 'Not specified') + '. Project: ' + (projectTitle || 'Untitled GIS project') + '.')),
+              h('p', { style: { margin: '10px 0 0', color: '#a7c7d8', fontSize: 11 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_packet_source_project', 'Source: {source}. Project: {project}.'), { source: provenance.source || __alloT('stem.gisstudio.ui_not_specified_capital', 'Not specified'), project: projectTitle || __alloT('stem.gisstudio.ui_untitled_gis_project', 'Untitled GIS project') }))),
             h('section', { 'aria-labelledby': 'gis-packet-export-heading', style: panel },
               h('h2', { id: 'gis-packet-export-heading', style: { margin: '0 0 6px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_export_the_teacher_handoff', 'Export the teacher handoff')),
               h('p', { style: { margin: '0 0 10px', color: '#b7d2df', fontSize: 11, lineHeight: 1.5 } }, __alloT('stem.gisstudio.ui_the_self_contained_report_is_screen_reader_fri', 'The self-contained report is screen-reader friendly and print-ready. It preserves evidence sequence and limitations instead of presenting a map without context.')),
@@ -8006,7 +8006,7 @@
           return h('div', { style: { display: 'grid', gap: 14 } },
             recoveryDraft && h('section', { 'aria-labelledby': 'gis-recovery-heading', style: { padding: 14, borderRadius: 12, border: '2px solid #f59e0b', background: '#2b2617' } },
               h('h2', { id: 'gis-recovery-heading', style: { margin: '0 0 5px', color: '#fde68a', fontSize: 16 } }, __alloT('stem.gisstudio.ui_recover_a_local_draft', 'Recover a local draft?')),
-              h('p', { style: { margin: '0 0 10px', color: '#fef3c7', fontSize: 12 } }, 'A device-local draft named "' + recoveryDraft.title + '" was saved ' + recoveryDraft.savedAt + '. Autosave is paused until you choose.'),
+              h('p', { style: { margin: '0 0 10px', color: '#fef3c7', fontSize: 12 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_recovery_draft_note', 'A device-local draft named {title} was saved {when}. Autosave is paused until you choose.'), { title: recoveryDraft.title, when: recoveryDraft.savedAt })),
               h('div', { style: { display: 'flex', gap: 8, flexWrap: 'wrap' } },
                 h('button', { type: 'button', onClick: restoreLocalDraft, style: primary }, __alloT('stem.gisstudio.ui_restore_draft', 'Restore draft')),
                 h('button', { type: 'button', onClick: discardLocalDraft, style: Object.assign({}, control, { cursor: 'pointer' }) }, __alloT('stem.gisstudio.ui_discard_draft', 'Discard draft')))),
@@ -8049,13 +8049,11 @@
               h('div', { style: panel },
                 h('h2', { style: { margin: '0 0 8px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_coordinate_privacy_review', 'Coordinate privacy review')),
                 h('p', { role: 'status', style: { margin: '0 0 8px', color: privacyAssessment.highPrecision || privacyAssessment.identifierWarnings ? '#fde68a' : '#86efac', fontSize: 12, lineHeight: 1.5 } },
-                  privacyAssessment.total + ' mapped features, imported points, or timeline rows checked. ' +
-                  privacyAssessment.highPrecision + ' use 4 or more decimal places; ' +
-                  privacyAssessment.identifierWarnings + ' have identifier-like labels.'),
+                  gisFillTemplate(__alloT('stem.gisstudio.ui_privacy_summary_counts', '{total} mapped features, imported points, or timeline rows checked. {precise} use 4 or more decimal places; {named} have identifier-like labels.'), { total: privacyAssessment.total, precise: privacyAssessment.highPrecision, named: privacyAssessment.identifierWarnings })),
                 (privacyAssessment.highPrecision > 0 || privacyAssessment.identifierWarnings > 0) && h('details', { style: { color: '#cfe8f3', fontSize: 11, marginBottom: 10 } },
                   h('summary', { style: { cursor: 'pointer', fontWeight: 800 } }, __alloT('stem.gisstudio.ui_review_flagged_point_labels', 'Review flagged point labels')),
-                  privacyAssessment.highPrecisionNames.length > 0 && h('p', null, 'High precision: ' + privacyAssessment.highPrecisionNames.join(', ')),
-                  privacyAssessment.identifierNames.length > 0 && h('p', null, 'Identifier-like labels: ' + privacyAssessment.identifierNames.join(', '))),
+                  privacyAssessment.highPrecisionNames.length > 0 && h('p', null, gisFillTemplate(__alloT('stem.gisstudio.ui_high_precision_names', 'High precision: {names}'), { names: privacyAssessment.highPrecisionNames.join(', ') })),
+                  privacyAssessment.identifierNames.length > 0 && h('p', null, gisFillTemplate(__alloT('stem.gisstudio.ui_identifier_like_names', 'Identifier-like labels: {names}'), { names: privacyAssessment.identifierNames.join(', ') }))),
                 h('label', { style: { display: 'grid', gap: 5, fontSize: 12, fontWeight: 700 } }, __alloT('stem.gisstudio.ui_round_point_coordinates_to', 'Round point coordinates to'),
                   h('select', { value: privacyDigits, onChange: function (event) { setPrivacyDigits(Number(event.target.value)); }, style: control },
                     h('option', { value: 2 }, __alloT('stem.gisstudio.ui_2_decimal_places_about_1_km', '2 decimal places (about 1 km)')),
@@ -8102,14 +8100,14 @@
                   h('button', { type: 'button', onClick: downloadTimeImportReport, disabled: !timeImportDiagnostics.invalidRows && !timeImportDiagnostics.truncatedRows, style: Object.assign({}, control, { cursor: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 'pointer' : 'not-allowed', opacity: timeImportDiagnostics.invalidRows || timeImportDiagnostics.truncatedRows ? 1 : 0.55 }) }, __alloT('stem.gisstudio.ui_download_time_series_import_review', 'Download time-series import review')),
                   h('button', { type: 'button', onClick: function () { setTimeText(EXAMPLE_TIME_CSV); setTimeImportDiagnostics({ invalidRows: 0, truncatedRows: 0, invalidSamples: [] }); setTimeError(''); }, style: Object.assign({}, control, { cursor: 'pointer' }) }, __alloT('stem.gisstudio.ui_restore_example', 'Restore example')))),
               timeError && h('p', { role: 'alert', style: { margin: '10px 0 0', padding: 9, borderRadius: 8, background: '#7f1d1d', color: '#fecaca' } }, timeError)),
-            (timeImportDiagnostics.invalidRows > 0 || timeImportDiagnostics.truncatedRows > 0) && h('p', { role: 'status', style: { margin: '8px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } }, 'Import review: ' + timeImportDiagnostics.invalidRows + ' row' + (timeImportDiagnostics.invalidRows === 1 ? '' : 's') + ' rejected.' + (timeImportDiagnostics.truncatedRows > 0 ? ' ' + timeImportDiagnostics.truncatedRows + ' additional source row' + (timeImportDiagnostics.truncatedRows === 1 ? '' : 's') + ' were beyond the 3,000-row limit.' : '')),
+            (timeImportDiagnostics.invalidRows > 0 || timeImportDiagnostics.truncatedRows > 0) && h('p', { role: 'status', style: { margin: '8px 0 0', padding: 9, borderLeft: '4px solid #f59e0b', borderRadius: 8, background: '#2b2617', color: '#fde68a', fontSize: 11, lineHeight: 1.45 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_time_import_review_rejected', 'Import review: {count} rows rejected.'), { count: timeImportDiagnostics.invalidRows }) + (timeImportDiagnostics.truncatedRows > 0 ? ' ' + timeImportDiagnostics.truncatedRows + ' additional source row' + (timeImportDiagnostics.truncatedRows === 1 ? '' : 's') + ' were beyond the 3,000-row limit.' : '')),
             h('section', { 'aria-labelledby': 'gis-time-controls-heading', style: panel },
               h('h2', { id: 'gis-time-controls-heading', style: { margin: '0 0 9px', color: '#f0fdfa', fontSize: 16 } }, __alloT('stem.gisstudio.ui_timeline_controls', 'Timeline controls')),
               h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(190px,1fr))', gap: 10 } },
                 h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, __alloT('stem.gisstudio.ui_baseline_year', 'Baseline year'),
                   h('select', { value: effectiveBaseline, onChange: function (event) { setTimeBaseline(Number(event.target.value)); setTimePlaying(false); persist('gisTimelineAnalyzed', true); }, style: control },
                     timeYears.map(function (year) { return h('option', { key: year, value: year }, year); }))),
-                h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, 'Focus year: ' + effectiveFocusYear,
+                h('label', { style: { display: 'grid', gap: 5, fontSize: 12 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_focus_year', 'Focus year: {year}'), { year: effectiveFocusYear }),
                   h('input', {
                     type: 'range', min: 0, max: Math.max(0, timeYears.length - 1), step: 1, value: focusIndex,
                     onChange: function (event) { setTimeFocusYear(timeYears[Number(event.target.value)]); setTimePlaying(false); persist('gisTimelineAnalyzed', true); },
@@ -8123,10 +8121,10 @@
               h('p', { style: { margin: '9px 0 0', color: '#a7c7d8', fontSize: 10 } }, __alloT('stem.gisstudio.ui_sound_orders_locations_from_decrease_to_increa', 'Sound orders locations from decrease to increase. Sawtooth tones mark decreases; sine tones mark increases.'))),
             h('section', { 'aria-label': __alloT('stem.gisstudio.a11y_synchronized_before_and_after_maps', 'Synchronized before and after maps'), style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(330px,100%),1fr))', gap: 12 } },
               h('div', null,
-                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Baseline: ' + effectiveBaseline),
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_baseline_year_value', 'Baseline: {year}'), { year: effectiveBaseline })),
                 interactiveMapSurface(timeLeftNode, 'Baseline interactive map for ' + effectiveBaseline, 370, !timeMapReady, timeMapUnavailable)),
               h('div', null,
-                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, 'Focus year: ' + effectiveFocusYear),
+                h('h3', { style: { margin: '0 0 6px', color: '#67e8f9', fontSize: 13 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_focus_year', 'Focus year: {year}'), { year: effectiveFocusYear })),
                 interactiveMapSurface(timeRightNode, 'Focus-year interactive map for ' + effectiveFocusYear, 370, !timeMapReady, timeMapUnavailable))),
             h('p', { role: 'status', style: { margin: 0, color: '#a7c7d8', fontSize: 11 } }, timeStatus),
             h('section', { 'aria-labelledby': 'gis-change-summary-heading', style: panel },
@@ -8141,7 +8139,7 @@
                 h('textarea', { value: timeObservation, onChange: function (event) { setTimeObservation(event.target.value); }, rows: 3, placeholder: __alloT('stem.gisstudio.ui_from_the_baseline_to_the_focus_year_evidence_a', 'From the baseline to the focus year... Evidence... A limitation...'), style: { width: '100%', boxSizing: 'border-box', padding: 10, borderRadius: 8, border: '1px solid #3f6b82', background: '#071827', color: '#fff' } })),
               h('div', { style: { overflowX: 'auto', marginTop: 12 } },
                 h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11 } },
-                  h('caption', { style: { textAlign: 'left', color: '#a7c7d8', paddingBottom: 7 } }, 'Change by location from ' + effectiveBaseline + ' to ' + effectiveFocusYear),
+                  h('caption', { style: { textAlign: 'left', color: '#a7c7d8', paddingBottom: 7 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_change_by_location_caption', 'Change by location from {from} to {to}'), { from: effectiveBaseline, to: effectiveFocusYear })),
                   h('thead', null, h('tr', null, ['Location', 'Baseline', 'Focus year', 'Absolute change', 'Percent change', 'Trend'].map(function (heading) {
                     return h('th', { key: heading, scope: 'col', style: { textAlign: 'left', padding: 7, color: '#67e8f9', borderBottom: '1px solid #3f6b82' } }, heading);
                   }))),
@@ -8168,7 +8166,7 @@
           }
           return h('div', { style: { display: 'grid', gap: 14 } },
             h('section', { 'aria-labelledby': 'gis-missions-heading', style: panel },
-              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, (activeRegionPack.id === 'maine' ? 'MAINE' : String(activeRegionPack.scope || activeRegionPack.label || 'REGION').toUpperCase()) + ' INQUIRY SERIES'),
+              h('p', { style: { margin: 0, color: '#fde68a', fontSize: 10, fontWeight: 900, letterSpacing: '.09em' } }, gisFillTemplate(__alloT('stem.gisstudio.ui_inquiry_series_eyebrow', '{region} INQUIRY SERIES'), { region: activeRegionPack.id === 'maine' ? 'MAINE' : String(activeRegionPack.scope || activeRegionPack.label || __alloT('stem.gisstudio.ui_region_word', 'REGION')).toUpperCase() })),
               h('h2', { id: 'gis-missions-heading', style: { margin: '4px 0 6px', color: '#f0fdfa', fontSize: 20 } }, gisText.missionHeading),
               h('p', { style: { margin: 0, color: '#b7d2df', fontSize: 12, lineHeight: 1.55 } }, __alloT('stem.gisstudio.ui_choose_a_question_prepare_the_right_gis_worksp', 'Choose a question, prepare the right GIS workspace, gather evidence from the map or its table twin, and document what the data can and cannot support.')),
               activeMission.generated && h('p', { role: 'note', style: { margin: '8px 0 0', color: '#a7c7d8', fontSize: 11, lineHeight: 1.5 } }, gisText.generatedMissionsNote),
@@ -8184,7 +8182,7 @@
                     style: { textAlign: 'left', padding: 12, borderRadius: 10, border: '1px solid ' + (active ? '#5eead4' : '#36586b'), background: active ? '#0f766e' : '#071827', color: '#fff', cursor: 'pointer' }
                   },
                     h('strong', { style: { display: 'block', fontSize: 13 } }, mission.title),
-                    h('span', { style: { display: 'block', marginTop: 4, color: active ? '#ecfeff' : '#a7c7d8', fontSize: 10 } }, mission.duration + ' - ' + completion.complete + '/' + completion.total + ' steps'));
+                    h('span', { style: { display: 'block', marginTop: 4, color: active ? '#ecfeff' : '#a7c7d8', fontSize: 10 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_mission_duration_steps', '{duration} - {done} of {total} steps'), { duration: mission.duration, done: completion.complete, total: completion.total })));
                 }))),
             h('section', { role: 'tabpanel', 'aria-labelledby': 'gis-active-mission-heading', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(260px,1fr))', gap: 14 } },
               h('div', { style: Object.assign({}, panel, { padding: 18 }) },
@@ -8192,7 +8190,7 @@
                 h('h2', { id: 'gis-active-mission-heading', style: { margin: '5px 0 8px', color: '#f0fdfa', fontSize: 20 } }, activeMission.title),
                 h('p', { style: { margin: '0 0 13px', color: '#dbeafe', fontSize: 14, lineHeight: 1.55 } }, activeMission.question),
                 h('label', { style: { display: 'grid', gap: 5, color: '#a7c7d8', fontSize: 11, marginBottom: 14 } },
-                  h('span', null, 'Mission progress: ' + activeMissionCompletion.complete + ' of ' + activeMissionCompletion.total + ' steps (' + activeMissionCompletion.percent + '%)'),
+                  h('span', null, gisFillTemplate(__alloT('stem.gisstudio.ui_mission_progress', 'Mission progress: {done} of {total} steps ({percent}%)'), { done: activeMissionCompletion.complete, total: activeMissionCompletion.total, percent: activeMissionCompletion.percent })),
                   h('progress', { value: activeMissionCompletion.complete, max: activeMissionCompletion.total, style: { width: '100%', height: 16 } })),
                 h('fieldset', { style: { margin: 0, padding: 12, border: '1px solid #3f6b82', borderRadius: 10 } },
                   h('legend', { style: { color: '#fde68a', fontWeight: 800, padding: '0 5px' } }, __alloT('stem.gisstudio.ui_investigation_checklist', 'Investigation checklist')),
@@ -8244,10 +8242,10 @@
                     h('option', { value: 'mercator' }, __alloT('stem.gisstudio.ui_mercator', 'Mercator')),
                     h('option', { value: 'equirectangular' }, __alloT('stem.gisstudio.ui_equirectangular', 'Equirectangular')),
                     h('option', { value: 'equalarea' }, __alloT('stem.gisstudio.ui_equal_area', 'Equal-area')))),
-                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, 'Latitude: ' + display.coordinate(latitude, 0, 'lat'),
+                h('label', { style: { display: 'grid', gap: 7, fontSize: 12, fontWeight: 700 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_latitude_value', 'Latitude: {value}'), { value: display.coordinate(latitude, 0, 'lat') }),
                   h('input', { type: 'range', min: -80, max: 80, step: 5, value: latitude, onChange: function (event) { setLatitude(Number(event.target.value)); }, 'aria-describedby': 'gis-factor' })),
                 h('div', { id: 'gis-factor', role: 'status', style: { marginTop: 14, padding: 11, borderRadius: 9, background: '#071827', color: '#cffafe' } },
-                  h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, display.number(factor, 2) + '\u00D7 visual area'),
+                  h('strong', { style: { display: 'block', color: '#67e8f9', fontSize: 18 } }, gisFillTemplate(__alloT('stem.gisstudio.ui_visual_area_factor', '{factor}× visual area'), { factor: display.number(factor, 2) })),
                   projection === 'mercator' ? 'Preserves local angles; enlarges high latitudes.' : projection === 'equirectangular' ? 'Maps coordinates directly; stretches east-west distance.' : 'Preserves relative area; changes shape and angle.')),
               h('svg', { viewBox: '0 0 560 300', role: 'img', 'aria-label': projection + ' distortion diagram at ' + display.coordinate(latitude, 0, 'lat') + '. Area factor ' + display.number(factor, 2), style: { width: '100%', minHeight: 280, background: '#071827', borderRadius: 12 } },
                 [0, 1, 2, 3, 4, 5, 6].map(function (n) { return h('line', { key: 'v' + n, x1: 40 + n * 80, x2: 40 + n * 80, y1: 30, y2: 260, stroke: '#294457' }); }),
